@@ -408,3 +408,40 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'react-native-progress/Bar' {
+  import { Component } from 'react';
+
+  interface ProgressBarProps extends React.ComponentProps<'View'> {
+    /**
+     * Progress value (between 0 and 1)
+     */
+    progress?: number;
+    /**
+     * Color of the progress bar
+     */
+    color?: string;
+    /**
+     * Width of the progress bar
+     */
+    width?: number | null;
+    /**
+     * Height of the progress bar
+     */
+    height?: number;
+    /**
+     * Border radius of the progress bar
+     */
+    borderRadius?: number;
+    /**
+     * Border width of the progress bar
+     */
+    borderWidth?: number;
+    /**
+     * Whether to use native driver for animations
+     */
+    useNativeDriver?: boolean;
+  }
+
+  export default class ProgressBar extends Component<ProgressBarProps> {}
+}
