@@ -11,9 +11,16 @@ const mockTheme = {
 
 describe('AnimatedTransactionModal', () => {
   it('should render correctly', () => {
+    const mockReview = jest.fn();
+    const mockOnModeChange = jest.fn();
+
     render(
       <ThemeContext.Provider value={mockTheme}>
-        <AnimatedTransactionModal>
+        <AnimatedTransactionModal
+          review={mockReview}
+          onModeChange={mockOnModeChange}
+          ready
+        >
           <View />
         </AnimatedTransactionModal>
       </ThemeContext.Provider>,
