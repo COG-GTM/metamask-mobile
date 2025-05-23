@@ -25,6 +25,12 @@ To learn how to contribute to the MetaMask codebase, visit our [Contributor Docs
 - [Miscellaneous](./docs/readme/miscellaneous.md)
 - [E2E Testing Segment Events](./docs/testing/e2e/segment-events.md)
 
+## TypeScript Migration
+
+The codebase is gradually being migrated from JavaScript to TypeScript for improved type safety and developer experience. Recent conversions include:
+
+- FadeAnimationView component (`app/components/UI/FadeAnimationView/index.tsx`)
+
 ## Getting started
 
 ### Using Expo (recommended)
