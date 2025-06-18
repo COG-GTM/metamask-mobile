@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
+import { RootState } from '../../../reducers';
+import { Dispatch } from 'redux';
 import Eth from '@metamask/ethjs-query';
 import {
   View,
@@ -377,7 +378,7 @@ async function addTokenToAssetsController(newToken, chainId, networkClientId) {
   }
 }
 
-function SwapsQuotesView({
+const SwapsQuotesView = ({
   swapsTokens,
   accounts,
   balances,
@@ -406,7 +407,7 @@ function SwapsQuotesView({
   resetTransaction,
   shouldUseSmartTransaction,
   isEIP1559Network,
-}) {
+}: SwapsQuotesViewProps) => {
   const navigation = useNavigation();
   /* Get params from navigation */
   const route = useRoute();
@@ -434,37 +435,37 @@ function SwapsQuotesView({
   /* State */
   const isMainnet = isMainnetByChainId(chainId);
   const multiLayerFeeNetwork = isMultiLayerFeeNetwork(chainId);
-  const [firstLoadTime, setFirstLoadTime] = useState(Date.now());
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
-  const [shouldFinishFirstLoad, setShouldFinishFirstLoad] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(POLLING_INTERVAL);
+  const [firstLoadTime, setFirstLoadTime] = useState<number>(Date.now());
+  const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
+  const [shouldFinishFirstLoad, setShouldFinishFirstLoad] = useState<boolean>(false);
+  const [remainingTime, setRemainingTime] = useState<number>(POLLING_INTERVAL);
 
-  const [allQuotesFetchTime, setAllQuotesFetchTime] = useState(null);
-  const [trackedRequestedQuotes, setTrackedRequestedQuotes] = useState(false);
-  const [trackedReceivedQuotes, setTrackedReceivedQuotes] = useState(false);
-  const [trackedError, setTrackedError] = useState(false);
-  const [animateOnGasChange, setAnimateOnGasChange] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [isHandlingSwap, setIsHandlingSwap] = useState(false);
+  const [allQuotesFetchTime, setAllQuotesFetchTime] = useState<number | null>(null);
+  const [trackedRequestedQuotes, setTrackedRequestedQuotes] = useState<boolean>(false);
+  const [trackedReceivedQuotes, setTrackedReceivedQuotes] = useState<boolean>(false);
+  const [trackedError, setTrackedError] = useState<boolean>(false);
+  const [animateOnGasChange, setAnimateOnGasChange] = useState<boolean>(false);
+  const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const [isHandlingSwap, setIsHandlingSwap] = useState<boolean>(false);
   const [multiLayerL1ApprovalFeeTotal, setMultiLayerL1ApprovalFeeTotal] =
-    useState(null);
+    useState<string | null>(null);
 
   /* Selected quote, initially topAggId (see effects) */
-  const [selectedQuoteId, setSelectedQuoteId] = useState(null);
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
 
   /* Slippage alert dismissed, values: false, 'high', medium, 'low' */
   const [hasDismissedSlippageAlert, setHasDismissedSlippageAlert] =
-    useState(false);
+    useState<boolean>(false);
 
   const [editQuoteTransactionsVisible, setEditQuoteTransactionsVisible] =
-    useState(false);
+    useState<boolean>(false);
 
-  const [customGasEstimate, setCustomGasEstimate] = useState(null);
-  const [customGasLimit, setCustomGasLimit] = useState(null);
+  const [customGasEstimate, setCustomGasEstimate] = useState<any>(null);
+  const [customGasLimit, setCustomGasLimit] = useState<any>(null);
 
   // TODO: use this variable in the future when calculating savings
-  const [isSaving] = useState(false);
-  const [isInFetch, setIsInFetch] = useState(false);
+  const [isSaving] = useState<boolean>(false);
+  const [isInFetch, setIsInFetch] = useState<boolean>(false);
 
   useEffect(() => {
     navigation.setOptions(getSwapsQuotesNavbar(navigation, route, colors));
@@ -694,7 +695,7 @@ function SwapsQuotesView({
   );
 
   /* Approval transaction if any */
-  const [approvalTransaction, setApprovalTransaction] = useState(
+  const [approvalTransaction, setApprovalTransaction] = useState<any>(
     originalApprovalTransaction,
   );
 
@@ -2575,68 +2576,68 @@ function SwapsQuotesView({
   );
 }
 
-SwapsQuotesView.propTypes = {
-  swapsTokens: PropTypes.arrayOf(PropTypes.object),
+interface SwapsQuotesViewProps {
+  swapsTokens: Array<any>;
   /**
    * Map of accounts to information objects including balances
    */
-  accounts: PropTypes.object,
+  accounts: any;
   /**
    * An object containing token balances for current account and network in the format address => balance
    */
-  balances: PropTypes.object,
+  balances: any;
   /**
    * ETH to current currency conversion rate
    */
-  conversionRate: PropTypes.number,
+  conversionRate: number;
   /**
    * Currency code of the currently-active currency
    */
-  currentCurrency: PropTypes.string,
+  currentCurrency: string;
   /**
    * A string that represents the selected address
    */
-  selectedAddress: PropTypes.string,
+  selectedAddress: string;
   /**
    * Chain Id
    */
-  chainId: PropTypes.string,
+  chainId: string;
   /**
    * ID of the global network client
    */
-  networkClientId: PropTypes.string,
+  networkClientId: string;
   /**
    * Native asset ticker
    */
-  ticker: PropTypes.string,
+  ticker: string;
   /**
    * Primary currency, either ETH or Fiat
    */
-  primaryCurrency: PropTypes.string,
-  isInPolling: PropTypes.bool,
-  quotesLastFetched: PropTypes.number,
-  topAggId: PropTypes.string,
+  primaryCurrency: string;
+  isInPolling: boolean;
+  quotesLastFetched: number;
+  topAggId: string;
   /**
    * Aggregator metada from Swaps controller API
    */
-  aggregatorMetadata: PropTypes.object,
-  pollingCyclesLeft: PropTypes.number,
-  quotes: PropTypes.object,
-  quoteValues: PropTypes.object,
-  approvalTransaction: PropTypes.object,
-  error: PropTypes.object,
-  quoteRefreshSeconds: PropTypes.number,
-  gasEstimateType: PropTypes.string,
-  gasFeeEstimates: PropTypes.object,
-  usedGasEstimate: PropTypes.object,
-  usedCustomGas: PropTypes.object,
-  setRecipient: PropTypes.func,
-  resetTransaction: PropTypes.func,
-  shouldUseSmartTransaction: PropTypes.bool,
-  isEIP1559Network: PropTypes.bool,
-};
+  aggregatorMetadata: any;
+  pollingCyclesLeft: number;
+  quotes: any;
+  quoteValues: any;
+  approvalTransaction: any;
+  error: any;
+  quoteRefreshSeconds: number;
+  gasEstimateType: string;
+  gasFeeEstimates: any;
+  usedGasEstimate: any;
+  usedCustomGas: any;
+  setRecipient: (from: string) => void;
+  resetTransaction: () => void;
+  shouldUseSmartTransaction: boolean;
+  isEIP1559Network: boolean;
+}
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   accounts: selectAccounts(state),
   chainId: selectEvmChainId(state),
   networkClientId: selectSelectedNetworkClientId(state),
@@ -2668,7 +2669,7 @@ const mapStateToProps = (state) => ({
   isEIP1559Network: selectIsEIP1559Network(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   setRecipient: (from) => dispatch(setRecipient(from, '', '', '', '')),
   resetTransaction: () => dispatch(resetTransaction()),
 });
