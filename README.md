@@ -27,6 +27,10 @@ To learn how to contribute to the MetaMask codebase, visit our [Contributor Docs
 
 ## Getting started
 
+### Entry Point
+
+The main application entry point is `index.ts` (TypeScript). This file handles app initialization, polyfills, error handling, and React Native app registration.
+
 ### Using Expo (recommended)
 
 Expo is the fastest way to start developing. With the Expo framework, developers don't need to compile the native side of the application as before, hence no need for any native environment setup, developers only need to download a precompiled development build and run the javascript bundler. The development build will then connect with the bundler to load the javascript code.
