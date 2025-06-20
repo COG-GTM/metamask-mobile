@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import { useSelector } from 'react-redux';
 import { Animated, View, StyleSheet, Image } from 'react-native';
-import PropTypes from 'prop-types';
 import { selectSelectedNetworkClientId } from '../../../../../selectors/networkController';
 import Engine from '../../../../../core/Engine';
 import Logger from '../../../../../util/Logger';
@@ -31,12 +30,9 @@ const STAGE_SIZE = IS_NARROW ? 240 : 260;
 const AGG_RADIO = STAGE_SIZE * (IS_NARROW ? 0.2 : 0.25);
 const PAN_RADIO = STAGE_SIZE * 0.6;
 
-// Percentage of the progress bar after iterating through
-// all aggregators, this is the starting point of
-// "finalizing" animationg
 const FINALIZING_PERCENTAGE = 80;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: any, shadows: any) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -108,29 +104,56 @@ const createStyles = (colors, shadows) =>
     },
   });
 
-function round(value, decimals) {
-  return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+function round(value: number, decimals: number): number {
+  return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
+}
+
+interface LoadingAnimationProps {
+  /**
+   * Whether to execute the "Finalizing" animation after the main sequence
+   */
+  finish?: boolean;
+  /**
+   * Function callback executed once both the main sequence and the finalizing animation ends
+   */
+  onAnimationEnd?: () => void;
+  /**
+   * Aggregator metadata from Swaps controller API
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  aggregatorMetadata?: any;
+  /**
+   * Whether to show head panning animation with aggregators logos
+   */
+  headPan?: boolean;
+}
+
+interface AggregatorMetadata {
+  key: string;
+  title?: string;
+  color?: string;
+  iconPng?: string;
 }
 
 function LoadingAnimation({
-  finish,
+  finish = false,
   onAnimationEnd,
   aggregatorMetadata,
   headPan = true,
-}) {
-  const [metadata, setMetadata] = useState([]);
-  const [shouldStart, setShouldStart] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
-  const [hasFinished, setHasFinished] = useState(false);
-  const [hasStartedFinishing, setHasStartedFinishing] = useState(false);
-  const [renderLogos, setRenderLogos] = useState(false);
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+}: LoadingAnimationProps): React.ReactElement {
+  const [metadata, setMetadata] = useState<AggregatorMetadata[]>([]);
+  const [shouldStart, setShouldStart] = useState<boolean>(false);
+  const [hasStarted, setHasStarted] = useState<boolean>(false);
+  const [hasFinished, setHasFinished] = useState<boolean>(false);
+  const [hasStartedFinishing, setHasStartedFinishing] = useState<boolean>(false);
+  const [renderLogos, setRenderLogos] = useState<boolean>(false);
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState<number>(0);
 
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
-  /* References */
-  const foxRef = useRef();
-  const foxHeadPan = useRef(new Animated.ValueXY(0, 0)).current;
+  const foxRef = useRef<any>();
+  const foxHeadPan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const currentQuoteIndexValue = useRef(new Animated.Value(0)).current;
   const progressValue = useRef(new Animated.Value(0)).current;
   const progressWidth = progressValue.interpolate({
@@ -141,39 +164,21 @@ function LoadingAnimation({
   const { colors, shadows } = useTheme();
   const styles = createStyles(colors, shadows);
 
-  /* Animation constructions */
-
-  /*
-   * == Positions
-   * This generates a random position for the aggregator in the stage
-   * the values returned contain both the values for the head pan and
-   * the logo positioning around it.
-   */
   const positions = useMemo(
     () =>
       headPan
-        ? metadata.reduce((acc, curr, index) => {
-            // Vertical position is random and is in range [-0.6, 0.6]
-            // making the head not look so steep up/down
+        ? metadata.reduce((acc: Record<string, number[]>, curr, index) => {
             const y = Math.random() * 0.6 * (Math.random() < 0.5 ? -1 : 1);
             const isNegativeY = y < 0;
 
-            // Horizontal position will be to the left or right depending 70% on the
-            // index, this ensures the head moves from left to right in these cases
-            // Otherwise is random.
             const isNegativeX =
               Math.random() < 0.7 ? index % 2 === 0 : Math.random() < 0.5;
             const x = isNegativeX ? -1 : 1;
 
-            // Head pan values, horizontal pan value is randomly changed by [-0.4,0.4]
-            // so the head rotates differently some times.
             const panRadioX = (x + (0.8 * Math.random() - 0.8)) * PAN_RADIO;
             const panRadioY = y * PAN_RADIO;
 
-            // Icons positions are compensated by their size according to the position
             const radioY = AGG_RADIO * y - (isNegativeY ? 40 : 0);
-            // Horizontal position depends on vertical position, making the logo sit
-            // in a radius from origin and not always same horizontal distance
             const radioX =
               Math.sqrt(1 - Math.pow(y, 2)) * x * AGG_RADIO -
               (isNegativeX ? 95 : 0);
@@ -182,98 +187,92 @@ function LoadingAnimation({
               ...acc,
               [curr.key]: [panRadioX, panRadioY, radioX, radioY],
             };
-            // eslint-disable-next-line no-mixed-spaces-and-tabs
           }, {})
         : {},
     [metadata, headPan],
   );
 
-  // The opacity for each of the icons
   const opacities = useMemo(
     () =>
       headPan
         ? metadata.reduce(
-            (acc, curr) => ({
+            (acc: Record<string, Animated.Value>, curr) => ({
               ...acc,
               [curr.key]: new Animated.Value(0),
             }),
             {},
-            // eslint-disable-next-line no-mixed-spaces-and-tabs
           )
         : {},
     [metadata, headPan],
   );
 
-  // The sequence for each aggregator
   const animationSequence = useMemo(
     () =>
       headPan
         ? [
-            // Animated.delay(INITIAL_DELAY),
             ...metadata.reduce(
-              (acc, cur, index, array) => [
+              (acc: any[], cur, index, array) => [
                 ...acc,
-                // Time to delay next iteration, this is the amount of time the head looks at the icon
                 Animated.delay(index > 0 ? DELAY : 0),
-                // Track the current index of the array
                 Animated.timing(currentQuoteIndexValue, {
                   toValue: index,
                   duration: 0,
                   useNativeDriver: true,
                 }),
                 Animated.parallel([
-                  // If is not the first aggregator, reduce previous aggregator opacity to 1
-                  index > 0 &&
-                    Animated.timing(opacities[array[index - 1].key], {
-                      toValue: 0,
-                      duration: PAN_DURATION,
-                      useNativeDriver: true,
-                    }),
-                  // Set current aggregator opacity to 1
+                  ...(index > 0
+                    ? [
+                        Animated.timing(opacities[array[index - 1].key], {
+                          toValue: 0,
+                          duration: PAN_DURATION,
+                          useNativeDriver: true,
+                        }),
+                      ]
+                    : []),
                   Animated.timing(opacities[cur.key], {
                     toValue: 1,
                     duration: PAN_DURATION,
                     useNativeDriver: true,
                   }),
-                  // Update progress bar given the current index
                   Animated.timing(progressValue, {
                     toValue:
                       (FINALIZING_PERCENTAGE / array.length) * (index + 1),
                     duration: PAN_DURATION,
                     useNativeDriver: false,
                   }),
-                  // Make the fox head pan to the aggregator position
-                  !Device.isAndroid() &&
-                    Animated.timing(foxHeadPan, {
-                      toValue: {
-                        x: positions[cur.key][0],
-                        y: positions[cur.key][1],
-                      },
-                      duration: PAN_DURATION,
-                      useNativeDriver: true,
-                    }),
+                  ...(!Device.isAndroid()
+                    ? [
+                        Animated.timing(foxHeadPan, {
+                          toValue: {
+                            x: positions[cur.key][0],
+                            y: positions[cur.key][1],
+                          },
+                          duration: PAN_DURATION,
+                          useNativeDriver: true,
+                        }),
+                      ]
+                    : []),
                 ]),
               ],
               [],
             ),
-            // Final animation of the sequence
             Animated.delay(DELAY),
             Animated.parallel([
-              // Set last aggregator icon opacity to 0
-              Animated.timing(opacities[[...metadata].pop()?.key], {
+              Animated.timing(opacities[[...metadata].pop()?.key || ''], {
                 toValue: 0,
                 duration: PAN_DURATION,
                 useNativeDriver: true,
               }),
-              // Reset to fox head to origing
-              !Device.isAndroid() &&
-                Animated.timing(foxHeadPan, {
-                  toValue: { x: 0, y: 0 },
-                  duration: PAN_DURATION,
-                  useNativeDriver: true,
-                }),
+              ...(!Device.isAndroid()
+                ? [
+                    Animated.timing(foxHeadPan, {
+                      toValue: { x: 0, y: 0 },
+                      duration: PAN_DURATION,
+                      useNativeDriver: true,
+                    }),
+                  ]
+                : []),
             ]),
-            // eslint-disable-next-line no-mixed-spaces-and-tabs
           ]
         : [],
     [
@@ -307,9 +306,6 @@ function LoadingAnimation({
     });
   }, [onAnimationEnd, progressValue]);
 
-  /* Effects */
-
-  /* Check and wait for metadata */
   useEffect(() => {
     (async () => {
       if (hasStarted) {
@@ -329,7 +325,7 @@ function LoadingAnimation({
         }
       } else {
         const metadata = Object.entries(aggregatorMetadata).map(
-          ([key, value]) => ({
+          ([key, value]: [string, any]) => ({
             key,
             ...value,
           }),
@@ -340,7 +336,6 @@ function LoadingAnimation({
     })();
   }, [aggregatorMetadata, hasStarted, selectedNetworkClientId]);
 
-  /* Delay the logos rendering to avoid navigation transition lag */
   useEffect(() => {
     if (!renderLogos) {
       const timeout = setTimeout(() => {
@@ -352,7 +347,6 @@ function LoadingAnimation({
     }
   }, [renderLogos]);
 
-  /* Effect to start animation. Useful in case we want to wait for metadata to update before start */
   useEffect(() => {
     if (!(shouldStart && renderLogos) || hasStarted) {
       return;
@@ -360,16 +354,14 @@ function LoadingAnimation({
     startAnimation();
   }, [hasStarted, renderLogos, shouldStart, startAnimation]);
 
-  /* Effect to finish animation once sequence is completed */
   useEffect(() => {
     if (hasFinished && finish && !hasStartedFinishing) {
       endAnimation();
     }
   }, [endAnimation, finish, hasFinished, hasStartedFinishing]);
 
-  /* Effect to track current aggregator index being animated */
   useEffect(() => {
-    const listener = currentQuoteIndexValue.addListener(({ value }) => {
+    const listener = currentQuoteIndexValue.addListener(({ value }: { value: number }) => {
       setCurrentQuoteIndex(Math.ceil(value));
     });
 
@@ -378,9 +370,8 @@ function LoadingAnimation({
     };
   });
 
-  /* Fox Head Pan listener and web view reload effect */
   useEffect(() => {
-    const listener = foxHeadPan.addListener(({ x, y }) => {
+    const listener = foxHeadPan.addListener(({ x, y }: { x: number; y: number }) => {
       requestAnimationFrame(() => {
         if (foxRef?.current?.injectJavaScript) {
           const JS = `window.dispatchEvent(new CustomEvent('nativedeviceorientation', {
@@ -459,7 +450,7 @@ function LoadingAnimation({
           <Image
             source={foxImage}
             style={styles.foxImage}
-            resizeMethod={'auto'}
+            resizeMethod="auto"
           />
           <View style={styles.backgroundShapes} pointerEvents="none">
             <ShapesBackgroundAnimation
@@ -498,24 +489,5 @@ function LoadingAnimation({
     </View>
   );
 }
-
-LoadingAnimation.propTypes = {
-  /**
-   * Wether to execute the "Finalizing" animation after the main sequence
-   */
-  finish: PropTypes.bool,
-  /**
-   * Function callback executed once both the main sequence and the finalizing animation ends
-   */
-  onAnimationEnd: PropTypes.func,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  /**
-   * Wether to show head panning animation with aggregators logos
-   */
-  headPan: PropTypes.bool,
-};
 
 export default LoadingAnimation;
