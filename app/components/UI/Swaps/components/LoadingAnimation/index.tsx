@@ -319,7 +319,7 @@ function LoadingAnimation({
           });
         } catch (error) {
           Logger.error(
-            error,
+            error as Error,
             'Swaps: Error fetching agg metadata in animation',
           );
         }
