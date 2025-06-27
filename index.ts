@@ -1,36 +1,40 @@
 import './shim.js';
 
-// Needed to polyfill random number generation.
 import 'react-native-get-random-values';
 import '@walletconnect/react-native-compat';
 
 import 'react-native-gesture-handler';
 import 'react-native-url-polyfill/auto';
 
-import crypto from 'crypto'; // eslint-disable-line import/no-nodejs-modules, no-unused-vars
-require('react-native-browser-polyfill'); // eslint-disable-line import/no-commonjs
+// eslint-disable-next-line import/no-nodejs-modules, @typescript-eslint/no-unused-vars
+import crypto from 'crypto';
+// eslint-disable-next-line import/no-commonjs, @typescript-eslint/no-require-imports
+require('react-native-browser-polyfill');
 
 import * as Sentry from '@sentry/react-native'; // eslint-disable-line import/no-namespace
 import { setupSentry } from './app/util/sentry/utils';
 setupSentry();
 
-import { AppRegistry, LogBox, ErrorUtils } from 'react-native';
+declare global {
+  interface Global {
+    ErrorUtils: {
+      getGlobalHandler(): ErrorHandlerCallback;
+      setGlobalHandler(handler: ErrorHandlerCallback): void;
+    };
+  }
+}
+
+import { AppRegistry, LogBox, ErrorHandlerCallback } from 'react-native';
 import Root from './app/components/Views/Root';
 import { name } from './app.config.js';
 import { isE2E } from './app/util/test/utils.js';
-
 import { Performance } from './app/core/Performance';
 import { handleCustomError, setReactNativeDefaultHandler } from './app/core/ErrorHandler';
 Performance.setupPerformanceObservers();
 
 LogBox.ignoreAllLogs();
-// List of warnings that we're ignoring
 LogBox.ignoreLogs([
   '{}',
-  // Uncomment the below lines (21 and 22) to run browser-tests.spec.js in debug mode
-  // in e2e tests until issue https://github.com/MetaMask/metamask-mobile/issues/1395 is resolved
-  //"Error in RPC response",
-  // 'User rejected account access',
   "Can't perform a React state update",
   'Error evaluating injectedJavaScript',
   'createErrorFromErrorData',
@@ -75,31 +79,30 @@ LogBox.ignoreLogs([
   'Warning: componentWillReceiveProps has been renamed',
 ]);
 
-const IGNORE_BOXLOGS_DEVELOPMENT = process.env.IGNORE_BOXLOGS_DEVELOPMENT;
-// Ignore box logs, useful for QA testing in development builds
+const IGNORE_BOXLOGS_DEVELOPMENT: string | undefined = process.env.IGNORE_BOXLOGS_DEVELOPMENT;
 if (IGNORE_BOXLOGS_DEVELOPMENT === 'true') {
   LogBox.ignoreAllLogs();
 }
 
 /* Uncomment and comment regular registration below */
-// import Storybook from './.storybook';
-// AppRegistry.registerComponent(name, () => Storybook);
 
 /**
  * Application entry point responsible for registering root component
  */
 AppRegistry.registerComponent(name, () =>
-  // Disable Sentry for E2E tests
   isE2E ? Root : Sentry.wrap(Root),
 );
 
-function setupGlobalErrorHandler() {
-  const reactNativeDefaultHandler = global.ErrorUtils.getGlobalHandler();
-  // set the base handler to the react native ExceptionsManager.handleException(), please refer to setupErrorHandling.js under react-native/Libraries/Core/ for details.
+function setupGlobalErrorHandler(): void {
+  const globalWithErrorUtils = global as typeof global & Global;
+  const reactNativeDefaultHandler = globalWithErrorUtils.ErrorUtils.getGlobalHandler();
   setReactNativeDefaultHandler(reactNativeDefaultHandler);
-  // override the global handler to provide custom error handling
-  global.ErrorUtils.setGlobalHandler(handleCustomError);
+  
+  const errorHandlerWrapper: ErrorHandlerCallback = (error: any, isFatal?: boolean) => {
+    handleCustomError(error, isFatal ?? false);
+  };
+  
+  globalWithErrorUtils.ErrorUtils.setGlobalHandler(errorHandlerWrapper);
 }
 
 setupGlobalErrorHandler();
-
