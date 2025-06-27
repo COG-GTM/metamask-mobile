@@ -7,14 +7,15 @@ import '@walletconnect/react-native-compat';
 import 'react-native-gesture-handler';
 import 'react-native-url-polyfill/auto';
 
-import crypto from 'crypto'; // eslint-disable-line import/no-nodejs-modules, no-unused-vars
-require('react-native-browser-polyfill'); // eslint-disable-line import/no-commonjs
+// eslint-disable-next-line import/no-nodejs-modules, @typescript-eslint/no-unused-vars
+import crypto from 'crypto';
+import 'react-native-browser-polyfill';
 
 import * as Sentry from '@sentry/react-native'; // eslint-disable-line import/no-namespace
 import { setupSentry } from './app/util/sentry/utils';
 setupSentry();
 
-import { AppRegistry, LogBox, ErrorUtils } from 'react-native';
+import { AppRegistry, LogBox } from 'react-native';
 import Root from './app/components/Views/Root';
 import { name } from './app.config.js';
 import { isE2E } from './app/util/test/utils.js';
@@ -75,7 +76,7 @@ LogBox.ignoreLogs([
   'Warning: componentWillReceiveProps has been renamed',
 ]);
 
-const IGNORE_BOXLOGS_DEVELOPMENT = process.env.IGNORE_BOXLOGS_DEVELOPMENT;
+const IGNORE_BOXLOGS_DEVELOPMENT: string | undefined = process.env.IGNORE_BOXLOGS_DEVELOPMENT;
 // Ignore box logs, useful for QA testing in development builds
 if (IGNORE_BOXLOGS_DEVELOPMENT === 'true') {
   LogBox.ignoreAllLogs();
@@ -93,11 +94,13 @@ AppRegistry.registerComponent(name, () =>
   isE2E ? Root : Sentry.wrap(Root),
 );
 
-function setupGlobalErrorHandler() {
+function setupGlobalErrorHandler(): void {
+  // @ts-expect-error React Native's ErrorUtils is available on global but not typed in globalThis
   const reactNativeDefaultHandler = global.ErrorUtils.getGlobalHandler();
   // set the base handler to the react native ExceptionsManager.handleException(), please refer to setupErrorHandling.js under react-native/Libraries/Core/ for details.
   setReactNativeDefaultHandler(reactNativeDefaultHandler);
   // override the global handler to provide custom error handling
+  // @ts-expect-error React Native's ErrorUtils is available on global but not typed in globalThis
   global.ErrorUtils.setGlobalHandler(handleCustomError);
 }
 
