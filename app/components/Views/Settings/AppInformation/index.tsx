@@ -1,4 +1,3 @@
-/* eslint-disable dot-notation */
 import React, { PureComponent } from 'react';
 import {
   SafeAreaView,
@@ -9,6 +8,9 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from 'react-native';
 import {
   getApplicationName,
@@ -16,16 +18,44 @@ import {
   getBuildNumber,
 } from 'react-native-device-info';
 import { fontStyles } from '../../../../styles/common';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import AppConstants from '../../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
+import { Theme } from '../../../../util/theme/models';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
-const createStyles = (colors) =>
+interface AppInformationProps {
+  /**
+   * Navigation object required to push new views
+   */
+  navigation: {
+    setOptions: (options: any) => void;
+    navigate: (routeName: string, params?: any) => void;
+  };
+}
+
+interface AppInformationState {
+  appInfo: string;
+  appVersion: string;
+}
+
+interface Styles {
+  wrapper: ViewStyle;
+  wrapperContent: ViewStyle;
+  title: TextStyle;
+  link: TextStyle;
+  division: ViewStyle;
+  image: ImageStyle;
+  logoWrapper: ViewStyle;
+  versionInfo: TextStyle;
+  branchInfo: TextStyle;
+  links: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -83,29 +113,29 @@ const createStyles = (colors) =>
       color: colors.text.alternative,
       ...fontStyles.normal,
     },
+    links: {},
   });
 
-const foxImage = require('../../../../images/branding/fox.png'); // eslint-disable-line import/no-commonjs
+const foxImage = require('../../../../images/branding/fox.png');
 
 /**
  * View that contains app information
  */
-export default class AppInformation extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-  };
+export default class AppInformation extends PureComponent<
+  AppInformationProps,
+  AppInformationState
+> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: AppInformationState = {
     appInfo: '',
     appVersion: '',
   };
 
-  updateNavBar = () => {
+  updateNavBar = (): void => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.info_title'),
@@ -116,7 +146,7 @@ export default class AppInformation extends PureComponent {
     );
   };
 
-  componentDidMount = async () => {
+  componentDidMount = async (): Promise<void> => {
     this.updateNavBar();
     const appName = await getApplicationName();
     const appVersion = await getVersion();
@@ -127,11 +157,11 @@ export default class AppInformation extends PureComponent {
     });
   };
 
-  componentDidUpdate = () => {
+  componentDidUpdate = (): void => {
     this.updateNavBar();
   };
 
-  goTo = (url, title) => {
+  goTo = (url: string, title: string): void => {
     InteractionManager.runAfterInteractions(() => {
       this.props.navigation.navigate('Webview', {
         screen: 'SimpleWebview',
@@ -143,38 +173,38 @@ export default class AppInformation extends PureComponent {
     });
   };
 
-  onPrivacyPolicy = () => {
+  onPrivacyPolicy = (): void => {
     const url = AppConstants.URLS.PRIVACY_POLICY;
     this.goTo(url, strings('app_information.privacy_policy'));
   };
 
-  onTermsOfUse = () => {
+  onTermsOfUse = (): void => {
     const url = AppConstants.URLS.TERMS_AND_CONDITIONS;
     this.goTo(url, strings('app_information.terms_of_use'));
   };
 
-  onAttributions = () => {
+  onAttributions = (): void => {
     const url = `https://raw.githubusercontent.com/MetaMask/metamask-mobile/v${this.state.appVersion}/attribution.txt`;
     this.goTo(url, strings('app_information.attributions'));
   };
 
-  onSupportCenter = () => {
+  onSupportCenter = (): void => {
     const url = 'https://support.metamask.io';
     this.goTo(url, strings('drawer.metamask_support'));
   };
 
-  onWebSite = () => {
+  onWebSite = (): void => {
     const url = 'https://metamask.io/';
     this.goTo(url, 'metamask.io');
   };
 
-  onContactUs = () => {
+  onContactUs = (): void => {
     const url = 'https://support.metamask.io';
     this.goTo(url, strings('drawer.metamask_support'));
   };
 
-  render = () => {
-    const colors = this.context.colors || mockTheme.colors;
+  render = (): JSX.Element => {
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -237,5 +267,3 @@ export default class AppInformation extends PureComponent {
     );
   };
 }
-
-AppInformation.contextType = ThemeContext;
