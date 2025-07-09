@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect, FC } from 'react';
 import {
   View,
   ScrollView,
@@ -44,7 +43,9 @@ const DEVICE_WIDTH = Dimensions.get('window').width;
 
 const IMG_PADDING = Device.isIphone5() ? 220 : 200;
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with proper theme type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     scroll: {
       flexGrow: 1,
@@ -127,6 +128,7 @@ const createStyles = (colors) =>
     tab: {
       margin: 32,
     },
+    scrollTabs: {},
   });
 
 const gas_education_carousel_1 = require('../../../images/gas-education-carousel-1.png'); // eslint-disable-line
@@ -138,21 +140,37 @@ const carousel_images = [
   gas_education_carousel_3,
 ];
 
+interface GasEducationCarouselProps {
+  // TODO: Replace "any" with proper navigation type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  route?: {
+    params?: {
+      navigateTo?: () => void;
+    };
+  };
+  // TODO: Replace "any" with proper type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  conversionRate: any;
+  currentCurrency: string;
+  ticker: string;
+}
+
 /**
  * View that is displayed to first time (new) users
  */
-const GasEducationCarousel = ({
+const GasEducationCarousel: FC<GasEducationCarouselProps> = ({
   navigation,
   route,
   conversionRate,
   currentCurrency,
   ticker,
 }) => {
-  const [currentTab, setCurrentTab] = useState(1);
-  const [gasFiat, setGasFiat] = useState(null);
+  const [currentTab, setCurrentTab] = useState<number>(1);
+  const [gasFiat, setGasFiat] = useState<string | null>(null);
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     navigation.setOptions(getTransparentOnboardingNavbarOptions(colors));
@@ -183,6 +201,7 @@ const GasEducationCarousel = ({
           const gasLimitHex = BNToHex(gas);
           const gasHexes = calculateEIP1559GasFeeHexes({
             gasLimitHex,
+            estimatedGasLimitHex: gasLimitHex,
             estimatedBaseFeeHex,
             suggestedMaxFeePerGasHex,
             suggestedMaxPriorityFeePerGasHex,
@@ -213,7 +232,7 @@ const GasEducationCarousel = ({
         const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
         setGasFiat(gasFiat);
       } catch (e) {
-        Logger.error(e);
+        Logger.error(e as Error);
       }
       setIsLoading(false);
     };
@@ -227,7 +246,7 @@ const GasEducationCarousel = ({
 
   const renderTabBar = () => <View />;
 
-  const onChangeTab = (obj) => {
+  const onChangeTab = (obj: { i: number }) => {
     setCurrentTab(obj.i + 1);
   };
 
@@ -239,7 +258,7 @@ const GasEducationCarousel = ({
       },
     });
 
-  const renderText = (key) => {
+  const renderText = (key: number) => {
     if (key === 1) {
       return (
         <View style={styles.tab}>
@@ -333,7 +352,7 @@ const GasEducationCarousel = ({
             >
               {['one', 'two', 'three'].map((value, index) => {
                 const key = index + 1;
-                const imgStyleKey = `carouselImage${key}`;
+                const imgStyleKey = `carouselImage${key}` as keyof typeof styles;
                 return (
                   <View key={key} style={baseStyles.flexGrow}>
                     <View style={styles.carouselImageWrapper}>
@@ -387,30 +406,9 @@ const GasEducationCarousel = ({
   );
 };
 
-GasEducationCarousel.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-    /* conversion rate of ETH - FIAT
-    */
-  conversionRate: PropTypes.any,
-  /**
-    /* Selected currency
-    */
-  currentCurrency: PropTypes.string,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),
