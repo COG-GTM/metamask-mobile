@@ -25,6 +25,34 @@ To learn how to contribute to the MetaMask codebase, visit our [Contributor Docs
 - [Miscellaneous](./docs/readme/miscellaneous.md)
 - [E2E Testing Segment Events](./docs/testing/e2e/segment-events.md)
 
+## TypeScript Migration
+
+MetaMask Mobile is actively migrating from JavaScript to TypeScript to improve type safety, developer experience, and code maintainability. The project has TypeScript infrastructure fully configured with strict type checking enabled and ESLint rules that enforce TypeScript best practices.
+
+### Migration Progress
+
+- ✅ **Confirm Component** - Critical transaction confirmation component migrated with comprehensive type interfaces
+- 🔄 **Ongoing** - Additional components are being migrated following established patterns
+
+### TypeScript Standards
+
+When contributing to TypeScript files or migrating JavaScript components:
+
+- **Use interfaces** for prop and state type definitions (not type aliases)
+- **Avoid `any` types** - ESLint configuration marks them as errors
+- **Create separate `.types.ts` files** for complex interfaces following the pattern in `app/components/Views/confirmations/legacy/SendFlow/Confirm/Confirm.types.ts`
+- **Leverage existing types** from core modules like `app/core/GasPolling/types.ts`
+- **Follow React Native typing patterns** - Use `ReactNode` for children, `StyleProp<ViewStyle>` for styles
+- **Maintain functionality** during conversion - migrations should be pure type additions without behavior changes
+
+### Configuration
+
+- **TypeScript Config**: `tsconfig.json` with strict type checking and `allowJs: true` for gradual migration
+- **ESLint Rules**: Separate rules for `.js` and `.ts` files with TypeScript-specific linting
+- **Fitness Functions**: Prevent adding new JavaScript files while allowing conversion of existing ones
+
+For examples of proper TypeScript patterns, see recently migrated components like the Confirm component in `app/components/Views/confirmations/legacy/SendFlow/Confirm/`.
+
 ## Getting started
 
 ### Using Expo (recommended)
