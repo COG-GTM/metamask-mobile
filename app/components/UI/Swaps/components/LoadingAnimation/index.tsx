@@ -61,7 +61,7 @@ const PAN_RADIO = STAGE_SIZE * 0.6;
 // "finalizing" animationg
 const FINALIZING_PERCENTAGE = 80;
 
-const createStyles = (colors: any, shadows: any) =>
+const createStyles = (colors: { background: { default: string }; primary: { muted: string; default: string }; text: { default: string } }, shadows: { size: { sm: Record<string, unknown> } }) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -236,7 +236,7 @@ function LoadingAnimation({
         ? [
             // Animated.delay(INITIAL_DELAY),
             ...metadata.reduce(
-              (acc: any[], cur, index, array) => [
+              (acc: unknown[], cur, index, array) => [
                 ...acc,
                 // Time to delay next iteration, this is the amount of time the head looks at the icon
                 Animated.delay(index > 0 ? DELAY : 0),
@@ -327,7 +327,7 @@ function LoadingAnimation({
 
   const startAnimation = useCallback(() => {
     setHasStarted(true);
-    Animated.sequence(animationSequence as any).start(() => {
+    Animated.sequence(animationSequence as Animated.CompositeAnimation[]).start(() => {
       setHasFinished(true);
     });
   }, [animationSequence]);
