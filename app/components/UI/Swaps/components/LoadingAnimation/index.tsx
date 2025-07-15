@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import { useSelector } from 'react-redux';
 import { Animated, View, StyleSheet, Image } from 'react-native';
-import PropTypes from 'prop-types';
 import { selectSelectedNetworkClientId } from '../../../../../selectors/networkController';
 import Engine from '../../../../../core/Engine';
 import Logger from '../../../../../util/Logger';
@@ -36,7 +35,7 @@ const PAN_RADIO = STAGE_SIZE * 0.6;
 // "finalizing" animationg
 const FINALIZING_PERCENTAGE = 80;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: any, shadows: any) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -108,8 +107,15 @@ const createStyles = (colors, shadows) =>
     },
   });
 
-function round(value, decimals) {
-  return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+function round(value: number, decimals: number): number {
+  return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
+}
+
+interface LoadingAnimationProps {
+  finish?: boolean;
+  onAnimationEnd?: () => void;
+  aggregatorMetadata?: Record<string, any>;
+  headPan?: boolean;
 }
 
 function LoadingAnimation({
@@ -117,20 +123,20 @@ function LoadingAnimation({
   onAnimationEnd,
   aggregatorMetadata,
   headPan = true,
-}) {
-  const [metadata, setMetadata] = useState([]);
-  const [shouldStart, setShouldStart] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
-  const [hasFinished, setHasFinished] = useState(false);
-  const [hasStartedFinishing, setHasStartedFinishing] = useState(false);
-  const [renderLogos, setRenderLogos] = useState(false);
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+}: LoadingAnimationProps) {
+  const [metadata, setMetadata] = useState<Array<{ key: string; [key: string]: any }>>([]);
+  const [shouldStart, setShouldStart] = useState<boolean>(false);
+  const [hasStarted, setHasStarted] = useState<boolean>(false);
+  const [hasFinished, setHasFinished] = useState<boolean>(false);
+  const [hasStartedFinishing, setHasStartedFinishing] = useState<boolean>(false);
+  const [renderLogos, setRenderLogos] = useState<boolean>(false);
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState<number>(0);
 
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
   /* References */
-  const foxRef = useRef();
-  const foxHeadPan = useRef(new Animated.ValueXY(0, 0)).current;
+  const foxRef = useRef<any>();
+  const foxHeadPan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const currentQuoteIndexValue = useRef(new Animated.Value(0)).current;
   const progressValue = useRef(new Animated.Value(0)).current;
   const progressWidth = progressValue.interpolate({
@@ -183,8 +189,8 @@ function LoadingAnimation({
               [curr.key]: [panRadioX, panRadioY, radioX, radioY],
             };
             // eslint-disable-next-line no-mixed-spaces-and-tabs
-          }, {})
-        : {},
+          }, {} as Record<string, number[]>)
+        : {} as Record<string, number[]>,
     [metadata, headPan],
   );
 
@@ -197,10 +203,10 @@ function LoadingAnimation({
               ...acc,
               [curr.key]: new Animated.Value(0),
             }),
-            {},
+            {} as Record<string, Animated.Value>,
             // eslint-disable-next-line no-mixed-spaces-and-tabs
           )
-        : {},
+        : {} as Record<string, Animated.Value>,
     [metadata, headPan],
   );
 
@@ -210,7 +216,7 @@ function LoadingAnimation({
       headPan
         ? [
             // Animated.delay(INITIAL_DELAY),
-            ...metadata.reduce(
+            ...(metadata.reduce(
               (acc, cur, index, array) => [
                 ...acc,
                 // Time to delay next iteration, this is the amount of time the head looks at the icon
@@ -223,12 +229,15 @@ function LoadingAnimation({
                 }),
                 Animated.parallel([
                   // If is not the first aggregator, reduce previous aggregator opacity to 1
-                  index > 0 &&
-                    Animated.timing(opacities[array[index - 1].key], {
-                      toValue: 0,
-                      duration: PAN_DURATION,
-                      useNativeDriver: true,
-                    }),
+                  ...(index > 0
+                    ? [
+                        Animated.timing(opacities[array[index - 1].key], {
+                          toValue: 0,
+                          duration: PAN_DURATION,
+                          useNativeDriver: true,
+                        }),
+                      ]
+                    : []),
                   // Set current aggregator opacity to 1
                   Animated.timing(opacities[cur.key], {
                     toValue: 1,
@@ -243,35 +252,41 @@ function LoadingAnimation({
                     useNativeDriver: false,
                   }),
                   // Make the fox head pan to the aggregator position
-                  !Device.isAndroid() &&
-                    Animated.timing(foxHeadPan, {
-                      toValue: {
-                        x: positions[cur.key][0],
-                        y: positions[cur.key][1],
-                      },
-                      duration: PAN_DURATION,
-                      useNativeDriver: true,
-                    }),
+                  ...(!Device.isAndroid()
+                    ? [
+                        Animated.timing(foxHeadPan, {
+                          toValue: {
+                            x: positions[cur.key][0],
+                            y: positions[cur.key][1],
+                          },
+                          duration: PAN_DURATION,
+                          useNativeDriver: true,
+                        }),
+                      ]
+                    : []),
                 ]),
               ],
-              [],
-            ),
+              [] as any[],
+            ) as any[]),
             // Final animation of the sequence
             Animated.delay(DELAY),
             Animated.parallel([
               // Set last aggregator icon opacity to 0
-              Animated.timing(opacities[[...metadata].pop()?.key], {
+              Animated.timing(opacities[[...metadata].pop()?.key || ''], {
                 toValue: 0,
                 duration: PAN_DURATION,
                 useNativeDriver: true,
               }),
               // Reset to fox head to origing
-              !Device.isAndroid() &&
-                Animated.timing(foxHeadPan, {
-                  toValue: { x: 0, y: 0 },
-                  duration: PAN_DURATION,
-                  useNativeDriver: true,
-                }),
+              ...(!Device.isAndroid()
+                ? [
+                    Animated.timing(foxHeadPan, {
+                      toValue: { x: 0, y: 0 },
+                      duration: PAN_DURATION,
+                      useNativeDriver: true,
+                    }),
+                  ]
+                : []),
             ]),
             // eslint-disable-next-line no-mixed-spaces-and-tabs
           ]
@@ -323,7 +338,7 @@ function LoadingAnimation({
           });
         } catch (error) {
           Logger.error(
-            error,
+            error as Error,
             'Swaps: Error fetching agg metadata in animation',
           );
         }
@@ -498,24 +513,5 @@ function LoadingAnimation({
     </View>
   );
 }
-
-LoadingAnimation.propTypes = {
-  /**
-   * Wether to execute the "Finalizing" animation after the main sequence
-   */
-  finish: PropTypes.bool,
-  /**
-   * Function callback executed once both the main sequence and the finalizing animation ends
-   */
-  onAnimationEnd: PropTypes.func,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  /**
-   * Wether to show head panning animation with aggregators logos
-   */
-  headPan: PropTypes.bool,
-};
 
 export default LoadingAnimation;
