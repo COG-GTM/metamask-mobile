@@ -25,6 +25,23 @@ To learn how to contribute to the MetaMask codebase, visit our [Contributor Docs
 - [Miscellaneous](./docs/readme/miscellaneous.md)
 - [E2E Testing Segment Events](./docs/testing/e2e/segment-events.md)
 
+## TypeScript Migration
+
+MetaMask Mobile is actively migrating from JavaScript to TypeScript to improve type safety and code quality. This migration follows our [Coding Guidelines](./.github/guidelines/CODING_GUIDELINES.md) which specify that new code should be written in TypeScript.
+
+### Migration Progress
+
+#### Recently Migrated Components
+- **GasEducationCarousel** (`app/components/Views/GasEducationCarousel/`) - Migrated from JavaScript to TypeScript with proper interfaces, type annotations, and strict TypeScript compliance
+
+### Contributing to the Migration
+When working on existing JavaScript files:
+- Convert components to TypeScript when making significant changes
+- Replace PropTypes with TypeScript interfaces
+- Add proper type annotations for all variables and functions
+- Follow the [TypeScript Guidelines](https://github.com/MetaMask/contributor-docs/blob/main/docs/typescript.md)
+- Ensure strict TypeScript compilation passes (`yarn lint:tsc`)
+
 ## Getting started
 
 ### Using Expo (recommended)
