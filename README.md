@@ -25,6 +25,21 @@ To learn how to contribute to the MetaMask codebase, visit our [Contributor Docs
 - [Miscellaneous](./docs/readme/miscellaneous.md)
 - [E2E Testing Segment Events](./docs/testing/e2e/segment-events.md)
 
+## TypeScript Migration
+
+MetaMask Mobile is undergoing an ongoing migration from JavaScript to TypeScript to improve code quality, type safety, and developer experience. 
+
+### Recent Conversions
+
+- **`index.js` → `index.tsx`** - Main application entry point converted to TypeScript with proper type annotations for global error handling and environment variables.
+
+### Development Notes
+
+- TypeScript compilation is verified with `yarn tsc`
+- TypeScript linting is available with `yarn lint:tsc`
+- The `tsconfig.json` includes all TypeScript files for proper compilation and linting
+- React Native global types may require `@ts-expect-error` suppressions for platform-specific globals like `ErrorUtils`
+
 ## Getting started
 
 ### Using Expo (recommended)
