@@ -1,23 +1,28 @@
 import { RootState } from '..';
 import { Action } from 'redux';
-import ACTIONS from './types';
+import { LegalNoticesActionType } from './types';
+
+export interface LegalNoticesState {
+  newPrivacyPolicyToastClickedOrClosed: boolean;
+  newPrivacyPolicyToastShownDate: number | null;
+}
 
 const currentDate = new Date(Date.now());
 const newPrivacyPolicyDate = new Date('2024-06-18T12:00:00Z');
 export const isPastPrivacyPolicyDate = currentDate >= newPrivacyPolicyDate;
 
-const initialState = {
+const initialState: LegalNoticesState = {
   newPrivacyPolicyToastClickedOrClosed: false,
   newPrivacyPolicyToastShownDate: null,
 };
 
-export const storePrivacyPolicyShownDate = (timestamp: number) => ({
-  type: ACTIONS.STORE_PRIVACY_POLICY_SHOWN_DATE,
+export const storePrivacyPolicyShownDate = (timestamp: number): StorePrivacyPolicyShownDateAction => ({
+  type: LegalNoticesActionType.STORE_PRIVACY_POLICY_SHOWN_DATE,
   payload: timestamp,
 });
 
-export const storePrivacyPolicyClickedOrClosed = () => ({
-  type: ACTIONS.STORE_PRIVACY_POLICY_CLICKED_OR_CLOSED,
+export const storePrivacyPolicyClickedOrClosed = (): StorePrivacyPolicyClickedOrClosedAction => ({
+  type: LegalNoticesActionType.STORE_PRIVACY_POLICY_CLICKED_OR_CLOSED,
 });
 
 export const shouldShowNewPrivacyToastSelector = (
@@ -30,6 +35,10 @@ export const shouldShowNewPrivacyToastSelector = (
 
   if (newPrivacyPolicyToastClickedOrClosed) return false;
 
+  if (!newPrivacyPolicyToastShownDate) {
+    return currentDate.getTime() >= newPrivacyPolicyDate.getTime();
+  }
+
   const shownDate = new Date(newPrivacyPolicyToastShownDate);
 
   const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
@@ -38,26 +47,27 @@ export const shouldShowNewPrivacyToastSelector = (
 
   return (
     currentDate.getTime() >= newPrivacyPolicyDate.getTime() &&
-    (!newPrivacyPolicyToastShownDate ||
-      (isRecent && !newPrivacyPolicyToastClickedOrClosed))
+    (isRecent && !newPrivacyPolicyToastClickedOrClosed)
   );
 };
 
-export interface LegalNoticesAction extends Action {
-  newPrivacyPolicyToastShownDate: boolean;
+export interface StorePrivacyPolicyShownDateAction extends Action<LegalNoticesActionType.STORE_PRIVACY_POLICY_SHOWN_DATE> {
   payload: number;
 }
 
+export interface StorePrivacyPolicyClickedOrClosedAction extends Action<LegalNoticesActionType.STORE_PRIVACY_POLICY_CLICKED_OR_CLOSED> {
+}
+
+export type LegalNoticesAction =
+  | StorePrivacyPolicyShownDateAction
+  | StorePrivacyPolicyClickedOrClosedAction;
+
 const legalNoticesReducer = (
-  state = initialState,
-  action: LegalNoticesAction = {
-    type: '',
-    newPrivacyPolicyToastShownDate: false,
-    payload: 0,
-  },
-) => {
+  state: LegalNoticesState = initialState,
+  action: LegalNoticesAction,
+): LegalNoticesState => {
   switch (action.type) {
-    case ACTIONS.STORE_PRIVACY_POLICY_SHOWN_DATE: {
+    case LegalNoticesActionType.STORE_PRIVACY_POLICY_SHOWN_DATE: {
       if (state.newPrivacyPolicyToastShownDate !== null) {
         return state;
       }
@@ -68,7 +78,7 @@ const legalNoticesReducer = (
       };
     }
 
-    case ACTIONS.STORE_PRIVACY_POLICY_CLICKED_OR_CLOSED: {
+    case LegalNoticesActionType.STORE_PRIVACY_POLICY_CLICKED_OR_CLOSED: {
       return { ...state, newPrivacyPolicyToastClickedOrClosed: true };
     }
 

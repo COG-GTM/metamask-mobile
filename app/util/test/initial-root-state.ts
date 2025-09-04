@@ -18,7 +18,10 @@ export const backgroundState: EngineState =
   initialBackgroundState as unknown as EngineState;
 
 const initialRootState: RootState = {
-  legalNotices: undefined,
+  legalNotices: {
+    newPrivacyPolicyToastClickedOrClosed: false,
+    newPrivacyPolicyToastShownDate: null,
+  },
   collectibles: undefined,
   engine: { backgroundState },
   privacy: undefined,
