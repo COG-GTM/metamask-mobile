@@ -1,3 +1,4 @@
+import { ImageSourcePropType } from 'react-native';
 import MATIC from './matic.png';
 import POL from './pol.png';
 import PALM from './palm.png';
@@ -25,8 +26,39 @@ import FLOW from './flow.png';
 import LENS from './lens.png';
 import PLUME from './plume.png';
 
+interface ImageIcons {
+  [key: string]: ImageSourcePropType;
+  PALM: ImageSourcePropType;
+  MATIC: ImageSourcePropType;
+  POL: ImageSourcePropType;
+  OPTIMISM: ImageSourcePropType;
+  ONE: ImageSourcePropType;
+  FTM: ImageSourcePropType;
+  ETHEREUM: ImageSourcePropType;
+  BNB: ImageSourcePropType;
+  AETH: ImageSourcePropType;
+  AVAX: ImageSourcePropType;
+  'LINEA-GOERLI': ImageSourcePropType;
+  'LINEA-SEPOLIA': ImageSourcePropType;
+  SEPOLIA: ImageSourcePropType;
+  'LINEA-MAINNET': ImageSourcePropType;
+  APE: ImageSourcePropType;
+  G: ImageSourcePropType;
+  'KAIA-MAINNET': ImageSourcePropType;
+  'KAIA-KAIROS-TESTNET': ImageSourcePropType;
+  SOLANA: ImageSourcePropType;
+  FOX_LOGO: ImageSourcePropType;
+  BTC: ImageSourcePropType;
+  BASE: ImageSourcePropType;
+  'MEGAETH-TESTNET': ImageSourcePropType;
+  XRPLEVM_XRP_TOKEN: ImageSourcePropType;
+  MATCHAIN: ImageSourcePropType;
+  FLOW: ImageSourcePropType;
+  LENS: ImageSourcePropType;
+  PLUME: ImageSourcePropType;
+}
 
-export default {
+const imageIcons: ImageIcons = {
   PALM,
   MATIC,
   POL,
@@ -56,3 +88,5 @@ export default {
   LENS,
   PLUME,
 };
+
+export default imageIcons;
