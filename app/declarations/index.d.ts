@@ -11,6 +11,13 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+declare module '@metamask/ethjs-unit';
+declare module 'number-to-bn';
+declare module 'ethereumjs-util';
+declare module 'bnjs4';
+declare module 'ethers';
+declare module '@metamask/utils';
+declare module 'bignumber.js';
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
