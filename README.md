@@ -1,29 +1,392 @@
 ![MetaMask logo](logo.png?raw=true)
 
-# MetaMask
+# MetaMask Mobile
 
-[![CI](https://github.com/MetaMask/metamask-mobile/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MetaMask/metamask-mobile/actions/workflows/ci.yml) [![CLA](https://github.com/MetaMask/metamask-mobile/actions/workflows/cla.yml/badge.svg?branch=main)](https://github.com/MetaMask/metamask-mobile/actions/workflows/cla.yml)
+[![CI](https://github.com/MetaMask/metamask-mobile/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MetaMask/metamask-mobile/actions/workflows/ci.yml) [![CLA](https://github.com/MetaMask/metamask-mobile/actions/workflows/cla.yml/badge.svg?branch=main)](https://github.com/MetaMask/metamask-mobile/actions/workflows/cla.yml) [![License](https://img.shields.io/badge/license-Custom-blue.svg)](LICENSE)
 
-MetaMask is a mobile wallet that provides easy access to websites that use the [Ethereum](https://ethereum.org/) blockchain.
+> MetaMask is a mobile wallet that provides easy access to websites that use the [Ethereum](https://ethereum.org/) blockchain. Built with React Native, it offers a secure and user-friendly interface for managing digital assets and interacting with decentralized applications.
 
-For up to the minute news, follow our [Twitter](https://twitter.com/metamask) or [Medium](https://medium.com/metamask) pages.
+## Table of Contents
 
-To learn how to develop MetaMask-compatible applications, visit our [Developer Docs](https://docs.metamask.io).
+- [Quickstart](#quickstart)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Architecture](#architecture)
+- [Development](#development)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
 
-To learn how to contribute to the MetaMask codebase, visit our [Contributor Docs](https://github.com/MetaMask/contributor-docs).
+## Quickstart
 
-## Documentation
+### Prerequisites
+
+- **OS**: macOS, Linux, or Windows
+- **Runtime**: Node.js 20.18.0, Yarn 1.22.22
+- **Mobile Development**:
+  - For iOS: Xcode, Ruby 3.1.6, CocoaPods
+  - For Android: Android Studio, Java 17+
+- **Tools**: Git, Watchman (recommended)
+
+### Setup
+
+```bash
+$ git clone https://github.com/COG-GTM/metamask-mobile.git
+$ cd metamask-mobile
+$ nvm use 20.18.0
+$ yarn setup:expo
+```
+
+### Run the App
+
+```bash
+# Start Metro bundler
+$ yarn watch
+
+# In separate terminals:
+# For iOS (requires Xcode)
+$ yarn start:ios
+
+# For Android (requires Android Studio)
+$ yarn start:android
+```
+
+### Verify Installation
+
+```bash
+$ yarn lint
+$ yarn test:unit --maxWorkers=1
+```
+
+## Configuration
+
+### Required Environment Variables
+
+| Name | Required | Default | Description |
+| --- | --- | --- | --- |
+| `GOOGLE_SERVICES_B64_ANDROID` | Yes | — | Base64 encoded Google Services JSON for Android Firebase |
+| `GOOGLE_SERVICES_B64_IOS` | Yes | — | Base64 encoded Google Services plist for iOS Firebase |
+
+### Optional Environment Variables
+
+| Name | Required | Default | Description |
+| --- | --- | --- | --- |
+| `MM_PUBNUB_SUB_KEY` | No | — | PubNub subscription key for real-time messaging |
+| `MM_PUBNUB_PUB_KEY` | No | — | PubNub publish key for real-time messaging |
+| `MM_OPENSEA_KEY` | No | — | OpenSea API key for NFT data |
+| `MM_INFURA_PROJECT_ID` | No | `null` | Infura project ID for Ethereum network access |
+| `MM_SENTRY_DSN` | No | — | Sentry DSN for error tracking |
+| `WALLET_CONNECT_PROJECT_ID` | No | — | WalletConnect v2 project ID |
+| `BLOCKAID_FILE_CDN` | No | — | CDN URL for Blockaid security files |
+| `SEGMENT_WRITE_KEY` | No | — | Segment analytics write key |
+| `METAMASK_BUILD_TYPE` | No | `main` | Build variant: `main`, `flask`, or `beta` |
+| `METAMASK_ENVIRONMENT` | No | `local` | Environment: `local`, `pre-release`, or `production` |
+
+### Environment Setup
+
+1. Copy environment templates:
+
+   ```bash
+   $ cp .js.env.example .js.env
+   $ cp .android.env.example .android.env
+   $ cp .ios.env.example .ios.env
+   ```
+
+2. Fill in required values in each `.env` file
+3. Rebuild the app after environment changes
+
+## Usage
+
+### Development Commands
+
+```bash
+# Start development server
+$ yarn watch
+
+# Platform-specific builds
+$ yarn start:ios          # iOS debug build
+$ yarn start:android      # Android debug build
+$ yarn start:ios:device   # iOS build for physical device
+
+# Build variants
+$ yarn setup:flask        # Flask (beta) variant setup
+$ yarn start:ios:flask    # iOS Flask build
+$ yarn start:android:flask # Android Flask build
+```
+
+### Production Builds
+
+```bash
+# iOS production build
+$ yarn build:ios:release
+
+# Android production build  
+$ yarn build:android:release
+
+# Generate checksums (Android)
+$ yarn build:android:checksum
+```
+
+### API Examples
+
+The app connects to various blockchain networks and services:
+
+```bash
+# Test network connectivity
+$ curl -X POST https://mainnet.infura.io/v3/YOUR_PROJECT_ID \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
+```
+
+## Architecture
+
+```mermaid
+graph TD
+    A[Mobile App] --> B[React Native UI]
+    B --> C[MetaMask Controllers]
+    C --> D[Ethereum Networks]
+    C --> E[External Services]
+    
+    D --> F[Mainnet]
+    D --> G[Testnets]
+    D --> H[Custom RPCs]
+    
+    E --> I[Firebase]
+    E --> J[Sentry]
+    E --> K[Segment]
+    E --> L[OpenSea]
+    E --> M[Infura]
+```
+
+**Key Components:**
+
+- **Engine**: Core MetaMask controller orchestration
+- **UI Layer**: React Native components and navigation
+- **Network Layer**: Ethereum JSON-RPC communication
+- **Security**: Keyring management and transaction signing
+- **Services**: Analytics, error reporting, and external APIs
+
+For detailed architecture information, see [Architecture Documentation](./docs/readme/architecture.md).
+
+## Development
+
+### Setup Development Environment
+
+#### Using Expo (Recommended)
+
+```bash
+$ yarn setup:expo
+$ yarn watch
+```
+
+#### Native Development
+
+```bash
+$ yarn setup
+$ yarn start:ios    # or yarn start:android
+```
+
+### Code Quality
+
+```bash
+# Linting
+$ yarn lint
+$ yarn lint:fix
+$ yarn lint:tsc
+
+# Formatting
+$ yarn format
+
+# Dependency checks
+$ yarn test:depcheck
+```
+
+### Development Tools
+
+```bash
+# Start Flipper debugger
+$ yarn start:flipper
+
+# Generate app icons
+$ yarn generate-icons
+
+# Storybook (component library)
+$ yarn prestorybook
+$ yarn storybook-watch
+```
+
+## Testing
+
+### Unit Tests
+
+```bash
+# Run all unit tests
+$ yarn test:unit
+
+# Run specific test file
+$ yarn jest path/to/test-file.test.js
+
+# Update snapshots
+$ yarn test:unit:update
+
+# Test coverage
+$ yarn test:merge-coverage
+```
+
+### End-to-End Tests
+
+```bash
+# Setup E2E environment
+$ yarn setup:e2e
+
+# iOS E2E tests
+$ yarn test:e2e:ios:build:qa-release
+$ yarn test:e2e:ios:run:qa-release
+
+# Android E2E tests  
+$ yarn test:e2e:android:build:qa-release
+$ yarn test:e2e:android:run:qa-release
+
+# WebDriver tests
+$ yarn test:wdio:ios
+$ yarn test:wdio:android
+```
+
+### Performance Testing
+
+```bash
+# Bundle size analysis
+$ yarn gen-bundle:ios
+$ yarn gen-bundle:android
+
+# Circular dependency check
+$ yarn circular:deps
+```
+
+## Deployment
+
+### Mobile App Stores
+
+#### iOS App Store
+
+- Build: `yarn build:ios:release`
+- Archive and upload via Xcode
+- Requires Apple Developer account
+
+#### Google Play Store
+
+- Build: `yarn build:android:release`
+- Generate signed APK/AAB
+- Upload via Google Play Console
+
+### Docker Development
+
+```bash
+# Build development container
+$ docker build -f scripts/docker/Dockerfile -t metamask-mobile .
+
+# Run container
+$ docker run -it -v $(pwd):/app metamask-mobile
+```
+
+**Container Details:**
+
+- Base: Node.js 20 on Debian Bookworm
+- Includes: Ruby 3.1.6, rbenv, bundler, CocoaPods
+- Ports: 8081 (Metro bundler)
+- Health: Metro server status
+
+## Troubleshooting
+
+### Common Issues
+
+#### Metro bundler fails to start
+
+- **Cause**: Port 8081 already in use
+- **Fix**: `yarn watch:clean && yarn watch`
+
+#### iOS build fails with CocoaPods errors
+
+- **Cause**: Outdated pods or Ruby version mismatch  
+- **Fix**: `cd ios && bundle exec pod install`
+
+#### Android build fails with Gradle errors
+
+- **Cause**: Incorrect Java version or Android SDK setup
+- **Fix**: Ensure Java 17+ and Android SDK 34+ are installed
+
+#### Environment variables not loading
+
+- **Cause**: Missing or incorrectly named `.env` files
+- **Fix**: Verify `.js.env`, `.android.env`, `.ios.env` exist and have correct format
+
+#### Firebase configuration missing
+
+- **Cause**: `GOOGLE_SERVICES_B64_*` variables not set
+- **Fix**: Obtain Firebase config files and encode as base64
+
+### Performance Issues
+
+#### Slow startup on device
+
+- Enable Hermes engine (enabled by default)
+- Check for large bundle size: `yarn gen-bundle:ios`
+
+#### Memory issues during development
+
+- Increase Node.js memory: `export NODE_OPTIONS="--max_old_space_size=8192"`
+- Use fewer test workers: `yarn test:unit --maxWorkers=1`
+
+### Getting Help
+
+1. Check [existing issues](https://github.com/COG-GTM/metamask-mobile/issues)
+2. Review [troubleshooting docs](./docs/readme/troubleshooting.md)
+3. Ask in [MetaMask Discord](https://discord.gg/metamask)
+4. Create a [new issue](https://github.com/MetaMask/metamask-mobile/issues/new) with:
+   - Environment details (OS, Node version, etc.)
+   - Steps to reproduce
+   - Error logs and screenshots
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
+
+**Quick Start for Contributors:**
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Follow our [coding guidelines](.github/guidelines/CODING_GUIDELINES.md)
+4. Add tests for new functionality
+5. Update [CHANGELOG.md](CHANGELOG.md)
+6. Submit a pull request
+
+**Development Resources:**
 
 - [Architecture](./docs/readme/architecture.md)
-- [Expo Development Environment Setup](./docs/readme/expo-environment.md)
-- [Native Development Environment Setup](./docs/readme/environment.md)
-- [Build Troubleshooting](./docs/readme/troubleshooting.md)
-- [Testing](./docs/readme/testing.md)
+- [Expo Development Environment](./docs/readme/expo-environment.md)
+- [Native Development Environment](./docs/readme/environment.md)
+- [Testing Guide](./docs/readme/testing.md)
 - [Debugging](./docs/readme/debugging.md)
-- [API Call Logging for Debugging](./docs/readme/api-logging.md)
+- [API Logging](./docs/readme/api-logging.md)
 - [Storybook](./docs/readme/storybook.md)
-- [Miscellaneous](./docs/readme/miscellaneous.md)
-- [E2E Testing Segment Events](./docs/testing/e2e/segment-events.md)
+- [E2E Testing](./docs/testing/e2e/segment-events.md)
+
+## License
+
+© ConsenSys Software Inc, 2021. All rights reserved.
+
+This project is licensed under a custom license. See [LICENSE](LICENSE) for details.
+
+---
+
+**External Links:**
+
+- [MetaMask Website](https://metamask.io)
+- [Developer Documentation](https://docs.metamask.io)
+- [Twitter](https://twitter.com/metamask) | [Medium](https://medium.com/metamask)
+- [Contributor Docs](https://github.com/MetaMask/contributor-docs)
 
 ## Getting started
 

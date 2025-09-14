@@ -1,0 +1,19 @@
+repo: https://github.com/COG-GTM/metamask-mobile
+project_type: mobile_app
+languages: [javascript, typescript]
+frameworks: [react_native, expo]
+runtimes: { node: "20.18.0", yarn: "1.22.22", ruby: "3.1.6" }
+entrypoints: ["yarn watch", "yarn start:ios", "yarn start:android"]
+package_manager: yarn
+build: ["yarn setup", "yarn setup:expo"]
+env:
+  required: [GOOGLE_SERVICES_B64_ANDROID, GOOGLE_SERVICES_B64_IOS]
+  optional: [MM_PUBNUB_SUB_KEY, MM_PUBNUB_PUB_KEY, MM_OPENSEA_KEY, MM_INFURA_PROJECT_ID, MM_SENTRY_DSN, WALLET_CONNECT_PROJECT_ID, BLOCKAID_FILE_CDN, SEGMENT_WRITE_KEY]
+services: [firebase, sentry, infura, opensea, pubnub, walletconnect, blockaid]
+ci: [github-actions]
+deployment: [expo, ios_app_store, google_play_store]
+docs_style: markdown
+maintainers:
+  - name: MetaMask Team
+    email: mobile@metamask.io
+support_policy: "Community support via GitHub issues"
