@@ -1,0 +1,30 @@
+repo: https://github.com/COG-GTM/metamask-mobile
+project_type: mobile_app
+languages: [javascript, typescript]
+frameworks: [react_native, expo]
+runtimes: 
+  node: "20.18.0"
+  ruby: "3.1.6"
+  yarn: "1.22.22"
+entrypoints: 
+  - "yarn watch"
+  - "yarn start:ios"
+  - "yarn start:android"
+package_manager: yarn
+build: 
+  - "yarn setup"
+  - "yarn setup:expo"
+  - "./scripts/build.sh ios debug"
+  - "./scripts/build.sh android debug"
+env:
+  required: [METAMASK_BUILD_TYPE]
+  optional: [GOOGLE_SERVICES_B64_ANDROID, GOOGLE_SERVICES_B64_IOS, NODE_OPTIONS]
+services: [firebase, sentry, segment]
+ci: [github-actions, bitrise]
+deployment: [docker, ios_app_store, google_play_store]
+docs_style: markdown
+maintainers:
+  - name: MetaMask Mobile Team
+    email: mobile@metamask.io
+support_policy: "Community support via GitHub issues"
+license: "Custom ConsenSys License - source viewable, limited reproduction rights"
