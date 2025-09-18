@@ -618,7 +618,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         rawAmountString,
         decimals || 18,
       );
-      const exchangeRate = contractExchangeRates[address || ''];
+      const exchangeRate = contractExchangeRates?.[address || ''];
       transactionValueFiat = balanceToFiat(
         transferValue,
         conversionRate,
