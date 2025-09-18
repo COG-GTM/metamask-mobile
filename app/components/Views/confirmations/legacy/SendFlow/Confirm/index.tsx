@@ -65,6 +65,7 @@ import {
 } from '../../../../../../util/address';
 import { KEYSTONE_TX_CANCELED } from '../../../../../../constants/error';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 import WarningMessage from '../WarningMessage';
 import { showAlert } from '../../../../../../actions/alert';
 import ClipboardManager from '../../../../../../core/ClipboardManager';
@@ -337,7 +338,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     this.props.setProposedNonce(proposedNonce.toString());
   };
 
-  getAnalyticsParams = (): Record<string, any> => {
+  getAnalyticsParams = (): Record<string, unknown> => {
     const {
       selectedAsset,
       gasEstimateType,
@@ -382,7 +383,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
   updateNavBar = (): void => {
     const { navigation, route, transaction } = this.props;
-    const colors = (this.context as any)?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme)?.colors || mockTheme.colors;
     navigation.setOptions(
       getSendFlowTitle(
         'send.confirm',
@@ -766,7 +767,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     return error;
   };
 
-  prepareTransactionToSend = (): any => {
+  prepareTransactionToSend = (): Record<string, unknown> => {
     const {
       transactionState: { selectedAsset, assetType, transaction },
       showCustomNonce,
@@ -854,7 +855,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     }
   };
 
-  getGasAnalyticsParams = (): Record<string, any> => {
+  getGasAnalyticsParams = (): Record<string, unknown> => {
     try {
       const { gasEstimateType } = this.props;
       const { gasSelected } = this.state;
@@ -981,7 +982,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     } = this.props;
     const { mode } = this.state;
 
-    const colors = (this.context as any)?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (mode === EDIT) {
@@ -1004,7 +1005,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
   renderHexDataModal = (): ReactNode => {
     const { hexDataModalVisible } = this.state;
     const { transaction } = this.props;
-    const colors = (this.context as any)?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1062,7 +1063,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       errorMessage,
       hexDataModalVisible,
     } = this.state;
-    const colors = (this.context as any)?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!gasEstimationReady || !ready) {
