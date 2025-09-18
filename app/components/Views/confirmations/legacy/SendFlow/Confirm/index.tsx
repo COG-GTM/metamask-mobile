@@ -294,7 +294,6 @@ interface ConfirmState {
  */
 class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: ConfirmState = {
     gasEstimationReady: false,
@@ -383,7 +382,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
   updateNavBar = (): void => {
     const { navigation, route, transaction } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any)?.colors || mockTheme.colors;
     navigation.setOptions(
       getSendFlowTitle(
         'send.confirm',
@@ -982,7 +981,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     } = this.props;
     const { mode } = this.state;
 
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (mode === EDIT) {
@@ -1005,7 +1004,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
   renderHexDataModal = (): ReactNode => {
     const { hexDataModalVisible } = this.state;
     const { transaction } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1063,7 +1062,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       errorMessage,
       hexDataModalVisible,
     } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!gasEstimationReady || !ready) {
