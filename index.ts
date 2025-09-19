@@ -7,14 +7,13 @@ import '@walletconnect/react-native-compat';
 import 'react-native-gesture-handler';
 import 'react-native-url-polyfill/auto';
 
-import crypto from 'crypto'; // eslint-disable-line import/no-nodejs-modules, no-unused-vars
-require('react-native-browser-polyfill'); // eslint-disable-line import/no-commonjs
+import 'react-native-browser-polyfill';
 
 import * as Sentry from '@sentry/react-native'; // eslint-disable-line import/no-namespace
 import { setupSentry } from './app/util/sentry/utils';
 setupSentry();
 
-import { AppRegistry, LogBox, type ErrorUtils } from 'react-native';
+import { AppRegistry, LogBox } from 'react-native';
 import Root from './app/components/Views/Root';
 import { name } from './app.config.js';
 import { isE2E } from './app/util/test/utils.js';
@@ -22,13 +21,6 @@ import { isE2E } from './app/util/test/utils.js';
 import { Performance } from './app/core/Performance';
 import { handleCustomError, setReactNativeDefaultHandler } from './app/core/ErrorHandler';
 
-declare global {
-  namespace NodeJS {
-    interface Global {
-      ErrorUtils: typeof ErrorUtils;
-    }
-  }
-}
 
 Performance.setupPerformanceObservers();
 
@@ -103,7 +95,7 @@ AppRegistry.registerComponent(name, () =>
 );
 
 function setupGlobalErrorHandler(): void {
-  const reactNativeDefaultHandler = (global as typeof globalThis & { ErrorUtils: typeof ErrorUtils }).ErrorUtils.getGlobalHandler();
+  const reactNativeDefaultHandler = (global as unknown as { ErrorUtils: { getGlobalHandler: () => ((error: Error, isFatal?: boolean) => void) | undefined } }).ErrorUtils.getGlobalHandler();
   // set the base handler to the react native ExceptionsManager.handleException(), please refer to setupErrorHandling.js under react-native/Libraries/Core/ for details.
   if (reactNativeDefaultHandler) {
     setReactNativeDefaultHandler(reactNativeDefaultHandler);
@@ -112,7 +104,7 @@ function setupGlobalErrorHandler(): void {
   const wrappedErrorHandler = (error: Error, isFatal?: boolean) => {
     handleCustomError(error, isFatal ?? false);
   };
-  (global as typeof globalThis & { ErrorUtils: typeof ErrorUtils }).ErrorUtils.setGlobalHandler(wrappedErrorHandler);
+  (global as unknown as { ErrorUtils: { setGlobalHandler: (handler: (error: Error, isFatal?: boolean) => void) => void } }).ErrorUtils.setGlobalHandler(wrappedErrorHandler);
 }
 
 setupGlobalErrorHandler();
