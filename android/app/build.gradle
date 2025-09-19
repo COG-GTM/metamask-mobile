@@ -66,7 +66,7 @@ react {
 project.ext.react = [
   bundleCommand: "ram-bundle",
   bundleAssetName: "index.bundle",
-  entryFile: "index.js",
+  entryFile: "index.ts",
   hermesCommand: "../../node_modules/hermes-engine/%OS-BIN%/hermesc",
   cliPath: "../../node_modules/react-native/cli.js",
   composeSourceMapsPath: "../../node_modules/react-native/scripts/compose-source-maps.js",

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- [#XXXX](https://github.com/MetaMask/metamask-mobile/pull/XXXX): chore(js-ts): Convert index.js to TypeScript (#XXXX)
 - fix(bridge): show "Auto" slippage for Solana swaps
 
 ### Added
