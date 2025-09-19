@@ -14,13 +14,22 @@ import * as Sentry from '@sentry/react-native'; // eslint-disable-line import/no
 import { setupSentry } from './app/util/sentry/utils';
 setupSentry();
 
-import { AppRegistry, LogBox, ErrorUtils } from 'react-native';
+import { AppRegistry, LogBox, type ErrorUtils } from 'react-native';
 import Root from './app/components/Views/Root';
 import { name } from './app.config.js';
 import { isE2E } from './app/util/test/utils.js';
 
 import { Performance } from './app/core/Performance';
 import { handleCustomError, setReactNativeDefaultHandler } from './app/core/ErrorHandler';
+
+declare global {
+  namespace NodeJS {
+    interface Global {
+      ErrorUtils: typeof ErrorUtils;
+    }
+  }
+}
+
 Performance.setupPerformanceObservers();
 
 LogBox.ignoreAllLogs();
@@ -75,7 +84,7 @@ LogBox.ignoreLogs([
   'Warning: componentWillReceiveProps has been renamed',
 ]);
 
-const IGNORE_BOXLOGS_DEVELOPMENT = process.env.IGNORE_BOXLOGS_DEVELOPMENT;
+const IGNORE_BOXLOGS_DEVELOPMENT: string | undefined = process.env.IGNORE_BOXLOGS_DEVELOPMENT;
 // Ignore box logs, useful for QA testing in development builds
 if (IGNORE_BOXLOGS_DEVELOPMENT === 'true') {
   LogBox.ignoreAllLogs();
@@ -93,12 +102,17 @@ AppRegistry.registerComponent(name, () =>
   isE2E ? Root : Sentry.wrap(Root),
 );
 
-function setupGlobalErrorHandler() {
-  const reactNativeDefaultHandler = global.ErrorUtils.getGlobalHandler();
+function setupGlobalErrorHandler(): void {
+  const reactNativeDefaultHandler = (global as typeof globalThis & { ErrorUtils: typeof ErrorUtils }).ErrorUtils.getGlobalHandler();
   // set the base handler to the react native ExceptionsManager.handleException(), please refer to setupErrorHandling.js under react-native/Libraries/Core/ for details.
-  setReactNativeDefaultHandler(reactNativeDefaultHandler);
+  if (reactNativeDefaultHandler) {
+    setReactNativeDefaultHandler(reactNativeDefaultHandler);
+  }
   // override the global handler to provide custom error handling
-  global.ErrorUtils.setGlobalHandler(handleCustomError);
+  const wrappedErrorHandler = (error: Error, isFatal?: boolean) => {
+    handleCustomError(error, isFatal ?? false);
+  };
+  (global as typeof globalThis & { ErrorUtils: typeof ErrorUtils }).ErrorUtils.setGlobalHandler(wrappedErrorHandler);
 }
 
 setupGlobalErrorHandler();
