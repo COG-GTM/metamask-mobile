@@ -180,6 +180,7 @@ exports[`AccountOverview should render correctly 1`] = `
                 "letterSpacing": 0.8,
               }
             }
+            testID="ethereum-address"
           >
             0xe7E12...6B0a1
           </Text>
