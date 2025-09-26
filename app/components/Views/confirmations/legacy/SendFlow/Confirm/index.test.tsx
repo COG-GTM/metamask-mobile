@@ -169,7 +169,9 @@ jest.mock('../../../../../../core/Engine', () => {
       },
       NetworkController: {
         getProviderAndBlockTracker: jest.fn().mockReturnValue({
-          provider: {},
+          provider: {
+            sendAsync: () => null,
+          },
         }),
       },
       PreferencesController: {
