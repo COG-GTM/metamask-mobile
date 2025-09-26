@@ -240,6 +240,7 @@ exports[`DrawerView - Extended Coverage renders correctly (snapshot) 1`] = `
                   "lineHeight": 17,
                 }
               }
+              testID="ethereum-address"
             >
               0xC4966...4a756
             </Text>
