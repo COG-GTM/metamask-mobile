@@ -240,14 +240,14 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
   );
 
   setNetworkNonce = async (): Promise<void> => {
-    const { globalNetworkClientId, setNonce: setNonceProp, setProposedNonce: setProposedNonceProp, transaction } =
+    const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(
       transaction,
-      globalNetworkClientId,
+      networkClientId,
     );
-    setNonceProp(proposedNonce.toString());
-    setProposedNonceProp(proposedNonce.toString());
+    setNonce(proposedNonce.toString());
+    setProposedNonce(proposedNonce.toString());
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
