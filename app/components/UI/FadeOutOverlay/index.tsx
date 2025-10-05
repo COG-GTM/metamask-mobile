@@ -6,8 +6,13 @@ import { Theme } from '@metamask/design-tokens';
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
-    overlay: {
-      backgroundColor: colors.overlay.default,
+    view: {
+      backgroundColor: colors.background.default,
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
     },
   });
 
@@ -47,26 +52,20 @@ export default class FadeOutOverlay extends PureComponent<
       toValue: 0,
       duration: this.props.duration,
       useNativeDriver: true,
+      isInteraction: false,
     }).start(() => {
       this.setState({ done: true });
     });
   }
 
   render() {
-    if (this.state.done) return null;
-
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
+    if (this.state.done) return null;
     return (
       <Animated.View
-        style={[
-          styles.overlay,
-          this.props.style,
-          {
-            opacity: this.opacity,
-          },
-        ]}
+        style={[{ opacity: this.opacity }, styles.view, this.props.style]}
       />
     );
   }

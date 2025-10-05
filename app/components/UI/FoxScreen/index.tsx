@@ -9,15 +9,19 @@ const foxImage: ImageSourcePropType = require('../../../images/branding/fox.png'
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
-      backgroundColor: colors.background.default,
       flex: 1,
-      justifyContent: 'center',
+      backgroundColor: colors.background.default,
       alignItems: 'center',
+      justifyContent: 'center',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
     },
-    foxImage: {
+    image: {
       width: 100,
       height: 100,
-      tintColor: colors.primary.default,
     },
   });
 
@@ -31,13 +35,8 @@ export default class FoxScreen extends PureComponent {
     const styles = createStyles(colors);
 
     return (
-      <View
-        style={styles.wrapper}
-        testID={CommonSelectorsIDs.FOX_SCREEN}
-        accessible
-        accessibilityLabel={CommonSelectorsIDs.FOX_SCREEN}
-      >
-        <Image source={foxImage} style={styles.foxImage} resizeMode="contain" />
+      <View style={styles.wrapper} testID={CommonSelectorsIDs.FOX_SCREEN}>
+        <Image source={foxImage} style={styles.image} resizeMethod={'auto'} />
       </View>
     );
   };
