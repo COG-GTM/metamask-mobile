@@ -17,7 +17,8 @@ export default class WebviewProgressBar extends PureComponent<
   WebviewProgressBarState
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  context: React.ContextType<typeof ThemeContext> = undefined!;
   mounted?: boolean;
 
   state: WebviewProgressBarState = {

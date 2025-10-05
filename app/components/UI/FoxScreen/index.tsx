@@ -23,7 +23,8 @@ const createStyles = (colors: Theme['colors']) =>
 
 export default class FoxScreen extends PureComponent {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  context: React.ContextType<typeof ThemeContext> = undefined!;
 
   render = () => {
     const colors = this.context.colors || mockTheme.colors;

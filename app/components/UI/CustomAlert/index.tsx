@@ -54,7 +54,8 @@ interface CustomAlertProps {
 
 export default class CustomAlert extends PureComponent<CustomAlertProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  context: React.ContextType<typeof ThemeContext> = undefined!;
 
   render() {
     const colors = this.context.colors || mockTheme.colors;

@@ -61,7 +61,8 @@ export default class AnimatedSpinner extends PureComponent<
     size: SpinnerSize.MD,
   };
 
-  declare context: React.ContextType<typeof ThemeContext>;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  context: React.ContextType<typeof ThemeContext> = undefined!;
   spinValue: Animated.Value;
   mounted?: boolean;
 

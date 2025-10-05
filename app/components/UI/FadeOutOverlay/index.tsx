@@ -30,7 +30,8 @@ export default class FadeOutOverlay extends PureComponent<
     duration: Device.isAndroid() ? 300 : 300,
   };
 
-  declare context: React.ContextType<typeof ThemeContext>;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  context: React.ContextType<typeof ThemeContext> = undefined!;
   opacity: Animated.Value;
 
   constructor(props: FadeOutOverlayProps) {
