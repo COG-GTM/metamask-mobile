@@ -98,7 +98,6 @@ export default class AnimatedSpinner extends PureComponent<
   AnimatedSpinnerState
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   spinValue = new Animated.Value(0);
   mounted = false;
@@ -147,7 +146,7 @@ export default class AnimatedSpinner extends PureComponent<
 
   render() {
     const { size = SpinnerSize.MD } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors, measures[size]);
     const spin = this.spinValue.interpolate({
       inputRange: [0, 1],

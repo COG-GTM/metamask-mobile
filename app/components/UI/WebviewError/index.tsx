@@ -95,11 +95,10 @@ interface WebviewErrorProps {
 
 export default class WebviewError extends PureComponent<WebviewErrorProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   render() {
     const { error, returnHome, showDetails } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

@@ -6,6 +6,7 @@ import Share from 'react-native-share';
 import Logger from '../../../util/Logger';
 import { baseStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { Theme } from '../../../util/theme/models';
 import type { NavigationProp, RouteProp } from '@react-navigation/native';
 
 interface SimpleWebviewRouteParams {
@@ -20,11 +21,10 @@ interface SimpleWebviewProps {
 
 export default class SimpleWebview extends PureComponent<SimpleWebviewProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(getWebviewNavbar(navigation, route, colors));
   };
 

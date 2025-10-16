@@ -80,7 +80,6 @@ interface GlobalAlertState {
 
 class GlobalAlert extends PureComponent<GlobalAlertProps, GlobalAlertState> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: GlobalAlertState = {
     isVisible: false,
@@ -128,7 +127,7 @@ class GlobalAlert extends PureComponent<GlobalAlertProps, GlobalAlertState> {
   };
 
   renderClipboardAlert() {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const clipboardIcon = require('../../../images/clipboard.png');
@@ -149,7 +148,7 @@ class GlobalAlert extends PureComponent<GlobalAlertProps, GlobalAlertState> {
   }
 
   render() {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const { content, data } = this.props;
 

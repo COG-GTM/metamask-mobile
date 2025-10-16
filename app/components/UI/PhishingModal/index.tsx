@@ -104,7 +104,6 @@ interface PhishingModalProps {
 
 export default class PhishingModal extends PureComponent<PhishingModalProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   shareToTwitter = () => {
     const tweetText =
@@ -120,7 +119,7 @@ export default class PhishingModal extends PureComponent<PhishingModalProps> {
   };
 
   render() {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!this.props.fullUrl) {
