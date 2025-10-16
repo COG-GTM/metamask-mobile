@@ -21,9 +21,9 @@ describe('PhishingModal', () => {
     const { toJSON } = renderWithProvider(
       <PhishingModal
         fullUrl="https://malicious-site.com"
-        goBackToSafety={() => {}}
-        continueToPhishingSite={() => {}}
-        goToFilePhishingIssue={() => {}}
+        goBackToSafety={jest.fn()}
+        continueToPhishingSite={jest.fn()}
+        goToFilePhishingIssue={jest.fn()}
       />
     );
     expect(toJSON()).toMatchSnapshot();
@@ -33,9 +33,9 @@ describe('PhishingModal', () => {
     const { getByText } = renderWithProvider(
       <PhishingModal
         fullUrl="https://malicious-site.com"
-        goBackToSafety={() => {}}
-        continueToPhishingSite={() => {}}
-        goToFilePhishingIssue={() => {}}
+        goBackToSafety={jest.fn()}
+        continueToPhishingSite={jest.fn()}
+        goToFilePhishingIssue={jest.fn()}
       />
     );
 

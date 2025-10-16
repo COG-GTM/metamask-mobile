@@ -1,15 +1,11 @@
 import React, { PureComponent } from 'react';
 import Modal from 'react-native-modal';
-import { InteractionManager, StyleSheet, View, Image } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
+import { dismissAlert } from '../../../actions/alert';
 import { connect } from 'react-redux';
-import { hideCurrentNotification } from '../../../actions/notification';
-import ElevatedView from 'react-native-elevated-view';
-import Text, {
-  TextVariant,
-} from '../../../component-library/components/Texts/Text';
-import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
-import Device from '../../../util/device';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import ElevatedView from 'react-native-elevated-view';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import type { Theme } from '../../../util/theme/models';
 
@@ -17,209 +13,137 @@ const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     modal: {
       margin: 0,
-      justifyContent: 'flex-end',
+      width: '100%',
     },
-    wrapper: {
-      backgroundColor: colors.background.default,
-      borderRadius: 8,
-      marginHorizontal: 16,
+    copyAlertIcon: {
+      marginBottom: 20,
     },
-    contentWrapper: {
-      paddingTop: 24,
-      paddingLeft: 24,
-      paddingRight: 24,
-      paddingBottom: Device.isIphoneX() ? 48 : 24,
-    },
-    title: {
-      ...fontStyles.bold,
-      fontSize: 18,
+    copyAlertText: {
       textAlign: 'center',
-      marginBottom: 8,
-      color: colors.text.default,
-    },
-    description: {
+      color: colors.overlay.inverse,
+      fontSize: 16,
       ...fontStyles.normal,
-      fontSize: 14,
-      textAlign: 'center',
-      color: colors.text.default,
-    },
-    content: {
-      marginTop: 4,
-      marginBottom: 4,
-      textAlign: 'center',
-    },
-    clipboardIcon: {
-      alignSelf: 'center',
-      marginBottom: 16,
-    },
-    clipboardImage: {
-      width: 60,
-      height: 60,
     },
   });
 
-interface NotificationContent {
-  title?: string;
-  description?: string;
+const getCopyAlertStyle = (colors: Theme['colors'], width?: number) => ({
+  width: width || 180,
+  backgroundColor: colors.overlay.alternative,
+  padding: 20,
+  paddingTop: 30,
+  alignSelf: 'center' as const,
+  alignItems: 'center' as const,
+  justifyContent: 'center' as const,
+  borderRadius: 8,
+});
+
+interface GlobalAlertData {
+  width?: number;
+  msg?: string;
 }
 
 interface GlobalAlertProps {
   isVisible: boolean;
-  autodismiss: number | null;
-  content: NotificationContent | null;
-  data: {
-    title?: string;
-    msg?: string;
-  } | null;
-  hideCurrentNotification: () => void;
+  autodismiss?: number | null;
+  content?: string | null;
+  data?: GlobalAlertData | null;
+  dismissAlert: () => void;
 }
 
-interface GlobalAlertState {
-  isVisible: boolean;
-}
-
-class GlobalAlert extends PureComponent<GlobalAlertProps, GlobalAlertState> {
+class GlobalAlert extends PureComponent<GlobalAlertProps> {
   static contextType = ThemeContext;
 
-  state: GlobalAlertState = {
-    isVisible: false,
-  };
-
-  animationTimerId: ReturnType<typeof setTimeout> | null = null;
-  autoDismissTimerId: ReturnType<typeof setTimeout> | null = null;
-
-  static defaultProps = {
-    content: null,
-    data: null,
+  onClose = () => {
+    this.props.dismissAlert();
   };
 
   componentDidUpdate(prevProps: GlobalAlertProps) {
-    if (!prevProps.isVisible && this.props.isVisible) {
-      this.animationTimerId = setTimeout(() => {
-        this.setState({ isVisible: true });
-      }, 100);
-
-      if (this.props.autodismiss) {
-        this.autoDismissTimerId = setTimeout(() => {
-          this.props.hideCurrentNotification();
-        }, this.props.autodismiss);
-      }
-    }
-
-    if (prevProps.isVisible && !this.props.isVisible) {
-      this.setState({ isVisible: false });
+    if (
+      this.props.autodismiss &&
+      !isNaN(this.props.autodismiss) &&
+      !prevProps.isVisible &&
+      this.props.isVisible
+    ) {
+      setTimeout(() => {
+        this.props.dismissAlert();
+      }, this.props.autodismiss);
     }
   }
 
-  componentWillUnmount() {
-    if (this.animationTimerId) {
-      clearTimeout(this.animationTimerId);
-    }
-    if (this.autoDismissTimerId) {
-      clearTimeout(this.autoDismissTimerId);
+  getComponent(content?: string | null) {
+    switch (content) {
+      case 'clipboard-alert':
+        return this.renderClipboardAlert();
+      default:
+        return <View />;
     }
   }
 
-  onHide = () => {
-    InteractionManager.runAfterInteractions(() => {
-      this.props.hideCurrentNotification();
-    });
+  getStyles = () => {
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    return createStyles(colors);
   };
 
-  renderClipboardAlert() {
+  renderClipboardAlert = () => {
     const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
-
-    const clipboardIcon = require('../../../images/clipboard.png');
+    const styles = this.getStyles();
 
     return (
-      <View style={styles.contentWrapper}>
-        <View style={styles.clipboardIcon}>
-          <Image source={clipboardIcon} style={styles.clipboardImage} />
+      <ElevatedView
+        style={getCopyAlertStyle(colors, this.props.data?.width)}
+        elevation={5}
+      >
+        <View style={styles.copyAlertIcon}>
+          <Icon
+            name={'check-circle'}
+            size={64}
+            color={colors.overlay.inverse}
+          />
         </View>
-        <Text variant={TextVariant.HeadingMD} style={styles.title}>
-          {strings('global_alert.clipboard_title')}
+        <Text style={styles.copyAlertText}>
+          {this.props.data?.msg}
         </Text>
-        <Text variant={TextVariant.BodyMD} style={styles.description}>
-          {strings('global_alert.clipboard_description')}
-        </Text>
-      </View>
+      </ElevatedView>
     );
-  }
+  };
 
-  render() {
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
-    const { content, data } = this.props;
-
-    if (data) {
-      return (
-        <Modal
-          isVisible={this.state.isVisible}
-          onBackdropPress={this.onHide}
-          onBackButtonPress={this.onHide}
-          onSwipeComplete={this.onHide}
-          swipeDirection="down"
-          propagateSwipe
-          backdropOpacity={0.7}
-          animationIn="slideInUp"
-          animationOut="slideOutDown"
-          style={styles.modal}
-        >
-          {this.renderClipboardAlert()}
-        </Modal>
-      );
-    }
-
-    if (!content) return null;
+  render = () => {
+    const { content, isVisible } = this.props;
+    const styles = this.getStyles();
 
     return (
       <Modal
-        isVisible={this.state.isVisible}
-        onBackdropPress={this.onHide}
-        onBackButtonPress={this.onHide}
-        onSwipeComplete={this.onHide}
-        swipeDirection="down"
-        propagateSwipe
-        backdropOpacity={0.7}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
         style={styles.modal}
+        isVisible={isVisible}
+        onBackdropPress={this.onClose}
+        onBackButtonPress={this.onClose}
+        backdropOpacity={0}
+        animationIn={'fadeIn'}
+        animationOut={'fadeOut'}
+        useNativeDriver
       >
-        <ElevatedView style={styles.wrapper} elevation={100}>
-          <View style={styles.contentWrapper}>
-            <Text variant={TextVariant.HeadingMD} style={styles.title}>
-              {content.title}
-            </Text>
-            <Text variant={TextVariant.BodyMD} style={styles.description}>
-              {content.description}
-            </Text>
-          </View>
-        </ElevatedView>
+        {this.getComponent(content)}
       </Modal>
     );
-  }
+  };
 }
 
 const mapStateToProps = (state: {
-  notification: {
+  alert: {
     isVisible: boolean;
-    autodismiss: number | null;
-    content: NotificationContent | null;
-    data: {
-      title?: string;
-      msg?: string;
-    } | null;
+    autodismiss?: number | null;
+    content?: string | null;
+    data?: GlobalAlertData | null;
   };
 }) => ({
-  isVisible: state.notification.isVisible,
-  autodismiss: state.notification.autodismiss,
-  content: state.notification.content,
-  data: state.notification.data,
+  isVisible: state.alert.isVisible,
+  autodismiss: state.alert.autodismiss,
+  content: state.alert.content,
+  data: state.alert.data,
 });
 
-const mapDispatchToProps = (dispatch: (action: { type: string }) => void) => ({
-  hideCurrentNotification: () => dispatch(hideCurrentNotification()),
+const mapDispatchToProps = (dispatch: (action: ReturnType<typeof dismissAlert>) => void) => ({
+  dismissAlert: () => dispatch(dismissAlert()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(GlobalAlert);

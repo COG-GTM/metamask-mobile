@@ -165,7 +165,11 @@ export default class PhishingModal extends PureComponent<PhishingModalProps> {
         <Button
           variant={ButtonVariants.Primary}
           label={strings('phishing.back_to_safety')}
-          onPress={this.props.goBackToSafety!}
+          onPress={() => {
+            if (this.props.goBackToSafety) {
+              this.props.goBackToSafety();
+            }
+          }}
           style={styles.buttonWrapper}
           width={ButtonWidthTypes.Full}
         />
