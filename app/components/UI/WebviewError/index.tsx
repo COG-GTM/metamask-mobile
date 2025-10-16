@@ -1,149 +1,125 @@
 import React, { PureComponent } from 'react';
-import {
-  Text,
-  View,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-} from 'react-native';
-import Modal from 'react-native-modal';
-import { fontStyles } from '../../../styles/common';
+import { Image, StyleSheet, View, Text, Platform } from 'react-native';
+import StyledButton from '../StyledButton';
 import { strings } from '../../../../locales/i18n';
+import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import generateTestId from '../../../../wdio/utils/generateTestId';
+import {
+  ERROR_PAGE_MESSAGE,
+  ERROR_PAGE_RETURN_BUTTON,
+  ERROR_PAGE_TITLE,
+} from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
 import type { Theme } from '../../../util/theme/models';
 import type { WebViewError } from '@metamask/react-native-webview/lib/WebViewTypes';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-commonjs
-const errorImage = require('../../../images/error-boundary-bg.png');
+import foxImage from '../../../images/branding/fox.png';
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
-    modal: {
-      margin: 0,
-      justifyContent: 'flex-end',
-    },
-    modalView: {
+    wrapper: {
+      ...StyleSheet.absoluteFillObject,
       backgroundColor: colors.background.default,
-      borderTopLeftRadius: 10,
-      borderTopRightRadius: 10,
-      paddingTop: 24,
-    },
-    webview: {
-      borderTopLeftRadius: 10,
-      borderTopRightRadius: 10,
-      flex: 1,
-    },
-    iconWrapper: {
-      alignItems: 'center',
       justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 99999999999999,
+    },
+    foxWrapper: {
+      backgroundColor: colors.background.default,
+      marginTop: -100,
+      width: 110,
+      marginBottom: 20,
+      height: 110,
+    },
+    textWrapper: {
+      width: 300,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     image: {
-      width: 50,
-      height: 50,
+      alignSelf: 'center',
+      width: 110,
+      height: 110,
     },
-    title: {
-      ...fontStyles.bold,
-      fontSize: 16,
+    errorTitle: {
       color: colors.text.default,
-      textAlign: 'center',
-      paddingVertical: 8,
-    },
-    textContent: {
-      paddingHorizontal: 24,
+      ...fontStyles.bold,
+      fontSize: 18,
+      marginBottom: 15,
     },
     errorMessage: {
-      ...fontStyles.normal,
-      fontSize: 14,
-      color: colors.text.default,
-      textAlign: 'left',
-      paddingVertical: 8,
-    },
-    button: {
-      marginTop: 16,
-      marginBottom: 24,
-      borderWidth: 1,
-      borderColor: colors.primary.default,
-      borderRadius: 50,
-      padding: 12,
-      paddingHorizontal: 34,
-      marginHorizontal: 24,
-    },
-    cancel: {
-      backgroundColor: colors.primary.default,
-    },
-    confirm: {
-      backgroundColor: colors.background.default,
-    },
-    buttonText: {
-      ...fontStyles.normal,
-      fontSize: 14,
       textAlign: 'center',
+      color: colors.text.alternative,
+      ...fontStyles.normal,
+      fontSize: 14,
+      marginBottom: 10,
     },
-    cancelButtonText: {
-      color: colors.primary.inverse,
+    errorInfo: {
+      color: colors.text.muted,
+      ...fontStyles.normal,
+      fontSize: 12,
     },
-    confirmButtonText: {
-      color: colors.primary.default,
+    buttonWrapper: {
+      width: 200,
+      marginTop: 30,
     },
   });
 
 interface WebviewErrorProps {
   error?: Error | boolean | WebViewError | null;
   returnHome: () => void;
-  showDetails?: () => void;
 }
 
 export default class WebviewError extends PureComponent<WebviewErrorProps> {
   static contextType = ThemeContext;
 
+  static defaultProps = {
+    error: false,
+  };
+
+  returnHome = () => {
+    this.props.returnHome();
+  };
+
   render() {
-    const { error, returnHome, showDetails } = this.props;
+    const { error } = this.props;
     const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
-    return (
-      <Modal
-        isVisible={Boolean(error)}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        style={styles.modal}
-        backdropOpacity={0.7}
-        animationInTiming={600}
-        animationOutTiming={600}
-        onBackdropPress={returnHome}
-        onBackButtonPress={returnHome}
-        onSwipeComplete={returnHome}
-        swipeDirection="down"
-        propagateSwipe
-      >
-        <View style={styles.modalView}>
-          <View style={styles.iconWrapper}>
-            <Image source={errorImage} style={styles.image} />
-          </View>
-          <View style={styles.textContent}>
-            <Text style={styles.title}>{strings('error_screen.title')}</Text>
-            <Text style={styles.errorMessage}>
-              {strings('error_screen.error_boundary_content')}
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={[styles.button, styles.cancel]}
-            onPress={returnHome}
-          >
-            <Text style={[styles.buttonText, styles.cancelButtonText]}>
-              {strings('error_screen.error_boundary_return_home')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.confirm]}
-            onPress={showDetails || (() => undefined)}
-          >
-            <Text style={[styles.buttonText, styles.confirmButtonText]}>
-              {strings('error_screen.error_boundary_view_details')}
-            </Text>
-          </TouchableOpacity>
+    return error ? (
+      <View style={styles.wrapper}>
+        <View style={styles.foxWrapper}>
+          <Image
+            source={foxImage}
+            style={styles.image}
+            resizeMethod={'auto'}
+          />
         </View>
-      </Modal>
-    );
+        <View style={styles.textWrapper}>
+          <Text
+            style={styles.errorTitle}
+            {...generateTestId(Platform, ERROR_PAGE_TITLE)}
+          >
+            {strings('webview_error.title')}
+          </Text>
+          <Text
+            style={styles.errorMessage}
+            {...generateTestId(Platform, ERROR_PAGE_MESSAGE)}
+          >
+            {strings('webview_error.message')}
+          </Text>
+          {error && typeof error === 'object' && 'description' in error && error.description ? (
+            <Text style={styles.errorInfo}>{error.description}</Text>
+          ) : null}
+        </View>
+        <View
+          style={styles.buttonWrapper}
+          {...generateTestId(Platform, ERROR_PAGE_RETURN_BUTTON)}
+        >
+          <StyledButton type={'confirm'} onPress={this.returnHome}>
+            {strings('webview_error.return_home')}
+          </StyledButton>
+        </View>
+      </View>
+    ) : null;
   }
 }

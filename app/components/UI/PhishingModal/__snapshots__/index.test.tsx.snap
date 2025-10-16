@@ -86,7 +86,7 @@ exports[`PhishingModal should render correctly 1`] = `
     You may also
      
     <Text
-      onPress={[Function]}
+      onPress={[MockFunction]}
       style={
         {
           "color": "#ca3542",
@@ -100,7 +100,7 @@ exports[`PhishingModal should render correctly 1`] = `
     but please do so at your own risk.
   </Text>
   <TouchableOpacity
-    onPress={[Function]}
+    onPress={[MockFunction]}
     style={
       {
         "alignItems": "center",
