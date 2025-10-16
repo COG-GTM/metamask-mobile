@@ -1,9 +1,8 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - Snaps team directory
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import SnapElement from '../SnapElement';
-import { Snap, Status } from '@metamask/snaps-utils';
+import { Status, type Snap } from '@metamask/snaps-utils';
+import { SnapId } from '@metamask/snaps-sdk';
 import { SemVerVersion } from '@metamask/utils';
 import SNAP_ElEMENT from '../SnapElement.constants';
 
@@ -22,15 +21,14 @@ describe('SnapElement', () => {
   const mockSnap: Snap = {
     blocked: false,
     enabled: true,
-    permissionName: 'wallet_snap_npm:@chainsafe/filsnap',
-    id: 'npm:@chainsafe/filsnap',
+    id: 'npm:@chainsafe/filsnap' as SnapId,
     initialPermissions: {
       'endowment:network-access': {},
       'endowment:rpc': {
         dapps: true,
         snaps: true,
       },
-      snap_confirm: {},
+      snap_dialog: {},
       snap_getBip44Entropy: [
         {
           coinType: 1,
@@ -65,7 +63,7 @@ describe('SnapElement', () => {
           dapps: true,
           snaps: true,
         },
-        snap_confirm: {},
+        snap_dialog: {},
         snap_getBip44Entropy: [
           {
             coinType: 1,
@@ -79,6 +77,7 @@ describe('SnapElement', () => {
       manifestVersion: '0.1',
     },
     status: 'runing' as Status,
+    sourceCode: '',
     version: '2.3.13' as SemVerVersion,
     versionHistory: [
       {
@@ -87,6 +86,8 @@ describe('SnapElement', () => {
         origin: 'metamask-mobile',
       },
     ],
+    auxiliaryFiles: [],
+    localizationFiles: [],
   };
 
   it('renders correctly', () => {

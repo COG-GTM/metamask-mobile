@@ -83,7 +83,7 @@ describe('NotificationManager', () => {
         duration: 5000,
         title: 'Simple Notification',
         description: 'Simple Notification Description',
-        action: 'tx',
+        status: 'tx',
       }),
     ).toBeTruthy();
   });
@@ -93,7 +93,7 @@ describe('NotificationManager', () => {
   });
 
   it('calling NotificationManager.getTransactionToView should be truthy if setTransactionToView was called before', () => {
-    NotificationManager.setTransactionToView(1);
+    NotificationManager.setTransactionToView('1');
     expect(NotificationManager.getTransactionToView()).toBeTruthy();
   });
 

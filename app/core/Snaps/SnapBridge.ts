@@ -2,8 +2,6 @@
 /* eslint-disable import/no-commonjs */
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-var-requires */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 // eslint-disable-next-line import/no-nodejs-modules
 import { Duplex } from 'stream';
 import {
@@ -21,7 +19,11 @@ import snapMethodMiddlewareBuilder from './SnapsMethodMiddleware';
 import { SubjectType } from '@metamask/permission-controller';
 
 import ObjectMultiplex from '@metamask/object-multiplex';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - Package lacks TypeScript definitions
 import createFilterMiddleware from '@metamask/eth-json-rpc-filters';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - Package lacks TypeScript definitions
 import createSubscriptionManager from '@metamask/eth-json-rpc-filters/subscriptionManager';
 import { providerAsMiddleware } from '@metamask/eth-json-rpc-middleware';
 const pump = require('pump');
@@ -46,6 +48,9 @@ export default class SnapBridge {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   blockTracker: any;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  deprecatedNetworkVersions: Record<string, any>;
 
   #mux: typeof ObjectMultiplex;
   // TODO: Replace "any" with type
@@ -119,6 +124,8 @@ export default class SnapBridge {
 
   setupProviderConnection = () => {
     Logger.log('[SNAP BRIDGE LOG] Engine+setupProviderConnection');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - ObjectMultiplex type definition issue
     const outStream = this.#mux.createStream('metamask-provider');
     const engine = this.setupProviderEngine();
 

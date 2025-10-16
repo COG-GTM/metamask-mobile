@@ -1,10 +1,8 @@
-'use strict';
 import React from 'react';
 import { SafeAreaView, Image, View, StyleSheet } from 'react-native';
 import Text from '../../Base/Text';
 import NetInfo from '@react-native-community/netinfo';
 import { baseStyles, fontStyles } from '../../../styles/common';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../locales/i18n';
 import StyledButton from '../../UI/StyledButton';
 import { getOfflineModalNavbar } from '../../UI/Navbar';
@@ -14,8 +12,9 @@ import AppConstants from '../../../core/AppConstants';
 import { connect } from 'react-redux';
 import { getInfuraBlockedSelector } from '../../../reducers/infuraAvailability';
 import { useTheme } from '../../../util/theme';
+import type { NavigationProp } from '@react-navigation/native';
 
-const createStyles = (colors) =>
+const createStyles = (colors: { background: { default: string }; text: { default: string } }) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -49,9 +48,15 @@ const createStyles = (colors) =>
     },
   });
 
-const astronautImage = require('../../../images/astronaut.png'); // eslint-disable-line import/no-commonjs
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-commonjs
+const astronautImage = require('../../../images/astronaut.png');
 
-const OfflineMode = ({ navigation, infuraBlocked }) => {
+interface OfflineModeProps {
+  navigation: NavigationProp<Record<string, object>>;
+  infuraBlocked: boolean;
+}
+
+const OfflineMode: React.FC<OfflineModeProps> = ({ navigation, infuraBlocked }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -59,7 +64,7 @@ const OfflineMode = ({ navigation, infuraBlocked }) => {
 
   const tryAgain = () => {
     if (netinfo?.isConnected) {
-      navigation.pop();
+      navigation.goBack();
     }
   };
 
@@ -87,7 +92,7 @@ const OfflineMode = ({ navigation, infuraBlocked }) => {
             {strings('offline_mode.title')}
           </Text>
           <Text centered style={styles.text}>
-            {strings(`offline_mode.text`)}
+            {strings('offline_mode.text')}
           </Text>
         </View>
         <View style={styles.buttonContainer}>
@@ -103,21 +108,10 @@ const OfflineMode = ({ navigation, infuraBlocked }) => {
   );
 };
 
-OfflineMode.navigationOptions = ({ navigation }) =>
-  getOfflineModalNavbar(navigation);
+(OfflineMode as unknown as { navigationOptions: () => unknown }).navigationOptions = () =>
+  getOfflineModalNavbar();
 
-OfflineMode.propTypes = {
-  /**
-   * Object that represents the navigator
-   */
-  navigation: PropTypes.object,
-  /**
-   * Whether infura was blocked or not
-   */
-  infuraBlocked: PropTypes.bool,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: { infuraAvailability: unknown }) => ({
   infuraBlocked: getInfuraBlockedSelector(state),
 });
 

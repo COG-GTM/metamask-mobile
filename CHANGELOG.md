@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
+- chore(js-ts): Complete Phase 1 of TypeScript migration - remove @ts-nocheck from Snaps files, convert NotificationManager and notification actions to TypeScript, convert initial batch of UI/Views components to TypeScript
 
 ### Added
 

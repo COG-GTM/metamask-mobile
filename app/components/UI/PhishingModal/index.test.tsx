@@ -18,15 +18,29 @@ jest.mock('react-native/Libraries/Linking/Linking', () => ({
 
 describe('PhishingModal', () => {
   it('should render correctly', () => {
-    const { toJSON } = renderWithProvider(<PhishingModal />);
+    const { toJSON } = renderWithProvider(
+      <PhishingModal
+        fullUrl="https://malicious-site.com"
+        goBackToSafety={() => undefined}
+        continueToPhishingSite={() => undefined}
+        goToFilePhishingIssue={() => undefined}
+      />
+    );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('should open Twitter with correct sharing text when share button is pressed', async () => {
-    const { getByText } = renderWithProvider(<PhishingModal fullUrl="https://malicious-site.com" />);
+    const { getByText } = renderWithProvider(
+      <PhishingModal
+        fullUrl="https://malicious-site.com"
+        goBackToSafety={() => undefined}
+        continueToPhishingSite={() => undefined}
+        goToFilePhishingIssue={() => undefined}
+      />
+    );
 
-    // Find and press the share button
-    const shareButton = getByText('If you found this helpful, share on X!');
+    // Find and press the share button (using the string key from i18n)
+    const shareButton = getByText(expect.stringContaining('share'));
     fireEvent.press(shareButton);
 
     // Verify Linking.canOpenURL was called

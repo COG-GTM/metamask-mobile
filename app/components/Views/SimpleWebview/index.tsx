@@ -1,35 +1,37 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { View } from 'react-native';
 import { WebView } from '@metamask/react-native-webview';
 import { getWebviewNavbar } from '../../UI/Navbar';
-import Share from 'react-native-share'; // eslint-disable-line  import/default
+import Share from 'react-native-share';
 import Logger from '../../../util/Logger';
 import { baseStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { NavigationProp, RouteProp } from '@react-navigation/native';
 
-export default class SimpleWebview extends PureComponent {
-  static propTypes = {
-    /**
-     * react-navigation object used to switch between screens
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+interface SimpleWebviewRouteParams {
+  url?: string;
+  dispatch?: () => void;
+}
+
+interface SimpleWebviewProps {
+  navigation: NavigationProp<Record<string, SimpleWebviewRouteParams>>;
+  route: RouteProp<Record<string, SimpleWebviewRouteParams>, string>;
+}
+
+export default class SimpleWebview extends PureComponent<SimpleWebviewProps> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     navigation.setOptions(getWebviewNavbar(navigation, route, colors));
   };
 
   componentDidMount = () => {
     const { navigation } = this.props;
     this.updateNavBar();
-    navigation && navigation.setParams({ dispatch: this.share });
+    navigation?.setParams({ dispatch: this.share });
   };
 
   componentDidUpdate = () => {
@@ -57,9 +59,8 @@ export default class SimpleWebview extends PureComponent {
         </View>
       );
     }
+    return null;
   }
 }
 
 export { default as createWebviewNavDetails } from './SimpleWebview.types';
-
-SimpleWebview.contextType = ThemeContext;
