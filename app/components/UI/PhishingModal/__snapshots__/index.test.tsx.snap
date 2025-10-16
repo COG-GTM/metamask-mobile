@@ -15,7 +15,7 @@ exports[`PhishingModal should render correctly 1`] = `
   <View
     style={
       {
-        "alignItems": "left",
+        "alignItems": "flex-start",
       }
     }
   >
@@ -86,6 +86,7 @@ exports[`PhishingModal should render correctly 1`] = `
     You may also
      
     <Text
+      onPress={[Function]}
       style={
         {
           "color": "#ca3542",
@@ -99,6 +100,7 @@ exports[`PhishingModal should render correctly 1`] = `
     but please do so at your own risk.
   </Text>
   <TouchableOpacity
+    onPress={[Function]}
     style={
       {
         "alignItems": "center",
@@ -221,6 +223,7 @@ exports[`PhishingModal should render correctly 1`] = `
     accessibilityRole="button"
     accessible={true}
     activeOpacity={1}
+    onPress={[Function]}
     onPressIn={[Function]}
     onPressOut={[Function]}
     style={

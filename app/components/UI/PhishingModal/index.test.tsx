@@ -21,9 +21,9 @@ describe('PhishingModal', () => {
     const { toJSON } = renderWithProvider(
       <PhishingModal
         fullUrl="https://malicious-site.com"
-        goBackToSafety={() => undefined}
-        continueToPhishingSite={() => undefined}
-        goToFilePhishingIssue={() => undefined}
+        goBackToSafety={() => {}}
+        continueToPhishingSite={() => {}}
+        goToFilePhishingIssue={() => {}}
       />
     );
     expect(toJSON()).toMatchSnapshot();
@@ -33,14 +33,14 @@ describe('PhishingModal', () => {
     const { getByText } = renderWithProvider(
       <PhishingModal
         fullUrl="https://malicious-site.com"
-        goBackToSafety={() => undefined}
-        continueToPhishingSite={() => undefined}
-        goToFilePhishingIssue={() => undefined}
+        goBackToSafety={() => {}}
+        continueToPhishingSite={() => {}}
+        goToFilePhishingIssue={() => {}}
       />
     );
 
     // Find and press the share button (using the string key from i18n)
-    const shareButton = getByText(expect.stringContaining('share'));
+    const shareButton = getByText(/share/i);
     fireEvent.press(shareButton);
 
     // Verify Linking.canOpenURL was called
