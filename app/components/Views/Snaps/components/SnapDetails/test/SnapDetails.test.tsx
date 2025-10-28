@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - Snaps team directory
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { Snap, Status } from '@metamask/snaps-utils';
@@ -24,10 +22,9 @@ jest.mock('../../../../../../core/Engine', () => ({
 }));
 
 describe('SnapDetails', () => {
-  const mockSnap: Snap = {
+  const mockSnap = {
     blocked: false,
     enabled: true,
-    permissionName: 'wallet_snap_npm:@chainsafe/filsnap',
     id: 'npm:@chainsafe/filsnap',
     initialPermissions: {
       'endowment:network-access': {},
@@ -35,7 +32,7 @@ describe('SnapDetails', () => {
         dapps: true,
         snaps: true,
       },
-      snap_confirm: {},
+      snap_dialog: {},
       snap_getBip44Entropy: [
         {
           coinType: 1,
@@ -70,7 +67,7 @@ describe('SnapDetails', () => {
           dapps: true,
           snaps: true,
         },
-        snap_confirm: {},
+        snap_dialog: {},
         snap_getBip44Entropy: [
           {
             coinType: 1,
@@ -97,7 +94,7 @@ describe('SnapDetails', () => {
   const installDateString = 'Installed on May 24 at 5:35 pm';
 
   it('renders the correct snap details', async () => {
-    const { getByTestId } = render(<SnapDetails snap={mockSnap} />);
+    const { getByTestId } = render(<SnapDetails snap={mockSnap as Snap} />);
 
     const cell = await getByTestId(SNAP_DETAILS_CELL);
     const switchElement = await getByTestId(SNAP_DETAILS_SWITCH);
@@ -124,7 +121,7 @@ describe('SnapDetails', () => {
   });
 
   it('handles snap enable and disable', async () => {
-    const { getByTestId } = render(<SnapDetails snap={mockSnap} />);
+    const { getByTestId } = render(<SnapDetails snap={mockSnap as Snap} />);
 
     const switchElement = await getByTestId(SNAP_DETAILS_SWITCH);
 

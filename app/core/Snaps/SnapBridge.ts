@@ -2,8 +2,6 @@
 /* eslint-disable import/no-commonjs */
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-var-requires */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 // eslint-disable-next-line import/no-nodejs-modules
 import { Duplex } from 'stream';
 import {
@@ -21,39 +19,55 @@ import snapMethodMiddlewareBuilder from './SnapsMethodMiddleware';
 import { SubjectType } from '@metamask/permission-controller';
 
 import ObjectMultiplex from '@metamask/object-multiplex';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - No type definitions available
 import createFilterMiddleware from '@metamask/eth-json-rpc-filters';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - No type definitions available
 import createSubscriptionManager from '@metamask/eth-json-rpc-filters/subscriptionManager';
 import { providerAsMiddleware } from '@metamask/eth-json-rpc-middleware';
 const pump = require('pump');
 
+interface Provider {
+  sendAsync: (
+    request: { method: string; params?: unknown[] },
+    callback: (error: Error | null, response?: unknown) => void,
+  ) => void;
+  [key: string]: unknown;
+}
+
+interface BlockTracker {
+  on: (event: string, handler: (...args: unknown[]) => void) => void;
+  removeListener: (event: string, handler: (...args: unknown[]) => void) => void;
+  [key: string]: unknown;
+}
+
+interface RPCMethodMiddlewareArgs {
+  hostname: string;
+  getProviderState: () => Promise<{
+    isUnlocked: boolean;
+    chainId: string;
+    networkVersion: string | null;
+  }>;
+}
+
 interface ISnapBridgeProps {
   snapId: string;
   connectionStream: Duplex;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getRPCMethodMiddleware: (args: any) => any;
+  getRPCMethodMiddleware: (args: RPCMethodMiddlewareArgs) => unknown;
 }
 
 export default class SnapBridge {
   snapId: string;
   stream: Duplex;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getRPCMethodMiddleware: (args: any) => any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  provider: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  blockTracker: any;
+  getRPCMethodMiddleware: (args: RPCMethodMiddlewareArgs) => unknown;
+  provider!: Provider;
+  blockTracker!: BlockTracker;
+  deprecatedNetworkVersions: Record<string, string | null>;
 
-  #mux: typeof ObjectMultiplex;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #providerProxy: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #blockTrackerProxy: any;
+  #mux: ObjectMultiplex;
+  #providerProxy: Provider | null;
+  #blockTrackerProxy: BlockTracker | null;
 
   constructor({
     snapId,
@@ -70,9 +84,14 @@ export default class SnapBridge {
     this.getRPCMethodMiddleware = getRPCMethodMiddleware;
     this.deprecatedNetworkVersions = {};
 
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { NetworkController } = Engine.context as any;
+    const { NetworkController } = Engine.context as unknown as {
+      NetworkController: {
+        getProviderAndBlockTracker: () => {
+          provider: Provider;
+          blockTracker: BlockTracker;
+        };
+      };
+    };
 
     const { provider, blockTracker } =
       NetworkController.getProviderAndBlockTracker();
@@ -86,26 +105,22 @@ export default class SnapBridge {
     this.#mux = setupMultiplex(this.stream);
   }
 
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #setProvider = (provider: any): void => {
+  #setProvider = (provider: Provider): void => {
     if (this.#providerProxy) {
-      this.#providerProxy.setTarget(provider);
+      (this.#providerProxy as unknown as { setTarget: (target: Provider) => void }).setTarget(provider);
     } else {
-      this.#providerProxy = createSwappableProxy(provider);
+      this.#providerProxy = createSwappableProxy(provider) as unknown as Provider;
     }
     this.provider = provider;
   };
 
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #setBlockTracker = (blockTracker: any): void => {
+  #setBlockTracker = (blockTracker: BlockTracker): void => {
     if (this.#blockTrackerProxy) {
-      this.#blockTrackerProxy.setTarget(blockTracker);
+      (this.#blockTrackerProxy as unknown as { setTarget: (target: BlockTracker) => void }).setTarget(blockTracker);
     } else {
-      this.#blockTrackerProxy = createEventEmitterProxy(blockTracker, {
+      this.#blockTrackerProxy = createEventEmitterProxy(blockTracker as unknown as Parameters<typeof createEventEmitterProxy>[0], {
         eventFilter: 'skipInternal',
-      });
+      }) as unknown as BlockTracker;
     }
     this.blockTracker = blockTracker;
   };
@@ -119,13 +134,11 @@ export default class SnapBridge {
 
   setupProviderConnection = () => {
     Logger.log('[SNAP BRIDGE LOG] Engine+setupProviderConnection');
-    const outStream = this.#mux.createStream('metamask-provider');
+    const outStream = (this.#mux as unknown as { createStream: (name: string) => Duplex }).createStream('metamask-provider');
     const engine = this.setupProviderEngine();
 
     const providerStream = createEngineStream({ engine });
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pump(outStream, providerStream, outStream, (err: any) => {
+    pump(outStream, providerStream, outStream, (err: Error | null) => {
       engine.destroy();
       if (err) Logger.log('Error with provider stream conn', err);
     });
@@ -146,9 +159,7 @@ export default class SnapBridge {
       blockTracker: this.#blockTrackerProxy,
     });
 
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscriptionManager.events.on('notification', (message: any) =>
+    subscriptionManager.events.on('notification', (message: unknown) =>
       engine.emit('notification', message),
     );
 
@@ -179,18 +190,20 @@ export default class SnapBridge {
       this.getRPCMethodMiddleware({
         hostname: this.snapId,
         getProviderState: this.getProviderState.bind(this),
-      }),
+      }) as Parameters<typeof engine.push>[0],
     );
 
     // Forward to metamask primary provider
-    engine.push(providerAsMiddleware(this.#providerProxy));
+    engine.push(providerAsMiddleware(this.#providerProxy as unknown as Parameters<typeof providerAsMiddleware>[0]));
     return engine;
   };
 
   isUnlocked = (): boolean => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { KeyringController } = Engine.context as any;
+    const { KeyringController } = Engine.context as unknown as {
+      KeyringController: {
+        isUnlocked: () => boolean;
+      };
+    };
     return KeyringController.isUnlocked();
   };
 
@@ -216,7 +229,7 @@ export default class SnapBridge {
             console.error(error);
             resolve(null);
           } else {
-            resolve(result);
+            resolve(result as string | null);
           }
         });
       });

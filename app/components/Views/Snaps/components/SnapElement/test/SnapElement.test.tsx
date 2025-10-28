@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - Snaps team directory
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import SnapElement from '../SnapElement';
@@ -19,10 +17,9 @@ jest.mock('@react-navigation/native', () => {
 });
 
 describe('SnapElement', () => {
-  const mockSnap: Snap = {
+  const mockSnap = {
     blocked: false,
     enabled: true,
-    permissionName: 'wallet_snap_npm:@chainsafe/filsnap',
     id: 'npm:@chainsafe/filsnap',
     initialPermissions: {
       'endowment:network-access': {},
@@ -30,7 +27,7 @@ describe('SnapElement', () => {
         dapps: true,
         snaps: true,
       },
-      snap_confirm: {},
+      snap_dialog: {},
       snap_getBip44Entropy: [
         {
           coinType: 1,
@@ -65,7 +62,7 @@ describe('SnapElement', () => {
           dapps: true,
           snaps: true,
         },
-        snap_confirm: {},
+        snap_dialog: {},
         snap_getBip44Entropy: [
           {
             coinType: 1,
@@ -90,7 +87,7 @@ describe('SnapElement', () => {
   };
 
   it('renders correctly', () => {
-    const { getByTestId } = render(<SnapElement {...mockSnap} />);
+    const { getByTestId } = render(<SnapElement {...(mockSnap as Snap)} />);
 
     const cell = getByTestId(SNAP_ElEMENT);
     expect(cell.props.children.props.title).toEqual(
