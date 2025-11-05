@@ -1,5 +1,10 @@
 /* eslint-disable react/display-name */
 import React from 'react';
+import type { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
+import type { Theme } from '../../../util/theme/models';
+import type { InternalAccount } from '@metamask/keyring-internal-api';
+import type { ImageSourcePropType, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type { IMetaMetricsEvent } from '../../../core/Analytics';
 import NavbarTitle from '../NavbarTitle';
 import ModalNavbarTitle from '../ModalNavbarTitle';
 import AccountRightButton from '../AccountRightButton';
@@ -60,6 +65,7 @@ import { createAccountSelectorNavDetails } from '../../../components/Views/Accou
 import { RequestPaymentViewSelectors } from '../../../../e2e/selectors/Receive/RequestPaymentView.selectors';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
+import { AvatarAccountType } from '../../../component-library/components/Avatars/Avatar';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { getFormattedAddressFromInternalAccount } from '../../../core/Multichain/utils';
 
@@ -67,8 +73,40 @@ import { getFormattedAddressFromInternalAccount } from '../../../core/Multichain
 import { withMetaMetrics } from '../Stake/utils/metaMetrics/withMetaMetrics';
 import { BridgeViewMode } from '../Bridge/types';
 
-const trackEvent = (event, params = {}) => {
-  MetaMetrics.getInstance().trackEvent(event);
+type StackNavigationProp = NavigationProp<ParamListBase> & {
+  pop: () => void;
+  dangerouslyGetParent: () => (NavigationProp<ParamListBase> & { pop: () => void }) | undefined;
+};
+
+interface NavigationOptions {
+  headerTitle?: string | React.JSX.Element | (() => React.JSX.Element);
+  headerLeft?: (() => React.JSX.Element | null) | null;
+  headerRight?: (() => React.JSX.Element | null) | null;
+  headerStyle?: StyleProp<ViewStyle> | StyleProp<ViewStyle>[];
+  headerTitleStyle?: StyleProp<TextStyle>;
+  headerBackTitle?: string;
+  headerTintColor?: string;
+  headerShown?: boolean;
+  title?: string | null;
+  header?: () => React.JSX.Element;
+}
+
+interface NavBarOptions {
+  backgroundColor?: string;
+  hasCancelButton?: boolean;
+  hasBackButton?: boolean;
+  hasIconButton?: boolean;
+  handleIconPress?: () => void;
+}
+
+interface MetricsOptions {
+  cancelButtonEvent?: { event: IMetaMetricsEvent; properties: Record<string, string> };
+  backButtonEvent?: { event: IMetaMetricsEvent; properties: Record<string, string> };
+  iconButtonEvent?: { event: IMetaMetricsEvent; properties: Record<string, string> };
+}
+
+const trackEvent = (event: unknown, params: Record<string, unknown> = {}): void => {
+  MetaMetrics.getInstance().trackEvent(event as never);
 };
 
 const styles = StyleSheet.create({
@@ -163,12 +201,12 @@ const metamask_fox = require('../../../images/branding/fox.png'); // eslint-disa
  * @returns {Object} - Corresponding navbar options containing headerTitle, headerLeft, headerTruncatedBackTitle and headerRight
  */
 export function getTransactionsNavbarOptions(
-  title,
-  themeColors,
-  _,
-  selectedAddress,
-  handleRightButtonPress,
-) {
+  title: string,
+  themeColors: Theme['colors'],
+  _: unknown,
+  selectedAddress: string,
+  handleRightButtonPress: () => void,
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -211,12 +249,12 @@ export function getTransactionsNavbarOptions(
  * @returns {Object} - Corresponding navbar options containing title and headerTitleStyle
  */
 export function getNavigationOptionsTitle(
-  title,
-  navigation,
-  isFullScreenModal,
-  themeColors,
-  navigationPopEvent = null,
-) {
+  title: string,
+  navigation: NavigationProp<ParamListBase>,
+  isFullScreenModal: boolean,
+  themeColors: Theme['colors'],
+  navigationPopEvent: IMetaMetricsEvent | null = null,
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -272,7 +310,12 @@ export function getNavigationOptionsTitle(
  * @param {Object} navigation - Navigation object required to push new views
  * @returns {Object} - Corresponding navbar options
  */
-export function getEditableOptions(title, navigation, route, themeColors) {
+export function getEditableOptions(
+  title: string,
+  navigation: NavigationProp<ParamListBase>,
+  route: RouteProp<ParamListBase, string>,
+  themeColors: Theme['colors'],
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -295,12 +338,12 @@ export function getEditableOptions(title, navigation, route, themeColors) {
   });
 
   function navigationPop() {
-    navigation.pop();
+    (navigation as StackNavigationProp).pop();
   }
 
-  const rightAction = route.params?.dispatch;
-  const editMode = route.params?.editMode === 'edit';
-  const addMode = route.params?.mode === 'add';
+  const rightAction = (route.params as { dispatch?: () => void })?.dispatch;
+  const editMode = (route.params as { editMode?: string })?.editMode === 'edit';
+  const addMode = (route.params as { mode?: string })?.mode === 'add';
   return {
     title,
     headerTitleStyle: innerStyles.headerTitleStyle,
@@ -347,12 +390,12 @@ export function getEditableOptions(title, navigation, route, themeColors) {
  * @returns {Object} - Corresponding navbar options containing title, headerLeft and headerRight
  */
 export function getPaymentRequestOptionsTitle(
-  title,
-  navigation,
-  route,
-  themeColors,
-) {
-  const goBack = route.params?.dispatch;
+  title: string,
+  navigation: NavigationProp<ParamListBase>,
+  route: RouteProp<ParamListBase, string>,
+  themeColors: Theme['colors'],
+): NavigationOptions {
+  const goBack = (route.params as { dispatch?: () => void })?.dispatch;
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -392,7 +435,7 @@ export function getPaymentRequestOptionsTitle(
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
       <TouchableOpacity
-        onPress={() => navigation.pop()}
+        onPress={() => (navigation as StackNavigationProp).pop()}
         style={styles.closeButton}
       >
         <IonicIcon
@@ -413,7 +456,10 @@ export function getPaymentRequestOptionsTitle(
  *
  * @returns {Object} - Corresponding navbar options containing title, and headerRight
  */
-export function getPaymentRequestSuccessOptionsTitle(navigation, themeColors) {
+export function getPaymentRequestSuccessOptionsTitle(
+  navigation: NavigationProp<ParamListBase>,
+  themeColors: Theme['colors'],
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -432,7 +478,7 @@ export function getPaymentRequestSuccessOptionsTitle(navigation, themeColors) {
     headerRight: () => (
       <TouchableOpacity
         // eslint-disable-next-line react/jsx-no-bind
-        onPress={() => navigation.pop()}
+        onPress={() => (navigation as StackNavigationProp).pop()}
         style={styles.closeButton}
         {...generateTestId(
           Platform,
@@ -458,11 +504,11 @@ export function getPaymentRequestSuccessOptionsTitle(navigation, themeColors) {
  * @returns {Object} - Corresponding navbar options containing title and headerTitleStyle
  */
 export function getTransactionOptionsTitle(
-  _title,
-  navigation,
-  route,
-  themeColors,
-) {
+  _title: string,
+  navigation: NavigationProp<ParamListBase>,
+  route: RouteProp<ParamListBase, string>,
+  themeColors: Theme['colors'],
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -475,16 +521,16 @@ export function getTransactionOptionsTitle(
       ...fontStyles.normal,
     },
   });
-  const transactionMode = route.params?.mode ?? '';
+  const transactionMode = (route.params as { mode?: string })?.mode ?? '';
   const { name } = route;
   const leftText =
     transactionMode === 'edit'
       ? strings('transaction.cancel')
       : strings('transaction.edit');
-  const disableModeChange = route.params?.disableModeChange;
-  const modeChange = route.params?.dispatch;
-  const leftAction = () => modeChange('edit');
-  const rightAction = () => navigation.pop();
+  const disableModeChange = (route.params as { disableModeChange?: boolean })?.disableModeChange;
+  const modeChange = (route.params as { dispatch?: (mode: string) => void })?.dispatch;
+  const leftAction = () => modeChange?.('edit');
+  const rightAction = () => (navigation as StackNavigationProp).pop();
   const rightText = strings('transaction.cancel');
   const title = transactionMode === 'edit' ? 'transaction.edit' : _title;
 
@@ -530,7 +576,7 @@ export function getTransactionOptionsTitle(
   };
 }
 
-export function getApproveNavbar(title) {
+export function getApproveNavbar(title: string): NavigationOptions {
   return {
     headerTitle: () => <NavbarTitle title={title} disableNetwork />,
     headerLeft: () => <View />,
@@ -546,13 +592,13 @@ export function getApproveNavbar(title) {
  * @returns {Object} - Corresponding navbar options containing title and headerTitleStyle
  */
 export function getSendFlowTitle(
-  title,
-  navigation,
-  route,
-  themeColors,
-  resetTransaction,
-  transaction,
-) {
+  title: string,
+  navigation: NavigationProp<ParamListBase>,
+  route: RouteProp<ParamListBase, string>,
+  themeColors: Theme['colors'],
+  resetTransaction: () => void,
+  transaction: unknown,
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -566,7 +612,7 @@ export function getSendFlowTitle(
     },
   });
   const rightAction = () => {
-    const providerType = route?.params?.providerType ?? '';
+    const providerType = (route?.params as { providerType?: string })?.providerType ?? '';
     const additionalTransactionMetricsParams =
       getBlockaidTransactionMetricsParams(transaction);
     trackEvent(
@@ -579,12 +625,12 @@ export function getSendFlowTitle(
         .build(),
     );
     resetTransaction();
-    navigation.dangerouslyGetParent()?.pop();
+    ((navigation as StackNavigationProp).dangerouslyGetParent() as StackNavigationProp | undefined)?.pop();
   };
-  const leftAction = () => navigation.pop();
+  const leftAction = () => (navigation as StackNavigationProp).pop();
 
   const canGoBack =
-    title !== 'send.send_to' && !route?.params?.isPaymentRequest;
+    title !== 'send.send_to' && !(route?.params as { isPaymentRequest?: boolean })?.isPaymentRequest;
 
   const titleToRender = title;
 
@@ -627,7 +673,7 @@ export function getSendFlowTitle(
  * @param {string} title - Title in string format
  * @returns {Object} - Corresponding navbar options containing headerTitle
  */
-export function getModalNavbarOptions(title) {
+export function getModalNavbarOptions(title: string): NavigationOptions {
   return {
     headerTitle: () => <ModalNavbarTitle title={title} />,
   };
@@ -641,11 +687,11 @@ export function getModalNavbarOptions(title) {
  * @returns {Object} - Corresponding navbar options containing headerTitle, headerTitle and headerTitle
  */
 export function getOnboardingNavbarOptions(
-  route,
-  { headerLeft } = {},
-  themeColors,
-) {
-  const headerLeftHide = headerLeft || route.params?.headerLeft;
+  route: RouteProp<ParamListBase, string>,
+  { headerLeft }: { headerLeft?: () => React.JSX.Element | null } = {},
+  themeColors: Theme['colors'],
+): NavigationOptions {
+  const headerLeftHide = headerLeft || (route.params as { headerLeft?: () => React.JSX.Element | null })?.headerLeft;
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -682,7 +728,7 @@ export function getOnboardingNavbarOptions(
  *
  * @returns {Object} - Corresponding navbar options containing headerTitle
  */
-export function getTransparentOnboardingNavbarOptions(themeColors) {
+export function getTransparentOnboardingNavbarOptions(themeColors: Theme['colors']): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -716,7 +762,7 @@ export function getTransparentOnboardingNavbarOptions(themeColors) {
  *
  * @returns {Object} - Corresponding navbar options containing headerTitle and a back button
  */
-export function getTransparentBackOnboardingNavbarOptions(themeColors) {
+export function getTransparentBackOnboardingNavbarOptions(themeColors: Theme['colors']): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -752,7 +798,7 @@ export function getTransparentBackOnboardingNavbarOptions(themeColors) {
  *
  * @returns {Object} - Corresponding navbar options containing headerLeft
  */
-export function getOptinMetricsNavbarOptions(themeColors) {
+export function getOptinMetricsNavbarOptions(themeColors: Theme['colors']): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -789,11 +835,11 @@ export function getOptinMetricsNavbarOptions(themeColors) {
  * @returns {Object} - Corresponding navbar options containing headerTitle, headerTitle and headerTitle
  */
 export function getClosableNavigationOptions(
-  title,
-  backButtonText,
-  navigation,
-  themeColors,
-) {
+  title: string,
+  backButtonText: string,
+  navigation: NavigationProp<ParamListBase>,
+  themeColors: Theme['colors'],
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -816,7 +862,7 @@ export function getClosableNavigationOptions(
   });
 
   function navigationPop() {
-    navigation.pop();
+    (navigation as StackNavigationProp).pop();
   }
 
   return {
@@ -855,7 +901,7 @@ export function getClosableNavigationOptions(
  *
  * @returns {Object} - Corresponding navbar options containing headerTitle, headerTitle and headerTitle
  */
-export function getOfflineModalNavbar() {
+export function getOfflineModalNavbar(): NavigationOptions {
   return {
     headerShown: false,
   };
@@ -881,20 +927,20 @@ export function getOfflineModalNavbar() {
  * @returns {Object} An object containing the navbar options for the wallet screen
  */
 export function getWalletNavbarOptions(
-  accountActionsRef,
-  selectedInternalAccount,
-  accountName,
-  accountAvatarType,
-  networkName,
-  networkImageSource,
-  onPressTitle,
-  navigation,
-  themeColors,
-  isNotificationEnabled,
-  isBackupAndSyncEnabled,
-  unreadNotificationCount,
-  readNotificationCount,
-) {
+  accountActionsRef: React.RefObject<unknown>,
+  selectedInternalAccount: InternalAccount,
+  accountName: string,
+  accountAvatarType: AvatarAccountType,
+  networkName: string,
+  networkImageSource: ImageSourcePropType,
+  onPressTitle: () => void,
+  navigation: NavigationProp<ParamListBase>,
+  themeColors: Theme['colors'],
+  isNotificationEnabled: boolean,
+  isBackupAndSyncEnabled: boolean | null,
+  unreadNotificationCount: number,
+  readNotificationCount: number,
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background,
@@ -1099,14 +1145,14 @@ export function getWalletNavbarOptions(
  * @returns {Object} - Corresponding navbar options containing headerTitle and headerTitle
  */
 export function getImportTokenNavbarOptions(
-  title,
-  translate,
-  navigation,
-  themeColors,
-  disableNetwork = false,
-  contentOffset = 0,
-  onClose = undefined,
-) {
+  title: string,
+  translate: boolean,
+  navigation: NavigationProp<ParamListBase>,
+  themeColors: Theme['colors'],
+  disableNetwork: boolean = false,
+  contentOffset: number = 0,
+  onClose?: () => void,
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1171,11 +1217,11 @@ export function getImportTokenNavbarOptions(
 }
 
 export function getNftDetailsNavbarOptions(
-  navigation,
-  themeColors,
-  onRightPress,
-  contentOffset = 0,
-) {
+  navigation: NavigationProp<ParamListBase>,
+  themeColors: Theme['colors'],
+  onRightPress?: () => void,
+  contentOffset: number = 0,
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1229,10 +1275,10 @@ export function getNftDetailsNavbarOptions(
 }
 
 export function getNftFullImageNavbarOptions(
-  navigation,
-  themeColors,
-  contentOffset = 0,
-) {
+  navigation: NavigationProp<ParamListBase>,
+  themeColors: Theme['colors'],
+  contentOffset: number = 0,
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1286,15 +1332,15 @@ export function getNftFullImageNavbarOptions(
  * @returns {Object} - Corresponding navbar options containing headerTitle and headerTitle
  */
 export function getNetworkNavbarOptions(
-  title,
-  translate,
-  navigation,
-  themeColors,
-  onRightPress = undefined,
-  disableNetwork = false,
-  contentOffset = 0,
-  networkName = '',
-) {
+  title: string,
+  translate: boolean,
+  navigation: NavigationProp<ParamListBase>,
+  themeColors: Theme['colors'],
+  onRightPress?: () => void,
+  disableNetwork: boolean = false,
+  contentOffset: number = 0,
+  networkName: string = '',
+): NavigationOptions {
   return {
     header: () => (
       <HeaderBase
@@ -1337,7 +1383,11 @@ export function getNetworkNavbarOptions(
  *
  * @returns {Object} - Corresponding navbar options containing headerTitle and headerTitle
  */
-export function getWebviewNavbar(navigation, route, themeColors) {
+export function getWebviewNavbar(
+  navigation: NavigationProp<ParamListBase>,
+  route: RouteProp<ParamListBase, string>,
+  themeColors: Theme['colors'],
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -1356,8 +1406,8 @@ export function getWebviewNavbar(navigation, route, themeColors) {
     },
   });
 
-  const title = route.params?.title ?? '';
-  const share = route.params?.dispatch;
+  const title = (route.params as { title?: string })?.title ?? '';
+  const share = (route.params as { dispatch?: () => void })?.dispatch;
   return {
     headerTitle: () => (
       <Text style={innerStyles.headerTitleStyle}>{title}</Text>
@@ -1366,7 +1416,7 @@ export function getWebviewNavbar(navigation, route, themeColors) {
       Device.isAndroid() ? (
         // eslint-disable-next-line react/jsx-no-bind
         <TouchableOpacity
-          onPress={() => navigation.pop()}
+          onPress={() => (navigation as StackNavigationProp).pop()}
           style={styles.backButton}
           {...generateTestId(Platform, BACK_BUTTON_SIMPLE_WEBVIEW)}
         >
@@ -1379,7 +1429,7 @@ export function getWebviewNavbar(navigation, route, themeColors) {
       ) : (
         // eslint-disable-next-line react/jsx-no-bind
         <TouchableOpacity
-          onPress={() => navigation.pop()}
+          onPress={() => (navigation as StackNavigationProp).pop()}
           style={styles.backButton}
         >
           <IonicIcon
@@ -1411,7 +1461,11 @@ export function getWebviewNavbar(navigation, route, themeColors) {
   };
 }
 
-export function getPaymentSelectorMethodNavbar(navigation, onPop, themeColors) {
+export function getPaymentSelectorMethodNavbar(
+  navigation: NavigationProp<ParamListBase>,
+  onPop?: () => void,
+  themeColors: Theme['colors'],
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1455,11 +1509,11 @@ export function getPaymentSelectorMethodNavbar(navigation, onPop, themeColors) {
 }
 
 export function getPaymentMethodApplePayNavbar(
-  navigation,
-  onPop,
-  onExit,
-  themeColors,
-) {
+  navigation: NavigationProp<ParamListBase>,
+  onPop?: () => void,
+  onExit?: () => void,
+  themeColors: Theme['colors'],
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -1529,7 +1583,12 @@ export function getPaymentMethodApplePayNavbar(
   };
 }
 
-export function getTransakWebviewNavbar(navigation, route, onPop, themeColors) {
+export function getTransakWebviewNavbar(
+  navigation: NavigationProp<ParamListBase>,
+  route: RouteProp<ParamListBase, string>,
+  onPop?: () => void,
+  themeColors: Theme['colors'],
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -1587,7 +1646,11 @@ export function getTransakWebviewNavbar(navigation, route, onPop, themeColors) {
   };
 }
 
-export function getSwapsAmountNavbar(navigation, route, themeColors) {
+export function getSwapsAmountNavbar(
+  navigation: NavigationProp<ParamListBase>,
+  route: RouteProp<ParamListBase, string>,
+  themeColors: Theme['colors'],
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1609,7 +1672,7 @@ export function getSwapsAmountNavbar(navigation, route, themeColors) {
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
       <TouchableOpacity
-        onPress={() => navigation.dangerouslyGetParent()?.pop()}
+        onPress={() => ((navigation as StackNavigationProp).dangerouslyGetParent() as StackNavigationProp | undefined)?.pop()}
         style={styles.closeButton}
       >
         <Text style={innerStyles.headerButtonText}>
@@ -1621,7 +1684,11 @@ export function getSwapsAmountNavbar(navigation, route, themeColors) {
   };
 }
 
-export function getSwapsQuotesNavbar(navigation, route, themeColors) {
+export function getSwapsQuotesNavbar(
+  navigation: NavigationProp<ParamListBase>,
+  route: RouteProp<ParamListBase, string>,
+  themeColors: Theme['colors'],
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1637,13 +1704,13 @@ export function getSwapsQuotesNavbar(navigation, route, themeColors) {
       elevation: 0,
     },
   });
-  const title = route.params?.title ?? 'Swap';
-  const leftActionText = route.params?.leftAction ?? strings('navigation.back');
+  const title = (route.params as { title?: string })?.title ?? 'Swap';
+  const leftActionText = (route.params as { leftAction?: string })?.leftAction ?? strings('navigation.back');
 
   const leftAction = () => {
-    const trade = route.params?.requestedTrade;
-    const selectedQuote = route.params?.selectedQuote;
-    const quoteBegin = route.params?.quoteBegin;
+    const trade = (route.params as { requestedTrade?: any })?.requestedTrade;
+    const selectedQuote = (route.params as { selectedQuote?: any })?.selectedQuote;
+    const quoteBegin = (route.params as { quoteBegin?: number })?.quoteBegin;
     if (!selectedQuote) {
       trackEvent(
         MetricsEventBuilder.createEventBuilder(
@@ -1663,13 +1730,13 @@ export function getSwapsQuotesNavbar(navigation, route, themeColors) {
           .build(),
       );
     }
-    navigation.pop();
+    (navigation as StackNavigationProp).pop();
   };
 
   const rightAction = () => {
-    const trade = route.params?.requestedTrade;
-    const selectedQuote = route.params?.selectedQuote;
-    const quoteBegin = route.params?.quoteBegin;
+    const trade = (route.params as { requestedTrade?: any })?.requestedTrade;
+    const selectedQuote = (route.params as { selectedQuote?: any })?.selectedQuote;
+    const quoteBegin = (route.params as { quoteBegin?: number })?.quoteBegin;
     if (!selectedQuote) {
       trackEvent(
         MetricsEventBuilder.createEventBuilder(
@@ -1689,7 +1756,7 @@ export function getSwapsQuotesNavbar(navigation, route, themeColors) {
           .build(),
       );
     }
-    navigation.dangerouslyGetParent()?.pop();
+    ((navigation as StackNavigationProp).dangerouslyGetParent() as StackNavigationProp | undefined)?.pop();
   };
 
   return {
@@ -1724,7 +1791,11 @@ export function getSwapsQuotesNavbar(navigation, route, themeColors) {
   };
 }
 
-export function getBridgeNavbar(navigation, route, themeColors) {
+export function getBridgeNavbar(
+  navigation: NavigationProp<ParamListBase>,
+  route: RouteProp<ParamListBase, string>,
+  themeColors: Theme['colors'],
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1739,13 +1810,13 @@ export function getBridgeNavbar(navigation, route, themeColors) {
   });
 
   let title = `${strings('swaps.title')}/${strings('bridge.title')}`;
-  if (route.params?.bridgeViewMode === BridgeViewMode.Bridge) {
+  if ((route.params as { bridgeViewMode?: BridgeViewMode })?.bridgeViewMode === BridgeViewMode.Bridge) {
     title = strings('bridge.title');
-  } else if (route.params?.bridgeViewMode === BridgeViewMode.Swap) {
+  } else if ((route.params as { bridgeViewMode?: BridgeViewMode })?.bridgeViewMode === BridgeViewMode.Swap) {
     title = strings('swaps.title');
   }
 
-  const leftAction = () => navigation.pop();
+  const leftAction = () => (navigation as StackNavigationProp).pop();
 
   return {
     headerTitle: () => (
@@ -1764,7 +1835,7 @@ export function getBridgeNavbar(navigation, route, themeColors) {
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
       <TouchableOpacity
-        onPress={() => navigation.dangerouslyGetParent()?.pop()}
+        onPress={() => ((navigation as StackNavigationProp).dangerouslyGetParent() as StackNavigationProp | undefined)?.pop()}
         style={styles.closeButton}
       >
         <Text style={innerStyles.headerButtonText}>
@@ -1776,7 +1847,7 @@ export function getBridgeNavbar(navigation, route, themeColors) {
   };
 }
 
-export function getBridgeTransactionDetailsNavbar(navigation) {
+export function getBridgeTransactionDetailsNavbar(navigation: NavigationProp<ParamListBase>): NavigationOptions {
   const leftAction = () => navigation.pop();
 
   return {
@@ -1797,11 +1868,11 @@ export function getBridgeTransactionDetailsNavbar(navigation) {
 }
 
 export function getFiatOnRampAggNavbar(
-  navigation,
-  { title = 'Buy', showBack = true, showCancel = true } = {},
-  themeColors,
-  onCancel,
-) {
+  navigation: NavigationProp<ParamListBase>,
+  { title = 'Buy', showBack = true, showCancel = true }: { title?: string; showBack?: boolean; showCancel?: boolean } = {},
+  themeColors: Theme['colors'],
+  onCancel?: () => void,
+): NavigationOptions {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1881,7 +1952,7 @@ export function getFiatOnRampAggNavbar(
   };
 }
 
-export const getEditAccountNameNavBarOptions = (goBack, themeColors) => {
+export const getEditAccountNameNavBarOptions = (goBack: () => void, themeColors: Theme['colors']): NavigationOptions => {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1910,7 +1981,7 @@ export const getEditAccountNameNavBarOptions = (goBack, themeColors) => {
   };
 };
 
-export const getSettingsNavigationOptions = (title, themeColors) => {
+export const getSettingsNavigationOptions = (title: string, themeColors: Theme['colors']): NavigationOptions => {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1935,12 +2006,12 @@ export const getSettingsNavigationOptions = (title, themeColors) => {
  * @returns Staking Navbar Component.
  */
 export function getStakingNavbar(
-  title,
-  navigation,
-  themeColors,
-  navBarOptions,
-  metricsOptions,
-) {
+  title: string,
+  navigation: NavigationProp<ParamListBase>,
+  themeColors: Theme['colors'],
+  navBarOptions?: NavBarOptions,
+  metricsOptions?: MetricsOptions,
+): NavigationOptions {
   const {
     hasBackButton = true,
     hasCancelButton = true,
