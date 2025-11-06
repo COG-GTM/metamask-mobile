@@ -8,6 +8,20 @@ import type { ImageSourcePropType, StyleProp, ViewStyle, TextStyle } from 'react
 import type { IMetaMetricsEvent } from '../../../core/Analytics';
 import NavbarTitle from '../NavbarTitle';
 import ModalNavbarTitle from '../ModalNavbarTitle';
+
+const TypedNavbarTitle = NavbarTitle as React.ComponentType<{
+  providerConfig?: object;
+  title?: string;
+  translate?: boolean;
+  disableNetwork?: boolean;
+  navigation?: NavigationProp<ParamListBase>;
+  metrics?: object;
+  showSelectedNetwork?: boolean;
+  networkName?: string;
+  children?: React.ReactNode;
+  chainId?: string;
+  selectedNetworkName?: string;
+}>;
 import AccountRightButton from '../AccountRightButton';
 import {
   Alert,
@@ -212,7 +226,7 @@ export function getTransactionsNavbarOptions(
   });
 
   return {
-    headerTitle: () => <NavbarTitle title={title} />,
+    headerTitle: () => <TypedNavbarTitle title={title} />,
     headerLeft: undefined,
     headerRight: () => (
       <AccountRightButton
@@ -523,7 +537,7 @@ export function getTransactionOptionsTitle(
   const title = transactionMode === 'edit' ? 'transaction.edit' : _title;
 
   return {
-    headerTitle: () => <NavbarTitle title={title} disableNetwork />,
+    headerTitle: () => <TypedNavbarTitle title={title} disableNetwork />,
     headerLeft: () =>
       transactionMode !== 'edit' ? (
         <TouchableOpacity
@@ -566,7 +580,7 @@ export function getTransactionOptionsTitle(
 
 export function getApproveNavbar(title: string): Partial<StackNavigationOptions> {
   return {
-    headerTitle: () => <NavbarTitle title={title} disableNetwork />,
+    headerTitle: () => <TypedNavbarTitle title={title} disableNetwork />,
     headerLeft: () => <View />,
     headerRight: () => <View />,
   };
@@ -602,7 +616,7 @@ export function getSendFlowTitle(
   const rightAction = () => {
     const providerType = (route?.params as { providerType?: string })?.providerType ?? '';
     const additionalTransactionMetricsParams =
-      getBlockaidTransactionMetricsParams(transaction);
+      getBlockaidTransactionMetricsParams(transaction as any);
     trackEvent(
       MetricsEventBuilder.createEventBuilder(MetaMetricsEvents.SEND_FLOW_CANCEL)
         .addProperties({
@@ -623,7 +637,7 @@ export function getSendFlowTitle(
   const titleToRender = title;
 
   return {
-    headerTitle: () => <NavbarTitle title={titleToRender} disableNetwork />,
+    headerTitle: () => <TypedNavbarTitle title={titleToRender} disableNetwork />,
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
       <TouchableOpacity
@@ -931,7 +945,7 @@ export function getWalletNavbarOptions(
 ): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
-      backgroundColor: themeColors.background,
+      backgroundColor: themeColors.background.default,
       shadowColor: importedColors.transparent,
       elevation: 0,
     },
@@ -953,7 +967,7 @@ export function getWalletNavbarOptions(
   );
   ///: END:ONLY_INCLUDE_IF
 
-  const onScanSuccess = (data, content) => {
+  const onScanSuccess = (data: { private_key?: string; target_address?: string; chain_id?: number; seed?: string }, content?: string) => {
     if (data.private_key) {
       Alert.alert(
         strings('wallet.private_key_detected'),
@@ -968,7 +982,7 @@ export function getWalletNavbarOptions(
             text: strings('wallet.yes'),
             onPress: async () => {
               try {
-                await importAccountFromPrivateKey(data.private_key);
+                await importAccountFromPrivateKey(data.private_key!);
                 navigation.navigate('ImportPrivateKeyView', {
                   screen: 'ImportPrivateKeySuccess',
                 });
@@ -990,7 +1004,7 @@ export function getWalletNavbarOptions(
       );
     } else {
       setTimeout(() => {
-        DeeplinkManager.parse(content, {
+        DeeplinkManager.parse(content || '', {
           origin: AppConstants.DEEPLINKS.ORIGIN_QR_CODE,
         });
       }, 500);
@@ -1054,7 +1068,7 @@ export function getWalletNavbarOptions(
     headerTitle: () => (
       <View style={innerStyles.headerTitle}>
         <PickerAccount
-          ref={accountActionsRef}
+          ref={accountActionsRef as any}
           accountAddress={formattedAddress}
           accountName={accountName}
           accountAvatarType={accountAvatarType}
@@ -1065,7 +1079,6 @@ export function getWalletNavbarOptions(
             getLabelTextByAddress(formattedAddress) || undefined
           }
           showAddress
-          cellAccountContainerStyle={styles.account}
           testID={WalletViewSelectorsIDs.ACCOUNT_ICON}
         />
       </View>
@@ -1086,9 +1099,8 @@ export function getWalletNavbarOptions(
               iconColor={IconColor.Default}
               onPress={handleNotificationOnPress}
               iconName={IconName.Notification}
-              size={IconSize.Xl}
+              size={ButtonIconSizes.Lg}
               testID={WalletViewSelectorsIDs.WALLET_NOTIFICATIONS_BUTTON}
-              style={styles.notificationButton}
             />
 
             {/* Badge Dot */}
@@ -1099,7 +1111,7 @@ export function getWalletNavbarOptions(
                   {
                     backgroundColor: unreadNotificationCount
                       ? themeColors.error.default
-                      : themeColors.background.transparent,
+                      : 'transparent',
                   },
                 ]}
               />
@@ -1111,7 +1123,7 @@ export function getWalletNavbarOptions(
           iconColor={IconColor.Default}
           onPress={openQRScanner}
           iconName={IconName.ScanBarcode}
-          size={IconSize.Xl}
+          size={ButtonIconSizes.Lg}
           testID={WalletViewSelectorsIDs.WALLET_SCAN_BUTTON}
         />
       </View>
@@ -1149,7 +1161,7 @@ export function getImportTokenNavbarOptions(
     },
     headerShadow: {
       elevation: 2,
-      shadowColor: themeColors.background.primary,
+      shadowColor: themeColors.shadow.default,
       shadowOpacity: contentOffset < 20 ? contentOffset / 100 : 0.2,
       shadowOffset: { height: 4, width: 0 },
       shadowRadius: 8,
@@ -1164,13 +1176,13 @@ export function getImportTokenNavbarOptions(
   });
   return {
     headerTitle: () => (
-      <NavbarTitle
+      <TypedNavbarTitle
         disableNetwork={disableNetwork}
         showSelectedNetwork={false}
         translate={translate}
       >
         {title}
-      </NavbarTitle>
+      </TypedNavbarTitle>
     ),
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
@@ -1199,7 +1211,7 @@ export function getImportTokenNavbarOptions(
     headerLeft: undefined,
     headerStyle: [
       innerStyles.headerStyle,
-      contentOffset && innerStyles.headerShadow,
+      ...(contentOffset ? [innerStyles.headerShadow] : []),
     ],
   };
 }
@@ -1218,7 +1230,7 @@ export function getNftDetailsNavbarOptions(
     },
     headerShadow: {
       elevation: 2,
-      shadowColor: themeColors.background.primary,
+      shadowColor: themeColors.shadow.default,
       shadowOpacity: contentOffset < 20 ? contentOffset / 100 : 0.2,
       shadowOffset: { height: 4, width: 0 },
       shadowRadius: 8,
@@ -1233,7 +1245,7 @@ export function getNftDetailsNavbarOptions(
   return {
     headerLeft: () => (
       <TouchableOpacity
-        onPress={() => navigation.pop()}
+        onPress={() => (navigation as StackNavigationProp).pop()}
         style={styles.backButton}
         testID={CommonSelectorsIDs.BACK_ARROW_BUTTON}
       >
@@ -1257,7 +1269,7 @@ export function getNftDetailsNavbarOptions(
       : () => <View />,
     headerStyle: [
       innerStyles.headerStyle,
-      contentOffset && innerStyles.headerShadow,
+      ...(contentOffset ? [innerStyles.headerShadow] : []),
     ],
   };
 }
@@ -1275,7 +1287,7 @@ export function getNftFullImageNavbarOptions(
     },
     headerShadow: {
       elevation: 2,
-      shadowColor: themeColors.background.primary,
+      shadowColor: themeColors.shadow.default,
       shadowOpacity: contentOffset < 20 ? contentOffset / 100 : 0.2,
       shadowOffset: { height: 4, width: 0 },
       shadowRadius: 8,
@@ -1291,7 +1303,7 @@ export function getNftFullImageNavbarOptions(
     headerRight: () => (
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.pop()}
+        onPress={() => (navigation as StackNavigationProp).pop()}
       >
         <Icon
           name={IconName.Close}
@@ -1303,7 +1315,7 @@ export function getNftFullImageNavbarOptions(
     headerLeft: () => <View />,
     headerStyle: [
       innerStyles.headerStyle,
-      contentOffset && innerStyles.headerShadow,
+      ...(contentOffset ? [innerStyles.headerShadow] : []),
     ],
   };
 }
@@ -1336,7 +1348,7 @@ export function getNetworkNavbarOptions(
         startAccessory={
           <ButtonIcon
             style={styles.headerLeftButton}
-            onPress={() => navigation.pop()}
+            onPress={() => (navigation as StackNavigationProp).pop()}
             testID={CommonSelectorsIDs.BACK_ARROW_BUTTON}
             size={ButtonIconSizes.Lg}
             iconName={IconName.ArrowLeft}
@@ -1355,7 +1367,7 @@ export function getNetworkNavbarOptions(
           )
         }
       >
-        <NavbarTitle
+        <TypedNavbarTitle
           disableNetwork={disableNetwork}
           title={title}
           translate={translate}
@@ -1390,7 +1402,7 @@ export function getWebviewNavbar(
       elevation: 0,
     },
     headerIcon: {
-      color: themeColors.default,
+      color: themeColors.primary.default,
     },
   });
 
@@ -1451,8 +1463,8 @@ export function getWebviewNavbar(
 
 export function getPaymentSelectorMethodNavbar(
   navigation: NavigationProp<ParamListBase>,
-  onPop?: () => void,
   themeColors: Theme['colors'],
+  onPop?: () => void,
 ): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
@@ -1654,7 +1666,7 @@ export function getSwapsAmountNavbar(
   const title = route.params?.title ?? 'Swap';
   return {
     headerTitle: () => (
-      <NavbarTitle title={title} disableNetwork translate={false} />
+      <TypedNavbarTitle title={title} disableNetwork translate={false} />
     ),
     headerLeft: () => <View />,
     headerRight: () => (
@@ -1710,7 +1722,7 @@ export function getSwapsQuotesNavbar(
             request_type: trade.request_type,
             custom_slippage: trade.custom_slippage,
             chain_id: trade.chain_id,
-            responseTime: new Date().getTime() - quoteBegin,
+            responseTime: quoteBegin ? new Date().getTime() - quoteBegin : 0,
           })
           .addSensitiveProperties({
             token_from_amount: trade.token_from_amount,
@@ -1736,7 +1748,7 @@ export function getSwapsQuotesNavbar(
             request_type: trade.request_type,
             custom_slippage: trade.custom_slippage,
             chain_id: trade.chain_id,
-            responseTime: new Date().getTime() - quoteBegin,
+            responseTime: quoteBegin ? new Date().getTime() - quoteBegin : 0,
           })
           .addSensitiveProperties({
             token_from_amount: trade.token_from_amount,
@@ -1749,7 +1761,7 @@ export function getSwapsQuotesNavbar(
 
   return {
     headerTitle: () => (
-      <NavbarTitle title={title} disableNetwork translate={false} />
+      <TypedNavbarTitle title={title} disableNetwork translate={false} />
     ),
     headerLeft: () =>
       Device.isAndroid() ? (
@@ -1888,7 +1900,7 @@ export function getFiatOnRampAggNavbar(
 
   return {
     headerTitle: () => (
-      <NavbarTitle title={title} disableNetwork translate={false} />
+      <TypedNavbarTitle title={title} disableNetwork translate={false} />
     ),
     headerLeft: () => {
       if (!showBack) return <View />;
