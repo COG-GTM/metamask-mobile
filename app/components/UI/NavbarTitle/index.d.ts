@@ -15,5 +15,5 @@ export interface NavbarTitleProps {
   selectedNetworkName?: string;
 }
 
-declare const NavbarTitle: React.ComponentType<NavbarTitleProps>;
+declare function NavbarTitle(props: NavbarTitleProps): React.JSX.Element;
 export default NavbarTitle;

@@ -1,6 +1,7 @@
 /* eslint-disable react/display-name */
 import React from 'react';
 import type { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
+import type { StackNavigationOptions } from '@react-navigation/stack';
 import type { Theme } from '../../../util/theme/models';
 import type { InternalAccount } from '@metamask/keyring-internal-api';
 import type { ImageSourcePropType, StyleProp, ViewStyle, TextStyle } from 'react-native';
@@ -77,19 +78,6 @@ type StackNavigationProp = NavigationProp<ParamListBase> & {
   pop: () => void;
   dangerouslyGetParent: () => (NavigationProp<ParamListBase> & { pop: () => void }) | undefined;
 };
-
-interface NavigationOptions {
-  headerTitle?: string | React.JSX.Element | (() => React.JSX.Element);
-  headerLeft?: (() => React.JSX.Element | null) | null;
-  headerRight?: (() => React.JSX.Element | null) | null;
-  headerStyle?: StyleProp<ViewStyle> | StyleProp<ViewStyle>[];
-  headerTitleStyle?: StyleProp<TextStyle>;
-  headerBackTitle?: string;
-  headerTintColor?: string;
-  headerShown?: boolean;
-  title?: string | null;
-  header?: () => React.JSX.Element;
-}
 
 interface NavBarOptions {
   backgroundColor?: string;
@@ -206,7 +194,7 @@ export function getTransactionsNavbarOptions(
   _: unknown,
   selectedAddress: string,
   handleRightButtonPress: () => void,
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -225,7 +213,7 @@ export function getTransactionsNavbarOptions(
 
   return {
     headerTitle: () => <NavbarTitle title={title} />,
-    headerLeft: null,
+    headerLeft: undefined,
     headerRight: () => (
       <AccountRightButton
         selectedAddress={selectedAddress}
@@ -254,7 +242,7 @@ export function getNavigationOptionsTitle(
   isFullScreenModal: boolean,
   themeColors: Theme['colors'],
   navigationPopEvent: IMetaMetricsEvent | null = null,
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -276,7 +264,7 @@ export function getNavigationOptionsTitle(
 
   return {
     title,
-    headerTitle: <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText>,
+    headerTitle: () => <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText>,
     headerRight: () =>
       isFullScreenModal ? (
         <ButtonIcon
@@ -315,7 +303,7 @@ export function getEditableOptions(
   navigation: NavigationProp<ParamListBase>,
   route: RouteProp<ParamListBase, string>,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -394,7 +382,7 @@ export function getPaymentRequestOptionsTitle(
   navigation: NavigationProp<ParamListBase>,
   route: RouteProp<ParamListBase, string>,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const goBack = (route.params as { dispatch?: () => void })?.dispatch;
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
@@ -459,7 +447,7 @@ export function getPaymentRequestOptionsTitle(
 export function getPaymentRequestSuccessOptionsTitle(
   navigation: NavigationProp<ParamListBase>,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -473,7 +461,7 @@ export function getPaymentRequestSuccessOptionsTitle(
 
   return {
     headerStyle: innerStyles.headerStyle,
-    title: null,
+    title: undefined,
     headerLeft: () => <View />,
     headerRight: () => (
       <TouchableOpacity
@@ -508,7 +496,7 @@ export function getTransactionOptionsTitle(
   navigation: NavigationProp<ParamListBase>,
   route: RouteProp<ParamListBase, string>,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -576,7 +564,7 @@ export function getTransactionOptionsTitle(
   };
 }
 
-export function getApproveNavbar(title: string): NavigationOptions {
+export function getApproveNavbar(title: string): Partial<StackNavigationOptions> {
   return {
     headerTitle: () => <NavbarTitle title={title} disableNetwork />,
     headerLeft: () => <View />,
@@ -598,7 +586,7 @@ export function getSendFlowTitle(
   themeColors: Theme['colors'],
   resetTransaction: () => void,
   transaction: unknown,
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -673,7 +661,7 @@ export function getSendFlowTitle(
  * @param {string} title - Title in string format
  * @returns {Object} - Corresponding navbar options containing headerTitle
  */
-export function getModalNavbarOptions(title: string): NavigationOptions {
+export function getModalNavbarOptions(title: string): Partial<StackNavigationOptions> {
   return {
     headerTitle: () => <ModalNavbarTitle title={title} />,
   };
@@ -690,7 +678,7 @@ export function getOnboardingNavbarOptions(
   route: RouteProp<ParamListBase, string>,
   { headerLeft }: { headerLeft?: () => React.JSX.Element | null } = {},
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const headerLeftHide = headerLeft || (route.params as { headerLeft?: () => React.JSX.Element | null })?.headerLeft;
   const innerStyles = StyleSheet.create({
     headerStyle: {
@@ -728,7 +716,7 @@ export function getOnboardingNavbarOptions(
  *
  * @returns {Object} - Corresponding navbar options containing headerTitle
  */
-export function getTransparentOnboardingNavbarOptions(themeColors: Theme['colors']): NavigationOptions {
+export function getTransparentOnboardingNavbarOptions(themeColors: Theme['colors']): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -762,7 +750,7 @@ export function getTransparentOnboardingNavbarOptions(themeColors: Theme['colors
  *
  * @returns {Object} - Corresponding navbar options containing headerTitle and a back button
  */
-export function getTransparentBackOnboardingNavbarOptions(themeColors: Theme['colors']): NavigationOptions {
+export function getTransparentBackOnboardingNavbarOptions(themeColors: Theme['colors']): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -798,7 +786,7 @@ export function getTransparentBackOnboardingNavbarOptions(themeColors: Theme['co
  *
  * @returns {Object} - Corresponding navbar options containing headerLeft
  */
-export function getOptinMetricsNavbarOptions(themeColors: Theme['colors']): NavigationOptions {
+export function getOptinMetricsNavbarOptions(themeColors: Theme['colors']): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -839,7 +827,7 @@ export function getClosableNavigationOptions(
   backButtonText: string,
   navigation: NavigationProp<ParamListBase>,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -901,7 +889,7 @@ export function getClosableNavigationOptions(
  *
  * @returns {Object} - Corresponding navbar options containing headerTitle, headerTitle and headerTitle
  */
-export function getOfflineModalNavbar(): NavigationOptions {
+export function getOfflineModalNavbar(): Partial<StackNavigationOptions> {
   return {
     headerShown: false,
   };
@@ -940,7 +928,7 @@ export function getWalletNavbarOptions(
   isBackupAndSyncEnabled: boolean | null,
   unreadNotificationCount: number,
   readNotificationCount: number,
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background,
@@ -1152,7 +1140,7 @@ export function getImportTokenNavbarOptions(
   disableNetwork: boolean = false,
   contentOffset: number = 0,
   onClose?: () => void,
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1208,7 +1196,7 @@ export function getImportTokenNavbarOptions(
         />
       </TouchableOpacity>
     ),
-    headerLeft: null,
+    headerLeft: undefined,
     headerStyle: [
       innerStyles.headerStyle,
       contentOffset && innerStyles.headerShadow,
@@ -1221,7 +1209,7 @@ export function getNftDetailsNavbarOptions(
   themeColors: Theme['colors'],
   onRightPress?: () => void,
   contentOffset: number = 0,
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1278,7 +1266,7 @@ export function getNftFullImageNavbarOptions(
   navigation: NavigationProp<ParamListBase>,
   themeColors: Theme['colors'],
   contentOffset: number = 0,
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1340,7 +1328,7 @@ export function getNetworkNavbarOptions(
   disableNetwork: boolean = false,
   contentOffset: number = 0,
   networkName: string = '',
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   return {
     header: () => (
       <HeaderBase
@@ -1387,7 +1375,7 @@ export function getWebviewNavbar(
   navigation: NavigationProp<ParamListBase>,
   route: RouteProp<ParamListBase, string>,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -1465,7 +1453,7 @@ export function getPaymentSelectorMethodNavbar(
   navigation: NavigationProp<ParamListBase>,
   onPop?: () => void,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1513,7 +1501,7 @@ export function getPaymentMethodApplePayNavbar(
   onPop?: () => void,
   onExit?: () => void,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -1588,7 +1576,7 @@ export function getTransakWebviewNavbar(
   route: RouteProp<ParamListBase, string>,
   onPop?: () => void,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -1650,7 +1638,7 @@ export function getSwapsAmountNavbar(
   navigation: NavigationProp<ParamListBase>,
   route: RouteProp<ParamListBase, string>,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1688,7 +1676,7 @@ export function getSwapsQuotesNavbar(
   navigation: NavigationProp<ParamListBase>,
   route: RouteProp<ParamListBase, string>,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1795,7 +1783,7 @@ export function getBridgeNavbar(
   navigation: NavigationProp<ParamListBase>,
   route: RouteProp<ParamListBase, string>,
   themeColors: Theme['colors'],
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1847,7 +1835,7 @@ export function getBridgeNavbar(
   };
 }
 
-export function getBridgeTransactionDetailsNavbar(navigation: NavigationProp<ParamListBase>): NavigationOptions {
+export function getBridgeTransactionDetailsNavbar(navigation: NavigationProp<ParamListBase>): Partial<StackNavigationOptions> {
   const leftAction = () => navigation.pop();
 
   return {
@@ -1872,7 +1860,7 @@ export function getFiatOnRampAggNavbar(
   { title = 'Buy', showBack = true, showCancel = true }: { title?: string; showBack?: boolean; showCancel?: boolean } = {},
   themeColors: Theme['colors'],
   onCancel?: () => void,
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1967,8 +1955,8 @@ export const getEditAccountNameNavBarOptions = (goBack: () => void, themeColors:
   });
 
   return {
-    headerTitle: <Text>{strings('account_actions.edit_name')}</Text>,
-    headerLeft: null,
+    headerTitle: () => <Text>{strings('account_actions.edit_name')}</Text>,
+    headerLeft: undefined,
     headerRight: () => (
       <ButtonIcon
         iconName={IconName.Close}
@@ -1981,7 +1969,7 @@ export const getEditAccountNameNavBarOptions = (goBack: () => void, themeColors:
   };
 };
 
-export const getSettingsNavigationOptions = (title: string, themeColors: Theme['colors']): NavigationOptions => {
+export const getSettingsNavigationOptions = (title: string, themeColors: Theme['colors']): Partial<StackNavigationOptions> => {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1990,8 +1978,8 @@ export const getSettingsNavigationOptions = (title: string, themeColors: Theme['
     },
   });
   return {
-    headerLeft: null,
-    headerTitle: <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText>,
+    headerLeft: undefined,
+    headerTitle: () => <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText>,
     ...innerStyles,
   };
 };
@@ -2011,7 +1999,7 @@ export function getStakingNavbar(
   themeColors: Theme['colors'],
   navBarOptions?: NavBarOptions,
   metricsOptions?: MetricsOptions,
-): NavigationOptions {
+): Partial<StackNavigationOptions> {
   const {
     hasBackButton = true,
     hasCancelButton = true,
