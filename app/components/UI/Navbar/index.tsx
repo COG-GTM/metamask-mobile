@@ -226,7 +226,7 @@ export function getTransactionsNavbarOptions(
   });
 
   return {
-    headerTitle: () => <TypedNavbarTitle title={title} />,
+    headerTitle: <TypedNavbarTitle title={title} /> as any,
     headerLeft: undefined,
     headerRight: () => (
       <AccountRightButton
@@ -278,7 +278,7 @@ export function getNavigationOptionsTitle(
 
   return {
     title,
-    headerTitle: () => <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText>,
+    headerTitle: <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText> as any,
     headerRight: () =>
       isFullScreenModal ? (
         <ButtonIcon
@@ -537,7 +537,7 @@ export function getTransactionOptionsTitle(
   const title = transactionMode === 'edit' ? 'transaction.edit' : _title;
 
   return {
-    headerTitle: () => <TypedNavbarTitle title={title} disableNetwork />,
+    headerTitle: <TypedNavbarTitle title={title} disableNetwork /> as any,
     headerLeft: () =>
       transactionMode !== 'edit' ? (
         <TouchableOpacity
@@ -580,7 +580,7 @@ export function getTransactionOptionsTitle(
 
 export function getApproveNavbar(title: string): Partial<StackNavigationOptions> {
   return {
-    headerTitle: () => <TypedNavbarTitle title={title} disableNetwork />,
+    headerTitle: <TypedNavbarTitle title={title} disableNetwork /> as any,
     headerLeft: () => <View />,
     headerRight: () => <View />,
   };
@@ -637,7 +637,7 @@ export function getSendFlowTitle(
   const titleToRender = title;
 
   return {
-    headerTitle: () => <TypedNavbarTitle title={titleToRender} disableNetwork />,
+    headerTitle: <TypedNavbarTitle title={titleToRender} disableNetwork /> as any,
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
       <TouchableOpacity
@@ -677,7 +677,7 @@ export function getSendFlowTitle(
  */
 export function getModalNavbarOptions(title: string): Partial<StackNavigationOptions> {
   return {
-    headerTitle: () => <ModalNavbarTitle title={title} />,
+    headerTitle: <ModalNavbarTitle title={title} /> as any,
   };
 }
 
@@ -709,7 +709,7 @@ export function getOnboardingNavbarOptions(
 
   return {
     headerStyle: innerStyles.headerStyle,
-    headerTitle: () => (
+    headerTitle: (
       <View style={styles.metamaskNameTransparentWrapper}>
         <Image
           source={metamask_name}
@@ -717,7 +717,7 @@ export function getOnboardingNavbarOptions(
           resizeMethod={'auto'}
         />
       </View>
-    ),
+    ) as any,
     headerBackTitle: strings('navigation.back'),
     headerRight: () => <View />,
     headerLeft: headerLeftHide,
@@ -744,7 +744,7 @@ export function getTransparentOnboardingNavbarOptions(themeColors: Theme['colors
     },
   });
   return {
-    headerTitle: () => (
+    headerTitle: (
       <View style={styles.metamaskNameTransparentWrapper}>
         <Image
           source={metamask_name}
@@ -752,7 +752,7 @@ export function getTransparentOnboardingNavbarOptions(themeColors: Theme['colors
           resizeMethod={'auto'}
         />
       </View>
-    ),
+    ) as any,
     headerLeft: () => <View />,
     headerRight: () => <View />,
     headerStyle: innerStyles.headerStyle,
@@ -778,7 +778,7 @@ export function getTransparentBackOnboardingNavbarOptions(themeColors: Theme['co
     },
   });
   return {
-    headerTitle: () => (
+    headerTitle: (
       <View style={styles.metamaskNameTransparentWrapper}>
         <Image
           source={metamask_name}
@@ -786,7 +786,7 @@ export function getTransparentBackOnboardingNavbarOptions(themeColors: Theme['co
           resizeMethod={'auto'}
         />
       </View>
-    ),
+    ) as any,
     headerBackTitle: strings('navigation.back'),
     headerRight: () => <View />,
     headerStyle: innerStyles.headerStyle,
@@ -814,7 +814,7 @@ export function getOptinMetricsNavbarOptions(themeColors: Theme['colors']): Part
     },
   });
   return {
-    headerTitle: () => (
+    headerTitle: (
       <View style={styles.metamaskNameTransparentWrapper}>
         <Image
           source={metamask_name}
@@ -822,7 +822,7 @@ export function getOptinMetricsNavbarOptions(themeColors: Theme['colors']): Part
           resizeMethod={'auto'}
         />
       </View>
-    ),
+    ) as any,
     headerBackTitle: strings('navigation.back'),
     headerRight: () => <View />,
     headerStyle: innerStyles.headerStyle,
@@ -1065,7 +1065,7 @@ export function getWalletNavbarOptions(
   };
 
   return {
-    headerTitle: () => (
+    headerTitle: (
       <View style={innerStyles.headerTitle}>
         <PickerAccount
           ref={accountActionsRef as any}
@@ -1082,7 +1082,7 @@ export function getWalletNavbarOptions(
           testID={WalletViewSelectorsIDs.ACCOUNT_ICON}
         />
       </View>
-    ),
+    ) as any,
     headerLeft: () => renderNetworkPicker(),
     headerRight: () => (
       <View style={styles.rightElementContainer}>
@@ -1175,7 +1175,7 @@ export function getImportTokenNavbarOptions(
     },
   });
   return {
-    headerTitle: () => (
+    headerTitle: (
       <TypedNavbarTitle
         disableNetwork={disableNetwork}
         showSelectedNetwork={false}
@@ -1183,7 +1183,7 @@ export function getImportTokenNavbarOptions(
       >
         {title}
       </TypedNavbarTitle>
-    ),
+    ) as any,
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
       <TouchableOpacity
@@ -1409,9 +1409,9 @@ export function getWebviewNavbar(
   const title = (route.params as { title?: string })?.title ?? '';
   const share = (route.params as { dispatch?: () => void })?.dispatch;
   return {
-    headerTitle: () => (
+    headerTitle: (
       <Text style={innerStyles.headerTitleStyle}>{title}</Text>
-    ),
+    ) as any,
     headerLeft: () =>
       Device.isAndroid() ? (
         // eslint-disable-next-line react/jsx-no-bind
@@ -1484,11 +1484,11 @@ export function getPaymentSelectorMethodNavbar(
     },
   });
   return {
-    headerTitle: () => (
+    headerTitle: (
       <Text style={innerStyles.headerTitleStyle}>
         {strings('fiat_on_ramp.purchase_method')}
       </Text>
-    ),
+    ) as any,
     headerLeft: () => <View />,
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
@@ -1665,9 +1665,9 @@ export function getSwapsAmountNavbar(
   });
   const title = route.params?.title ?? 'Swap';
   return {
-    headerTitle: () => (
+    headerTitle: (
       <TypedNavbarTitle title={title} disableNetwork translate={false} />
-    ),
+    ) as any,
     headerLeft: () => <View />,
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
@@ -1760,9 +1760,9 @@ export function getSwapsQuotesNavbar(
   };
 
   return {
-    headerTitle: () => (
+    headerTitle: (
       <TypedNavbarTitle title={title} disableNetwork translate={false} />
-    ),
+    ) as any,
     headerLeft: () =>
       Device.isAndroid() ? (
         // eslint-disable-next-line react/jsx-no-bind
@@ -1819,14 +1819,14 @@ export function getBridgeNavbar(
   const leftAction = () => (navigation as StackNavigationProp).pop();
 
   return {
-    headerTitle: () => (
+    headerTitle: (
       <NavbarTitle
         title={title}
         disableNetwork
         showSelectedNetwork={false}
         translate={false}
       />
-    ),
+    ) as any,
     headerLeft: () => (
       <TouchableOpacity onPress={leftAction} style={styles.backButton}>
         <Icon name={IconName.ArrowLeft} />
@@ -1851,14 +1851,14 @@ export function getBridgeTransactionDetailsNavbar(navigation: NavigationProp<Par
   const leftAction = () => navigation.pop();
 
   return {
-    headerTitle: () => (
+    headerTitle: (
       <NavbarTitle
         title={strings('bridge_transaction_details.transaction_details')}
         disableNetwork
         showSelectedNetwork={false}
         translate={false}
       />
-    ),
+    ) as any,
     headerLeft: () => (
       <TouchableOpacity onPress={leftAction} style={styles.backButton}>
         <Icon name={IconName.ArrowLeft} />
@@ -1899,9 +1899,9 @@ export function getFiatOnRampAggNavbar(
   const navigationCancelText = strings('navigation.cancel');
 
   return {
-    headerTitle: () => (
+    headerTitle: (
       <TypedNavbarTitle title={title} disableNetwork translate={false} />
-    ),
+    ) as any,
     headerLeft: () => {
       if (!showBack) return <View />;
 
@@ -1967,7 +1967,7 @@ export const getEditAccountNameNavBarOptions = (goBack: () => void, themeColors:
   });
 
   return {
-    headerTitle: () => <Text>{strings('account_actions.edit_name')}</Text>,
+    headerTitle: <Text>{strings('account_actions.edit_name')}</Text> as any,
     headerLeft: undefined,
     headerRight: () => (
       <ButtonIcon
@@ -1991,7 +1991,7 @@ export const getSettingsNavigationOptions = (title: string, themeColors: Theme['
   });
   return {
     headerLeft: undefined,
-    headerTitle: () => <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText>,
+    headerTitle: <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText> as any,
     ...innerStyles,
   };
 };
@@ -2077,11 +2077,11 @@ export function getStakingNavbar(
   }
 
   return {
-    headerTitle: () => (
+    headerTitle: (
       <View style={innerStyles.headerTitle}>
         <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText>
       </View>
-    ),
+    ) as any,
     headerStyle: innerStyles.headerStyle,
     headerLeft: () =>
       hasBackButton ? (
