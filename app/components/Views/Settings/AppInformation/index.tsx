@@ -1,4 +1,3 @@
-/* eslint-disable dot-notation */
 import React, { PureComponent } from 'react';
 import {
   SafeAreaView,
@@ -23,8 +22,9 @@ import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { Theme } from '@metamask/design-tokens';
+import foxImage from '../../../../images/branding/fox.png';
 
-const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
+const IS_QA = process.env.METAMASK_ENVIRONMENT === 'qa';
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -87,13 +87,11 @@ const createStyles = (colors: Theme['colors']) =>
     links: {},
   });
 
-const foxImage = require('../../../../images/branding/fox.png'); // eslint-disable-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-commonjs
-
 interface AppInformationProps {
   /**
    * navigation object required to push new views
    */
-  navigation: NavigationProp<ParamListBase>;
+  navigation?: NavigationProp<ParamListBase>;
 }
 
 interface AppInformationState {
@@ -119,7 +117,7 @@ export default class AppInformation extends PureComponent<
     const { navigation } = this.props;
     const colors =
       (this.context as unknown as Theme).colors || mockTheme.colors;
-    navigation.setOptions(
+    navigation?.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.info_title'),
         navigation,
@@ -146,7 +144,7 @@ export default class AppInformation extends PureComponent<
 
   goTo = (url: string, title: string) => {
     InteractionManager.runAfterInteractions(() => {
-      this.props.navigation.navigate('Webview', {
+      this.props.navigation?.navigate('Webview', {
         screen: 'SimpleWebview',
         params: {
           url,
@@ -206,7 +204,7 @@ export default class AppInformation extends PureComponent<
             <Text style={styles.versionInfo}>{this.state.appInfo}</Text>
             {IS_QA ? (
               <Text style={styles.branchInfo}>
-                {`Branch: ${process.env['GIT_BRANCH']}`}
+                {`Branch: ${process.env.GIT_BRANCH}`}
               </Text>
             ) : null}
           </View>
