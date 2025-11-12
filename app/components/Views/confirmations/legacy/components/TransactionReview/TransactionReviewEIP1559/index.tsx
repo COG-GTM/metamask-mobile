@@ -102,6 +102,10 @@ interface TransactionReviewEIP1559Props {
   isAnimating?: boolean;
   gasEstimationReady?: boolean;
   legacy?: boolean;
+  totalNative?: string;
+  totalConversion?: string;
+  totalMaxNative?: string;
+  over?: boolean;
 }
 
 const TransactionReviewEIP1559: React.FC<TransactionReviewEIP1559Props> = ({
