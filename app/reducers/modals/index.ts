@@ -1,4 +1,46 @@
-const initialState = {
+import { Reducer } from 'redux';
+
+export interface ModalsState {
+  networkModalVisible: boolean;
+  shouldNetworkSwitchPopToWallet: boolean;
+  collectibleContractModalVisible: boolean;
+  dappTransactionModalVisible: boolean;
+  signMessageModalVisible: boolean;
+  infoNetworkModalVisible?: boolean;
+}
+
+interface ToggleNetworkModalAction {
+  type: 'TOGGLE_NETWORK_MODAL';
+  shouldNetworkSwitchPopToWallet: boolean;
+}
+
+interface ToggleCollectibleContractModalAction {
+  type: 'TOGGLE_COLLECTIBLE_CONTRACT_MODAL';
+}
+
+interface ToggleDappTransactionModalAction {
+  type: 'TOGGLE_DAPP_TRANSACTION_MODAL';
+  show?: boolean | null;
+}
+
+interface ToggleInfoNetworkModalAction {
+  type: 'TOGGLE_INFO_NETWORK_MODAL';
+  show?: boolean;
+}
+
+interface ToggleSignModalAction {
+  type: 'TOGGLE_SIGN_MODAL';
+  show?: boolean;
+}
+
+type ModalsAction =
+  | ToggleNetworkModalAction
+  | ToggleCollectibleContractModalAction
+  | ToggleDappTransactionModalAction
+  | ToggleInfoNetworkModalAction
+  | ToggleSignModalAction;
+
+const initialState: ModalsState = {
   networkModalVisible: false,
   shouldNetworkSwitchPopToWallet: true,
   collectibleContractModalVisible: false,
@@ -6,7 +48,10 @@ const initialState = {
   signMessageModalVisible: true,
 };
 
-const modalsReducer = (state = initialState, action) => {
+const modalsReducer: Reducer<ModalsState, ModalsAction> = (
+  state = initialState,
+  action,
+) => {
   switch (action.type) {
     case 'TOGGLE_NETWORK_MODAL':
       return {
@@ -31,7 +76,7 @@ const modalsReducer = (state = initialState, action) => {
         dappTransactionModalVisible:
           action.show === null
             ? !state.dappTransactionModalVisible
-            : action.show,
+            : Boolean(action.show),
       };
     case 'TOGGLE_INFO_NETWORK_MODAL':
       if (action.show === false) {
@@ -59,4 +104,5 @@ const modalsReducer = (state = initialState, action) => {
       return state;
   }
 };
+
 export default modalsReducer;
