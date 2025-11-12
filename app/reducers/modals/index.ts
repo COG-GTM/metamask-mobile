@@ -40,7 +40,7 @@ type ModalsAction =
   | ToggleInfoNetworkModalAction
   | ToggleSignModalAction;
 
-const initialState: ModalsState = {
+export const initialState: ModalsState = {
   networkModalVisible: false,
   shouldNetworkSwitchPopToWallet: true,
   collectibleContractModalVisible: false,

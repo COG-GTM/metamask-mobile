@@ -192,8 +192,6 @@ exports[`captureSentryFeedback maskObject masks initial root state fixture 1`] =
     "collectibleContractModalVisible": false,
     "dappTransactionModalVisible": false,
     "networkModalVisible": false,
-    "receiveAsset": undefined,
-    "receiveModalVisible": false,
     "shouldNetworkSwitchPopToWallet": true,
     "signMessageModalVisible": true,
   },
