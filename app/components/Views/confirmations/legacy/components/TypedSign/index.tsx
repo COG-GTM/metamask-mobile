@@ -25,6 +25,7 @@ import { isExternalHardwareAccount } from '../../../../../../util/address';
 import createExternalSignModelNav from '../../../../../../util/hardwareWallet/signatureUtils';
 import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selectors/Browser/SigningBottomSheet.selectors';
 import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { selectProviderTypeByChainId } from '../../../../../../selectors/networkController';
 import { selectSignatureRequestById } from '../../../../../../selectors/signatureController';
 import { MessageParams, PageMeta } from '../SignatureRequest/types';
@@ -56,7 +57,7 @@ const createStyles = (colors: { text: { default: string } }) =>
     },
   });
 
-interface TypedSignProps {
+interface TypedSignProps extends IWithMetricsAwarenessProps {
   navigation: {
     navigate: (...args: unknown[]) => void;
   };
@@ -67,9 +68,6 @@ interface TypedSignProps {
   toggleExpandedMessage?: () => void;
   showExpandedMessage?: boolean;
   securityAlertResponse?: SecurityAlertResponse;
-  metrics: {
-    trackEvent: (event: unknown) => void;
-  };
   networkType?: string;
 }
 
@@ -81,6 +79,13 @@ interface TypedMessageV1Item {
 interface TypedMessageData {
   [key: string]: string | TypedMessageData;
 }
+
+type TypedSignVersion = 'V1' | 'V3' | 'V4';
+
+const getTypedSignMethod = (version?: string): string => {
+  const normalizedVersion = (version === 'V3' || version === 'V4' ? version : 'V1') as TypedSignVersion;
+  return typedSign[normalizedVersion];
+};
 
 const TypedSign = ({
   navigation,
@@ -133,18 +138,19 @@ const TypedSign = ({
     await handleSignatureAction(
       onReject,
       messageParams,
-      typedSign[messageParams.version || 'V1'],
+      getTypedSignMethod(messageParams.version),
       securityAlertResponse,
       false,
     );
   }, [onReject, messageParams, securityAlertResponse]);
 
   const confirmSignature = useCallback(async () => {
+    const signMethod = getTypedSignMethod(messageParams.version);
     if (!isExternalHardwareAccount(messageParams.from)) {
       await handleSignatureAction(
         onConfirm,
         messageParams,
-        typedSign[messageParams.version || 'V1'],
+        signMethod,
         securityAlertResponse,
         true,
       );
@@ -154,7 +160,7 @@ const TypedSign = ({
           onReject,
           onConfirm,
           messageParams,
-          typedSign[messageParams.version || 'V1'],
+          signMethod,
         )),
       );
     }
@@ -167,7 +173,7 @@ const TypedSign = ({
   ]);
 
   const updateShouldTruncateMessage = useCallback(
-    (e: { nativeEvent: { lines: unknown[] } }) => {
+    (e: { nativeEvent: { layout: { height: number } } }) => {
       const truncate = shouldTruncateMessage(e);
       setTruncateMessage(truncate);
     },
@@ -220,7 +226,9 @@ const TypedSign = ({
       const { sanitizedMessage } = parseAndSanitizeSignTypedData(
         messageParams.data,
       );
-      return renderTypedMessageV3(sanitizedMessage);
+      if (sanitizedMessage?.value) {
+        return renderTypedMessageV3(sanitizedMessage.value as TypedMessageData);
+      }
     }
     return null;
   }, [messageParams, styles, renderTypedMessageV3]);
@@ -241,6 +249,8 @@ const TypedSign = ({
     }
   }
 
+  const signMethod = getTypedSignMethod(messageParams.version);
+  
   const rootView = showExpandedMessage ? (
     <ExpandedMessage
       currentPageInformation={currentPageInformation}
@@ -256,7 +266,7 @@ const TypedSign = ({
       domain={domain}
       currentPageInformation={currentPageInformation}
       truncateMessage={truncateMessage}
-      type={typedSign[messageParams.version || 'V1']}
+      type={signMethod}
       fromAddress={messageParams.from}
       testID={SigningBottomSheetSelectorsIDs.TYPED_REQUEST}
       networkType={networkType}
@@ -282,9 +292,13 @@ const mapStateToProps = (
   );
 
   return {
-    networkType: selectProviderTypeByChainId(state, signatureRequest?.chainId),
+    networkType: signatureRequest?.chainId 
+      ? selectProviderTypeByChainId(state, signatureRequest.chainId)
+      : undefined,
     securityAlertResponse: state.signatureRequest.securityAlertResponse,
   };
 };
 
-export default connect(mapStateToProps)(withMetricsAwareness(TypedSign));
+export default connect(mapStateToProps)(
+  withMetricsAwareness(TypedSign as React.ComponentType<IWithMetricsAwarenessProps>)
+);
