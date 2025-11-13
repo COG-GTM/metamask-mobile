@@ -147,7 +147,7 @@ const EDIT_NONCE = 'edit_nonce';
 const REVIEW = 'review';
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
-let intervalIdForEstimatedL1Fee: NodeJS.Timeout | undefined;
+let intervalIdForEstimatedL1Fee: ReturnType<typeof setInterval> | undefined;
 
 interface ConfirmProps {
   navigation: {
