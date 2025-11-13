@@ -410,7 +410,8 @@ declare module '@sentry/react-native' {
 }
 
 declare module 'human-standard-token-abi' {
-  const abi: readonly unknown[];
+  import { Fragment, JsonFragment } from '@ethersproject/abi';
+  const abi: readonly (string | Fragment | JsonFragment)[];
   export default abi;
 }
 
