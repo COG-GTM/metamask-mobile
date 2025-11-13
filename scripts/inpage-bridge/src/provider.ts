@@ -1,22 +1,27 @@
-const { initializeProvider, shimWeb3 } = require('@metamask/providers');
-const ObjectMultiplex = require('@metamask/object-multiplex');
-const pump = require('pump');
-const { v4: uuid } = require('uuid');
-const MobilePortStream = require('./MobilePortStream');
-const ReactNativePostMessageStream = require('./ReactNativePostMessageStream');
+import { initializeProvider, shimWeb3 } from '@metamask/providers';
+import ObjectMultiplex from '@metamask/object-multiplex';
+import pump from 'pump';
+import { v4 as uuid } from 'uuid';
+import MobilePortStream from './MobilePortStream';
+import ReactNativePostMessageStream from './ReactNativePostMessageStream';
 
 const INPAGE = 'metamask-inpage';
 const CONTENT_SCRIPT = 'metamask-contentscript';
 const PROVIDER = 'metamask-provider';
 
-// Setup stream for content script communication
 const metamaskStream = new ReactNativePostMessageStream({
   name: INPAGE,
   target: CONTENT_SCRIPT,
 });
 
-const init = () => {
-  // Initialize provider object (window.ethereum)
+declare global {
+  interface Window {
+    _metamaskSetupProvider?: () => void;
+    ethereum?: unknown;
+  }
+}
+
+const init = (): void => {
   initializeProvider({
     connectionStream: metamaskStream,
     shouldSendMetadata: false,
@@ -28,7 +33,6 @@ const init = () => {
     },
   });
 
-  // Set content script post-setup function
   Object.defineProperty(window, '_metamaskSetupProvider', {
     value: () => {
       setupProviderStreams();
@@ -39,15 +43,13 @@ const init = () => {
     writable: false,
   });
 
-}
+};
 
-// Functions
 
 /**
  * Setup function called from content script after the DOM is ready.
  */
-function setupProviderStreams() {
-  // the transport-specific streams for communication between inpage and background
+function setupProviderStreams(): void {
   const pageStream = new ReactNativePostMessageStream({
     name: CONTENT_SCRIPT,
     target: INPAGE,
@@ -57,39 +59,35 @@ function setupProviderStreams() {
     name: CONTENT_SCRIPT,
   });
 
-  // create and connect channel muxes
-  // so we can handle the channels individually
   const pageMux = new ObjectMultiplex();
   pageMux.setMaxListeners(25);
   const appMux = new ObjectMultiplex();
   appMux.setMaxListeners(25);
 
-  pump(pageMux, pageStream, pageMux, (err) =>
+  pump(pageMux, pageStream, pageMux, (err?: Error) =>
     logStreamDisconnectWarning('MetaMask Inpage Multiplex', err),
   );
-  pump(appMux, appStream, appMux, (err) => {
+  pump(appMux, appStream, appMux, (err?: Error) => {
     logStreamDisconnectWarning('MetaMask Background Multiplex', err);
     notifyProviderOfStreamFailure();
   });
 
-  // forward communication across inpage-background for these channels only
   forwardTrafficBetweenMuxes(PROVIDER, pageMux, appMux);
 
-  // add web3 shim
   shimWeb3(window.ethereum);
 }
 
 /**
  * Set up two-way communication between muxes for a single, named channel.
  *
- * @param {string} channelName - The name of the channel.
- * @param {ObjectMultiplex} muxA - The first mux.
- * @param {ObjectMultiplex} muxB - The second mux.
+ * @param channelName - The name of the channel.
+ * @param muxA - The first mux.
+ * @param muxB - The second mux.
  */
-function forwardTrafficBetweenMuxes(channelName, muxA, muxB) {
+function forwardTrafficBetweenMuxes(channelName: string, muxA: ObjectMultiplex, muxB: ObjectMultiplex): void {
   const channelA = muxA.createStream(channelName);
   const channelB = muxB.createStream(channelName);
-  pump(channelA, channelB, channelA, (err) =>
+  pump(channelA, channelB, channelA, (err?: Error) =>
     logStreamDisconnectWarning(
       `MetaMask muxed traffic for channel "${channelName}" failed.`,
       err,
@@ -100,10 +98,10 @@ function forwardTrafficBetweenMuxes(channelName, muxA, muxB) {
 /**
  * Error handler for page to extension stream disconnections
  *
- * @param {string} remoteLabel - Remote stream name
- * @param {Error} err - Stream connection error
+ * @param remoteLabel - Remote stream name
+ * @param err - Stream connection error
  */
-function logStreamDisconnectWarning(remoteLabel, err) {
+function logStreamDisconnectWarning(remoteLabel: string, err?: Error): void {
   let warningMsg = `MetamaskContentscript - lost connection to ${remoteLabel}`;
   if (err) {
     warningMsg += `\n${err.stack}`;
@@ -117,12 +115,11 @@ function logStreamDisconnectWarning(remoteLabel, err) {
  * Notifies the inpage context that streams have failed, via window.postMessage.
  * Relies on @metamask/object-multiplex and post-message-stream implementation details.
  */
-function notifyProviderOfStreamFailure() {
+function notifyProviderOfStreamFailure(): void {
   window.postMessage(
     {
       target: INPAGE, // the post-message-stream "target"
       data: {
-        // this object gets passed to object-multiplex
         name: PROVIDER, // the object-multiplex channel name
         data: {
           jsonrpc: '2.0',
