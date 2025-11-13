@@ -496,9 +496,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         txParams: transaction.transaction as any,
         chainId,
       });
-      const hexResult: any = result ? ensureHex(result) : ensureHex('0');
       this.setState({
-        multiLayerL1FeeTotal: hexResult,
+        multiLayerL1FeeTotal: (result ? ensureHex(result) : ensureHex('0')) as any,
       });
     } catch (e) {
       Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
@@ -1080,7 +1079,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
                 approve,
                 result,
                 transactionMeta as any,
-                assetType,
+                assetType ?? '',
                 {
                   ...analyticsParams,
                   ...getBlockaidTransactionMetricsParams(transaction as any),
