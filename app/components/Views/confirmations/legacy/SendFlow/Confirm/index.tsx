@@ -1474,7 +1474,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
           asset={selectedAsset as any}
           transactionState={this.props.transactionState as any}
           onPressFromAddressIcon={
-            !paymentRequest ? undefined : this.openAccountSelector
+            !paymentRequest ? null : this.openAccountSelector
           }
           layout="vertical"
         />
