@@ -496,8 +496,9 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         txParams: transaction.transaction as any,
         chainId,
       });
+      const hexResult = result ? ensureHex(result) : ensureHex('0');
       this.setState({
-        multiLayerL1FeeTotal: result ? ensureHex(result) : ensureHex('0'),
+        multiLayerL1FeeTotal: hexResult as any,
       });
     } catch (e) {
       Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
@@ -839,7 +840,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       );
       transactionValue = `${transferValue} ${symbol}`;
       const exchangeRate = address && contractExchangeRates && contractExchangeRates[address]
-        ? (typeof contractExchangeRates[address] === 'number' ? contractExchangeRates[address] : contractExchangeRates[address]?.price)
+        ? (typeof contractExchangeRates[address] === 'number' ? contractExchangeRates[address] : (contractExchangeRates[address] as any)?.price)
         : undefined;
       transactionValueFiat =
         balanceToFiat(
@@ -936,7 +937,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
     const insufficientBalanceMessage = validateSufficientBalance(
       weiBalance.toString(10),
-      totalTransactionValue,
+      totalTransactionValue.toString(10),
       ticker ?? '',
     );
 
@@ -1069,6 +1070,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         const deviceId = await getDeviceId();
         this.setState({ transactionConfirmed: false });
         // Approve transaction for ledger is called in the Confirmation Flow (modals) after user prompt
+        const analyticsParams = await this.getAnalyticsParams();
         this.props.navigation.navigate(
           ...createLedgerTransactionModalNavDetails({
             transactionId: transactionMeta.id ?? '',
@@ -1080,7 +1082,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
                 transactionMeta as any,
                 assetType,
                 {
-                  ...await this.getAnalyticsParams(),
+                  ...analyticsParams,
                   ...getBlockaidTransactionMetricsParams(transaction as any),
                   ...this.getTransactionMetrics(),
                 },
@@ -1109,6 +1111,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         throw transactionMeta.error;
       }
 
+      const analyticsParamsForCompletion = await this.getAnalyticsParams(transactionMeta);
       InteractionManager.runAfterInteractions(() => {
         NotificationManager.watchSubmittedTransaction({
           ...transactionMeta,
@@ -1119,7 +1122,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
           this.props.metrics
             .createEventBuilder(MetaMetricsEvents.SEND_TRANSACTION_COMPLETED)
             .addProperties({
-              ...await this.getAnalyticsParams(transactionMeta),
+              ...analyticsParamsForCompletion,
               ...getBlockaidTransactionMetricsParams(transaction as any),
               ...this.getTransactionMetrics(),
             })
@@ -1211,8 +1214,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     const proposedNonce = (this.props.transaction as any).proposedNonce;
     return (
       <CustomNonceModal
-        proposedNonce={proposedNonce ? Number(proposedNonce) : undefined}
-        nonceValue={nonce ? Number(nonce) : undefined}
+        proposedNonce={proposedNonce ? Number(proposedNonce) : 0}
+        nonceValue={nonce ? Number(nonce) : 0}
         close={() => this.toggleConfirmationModal(REVIEW)}
         save={this.updateTransactionStateWithUpdatedNonce}
       />
@@ -1347,19 +1350,21 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     } as any);
   };
 
-  onContactUsClicked = async () => {
+  onContactUsClicked = () => {
     const { transaction } = this.props;
-    const analyticsParams = {
-      ...await this.getAnalyticsParams(),
-      ...getBlockaidTransactionMetricsParams(transaction as any),
-      external_link_clicked: 'security_alert_support_link',
-    };
-    this.props.metrics.trackEvent(
-      this.props.metrics
-        .createEventBuilder(MetaMetricsEvents.CONTRACT_ADDRESS_COPIED)
-        .addProperties(analyticsParams)
-        .build(),
-    );
+    this.getAnalyticsParams().then((baseParams) => {
+      const analyticsParams = {
+        ...baseParams,
+        ...getBlockaidTransactionMetricsParams(transaction as any),
+        external_link_clicked: 'security_alert_support_link',
+      };
+      this.props.metrics.trackEvent(
+        this.props.metrics
+          .createEventBuilder(MetaMetricsEvents.CONTRACT_ADDRESS_COPIED)
+          .addProperties(analyticsParams)
+          .build(),
+      );
+    });
   };
 
   getConfirmButtonStyles() {
@@ -1399,7 +1404,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         chainId: controllerTransactionMeta.chainId,
       },
     };
-    await updateTransaction(updatedTx as any);
+    await updateTransaction(updatedTx as any, {} as any);
   }
 
   getTransactionMetrics = () => {
@@ -1465,6 +1470,9 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         testID={ConfirmViewSelectorsIDs.CONTAINER}
       >
         <AccountFromToInfoCard
+          url=""
+          origin=""
+          asset={selectedAsset}
           transactionState={this.props.transactionState as any}
           onPressFromAddressIcon={
             !paymentRequest ? undefined : this.openAccountSelector
@@ -1508,10 +1516,10 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
               </Text>
               <View style={styles.CollectibleMediaWrapper}>
                 <CollectibleMedia
-                  small
-                  iconStyle={styles.CollectibleMedia}
-                  containerStyle={styles.CollectibleMedia}
                   collectible={selectedAsset as any}
+                  small={true}
+                  iconStyle={styles.CollectibleMedia as any}
+                  containerStyle={styles.CollectibleMedia as any}
                 />
               </View>
               <View>
@@ -1698,4 +1706,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Confirm));
+)(withMetricsAwareness(Confirm as any));
