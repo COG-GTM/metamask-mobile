@@ -408,3 +408,13 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'human-standard-token-abi' {
+  const abi: readonly unknown[];
+  export default abi;
+}
+
+declare module '@metamask/ethjs-query' {
+  const EthQuery: unknown;
+  export default EthQuery;
+}
