@@ -497,7 +497,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         chainId,
       });
       this.setState({
-        multiLayerL1FeeTotal: ensureHex(result ?? '0'),
+        multiLayerL1FeeTotal: result ? ensureHex(result) : ensureHex('0'),
       });
     } catch (e) {
       Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
@@ -1073,7 +1073,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
           ...createLedgerTransactionModalNavDetails({
             transactionId: transactionMeta.id ?? '',
             deviceId,
-            onConfirmationComplete: async (approve) =>
+            onConfirmationComplete: async (approve: boolean) =>
               await this.onLedgerConfirmation(
                 approve,
                 result,
@@ -1085,8 +1085,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
                   ...this.getTransactionMetrics(),
                 },
               ),
-            type: 'signTransaction',
-          }),
+          } as any),
         );
         return;
       }
@@ -1212,8 +1211,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     const proposedNonce = (this.props.transaction as any).proposedNonce;
     return (
       <CustomNonceModal
-        proposedNonce={proposedNonce}
-        nonceValue={nonce}
+        proposedNonce={proposedNonce ? Number(proposedNonce) : undefined}
+        nonceValue={nonce ? Number(nonce) : undefined}
         close={() => this.toggleConfirmationModal(REVIEW)}
         save={this.updateTransactionStateWithUpdatedNonce}
       />
@@ -1326,7 +1325,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       stopUpdateGas: false,
       gasSelectedTemp: gasValue,
       closeModal: true,
-    });
+    } as any);
   };
 
   updateGasState = ({ gasTxn, gasObj, gasSelect, txnType }: any) => {
@@ -1345,7 +1344,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
             EIP1559GasTransaction: gasTxn,
             EIP1559GasObject: gasObj,
           }),
-    });
+    } as any);
   };
 
   onContactUsClicked = async () => {
@@ -1400,7 +1399,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         chainId: controllerTransactionMeta.chainId,
       },
     };
-    await updateTransaction(updatedTx, undefined);
+    await updateTransaction(updatedTx as any);
   }
 
   getTransactionMetrics = () => {
