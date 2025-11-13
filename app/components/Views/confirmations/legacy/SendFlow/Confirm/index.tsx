@@ -497,7 +497,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         chainId,
       });
       this.setState({
-        multiLayerL1FeeTotal: result ?? '0x0',
+        multiLayerL1FeeTotal: ensureHex(result ?? '0'),
       });
     } catch (e) {
       Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
@@ -876,7 +876,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     return buildTransactionParams({
       gasDataEIP1559,
       gasDataLegacy,
-      gasEstimateType,
+      gasEstimateType: gasEstimateType as any,
       showCustomNonce,
       transaction,
     });
@@ -935,7 +935,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     }
 
     const insufficientBalanceMessage = validateSufficientBalance(
-      weiBalance,
+      weiBalance.toString(10),
       totalTransactionValue,
       ticker ?? '',
     );
