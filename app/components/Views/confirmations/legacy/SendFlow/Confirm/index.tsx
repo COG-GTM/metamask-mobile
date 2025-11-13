@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
 // @ts-ignore - no type definitions available
 import Eth from '@metamask/ethjs-query';
-import BN from 'bn.js';
+import BN from 'bnjs4';
 import { isEmpty } from 'lodash';
 import {
   renderFromWei,
