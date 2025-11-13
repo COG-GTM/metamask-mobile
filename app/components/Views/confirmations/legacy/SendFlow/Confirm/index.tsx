@@ -346,7 +346,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     setProposedNonce(String(proposedNonce));
   };
 
-  getAnalyticsParams = (transactionMeta: any) => {
+  getAnalyticsParams = async (transactionMeta: any) => {
     const {
       selectedAsset,
       gasEstimateType,
@@ -380,9 +380,11 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       const { SmartTransactionsController } = Engine.context;
 
       const smartTransactionMetricsProperties =
-        getSmartTransactionMetricsProperties(
+        await getSmartTransactionMetricsProperties(
           SmartTransactionsController as any,
           transactionMeta as any,
+          false,
+          undefined,
         );
 
       // Merge baseParams with the additional smart transaction properties
@@ -420,7 +422,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
     const { transactionMeta } = this.state;
     const { TokensController } = Engine.context;
-    await stopGasPolling(this.state.pollToken as any);
+    await stopGasPolling();
     clearInterval(intervalIdForEstimatedL1Fee);
 
     if (transactionMeta.id) {
