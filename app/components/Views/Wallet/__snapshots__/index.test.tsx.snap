@@ -842,7 +842,7 @@ exports[`Wallet should render correctly 1`] = `
                               }
                             }
                           >
-                            An error occurred
+                            We encountered an unexpected error
                           </Text>
                         </View>
                         <View
@@ -901,7 +901,7 @@ exports[`Wallet should render correctly 1`] = `
                                 }
                               }
                             >
-                              Your information can't be shown. Don’t worry, your wallet and funds are safe.
+                              We're unable to display this information right now. Your wallet and funds remain secure. Try refreshing or restarting the app.
                             </Text>
                           </View>
                         </View>
@@ -2033,7 +2033,7 @@ exports[`Wallet should render correctly when Solana support is enabled 1`] = `
                               }
                             }
                           >
-                            An error occurred
+                            We encountered an unexpected error
                           </Text>
                         </View>
                         <View
@@ -2092,7 +2092,7 @@ exports[`Wallet should render correctly when Solana support is enabled 1`] = `
                                 }
                               }
                             >
-                              Your information can't be shown. Don’t worry, your wallet and funds are safe.
+                              We're unable to display this information right now. Your wallet and funds remain secure. Try refreshing or restarting the app.
                             </Text>
                           </View>
                         </View>
@@ -3224,7 +3224,7 @@ exports[`Wallet should render correctly when there are no detected tokens 1`] = 
                               }
                             }
                           >
-                            An error occurred
+                            We encountered an unexpected error
                           </Text>
                         </View>
                         <View
@@ -3283,7 +3283,7 @@ exports[`Wallet should render correctly when there are no detected tokens 1`] = 
                                 }
                               }
                             >
-                              Your information can't be shown. Don’t worry, your wallet and funds are safe.
+                              We're unable to display this information right now. Your wallet and funds remain secure. Try refreshing or restarting the app.
                             </Text>
                           </View>
                         </View>
