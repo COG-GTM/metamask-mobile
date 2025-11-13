@@ -1861,7 +1861,7 @@ exports[`BuildQuote View Crypto Currency Data renders an error page when there i
                                     }
                                   }
                                 >
-                                  Error
+                                  Transaction error
                                 </Text>
                               </View>
                               <View
@@ -3464,7 +3464,7 @@ exports[`BuildQuote View Fiat Currency Data renders an error page when there is 
                                     }
                                   }
                                 >
-                                  Error
+                                  Transaction error
                                 </Text>
                               </View>
                               <View
@@ -5067,7 +5067,7 @@ exports[`BuildQuote View Payment Method Data renders an error page when there is
                                     }
                                   }
                                 >
-                                  Error
+                                  Transaction error
                                 </Text>
                               </View>
                               <View
@@ -9640,7 +9640,7 @@ exports[`BuildQuote View Regions data renders an error page when there is a regi
                                     }
                                   }
                                 >
-                                  Error
+                                  Transaction error
                                 </Text>
                               </View>
                               <View
@@ -17254,7 +17254,7 @@ exports[`BuildQuote View renders correctly when sdkError is present 1`] = `
                                     }
                                   }
                                 >
-                                  Oops, something went wrong
+                                  This action couldn't be completed. Please try again.
                                 </Text>
                               </View>
                               <View
@@ -17918,7 +17918,7 @@ exports[`BuildQuote View renders correctly when sdkError is present 2`] = `
                                     }
                                   }
                                 >
-                                  Oops, something went wrong
+                                  This action couldn't be completed. Please try again.
                                 </Text>
                               </View>
                               <View
