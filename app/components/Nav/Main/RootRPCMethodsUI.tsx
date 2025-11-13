@@ -33,6 +33,7 @@ import BigNumber from 'bignumber.js';
 import { toLowerCaseEquals } from '../../../util/general';
 import { KEYSTONE_TX_CANCELED } from '../../../constants/error';
 import { MetaMetricsEvents } from '../../../core/Analytics';
+import { IMetaMetricsEvent } from '../../../core/Analytics/MetaMetrics.types';
 import {
   getAddressAccountType,
   isHardwareAccount,
