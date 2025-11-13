@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
-import PropTypes from 'prop-types';
 import Eth from '@metamask/ethjs-query';
+import BN from 'bn.js';
 import { isEmpty } from 'lodash';
 import {
   renderFromWei,
@@ -145,162 +145,165 @@ const EDIT_NONCE = 'edit_nonce';
 const REVIEW = 'review';
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
-let intervalIdForEstimatedL1Fee;
+let intervalIdForEstimatedL1Fee: NodeJS.Timeout | undefined;
 
-/**
- * View that wraps the wraps the "Send" screen
- */
-class Confirm extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that contains navigation props
-     */
-    route: PropTypes.object,
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * Object containing token balances in the format address => balance
-     */
-    contractBalances: PropTypes.object,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Current transaction state
-     */
-    transactionState: PropTypes.object,
-    /**
-     * Normalized transaction state
-     */
-    transaction: PropTypes.object.isRequired,
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Set transaction object to be sent
-     */
-    prepareTransaction: PropTypes.func,
-    /**
-     * Chain Id
-     */
-    chainId: PropTypes.string,
-    /**
-     * ID of the associated network client
-     */
-    networkClientId: PropTypes.string,
-    /**
-     * ID of the global network client
-     */
-    globalNetworkClientId: PropTypes.string,
-    /**
-     * Indicates whether hex data should be shown in transaction editor
-     */
-    showHexData: PropTypes.bool,
-    /**
-     * Indicates whether custom nonce should be shown in transaction editor
-     */
-    showCustomNonce: PropTypes.bool,
-    /**
-     * Network provider type as mainnet
-     */
-    providerType: PropTypes.string,
-    /**
-     * Selected asset from current transaction state
-     */
-    selectedAsset: PropTypes.object,
-    /**
-     * Resets transaction state
-     */
-    resetTransaction: PropTypes.func,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Set transaction nonce
-     */
-    setNonce: PropTypes.func,
-    /**
-     * Set proposed nonce (from network)
-     */
-    setProposedNonce: PropTypes.func,
-    /**
-     * Gas fee estimates returned by the gas fee controller
-     */
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * Estimate type returned by the gas fee controller, can be market-fee, legacy or eth_gasPrice
-     */
-    gasEstimateType: PropTypes.string,
-    /**
-     * Indicates whether the current transaction is a deep link transaction
-     */
-    isPaymentRequest: PropTypes.bool,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNativeTokenBuySupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Set transaction ID
-     */
-    setTransactionId: PropTypes.func,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-    /**
-     * Object containing confirmation metrics by id
-     */
-    confirmationMetricsById: PropTypes.object,
-    /**
-     * Transaction metadata from the transaction controller
-     */
-    transactionMetadata: PropTypes.object,
-    /**
-     * Update confirmation metrics
-     */
-    updateConfirmationMetric: PropTypes.func,
-    /**
-     * Object containing blockaid validation response for confirmation
-     */
-    securityAlertResponse: PropTypes.object,
-    /**
-     * Boolean that indicates if the max value mode is enabled
-     */
-    maxValueMode: PropTypes.bool,
-    /**
-     * Function that sets the transaction value
-     */
-    setTransactionValue: PropTypes.func,
-  };
+interface SelectedAsset {
+  address?: string;
+  symbol?: string;
+  decimals?: number;
+  image?: string;
+  name?: string;
+  tokenId?: string;
+  isETH?: boolean;
+  balanceFiat?: string;
+  balance?: string;
+}
 
-  state = {
+interface TransactionObject {
+  from?: string;
+  to?: string;
+  value?: string;
+  data?: string;
+  gas?: string;
+  gasPrice?: string;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
+  nonce?: string;
+}
+
+interface TransactionState {
+  transaction: TransactionObject;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  selectedAsset: SelectedAsset;
+  assetType?: string;
+  paymentRequest?: boolean;
+}
+
+interface Transaction {
+  from?: string;
+  to?: string;
+  transactionTo?: string;
+  transactionValue?: string;
+  data?: string;
+  value?: string;
+  gas?: string;
+  gasPrice?: string;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
+  nonce?: string;
+  origin?: string;
+  transaction?: TransactionObject;
+}
+
+interface GasTransaction {
+  totalMaxHex?: string;
+  gasFeeMaxHex?: string;
+  gasFeeMaxNative?: string;
+  gasFeeMaxConversion?: string;
+  totalMaxNative?: string;
+  totalMaxConversion?: string;
+  suggestedMaxFeePerGas?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedGasLimit?: string;
+  error?: string;
+}
+
+interface GasObject {
+  suggestedMaxFeePerGas?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedGasLimit?: string;
+  suggestedGasPrice?: string;
+}
+
+interface TransactionMeta {
+  id: string;
+  origin?: string;
+  txParams?: TransactionObject;
+  status?: string;
+  error?: Error;
+  hash?: string;
+  chainId?: string;
+  networkClientId?: string;
+}
+
+interface ConfirmProps {
+  navigation: any;
+  route: any;
+  accounts: { [address: string]: { balance: string } };
+  contractBalances: { [address: string]: string };
+  ticker: string;
+  transactionState: TransactionState;
+  transaction: Transaction;
+  conversionRate?: number;
+  currentCurrency: string;
+  contractExchangeRates: { [address: string]: number };
+  prepareTransaction: (transaction: any) => void;
+  chainId: string;
+  networkClientId: string;
+  globalNetworkClientId: string;
+  showHexData: boolean;
+  showCustomNonce: boolean;
+  providerType: string;
+  selectedAsset: SelectedAsset;
+  resetTransaction: () => void;
+  primaryCurrency: string;
+  setNonce: (nonce: string) => void;
+  setProposedNonce: (nonce: string) => void;
+  gasFeeEstimates: any;
+  gasEstimateType: string;
+  isPaymentRequest: boolean;
+  showAlert: (config: any) => void;
+  isNativeTokenBuySupported: boolean;
+  metrics: any;
+  setTransactionId: (id: string) => void;
+  shouldUseSmartTransaction: boolean;
+  confirmationMetricsById: { [id: string]: any };
+  transactionMetadata?: TransactionMeta;
+  updateConfirmationMetric: (params: { id: string; params: any }) => void;
+  securityAlertResponse?: any;
+  maxValueMode: boolean;
+  setTransactionValue: (value: string) => void;
+  removeFavoriteCollectible?: (address: string, chainId: string, collectible: any) => void;
+}
+
+interface ConfirmState {
+  gasEstimationReady: boolean;
+  fromSelectedAddress: string;
+  hexDataModalVisible: boolean;
+  warningGasPriceHigh?: string;
+  ready: boolean;
+  transactionValue?: string;
+  transactionValueFiat?: string;
+  errorMessage?: string;
+  mode: string;
+  gasSelected: string;
+  stopUpdateGas: boolean;
+  advancedGasInserted: boolean;
+  EIP1559GasTransaction: GasTransaction;
+  EIP1559GasObject: GasObject;
+  legacyGasObject: GasObject;
+  legacyGasTransaction: GasTransaction;
+  multiLayerL1FeeTotal: string;
+  result?: any;
+  transactionMeta: Partial<TransactionMeta>;
+  isChangeInSimulationModalShown: boolean;
+  hasHandledFirstGasUpdate: boolean;
+  pollToken?: string;
+  transactionConfirmed?: boolean;
+  isAnimating?: boolean;
+  animateOnChange?: boolean;
+  closeModal?: boolean;
+}
+
+class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  state: ConfirmState = {
     gasEstimationReady: false,
-    fromSelectedAddress: this.props.transactionState.transaction.from,
+    fromSelectedAddress: this.props.transactionState.transaction.from || '',
     hexDataModalVisible: false,
     warningGasPriceHigh: undefined,
     ready: false,
@@ -334,14 +337,14 @@ class Confirm extends PureComponent {
     const { globalNetworkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(
-      transaction,
+      transaction as any,
       globalNetworkClientId,
     );
-    setNonce(proposedNonce);
-    setProposedNonce(proposedNonce);
+    setNonce(String(proposedNonce));
+    setProposedNonce(String(proposedNonce));
   };
 
-  getAnalyticsParams = (transactionMeta) => {
+  getAnalyticsParams = (transactionMeta: any) => {
     const {
       selectedAsset,
       gasEstimateType,
@@ -376,7 +379,7 @@ class Confirm extends PureComponent {
 
       const smartTransactionMetricsProperties =
         getSmartTransactionMetricsProperties(
-          SmartTransactionsController,
+          SmartTransactionsController as any,
           transactionMeta,
         );
 
@@ -415,13 +418,13 @@ class Confirm extends PureComponent {
 
     const { transactionMeta } = this.state;
     const { TokensController } = Engine.context;
-    await stopGasPolling(this.state.pollToken);
+    await stopGasPolling(this.state.pollToken as any);
     clearInterval(intervalIdForEstimatedL1Fee);
 
-    Engine.rejectPendingApproval(transactionMeta.id, undefined, {
+    Engine.rejectPendingApproval(transactionMeta.id as string, undefined, {
       ignoreMissing: true,
       logErrors: false,
-    });
+    } as any);
 
     /**
      * Remove token that was added to the account temporarily
@@ -438,7 +441,7 @@ class Confirm extends PureComponent {
     const weiBalance = hexToBN(contractBalances[selectedAsset.address]);
     if (weiBalance?.isZero()) {
       await TokensController.ignoreTokens(
-        [selectedAsset.address],
+        [selectedAsset.address as string],
         this.props.networkClientId,
       );
     }
@@ -454,14 +457,14 @@ class Confirm extends PureComponent {
         Engine.context.NetworkController.getProviderAndBlockTracker().provider,
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
-        txParams: transaction.transaction,
+        txParams: transaction.transaction as any,
         chainId,
       });
       this.setState({
         multiLayerL1FeeTotal: result,
       });
     } catch (e) {
-      Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
+      Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
         multiLayerL1FeeTotal: '0x0',
       });
@@ -497,7 +500,7 @@ class Confirm extends PureComponent {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.SEND_TRANSACTION_STARTED)
-        .addProperties(this.getAnalyticsParams())
+        .addProperties(this.getAnalyticsParams({}))
         .build(),
     );
 
@@ -530,7 +533,7 @@ class Confirm extends PureComponent {
       navigation.navigate(Routes.WALLET_VIEW);
       Alert.alert(
         strings('transactions.transaction_error'),
-        error && error.message,
+        error?.message,
         [{ text: 'OK' }],
       );
       return;
@@ -562,7 +565,7 @@ class Confirm extends PureComponent {
     ppomUtil.validateRequest(reqObject, id);
   };
 
-  componentDidUpdate = (prevProps, prevState) => {
+  componentDidUpdate = (prevProps: ConfirmProps, prevState: ConfirmState) => {
     const {
       accounts,
       transactionState: {
@@ -968,7 +971,7 @@ class Confirm extends PureComponent {
       }
     } finally {
       // Error handling derived to LedgerConfirmationModal component
-      navigation && navigation.dangerouslyGetParent()?.popToTop();
+      navigation?.dangerouslyGetParent()?.popToTop();
     }
   };
 
@@ -1101,7 +1104,7 @@ class Confirm extends PureComponent {
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: 'OK' }],
         );
         Logger.error(error, 'error while trying to send transaction (Confirm)');
