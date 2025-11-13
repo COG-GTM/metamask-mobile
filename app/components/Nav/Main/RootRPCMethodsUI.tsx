@@ -37,6 +37,7 @@ import {
   getAddressAccountType,
   isHardwareAccount,
 } from '../../../util/address';
+import { TransactionMeta } from '@metamask/transaction-controller';
 
 import {
   selectEvmChainId,
@@ -83,26 +84,6 @@ interface Token {
   decimals?: number;
   image?: string;
   name?: string;
-}
-
-interface TransactionMeta {
-  id: string;
-  origin: string;
-  txParams: {
-    from: string;
-    to?: string;
-    value?: string;
-    gas?: string;
-    gasPrice?: string;
-    data?: string;
-    assetType?: string;
-  };
-  chainId: string;
-  networkClientId: string;
-  securityAlertResponse?: any;
-  status?: string;
-  error?: Error;
-  hash?: string;
 }
 
 interface SwapTransaction {
@@ -164,7 +145,7 @@ export const useSwapConfirmedEvent = ({ trackSwaps }: { trackSwaps: (event: stri
             swapsTransactions[transactionMeta.id]?.paramsForAnalytics
           ) {
             trackSwaps(
-              MetaMetricsEvents.SWAP_COMPLETED,
+              MetaMetricsEvents.SWAP_COMPLETED as any,
               transactionMeta,
               swapsTransactions,
             );
@@ -218,7 +199,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
           props.selectedAddress,
         ]);
         const receipt = await query(ethQuery, 'getTransactionReceipt', [
-          transactionMeta.hash,
+          transactionMeta.hash as any,
         ]);
 
         const currentBlock = await query(ethQuery, 'getBlockByHash', [
@@ -280,8 +261,8 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
 
         const smartTransactionMetricsProperties =
           getSmartTransactionMetricsProperties(
-            SmartTransactionsController,
-            transactionMeta,
+            SmartTransactionsController as any,
+            transactionMeta as any,
           );
 
         const parameters = {
@@ -311,9 +292,9 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
         Logger.log('Swaps', 'Sending metrics event', event);
 
         trackEvent(
-          createEventBuilder(event)
-            .addProperties({ ...parameters })
-            .addSensitiveProperties({ ...sensitiveParameters })
+          createEventBuilder(event as any)
+            .addProperties({ ...parameters } as any)
+            .addSensitiveProperties({ ...sensitiveParameters } as any)
             .build(),
         );
       } catch (e) {
@@ -385,8 +366,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
               transactionId: transactionMeta.id,
               deviceId,
               onConfirmationComplete: () => {},
-              type: 'signTransaction',
-            }),
+            } as any),
           );
         } else {
           Engine.acceptPendingApproval(transactionMeta.id);
@@ -398,7 +378,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
         ) {
           Alert.alert(
             strings('transactions.transaction_error'),
-            error && (error as Error).message,
+            (error as any)?.message || '',
             [{ text: strings('navigation.ok') }],
           );
           Logger.error(error as Error, 'error while trying to send transaction (Main)');
@@ -446,8 +426,8 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
           txParams: { value, gas, gasPrice, data },
         } = transactionMeta;
         const { AssetsContractController } = Engine.context;
-        transactionMeta.txParams.gas = hexToBN(gas!);
-        transactionMeta.txParams.gasPrice = gasPrice && hexToBN(gasPrice);
+        transactionMeta.txParams.gas = hexToBN(gas!) as any;
+        transactionMeta.txParams.gasPrice = gasPrice && (hexToBN(gasPrice) as any);
 
         if (
           (value === '0x0' || !value) &&
@@ -481,11 +461,11 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
           const tokenValue = getTokenValueParam(tokenData);
           const toAddress = getTokenAddressParam(tokenData);
           const tokenAmount =
-            tokenData && calcTokenAmount(tokenValue, asset.decimals).toFixed();
+            tokenData && calcTokenAmount(tokenValue, asset.decimals!).toFixed();
 
           transactionMeta.txParams.value = hexToBN(
             getTokenValueParamAsHex(tokenData),
-          );
+          ) as any;
           (transactionMeta.txParams as any).readableValue = tokenAmount;
           transactionMeta.txParams.to = toAddress;
 
@@ -497,11 +477,11 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
             networkClientId,
             chainId,
             ...transactionMeta.txParams,
-          });
+          } as any);
         } else {
-          transactionMeta.txParams.value = hexToBN(value!);
+          transactionMeta.txParams.value = hexToBN(value!) as any;
           (transactionMeta.txParams as any).readableValue = fromWei(
-            transactionMeta.txParams.value,
+            transactionMeta.txParams.value as any,
           );
 
           setEtherTransaction({
@@ -511,10 +491,10 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
             chainId,
             networkClientId,
             ...transactionMeta.txParams,
-          });
+          } as any);
         }
 
-        if (isApprovalTransaction(data) && (!value || isZeroValue(value))) {
+        if (isApprovalTransaction(data) && (!value || isZeroValue(value as any))) {
           setTransactionModalType(TransactionModalType.Transaction);
         } else {
           setTransactionModalType(TransactionModalType.Dapp);
@@ -552,7 +532,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
     initializeWalletConnect();
 
     return function cleanup() {
-      Engine.context.TokensController?.hub?.removeAllListeners();
+      (Engine.context.TokensController as any)?.hub?.removeAllListeners();
       WalletConnect?.hub?.removeAllListeners();
     };
   }, []);
