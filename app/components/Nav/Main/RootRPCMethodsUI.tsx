@@ -138,7 +138,7 @@ export const useSwapConfirmedEvent = ({ trackSwaps }: UseSwapConfirmedEventProps
             swapsTransactions[transactionMeta.id]?.paramsForAnalytics
           ) {
             trackSwaps(
-              String(MetaMetricsEvents.SWAP_COMPLETED),
+              MetaMetricsEvents.SWAP_COMPLETED,
               transactionMeta,
               swapsTransactions,
             );
@@ -364,7 +364,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
             } else {
               if (swapsTransactions[transactionMeta.id]?.analytics) {
                 trackSwaps(
-                  String(MetaMetricsEvents.SWAP_FAILED),
+                  MetaMetricsEvents.SWAP_FAILED,
                   transactionMeta,
                   swapsTransactions,
                 );
