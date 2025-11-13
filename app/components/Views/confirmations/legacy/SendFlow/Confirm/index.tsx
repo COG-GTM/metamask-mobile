@@ -31,6 +31,8 @@ import StyledButton from '../../../../../UI/StyledButton';
 import { WalletDevice } from '@metamask/transaction-controller';
 import { ChainId } from '@metamask/controller-utils';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
+import type { Hex } from '@metamask/utils';
+import { TokenI } from '../../../../../UI/Tokens/types';
 import {
   prepareTransaction,
   resetTransaction,
@@ -147,6 +149,34 @@ const REVIEW = 'review';
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
 let intervalIdForEstimatedL1Fee: NodeJS.Timeout | undefined;
+
+function ensureHex(input: string | BN): Hex {
+  if (typeof input === 'string') {
+    return (input.startsWith('0x') ? input : `0x${input}`) as Hex;
+  }
+  const hexString = input.toString(16);
+  return `0x${hexString}` as Hex;
+}
+
+function toTokenI(asset: SelectedAsset): TokenI {
+  return {
+    address: asset.address ?? '0x',
+    aggregators: [],
+    decimals: asset.decimals ?? 0,
+    image: asset.image ?? '',
+    name: asset.name ?? (asset.symbol ?? ''),
+    symbol: asset.symbol ?? '',
+    balance: asset.balance ?? '0',
+    balanceFiat: asset.balanceFiat,
+    logo: asset.image,
+    isETH: asset.isETH,
+    isNative: asset.isETH,
+  };
+}
+
+type MobileTransactionMeta = TransactionMeta & {
+  simulationData?: unknown;
+};
 
 interface SelectedAsset {
   address?: string;
@@ -437,17 +467,17 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
      * Ref.: https://github.com/MetaMask/metamask-mobile/pull/3989#issuecomment-1367558394
      */
     if (
-      isNativeToken(selectedAsset) ||
+      isNativeToken(toTokenI(selectedAsset)) ||
       selectedAsset.tokenId ||
       !selectedAsset.address
     ) {
       return;
     }
 
-    const weiBalance = hexToBN(contractBalances[selectedAsset.address || '']);
+    const weiBalance = hexToBN(contractBalances[selectedAsset.address]);
     if (weiBalance?.isZero()) {
       await TokensController.ignoreTokens(
-        [selectedAsset.address as string],
+        [selectedAsset.address],
         this.props.networkClientId,
       );
     }
@@ -467,12 +497,12 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         chainId,
       });
       this.setState({
-        multiLayerL1FeeTotal: result,
+        multiLayerL1FeeTotal: result ?? '0x0',
       });
     } catch (e) {
       Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
-        multiLayerL1FeeTotal: '0x0',
+        multiLayerL1FeeTotal: ensureHex('0'),
       });
     }
   };
@@ -535,11 +565,11 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         },
       ));
     } catch (error) {
-      Logger.error(error, 'error while adding transaction (Confirm)');
+      Logger.error(error as Error, 'error while adding transaction (Confirm)');
       navigation.navigate(Routes.WALLET_VIEW);
       Alert.alert(
         strings('transactions.transaction_error'),
-        error?.message,
+        error instanceof Error ? error.message : String(error),
         [{ text: 'OK' }],
       );
       return;
@@ -686,7 +716,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
             },
           );
         } else if (this.props.gasEstimateType !== GAS_ESTIMATE_TYPES.NONE) {
-          this.setError(this.state.legacyGasTransaction.error);
+          this.setError(this.state.legacyGasTransaction.error ?? '');
           // eslint-disable-next-line react/no-did-update-set-state
           this.setState(
             {
@@ -764,8 +794,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     const symbol = ticker ?? selectedAsset?.symbol;
     const parsedTicker = getTicker(symbol);
 
-    if (isNativeToken(selectedAsset)) {
-      transactionValue = `${renderFromWei(value)} ${parsedTicker}`;
+    if (isNativeToken(toTokenI(selectedAsset))) {
+      transactionValue = `${renderFromWei(value ?? '0x0')} ${parsedTicker}`;
       transactionValueFiat = weiToFiat(
         valueBN,
         conversionRate,
@@ -787,29 +817,29 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       } = selectedAsset;
       const { TokensController } = Engine.context;
 
-      if (!contractBalances[address]) {
+      if (address && !contractBalances[address]) {
         await TokensController.addToken({
           address,
           symbol,
-          decimals,
+          decimals: decimals ?? 0,
           image,
           name,
           networkClientId: this.props.networkClientId,
         });
       }
 
-      const [, , rawAmount] = decodeTransferData('transfer', data);
+      const [, , rawAmount] = decodeTransferData('transfer', data ?? '0x');
       const rawAmountString = parseInt(rawAmount, 16).toLocaleString(
         'fullwide',
         { useGrouping: false },
       );
       const transferValue = renderFromTokenMinimalUnit(
         rawAmountString,
-        decimals,
+        decimals ?? 0,
       );
       transactionValue = `${transferValue} ${symbol}`;
-      const exchangeRate = contractExchangeRates
-        ? contractExchangeRates[address]?.price
+      const exchangeRate = address && contractExchangeRates && contractExchangeRates[address]
+        ? (typeof contractExchangeRates[address] === 'number' ? contractExchangeRates[address] : contractExchangeRates[address]?.price)
         : undefined;
       transactionValueFiat =
         balanceToFiat(
@@ -872,7 +902,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
    * Validates transaction balances
    * @returns - Whether there is an error with the amount
    */
-  validateAmount = ({ transaction }) => {
+  validateAmount = ({ transaction }: { transaction: any }) => {
     const {
       accounts,
       contractBalances,
@@ -921,20 +951,20 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       });
     }
 
-    if (isNativeToken(selectedAsset) || selectedAsset.tokenId) {
+    if (isNativeToken(toTokenI(selectedAsset)) || selectedAsset.tokenId) {
       return insufficientBalanceMessage;
     }
 
     const insufficientTokenBalanceMessage = validateSufficientTokenBalance(
       transaction,
       contractBalances,
-      selectedAsset,
+      toTokenI(selectedAsset),
     );
 
     return insufficientBalanceMessage || insufficientTokenBalanceMessage;
   };
 
-  setError = (errorMessage) => {
+  setError = (errorMessage: string) => {
     this.setState({ errorMessage }, () => {
       if (errorMessage) {
         this.scrollView.scrollToEnd({ animated: true });
@@ -943,11 +973,11 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
   };
 
   onLedgerConfirmation = async (
-    approve,
-    result,
-    transactionMeta,
-    assetType,
-    gaParams,
+    approve: boolean,
+    result: any,
+    transactionMeta: TransactionMeta,
+    assetType: string,
+    gaParams: any,
   ) => {
     const { navigation } = this.props;
     // Manual cancel from UI or rejected from ledger device.
