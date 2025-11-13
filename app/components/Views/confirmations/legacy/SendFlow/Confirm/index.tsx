@@ -496,9 +496,9 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         txParams: transaction.transaction as any,
         chainId,
       });
-      const hexResult = result ? ensureHex(result) : ensureHex('0');
+      const hexResult: any = result ? ensureHex(result) : ensureHex('0');
       this.setState({
-        multiLayerL1FeeTotal: hexResult as any,
+        multiLayerL1FeeTotal: hexResult,
       });
     } catch (e) {
       Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
@@ -1070,11 +1070,11 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         const deviceId = await getDeviceId();
         this.setState({ transactionConfirmed: false });
         // Approve transaction for ledger is called in the Confirmation Flow (modals) after user prompt
-        const analyticsParams = await this.getAnalyticsParams();
+        const analyticsParams = await this.getAnalyticsParams(transactionMeta);
         this.props.navigation.navigate(
           ...createLedgerTransactionModalNavDetails({
             transactionId: transactionMeta.id ?? '',
-            deviceId,
+            deviceId: deviceId ?? '',
             onConfirmationComplete: async (approve: boolean) =>
               await this.onLedgerConfirmation(
                 approve,
@@ -1351,8 +1351,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
   };
 
   onContactUsClicked = () => {
-    const { transaction } = this.props;
-    this.getAnalyticsParams().then((baseParams) => {
+    const { transaction, transactionState } = this.props;
+    this.getAnalyticsParams(transactionState as any).then((baseParams) => {
       const analyticsParams = {
         ...baseParams,
         ...getBlockaidTransactionMetricsParams(transaction as any),
@@ -1472,7 +1472,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         <AccountFromToInfoCard
           url=""
           origin=""
-          asset={selectedAsset}
+          asset={selectedAsset as any}
           transactionState={this.props.transactionState as any}
           onPressFromAddressIcon={
             !paymentRequest ? undefined : this.openAccountSelector
@@ -1517,7 +1517,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
               <View style={styles.CollectibleMediaWrapper}>
                 <CollectibleMedia
                   collectible={selectedAsset as any}
-                  small={true}
+                  {...({ small: true } as any)}
                   iconStyle={styles.CollectibleMedia as any}
                   containerStyle={styles.CollectibleMedia as any}
                 />
