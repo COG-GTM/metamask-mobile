@@ -8,6 +8,9 @@ import {
   switchToNetwork,
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
+import { JsonRpcRequest, PendingJsonRpcResponse, Json } from '@metamask/utils';
+import { AsyncJsonRpcEngineNextCallback, JsonRpcEngineEndCallback } from '@metamask/json-rpc-engine';
+import { type Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
 
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
@@ -19,13 +22,31 @@ import { MESSAGE_TYPE } from '../createTracingMiddleware';
  * @param params.hooks - Method hooks passed to the method implementation.
  * @returns {void}.
  */
+type SwitchHooks = {
+  getNetworkConfigurationByChainId: (chainId: string) => unknown;
+  getCurrentChainIdForDomain: (origin: string) => string;
+  getCaveat?: (args: { target: string; caveatType: string }) => { value: Caip25CaveatValue } | undefined;
+  requestPermittedChainsPermissionIncrementalForOrigin?: (args: { origin: string; chainId: `0x${string}`; autoApprove: boolean }) => Promise<void>;
+  hasApprovalRequestsForOrigin?: () => unknown;
+  rejectApprovalRequestsForOrigin?: () => void;
+  toNetworkConfiguration?: unknown;
+  fromNetworkConfiguration?: unknown;
+  [key: string]: unknown;
+};
+
 export const wallet_switchEthereumChain = async ({
   req,
   res,
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: {
+  req: JsonRpcRequest<Json[]> & { origin: string };
+  res: PendingJsonRpcResponse<Json>;
+  requestUserApproval: (params: { type?: string; requestData?: Record<string, unknown> }) => Promise<unknown>;
+  analytics?: Record<string, unknown>;
+  hooks: SwitchHooks;
+}): Promise<void> => {
   const {
     CurrencyRateController,
     NetworkController,
@@ -34,15 +55,15 @@ export const wallet_switchEthereumChain = async ({
   } = Engine.context;
   const params = req.params?.[0];
   const { origin } = req;
-  if (!params || typeof params !== 'object') {
+  if (!params || typeof params !== 'object' || Array.isArray(params)) {
     throw rpcErrors.invalidParams({
       message: `Expected single, object parameter. Received:\n${JSON.stringify(
         req.params,
       )}`,
     });
   }
-  const { chainId } = params;
-  const allowedKeys = {
+  const { chainId } = params as { chainId: unknown };
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
@@ -79,7 +100,7 @@ export const wallet_switchEthereumChain = async ({
     );
 
     const toNetworkConfiguration =
-      hooks.getNetworkConfigurationByChainId(chainId);
+      hooks.getNetworkConfigurationByChainId(chainId as string);
 
     await switchToNetwork({
       network: existingNetwork,
