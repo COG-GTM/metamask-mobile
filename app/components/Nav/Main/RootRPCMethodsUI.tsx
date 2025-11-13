@@ -205,7 +205,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
 
   const trackSwaps = useCallback(
     async (
-      event: string,
+      event: IMetaMetricsEvent,
       transactionMeta: TransactionMeta,
       swapsTransactions: SwapsTransactions,
     ) => {
