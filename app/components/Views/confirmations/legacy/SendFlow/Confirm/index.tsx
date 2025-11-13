@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
-// @ts-ignore - no type definitions available
+// @ts-expect-error - no type definitions available for @metamask/ethjs-query
 import Eth from '@metamask/ethjs-query';
 import BN from 'bnjs4';
 import { isEmpty } from 'lodash';
@@ -260,8 +260,8 @@ interface TransactionMeta {
 }
 
 interface ConfirmProps {
-  navigation: any;
-  route: any;
+  navigation: unknown;
+  route: unknown;
   accounts: { [address: string]: { balance: string } };
   contractBalances: { [address: string]: string };
   ticker: string;
@@ -270,7 +270,7 @@ interface ConfirmProps {
   conversionRate?: number;
   currentCurrency: string;
   contractExchangeRates: { [address: string]: number };
-  prepareTransaction: (transaction: any) => void;
+  prepareTransaction: (transaction: unknown) => void;
   chainId: string;
   networkClientId: string;
   globalNetworkClientId: string;
@@ -330,7 +330,7 @@ interface ConfirmState {
 
 class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
+  context!: React.ContextType<typeof ThemeContext>;
   scrollView: any;
 
   state: ConfirmState = {
@@ -493,16 +493,16 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         Engine.context.NetworkController.getProviderAndBlockTracker().provider,
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
-        txParams: transaction.transaction as any,
-        chainId: chainId as any,
+        txParams: transaction.transaction as unknown,
+        chainId: chainId as unknown,
       });
       this.setState({
-        multiLayerL1FeeTotal: (result ? ensureHex(result) : ensureHex('0')) as any,
+        multiLayerL1FeeTotal: result ? ensureHex(result) : ensureHex('0'),
       });
     } catch (e) {
       Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
-        multiLayerL1FeeTotal: ensureHex('0') as any,
+        multiLayerL1FeeTotal: ensureHex('0'),
       });
     }
   };

@@ -24,7 +24,6 @@ import {
   getIsSwapApproveOrSwapTransaction,
   isApprovalTransaction,
 } from '../../../util/transactions';
-import BN from 'bnjs4';
 import Logger from '../../../util/Logger';
 import TransactionTypes from '../../../core/TransactionTypes';
 import { swapsUtils } from '@metamask/swaps-controller';
@@ -87,14 +86,14 @@ interface Token {
 }
 
 interface SwapTransaction {
-  analytics?: any;
+  analytics?: unknown;
   paramsForAnalytics?: {
     sentAt: number;
     gasEstimate: string;
     ethAccountBalance: string;
     approvalTransactionMetaId?: string;
   };
-  destinationToken?: any;
+  destinationToken?: unknown;
   destinationTokenDecimals?: number;
   destinationAmount?: string;
   gasUsed?: string;
@@ -106,9 +105,9 @@ interface SwapsTransactions {
 }
 
 interface RootRPCMethodsUIProps {
-  navigation: any;
-  setEtherTransaction: (transaction: any) => void;
-  setTransactionObject: (transaction: any) => void;
+  navigation: unknown;
+  setEtherTransaction: (transaction: unknown) => void;
+  setTransactionObject: (transaction: unknown) => void;
   tokens: Token[];
   selectedAddress: string;
   chainId: string;
