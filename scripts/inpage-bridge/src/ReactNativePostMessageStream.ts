@@ -90,4 +90,4 @@ class PostMessageStream extends Duplex {
   }
 }
 
-export = PostMessageStream;
+export default PostMessageStream;

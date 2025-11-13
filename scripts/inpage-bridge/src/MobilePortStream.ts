@@ -136,4 +136,4 @@ class MobilePortStream extends Duplex {
   }
 }
 
-export = MobilePortStream;
+export default MobilePortStream;

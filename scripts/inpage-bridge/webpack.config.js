@@ -14,7 +14,7 @@ const isBuildTypeFlask = process.env.METAMASK_BUILD_TYPE === 'flask';
 const appId = isBuildTypeFlask ? 'io.metamask.mobile.flask' : 'io.metamask.mobile';
 
 const config = {
-  entry: './src/index.js',
+  entry: './src/index.ts',
 
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -25,17 +25,22 @@ const config = {
   module: {
     rules: [
       {
-        test: /\.(js|jsx|mjs)$/u,
+        test: /\.(ts|js|jsx|mjs)$/u,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env'],
+            presets: [
+              '@babel/preset-env',
+              ['@babel/preset-typescript', { allowDeclareFields: true }],
+            ],
           },
         },
+        exclude: /node_modules/,
       },
     ],
   },
   resolve: {
+    extensions: ['.ts', '.js', '.jsx', '.mjs'],
     fallback: {
       buffer: require.resolve('buffer'),
       stream: require.resolve('stream-browserify'),
