@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
+// @ts-ignore - no type definitions available
 import Eth from '@metamask/ethjs-query';
 import BN from 'bn.js';
 import { isEmpty } from 'lodash';
@@ -300,6 +301,7 @@ interface ConfirmState {
 class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
   static contextType = ThemeContext;
   declare context: React.ContextType<typeof ThemeContext>;
+  scrollView: any;
 
   state: ConfirmState = {
     gasEstimationReady: false,
@@ -380,7 +382,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       const smartTransactionMetricsProperties =
         getSmartTransactionMetricsProperties(
           SmartTransactionsController as any,
-          transactionMeta,
+          transactionMeta as any,
         );
 
       // Merge baseParams with the additional smart transaction properties
@@ -390,7 +392,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       };
     } catch (error) {
       // Log the error and return the baseParams
-      Logger.error(error, 'Error in getAnalyticsParams:');
+      Logger.error(error as Error, 'Error in getAnalyticsParams:');
       return baseParams;
     }
   };
@@ -421,10 +423,12 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     await stopGasPolling(this.state.pollToken as any);
     clearInterval(intervalIdForEstimatedL1Fee);
 
-    Engine.rejectPendingApproval(transactionMeta.id as string, undefined, {
-      ignoreMissing: true,
-      logErrors: false,
-    } as any);
+    if (transactionMeta.id) {
+      Engine.rejectPendingApproval(transactionMeta.id, undefined as any, {
+        ignoreMissing: true,
+        logErrors: false,
+      } as any);
+    }
 
     /**
      * Remove token that was added to the account temporarily
@@ -438,7 +442,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       return;
     }
 
-    const weiBalance = hexToBN(contractBalances[selectedAsset.address]);
+    const weiBalance = hexToBN(contractBalances[selectedAsset.address || '']);
     if (weiBalance?.isZero()) {
       await TokensController.ignoreTokens(
         [selectedAsset.address as string],
@@ -595,8 +599,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     const fromAddressChanged =
       prevState.fromSelectedAddress !== fromSelectedAddress;
     const previousContractBalance =
-      prevProps.contractBalances[selectedAsset.address];
-    const newContractBalance = contractBalances[selectedAsset.address];
+      prevProps.contractBalances[selectedAsset.address || ''];
+    const newContractBalance = contractBalances[selectedAsset.address || ''];
     const contractBalanceChanged =
       previousContractBalance !== newContractBalance;
     const recipientIsDefined = transactionTo !== undefined;
@@ -643,9 +647,9 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       updateTransactionToMaxValue({
         transactionId,
         isEIP1559Transaction,
-        EIP1559GasTransaction,
-        legacyGasTransaction,
-        accountBalance: accounts[from].balance,
+        EIP1559GasTransaction: EIP1559GasTransaction as any,
+        legacyGasTransaction: legacyGasTransaction as any,
+        accountBalance: accounts[from || '']?.balance,
         setTransactionValue: this.props.setTransactionValue,
       });
 
@@ -708,16 +712,16 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     }
   };
 
-  setScrollViewRef = (ref) => {
+  setScrollViewRef = (ref: any) => {
     this.scrollView = ref;
   };
 
-  toggleConfirmationModal = (MODE) => {
+  toggleConfirmationModal = (MODE: string) => {
     this.onModeChange(MODE);
     this.setState({ closeModal: false });
   };
 
-  onModeChange = (mode) => {
+  onModeChange = (mode: string) => {
     this.setState({ mode });
     if (mode === EDIT) {
       this.props.metrics.trackEvent(
