@@ -494,7 +494,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
         txParams: transaction.transaction as any,
-        chainId,
+        chainId: chainId as any,
       });
       this.setState({
         multiLayerL1FeeTotal: (result ? ensureHex(result) : ensureHex('0')) as any,
@@ -502,7 +502,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     } catch (e) {
       Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
-        multiLayerL1FeeTotal: ensureHex('0'),
+        multiLayerL1FeeTotal: ensureHex('0') as any,
       });
     }
   };
