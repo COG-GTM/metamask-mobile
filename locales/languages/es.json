@@ -282,7 +282,7 @@
     "desc": "Escriba su contraseña para continuar",
     "password": "Contraseña",
     "confirm_button": "Confirmar",
-    "error": "Error"
+    "error": "No se puede verificar la contraseña"
   },
   "choose_password": {
     "title": "Crear contraseña",
@@ -385,7 +385,7 @@
   },
   "send": {
     "title": "Enviar",
-    "deeplink_failure": "Se produjo un error. Vuelva a intentarlo",
+    "deeplink_failure": "No se puede abrir este enlace. Verifique que el enlace sea válido e intente nuevamente.",
     "warn_network_change": "La red cambió a ",
     "send_to": "Enviar a",
     "amount": "Importe",
@@ -2759,8 +2759,8 @@
     "enter_lower_gas_fees": "Ingrese una cantidad baja para pagar las tarifas de gas",
     "max": "MAX",
     "try_again": "Vuelva a intentarlo",
-    "error": "Error",
-    "something_went_wrong": "Lo sentimos, se produjo un error",
+    "error": "Error de transacción",
+    "something_went_wrong": "No se pudo completar esta acción. Inténtelo de nuevo.",
     "report_this_issue": "Informar sobre este problema",
     "no_providers_available": "No hay proveedores disponibles",
     "try_different_amount_to_buy_input": "¡Intente elegir otro método de pago o intente aumentar o reducir la cantidad que desea comprar!",
@@ -3055,8 +3055,8 @@
     "not_supported": "Vínculo profundo no admitido"
   },
   "error_screen": {
-    "title": "Ocurrió un error",
-    "subtitle": "No se puede mostrar su información. No se preocupe, su monedero y sus fondos están seguros.",
+    "title": "Encontramos un error inesperado",
+    "subtitle": "No podemos mostrar esta información en este momento. Su monedero y sus fondos permanecen seguros. Intente actualizar o reiniciar la aplicación.",
     "try_again_button": "Vuelva a intentarlo",
     "submit_ticket_1": "Informe este problema para que podamos corregirlo:",
     "submit_ticket_2": "Tome una captura de esta pantalla.",
@@ -3275,8 +3275,8 @@
     "add_token": "Haga clic aquí para agregar manualmente los tokens",
     "add_token_manually": "Agregarlos manualmente.",
     "got_it": "Listo",
-    "error_title": "¡Uy! Algo salió mal.",
-    "error_message": "Hubo un error al cargar la información de la red. Inténtelo de nuevo más tarde.",
+    "error_title": "No se puede cargar la información de la red",
+    "error_message": "No pudimos cargar los detalles de la red. Esto puede deberse a problemas de conectividad. Verifique su conexión e intente nuevamente.",
     "private_network_third_description": "Ingrese un nombre para esta red para que sea fácil de identificar.",
     "learn_more_url": "https://support.metamask.io/networks-and-sidechains/managing-networks/user-guide-custom-networks-and-sidechains/",
     "enable_token_detection": "Habilitar la detección automática de tokens",
@@ -3287,8 +3287,8 @@
     "non_evm_second_description": "Perderá sus activos si intenta enviarlos desde o a otra red."
   },
   "download_files": {
-    "error": "No se pudo descargar el archivo adjunto.",
-    "unknownError": "Ocurrió un error desconocido"
+    "error": "No se puede descargar el archivo. Verifique su conexión a Internet y espacio de almacenamiento, luego intente nuevamente.",
+    "unknownError": "Ocurrió un error inesperado durante la descarga. Intente nuevamente o contacte al soporte si esto continúa."
   },
   "remember_me": {
     "enable_remember_me": "Activar Recordarme",
@@ -3461,9 +3461,9 @@
     "device_unlocked_message": "El dispositivo está desbloqueado",
     "ledger_disconnected": "Su dispositivo se desconectó",
     "ledger_disconnected_error": "Se ha perdido la conexión con su dispositivo. Vuelva a intentarlo.",
-    "unknown_error": "Ocurrió un error inesperado.",
+    "unknown_error": "Ocurrió un error inesperado. Si esto persiste, intente reiniciar la aplicación o contacte al soporte.",
     "unknown_error_message": "Ocurrió un error inesperado. Inténtelo de nuevo.",
-    "error_occured": "Ocurrió un error",
+    "error_occured": "Algo salió mal con esta acción",
     "how_to_install_eth_app": "Cómo instalar la aplicación Ethereum en un dispositivo Ledger",
     "ledger_account_count": "Está utilizando 1 cuenta desde su Ledger con MetaMask Mobile.",
     "open_eth_app": "Abra la aplicación Ethereum",

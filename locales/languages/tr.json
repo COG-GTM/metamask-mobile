@@ -282,7 +282,7 @@
     "desc": "Devam etmek için lütfen şifrenizi girin",
     "password": "Şifre",
     "confirm_button": "Onayla",
-    "error": "Hata"
+    "error": "Şifre doğrulanamıyor"
   },
   "choose_password": {
     "title": "Şifre oluştur",
@@ -385,7 +385,7 @@
   },
   "send": {
     "title": "Gönder",
-    "deeplink_failure": "Bir şeyler ters gitti. Lütfen tekrar deneyin",
+    "deeplink_failure": "Bu bağlantı açılamıyor. Lütfen bağlantının geçerli olduğunu kontrol edin ve tekrar deneyin.",
     "warn_network_change": "Ağ değiştirildi:",
     "send_to": "Şuraya Gönder",
     "amount": "Tutar",
@@ -1327,7 +1327,7 @@
     "private_key_copied_ios": "Özel anahtar geçici olarak panoya kopyalandı\n",
     "private_key_copied_android": "Özel anahtar panoya kopyalandı\n",
     "warning_incorrect_password": "Şifre yanlış",
-    "unknown_error": "Hesabınızın kilidi açılamadı. Lütfen tekrar deneyin.",
+    "unknown_error": "Beklenmeyen bir hata oluştu. Bu devam ederse, uygulamayı yeniden başlatmayı deneyin veya destekle iletişime geçin.",
     "hardware_error": "Bu bir donanım cüzdanı hesabıdır, özel kilidinizi dışa aktaramazsınız.",
     "seed_warning": "Bu sizin cüzdanınızın 12 sözcükten oluşan ifadesidir. Bu ifade, cüzdanınızda para gönderme kabiliyeti de dahil olmak üzere tüm şimdiki ve gelecekteki hesaplarınızı kontrol etmek için kullanılabilir. Bu ifadeyi güvenli bir şekilde saklayın, hiç kimseyle PAYLAŞMAYIN.",
     "text": "METİN",
@@ -2759,8 +2759,8 @@
     "enter_lower_gas_fees": "Gaz ücretlerini ödemek için daha düşük bir tutar girin",
     "max": "MAKS.",
     "try_again": "Tekrar dene",
-    "error": "Hata",
-    "something_went_wrong": "Hay aksi, bir şeyler ters gitti",
+    "error": "İşlem hatası",
+    "something_went_wrong": "Bu işlem tamamlanamadı. Lütfen tekrar deneyin.",
     "report_this_issue": "Bu sorunu bildir",
     "no_providers_available": "Sağlayıcı mevcut değil",
     "try_different_amount_to_buy_input": "Farklı bir ödeme yöntemi seçmeyi dene veya satın almak istediğin tutarı artırmayı veya azaltmayı dene!",
@@ -3055,8 +3055,8 @@
     "not_supported": "Derin bağlantı desteklenmiyor"
   },
   "error_screen": {
-    "title": "Bir hata oluştu",
-    "subtitle": "Bilgileriniz gösterilemiyor. Endişelenmeyin, cüzdanınız ve paranız güvendedir.",
+    "title": "Beklenmeyen bir hatayla karşılaştık",
+    "subtitle": "Şu anda bu bilgileri görüntüleyemiyoruz. Cüzdanınız ve fonlarınız güvende kalıyor. Uygulamayı yenilemeyi veya yeniden başlatmayı deneyin.",
     "try_again_button": "Tekrar deneyin",
     "submit_ticket_1": "Düzeltebilmemiz için lütfen bu sorunu bildirin:",
     "submit_ticket_2": "Bu ekranın bir ekran görüntüsünü alın.",
@@ -3275,8 +3275,8 @@
     "add_token": "Tokenleri manuel olarak eklemek için buraya tıklayın",
     "add_token_manually": "Manuel olarak ekleyin.",
     "got_it": "Anladım",
-    "error_title": "Hay aksi, bir şeyler ters gitti.",
-    "error_message": "Ağ bilgileri yüklenirken bir hata oluştu. Lütfen daha sonra tekrar dene.",
+    "error_title": "Ağ bilgileri yüklenemiyor",
+    "error_message": "Ağ ayrıntılarını yükleyemedik. Bu, bağlantı sorunlarından kaynaklanıyor olabilir. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.",
     "private_network_third_description": "Tanımlamayı kolaylaştırmak için lütfen bu ağ için bir ad gir.",
     "learn_more_url": "https://support.metamask.io/networks-and-sidechains/managing-networks/user-guide-custom-networks-and-sidechains/",
     "enable_token_detection": "Otomatik token algılamayı etkinleştir",
@@ -3287,8 +3287,8 @@
     "non_evm_second_description": "Başka bir ağdan veya başka bir ağa göndermeye çalışırsanız varlıklarınızı kaybedersiniz."
   },
   "download_files": {
-    "error": "Ek indirilemedi.",
-    "unknownError": "Bilinmeyen bir hata oluştu"
+    "error": "Dosya indirilemiyor. İnternet bağlantınızı ve depolama alanınızı kontrol edin, ardından tekrar deneyin.",
+    "unknownError": "İndirme sırasında beklenmeyen bir hata oluştu. Lütfen tekrar deneyin veya bu devam ederse destekle iletişime geçin."
   },
   "remember_me": {
     "enable_remember_me": "Beni Hatırla özelliğini aç",
@@ -3461,9 +3461,9 @@
     "device_unlocked_message": "Cihazın kilidi açık",
     "ledger_disconnected": "Cihazınızın bağlantısı kesildi",
     "ledger_disconnected_error": "Cihazınız ile bağlantı kaybedildi. Lütfen tekrar deneyin.",
-    "unknown_error": "Beklenmedik hata oluştu.",
+    "unknown_error": "Beklenmeyen bir hata oluştu. Bu devam ederse, uygulamayı yeniden başlatmayı deneyin veya destekle iletişime geçin.",
     "unknown_error_message": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
-    "error_occured": "Bir hata oluştu",
+    "error_occured": "Bu işlemde bir sorun oluştu",
     "how_to_install_eth_app": "Ledger cihazına Ethereum uygulaması nasıl yüklenir?",
     "ledger_account_count": "Ledger cihazınızda MetaMask Mobil ile 1 hesap kullanıyorsunuz.",
     "open_eth_app": "Lütfen Ethereum uygulamasını açın",

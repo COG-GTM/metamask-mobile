@@ -282,7 +282,7 @@
     "desc": "Insira sua senha para continuar",
     "password": "Senha",
     "confirm_button": "Confirmar",
-    "error": "Erro"
+    "error": "Não foi possível verificar a senha"
   },
   "choose_password": {
     "title": "Criar senha",
@@ -385,7 +385,7 @@
   },
   "send": {
     "title": "Enviar",
-    "deeplink_failure": "Algo deu errado. Por favor, tente de novo.",
+    "deeplink_failure": "Não foi possível abrir este link. Verifique se o link é válido e tente novamente.",
     "warn_network_change": "Rede alterada para ",
     "send_to": "Enviar para",
     "amount": "Valor",
@@ -1327,7 +1327,7 @@
     "private_key_copied_ios": "Chave privada temporariamente copiada para a área de transferência\n",
     "private_key_copied_android": "Chave privada copiada para a área de transferência\n",
     "warning_incorrect_password": "Senha incorreta",
-    "unknown_error": "Não foi possível desbloquear sua conta. Tente novamente.",
+    "unknown_error": "Ocorreu um erro inesperado. Se isso persistir, tente reiniciar o aplicativo ou entre em contato com o suporte.",
     "hardware_error": "Esta é uma conta de carteira de hardware; não é possível exportar sua chave privada.",
     "seed_warning": "Esta é a frase de 12 palavras da sua carteira. Ela pode ser usada para assumir o controle de todas as suas contas, atuais e futuras, incluindo a capacidade de retirar fundos. Guarde esta frase em segurança e NÃO a compartilhe com ninguém.",
     "text": "TEXTO",
@@ -2759,8 +2759,8 @@
     "enter_lower_gas_fees": "Insira um valor menor para pagar as taxas de gás",
     "max": "MÁX.",
     "try_again": "Tente novamente",
-    "error": "Erro",
-    "something_went_wrong": "Ops, algo deu errado",
+    "error": "Erro de transação",
+    "something_went_wrong": "Esta ação não pôde ser concluída. Tente novamente.",
     "report_this_issue": "Comunique esse problema",
     "no_providers_available": "Nenhum provedor disponível",
     "try_different_amount_to_buy_input": "Tente escolher um método de pagamento diferente ou tente aumentar ou reduzir o valor que deseja comprar!",
@@ -3055,8 +3055,8 @@
     "not_supported": "Deeplink não compatível"
   },
   "error_screen": {
-    "title": "Ocorreu um erro",
-    "subtitle": "Não foi possível exibir suas informações. Não se preocupe, sua carteira e seus fundos estão seguros.",
+    "title": "Encontramos um erro inesperado",
+    "subtitle": "Não conseguimos exibir essas informações no momento. Sua carteira e fundos permanecem seguros. Tente atualizar ou reiniciar o aplicativo.",
     "try_again_button": "Tente novamente",
     "submit_ticket_1": "Relate o problema para que possamos corrigi-lo:",
     "submit_ticket_2": "Capture a imagem desta tela.",
@@ -3275,8 +3275,8 @@
     "add_token": "Clique aqui para adicionar os tokens manualmente",
     "add_token_manually": "Adicione-os manualmente.",
     "got_it": "Entendi",
-    "error_title": "Ops! Algo deu errado.",
-    "error_message": "Ocorreu um erro ao carregar as informações de rede. Por favor, tente novamente mais tarde.",
+    "error_title": "Não foi possível carregar informações da rede",
+    "error_message": "Não foi possível carregar os detalhes da rede. Isso pode ser devido a problemas de conectividade. Verifique sua conexão e tente novamente.",
     "private_network_third_description": "Insira um nome para esta rede para facilitar a identificação.",
     "learn_more_url": "https://support.metamask.io/networks-and-sidechains/managing-networks/user-guide-custom-networks-and-sidechains/",
     "enable_token_detection": "Ative a detecção automática de tokens",
@@ -3287,8 +3287,8 @@
     "non_evm_second_description": "Você perderá seus ativos se tentar recebê-los ou enviá-los usando outra rede."
   },
   "download_files": {
-    "error": "Falha ao baixar anexo.",
-    "unknownError": "Ocorreu um erro desconhecido"
+    "error": "Não foi possível baixar o arquivo. Verifique sua conexão com a Internet e espaço de armazenamento e tente novamente.",
+    "unknownError": "Ocorreu um erro inesperado durante o download. Tente novamente ou entre em contato com o suporte se isso continuar."
   },
   "remember_me": {
     "enable_remember_me": "Ativar \"Lembrar de mim\"",
@@ -3461,9 +3461,9 @@
     "device_unlocked_message": "O dispositivo está desbloqueado",
     "ledger_disconnected": "Seu dispositivo foi desconectado",
     "ledger_disconnected_error": "A conexão com o seu dispositivo foi perdida. Por favor, tente novamente.",
-    "unknown_error": "Ocorreu um erro inesperado.",
+    "unknown_error": "Ocorreu um erro inesperado. Se isso persistir, tente reiniciar o aplicativo ou entre em contato com o suporte.",
     "unknown_error_message": "Ocorreu um erro inesperado. Por favor, tente novamente.",
-    "error_occured": "Ocorreu um erro",
+    "error_occured": "Algo deu errado com esta ação",
     "how_to_install_eth_app": "Como instalar o app Ethereum em um dispositivo Ledger",
     "ledger_account_count": "Você está usando 1 conta da sua Ledger com o MetaMask Mobile.",
     "open_eth_app": "Favor abrir o app Ethereum",

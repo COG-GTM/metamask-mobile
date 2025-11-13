@@ -282,7 +282,7 @@
     "desc": "Masukkan kata sandi Anda untuk melanjutkan",
     "password": "Kata sandi",
     "confirm_button": "Konfirmasikan",
-    "error": "Kesalahan"
+    "error": "Tidak dapat memverifikasi kata sandi"
   },
   "choose_password": {
     "title": "Buat kata sandi",
@@ -385,7 +385,7 @@
   },
   "send": {
     "title": "Kirim",
-    "deeplink_failure": "Terjadi kesalahan! Silakan coba lagi",
+    "deeplink_failure": "Tidak dapat membuka tautan ini. Harap periksa apakah tautan valid dan coba lagi.",
     "warn_network_change": "Jaringan diubah ke",
     "send_to": "Kirim ke",
     "amount": "Jumlah",
@@ -1327,7 +1327,7 @@
     "private_key_copied_ios": "Kunci pribadi untuk sementara disalin ke papan klip\n",
     "private_key_copied_android": "Kunci pribadi disalin ke papan klip\n",
     "warning_incorrect_password": "Kata sandi salah",
-    "unknown_error": "Tidak dapat membuka akun Anda. Silakan coba lagi.",
+    "unknown_error": "Terjadi kesalahan yang tidak terduga. Jika ini terus berlanjut, coba mulai ulang aplikasi atau hubungi dukungan.",
     "hardware_error": "Ini merupakan akun dompet perangkat keras, Anda tidak dapat mengekspor kunci pribadi.",
     "seed_warning": "Ini merupakan frasa 12 kata dompet Anda. Frasa ini dapat digunakan untuk mengontrol semua akun saat ini dan di masa mendatang, termasuk kemampuan untuk mengirim dana mereka. Simpan frasa ini dengan aman, JANGAN bagikan kepada siapa pun.",
     "text": "TEKS",
@@ -2759,8 +2759,8 @@
     "enter_lower_gas_fees": "Masukkan jumlah yang lebih rendah untuk membayar biaya gas",
     "max": "MAKS",
     "try_again": "Coba lagi",
-    "error": "Galat",
-    "something_went_wrong": "Ups! Terjadi kesalahan",
+    "error": "Kesalahan transaksi",
+    "something_went_wrong": "Tindakan ini tidak dapat diselesaikan. Harap coba lagi.",
     "report_this_issue": "Laporkan masalah ini",
     "no_providers_available": "Penyedia tidak tersedia",
     "try_different_amount_to_buy_input": "Coba pilih metode pembayaran lain atau coba tambahkan atau kurangi jumlah yang ingin Anda beli!",
@@ -3055,8 +3055,8 @@
     "not_supported": "Tidak mendukung pranala"
   },
   "error_screen": {
-    "title": "Terjadi kesalahan",
-    "subtitle": "Informasi Anda tidak dapat ditampilkan. Jangan khawatir, dompet dan dana Anda tetap aman.",
+    "title": "Kami mengalami kesalahan yang tidak terduga",
+    "subtitle": "Kami tidak dapat menampilkan informasi ini saat ini. Dompet dan dana Anda tetap aman. Coba segarkan atau mulai ulang aplikasi.",
     "try_again_button": "Coba lagi",
     "submit_ticket_1": "Harap laporkan masalah ini agar kami dapat memperbaikinya:",
     "submit_ticket_2": "Ambil tangkapan layar dari layar ini.",
@@ -3275,8 +3275,8 @@
     "add_token": "Klik di sini untuk menambahkan token secara manual",
     "add_token_manually": "Tambahkan secara manual.",
     "got_it": "Mengerti",
-    "error_title": "Ups! Terjadi kesalahan.",
-    "error_message": "Terjadi kesalahan saat memuat informasi jaringan. Silakan coba lagi nanti.",
+    "error_title": "Tidak dapat memuat informasi jaringan",
+    "error_message": "Kami tidak dapat memuat detail jaringan. Ini mungkin karena masalah konektivitas. Harap periksa koneksi Anda dan coba lagi.",
     "private_network_third_description": "Masukkan nama untuk jaringan ini agar mudah diidentifikasi.",
     "learn_more_url": "https://support.metamask.io/networks-and-sidechains/managing-networks/user-guide-custom-networks-and-sidechains/",
     "enable_token_detection": "Aktifkan deteksi token otomatis",
@@ -3287,8 +3287,8 @@
     "non_evm_second_description": "Anda akan kehilangan aset milik Anda jika mencoba mengirimnya dari atau ke jaringan lain."
   },
   "download_files": {
-    "error": "Gagal mengunduh lampiran.",
-    "unknownError": "Terjadi kesalahan tidak dikenal"
+    "error": "Tidak dapat mengunduh file. Periksa koneksi internet dan ruang penyimpanan Anda, lalu coba lagi.",
+    "unknownError": "Terjadi kesalahan yang tidak terduga saat mengunduh. Harap coba lagi atau hubungi dukungan jika ini berlanjut."
   },
   "remember_me": {
     "enable_remember_me": "Aktifkan Ingatkan saya",
@@ -3461,9 +3461,9 @@
     "device_unlocked_message": "Perangkat tidak terkunci",
     "ledger_disconnected": "Sambungan perangkat terputus",
     "ledger_disconnected_error": "Koneksi ke perangkat telah terputus. Silakan coba lagi.",
-    "unknown_error": "Terjadi kesalahan tidak terduga.",
+    "unknown_error": "Terjadi kesalahan yang tidak terduga. Jika ini terus berlanjut, coba mulai ulang aplikasi atau hubungi dukungan.",
     "unknown_error_message": "Terjadi kesalahan tidak terduga. Silakan coba lagi.",
-    "error_occured": "Terjadi kesalahan",
+    "error_occured": "Terjadi kesalahan dengan tindakan ini",
     "how_to_install_eth_app": "Cara menginstal aplikasi Ethereum di perangkat Ledger",
     "ledger_account_count": "Anda menggunakan 1 akun dari Ledger dengan MetaMask Mobile.",
     "open_eth_app": "Buka aplikasi Ethereum",

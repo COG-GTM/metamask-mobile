@@ -282,7 +282,7 @@
     "desc": "Pakilagay ang iyong password para magpatuloy",
     "password": "Password",
     "confirm_button": "Kumpirmahin",
-    "error": "Error"
+    "error": "Hindi ma-verify ang password"
   },
   "choose_password": {
     "title": "Gumawa ng password",
@@ -385,7 +385,7 @@
   },
   "send": {
     "title": "Magpadala",
-    "deeplink_failure": "Nagkaproblema. Pakisubukang muli",
+    "deeplink_failure": "Hindi mabuksan ang link na ito. Pakisuri kung valid ang link at subukang muli.",
     "warn_network_change": "Inilipat ang network sa ",
     "send_to": "Ipadala kay/sa",
     "amount": "Halaga",
@@ -1327,7 +1327,7 @@
     "private_key_copied_ios": "Ang pribadong key ay pansamantalang kinopya sa clipboard\n",
     "private_key_copied_android": "Ang pribadong key ay kinopya sa clipboard\n",
     "warning_incorrect_password": "Mali ang password",
-    "unknown_error": "Hindi ma-unlock ang iyong account. Pakisubukan ulit.",
+    "unknown_error": "Naganap ang hindi inaasahang error. Kung magpapatuloy ito, subukang i-restart ang app o makipag-ugnayan sa support.",
     "hardware_error": "Isa itong account ng wallet na hardware, hindi mo mae-export ang iyong pribadong key.",
     "seed_warning": "Ito ang pariralang may 12 salita ng wallet mo. Magagamit ang pariralang ito para makontrol ang lahat ng iyong account sa kasalukuyan at hinaharap, pati na ang kakayahang ipadala ang alinman sa kanilang mga pondo. Ligtas na itabi ang pariralang ito, HUWAG itong ibahagi sa kahit sino.",
     "text": "TEXT",
@@ -2759,8 +2759,8 @@
     "enter_lower_gas_fees": "Maglagay ng mas mababang halaga para bayaran ang gas fees",
     "max": "MAX",
     "try_again": "Subukan muli",
-    "error": "Error",
-    "something_went_wrong": "Teka, nagkaroon ng pagkakamali",
+    "error": "Error sa transaksyon",
+    "something_went_wrong": "Hindi makumpleto ang aksyong ito. Pakisubukan muli.",
     "report_this_issue": "Iulat ang isyung ito",
     "no_providers_available": "Wala available na mga provider",
     "try_different_amount_to_buy_input": "Subukang pumili ng ibang paraan ng pagbabayad o subukang dagdagan o bawasan ang halagang gusto mong bilhin!",
@@ -3055,8 +3055,8 @@
     "not_supported": "Hindi sinusuportahan ang deeplink"
   },
   "error_screen": {
-    "title": "An error occurred",
-    "subtitle": "Hindi maipapakita ang iyong impormasyon. Huwag mag-alala, ligtas ang iyong wallet at pondo.",
+    "title": "Nakatagpo kami ng hindi inaasahang error",
+    "subtitle": "Hindi namin maipakita ang impormasyong ito sa ngayon. Ang iyong wallet at pondo ay nananatiling secure. Subukang i-refresh o i-restart ang app.",
     "try_again_button": "Subukan ulit",
     "submit_ticket_1": "Paki-report ang isyung ito para maayos namin:",
     "submit_ticket_2": "Kumuha ng screenshot ng screen na ito.",
@@ -3275,8 +3275,8 @@
     "add_token": "I-click dito para mano-manong idagdag ang mga token",
     "add_token_manually": "Idagdag ang mga ito ng manu-mano.",
     "got_it": "Kuha ko na",
-    "error_title": "Oops! Nagkaroon ng problema.",
-    "error_message": "Nagkaroon ng error sa pag-load ng impormasyon ng network. Pakisubukan muli mamaya.",
+    "error_title": "Hindi ma-load ang impormasyon ng network",
+    "error_message": "Hindi namin ma-load ang mga detalye ng network. Maaaring dahil ito sa mga isyu sa koneksyon. Pakisuri ang iyong koneksyon at subukang muli.",
     "private_network_third_description": "Pakilagyan ng pangalan ang network na ito para mas madaling tukuyin.",
     "learn_more_url": "https://support.metamask.io/networks-and-sidechains/managing-networks/user-guide-custom-networks-and-sidechains/",
     "enable_token_detection": "Paganahin ang awtomatikong pagtuklas ng token",
@@ -3287,8 +3287,8 @@
     "non_evm_second_description": "Mawawala ang mga asset mo kapag sinubukan mong ipadala ang mga ito mula sa o papunta sa ibang network."
   },
   "download_files": {
-    "error": "Nabigong i-download ang attachment.",
-    "unknownError": "May naganap na di kilalang error"
+    "error": "Hindi ma-download ang file. Suriin ang iyong internet connection at storage space, pagkatapos ay subukang muli.",
+    "unknownError": "Naganap ang hindi inaasahang error sa pag-download. Pakisubukang muli o makipag-ugnayan sa support kung magpapatuloy ito."
   },
   "remember_me": {
     "enable_remember_me": "I-on ang Tandaan ako",
@@ -3461,9 +3461,9 @@
     "device_unlocked_message": "Naka-unlock ang device",
     "ledger_disconnected": "Nadiskonekta ang iyong device",
     "ledger_disconnected_error": "Nawala ang koneksyon sa iyong device. Pakisubukang muli.",
-    "unknown_error": "Naganap ang hindi inaasahang error.",
+    "unknown_error": "Naganap ang hindi inaasahang error. Kung magpapatuloy ito, subukang i-restart ang app o makipag-ugnayan sa support.",
     "unknown_error_message": "May naganap na hindi inaasahang error. Mangyaring subukan muli.",
-    "error_occured": "May naganap na error",
+    "error_occured": "May nangyaring mali sa aksyong ito",
     "how_to_install_eth_app": "Paano i-install ang app ng Ethereum sa isang Ledger device",
     "ledger_account_count": "Gumagamit ka ng 1 account mula sa iyong Ledger gamit ang MetaMask Mobile.",
     "open_eth_app": "Mangyaring buksan ang app ng Ethereum",

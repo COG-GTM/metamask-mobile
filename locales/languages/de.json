@@ -282,7 +282,7 @@
     "desc": "Bitte geben Sie Ihr Passwort ein, um fortzufahren.",
     "password": "Passwort",
     "confirm_button": "Bestätigen",
-    "error": "Fehler"
+    "error": "Passwort kann nicht verifiziert werden"
   },
   "choose_password": {
     "title": "Passwort erstellen",
@@ -385,7 +385,7 @@
   },
   "send": {
     "title": "Senden",
-    "deeplink_failure": "Hoppla! Etwas ist schiefgelaufen! Bitte versuchen Sie es erneut.",
+    "deeplink_failure": "Dieser Link kann nicht geöffnet werden. Bitte überprüfen Sie, ob der Link gültig ist, und versuchen Sie es erneut.",
     "warn_network_change": "Netzwerk geändert zu",
     "send_to": "Senden an",
     "amount": "Betrag",
@@ -1327,7 +1327,7 @@
     "private_key_copied_ios": "Privater Schlüssel wurde temporär in die Zwischenablage kopiert\n",
     "private_key_copied_android": "Privater Schlüssel wurde in die Zwischenablage kopiert",
     "warning_incorrect_password": "Falsches Passwort",
-    "unknown_error": "Konto konnte nicht entsperrt werden. Bitte versuchen Sie es erneut.",
+    "unknown_error": "Ein unerwarteter Fehler ist aufgetreten. Wenn dies weiterhin auftritt, versuchen Sie, die App neu zu starten oder kontaktieren Sie den Support.",
     "hardware_error": "Dies ist ein Hardware-Wallet-Konto. Sie können Ihren privaten Schlüssel nicht exportieren.",
     "seed_warning": "Dies ist die 12-Worte-Phrase Ihrer Wallet. Diese Phrase kann verwendet werden, um die Kontrolle über alle Ihre aktuellen und zukünftigen Konten zu erlangen, einschließlich der Möglichkeit, Gelder auf Ihre Wallet zu überweisen. Bewahren Sie diese Phrase sicher auf und TEILEN SIE sie mit niemanden.",
     "text": "TEXT",
@@ -2759,8 +2759,8 @@
     "enter_lower_gas_fees": "Geben Sie einen niedrigeren Betrag für die Gas-Gebühren ein",
     "max": "MAX",
     "try_again": "Erneut versuchen",
-    "error": "Fehler",
-    "something_went_wrong": "Hoppla, etwas ist schiefgelaufen.",
+    "error": "Transaktionsfehler",
+    "something_went_wrong": "Diese Aktion konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
     "report_this_issue": "Problem melden",
     "no_providers_available": "Keine Anbieter verfügbar",
     "try_different_amount_to_buy_input": "Versuchen Sie, eine andere Zahlungsmethode auszuwählen oder den gewünschten Kaufbetrag zu reduzieren bzw. zu erhöhen!",
@@ -3055,8 +3055,8 @@
     "not_supported": "Deeplink nicht unterstützt"
   },
   "error_screen": {
-    "title": "Ein Fehler ist aufgetreten",
-    "subtitle": "Ihre Informationen können nicht angezeigt werden. Keine Sorge, Ihre Wallet und Ihre Gelder sind sicher.",
+    "title": "Es ist ein unerwarteter Fehler aufgetreten",
+    "subtitle": "Wir können diese Informationen derzeit nicht anzeigen. Ihr Wallet und Ihre Guthaben bleiben sicher. Versuchen Sie, die App zu aktualisieren oder neu zu starten.",
     "try_again_button": "Erneut versuchen",
     "submit_ticket_1": "Bitte melden Sie diesen Fehler, damit wir ihn beheben können:",
     "submit_ticket_2": "Machen Sie einen Screenshot Ihres Bildschirms.",
@@ -3275,8 +3275,8 @@
     "add_token": "Klicken Sie hier, um die Tokens manuell hinzuzufügen.",
     "add_token_manually": "Fügen Sie sie manuell hinzu.",
     "got_it": "Verstanden",
-    "error_title": "Hoppla! Etwas ist schiefgelaufen.",
-    "error_message": "Beim Laden der Netzwerkinformationen ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+    "error_title": "Netzwerkinformationen können nicht geladen werden",
+    "error_message": "Wir konnten die Netzwerkdetails nicht laden. Dies kann auf Verbindungsprobleme zurückzuführen sein. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
     "private_network_third_description": "Bitte geben Sie einen Namen für dieses Netzwerk ein, damit es leicht identifiziert werden kann.",
     "learn_more_url": "https://support.metamask.io/networks-and-sidechains/managing-networks/user-guide-custom-networks-and-sidechains/",
     "enable_token_detection": "Automatische Token-Erkennung einschalten",
@@ -3287,8 +3287,8 @@
     "non_evm_second_description": "Sie werden Ihre Assets verlieren, wenn Sie versuchen, sie von einem anderen Netzwerk bzw. an ein anderes Netzwerk zu senden."
   },
   "download_files": {
-    "error": "Anhang konnte nicht heruntergeladen werden.",
-    "unknownError": "Ein unbekannter Fehler ist aufgetreten."
+    "error": "Datei kann nicht heruntergeladen werden. Überprüfen Sie Ihre Internetverbindung und Ihren Speicherplatz und versuchen Sie es erneut.",
+    "unknownError": "Beim Download ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support, wenn dies weiterhin auftritt."
   },
   "remember_me": {
     "enable_remember_me": "„Angemeldet bleiben“ aktivieren",
@@ -3461,9 +3461,9 @@
     "device_unlocked_message": "Gerät ist entsperrt",
     "ledger_disconnected": "Verbindung zu Ihrem Gerät unterbrochen",
     "ledger_disconnected_error": "Die Verbindung zu Ihrem Gerät wurde unterbrochen. Bitte versuchen Sie es erneut.",
-    "unknown_error": "Ein unerwarteter Fehler ist aufgetreten.",
+    "unknown_error": "Ein unerwarteter Fehler ist aufgetreten. Wenn dies weiterhin auftritt, versuchen Sie, die App neu zu starten oder kontaktieren Sie den Support.",
     "unknown_error_message": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
-    "error_occured": "Ein Fehler ist aufgetreten",
+    "error_occured": "Bei dieser Aktion ist ein Fehler aufgetreten",
     "how_to_install_eth_app": "So installieren Sie die Ethereum-App auf einem Ledger-Gerät",
     "ledger_account_count": "Sie verwenden 1 Konto von Ihrem Ledger mit MetaMask Mobile.",
     "open_eth_app": "Bitte öffnen Sie die Ethereum-App.",

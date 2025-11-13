@@ -282,7 +282,7 @@
     "desc": "Veuillez saisir votre mot de passe pour continuer",
     "password": "Mot de passe",
     "confirm_button": "Confirmer",
-    "error": "Erreur"
+    "error": "Impossible de vérifier le mot de passe"
   },
   "choose_password": {
     "title": "Créer un mot de passe",
@@ -385,7 +385,7 @@
   },
   "send": {
     "title": "Envoyer",
-    "deeplink_failure": "Un problème est survenu, veuillez réessayer.",
+    "deeplink_failure": "Impossible d'ouvrir ce lien. Veuillez vérifier que le lien est valide et réessayer.",
     "warn_network_change": "Le réseau a été modifié pour",
     "send_to": "Envoyer à",
     "amount": "Montant",
@@ -2759,8 +2759,8 @@
     "enter_lower_gas_fees": "Saisissez un montant inférieur pour payer les frais de gaz",
     "max": "MAX.",
     "try_again": "Réessayer",
-    "error": "Erreur",
-    "something_went_wrong": "Oups ! Nous avons rencontré un problème",
+    "error": "Erreur de transaction",
+    "something_went_wrong": "Cette action n'a pas pu être complétée. Veuillez réessayer.",
     "report_this_issue": "Signaler ce problème",
     "no_providers_available": "Aucun fournisseur disponible",
     "try_different_amount_to_buy_input": "Essayez de choisir un autre mode de paiement ou essayez d’augmenter ou de réduire le montant de l’achat !",
@@ -3055,8 +3055,8 @@
     "not_supported": "Lien profond non pris en charge"
   },
   "error_screen": {
-    "title": "Une erreur est survenue",
-    "subtitle": "Vos informations ne peuvent pas être affichées. Ne vous inquiétez pas, votre portefeuille et vos fonds sont en sécurité.",
+    "title": "Nous avons rencontré une erreur inattendue",
+    "subtitle": "Nous ne pouvons pas afficher ces informations pour le moment. Votre portefeuille et vos fonds restent sécurisés. Essayez d'actualiser ou de redémarrer l'application.",
     "try_again_button": "Réessayer",
     "submit_ticket_1": "Veuillez signaler ce problème afin que nous puissions le résoudre :",
     "submit_ticket_2": "Faites une capture d’écran.",
@@ -3275,8 +3275,8 @@
     "add_token": "Cliquez ici pour ajouter les jetons manuellement",
     "add_token_manually": "Ajouter les jetons manuellement.",
     "got_it": "D’accord",
-    "error_title": "Oups ! Une erreur s’est produite.",
-    "error_message": "Une erreur de chargement des informations du réseau s’est produite. Veuillez réessayer plus tard.",
+    "error_title": "Impossible de charger les informations du réseau",
+    "error_message": "Nous n'avons pas pu charger les détails du réseau. Cela peut être dû à des problèmes de connectivité. Veuillez vérifier votre connexion et réessayer.",
     "private_network_third_description": "Veuillez saisir un nom pour ce réseau afin de faciliter son identification.",
     "learn_more_url": "https://support.metamask.io/networks-and-sidechains/managing-networks/user-guide-custom-networks-and-sidechains/",
     "enable_token_detection": "Activer la détection automatique des jetons",
@@ -3287,8 +3287,8 @@
     "non_evm_second_description": "Vous perdrez vos actifs si vous tentez de les envoyer depuis ou vers un autre réseau."
   },
   "download_files": {
-    "error": "Échec du téléchargement de la pièce jointe.",
-    "unknownError": "Une erreur inconnue s’est produite"
+    "error": "Impossible de télécharger le fichier. Vérifiez votre connexion Internet et votre espace de stockage, puis réessayez.",
+    "unknownError": "Une erreur inattendue s'est produite lors du téléchargement. Veuillez réessayer ou contacter le support si cela continue."
   },
   "remember_me": {
     "enable_remember_me": "Activer l'option « Se souvenir de moi »",
@@ -3461,9 +3461,9 @@
     "device_unlocked_message": "L’appareil est débloqué",
     "ledger_disconnected": "Votre appareil a été déconnecté",
     "ledger_disconnected_error": "La connexion à votre appareil a été perdue, veuillez réessayer.",
-    "unknown_error": "Une erreur inattendue est survenue.",
+    "unknown_error": "Une erreur inattendue est survenue. Si cela persiste, essayez de redémarrer l'application ou contactez le support.",
     "unknown_error_message": "Une erreur inattendue est survenue, veuillez réessayer.",
-    "error_occured": "Une erreur est survenue",
+    "error_occured": "Un problème est survenu avec cette action",
     "how_to_install_eth_app": "Comment installer l’application Ethereum sur un appareil Ledger",
     "ledger_account_count": "Vous utilisez 1 compte de votre Ledger avec MetaMask Mobile.",
     "open_eth_app": "Veuillez ouvrir l’application Ethereum",
