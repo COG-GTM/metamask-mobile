@@ -1283,7 +1283,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     try {
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
-      Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
+      Logger.error(error as Error, 'Navigation: Error when navigating to buy ETH.');
     }
 
     this.props.metrics.trackEvent(
@@ -1297,7 +1297,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     const { chainId } = this.props;
     InteractionManager.runAfterInteractions(() => {
       this.props.navigation.navigate(Routes.BROWSER.VIEW, {
-        newTabUrl: TESTNET_FAUCETS[chainId],
+        newTabUrl: (TESTNET_FAUCETS as any)[chainId],
         timestamp: Date.now(),
       });
     });
@@ -1310,18 +1310,18 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     this.setState({ isAnimating: false });
   };
 
-  updateTransactionState = (gas) => {
+  updateTransactionState = (gas: any) => {
     this.setState({
       EIP1559GasTransaction: gas,
       legacyGasTransaction: gas,
     });
   };
 
-  onGasChanged = (gasValue) => {
+  onGasChanged = (gasValue: any) => {
     this.setState({ gasSelected: gasValue });
   };
 
-  onGasCanceled = (gasValue) => {
+  onGasCanceled = (gasValue: any) => {
     this.setState({
       stopUpdateGas: false,
       gasSelectedTemp: gasValue,
@@ -1329,7 +1329,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     });
   };
 
-  updateGasState = ({ gasTxn, gasObj, gasSelect, txnType }) => {
+  updateGasState = ({ gasTxn, gasObj, gasSelect, txnType }: any) => {
     this.setState({
       gasSelectedTemp: gasSelect,
       gasSelected: gasSelect,
@@ -1348,11 +1348,11 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     });
   };
 
-  onContactUsClicked = () => {
+  onContactUsClicked = async () => {
     const { transaction } = this.props;
     const analyticsParams = {
-      ...this.getAnalyticsParams(),
-      ...getBlockaidTransactionMetricsParams(transaction),
+      ...await this.getAnalyticsParams(),
+      ...getBlockaidTransactionMetricsParams(transaction as any),
       external_link_clicked: 'security_alert_support_link',
     };
     this.props.metrics.trackEvent(
@@ -1379,15 +1379,19 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     return confirmButtonStyle;
   }
 
-  async persistTransactionParameters(transactionParams) {
+  async persistTransactionParameters(transactionParams: any) {
     const { TransactionController } = Engine.context;
     const { transactionMeta } = this.state;
     const { id: transactionId } = transactionMeta;
 
     const controllerTransactionMeta =
       TransactionController.state.transactions.find(
-        (tx) => tx.id === transactionId,
+        (tx: any) => tx.id === transactionId,
       );
+
+    if (!controllerTransactionMeta) {
+      return;
+    }
 
     const updatedTx = {
       ...controllerTransactionMeta,
@@ -1396,7 +1400,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         chainId: controllerTransactionMeta.chainId,
       },
     };
-    await updateTransaction(updatedTx);
+    await updateTransaction(updatedTx, undefined);
   }
 
   getTransactionMetrics = () => {
@@ -1404,7 +1408,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     const { confirmationMetricsById } = this.props;
     const { id: transactionId } = transactionMeta;
 
-    return confirmationMetricsById[transactionId]?.properties || {};
+    return confirmationMetricsById?.[transactionId ?? '']?.properties || {};
   };
 
   render = () => {
@@ -1462,9 +1466,9 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         testID={ConfirmViewSelectorsIDs.CONTAINER}
       >
         <AccountFromToInfoCard
-          transactionState={this.props.transactionState}
+          transactionState={this.props.transactionState as any}
           onPressFromAddressIcon={
-            !paymentRequest ? null : this.openAccountSelector
+            !paymentRequest ? undefined : this.openAccountSelector
           }
           layout="vertical"
         />
@@ -1473,11 +1477,11 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
             <>
               <TransactionBlockaidBanner
                 transactionId={this.state.transactionMeta.id}
-                style={styles.blockaidBanner}
+                style={(styles as any).blockaidBanner}
                 onContactUsClicked={this.onContactUsClicked}
               />
               <SmartTransactionsMigrationBanner
-                style={styles.smartTransactionsMigrationBanner}
+                style={(styles as any).smartTransactionsMigrationBanner}
               />
             </>
           )}
@@ -1508,7 +1512,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
                   small
                   iconStyle={styles.CollectibleMedia}
                   containerStyle={styles.CollectibleMedia}
-                  collectible={selectedAsset}
+                  collectible={selectedAsset as any}
                 />
               </View>
               <View>
@@ -1536,6 +1540,9 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
             legacy={!showFeeMarket}
             onlyGas={false}
             multiLayerL1FeeTotal={multiLayerL1FeeTotal}
+            hideTotal={false}
+            noMargin={false}
+            originWarning={undefined}
           />
           {mode === EDIT && (
             <CustomGasModal
@@ -1555,7 +1562,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
           )}
           {showCustomNonce && !shouldUseSmartTransaction && (
             <CustomNonce
-              nonce={nonce}
+              nonce={nonce ? Number(nonce) : undefined}
               onNonceEdit={() => this.toggleConfirmationModal(EDIT_NONCE)}
             />
           )}
@@ -1634,7 +1641,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
 Confirm.contextType = ThemeContext;
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: any) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId || selectEvmChainId(state);
 
@@ -1673,20 +1680,20 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  prepareTransaction: (transaction) =>
+const mapDispatchToProps = (dispatch: any) => ({
+  prepareTransaction: (transaction: any) =>
     dispatch(prepareTransaction(transaction)),
   resetTransaction: () => dispatch(resetTransaction()),
-  setTransactionId: (transactionId) =>
+  setTransactionId: (transactionId: any) =>
     dispatch(setTransactionId(transactionId)),
-  setNonce: (nonce) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
-  removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
+  setNonce: (nonce: any) => dispatch(setNonce(nonce)),
+  setProposedNonce: (nonce: any) => dispatch(setProposedNonce(nonce)),
+  removeFavoriteCollectible: (selectedAddress: any, chainId: any, collectible: any) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
-  showAlert: (config) => dispatch(showAlert(config)),
-  updateConfirmationMetric: ({ id, params }) =>
+  showAlert: (config: any) => dispatch(showAlert(config)),
+  updateConfirmationMetric: ({ id, params }: any) =>
     dispatch(updateConfirmationMetric({ id, params })),
-  setTransactionValue: (value) => dispatch(setTransactionValue(value)),
+  setTransactionValue: (value: any) => dispatch(setTransactionValue(value)),
 });
 
 export default connect(
