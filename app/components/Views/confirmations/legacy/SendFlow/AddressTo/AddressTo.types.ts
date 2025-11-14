@@ -1,29 +1,15 @@
+import { TextInput } from 'react-native';
+
 export interface SFAddressToProps {
   addressToReady: boolean;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  confusableCollectionArray: any;
+  confusableCollectionArray?: string[];
   highlighted: boolean;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  inputRef: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  inputWidth: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  isFromAddressBook: any;
+  inputRef?: React.RefObject<TextInput>;
+  inputWidth?: object;
+  isFromAddressBook?: boolean;
   onSubmit: (address: string) => void;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onToSelectedAddressChange: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toSelectedAddress: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toSelectedAddressName: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updateParentState: any;
+  onToSelectedAddressChange: (address?: string) => void;
+  toSelectedAddress?: string;
+  toSelectedAddressName?: string;
+  updateParentState?: (state: { highlighted: boolean }) => void;
 }

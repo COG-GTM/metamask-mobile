@@ -79,7 +79,7 @@ const SendFlowAddressTo = ({
   };
 
   const onToInputFocus = () => {
-    updateParentState({ highlighted: !highlighted });
+    updateParentState?.({ highlighted: !highlighted });
   };
   const onClear = () => onToSelectedAddressChange();
 

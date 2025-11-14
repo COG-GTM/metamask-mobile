@@ -46,7 +46,7 @@ describe('SendFlowAddressTo', () => {
           confusableCollectionArray={undefined}
           isFromAddressBook={undefined}
           updateParentState={undefined}
-          onToSelectedAddressChange={undefined}
+          onToSelectedAddressChange={() => undefined}
         />
       </Provider>,
     );
