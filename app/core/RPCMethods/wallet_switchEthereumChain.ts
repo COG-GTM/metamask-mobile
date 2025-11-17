@@ -64,6 +64,7 @@ export const wallet_switchEthereumChain = async ({
 }: WalletSwitchEthereumChainArgs): Promise<void> => {
   const {
     NetworkController,
+    SelectedNetworkController,
   } = Engine.context;
   const params = req.params?.[0];
   const { origin } = req;
