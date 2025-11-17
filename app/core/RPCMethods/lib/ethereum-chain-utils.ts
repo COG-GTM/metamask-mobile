@@ -212,18 +212,23 @@ export async function validateRpcEndpoint(rpcUrl: string, chainId: Hex): Promise
 
 export function findExistingNetwork(
   chainId: Hex,
-  networkConfigurations: Record<string, NetworkConfiguration>,
+  networkConfigurations: Record<string, NetworkConfiguration | unknown>,
 ): [string, NetworkConfiguration] | undefined {
   const existingEntry = Object.entries(networkConfigurations).find(
-    ([, networkConfiguration]) => networkConfiguration.chainId === chainId,
+    ([, networkConfiguration]) => 
+      typeof networkConfiguration === 'object' && 
+      networkConfiguration !== null && 
+      'chainId' in networkConfiguration &&
+      (networkConfiguration as NetworkConfiguration).chainId === chainId,
   );
   if (existingEntry) {
     const [, networkConfiguration] = existingEntry;
+    const config = networkConfiguration as NetworkConfiguration;
     const networkConfigurationId =
-      networkConfiguration.rpcEndpoints[
-        networkConfiguration.defaultRpcEndpointIndex
+      config.rpcEndpoints[
+        config.defaultRpcEndpointIndex
       ].networkClientId;
-    return [networkConfigurationId, networkConfiguration];
+    return [networkConfigurationId, config];
   }
   return;
 }
@@ -248,7 +253,7 @@ interface SwitchToNetworkParams {
     type: string;
     requestData: Record<string, unknown>;
     origin?: string;
-  }) => Promise<void>;
+  }) => Promise<unknown>;
   analytics?: Record<string, unknown>;
   origin: string;
   isAddNetworkFlow?: boolean;
