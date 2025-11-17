@@ -8,6 +8,42 @@ import {
   switchToNetwork,
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
+import { NetworkConfiguration } from '@metamask/network-controller';
+import { Hex } from '@metamask/utils';
+
+interface WalletSwitchEthereumChainParams {
+  chainId: string;
+}
+
+interface WalletSwitchEthereumChainHooks {
+  getCurrentChainIdForDomain: (origin: string) => Hex;
+  getNetworkConfigurationByChainId: (chainId: Hex) => NetworkConfiguration | undefined;
+  getCaveat: (args: { target: string; caveatType: string }) => { value: unknown } | undefined;
+  requestPermittedChainsPermissionIncrementalForOrigin: (args: {
+    origin: string;
+    chainId: Hex;
+    autoApprove: boolean;
+  }) => Promise<void>;
+  hasApprovalRequestsForOrigin?: () => boolean;
+  rejectApprovalRequestsForOrigin?: () => void;
+}
+
+interface WalletSwitchEthereumChainArgs {
+  req: {
+    params?: [WalletSwitchEthereumChainParams];
+    origin: string;
+  };
+  res: {
+    result: null;
+  };
+  requestUserApproval: (args: {
+    type: string;
+    requestData: Record<string, unknown>;
+    origin?: string;
+  }) => Promise<void>;
+  analytics?: Record<string, unknown>;
+  hooks: WalletSwitchEthereumChainHooks;
+}
 
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
@@ -25,12 +61,9 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: WalletSwitchEthereumChainArgs): Promise<void> => {
   const {
-    CurrencyRateController,
     NetworkController,
-    MultichainNetworkController,
-    SelectedNetworkController,
   } = Engine.context;
   const params = req.params?.[0];
   const { origin } = req;
@@ -42,7 +75,7 @@ export const wallet_switchEthereumChain = async ({
     });
   }
   const { chainId } = params;
-  const allowedKeys = {
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
@@ -79,16 +112,11 @@ export const wallet_switchEthereumChain = async ({
     );
 
     const toNetworkConfiguration =
-      hooks.getNetworkConfigurationByChainId(chainId);
+      hooks.getNetworkConfigurationByChainId(_chainId);
 
     await switchToNetwork({
       network: existingNetwork,
       chainId: _chainId,
-      controllers: {
-        CurrencyRateController,
-        MultichainNetworkController,
-        SelectedNetworkController,
-      },
       requestUserApproval,
       analytics,
       origin,
@@ -97,8 +125,10 @@ export const wallet_switchEthereumChain = async ({
         toNetworkConfiguration,
         fromNetworkConfiguration,
         ...hooks,
-      },
-    });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     res.result = null;
     return;
