@@ -15,7 +15,6 @@ interface WebviewProgressBarState {
 
 export default class WebviewProgressBar extends PureComponent<WebviewProgressBarProps, WebviewProgressBarState> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
   private mounted = false;
 
   state: WebviewProgressBarState = {
