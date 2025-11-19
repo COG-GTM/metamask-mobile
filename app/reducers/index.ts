@@ -35,7 +35,7 @@ import performanceReducer, {
   PerformanceState,
 } from '../core/redux/slices/performance';
 import { isTest } from '../util/test/utils';
-import { SecurityAlertResponse } from '../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
+import { SecurityAlertResponse } from '@metamask/transaction-controller';
 
 export interface LegalNoticesState {
   newPrivacyPolicyToastClickedOrClosed: boolean;
@@ -248,7 +248,7 @@ export type StateFromReducer<reducer> = reducer extends Reducer<
 // to this type. Once that is complete, we can automatically generate this type
 // using the `StateFromReducersMapObject` type from redux.
 export interface RootState {
-  legalNotices: StateFromReducer<typeof legalNoticesReducer>;
+  legalNotices: LegalNoticesState;
   collectibles: CollectiblesState;
   engine: { backgroundState: EngineState };
   privacy: PrivacyState;
@@ -283,31 +283,31 @@ export interface RootState {
 }
 
 const baseReducers = {
-  legalNotices: legalNoticesReducer,
-  collectibles: collectiblesReducer,
+  legalNotices: legalNoticesReducer as unknown as Reducer<LegalNoticesState, AnyAction>,
+  collectibles: collectiblesReducer as unknown as Reducer<CollectiblesState, AnyAction>,
   engine: engineReducer as Reducer<RootState['engine'], AnyAction>,
-  privacy: privacyReducer,
-  bookmarks: bookmarksReducer,
-  browser: browserReducer,
-  modals: modalsReducer,
-  settings: settingsReducer,
-  alert: alertReducer,
-  transaction: transactionReducer,
+  privacy: privacyReducer as unknown as Reducer<PrivacyState, AnyAction>,
+  bookmarks: bookmarksReducer as unknown as Reducer<BookmarksState, AnyAction>,
+  browser: browserReducer as unknown as Reducer<BrowserState, AnyAction>,
+  modals: modalsReducer as unknown as Reducer<ModalsState, AnyAction>,
+  settings: settingsReducer as unknown as Reducer<SettingsState, AnyAction>,
+  alert: alertReducer as unknown as Reducer<AlertState, AnyAction>,
+  transaction: transactionReducer as unknown as Reducer<TransactionState, AnyAction>,
   user: userReducer,
-  wizard: wizardReducer,
+  wizard: wizardReducer as unknown as Reducer<WizardState, AnyAction>,
   onboarding: onboardingReducer,
-  notification: notificationReducer,
-  signatureRequest: signatureRequestReducer,
-  swaps: swapsReducer,
+  notification: notificationReducer as unknown as Reducer<NotificationState, AnyAction>,
+  signatureRequest: signatureRequestReducer as unknown as Reducer<SignatureRequestState, AnyAction>,
+  swaps: swapsReducer as unknown as Reducer<SwapsState, AnyAction>,
   fiatOrders,
-  infuraAvailability: infuraAvailabilityReducer,
+  infuraAvailability: infuraAvailabilityReducer as unknown as Reducer<InfuraAvailabilityState, AnyAction>,
   navigation: navigationReducer,
-  networkOnboarded: networkOnboardReducer,
-  security: securityReducer,
+  networkOnboarded: networkOnboardReducer as unknown as Reducer<NetworkOnboardedState, AnyAction>,
+  security: securityReducer as unknown as Reducer<SecurityState, AnyAction>,
   sdk: sdkReducer,
-  experimentalSettings: experimentalSettingsReducer,
-  rpcEvents: rpcEventReducer,
-  accounts: accountsReducer,
+  experimentalSettings: experimentalSettingsReducer as unknown as Reducer<ExperimentalSettingsState, AnyAction>,
+  rpcEvents: rpcEventReducer as unknown as Reducer<iEventGroup, AnyAction>,
+  accounts: accountsReducer as unknown as Reducer<iAccountEvent, AnyAction>,
   inpageProvider: inpageProviderReducer,
   originThrottling: originThrottlingReducer,
   notifications: notificationsAccountsProvider,
