@@ -159,7 +159,11 @@ const DetailsModalSection = ({ style, borderBottom, ...props }: DetailsModalSect
 
   return (
     <View
-      style={[styles.section, borderBottom && styles.sectionBorderBottom, style]}
+      style={[
+        styles.section,
+        ...(borderBottom ? [styles.sectionBorderBottom] : []),
+        ...(style == null ? [] : [style]),
+      ]}
       {...props}
     />
   );
@@ -177,7 +181,14 @@ const DetailsModalColumn = ({ style, end, ...props }: DetailsModalColumnProps) =
   const styles = createStyles(colors);
 
   return (
-    <View style={[styles.column, end && styles.columnEnd, style]} {...props} />
+    <View
+      style={[
+        styles.column,
+        ...(end ? [styles.columnEnd] : []),
+        ...(style == null ? [] : [style]),
+      ]}
+      {...props}
+    />
   );
 };
 

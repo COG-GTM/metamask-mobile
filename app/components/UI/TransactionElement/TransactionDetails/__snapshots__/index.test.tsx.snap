@@ -340,8 +340,6 @@ exports[`TransactionDetails should render correctly 1`] = `
                               {
                                 "flex": 1,
                               },
-                              undefined,
-                              undefined,
                             ]
                           }
                         >
@@ -451,7 +449,6 @@ exports[`TransactionDetails should render correctly 1`] = `
                               {
                                 "alignItems": "flex-end",
                               },
-                              undefined,
                             ]
                           }
                         >
@@ -529,7 +526,6 @@ exports[`TransactionDetails should render correctly 1`] = `
                               "flexDirection": "row",
                               "paddingVertical": 16,
                             },
-                            false,
                           ]
                         }
                       >
@@ -539,8 +535,6 @@ exports[`TransactionDetails should render correctly 1`] = `
                               {
                                 "flex": 1,
                               },
-                              undefined,
-                              undefined,
                             ]
                           }
                         >
@@ -794,7 +788,6 @@ exports[`TransactionDetails should render correctly 1`] = `
                               {
                                 "alignItems": "flex-end",
                               },
-                              undefined,
                             ]
                           }
                         >
@@ -1047,7 +1040,6 @@ exports[`TransactionDetails should render correctly 1`] = `
                               "flexDirection": "row",
                               "paddingVertical": 16,
                             },
-                            undefined,
                           ]
                         }
                       >
@@ -1057,8 +1049,6 @@ exports[`TransactionDetails should render correctly 1`] = `
                               {
                                 "flex": 1,
                               },
-                              undefined,
-                              undefined,
                             ]
                           }
                         >
