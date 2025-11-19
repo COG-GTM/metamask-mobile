@@ -35,7 +35,7 @@ import performanceReducer, {
   PerformanceState,
 } from '../core/redux/slices/performance';
 import { isTest } from '../util/test/utils';
-import { SecurityAlertResponse } from '@metamask/transaction-controller';
+import type { SecurityAlertResponse } from '@metamask/transaction-controller';
 
 export interface LegalNoticesState {
   newPrivacyPolicyToastClickedOrClosed: boolean;
@@ -244,9 +244,6 @@ export type StateFromReducer<reducer> = reducer extends Reducer<
   ? State
   : never;
 
-// TODO: Convert all reducers to valid TypeScript Redux reducers, and add them
-// to this type. Once that is complete, we can automatically generate this type
-// using the `StateFromReducersMapObject` type from redux.
 export interface RootState {
   legalNotices: LegalNoticesState;
   collectibles: CollectiblesState;
