@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import Device from '../../../util/device';
-// @ts-ignore - no type definitions available
+// @ts-expect-error - no type definitions available for react-native-confetti
 import ConfettiNormal from 'react-native-confetti';
 import ConfettiCannon from 'react-native-confetti-cannon';
 

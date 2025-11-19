@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-// @ts-ignore - no type definitions available
+// @ts-expect-error - no type definitions available for react-native-progress/Bar
 import ProgressBar from 'react-native-progress/Bar';
 import FadeView from '../FadeView';
 import { ThemeContext, mockTheme } from '../../../util/theme';
