@@ -19,7 +19,7 @@ import collectiblesReducer from './collectibles';
 import navigationReducer, { NavigationState } from './navigation';
 import networkOnboardReducer from './networkSelector';
 import securityReducer, { SecurityState } from './security';
-import { combineReducers, Reducer } from 'redux';
+import { combineReducers, Reducer, AnyAction } from 'redux';
 import experimentalSettingsReducer from './experimentalSettings';
 import { EngineState } from '../core/Engine';
 import rpcEventReducer, { iEventGroup } from './rpcEvents';
@@ -75,7 +75,7 @@ export interface BrowserStateFavicon {
 }
 
 export interface BrowserState {
-  history: Array<{ url: string; name: string }>;
+  history: { url: string; name: string }[];
   whitelist: string[];
   tabs: BrowserStateTab[];
   favicons: BrowserStateFavicon[];
@@ -239,9 +239,7 @@ export interface PrivacyState {
  */
 export type StateFromReducer<reducer> = reducer extends Reducer<
   infer State,
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  any
+  AnyAction
 >
   ? State
   : never;
@@ -250,7 +248,7 @@ export type StateFromReducer<reducer> = reducer extends Reducer<
 // to this type. Once that is complete, we can automatically generate this type
 // using the `StateFromReducersMapObject` type from redux.
 export interface RootState {
-  legalNotices: LegalNoticesState;
+  legalNotices: StateFromReducer<typeof legalNoticesReducer>;
   collectibles: CollectiblesState;
   engine: { backgroundState: EngineState };
   privacy: PrivacyState;
@@ -287,9 +285,7 @@ export interface RootState {
 const baseReducers = {
   legalNotices: legalNoticesReducer,
   collectibles: collectiblesReducer,
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  engine: engineReducer as any,
+  engine: engineReducer as Reducer<RootState['engine'], AnyAction>,
   privacy: privacyReducer,
   bookmarks: bookmarksReducer,
   browser: browserReducer,
@@ -325,10 +321,6 @@ if (isTest) {
   baseReducers.performance = performanceReducer;
 }
 
-// TODO: Fix the Action type. It's set to `any` now because some of the
-// TypeScript reducers have invalid actions
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rootReducer = combineReducers<RootState, any>(baseReducers);
+const rootReducer = combineReducers<RootState, AnyAction>(baseReducers);
 
 export default rootReducer;
