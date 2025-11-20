@@ -95,10 +95,10 @@ AppRegistry.registerComponent(name, () =>
   isE2E ? Root : Sentry.wrap(Root),
 );
 
-type GlobalErrorUtils = {
+interface GlobalErrorUtils {
   getGlobalHandler: () => ErrorHandlerCallback;
   setGlobalHandler: (handler: ErrorHandlerCallback) => void;
-};
+}
 
 type RNGlobal = typeof globalThis & { ErrorUtils: GlobalErrorUtils };
 
