@@ -1,3 +1,4 @@
+/** @type {{ approvedHosts: Record<string, boolean>; revealSRPTimestamps: number[] }} */
 const initialState = {
   approvedHosts: {},
   revealSRPTimestamps: [],
