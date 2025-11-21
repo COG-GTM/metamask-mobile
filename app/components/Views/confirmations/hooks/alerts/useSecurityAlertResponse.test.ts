@@ -5,6 +5,7 @@ import {
   transferConfirmationState,
 } from '../../../../../util/test/confirm-data-helpers';
 import { useSecurityAlertResponse } from './useSecurityAlertResponse';
+import { RootState } from '../../../../../reducers';
 
 jest.mock('../../../../../core/Engine', () => ({
   context: {
@@ -21,7 +22,7 @@ describe('useSecurityAlertResponse', () => {
         signatureRequest: {
           securityAlertResponse: mockSecurityAlertResponse,
         },
-      }),
+      }) as unknown as RootState,
     });
     expect(result.current).toStrictEqual({
       securityAlertResponse: mockSecurityAlertResponse,

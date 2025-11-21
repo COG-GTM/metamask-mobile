@@ -7,6 +7,7 @@ import {
   typedSignV1ConfirmationState,
 } from '../../../../../util/test/confirm-data-helpers';
 import SignatureBlockaidBanner from './signature-blockaid-banner';
+import { RootState } from '../../../../../reducers';
 
 jest.mock('react-native-gzip', () => ({
   deflate: (str: string) => str,
@@ -33,7 +34,7 @@ jest.mock('../../../../../util/confirmation/signatureUtils', () => ({
 const typedSignV1ConfirmationStateWithBlockaidResponse = {
   ...typedSignV1ConfirmationState,
   signatureRequest: { securityAlertResponse },
-};
+} as unknown as RootState;
 
 describe('Confirm', () => {
   it('should return null if request does not have securityAlertResponse', async () => {
