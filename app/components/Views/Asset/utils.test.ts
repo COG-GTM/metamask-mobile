@@ -64,13 +64,8 @@ describe('getSwapsIsLive', () => {
       const result = getSwapsIsLive(
         {
           ...mockState,
-          swaps: { 
-            isLive: mockState.swaps.isLive,
-            hasOnboarded: mockState.swaps.hasOnboarded,
-            featureFlags: mockState.swaps.featureFlags,
-            '0x1': { isLive: false, featureFlags: undefined },
-          },
-        },
+          swaps: { ...mockState.swaps, '0x1': { isLive: false, featureFlags: undefined } },
+        } as unknown as RootState,
         mockChainId,
       );
       expect(result).toBe(false);
@@ -80,13 +75,8 @@ describe('getSwapsIsLive', () => {
       const result = getSwapsIsLive(
         {
           ...mockState,
-          swaps: { 
-            isLive: mockState.swaps.isLive,
-            hasOnboarded: mockState.swaps.hasOnboarded,
-            featureFlags: mockState.swaps.featureFlags,
-            '0x1': null as any,
-          },
-        },
+          swaps: { ...mockState.swaps, '0x1': null as any },
+        } as unknown as RootState,
         mockChainId,
       );
       expect(result).toBe(false);

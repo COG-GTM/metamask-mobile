@@ -231,7 +231,7 @@ describe('Confirm', () => {
       state: {
         ...typedSignV1ConfirmationState,
         signatureRequest: { securityAlertResponse },
-      },
+      } as any,
     });
 
     await act(async () => {
@@ -250,7 +250,7 @@ describe('Confirm', () => {
       state: {
         ...typedSignV1ConfirmationState,
         signatureRequest: { securityAlertResponse },
-      },
+      } as any,
     });
     expect(queryByText('Signature request')).toBeNull();
   });
