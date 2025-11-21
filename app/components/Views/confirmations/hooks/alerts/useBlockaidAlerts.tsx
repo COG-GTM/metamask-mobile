@@ -81,7 +81,8 @@ export default function useBlockaidAlerts(): Alert[] {
 
     const { result_type, reason, features } = securityAlertResponse;
 
-    const featuresStrings: string[] | undefined = features?.filter(
+    const rawFeatures = Array.isArray(features) ? features : [];
+    const featuresStrings = (rawFeatures as (string | Record<string, string>)[]).filter(
       (feature): feature is string => typeof feature === 'string',
     );
 
