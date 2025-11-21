@@ -13,7 +13,9 @@ describe('getSwapsIsLive', () => {
   const mockState = {
     swaps: {
       isLive: true,
-      '0x1': { isLive: true },
+      hasOnboarded: false,
+      featureFlags: undefined,
+      '0x1': { isLive: true, featureFlags: undefined },
     },
     engine: {
       backgroundState: {
