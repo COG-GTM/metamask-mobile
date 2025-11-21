@@ -80,3 +80,34 @@ if (isTest) {
 }
 
 export default initialRootState;
+
+export type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
+};
+
+function deepMerge<T>(base: T, overrides?: DeepPartial<T>): T {
+  if (!overrides) return base;
+  if (typeof base !== 'object' || base === null) return base;
+  if (Array.isArray(base)) return (overrides as T) ?? base;
+
+  const result = { ...base };
+  for (const key in overrides) {
+    if (Object.prototype.hasOwnProperty.call(overrides, key)) {
+      const overrideValue = overrides[key];
+      const baseValue = base[key];
+      
+      if (overrideValue !== undefined) {
+        if (typeof baseValue === 'object' && baseValue !== null && !Array.isArray(baseValue) &&
+            typeof overrideValue === 'object' && overrideValue !== null && !Array.isArray(overrideValue)) {
+          (result as any)[key] = deepMerge(baseValue, overrideValue as any);
+        } else {
+          (result as any)[key] = overrideValue;
+        }
+      }
+    }
+  }
+  return result;
+}
+
+export const buildInitialRootState = (overrides?: DeepPartial<RootState>): RootState => 
+  deepMerge(initialRootState, overrides);
