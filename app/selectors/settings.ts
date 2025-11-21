@@ -5,27 +5,27 @@ const selectSettings = (state: RootState) => state.settings;
 
 export const selectShowFiatInTestnets = createSelector(
   selectSettings,
-  (settingsState: Record<string, unknown>) =>
+  (settingsState) =>
     settingsState.showFiatOnTestnets as boolean,
 );
 
 export const selectPrimaryCurrency = createSelector(
   selectSettings,
-  (settingsState: Record<string, unknown>) => settingsState.primaryCurrency,
+  (settingsState) => settingsState.primaryCurrency,
 );
 export const selectShowCustomNonce = createSelector(
   selectSettings,
-  (settingsState: Record<string, unknown>) => settingsState.showCustomNonce,
+  (settingsState) => settingsState.showCustomNonce,
 );
 
 export const selectBasicFunctionalityEnabled = createSelector(
   selectSettings,
-  (settingsState: Record<string, unknown>) =>
+  (settingsState) =>
     settingsState.basicFunctionalityEnabled as boolean,
 );
 
 export const selectHideZeroBalanceTokens = createSelector(
   selectSettings,
-  (settingsState: Record<string, unknown>) =>
+  (settingsState) =>
     Boolean(settingsState.hideZeroBalanceTokens),
 );

@@ -14,5 +14,5 @@ export const selectBrowserHistoryWithType = createDeepEqualSelector(
 
 export const selectBrowserBookmarksWithType = createDeepEqualSelector(
     (state: RootState) => state.bookmarks,
-    (bookmarks: SiteItem[]) => bookmarks.map(item => ({...item, category: UrlAutocompleteCategory.Favorites} as const))
+    (bookmarks) => bookmarks.map(item => ({url: item.url, name: item.name || '', category: UrlAutocompleteCategory.Favorites} as const))
 );
