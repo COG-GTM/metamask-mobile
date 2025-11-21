@@ -26,13 +26,11 @@ const initialState: DeepPartial<RootState> = {
       value: '',
       data: '0x0',
       from: MOCK_ADDRESS_2,
-      gas: '',
-      gasPrice: '',
       to: '0x2',
     },
     selectedAsset: { symbol: 'ETH' },
     assetType: undefined,
-  },
+  } as any,
   settings: {},
   engine: {
     backgroundState: {

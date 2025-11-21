@@ -29,13 +29,13 @@ const mockInitialState = {
       gasPrice: '0x0',
       data: '0x0',
     },
-  },
+  } as any,
   engine: {
     backgroundState: {
       ...backgroundState,
     },
   },
-};
+} as any;
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),

@@ -92,7 +92,7 @@ const initialState = {
       result_type: 'Benign',
     },
   },
-};
+} as any;
 
 const store = mockStore(initialState);
 

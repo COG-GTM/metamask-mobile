@@ -33,7 +33,6 @@ const mockState: DeepPartial<RootState> = {
     },
   },
   transaction: {
-    id: 123,
     securityAlertResponses: {
       123: {
         result_type: ResultType.Warning,
@@ -43,7 +42,7 @@ const mockState: DeepPartial<RootState> = {
         chainId: '0x1',
       },
     },
-  },
+  } as any,
 };
 
 describe('TransactionBlockaidBanner', () => {

@@ -96,7 +96,7 @@ const mockInitialState: DeepPartial<RootState> = {
       to: '0xe64dD0AB5ad7e8C5F2bf6Ce75C34e187af8b920A',
       value: '0x2',
     },
-  },
+  } as any,
   fiatOrders: {
     networks: [
       {

@@ -99,7 +99,7 @@ describe('useSignatureMetrics', () => {
       state: {
         ...typedSignV4ConfirmationState,
         signatureRequest: { securityAlertResponse },
-      },
+      } as any,
     });
     // first call for 'SIGNATURE_REQUESTED' event
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);
