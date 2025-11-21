@@ -2,6 +2,29 @@ import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
 import { AnyAction } from 'redux';
 
+const normalizeTxValue = (value: unknown): string | undefined => {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'string') return value;
+  if (value && typeof (value as any).toString === 'function') {
+    return (value as any).toString(10);
+  }
+  return undefined;
+};
+
+const normalizeTxData = (txData: any): Partial<TransactionObject> => {
+  if (!txData) return {};
+  return {
+    data: txData.data,
+    from: txData.from,
+    gas: normalizeTxValue(txData.gas),
+    gasPrice: normalizeTxValue(txData.gasPrice),
+    to: txData.to,
+    value: normalizeTxValue(txData.value),
+    maxFeePerGas: normalizeTxValue(txData.maxFeePerGas),
+    maxPriorityFeePerGas: normalizeTxValue(txData.maxPriorityFeePerGas),
+  };
+};
+
 export interface TransactionObject {
   data?: string;
   from?: string;
@@ -151,7 +174,7 @@ const transactionReducer = (
         ...state,
         transaction: {
           ...state.transaction,
-          ...getTxData(action.transaction),
+          ...normalizeTxData(getTxData(action.transaction)),
         },
         ...txMeta,
         securityAlertResponses: state.securityAlertResponses,
@@ -173,7 +196,7 @@ const transactionReducer = (
         assetType: 'ETH',
         selectedAsset: { isETH: true, symbol: 'ETH' },
         ...getTxMeta(action.transaction),
-        transaction: getTxData(action.transaction),
+        transaction: normalizeTxData(getTxData(action.transaction)),
       };
     case 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE': {
       const { transactionId, securityAlertResponse } = action;
