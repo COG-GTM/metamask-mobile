@@ -7,8 +7,10 @@ export interface Bookmark {
 
 export type BookmarksState = Bookmark[];
 
+export const initialState: BookmarksState = [];
+
 const bookmarksReducer = (
-  state: BookmarksState = [],
+  state: BookmarksState = initialState,
   action: AnyAction,
 ): BookmarksState => {
   switch (action.type) {

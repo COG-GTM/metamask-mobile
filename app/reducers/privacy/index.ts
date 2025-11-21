@@ -5,7 +5,7 @@ export interface PrivacyState {
   revealSRPTimestamps: number[];
 }
 
-const initialState: PrivacyState = {
+export const initialState: PrivacyState = {
   approvedHosts: {},
   revealSRPTimestamps: [],
 };

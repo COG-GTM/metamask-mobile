@@ -8,7 +8,7 @@ export interface AlertState {
   data: Record<string, unknown> | null;
 }
 
-const initialState: AlertState = {
+export const initialState: AlertState = {
   isVisible: false,
   autodismiss: null,
   content: null,

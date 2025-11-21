@@ -87,7 +87,7 @@ export const REMOVE_FAVORITE_COLLECTIBLE = 'REMOVE_FAVORITE_COLLECTIBLE';
 export const SHOW_NFT_FETCHING_LOADER = 'SHOW_NFT_FETCHING_LOADER';
 export const HIDE_NFT_FETCHING_LOADER = 'HIDE_NFT_FETCHING_LOADER';
 
-const initialState: CollectiblesState = {
+export const initialState: CollectiblesState = {
   favorites: {},
   isNftFetchingProgress: false,
 };

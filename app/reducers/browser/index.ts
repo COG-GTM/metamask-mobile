@@ -28,7 +28,7 @@ export interface BrowserState {
   visitedDappsByHostname: Record<string, boolean>;
 }
 
-const initialState: BrowserState = {
+export const initialState: BrowserState = {
   history: [],
   whitelist: [],
   tabs: [],
