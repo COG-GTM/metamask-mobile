@@ -56,11 +56,8 @@ const dequeue = (notifications: Notification[]): Notification[] =>
   notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
-  (
-    /** @type {import('..').RootState} */
-    state,
-  ) => state?.notifications,
-  (notifications) => notifications[0] || {},
+  (state: { notification: NotificationState }) => state?.notification?.notifications,
+  (notifications) => notifications?.[0] || {},
 );
 
 const notificationReducer = (

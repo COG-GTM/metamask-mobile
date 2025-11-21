@@ -15,16 +15,13 @@ export const initialState: ExperimentalSettingsState = {
 
 const experimentalSettingsReducer = (
   state: ExperimentalSettingsState = initialState,
-  action: {
-    securityAlertsEnabled: SetSecurityAlertsEnabled;
-    type: string;
-  },
+  action: SetSecurityAlertsEnabled | { type: string },
 ): ExperimentalSettingsState => {
   switch (action.type) {
     case ActionType.SET_SECURITY_ALERTS_ENABLED:
       return {
         ...state,
-        securityAlertsEnabled: action.securityAlertsEnabled,
+        securityAlertsEnabled: (action as SetSecurityAlertsEnabled).securityAlertsEnabled,
       };
     default:
       return state;
