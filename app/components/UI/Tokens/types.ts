@@ -1,8 +1,3 @@
-export interface BrowserTab {
-  id: string;
-  url: string;
-}
-
 export interface TokenI {
   address: string;
   aggregators: string[];
