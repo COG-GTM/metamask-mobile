@@ -1,6 +1,6 @@
 import React from 'react';
 import { TokenI } from '../../../Tokens/types';
-import { BrowserTab } from '../../../../../reducers/browser';
+import type { BrowserTab } from '../../../../../reducers/browser';
 import { useNavigation } from '@react-navigation/native';
 import Routes from '../../../../../constants/navigation/Routes';
 import { useSelector } from 'react-redux';
