@@ -325,7 +325,7 @@ describe('captureSentryFeedback', () => {
         },
       },
       privacy: {},
-      bookmarks: {},
+      bookmarks: [],
       browser: {
         activeTab: null,
         favicons: [],
@@ -338,7 +338,6 @@ describe('captureSentryFeedback', () => {
         collectibleContractModalVisible: false,
         dappTransactionModalVisible: false,
         networkModalVisible: false,
-        receiveAsset: undefined,
         receiveModalVisible: false,
         shouldNetworkSwitchPopToWallet: true,
         signMessageModalVisible: true,
@@ -404,9 +403,6 @@ describe('captureSentryFeedback', () => {
         events: [],
       },
       notification: {
-        notification: {
-          notificationsSettings: {},
-        },
         notifications: [],
       },
       swaps: {

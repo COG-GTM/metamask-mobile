@@ -327,7 +327,7 @@ function setupGlobalState({
       originThrottling: originThrottling || {
         origins: {},
       },
-    }));
+    } as Partial<RootState>));
   mockStore.dispatch.mockImplementation((obj) => obj);
   if (addTransactionResult) {
     mockAddTransaction.mockImplementation(async () => ({
