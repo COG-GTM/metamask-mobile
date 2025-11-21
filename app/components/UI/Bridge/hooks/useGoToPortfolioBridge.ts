@@ -6,11 +6,12 @@ import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { selectEvmChainId } from '../../../../selectors/networkController';
 
-import type { BrowserTab } from '../../Tokens/types';
+import type { BrowserTab } from '../../../../reducers/browser';
 import type { BrowserParams } from '../../../Views/Browser/Browser.types';
 import { getDecimalChainId } from '../../../../util/networks';
 import { useMetrics } from '../../../hooks/useMetrics';
 import { isBridgeUrl } from '../../../../util/url';
+import type { RootState } from '../../../../reducers';
 
 /**
  * Returns a function that is used to navigate to the MetaMask Bridges webpage.
@@ -19,9 +20,7 @@ import { isBridgeUrl } from '../../../../util/url';
  */
 export default function useGoToPortfolioBridge(location: string) {
   const chainId = useSelector(selectEvmChainId);
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const browserTabs = useSelector((state: any) => state.browser.tabs);
+  const browserTabs = useSelector((state: RootState) => state.browser.tabs);
   const { navigate } = useNavigation();
   const { trackEvent, createEventBuilder } = useMetrics();
   return (address?: string) => {
@@ -29,7 +28,7 @@ export default function useGoToPortfolioBridge(location: string) {
       isBridgeUrl(tab.url),
     );
 
-    const params: BrowserParams & { existingTabId?: string } = {
+    const params: BrowserParams & { existingTabId?: number } = {
       timestamp: Date.now(),
     };
 

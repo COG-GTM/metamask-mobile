@@ -30,7 +30,8 @@ import {
   isPortfolioViewEnabled,
 } from '../../../util/networks';
 import { isPortfolioUrl } from '../../../util/url';
-import { BrowserTab, TokenI } from '../../../components/UI/Tokens/types';
+import { TokenI } from '../../../components/UI/Tokens/types';
+import type { BrowserTab } from '../../../reducers/browser';
 import { RootState } from '../../../reducers';
 import { Hex } from '@metamask/utils';
 import { appendURLParams } from '../../../util/browser';
@@ -68,8 +69,7 @@ const AssetOptions = (props: Props) => {
   );
   const tokenList = useSelector(selectTokenList);
   const chainId = useSelector(selectEvmChainId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const browserTabs = useSelector((state: any) => state.browser.tabs);
+  const browserTabs = useSelector((state: RootState) => state.browser.tabs);
   const isDataCollectionForMarketingEnabled = useSelector(
     (state: RootState) => state.security.dataCollectionForMarketing,
   );
