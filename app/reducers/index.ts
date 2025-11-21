@@ -410,6 +410,6 @@ if (isTest) {
 // TypeScript reducers have invalid actions
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rootReducer = combineReducers<RootState, any>(baseReducers);
+const rootReducer = combineReducers<RootState, any>(baseReducers as any);
 
 export default rootReducer;
