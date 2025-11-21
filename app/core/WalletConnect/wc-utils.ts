@@ -145,7 +145,7 @@ export const waitForNetworkModalOnboarding = async ({
   while (waitForNetworkModalOnboarded) {
     loopCounter += 1;
     const { networkOnboarded } = store.getState();
-    const networkOnboardedState = networkOnboarded?.networkOnboardedState ?? {};
+    const networkOnboardedState = (networkOnboarded?.networkOnboardedState ?? {}) as Record<string, boolean>;
 
     if (networkOnboardedState[chainId]) {
       waitForNetworkModalOnboarded = false;

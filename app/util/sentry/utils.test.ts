@@ -338,7 +338,6 @@ describe('captureSentryFeedback', () => {
         collectibleContractModalVisible: false,
         dappTransactionModalVisible: false,
         networkModalVisible: false,
-        receiveModalVisible: false,
         shouldNetworkSwitchPopToWallet: true,
         signMessageModalVisible: true,
       },
