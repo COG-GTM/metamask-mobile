@@ -1,4 +1,18 @@
-export const initialState = {
+export interface NetworkOnboardedState {
+  networkOnboardedState: Record<string, boolean>;
+  networkState: {
+    showNetworkOnboarding: boolean;
+    nativeToken: string;
+    networkType: string;
+    networkUrl: string;
+  };
+  switchedNetwork: {
+    networkUrl: string;
+    networkStatus: boolean;
+  };
+}
+
+export const initialState: NetworkOnboardedState = {
   networkOnboardedState: {},
   networkState: {
     showNetworkOnboarding: false,
@@ -19,7 +33,7 @@ export const initialState = {
  */
 
 function networkOnboardReducer(
-  state = initialState,
+  state: NetworkOnboardedState = initialState,
   action: {
     nativeToken: string;
     networkType: string;
@@ -27,9 +41,7 @@ function networkOnboardReducer(
     networkStatus: boolean;
     showNetworkOnboarding: boolean;
     type: string;
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    payload: any;
+    payload: string;
   } = {
     nativeToken: '',
     networkType: '',
@@ -37,9 +49,9 @@ function networkOnboardReducer(
     networkStatus: false,
     showNetworkOnboarding: false,
     type: '',
-    payload: undefined,
+    payload: '',
   },
-) {
+): NetworkOnboardedState {
   switch (action.type) {
     case 'SHOW_NETWORK_ONBOARDING':
       return {

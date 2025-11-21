@@ -62,6 +62,8 @@ export interface iEventGroup {
   signingEvent: iEventStage;
 }
 
+export type RpcEventsState = iEventGroup;
+
 /**
  * Initial state of the RPC event flow
  */

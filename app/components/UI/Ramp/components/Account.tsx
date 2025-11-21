@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import EthereumAddress from '../../EthereumAddress';
-import JSIdenticon from '../../Identicon';
+import Identicon from '../../Identicon';
 import Text from '../../../Base/Text';
 import { View, StyleSheet } from 'react-native';
 import { useTheme } from '../../../../util/theme';
@@ -12,11 +12,6 @@ import {
   selectInternalAccounts,
 } from '../../../../selectors/accountsController';
 import { toLowerCaseEquals } from '../../../../util/general';
-
-// TODO: Convert into typescript and correctly type
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Identicon = JSIdenticon as any;
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({

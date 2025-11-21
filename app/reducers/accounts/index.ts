@@ -7,6 +7,8 @@ export interface iAccountEvent {
   reloadAccounts: boolean;
 }
 
+export type AccountsState = iAccountEvent;
+
 /**
  * Initial state of the Accounts event flow
  */
