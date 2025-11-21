@@ -9,7 +9,7 @@ export interface ExperimentalSettingsState {
   securityAlertsEnabled: boolean;
 }
 
-const initialState: ExperimentalSettingsState = {
+export const initialState: ExperimentalSettingsState = {
   securityAlertsEnabled: true,
 };
 

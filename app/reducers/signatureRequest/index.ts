@@ -9,7 +9,7 @@ interface ActionType {
   securityAlertResponse?: SecurityAlertResponse;
 }
 
-const initialState: SignatureRequestState = {
+export const initialState: SignatureRequestState = {
   securityAlertResponse: undefined,
 };
 

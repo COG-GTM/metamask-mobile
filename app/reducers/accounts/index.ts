@@ -12,7 +12,7 @@ export type AccountsState = iAccountEvent;
 /**
  * Initial state of the Accounts event flow
  */
-const initialState: iAccountEvent = {
+export const initialState: iAccountEvent = {
   reloadAccounts: false,
 };
 
