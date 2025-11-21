@@ -10,8 +10,9 @@ const selectCurrentTransactionId = (state: RootState) => state.transaction?.id;
 export const selectCurrentTransactionSecurityAlertResponse = (
   state: RootState,
 ) => {
-  const { id, securityAlertResponses } = state.transaction;
-  return securityAlertResponses?.[id];
+  const id = state.transaction?.id;
+  const securityAlertResponses = state.transaction?.securityAlertResponses;
+  return id ? securityAlertResponses?.[id] : undefined;
 };
 
 export const selectCurrentTransactionMetadata = createSelector(
