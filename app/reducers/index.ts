@@ -324,18 +324,12 @@ export interface SignatureRequestState {
  *
  * @template reducer A reducer function
  */
-export type StateFromReducer<reducer> = reducer extends Reducer<
-  infer State,
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  any
->
-  ? State
+export type StateFromReducer<R> = R extends Reducer<infer S, any>
+  ? S
+  : R extends (state: infer S, action: any) => any
+  ? S
   : never;
 
-// TODO: Convert all reducers to valid TypeScript Redux reducers, and add them
-// to this type. Once that is complete, we can automatically generate this type
-// using the `StateFromReducersMapObject` type from redux.
 export interface RootState {
   legalNotices: StateFromReducer<typeof legalNoticesReducer>;
   collectibles: StateFromReducer<typeof collectiblesReducer>;

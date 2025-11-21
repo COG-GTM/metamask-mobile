@@ -1590,7 +1590,10 @@ export class Engine {
       const { chainId, ticker } = NetworkController.getNetworkClientById(
         getGlobalNetworkClientId(NetworkController),
       ).configuration;
-      const { settings: { showFiatOnTestnets } = {} } = store.getState();
+      const { settings } = store.getState();
+      const showFiatOnTestnets = settings && 'showFiatOnTestnets' in settings 
+        ? Boolean(settings.showFiatOnTestnets) 
+        : false;
 
       if (isTestNet(chainId) && !showFiatOnTestnets) {
         return {

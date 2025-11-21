@@ -16,7 +16,12 @@ export const selectConversionRate = createSelector(
   selectCurrencyRateControllerState,
   selectEvmChainId,
   selectEvmTicker,
-  (state: RootState) => state.settings.showFiatOnTestnets,
+  (state: RootState) => {
+    const { settings } = state;
+    return settings && 'showFiatOnTestnets' in settings
+      ? Boolean(settings.showFiatOnTestnets)
+      : false;
+  },
   (
     currencyRateControllerState: CurrencyRateState,
     chainId: string,
@@ -63,7 +68,12 @@ export const selectConversionRateFoAllChains = createSelector(
 export const selectConversionRateByChainId = createSelector(
   selectConversionRateFoAllChains,
   (_state: RootState, chainId: string) => chainId,
-  (state: RootState) => state.settings.showFiatOnTestnets,
+  (state: RootState) => {
+    const { settings } = state;
+    return settings && 'showFiatOnTestnets' in settings
+      ? Boolean(settings.showFiatOnTestnets)
+      : false;
+  },
   selectNativeCurrencyByChainId,
   (
     currencyRates: CurrencyRateState['currencyRates'],
