@@ -28,6 +28,7 @@ import { initialState as initialRpcEventsState } from '../../reducers/rpcEvents'
 import { initialState as initialNetworkSelectorState } from '../../reducers/networkSelector';
 import { initialState as initialExperimentalSettingsState } from '../../reducers/experimentalSettings';
 import { initialState as initialSignatureRequestState } from '../../reducers/signatureRequest';
+import { initialState as initialLegalNoticesState } from '../../reducers/legalNotices';
 import { isTest } from './utils';
 // A cast is needed here because we use enums in some controllers, and TypeScript doesn't consider
 // the string value of an enum as satisfying an enum type.
@@ -35,7 +36,7 @@ export const backgroundState: EngineState =
   initialBackgroundState as unknown as EngineState;
 
 const initialRootState: RootState = {
-  legalNotices: undefined,
+  legalNotices: initialLegalNoticesState,
   collectibles: initialCollectiblesState,
   engine: { backgroundState },
   privacy: initialPrivacyState,
