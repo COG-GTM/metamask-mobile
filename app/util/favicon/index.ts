@@ -123,7 +123,7 @@ export const getFaviconFromCache = (originUrl: string): string | undefined => {
   const cacheKey = originToHost(originUrl);
   if (!cacheKey) return;
   const { browser } = store.getState();
-  const cachedFavicon = browser.favicons.find(
+  const cachedFavicon = browser?.favicons?.find(
     (favicon: { origin: string; url: string }) => favicon.origin === cacheKey,
   );
   return cachedFavicon?.url;

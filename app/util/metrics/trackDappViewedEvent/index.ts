@@ -22,7 +22,7 @@ const trackDappViewedEvent = ({
   numberOfConnectedAccounts: number;
 }) => {
   const visitedDappsByHostname =
-    store.getState().browser.visitedDappsByHostname;
+    store.getState().browser?.visitedDappsByHostname ?? {};
   const isFirstVisit = !visitedDappsByHostname[hostname];
   const internalAccounts = selectInternalAccounts(store.getState());
   const numberOfWalletAccounts = Object.keys(internalAccounts).length;

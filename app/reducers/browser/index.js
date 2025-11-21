@@ -2,6 +2,11 @@ import { BrowserActionTypes } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
 
+/** @typedef {{ url: string; name: string }} HistoryEntry */
+/** @typedef {{ url: string; id: number; linkType?: string }} TabEntry */
+/** @typedef {{ origin: string; url: string }} FaviconEntry */
+
+/** @type {{ history: HistoryEntry[]; whitelist: string[]; tabs: TabEntry[]; favicons: FaviconEntry[]; activeTab: number | null; visitedDappsByHostname: Record<string, boolean> }} */
 const initialState = {
   history: [],
   whitelist: [],

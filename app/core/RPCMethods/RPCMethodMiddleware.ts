@@ -415,7 +415,7 @@ export const getRpcMethodMiddleware = ({
       const checkTabActive = () => {
         if (!tabId) return true;
         const { browser } = store.getState();
-        if (tabId !== browser.activeTab)
+        if (tabId !== browser?.activeTab)
           throw providerErrors.userRejectedRequest();
       };
 

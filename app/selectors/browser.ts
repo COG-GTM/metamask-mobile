@@ -8,7 +8,7 @@ interface SiteItem {
 }
 
 export const selectBrowserHistoryWithType = createDeepEqualSelector(
-    (state: RootState) => state.browser.history,
+    (state: RootState) => state.browser?.history ?? [],
     (history: SiteItem[]) => history.map(item => ({...item, category: UrlAutocompleteCategory.Recents} as const)).reverse()
 );
 
