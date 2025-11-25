@@ -13,6 +13,32 @@ export interface Identity {
   importTime?: number;
 }
 
+interface AccountsControllerState {
+  internalAccounts: {
+    accounts: Record<string, InternalAccount>;
+    selectedAccount: string;
+  };
+}
+
+interface PreferencesControllerState {
+  identities?: Record<string, Identity>;
+  selectedAddress?: string;
+}
+
+interface BackgroundState {
+  KeyringController?: unknown;
+  PreferencesController?: PreferencesControllerState;
+  AccountsController?: AccountsControllerState;
+}
+
+interface EngineState {
+  backgroundState?: BackgroundState;
+}
+
+interface MigrationState {
+  engine?: EngineState;
+}
+
 export default function migrate(state: unknown) {
   if (!isObject(state)) {
     captureException(
@@ -78,10 +104,8 @@ export default function migrate(state: unknown) {
   return state;
 }
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function createDefaultAccountsController(state: Record<string, any>) {
-  state.engine.backgroundState.AccountsController = {
+function createDefaultAccountsController(state: MigrationState) {
+  state.engine!.backgroundState!.AccountsController = {
     internalAccounts: {
       accounts: {},
       selectedAccount: '',
@@ -89,14 +113,9 @@ function createDefaultAccountsController(state: Record<string, any>) {
   };
 }
 
-function createInternalAccountsForAccountsController(
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  state: Record<string, any>,
-) {
-  const identities: {
-    [key: string]: Identity;
-  } = state.engine.backgroundState.PreferencesController?.identities || {};
+function createInternalAccountsForAccountsController(state: MigrationState) {
+  const identities: Record<string, Identity> =
+    state.engine!.backgroundState!.PreferencesController?.identities || {};
 
   if (Object.keys(identities).length === 0) {
     captureException(
@@ -132,31 +151,25 @@ function createInternalAccountsForAccountsController(
       type: EthAccountType.Eoa,
     };
   }
-  state.engine.backgroundState.AccountsController.internalAccounts.accounts =
+  state.engine!.backgroundState!.AccountsController!.internalAccounts.accounts =
     accounts;
 }
 
 function findInternalAccountByAddress(
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  state: Record<string, any>,
+  state: MigrationState,
   address: string,
 ): InternalAccount | undefined {
   return Object.values<InternalAccount>(
-    state.engine.backgroundState.AccountsController.internalAccounts.accounts,
+    state.engine!.backgroundState!.AccountsController!.internalAccounts.accounts,
   ).find(
     (account: InternalAccount) =>
       account.address.toLowerCase() === address.toLowerCase(),
   );
 }
 
-function createSelectedAccountForAccountsController(
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  state: Record<string, any>,
-) {
+function createSelectedAccountForAccountsController(state: MigrationState) {
   const selectedAddress =
-    state.engine.backgroundState.PreferencesController?.selectedAddress;
+    state.engine!.backgroundState!.PreferencesController?.selectedAddress;
 
   // Handle the case where the selectedAddress from preferences controller is either not defined or not a string
   if (!selectedAddress || typeof selectedAddress !== 'string') {
@@ -167,7 +180,7 @@ function createSelectedAccountForAccountsController(
     );
     // Get the first account if selectedAddress is not a string
     const [firstAddress] = Object.keys(
-      state.engine.backgroundState.PreferencesController?.identities,
+      state.engine!.backgroundState!.PreferencesController?.identities ?? {},
     );
     const internalAccount = findInternalAccountByAddress(state, firstAddress);
 
@@ -179,9 +192,9 @@ function createSelectedAccountForAccountsController(
           ),
         );
       }
-      state.engine.backgroundState.AccountsController.internalAccounts.selectedAccount =
+      state.engine!.backgroundState!.AccountsController!.internalAccounts.selectedAccount =
         internalAccount.id;
-      state.engine.backgroundState.PreferencesController.selectedAddress =
+      state.engine!.backgroundState!.PreferencesController!.selectedAddress =
         internalAccount.address;
     }
     return;
@@ -196,7 +209,7 @@ function createSelectedAccountForAccountsController(
         ),
       );
     }
-    state.engine.backgroundState.AccountsController.internalAccounts.selectedAccount =
+    state.engine!.backgroundState!.AccountsController!.internalAccounts.selectedAccount =
       selectedAccount.id;
   }
 }

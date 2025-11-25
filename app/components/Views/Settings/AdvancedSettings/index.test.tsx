@@ -6,16 +6,18 @@ import { strings } from '../../../../../locales/i18n';
 import Engine from '../../../../core/Engine';
 import { backgroundState } from '../../../../util/test/initial-root-state';
 import Device from '../../../../util/device';
+import { EngineState } from '../../../../core/Engine';
+
+interface TestState {
+  settings: { showHexData: boolean };
+  engine: { backgroundState: EngineState };
+}
 
 const originalFetch = global.fetch;
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let initialState: any;
+let initialState: TestState;
 const mockNavigate = jest.fn();
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let mockSetSmartTransactionsOptInStatus: jest.Mock<any, any>;
+let mockSetSmartTransactionsOptInStatus: jest.Mock<void, [boolean]>;
 
 beforeEach(() => {
   initialState = {
