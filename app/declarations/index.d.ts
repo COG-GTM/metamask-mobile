@@ -34,6 +34,17 @@ declare module 'humanize-duration' {
   export = humanizeDuration;
 }
 
+declare module '@metamask/ethjs-unit' {
+  export function toWei(value: string | number, unit: string): string;
+  export function fromWei(value: string | number, unit: string): string;
+}
+
+declare module 'number-to-bn' {
+  import BN from 'bn.js';
+  function numberToBN(value: string | number): BN;
+  export = numberToBN;
+}
+
 declare module 'react-native-fast-crypto';
 
 declare module 'react-native-minimizer';
