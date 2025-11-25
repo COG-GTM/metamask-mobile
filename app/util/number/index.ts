@@ -281,7 +281,7 @@ export function renderFiatAddition(
  * @param {number} maxDecimalPlaces
  * @returns {string}
  */
-export function limitToMaximumDecimalPlaces(num, maxDecimalPlaces = 5) {
+export function limitToMaximumDecimalPlaces(num: number, maxDecimalPlaces = 5): string | number {
   if (isNaN(num) || isNaN(maxDecimalPlaces)) {
     return num;
   }
@@ -299,11 +299,11 @@ export function limitToMaximumDecimalPlaces(num, maxDecimalPlaces = 5) {
  * @returns {Object} - The converted balance as BN instance
  */
 export function fiatNumberToTokenMinimalUnit(
-  fiat,
-  conversionRate,
-  exchangeRate,
-  decimals,
-) {
+  fiat: number | string,
+  conversionRate: number,
+  exchangeRate: number,
+  decimals: number,
+): BN4 {
   const floatFiatConverted = parseFloat(fiat) / (conversionRate * exchangeRate);
   const base = Math.pow(10, decimals);
   let weiNumber = floatFiatConverted * base;
@@ -321,7 +321,7 @@ export function fiatNumberToTokenMinimalUnit(
  * @returns {String} - Number of token minimal unit, in render format
  * If value is less than 5 precision decimals will show '< 0.00001'
  */
-export function renderFromWei(value, decimalsToShow = 5) {
+export function renderFromWei(value: number | string | BN4 | null | undefined, decimalsToShow = 5): string {
   let renderWei = '0';
   // avoid undefined
   if (value) {
@@ -344,7 +344,7 @@ export function renderFromWei(value, decimalsToShow = 5) {
  * @param {number} decimals - Decimals to be considered on the conversion
  * @returns {string} - String of the hex token value
  */
-export function calcTokenValueToSend(value, decimals) {
+export function calcTokenValueToSend(value: number | null | undefined, decimals: number): string | number {
   return value ? (value * Math.pow(10, decimals)).toString(16) : 0;
 }
 
@@ -354,7 +354,7 @@ export function calcTokenValueToSend(value, decimals) {
  * @param {object|string} value - Value to check
  * @returns {boolean} - True if the value is a BN instance
  */
-export function isBN(value) {
+export function isBN(value: unknown): value is BN4 {
   return BN4.isBN(value);
 }
 
@@ -364,10 +364,10 @@ export function isBN(value) {
  * @param {number | string} value - String to check
  * @returns {boolean} - True if the string is a valid decimal
  */
-export function isDecimal(value) {
+export function isDecimal(value: string | number): boolean {
   return (
-    Number.isFinite(parseFloat(value)) &&
-    !Number.isNaN(parseFloat(value)) &&
+    Number.isFinite(parseFloat(String(value))) &&
+    !Number.isNaN(parseFloat(String(value))) &&
     !isNaN(+value)
   );
 }
@@ -378,7 +378,7 @@ export function isDecimal(value) {
  * @param {string} value - Some numeric value represented as a string
  * @returns {Object} - BN instance
  */
-export function toBN(value) {
+export function toBN(value: string | number): BN4 {
   return new BN4(value);
 }
 
@@ -388,7 +388,7 @@ export function toBN(value) {
  * @param {*} str - Number string
  * @returns {boolean} - True if the string  is a valid number
  */
-export function isNumber(str) {
+export function isNumber(str: string): boolean {
   return regex.number.test(str);
 }
 
@@ -398,7 +398,7 @@ export function isNumber(str) {
  * @param {number | string | null | undefined} value - Value to check
  * @returns {boolean} - True if the value is a valid number
  */
-export function isNumberValue(value) {
+export function isNumberValue(value: number | string | null | undefined): boolean {
   if (value === null || value === undefined) { return false; }
 
   if (typeof value === 'number') {
@@ -408,7 +408,7 @@ export function isNumberValue(value) {
   return isDecimal(value);
 }
 
-export const dotAndCommaDecimalFormatter = (value) => {
+export const dotAndCommaDecimalFormatter = (value: string | number): string => {
   const valueStr = String(value);
 
   const formattedValue = valueStr.replace(',', '.');
@@ -425,7 +425,7 @@ export const dotAndCommaDecimalFormatter = (value) => {
  * @see https://262.ecma-international.org/5.1/#sec-9.8.1
  */
 
-export const isNumberScientificNotationWhenString = (value) => {
+export const isNumberScientificNotationWhenString = (value: number): boolean => {
   if (typeof value !== 'number') {
     return false;
   }
@@ -440,13 +440,14 @@ export const isNumberScientificNotationWhenString = (value) => {
  * @param {string} unit - Unit to convert from, ether by default
  * @returns {BN4} - BN instance containing the new number
  */
-export function toWei(value, unit = 'ether') {
+export function toWei(value: number | string | BN4, unit = 'ether'): BN4 {
   // check the posibilty to convert to BN
   // directly on the swaps screen
-  if (isNumberScientificNotationWhenString(value)) {
-    value = value.toFixed(18);
+  let valueToConvert: number | string | BN4 = value;
+  if (typeof value === 'number' && isNumberScientificNotationWhenString(value)) {
+    valueToConvert = value.toFixed(18);
   }
-  return convert.toWei(value, unit);
+  return convert.toWei(valueToConvert, unit);
 }
 
 /**
@@ -456,8 +457,8 @@ export function toWei(value, unit = 'ether') {
  * @param {string} unit - Unit to convert from, ether by default
  * @returns {Object} - BN instance containing the new number
  */
-export function toGwei(value, unit = 'ether') {
-  return fromWei(value, unit) * 1000000000;
+export function toGwei(value: number | string | BN4, unit = 'ether'): number {
+  return Number(fromWei(value, unit)) * 1000000000;
 }
 
 /**
@@ -467,9 +468,9 @@ export function toGwei(value, unit = 'ether') {
  * @param {string} unit - Unit to convert from, ether by default
  * @returns {string} - String instance containing the renderable number
  */
-export function renderToGwei(value, unit = 'ether') {
-  const gwei = fromWei(value, unit) * 1000000000;
-  let gweiFixed = parseFloat(Math.round(gwei));
+export function renderToGwei(value: number | string | BN4, unit = 'ether'): number {
+  const gwei = Number(fromWei(value, unit)) * 1000000000;
+  let gweiFixed = parseFloat(String(Math.round(gwei)));
   gweiFixed = isNaN(gweiFixed) ? 0 : gweiFixed;
   return gweiFixed;
 }
@@ -484,17 +485,17 @@ export function renderToGwei(value, unit = 'ether') {
  * @returns {string} - Currency-formatted string
  */
 export function weiToFiat(
-  wei,
-  conversionRate = null,
-  currencyCode,
+  wei: number | string | BN4 | null | undefined,
+  conversionRate: number | null = null,
+  currencyCode: string,
   decimalsToShow = 5,
-) {
+): string | undefined {
   if (!conversionRate) return undefined;
   if (!wei || !isBN(wei) || !conversionRate) {
     return addCurrencySymbol(0, currencyCode);
   }
-  decimalsToShow = (currencyCode === 'usd' && 2) || undefined;
-  const value = weiToFiatNumber(wei, conversionRate, decimalsToShow);
+  const decimals = (currencyCode === 'usd' && 2) || decimalsToShow;
+  const value = weiToFiatNumber(wei, conversionRate, decimals);
   return addCurrencySymbol(value, currencyCode);
 }
 
