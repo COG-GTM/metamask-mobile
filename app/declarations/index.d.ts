@@ -8,6 +8,32 @@ declare module 'react-native-fade-in-image';
 
 declare module 'deprecated-react-native-prop-types';
 
+declare module 'ethereumjs-abi' {
+  export function rawEncode(types: string[], values: unknown[]): Buffer;
+  export function rawDecode(types: string[], data: Buffer): unknown[];
+  export function solidityPack(types: string[], values: unknown[]): Buffer;
+  export function soliditySHA3(types: string[], values: unknown[]): Buffer;
+}
+
+declare module 'humanize-duration' {
+  interface HumanizeDurationOptions {
+    language?: string;
+    fallbacks?: string[];
+    delimiter?: string;
+    spacer?: string;
+    largest?: number;
+    units?: string[];
+    round?: boolean;
+    decimal?: string;
+    conjunction?: string;
+    serialComma?: boolean;
+    maxDecimalPoints?: number;
+    unitMeasures?: Record<string, number>;
+  }
+  function humanizeDuration(ms: number, options?: HumanizeDurationOptions): string;
+  export = humanizeDuration;
+}
+
 declare module 'react-native-fast-crypto';
 
 declare module 'react-native-minimizer';
