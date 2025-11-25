@@ -35,12 +35,14 @@ declare module 'humanize-duration' {
 }
 
 declare module '@metamask/ethjs-unit' {
-  export function toWei(value: string | number, unit: string): string;
-  export function fromWei(value: string | number, unit: string): string;
+  import BN from 'bn.js';
+  export function toWei(value: string | number | BN, unit: string): BN;
+  export function fromWei(value: string | number | BN, unit: string): string;
+  export function numberToString(value: string | number | BN): string;
 }
 
 declare module 'number-to-bn' {
-  import BN from 'bn.js';
+  import BN from 'bnjs4';
   function numberToBN(value: string | number): BN;
   export = numberToBN;
 }

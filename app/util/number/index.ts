@@ -9,9 +9,12 @@ import { add0x, remove0x } from '@metamask/utils';
 import numberToBN from 'number-to-bn';
 import BigNumber from 'bignumber.js';
 
-import currencySymbols from '../currency-symbols.json';
+import currencySymbolsJson from '../currency-symbols.json';
 import { isZero } from '../lodash';
 import { regex } from '../regex';
+
+// Cast to Record<string, string> to allow indexing with any string
+const currencySymbols: Record<string, string> = currencySymbolsJson;
 
 const MAX_DECIMALS_FOR_TOKENS = 36;
 BigNumber.config({ DECIMAL_PLACES: MAX_DECIMALS_FOR_TOKENS });
@@ -116,20 +119,21 @@ export function fromTokenMinimalUnit(
   decimals: number,
   isRounding = true,
 ): string {
-  minimalInput = isRounding ? Number(minimalInput) : minimalInput;
-  const prefixedInput = addHexPrefix(minimalInput.toString(16));
+  const processedInput = isRounding ? Number(minimalInput) : minimalInput;
+  const prefixedInput = addHexPrefix(processedInput.toString(16));
   let minimal = safeNumberToBN(prefixedInput);
   const negative = minimal.lt(new BN4(0));
   const base = toBN(Math.pow(10, decimals).toString());
 
   if (negative) {
-    minimal = minimal.mul(negative);
+    minimal = minimal.mul(new BN4(-1));
   }
   let fraction = minimal.mod(base).toString(10);
   while (fraction.length < decimals) {
     fraction = '0' + fraction;
   }
-  fraction = fraction.match(regex.fractions)[1];
+  const fractionMatch = fraction.match(regex.fractions);
+  fraction = fractionMatch ? fractionMatch[1] : '0';
   const whole = minimal.div(base).toString(10);
   let value = '' + whole + (fraction === '0' ? '' : '.' + fraction);
   if (negative) {
@@ -169,7 +173,11 @@ export function fromTokenMinimalUnitString(minimalInput: string, decimals: numbe
  */
 export function toTokenMinimalUnit(tokenValue: number | string | BN4, decimals: number): BN4 {
   const base = toBN(Math.pow(10, decimals).toString());
-  let value = convert.numberToString(tokenValue);
+  // Convert tokenValue to string, handling BN4 type
+  const tokenValueStr = typeof tokenValue === 'object' && 'toString' in tokenValue
+    ? tokenValue.toString(10)
+    : String(tokenValue);
+  let value = tokenValueStr;
   const negative = value.substring(0, 1) === '-';
   if (negative) {
     value = value.substring(1);
@@ -190,29 +198,29 @@ export function toTokenMinimalUnit(tokenValue: number | string | BN4, decimals: 
         ' to token minimal util,  too many decimal points',
     );
   }
-  let whole = comps[0],
-    fraction = comps[1];
-  if (!whole) {
-    whole = '0';
+  let wholeStr = comps[0],
+    fractionStr = comps[1];
+  if (!wholeStr) {
+    wholeStr = '0';
   }
-  if (!fraction) {
-    fraction = '';
+  if (!fractionStr) {
+    fractionStr = '';
   }
-  if (fraction.length > decimals) {
+  if (fractionStr.length > decimals) {
     throw new Error(
       '[number] while converting number ' +
         tokenValue +
         ' to token minimal util, too many decimal places',
     );
   }
-  while (fraction.length < decimals) {
-    fraction += '0';
+  while (fractionStr.length < decimals) {
+    fractionStr += '0';
   }
-  whole = new BN4(whole);
-  fraction = new BN4(fraction);
-  let tokenMinimal = whole.mul(base).add(fraction);
+  const wholeBN = new BN4(wholeStr);
+  const fractionBN = new BN4(fractionStr);
+  let tokenMinimal = wholeBN.mul(base).add(fractionBN);
   if (negative) {
-    tokenMinimal = tokenMinimal.mul(negative);
+    tokenMinimal = tokenMinimal.mul(new BN4(-1));
   }
   return new BN4(tokenMinimal.toString(10), 10);
 }
@@ -443,11 +451,15 @@ export const isNumberScientificNotationWhenString = (value: number): boolean => 
 export function toWei(value: number | string | BN4, unit = 'ether'): BN4 {
   // check the posibilty to convert to BN
   // directly on the swaps screen
-  let valueToConvert: number | string | BN4 = value;
-  if (typeof value === 'number' && isNumberScientificNotationWhenString(value)) {
-    valueToConvert = value.toFixed(18);
+  let valueToConvert: number | string = typeof value === 'object' && 'toString' in value
+    ? value.toString(10)
+    : value;
+  if (typeof valueToConvert === 'number' && isNumberScientificNotationWhenString(valueToConvert)) {
+    valueToConvert = valueToConvert.toFixed(18);
   }
-  return convert.toWei(valueToConvert, unit);
+  // convert.toWei returns bn.js BN, but we need bnjs4 BN4
+  const result = convert.toWei(valueToConvert, unit);
+  return new BN4(result.toString(10), 10);
 }
 
 /**
@@ -511,41 +523,48 @@ export function addCurrencySymbol(
   currencyCode: string,
   extendDecimals = false,
 ): string {
-  const prefix = parseFloat(amount) < 0 ? '-' : '';
+  // Convert to number for comparisons
+  let numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  const prefix = numAmount < 0 ? '-' : '';
+  let formattedAmount: string;
+
   if (extendDecimals) {
-    if (isNumberScientificNotationWhenString(amount)) {
-      amount = amount.toFixed(18);
+    if (typeof numAmount === 'number' && isNumberScientificNotationWhenString(numAmount)) {
+      formattedAmount = numAmount.toFixed(18);
+      numAmount = parseFloat(formattedAmount);
     }
 
     // if bigger than 0.01, show 2 decimals
-    if (amount >= 0.01 || amount <= -0.01) {
-      amount = parseFloat(amount).toFixed(2);
-    }
-
-    // if less than 0.01, show all the decimals that are zero except the trailing zeros, and 3 decimals for the rest that are not zero
-    if ((amount < 0.01 && amount > 0) || (amount > -0.01 && amount < 0)) {
-      const decimalString = amount.toString().split('.')[1];
+    if (numAmount >= 0.01 || numAmount <= -0.01) {
+      formattedAmount = numAmount.toFixed(2);
+    } else if ((numAmount < 0.01 && numAmount > 0) || (numAmount > -0.01 && numAmount < 0)) {
+      // if less than 0.01, show all the decimals that are zero except the trailing zeros, and 3 decimals for the rest that are not zero
+      const decimalString = numAmount.toString().split('.')[1];
       if (decimalString && decimalString.length > 1) {
-        const firstNonZeroDecimal = decimalString.indexOf(
-          decimalString.match(regex.decimalString)[0],
-        );
+        const decimalMatch = decimalString.match(regex.decimalString);
+        const firstNonZeroDecimal = decimalMatch ? decimalString.indexOf(decimalMatch[0]) : -1;
         if (firstNonZeroDecimal > 0) {
-          amount = parseFloat(amount).toFixed(firstNonZeroDecimal + 3);
+          formattedAmount = numAmount.toFixed(firstNonZeroDecimal + 3);
           // remove trailing zeros
-          amount = amount.replace(regex.trailingZero, '');
+          formattedAmount = formattedAmount.replace(regex.trailingZero, '');
+        } else {
+          formattedAmount = numAmount.toString();
         }
+      } else {
+        formattedAmount = numAmount.toString();
       }
+    } else {
+      formattedAmount = numAmount.toString();
     }
+  } else if (currencyCode === 'usd') {
+    formattedAmount = numAmount.toFixed(2);
+  } else {
+    formattedAmount = typeof amount === 'string' ? amount : amount.toString();
   }
 
-  if (currencyCode === 'usd' && !extendDecimals) {
-    amount = parseFloat(amount).toFixed(2);
-  }
-
-  const amountString = amount.toString();
-  const absAmountStr = amountString.startsWith('-')
-    ? amountString.slice(1) // Remove the first character if it's a '-'
-    : amountString;
+  const absAmountStr = formattedAmount.startsWith('-')
+    ? formattedAmount.slice(1) // Remove the first character if it's a '-'
+    : formattedAmount;
 
   if (currencySymbols[currencyCode]) {
     return `${prefix}${currencySymbols[currencyCode]}${absAmountStr}`;
@@ -784,9 +803,10 @@ const converter = ({
   invertConversionRate,
   roundDown,
 }: ConverterOptions): string | BigNumber | BN4 => {
-  let convertedValue = fromNumericBase
+  // Always convert to BigNumber for internal calculations
+  let convertedValue: BigNumber = fromNumericBase
     ? toBigNumber[fromNumericBase](value)
-    : value;
+    : new BigNumber(typeof value === 'object' ? value.toString() : value);
 
   if (fromDenomination) {
     convertedValue = toNormalizedDenomination[fromDenomination](convertedValue);
@@ -824,7 +844,7 @@ const converter = ({
   }
 
   if (toNumericBase) {
-    convertedValue = baseChange[toNumericBase](convertedValue);
+    return baseChange[toNumericBase](convertedValue);
   }
   return convertedValue;
 };
