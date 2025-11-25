@@ -3,10 +3,19 @@ import {
   REMOVE_FAVORITE_COLLECTIBLE,
 } from '../../reducers/collectibles';
 
+// Type definitions
+interface Collectible {
+  address: string;
+  tokenId: string;
+  name?: string;
+  image?: string;
+  standard?: string;
+}
+
 export const addFavoriteCollectible = (
-  selectedAddress,
-  chainId,
-  collectible,
+  selectedAddress: string,
+  chainId: string,
+  collectible: Collectible,
 ) => ({
   type: ADD_FAVORITE_COLLECTIBLE,
   selectedAddress,
@@ -15,9 +24,9 @@ export const addFavoriteCollectible = (
 });
 
 export const removeFavoriteCollectible = (
-  selectedAddress,
-  chainId,
-  collectible,
+  selectedAddress: string,
+  chainId: string,
+  collectible: Collectible,
 ) => ({
   type: REMOVE_FAVORITE_COLLECTIBLE,
   selectedAddress,

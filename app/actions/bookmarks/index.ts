@@ -1,13 +1,19 @@
-export function addBookmark(bookmark) {
+// Type definitions
+interface Bookmark {
+  url: string;
+  name: string;
+}
+
+export function addBookmark(bookmark: Bookmark) {
   return {
-    type: 'ADD_BOOKMARK',
+    type: 'ADD_BOOKMARK' as const,
     bookmark,
   };
 }
 
-export function removeBookmark(bookmark) {
+export function removeBookmark(bookmark: Bookmark) {
   return {
-    type: 'REMOVE_BOOKMARK',
+    type: 'REMOVE_BOOKMARK' as const,
     bookmark,
   };
 }

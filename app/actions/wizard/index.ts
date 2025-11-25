@@ -1,9 +1,9 @@
 /**
  * Sets onboarding wizard step
  */
-export default function setOnboardingWizardStep(step) {
+export default function setOnboardingWizardStep(step: number) {
   return {
-    type: 'SET_ONBOARDING_WIZARD_STEP',
+    type: 'SET_ONBOARDING_WIZARD_STEP' as const,
     step,
   };
 }

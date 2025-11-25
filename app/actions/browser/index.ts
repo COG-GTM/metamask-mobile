@@ -3,15 +3,31 @@
  */
 export const BrowserActionTypes = {
   ADD_TO_VIEWED_DAPP: 'ADD_TO_VIEWED_DAPP',
-};
+} as const;
+
+// Type definitions
+interface WebsiteEntry {
+  url: string;
+  name: string;
+}
+
+interface TabData {
+  isArchived?: boolean;
+  url?: string;
+  image?: string;
+}
+
+interface FaviconEntry {
+  origin: string;
+  url: string;
+}
 
 /**
  * Adds a new entry to viewed dapps
  *
- * @param {string} hostname - Dapp hostname
- * @returns
+ * @param hostname - Dapp hostname
  */
-export function addToViewedDapp(hostname) {
+export function addToViewedDapp(hostname: string) {
   return {
     type: BrowserActionTypes.ADD_TO_VIEWED_DAPP,
     hostname,
@@ -21,13 +37,11 @@ export function addToViewedDapp(hostname) {
 /**
  * Adds a new entry to the browser history
  *
- * @param {Object} website - The website that has been visited
- * @param {string} website.url - The website's url
- * @param {string} website.name - The website name
+ * @param website - The website that has been visited
  */
-export function addToHistory({ url, name }) {
+export function addToHistory({ url, name }: WebsiteEntry) {
   return {
-    type: 'ADD_TO_BROWSER_HISTORY',
+    type: 'ADD_TO_BROWSER_HISTORY' as const,
     url,
     name,
   };
@@ -36,9 +50,9 @@ export function addToHistory({ url, name }) {
 /**
  * Clears the entire browser history
  */
-export function clearHistory(metricsEnabled, marketingEnabled) {
+export function clearHistory(metricsEnabled: boolean, marketingEnabled: boolean) {
   return {
-    type: 'CLEAR_BROWSER_HISTORY',
+    type: 'CLEAR_BROWSER_HISTORY' as const,
     id: Date.now(),
     metricsEnabled,
     marketingEnabled,
@@ -48,11 +62,11 @@ export function clearHistory(metricsEnabled, marketingEnabled) {
 /**
  * Adds a new entry to the whitelist
  *
- * @param {string} url - The website's url
+ * @param url - The website's url
  */
-export function addToWhitelist(url) {
+export function addToWhitelist(url: string) {
   return {
-    type: 'ADD_TO_BROWSER_WHITELIST',
+    type: 'ADD_TO_BROWSER_WHITELIST' as const,
     url,
   };
 }
@@ -62,19 +76,19 @@ export function addToWhitelist(url) {
  */
 export function closeAllTabs() {
   return {
-    type: 'CLOSE_ALL_TABS',
+    type: 'CLOSE_ALL_TABS' as const,
   };
 }
 
 /**
  * Creates a new tab
  *
- * @param {string} url - The website's url
- * @param {string} linkType - optional link type
+ * @param url - The website's url
+ * @param linkType - optional link type
  */
-export function createNewTab(url, linkType) {
+export function createNewTab(url: string, linkType?: string) {
   return {
-    type: 'CREATE_NEW_TAB',
+    type: 'CREATE_NEW_TAB' as const,
     url,
     linkType,
     id: Date.now(),
@@ -84,11 +98,11 @@ export function createNewTab(url, linkType) {
 /**
  * Closes an exiting tab
  *
- * @param {number} id - The Tab ID
+ * @param id - The Tab ID
  */
-export function closeTab(id) {
+export function closeTab(id: number) {
   return {
-    type: 'CLOSE_TAB',
+    type: 'CLOSE_TAB' as const,
     id,
   };
 }
@@ -96,11 +110,11 @@ export function closeTab(id) {
 /**
  * Selects an exiting tab
  *
- * @param {number} id - The Tab ID
+ * @param id - The Tab ID
  */
-export function setActiveTab(id) {
+export function setActiveTab(id: number) {
   return {
-    type: 'SET_ACTIVE_TAB',
+    type: 'SET_ACTIVE_TAB' as const,
     id,
   };
 }
@@ -108,12 +122,12 @@ export function setActiveTab(id) {
 /**
  * Selects an exiting tab
  *
- * @param {number} id - The Tab ID
- * @param {Object} data - { isArchived: boolean, url: string, image: string }
+ * @param id - The Tab ID
+ * @param data - { isArchived: boolean, url: string, image: string }
  */
-export function updateTab(id, data) {
+export function updateTab(id: number, data: TabData) {
   return {
-    type: 'UPDATE_TAB',
+    type: 'UPDATE_TAB' as const,
     id,
     data,
   };
@@ -121,14 +135,11 @@ export function updateTab(id, data) {
 
 /**
  * Stores the favicon url using the origin as key
- * @param {Object} favicon - favicon to store
- * @param {string} favicon.origin - the origin of the favicon as key
- * @param {string} favicon.url - the favicon image url
- * @returns {{favicon, type: string}}
+ * @param favicon - favicon to store
  */
-export function storeFavicon({ origin, url }) {
+export function storeFavicon({ origin, url }: FaviconEntry) {
   return {
-    type: 'STORE_FAVICON_URL',
+    type: 'STORE_FAVICON_URL' as const,
     origin,
     url,
   };
