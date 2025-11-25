@@ -506,10 +506,10 @@ export function weiToFiat(
  * @returns {string} - Currency-formatted string
  */
 export function addCurrencySymbol(
-  amount,
-  currencyCode,
+  amount: number | string,
+  currencyCode: string,
   extendDecimals = false,
-) {
+): string {
   const prefix = parseFloat(amount) < 0 ? '-' : '';
   if (extendDecimals) {
     if (isNumberScientificNotationWhenString(amount)) {
@@ -567,7 +567,7 @@ export function addCurrencySymbol(
  * @param {Number} decimalsToShow - Decimals to 5
  * @returns {Number} - The converted balance
  */
-export function weiToFiatNumber(wei, conversionRate, decimalsToShow = 5) {
+export function weiToFiatNumber(wei: number | string | BN4, conversionRate: number, decimalsToShow = 5): number {
   const base = Math.pow(10, decimalsToShow);
   const eth = fromWei(wei).toString();
   let value = parseFloat(Math.floor(eth * conversionRate * base) / base);
@@ -581,7 +581,7 @@ export function weiToFiatNumber(wei, conversionRate, decimalsToShow = 5) {
  * @param {string} wei - Amount in decimal notation
  * @returns {string} - Number string with less or equal 18 decimals
  */
-export function handleWeiNumber(wei) {
+export function handleWeiNumber(wei: string): string {
   const comps = wei.split('.');
   let fraction = comps[1];
   if (fraction && fraction.length > 18) fraction = fraction.substring(0, 18);
@@ -596,7 +596,7 @@ export function handleWeiNumber(wei) {
  * @param {number} conversionRate - ETH to current currency conversion rate
  * @returns {Object} - The converted balance as BN instance
  */
-export function fiatNumberToWei(fiat, conversionRate) {
+export function fiatNumberToWei(fiat: number | string, conversionRate: number): string | BN4 {
   const floatFiatConverted = parseFloat(fiat) / conversionRate;
   if (
     !floatFiatConverted ||
@@ -619,7 +619,7 @@ export function fiatNumberToWei(fiat, conversionRate) {
  * @param {number|string} value -  number
  * @returns {Object} - The converted value as BN instance
  */
-export function safeNumberToBN(value) {
+export function safeNumberToBN(value: number | string): BN4 {
   try {
     const safeValue = fastSplit(value?.toString()) || '0';
     return numberToBN(safeValue);
@@ -636,7 +636,7 @@ export function safeNumberToBN(value) {
  * @returns {string} - the selected splitted element
  */
 
-export function fastSplit(value, divider = '.') {
+export function fastSplit(value: string, divider = '.'): string {
   const [from, to] = [value.indexOf(divider), 0];
   return value.substring(from, to) || value;
 }
@@ -651,11 +651,11 @@ export function fastSplit(value, divider = '.') {
  * @returns {string} - Currency-formatted string
  */
 export function balanceToFiat(
-  balance,
-  conversionRate,
-  exchangeRate,
-  currencyCode,
-) {
+  balance: number | string,
+  conversionRate: number | null | undefined,
+  exchangeRate: number | undefined,
+  currencyCode: string,
+): string | undefined {
   if (
     balance === undefined ||
     balance === null ||
@@ -679,11 +679,11 @@ export function balanceToFiat(
  * @returns {Number} - The converted balance
  */
 export function balanceToFiatNumber(
-  balance,
-  conversionRate,
-  exchangeRate,
+  balance: number | string,
+  conversionRate: number,
+  exchangeRate: number,
   decimalsToShow = 5,
-) {
+): number {
   const base = Math.pow(10, decimalsToShow);
   let fiatFixed = parseFloat(
     Math.floor(balance * conversionRate * exchangeRate * base) / base,
@@ -692,7 +692,7 @@ export function balanceToFiatNumber(
   return fiatFixed;
 }
 
-export function getCurrencySymbol(currencyCode) {
+export function getCurrencySymbol(currencyCode: string): string {
   if (currencySymbols[currencyCode]) {
     return `${currencySymbols[currencyCode]}`;
   }
@@ -707,7 +707,7 @@ export function getCurrencySymbol(currencyCode) {
  * @param {number} decimalsToShow - Decimals to 5
  * @returns {string} - The converted balance
  */
-export function renderFiat(value, currencyCode, decimalsToShow = 5) {
+export function renderFiat(value: number, currencyCode: string, decimalsToShow = 5): string {
   const base = Math.pow(10, decimalsToShow);
   let fiatFixed = parseFloat(Math.round(value * base) / base);
   fiatFixed = isNaN(fiatFixed) ? 0.0 : fiatFixed;
@@ -723,7 +723,7 @@ export function renderFiat(value, currencyCode, decimalsToShow = 5) {
  * @param {object} value - Object containing wei value in BN format
  * @returns {string} - Corresponding wei value
  */
-export function renderWei(value) {
+export function renderWei(value: number | string | BN4): string {
   if (!value) return '0';
   const wei = fromWei(value);
   const renderWei = wei * Math.pow(10, 18);
@@ -735,7 +735,7 @@ export function renderWei(value) {
  * @param {string} number - String containing a number
  * @returns {string} - String number with none or at most 5 decimal places
  */
-export function renderNumber(number) {
+export function renderNumber(number: string): string {
   const index = number.indexOf('.');
   if (index === 0) return number;
   return number.substring(0, index + 6);
@@ -749,7 +749,7 @@ export function renderNumber(number) {
  * @returns {boolean} True if the value is a correctly formatted hex string,
  * false otherwise.
  */
-export function isPrefixedFormattedHexString(value) {
+export function isPrefixedFormattedHexString(value: unknown): boolean {
   if (typeof value !== 'string') {
     return false;
   }
