@@ -756,6 +756,20 @@ export function isPrefixedFormattedHexString(value: unknown): boolean {
   return regex.prefixedFormattedHexString.test(value);
 }
 
+interface ConverterOptions {
+  value: string | number | BigNumber;
+  fromNumericBase?: 'hex' | 'dec' | 'BN';
+  fromDenomination?: 'WEI' | 'GWEI' | 'ETH';
+  fromCurrency?: string | null;
+  toNumericBase?: 'hex' | 'dec' | 'BN';
+  toDenomination?: 'WEI' | 'GWEI' | 'ETH';
+  toCurrency?: string | null;
+  numberOfDecimals?: number;
+  conversionRate?: number | null;
+  invertConversionRate?: boolean;
+  roundDown?: number;
+}
+
 const converter = ({
   value,
   fromNumericBase,
@@ -768,7 +782,7 @@ const converter = ({
   conversionRate,
   invertConversionRate,
   roundDown,
-}) => {
+}: ConverterOptions): string | BigNumber | BN4 => {
   let convertedValue = fromNumericBase
     ? toBigNumber[fromNumericBase](value)
     : value;
@@ -814,8 +828,20 @@ const converter = ({
   return convertedValue;
 };
 
+interface ConversionUtilOptions {
+  fromCurrency?: string | null;
+  toCurrency?: string | null;
+  fromNumericBase?: 'hex' | 'dec' | 'BN';
+  toNumericBase?: 'hex' | 'dec' | 'BN';
+  fromDenomination?: 'WEI' | 'GWEI' | 'ETH';
+  toDenomination?: 'WEI' | 'GWEI' | 'ETH';
+  numberOfDecimals?: number;
+  conversionRate?: number | null;
+  invertConversionRate?: boolean;
+}
+
 export const conversionUtil = (
-  value,
+  value: string | number | BigNumber,
   {
     fromCurrency = null,
     toCurrency = fromCurrency,
@@ -826,8 +852,8 @@ export const conversionUtil = (
     numberOfDecimals,
     conversionRate,
     invertConversionRate,
-  },
-) =>
+  }: ConversionUtilOptions,
+): string | BigNumber | BN4 =>
   converter({
     fromCurrency,
     toCurrency,
@@ -841,19 +867,25 @@ export const conversionUtil = (
     value: value || '0',
   });
 
-export const toHexadecimal = (decimal) => {
+export const toHexadecimal = (decimal: string | number | null | undefined): string | null | undefined => {
   if (!decimal) return decimal;
-  if (decimal !== typeof 'string') {
-    decimal = String(decimal);
+  let decimalStr = decimal;
+  if (typeof decimalStr !== 'string') {
+    decimalStr = String(decimalStr);
   }
-  if (decimal.startsWith('0x')) return decimal;
-  return toBigNumber.dec(decimal).toString(16);
+  if (decimalStr.startsWith('0x')) return decimalStr;
+  return toBigNumber.dec(decimalStr).toString(16);
 };
+
+interface MultiLayerFeeOptions {
+  multiLayerL1FeeTotal?: string;
+  ethFee?: number | string;
+}
 
 export const calculateEthFeeForMultiLayer = ({
   multiLayerL1FeeTotal,
   ethFee = 0,
-}) => {
+}: MultiLayerFeeOptions): string | number => {
   if (!multiLayerL1FeeTotal) {
     return ethFee;
   }
@@ -873,14 +905,14 @@ export const calculateEthFeeForMultiLayer = ({
  * @param {number|string|object} value - Value to check
  * @returns {boolean} - true if value is zero
  */
-export const isZeroValue = (value) => {
+export const isZeroValue = (value: number | string | BN4 | null | undefined): boolean => {
   if (value === null || value === undefined) {
     return false;
   }
   return value === '0x0' || (isBN(value) && value.isZero()) || isZero(value);
 };
 
-export const formatValueToMatchTokenDecimals = (value, decimal) => {
+export const formatValueToMatchTokenDecimals = (value: string | null | undefined, decimal: number): string | null | undefined => {
   if (value === null || value === undefined) {
     return value;
   }
@@ -888,19 +920,23 @@ export const formatValueToMatchTokenDecimals = (value, decimal) => {
   if (decimalIndex !== -1) {
     const fractionalLength = value.substring(decimalIndex + 1).length;
     if (fractionalLength > decimal) {
-      value = parseFloat(value).toFixed(decimal);
+      return parseFloat(value).toFixed(decimal);
     }
   }
   return value;
 };
 
-export const safeBNToHex = (value) => {
+export const safeBNToHex = (value: BN4 | null | undefined): string | null | undefined => {
   if (value === null || value === undefined) {
     return value;
   }
 
   return BNToHex(value);
 };
+
+interface I18nContext {
+  t: (key: string) => string;
+}
 
 /**
  * Formats a potentially large number to the nearest unit.
@@ -910,7 +946,7 @@ export const safeBNToHex = (value) => {
  * @param number - The number to format.
  * @returns A localized string of the formatted number + unit.
  */
-export const localizeLargeNumber = (i18n, number) => {
+export const localizeLargeNumber = (i18n: I18nContext, number: number): string => {
   const oneTrillion = 1000000000000;
   const oneBillion = 1000000000;
   const oneMillion = 1000000;
@@ -931,7 +967,7 @@ export const localizeLargeNumber = (i18n, number) => {
   return number.toFixed(2);
 };
 
-export const convertDecimalToPercentage = (decimal) => {
+export const convertDecimalToPercentage = (decimal: number): string => {
   if (typeof decimal !== 'number' || isNaN(decimal)) {
     throw new Error('Input must be a valid number');
   }
