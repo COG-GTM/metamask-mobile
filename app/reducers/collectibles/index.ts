@@ -8,9 +8,11 @@ import { selectSelectedInternalAccountAddress } from '../../selectors/accountsCo
 import { compareTokenIds } from '../../util/tokens';
 import { createDeepEqualSelector } from '../../selectors/util';
 
-const favoritesSelector = (state) => state.collectibles.favorites;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const favoritesSelector = (state: any) => state.collectibles.favorites;
 
-export const isNftFetchingProgressSelector = (state) =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const isNftFetchingProgressSelector = (state: any) =>
   state.collectibles.isNftFetchingProgress;
 
 export const collectibleContractsSelector = createSelector(
@@ -18,12 +20,14 @@ export const collectibleContractsSelector = createSelector(
   selectChainId,
   selectAllNftContracts,
   (address, chainId, allNftContracts) =>
+    // @ts-expect-error - address can be undefined from selector
     allNftContracts[address]?.[chainId] || [],
 );
 
 export const multichainCollectibleContractsSelector = createSelector(
   selectSelectedInternalAccountAddress,
   selectAllNftContracts,
+  // @ts-expect-error - address can be undefined from selector
   (address, allNftContracts) => allNftContracts[address] || {},
 );
 
@@ -31,12 +35,14 @@ export const collectiblesSelector = createDeepEqualSelector(
   selectSelectedInternalAccountAddress,
   selectChainId,
   selectAllNfts,
+  // @ts-expect-error - address can be undefined from selector
   (address, chainId, allNfts) => allNfts[address]?.[chainId] || [],
 );
 
 export const multichainCollectiblesSelector = createDeepEqualSelector(
   selectSelectedInternalAccountAddress,
   selectAllNfts,
+  // @ts-expect-error - address can be undefined from selector
   (address, allNfts) => allNfts[address] || {},
 );
 
@@ -44,16 +50,20 @@ export const favoritesCollectiblesSelector = createSelector(
   selectSelectedInternalAccountAddress,
   selectChainId,
   favoritesSelector,
+  // @ts-expect-error - address can be undefined from selector
   (address, chainId, favorites) => favorites[address]?.[chainId] || [],
 );
 
 export const isCollectibleInFavoritesSelector = createSelector(
   favoritesCollectiblesSelector,
-  (state, collectible) => collectible,
-  (favoriteCollectibles, collectible) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (state: any, collectible: any) => collectible,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (favoriteCollectibles: any, collectible: any) =>
     Boolean(
       favoriteCollectibles.find(
-        ({ tokenId, address }) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ({ tokenId, address }: any) =>
           // TO DO: Remove after moving favorites to controllers.
           compareTokenIds(tokenId, collectible.tokenId) &&
           address === collectible.address,
@@ -62,9 +72,10 @@ export const isCollectibleInFavoritesSelector = createSelector(
 );
 
 const getFavoritesCollectibles = (
-  favoriteCollectibles,
-  selectedAddress,
-  chainId,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  favoriteCollectibles: any,
+  selectedAddress: string,
+  chainId: string,
 ) => favoriteCollectibles[selectedAddress]?.[chainId] || [];
 
 export const ADD_FAVORITE_COLLECTIBLE = 'ADD_FAVORITE_COLLECTIBLE';
@@ -73,11 +84,12 @@ export const SHOW_NFT_FETCHING_LOADER = 'SHOW_NFT_FETCHING_LOADER';
 export const HIDE_NFT_FETCHING_LOADER = 'HIDE_NFT_FETCHING_LOADER';
 
 const initialState = {
-  favorites: {},
+  favorites: {} as Record<string, Record<string, Array<{ tokenId: string; address: string }>>>,
   isNftFetchingProgress: false,
 };
 
-const collectiblesFavoritesReducer = (state = initialState, action) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const collectiblesFavoritesReducer = (state = initialState, action: any) => {
   switch (action.type) {
     case ADD_FAVORITE_COLLECTIBLE: {
       const { selectedAddress, chainId, collectible } = action;
@@ -111,7 +123,8 @@ const collectiblesFavoritesReducer = (state = initialState, action) => {
         chainId,
       );
       const indexToRemove = collectibles.findIndex(
-        ({ tokenId, address }) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ({ tokenId, address }: any) =>
           // TO DO: Remove after moving favorites to controllers.
           compareTokenIds(tokenId, collectible.tokenId) &&
           address === collectible.address,

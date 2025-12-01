@@ -2,7 +2,8 @@ import { createSelector } from 'reselect';
 import { NotificationTypes } from '../../util/notifications';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-export const initialState = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const initialState: { notifications: any[] } = {
   notifications: [],
 };
 
@@ -21,21 +22,26 @@ export const ACTIONS = {
   UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
 };
 
-const enqueue = (notifications, notification) => [
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const enqueue = (notifications: any[], notification: any) => [
   ...notifications,
   notification,
 ];
-const dequeue = (notifications) => notifications.slice(1);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const dequeue = (notifications: any[]) => notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
   (
     /** @type {import('..').RootState} */
-    state,
-  ) => state?.notifications,
-  (notifications) => notifications[0] || {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    state: any,
+  ) => state?.notification?.notifications,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (notifications: any) => notifications?.[0] || {},
 );
 
-const notificationReducer = (state = initialState, action) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const notificationReducer = (state = initialState, action: any) => {
   const { notifications } = state;
   switch (action.type) {
     // make current notification isVisible props false

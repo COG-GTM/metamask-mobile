@@ -12,7 +12,6 @@ const initialState = {
     gasPrice: undefined,
     to: undefined,
     value: undefined,
-    // eip1559
     maxFeePerGas: undefined,
     maxPriorityFeePerGas: undefined,
   },
@@ -32,7 +31,8 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getAssetType = (selectedAsset: any) => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,7 +46,8 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const transactionReducer = (state = initialState, action: any) => {
   switch (action.type) {
     case REHYDRATE:
       return {
