@@ -7,7 +7,8 @@ import {
   EXPLORED,
 } from '../../constants/storage';
 
-export default function migrate(state) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function migrate(state: any) {
   state.analytics?.enabled
     ? DefaultPreference.set(METRICS_OPT_IN, AGREED)
     : DefaultPreference.set(METRICS_OPT_IN, DENIED);

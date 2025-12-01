@@ -1,7 +1,9 @@
-import { getAllNetworks, isSafeChainId } from '../../util/networks';
+import { getAllNetworks } from '../../util/networks';
+import { isSafeChainId, toHex } from '@metamask/controller-utils';
 import { GOERLI } from '../../../app/constants/network';
 
-export default function migrate(state) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function migrate(state: any) {
   const provider = state.engine.backgroundState.NetworkController.provider;
 
   // Check if the current network is one of the initial networks
@@ -10,7 +12,7 @@ export default function migrate(state) {
 
   // Check if the current network has a valid chainId
   const chainIdNumber = parseInt(provider.chainId, 10);
-  const isCustomRpcWithInvalidChainId = !isSafeChainId(chainIdNumber);
+  const isCustomRpcWithInvalidChainId = !isSafeChainId(toHex(chainIdNumber));
 
   if (!isInitialNetwork && isCustomRpcWithInvalidChainId) {
     // If the current network does not have a chainId, switch to testnet.

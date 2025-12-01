@@ -1,15 +1,20 @@
+// @ts-expect-error - NetworksChainId exists at runtime on controller-utils but is omitted from its type definitions
 import { NetworksChainId } from '@metamask/controller-utils';
 
-export default function migrate(state) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function migrate(state: any) {
   const { allTokens } = state.engine.backgroundState.TokensController;
   const { allCollectibleContracts, allCollectibles } =
     state.engine.backgroundState.CollectiblesController;
   const { frequentRpcList } =
     state.engine.backgroundState.PreferencesController;
 
-  const newAllCollectibleContracts = {};
-  const newAllCollectibles = {};
-  const newAllTokens = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const newAllCollectibleContracts: Record<string, any> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const newAllCollectibles: Record<string, any> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const newAllTokens: Record<string, any> = {};
 
   Object.keys(allTokens).forEach((address) => {
     newAllTokens[address] = {};
@@ -18,7 +23,8 @@ export default function migrate(state) {
         newAllTokens[address][NetworksChainId[networkType]] =
           allTokens[address][networkType];
       } else {
-        frequentRpcList.forEach(({ chainId }) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        frequentRpcList.forEach(({ chainId }: any) => {
           newAllTokens[address][chainId] = allTokens[address][networkType];
         });
       }
@@ -32,7 +38,8 @@ export default function migrate(state) {
         newAllCollectibles[address][NetworksChainId[networkType]] =
           allCollectibles[address][networkType];
       } else {
-        frequentRpcList.forEach(({ chainId }) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        frequentRpcList.forEach(({ chainId }: any) => {
           newAllCollectibles[address][chainId] =
             allCollectibles[address][networkType];
         });
@@ -47,7 +54,8 @@ export default function migrate(state) {
         newAllCollectibleContracts[address][NetworksChainId[networkType]] =
           allCollectibleContracts[address][networkType];
       } else {
-        frequentRpcList.forEach(({ chainId }) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        frequentRpcList.forEach(({ chainId }: any) => {
           newAllCollectibleContracts[address][chainId] =
             allCollectibleContracts[address][networkType];
         });

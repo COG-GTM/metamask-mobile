@@ -1,4 +1,5 @@
-export default function migrate(state) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function migrate(state: any) {
   state.engine.backgroundState.TokensController = {
     allTokens: state.engine.backgroundState.AssetsController.allTokens,
     ignoredTokens: state.engine.backgroundState.AssetsController.ignoredTokens,

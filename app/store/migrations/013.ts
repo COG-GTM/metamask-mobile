@@ -1,6 +1,7 @@
 import { v1 as random } from 'uuid';
 
-export default function migrate(state) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function migrate(state: any) {
   // If for some reason we already have PermissionController state, bail out.
   const hasPermissionControllerState = Boolean(
     state.engine.backgroundState.PermissionController?.subjects,
@@ -15,8 +16,10 @@ export default function migrate(state) {
   // If no dapps connected, bail out.
   if (hosts.length < 1) return state;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { subjects } = hosts.reduce(
-    (accumulator, host, index) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (accumulator: any, host, index) => ({
       subjects: {
         ...accumulator.subjects,
         [host]: {
@@ -43,7 +46,8 @@ export default function migrate(state) {
         },
       },
     }),
-    {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    { subjects: {} as Record<string, any> },
   );
 
   const newState = { ...state };
