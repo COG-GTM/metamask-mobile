@@ -1,7 +1,9 @@
+// @ts-expect-error - NetworksChainId exists at runtime on controller-utils but is omitted from its type definitions
 import { NetworksChainId } from '@metamask/controller-utils';
 import { GOERLI } from '../../../app/constants/network';
 
-export default function migrate(state) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function migrate(state: any) {
   const chainId =
     state.engine.backgroundState.NetworkController.providerConfig.chainId;
   // Deprecate rinkeby, ropsten and Kovan, any user that is on those we fallback to goerli

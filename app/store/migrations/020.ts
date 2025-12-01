@@ -11,14 +11,17 @@ import { v4 } from 'uuid';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function migrate(state: any) {
   const preferencesControllerState =
     state.engine.backgroundState.PreferencesController;
   const networkControllerState = state.engine.backgroundState.NetworkController;
   const frequentRpcList = preferencesControllerState?.frequentRpcList;
   if (networkControllerState && frequentRpcList) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const networkConfigurations = frequentRpcList.reduce(
-      (networkConfigs, networkConfig) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (networkConfigs: any, networkConfig: any) => {
         const networkConfigurationId = v4();
         return {
           ...networkConfigs,

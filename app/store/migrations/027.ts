@@ -6,7 +6,8 @@ import { NetworkType } from '@metamask/controller-utils';
  * @param {any} state - Redux state
  * @returns
  */
-export default function migrate(state) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function migrate(state: any) {
   const backgroundState = state.engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;
@@ -21,16 +22,21 @@ export default function migrate(state) {
     networkControllerState.networkConfigurations || {};
 
   const submitHistory = transactions
-    .filter((tx) => tx.rawTransaction?.length)
-    .map((tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((tx: any) => tx.rawTransaction?.length)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((tx: any) => {
       const matchingProviderConfig =
         providerConfig.chainId === tx.chainId ? providerConfig : undefined;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const matchingNetworkConfigurations = Object.values(
         networkConfigurations,
-      ).filter((c) => c.chainId === tx.chainId);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ).filter((c: any) => c.chainId === tx.chainId);
 
-      const networkUrl = matchingNetworkConfigurations.map((c) => c.rpcUrl);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const networkUrl = matchingNetworkConfigurations.map((c: any) => c.rpcUrl);
 
       const networkType = matchingProviderConfig
         ? matchingProviderConfig.type

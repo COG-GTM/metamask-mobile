@@ -1,7 +1,8 @@
 import { isObject, hasProperty } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
 import { mapValues } from 'lodash';
-import ambiguousNetworks from './migration-data/amibiguous-networks.json';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ambiguousNetworks: Record<string, any> = require('./migration-data/amibiguous-networks.json');
 
 /**
  * Migrate address book state to be keyed by chain ID rather than network ID.
@@ -23,11 +24,11 @@ import ambiguousNetworks from './migration-data/amibiguous-networks.json';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function migrate(state: any) {
   const keyringControllerState = state.engine.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
     captureException(
-      // @ts-expect-error We are not returning state not to stop the flow of Vault recovery
       new Error(
         `Migration 23: Invalid vault in KeyringController: '${typeof keyringControllerState}'`,
       ),
@@ -56,16 +57,21 @@ export default function migrate(state) {
     );
     return state;
   } else if (
-    Object.values(networkControllerState.networkConfigurations).some(
-      (networkConfiguration) => !hasProperty(networkConfiguration, 'chainId'),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Object.values(networkControllerState.networkConfigurations as Record<string, any>).some(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (networkConfiguration: any) => !hasProperty(networkConfiguration, 'chainId'),
     )
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [invalidConfigurationId, invalidConfiguration] = Object.entries(
-      networkControllerState.networkConfigurations,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      networkControllerState.networkConfigurations as Record<string, any>,
     ).find(
-      ([_networkConfigId, networkConfiguration]) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ([_networkConfigId, networkConfiguration]: [string, any]) =>
         !hasProperty(networkConfiguration, 'chainId'),
-    );
+    ) as [string, any];
     captureException(
       new Error(
         `Migration 23: Network configuration missing chain ID, id '${invalidConfigurationId}', keys '${Object.keys(
@@ -92,13 +98,18 @@ export default function migrate(state) {
     );
     return state;
   } else if (
-    Object.values(addressBookControllerState.addressBook).some(
-      (addressEntries) => !isObject(addressEntries),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Object.values(addressBookControllerState.addressBook as Record<string, any>).some(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (addressEntries: any) => !isObject(addressEntries),
     )
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [networkId, invalidEntries] = Object.entries(
-      addressBookControllerState.addressBook,
-    ).find(([_networkId, addressEntries]) => !isObject(addressEntries));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      addressBookControllerState.addressBook as Record<string, any>,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ).find(([_networkId, addressEntries]: [string, any]) => !isObject(addressEntries)) as [string, any];
     captureException(
       new Error(
         `Migration 23: Address book configuration invalid, network id '${networkId}', type '${typeof invalidEntries}'`,
@@ -106,22 +117,34 @@ export default function migrate(state) {
     );
     return state;
   } else if (
-    Object.values(addressBookControllerState.addressBook).some(
-      (addressEntries) =>
-        Object.values(addressEntries).some(
-          (addressEntry) => !hasProperty(addressEntry, 'chainId'),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Object.values(addressBookControllerState.addressBook as Record<string, any>).some(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (addressEntries: any) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Object.values(addressEntries as Record<string, any>).some(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (addressEntry: any) => !hasProperty(addressEntry, 'chainId'),
         ),
     )
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [networkId, invalidEntries] = Object.entries(
-      addressBookControllerState.addressBook,
-    ).find(([_networkId, addressEntries]) =>
-      Object.values(addressEntries).some(
-        (addressEntry) => !hasProperty(addressEntry, 'chainId'),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      addressBookControllerState.addressBook as Record<string, any>,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ).find(([_networkId, addressEntries]: [string, any]) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      Object.values(addressEntries as Record<string, any>).some(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (addressEntry: any) => !hasProperty(addressEntry, 'chainId'),
       ),
-    );
-    const invalidEntry = Object.values(invalidEntries).find(
-      (addressEntry) => !hasProperty(addressEntry, 'chainId'),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) as [string, any];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const invalidEntry = Object.values(invalidEntries as Record<string, any>).find(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (addressEntry: any) => !hasProperty(addressEntry, 'chainId'),
     );
     captureException(
       new Error(
@@ -138,12 +161,15 @@ export default function migrate(state) {
     return state;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const localChainIds = Object.values(
-    networkControllerState.networkConfigurations,
-  ).reduce((customChainIds, networkConfiguration) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    networkControllerState.networkConfigurations as Record<string, any>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ).reduce((customChainIds: Set<string>, networkConfiguration: any) => {
     customChainIds.add(networkConfiguration.chainId);
     return customChainIds;
-  }, new Set());
+  }, new Set<string>());
   const builtInNetworkChainIdsAsOfMigration22 = [
     '1',
     '5',
@@ -155,22 +181,28 @@ export default function migrate(state) {
     localChainIds.add(builtInChainId);
   }
 
-  const migratedAddressBook = {};
-  const ambiguousAddressEntries = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const migratedAddressBook: Record<string, any> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ambiguousAddressEntries: Record<string, any> = {};
   for (const [networkId, addressEntries] of Object.entries(
-    addressBookControllerState.addressBook,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    addressBookControllerState.addressBook as Record<string, any>,
   )) {
     if (ambiguousNetworks[networkId]) {
       const chainIdCandidates = ambiguousNetworks[networkId].chainIds;
-      const recognizedChainIdCandidates = chainIdCandidates.filter((chainId) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const recognizedChainIdCandidates = chainIdCandidates.filter((chainId: any) =>
         localChainIds.has(chainId),
       );
 
       for (const chainId of recognizedChainIdCandidates) {
         if (recognizedChainIdCandidates.length > 1) {
-          ambiguousAddressEntries[chainId] = Object.keys(addressEntries);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ambiguousAddressEntries[chainId] = Object.keys(addressEntries as Record<string, any>);
         }
-        migratedAddressBook[chainId] = mapValues(addressEntries, (entry) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        migratedAddressBook[chainId] = mapValues(addressEntries as Record<string, any>, (entry: any) => ({
           ...entry,
           chainId,
         }));
