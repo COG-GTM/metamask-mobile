@@ -54,9 +54,11 @@ export const collectiblesSelector = createDeepEqualSelector(
   selectSelectedInternalAccountAddress,
   selectChainId,
   selectAllNfts,
-  (address, chainId, allNfts) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (address, chainId, allNfts): any[] => {
     if (!address) return [];
-    const addressNfts = (allNfts as Record<string, Record<string, unknown[]>>)[address];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const addressNfts = (allNfts as Record<string, Record<string, any[]>>)[address];
     return addressNfts?.[chainId as string] || [];
   },
 );
@@ -123,7 +125,7 @@ interface ShowNftFetchingLoaderAction
 interface HideNftFetchingLoaderAction
   extends Action<typeof HIDE_NFT_FETCHING_LOADER> {}
 
-type CollectiblesAction =
+export type CollectiblesAction =
   | AddFavoriteCollectibleAction
   | RemoveFavoriteCollectibleAction
   | ShowNftFetchingLoaderAction

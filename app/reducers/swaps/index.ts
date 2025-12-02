@@ -41,14 +41,8 @@ export interface TopAsset {
   address: string;
 }
 
-interface LocalFeatureFlags {
-  smartTransactions?: {
-    mobileActive?: boolean;
-    [key: string]: unknown;
-  };
-  smart_transactions?: unknown;
-  [key: string]: unknown;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LocalFeatureFlags = Record<string, any>;
 
 export interface ChainState {
   isLive: boolean;
@@ -76,11 +70,12 @@ const MAX_TOKENS_WITH_BALANCE = 5;
 
 // * Action Creator
 export const setSwapsLiveness = (
-  chainId: Hex,
-  featureFlags: LocalFeatureFlags | null,
+  chainId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  featureFlags: any,
 ) => ({
   type: SWAPS_SET_LIVENESS as typeof SWAPS_SET_LIVENESS,
-  payload: { chainId, featureFlags },
+  payload: { chainId: chainId as Hex, featureFlags },
 });
 
 export const setSwapsHasOnboarded = (hasOnboarded: boolean) => ({
@@ -147,7 +142,8 @@ export const selectSwapsChainFeatureFlags = createSelector(
   swapsStateSelector,
   (_state: RootState, transactionChainId?: Hex) =>
     transactionChainId || selectEvmChainId(_state),
-  (swapsState: SwapsState, chainId: Hex): LocalFeatureFlags => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (swapsState: SwapsState, chainId: Hex): any => ({
     ...(swapsState[chainId] as ChainState)?.featureFlags,
     smartTransactions: {
       ...((swapsState[chainId] as ChainState)?.featureFlags?.smartTransactions || {}),
@@ -166,20 +162,28 @@ export const swapsHasOnboardedSelector = createSelector(
 
 interface SwapsControllerState {
   tokens: Token[];
-  approvalTransaction: unknown;
-  quoteValues: unknown;
-  quotes: unknown;
-  aggregatorMetadata: unknown;
-  error: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  approvalTransaction: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  quoteValues: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  quotes: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  aggregatorMetadata: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  error: any;
   quoteRefreshSeconds: number;
-  usedGasEstimate: unknown;
-  usedCustomGas: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  usedGasEstimate: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  usedCustomGas: any;
   topAggId: string;
   pollingCyclesLeft: number;
   quotesLastFetched: number;
   isInPolling: boolean;
   topAssets: TopAsset[];
-  chainCache: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  chainCache: any;
 }
 
 const selectSwapsControllerState = (state: RootState): SwapsControllerState =>
@@ -484,7 +488,7 @@ interface SetSwapsHasOnboardedAction
   payload: boolean;
 }
 
-type SwapsAction = SetSwapsLivenessAction | SetSwapsHasOnboardedAction;
+export type SwapsAction = SetSwapsLivenessAction | SetSwapsHasOnboardedAction;
 
 function swapsReducer(
   state: SwapsState = initialState,
