@@ -408,3 +408,8 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'readable-stream' {
+  import { Duplex as NodeDuplex } from 'stream';
+  export class Duplex extends NodeDuplex {}
+}
