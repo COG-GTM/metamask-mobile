@@ -122,9 +122,6 @@ export default class AppInformation extends PureComponent<
   AppInformationProps,
   AppInformationState
 > {
-  static contextType = ThemeContext;
-  declare context: Theme;
-
   state: AppInformationState = {
     appInfo: '',
     appVersion: '',
@@ -132,7 +129,8 @@ export default class AppInformation extends PureComponent<
 
   updateNavBar = (): void => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.info_title'),
@@ -201,7 +199,8 @@ export default class AppInformation extends PureComponent<
   };
 
   render = (): React.ReactNode => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -264,3 +263,5 @@ export default class AppInformation extends PureComponent<
     );
   };
 }
+
+AppInformation.contextType = ThemeContext;
