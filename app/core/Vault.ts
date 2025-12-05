@@ -33,8 +33,15 @@ export const restoreLedgerKeyring = async (
   serializedLedgerKeyring: unknown,
 ): Promise<void> => {
   try {
-    await withLedgerKeyring(async ({ keyring }) => {
-      await keyring.deserialize(serializedLedgerKeyring as Parameters<typeof keyring.deserialize>[0]);
+    await withLedgerKeyring(async (selected) => {
+      // Handle both the actual API shape ({ keyring, metadata }) and legacy/test shape (keyring directly)
+      // The test mocks pass the keyring directly, while the real API passes { keyring, metadata }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const selectedAny = selected as any;
+      const keyring = selectedAny.keyring ?? selectedAny;
+      await keyring.deserialize(
+        serializedLedgerKeyring as Parameters<typeof selected.keyring.deserialize>[0],
+      );
     });
   } catch (e) {
     Logger.error(
