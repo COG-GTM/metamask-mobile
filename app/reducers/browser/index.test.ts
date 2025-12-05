@@ -1,28 +1,31 @@
-import browserReducer from './index';
+import browserReducer, { BrowserState } from './index';
 import AppConstants from '../../core/AppConstants';
+import { STORE_FAVICON_URL, BrowserActionType } from '../../actions/browser';
 
 describe('browserReducer STORE_FAVICON_URL', () => {
   it('adds favicon in the state', () => {
-    const initialState = {
+    const initialState: BrowserState = {
       history: [],
       whitelist: [],
       tabs: [],
       favicons: [],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
-    const action = {
-      type: 'STORE_FAVICON_URL',
+    const action: BrowserActionType = {
+      type: STORE_FAVICON_URL,
       origin: 'testOrigin',
       url: 'testUrl',
     };
 
-    const expectedState = {
+    const expectedState: BrowserState = {
       history: [],
       whitelist: [],
       tabs: [],
       favicons: [{ origin: 'testOrigin', url: 'testUrl' }],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const newState = browserReducer(initialState, action);
@@ -31,7 +34,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
   });
 
   it('limits the number of stored favicons in state to FAVICON_CACHE_MAX_SIZE', () => {
-    const initialState = {
+    const initialState: BrowserState = {
       history: [],
       whitelist: [],
       tabs: [],
@@ -40,15 +43,16 @@ describe('browserReducer STORE_FAVICON_URL', () => {
         url: 'oldUrl',
       }),
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
-    const action = {
-      type: 'STORE_FAVICON_URL',
+    const action: BrowserActionType = {
+      type: STORE_FAVICON_URL,
       origin: 'newOrigin',
       url: 'newUrl',
     };
 
-    const expectedState = {
+    const expectedState: BrowserState = {
       history: [],
       whitelist: [],
       tabs: [],
@@ -60,6 +64,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
         }),
       ],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const newState = browserReducer(initialState, action);
