@@ -4,7 +4,6 @@ import {
   NotificationTypes,
   NotificationTypesType,
 } from '../../util/notifications';
-import type { RootState } from '..';
 
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
@@ -139,7 +138,7 @@ const dequeue = (notifications: Notification[]): Notification[] =>
   notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
-  (state: RootState) => state?.notification?.notifications,
+  (state: NotificationState) => state?.notifications,
   (notifications: Notification[] | undefined) => notifications?.[0] || {},
 );
 
