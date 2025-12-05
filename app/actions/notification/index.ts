@@ -25,7 +25,7 @@ export function modifyOrShowTransactionNotificationById({
   transaction,
   status,
 }: {
-  autodismiss: number;
+  autodismiss?: number | false;
   transaction: { id: string; [key: string]: unknown };
   status: string;
 }): NotificationAction {
@@ -43,7 +43,7 @@ export function modifyOrShowSimpleNotificationById({
   description,
   status,
 }: {
-  autodismiss: number;
+  autodismiss?: number | false;
   title: string;
   description: string;
   status: string;
@@ -87,7 +87,7 @@ export function showSimpleNotification({
   status,
   id,
 }: {
-  autodismiss?: number;
+  autodismiss?: number | false;
   title: string;
   description: string;
   status: string;
@@ -108,7 +108,7 @@ export function showTransactionNotification({
   transaction,
   status,
 }: {
-  autodismiss?: number;
+  autodismiss?: number | false;
   transaction: { id: string; [key: string]: unknown };
   status: string;
 }): NotificationAction {

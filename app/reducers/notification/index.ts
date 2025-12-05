@@ -10,7 +10,7 @@ const { TRANSACTION, SIMPLE } = NotificationTypes;
 export interface BaseNotification {
   id: string;
   isVisible: boolean;
-  autodismiss: number;
+  autodismiss: number | false;
   status: string;
   type: NotificationTypesType;
 }
@@ -68,7 +68,7 @@ interface HideNotificationByIdAction {
 interface ModifyOrShowTransactionNotificationAction {
   type: typeof ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION;
   id?: string;
-  autodismiss?: number;
+  autodismiss?: number | false;
   transaction: { id: string; [key: string]: unknown };
   status: string;
 }
@@ -76,7 +76,7 @@ interface ModifyOrShowTransactionNotificationAction {
 interface ModifyOrShowSimpleNotificationAction {
   type: typeof ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION;
   id?: string;
-  autodismiss?: number;
+  autodismiss?: number | false;
   title: string;
   description: string;
   status: string;
@@ -100,7 +100,7 @@ interface RemoveCurrentNotificationAction {
 interface ShowSimpleNotificationAction {
   type: typeof ACTIONS.SHOW_SIMPLE_NOTIFICATION;
   id: string;
-  autodismiss?: number;
+  autodismiss?: number | false;
   title: string;
   description: string;
   status: string;
@@ -108,7 +108,7 @@ interface ShowSimpleNotificationAction {
 
 interface ShowTransactionNotificationAction {
   type: typeof ACTIONS.SHOW_TRANSACTION_NOTIFICATION;
-  autodismiss?: number;
+  autodismiss?: number | false;
   transaction: { id: string; [key: string]: unknown };
   status: string;
 }
