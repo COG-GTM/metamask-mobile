@@ -14,7 +14,9 @@ import fiatOrders from './fiatOrders';
 import swapsReducer from './swaps';
 import signatureRequestReducer from './signatureRequest';
 import notificationReducer from './notification';
-import infuraAvailabilityReducer from './infuraAvailability';
+import infuraAvailabilityReducer, {
+  InfuraAvailabilityState,
+} from './infuraAvailability';
 import collectiblesReducer from './collectibles';
 import navigationReducer, { NavigationState } from './navigation';
 import networkOnboardReducer from './networkSelector';
@@ -94,9 +96,7 @@ export interface RootState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   swaps: any;
   fiatOrders: StateFromReducer<typeof fiatOrders>;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  infuraAvailability: any;
+  infuraAvailability: InfuraAvailabilityState;
   navigation: NavigationState;
   // The networkOnboarded reducer is TypeScript but not yet a valid reducer
   // TODO: Replace "any" with type
