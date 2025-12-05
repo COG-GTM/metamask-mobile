@@ -94,14 +94,17 @@ const CHAIN_ID_TO_NETWORK_ID: Record<HexChainId, NetworkId> = {
  * Get a cached ENS name.
  *
  * @param address - The address to lookup.
- * @param chainId - The chain ID for the cached ENS name.
+ * @param chainId - The chain ID for the cached ENS name (optional).
  * @returns The cached ENS name, or undefined if the name
  * was not found in the cache.
  */
 export function getCachedENSName(
   address: EthAddress,
-  chainId: HexChainId,
+  chainId?: HexChainId,
 ): ENSDomainName | undefined {
+  if (!chainId) {
+    return undefined;
+  }
   const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
   if (!networkHasEnsSupport) {
     return undefined;
@@ -117,13 +120,16 @@ export function getCachedENSName(
  * Perform a reverse ENS lookup to get the ENS name for an address.
  *
  * @param address - The Ethereum address to lookup.
- * @param chainId - The chain ID for the lookup.
+ * @param chainId - The chain ID for the lookup (optional).
  * @returns The ENS name if found, or undefined.
  */
 export async function doENSReverseLookup(
   address: EthAddress,
-  chainId: HexChainId,
+  chainId?: HexChainId,
 ): Promise<ENSDomainName | undefined> {
+  if (!chainId) {
+    return undefined;
+  }
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
   const { name: cachedName, timestamp } =
@@ -162,13 +168,16 @@ export async function doENSReverseLookup(
  * Perform an ENS lookup to resolve an ENS name to an address.
  *
  * @param ensName - The ENS name to resolve.
- * @param chainId - The chain ID for the lookup.
- * @returns The resolved Ethereum address, or undefined if not found.
+ * @param chainId - The chain ID for the lookup (optional).
+ * @returns The resolved Ethereum address, or null if not found.
  */
 export async function doENSLookup(
   ensName: ENSDomainName,
-  chainId: HexChainId,
-): Promise<EthAddress | undefined> {
+  chainId?: HexChainId,
+): Promise<EthAddress | null> {
+  if (!chainId) {
+    return null;
+  }
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
 
@@ -179,12 +188,12 @@ export async function doENSLookup(
     const ens: ENSInstance = new ENS({ provider, network: networkId });
     try {
       const resolvedAddress = await ens.lookup(ensName);
-      if (resolvedAddress === EMPTY_ADDRESS) return undefined;
+      if (resolvedAddress === EMPTY_ADDRESS) return null;
       return resolvedAddress;
       // eslint-disable-next-line no-empty
     } catch (e) {}
   }
-  return undefined;
+  return null;
 }
 
 /**
