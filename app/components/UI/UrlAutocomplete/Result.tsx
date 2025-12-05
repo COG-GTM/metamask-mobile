@@ -9,7 +9,7 @@ import { IconName } from '../../../component-library/components/Icons/Icon';
 import { useDispatch, useSelector } from 'react-redux';
 import { removeBookmark } from '../../../actions/bookmarks';
 import stylesheet from './styles';
-import { AutocompleteSearchResult, TokenSearchResult, UrlAutocompleteCategory } from './types';
+import { AutocompleteSearchResult, FuseSearchResult, TokenSearchResult, UrlAutocompleteCategory } from './types';
 import BadgeWrapper from '../../../component-library/components/Badges/BadgeWrapper';
 import Badge, { BadgeVariant } from '../../../component-library/components/Badges/Badge';
 import { NetworkBadgeSource } from '../AssetOverview/Balance/Balance';
@@ -35,7 +35,9 @@ export const Result: React.FC<ResultProps> = memo(({ result, onPress, onSwapPres
     const dispatch = useDispatch();
 
     const onPressRemove = useCallback(() => {
-        dispatch(removeBookmark(result));
+        if ('url' in result) {
+            dispatch(removeBookmark(result as FuseSearchResult));
+        }
     }, [dispatch, result]);
 
     const swapsEnabled = result.category === UrlAutocompleteCategory.Tokens && isSwapsAllowed(result.chainId) && AppConstants.SWAPS.ACTIVE;
