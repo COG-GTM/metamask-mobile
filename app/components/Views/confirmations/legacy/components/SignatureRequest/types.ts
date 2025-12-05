@@ -21,6 +21,6 @@ export interface MessageParams {
   metamaskId: string;
   meta?: PageMeta;
   origin: string;
-  version?: string;
+  version?: 'V1' | 'V3' | 'V4';
   securityAlertResponse?: SecurityAlertResponse;
 }

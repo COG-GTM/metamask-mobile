@@ -68,10 +68,11 @@ jest.mock('../../../../../../util/address', () => ({
 }));
 
 const messageParamsMock = {
-  data: { type: 'string', name: 'Message', value: 'Hi, Alice!' },
+  data: [{ name: 'Message', value: 'Hi, Alice!' }],
   origin: 'example.com',
   metamaskId: 'TestMessageId',
   from: '0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272',
+  version: 'V1' as const,
 };
 
 const mockStore = configureMockStore();
