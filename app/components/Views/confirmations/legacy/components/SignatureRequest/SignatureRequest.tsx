@@ -158,9 +158,8 @@ interface ThemeContextType {
 
 class SignatureRequest extends PureComponent<SignatureRequestProps> {
   static contextType = ThemeContext;
-  declare context: ThemeContextType;
 
-  componentDidMount = () => {
+  componentDidMount= () => {
     const { currentPageInformation, type, fromAddress, metrics } = this.props;
 
     metrics.trackEvent(
@@ -209,10 +208,11 @@ class SignatureRequest extends PureComponent<SignatureRequestProps> {
     };
   };
 
-  getStyles = () => {
-    const colors = this.context?.colors || mockTheme.colors;
-    return createStyles(colors);
-  };
+    getStyles = () => {
+      const themeContext = this.context as ThemeContextType | undefined;
+      const colors = themeContext?.colors || mockTheme.colors;
+      return createStyles(colors);
+    };
 
   renderActionViewChildren = () => {
     const {
