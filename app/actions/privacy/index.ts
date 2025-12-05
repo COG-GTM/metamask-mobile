@@ -22,7 +22,7 @@ export interface ClearHostsAction
 
 export interface RecordSRPRevealTimestampAction
   extends ReduxAction<ActionType.RECORD_SRP_REVEAL_TIMESTAMP> {
-  timestamp: number;
+  timestamp: string;
 }
 
 export type PrivacyAction =
@@ -46,7 +46,7 @@ export const clearHosts = (): ClearHostsAction => ({
 });
 
 export const recordSRPRevealTimestamp = (
-  timestamp: number,
+  timestamp: string,
 ): RecordSRPRevealTimestampAction => ({
   type: ActionType.RECORD_SRP_REVEAL_TIMESTAMP,
   timestamp,
