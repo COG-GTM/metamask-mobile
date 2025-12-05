@@ -1,7 +1,55 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import type { SecurityAlertResponse } from '@metamask/transaction-controller';
+import type BN from 'bnjs4';
+import type {
+  TransactionAction,
+  SelectedAsset,
+  AssetType,
+} from '../../actions/transaction';
 
-const initialState = {
+// Transaction data within state
+export interface Transaction {
+  data?: string;
+  from?: string;
+  gas?: BN;
+  gasPrice?: BN;
+  to?: string;
+  value?: BN;
+  maxFeePerGas?: BN;
+  maxPriorityFeePerGas?: BN;
+}
+
+// Security alert responses map
+export interface SecurityAlertResponses {
+  [transactionId: string]: SecurityAlertResponse;
+}
+
+// Transaction reducer state interface
+export interface TransactionState {
+  ensRecipient?: string;
+  assetType?: AssetType;
+  selectedAsset: SelectedAsset;
+  transaction: Transaction;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  symbol?: string;
+  paymentRequest?: unknown;
+  readableValue?: string;
+  id?: string;
+  type?: string;
+  proposedNonce?: string;
+  nonce?: string;
+  securityAlertResponses: SecurityAlertResponses;
+  useMax: boolean;
+  maxValueMode?: boolean;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -12,7 +60,6 @@ const initialState = {
     gasPrice: undefined,
     to: undefined,
     value: undefined,
-    // eip1559
     maxFeePerGas: undefined,
     maxPriorityFeePerGas: undefined,
   },
@@ -32,8 +79,8 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
-  let assetType;
+const getAssetType = (selectedAsset?: SelectedAsset): AssetType | undefined => {
+  let assetType: AssetType | undefined;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
       assetType = 'ERC721';
@@ -46,7 +93,18 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+// Action type for REHYDRATE
+interface RehydrateAction {
+  type: typeof REHYDRATE;
+}
+
+// Combined action type for the reducer
+type ReducerAction = TransactionAction | RehydrateAction;
+
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: ReducerAction,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
