@@ -63,16 +63,16 @@ const Identicon: React.FC<IdenticonProps> = ({
 
   const image = imageUri ? (
     <Image source={{ uri: imageUri }} style={styleForBlockieAndTokenIcon} />
-  ) : useBlockieIcon ? (
+  ) : useBlockieIcon && address ? (
     <Image
       source={{ uri: toDataUrl(address) }}
       style={styleForBlockieAndTokenIcon}
     />
-  ) : (
+  ) : address ? (
     <View style={customStyle}>
       <Jazzicon size={diameter} address={address} />
     </View>
-  );
+  ) : null;
 
   if (noFadeIn) {
     return image;
