@@ -438,7 +438,6 @@ exports[`TypedSign onConfirm signs message 1`] = `
               </View>
             </View>
             <TouchableOpacity
-              onPress={null}
               style={
                 {
                   "alignSelf": "center",
@@ -517,7 +516,47 @@ exports[`TypedSign onConfirm signs message 1`] = `
                 <View
                   onLayout={[Function]}
                   style={[]}
-                />
+                >
+                  <View
+                    style={
+                      {
+                        "marginLeft": 10,
+                      }
+                    }
+                  >
+                    <View>
+                      <Text
+                        style={
+                          [
+                            {
+                              "color": "#121314",
+                              "fontFamily": "Courier",
+                              "fontWeight": "400",
+                            },
+                            {
+                              "fontFamily": "CentraNo1-Bold",
+                              "fontWeight": "600",
+                            },
+                          ]
+                        }
+                      >
+                        Message
+                        :
+                      </Text>
+                      <Text
+                        style={
+                          {
+                            "color": "#121314",
+                            "fontFamily": "Courier",
+                            "fontWeight": "400",
+                          }
+                        }
+                      >
+                         Hi, Alice!
+                      </Text>
+                    </View>
+                  </View>
+                </View>
               </View>
               <View
                 style={
@@ -1111,7 +1150,6 @@ exports[`TypedSign onReject rejects message 1`] = `
               </View>
             </View>
             <TouchableOpacity
-              onPress={null}
               style={
                 {
                   "alignSelf": "center",
@@ -1190,7 +1228,47 @@ exports[`TypedSign onReject rejects message 1`] = `
                 <View
                   onLayout={[Function]}
                   style={[]}
-                />
+                >
+                  <View
+                    style={
+                      {
+                        "marginLeft": 10,
+                      }
+                    }
+                  >
+                    <View>
+                      <Text
+                        style={
+                          [
+                            {
+                              "color": "#121314",
+                              "fontFamily": "Courier",
+                              "fontWeight": "400",
+                            },
+                            {
+                              "fontFamily": "CentraNo1-Bold",
+                              "fontWeight": "600",
+                            },
+                          ]
+                        }
+                      >
+                        Message
+                        :
+                      </Text>
+                      <Text
+                        style={
+                          {
+                            "color": "#121314",
+                            "fontFamily": "Courier",
+                            "fontWeight": "400",
+                          }
+                        }
+                      >
+                         Hi, Alice!
+                      </Text>
+                    </View>
+                  </View>
+                </View>
               </View>
               <View
                 style={
@@ -1373,7 +1451,7 @@ exports[`TypedSign should render correctly 1`] = `
     }
   }
 >
-  <Component
+  <TypedSign
     currentPageInformation={
       {
         "title": "title",
@@ -1382,14 +1460,16 @@ exports[`TypedSign should render correctly 1`] = `
     }
     messageParams={
       {
-        "data": {
-          "name": "Message",
-          "type": "string",
-          "value": "Hi, Alice!",
-        },
+        "data": [
+          {
+            "name": "Message",
+            "value": "Hi, Alice!",
+          },
+        ],
         "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
         "metamaskId": "TestMessageId",
         "origin": "example.com",
+        "version": "V1",
       }
     }
     onConfirm={[MockFunction]}

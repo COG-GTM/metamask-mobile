@@ -67,6 +67,17 @@ jest.mock('../../../../../../util/address', () => ({
   getAddressAccountType: jest.fn().mockReturnValue('Metamask'),
 }));
 
+jest.mock('@react-navigation/native', () => {
+  const actual = jest.requireActual('@react-navigation/native');
+  return {
+    ...actual,
+    useNavigation: () => ({
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+    }),
+  };
+});
+
 const messageParamsMock = {
   data: [{ name: 'Message', value: 'Hi, Alice!' }],
   origin: 'example.com',
