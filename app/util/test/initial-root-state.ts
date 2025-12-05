@@ -9,6 +9,7 @@ import { initialState as initialBridgeState } from '../../core/redux/slices/brid
 import initialBackgroundState from './initial-background-state.json';
 import { userInitialState } from '../../reducers/user';
 import { initialNavigationState } from '../../reducers/navigation';
+import { initialAlertState } from '../../reducers/alert';
 import { initialOnboardingState } from '../../reducers/onboarding';
 import { initialState as initialPerformanceState } from '../../core/redux/slices/performance';
 import { isTest } from './utils';
@@ -26,7 +27,7 @@ const initialRootState: RootState = {
   browser: undefined,
   modals: undefined,
   settings: undefined,
-  alert: undefined,
+  alert: initialAlertState,
   transaction: undefined,
   user: userInitialState,
   wizard: undefined,
