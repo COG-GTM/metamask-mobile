@@ -58,6 +58,7 @@ interface SimpleNotificationData {
   title: string;
   description: string;
   status?: string;
+  action?: string;
 }
 
 /**
@@ -479,8 +480,8 @@ class NotificationManager {
    * Sets the id of the transaction that should
    * be displayed in memory
    */
-  setTransactionToView = (id: string): void => {
-    this._transactionToView.push(id);
+  setTransactionToView = (id: string | number): void => {
+    this._transactionToView.push(String(id));
   };
 
   /**
@@ -696,7 +697,7 @@ export default {
   getTransactionToView(): string | undefined {
     return instance?.getTransactionToView();
   },
-  setTransactionToView(id: string): void {
+  setTransactionToView(id: string | number): void {
     instance?.setTransactionToView(id);
   },
   gotIncomingTransaction(
