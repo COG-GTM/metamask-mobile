@@ -1,5 +1,6 @@
 import React from 'react';
-import { TokenI, BrowserTab } from '../../../Tokens/types';
+import { TokenI } from '../../../Tokens/types';
+import { type BrowserTabState } from '../../../../../reducers/browser';
 import { useNavigation } from '@react-navigation/native';
 import Routes from '../../../../../constants/navigation/Routes';
 import { useSelector } from 'react-redux';
@@ -69,7 +70,7 @@ const StakeButtonContent = ({ asset }: StakeButtonProps) => {
         },
       });
     } else {
-      const existingStakeTab = browserTabs.find((tab: BrowserTab) =>
+      const existingStakeTab = browserTabs.find((tab: BrowserTabState) =>
         tab.url.includes(AppConstants.STAKE.URL),
       );
       let existingTabId;

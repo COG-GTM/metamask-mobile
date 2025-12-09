@@ -1,4 +1,15 @@
-const initialState = {
+import {
+  type ModalsAction,
+  ModalsActionType,
+} from '../../actions/modals/types';
+import { type ModalsState } from './types';
+
+export * from './types';
+
+/**
+ * Initial modals state
+ */
+export const initialModalsState: ModalsState = {
   networkModalVisible: false,
   shouldNetworkSwitchPopToWallet: true,
   collectibleContractModalVisible: false,
@@ -6,20 +17,27 @@ const initialState = {
   signMessageModalVisible: true,
 };
 
-const modalsReducer = (state = initialState, action) => {
+/**
+ * Modals reducer
+ */
+/* eslint-disable @typescript-eslint/default-param-last */
+const modalsReducer = (
+  state: ModalsState = initialModalsState,
+  action: ModalsAction,
+): ModalsState => {
   switch (action.type) {
-    case 'TOGGLE_NETWORK_MODAL':
+    case ModalsActionType.TOGGLE_NETWORK_MODAL:
       return {
         ...state,
         networkModalVisible: !state.networkModalVisible,
         shouldNetworkSwitchPopToWallet: action.shouldNetworkSwitchPopToWallet,
       };
-    case 'TOGGLE_COLLECTIBLE_CONTRACT_MODAL':
+    case ModalsActionType.TOGGLE_COLLECTIBLE_CONTRACT_MODAL:
       return {
         ...state,
         collectibleContractModalVisible: !state.collectibleContractModalVisible,
       };
-    case 'TOGGLE_DAPP_TRANSACTION_MODAL':
+    case ModalsActionType.TOGGLE_DAPP_TRANSACTION_MODAL:
       if (action.show === false) {
         return {
           ...state,
@@ -33,7 +51,7 @@ const modalsReducer = (state = initialState, action) => {
             ? !state.dappTransactionModalVisible
             : action.show,
       };
-    case 'TOGGLE_INFO_NETWORK_MODAL':
+    case ModalsActionType.TOGGLE_INFO_NETWORK_MODAL:
       if (action.show === false) {
         return {
           ...state,
@@ -44,7 +62,7 @@ const modalsReducer = (state = initialState, action) => {
         ...state,
         infoNetworkModalVisible: !state.infoNetworkModalVisible,
       };
-    case 'TOGGLE_SIGN_MODAL':
+    case ModalsActionType.TOGGLE_SIGN_MODAL:
       if (action.show === false) {
         return {
           ...state,
@@ -59,4 +77,5 @@ const modalsReducer = (state = initialState, action) => {
       return state;
   }
 };
+
 export default modalsReducer;

@@ -11,6 +11,10 @@ import { userInitialState } from '../../reducers/user';
 import { initialNavigationState } from '../../reducers/navigation';
 import { initialOnboardingState } from '../../reducers/onboarding';
 import { initialState as initialPerformanceState } from '../../core/redux/slices/performance';
+import { initialBrowserState } from '../../reducers/browser';
+import { initialModalsState } from '../../reducers/modals';
+import { initialSettingsState } from '../../reducers/settings';
+import { initialTransactionState } from '../../reducers/transaction';
 import { isTest } from './utils';
 // A cast is needed here because we use enums in some controllers, and TypeScript doesn't consider
 // the string value of an enum as satisfying an enum type.
@@ -23,11 +27,11 @@ const initialRootState: RootState = {
   engine: { backgroundState },
   privacy: undefined,
   bookmarks: undefined,
-  browser: undefined,
-  modals: undefined,
-  settings: undefined,
+  browser: initialBrowserState,
+  modals: initialModalsState,
+  settings: initialSettingsState,
   alert: undefined,
-  transaction: undefined,
+  transaction: initialTransactionState,
   user: userInitialState,
   wizard: undefined,
   onboarding: initialOnboardingState,
