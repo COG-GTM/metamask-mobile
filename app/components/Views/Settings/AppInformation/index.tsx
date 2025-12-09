@@ -84,7 +84,6 @@ const createStyles = (colors: Colors) =>
       color: colors.text.alternative,
       ...fontStyles.normal,
     },
-    links: {},
   });
 
 // eslint-disable-next-line import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
@@ -194,7 +193,7 @@ const AppInformation = () => {
           ) : null}
         </View>
         <Text style={styles.title}>{strings('app_information.links')}</Text>
-        <View style={styles.links}>
+        <View>
           <TouchableOpacity onPress={onPrivacyPolicy}>
             <Text style={styles.link}>
               {strings('app_information.privacy_policy')}
@@ -212,7 +211,7 @@ const AppInformation = () => {
           </TouchableOpacity>
         </View>
         <View style={styles.division} />
-        <View style={styles.links}>
+        <View>
           <TouchableOpacity onPress={onSupportCenter}>
             <Text style={styles.link}>
               {strings('app_information.support_center')}
