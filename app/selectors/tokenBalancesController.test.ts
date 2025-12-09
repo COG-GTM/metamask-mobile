@@ -143,7 +143,14 @@ describe('TokenBalancesController Selectors', () => {
     const arrange = () => {
       // Deep clone for isolated test
       const mockState: RootState = JSON.parse(JSON.stringify(mockRootState));
-      mockState.settings = { showFiatOnTestnets: true };
+      mockState.settings = {
+        searchEngine: 'DuckDuckGo',
+        primaryCurrency: 'ETH',
+        lockTime: 30000,
+        useBlockieIcon: true,
+        hideZeroBalanceTokens: false,
+        showFiatOnTestnets: true,
+      } as RootState['settings'];
 
       return { mockState };
     };

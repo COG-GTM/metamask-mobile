@@ -1,5 +1,5 @@
 import { type Action } from 'redux';
-import { type SecurityAlertResponse } from '@metamask/transaction-controller';
+import { type SecurityAlertResponse } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 import type BN from 'bnjs4';
 
 /**

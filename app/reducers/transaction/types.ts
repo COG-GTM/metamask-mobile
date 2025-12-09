@@ -1,4 +1,4 @@
-import { type SecurityAlertResponse } from '@metamask/transaction-controller';
+import { type SecurityAlertResponse } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 import type BN from 'bnjs4';
 import { type AssetType, type SelectedAsset } from '../../actions/transaction/types';
 
@@ -40,4 +40,6 @@ export interface TransactionState {
   securityAlertResponses: Record<string, SecurityAlertResponse>;
   useMax: boolean;
   maxValueMode?: boolean;
+  origin?: string;
+  chainId?: string;
 }

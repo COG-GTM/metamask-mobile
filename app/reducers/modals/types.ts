@@ -1,4 +1,16 @@
 /**
+ * Asset object for receive modal
+ */
+export interface ReceiveAsset {
+  symbol?: string;
+  address?: string;
+  decimals?: number;
+  image?: string;
+  name?: string;
+  isETH?: boolean;
+}
+
+/**
  * Modals state interface
  */
 export interface ModalsState {
@@ -8,4 +20,6 @@ export interface ModalsState {
   dappTransactionModalVisible: boolean;
   signMessageModalVisible: boolean;
   infoNetworkModalVisible?: boolean;
+  receiveAsset?: ReceiveAsset;
+  receiveModalVisible?: boolean;
 }
