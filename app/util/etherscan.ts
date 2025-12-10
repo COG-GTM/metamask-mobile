@@ -15,11 +15,14 @@ import {
  *
  * TODO: Replace this with `@metamask/etherscan-link`
  *
- * @param {networkType} string - name of the network
- * @param {address} string - ethereum address to be used on the link
- * @returns - string
+ * @param networkType - name of the network
+ * @param address - ethereum address to be used on the link
+ * @returns string URL for the address on etherscan
  */
-export function getEtherscanAddressUrl(networkType, address) {
+export function getEtherscanAddressUrl(
+  networkType: string,
+  address: string,
+): string {
   return `${getEtherscanBaseUrl(networkType)}/address/${address}`;
 }
 
@@ -28,11 +31,14 @@ export function getEtherscanAddressUrl(networkType, address) {
  *
  * TODO: Replace this with `@metamask/etherscan-link`
  *
- * @param {networkType} string - name of the network
- * @param {tx_hash} string - hash of the transaction to be used on the link
- * @returns - string
+ * @param networkType - name of the network
+ * @param tx_hash - hash of the transaction to be used on the link
+ * @returns string URL for the transaction on etherscan
  */
-export function getEtherscanTransactionUrl(networkType, tx_hash) {
+export function getEtherscanTransactionUrl(
+  networkType: string,
+  tx_hash: string,
+): string {
   return `${getEtherscanBaseUrl(networkType)}/tx/${tx_hash}`;
 }
 
@@ -41,10 +47,10 @@ export function getEtherscanTransactionUrl(networkType, tx_hash) {
  *
  * TODO: Replace this with `@metamask/etherscan-link`
  *
- * @param {networkType} string - name of the network
- * @returns - string
+ * @param networkType - name of the network
+ * @returns string base URL for etherscan
  */
-export function getEtherscanBaseUrl(networkType) {
+export function getEtherscanBaseUrl(networkType: string): string {
   if (networkType === LINEA_GOERLI) return LINEA_GOERLI_BLOCK_EXPLORER;
   if (networkType === LINEA_SEPOLIA) return LINEA_SEPOLIA_BLOCK_EXPLORER;
   if (networkType === LINEA_MAINNET) return LINEA_MAINNET_BLOCK_EXPLORER;
