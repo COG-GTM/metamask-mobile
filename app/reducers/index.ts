@@ -13,7 +13,7 @@ import onboardingReducer, { OnboardingState } from './onboarding';
 import fiatOrders from './fiatOrders';
 import swapsReducer from './swaps';
 import signatureRequestReducer from './signatureRequest';
-import notificationReducer from './notification';
+import notificationReducer, { NotificationState } from './notification';
 import infuraAvailabilityReducer from './infuraAvailability';
 import collectiblesReducer from './collectibles';
 import navigationReducer, { NavigationState } from './navigation';
@@ -87,9 +87,7 @@ export interface RootState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   wizard: any;
   onboarding: OnboardingState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  notification: any;
+  notification: NotificationState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   swaps: any;
