@@ -38,6 +38,7 @@ import {
 } from '@metamask/permission-controller';
 import PPOMUtil from '../../lib/ppom/ppom-util';
 import { backgroundState } from '../../util/test/initial-root-state';
+import { browserInitialState } from '../../reducers/browser';
 import { Store } from 'redux';
 import { RootState } from 'app/reducers';
 import { addTransaction } from '../../util/transaction-controller';
@@ -305,11 +306,10 @@ function setupGlobalState({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .spyOn(store as Store<Partial<RootState>, any>, 'getState')
     .mockImplementation(() => ({
-      browser: activeTab
-        ? {
-          activeTab,
-        }
-        : {},
+      browser: {
+        ...browserInitialState,
+        ...(activeTab !== undefined && { activeTab }),
+      },
       engine: {
         backgroundState: {
           ...backgroundState,
