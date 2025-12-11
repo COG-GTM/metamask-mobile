@@ -16,7 +16,6 @@ import {
   TransactionType,
   TransactionMeta,
 } from '@metamask/transaction-controller';
-import type { TransactionController } from '@metamask/transaction-controller';
 import { swapsUtils } from '@metamask/swaps-controller';
 import Engine from '../../core/Engine';
 import I18n, { strings } from '../../../locales/i18n';
@@ -87,15 +86,15 @@ export interface TransactionToNameConfig {
   addressBook: Record<string, Record<string, { name: string }>>;
   chainId: string;
   toAddress: string;
-  internalAccounts: Array<{
+  internalAccounts: {
     address: string;
     metadata: { name: string };
-  }>;
+  }[];
   ensRecipient?: string;
 }
 
 export interface BrowserState {
-  tabs?: Array<{ id: string; url: string }>;
+  tabs?: { id: string; url: string }[];
   activeTab?: string;
 }
 
@@ -821,10 +820,8 @@ export function getTransactionToName({
   const matchingAccount = internalAccountsMap[checksummedToAddress];
 
   const transactionToName =
-    (networkAddressBook &&
-      networkAddressBook[checksummedToAddress] &&
-      networkAddressBook[checksummedToAddress].name) ||
-    (matchingAccount && matchingAccount.metadata.name);
+    networkAddressBook?.[checksummedToAddress]?.name ||
+    matchingAccount?.metadata.name;
 
   return transactionToName;
 }
@@ -1032,8 +1029,7 @@ export const calculateEIP1559Times = ({
 
     if (
       selectedOption &&
-      gasFeeEstimates &&
-      gasFeeEstimates[LOW] &&
+      gasFeeEstimates?.[LOW] &&
       gasFeeEstimates[MEDIUM] &&
       gasFeeEstimates[HIGH]
     ) {
@@ -1561,8 +1557,7 @@ export const parseTransactionLegacy = (
   const gasLimitHex = BNToHex(new BN(selectedGasFee.suggestedGasLimit));
 
   let weiTransactionFee =
-    gasLimit &&
-    gasLimit.mul(hexToBN(decGWEIToHexWEI(selectedGasFee.suggestedGasPrice)));
+    gasLimit?.mul(hexToBN(decGWEIToHexWEI(selectedGasFee.suggestedGasPrice)));
   if (multiLayerL1FeeTotal) {
     weiTransactionFee = hexToBN(
       sumHexWEIs([BNToHex(weiTransactionFee), multiLayerL1FeeTotal]),
@@ -1600,12 +1595,12 @@ export const parseTransactionLegacy = (
 
   // When selectedAsset is a string, it represents a ticker (native currency), not a token
   // In this case, we use an empty object so the default values are used in the else if (data) branch
-  const asset: SelectedAsset = typeof selectedAsset === 'string' 
-    ? {} 
+  const asset: SelectedAsset = typeof selectedAsset === 'string'
+    ? {}
     : selectedAsset;
   if (asset.isETH) {
     const transactionTotalAmountBN =
-      weiTransactionFee && weiTransactionFee.add(valueBN);
+      weiTransactionFee?.add(valueBN);
     transactionTotalAmount = `${renderFromWei(
       transactionTotalAmountBN,
     )} ${parsedTicker}`;
@@ -1616,7 +1611,7 @@ export const parseTransactionLegacy = (
     );
   } else if (asset.tokenId) {
     const transactionTotalAmountBN =
-      weiTransactionFee && weiTransactionFee.add(valueBN);
+      weiTransactionFee?.add(valueBN);
     transactionTotalAmount = `${renderFromWei(
       weiTransactionFee,
     )} ${parsedTicker}`;
@@ -1708,7 +1703,7 @@ export function validateTransactionActionBalance(
 
 /**
  * @param {number|string|BigNumber} value
- * @param {number=} decimals
+ * @param {number} [decimals]
  * @returns {BigNumber}
  */
 export function calcTokenAmount(value: number | string | BigNumber, decimals?: number): BigNumber {
@@ -1724,9 +1719,7 @@ export function calcTokenValue(value: number | string | BigNumber, decimals?: nu
 /**
  * Attempts to get the address parameter of the given token transaction data
  * (i.e. function call) per the Human Standard Token ABI, in the following
- * order:
- *   - The '_to' parameter, if present
- *   - The first parameter, if present
+ * order: the '_to' parameter if present, or the first parameter if present.
  *
  * @param {Object} tokenData - ethers Interface token data.
  * @returns {string | undefined} A lowercase address string.
@@ -1761,7 +1754,7 @@ export function getTokenValueParam(tokenData: TokenData = {}): string | undefine
 
 export function getTokenValue(tokenParams: TokenParam[] = []): string | undefined {
   const valueData = tokenParams.find((param) => param.name === '_value');
-  return valueData && valueData.value;
+  return valueData?.value;
 }
 
 /**
@@ -1900,7 +1893,7 @@ export function isNFTTokenStandard(tokenStandard: string): boolean {
  */
 export function getTransactionById(
   transactionId: string,
-  transactionController: { state: { transactions: Array<{ id: string; [key: string]: unknown }> } },
+  transactionController: { state: { transactions: { id: string; [key: string]: unknown }[] } },
 ) {
   return transactionController.state.transactions.find(
     (tx) => tx.id === transactionId,

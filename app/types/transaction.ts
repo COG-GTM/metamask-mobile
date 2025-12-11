@@ -78,10 +78,10 @@ export interface TransactionToNameConfig {
   addressBook: Record<string, Record<string, { name: string }>>;
   chainId: string;
   toAddress: string;
-  internalAccounts: Array<{
+  internalAccounts: {
     address: string;
     metadata: { name: string };
-  }>;
+  }[];
   ensRecipient?: string;
 }
 
@@ -121,7 +121,7 @@ export interface TimeEstimateResult {
  * Browser state for getActiveTabUrl
  */
 export interface BrowserState {
-  tabs?: Array<{ id: string; url: string }>;
+  tabs?: { id: string; url: string }[];
   activeTab?: string;
 }
 
