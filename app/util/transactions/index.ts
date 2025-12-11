@@ -1,7 +1,9 @@
 import { addHexPrefix, toChecksumAddress } from 'ethereumjs-util';
 import BN from 'bnjs4';
+// @ts-expect-error - ethereumjs-abi has no type declarations
 import { rawEncode, rawDecode } from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
+// @ts-expect-error - humanize-duration has no type declarations
 import humanizeDuration from 'humanize-duration';
 import {
   query,
@@ -12,7 +14,9 @@ import {
 import {
   isEIP1559Transaction,
   TransactionType,
+  TransactionMeta,
 } from '@metamask/transaction-controller';
+import type { TransactionController } from '@metamask/transaction-controller';
 import { swapsUtils } from '@metamask/swaps-controller';
 import Engine from '../../core/Engine';
 import I18n, { strings } from '../../../locales/i18n';
@@ -55,6 +59,184 @@ import {
 import Logger from '../../util/Logger';
 import { handleMethodData } from '../../util/transaction-controller';
 import EthQuery from '@metamask/eth-query';
+
+// Type definitions for transaction utilities
+export interface TransferDataOptions {
+  toAddress?: string;
+  fromAddress?: string;
+  amount?: string;
+  tokenId?: string;
+}
+
+export interface ApprovalDataOptions {
+  spender: string | null;
+  value: string;
+  data?: string;
+}
+
+export interface DecodedApprovalData {
+  spenderAddress: string;
+  encodedAmount: string;
+}
+
+export interface MethodData {
+  name?: string;
+}
+
+export interface TransactionToNameConfig {
+  addressBook: Record<string, Record<string, { name: string }>>;
+  chainId: string;
+  toAddress: string;
+  internalAccounts: Array<{
+    address: string;
+    metadata: { name: string };
+  }>;
+  ensRecipient?: string;
+}
+
+export interface BrowserState {
+  tabs?: Array<{ id: string; url: string }>;
+  activeTab?: string;
+}
+
+export interface SelectedAsset {
+  isETH?: boolean;
+  tokenId?: string;
+  address?: string;
+  symbol?: string;
+  decimals?: number;
+}
+
+export interface TransactionState {
+  selectedAsset: SelectedAsset | string;
+  transaction: {
+    value?: string;
+    data?: string;
+  };
+}
+
+export interface SelectedGasFee {
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedMaxFeePerGas?: string;
+  estimatedBaseFee?: string;
+  suggestedGasLimit?: string;
+  suggestedEstimatedGasLimit?: string;
+  selectedOption?: string;
+  recommended?: string;
+  suggestedGasPrice?: string;
+}
+
+export interface GasFeeEstimate {
+  suggestedMaxPriorityFeePerGas?: string;
+  maxWaitTimeEstimate?: number;
+  minWaitTimeEstimate?: number;
+}
+
+export interface GasFeeEstimates {
+  baseFeeTrend?: string;
+  low?: GasFeeEstimate;
+  medium?: GasFeeEstimate;
+  high?: GasFeeEstimate;
+  [key: string]: GasFeeEstimate | string | undefined;
+}
+
+export interface ExtendedTransactionMeta extends TransactionMeta {
+  isTransfer?: boolean;
+  transferInformation?: {
+    contractAddress: string;
+    symbol: string;
+  };
+  toSmartContract?: boolean;
+}
+
+export interface TokenData {
+  args?: {
+    _to?: string;
+    _value?: { _hex?: string; toString(): string };
+    [key: number]: { _hex?: string };
+  };
+}
+
+export interface TokenParam {
+  name: string;
+  value: string;
+}
+
+export interface CalculateAmountsEIP1559Params {
+  value: string;
+  nativeCurrency: string;
+  currentCurrency: string;
+  conversionRate: number;
+  gasFeeMinConversion: string;
+  gasFeeMinNative: string;
+  gasFeeMaxNative: string;
+  gasFeeMaxConversion: string;
+  gasFeeMaxHex: string;
+  gasFeeMinHex: string;
+}
+
+export interface CalculateEthEIP1559Params {
+  nativeCurrency: string;
+  currentCurrency: string;
+  totalMinNative: string;
+  totalMinConversion: string;
+  totalMaxNative: string;
+  totalMaxConversion: string;
+}
+
+export interface CalculateERC20EIP1559Params {
+  currentCurrency: string;
+  nativeCurrency: string;
+  conversionRate: number;
+  exchangeRate: number;
+  tokenAmount: string;
+  totalMinConversion: string;
+  totalMaxConversion: string;
+  symbol: string;
+  totalMinNative: string;
+  totalMaxNative: string;
+}
+
+export interface CalculateEIP1559TimesParams {
+  suggestedMaxPriorityFeePerGas: string;
+  suggestedMaxFeePerGas: string;
+  selectedOption: string;
+  recommended: string;
+  gasFeeEstimates: GasFeeEstimates;
+}
+
+export interface CalculateEIP1559GasFeeHexesParams {
+  gasLimitHex: string;
+  estimatedGasLimitHex: string;
+  estimatedBaseFeeHex: string;
+  suggestedMaxFeePerGasHex: string;
+  suggestedMaxPriorityFeePerGasHex: string;
+}
+
+export interface ParseTransactionEIP1559Params {
+  selectedGasFee: SelectedGasFee;
+  swapsParams?: { sourceAmount?: string };
+  contractExchangeRates: Record<string, number>;
+  conversionRate: number;
+  currentCurrency: string;
+  nativeCurrency: string;
+  transactionState?: TransactionState;
+  ticker?: string;
+  gasFeeEstimates: GasFeeEstimates;
+  selectedAsset?: SelectedAsset | string;
+}
+
+export interface ParseTransactionLegacyParams {
+  contractExchangeRates: Record<string, number>;
+  conversionRate: number;
+  currentCurrency: string;
+  transactionState?: TransactionState;
+  selectedAsset?: SelectedAsset | string;
+  ticker?: string;
+  selectedGasFee: SelectedGasFee;
+  multiLayerL1FeeTotal?: string;
+  nativeCurrency?: string;
+}
 
 const { SAI_ADDRESS } = AppConstants;
 
@@ -177,7 +359,10 @@ const actionKeys = {
  * @param {Object} opts - Optional asset parameters
  * @returns {String} - String containing the generated transfer data
  */
-export function generateTransferData(type = undefined, opts = {}) {
+export function generateTransferData(
+  type: string | undefined = undefined,
+  opts: TransferDataOptions = {},
+): string | undefined {
   if (!type) {
     throw new TypeError('[transactions] type must be defined');
   }
@@ -221,7 +406,7 @@ export function generateTransferData(type = undefined, opts = {}) {
  * @param {string | undefined} data The transaction data.
  * @returns {string | undefined} The four-byte signature if data is provided, otherwise undefined.
  */
-export function getFourByteSignature(data) {
+export function getFourByteSignature(data: string | undefined): string | undefined {
   return data?.substring(0, 10);
 }
 
@@ -230,7 +415,7 @@ export function getFourByteSignature(data) {
  * @param {string} data The transaction data.
  * @returns {boolean} True if the transaction is an "approve" or "increase allowance" call, false otherwise.
  */
-export function isApprovalTransaction(data) {
+export function isApprovalTransaction(data: string | undefined): boolean {
   const fourByteSignature = getFourByteSignature(data);
   return [
     APPROVE_FUNCTION_SIGNATURE,
@@ -248,7 +433,7 @@ export function isApprovalTransaction(data) {
  * @param {string} [opts.data] - The data of the transaction
  * @returns {String} - String containing the generated data, by default for approve method
  */
-export function generateApprovalData(opts) {
+export function generateApprovalData(opts: ApprovalDataOptions): string {
   const { spender, value, data } = opts;
 
   if (!spender || !value) {
@@ -271,7 +456,7 @@ export function generateApprovalData(opts) {
   );
 }
 
-export function decodeApproveData(data) {
+export function decodeApproveData(data: string): DecodedApprovalData {
   return {
     spenderAddress: addHexPrefix(data.substr(34, 40)),
     encodedAmount: data.substr(74, 138),
@@ -287,7 +472,7 @@ const BASE = 4 * 16;
  * @param {String} data - Data to decode
  * @returns {Array} - Object containing the decoded transfer data
  */
-export function decodeTransferData(type, data) {
+export function decodeTransferData(type: string, data: string): string[] | undefined {
   switch (type) {
     case 'transfer': {
       const encodedAddress = data.substring(10, BASE + 10);
@@ -334,7 +519,7 @@ export function decodeTransferData(type, data) {
  * @param {string} data - Transaction data
  * @returns {MethodData} - Method data object containing the name if is valid
  */
-export async function getMethodData(data, networkClientId) {
+export async function getMethodData(data: string, networkClientId: string): Promise<MethodData> {
   if (data.length < 10) return {};
   const fourByteSignature = getFourByteSignature(data);
   if (fourByteSignature === TRANSFER_FUNCTION_SIGNATURE) {
@@ -374,10 +559,10 @@ export async function getMethodData(data, networkClientId) {
  * @returns {Promise<boolean>} - Whether the given address is a contract
  */
 export async function isSmartContractAddress(
-  address,
-  chainId,
-  networkClientId = undefined,
-) {
+  address: string,
+  chainId: string,
+  networkClientId: string | undefined = undefined,
+): Promise<boolean> {
   if (!address) return false;
 
   address = toChecksumAddress(address);
@@ -412,7 +597,7 @@ export async function isSmartContractAddress(
  * @param {string} tokenId - A possible collectible id
  * @returns {boolean} - Wether the given address is an ERC721 contract
  */
-export async function isCollectibleAddress(address, tokenId) {
+export async function isCollectibleAddress(address: string, tokenId: string): Promise<boolean> {
   const cache = CollectibleAddresses.cache[address];
   if (cache) {
     return Promise.resolve(cache);
@@ -436,7 +621,10 @@ export async function isCollectibleAddress(address, tokenId) {
  * @param {string} chainId - Current chainId
  * @returns {string} - Corresponding transaction action key
  */
-export async function getTransactionActionKey(transaction, chainId) {
+export async function getTransactionActionKey(
+  transaction: ExtendedTransactionMeta,
+  chainId: string,
+): Promise<string> {
   const { networkClientId, type } = transaction ?? {};
   const txParams = transaction.txParams ?? transaction.transaction ?? {};
   const { data, to } = txParams;
@@ -488,7 +676,12 @@ export async function getTransactionActionKey(transaction, chainId) {
  * @param {string} selectedAddress - Current account public address
  * @returns {string} - Transaction type message
  */
-export async function getActionKey(tx, selectedAddress, ticker, chainId) {
+export async function getActionKey(
+  tx: ExtendedTransactionMeta,
+  selectedAddress: string,
+  ticker: string,
+  chainId: string,
+): Promise<string> {
   const actionKey = await getTransactionActionKey(tx, chainId);
   if (actionKey === SEND_ETHER_ACTION_KEY) {
     let currencySymbol = ticker;
@@ -534,7 +727,10 @@ export async function getActionKey(tx, selectedAddress, ticker, chainId) {
  * @param {string} chainId - Current chainId
  * @returns {string} - Transaction function type
  */
-export async function getTransactionReviewActionKey(transaction, chainId) {
+export async function getTransactionReviewActionKey(
+  transaction: ExtendedTransactionMeta,
+  chainId: string,
+): Promise<string> {
   const actionKey = await getTransactionActionKey(transaction, chainId);
   const transactionReviewActionKey = reviewActionKeys[actionKey];
   if (transactionReviewActionKey) {
@@ -549,7 +745,7 @@ export async function getTransactionReviewActionKey(transaction, chainId) {
  * @param {string} - Ticker
  * @returns {string} - Corresponding ticker or ETH
  */
-export function getTicker(ticker) {
+export function getTicker(ticker: string | undefined): string {
   return ticker || strings('unit.eth');
 }
 
@@ -559,7 +755,13 @@ export function getTicker(ticker) {
  * @param {string} ticker - Ticker
  * @returns {object} - ETH object
  */
-export function getEther(ticker) {
+export function getEther(ticker: string | undefined): {
+  name: string;
+  address: string;
+  symbol: string;
+  logo: string;
+  isETH: boolean;
+} {
   return {
     name: 'Ether',
     address: '',
@@ -586,7 +788,7 @@ export function getTransactionToName({
   toAddress,
   internalAccounts,
   ensRecipient,
-}) {
+}: TransactionToNameConfig): string | undefined {
   if (ensRecipient) {
     return ensRecipient;
   }
@@ -619,26 +821,26 @@ export function getTransactionToName({
  * @param {object} accountAddedTimeInsertPointFound - Flag to see if the import time was already found
  */
 export function addAccountTimeFlagFilter(
-  transaction,
-  addedAccountTime,
-  accountAddedTimeInsertPointFound,
-) {
+  transaction: { time: number },
+  addedAccountTime: number,
+  accountAddedTimeInsertPointFound: boolean,
+): boolean {
   return (
     transaction.time <= addedAccountTime && !accountAddedTimeInsertPointFound
   );
 }
 
 //Leaving here a comment to re-visit this function since it's probably be possible to deprecate
-export function getNormalizedTxState(state) {
+export function getNormalizedTxState(state: { transaction?: { transaction?: Record<string, unknown> } }): Record<string, unknown> | undefined {
   return state.transaction
     ? { ...state.transaction, ...state.transaction.transaction }
     : undefined;
 }
 
-export const getActiveTabUrl = ({ browser = {} }) =>
+export const getActiveTabUrl = ({ browser = {} }: { browser?: BrowserState }): string | undefined =>
   browser.tabs &&
   browser.activeTab &&
-  browser.tabs.find(({ id }) => id === browser.activeTab)?.url;
+  browser.tabs.find(({ id }: { id: string }) => id === browser.activeTab)?.url;
 
 export const calculateAmountsEIP1559 = ({
   value,
@@ -651,7 +853,7 @@ export const calculateAmountsEIP1559 = ({
   gasFeeMaxConversion,
   gasFeeMaxHex,
   gasFeeMinHex,
-}) => {
+}: CalculateAmountsEIP1559Params) => {
   // amount numbers
   const amountConversion = getValueFromWeiHex({
     value,
@@ -703,7 +905,7 @@ export const calculateEthEIP1559 = ({
   totalMinConversion,
   totalMaxNative,
   totalMaxConversion,
-}) => {
+}: CalculateEthEIP1559Params): string[] => {
   const renderableTotalMinNative = formatETHFee(totalMinNative, nativeCurrency);
   const renderableTotalMinConversion = formatCurrency(
     totalMinConversion,
@@ -734,7 +936,7 @@ export const calculateERC20EIP1559 = ({
   symbol,
   totalMinNative,
   totalMaxNative,
-}) => {
+}: CalculateERC20EIP1559Params): string[] => {
   const tokenAmountConversion = convertTokenToFiat({
     value: tokenAmount,
     toCurrency: currentCurrency,
@@ -780,7 +982,7 @@ export const calculateEIP1559Times = ({
   selectedOption,
   recommended,
   gasFeeEstimates,
-}) => {
+}: CalculateEIP1559TimesParams) => {
   let timeEstimate = strings('times_eip1559.unknown');
   let timeEstimateColor = 'grey';
   let timeEstimateId;
@@ -937,7 +1139,7 @@ export const calculateEIP1559GasFeeHexes = ({
   estimatedBaseFeeHex,
   suggestedMaxFeePerGasHex,
   suggestedMaxPriorityFeePerGasHex,
-}) => {
+}: CalculateEIP1559GasFeeHexesParams) => {
   // Hex calculations
   const estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex = addCurrencies(
     estimatedBaseFeeHex,
