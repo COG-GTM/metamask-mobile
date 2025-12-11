@@ -132,6 +132,7 @@ export interface ExtendedTransactionMeta extends TransactionMeta {
   isTransfer?: boolean;
   transferInformation?: {
     contractAddress: string;
+    decimals: number;
     symbol: string;
   };
   toSmartContract?: boolean;
