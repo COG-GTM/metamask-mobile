@@ -93,7 +93,7 @@ class TransactionReviewSummary extends PureComponent<TransactionReviewSummaryPro
     } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const isTestNetResult = isTestNet(chainId);
+    const isTestNetResult = isTestNet(chainId as string);
 
     return (
       <View>

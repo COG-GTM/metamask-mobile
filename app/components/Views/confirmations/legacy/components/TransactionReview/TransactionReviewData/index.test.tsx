@@ -30,6 +30,7 @@ describe('TransactionReviewData', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
+        {/* @ts-expect-error - Test file props mismatch */}
         <TransactionReviewData />
       </Provider>,
     );

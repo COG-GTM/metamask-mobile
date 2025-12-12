@@ -197,7 +197,5 @@ const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
 
 TransactionReviewData.contextType = ThemeContext;
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(TransactionReviewData);
+// @ts-expect-error - Redux connect typing with class components is complex
+export default connect(mapStateToProps, mapDispatchToProps)(TransactionReviewData);

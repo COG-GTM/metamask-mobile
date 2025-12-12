@@ -230,9 +230,10 @@ class TransactionReviewInformation extends PureComponent<
   setNetworkNonce = async () => {
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
+    // @ts-expect-error - transaction type mismatch with getNetworkNonce parameter
     const proposedNonce = await getNetworkNonce(transaction, networkClientId);
-    setNonce(proposedNonce);
-    setProposedNonce(proposedNonce);
+    setNonce?.(proposedNonce);
+    setProposedNonce?.(proposedNonce);
   };
 
   toggleNonceModal = () =>
@@ -243,31 +244,32 @@ class TransactionReviewInformation extends PureComponent<
     const { proposedNonce, nonce } = this.props.transaction;
     return (
       <CustomNonceModal
-        proposedNonce={proposedNonce}
-        nonceValue={nonce}
+        proposedNonce={proposedNonce as number}
+        nonceValue={nonce as number}
         close={this.toggleNonceModal}
-        save={setNonce}
+        save={setNonce as (...args: unknown[]) => unknown}
       />
     );
   };
 
   getTotalFiat = (
-    asset,
-    totalGas,
-    conversionRate,
-    exchangeRate,
-    currentCurrency,
-    amountToken,
+    asset: unknown,
+    totalGas: unknown,
+    conversionRate: number | undefined,
+    exchangeRate: number | undefined,
+    currentCurrency: string | undefined,
+    amountToken: string,
   ) => {
     let total = 0;
+    // @ts-expect-error - BN type mismatch between bn.js and bnjs4
     const gasFeeFiat = weiToFiatNumber(totalGas, conversionRate);
     const balanceFiat = balanceToFiatNumber(
       parseFloat(amountToken),
-      conversionRate,
-      exchangeRate,
+      conversionRate as number,
+      exchangeRate as number,
     );
     const base = Math.pow(10, 5);
-    total = ((parseFloat(gasFeeFiat) + parseFloat(balanceFiat)) * base) / base;
+    total = ((parseFloat(String(gasFeeFiat)) + balanceFiat) * base) / base;
     return `${total} ${currentCurrency}`;
   };
 
@@ -276,14 +278,14 @@ class TransactionReviewInformation extends PureComponent<
     /* this is kinda weird, we have to reject the transaction to collapse the modal */
     this.onCancelPress();
     try {
-      navigation.navigate(...createBuyNavigationDetails());
+      navigation?.navigate(...createBuyNavigationDetails());
     } catch (error) {
-      Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
+      Logger.error(error as Error, 'Navigation: Error when navigating to buy ETH.');
     }
 
-    this.props.metrics.trackEvent(
+    this.props.metrics?.trackEvent(
       this.props.metrics
-        .createEventBuilder(MetaMetricsEvents.RECEIVE_OPTIONS_PAYMENT_REQUEST)
+        ?.createEventBuilder(MetaMetricsEvents.RECEIVE_OPTIONS_PAYMENT_REQUEST)
         .build(),
     );
   };
@@ -293,7 +295,7 @@ class TransactionReviewInformation extends PureComponent<
     edit && edit();
   };
 
-  getRenderTotals = (totalGas, totalGasFiat) => {
+  getRenderTotals = (totalGas: BN, totalGasFiat: string) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
@@ -302,26 +304,30 @@ class TransactionReviewInformation extends PureComponent<
       ticker,
     } = this.props;
 
-    const totals = {
+    const totals: Record<string, () => [string | undefined, string | undefined]> = {
       ETH: () => {
+        // @ts-expect-error - BN type mismatch between bn.js and bnjs4
         const totalEth = isBN(value) ? value.add(totalGas) : totalGas;
         const totalFiat = `${weiToFiat(
+          // @ts-expect-error - BN type mismatch between bn.js and bnjs4
           totalEth,
           conversionRate,
           currentCurrency,
         )}`;
 
+        // @ts-expect-error - BN type mismatch between bn.js and bnjs4
         const totalValue = `${renderFromWei(totalEth)} ${getTicker(ticker)}`;
 
         return [totalFiat, totalValue];
       },
       ERC20: () => {
         const amountToken = renderFromTokenMinimalUnit(
+          // @ts-expect-error - BN type mismatch between bn.js and bnjs4
           value,
-          selectedAsset.decimals,
+          selectedAsset?.decimals,
         );
         const conversionRateAsset =
-          contractExchangeRates[selectedAsset.address];
+          contractExchangeRates?.[selectedAsset?.address as string];
         const totalFiat = this.getTotalFiat(
           selectedAsset,
           totalGas,
@@ -331,25 +337,27 @@ class TransactionReviewInformation extends PureComponent<
           amountToken,
         );
         const totalValue = `${
-          amountToken + ' ' + selectedAsset.symbol
+          amountToken + ' ' + selectedAsset?.symbol
+          // @ts-expect-error - BN type mismatch between bn.js and bnjs4
         } + ${renderFromWei(totalGas)} ${getTicker(ticker)}`;
         return [totalFiat, totalValue];
       },
       ERC721: () => {
         const totalFiat = totalGasFiat;
-        const totalValue = `${selectedAsset.name}  (#${
-          selectedAsset.tokenId
+        const totalValue = `${selectedAsset?.name}  (#${
+          selectedAsset?.tokenId
+          // @ts-expect-error - BN type mismatch between bn.js and bnjs4
         }) + ${renderFromWei(totalGas)} ${getTicker(ticker)}`;
         return [totalFiat, totalValue];
       },
       default: () => [undefined, undefined],
     };
-    return totals[assetType] || totals.default;
+    return totals[assetType as string] || totals.default;
   };
 
   isTestNetwork = () => {
     const { chainId } = this.props;
-    return isTestNet(chainId);
+    return isTestNet(chainId as string);
   };
 
   getRenderTotalsEIP1559 = ({
@@ -357,6 +365,11 @@ class TransactionReviewInformation extends PureComponent<
     gasFeeMinConversion,
     gasFeeMaxNative,
     gasFeeMaxConversion,
+  }: {
+    gasFeeMinNative: string;
+    gasFeeMinConversion: string;
+    gasFeeMaxNative: string;
+    gasFeeMaxConversion: string;
   }) => {
     const {
       transaction: { value, selectedAsset, assetType },
@@ -378,6 +391,7 @@ class TransactionReviewInformation extends PureComponent<
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
+          // @ts-expect-error - calculateAmountsEIP1559 missing gasFeeMaxHex and gasFeeMinHex
         } = calculateAmountsEIP1559({
           value: value && BNToHex(value),
           nativeCurrency: ticker,
@@ -416,6 +430,7 @@ class TransactionReviewInformation extends PureComponent<
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
+          // @ts-expect-error - calculateAmountsEIP1559 missing gasFeeMaxHex and gasFeeMinHex
         } = calculateAmountsEIP1559({
           value: '0x0',
           nativeCurrency: ticker,
@@ -428,11 +443,12 @@ class TransactionReviewInformation extends PureComponent<
         });
 
         const tokenAmount = renderFromTokenMinimalUnit(
+          // @ts-expect-error - BN type mismatch between bn.js and bnjs4
           value,
-          selectedAsset.decimals,
+          selectedAsset?.decimals,
         );
-        const exchangeRate = contractExchangeRates[selectedAsset.address];
-        const symbol = selectedAsset.symbol;
+        const exchangeRate = contractExchangeRates?.[selectedAsset?.address as string];
+        const symbol = selectedAsset?.symbol;
 
         [
           renderableTotalMinNative,
@@ -464,6 +480,7 @@ class TransactionReviewInformation extends PureComponent<
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
+          // @ts-expect-error - calculateAmountsEIP1559 missing gasFeeMaxHex and gasFeeMinHex
         } = calculateAmountsEIP1559({
           value: '0x0',
           nativeCurrency: ticker,
@@ -489,12 +506,12 @@ class TransactionReviewInformation extends PureComponent<
           totalMaxConversion,
         });
 
-        renderableTotalMinNative = `${selectedAsset.name} ${
-          ' (#' + selectedAsset.tokenId + ')'
+        renderableTotalMinNative = `${selectedAsset?.name} ${
+          ' (#' + selectedAsset?.tokenId + ')'
         } + ${renderableTotalMinNative}`;
 
-        renderableTotalMaxNative = `${selectedAsset.name} ${
-          ' (#' + selectedAsset.tokenId + ')'
+        renderableTotalMaxNative = `${selectedAsset?.name} ${
+          ' (#' + selectedAsset?.tokenId + ')'
         } + ${renderableTotalMaxNative}`;
 
         return [
@@ -506,7 +523,7 @@ class TransactionReviewInformation extends PureComponent<
       },
       default: () => [undefined, undefined],
     };
-    return totals[assetType] || totals.default;
+    return totals[assetType as keyof typeof totals] || totals.default;
   };
 
   onCancelPress = () => {
@@ -518,9 +535,9 @@ class TransactionReviewInformation extends PureComponent<
     const { chainId } = this.props;
     InteractionManager.runAfterInteractions(() => {
       this.onCancelPress();
-      this.props.navigation.navigate(
+      this.props.navigation?.navigate(
         ...createBrowserNavDetails({
-          newTabUrl: TESTNET_FAUCETS[chainId],
+          newTabUrl: TESTNET_FAUCETS[chainId as keyof typeof TESTNET_FAUCETS],
           timestamp: Date.now(),
         }),
       );
@@ -548,20 +565,21 @@ class TransactionReviewInformation extends PureComponent<
       renderableTotalMinNative,
       renderableTotalMinConversion,
       renderableTotalMaxNative,
+      // @ts-expect-error - EIP1559GasData type mismatch with getRenderTotalsEIP1559 parameter
     ] = this.getRenderTotalsEIP1559(EIP1559GasData)();
     return (
       <TransactionReviewEIP1559
         totalNative={renderableTotalMinNative}
         totalConversion={renderableTotalMinConversion}
         totalMaxNative={renderableTotalMaxNative}
-        gasFeeNative={EIP1559GasData.renderableGasFeeMinNative}
-        gasFeeConversion={EIP1559GasData.renderableGasFeeMinConversion}
-        gasFeeMaxNative={EIP1559GasData.renderableGasFeeMaxNative}
-        gasFeeMaxConversion={EIP1559GasData.renderableGasFeeMaxConversion}
+        gasFeeNative={EIP1559GasData?.renderableGasFeeMinNative}
+        gasFeeConversion={EIP1559GasData?.renderableGasFeeMinConversion}
+        gasFeeMaxNative={EIP1559GasData?.renderableGasFeeMaxNative}
+        gasFeeMaxConversion={EIP1559GasData?.renderableGasFeeMaxConversion}
         primaryCurrency={primaryCurrency}
-        timeEstimate={EIP1559GasData.timeEstimate}
-        timeEstimateColor={EIP1559GasData.timeEstimateColor}
-        timeEstimateId={EIP1559GasData.timeEstimateId}
+        timeEstimate={EIP1559GasData?.timeEstimate}
+        timeEstimateColor={EIP1559GasData?.timeEstimateColor}
+        timeEstimateId={EIP1559GasData?.timeEstimateId}
         onEdit={this.edit}
         origin={host}
         originWarning={originWarning}
@@ -593,16 +611,20 @@ class TransactionReviewInformation extends PureComponent<
     } = this.props;
 
     let totalGas =
+      // @ts-expect-error - BN type mismatch between bn.js and bnjs4
       isBN(gas) && isBN(gasPrice) ? gas.mul(gasPrice) : hexToBN('0x0');
     if (multiLayerL1FeeTotal) {
       totalGas = hexToBN(sumHexWEIs([BNToHex(totalGas), multiLayerL1FeeTotal]));
     }
 
+    // @ts-expect-error - BN type mismatch between bn.js and bnjs4
     const totalGasFiat = weiToFiat(totalGas, conversionRate, currentCurrency);
+    // @ts-expect-error - BN type mismatch between bn.js and bnjs4
     const totalGasEth = `${renderFromWei(totalGas)} ${getTicker(ticker)}`;
     const [totalFiat, totalValue] = this.getRenderTotals(
+      // @ts-expect-error - BN type mismatch between bn.js and bnjs4
       totalGas,
-      totalGasFiat,
+      totalGasFiat as string,
     )();
     return (
       <TransactionReviewEIP1559
@@ -741,7 +763,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+const mapDispatchToProps = (dispatch: (...args: unknown[]) => unknown) => ({
   setNonce: (nonce: number) => dispatch(setNonce(nonce)),
   setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
 });
@@ -750,5 +772,7 @@ TransactionReviewInformation.contextType = ThemeContext;
 
 export default connect(
   mapStateToProps,
+  // @ts-expect-error - mapDispatchToProps typing with connect is complex
   mapDispatchToProps,
+  // @ts-expect-error - withMetricsAwareness HOC typing is complex with class components
 )(withMetricsAwareness(TransactionReviewInformation));

@@ -248,7 +248,7 @@ class TransactionReview extends PureComponent<
 > {
   declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: TransactionReviewState = {
     toFocused: false,
     actionKey: strings('transactions.tx_review_confirm'),
     showHexData: false,
@@ -257,6 +257,7 @@ class TransactionReview extends PureComponent<
     conversionRate: undefined,
     fiatValue: undefined,
     multiLayerL1FeeTotal: '0x0',
+    approveTransaction: undefined,
   };
 
   fetchEstimatedL1Fee = async () => {
@@ -269,15 +270,19 @@ class TransactionReview extends PureComponent<
         Engine.context.NetworkController.getProviderAndBlockTracker().provider,
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
-        txParams: transaction.transaction,
-        chainId,
-        networkClientId,
+        // @ts-expect-error - txParams type mismatch with transaction.transaction
+        txParams: {
+          ...transaction.transaction,
+          from: (transaction.transaction as { from?: string }).from as `0x${string}`,
+        },
+        chainId: chainId as `0x${string}`,
+        networkClientId: networkClientId as string,
       });
       this.setState({
-        multiLayerL1FeeTotal: result,
+        multiLayerL1FeeTotal: result as string,
       });
     } catch (e) {
-      Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
+      Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
         multiLayerL1FeeTotal: '0x0',
       });
@@ -297,8 +302,9 @@ class TransactionReview extends PureComponent<
     } = this.props;
     let { showHexData } = this.props;
     let assetAmount, conversionRate, fiatValue;
-    showHexData = showHexData || data;
+    showHexData = showHexData || !!data;
     const approveTransaction =
+      // @ts-expect-error - isApprovalTransaction and isZeroValue parameter types
       isApprovalTransaction(data) && (!value || isZeroValue(value));
 
     const actionKey = await getTransactionReviewActionKey(
@@ -306,18 +312,19 @@ class TransactionReview extends PureComponent<
         ...transactionMetadata,
         transaction,
         txParams: undefined,
-      },
-      chainId,
+      } as Parameters<typeof getTransactionReviewActionKey>[0],
+      chainId as string,
     );
 
     if (approveTransaction) {
-      let contract = tokenList[safeToChecksumAddress(to)];
+      let contract = tokenList?.[safeToChecksumAddress(to as string) as string];
       if (!contract) {
-        contract = tokens.find(
-          ({ address }) => address === safeToChecksumAddress(to),
+        contract = tokens?.find(
+          ({ address }) => address === safeToChecksumAddress(to as string),
         );
       }
       const symbol = (contract && contract.symbol) || 'ERC20';
+      // @ts-expect-error - decodeTransferData parameter type
       assetAmount = `${decodeTransferData('transfer', data)[1]} ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();
@@ -325,14 +332,14 @@ class TransactionReview extends PureComponent<
 
     this.setState({
       actionKey,
-      showHexData,
-      assetAmount,
-      conversionRate,
-      fiatValue,
+      showHexData: showHexData as boolean,
+      assetAmount: assetAmount as string | undefined,
+      conversionRate: conversionRate as number | boolean | undefined,
+      fiatValue: fiatValue as string | undefined,
       approveTransaction,
     });
 
-    metrics.trackEvent(
+    metrics?.trackEvent(
       metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_STARTED)
         .addProperties({
@@ -353,11 +360,12 @@ class TransactionReview extends PureComponent<
   onContactUsClicked = () => {
     const { securityAlertResponse, metrics } = this.props;
     const additionalParams = {
+      // @ts-expect-error - getBlockaidMetricsParams parameter type mismatch
       ...getBlockaidMetricsParams(securityAlertResponse),
       external_link_clicked: 'security_alert_support_link',
     };
 
-    metrics.trackEvent(
+    metrics?.trackEvent(
       metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_STARTED)
         .addProperties(additionalParams)
@@ -376,43 +384,47 @@ class TransactionReview extends PureComponent<
       contractExchangeRates,
       ticker,
     } = this.props;
-    const values = {
+    const values: Record<string, () => unknown[]> = {
       ETH: () => {
+        // @ts-expect-error - renderFromWei parameter type mismatch
         const assetAmount = `${renderFromWei(value)} ${getTicker(ticker)}`;
         const conversionRate = this.props.conversionRate;
+        // @ts-expect-error - weiToFiat parameter type mismatch
         const fiatValue = weiToFiat(value, conversionRate, currentCurrency);
         return [assetAmount, conversionRate, fiatValue];
       },
       ERC20: () => {
         const assetAmount = `${renderFromTokenMinimalUnit(
+          // @ts-expect-error - renderFromTokenMinimalUnit parameter type mismatch
           value,
-          selectedAsset.decimals,
-        )} ${selectedAsset.symbol}`;
+          selectedAsset?.decimals,
+        )} ${selectedAsset?.symbol}`;
         const conversionRate = contractExchangeRates
-          ? contractExchangeRates[selectedAsset.address]?.price
+          ? contractExchangeRates[selectedAsset?.address as string]?.price
           : undefined;
         const fiatValue = balanceToFiat(
-          (value && fromTokenMinimalUnit(value, selectedAsset.decimals)) || 0,
+          // @ts-expect-error - fromTokenMinimalUnit parameter type mismatch
+          (value && fromTokenMinimalUnit(value, selectedAsset?.decimals)) || 0,
           this.props.conversionRate,
           conversionRate,
-          currentCurrency,
+          currentCurrency as string,
         );
         return [assetAmount, conversionRate, fiatValue];
       },
       ERC721: () => {
-        const assetAmount = strings('unit.token_id') + selectedAsset.tokenId;
+        const assetAmount = strings('unit.token_id') + selectedAsset?.tokenId;
         const conversionRate = true;
-        const fiatValue = selectedAsset.name;
+        const fiatValue = selectedAsset?.name;
         return [assetAmount, conversionRate, fiatValue];
       },
       default: () => [undefined, undefined, undefined],
     };
-    return values[assetType] || values.default;
+    return values[assetType as string] || values.default;
   };
 
   edit = () => {
     const { onModeChange, metrics } = this.props;
-    metrics.trackEvent(
+    metrics?.trackEvent(
       metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)
         .build(),
@@ -428,7 +440,7 @@ class TransactionReview extends PureComponent<
   toggleDataView = () => {
     const { animate } = this.props;
     if (this.state.dataVisible) {
-      animate({
+      animate?.({
         modalEndValue: 1,
         xTranslationName: 'reviewToData',
         xTranslationEndValue: 0,
@@ -436,7 +448,7 @@ class TransactionReview extends PureComponent<
       this.setState({ dataVisible: false });
       return;
     }
-    animate({
+    animate?.({
       modalEndValue: 0,
       xTranslationName: 'reviewToData',
       xTranslationEndValue: 1,
@@ -446,9 +458,9 @@ class TransactionReview extends PureComponent<
 
   getUrlFromBrowser() {
     const { browser } = this.props;
-    let url;
-    browser.tabs.forEach((tab) => {
-      if (tab.id === browser.activeTab) {
+    let url = '';
+    browser?.tabs?.forEach((tab) => {
+      if (tab.id === browser?.activeTab) {
         url = tab.url;
       }
     });
@@ -519,7 +531,7 @@ class TransactionReview extends PureComponent<
 
     let url = '';
     if (currentConnection) {
-      url = currentConnection.originatorInfo.url;
+      url = currentConnection.originatorInfo?.url ?? '';
     } else {
       url = this.getUrlFromBrowser();
     }
@@ -529,13 +541,13 @@ class TransactionReview extends PureComponent<
     const originatorInfo = currentConnection?.originatorInfo;
     const sdkDappMetadata = {
       url: originatorInfo?.url ?? strings('sdk.unknown'),
-      icon: originatorInfo?.icon,
+      icon: originatorInfo?.icon ?? '',
     };
 
     return (
       <>
         <Animated.View
-          style={generateTransform('reviewToData', [
+          style={generateTransform?.('reviewToData', [
             0,
             -Device.getDeviceWidth(),
           ])}
@@ -560,7 +572,7 @@ class TransactionReview extends PureComponent<
                   >
                     <ApprovalTagUrl
                       currentEnsName={ensRecipient}
-                      from={from}
+                      from={from as string}
                       origin={origin}
                       sdkDappMetadata={sdkDappMetadata}
                       url={url}
@@ -577,8 +589,9 @@ class TransactionReview extends PureComponent<
                       </View>
                     )}
                     {to && (
-                      <View style={styles.accountWrapper}>
+                      <View style={styles.accountInfoCardWrapper}>
                         <AccountFromToInfoCard
+                          // @ts-expect-error - AccountFromToInfoCard props are provided via Redux connect
                           transactionState={transaction}
                           layout="vertical"
                         />
@@ -587,17 +600,22 @@ class TransactionReview extends PureComponent<
                     <TransactionReviewSummary
                       actionKey={actionKey}
                       assetAmount={assetAmount}
-                      conversionRate={conversionRate}
+                      conversionRate={
+                        typeof conversionRate === 'number'
+                          ? conversionRate
+                          : undefined
+                      }
                       fiatValue={fiatValue}
                       approveTransaction={approveTransaction}
                       primaryCurrency={primaryCurrency}
                       chainId={chainId}
                     />
                     {useTransactionSimulations &&
-                      transactionSimulationData &&
+                      Boolean(transactionSimulationData) &&
                       transactionMetadata && (
                         <View style={styles.transactionSimulations}>
                           <SimulationDetails
+                            // @ts-expect-error - SimulationDetails transaction type mismatch
                             transaction={transactionMetadata}
                             enableMetrics
                           />
@@ -635,15 +653,14 @@ class TransactionReview extends PureComponent<
         <Animated.View
           style={[
             styles.transactionData,
-            generateTransform('reviewToData', [Device.getDeviceWidth(), 0]),
+            generateTransform?.('reviewToData', [Device.getDeviceWidth(), 0]),
             hideData && styles.hidden,
           ]}
         >
+          {/* @ts-expect-error - TransactionReviewData transaction prop is provided via Redux connect */}
           <TransactionReviewData
             actionKey={actionKey}
             toggleDataView={this.toggleDataView}
-            saveTransactionReviewDataHeight={saveTransactionReviewDataHeight}
-            customGasHeight={customGasHeight}
           />
         </Animated.View>
       </>
@@ -664,12 +681,14 @@ class TransactionReview extends PureComponent<
       <View style={styles.actionViewQRObject}>
         <TransactionHeader currentPageInformation={currentPageInformation} />
         <QRSigningDetails
-          QRState={QRState}
+          QRState={
+            QRState as Parameters<typeof QRSigningDetails>[0]['QRState']
+          }
           tighten
           showCancelButton
           showHint={false}
           bypassAndroidCameraAccessCheck={false}
-          fromAddress={from}
+          fromAddress={from as string}
           cancelCallback={onCancel}
           successCallback={onConfirm}
         />
@@ -715,6 +734,7 @@ TransactionReview.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(
   withNavigation(
+    // @ts-expect-error - HOC wrappers with class components have complex typing
     withQRHardwareAwareness(withMetricsAwareness(TransactionReview)),
   ),
 );

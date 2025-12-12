@@ -76,7 +76,9 @@ const transactionReview = {
 describe('TransactionReviewEIP1559', () => {
   it('should render correctly', () => {
     const wrapper = renderWithProvider(
+      // @ts-expect-error - Test file props mismatch
       <TransactionReviewEIP1559 {...transactionReview} />,
+      // @ts-expect-error - Test file state mismatch
       { state: initialState },
     );
 
@@ -88,12 +90,14 @@ describe('TransactionReviewEIP1559', () => {
 
     renderHookWithProvider(
       () =>
+        // @ts-expect-error - Test file props mismatch
         TransactionReviewEIP1559({
           ...transactionReview,
           gasEstimationReady: true,
           updateTransactionState: updateTransactionStateMock,
         }),
       {
+        // @ts-expect-error - Test file state mismatch with RootState type
         state: initialState,
       },
     );

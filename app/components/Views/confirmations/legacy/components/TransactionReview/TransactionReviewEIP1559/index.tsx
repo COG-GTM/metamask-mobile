@@ -40,56 +40,75 @@ interface TransactionReviewEIP1559Props {
   gasEstimationReady?: boolean;
   legacy?: boolean;
   originWarning?: boolean;
+  totalNative?: string;
+  totalConversion?: string;
+  totalMaxNative?: string;
+  over?: boolean;
 }
 
-const createStyles = (colors: Colors) =>
-  StyleSheet.create({
-    overview: (noMargin: boolean) => ({
-      marginHorizontal: noMargin ? 0 : 24,
-      paddingTop: 10,
-      paddingBottom: 10,
-    }),
-    valuesContainer: {
-      flex: 1,
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-    },
-    gasInfoContainer: {
-      paddingLeft: 2,
-    },
-    gasInfoIcon: (hasOrigin: boolean) => ({
-      color: hasOrigin ? colors.warning.default : colors.icon.muted,
-    }),
-    amountContainer: {
-      flex: 1,
-      paddingRight: 10,
-    },
-    gasRowContainer: {
-      flexDirection: 'row',
-      flex: 1,
-      alignItems: 'center',
-      marginBottom: 2,
-    },
-    gasBottomRowContainer: {
-      marginTop: 4,
-    },
-    hitSlop: {
-      top: 10,
-      left: 10,
-      bottom: 10,
-      right: 10,
-    },
-    redInfo: {
-      color: colors.error.default,
-    },
-    timeEstimateContainer: {
-      alignItems: 'center',
-      flexDirection: 'row',
-    },
-    flex: {
-      flex: 1,
-    },
-  });
+import { ViewStyle, TextStyle } from 'react-native';
+
+interface EIP1559Styles {
+  overview: (noMargin?: boolean) => ViewStyle;
+  valuesContainer: ViewStyle;
+  gasInfoContainer: ViewStyle;
+  gasInfoIcon: (hasOrigin?: boolean) => TextStyle;
+  amountContainer: ViewStyle;
+  gasRowContainer: ViewStyle;
+  gasBottomRowContainer: ViewStyle;
+  hitSlop: { top: number; left: number; bottom: number; right: number };
+  redInfo: TextStyle;
+  timeEstimateContainer: ViewStyle;
+  flex: ViewStyle;
+}
+
+const createStyles = (colors: Colors): EIP1559Styles => ({
+  overview: (noMargin?: boolean) => ({
+    marginHorizontal: noMargin ? 0 : 24,
+    paddingTop: 10,
+    paddingBottom: 10,
+  }),
+  valuesContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  gasInfoContainer: {
+    paddingLeft: 2,
+  },
+  gasInfoIcon: (hasOrigin?: boolean) => ({
+    color: hasOrigin ? colors.warning.default : colors.icon.muted,
+  }),
+  amountContainer: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  gasRowContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  gasBottomRowContainer: {
+    marginTop: 4,
+  },
+  hitSlop: {
+    top: 10,
+    left: 10,
+    bottom: 10,
+    right: 10,
+  },
+  redInfo: {
+    color: colors.error.default,
+  },
+  timeEstimateContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  flex: {
+    flex: 1,
+  },
+});
 
 const Skeleton = ({ width, noStyle }: SkeletonProps) => {
   const { colors } = useTheme();
@@ -149,7 +168,7 @@ const TransactionReviewEIP1559 = ({
   );
 
   const edit = useCallback(() => {
-    if (!isAnimating) onEdit();
+    if (!isAnimating) onEdit?.();
   }, [isAnimating, onEdit]);
 
   const isMainnet = isMainnetByChainId(chainId);
@@ -166,10 +185,12 @@ const TransactionReviewEIP1559 = ({
   }
 
   const valueToWatchAnimation = `${gasFeeNative}${gasFeeMaxNative}`;
-  const isTestNetwork = isTestNet(chainId);
+  const isTestNetwork = isTestNet(chainId as string);
 
   return (
+    // @ts-expect-error - Summary component types don't include children prop
     <Summary style={styles.overview(noMargin)}>
+      {/* @ts-expect-error - Summary.Row types don't include children prop */}
       <Summary.Row>
         <View style={styles.gasRowContainer}>
           <View style={styles.gasRowContainer}>
@@ -254,6 +275,7 @@ const TransactionReviewEIP1559 = ({
         </View>
       </Summary.Row>
       {!legacy && (
+        // @ts-expect-error - Summary.Row types don't include children prop
         <Summary.Row>
           <View style={styles.gasRowContainer}>
             {gasEstimationReady ? (

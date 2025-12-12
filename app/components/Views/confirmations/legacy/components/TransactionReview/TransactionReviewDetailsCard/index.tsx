@@ -133,7 +133,7 @@ export default class TransactionReviewDetailsCard extends Component<TransactionR
     return (
       <View style={styles.section}>
         <ConnectHeader
-          action={toggleViewDetails}
+          action={toggleViewDetails as () => void}
           title={strings('spend_limit_edition.transaction_details')}
         />
         <View style={styles.transactionDetails}>
@@ -156,7 +156,7 @@ export default class TransactionReviewDetailsCard extends Component<TransactionR
                 </Text>
               ) : (
                 <Text style={styles.address}>
-                  {renderShortAddress(address)}
+                  {renderShortAddress(address as string)}
                 </Text>
               )}
               <Feather
@@ -164,7 +164,7 @@ export default class TransactionReviewDetailsCard extends Component<TransactionR
                 size={16}
                 color={colors.primary.default}
                 style={styles.copyIcon}
-                onPress={() => copyContractAddress(address)}
+                onPress={() => copyContractAddress?.(address)}
               />
             </View>
           </View>

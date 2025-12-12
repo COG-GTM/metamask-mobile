@@ -83,14 +83,38 @@ const TransactionReviewEIP1559Update = ({
   const { colors } = useAppThemeFromContext() || mockTheme;
   const styles = createStyles(colors);
 
-  const gasTransaction = useGasTransaction({
+  const gasTransactionResult = useGasTransaction({
     onlyGas: !!onlyGas,
     gasSelected,
     legacy: !!legacy,
-    gasObject,
+    gasObject: gasObject as {
+      suggestedGasLimit: string;
+      suggestedMaxFeePerGas: string;
+      suggestedMaxPriorityFeePerGas: string;
+    },
     gasObjectLegacy,
     multiLayerL1FeeTotal,
   });
+
+  // Cast to expected type - useGasTransaction returns a complex union type
+  const gasTransaction = gasTransactionResult as unknown as {
+    gasFeeMaxNative: string;
+    renderableGasFeeMinNative: string;
+    renderableGasFeeMinConversion: string;
+    renderableGasFeeMaxNative: string;
+    renderableTotalMinNative: string;
+    renderableTotalMinConversion: string;
+    renderableTotalMaxNative: string;
+    renderableGasFeeMaxConversion: string;
+    timeEstimateColor: string;
+    timeEstimate: string;
+    timeEstimateId: string;
+    transactionFee: string;
+    transactionFeeFiat: string;
+    transactionTotalAmount: string;
+    transactionTotalAmountFiat: string;
+    suggestedGasLimit: string;
+  };
 
   const {
     gasFeeMaxNative,
@@ -113,7 +137,7 @@ const TransactionReviewEIP1559Update = ({
 
   useEffect(() => {
     if (gasEstimationReady) {
-      updateTransactionState(gasTransaction);
+      updateTransactionState?.(gasTransaction);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -129,13 +153,16 @@ const TransactionReviewEIP1559Update = ({
   );
 
   const edit = useCallback(() => {
-    if (!isAnimating) onEdit();
+    if (!isAnimating) onEdit?.();
   }, [isAnimating, onEdit]);
 
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
-  const switchNativeCurrencyDisplayOptions = (nativeValue, fiatValue) => {
+  const switchNativeCurrencyDisplayOptions = (
+    nativeValue: React.ReactNode,
+    fiatValue: React.ReactNode,
+  ): React.ReactNode => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
   };
@@ -143,7 +170,9 @@ const TransactionReviewEIP1559Update = ({
   const valueToWatchAnimation = `${renderableGasFeeMinNative}${renderableGasFeeMaxNative}`;
 
   return (
+    // @ts-expect-error - Summary component types don't include children prop
     <Summary style={styles.overview(noMargin)}>
+      {/* @ts-expect-error - Summary.Row types don't include children prop */}
       <Summary.Row>
         <View style={styles.gasRowContainer}>
           <View style={styles.gasRowContainer}>
@@ -164,7 +193,7 @@ const TransactionReviewEIP1559Update = ({
                 <MaterialCommunityIcons
                   name="information"
                   size={13}
-                  style={styles.gasInfoIcon(originWarning)}
+                  style={styles.gasInfoIcon(!!originWarning)}
                 />
               </TouchableOpacity>
             </Text>
@@ -244,6 +273,7 @@ const TransactionReviewEIP1559Update = ({
         </View>
       </Summary.Row>
       {!legacy && (
+        // @ts-expect-error - Summary.Row types don't include children prop
         <Summary.Row>
           <View style={styles.gasRowContainer}>
             {gasEstimationReady ? (
@@ -339,6 +369,7 @@ const TransactionReviewEIP1559Update = ({
         <View>
           <Summary.Separator />
           <View style={styles.gasBottomRowContainer}>
+            {/* @ts-expect-error - Summary.Row types don't include children prop */}
             <Summary.Row>
               <Text primary bold noMargin>
                 {strings('transaction_review_eip1559.total')}
@@ -402,6 +433,7 @@ const TransactionReviewEIP1559Update = ({
             </Summary.Row>
           </View>
           {!legacy && (
+            // @ts-expect-error - Summary.Row types don't include children prop
             <Summary.Row>
               {gasEstimationReady ? (
                 <FadeAnimationView
