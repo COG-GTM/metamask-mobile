@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { Image, StyleSheet, View, Text, Platform } from 'react-native';
 import StyledButton from '../StyledButton';
 import { strings } from '../../../../locales/i18n';
@@ -11,8 +10,9 @@ import {
   ERROR_PAGE_RETURN_BUTTON,
   ERROR_PAGE_TITLE,
 } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       ...StyleSheet.absoluteFillObject,
@@ -62,33 +62,35 @@ const createStyles = (colors) =>
     },
   });
 
+interface WebviewErrorInfo {
+  description?: string;
+}
+
+interface WebviewErrorProps {
+  error?: WebviewErrorInfo | boolean;
+  returnHome?: () => void;
+}
+
 /**
  * View that renders custom error page for the browser
  */
-export default class WebviewError extends PureComponent {
-  static propTypes = {
-    /**
-     * error info
-     */
-    error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-    /**
-     * Function that reloads the page
-     */
-    returnHome: PropTypes.func,
-  };
-
+export default class WebviewError extends PureComponent<WebviewErrorProps> {
   static defaultProps = {
     error: false,
   };
 
+  declare context: React.ContextType<typeof ThemeContext>;
+
   returnHome = () => {
-    this.props.returnHome();
+    this.props.returnHome?.();
   };
 
   render() {
     const { error } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
+
+    const errorInfo = typeof error === 'object' ? error : null;
 
     return error ? (
       <View style={styles.wrapper}>
@@ -112,8 +114,8 @@ export default class WebviewError extends PureComponent {
           >
             {strings('webview_error.message')}
           </Text>
-          {error.description ? (
-            <Text style={styles.errorInfo}>{error.description}</Text>
+          {errorInfo?.description ? (
+            <Text style={styles.errorInfo}>{errorInfo.description}</Text>
           ) : null}
         </View>
         <View

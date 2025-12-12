@@ -1,10 +1,10 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { Animated, StyleSheet } from 'react-native';
+import { Animated, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     view: {
       backgroundColor: colors.background.default,
@@ -16,16 +16,30 @@ const createStyles = (colors) =>
     },
   });
 
+interface FadeOutOverlayProps {
+  style?: StyleProp<ViewStyle>;
+  duration?: number;
+}
+
+interface FadeOutOverlayState {
+  done: boolean;
+}
+
 /**
  * View that is displayed to first time (new) users
  */
-export default class FadeOutOverlay extends PureComponent {
-  static propTypes = {
-    style: PropTypes.any,
-    duration: PropTypes.number,
+export default class FadeOutOverlay extends PureComponent<
+  FadeOutOverlayProps,
+  FadeOutOverlayState
+> {
+  static defaultProps = {
+    style: null,
+    duration: Device.isAndroid() ? 300 : 300,
   };
 
-  state = {
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  state: FadeOutOverlayState = {
     done: false,
   };
 
@@ -43,7 +57,7 @@ export default class FadeOutOverlay extends PureComponent {
   }
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (this.state.done) return null;
@@ -56,8 +70,3 @@ export default class FadeOutOverlay extends PureComponent {
 }
 
 FadeOutOverlay.contextType = ThemeContext;
-
-FadeOutOverlay.defaultProps = {
-  style: null,
-  duration: Device.isAndroid() ? 300 : 300,
-};
