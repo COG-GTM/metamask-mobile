@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { TouchableOpacity, View, StyleSheet, Linking } from 'react-native';
+import { TouchableOpacity, View, Linking, ViewStyle, TextStyle } from 'react-native';
 import Summary from '../../../../../../Base/Summary';
 import Text from '../../../../../../Base/Text';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -45,8 +45,6 @@ interface TransactionReviewEIP1559Props {
   totalMaxNative?: string;
   over?: boolean;
 }
-
-import { ViewStyle, TextStyle } from 'react-native';
 
 interface EIP1559Styles {
   overview: (noMargin?: boolean) => ViewStyle;
@@ -154,7 +152,7 @@ const TransactionReviewEIP1559 = ({
   const [isVisibleLegacyLearnMore, , showLegacyLearnMore, hideLegacyLearnMore] =
     useModalHandler(false);
   const toggleLearnMoreModal = useCallback(() => {
-    setShowLearnMoreModal((showLearnMoreModal) => !showLearnMoreModal);
+    setShowLearnMoreModal((prevShowLearnMoreModal) => !prevShowLearnMoreModal);
   }, []);
   const { colors } = useTheme();
   const styles = createStyles(colors);
