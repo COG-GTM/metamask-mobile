@@ -30,7 +30,8 @@ const foxImage = require('../../../images/branding/fox.png'); // eslint-disable-
  * in the middle of the screen
  */
 export default class FoxScreen extends PureComponent {
-  declare context: React.ContextType<typeof ThemeContext>;
+  // Initialize context with mockTheme to satisfy TypeScript (avoids 'declare' which Babel doesn't support)
+  context: React.ContextType<typeof ThemeContext> = mockTheme;
 
   render = () => {
     const colors = this.context?.colors || mockTheme.colors;

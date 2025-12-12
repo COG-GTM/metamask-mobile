@@ -79,7 +79,8 @@ export default class WebviewError extends PureComponent<WebviewErrorProps> {
     error: false,
   };
 
-  declare context: React.ContextType<typeof ThemeContext>;
+  // Initialize context with mockTheme to satisfy TypeScript (avoids 'declare' which Babel doesn't support)
+  context: React.ContextType<typeof ThemeContext> = mockTheme;
 
   returnHome = () => {
     this.props.returnHome?.();

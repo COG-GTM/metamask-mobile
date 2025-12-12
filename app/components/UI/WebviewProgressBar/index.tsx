@@ -25,7 +25,8 @@ export default class WebviewProgressBar extends PureComponent<
   WebviewProgressBarProps,
   WebviewProgressBarState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
+  // Initialize context with mockTheme to satisfy TypeScript (avoids 'declare' which Babel doesn't support)
+  context: React.ContextType<typeof ThemeContext> = mockTheme;
   private mounted = false;
 
   state: WebviewProgressBarState = {

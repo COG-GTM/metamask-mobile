@@ -90,7 +90,8 @@ interface CustomAlertProps {
  * a header with an image, body and footer with a button
  */
 export default class CustomAlert extends PureComponent<CustomAlertProps> {
-  declare context: React.ContextType<typeof ThemeContext>;
+  // Initialize context with mockTheme to satisfy TypeScript (avoids 'declare' which Babel doesn't support)
+  context: React.ContextType<typeof ThemeContext> = mockTheme;
 
   render() {
     const colors = this.context?.colors || mockTheme.colors;

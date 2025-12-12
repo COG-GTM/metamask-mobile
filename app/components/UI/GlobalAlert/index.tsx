@@ -55,7 +55,8 @@ interface GlobalAlertProps {
  * connected to redux
  */
 class GlobalAlert extends PureComponent<GlobalAlertProps> {
-  declare context: React.ContextType<typeof ThemeContext>;
+  // Initialize context with mockTheme to satisfy TypeScript (avoids 'declare' which Babel doesn't support)
+  context: React.ContextType<typeof ThemeContext> = mockTheme;
 
   onClose = () => {
     this.props.dismissAlert();

@@ -75,7 +75,8 @@ class AnimatedTransactionModal extends PureComponent<
   AnimatedTransactionModalProps,
   AnimatedTransactionModalState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
+  // Initialize context with mockTheme to satisfy TypeScript (avoids 'declare' which Babel doesn't support)
+  context: React.ContextType<typeof ThemeContext> = mockTheme;
 
   reviewToEditValue = new Animated.Value(0);
   reviewToDataValue = new Animated.Value(0);

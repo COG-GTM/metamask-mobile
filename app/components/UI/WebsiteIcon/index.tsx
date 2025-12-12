@@ -66,7 +66,8 @@ interface WebsiteIconState {
  * https://github.com/MetaMask/metamask-mobile/blob/34f9da127435053a32e5f4e9c69ce8aa1e37c394/app/component-library/components/Avatars/Avatar/README.md#L1
  */
 class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
-  declare context: React.ContextType<typeof ThemeContext>;
+  // Initialize context with mockTheme to satisfy TypeScript (avoids 'declare' which Babel doesn't support)
+  context: React.ContextType<typeof ThemeContext> = mockTheme;
 
   state: WebsiteIconState = {
     renderIconUrlError: false,

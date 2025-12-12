@@ -37,7 +37,8 @@ export default class FadeOutOverlay extends PureComponent<
     duration: Device.isAndroid() ? 300 : 300,
   };
 
-  declare context: React.ContextType<typeof ThemeContext>;
+  // Initialize context with mockTheme to satisfy TypeScript (avoids 'declare' which Babel doesn't support)
+  context: React.ContextType<typeof ThemeContext> = mockTheme;
 
   state: FadeOutOverlayState = {
     done: false,
