@@ -419,7 +419,7 @@ jest.mock('react-native/Libraries/Image/resolveAssetSource', () => ({
 
 jest.mock('redux-persist', () => ({
   persistStore: jest.fn(),
-  persistReducer: <S>(
+  persistReducer: <S,>(
     _config: unknown,
     reducer?: (state: S | undefined, action: unknown) => S,
   ) => reducer || ((state: S) => state),
@@ -452,7 +452,7 @@ afterEach(() => {
 });
 
 global.crypto = {
-  getRandomValues: <T extends ArrayBufferView>(arr: T): T => {
+  getRandomValues: <T extends ArrayBufferView,>(arr: T): T => {
     const uint8Max = 255;
     const view = new Uint8Array(
       arr.buffer,
