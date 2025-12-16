@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ViewStyle } from 'react-native';
 import { connect } from 'react-redux';
 import Modal from 'react-native-modal';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -15,8 +14,14 @@ import {
 import { useTheme } from '../../../../util/theme';
 import Logger from '../../../../util/Logger';
 import { selectSwapsApprovalTransaction } from '../../../../reducers/swaps';
+import { RootState } from '../../../../reducers';
 
-const styles = StyleSheet.create({
+interface Styles {
+  keyboardAwareWrapper: ViewStyle;
+  bottomModal: ViewStyle;
+}
+
+const styles: Styles = StyleSheet.create({
   keyboardAwareWrapper: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -27,7 +32,31 @@ const styles = StyleSheet.create({
   },
 });
 
-function ApprovalTransactionEditionModal({
+interface SourceToken {
+  decimals: number;
+  symbol: string;
+}
+
+interface ApprovalTransaction {
+  data?: string;
+  to?: string;
+  from?: string;
+  gas?: string;
+  gasPrice?: string;
+}
+
+interface ApprovalTransactionEditionModalProps {
+  originalApprovalTransaction?: ApprovalTransaction;
+  approvalTransaction?: ApprovalTransaction;
+  editQuoteTransactionsVisible?: boolean;
+  onCancelEditQuoteTransactions?: () => void;
+  setApprovalTransaction?: (tx: ApprovalTransaction | undefined) => void;
+  sourceToken: SourceToken;
+  minimumSpendLimit: string;
+  chainId?: string;
+}
+
+const ApprovalTransactionEditionModal: React.FC<ApprovalTransactionEditionModalProps> = ({
   originalApprovalTransaction,
   approvalTransaction,
   editQuoteTransactionsVisible,
@@ -36,10 +65,10 @@ function ApprovalTransactionEditionModal({
   sourceToken,
   minimumSpendLimit,
   chainId,
-}) {
+}) => {
   /* Approval transaction if any */
   const [customApprovalTransaction, setCustomApprovalTransaction] =
-    useState(approvalTransaction);
+    useState<ApprovalTransaction | undefined>(approvalTransaction);
   const [approvalTransactionAmount, setApprovalTransactionAmount] =
     useState('');
   const [approvalCustomValue, setApprovalCustomValue] =
@@ -49,7 +78,7 @@ function ApprovalTransactionEditionModal({
   const { colors } = useTheme();
 
   const onSpendLimitCustomValueChange = useCallback(
-    (approvalCustomValue) => setApprovalCustomValue(approvalCustomValue),
+    (value: string) => setApprovalCustomValue(value),
     [],
   );
 
@@ -70,12 +99,12 @@ function ApprovalTransactionEditionModal({
           ? approvalTransactionAmount
           : approvalCustomValue,
         sourceToken.decimals,
-        swapsUtils.getSwapsContractAddress(chainId),
-        customApprovalTransaction,
+        swapsUtils.getSwapsContractAddress(chainId as string),
+        customApprovalTransaction as ApprovalTransaction,
       );
       setCustomApprovalTransaction(newApprovalTransaction);
-      setApprovalTransaction(newApprovalTransaction);
-      onCancelEditQuoteTransactions();
+      setApprovalTransaction?.(newApprovalTransaction);
+      onCancelEditQuoteTransactions?.();
     } catch (err) {
       Logger.log('Failed to setTransactionObject', err);
     }
@@ -94,12 +123,11 @@ function ApprovalTransactionEditionModal({
     const newApprovalTx = spendLimitUnlimitedSelected
       ? originalApprovalTransaction
       : customApprovalTransaction;
-    setApprovalTransaction(newApprovalTx);
-    if (newApprovalTx) {
-      const approvalTransactionAmount = decodeApproveData(
-        newApprovalTx.data,
-      ).encodedAmount;
-      const amountDec = hexToBN(approvalTransactionAmount).toString(10);
+    setApprovalTransaction?.(newApprovalTx);
+    if (newApprovalTx?.data) {
+      const decodedData = decodeApproveData(newApprovalTx.data);
+      const approvalAmount = decodedData.encodedAmount;
+      const amountDec = hexToBN(approvalAmount).toString(10);
       setApprovalTransactionAmount(
         fromTokenMinimalUnitString(amountDec, sourceToken.decimals),
       );
@@ -151,20 +179,9 @@ function ApprovalTransactionEditionModal({
       </KeyboardAwareScrollView>
     </Modal>
   );
-}
-
-ApprovalTransactionEditionModal.propTypes = {
-  approvalTransaction: PropTypes.object,
-  originalApprovalTransaction: PropTypes.object,
-  editQuoteTransactionsVisible: PropTypes.bool,
-  minimumSpendLimit: PropTypes.string.isRequired,
-  onCancelEditQuoteTransactions: PropTypes.func,
-  setApprovalTransaction: PropTypes.func,
-  sourceToken: PropTypes.object,
-  chainId: PropTypes.string,
 };
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   originalApprovalTransaction: selectSwapsApprovalTransaction(state),
 });
 
