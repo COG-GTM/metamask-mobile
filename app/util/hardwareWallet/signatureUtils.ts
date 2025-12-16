@@ -20,9 +20,9 @@ export default async (
 
   const onConfirmationComplete = async (confirmed: boolean) => {
     if (!confirmed) {
-      await handleSignatureAction(onReject, messageParams, signType, false);
+      await handleSignatureAction(onReject, messageParams, signType, undefined, false);
     } else {
-      await handleSignatureAction(onConfirm, messageParams, signType, true);
+      await handleSignatureAction(onConfirm, messageParams, signType, undefined, true);
     }
   };
 

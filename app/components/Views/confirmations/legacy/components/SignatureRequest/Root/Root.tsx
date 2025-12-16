@@ -1,7 +1,6 @@
 import Modal from 'react-native-modal';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import setSignatureRequestSecurityAlertResponse from '../../../../../../../actions/signatureRequest';
 import { store } from '../../../../../../../store';
@@ -32,7 +31,6 @@ const Root = ({
   onSignConfirm,
   onSignReject,
 }: RootProps) => {
-  const navigation = useNavigation();
   const { colors } = useTheme();
   const [showExpandedMessage, setShowExpandedMessage] = useState(false);
   const visibility = useSelector(
@@ -93,7 +91,6 @@ const Root = ({
       )}
       {approvalType === ApprovalTypes.ETH_SIGN_TYPED_DATA && (
         <TypedSign
-          navigation={navigation}
           messageParams={messageParams}
           onReject={onSignReject}
           onConfirm={onSignConfirm}

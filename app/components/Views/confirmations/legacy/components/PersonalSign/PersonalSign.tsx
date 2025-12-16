@@ -1,12 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { InteractionManager, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
-import { strings } from '../../../../../../../locales/i18n';
 import { KEYSTONE_TX_CANCELED } from '../../../../../../constants/error';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
-import Engine from '../../../../../../core/Engine';
-import NotificationManager from '../../../../../../core/NotificationManager';
 import {
   getAddressAccountType,
   isExternalHardwareAccount,
@@ -14,7 +11,6 @@ import {
 } from '../../../../../../util/address';
 import { escapeSpecialUnicode } from '../../../../../../util/string';
 import { useTheme } from '../../../../../../util/theme';
-import { WALLET_CONNECT_ORIGIN } from '../../../../../../util/walletconnect';
 import SignatureRequest from '../SignatureRequest';
 import ExpandedMessage from '../SignatureRequest/ExpandedMessage';
 import createStyles from './styles';
@@ -22,7 +18,6 @@ import { PersonalSignProps } from './types';
 
 import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selectors/Browser/SigningBottomSheet.selectors';
 import { useMetrics } from '../../../../../../components/hooks/useMetrics';
-import AppConstants from '../../../../../../core/AppConstants';
 import Logger from '../../../../../../util/Logger';
 import { getBlockaidMetricsParams } from '../../../../../../util/blockaid';
 import createExternalSignModelNav from '../../../../../../util/hardwareWallet/signatureUtils';
@@ -31,6 +26,11 @@ import { selectSignatureRequestById } from '../../../../../../selectors/signatur
 import { selectProviderTypeByChainId } from '../../../../../../selectors/networkController';
 import { RootState } from '../../../../../../reducers';
 import { Hex } from '@metamask/utils';
+import {
+  showWalletConnectNotification,
+  addSignatureErrorListener,
+  removeSignatureErrorListener,
+} from '../../../../../../util/confirmation/signatureUtils';
 
 /**
  * Converts a hexadecimal string to a utf8 string.
@@ -133,15 +133,9 @@ const PersonalSign = ({
         );
       }
     };
-    Engine.context.SignatureController.hub.on(
-      `${messageParams.metamaskId}:signError`,
-      onSignatureError,
-    );
+    addSignatureErrorListener(messageParams.metamaskId, onSignatureError);
     return () => {
-      Engine.context.SignatureController.hub.removeListener(
-        `${messageParams.metamaskId}:signError`,
-        onSignatureError,
-      );
+      removeSignatureErrorListener(messageParams.metamaskId, onSignatureError);
     };
   }, [
     getAnalyticsParams,
@@ -150,27 +144,9 @@ const PersonalSign = ({
     createEventBuilder,
   ]);
 
-  const showWalletConnectNotification = (confirmation = false) => {
-    InteractionManager.runAfterInteractions(() => {
-      messageParams.origin &&
-        (messageParams.origin.startsWith(WALLET_CONNECT_ORIGIN) ||
-          messageParams.origin.startsWith(
-            AppConstants.MM_SDK.SDK_REMOTE_ORIGIN,
-          )) &&
-        NotificationManager.showSimpleNotification({
-          status: `simple_notification${!confirmation ? '_rejected' : ''}`,
-          duration: 5000,
-          title: confirmation
-            ? strings('notifications.wc_signed_title')
-            : strings('notifications.wc_signed_rejected_title'),
-          description: strings('notifications.wc_description'),
-        });
-    });
-  };
-
   const rejectSignature = async () => {
     await onReject();
-    showWalletConnectNotification(false);
+    showWalletConnectNotification(messageParams, false);
     trackEvent(
       createEventBuilder(MetaMetricsEvents.SIGNATURE_REJECTED)
         .addProperties(getAnalyticsParams())
@@ -181,7 +157,7 @@ const PersonalSign = ({
   const confirmSignature = async () => {
     if (!isExternalHardwareAccount(messageParams.from)) {
       await onConfirm();
-      showWalletConnectNotification(true);
+      showWalletConnectNotification(messageParams, true);
       trackEvent(
         createEventBuilder(MetaMetricsEvents.SIGNATURE_APPROVED)
           .addProperties(getAnalyticsParams())
