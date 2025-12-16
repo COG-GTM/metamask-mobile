@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   InteractionManager,
   ActivityIndicator,
@@ -71,12 +70,131 @@ import {
   /* eslint-enable no-restricted-syntax */
   selectProviderTypeByChainId,
 } from '../../../../../selectors/networkController';
+import { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
+import { RootState } from '../../../../../reducers';
+import { Dispatch } from 'redux';
+import BN from 'bn.js';
 
 const REVIEW = 'review';
 const EDIT = 'edit';
 const SEND = 'Send';
 
-const createStyles = (colors) =>
+interface ThemeColors {
+  background: {
+    default: string;
+  };
+}
+
+interface Theme {
+  colors: ThemeColors;
+}
+
+interface SelectedAsset {
+  symbol?: string;
+  contractName?: string;
+  address?: string;
+  decimals?: number;
+  tokenId?: string;
+  isETH?: boolean;
+}
+
+interface TransactionObject {
+  id?: string;
+  assetType?: string;
+  selectedAsset?: SelectedAsset;
+  gas?: BN | string;
+  gasPrice?: BN | string;
+  value?: BN | string;
+  to?: string;
+  from?: string;
+  data?: string;
+  providerType?: string;
+  chainId?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  readableValue?: string;
+  ensRecipient?: string;
+  paymentRequest?: boolean;
+  symbol?: string;
+}
+
+interface InternalAccount {
+  address: string;
+  metadata: {
+    name: string;
+  };
+}
+
+interface TokenInfo {
+  address: string;
+  symbol?: string;
+  decimals?: number;
+}
+
+interface TxMeta {
+  target_address?: string;
+  action?: string;
+  parameters?: {
+    value?: string;
+    address?: string;
+    uint256?: string;
+    gas?: string;
+    gasPrice?: string;
+  };
+  source?: string;
+}
+
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface MetricsInterface {
+  trackEvent: (event: unknown) => void;
+  createEventBuilder: (event: unknown) => {
+    addProperties: (props: Record<string, unknown>) => {
+      build: () => unknown;
+    };
+    build: () => unknown;
+  };
+}
+
+interface SendProps {
+  navigation: NavigationProp<ParamListBase>;
+  resetTransaction: () => void;
+  networkType: string;
+  setTransactionObject: (transaction: Partial<TransactionObject>) => void;
+  tokens: TokenInfo[];
+  transaction: TransactionObject;
+  showAlert: (config: AlertConfig) => void;
+  addressBook: Record<string, Record<string, unknown>>;
+  globalNetworkClientId: string;
+  globalChainId: string;
+  internalAccounts: InternalAccount[];
+  selectedAddress: string;
+  contractBalances: Record<string, unknown>;
+  toggleDappTransactionModal: () => void;
+  dappTransactionModalVisible: boolean;
+  tokenList: Record<string, TokenInfo>;
+  route: RouteProp<ParamListBase>;
+  metrics: MetricsInterface;
+  shouldUseSmartTransaction: boolean;
+}
+
+interface SendState {
+  mode: string;
+  transactionKey: number | undefined;
+  ready: boolean;
+  transactionConfirmed: boolean;
+  transactionSubmitted: boolean;
+  transaction?: TransactionObject;
+}
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -93,87 +211,11 @@ const createStyles = (colors) =>
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Send extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Action that cleans transaction state
-     */
-    resetTransaction: PropTypes.func.isRequired,
-    /**
-     * A string representing the network name
-     */
-    networkType: PropTypes.string,
-    /**
-     * Action that sets transaction attributes from object to a transaction
-     */
-    setTransactionObject: PropTypes.func.isRequired,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * Transaction state
-     */
-    transaction: PropTypes.object.isRequired,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     * ID of the global network client
-     */
-    globalNetworkClientId: PropTypes.string,
-    /**
-     * ID of the global chain
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Object containing token balances in the format address => balance
-     */
-    contractBalances: PropTypes.object,
-    /**
-     * Hides or shows dApp transaction modal
-     */
-    toggleDappTransactionModal: PropTypes.func,
-    /**
-     * dApp transaction modal visible or not
-     */
-    dappTransactionModalVisible: PropTypes.bool,
-    /**
-     * List of tokens from TokenListController
-     */
-    tokenList: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
+class Send extends PureComponent<SendProps, SendState> {
+  static contextType = ThemeContext;
+  declare context: Theme;
 
-  state = {
+  state: SendState = {
     mode: REVIEW,
     transactionKey: undefined,
     ready: false,
@@ -187,7 +229,7 @@ class Send extends PureComponent {
   /**
    * Resets gas and gasPrice of transaction
    */
-  async reset() {
+  async reset(): Promise<boolean | void> {
     const { globalNetworkClientId, transaction } = this.props;
     const { gas, gasPrice } = await estimateGas(
       transaction,
@@ -203,16 +245,16 @@ class Send extends PureComponent {
   /**
    * Transaction state is erased, ready to create a new clean transaction
    */
-  clear = () => {
+  clear = (): void => {
     this.props.resetTransaction();
   };
 
   /**
    * Check if view is called with txMeta object for a deeplink
    */
-  async checkForDeeplinks() {
+  async checkForDeeplinks(): Promise<void> {
     const { route } = this.props;
-    const txMeta = route.params?.txMeta;
+    const txMeta = route.params?.txMeta as TxMeta | undefined;
     if (txMeta) {
       await this.handleNewTxMeta(txMeta);
     } else {
@@ -220,7 +262,7 @@ class Send extends PureComponent {
     }
   }
 
-  updateNavBar = () => {
+  updateNavBar = (): void => {
     const colors = this.context.colors || mockTheme.colors;
     const { navigation, route } = this.props;
     navigation.setOptions(
@@ -231,7 +273,7 @@ class Send extends PureComponent {
   /**
    * Sets state mounted to true, resets transaction and check for deeplinks
    */
-  async componentDidMount() {
+  async componentDidMount(): Promise<void> {
     const {
       navigation,
       transaction: { assetType, selectedAsset },
@@ -246,7 +288,7 @@ class Send extends PureComponent {
         dispatch: this.onModeChange,
         disableModeChange:
           assetType === 'ERC20' &&
-          contractBalances[selectedAsset.address] === undefined,
+          contractBalances[selectedAsset?.address || ''] === undefined,
       });
     dappTransactionModalVisible && toggleDappTransactionModal();
     this.mounted = true;
@@ -257,7 +299,7 @@ class Send extends PureComponent {
   /**
    * Cancels transaction and sets mounted to false
    */
-  async componentWillUnmount() {
+  async componentWillUnmount(): Promise<void> {
     const { transactionSubmitted } = this.state;
     const { transaction } = this.state;
     if (!transactionSubmitted && !this.unmountHandled) {
@@ -267,7 +309,7 @@ class Send extends PureComponent {
     this.mounted = false;
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: SendProps): void {
     const prevRoute = prevProps.route;
     const {
       route,
@@ -277,21 +319,21 @@ class Send extends PureComponent {
     } = this.props;
     this.updateNavBar();
     if (prevRoute && route) {
-      const prevTxMeta = prevRoute.params?.txMeta;
-      const currentTxMeta = route.params?.txMeta;
+      const prevTxMeta = prevRoute.params?.txMeta as TxMeta | undefined;
+      const currentTxMeta = route.params?.txMeta as TxMeta | undefined;
       if (
         currentTxMeta &&
         currentTxMeta.source &&
-        (!prevTxMeta.source || prevTxMeta.source !== currentTxMeta.source)
+        (!prevTxMeta?.source || prevTxMeta.source !== currentTxMeta.source)
       ) {
         this.handleNewTxMeta(currentTxMeta);
       }
     }
 
-    const contractBalance = contractBalances[selectedAsset.address];
+    const contractBalance = contractBalances[selectedAsset?.address || ''];
     const erc20ContractBalanceChanged =
       assetType === 'ERC20' &&
-      prevProps.contractBalances[selectedAsset.address] !== contractBalance;
+      prevProps.contractBalances[selectedAsset?.address || ''] !== contractBalance;
     const assetTypeDefined =
       prevProps.transaction.assetType === undefined && assetType === 'ERC20';
     if (assetTypeDefined || erc20ContractBalanceChanged) {
@@ -305,7 +347,7 @@ class Send extends PureComponent {
   /**
    * Handle deeplink txMeta recipient
    */
-  handleNewTxMetaRecipient = async (recipient) => {
+  handleNewTxMetaRecipient = async (recipient: string): Promise<{ to?: string; ensRecipient?: string }> => {
     const to = await getAddress(recipient, this.props.globalChainId);
 
     if (!to) {
@@ -323,15 +365,15 @@ class Send extends PureComponent {
   /**
    * Handle txMeta object, setting neccesary state to make a transaction
    */
-  handleNewTxMeta = async ({ target_address, action, parameters = null }) => {
+  handleNewTxMeta = async ({ target_address, action, parameters = null }: TxMeta): Promise<void> => {
     const { addressBook, globalChainId, internalAccounts, selectedAddress } =
       this.props;
 
-    let newTxMeta = {};
-    let txRecipient;
+    let newTxMeta: Partial<TransactionObject> = {};
+    let txRecipient: { to?: string; ensRecipient?: string };
     switch (action) {
       case 'send-eth':
-        txRecipient = await this.handleNewTxMetaRecipient(target_address);
+        txRecipient = await this.handleNewTxMetaRecipient(target_address || '');
         if (!txRecipient.to) return;
         newTxMeta = {
           symbol: 'ETH',
@@ -343,7 +385,7 @@ class Send extends PureComponent {
 
         if (parameters && parameters.value) {
           newTxMeta.value = BNToHex(toBN(parameters.value));
-          newTxMeta.transactionValue = newTxMeta.value;
+          newTxMeta.transactionValue = newTxMeta.value as string;
           newTxMeta.readableValue = fromWei(newTxMeta.value);
         }
 
@@ -358,14 +400,14 @@ class Send extends PureComponent {
         newTxMeta.transactionTo = newTxMeta.to;
         break;
       case 'send-token': {
-        const selectedAsset = await this.handleTokenDeeplink(target_address);
+        const selectedAsset = await this.handleTokenDeeplink(target_address || '');
 
         const { ensRecipient, to } = await this.handleNewTxMetaRecipient(
-          parameters.address,
+          parameters?.address || '',
         );
         if (!to) return;
         const tokenAmount =
-          (parameters.uint256 &&
+          (parameters?.uint256 &&
             new BigNumber(parameters.uint256).toString(16)) ||
           '0';
         newTxMeta = {
@@ -382,7 +424,7 @@ class Send extends PureComponent {
           value: '0x0',
           readableValue:
             fromTokenMinimalUnit(
-              parameters.uint256 || '0',
+              parameters?.uint256 || '0',
               selectedAsset.decimals,
             ) || '0',
         };
@@ -408,14 +450,14 @@ class Send extends PureComponent {
 
       // if gas and gasPrice is not defined in the deeplink, we should define them
       if (!gas && !gasPrice) {
-        const { gas, gasPrice } = await estimateGas(
+        const { gas: estimatedGas, gasPrice: estimatedGasPrice } = await estimateGas(
           this.props.transaction,
           this.props.globalNetworkClientId,
         );
         newTxMeta = {
           ...newTxMeta,
-          gas,
-          gasPrice,
+          gas: estimatedGas,
+          gasPrice: estimatedGasPrice,
         };
       }
       // TODO: We should add here support for sending tokens
@@ -430,7 +472,7 @@ class Send extends PureComponent {
     const fromAccount = internalAccounts.find((account) =>
       toLowerCaseEquals(account.address, selectedAddress),
     );
-    newTxMeta.transactionFromName = fromAccount.metadata.name;
+    newTxMeta.transactionFromName = fromAccount?.metadata.name;
     this.props.setTransactionObject(newTxMeta);
     this.mounted && this.setState({ ready: true, transactionKey: Date.now() });
   };
@@ -442,7 +484,7 @@ class Send extends PureComponent {
    *
    * @returns ERC20 asset, containing address, symbol and decimals
    */
-  handleTokenDeeplink = async (address) => {
+  handleTokenDeeplink = async (address: string): Promise<TokenInfo> => {
     const { tokens, tokenList } = this.props;
     address = toChecksumAddress(address);
     // First check if we have token information in token list
@@ -456,7 +498,7 @@ class Send extends PureComponent {
     }
     // Finally try to query the contract
     const { AssetsContractController } = Engine.context;
-    const token = { address };
+    const token: TokenInfo = { address };
     try {
       const decimals = await AssetsContractController.getERC20TokenDecimals(
         address,
@@ -487,11 +529,11 @@ class Send extends PureComponent {
    *
    * @param {object} transaction - Transaction object
    */
-  prepareTransaction = (transaction) => ({
+  prepareTransaction = (transaction: TransactionObject): TransactionObject => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
-    value: BNToHex(transaction.value),
+    gas: BNToHex(transaction.gas as BN),
+    gasPrice: BNToHex(transaction.gasPrice as BN),
+    value: BNToHex(transaction.value as BN),
   });
 
   /**
@@ -501,10 +543,10 @@ class Send extends PureComponent {
    * @param {object} transaction - Transaction object
    * @param {object} selectedAsset - Asset object
    */
-  prepareAssetTransaction = (transaction, selectedAsset) => ({
+  prepareAssetTransaction = (transaction: TransactionObject, selectedAsset: SelectedAsset): TransactionObject => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
+    gas: BNToHex(transaction.gas as BN),
+    gasPrice: BNToHex(transaction.gasPrice as BN),
     value: '0x0',
     to: selectedAsset.address,
   });
@@ -514,20 +556,20 @@ class Send extends PureComponent {
    *
    * @param transaction - Transaction object
    */
-  sanitizeTransaction = (transaction) => ({
+  sanitizeTransaction = (transaction: TransactionObject): TransactionObject => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
+    gas: BNToHex(transaction.gas as BN),
+    gasPrice: BNToHex(transaction.gasPrice as BN),
   });
 
   /**
    * Removes collectible in case an ERC721 asset is being sent, when not in mainnet
    */
-  removeNft = () => {
+  removeNft = (): void => {
     const { selectedAsset, assetType, providerType } = this.props.transaction;
     if (assetType === 'ERC721' && providerType !== MAINNET) {
       const { NftController } = Engine.context;
-      NftController.removeNft(selectedAsset.address, selectedAsset.tokenId);
+      NftController.removeNft(selectedAsset?.address, selectedAsset?.tokenId);
     }
   };
 
@@ -536,7 +578,7 @@ class Send extends PureComponent {
    *
    * @param if - Transaction id
    */
-  onCancel = (id) => {
+  onCancel = (id?: string): void => {
     Engine.context.ApprovalController.reject(
       id,
       providerErrors.userRejectedRequest(),
@@ -552,7 +594,7 @@ class Send extends PureComponent {
    * If success, transaction state is cleared, if not transaction is reset alert about the error
    * and returns to edit transaction
    */
-  onConfirm = async () => {
+  onConfirm = async (): Promise<void> => {
     const { AddressBookController, KeyringController, ApprovalController } =
       Engine.context;
     this.setState({ transactionConfirmed: true });
@@ -567,7 +609,7 @@ class Send extends PureComponent {
       if (assetType === 'ETH') {
         transaction = this.prepareTransaction(transaction);
       } else {
-        transaction = this.prepareAssetTransaction(transaction, selectedAsset);
+        transaction = this.prepareAssetTransaction(transaction, selectedAsset || {});
       }
       const { result, transactionMeta } = await addTransaction(transaction, {
         deviceConfirmedOn: WalletDevice.MM_MOBILE,
@@ -580,7 +622,7 @@ class Send extends PureComponent {
       });
 
       // Add to the AddressBook if it's an unkonwn address
-      let checksummedAddress = null;
+      let checksummedAddress: string | null = null;
 
       if (assetType === 'ETH') {
         checksummedAddress = toChecksumAddress(transactionMeta.transaction.to);
@@ -612,11 +654,11 @@ class Send extends PureComponent {
       }
       const existingContact =
         addressBook[globalChainId] &&
-        addressBook[globalChainId][checksummedAddress];
+        addressBook[globalChainId][checksummedAddress || ''];
       if (!existingContact) {
         AddressBookController.set(checksummedAddress, '', globalChainId);
       }
-      await new Promise((resolve) => {
+      await new Promise<void>((resolve) => {
         resolve(result);
       });
       if (transactionMeta.error) {
@@ -636,15 +678,15 @@ class Send extends PureComponent {
       });
     } catch (error) {
       if (
-        !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
-        !error?.message.startsWith(STX_NO_HASH_ERROR)
+        !(error as Error)?.message.startsWith(KEYSTONE_TX_CANCELED) &&
+        !(error as Error)?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error && (error as Error).message,
           [{ text: strings('navigation.ok') }],
         );
-        Logger.error(error, 'error while trying to send transaction (Send)');
+        Logger.error(error as Error, 'error while trying to send transaction (Send)');
       } else {
         this.props.metrics.trackEvent(
           this.props.metrics
@@ -665,7 +707,7 @@ class Send extends PureComponent {
   /**
    * Call Analytics to track confirm started event for send screen
    */
-  trackConfirmScreen = () => {
+  trackConfirmScreen = (): void => {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_STARTED)
@@ -677,7 +719,7 @@ class Send extends PureComponent {
   /**
    * Call Analytics to track confirm started event for send screen
    */
-  trackEditScreen = async () => {
+  trackEditScreen = async (): Promise<void> => {
     const { transaction } = this.props;
     const actionKey = await getTransactionReviewActionKey({ transaction });
     this.props.metrics.trackEvent(
@@ -694,7 +736,7 @@ class Send extends PureComponent {
   /**
    * Call Analytics to track cancel pressed
    */
-  trackOnCancel = () => {
+  trackOnCancel = (): void => {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CANCEL_TRANSACTION)
@@ -706,7 +748,7 @@ class Send extends PureComponent {
   /**
    * Call Analytics to track confirm pressed
    */
-  trackOnConfirm = () => {
+  trackOnConfirm = (): void => {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(
@@ -722,7 +764,7 @@ class Send extends PureComponent {
    *
    * @return {object} - Object containing view, network type, activeCurrency and assetType
    */
-  getTrackingParams = () => {
+  getTrackingParams = (): Record<string, unknown> => {
     const {
       networkType,
       transaction,
@@ -749,7 +791,7 @@ class Send extends PureComponent {
    *
    * @param mode - Transaction mode, review or edit
    */
-  onModeChange = (mode) => {
+  onModeChange = (mode: string): void => {
     const { navigation } = this.props;
     navigation && navigation.setParams({ mode });
     this.mounted && this.setState({ mode });
@@ -759,14 +801,14 @@ class Send extends PureComponent {
     });
   };
 
-  changeToReviewMode = () => this.onModeChange(REVIEW);
+  changeToReviewMode = (): void => this.onModeChange(REVIEW);
 
-  getStyles = () => {
+  getStyles = (): ReturnType<typeof createStyles> => {
     const colors = this.context.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
-  renderLoader() {
+  renderLoader(): React.ReactNode {
     const styles = this.getStyles();
     return (
       <View style={styles.loader}>
@@ -775,7 +817,7 @@ class Send extends PureComponent {
     );
   }
 
-  renderModeComponent() {
+  renderModeComponent(): React.ReactNode {
     if (this.state.mode === EDIT) {
       return (
         <EditAmount
@@ -794,7 +836,7 @@ class Send extends PureComponent {
     }
   }
 
-  render = () => {
+  render = (): React.ReactNode => {
     const styles = this.getStyles();
     return (
       <View style={styles.wrapper}>
@@ -804,7 +846,7 @@ class Send extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const globalChainId = selectEvmChainId(state);
 
   return {
@@ -827,15 +869,13 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   resetTransaction: () => dispatch(resetTransaction()),
-  setTransactionObject: (transaction) =>
+  setTransactionObject: (transaction: Partial<TransactionObject>) =>
     dispatch(setTransactionObject(transaction)),
-  showAlert: (config) => dispatch(showAlert(config)),
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
   toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal()),
 });
-
-Send.contextType = ThemeContext;
 
 export default connect(
   mapStateToProps,
