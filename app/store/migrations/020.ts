@@ -1,4 +1,10 @@
+import { isObject } from '@metamask/utils';
 import { v4 } from 'uuid';
+
+interface NetworkConfig {
+  chainId: string | number;
+  [key: string]: unknown;
+}
 
 /**
  * Migrate network configuration from Preferences controller to Network controller.
@@ -11,13 +17,22 @@ import { v4 } from 'uuid';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
-  const preferencesControllerState =
-    state.engine.backgroundState.PreferencesController;
-  const networkControllerState = state.engine.backgroundState.NetworkController;
-  const frequentRpcList = preferencesControllerState?.frequentRpcList;
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
+
+  const engineState = state.engine as Record<string, Record<string, unknown>> | undefined;
+  if (!engineState?.backgroundState) {
+    return state;
+  }
+
+  const preferencesControllerState = engineState.backgroundState.PreferencesController as Record<string, unknown> | undefined;
+  const networkControllerState = engineState.backgroundState.NetworkController as Record<string, unknown> | undefined;
+  const frequentRpcList = preferencesControllerState?.frequentRpcList as NetworkConfig[] | undefined;
+
   if (networkControllerState && frequentRpcList) {
-    const networkConfigurations = frequentRpcList.reduce(
+    const networkConfigurations = frequentRpcList.reduce<Record<string, NetworkConfig>>(
       (networkConfigs, networkConfig) => {
         const networkConfigurationId = v4();
         return {
@@ -33,7 +48,7 @@ export default function migrate(state) {
       },
       {},
     );
-    delete preferencesControllerState.frequentRpcList;
+    delete preferencesControllerState?.frequentRpcList;
 
     networkControllerState.networkConfigurations = networkConfigurations ?? {};
   }
