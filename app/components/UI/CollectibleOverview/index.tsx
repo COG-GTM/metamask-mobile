@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  ReactNode,
 } from 'react';
 import {
   StyleSheet,
@@ -12,9 +13,12 @@ import {
   Animated,
   SafeAreaView,
   TouchableWithoutFeedback,
+  LayoutChangeEvent,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from 'react-native';
 import RemoteImage from '../../Base/RemoteImage';
-import PropTypes from 'prop-types';
 import { connect, useSelector } from 'react-redux';
 import { baseStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
@@ -40,6 +44,7 @@ import {
   PanGestureHandler,
   gestureHandlerRootHOC,
   ScrollView,
+  PanGestureHandlerGestureEvent,
 } from 'react-native-gesture-handler';
 import AppConstants from '../../../core/AppConstants';
 import { useTheme } from '../../../util/theme';
@@ -49,6 +54,8 @@ import {
   selectIsIpfsGatewayEnabled,
 } from '../../../selectors/preferencesController';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
+import { RootState } from '../../../reducers';
+import { Theme } from '../../../util/theme/models';
 
 const ANIMATION_VELOCITY = 250;
 const HAS_NOTCH = Device.hasNotch();
@@ -58,7 +65,29 @@ const VERTICAL_ALIGNMENT = IS_SMALL_DEVICE ? 12 : 16;
 
 const THRESHOLD = 50;
 
-const createStyles = (colors) =>
+interface Styles {
+  wrapper: ViewStyle;
+  generalContainer: ViewStyle;
+  information: ViewStyle;
+  row: ViewStyle;
+  name: TextStyle;
+  userContainer: ViewStyle;
+  userImage: ImageStyle;
+  buttonContainer: ViewStyle;
+  button: ViewStyle;
+  iconButtons: ViewStyle;
+  leftButton: ViewStyle;
+  collectibleInfoContainer: ViewStyle;
+  collectibleInfoKey: TextStyle;
+  collectibleDescription: TextStyle;
+  userInfoContainer: ViewStyle;
+  titleWrapper: ViewStyle;
+  dragger: ViewStyle;
+  scrollableDescription: ViewStyle;
+  description: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     wrapper: {
       flex: 0,
@@ -144,18 +173,61 @@ const createStyles = (colors) =>
 const FieldType = {
   Link: 'Link',
   Text: 'Text',
-};
-/**
- * View that displays the information of a specific ERC-721 Token
- */
-const CollectibleOverview = ({
+} as const;
+
+interface LastSale {
+  event_timestamp?: string;
+  total_price?: string;
+}
+
+interface Creator {
+  user?: {
+    username?: string;
+  };
+}
+
+interface Collectible {
+  address?: string;
+  tokenId?: string;
+  name?: string;
+  description?: string;
+  standard?: string;
+  lastSale?: LastSale;
+  imageOriginal?: string;
+  externalLink?: string;
+  logo?: string;
+  creator?: Creator;
+  contractName?: string;
+}
+
+interface CollectibleInfoRowParams {
+  key: string;
+  value?: string | null;
+  onPress?: () => void;
+  type: typeof FieldType[keyof typeof FieldType];
+}
+
+interface CollectibleOverviewProps {
+  chainId: string;
+  collectible: Collectible;
+  selectedAddress: string;
+  tradable?: boolean;
+  onSend?: () => void;
+  addFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Collectible) => void;
+  removeFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Collectible) => void;
+  isInFavorites: boolean;
+  openLink: (url?: string) => void;
+  onTranslation?: (isTranslated: boolean) => void;
+}
+
+const CollectibleOverview: React.FC<CollectibleOverviewProps> = ({
   chainId,
   collectible,
   selectedAddress,
   tradable,
   onSend,
-  addFavoriteCollectible,
-  removeFavoriteCollectible,
+  addFavoriteCollectible: addFavoriteCollectibleAction,
+  removeFavoriteCollectible: removeFavoriteCollectibleAction,
   isInFavorites,
   openLink,
   onTranslation,
@@ -165,7 +237,7 @@ const CollectibleOverview = ({
   const [wrapperHeight, setWrapperHeight] = useState(0);
   const [position, setPosition] = useState(0);
   const positionAnimated = useRef(new Animated.Value(0)).current;
-  const scrollViewRef = useRef(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -180,11 +252,11 @@ const CollectibleOverview = ({
 
   const renderScrollableDescription = useMemo(() => {
     const maxLength = IS_SMALL_DEVICE ? 150 : 300;
-    return collectible?.description?.length > maxLength;
+    return (collectible?.description?.length ?? 0) > maxLength;
   }, [collectible.description]);
 
   const renderCollectibleInfoRow = useCallback(
-    ({ key, value, onPress, type }) => {
+    ({ key, value, onPress, type }: CollectibleInfoRowParams): ReactNode => {
       if (!value) return null;
       if (type === FieldType.Link) {
         if (!isLinkSafe(value)) return null;
@@ -228,17 +300,19 @@ const CollectibleOverview = ({
     renderCollectibleInfoRow({
       key: strings('collectible.collectible_last_sold'),
       value:
-        collectible?.lastSale?.event_timestamp &&
-        toLocaleDate(
-          new Date(collectible?.lastSale?.event_timestamp),
-        ).toString(),
+        collectible?.lastSale?.event_timestamp
+          ? toLocaleDate(
+              new Date(collectible?.lastSale?.event_timestamp),
+            ).toString()
+          : undefined,
       type: FieldType.Text,
     }),
     renderCollectibleInfoRow({
       key: strings('collectible.collectible_last_price_sold'),
       value:
-        collectible?.lastSale?.total_price &&
-        `${renderFromWei(collectible?.lastSale?.total_price)} ETH`,
+        collectible?.lastSale?.total_price
+          ? `${renderFromWei(collectible?.lastSale?.total_price)} ETH`
+          : undefined,
       type: FieldType.Text,
     }),
     renderCollectibleInfoRow({
@@ -257,7 +331,7 @@ const CollectibleOverview = ({
       key: strings('collectible.collectible_asset_contract'),
       value: renderShortAddress(collectible?.address),
       onPress: () => {
-        if (isMainNet(chainId))
+        if (isMainNet(chainId) && collectible?.address)
           openLink(
             etherscanLink.createTokenTrackerLink(collectible?.address, chainId),
           );
@@ -268,16 +342,16 @@ const CollectibleOverview = ({
 
   const collectibleToFavorites = useCallback(() => {
     const action = isInFavorites
-      ? removeFavoriteCollectible
-      : addFavoriteCollectible;
+      ? removeFavoriteCollectibleAction
+      : addFavoriteCollectibleAction;
     action(selectedAddress, chainId, collectible);
   }, [
     selectedAddress,
     chainId,
     collectible,
     isInFavorites,
-    addFavoriteCollectible,
-    removeFavoriteCollectible,
+    addFavoriteCollectibleAction,
+    removeFavoriteCollectibleAction,
   ]);
 
   const shareCollectible = useCallback(() => {
@@ -296,7 +370,7 @@ const CollectibleOverview = ({
       nativeEvent: {
         layout: { height },
       },
-    }) => setHeaderHeight(height),
+    }: LayoutChangeEvent) => setHeaderHeight(height),
     [],
   );
 
@@ -305,7 +379,7 @@ const CollectibleOverview = ({
       nativeEvent: {
         layout: { height },
       },
-    }) => {
+    }: LayoutChangeEvent) => {
       //This condition is needed to prevent bouncing when the component is rendered
       if (Math.abs(height - prevWrapperHeight) > THRESHOLD) {
         setWrapperHeight(height);
@@ -316,7 +390,7 @@ const CollectibleOverview = ({
   );
 
   const animateViewPosition = useCallback(
-    (toValue, duration) => {
+    (toValue: number, duration: number) => {
       animating.current = true;
       Animated.timing(positionAnimated, {
         toValue,
@@ -332,12 +406,12 @@ const CollectibleOverview = ({
   );
 
   const handleGesture = useCallback(
-    (evt) => {
+    (evt: PanGestureHandlerGestureEvent) => {
       // we don't want to trigger the animation again when the view is being animated
       if (evt.nativeEvent.velocityY === 0 || animating.current) return;
       const toValue = evt.nativeEvent.velocityY > 0 ? translationHeight : 0;
       if (toValue !== position) {
-        onTranslation(toValue !== 0);
+        onTranslation?.(toValue !== 0);
         animateViewPosition(toValue, ANIMATION_VELOCITY);
       }
     },
@@ -345,7 +419,7 @@ const CollectibleOverview = ({
   );
 
   const gestureHandlerWrapper = useCallback(
-    (child) => (
+    (child: ReactNode) => (
       <PanGestureHandler
         waitFor={scrollViewRef}
         activeOffsetY={[0, 0]}
@@ -396,7 +470,7 @@ const CollectibleOverview = ({
                     style={styles.userImage}
                   />
                 )}
-                <View numberOfLines={1} style={styles.userInfoContainer}>
+                <View style={styles.userInfoContainer}>
                   {collectible.creator.user?.username && (
                     <Text black bold noMargin big={!IS_SMALL_DEVICE}>
                       {collectible.creator.user.username}
@@ -501,59 +575,20 @@ const CollectibleOverview = ({
   );
 };
 
-CollectibleOverview.propTypes = {
-  /**
-   * Chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Object that represents the collectible to be displayed
-   */
-  collectible: PropTypes.object,
-  /**
-   * Represents if the collectible is tradable (can be sent)
-   */
-  tradable: PropTypes.bool,
-  /**
-   * Function called when user presses the Send button
-   */
-  onSend: PropTypes.func,
-  /**
-   * Selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Dispatch add collectible to favorites action
-   */
-  addFavoriteCollectible: PropTypes.func,
-  /**
-   * Dispatch remove collectible from favorites action
-   */
-  removeFavoriteCollectible: PropTypes.func,
-  /**
-   * Whether the current collectible is favorited
-   */
-  isInFavorites: PropTypes.bool,
-  /**
-   * Function to open a link on a webview
-   */
-  openLink: PropTypes.func.isRequired,
-  /**
-   * callback to trigger when modal is being animated
-   */
-  onTranslation: PropTypes.func,
-};
+interface OwnProps {
+  collectible: Collectible;
+}
 
-const mapStateToProps = (state, props) => ({
+const mapStateToProps = (state: RootState, props: OwnProps) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  addFavoriteCollectible: (selectedAddress, chainId, collectible) =>
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+  addFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Collectible) =>
     dispatch(addFavoriteCollectible(selectedAddress, chainId, collectible)),
-  removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
+  removeFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Collectible) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
 });
 
