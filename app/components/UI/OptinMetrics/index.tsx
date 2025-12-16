@@ -9,8 +9,12 @@ import {
   Alert,
   Linking,
   TouchableOpacity,
+  ViewStyle,
+  TextStyle,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+  LayoutChangeEvent,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { baseStyles, fontStyles } from '../../../styles/common';
 import Entypo from 'react-native-vector-icons/Entypo';
 import { getOptinMetricsNavbarOptions } from '../Navbar';
@@ -42,8 +46,40 @@ import generateDeviceAnalyticsMetaData, {
 import {
   UserProfileProperty
 } from '../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
+import { Dispatch } from 'redux';
+import { MetricsInterface } from '../../hooks/useMetrics/useMetrics.types';
 
-const createStyles = ({ colors }) =>
+interface Styles {
+  root: ViewStyle;
+  checkIcon: TextStyle;
+  crossIcon: TextStyle;
+  checkbox: ViewStyle;
+  icon: ViewStyle;
+  action: ViewStyle;
+  title: TextStyle;
+  description: TextStyle;
+  descriptionBold: TextStyle;
+  content: TextStyle;
+  linkText: TextStyle;
+  wrapper: ViewStyle;
+  privacyPolicy: TextStyle;
+  link: TextStyle;
+  actionContainer: ViewStyle;
+  disabledActionContainer: ViewStyle;
+  button: ViewStyle;
+  buttonDivider: ViewStyle;
+  cancel: ViewStyle;
+  confirm: ViewStyle;
+}
+
+interface ThemeColors {
+  colors: Theme['colors'];
+  typography?: Theme['typography'];
+}
+
+const createStyles = ({ colors }: ThemeColors): Styles =>
   StyleSheet.create({
     root: {
       ...baseStyles.flexGrow,
@@ -130,65 +166,58 @@ const createStyles = ({ colors }) =>
     },
   });
 
+interface ActionItem {
+  action: number;
+  prefix: string;
+  description: string;
+}
+
+interface OptinMetricsProps {
+  isDataCollectionForMarketingEnabled: boolean | null;
+  setDataCollectionForMarketing: (value: boolean) => void;
+  navigation: {
+    setOptions: (options: object) => void;
+    reset: (state: { routes: Array<{ name: string }> }) => void;
+    navigate: (route: string, params?: object) => void;
+  };
+  setOnboardingWizardStep: (step: number) => void;
+  events: Array<unknown[]>;
+  clearOnboardingEvents: () => void;
+  route?: {
+    params?: {
+      onContinue?: () => void;
+    };
+  };
+  metrics: MetricsInterface;
+}
+
+interface OptinMetricsState {
+  isActionEnabled: boolean;
+  scrollViewContentHeight: number | undefined;
+  isEndReached: boolean;
+  scrollViewHeight: number | undefined;
+}
+
 /**
  * View that is displayed in the flow to agree to metrics
  */
-class OptinMetrics extends PureComponent {
-  static propTypes = {
-    isDataCollectionForMarketingEnabled: PropTypes.bool,
-    setDataCollectionForMarketing: PropTypes.func,
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Action to set onboarding wizard step
-     */
-    setOnboardingWizardStep: PropTypes.func,
-    /**
-     * Onboarding events array created in previous onboarding views
-     */
-    events: PropTypes.array,
-    /**
-     * Action to erase any event stored in onboarding state
-     */
-    clearOnboardingEvents: PropTypes.func,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class OptinMetrics extends PureComponent<OptinMetricsProps, OptinMetricsState> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
-    /**
-     * Used to control the action buttons state.
-     */
+  state: OptinMetricsState = {
     isActionEnabled: false,
-    /**
-     * Tracks the scroll view's content height.
-     */
     scrollViewContentHeight: undefined,
-    /**
-     * Tracks when scroll view has scrolled to end.
-     * Needed to prevent scroll event from setting state multiple times.
-     */
     isEndReached: false,
-    /**
-     * Tracks the scroll view's height.
-     */
     scrollViewHeight: undefined
   };
 
-  getStyles = () => {
+  getStyles = (): Styles => {
     const { colors, typography } = this.context;
     return createStyles({ colors, typography });
   };
 
-  actionsList = isPastPrivacyPolicyDate
+  actionsList: ActionItem[] = isPastPrivacyPolicyDate
     ? [1, 2, 3].map((value) => ({
       action: value,
       prefix: strings(`privacy_policy.action_description_${value}_prefix`),
@@ -220,7 +249,7 @@ class OptinMetrics extends PureComponent {
     BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
   }
 
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(_: OptinMetricsProps, prevState: OptinMetricsState) {
     // Update the navbar
     this.updateNavBar();
 
@@ -235,7 +264,7 @@ class OptinMetrics extends PureComponent {
       if (scrollViewContentHeight === undefined || isEndReached) return;
 
       // Check if content fits view port of scroll view
-      if (scrollViewHeight >= scrollViewContentHeight) {
+      if (scrollViewHeight !== undefined && scrollViewHeight >= scrollViewContentHeight) {
         this.onScrollEndReached();
       }
     }
@@ -248,11 +277,12 @@ class OptinMetrics extends PureComponent {
   /**
    * Temporary disabling the back button so users can't go back
    */
-  handleBackPress = () => {
+  handleBackPress = (): boolean => {
     Alert.alert(
       strings('onboarding.optin_back_title'),
       strings('onboarding.optin_back_desc'),
     );
+    return true;
   };
 
   /**
@@ -276,11 +306,8 @@ class OptinMetrics extends PureComponent {
 
   /**
    * Render each action with corresponding icon
-   *
-   * @param {object} - Object containing action and description to be rendered
-   * @param {number} i - Index key
    */
-  renderLegacyAction = ({ action, description, prefix }, i) => {
+  renderLegacyAction = ({ action, description, prefix }: ActionItem, i: number) => {
     const styles = this.getStyles();
 
     return (
@@ -306,7 +333,7 @@ class OptinMetrics extends PureComponent {
     );
   };
 
-  renderAction = ({ description, prefix }, i) => {
+  renderAction = ({ description, prefix }: ActionItem, i: number) => {
     const styles = this.getStyles();
 
     return (
@@ -401,7 +428,7 @@ class OptinMetrics extends PureComponent {
         // as precision is only to the milisecond
         // and loop seems to runs faster than that
         setTimeout(() => {
-          metrics.trackEvent(...eventArgs);
+          metrics.trackEvent(...(eventArgs as Parameters<typeof metrics.trackEvent>));
         }, delay);
         delay += eventTrackingDelay;
       });
@@ -423,12 +450,8 @@ class OptinMetrics extends PureComponent {
 
   /**
    * Opens link when provided link params.
-   *
-   * @param {Object} linkParams
-   * @param {string} linkParams.url
-   * @param {string} linkParams.title
    */
-  onPressLink = (linkParams) => {
+  onPressLink = (linkParams: { url: string; title: string }) => {
     this.props.navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: linkParams,
@@ -455,8 +478,6 @@ class OptinMetrics extends PureComponent {
 
   /**
    * Render privacy policy description
-   *
-   * @returns - Touchable opacity object to render with privacy policy information
    */
   renderPrivacyPolicy = () => {
     const styles = this.getStyles();
@@ -552,28 +573,21 @@ class OptinMetrics extends PureComponent {
 
   /**
    * Content size change event for the ScrollView.
-   *
-   * @param {number} _
-   * @param {number} height
    */
-  onContentSizeChange = (_, height) => (this.setState({ scrollViewContentHeight: height }));
+  onContentSizeChange = (_: number, height: number) => (this.setState({ scrollViewContentHeight: height }));
 
   /**
    * Layout event for the ScrollView.
-   *
-   * @param {Object} event
    */
-  onLayout = ({ nativeEvent }) => {
+  onLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     const scrollViewHeight = nativeEvent.layout.height;
     this.setState({ scrollViewHeight });
   };
 
   /**
    * Scroll event for the ScrollView.
-   *
-   * @param {Object} event
    */
-  onScroll = ({ nativeEvent }) => {
+  onScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (this.state.isEndReached) return;
     const currentYOffset = nativeEvent.contentOffset.y;
     const paddingAllowance = 16;
@@ -654,7 +668,7 @@ class OptinMetrics extends PureComponent {
                 activeOpacity={1}
               >
                 <Checkbox
-                  isChecked={isDataCollectionForMarketingEnabled}
+                  isChecked={Boolean(isDataCollectionForMarketingEnabled)}
                   accessibilityRole={'checkbox'}
                   accessible
                   onPress={() =>
@@ -677,18 +691,16 @@ class OptinMetrics extends PureComponent {
   }
 }
 
-OptinMetrics.contextType = ThemeContext;
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   events: state.onboarding.events,
   isDataCollectionForMarketingEnabled:
     state.security.dataCollectionForMarketing,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  setOnboardingWizardStep: (step: number) => dispatch(setOnboardingWizardStep(step)),
   clearOnboardingEvents: () => dispatch(clearOnboardingEvents()),
-  setDataCollectionForMarketing: (value) =>
+  setDataCollectionForMarketing: (value: boolean) =>
     dispatch(setDataCollectionForMarketing(value)),
 });
 
