@@ -4,8 +4,9 @@ import {
   endowmentCaveatSpecifications as snapsEndowmentCaveatSpecifications,
 } from '@metamask/snaps-rpc-methods';
 ///: END:ONLY_INCLUDE_IF
-import {  RestrictedMethods } from './constants';
+import { RestrictedMethods } from './constants';
 import { caip25CaveatBuilder, Caip25CaveatType, caip25EndowmentBuilder, createCaip25Caveat } from '@metamask/chain-agnostic-permission';
+import type { InternalAccount } from '@metamask/keyring-api';
 
 /**
  * This file contains the specifications of the permissions and caveats
@@ -30,29 +31,23 @@ export const CaveatFactories = Object.freeze({
   [Caip25CaveatType]: createCaip25Caveat,
 });
 
-/**
- * A PreferencesController identity object.
- *
- * @typedef {Object} Identity
- * @property {string} address - The address of the identity.
- * @property {string} name - The name of the identity.
- * @property {number} [lastSelected] - Unix timestamp of when the identity was
- * last selected in the UI.
- */
+interface GetCaveatSpecificationsOptions {
+  listAccounts: () => InternalAccount[];
+  findNetworkClientIdByChainId: (chainId: `0x${string}`) => string;
+}
 
 /**
  * Gets the specifications for all caveats that will be recognized by the
  * PermissionController.
  *
- * @param {{
- * listAccounts: () => import('@metamask/keyring-api').InternalAccount[],
- * findNetworkClientIdByChainId: (chainId: `0x${string}`) => string,
- * }} options - Options bag.
+ * @param options - Options bag.
+ * @param options.listAccounts - Function to list accounts.
+ * @param options.findNetworkClientIdByChainId - Function to find network client ID by chain ID.
  */
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
-}) => ({
+}: GetCaveatSpecificationsOptions) => ({
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
@@ -80,7 +75,7 @@ export const getPermissionSpecifications = () => ({
  * restricted or unrestricted method, or the request will be rejected with a
  * "method not found" error.
  */
-export const unrestrictedMethods = Object.freeze([
+export const unrestrictedMethods: readonly string[] = Object.freeze([
   'eth_blockNumber',
   'eth_call',
   'eth_decrypt',

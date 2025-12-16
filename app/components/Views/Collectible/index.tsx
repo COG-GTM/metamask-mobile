@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
-import { RefreshControl, ScrollView, View, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
+import { RefreshControl, ScrollView, View, StyleSheet, ViewStyle } from 'react-native';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import { connect } from 'react-redux';
 import Collectibles from '../../UI/Collectibles';
@@ -13,8 +12,15 @@ import { toLowerCaseEquals } from '../../../util/general';
 import { collectiblesSelector } from '../../../reducers/collectibles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+interface Styles {
+  wrapper: ViewStyle;
+  assetOverviewWrapper?: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -22,44 +28,58 @@ const createStyles = (colors) =>
     },
   });
 
+interface CollectibleItem {
+  address: string;
+  name?: string;
+  image?: string;
+  [key: string]: unknown;
+}
+
+interface CollectibleContract {
+  address: string;
+  name?: string;
+  logo?: string;
+  [key: string]: unknown;
+}
+
+interface NavigationObject {
+  setOptions?: (options: unknown) => void;
+  [key: string]: unknown;
+}
+
+interface RouteObject {
+  params?: CollectibleContract;
+}
+
+interface CollectibleProps {
+  collectibles: CollectibleItem[];
+  navigation: NavigationObject;
+  toggleCollectibleContractModal: () => void;
+  collectibleContractModalVisible: boolean;
+  route: RouteObject;
+}
+
+interface CollectibleState {
+  refreshing: boolean;
+  collectibles: CollectibleItem[];
+}
+
 /**
  * View that displays a specific collectible
  * including the overview (name, address, symbol, logo, description, total supply)
  * and also individual collectibles list
  */
-class Collectible extends PureComponent {
-  static propTypes = {
-    /**
-     * Array of assets (in this case Collectibles)
-     */
-    collectibles: PropTypes.array,
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-     * Called to toggle collectible contract information modal
-     */
-    toggleCollectibleContractModal: PropTypes.func,
-    /**
-     * Whether collectible contract information is visible
-     */
-    collectibleContractModalVisible: PropTypes.bool,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: CollectibleState = {
     refreshing: false,
     collectibles: [],
   };
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.name ?? '',
       false,
@@ -98,18 +118,18 @@ class Collectible extends PureComponent {
       collectibleContractModalVisible,
     } = this.props;
     const collectibleContract = params;
-    const address = params.address;
+    const address = params?.address ?? '';
     const { collectibles } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const filteredCollectibles = collectibles.filter((collectible) =>
       toLowerCaseEquals(collectible.address, address),
     );
     filteredCollectibles.map((collectible) => {
       if (!collectible.name || collectible.name === '') {
-        collectible.name = collectibleContract.name;
+        collectible.name = collectibleContract?.name;
       }
-      if (!collectible.image && collectibleContract.logo) {
+      if (!collectible.image && collectibleContract?.logo) {
         collectible.image = collectibleContract.logo;
       }
       return collectible;
@@ -168,12 +188,12 @@ class Collectible extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   collectibles: collectiblesSelector(state),
   collectibleContractModalVisible: state.modals.collectibleContractModalVisible,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),
 });
