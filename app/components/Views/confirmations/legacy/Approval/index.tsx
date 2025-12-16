@@ -1,8 +1,7 @@
 import React, { PureComponent } from 'react';
 import { TransactionEnvelopeType } from '@metamask/transaction-controller';
-import { StyleSheet, AppState, Alert, InteractionManager } from 'react-native';
+import { StyleSheet, AppState, Alert, InteractionManager, NativeEventSubscription } from 'react-native';
 import Engine from '../../../../../core/Engine';
-import PropTypes from 'prop-types';
 import TransactionEditor from './components/TransactionEditor';
 import Modal from 'react-native-modal';
 import { safeBNToHex } from '../../../../../util/number';
@@ -60,10 +59,108 @@ import DevLogger from '../../../../../core/SDKConnect/utils/DevLogger';
 import SDKConnect from '../../../../../core/SDKConnect/SDKConnect';
 import WC2Manager from '../../../../../core/WalletConnect/WalletConnectV2';
 import { selectProviderTypeByChainId } from '../../../../../selectors/networkController';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { RootState } from '../../../../../reducers';
+import { Dispatch } from 'redux';
 
 const REVIEW = 'review';
 const EDIT = 'edit';
 const APPROVAL = 'Approval';
+
+interface ThemeColors {
+  overlay: {
+    default: string;
+  };
+}
+
+interface Theme {
+  colors: ThemeColors;
+}
+
+interface SelectedAsset {
+  symbol?: string;
+  contractName?: string;
+  address?: string;
+}
+
+interface TransactionObject {
+  id?: string;
+  origin?: string;
+  assetType?: string;
+  selectedAsset?: SelectedAsset;
+  from?: string;
+  to?: string;
+  value?: string;
+  gas?: string;
+  gasPrice?: string;
+  chainId?: string;
+  status?: string;
+  txParams?: {
+    type?: string;
+  };
+}
+
+interface EIP1559GasDataType {
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
+  estimatedBaseFee?: string;
+}
+
+interface SimulationDataType {
+  isUpdatedAfterSecurityCheck?: boolean;
+}
+
+interface SecurityAlertResponseType {
+  result_type?: string;
+  reason?: string;
+  features?: string[];
+}
+
+interface MetricsInterface {
+  trackEvent: (event: unknown) => void;
+  createEventBuilder: (event: unknown) => {
+    addProperties: (props: Record<string, unknown>) => {
+      build: () => unknown;
+    };
+    build: () => unknown;
+  };
+}
+
+interface ConfirmationMetrics {
+  properties?: Record<string, unknown>;
+  sensitiveProperties?: Record<string, unknown>;
+}
+
+interface ApprovalProps {
+  selectedAddress: string;
+  navigation: NavigationProp<ParamListBase>;
+  resetTransaction: () => void;
+  transaction: TransactionObject;
+  transactions: TransactionObject[];
+  networkType: string;
+  hideModal: () => void;
+  dappTransactionModalVisible: boolean;
+  showCustomNonce: boolean;
+  chainId: string;
+  metrics: MetricsInterface;
+  shouldUseSmartTransaction: boolean;
+  confirmationMetricsById: Record<string, ConfirmationMetrics>;
+  securityAlertResponse?: SecurityAlertResponseType;
+  simulationData?: SimulationDataType;
+}
+
+interface ApprovalState {
+  mode: string;
+  transactionHandled: boolean;
+  transactionConfirmed: boolean;
+  isChangeInSimulationModalOpen: boolean;
+}
+
+interface ConfirmParams {
+  gasEstimateType?: string;
+  EIP1559GasData?: EIP1559GasDataType;
+  gasSelected?: string;
+}
 
 const styles = StyleSheet.create({
   bottomModal: {
@@ -75,80 +172,15 @@ const styles = StyleSheet.create({
 /**
  * PureComponent that manages transaction approval from the dapp browser
  */
-class Approval extends PureComponent {
-  appStateListener;
+class Approval extends PureComponent<ApprovalProps, ApprovalState> {
+  static contextType = ThemeContext;
+  declare context: Theme;
 
-  #transactionFinishedListener;
+  appStateListener: NativeEventSubscription | undefined;
 
-  static propTypes = {
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * react-navigation object used for switching between screens
-     */
-    navigation: PropTypes.object.isRequired,
-    /**
-     * Action that cleans transaction state
-     */
-    resetTransaction: PropTypes.func.isRequired,
-    /**
-     * Transaction state
-     */
-    transaction: PropTypes.object.isRequired,
-    /**
-     * List of transactions
-     */
-    transactions: PropTypes.array,
-    /**
-     * A string representing the network name
-     */
-    networkType: PropTypes.string,
-    /**
-     * Hide dapp transaction modal
-     */
-    hideModal: PropTypes.func,
-    /**
-     * Tells whether or not dApp transaction modal is visible
-     */
-    dappTransactionModalVisible: PropTypes.bool,
-    /**
-     * Indicates whether custom nonce should be shown in transaction editor
-     */
-    showCustomNonce: PropTypes.bool,
+  #transactionFinishedListener: (() => void) | undefined;
 
-    /**
-     * A string representing the network chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-
-    /**
-     * Object containing confirmation metrics by id
-     */
-    confirmationMetricsById: PropTypes.object,
-
-    /**
-     * Object containing blockaid validation response for confirmation
-     */
-    securityAlertResponse: PropTypes.object,
-
-    /**
-     * Object containing simulation data
-     */
-    simulationData: PropTypes.object,
-  };
-
-  state = {
+  state: ApprovalState = {
     mode: REVIEW,
     transactionHandled: false,
     transactionConfirmed: false,
@@ -158,7 +190,7 @@ class Approval extends PureComponent {
   originIsWalletConnect = false;
   originIsMMSDKRemoteConn = false;
 
-  updateNavBar = () => {
+  updateNavBar = (): void => {
     const colors = this.context.colors || mockTheme.colors;
     const { navigation } = this.props;
     navigation.setOptions(
@@ -166,11 +198,11 @@ class Approval extends PureComponent {
     );
   };
 
-  componentDidUpdate = () => {
+  componentDidUpdate = (): void => {
     this.updateNavBar();
   };
 
-  componentWillUnmount = () => {
+  componentWillUnmount = (): void => {
     try {
       const { transactionHandled } = this.state;
       const { transaction, selectedAddress } = this.props;
@@ -206,7 +238,7 @@ class Approval extends PureComponent {
     }
   };
 
-  isTxStatusCancellable = (transaction) => {
+  isTxStatusCancellable = (transaction: TransactionObject | undefined): boolean => {
     if (
       transaction?.status === TX_SUBMITTED ||
       transaction?.status === TX_REJECTED ||
@@ -219,7 +251,7 @@ class Approval extends PureComponent {
     return true;
   };
 
-  handleAppStateChange = (appState) => {
+  handleAppStateChange = (appState: string): void => {
     try {
       if (appState !== 'active') {
         const { transaction, transactions } = this.props;
@@ -246,7 +278,7 @@ class Approval extends PureComponent {
     }
   };
 
-  componentDidMount = () => {
+  componentDidMount = (): void => {
     const { navigation } = this.props;
     this.updateNavBar();
     this.appStateListener = AppState.addEventListener(
@@ -258,7 +290,7 @@ class Approval extends PureComponent {
     this.initialise();
   };
 
-  initialise = async () => {
+  initialise = async (): Promise<void> => {
     // Detect origin: WalletConnect / SDK / InAppBrowser
     await this.detectOrigin(); // Ensure detectOrigin finishes before proceeding
 
@@ -270,7 +302,7 @@ class Approval extends PureComponent {
     );
   };
 
-  detectOrigin = async () => {
+  detectOrigin = async (): Promise<void> => {
     const { transaction } = this.props;
     const { origin } = transaction;
 
@@ -283,11 +315,11 @@ class Approval extends PureComponent {
       // Check if origin is WalletConnect
       const wc2Manager = await WC2Manager.getInstance();
       const sessions = wc2Manager.getSessions();
-      this.originIsWalletConnect = sessions.some((session) => {
+      this.originIsWalletConnect = sessions.some((session: { peer: { metadata: { url: string } } }) => {
         // Otherwise, compare the origin with the metadata URL
         if (
           session.peer.metadata.url === origin ||
-          origin.startsWith(WALLET_CONNECT_ORIGIN)
+          origin?.startsWith(WALLET_CONNECT_ORIGIN)
         ) {
           DevLogger.log(
             `Approval::detectOrigin Comparing session URL ${session.peer.metadata.url} with origin ${origin}`,
@@ -305,7 +337,7 @@ class Approval extends PureComponent {
   /**
    * Call Analytics to track confirm started event for approval screen
    */
-  trackConfirmScreen = () => {
+  trackConfirmScreen = (): void => {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_STARTED)
@@ -317,7 +349,7 @@ class Approval extends PureComponent {
   /**
    * Call Analytics to track confirm started event for approval screen
    */
-  trackEditScreen = async () => {
+  trackEditScreen = async (): Promise<void> => {
     const { transaction, metrics } = this.props;
     const actionKey = await getTransactionReviewActionKey({ transaction });
     metrics.trackEvent(
@@ -334,7 +366,7 @@ class Approval extends PureComponent {
   /**
    * Call Analytics to track cancel pressed
    */
-  trackOnCancel = () => {
+  trackOnCancel = (): void => {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CANCEL_TRANSACTION)
@@ -348,7 +380,7 @@ class Approval extends PureComponent {
    *
    * @return {object} - Object containing view, network, activeCurrency and assetType
    */
-  getTrackingParams = () => {
+  getTrackingParams = (): Record<string, unknown> => {
     const {
       networkType,
       transaction: { selectedAsset, assetType },
@@ -357,20 +389,20 @@ class Approval extends PureComponent {
     return {
       view: APPROVAL,
       network: networkType,
-      activeCurrency: selectedAsset.symbol || selectedAsset.contractName,
+      activeCurrency: selectedAsset?.symbol || selectedAsset?.contractName,
       assetType,
       is_smart_transaction: shouldUseSmartTransaction,
     };
   };
 
-  getBlockaidMetricsParams = () => {
+  getBlockaidMetricsParams = (): Record<string, unknown> => {
     const { securityAlertResponse } = this.props;
     return securityAlertResponse
       ? getBlockaidMetricsParams(securityAlertResponse)
       : {};
   };
 
-  getAnalyticsParams = ({ gasEstimateType, gasSelected } = {}) => {
+  getAnalyticsParams = ({ gasEstimateType, gasSelected }: { gasEstimateType?: string; gasSelected?: string } = {}): Record<string, unknown> => {
     const { chainId, transaction, selectedAddress, shouldUseSmartTransaction } =
       this.props;
 
@@ -413,7 +445,7 @@ class Approval extends PureComponent {
       };
     } catch (error) {
       Logger.error(
-        error,
+        error as Error,
         'Error while getting analytics params for approval screen',
       );
       return baseParams;
@@ -423,11 +455,11 @@ class Approval extends PureComponent {
   /**
    * Transaction state is erased, ready to create a new clean transaction
    */
-  clear = () => {
+  clear = (): void => {
     this.props.resetTransaction();
   };
 
-  showWalletConnectNotification = (confirmation = false) => {
+  showWalletConnectNotification = (confirmation = false): void => {
     const { transaction } = this.props;
     InteractionManager.runAfterInteractions(() => {
       transaction.origin &&
@@ -443,7 +475,7 @@ class Approval extends PureComponent {
     });
   };
 
-  onCancel = () => {
+  onCancel = (): void => {
     this.props.hideModal();
     this.state.mode === REVIEW && this.trackOnCancel();
     this.showWalletConnectNotification();
@@ -459,7 +491,7 @@ class Approval extends PureComponent {
     );
   };
 
-  onLedgerConfirmation = (approve, transactionId, gaParams) => {
+  onLedgerConfirmation = (approve: boolean, transactionId: string, gaParams: Record<string, unknown>): void => {
     try {
       //manual cancel from UI when transaction is awaiting from ledger confirmation
       if (!approve) {
@@ -494,7 +526,7 @@ class Approval extends PureComponent {
   /**
    * Callback on confirm transaction
    */
-  onConfirm = async ({ gasEstimateType, EIP1559GasData, gasSelected }) => {
+  onConfirm = async ({ gasEstimateType, EIP1559GasData, gasSelected }: ConfirmParams): Promise<void> => {
     const { KeyringController, ApprovalController } = Engine.context;
     const {
       transactions,
@@ -546,7 +578,7 @@ class Approval extends PureComponent {
       this.#transactionFinishedListener =
         Engine.controllerMessenger.subscribeOnceIf(
           'TransactionController:transactionFinished',
-          (transactionMeta) => {
+          (transactionMeta: { status: string; error?: Error; assetType?: string }) => {
             if (transactionMeta.status === 'submitted') {
               if (!isLedgerAccount) {
                 this.setState({ transactionHandled: true });
@@ -558,20 +590,20 @@ class Approval extends PureComponent {
               });
             } else {
               Logger.error(
-                transactionMeta.error,
+                transactionMeta.error as Error,
                 'error while trying to finish a transaction (Approval)',
               );
             }
           },
-          (transactionMeta) => transactionMeta.id === transaction.id,
+          (transactionMeta: { id: string }) => transactionMeta.id === transaction.id,
         );
       await KeyringController.resetQRKeyringState();
 
       const fullTx = transactions.find(({ id }) => id === transaction.id);
 
-      if (fullTx.txParams.type !== TransactionEnvelopeType.legacy) {
+      if (fullTx?.txParams?.type !== TransactionEnvelopeType.legacy) {
         // For EIP-1559 transactions, we need to remove gasPrice as it's not compatible
-        delete transaction.gasPrice;
+        delete (transaction as { gasPrice?: string }).gasPrice;
       }
 
       const updatedTx = {
@@ -593,8 +625,8 @@ class Approval extends PureComponent {
           ...createLedgerTransactionModalNavDetails({
             transactionId: transaction.id,
             deviceId,
-            onConfirmationComplete: (approve) =>
-              this.onLedgerConfirmation(approve, transaction.id, {
+            onConfirmationComplete: (approve: boolean) =>
+              this.onLedgerConfirmation(approve, transaction.id as string, {
                 ...this.getAnalyticsParams({ gasEstimateType, gasSelected }),
                 ...this.getTransactionMetrics(),
               }),
@@ -612,16 +644,16 @@ class Approval extends PureComponent {
       this.showWalletConnectNotification(true);
     } catch (error) {
       if (
-        !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
-        !error?.message.startsWith(STX_NO_HASH_ERROR)
+        !(error as Error)?.message.startsWith(KEYSTONE_TX_CANCELED) &&
+        !(error as Error)?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error && (error as Error).message,
           [{ text: strings('navigation.ok') }],
         );
         Logger.error(
-          error,
+          error as Error,
           'error while trying to send transaction (Approval)',
         );
         this.setState({ transactionHandled: true });
@@ -660,7 +692,7 @@ class Approval extends PureComponent {
    *
    * @param mode - Transaction mode, review or edit
    */
-  onModeChange = (mode) => {
+  onModeChange = (mode: string): void => {
     const { navigation } = this.props;
     navigation && navigation.setParams({ mode });
     this.setState({ mode });
@@ -677,16 +709,16 @@ class Approval extends PureComponent {
    * @param {object} transaction - Transaction object
    * @param {object} selectedAsset - Asset object
    */
-  prepareTransaction = ({ EIP1559GasData, gasEstimateType }) => {
+  prepareTransaction = ({ EIP1559GasData, gasEstimateType }: { EIP1559GasData?: EIP1559GasDataType; gasEstimateType?: string }): TransactionObject => {
     const { transaction: rawTransaction, showCustomNonce } = this.props;
     const { assetType, gas, gasPrice, selectedAsset } = rawTransaction;
 
-    const transaction = {
+    const transaction: TransactionObject = {
       ...rawTransaction,
     };
 
     if (assetType !== 'ETH') {
-      transaction.to = selectedAsset.address;
+      transaction.to = selectedAsset?.address;
       transaction.value = '0x0';
     }
 
@@ -704,15 +736,15 @@ class Approval extends PureComponent {
     });
   };
 
-  getTransactionMetrics = () => {
+  getTransactionMetrics = (): Record<string, unknown> => {
     const { confirmationMetricsById, transaction } = this.props;
     const { id: transactionId } = transaction;
 
     // Skip sensitiveProperties for now as it's not supported by mobile Metametrics client
-    return confirmationMetricsById[transactionId]?.properties || {};
+    return confirmationMetricsById[transactionId || '']?.properties || {};
   };
 
-  render = () => {
+  render = (): React.ReactNode => {
     const { dappTransactionModalVisible } = this.props;
     const { mode, transactionConfirmed, isChangeInSimulationModalOpen } =
       this.state;
@@ -750,7 +782,7 @@ class Approval extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
 
@@ -769,11 +801,9 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   resetTransaction: () => dispatch(resetTransaction()),
 });
-
-Approval.contextType = ThemeContext;
 
 export default connect(
   mapStateToProps,
