@@ -1,8 +1,12 @@
 /* eslint-disable import/no-commonjs, import/no-nodejs-modules */
-const path = require('path');
+import path from 'path';
+
+interface TransformResult {
+  code: string;
+}
 
 module.exports = {
-  process(_, filename) {
+  process(_: string, filename: string): TransformResult {
     const assetFilename = JSON.stringify(path.basename(filename));
 
     return {
