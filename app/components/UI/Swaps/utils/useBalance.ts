@@ -6,14 +6,38 @@ import {
   safeNumberToBN,
 } from '../../../../util/number';
 import { safeToChecksumAddress } from '../../../../util/address';
+import BN from 'bn.js';
+
+interface Account {
+  balance?: string;
+  [key: string]: unknown;
+}
+
+interface Accounts {
+  [address: string]: Account;
+}
+
+interface Balances {
+  [address: string]: string | BN;
+}
+
+interface SourceToken {
+  address?: string;
+  decimals?: number;
+  [key: string]: unknown;
+}
+
+interface UseBalanceOptions {
+  asUnits?: boolean;
+}
 
 function useBalance(
-  accounts,
-  balances,
-  selectedAddress,
-  sourceToken,
-  { asUnits = false } = {},
-) {
+  accounts: Accounts,
+  balances: Balances,
+  selectedAddress: string,
+  sourceToken: SourceToken | null | undefined,
+  { asUnits = false }: UseBalanceOptions = {},
+): string | BN | null {
   // TODO: This doesn't always return type BN. Objects down the line may attempt to call functions on the BN object.
   const balance = useMemo(() => {
     if (!sourceToken) {
@@ -32,7 +56,7 @@ function useBalance(
     }
     const tokenAddress = safeToChecksumAddress(sourceToken.address);
 
-    if (tokenAddress in balances) {
+    if (tokenAddress && tokenAddress in balances) {
       if (asUnits) {
         return balances[tokenAddress];
       }
