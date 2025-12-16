@@ -1,7 +1,6 @@
 import isUrl from 'is-url';
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ViewStyle, TextStyle } from 'react-native';
 import { connect } from 'react-redux';
 import { strings } from '../../../../locales/i18n';
 import Text, {
@@ -32,8 +31,26 @@ import {
 import ApproveTransactionHeader from '../../Views/confirmations/legacy/components/ApproveTransactionHeader';
 import Identicon from '../Identicon';
 import { selectInternalAccounts } from '../../../selectors/accountsController';
+import { RootState } from '../../../reducers';
+import { Theme } from '../../../util/theme/models';
+import { InternalAccount } from '@metamask/keyring-internal-api';
 
-const createStyles = (colors) =>
+interface Styles {
+  accountInformation: ViewStyle;
+  identicon: ViewStyle;
+  accountInfoRow: ViewStyle;
+  accountNameAndAddress: ViewStyle;
+  accountName: TextStyle;
+  accountNameSmall: TextStyle;
+  accountAddress: TextStyle;
+  accountAddressSmall: TextStyle;
+  balanceText: TextStyle;
+  balanceTextSmall: TextStyle;
+  tag: ViewStyle;
+  tagText: TextStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     accountInformation: {
       flexDirection: 'row',
@@ -100,43 +117,36 @@ const createStyles = (colors) =>
     },
   });
 
-class AccountInfoCard extends PureComponent {
-  static propTypes = {
-    /**
-     * A string that represents the from address.
-     */
-    fromAddress: PropTypes.string.isRequired,
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * A number that specifies the ETH/USD conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * The selected currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Declares the operation being performed i.e. 'signing'
-     */
-    operation: PropTypes.string,
-    /**
-     * Clarify should show fiat balance
-     */
-    showFiatBalance: PropTypes.bool,
-    /**
-     * Current selected ticker
-     */
-    ticker: PropTypes.string,
-    transaction: PropTypes.object,
-    origin: PropTypes.string,
+interface AccountBalance {
+  balance?: string;
+}
+
+interface Transaction {
+  txParams?: {
+    from?: string;
+    to?: string;
+    value?: string;
+    data?: string;
   };
+}
+
+interface AccountInfoCardProps {
+  fromAddress: string;
+  accounts?: Record<string, AccountBalance>;
+  internalAccounts?: InternalAccount[];
+  conversionRate?: number;
+  currentCurrency?: string;
+  operation?: string;
+  showFiatBalance?: boolean;
+  ticker?: string;
+  transaction?: Transaction;
+  origin?: string;
+  activeTabUrl?: string;
+}
+
+class AccountInfoCard extends PureComponent<AccountInfoCardProps> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
   render() {
     const {
@@ -154,10 +164,10 @@ class AccountInfoCard extends PureComponent {
 
     const fromAddress = safeToChecksumAddress(rawFromAddress);
     const accountLabelTag = getLabelTextByAddress(fromAddress);
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const weiBalance = accounts?.[fromAddress]?.balance
-      ? hexToBN(accounts[fromAddress].balance)
+    const weiBalance = accounts?.[fromAddress ?? '']?.balance
+      ? hexToBN(accounts[fromAddress ?? ''].balance)
       : 0;
     const balance = `${renderFromWei(weiBalance)} ${getTicker(ticker)}`;
     const accountLabel = renderAccountName(fromAddress, internalAccounts);
@@ -170,7 +180,7 @@ class AccountInfoCard extends PureComponent {
 
     const currentConnection = sdkConnections[origin ?? ''];
 
-    const isOriginUrl = isUrl(origin);
+    const isOriginUrl = isUrl(origin ?? '');
 
     const originatorInfo = currentConnection?.originatorInfo;
 
@@ -242,7 +252,7 @@ class AccountInfoCard extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   accounts: selectAccounts(state),
   internalAccounts: selectInternalAccounts(state),
   conversionRate: selectConversionRate(state),
@@ -251,7 +261,5 @@ const mapStateToProps = (state) => ({
   transaction: getNormalizedTxState(state),
   activeTabUrl: getActiveTabUrl(state),
 });
-
-AccountInfoCard.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(AccountInfoCard);
