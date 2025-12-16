@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   Alert,
@@ -8,6 +7,8 @@ import {
   TextInput,
   SafeAreaView,
   StyleSheet,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import StyledButton from '../../UI/StyledButton';
@@ -17,8 +18,17 @@ import { strings } from '../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import { passwordRequirementsMet } from '../../../util/password';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  mainWrapper: ViewStyle;
+  wrapper: ViewStyle;
+  input: TextStyle;
+  ctaWrapper: ViewStyle;
+  enterPassword: TextStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -45,22 +55,38 @@ const createStyles = (colors) =>
     },
   });
 
+interface NavigationObject {
+  setOptions: (options: unknown) => void;
+  pop: () => void;
+}
+
+interface RouteObject {
+  params?: {
+    onPasswordSet: (password: string) => void;
+  };
+}
+
+interface EnterPasswordSimpleProps {
+  navigation: NavigationObject;
+  route: RouteObject;
+}
+
+interface EnterPasswordSimpleState {
+  password: string;
+  loading: boolean;
+  error: string | null;
+}
+
 /**
  * View where users can re-enter their password
  */
-export default class EnterPasswordSimple extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+export default class EnterPasswordSimple extends PureComponent<
+  EnterPasswordSimpleProps,
+  EnterPasswordSimpleState
+> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: EnterPasswordSimpleState = {
     password: '',
     loading: false,
     error: null,
@@ -70,7 +96,7 @@ export default class EnterPasswordSimple extends PureComponent {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('enter_password.title'),
@@ -101,19 +127,19 @@ export default class EnterPasswordSimple extends PureComponent {
         strings('choose_password.password_length_error'),
       );
     } else {
-      this.props.route.params.onPasswordSet(this.state.password);
+      this.props.route.params?.onPasswordSet(this.state.password);
       this.props.navigation.pop();
       return;
     }
   };
 
-  onPasswordChange = (val) => {
+  onPasswordChange = (val: string) => {
     this.setState({ password: val });
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = this.context?.colors || mockTheme.colors;
+    const themeAppearance = this.context?.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (
