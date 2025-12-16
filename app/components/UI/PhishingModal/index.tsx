@@ -6,8 +6,9 @@ import {
   Platform,
   Linking,
   TouchableOpacity,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
@@ -20,8 +21,24 @@ import {
   ButtonVariants,
   ButtonWidthTypes,
 } from '../../../component-library/components/Buttons/Button/Button.types';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  warningIcon: TextStyle;
+  phishingModalWrapper: ViewStyle;
+  phishingModalTitle: TextStyle;
+  phishingText: TextStyle;
+  link: TextStyle;
+  buttonContainer: ViewStyle;
+  buttonText: TextStyle;
+  buttonIcon: TextStyle;
+  backToSafetyButton: ViewStyle;
+  backToSafetyText: TextStyle;
+  warningContainer: ViewStyle;
+  buttonWrapper: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     warningIcon: {
       color: colors.error.default,
@@ -89,7 +106,7 @@ const createStyles = (colors) =>
       color: colors.primary.default,
     },
     warningContainer: {
-      alignItems: 'left',
+      alignItems: 'flex-start',
     },
     buttonWrapper: {
       marginTop: 32,
@@ -97,28 +114,16 @@ const createStyles = (colors) =>
     },
   });
 
-export default class PhishingModal extends PureComponent {
-  static propTypes = {
-    /**
-     * name of the blacklisted url
-     */
-    fullUrl: PropTypes.string,
-    /**
-     * Called to the user decides to proceed to the phishing site
-     */
-    continueToPhishingSite: PropTypes.func,
-    /**
-     * Called to the user decides to report an issue
-     */
-    goToFilePhishingIssue: PropTypes.func,
-    /**
-     * Called when the user takes the recommended action
-     */
-    goBackToSafety: PropTypes.func,
-    /**
-     * Called to the user decides to share on Twitter
-     */
-  };
+interface PhishingModalProps {
+  fullUrl?: string;
+  continueToPhishingSite?: () => void;
+  goToFilePhishingIssue?: () => void;
+  goBackToSafety?: () => void;
+}
+
+export default class PhishingModal extends PureComponent<PhishingModalProps> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
   shareToTwitter = () => {
     const tweetText =
@@ -136,7 +141,7 @@ export default class PhishingModal extends PureComponent {
   render() {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const urlObj = new URL(this.props.fullUrl);
+    const urlObj = new URL(this.props.fullUrl || '');
     const host = urlObj.hostname;
 
     return (
@@ -189,5 +194,3 @@ export default class PhishingModal extends PureComponent {
     );
   }
 }
-
-PhishingModal.contextType = ThemeContext;
