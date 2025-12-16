@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   StyleSheet,
@@ -7,8 +6,12 @@ import {
   View,
   Image,
   TouchableOpacity,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 
 import Engine from '../../../../core/Engine';
 import I18n, {
@@ -39,11 +42,22 @@ import Text, {
 import { MetaMetricsEvents } from '../../../../core/Analytics';
 import { MetricsEventBuilder } from '../../../../core/Analytics/MetricsEventBuilder';
 import { UserProfileProperty } from '../../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
+import { RootState } from '../../../../reducers';
+import { Theme } from '../../../../util/theme/models';
 
 const diameter = 40;
 const spacing = 8;
 
-const sortedCurrencies = infuraCurrencies.objects.sort((a, b) =>
+interface CurrencyQuote {
+  code: string;
+  name: string;
+}
+
+interface CurrencyObject {
+  quote: CurrencyQuote;
+}
+
+const sortedCurrencies = (infuraCurrencies as { objects: CurrencyObject[] }).objects.sort((a, b) =>
   a.quote.code
     .toLocaleLowerCase()
     .localeCompare(b.quote.code.toLocaleLowerCase()),
@@ -57,7 +71,12 @@ const infuraCurrencyOptions = sortedCurrencies.map(
   }),
 );
 
-export const updateUserTraitsWithCurrentCurrency = (currency, metrics) => {
+interface MetricsInterface {
+  addTraitsToUser: (traits: Record<string, string>) => void;
+  trackEvent: (event: unknown) => void;
+}
+
+export const updateUserTraitsWithCurrentCurrency = (currency: string, metrics: MetricsInterface) => {
   // track event and add selected currency to user profile for analytics
   const traits = { [UserProfileProperty.CURRENT_CURRENCY]: currency };
   metrics.addTraitsToUser(traits);
@@ -71,7 +90,7 @@ export const updateUserTraitsWithCurrentCurrency = (currency, metrics) => {
   );
 };
 
-export const updateUserTraitsWithCurrencyType = (primaryCurrency, metrics) => {
+export const updateUserTraitsWithCurrencyType = (primaryCurrency: string, metrics: MetricsInterface) => {
   // track event and add primary currency preference (fiat/crypto) to user profile for analytics
   const traits = { [UserProfileProperty.PRIMARY_CURRENCY]: primaryCurrency };
   metrics.addTraitsToUser(traits);
@@ -87,7 +106,27 @@ export const updateUserTraitsWithCurrencyType = (primaryCurrency, metrics) => {
   );
 };
 
-const createStyles = (colors) =>
+interface Styles {
+  wrapper: ViewStyle;
+  titleContainer: ViewStyle;
+  title: ViewStyle;
+  toggle: ViewStyle;
+  desc: TextStyle;
+  accessory: ViewStyle;
+  picker: ViewStyle;
+  setting: ViewStyle;
+  switch: ViewStyle;
+  firstSetting: ViewStyle;
+  inner: ViewStyle;
+  identicon_container: ViewStyle;
+  identicon_row: ViewStyle;
+  identiconText: TextStyle;
+  blockie: ImageStyle;
+  border: ViewStyle;
+  selected: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -159,94 +198,77 @@ const createStyles = (colors) =>
     },
   });
 
+interface NavigationObject {
+  setOptions: (options: unknown) => void;
+  navigate: (route: string) => void;
+}
+
+interface LanguageOption {
+  value: string;
+  label: string;
+  key: string;
+}
+
+interface SettingsProps {
+  currentCurrency: string;
+  navigation: NavigationObject;
+  setSearchEngine: (searchEngine: string) => void;
+  setPrimaryCurrency: (primaryCurrency: string) => void;
+  searchEngine: string;
+  primaryCurrency: string;
+  useBlockieIcon: boolean;
+  setUseBlockieIcon: (useBlockieIcon: boolean) => void;
+  selectedAddress: string;
+  hideZeroBalanceTokens: boolean;
+  setHideZeroBalanceTokens: (hideZeroBalanceTokens: boolean) => void;
+  metrics: MetricsInterface;
+}
+
+interface SettingsState {
+  currentLanguage: string;
+  languages: Record<string, string>;
+}
+
 /**
  * Main view for general app configurations
  */
-class Settings extends PureComponent {
-  static propTypes = {
-    /**
-    /* State current currency
-    */
-    currentCurrency: PropTypes.string,
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Called to set the active search engine
-     */
-    setSearchEngine: PropTypes.func,
-    /**
-     * Called to set primary currency
-     */
-    setPrimaryCurrency: PropTypes.func,
-    /**
-     * Active search engine
-     */
-    searchEngine: PropTypes.string,
-    /**
-     * Active primary currency
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Show a BlockieIcon instead of JazzIcon
-     */
-    useBlockieIcon: PropTypes.bool,
-    /**
-     * called to toggle BlockieIcon
-     */
-    setUseBlockieIcon: PropTypes.func,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * A bool that represents if the user wants to hide zero balance token
-     */
-    hideZeroBalanceTokens: PropTypes.bool,
-    /**
-     * Called to toggle zero balance token display
-     */
-    setHideZeroBalanceTokens: PropTypes.func,
-    /**
-     * App theme
-     */
-    // appTheme: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class Settings extends PureComponent<SettingsProps, SettingsState> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  languageOptions: LanguageOption[] | undefined;
+  searchEngineOptions: LanguageOption[] | undefined;
+  primaryCurrencyOptions: LanguageOption[] | undefined;
+
+  state: SettingsState = {
     currentLanguage: I18n.locale.substr(0, 2),
     languages: {},
   };
 
-  selectCurrency = async (currency) => {
+  selectCurrency = async (currency: string) => {
     const { CurrencyRateController } = Engine.context;
     CurrencyRateController.setCurrentCurrency(currency);
     updateUserTraitsWithCurrentCurrency(currency, this.props.metrics);
   };
 
-  selectLanguage = (language) => {
+  selectLanguage = (language: string) => {
     if (language === this.state.currentLanguage) return;
     setLocale(language);
     this.setState({ currentLanguage: language });
     setTimeout(() => this.props.navigation.navigate('Home'), 100);
   };
 
-  selectSearchEngine = (searchEngine) => {
+  selectSearchEngine = (searchEngine: string) => {
     this.props.setSearchEngine(searchEngine);
   };
 
-  selectPrimaryCurrency = (primaryCurrency) => {
+  selectPrimaryCurrency = (primaryCurrency: string) => {
     this.props.setPrimaryCurrency(primaryCurrency);
 
     updateUserTraitsWithCurrencyType(primaryCurrency, this.props.metrics);
   };
 
-  toggleHideZeroBalanceTokens = (toggleHideZeroBalanceTokens) => {
+  toggleHideZeroBalanceTokens = (toggleHideZeroBalanceTokens: boolean) => {
     this.props.setHideZeroBalanceTokens(toggleHideZeroBalanceTokens);
   };
 
@@ -293,34 +315,6 @@ class Settings extends PureComponent {
   componentDidUpdate = () => {
     this.updateNavBar();
   };
-
-  // TODO - Reintroduce once we enable manual theme settings
-  // goToThemeSettings = () => {
-  //   const { navigation } = this.props;
-  //   navigation.navigate('ThemeSettings');
-  // };
-
-  // renderThemeSettingsSection = () => {
-  //   const { appTheme } = this.props;
-  //   const colors = this.context.colors || mockTheme.colors;
-  //   const styles = createStyles(colors);
-
-  //   return (
-  //     <View style={styles.setting}>
-  //       <View>
-  //         <Text variant={TextVariant.BodyMD} color={TextColor.Alternative}>
-  //           {strings('app_settings.theme_title', {
-  //             theme: strings(`app_settings.theme_${AppThemeKey[appTheme]}`),
-  //           })}
-  //         </Text>
-  //         <Text style={styles.desc}>{strings('app_settings.theme_description')}</Text>
-  //         <StyledButton type="normal" onPress={this.goToThemeSettings} containerStyle={styles.marginTop}>
-  //           {strings('app_settings.theme_button_text')}
-  //         </StyledButton>
-  //       </View>
-  //     </View>
-  //   );
-  // };
 
   render() {
     const {
@@ -508,32 +502,28 @@ class Settings extends PureComponent {
               </View>
             </View>
           </View>
-          {/* {this.renderThemeSettingsSection()} */}
         </View>
       </ScrollView>
     );
   }
 }
 
-Settings.contextType = ThemeContext;
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   currentCurrency: selectCurrentCurrency(state),
   searchEngine: state.settings.searchEngine,
   primaryCurrency: state.settings.primaryCurrency,
   useBlockieIcon: state.settings.useBlockieIcon,
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   hideZeroBalanceTokens: state.settings.hideZeroBalanceTokens,
-  // appTheme: state.user.appTheme,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setSearchEngine: (searchEngine) => dispatch(setSearchEngine(searchEngine)),
-  setPrimaryCurrency: (primaryCurrency) =>
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  setSearchEngine: (searchEngine: string) => dispatch(setSearchEngine(searchEngine)),
+  setPrimaryCurrency: (primaryCurrency: string) =>
     dispatch(setPrimaryCurrency(primaryCurrency)),
-  setUseBlockieIcon: (useBlockieIcon) =>
+  setUseBlockieIcon: (useBlockieIcon: boolean) =>
     dispatch(setUseBlockieIcon(useBlockieIcon)),
-  setHideZeroBalanceTokens: (hideZeroBalanceTokens) =>
+  setHideZeroBalanceTokens: (hideZeroBalanceTokens: boolean) =>
     dispatch(setHideZeroBalanceTokens(hideZeroBalanceTokens)),
 });
 
