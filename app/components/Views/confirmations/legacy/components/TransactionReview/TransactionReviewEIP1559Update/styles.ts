@@ -1,8 +1,23 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { Theme } from '../../../../../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  overview: (noMargin: boolean) => ViewStyle;
+  valuesContainer: ViewStyle;
+  gasInfoContainer: ViewStyle;
+  gasInfoIcon: (hasOrigin: boolean) => TextStyle;
+  amountContainer: ViewStyle;
+  gasRowContainer: ViewStyle;
+  gasBottomRowContainer: ViewStyle;
+  hitSlop: { top: number; left: number; bottom: number; right: number };
+  redInfo: TextStyle;
+  timeEstimateContainer: ViewStyle;
+  flex: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
-    overview: (noMargin) => ({
+    overview: (noMargin: boolean) => ({
       marginHorizontal: noMargin ? 0 : 24,
       paddingTop: 10,
       paddingBottom: 10,
@@ -15,7 +30,7 @@ const createStyles = (colors) =>
     gasInfoContainer: {
       paddingLeft: 2,
     },
-    gasInfoIcon: (hasOrigin) => ({
+    gasInfoIcon: (hasOrigin: boolean) => ({
       color: hasOrigin ? colors.warning.default : colors.icon.muted,
     }),
     amountContainer: {
@@ -47,6 +62,6 @@ const createStyles = (colors) =>
     flex: {
       flex: 1,
     },
-  });
+  }) as unknown as Styles;
 
 export default createStyles;
