@@ -9,6 +9,44 @@ import {
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 
+interface JsonRpcRequest {
+  params?: Array<{ chainId?: string }>;
+  origin?: string;
+}
+
+interface JsonRpcResponse {
+  result: null | unknown;
+}
+
+interface AnalyticsParams {
+  [key: string]: unknown;
+}
+
+interface NetworkConfiguration {
+  chainId: string;
+  [key: string]: unknown;
+}
+
+interface Hooks {
+  getNetworkConfigurationByChainId: (chainId: string) => NetworkConfiguration | undefined;
+  setActiveNetwork: (networkClientId: string) => void;
+  requestUserApproval: (params: unknown) => Promise<void>;
+  getCaveat: (origin: string, permission: string) => unknown;
+  getCurrentChainIdForDomain: (origin: string) => string;
+  requestPermittedChainsPermissionIncrementalForOrigin: (params: unknown) => Promise<void>;
+  setTokenNetworkFilter: (chainId: string) => void;
+  hasApprovalRequestsForOrigin: (origin: string) => boolean;
+  rejectApprovalRequestsForOrigin: (origin: string) => void;
+}
+
+interface WalletSwitchEthereumChainParams {
+  req: JsonRpcRequest;
+  res: JsonRpcResponse;
+  requestUserApproval: (params: unknown) => Promise<void>;
+  analytics: AnalyticsParams;
+  hooks: Hooks;
+}
+
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
  *
@@ -25,7 +63,7 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: WalletSwitchEthereumChainParams): Promise<void> => {
   const {
     CurrencyRateController,
     NetworkController,
@@ -42,7 +80,7 @@ export const wallet_switchEthereumChain = async ({
     });
   }
   const { chainId } = params;
-  const allowedKeys = {
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
@@ -60,26 +98,26 @@ export const wallet_switchEthereumChain = async ({
   const existingNetwork = findExistingNetwork(_chainId, networkConfigurations);
   if (existingNetwork) {
     const currentDomainSelectedNetworkClientId =
-      SelectedNetworkController.getNetworkClientIdForDomain(origin);
+      SelectedNetworkController.getNetworkClientIdForDomain(origin as string);
     const {
       configuration: { chainId: currentDomainSelectedChainId },
     } = NetworkController.getNetworkClientById(
       currentDomainSelectedNetworkClientId,
-    ) || { configuration: {} };
+    ) || { configuration: {} as { chainId?: string } };
 
     if (currentDomainSelectedChainId === _chainId) {
       res.result = null;
       return;
     }
 
-    const currentChainIdForOrigin = hooks.getCurrentChainIdForDomain(origin);
+    const currentChainIdForOrigin = hooks.getCurrentChainIdForDomain(origin as string);
 
     const fromNetworkConfiguration = hooks.getNetworkConfigurationByChainId(
       currentChainIdForOrigin,
     );
 
     const toNetworkConfiguration =
-      hooks.getNetworkConfigurationByChainId(chainId);
+      hooks.getNetworkConfigurationByChainId(chainId as string);
 
     await switchToNetwork({
       network: existingNetwork,

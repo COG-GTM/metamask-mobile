@@ -13,6 +13,11 @@ const CACHE_REFRESH_THRESHOLD = 60 * 60 * 1000;
 import { EMPTY_ADDRESS } from '../constants/transaction';
 import { regex } from '../../app/util/regex';
 
+interface CacheEntry {
+  name?: string;
+  timestamp: number;
+}
+
 /**
  * Utility class with the single responsibility
  * of caching ENS names
@@ -20,7 +25,7 @@ import { regex } from '../../app/util/regex';
  * TODO: Replace this entire module and cache with the core ENS controller
  */
 export class ENSCache {
-  static cache = {};
+  static cache: Record<string, CacheEntry> = {};
 }
 
 /**
@@ -34,7 +39,7 @@ const ENS_SUPPORTED_CHAIN_IDS = [ChainId[NetworkType.mainnet]];
 /**
  * We still need it to support the legacy ENS library that we are using.
  */
-const ENS_SUPPORTED_NETWORK_IDS = {
+const ENS_SUPPORTED_NETWORK_IDS: Record<string, string> = {
   [InfuraNetworkType.mainnet]: '1',
 };
 
@@ -42,7 +47,7 @@ const ENS_SUPPORTED_NETWORK_IDS = {
  * A map of chain ID to network ID for networks supported by the current
  * legacy ENS library we are using.
  */
-const CHAIN_ID_TO_NETWORK_ID = {
+const CHAIN_ID_TO_NETWORK_ID: Record<string, string> = {
   [ChainId[NetworkType.mainnet]]:
     ENS_SUPPORTED_NETWORK_IDS[NetworkType.mainnet],
 };
@@ -50,12 +55,12 @@ const CHAIN_ID_TO_NETWORK_ID = {
 /**
  * Get a cached ENS name.
  *
- * @param {string} address - The address to lookup.
- * @param {string} chainId - The chain ID for the cached ENS name.
- * @returns {string|undefined} The cached ENS name, or undefined if the name
+ * @param address - The address to lookup.
+ * @param chainId - The chain ID for the cached ENS name.
+ * @returns The cached ENS name, or undefined if the name
  * was not found in the cache.
  */
-export function getCachedENSName(address, chainId) {
+export function getCachedENSName(address: string, chainId: string): string | undefined {
   const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
   if (!networkHasEnsSupport) {
     return undefined;
@@ -67,7 +72,10 @@ export function getCachedENSName(address, chainId) {
   return cacheEntry?.name;
 }
 
-export async function doENSReverseLookup(address, chainId) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let ens: any;
+
+export async function doENSReverseLookup(address: string, chainId: string): Promise<string | undefined> {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
   const { name: cachedName, timestamp } =
@@ -81,26 +89,28 @@ export async function doENSReverseLookup(address, chainId) {
 
   if (networkHasEnsSupport) {
     const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
-    this.ens = new ENS({ provider, network: networkId });
+    ens = new ENS({ provider, network: networkId });
     try {
-      const name = await this.ens.reverse(address);
-      const resolvedAddress = await this.ens.lookup(name);
+      const name = await ens.reverse(address);
+      const resolvedAddress = await ens.lookup(name);
       if (toLowerCaseEquals(address, resolvedAddress)) {
         ENSCache.cache[networkId + address] = { name, timestamp: Date.now() };
         return name;
       }
     } catch (e) {
+      const error = e as Error;
       if (
-        e.message.includes(ENS_NAME_NOT_DEFINED_ERROR) ||
-        e.message.includes(INVALID_ENS_NAME_ERROR)
+        error.message.includes(ENS_NAME_NOT_DEFINED_ERROR) ||
+        error.message.includes(INVALID_ENS_NAME_ERROR)
       ) {
         ENSCache.cache[networkId + address] = { timestamp: Date.now() };
       }
     }
   }
+  return undefined;
 }
 
-export async function doENSLookup(ensName, chainId) {
+export async function doENSLookup(ensName: string, chainId: string): Promise<string | undefined> {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
 
@@ -108,16 +118,17 @@ export async function doENSLookup(ensName, chainId) {
 
   if (networkHasEnsSupport) {
     const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
-    this.ens = new ENS({ provider, network: networkId });
+    ens = new ENS({ provider, network: networkId });
     try {
-      const resolvedAddress = await this.ens.lookup(ensName);
+      const resolvedAddress = await ens.lookup(ensName);
       if (resolvedAddress === EMPTY_ADDRESS) return;
       return resolvedAddress;
       // eslint-disable-next-line no-empty
     } catch (e) {}
   }
+  return undefined;
 }
 
-export function isDefaultAccountName(name) {
+export function isDefaultAccountName(name: string): boolean {
   return regex.defaultAccount.test(name);
 }
