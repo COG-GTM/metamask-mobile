@@ -1,11 +1,20 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { View, StyleSheet } from 'react-native';
+import React, { ReactNode } from 'react';
+import { View, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  menuItemWarning: ViewStyle;
+  wrapper: ViewStyle;
+  icon: ViewStyle;
+  red: ViewStyle;
+  normal: ViewStyle;
+  check: TextStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     menuItemWarning: {
       flex: 1,
@@ -38,7 +47,7 @@ const createStyles = (colors) =>
     },
   });
 
-const WarningIcon = () => {
+const WarningIcon: React.FC = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -51,7 +60,8 @@ const WarningIcon = () => {
     />
   );
 };
-const CheckIcon = () => {
+
+const CheckIcon: React.FC = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -64,25 +74,16 @@ const CheckIcon = () => {
   );
 };
 
-const propTypes = {
-  style: PropTypes.object,
-  isWarning: PropTypes.bool,
-  isNotification: PropTypes.bool,
-  children: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.node),
-    PropTypes.node,
-  ]),
-};
+interface SettingsNotificationProps {
+  style?: ViewStyle;
+  isWarning?: boolean;
+  isNotification?: boolean;
+  children?: ReactNode;
+}
 
-const defaultProps = {
-  style: {},
-  isWarning: false,
-  isHighlighted: false,
-};
-
-const SettingsNotification = ({
-  style,
-  isWarning,
+const SettingsNotification: React.FC<SettingsNotificationProps> = ({
+  style = {},
+  isWarning = false,
   isNotification,
   children,
 }) => {
@@ -103,8 +104,5 @@ const SettingsNotification = ({
     </View>
   );
 };
-
-SettingsNotification.propTypes = propTypes;
-SettingsNotification.defaultProps = defaultProps;
 
 export default SettingsNotification;

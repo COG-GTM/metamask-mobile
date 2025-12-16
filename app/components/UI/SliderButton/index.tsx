@@ -4,6 +4,7 @@ import React, {
   useRef,
   useState,
   useCallback,
+  ReactElement,
 } from 'react';
 import {
   View,
@@ -12,12 +13,15 @@ import {
   StyleSheet,
   Image,
   Text,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import Device from '../../../util/device';
 import { useTheme } from '../../../util/theme';
 import { SwapsViewSelectors } from '../../../../e2e/selectors/swaps/SwapsView.selectors';
+import { Theme } from '../../../util/theme/models';
 
 /* eslint-disable import/no-commonjs */
 const SliderBgImg = require('./assets/slider_button_gradient.png');
@@ -29,12 +33,26 @@ const MARGIN = DIAMETER * 0.16;
 const COMPLETE_VERTICAL_THRESHOLD = DIAMETER * 2;
 const COMPLETE_THRESHOLD = 0.85;
 
-const createStyles = (colors, shadows) =>
+interface Styles {
+  container: ViewStyle;
+  disabledContainer: ViewStyle;
+  slider: ViewStyle;
+  trackBack: ViewStyle;
+  trackBackGradient: ImageStyle;
+  trackBackGradientPressed: ViewStyle;
+  trackBackShine: ImageStyle;
+  trackFront: ViewStyle;
+  textFrontContainer: ViewStyle;
+  textBack: TextStyle;
+  textFront: TextStyle;
+}
+
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']): Styles =>
   StyleSheet.create({
     container: {
       ...shadows.size.sm,
       shadowColor: colors.shadow.primary,
-      elevation: 0, // shadow colors not supported on Android. nothing > gray shadow
+      elevation: 0,
     },
     disabledContainer: {
       opacity: 0.66,
@@ -77,7 +95,6 @@ const createStyles = (colors, shadows) =>
       height: '100%',
       borderRadius: DIAMETER,
     },
-
     textFrontContainer: {
       position: 'absolute',
       width: '100%',
@@ -97,13 +114,21 @@ const createStyles = (colors, shadows) =>
     },
   });
 
+interface SliderButtonProps {
+  incompleteText?: ReactElement | string;
+  completeText?: ReactElement | string;
+  onComplete?: () => void;
+  onSwipeChange?: (isPressed: boolean) => void;
+  disabled?: boolean;
+}
+
 function SliderButton({
   incompleteText,
   completeText,
   onComplete,
   disabled,
   onSwipeChange,
-}) {
+}: SliderButtonProps) {
   const [componentWidth, setComponentWidth] = useState(0);
   const [hasCompletedCalled, setHasCompletedCalled] = useState(false);
   const [hasStartedCompleteAnimation, setHasStartedCompleteAnimation] =
@@ -111,7 +136,7 @@ function SliderButton({
   const [isPressed, setIsPressed] = useState(false);
 
   const shineOffset = useRef(new Animated.Value(0)).current;
-  const pan = useRef(new Animated.ValueXY(0, 0)).current;
+  const pan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const completion = useRef(new Animated.Value(0)).current;
 
   const onCompleteCallback = useRef(onComplete);
@@ -120,9 +145,9 @@ function SliderButton({
   const styles = createStyles(colors, shadows);
 
   const handleIsPressed = useCallback(
-    (isPressed) => {
-      onSwipeChange?.(isPressed);
-      setIsPressed(isPressed);
+    (pressed: boolean) => {
+      onSwipeChange?.(pressed);
+      setIsPressed(pressed);
     },
     [onSwipeChange],
   );
@@ -146,7 +171,6 @@ function SliderButton({
     : incompleteTextOpacity.interpolate({
         inputRange: [0, 0.5, 1],
         outputRange: [0, 0, 1],
-        // eslint-disable-next-line no-mixed-spaces-and-tabs
       });
   const sliderCompletedOpacity = completion.interpolate({
     inputRange: [0, 1],
@@ -327,28 +351,5 @@ function SliderButton({
     </View>
   );
 }
-
-SliderButton.propTypes = {
-  /**
-   * Text that prompts the user to interact with the slider
-   */
-  incompleteText: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  /**
-   * Text during ineraction stating the action being taken
-   */
-  completeText: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  /**
-   * Action to execute once button completes sliding
-   */
-  onComplete: PropTypes.func,
-  /**
-   * Callback that gets called when the button is being swiped
-   */
-  onSwipeChange: PropTypes.func,
-  /**
-   * Value that decides whether or not the slider is disabled
-   */
-  disabled: PropTypes.bool,
-};
 
 export default SliderButton;
