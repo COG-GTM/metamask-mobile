@@ -1,14 +1,15 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { ReactNode } from 'react';
+import { View, StyleSheet, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Alert, { AlertType } from '../../../Base/Alert';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
+import { Theme } from '../../../../util/theme/models';
+
 const AlertTypeKeys = Object.keys(AlertType);
 
 const VERTICAL_DISPLACEMENT = 12;
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     content: {
       flex: 1,
@@ -54,7 +55,14 @@ const createStyles = (colors) =>
     },
   });
 
-const getButtonStyle = (type, styles) => {
+interface StylesType {
+  errorButton: ViewStyle;
+  warningButton: ViewStyle;
+  errorInfoIcon: { color: string };
+  warningInfoIcon: { color: string };
+}
+
+const getButtonStyle = (type: string | undefined, styles: StylesType): ViewStyle => {
   switch (type) {
     case AlertType.Error: {
       return styles.errorButton;
@@ -66,7 +74,7 @@ const getButtonStyle = (type, styles) => {
   }
 };
 
-const getInfoIconStyle = (type, styles) => {
+const getInfoIconStyle = (type: string | undefined, styles: StylesType): { color: string } => {
   switch (type) {
     case AlertType.Error: {
       return styles.errorInfoIcon;
@@ -78,7 +86,13 @@ const getInfoIconStyle = (type, styles) => {
   }
 };
 
-function Button({ type, onPress, children }) {
+interface ButtonProps {
+  type?: string;
+  onPress?: () => void;
+  children?: string;
+}
+
+function Button({ type, onPress, children }: ButtonProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -99,13 +113,16 @@ function Button({ type, onPress, children }) {
   );
 }
 
-Button.propTypes = {
-  type: PropTypes.oneOf(AlertTypeKeys),
-  onPress: PropTypes.func,
-  children: PropTypes.string,
-};
+interface ActionAlertProps {
+  type?: (typeof AlertTypeKeys)[number];
+  style?: StyleProp<ViewStyle>;
+  onPress?: () => void;
+  onInfoPress?: () => void;
+  action?: string;
+  children?: ReactNode | ((textStyle: ViewStyle) => ReactNode);
+}
 
-function ActionAlert({ type, style, action, onInfoPress, onPress, children }) {
+function ActionAlert({ type, style, action, onInfoPress, onPress, children }: ActionAlertProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -115,10 +132,12 @@ function ActionAlert({ type, style, action, onInfoPress, onPress, children }) {
       type={type}
       style={[style, Boolean(action) && styles.contentWithAction]}
     >
-      {(textStyle) => (
+      {(textStyle: ViewStyle) => (
         <>
           <View style={styles.wrapper}>
-            <View style={[styles.content]}>{children(textStyle)}</View>
+            <View style={[styles.content]}>
+              {typeof children === 'function' ? children(textStyle) : children}
+            </View>
             {Boolean(action) && (
               <View style={[styles.action]}>
                 <Button onPress={onPress} type={type}>
@@ -146,12 +165,4 @@ function ActionAlert({ type, style, action, onInfoPress, onPress, children }) {
   );
 }
 
-ActionAlert.propTypes = {
-  type: PropTypes.oneOf(AlertTypeKeys),
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  onPress: PropTypes.func,
-  onInfoPress: PropTypes.func,
-  action: PropTypes.string,
-  children: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
-};
 export default ActionAlert;

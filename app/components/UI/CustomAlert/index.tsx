@@ -1,13 +1,21 @@
-import React, { PureComponent } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactNode } from 'react';
+import { StyleSheet, View, Text, ViewStyle, TextStyle } from 'react-native';
 import Modal from 'react-native-modal';
 import StyledButton from '../StyledButton';
 import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  modal: ViewStyle;
+  content: ViewStyle;
+  header: ViewStyle;
+  body: ViewStyle;
+  title: TextStyle;
+  footer: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     modal: {
       padding: 20,
@@ -39,57 +47,27 @@ const createStyles = (colors) =>
     },
   });
 
+interface CustomAlertProps {
+  headerStyle?: ViewStyle;
+  headerContent?: ReactNode;
+  titleText?: string;
+  bodyContent?: React.ReactElement;
+  buttonText?: string;
+  onPress?: () => void;
+  isVisible?: boolean;
+  onBackdropPress?: () => void;
+  onSwipeComplete?: () => void;
+  swipeDirection?: 'up' | 'down' | 'left' | 'right';
+  children?: ReactNode;
+}
+
 /**
 /* PureComponent that renders our custom alerts, which contains
 /* a header with an image, body and footer with a button
 */
-export default class CustomAlert extends PureComponent {
-  static propTypes = {
-    /**
-    /* Style of the header view
-    */
-    headerStyle: ViewPropTypes.style,
-    /**
-    /* Content to be displayed in the header
-    */
-    headerContent: PropTypes.any,
-    /**
-    /* Text of the tile
-    */
-    titleText: PropTypes.string,
-    /**
-    /* PureComponent that contains the content of the modal
-    */
-    bodyContent: PropTypes.element,
-    /**
-    /* Text of the button
-    */
-    buttonText: PropTypes.string,
-    /**
-    /* Action of the button
-    */
-    onPress: PropTypes.func,
-    /**
-    /* Boolean that controls the modal visibility
-    */
-    isVisible: PropTypes.bool,
-    /**
-    /* Function that will be called when tapping on the backdrop
-    */
-    onBackdropPress: PropTypes.func,
-    /**
-    /* Function that will be called when swiping on swipeDirection
-    */
-    onSwipeComplete: PropTypes.func,
-    /**
-    /* Direction of the swipe gesture to trigger a swipeComplete event
-    */
-    swipeDirection: PropTypes.string,
-    /**
-    /* Children components
-    */
-    children: PropTypes.any,
-  };
+export default class CustomAlert extends PureComponent<CustomAlertProps> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
   render() {
     const colors = this.context.colors || mockTheme.colors;
@@ -98,7 +76,7 @@ export default class CustomAlert extends PureComponent {
     return (
       <Modal
         style={styles.modal}
-        isVisible={this.propTypes}
+        isVisible={this.props.isVisible}
         onBackButtonPress={this.props.onPress}
         {...this.props}
         backdropColor={colors.overlay.default}
@@ -122,5 +100,3 @@ export default class CustomAlert extends PureComponent {
     );
   }
 }
-
-CustomAlert.contextType = ThemeContext;
