@@ -6,7 +6,7 @@ import {
   safeNumberToBN,
 } from '../../../../util/number';
 import { safeToChecksumAddress } from '../../../../util/address';
-import BN from 'bn.js';
+import BN from 'bnjs4';
 
 interface Account {
   balance?: string;

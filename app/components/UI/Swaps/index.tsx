@@ -88,7 +88,7 @@ import { selectShouldUseSmartTransaction } from '../../../selectors/smartTransac
 import { useStablecoinsDefaultSlippage } from './useStablecoinsDefaultSlippage';
 import { RootState } from '../../../reducers';
 import { Dispatch } from 'redux';
-import BN from 'bn.js';
+import BN from 'bnjs4';
 
 interface ThemeColors {
   background: {

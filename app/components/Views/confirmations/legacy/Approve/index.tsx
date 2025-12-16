@@ -87,7 +87,7 @@ import { isNonEvmChainId } from '../../../../../core/Multichain/utils';
 import { RootState } from '../../../../../reducers';
 import { Dispatch } from 'redux';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
-import BN from 'bn.js';
+import BN from 'bnjs4';
 
 const EDIT = 'edit';
 const REVIEW = 'review';

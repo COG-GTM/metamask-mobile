@@ -139,7 +139,7 @@ import { isNativeToken } from '../../../utils/generic';
 import { RootState } from '../../../../../../reducers';
 import { Dispatch } from 'redux';
 import { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
-import BN from 'bn.js';
+import BN from 'bnjs4';
 
 const EDIT = 'edit';
 const EDIT_NONCE = 'edit_nonce';

@@ -112,7 +112,7 @@ import { MMM_ORIGIN } from '../../../constants/confirmations';
 import { RootState } from '../../../../../../reducers';
 import { Dispatch } from 'redux';
 import { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
-import BN from 'bn.js';
+import BN from 'bnjs4';
 
 const KEYBOARD_OFFSET = Device.isSmallDevice() ? 80 : 120;
 

@@ -62,7 +62,7 @@ import { selectContractExchangeRatesByChainId } from '../../../../../../../selec
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { RootState } from '../../../../../../../reducers';
 import { Dispatch } from 'redux';
-import BN from 'bn.js';
+import BN from 'bnjs4';
 
 interface ThemeColors {
   error: {

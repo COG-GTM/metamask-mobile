@@ -37,7 +37,7 @@ import {
   TransactionType,
   TransactionMeta,
 } from '@metamask/transaction-controller';
-import BN from 'bn.js';
+import BN from 'bnjs4';
 
 const { getSwapsContractAddress } = swapsUtils;
 
