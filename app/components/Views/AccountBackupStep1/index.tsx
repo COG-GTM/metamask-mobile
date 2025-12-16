@@ -8,8 +8,10 @@ import {
   StyleSheet,
   BackHandler,
   Image,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import StyledButton from '../../UI/StyledButton';
 import OnboardingProgress from '../../UI/OnboardingProgress';
@@ -33,9 +35,32 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import Routes from '../../../../app/constants/navigation/Routes';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
-import SRPDesign from '../../../images/srp-lock-design.png';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const SRPDesign = require('../../../images/srp-lock-design.png');
+
+interface Styles {
+  mainWrapper: ViewStyle;
+  scrollviewWrapper: ViewStyle;
+  wrapper: ViewStyle;
+  content: ViewStyle;
+  title: TextStyle;
+  text: ViewStyle;
+  label: TextStyle;
+  buttonWrapper: ViewStyle;
+  bold: TextStyle;
+  blue: TextStyle;
+  remindLaterText: TextStyle;
+  remindLaterSubText: TextStyle;
+  startSubText: TextStyle;
+  remindLaterContainer: ViewStyle;
+  remindLaterButton: ViewStyle;
+  ctaContainer: ViewStyle;
+  srpDesign: ImageStyle;
+  button?: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -123,11 +148,19 @@ const createStyles = (colors) =>
     },
   });
 
-/**
- * View that's shown during the first step of
- * the backup seed phrase flow
- */
-const AccountBackupStep1 = (props) => {
+interface AccountBackupStep1Props {
+  navigation: {
+    navigate: (route: string, params?: object) => void;
+    setOptions: (options: object) => void;
+    reset: (state: { index: number; routes: Array<{ name: string }> }) => void;
+  };
+  route: {
+    params?: object;
+  };
+  setOnboardingWizardStep: (step: number) => void;
+}
+
+const AccountBackupStep1: React.FC<AccountBackupStep1Props> = (props) => {
   const { navigation, route } = props;
   const [showRemindLaterModal, setRemindLaterModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -136,9 +169,11 @@ const AccountBackupStep1 = (props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const track = (event, properties) => {
+  const track = (event: unknown, properties?: object): void => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
-    eventBuilder.addProperties(properties);
+    if (properties) {
+      eventBuilder.addProperties(properties);
+    }
     trackOnboarding(eventBuilder.build());
   };
 
@@ -156,52 +191,47 @@ const AccountBackupStep1 = (props) => {
 
   useEffect(
     () => {
-      // Check if user has funds
       if (Engine.hasFunds()) setHasFunds(true);
 
-      // Disable back press
-      const hardwareBackPress = () => true;
+      const hardwareBackPress = (): boolean => true;
 
-      // Add event listener
       BackHandler.addEventListener('hardwareBackPress', hardwareBackPress);
 
-      // Remove event listener on cleanup
       return () => {
         BackHandler.removeEventListener('hardwareBackPress', hardwareBackPress);
       };
     },
-    [], // Run only when component mounts
+    [],
   );
 
-  const goNext = () => {
+  const goNext = (): void => {
     props.navigation.navigate('AccountBackupStep1B', { ...props.route.params });
     track(MetaMetricsEvents.WALLET_SECURITY_STARTED);
   };
 
-  const showRemindLater = () => {
+  const showRemindLater = (): void => {
     if (hasFunds) return;
 
     setRemindLaterModal(true);
     track(MetaMetricsEvents.WALLET_SECURITY_SKIP_INITIATED);
   };
 
-  const toggleSkipCheckbox = () =>
+  const toggleSkipCheckbox = (): void =>
     skipCheckbox ? setToggleSkipCheckbox(false) : setToggleSkipCheckbox(true);
 
-  const hideRemindLaterModal = () => {
+  const hideRemindLaterModal = (): void => {
     setToggleSkipCheckbox(false);
     setRemindLaterModal(false);
   };
 
-  const secureNow = () => {
+  const secureNow = (): void => {
     hideRemindLaterModal();
     goNext();
   };
 
-  const skip = async () => {
+  const skip = async (): Promise<void> => {
     hideRemindLaterModal();
     track(MetaMetricsEvents.WALLET_SECURITY_SKIP_CONFIRMED);
-    // Get onboarding wizard state
     const onboardingWizard = await StorageWrapper.getItem(ONBOARDING_WIZARD);
     !onboardingWizard && props.setOnboardingWizardStep(1);
     props.navigation.reset({
@@ -210,9 +240,9 @@ const AccountBackupStep1 = (props) => {
     });
   };
 
-  const showWhatIsSeedphrase = () => setWhatIsSeedphraseModal(true);
+  const showWhatIsSeedphrase = (): void => setWhatIsSeedphraseModal(true);
 
-  const hideWhatIsSeedphrase = () => setWhatIsSeedphraseModal(false);
+  const hideWhatIsSeedphrase = (): void => setWhatIsSeedphraseModal(false);
 
   return (
     <SafeAreaView style={styles.mainWrapper}>
@@ -298,22 +328,11 @@ const AccountBackupStep1 = (props) => {
   );
 };
 
-AccountBackupStep1.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Action to set onboarding wizard step
-   */
-  setOnboardingWizardStep: PropTypes.func,
-};
-
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (
+  dispatch: (action: unknown) => void,
+): {
+  setOnboardingWizardStep: (step: number) => void;
+} => ({
   setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
 });
 
