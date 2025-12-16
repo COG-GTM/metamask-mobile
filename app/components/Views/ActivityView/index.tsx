@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, ViewStyle, TextStyle } from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -39,8 +39,24 @@ import {
   getFontFamily,
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
+import { RootState } from '../../../reducers';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (params) => {
+interface StyleSheetParams {
+  theme: Theme;
+}
+
+interface Styles {
+  wrapper: ViewStyle;
+  controlButtonOuterWrapper: ViewStyle;
+  controlButton: ViewStyle;
+  controlButtonDisabled: ViewStyle;
+  header: ViewStyle;
+  title: TextStyle;
+  titleText: TextStyle;
+}
+
+const createStyles = (params: StyleSheetParams): Styles => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -93,6 +109,14 @@ const createStyles = (params) => {
   });
 };
 
+interface ScrollableTabViewRef {
+  goToPage: (page: number) => void;
+}
+
+interface RouteParams {
+  redirectToOrders?: boolean;
+}
+
 const ActivityView = () => {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -111,24 +135,24 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector((state: RootState) => getHasOrders(state) || false);
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<ScrollableTabViewRef>(null);
+  const params = useParams<RouteParams>();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
 
   const openAccountSelector = useCallback(() => {
-    navigation.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
+    navigation.navigate(Routes.MODAL.ROOT_MODAL_FLOW as never, {
       screen: Routes.SHEET.ACCOUNT_SELECTOR,
-    });
+    } as never);
     // Track Event: "Opened Acount Switcher"
     trackEvent(
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            (accountsByChainId as Record<string, Record<string, unknown>>)?.[selectedAddress ?? ''] ?? {},
           ).length,
         })
         .build(),
@@ -142,7 +166,7 @@ const ActivityView = () => {
   ]);
 
   const showFilterControls = () => {
-    navigation.navigate(...createTokenBottomSheetFilterNavDetails({}));
+    navigation.navigate(...(createTokenBottomSheetFilterNavDetails({}) as [never, never]));
   };
 
   useEffect(
@@ -167,11 +191,11 @@ const ActivityView = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (hasOrders && params.redirectToOrders) {
-        navigation.setParams({ redirectToOrders: false });
+      if (hasOrders && params?.redirectToOrders) {
+        navigation.setParams({ redirectToOrders: false } as never);
         tabViewRef.current?.goToPage(1);
       }
-    }, [hasOrders, navigation, params.redirectToOrders]),
+    }, [hasOrders, navigation, params?.redirectToOrders]),
   );
 
   return (

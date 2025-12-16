@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import { fontStyles } from '../../../../../../../styles/common';
@@ -15,8 +14,23 @@ import {
   selectConversionRateByChainId,
   selectCurrentCurrency,
 } from '../../../../../../../selectors/currencyRateController';
+import { RootState } from '../../../../../../../reducers';
+import { Theme } from '../../../../../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  root: ViewStyle;
+  dataHeader: ViewStyle;
+  dataTitleText: TextStyle;
+  dataDescription: TextStyle;
+  dataBox: ViewStyle;
+  label: ViewStyle;
+  boldLabel: TextStyle;
+  labelText: TextStyle;
+  hexData: TextStyle;
+  scrollView: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     root: {
       paddingHorizontal: 24,
@@ -75,34 +89,41 @@ const createStyles = (colors) =>
     },
   });
 
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface TransactionObject {
+  data?: string;
+  [key: string]: unknown;
+}
+
+interface Transaction {
+  transaction: TransactionObject;
+  chainId?: string;
+  [key: string]: unknown;
+}
+
+interface TransactionReviewDataProps {
+  transaction: Transaction;
+  actionKey?: string;
+  toggleDataView?: () => void;
+  customGasHeight?: number;
+  showAlert: (config: AlertConfig) => void;
+  conversionRate?: number;
+  currentCurrency?: string;
+}
+
 /**
  * PureComponent that supports reviewing transaction data
  */
-class TransactionReviewData extends PureComponent {
-  static propTypes = {
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Transaction corresponding action key
-     */
-    actionKey: PropTypes.string,
-    /**
-     * Hides or shows transaction data
-     */
-    toggleDataView: PropTypes.func,
-    /**
-     * Height of custom gas and data modal
-     */
-    customGasHeight: PropTypes.number,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-  };
+class TransactionReviewData extends PureComponent<TransactionReviewDataProps> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  applyRootHeight = () => ({ height: this.props.customGasHeight });
+  applyRootHeight = (): { height: number | undefined } => ({ height: this.props.customGasHeight });
 
   handleCopyHex = () => {
     const {
@@ -110,7 +131,9 @@ class TransactionReviewData extends PureComponent {
         transaction: { data },
       },
     } = this.props;
-    ClipboardManager.setString(data);
+    if (data) {
+      ClipboardManager.setString(data);
+    }
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -127,7 +150,7 @@ class TransactionReviewData extends PureComponent {
       actionKey,
       toggleDataView,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -182,14 +205,14 @@ class TransactionReviewData extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   conversionRate: selectConversionRateByChainId(state, state.transaction.chainId),
   currentCurrency: selectCurrentCurrency(state),
   transaction: state.transaction,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
 });
 
 TransactionReviewData.contextType = ThemeContext;
