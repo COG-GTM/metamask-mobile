@@ -1,11 +1,12 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   SafeAreaView,
   Dimensions,
   StyleSheet,
   View,
   Alert,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import Share from 'react-native-share';
 import QRCode from 'react-native-qrcode-svg';
@@ -33,10 +34,32 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { getDecimalChainId } from '../../../util/networks';
 import QRAccountDisplay from '../../Views/QRAccountDisplay';
 import PNG_MM_LOGO_PATH from '../../../images/branding/fox.png';
+import { RootState } from '../../../reducers';
+import { Theme } from '../../../util/theme/models';
+import { NavigationProp } from '@react-navigation/native';
 
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
-const createStyles = (theme) =>
+interface Styles {
+  wrapper: ViewStyle;
+  body: ViewStyle;
+  qrWrapper: ViewStyle;
+  addressWrapper: ViewStyle;
+  copyButton: ViewStyle;
+  qrCode: ViewStyle;
+  actionRow: ViewStyle;
+  actionButton: ViewStyle;
+  title: TextStyle;
+  titleWrapper: ViewStyle;
+}
+
+interface ThemeWithBrand extends Theme {
+  brandColors: {
+    white: string;
+  };
+}
+
+const createStyles = (theme: ThemeWithBrand): Styles =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: theme.colors.background.default,
@@ -70,7 +93,6 @@ const createStyles = (theme) =>
     },
     copyButton: {
       backgroundColor: theme.colors.background.default,
-      color: theme.colors.primary.default,
       borderRadius: 12,
       overflow: 'hidden',
       paddingVertical: 3,
@@ -106,72 +128,65 @@ const createStyles = (theme) =>
     },
   });
 
-/**
- * PureComponent that renders receive options
- */
-class ReceiveRequest extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Asset to receive, could be not defined
-     */
-    receiveAsset: PropTypes.object,
-    /**
-     /* Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Network provider chain id
-     */
-    chainId: PropTypes.string,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * Hides the modal that contains the component
-     */
-    hideModal: PropTypes.func,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNetworkBuySupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+interface ReceiveAsset {
+  symbol?: string;
+  address?: string;
+}
 
-  state = {
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface MetricsObject {
+  trackEvent: (event: unknown) => void;
+  createEventBuilder: (event: unknown) => {
+    addProperties: (props: Record<string, unknown>) => {
+      build: () => unknown;
+    };
+    build: () => unknown;
+  };
+}
+
+interface ReceiveRequestProps {
+  navigation: NavigationProp<Record<string, unknown>>;
+  selectedAddress?: string;
+  receiveAsset?: ReceiveAsset;
+  showAlert: (config: AlertConfig) => void;
+  chainId?: string;
+  protectWalletModalVisible: () => void;
+  hideModal?: () => void;
+  seedphraseBackedUp?: boolean;
+  isNetworkBuySupported?: boolean;
+  metrics: MetricsObject;
+}
+
+interface ReceiveRequestState {
+  qrModalVisible: boolean;
+  buyModalVisible: boolean;
+}
+
+class ReceiveRequest extends PureComponent<ReceiveRequestProps, ReceiveRequestState> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  state: ReceiveRequestState = {
     qrModalVisible: false,
     buyModalVisible: false,
   };
 
-  /**
-   * Share current account public address
-   */
   onShare = () => {
     const { selectedAddress } = this.props;
     Share.open({
-      message: generateUniversalLinkAddress(selectedAddress),
+      message: generateUniversalLinkAddress(selectedAddress || ''),
     })
       .then(() => {
-        this.props.hideModal();
+        this.props.hideModal?.();
         setTimeout(() => this.props.protectWalletModalVisible(), 1000);
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         Logger.log('Error while trying to share address', err);
       });
 
@@ -182,9 +197,6 @@ class ReceiveRequest extends PureComponent {
     );
   };
 
-  /**
-   * Shows an alert message with a coming soon message
-   */
   onBuy = async () => {
     const { navigation, isNetworkBuySupported } = this.props;
     if (!isNetworkBuySupported) {
@@ -201,7 +213,7 @@ class ReceiveRequest extends PureComponent {
           .addProperties({
             text: 'Buy Native Token',
             location: 'Receive Modal',
-            chain_id_destination: getDecimalChainId(this.props.chainId),
+            chain_id_destination: getDecimalChainId(this.props.chainId || ''),
           })
           .build(),
       );
@@ -210,7 +222,7 @@ class ReceiveRequest extends PureComponent {
 
   copyAccountToClipboard = async () => {
     const { selectedAddress } = this.props;
-    ClipboardManager.setString(selectedAddress);
+    ClipboardManager.setString(selectedAddress || '');
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -218,7 +230,7 @@ class ReceiveRequest extends PureComponent {
       data: { msg: strings('account_details.account_copied_to_clipboard') },
     });
     if (!this.props.seedphraseBackedUp) {
-      setTimeout(() => this.props.hideModal(), 1000);
+      setTimeout(() => this.props.hideModal?.(), 1000);
       setTimeout(() => this.props.protectWalletModalVisible(), 1500);
     }
   };
@@ -238,7 +250,7 @@ class ReceiveRequest extends PureComponent {
 
   render() {
     const theme = this.context || mockTheme;
-    const styles = createStyles(theme);
+    const styles = createStyles(theme as ThemeWithBrand);
 
     return (
       <SafeAreaView style={styles.wrapper}>
@@ -253,7 +265,7 @@ class ReceiveRequest extends PureComponent {
             />
           </View>
 
-          <QRAccountDisplay accountAddress={this.props.selectedAddress} />
+          <QRAccountDisplay accountAddress={this.props.selectedAddress || ''} />
 
           <View style={styles.actionRow}>
             <StyledButton
@@ -273,9 +285,7 @@ class ReceiveRequest extends PureComponent {
   }
 }
 
-ReceiveRequest.contextType = ThemeContext;
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   receiveAsset: state.modals.receiveAsset,
@@ -286,8 +296,8 @@ const mapStateToProps = (state) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 
