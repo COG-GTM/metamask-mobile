@@ -1,6 +1,5 @@
-import React, { PureComponent } from 'react';
-import { ScrollView, View, StyleSheet, Text, SafeAreaView } from 'react-native';
-import PropTypes from 'prop-types';
+import React, { PureComponent, RefObject, createRef } from 'react';
+import { ScrollView, View, StyleSheet, Text, SafeAreaView, ViewStyle, TextStyle } from 'react-native';
 import CollectibleOverview from '../../UI/CollectibleOverview';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import StyledButton from '../../UI/StyledButton';
@@ -10,8 +9,19 @@ import { connect } from 'react-redux';
 import collectiblesTransferInformation from '../../../util/collectibles-transfer';
 import { newAssetTransaction } from '../../../actions/transaction';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  root: ViewStyle;
+  wrapper: ViewStyle;
+  buttons: ViewStyle;
+  button: ViewStyle;
+  buttonText: TextStyle;
+  assetOverviewWrapper?: ViewStyle;
+  flexRow?: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     root: {
       flex: 1,
@@ -37,29 +47,36 @@ const createStyles = (colors) =>
     },
   });
 
+interface Collectible {
+  address: string;
+  contractName?: string;
+  [key: string]: unknown;
+}
+
+interface NavigationObject {
+  navigate: (route: string) => void;
+}
+
+interface RouteObject {
+  params?: Collectible;
+}
+
+interface CollectibleViewProps {
+  navigation: NavigationObject;
+  newAssetTransaction: (selectedAsset: Collectible) => void;
+  route: RouteObject;
+}
+
 /**
  * View that displays a specific collectible asset
  */
-class CollectibleView extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+class CollectibleView extends PureComponent<CollectibleViewProps> {
+  declare context: React.ContextType<typeof ThemeContext>;
+  scrollViewRef: RefObject<ScrollView> = createRef();
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.contractName ?? '',
       false,
@@ -80,8 +97,10 @@ class CollectibleView extends PureComponent {
     const {
       route: { params },
     } = this.props;
-    this.props.newAssetTransaction(params);
-    this.props.navigation.navigate('SendFlowView');
+    if (params) {
+      this.props.newAssetTransaction(params);
+      this.props.navigation.navigate('SendFlowView');
+    }
   };
 
   render() {
@@ -90,13 +109,17 @@ class CollectibleView extends PureComponent {
       navigation,
     } = this.props;
     const collectible = params;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
+
+    if (!collectible) {
+      return null;
+    }
 
     const lowerAddress = collectible.address.toLowerCase();
     const tradable =
       lowerAddress in collectiblesTransferInformation
-        ? collectiblesTransferInformation[lowerAddress].tradable
+        ? (collectiblesTransferInformation as Record<string, { tradable: boolean }>)[lowerAddress].tradable
         : true;
 
     return (
@@ -131,8 +154,8 @@ class CollectibleView extends PureComponent {
 
 CollectibleView.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
-  newAssetTransaction: (selectedAsset) =>
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+  newAssetTransaction: (selectedAsset: Collectible) =>
     dispatch(newAssetTransaction(selectedAsset)),
 });
 

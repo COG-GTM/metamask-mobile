@@ -4,7 +4,7 @@ import { getAddressAccountType } from '../address';
 import NotificationManager from '../../core/NotificationManager';
 import { WALLET_CONNECT_ORIGIN } from '../walletconnect';
 import AppConstants from '../../core/AppConstants';
-import { InteractionManager } from 'react-native';
+import { InteractionManager, LayoutChangeEvent } from 'react-native';
 import { strings } from '../../../locales/i18n';
 import { selectEvmChainId } from '../../selectors/networkController';
 import { store } from '../../store';
@@ -18,13 +18,40 @@ export const typedSign = {
   V1: 'eth_signTypedData',
   V3: 'eth_signTypedData_v3',
   V4: 'eth_signTypedData_v4',
-};
+} as const;
+
+interface MessageParams {
+  from?: string;
+  version?: string;
+  origin?: string;
+  currentPageInformation?: {
+    url?: string;
+    analytics?: Record<string, unknown>;
+  };
+  meta?: {
+    url?: string;
+    analytics?: Record<string, unknown>;
+  };
+}
+
+interface SecurityAlertResponse {
+  [key: string]: unknown;
+}
+
+interface AnalyticsParams {
+  account_type: string | null;
+  dapp_host_name: string;
+  chain_id: string | null;
+  signature_type: string;
+  version: string;
+  [key: string]: unknown;
+}
 
 export const getAnalyticsParams = (
-  messageParams,
-  signType,
-  securityAlertResponse,
-) => {
+  messageParams: MessageParams,
+  signType: string,
+  securityAlertResponse?: SecurityAlertResponse,
+): AnalyticsParams => {
   if (!messageParams || typeof messageParams !== 'object') {
     throw new Error('Invalid messageParams provided');
   }
@@ -32,8 +59,8 @@ export const getAnalyticsParams = (
   const { currentPageInformation = {}, meta = {} } = messageParams;
   const pageInfo = { ...currentPageInformation, ...meta };
 
-  const analyticsParams = {
-    account_type: getAddressAccountType(messageParams.from),
+  const analyticsParams: AnalyticsParams = {
+    account_type: messageParams.from ? getAddressAccountType(messageParams.from) : null,
     dapp_host_name: 'N/A',
     chain_id: null,
     signature_type: signType,
@@ -55,13 +82,13 @@ export const getAnalyticsParams = (
       Object.assign(analyticsParams, blockaidParams);
     }
   } catch (error) {
-    Logger.error(error, 'Error processing analytics parameters:');
+    Logger.error(error as Error, 'Error processing analytics parameters:');
   }
 
   return analyticsParams;
 };
 
-export const walletConnectNotificationTitle = (confirmation, isError) => {
+export const walletConnectNotificationTitle = (confirmation: boolean, isError: boolean): string => {
   if (isError) return strings('notifications.wc_signed_failed_title');
   return confirmation
     ? strings('notifications.wc_signed_title')
@@ -69,15 +96,15 @@ export const walletConnectNotificationTitle = (confirmation, isError) => {
 };
 
 export const showWalletConnectNotification = (
-  messageParams = {},
+  messageParams: MessageParams = {},
   confirmation = false,
   isError = false,
-) => {
+): void => {
   InteractionManager.runAfterInteractions(() => {
     /**
      * FIXME: need to rewrite the way BackgroundBridge sets the origin.
      */
-    const origin = messageParams.origin.toLowerCase().replaceAll(':', '');
+    const origin = (messageParams.origin || '').toLowerCase().replaceAll(':', '');
     const isWCOrigin = origin.startsWith(
       WALLET_CONNECT_ORIGIN.replaceAll(':', '').toLowerCase(),
     );
@@ -97,12 +124,12 @@ export const showWalletConnectNotification = (
 };
 
 export const handleSignatureAction = async (
-  onAction,
-  messageParams,
-  signType,
-  securityAlertResponse,
-  confirmation,
-) => {
+  onAction: () => Promise<void>,
+  messageParams: MessageParams,
+  signType: string,
+  securityAlertResponse: SecurityAlertResponse | undefined,
+  confirmation: boolean,
+): Promise<void> => {
   await onAction();
   showWalletConnectNotification(messageParams, confirmation);
   MetaMetrics.getInstance().trackEvent(
@@ -118,21 +145,21 @@ export const handleSignatureAction = async (
   );
 };
 
-export const addSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const addSignatureErrorListener = (metamaskId: string, onSignatureError: () => void): void => {
   Engine.context.SignatureController.hub.on(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const removeSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const removeSignatureErrorListener = (metamaskId: string, onSignatureError: () => void): void => {
   Engine.context.SignatureController.hub.removeListener(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const shouldTruncateMessage = (e) => {
+export const shouldTruncateMessage = (e: LayoutChangeEvent): boolean => {
   if (
     (Device.isIos() && e.nativeEvent.layout.height > 70) ||
     (Device.isAndroid() && e.nativeEvent.layout.height > 100)
