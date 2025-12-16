@@ -1,5 +1,4 @@
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { PureComponent, RefObject } from 'react';
 import {
   Dimensions,
   InteractionManager,
@@ -7,6 +6,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import Text from '../../../component-library/components/Texts/Text';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -19,6 +20,7 @@ import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import withMetricsAwareness from '../../hooks/useMetrics/withMetricsAwareness';
 import TabThumbnail from './TabThumbnail';
+import { Theme } from '../../../util/theme/models';
 
 const THUMB_VERTICAL_MARGIN = 15;
 const NAVBAR_SIZE = Device.isIphoneX() ? 88 : 64;
@@ -31,7 +33,25 @@ const ROWS_VISIBLE = Math.floor(
 );
 const TABS_VISIBLE = ROWS_VISIBLE;
 
-const createStyles = (colors, shadows) =>
+interface Styles {
+  noTabs: ViewStyle;
+  noTabsTitle: TextStyle;
+  noTabsDesc: TextStyle;
+  tabAction: ViewStyle;
+  tabActionleft: ViewStyle;
+  tabActionRight: ViewStyle;
+  tabActionDone: TextStyle;
+  tabActionText: TextStyle;
+  actionDisabled: TextStyle;
+  tabsView: ViewStyle;
+  tabActions: ViewStyle;
+  tabs: ViewStyle;
+  tabsContent: ViewStyle;
+  newTabIcon: TextStyle;
+  newTabIconButton: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']): Styles =>
   StyleSheet.create({
     noTabs: {
       flex: 1,
@@ -120,101 +140,85 @@ const createStyles = (colors, shadows) =>
     }
   });
 
-/**
- * PureComponent that wraps all the thumbnails
- * representing all the open tabs
- */
-class Tabs extends PureComponent {
-  static propTypes = {
-    /**
-     * Array of tabs
-     */
-    tabs: PropTypes.array,
-    /**
-     * ID of the active tab
-     */
-    activeTab: PropTypes.number,
-    /**
-     * Opens a new tab
-     */
-    newTab: PropTypes.func,
-    /**
-     * Closes a tab
-     */
-    closeTab: PropTypes.func,
-    /**
-     * Closes all tabs
-     */
-    closeAllTabs: PropTypes.func,
-    /**
-     * Dismiss the entire view
-     */
-    closeTabsView: PropTypes.func,
-    /**
-     * Switches to a specific tab
-     */
-    switchToTab: PropTypes.func,
-    /**
-     * Sets the current tab used for the animation
-     */
-    animateCurrentTab: PropTypes.func, // eslint-disable-line react/no-unused-prop-types
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object
+interface Tab {
+  id: number;
+  url?: string;
+}
+
+interface MetricsObject {
+  trackEvent: (event: Record<string, unknown>) => void;
+  createEventBuilder: (event: string) => {
+    addProperties: (props: Record<string, unknown>) => {
+      build: () => Record<string, unknown>;
+    };
   };
+}
 
-  thumbnails = {};
+interface TabsProps {
+  tabs?: Tab[];
+  activeTab?: number;
+  newTab?: () => void;
+  closeTab?: (tab: Tab) => void;
+  closeAllTabs?: () => void;
+  closeTabsView?: () => void;
+  switchToTab?: (tab: Tab) => void;
+  animateCurrentTab?: (tab: Tab) => void;
+  metrics?: MetricsObject;
+}
 
-  state = {
+interface TabsState {
+  currentTab: Tab | null;
+}
+
+class Tabs extends PureComponent<TabsProps, TabsState> {
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  thumbnails: Record<number, RefObject<TabThumbnail>> = {};
+
+  state: TabsState = {
     currentTab: null,
   };
 
-  scrollview = React.createRef();
+  scrollview: RefObject<ScrollView> = React.createRef();
 
-  constructor(props) {
+  constructor(props: TabsProps) {
     super(props);
-    this.createTabsRef(props.tabs);
+    this.createTabsRef(props.tabs ?? []);
   }
 
   componentDidMount() {
-    if (this.props.tabs.length > TABS_VISIBLE) {
-      // Find the selected index
+    const { tabs = [], activeTab } = this.props;
+    if (tabs.length > TABS_VISIBLE) {
       let index = 0;
-      this.props.tabs.forEach((tab, i) => {
-        if (tab.id === this.props.activeTab) {
+      tabs.forEach((tab, i) => {
+        if (tab.id === activeTab) {
           index = i;
         }
       });
 
-      // Calculate the row
-
       const row = index + 1;
-
-      // Scroll if needed
       const pos = (row - 1) * THUMB_HEIGHT;
 
       InteractionManager.runAfterInteractions(() => {
-        this.scrollview.current &&
-          this.scrollview.current.scrollTo({ x: 0, y: pos, animated: true });
+        this.scrollview.current?.scrollTo({ x: 0, y: pos, animated: true });
       });
     }
   }
 
-  createTabsRef(tabs) {
+  createTabsRef(tabs: Tab[]) {
     tabs.forEach((tab) => {
       this.thumbnails[tab.id] = React.createRef();
     });
   }
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.tabs.length !== Object.keys(this.thumbnails).length) {
-      this.createTabsRef(this.props.tabs);
+  componentDidUpdate(prevProps: TabsProps) {
+    if ((prevProps.tabs?.length ?? 0) !== Object.keys(this.thumbnails).length) {
+      this.createTabsRef(this.props.tabs ?? []);
     }
   }
 
-  onSwitch = async (tab) => {
-    this.props.switchToTab(tab);
+  onSwitch = async (tab: Tab) => {
+    this.props.switchToTab?.(tab);
   };
 
   getStyles = () => {
@@ -238,7 +242,8 @@ class Tabs extends PureComponent {
       </View>
     );
   }
-  renderTabs(tabs, activeTab) {
+
+  renderTabs(tabs: Tab[], activeTab?: number) {
     const styles = this.getStyles();
 
     return (
@@ -248,7 +253,6 @@ class Tabs extends PureComponent {
         ref={this.scrollview}
       >
         {tabs.map((tab) => (
-          // eslint-disable-next-line react/jsx-key
           <TabThumbnail
             ref={this.thumbnails[tab.id]}
             key={tab.id}
@@ -263,13 +267,13 @@ class Tabs extends PureComponent {
   }
 
   onNewTabPress = () => {
-    const { tabs, newTab } = this.props;
-    newTab();
+    const { tabs = [], newTab } = this.props;
+    newTab?.();
     this.trackNewTabEvent(tabs.length);
   };
 
-  trackNewTabEvent = (tabsNumber) => {
-    this.props.metrics.trackEvent(
+  trackNewTabEvent = (tabsNumber: number) => {
+    this.props.metrics?.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.BROWSER_NEW_TAB)
         .addProperties({
@@ -281,7 +285,7 @@ class Tabs extends PureComponent {
   };
 
   renderTabActions() {
-    const { tabs, closeAllTabs, closeTabsView } = this.props;
+    const { tabs = [], closeAllTabs, closeTabsView } = this.props;
     const styles = this.getStyles();
 
     return (
@@ -334,13 +338,13 @@ class Tabs extends PureComponent {
   }
 
   render() {
-    const { tabs, activeTab } = this.props;
+    const { tabs = [], activeTab } = this.props;
     const styles = this.getStyles();
 
     return (
       <SafeAreaInsetsContext.Consumer>
         {(insets) => (
-          <View style={{ ...styles.tabsView, paddingTop: insets.top }}>
+          <View style={{ ...styles.tabsView, paddingTop: insets?.top }}>
             {tabs.length === 0
               ? this.renderNoTabs()
               : this.renderTabs(tabs, activeTab)}

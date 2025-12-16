@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   Alert,
   ScrollView,
@@ -8,6 +7,8 @@ import {
   StyleSheet,
   Text,
   View,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
@@ -16,8 +17,19 @@ import Engine from '../../../core/Engine';
 import CollectibleMedia from '../CollectibleMedia';
 import AssetElement from '../AssetElement';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  wrapper: ViewStyle;
+  emptyView: ViewStyle;
+  text: TextStyle;
+  itemWrapper: ViewStyle;
+  rows: ViewStyle;
+  name: TextStyle;
+  tokenId: TextStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -57,38 +69,42 @@ const createStyles = (colors) =>
     },
   });
 
-/**
- * View that renders a list of Collectibles
- * also known as ERC-721 Tokens
- */
-export default class Collectibles extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * Array of assets (in this case Collectibles)
-     */
-    collectibles: PropTypes.array,
-    /**
-     * Collectible contract object
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * Callback triggered when collectible pressed from collectibles list
-     */
-    onPress: PropTypes.func,
-  };
+interface Collectible {
+  address: string;
+  tokenId: string;
+  name?: string;
+}
 
-  state = {
+interface CollectibleContract {
+  name?: string;
+}
+
+interface NavigationObject {
+  navigate: (route: string, params?: Record<string, unknown>) => void;
+  push: (route: string, params?: Record<string, unknown>) => void;
+}
+
+interface CollectiblesProps {
+  navigation?: NavigationObject;
+  collectibles?: Collectible[];
+  collectibleContract?: CollectibleContract;
+  onPress?: (collectible: Collectible) => void;
+}
+
+interface CollectiblesState {
+  refreshing: boolean;
+}
+
+export default class Collectibles extends PureComponent<CollectiblesProps, CollectiblesState> {
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  state: CollectiblesState = {
     refreshing: false,
   };
 
-  actionSheet = null;
+  actionSheet: ActionSheet | null = null;
 
-  longPressedCollectible = null;
+  longPressedCollectible: Collectible | null = null;
 
   renderEmpty = () => {
     const colors = this.context.colors || mockTheme.colors;
@@ -111,36 +127,38 @@ export default class Collectibles extends PureComponent {
     );
   };
 
-  onItemPress = (collectible) => {
-    this.props.navigation.navigate('CollectibleView', {
+  onItemPress = (collectible: Collectible) => {
+    this.props.navigation?.navigate('CollectibleView', {
       ...collectible,
-      contractName: this.props.collectibleContract.name,
+      contractName: this.props.collectibleContract?.name,
     });
   };
 
-  handleOnPress = (collectible) => {
-    this.props.onPress(collectible);
+  handleOnPress = (collectible: Collectible) => {
+    this.props.onPress?.(collectible);
   };
 
   goToAddCollectible = () => {
-    this.props.navigation.push('AddAsset', { assetType: 'collectible' });
+    this.props.navigation?.push('AddAsset', { assetType: 'collectible' });
   };
 
-  showRemoveMenu = (collectible) => {
+  showRemoveMenu = (collectible: Collectible) => {
     this.longPressedCollectible = collectible;
-    this.actionSheet.show();
+    this.actionSheet?.show();
   };
 
   refreshMetadata = () => {
     const { NftController } = Engine.context;
 
-    NftController.addNft(
-      this.longPressedCollectible.current.address,
-      this.longPressedCollectible.current.tokenId,
-    );
+    if (this.longPressedCollectible) {
+      NftController.addNft(
+        this.longPressedCollectible.address,
+        this.longPressedCollectible.tokenId,
+      );
+    }
   };
 
-  handleMenuAction = (index) => {
+  handleMenuAction = (index: number) => {
     if (index === 1) {
       this.removeNft();
     } else if (index === 0) {
@@ -150,23 +168,25 @@ export default class Collectibles extends PureComponent {
 
   removeNft = () => {
     const { NftController } = Engine.context;
-    NftController.removeAndIgnoreNft(
-      this.longPressedCollectible.address,
-      this.longPressedCollectible.tokenId,
-    );
+    if (this.longPressedCollectible) {
+      NftController.removeAndIgnoreNft(
+        this.longPressedCollectible.address,
+        this.longPressedCollectible.tokenId,
+      );
+    }
     Alert.alert(
       strings('wallet.collectible_removed_title'),
       strings('wallet.collectible_removed_desc'),
     );
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: ActionSheet | null) => {
     this.actionSheet = ref;
   };
 
-  keyExtractor = (item) => `${item.address}_${item.tokenId}`;
+  keyExtractor = (item: Collectible) => `${item.address}_${item.tokenId}`;
 
-  renderItem = ({ item }) => {
+  renderItem = ({ item }: { item: Collectible }) => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -224,7 +244,6 @@ export default class Collectibles extends PureComponent {
           ]}
           cancelButtonIndex={2}
           destructiveButtonIndex={1}
-          // eslint-disable-next-line react/jsx-no-bind
           onPress={this.handleMenuAction}
           theme={themeAppearance}
         />
