@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
-import { Alert, BackHandler, View, StyleSheet, Keyboard } from 'react-native';
+import { Alert, BackHandler, View, StyleSheet, Keyboard, ViewStyle, TextStyle, NativeEventSubscription } from 'react-native';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import StorageWrapper from '../../../store/storage-wrapper';
 import OnboardingProgress from '../../UI/OnboardingProgress';
@@ -22,8 +21,22 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import OnboardingSuccess from '../OnboardingSuccess';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  mainWrapper: ViewStyle;
+  actionView: ViewStyle;
+  wrapper: ViewStyle;
+  onBoardingWrapper: ViewStyle;
+  congratulations: TextStyle;
+  baseText: TextStyle;
+  successText: TextStyle;
+  hintText: TextStyle;
+  learnText: TextStyle;
+  recoverText: TextStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -69,48 +82,73 @@ const createStyles = (colors) =>
     },
   });
 
-const hardwareBackPress = () => ({});
+const hardwareBackPress = (): boolean => true;
 const HARDWARE_BACK_PRESS = 'hardwareBackPress';
+
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface NavigationObject {
+  setOptions: (options: unknown) => void;
+  navigate: (route: string, params?: unknown) => void;
+  reset: (config: { routes: { name: string }[] }) => void;
+  pop: () => void;
+}
+
+interface RouteObject {
+  params?: {
+    steps?: number[];
+    words?: string[];
+  };
+}
+
+interface ManualBackupStep3Props {
+  navigation: NavigationObject;
+  route: RouteObject;
+  setOnboardingWizardStep: (step: number) => void;
+  showAlert: (config: AlertConfig) => void;
+}
+
+interface ManualBackupStep3State {
+  currentStep: number;
+  showHint: boolean;
+  hintText: string;
+}
 
 /**
  * View that's shown during the last step of
  * the backup seed phrase flow
  */
-class ManualBackupStep3 extends PureComponent {
-  constructor(props) {
+class ManualBackupStep3 extends PureComponent<ManualBackupStep3Props, ManualBackupStep3State> {
+  declare context: React.ContextType<typeof ThemeContext>;
+  steps: number[] | undefined;
+  backHandler: NativeEventSubscription | null = null;
+
+  constructor(props: ManualBackupStep3Props) {
     super(props);
     this.steps = props.route.params?.steps;
   }
 
-  state = {
+  state: ManualBackupStep3State = {
     currentStep: 4,
     showHint: false,
     hintText: '',
   };
 
-  static propTypes = {
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Action to set onboarding wizard step
-     */
-    setOnboardingWizardStep: PropTypes.func,
-  };
-
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     navigation.setOptions(getTransparentOnboardingNavbarOptions(colors));
   };
 
   componentWillUnmount = () => {
-    BackHandler.removeEventListener(HARDWARE_BACK_PRESS, hardwareBackPress);
+    if (this.backHandler) {
+      this.backHandler.remove();
+    }
   };
 
   componentDidMount = async () => {
@@ -129,7 +167,7 @@ class ManualBackupStep3 extends PureComponent {
         MetaMetricsEvents.WALLET_SECURITY_COMPLETED,
       ).build(),
     );
-    BackHandler.addEventListener(HARDWARE_BACK_PRESS, hardwareBackPress);
+    this.backHandler = BackHandler.addEventListener(HARDWARE_BACK_PRESS, hardwareBackPress);
   };
 
   componentDidUpdate = () => {
@@ -149,10 +187,10 @@ class ManualBackupStep3 extends PureComponent {
       },
     });
 
-  isHintSeedPhrase = (hintText) => {
+  isHintSeedPhrase = (hintText: string): boolean => {
     const words = this.props.route.params?.words;
     if (words) {
-      const lower = (string) => String(string).toLowerCase();
+      const lower = (string: string) => String(string).toLowerCase();
       return lower(hintText) === lower(words.join(' '));
     }
     return false;
@@ -169,7 +207,7 @@ class ManualBackupStep3 extends PureComponent {
     const currentSeedphraseHints = await StorageWrapper.getItem(
       SEED_PHRASE_HINTS,
     );
-    const parsedHints = JSON.parse(currentSeedphraseHints);
+    const parsedHints = JSON.parse(currentSeedphraseHints || '{}');
     await StorageWrapper.setItem(
       SEED_PHRASE_HINTS,
       JSON.stringify({ ...parsedHints, manualBackup: hintText }),
@@ -191,7 +229,7 @@ class ManualBackupStep3 extends PureComponent {
     }
   };
 
-  handleChangeText = (text) => this.setState({ hintText: text });
+  handleChangeText = (text: string) => this.setState({ hintText: text });
 
   renderHint = () => {
     const { showHint, hintText } = this.state;
@@ -208,7 +246,7 @@ class ManualBackupStep3 extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -234,9 +272,9 @@ class ManualBackupStep3 extends PureComponent {
 
 ManualBackupStep3.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
+  setOnboardingWizardStep: (step: number) => dispatch(setOnboardingWizardStep(step)),
 });
 
 export default connect(null, mapDispatchToProps)(ManualBackupStep3);

@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { fontStyles } from '../../../../../../../styles/common';
-import PropTypes from 'prop-types';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import { strings } from '../../../../../../../../locales/i18n';
 import Feather from 'react-native-vector-icons/Feather';
@@ -11,12 +10,29 @@ import ConnectHeader from '../../../../../../UI/ConnectHeader';
 import formatNumber from '../../../../../../../util/formatNumber';
 import TransactionTypes from '../../../../../../../core/TransactionTypes';
 import { renderShortAddress } from '../../../../../../../util/address';
+import { Theme } from '../../../../../../../util/theme/models';
 
 const {
   ASSET: { ERC20 },
 } = TransactionTypes;
 
-const createStyles = (colors) =>
+interface Styles {
+  uppercase: TextStyle;
+  viewData: ViewStyle;
+  viewDataRow: ViewStyle;
+  viewDataTitle: TextStyle;
+  viewDataText: TextStyle;
+  viewDataArrow: ViewStyle;
+  transactionDetails: ViewStyle;
+  transactionDetailsRow: ViewStyle;
+  transactionDetailsTextLeft: TextStyle;
+  transactionDetailsTextRight: ViewStyle;
+  section: ViewStyle;
+  copyIcon: ViewStyle;
+  address: TextStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     uppercase: {
       textTransform: 'capitalize',
@@ -88,24 +104,26 @@ const createStyles = (colors) =>
     },
   });
 
-export default class TransactionReviewDetailsCard extends Component {
-  static propTypes = {
-    toggleViewDetails: PropTypes.func,
-    copyContractAddress: PropTypes.func,
-    toggleViewData: PropTypes.func,
-    address: PropTypes.string,
-    host: PropTypes.string,
-    tokenSpendValue: PropTypes.string,
-    tokenSymbol: PropTypes.string,
-    data: PropTypes.string,
-    displayViewData: PropTypes.bool,
-    method: PropTypes.string,
-    nickname: PropTypes.string,
-    nicknameExists: PropTypes.bool,
-    tokenValue: PropTypes.string,
-    tokenStandard: PropTypes.string,
-    tokenName: PropTypes.string,
-  };
+interface TransactionReviewDetailsCardProps {
+  toggleViewDetails?: () => void;
+  copyContractAddress?: (address: string) => void;
+  toggleViewData?: () => void;
+  address?: string;
+  host?: string;
+  tokenSpendValue?: string;
+  tokenSymbol?: string;
+  data?: string;
+  displayViewData?: boolean;
+  method?: string;
+  nickname?: string;
+  nicknameExists?: boolean;
+  tokenValue?: string;
+  tokenStandard?: string;
+  tokenName?: string;
+}
+
+export default class TransactionReviewDetailsCard extends Component<TransactionReviewDetailsCardProps> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   render() {
     const {
@@ -125,7 +143,7 @@ export default class TransactionReviewDetailsCard extends Component {
       tokenName,
       tokenStandard,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -162,7 +180,7 @@ export default class TransactionReviewDetailsCard extends Component {
                 size={16}
                 color={colors.primary.default}
                 style={styles.copyIcon}
-                onPress={() => copyContractAddress(address)}
+                onPress={() => copyContractAddress?.(address || '')}
               />
             </View>
           </View>

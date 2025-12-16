@@ -1,6 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, View, Text, InteractionManager } from 'react-native';
+import { StyleSheet, View, Text, InteractionManager, ViewStyle, TextStyle } from 'react-native';
 import URL from 'url-parse';
 import { useSelector } from 'react-redux';
 import { fontStyles } from '../../../../../../styles/common';
@@ -22,8 +21,29 @@ import { AssetWatcherSelectorsIDs } from '../../../../../../../e2e/selectors/Tra
 import { getDecimalChainId } from '../../../../../../util/networks';
 import { useMetrics } from '../../../../../../components/hooks/useMetrics';
 import Logger from '../../../../../../util/Logger';
+import { Theme } from '../../../../../../util/theme/models';
+import { RootState } from '../../../../../../reducers';
 
-const createStyles = (colors) =>
+interface Styles {
+  root: ViewStyle;
+  title: TextStyle;
+  text: TextStyle;
+  tokenInformation: ViewStyle;
+  tokenInfo: ViewStyle;
+  approveTransactionHeaderWrapper: ViewStyle;
+  infoTitleWrapper: ViewStyle;
+  infoTitle: TextStyle;
+  infoBalance: ViewStyle;
+  infoToken: ViewStyle;
+  token: ViewStyle;
+  identicon: ViewStyle;
+  signText: TextStyle;
+  addMessage: ViewStyle;
+  children: ViewStyle;
+  titleWrapper: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -94,14 +114,38 @@ const createStyles = (colors) =>
       borderTopColor: colors.border.muted,
       borderTopWidth: 1,
     },
+    titleWrapper: {},
   });
+
+interface Asset {
+  address: string;
+  symbol: string;
+  decimals: number;
+  standard?: string;
+}
+
+interface SuggestedAssetMeta {
+  asset: Asset;
+  interactingAddress?: string;
+}
+
+interface CurrentPageInformation {
+  url?: string;
+}
+
+interface WatchAssetRequestProps {
+  onCancel: () => void;
+  onConfirm: () => Promise<void>;
+  suggestedAssetMeta: SuggestedAssetMeta;
+  currentPageInformation: CurrentPageInformation;
+}
 
 const WatchAssetRequest = ({
   suggestedAssetMeta,
   currentPageInformation,
   onCancel,
   onConfirm,
-}) => {
+}: WatchAssetRequestProps) => {
   const { asset, interactingAddress } = suggestedAssetMeta;
   // TODO - Once TokensController is updated, interactingAddress should always be defined
   const { colors } = useTheme();
@@ -113,11 +157,11 @@ const WatchAssetRequest = ({
     ? strings('transaction.failed')
     : `${renderFromTokenMinimalUnit(balance, asset.decimals)} ${asset.symbol}`;
 
-  const activeTabUrl = useSelector(getActiveTabUrl, isEqual);
+  const activeTabUrl = useSelector((state: RootState) => getActiveTabUrl(state), isEqual);
 
   const getTokenAddedAnalyticsParams = () => {
     try {
-      const url = new URL(currentPageInformation?.url);
+      const url = new URL(currentPageInformation?.url || '');
 
       return {
         token_address: asset?.address,
@@ -126,8 +170,8 @@ const WatchAssetRequest = ({
         chain_id: getDecimalChainId(chainId),
         source: 'Dapp suggested (watchAsset)',
       };
-    } catch (error) {
-      Logger.error(error, 'WatchAssetRequest.getTokenAddedAnalyticsParams');
+    } catch (err) {
+      Logger.error(err as Error, 'WatchAssetRequest.getTokenAddedAnalyticsParams');
       return undefined;
     }
   };
@@ -175,7 +219,7 @@ const WatchAssetRequest = ({
         />
       </View>
       <View style={styles.titleWrapper}>
-        <Text style={styles.title} onPress={this.cancelSignature}>
+        <Text style={styles.title}>
           {strings('watch_asset_request.title')}
         </Text>
       </View>
@@ -228,25 +272,6 @@ const WatchAssetRequest = ({
       </ActionView>
     </View>
   );
-};
-
-WatchAssetRequest.propTypes = {
-  /**
-   * Callback triggered when this message signature is rejected
-   */
-  onCancel: PropTypes.func,
-  /**
-   * Callback triggered when this message signature is approved
-   */
-  onConfirm: PropTypes.func,
-  /**
-   * Token object
-   */
-  suggestedAssetMeta: PropTypes.object,
-  /**
-   * Object containing current page title, url, and icon href
-   */
-  currentPageInformation: PropTypes.object,
 };
 
 export default WatchAssetRequest;
