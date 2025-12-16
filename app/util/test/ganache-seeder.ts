@@ -1,13 +1,22 @@
 import { Web3Provider } from '@ethersproject/providers';
-import { ContractFactory } from '@ethersproject/contracts';
+import { ContractFactory, Contract } from '@ethersproject/contracts';
 import { SMART_CONTRACTS, contractConfiguration } from './smart-contracts';
 import ContractAddressRegistry from './contract-address-registry';
+
+type SmartContractName = typeof SMART_CONTRACTS[keyof typeof SMART_CONTRACTS];
+
+interface GanacheProvider {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+}
 
 /*
  * Ganache seeder is used to seed initial smart contract or set initial blockchain state.
  */
 class GanacheSeeder {
-  constructor(ganacheProvider) {
+  private smartContractRegistry: ContractAddressRegistry;
+  private ganacheProvider: GanacheProvider;
+
+  constructor(ganacheProvider: GanacheProvider) {
     this.smartContractRegistry = new ContractAddressRegistry();
     this.ganacheProvider = ganacheProvider;
   }
@@ -18,8 +27,8 @@ class GanacheSeeder {
    * @param contractName
    */
 
-  async deploySmartContract(contractName) {
-    const ethersProvider = new Web3Provider(this.ganacheProvider, 'any');
+  async deploySmartContract(contractName: SmartContractName): Promise<void> {
+    const ethersProvider = new Web3Provider(this.ganacheProvider as unknown as Parameters<typeof Web3Provider>[0], 'any');
     const signer = ethersProvider.getSigner();
     const fromAddress = await signer.getAddress();
     const contractFactory = new ContractFactory(
@@ -28,7 +37,7 @@ class GanacheSeeder {
       signer,
     );
 
-    let contract;
+    let contract: Contract;
 
     if (contractName === SMART_CONTRACTS.HST) {
       contract = await contractFactory.deploy(
@@ -69,7 +78,7 @@ class GanacheSeeder {
    * @param contractName
    * @param contractAddress
    */
-  storeSmartContractAddress(contractName, contractAddress) {
+  storeSmartContractAddress(contractName: SmartContractName, contractAddress: string): void {
     this.smartContractRegistry.storeNewContractAddress(
       contractName,
       contractAddress,
@@ -81,7 +90,7 @@ class GanacheSeeder {
    *
    * @returns ContractAddressRegistry
    */
-  getContractRegistry() {
+  getContractRegistry(): ContractAddressRegistry {
     return this.smartContractRegistry;
   }
 }
