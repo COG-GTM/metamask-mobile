@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { Image, StyleSheet, View, Text, Platform } from 'react-native';
+import { Image, StyleSheet, View, Text, Platform, ViewStyle, TextStyle, ImageStyle } from 'react-native';
 import StyledButton from '../StyledButton';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
@@ -11,8 +10,20 @@ import {
   ERROR_PAGE_RETURN_BUTTON,
   ERROR_PAGE_TITLE,
 } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  wrapper: ViewStyle;
+  foxWrapper: ViewStyle;
+  textWrapper: ViewStyle;
+  image: ImageStyle;
+  errorTitle: TextStyle;
+  errorMessage: TextStyle;
+  errorInfo: TextStyle;
+  buttonWrapper: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     wrapper: {
       ...StyleSheet.absoluteFillObject,
@@ -62,27 +73,24 @@ const createStyles = (colors) =>
     },
   });
 
-/**
- * View that renders custom error page for the browser
- */
-export default class WebviewError extends PureComponent {
-  static propTypes = {
-    /**
-     * error info
-     */
-    error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-    /**
-     * Function that reloads the page
-     */
-    returnHome: PropTypes.func,
-  };
+interface WebviewErrorInfo {
+  description?: string;
+}
+
+interface WebviewErrorProps {
+  error?: WebviewErrorInfo | boolean;
+  returnHome?: () => void;
+}
+
+export default class WebviewError extends PureComponent<WebviewErrorProps> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   static defaultProps = {
     error: false,
   };
 
   returnHome = () => {
-    this.props.returnHome();
+    this.props.returnHome?.();
   };
 
   render() {
@@ -112,7 +120,7 @@ export default class WebviewError extends PureComponent {
           >
             {strings('webview_error.message')}
           </Text>
-          {error.description ? (
+          {typeof error === 'object' && error.description ? (
             <Text style={styles.errorInfo}>{error.description}</Text>
           ) : null}
         </View>

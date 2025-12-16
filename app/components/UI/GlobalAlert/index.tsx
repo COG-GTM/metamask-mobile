@@ -1,21 +1,29 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, ViewStyle, TextStyle } from 'react-native';
 import { dismissAlert } from '../../../actions/alert';
 import { connect } from 'react-redux';
 import { fontStyles } from '../../../styles/common';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ElevatedView from 'react-native-elevated-view';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+interface Styles {
+  modal: ViewStyle;
+  copyAlert: (width?: number) => ViewStyle;
+  copyAlertIcon: ViewStyle;
+  copyAlertText: TextStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     modal: {
       margin: 0,
       width: '100%',
     },
-    copyAlert: (width) => ({
+    copyAlert: (width?: number): ViewStyle => ({
       width: width || 180,
       backgroundColor: colors.overlay.alternative,
       padding: 20,
@@ -36,39 +44,27 @@ const createStyles = (colors) =>
     },
   });
 
-/**
- * Wrapper component for a global alert
- * connected to redux
- */
-class GlobalAlert extends PureComponent {
-  static propTypes = {
-    /**
-     * Boolean that determines if the modal should be shown
-     */
-    isVisible: PropTypes.bool.isRequired,
-    /**
-     * Number that determines when it should be autodismissed (in miliseconds)
-     */
-    autodismiss: PropTypes.number,
-    /**
-     * Children component(s)
-     */
-    content: PropTypes.any,
-    /**
-     * Object with data required to render the content
-     */
-    data: PropTypes.object,
-    /**
-     * function that dismisses de modal
-     */
-    dismissAlert: PropTypes.func,
-  };
+interface AlertData {
+  width?: number;
+  msg?: string;
+}
+
+interface GlobalAlertProps {
+  isVisible: boolean;
+  autodismiss?: number;
+  content?: string;
+  data?: AlertData;
+  dismissAlert: () => void;
+}
+
+class GlobalAlert extends PureComponent<GlobalAlertProps> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   onClose = () => {
     this.props.dismissAlert();
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: GlobalAlertProps) {
     if (
       this.props.autodismiss &&
       !isNaN(this.props.autodismiss) &&
@@ -81,7 +77,7 @@ class GlobalAlert extends PureComponent {
     }
   }
 
-  getComponent(content) {
+  getComponent(content?: string) {
     switch (content) {
       case 'clipboard-alert':
         return this.renderClipboardAlert();
@@ -97,11 +93,11 @@ class GlobalAlert extends PureComponent {
 
   renderClipboardAlert = () => {
     const colors = this.context.colors || mockTheme.colors;
-    const styles = this.getStyles(colors);
+    const styles = this.getStyles();
 
     return (
       <ElevatedView
-        style={styles.copyAlert(this.props.data && this.props.data.width)}
+        style={styles.copyAlert(this.props.data?.width)}
         elevation={5}
       >
         <View style={styles.copyAlertIcon}>
@@ -112,7 +108,7 @@ class GlobalAlert extends PureComponent {
           />
         </View>
         <Text style={styles.copyAlertText}>
-          {this.props.data && this.props.data.msg}
+          {this.props.data?.msg}
         </Text>
       </ElevatedView>
     );
@@ -120,8 +116,7 @@ class GlobalAlert extends PureComponent {
 
   render = () => {
     const { content, isVisible } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = this.getStyles(colors);
+    const styles = this.getStyles();
 
     return (
       <Modal
@@ -140,14 +135,14 @@ class GlobalAlert extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   isVisible: state.alert.isVisible,
   autodismiss: state.alert.autodismiss,
   content: state.alert.content,
   data: state.alert.data,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
   dismissAlert: () => dispatch(dismissAlert()),
 });
 
