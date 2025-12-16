@@ -1,4 +1,26 @@
-export default [
+interface AbiInput {
+  name: string;
+  type: string;
+  indexed?: boolean;
+}
+
+interface AbiOutput {
+  name: string;
+  type: string;
+}
+
+interface AbiItem {
+  constant?: boolean;
+  inputs?: AbiInput[];
+  name?: string;
+  outputs?: AbiOutput[];
+  payable?: boolean;
+  stateMutability?: string;
+  type: string;
+  anonymous?: boolean;
+}
+
+const resolverAbi: AbiItem[] = [
   {
     constant: false,
     inputs: [
@@ -233,3 +255,5 @@ export default [
     type: 'event',
   },
 ];
+
+export default resolverAbi;

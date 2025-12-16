@@ -9,6 +9,9 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from 'react-native';
 import {
   getApplicationName,
@@ -16,16 +19,29 @@ import {
   getBuildNumber,
 } from 'react-native-device-info';
 import { fontStyles } from '../../../../styles/common';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import AppConstants from '../../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
+import { Theme } from '../../../../util/theme/models';
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
-const createStyles = (colors) =>
+interface Styles {
+  wrapper: ViewStyle;
+  wrapperContent: ViewStyle;
+  title: TextStyle;
+  link: TextStyle;
+  division: ViewStyle;
+  image: ImageStyle;
+  logoWrapper: ViewStyle;
+  versionInfo: TextStyle;
+  branchInfo: TextStyle;
+  links: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -83,29 +99,39 @@ const createStyles = (colors) =>
       color: colors.text.alternative,
       ...fontStyles.normal,
     },
+    links: {},
   });
 
 const foxImage = require('../../../../images/branding/fox.png'); // eslint-disable-line import/no-commonjs
 
+interface NavigationObject {
+  setOptions: (options: unknown) => void;
+  navigate: (route: string, params?: unknown) => void;
+}
+
+interface AppInformationProps {
+  navigation: NavigationObject;
+}
+
+interface AppInformationState {
+  appInfo: string;
+  appVersion: string;
+}
+
 /**
  * View that contains app information
  */
-export default class AppInformation extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-  };
+export default class AppInformation extends PureComponent<AppInformationProps, AppInformationState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: AppInformationState = {
     appInfo: '',
     appVersion: '',
   };
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.info_title'),
@@ -131,7 +157,7 @@ export default class AppInformation extends PureComponent {
     this.updateNavBar();
   };
 
-  goTo = (url, title) => {
+  goTo = (url: string, title: string) => {
     InteractionManager.runAfterInteractions(() => {
       this.props.navigation.navigate('Webview', {
         screen: 'SimpleWebview',
@@ -174,7 +200,7 @@ export default class AppInformation extends PureComponent {
   };
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
