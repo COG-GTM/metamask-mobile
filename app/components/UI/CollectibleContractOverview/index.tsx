@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import PropTypes from 'prop-types';
+import { StyleSheet, Text, View, ViewStyle, TextStyle } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import CollectibleMedia from '../CollectibleMedia';
@@ -15,8 +14,18 @@ import { collectiblesSelector } from '../../../reducers/collectibles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { TokenOverviewSelectorsIDs } from '../../../../e2e/selectors/wallet/TokenOverview.selectors';
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
+import { RootState } from '../../../reducers';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  wrapper: ViewStyle;
+  assetLogo: ViewStyle;
+  information: ViewStyle;
+  name: TextStyle;
+  actions: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -50,38 +59,35 @@ const createStyles = (colors) =>
     },
   });
 
-/**
- * View that displays a specific collectible contract
- * including the overview (name, address, symbol, logo, description, total supply)
- */
-class CollectibleContractOverview extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the asset to be displayed
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * Array of ERC721 assets
-     */
-    collectibles: PropTypes.array,
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * How many collectibles are owned by the user
-     */
-    ownerOf: PropTypes.number,
-    /**
-     * Action that sets a collectible contract type transaction
-     */
-    toggleCollectibleContractModal: PropTypes.func.isRequired,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func,
-  };
+interface CollectibleContract {
+  address: string;
+  name?: string;
+  logo?: string;
+}
+
+interface Collectible {
+  address: string;
+  image?: string;
+  tokenId?: string;
+}
+
+interface NavigationProp {
+  push: (route: string, params?: Record<string, unknown>) => void;
+  navigate: (route: string) => void;
+}
+
+interface CollectibleContractOverviewProps {
+  collectibleContract: CollectibleContract;
+  collectibles: Collectible[];
+  navigation: NavigationProp;
+  ownerOf?: number;
+  toggleCollectibleContractModal: () => void;
+  newAssetTransaction: (collectible: Collectible) => void;
+}
+
+class CollectibleContractOverview extends PureComponent<CollectibleContractOverviewProps> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
   onAdd = () => {
     const { navigation, collectibleContract } = this.props;
@@ -93,11 +99,13 @@ class CollectibleContractOverview extends PureComponent {
 
   onSend = () => {
     const { collectibleContract, collectibles } = this.props;
-    const collectible = collectibles.find((collectible) =>
-      toLowerCaseEquals(collectible.address, collectibleContract.address),
+    const collectible = collectibles.find((item) =>
+      toLowerCaseEquals(item.address, collectibleContract.address),
     );
-    this.props.newAssetTransaction(collectible);
-    this.props.navigation.navigate('SendFlowView');
+    if (collectible) {
+      this.props.newAssetTransaction(collectible);
+      this.props.navigation.navigate('SendFlowView');
+    }
   };
 
   onInfo = () => this.props.toggleCollectibleContractModal();
@@ -117,9 +125,10 @@ class CollectibleContractOverview extends PureComponent {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const lowerAddress = address.toLowerCase();
+    const transferInfo = collectiblesTransferInformation[lowerAddress as keyof typeof collectiblesTransferInformation];
     const leftActionButtonText =
       lowerAddress in collectiblesTransferInformation
-        ? collectiblesTransferInformation[lowerAddress].tradable &&
+        ? transferInfo?.tradable &&
           strings('asset_overview.send_button')
         : strings('asset_overview.send_button');
     return (
@@ -159,18 +168,16 @@ class CollectibleContractOverview extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   collectibles: collectiblesSelector(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),
-  newAssetTransaction: (selectedAsset) =>
+  newAssetTransaction: (selectedAsset: Collectible) =>
     dispatch(newAssetTransaction(selectedAsset)),
 });
-
-CollectibleContractOverview.contextType = ThemeContext;
 
 export default connect(
   mapStateToProps,
