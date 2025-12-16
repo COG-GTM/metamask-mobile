@@ -8,8 +8,10 @@ import {
   StyleSheet,
   Image,
   Dimensions,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import StyledButton from '../../UI/StyledButton';
@@ -27,6 +29,7 @@ import { useTheme } from '../../../util/theme';
 import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ManualBackUpSteps.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { Theme } from '../../../util/theme/models';
 
 const explain_backup_seedphrase = require('../../../images/explain-backup-seedphrase.png'); // eslint-disable-line
 
@@ -34,7 +37,43 @@ const IMAGE_1_RATIO = 162.8 / 138;
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const IMG_PADDING = Device.isIphoneX() ? 100 : Device.isIphone5S() ? 180 : 220;
 
-const createStyles = (colors) =>
+interface Styles {
+  mainWrapper: ViewStyle;
+  scrollviewWrapper: ViewStyle;
+  wrapper: ViewStyle;
+  content: ViewStyle;
+  title: TextStyle;
+  text: ViewStyle;
+  label: TextStyle;
+  bold: TextStyle;
+  image: ImageStyle;
+  card: ViewStyle;
+  modalNoBorder: ViewStyle;
+  secureModalContainer: ViewStyle;
+  secureModalXButton: ViewStyle;
+  whySecureTitle: TextStyle;
+  learnMoreText: TextStyle;
+  blue: TextStyle;
+  titleIcon: TextStyle;
+  centerContent: ViewStyle;
+  infoIcon: TextStyle;
+  whyImportantText: TextStyle;
+  manualTitle: TextStyle;
+  paragraph: TextStyle;
+  smallParagraph: TextStyle;
+  barsTitle: TextStyle;
+  barsContainer: ViewStyle;
+  bar: ViewStyle;
+  secureModalXIcon: TextStyle;
+  auxCenterView: ViewStyle;
+  secureModalTitleContainer: ViewStyle;
+  explainBackupContainer: ViewStyle;
+  whySecureText: TextStyle;
+  button?: ViewStyle;
+  remindLaterButton?: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -196,11 +235,17 @@ const createStyles = (colors) =>
     },
   });
 
-/**
- * View that's shown during the first step of
- * the backup seed phrase flow
- */
-const AccountBackupStep1B = (props) => {
+interface AccountBackupStep1BProps {
+  navigation: {
+    navigate: (route: string, params?: object) => void;
+    setOptions: (options: object) => void;
+  };
+  route: {
+    params?: object;
+  };
+}
+
+const AccountBackupStep1B: React.FC<AccountBackupStep1BProps> = (props) => {
   const { navigation, route } = props;
   const [showWhySecureWalletModal, setWhySecureWalletModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -211,7 +256,7 @@ const AccountBackupStep1B = (props) => {
     navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
   }, [navigation, route, colors]);
 
-  const goNext = () => {
+  const goNext = (): void => {
     props.navigation.navigate('ManualBackupStep1', { ...props.route.params });
     trackOnboarding(
       MetricsEventBuilder.createEventBuilder(
@@ -220,7 +265,7 @@ const AccountBackupStep1B = (props) => {
     );
   };
 
-  const learnMore = () => {
+  const learnMore = (): void => {
     setWhySecureWalletModal(false);
     props.navigation.navigate('Webview', {
       screen: 'SimpleWebview',
@@ -231,13 +276,13 @@ const AccountBackupStep1B = (props) => {
     });
   };
 
-  const dismiss = () => null;
+  const dismiss = (): null => null;
 
-  const showWhySecureWallet = () => setWhySecureWalletModal(true);
-  const hideWhySecureWallet = () => setWhySecureWalletModal(false);
+  const showWhySecureWallet = (): void => setWhySecureWalletModal(true);
+  const hideWhySecureWallet = (): void => setWhySecureWalletModal(false);
 
-  const showWhatIsSeedphrase = () => setWhatIsSeedphraseModal(true);
-  const hideWhatIsSeedphrase = () => setWhatIsSeedphraseModal(false);
+  const showWhatIsSeedphrase = (): void => setWhatIsSeedphraseModal(true);
+  const hideWhatIsSeedphrase = (): void => setWhatIsSeedphraseModal(false);
 
   return (
     <SafeAreaView style={styles.mainWrapper}>
@@ -383,17 +428,6 @@ const AccountBackupStep1B = (props) => {
       />
     </SafeAreaView>
   );
-};
-
-AccountBackupStep1B.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
 };
 
 export default AccountBackupStep1B;
