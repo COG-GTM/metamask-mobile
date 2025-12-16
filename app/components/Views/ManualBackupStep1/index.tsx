@@ -7,8 +7,8 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Appearance,
+  ColorSchemeName,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import FeatherIcons from 'react-native-vector-icons/Feather';
@@ -38,20 +38,38 @@ import { Authentication } from '../../../core';
 import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ManualBackUpSteps.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { RootState } from '../../../reducers';
+
+interface NavigationObject {
+  setOptions: (options: unknown) => void;
+  navigate: (route: string, params?: unknown) => void;
+}
+
+interface RouteObject {
+  params?: {
+    words?: string[];
+  };
+}
+
+interface ManualBackupStep1Props {
+  route: RouteObject;
+  navigation: NavigationObject;
+  appTheme: string;
+}
 
 /**
  * View that's shown during the second step of
  * the backup seed phrase flow
  */
-const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
+const ManualBackupStep1 = ({ route, navigation, appTheme }: ManualBackupStep1Props) => {
   const [seedPhraseHidden, setSeedPhraseHidden] = useState(true);
 
-  const [password, setPassword] = useState(undefined);
+  const [password, setPassword] = useState<string | undefined>(undefined);
   const [warningIncorrectPassword, setWarningIncorrectPassword] =
-    useState(undefined);
+    useState<string | undefined>(undefined);
   const [ready, setReady] = useState(false);
   const [view, setView] = useState(SEED_PHRASE);
-  const [words, setWords] = useState([]);
+  const [words, setWords] = useState<string[]>([]);
 
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
@@ -63,7 +81,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
   }, [colors, navigation, route]);
 
-  const tryExportSeedPhrase = async (password) => {
+  const tryExportSeedPhrase = async (password: string): Promise<string[]> => {
     const { KeyringController } = Engine.context;
     const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(
       password,
@@ -101,7 +119,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     updateNavBar();
   }, [updateNavBar]);
 
-  const onPasswordChange = (password) => {
+  const onPasswordChange = (password: string) => {
     setPassword(password);
   };
 
@@ -121,7 +139,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     );
   };
 
-  const tryUnlockWithPassword = async (password) => {
+  const tryUnlockWithPassword = async (password: string) => {
     setReady(false);
     try {
       const seedPhrase = await tryExportSeedPhrase(password);
@@ -130,7 +148,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
       setReady(true);
     } catch (e) {
       let msg = strings('reveal_credential.warning_incorrect_password');
-      if (e.toString().toLowerCase() !== WRONG_PASSWORD_ERROR.toLowerCase()) {
+      if ((e as Error).toString().toLowerCase() !== WRONG_PASSWORD_ERROR.toLowerCase()) {
         msg = strings('reveal_credential.unknown_error');
       }
       setWarningIncorrectPassword(msg);
@@ -139,11 +157,13 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
   };
 
   const tryUnlock = () => {
-    tryUnlockWithPassword(password);
+    if (password) {
+      tryUnlockWithPassword(password);
+    }
   };
 
-  const getBlurType = () => {
-    let blurType = 'light';
+  const getBlurType = (): 'light' | 'dark' => {
+    let blurType: ColorSchemeName = 'light';
     switch (appTheme) {
       case 'light':
         blurType = 'light';
@@ -157,7 +177,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
       default:
         blurType = 'light';
     }
-    return blurType;
+    return blurType || 'light';
   };
 
   const renderSeedPhraseConcealer = () => {
@@ -306,22 +326,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
   );
 };
 
-ManualBackupStep1.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Theme that app is set to
-   */
-  appTheme: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   appTheme: state.user.appTheme,
 });
 

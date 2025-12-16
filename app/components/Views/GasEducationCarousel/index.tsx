@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect, ReactNode } from 'react';
 import {
   View,
   ScrollView,
@@ -7,6 +6,10 @@ import {
   Image,
   Dimensions,
   TouchableOpacity,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
+  ImageSourcePropType,
 } from 'react-native';
 import StyledButton from '../../UI/StyledButton';
 import { baseStyles } from '../../../styles/common';
@@ -36,6 +39,8 @@ import {
   selectConversionRate,
   selectCurrentCurrency,
 } from '../../../selectors/currencyRateController';
+import { RootState } from '../../../reducers';
+import { Theme } from '../../../util/theme/models';
 
 const IMAGE_3_RATIO = 281 / 354;
 const IMAGE_2_RATIO = 353 / 416;
@@ -44,7 +49,28 @@ const DEVICE_WIDTH = Dimensions.get('window').width;
 
 const IMG_PADDING = Device.isIphone5() ? 220 : 200;
 
-const createStyles = (colors) =>
+interface Styles {
+  scroll: ViewStyle;
+  wrapper: ViewStyle;
+  title: TextStyle;
+  subtitle: TextStyle;
+  subheader: TextStyle;
+  link: TextStyle;
+  ctas: ViewStyle;
+  ctaWrapper: ViewStyle;
+  carouselImage: ImageStyle;
+  carouselImage1: ImageStyle;
+  carouselImage2: ImageStyle;
+  carouselImage3: ImageStyle;
+  carouselImageWrapper: ViewStyle;
+  circle: ViewStyle;
+  solidCircle: ViewStyle;
+  progessContainer: ViewStyle;
+  tab: ViewStyle;
+  scrollTabs?: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     scroll: {
       flexGrow: 1,
@@ -132,11 +158,35 @@ const createStyles = (colors) =>
 const gas_education_carousel_1 = require('../../../images/gas-education-carousel-1.png'); // eslint-disable-line
 const gas_education_carousel_2 = require('../../../images/gas-education-carousel-2.png'); // eslint-disable-line
 const gas_education_carousel_3 = require('../../../images/gas-education-carousel-3.png'); // eslint-disable-line
-const carousel_images = [
+const carousel_images: ImageSourcePropType[] = [
   gas_education_carousel_1,
   gas_education_carousel_2,
   gas_education_carousel_3,
 ];
+
+interface NavigationObject {
+  setOptions: (options: unknown) => void;
+  navigate: (route: string, params?: unknown) => void;
+  pop: () => void;
+}
+
+interface RouteObject {
+  params?: {
+    navigateTo?: () => void;
+  };
+}
+
+interface GasEducationCarouselProps {
+  navigation: NavigationObject;
+  route: RouteObject;
+  conversionRate?: number;
+  currentCurrency?: string;
+  ticker?: string;
+}
+
+interface TabChangeEvent {
+  i: number;
+}
 
 /**
  * View that is displayed to first time (new) users
@@ -147,9 +197,9 @@ const GasEducationCarousel = ({
   conversionRate,
   currentCurrency,
   ticker,
-}) => {
+}: GasEducationCarouselProps) => {
   const [currentTab, setCurrentTab] = useState(1);
-  const [gasFiat, setGasFiat] = useState(null);
+  const [gasFiat, setGasFiat] = useState<string | null>(null);
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [isLoading, setIsLoading] = useState(true);
@@ -210,10 +260,10 @@ const GasEducationCarousel = ({
           conversionRate,
         });
 
-        const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
-        setGasFiat(gasFiat);
+        const gasFiatValue = formatCurrency(maxFeePerGasConversion, currentCurrency || 'USD');
+        setGasFiat(gasFiatValue);
       } catch (e) {
-        Logger.error(e);
+        Logger.error(e as Error);
       }
       setIsLoading(false);
     };
@@ -227,7 +277,7 @@ const GasEducationCarousel = ({
 
   const renderTabBar = () => <View />;
 
-  const onChangeTab = (obj) => {
+  const onChangeTab = (obj: TabChangeEvent) => {
     setCurrentTab(obj.i + 1);
   };
 
@@ -239,7 +289,7 @@ const GasEducationCarousel = ({
       },
     });
 
-  const renderText = (key) => {
+  const renderText = (key: number): ReactNode => {
     if (key === 1) {
       return (
         <View style={styles.tab}>
@@ -316,6 +366,7 @@ const GasEducationCarousel = ({
         </View>
       );
     }
+    return null;
   };
 
   return (
@@ -333,13 +384,13 @@ const GasEducationCarousel = ({
             >
               {['one', 'two', 'three'].map((value, index) => {
                 const key = index + 1;
-                const imgStyleKey = `carouselImage${key}`;
+                const imgStyleKey = `carouselImage${key}` as keyof Styles;
                 return (
                   <View key={key} style={baseStyles.flexGrow}>
                     <View style={styles.carouselImageWrapper}>
                       <Image
                         source={carousel_images[index]}
-                        style={[styles.carouselImage, styles[imgStyleKey]]}
+                        style={[styles.carouselImage, styles[imgStyleKey] as ImageStyle]}
                         resizeMethod={'auto'}
                       />
                     </View>
@@ -387,30 +438,7 @@ const GasEducationCarousel = ({
   );
 };
 
-GasEducationCarousel.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-    /* conversion rate of ETH - FIAT
-    */
-  conversionRate: PropTypes.any,
-  /**
-    /* Selected currency
-    */
-  currentCurrency: PropTypes.string,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),
