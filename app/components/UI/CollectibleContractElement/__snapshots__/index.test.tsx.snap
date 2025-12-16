@@ -197,7 +197,9 @@ exports[`CollectibleContractElement render matches snapshot 1`] = `
       </Text>
     </View>
   </TouchableOpacity>
-  <View>
+  <View
+    style={{}}
+  >
     <View
       style={
         {
@@ -208,7 +210,7 @@ exports[`CollectibleContractElement render matches snapshot 1`] = `
       }
     >
       <View
-        styles={
+        style={
           {
             "flex": 1,
             "flexDirection": "row",
@@ -366,7 +368,7 @@ exports[`CollectibleContractElement render matches snapshot 1`] = `
         </TouchableOpacity>
       </View>
       <View
-        styles={
+        style={
           {
             "flex": 1,
             "flexDirection": "row",
@@ -528,7 +530,7 @@ exports[`CollectibleContractElement render matches snapshot 1`] = `
         </TouchableOpacity>
       </View>
       <View
-        styles={
+        style={
           {
             "flex": 1,
             "flexDirection": "row",
@@ -696,7 +698,7 @@ exports[`CollectibleContractElement render matches snapshot 1`] = `
       }
     >
       <View
-        styles={
+        style={
           {
             "flex": 1,
             "flexDirection": "row",
