@@ -127,7 +127,7 @@ describe('CollectibleContractElement', () => {
       const removeFavoriteMock = jest.fn();
 
       const props = {
-        asset: { favorites: false, name: 'AssetName', logo: 'asset-logo.png' },
+        asset: { favorites: false, name: 'AssetName', logo: 'asset-logo.png', address: '0xdef' },
         contractCollectibles: [
           { address: '0xdef', tokenId: '1', name: 'Collectible1' },
           { address: '0xdef', tokenId: '2', name: 'Collectible2' },

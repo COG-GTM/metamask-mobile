@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import { fontStyles } from '../../../styles/common';
 import CollectibleMedia from '../CollectibleMedia';
 import Device from '../../../util/device';
@@ -23,11 +22,27 @@ import {
   useMetrics,
 } from '../../../components/hooks/useMetrics';
 import { getDecimalChainId } from '../../../util/networks';
+import { RootState } from '../../../reducers';
+import { Theme } from '../../../util/theme/models';
 
 const DEVICE_WIDTH = Device.getDeviceWidth();
 const COLLECTIBLE_WIDTH = (DEVICE_WIDTH - 30 - 16) / 3;
 
-const createStyles = (colors, brandColors) =>
+interface CollectibleAsset {
+  address: string;
+  name?: string;
+  logo?: string;
+  favorites?: boolean;
+}
+
+interface Collectible {
+  address: string;
+  tokenId: string;
+  name?: string;
+  logo?: string;
+}
+
+const createStyles = (colors: Theme['colors'], brandColors: Theme['brandColors']) =>
   StyleSheet.create({
     itemWrapper: {
       paddingHorizontal: 15,
@@ -74,34 +89,41 @@ const createStyles = (colors, brandColors) =>
       borderRadius: 16,
       backgroundColor: brandColors.yellow500,
     },
+    grid: {},
   });
 
-const splitIntoSubArrays = (array, count) => {
-  const newArray = [];
-  while (array.length > 0) {
-    newArray.push(array.splice(0, count));
+const splitIntoSubArrays = <T,>(array: T[], count: number): T[][] => {
+  const newArray: T[][] = [];
+  const arrayCopy = [...array];
+  while (arrayCopy.length > 0) {
+    newArray.push(arrayCopy.splice(0, count));
   }
   return newArray;
 };
 
-/**
- * Customizable view to render assets in lists
- */
-function CollectibleContractElement({
+interface CollectibleContractElementProps extends PropsFromRedux {
+  asset: CollectibleAsset;
+  contractCollectibles: Collectible[];
+  collectiblesVisible?: boolean;
+  onPress: (collectible: Collectible) => void;
+}
+
+const CollectibleContractElement: React.FC<CollectibleContractElementProps> = ({
   asset,
   contractCollectibles,
   collectiblesVisible: propsCollectiblesVisible,
   onPress,
   chainId,
   selectedAddress,
-  removeFavoriteCollectible,
-}) {
-  const [collectiblesGrid, setCollectiblesGrid] = useState([]);
+  removeFavoriteCollectible: dispatchRemoveFavoriteCollectible,
+}) => {
+  const [collectiblesGrid, setCollectiblesGrid] = useState<Collectible[][]>([]);
   const [collectiblesVisible, setCollectiblesVisible] = useState(
     propsCollectiblesVisible,
   );
-  const actionSheetRef = useRef();
-  const longPressedCollectible = useRef(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const actionSheetRef = useRef<any>(null);
+  const longPressedCollectible = useRef<Collectible | null>(null);
   const { colors, themeAppearance, brandColors } = useTheme();
   const styles = createStyles(colors, brandColors);
   const { trackEvent, createEventBuilder } = useMetrics();
@@ -111,20 +133,22 @@ function CollectibleContractElement({
   }, [collectiblesVisible, setCollectiblesVisible]);
 
   const onPressCollectible = useCallback(
-    (collectible) => {
+    (collectible: Collectible) => {
       onPress(collectible);
     },
     [onPress],
   );
 
-  const onLongPressCollectible = useCallback((collectible) => {
-    actionSheetRef.current.show();
+  const onLongPressCollectible = useCallback((collectible: Collectible) => {
+    actionSheetRef.current?.show();
     longPressedCollectible.current = collectible;
   }, []);
 
   const removeNft = () => {
     const { NftController } = Engine.context;
-    removeFavoriteCollectible(
+    if (!longPressedCollectible.current) return;
+
+    dispatchRemoveFavoriteCollectible(
       selectedAddress,
       chainId,
       longPressedCollectible.current,
@@ -148,6 +172,7 @@ function CollectibleContractElement({
 
   const refreshMetadata = () => {
     const { NftController } = Engine.context;
+    if (!longPressedCollectible.current) return;
 
     NftController.addNft(
       longPressedCollectible.current.address,
@@ -155,7 +180,7 @@ function CollectibleContractElement({
     );
   };
 
-  const handleMenuAction = (index) => {
+  const handleMenuAction = (index: number) => {
     if (index === 1) {
       removeNft();
     } else if (index === 0) {
@@ -164,27 +189,28 @@ function CollectibleContractElement({
   };
 
   const renderCollectible = useCallback(
-    (collectible, index) => {
+    (collectible: Collectible, index: number) => {
       if (!collectible) return null;
-      const onPress = () => onPressCollectible({ ...collectible });
-      const onLongPress = () =>
+      const handlePress = () => onPressCollectible({ ...collectible });
+      const handleLongPress = () =>
         !asset.favorites ? onLongPressCollectible({ ...collectible }) : null;
       return (
         <View
           key={collectible.address + collectible.tokenId}
-          styles={styles.collectibleBox}
+          style={styles.collectibleBox}
           testID={`collectible-${collectible.name}-${collectible.tokenId}`}
         >
           <TouchableOpacity
-            onPress={onPress}
-            onLongPress={onLongPress}
+            onPress={handlePress}
+            onLongPress={handleLongPress}
             testID={`collectible-${collectible.name}-${collectible.tokenId}`}
           >
             <View style={index === 1 ? styles.collectibleInTheMiddle : {}}>
               <CollectibleMedia
                 style={styles.collectibleIcon}
+                // @ts-expect-error - CollectibleMedia accepts partial collectible data
                 collectible={{ ...collectible }}
-                onPressColectible={onPress}
+                onPressColectible={handlePress}
                 isTokenImage
               />
             </View>
@@ -196,10 +222,10 @@ function CollectibleContractElement({
   );
 
   useEffect(() => {
-    const temp = splitIntoSubArrays(contractCollectibles, 3);
-
+    const temp = splitIntoSubArrays([...contractCollectibles], 3);
     setCollectiblesGrid(temp);
   }, [contractCollectibles, setCollectiblesGrid]);
+
   return (
     <View style={styles.itemWrapper}>
       <TouchableOpacity
@@ -220,10 +246,11 @@ function CollectibleContractElement({
           {!asset.favorites ? (
             <CollectibleMedia
               iconStyle={styles.collectibleContractIcon}
+              // @ts-expect-error - CollectibleMedia accepts partial collectible data
               collectible={{
                 name: strings('collectible.untitled_collection'),
                 ...asset,
-                image: asset.logo,
+                image: asset.logo || null,
               }}
               tiny
             />
@@ -264,56 +291,23 @@ function CollectibleContractElement({
         ]}
         cancelButtonIndex={2}
         destructiveButtonIndex={1}
-        // eslint-disable-next-line react/jsx-no-bind
         onPress={handleMenuAction}
         theme={themeAppearance}
       />
     </View>
   );
-}
-
-CollectibleContractElement.propTypes = {
-  /**
-   * Object being rendered
-   */
-  asset: PropTypes.object,
-  /**
-   * Array of collectibles
-   */
-  contractCollectibles: PropTypes.array,
-  /**
-   * Whether the collectibles are visible or not
-   */
-  collectiblesVisible: PropTypes.bool,
-  /**
-   * Called when the collectible is pressed
-   */
-  onPress: PropTypes.func,
-  /**
-   * Selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Dispatch remove collectible from favorites action
-   */
-  removeFavoriteCollectible: PropTypes.func,
 };
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
-    dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
-});
+const mapDispatchToProps = {
+  removeFavoriteCollectible,
+};
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(CollectibleContractElement);
+const connector = connect(mapStateToProps, mapDispatchToProps);
+type PropsFromRedux = ConnectedProps<typeof connector>;
+
+export default connector(CollectibleContractElement);
