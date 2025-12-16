@@ -25,8 +25,13 @@ import FLOW from './flow.png';
 import LENS from './lens.png';
 import PLUME from './plume.png';
 
+type ImageSource = number;
 
-export default {
+interface ImageIcons {
+  [key: string]: ImageSource;
+}
+
+const imageIcons: ImageIcons = {
   PALM,
   MATIC,
   POL,
@@ -56,3 +61,5 @@ export default {
   LENS,
   PLUME,
 };
+
+export default imageIcons;
