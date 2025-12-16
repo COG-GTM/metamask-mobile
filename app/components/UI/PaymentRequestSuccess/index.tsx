@@ -13,14 +13,13 @@ import {
 import { connect } from 'react-redux';
 import { fontStyles } from '../../../styles/common';
 import { getPaymentRequestSuccessOptionsTitle } from '../../UI/Navbar';
-import PropTypes from 'prop-types';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import StyledButton from '../StyledButton';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import { showAlert } from '../../../actions/alert';
 import Logger from '../../../util/Logger';
-import Share from 'react-native-share'; // eslint-disable-line  import/default
+import Share from 'react-native-share';
 import Modal from 'react-native-modal';
 import QRCode from 'react-native-qrcode-svg';
 import { renderNumber } from '../../../util/number';
@@ -31,10 +30,12 @@ import ClipboardManager from '../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { SendLinkViewSelectorsIDs } from '../../../../e2e/selectors/Receive/SendLinkView.selectors';
+import { Theme } from '../../../util/theme/models';
+import { NavigationProp, RouteProp } from '@react-navigation/native';
 
 const isIos = Device.isIos();
 
-const createStyles = (theme) =>
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: theme.colors.background.default,
@@ -158,30 +159,39 @@ const createStyles = (theme) =>
     },
   });
 
-/**
- * View to interact with a previously generated payment request link
- */
-class PaymentRequestSuccess extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-    /* Triggers global alert
-    */
-    showAlert: PropTypes.func,
-    /**
-    /* Prompts protect wallet modal
-    */
-    protectWalletModalVisible: PropTypes.func,
-  };
+interface RouteParams {
+  link?: string;
+  qrLink?: string;
+  amount?: string;
+  symbol?: string;
+}
 
-  state = {
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface PaymentRequestSuccessProps {
+  navigation: NavigationProp<Record<string, unknown>>;
+  route: RouteProp<{ params: RouteParams }, 'params'>;
+  showAlert: (config: AlertConfig) => void;
+  protectWalletModalVisible: () => void;
+}
+
+interface PaymentRequestSuccessState {
+  link: string;
+  qrLink: string;
+  amount: string;
+  symbol: string;
+  qrModalVisible: boolean;
+}
+
+class PaymentRequestSuccess extends PureComponent<PaymentRequestSuccessProps, PaymentRequestSuccessState> {
+  declare context: Theme;
+
+  state: PaymentRequestSuccessState = {
     link: '',
     qrLink: '',
     amount: '',
@@ -197,9 +207,6 @@ class PaymentRequestSuccess extends PureComponent {
     );
   };
 
-  /**
-   * Sets payment request link, amount and symbol of the asset to state
-   */
   componentDidMount = () => {
     const { route } = this.props;
     this.updateNavBar();
@@ -218,9 +225,6 @@ class PaymentRequestSuccess extends PureComponent {
     this.props.protectWalletModalVisible();
   };
 
-  /**
-   * Copies payment request link to clipboard
-   */
   copyAccountToClipboard = async () => {
     const { link } = this.state;
     await ClipboardManager.setString(link);
@@ -234,28 +238,19 @@ class PaymentRequestSuccess extends PureComponent {
     });
   };
 
-  /**
-   * Shows share native UI
-   */
   onShare = () => {
     const { link } = this.state;
     Share.open({
       message: link,
-    }).catch((err) => {
+    }).catch((err: Error) => {
       Logger.log('Error while trying to share payment request', err);
     });
   };
 
-  /**
-   * Toggles payment request QR code modal on top
-   */
   showQRModal = () => {
     this.setState({ qrModalVisible: true });
   };
 
-  /**
-   * Closes payment request QR code modal
-   */
   closeQRModal = () => {
     this.setState({ qrModalVisible: false });
   };
@@ -413,8 +408,8 @@ class PaymentRequestSuccess extends PureComponent {
 
 PaymentRequestSuccess.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, RefObject } from 'react';
 import { Image, StyleSheet, Keyboard, Platform } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSelector } from 'react-redux';
@@ -95,6 +95,12 @@ import { AssetLoader } from '../../Views/AssetLoader';
 import { BridgeTransactionDetails } from '../../UI/Bridge/components/TransactionDetails/TransactionDetails';
 import { BridgeModalStack, BridgeScreenStack } from '../../UI/Bridge/routes';
 import TurnOnBackupAndSync from '../../Views/Identity/TurnOnBackupAndSync/TurnOnBackupAndSync';
+import { RootState } from '../../../reducers';
+import { RouteProp } from '@react-navigation/native';
+import {
+  BottomTabNavigationOptions,
+  BottomTabBarProps,
+} from '@react-navigation/bottom-tabs';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -129,8 +135,16 @@ const WalletModalFlow = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const AssetStackFlow = (props) => (
+interface RouteParams {
+  address?: string;
+  collectible?: unknown;
+}
+
+interface AssetStackFlowProps {
+  route: RouteProp<{ params: RouteParams }, 'params'>;
+}
+
+const AssetStackFlow = (props: AssetStackFlowProps) => (
   <Stack.Navigator>
     <Stack.Screen
       name={'Asset'}
@@ -145,7 +159,7 @@ const AssetStackFlow = (props) => (
   </Stack.Navigator>
 );
 
-const AssetModalFlow = (props) => (
+const AssetModalFlow = (props: AssetStackFlowProps) => (
   <Stack.Navigator
     mode={'modal'}
     initialRouteName={'AssetStackFlow'}
@@ -158,7 +172,6 @@ const AssetModalFlow = (props) => (
     />
   </Stack.Navigator>
 );
-/* eslint-enable react/prop-types */
 
 const WalletTabStackFlow = () => (
   <Stack.Navigator initialRouteName={'WalletView'}>
@@ -217,8 +230,7 @@ const TransactionsHome = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const BrowserFlow = (props) => (
+const BrowserFlow = (props: AssetStackFlowProps) => (
   <Stack.Navigator
     initialRouteName={Routes.BROWSER.VIEW}
     mode={'modal'}
@@ -254,7 +266,11 @@ const BrowserFlow = (props) => (
   </Stack.Navigator>
 );
 
-export const DrawerContext = React.createContext({ drawerRef: null });
+interface DrawerContextType {
+  drawerRef: RefObject<unknown> | null;
+}
+
+export const DrawerContext = React.createContext<DrawerContextType>({ drawerRef: null });
 
 ///: BEGIN:ONLY_INCLUDE_IF(external-snaps)
 const SnapsSettingsStack = () => (
@@ -318,21 +334,13 @@ const SettingsFlow = () => (
       name={Routes.RAMP.ACTIVATION_KEY_FORM}
       component={RampActivationKeyForm}
     />
-    {
-      /**
-       * This screen should only accessed in test mode.
-       * It is used to test the AES crypto functions.
-       *
-       * If this is in production, it is a bug.
-       */
-      isTest && (
-        <Stack.Screen
-          name="AesCryptoTestForm"
-          component={AesCryptoTestForm}
-          options={AesCryptoTestForm.navigationOptions}
-        />
-      )
-    }
+    {isTest && (
+      <Stack.Screen
+        name="AesCryptoTestForm"
+        component={AesCryptoTestForm}
+        options={AesCryptoTestForm.navigationOptions}
+      />
+    )}
     <Stack.Screen
       name="ExperimentalSettings"
       component={ExperimentalSettings}
@@ -437,6 +445,13 @@ const SettingsFlow = () => (
   </Stack.Navigator>
 );
 
+interface TabOptions extends BottomTabNavigationOptions {
+  tabBarIconKey: TabBarIconKey;
+  callback?: () => void;
+  rootScreenName: string;
+  unmountOnBlur?: boolean;
+}
+
 const HomeTabs = () => {
   const { trackEvent, createEventBuilder } = useMetrics();
   const drawerRef = useRef(null);
@@ -444,18 +459,16 @@ const HomeTabs = () => {
 
   const accountsLength = useSelector(selectAccountsLength);
 
-  const chainId = useSelector((state) => {
+  const chainId = useSelector((state: RootState) => {
     const providerConfig = selectProviderConfig(state);
-    return ChainId[providerConfig.type];
+    return ChainId[providerConfig.type as keyof typeof ChainId];
   });
 
   const amountOfBrowserOpenTabs = useSelector(
-    (state) => state.browser.tabs.length,
+    (state: RootState) => state.browser.tabs.length,
   );
 
-  /* tabs: state.browser.tabs, */
-  /* activeTab: state.browser.activeTab, */
-  const activeConnectedDapp = useSelector((state) => {
+  const activeConnectedDapp = useSelector((state: RootState) => {
     const activeTabUrl = getActiveTabUrl(state);
     if (!isUrl(activeTabUrl)) return [];
     try {
@@ -467,13 +480,13 @@ const HomeTabs = () => {
       );
       return permittedAcc;
     } catch (error) {
-      Logger.error(error, {
+      Logger.error(error as Error, {
         message: 'ParseUrl::MainNavigator error while parsing URL',
       });
     }
   }, isEqual);
 
-  const options = {
+  const options: Record<string, TabOptions> = {
     home: {
       tabBarIconKey: TabBarIconKey.Wallet,
       callback: () => {
@@ -535,8 +548,6 @@ const HomeTabs = () => {
   };
 
   useEffect(() => {
-    // Hide keyboard on Android when keyboard is visible.
-    // Better solution would be to update android:windowSoftInputMode in the AndroidManifest and refactor pages to support it.
     if (Platform.OS === 'android') {
       const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
         setIsKeyboardHidden(false);
@@ -552,13 +563,13 @@ const HomeTabs = () => {
     }
   }, []);
 
-  const renderTabBar = ({ state, descriptors, navigation }) => {
+  const renderTabBar = (props: BottomTabBarProps) => {
     if (isKeyboardHidden) {
       return (
         <TabBar
-          state={state}
-          descriptors={descriptors}
-          navigation={navigation}
+          state={props.state}
+          descriptors={props.descriptors}
+          navigation={props.navigation}
         />
       );
     }
@@ -625,11 +636,14 @@ const SendView = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const NftDetailsModeView = (props) => (
+interface NftDetailsProps {
+  route: RouteProp<{ params: RouteParams }, 'params'>;
+}
+
+const NftDetailsModeView = (props: NftDetailsProps) => (
   <Stack.Navigator>
     <Stack.Screen
-      name=" " // No name here because this title will be displayed in the header of the page
+      name=" "
       component={NftDetails}
       initialParams={{
         collectible: props.route.params?.collectible,
@@ -638,11 +652,10 @@ const NftDetailsModeView = (props) => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const NftDetailsFullImageModeView = (props) => (
+const NftDetailsFullImageModeView = (props: NftDetailsProps) => (
   <Stack.Navigator>
     <Stack.Screen
-      name=" " // No name here because this title will be displayed in the header of the page
+      name=" "
       component={NftDetailsFullImage}
       initialParams={{
         collectible: props.route.params?.collectible,
@@ -710,8 +723,7 @@ const PaymentRequestView = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const NotificationsModeView = (props) => (
+const NotificationsModeView = () => (
   <Stack.Navigator>
     <Stack.Screen
       name={Routes.NOTIFICATIONS.VIEW}
@@ -809,7 +821,6 @@ const MainNavigator = () => (
       name="CollectiblesDetails"
       component={CollectiblesDetails}
       options={{
-        //Refer to - https://reactnavigation.org/docs/stack-navigator/#animations
         cardStyle: { backgroundColor: importedColors.transparent },
         cardStyleInterpolator: () => ({
           overlayStyle: {
@@ -822,7 +833,6 @@ const MainNavigator = () => (
       name={Routes.DEPRECATED_NETWORK_DETAILS}
       component={DeprecatedNetworkDetails}
       options={{
-        //Refer to - https://reactnavigation.org/docs/stack-navigator/#animations
         cardStyle: { backgroundColor: importedColors.transparent },
         cardStyleInterpolator: () => ({
           overlayStyle: {
@@ -838,7 +848,6 @@ const MainNavigator = () => (
     <Stack.Screen
       name="SendFlowView"
       component={SendFlowView}
-      //Disabling swipe down on IOS
       options={{ gestureEnabled: false }}
     />
     <Stack.Screen name="AddBookmarkView" component={AddBookmarkView} />
@@ -883,10 +892,8 @@ const MainNavigator = () => (
           resizeMode={'contain'}
         />
       )}
-      // eslint-disable-next-line react-native/no-inline-styles
       headerStyle={{ borderBottomWidth: 0 }}
     />
-    {/* TODO: This is added to support slide 4 in the carousel - once changed this can be safely removed*/}
     <Stack.Screen
       name="GeneralSettings"
       component={GeneralSettings}

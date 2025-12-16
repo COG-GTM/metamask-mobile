@@ -1,26 +1,25 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import ProgressBar from 'react-native-progress/Bar';
 import FadeView from '../FadeView';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
-/**
- * PureComponent that wraps the ProgressBar
- * and allows to fade it in / out
- * via the boolean prop visible
- */
-export default class WebviewProgressBar extends PureComponent {
-  state = {
+interface WebviewProgressBarProps {
+  progress?: number;
+}
+
+interface WebviewProgressBarState {
+  visible: boolean;
+}
+
+export default class WebviewProgressBar extends PureComponent<WebviewProgressBarProps, WebviewProgressBarState> {
+  state: WebviewProgressBarState = {
     visible: true,
   };
 
-  static propTypes = {
-    /**
-     * Float that represents the progress complete
-     * between 0 and 1
-     */
-    progress: PropTypes.any,
-  };
+  private mounted = false;
+
+  declare context: Theme;
 
   componentDidMount() {
     this.mounted = true;

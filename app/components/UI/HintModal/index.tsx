@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import {
   View,
   StyleSheet,
@@ -17,8 +16,9 @@ import ButtonIcon, {
   ButtonIconSizes,
 } from '../../../component-library/components/Buttons/ButtonIcon';
 import { IconName } from '../../../component-library/components/Icons/Icon';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     hintWrapper: {
       flex: 1,
@@ -55,14 +55,23 @@ const createStyles = (colors) =>
     },
   });
 
+interface HintModalProps {
+  onCancel: () => void;
+  onConfirm: () => void;
+  modalVisible: boolean;
+  onRequestClose: () => void;
+  value?: string;
+  onChangeText: (text: string) => void;
+}
+
 const HintModal = ({
   onCancel,
   onConfirm,
-  modalVisible,
+  modalVisible = false,
   onRequestClose,
   value,
   onChangeText,
-}) => {
+}: HintModalProps) => {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
@@ -113,20 +122,5 @@ const HintModal = ({
     </ActionModal>
   );
 };
-
-const propTypes = {
-  onCancel: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  onRequestClose: PropTypes.func.isRequired,
-  value: PropTypes.string,
-  onChangeText: PropTypes.func.isRequired,
-};
-const defaultProps = {
-  modalVisible: false,
-};
-
-HintModal.propTypes = propTypes;
-HintModal.defaultProps = defaultProps;
 
 export default HintModal;

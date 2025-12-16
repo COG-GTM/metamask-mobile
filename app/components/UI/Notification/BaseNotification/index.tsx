@@ -1,6 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
+import { TouchableOpacity, StyleSheet, View, ViewStyle } from 'react-native';
 import { fontStyles, baseStyles } from '../../../../styles/common';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AnimatedSpinner from '../../AnimatedSpinner';
@@ -10,8 +9,13 @@ import AntIcon from 'react-native-vector-icons/AntDesign';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
 import { ToastSelectorsIDs } from '../../../../../e2e/selectors/wallet/ToastModal.selectors';
+import { Theme } from '../../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface StylesType {
+  checkIcon?: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     floatingBackground: {
       backgroundColor: colors.background.default,
@@ -60,7 +64,7 @@ const createStyles = (colors) =>
     },
   });
 
-export const getIcon = (status, colors, styles) => {
+export const getIcon = (status: string | undefined, colors: Theme['colors'], styles: StylesType) => {
   switch (status) {
     case 'pending':
     case 'pending_withdrawal':
@@ -119,9 +123,19 @@ export const getIcon = (status, colors, styles) => {
         />
       );
   }
+  return null;
 };
 
-const getTitle = (status, { nonce, amount, assetType }) => {
+interface NotificationData {
+  nonce?: string;
+  amount?: string;
+  assetType?: string;
+  type?: string;
+  title?: string;
+  description?: string;
+}
+
+const getTitle = (status: string | undefined, { nonce, amount, assetType }: NotificationData): string | undefined => {
   switch (status) {
     case 'pending':
       return strings('notifications.pending_title');
@@ -130,7 +144,7 @@ const getTitle = (status, { nonce, amount, assetType }) => {
     case 'pending_withdrawal':
       return strings('notifications.pending_withdrawal_title');
     case 'success':
-      return strings('notifications.success_title', { nonce: parseInt(nonce) });
+      return strings('notifications.success_title', { nonce: parseInt(nonce || '0') });
     case 'success_deposit':
       return strings('notifications.success_deposit_title');
     case 'success_withdrawal':
@@ -141,7 +155,7 @@ const getTitle = (status, { nonce, amount, assetType }) => {
         assetType,
       });
     case 'speedup':
-      return strings('notifications.speedup_title', { nonce: parseInt(nonce) });
+      return strings('notifications.speedup_title', { nonce: parseInt(nonce || '0') });
     case 'received_payment':
       return strings('notifications.received_payment_title');
     case 'cancelled':
@@ -149,28 +163,35 @@ const getTitle = (status, { nonce, amount, assetType }) => {
     case 'error':
       return strings('notifications.error_title');
   }
+  return undefined;
 };
 
-export const getDescription = (status, { amount = null, type = null }) => {
+export const getDescription = (status: string | undefined, { amount = null, type = null }: { amount?: string | null; type?: string | null }): string => {
   if (amount && typeof amount !== 'object' && type) {
     return strings(`notifications.${type}_${status}_message`, { amount });
   }
   return strings(`notifications.${status}_message`);
 };
 
-/**
- * BaseNotification component used to render in-app notifications
- */
+interface BaseNotificationProps {
+  status?: string;
+  data?: NotificationData | null;
+  onPress?: () => void;
+  onHide?: () => void;
+  autoDismiss?: boolean;
+}
+
 const BaseNotification = ({
   status,
   data = null,
-  data: { description = null, title = null },
   onPress,
   onHide,
-  autoDismiss,
-}) => {
+  autoDismiss = false,
+}: BaseNotificationProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const description = data?.description ?? null;
+  const title = data?.title ?? null;
 
   return (
     <View style={baseStyles.flexGrow}>
@@ -188,10 +209,10 @@ const BaseNotification = ({
               style={styles.flashTitle}
               testID={ToastSelectorsIDs.NOTIFICATION_TITLE}
             >
-              {!title ? getTitle(status, data) : title}
+              {!title ? getTitle(status, data || {}) : title}
             </Text>
             <Text style={styles.flashText}>
-              {!description ? getDescription(status, data) : description}
+              {!description ? getDescription(status, data || {}) : description}
             </Text>
           </View>
           <View>
@@ -205,18 +226,6 @@ const BaseNotification = ({
       </View>
     </View>
   );
-};
-
-BaseNotification.propTypes = {
-  status: PropTypes.string,
-  data: PropTypes.object,
-  onPress: PropTypes.func,
-  onHide: PropTypes.func,
-  autoDismiss: PropTypes.bool,
-};
-
-BaseNotification.defaultProps = {
-  autoDismiss: false,
 };
 
 export default BaseNotification;
