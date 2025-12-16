@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -9,6 +8,8 @@ import {
   UIManager,
   Platform,
   SafeAreaView,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
@@ -33,8 +34,30 @@ import {
   selectCurrentCurrency,
 } from '../../../../selectors/currencyRateController';
 import { selectSwapsQuoteValues } from '../../../../reducers/swaps';
+import { RootState } from '../../../../reducers';
+import { Theme } from '../../../../util/theme/models';
 
-const createStyles = (colors, shadows) =>
+interface Styles {
+  modalView: ViewStyle;
+  modal: ViewStyle;
+  title: ViewStyle;
+  titleButton: ViewStyle;
+  closeIcon: TextStyle;
+  backIcon: TextStyle;
+  detailsIcon: TextStyle;
+  body: ViewStyle;
+  row: ViewStyle;
+  quoteRow: ViewStyle;
+  detailsRow: ViewStyle;
+  selectedQuoteRow: ViewStyle;
+  columnAmount: ViewStyle;
+  columnFee: ViewStyle;
+  columnValue: ViewStyle;
+  red: TextStyle;
+  transparent: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']): Styles =>
   StyleSheet.create({
     modalView: {
       backgroundColor: colors.background.default,
@@ -58,7 +81,6 @@ const createStyles = (colors, shadows) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      color: colors.text.default,
     },
     titleButton: {
       flexDirection: 'row',
@@ -127,30 +149,67 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+interface Token {
+  symbol?: string;
+  decimals?: number;
+}
+
+interface PriceSlippage {
+  calculationError?: string;
+  destinationAmountInETH?: string;
+}
+
+interface Quote {
+  aggregator: string;
+  sourceAmount?: string;
+  destinationAmount?: string;
+  slippage?: number;
+  aggType?: string;
+  priceSlippage?: PriceSlippage;
+}
+
+interface QuoteValue {
+  overallValueOfQuote?: number;
+  ethFee?: string;
+}
+
+interface QuotesModalProps {
+  isVisible?: boolean;
+  toggleModal?: () => void;
+  quotes?: Quote[];
+  selectedQuote?: string;
+  sourceToken?: Token;
+  destinationToken?: Token;
+  conversionRate?: number;
+  currentCurrency?: string;
+  quoteValues?: Record<string, QuoteValue>;
+  showOverallValue?: boolean;
+  ticker?: string;
+  multiLayerL1ApprovalFeeTotal?: string;
+}
+
 function QuotesModal({
   isVisible,
   toggleModal,
-  quotes,
+  quotes = [],
   selectedQuote,
   sourceToken,
   destinationToken,
   conversionRate,
   currentCurrency,
-  quoteValues,
+  quoteValues = {},
   showOverallValue,
   ticker,
   multiLayerL1ApprovalFeeTotal,
-}) {
+}: QuotesModalProps): React.JSX.Element {
   const bestOverallValue =
-    quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
+    quoteValues?.[quotes[0]?.aggregator]?.overallValueOfQuote ?? 0;
   const [displayDetails, setDisplayDetails] = useState(false);
   const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] =
-    useState(null);
+    useState<number | null>(null);
   const { colors, shadows } = useTheme();
   const styles = createStyles(colors, shadows);
 
-  // When index/quotes change we get a new selected quote in case it exists
-  // (quotes.length can be shorter than selected index)
   const selectedDetailsQuote = useMemo(() => {
     if (
       selectedDetailsQuoteIndex !== null &&
@@ -161,7 +220,6 @@ function QuotesModal({
     return null;
   }, [quotes, selectedDetailsQuoteIndex]);
 
-  // When index/quotes/quoteValues change we get a new selected quoteValaue in case it exists
   const selectedDetailsQuoteValues = useMemo(() => {
     if (
       selectedDetailsQuoteIndex !== null &&
@@ -173,15 +231,13 @@ function QuotesModal({
     return null;
   }, [quoteValues, selectedDetailsQuote, selectedDetailsQuoteIndex]);
 
-  // Toggle displaying details
   const toggleDetails = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setDisplayDetails((f) => !f);
   }, []);
 
-  // Toggle to the details in case the quote exist
   const handleQuoteDetailsPress = useCallback(
-    (index) => {
+    (index: number) => {
       if (quotes?.[index]) {
         setSelectedDetailsQuoteIndex(index);
         toggleDetails();
@@ -190,28 +246,23 @@ function QuotesModal({
     [toggleDetails, quotes],
   );
 
-  // Go back from the detail view to the list before dismissing the modal
   const handleBackButtonPress = useCallback(() => {
     if (displayDetails) {
       return toggleDetails();
     }
-    toggleModal();
+    toggleModal?.();
   }, [toggleDetails, displayDetails, toggleModal]);
 
-  // Go back to the list view when modal is visible
   useEffect(() => {
     if (isVisible) {
       setDisplayDetails(false);
     }
   }, [isVisible]);
 
-  // When quotes change go back to the first quote as selected
   useEffect(() => {
-    setSelectedDetailsQuoteIndex(quotes?.[0] || null);
+    setSelectedDetailsQuoteIndex(quotes?.[0] ? 0 : null);
   }, [quotes]);
 
-  // If details are going to be displayed but the quotes does not exist,
-  // go back to the list
   useEffect(() => {
     if (displayDetails && !selectedDetailsQuote) {
       setDisplayDetails(false);
@@ -289,11 +340,11 @@ function QuotesModal({
                     <Text small>{strings('swaps.guaranteed_amount')}</Text>
                     <Text primary>
                       {fromTokenMinimalUnitString(
-                        selectedDetailsQuote.destinationAmount,
-                        destinationToken.decimals,
+                        selectedDetailsQuote.destinationAmount ?? '0',
+                        destinationToken?.decimals ?? 18,
                       )}{' '}
                       <Text reset bold>
-                        {destinationToken.symbol}
+                        {destinationToken?.symbol}
                       </Text>
                       {selectedDetailsQuote?.priceSlippage?.calculationError
                         ?.length === 0 &&
@@ -307,8 +358,8 @@ function QuotesModal({
                                 selectedDetailsQuote.priceSlippage
                                   .destinationAmountInETH,
                               ),
-                              conversionRate,
-                              currentCurrency,
+                              conversionRate ?? 0,
+                              currentCurrency ?? 'usd',
                             )}
                             )
                           </Text>
@@ -318,16 +369,16 @@ function QuotesModal({
                   <View style={styles.detailsRow}>
                     <Text small>{strings('swaps.estimated_network_fees')}</Text>
                     <Text primary>
-                      {renderFromWei(toWei(selectedDetailsQuoteValuesEthFee))}{' '}
+                      {renderFromWei(toWei(selectedDetailsQuoteValuesEthFee ?? '0'))}{' '}
                       <Text reset bold>
                         {ticker}
                       </Text>{' '}
                       <Text>
                         (~
                         {weiToFiat(
-                          toWei(selectedDetailsQuoteValuesEthFee),
-                          conversionRate,
-                          currentCurrency,
+                          toWei(selectedDetailsQuoteValuesEthFee ?? '0'),
+                          conversionRate ?? 0,
+                          currentCurrency ?? 'usd',
                         )}
                         )
                       </Text>
@@ -336,8 +387,8 @@ function QuotesModal({
                   <View style={styles.detailsRow}>
                     <Text small>{strings('swaps.source')}</Text>
                     <Text primary>
-                      {getQuotesSourceMessage(selectedDetailsQuote.aggType).map(
-                        (message, index) =>
+                      {getQuotesSourceMessage(selectedDetailsQuote.aggType ?? '').map(
+                        (message: string, index: number) =>
                           index === 1 ? (
                             <Text reset bold key={index}>
                               {message}{' '}
@@ -361,7 +412,7 @@ function QuotesModal({
                 <View style={styles.row}>
                   <View style={styles.columnAmount}>
                     <Text small bold>
-                      {destinationToken.symbol}
+                      {destinationToken?.symbol}
                     </Text>
                     <Text small primary bold>
                       {strings('swaps.receiving')}
@@ -410,17 +461,17 @@ function QuotesModal({
                             <Text primary bold={isSelected}>
                               ~
                               {renderFromTokenMinimalUnit(
-                                quote.destinationAmount,
-                                destinationToken.decimals,
+                                quote.destinationAmount ?? '0',
+                                destinationToken?.decimals ?? 18,
                               )}
                             </Text>
                           </View>
                           <View style={styles.columnFee}>
                             <Text primary bold={isSelected}>
                               {weiToFiat(
-                                toWei(quoteEthFee),
-                                conversionRate,
-                                currentCurrency,
+                                toWei(quoteEthFee ?? '0'),
+                                conversionRate ?? 0,
+                                currentCurrency ?? 'usd',
                               )}
                             </Text>
                           </View>
@@ -435,18 +486,18 @@ function QuotesModal({
                                       (quoteValue?.overallValueOfQuote ?? 0)
                                     ).toFixed(18),
                                   ),
-                                  conversionRate,
-                                  currentCurrency,
+                                  conversionRate ?? 0,
+                                  currentCurrency ?? 'usd',
                                 )}
                               </Text>
                             ) : (
                               <Text style={styles.red}>
                                 -
                                 {renderFromTokenMinimalUnit(
-                                  new BigNumber(quotes[0].destinationAmount)
-                                    .minus(quote.destinationAmount)
+                                  new BigNumber(quotes[0]?.destinationAmount ?? '0')
+                                    .minus(quote.destinationAmount ?? '0')
                                     .toString(10),
-                                  destinationToken.decimals,
+                                  destinationToken?.decimals ?? 18,
                                 )}
                               </Text>
                             )}
@@ -471,37 +522,7 @@ function QuotesModal({
   );
 }
 
-QuotesModal.propTypes = {
-  isVisible: PropTypes.bool,
-  toggleModal: PropTypes.func,
-  quotes: PropTypes.array,
-  selectedQuote: PropTypes.string,
-  destinationToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  sourceToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  quoteValues: PropTypes.object,
-  showOverallValue: PropTypes.bool,
-  multiLayerL1ApprovalFeeTotal: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   quoteValues: selectSwapsQuoteValues(state),
