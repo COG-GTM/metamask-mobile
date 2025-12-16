@@ -1373,7 +1373,7 @@ exports[`TypedSign should render correctly 1`] = `
     }
   }
 >
-  <Component
+  <TypedSign
     currentPageInformation={
       {
         "title": "title",
@@ -1382,11 +1382,7 @@ exports[`TypedSign should render correctly 1`] = `
     }
     messageParams={
       {
-        "data": {
-          "name": "Message",
-          "type": "string",
-          "value": "Hi, Alice!",
-        },
+        "data": "{"type":"string","name":"Message","value":"Hi, Alice!"}",
         "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
         "metamaskId": "TestMessageId",
         "origin": "example.com",

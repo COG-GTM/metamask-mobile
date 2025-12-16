@@ -18,6 +18,16 @@ import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selecto
 
 jest.mock('../../../../../../core/Analytics/MetaMetrics');
 
+const mockNavigate = jest.fn();
+jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
+  useNavigation: jest.fn(() => ({
+    navigate: mockNavigate,
+    goBack: jest.fn(),
+    setOptions: jest.fn(),
+  })),
+}));
+
 const mockMetrics = {
   trackEvent: jest.fn(),
 };
@@ -56,6 +66,7 @@ jest.mock('../../../../../../core/Engine', () => {
     },
     controllerMessenger: {
       subscribe: jest.fn(),
+      unsubscribe: jest.fn(),
     },
   };
 });
