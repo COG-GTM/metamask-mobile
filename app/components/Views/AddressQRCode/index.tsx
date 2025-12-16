@@ -1,11 +1,12 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
   View,
   Text,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
@@ -19,10 +20,23 @@ import { protectWalletModalVisible } from '../../../actions/user';
 import ClipboardManager from '../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
+import { RootState } from '../../../reducers';
+import { Theme } from '../../../util/theme/models';
 
 const WIDTH = Dimensions.get('window').width - 88;
 
-const createStyles = (theme) =>
+interface Styles {
+  root: ViewStyle;
+  wrapper: ViewStyle;
+  qrCodeContainer: ViewStyle;
+  qrCode: ViewStyle;
+  addressWrapper: ViewStyle;
+  closeIcon: ViewStyle;
+  addressTitle: TextStyle;
+  address: TextStyle;
+}
+
+const createStyles = (theme: Theme): Styles =>
   StyleSheet.create({
     root: {
       flex: 1,
@@ -76,33 +90,26 @@ const createStyles = (theme) =>
     },
   });
 
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface AddressQRCodeProps {
+  selectedAddress: string;
+  showAlert: (config: AlertConfig) => void;
+  closeQrModal: () => void;
+  protectWalletModalVisible: () => void;
+  seedphraseBackedUp: boolean;
+}
+
 /**
  * PureComponent that renders a public address view
  */
-class AddressQRCode extends PureComponent {
-  static propTypes = {
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-    /* Triggers global alert
-    */
-    showAlert: PropTypes.func,
-    /**
-    /* Callback to close the modal
-    */
-    closeQrModal: PropTypes.func,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-  };
+class AddressQRCode extends PureComponent<AddressQRCodeProps> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   /**
    * Closes QR code modal
@@ -124,12 +131,10 @@ class AddressQRCode extends PureComponent {
     });
   };
 
-  processAddress = () => {
+  processAddress = (): string => {
     const { selectedAddress } = this.props;
-    const processedAddress = `${selectedAddress.slice(0, 2)} ${selectedAddress
-      .slice(2)
-      .match(/.{1,4}/g)
-      .join(' ')}`;
+    const matches = selectedAddress.slice(2).match(/.{1,4}/g);
+    const processedAddress = `${selectedAddress.slice(0, 2)} ${matches ? matches.join(' ') : ''}`;
     return processedAddress;
   };
 
@@ -174,13 +179,13 @@ class AddressQRCode extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   seedphraseBackedUp: state.user.seedphraseBackedUp,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 
