@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   StyleSheet,
@@ -8,6 +7,9 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -16,6 +18,7 @@ import Device from '../../../../util/device';
 import Text from '../../../Base/Text';
 import StyledButton from '../../StyledButton';
 import { useTheme, useAssetFromTheme } from '../../../../util/theme';
+import { Theme } from '../../../../util/theme/models';
 
 /* eslint-disable import/no-commonjs */
 const onboardingDeviceImage = require('../../../../images/swaps_onboard_device.png');
@@ -23,7 +26,19 @@ const swapsAggregatorsLight = require('../../../../images/swaps_aggs-light.png')
 const swapsAggregatorsDark = require('../../../../images/swaps_aggs-dark.png');
 /* eslint-enable import/no-commonjs */
 
-const createStyles = (colors, bottomInset) =>
+interface Styles {
+  screen: ViewStyle;
+  content: ViewStyle;
+  images: ViewStyle;
+  title: TextStyle;
+  aggregatorsImage: ImageStyle;
+  learnMore: ViewStyle;
+  learnMoreLink: ViewStyle;
+  actionButtonWrapper: ViewStyle;
+  actionButton: ViewStyle;
+}
+
+const createStyles = (colors: Theme['colors'], bottomInset: number): Styles =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -72,7 +87,11 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-function Onboarding({ setHasOnboarded }) {
+interface OnboardingProps {
+  setHasOnboarded?: (value: boolean) => void;
+}
+
+function Onboarding({ setHasOnboarded }: OnboardingProps) {
   const navigation = useNavigation();
   const { colors } = useTheme();
   const { bottom: bottomInset } = useSafeAreaInsets();
@@ -84,16 +103,16 @@ function Onboarding({ setHasOnboarded }) {
 
   const handleStartSwapping = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setHasOnboarded(true);
+    setHasOnboarded?.(true);
   }, [setHasOnboarded]);
 
   const handleReviewAuditsPress = useCallback(() => {
-    navigation.navigate('Webview', {
+    navigation.navigate('Webview' as never, {
       screen: 'SimpleWebview',
       params: {
         url: 'https://consensys.net/diligence/audits/2020/08/metaswap/',
       },
-    });
+    } as never);
   }, [navigation]);
 
   return (
@@ -144,9 +163,5 @@ function Onboarding({ setHasOnboarded }) {
     </View>
   );
 }
-
-Onboarding.propTypes = {
-  setHasOnboarded: PropTypes.func,
-};
 
 export default Onboarding;

@@ -1,6 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, SafeAreaView, View } from 'react-native';
+import { StyleSheet, SafeAreaView, View, ViewStyle, TextStyle } from 'react-native';
 import Modal from 'react-native-modal';
 
 import ModalDragger from '../../../Base/ModalDragger';
@@ -8,8 +7,18 @@ import Text from '../../../Base/Text';
 import SlippageSlider from '../../SlippageSlider';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
+import { Theme } from '../../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Styles {
+  modal: ViewStyle;
+  modalView: ViewStyle;
+  content: ViewStyle;
+  slippageWrapper: ViewStyle;
+  warningTextWrapper: ViewStyle;
+  warningText: TextStyle;
+}
+
+const createStyles = (colors: Theme['colors']): Styles =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -38,7 +47,14 @@ const createStyles = (colors) =>
     },
   });
 
-function SlippageModal({ isVisible, dismiss, onChange, slippage }) {
+interface SlippageModalProps {
+  isVisible?: boolean;
+  dismiss?: () => void;
+  onChange?: (value: number) => void;
+  slippage?: number;
+}
+
+function SlippageModal({ isVisible, dismiss, onChange, slippage }: SlippageModalProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -63,7 +79,7 @@ function SlippageModal({ isVisible, dismiss, onChange, slippage }) {
 
           <View style={styles.slippageWrapper}>
             <View style={styles.warningTextWrapper}>
-              {slippage >= 5 && (
+              {slippage !== undefined && slippage >= 5 && (
                 <Text style={styles.warningText}>
                   {strings('swaps.slippage_warning')}
                 </Text>
@@ -74,7 +90,7 @@ function SlippageModal({ isVisible, dismiss, onChange, slippage }) {
               increment={1}
               onChange={onChange}
               value={slippage}
-              formatTooltipText={(text) => `${text}%`}
+              formatTooltipText={(text: number) => `${text}%`}
             />
           </View>
 
@@ -87,10 +103,4 @@ function SlippageModal({ isVisible, dismiss, onChange, slippage }) {
   );
 }
 
-SlippageModal.propTypes = {
-  isVisible: PropTypes.bool,
-  dismiss: PropTypes.func,
-  onChange: PropTypes.func,
-  slippage: PropTypes.number,
-};
 export default SlippageModal;
