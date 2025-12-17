@@ -5,7 +5,14 @@ import {
   SetSecurityAlertsEnabled,
 } from '../../actions/experimental';
 
-const initialState = {
+/**
+ * Experimental settings reducer state
+ */
+export interface ExperimentalSettingsState {
+  securityAlertsEnabled: boolean;
+}
+
+const initialState: ExperimentalSettingsState = {
   securityAlertsEnabled: true,
 };
 

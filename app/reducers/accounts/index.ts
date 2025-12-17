@@ -8,6 +8,11 @@ export interface iAccountEvent {
 }
 
 /**
+ * Accounts reducer state type alias
+ */
+export type AccountsState = iAccountEvent;
+
+/**
  * Initial state of the Accounts event flow
  */
 const initialState: iAccountEvent = {

@@ -6,7 +6,15 @@ const currentDate = new Date(Date.now());
 const newPrivacyPolicyDate = new Date('2024-06-18T12:00:00Z');
 export const isPastPrivacyPolicyDate = currentDate >= newPrivacyPolicyDate;
 
-const initialState = {
+/**
+ * Legal notices reducer state
+ */
+export interface LegalNoticesState {
+  newPrivacyPolicyToastClickedOrClosed: boolean;
+  newPrivacyPolicyToastShownDate: number | null;
+}
+
+const initialState: LegalNoticesState = {
   newPrivacyPolicyToastClickedOrClosed: false,
   newPrivacyPolicyToastShownDate: null,
 };
@@ -30,6 +38,10 @@ export const shouldShowNewPrivacyToastSelector = (
 
   if (newPrivacyPolicyToastClickedOrClosed) return false;
 
+  if (!newPrivacyPolicyToastShownDate) {
+    return currentDate.getTime() >= newPrivacyPolicyDate.getTime();
+  }
+
   const shownDate = new Date(newPrivacyPolicyToastShownDate);
 
   const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
@@ -38,8 +50,7 @@ export const shouldShowNewPrivacyToastSelector = (
 
   return (
     currentDate.getTime() >= newPrivacyPolicyDate.getTime() &&
-    (!newPrivacyPolicyToastShownDate ||
-      (isRecent && !newPrivacyPolicyToastClickedOrClosed))
+    (isRecent && !newPrivacyPolicyToastClickedOrClosed)
   );
 };
 

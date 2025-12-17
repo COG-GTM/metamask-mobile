@@ -1,4 +1,36 @@
-export const initialState = {
+/**
+ * Network state for onboarding
+ */
+export interface NetworkState {
+  showNetworkOnboarding: boolean;
+  nativeToken: string;
+  networkType: string;
+  networkUrl: string;
+}
+
+/**
+ * Switched network state
+ */
+export interface SwitchedNetwork {
+  networkUrl: string;
+  networkStatus: boolean;
+}
+
+/**
+ * Network onboarded state mapping
+ */
+export type NetworkOnboardedStateMap = Record<string, boolean>;
+
+/**
+ * Network onboarded reducer state
+ */
+export interface NetworkOnboardedState {
+  networkOnboardedState: NetworkOnboardedStateMap;
+  networkState: NetworkState;
+  switchedNetwork: SwitchedNetwork;
+}
+
+export const initialState: NetworkOnboardedState = {
   networkOnboardedState: {},
   networkState: {
     showNetworkOnboarding: false,
