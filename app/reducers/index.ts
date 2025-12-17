@@ -364,31 +364,31 @@ export type StateFromReducer<reducer> = reducer extends Reducer<
 // to this type. Once that is complete, we can automatically generate this type
 // using the `StateFromReducersMapObject` type from redux.
 export interface RootState {
-  legalNotices: LegalNoticesState;
-  collectibles: CollectiblesState;
-  engine: { backgroundState: EngineState };
-  privacy: PrivacyState;
-  bookmarks: BookmarksState;
-  browser: BrowserState;
-  modals: ModalsState;
-  settings: SettingsState;
-  alert: AlertState;
-  transaction: TransactionState;
+  legalNotices: StateFromReducer<typeof legalNoticesReducer>;
+  collectibles: StateFromReducer<typeof collectiblesReducer>;
+  engine: StateFromReducer<typeof engineReducer>;
+  privacy: StateFromReducer<typeof privacyReducer>;
+  bookmarks: StateFromReducer<typeof bookmarksReducer>;
+  browser: StateFromReducer<typeof browserReducer>;
+  modals: StateFromReducer<typeof modalsReducer>;
+  settings: StateFromReducer<typeof settingsReducer>;
+  alert: StateFromReducer<typeof alertReducer>;
+  transaction: StateFromReducer<typeof transactionReducer>;
   user: UserState;
-  wizard: WizardState;
+  wizard: StateFromReducer<typeof wizardReducer>;
   onboarding: OnboardingState;
-  notification: NotificationState;
-  swaps: SwapsState;
+  notification: StateFromReducer<typeof notificationReducer>;
+  swaps: StateFromReducer<typeof swapsReducer>;
   fiatOrders: StateFromReducer<typeof fiatOrders>;
-  infuraAvailability: InfuraAvailabilityState;
+  infuraAvailability: StateFromReducer<typeof infuraAvailabilityReducer>;
   navigation: NavigationState;
-  networkOnboarded: NetworkOnboardedState;
+  networkOnboarded: StateFromReducer<typeof networkOnboardReducer>;
   security: SecurityState;
   sdk: StateFromReducer<typeof sdkReducer>;
-  experimentalSettings: ExperimentalSettingsState;
-  signatureRequest: SignatureRequestState;
-  rpcEvents: iEventGroup;
-  accounts: iAccountEvent;
+  experimentalSettings: StateFromReducer<typeof experimentalSettingsReducer>;
+  signatureRequest: StateFromReducer<typeof signatureRequestReducer>;
+  rpcEvents: StateFromReducer<typeof rpcEventReducer>;
+  accounts: StateFromReducer<typeof accountsReducer>;
   inpageProvider: StateFromReducer<typeof inpageProviderReducer>;
   confirmationMetrics: StateFromReducer<typeof confirmationMetricsReducer>;
   originThrottling: StateFromReducer<typeof originThrottlingReducer>;
@@ -439,10 +439,7 @@ if (isTest) {
   baseReducers.performance = performanceReducer;
 }
 
-// TODO: Fix the Action type. It's set to `any` now because some of the
-// TypeScript reducers have invalid actions
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rootReducer = combineReducers<RootState, any>(baseReducers);
+// Let TypeScript infer the types from the reducers
+const rootReducer = combineReducers(baseReducers);
 
 export default rootReducer;
