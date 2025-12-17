@@ -1,7 +1,27 @@
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import { TransactionState, SelectedAsset } from './types';
 
-const initialState = {
+interface TransactionAction {
+  type: string;
+  selectedAsset?: SelectedAsset;
+  assetType?: string;
+  nonce?: string;
+  proposedNonce?: string;
+  from?: string;
+  to?: string;
+  ensRecipient?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transaction?: Record<string, unknown>;
+  asset?: SelectedAsset;
+  transactionId?: string;
+  securityAlertResponse?: unknown;
+  maxValueMode?: boolean;
+  value?: string;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -12,7 +32,6 @@ const initialState = {
     gasPrice: undefined,
     to: undefined,
     value: undefined,
-    // eip1559
     maxFeePerGas: undefined,
     maxPriorityFeePerGas: undefined,
   },
@@ -32,7 +51,7 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+const getAssetType = (selectedAsset: SelectedAsset | undefined): string | undefined => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,7 +65,10 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
@@ -60,8 +82,8 @@ const transactionReducer = (state = initialState, action) => {
       return {
         ...state,
         ...initialState,
-        selectedAsset: action.selectedAsset,
-        assetType: action.assetType,
+        selectedAsset: action.selectedAsset ?? {},
+        assetType: action.assetType as TransactionState['assetType'],
       };
     case 'SET_NONCE':
       return {
@@ -83,8 +105,8 @@ const transactionReducer = (state = initialState, action) => {
         transactionFromName: action.transactionFromName,
       };
     case 'SET_SELECTED_ASSET': {
-      const selectedAsset = action.selectedAsset;
-      const assetType = action.assetType || getAssetType(selectedAsset);
+      const selectedAsset = action.selectedAsset ?? {};
+      const assetType = (action.assetType || getAssetType(selectedAsset)) as TransactionState['assetType'];
       return {
         ...state,
         selectedAsset,
@@ -94,46 +116,49 @@ const transactionReducer = (state = initialState, action) => {
     case 'PREPARE_TRANSACTION':
       return {
         ...state,
-        transaction: action.transaction,
+        transaction: action.transaction as TransactionState['transaction'],
       };
     case 'SET_TRANSACTION_OBJECT': {
-      const selectedAsset = action.transaction.selectedAsset;
+      const transaction = action.transaction!;
+      const selectedAsset = transaction.selectedAsset as SelectedAsset | undefined;
       if (selectedAsset) {
         const assetType = getAssetType(selectedAsset);
-        action.transaction.assetType = assetType;
+        transaction.assetType = assetType;
       }
-      const txMeta = getTxMeta(action.transaction);
+      const txMeta = getTxMeta(transaction);
       return {
         ...state,
         transaction: {
           ...state.transaction,
-          ...getTxData(action.transaction),
+          ...getTxData(transaction),
         },
         ...txMeta,
-        // Retain the securityAlertResponses from the old state
         securityAlertResponses: state.securityAlertResponses,
-      };
+      } as TransactionState;
     }
     case 'SET_TOKENS_TRANSACTION': {
-      const selectedAsset = action.asset;
-      const assetType = getAssetType(selectedAsset);
+      const selectedAsset = action.asset ?? {};
+      const assetType = getAssetType(selectedAsset) as TransactionState['assetType'];
       return {
         ...state,
-        selectedAsset: action.asset,
+        selectedAsset,
         assetType,
       };
     }
-    case 'SET_ETHER_TRANSACTION':
+    case 'SET_ETHER_TRANSACTION': {
+      const transaction = action.transaction!;
       return {
         ...state,
         symbol: 'ETH',
         assetType: 'ETH',
         selectedAsset: { isETH: true, symbol: 'ETH' },
-        ...getTxMeta(action.transaction),
-        transaction: getTxData(action.transaction),
-      };
+        ...getTxMeta(transaction),
+        transaction: getTxData(transaction),
+      } as TransactionState;
+    }
     case 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE': {
-      const { transactionId, securityAlertResponse } = action;
+      const transactionId = action.transactionId as string;
+      const securityAlertResponse = action.securityAlertResponse as TransactionState['securityAlertResponses'][string];
       return {
         ...state,
         securityAlertResponses: {

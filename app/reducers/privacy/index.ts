@@ -1,9 +1,20 @@
-const initialState = {
+import { PrivacyState } from './types';
+
+interface PrivacyAction {
+  type: string;
+  hostname?: string;
+  timestamp?: number;
+}
+
+const initialState: PrivacyState = {
   approvedHosts: {},
   revealSRPTimestamps: [],
 };
 
-const privacyReducer = (state = initialState, action) => {
+const privacyReducer = (
+  state: PrivacyState = initialState,
+  action: PrivacyAction,
+): PrivacyState => {
   const newHosts = { ...state.approvedHosts };
   switch (action.type) {
     case 'APPROVE_HOST':
@@ -11,11 +22,11 @@ const privacyReducer = (state = initialState, action) => {
         ...state,
         approvedHosts: {
           ...state.approvedHosts,
-          [action.hostname]: true,
+          [action.hostname as string]: true,
         },
       };
     case 'REJECT_HOST':
-      delete newHosts[action.hostname];
+      delete newHosts[action.hostname as string];
       return {
         ...state,
         approvedHosts: newHosts,
@@ -28,7 +39,7 @@ const privacyReducer = (state = initialState, action) => {
     case 'RECORD_SRP_REVEAL_TIMESTAMP':
       return {
         ...state,
-        revealSRPTimestamps: [...state.revealSRPTimestamps, action.timestamp],
+        revealSRPTimestamps: [...state.revealSRPTimestamps, action.timestamp as number],
       };
     default:
       return state;

@@ -1,31 +1,30 @@
 import { RootState } from '../reducers';
 import { createSelector } from 'reselect';
+import { SettingsState } from '../reducers/settings/types';
 
 const selectSettings = (state: RootState) => state.settings;
 
 export const selectShowFiatInTestnets = createSelector(
   selectSettings,
-  (settingsState: Record<string, unknown>) =>
-    settingsState.showFiatOnTestnets as boolean,
+  (settingsState: SettingsState) => settingsState.showFiatOnTestnets,
 );
 
 export const selectPrimaryCurrency = createSelector(
   selectSettings,
-  (settingsState: Record<string, unknown>) => settingsState.primaryCurrency,
+  (settingsState: SettingsState) => settingsState.primaryCurrency,
 );
 export const selectShowCustomNonce = createSelector(
   selectSettings,
-  (settingsState: Record<string, unknown>) => settingsState.showCustomNonce,
+  (settingsState: SettingsState) => settingsState.showCustomNonce,
 );
 
 export const selectBasicFunctionalityEnabled = createSelector(
   selectSettings,
-  (settingsState: Record<string, unknown>) =>
-    settingsState.basicFunctionalityEnabled as boolean,
+  (settingsState: SettingsState) => settingsState.basicFunctionalityEnabled,
 );
 
 export const selectHideZeroBalanceTokens = createSelector(
   selectSettings,
-  (settingsState: Record<string, unknown>) =>
+  (settingsState: SettingsState) =>
     Boolean(settingsState.hideZeroBalanceTokens),
 );

@@ -22,8 +22,8 @@ import securityReducer, { SecurityState } from './security';
 import { combineReducers, Reducer } from 'redux';
 import experimentalSettingsReducer from './experimentalSettings';
 import { EngineState } from '../core/Engine';
-import rpcEventReducer from './rpcEvents';
-import accountsReducer from './accounts';
+import rpcEventReducer, { iEventGroup } from './rpcEvents';
+import accountsReducer, { iAccountEvent } from './accounts';
 import sdkReducer from './sdk';
 import inpageProviderReducer from '../core/redux/slices/inpageProvider';
 import confirmationMetricsReducer from '../core/redux/slices/confirmationMetrics';
@@ -35,6 +35,16 @@ import performanceReducer, {
   PerformanceState,
 } from '../core/redux/slices/performance';
 import { isTest } from '../util/test/utils';
+
+import { LegalNoticesState } from './legalNotices/types';
+import { PrivacyState } from './privacy/types';
+import { BrowserState } from './browser/types';
+import { SettingsState } from './settings/types';
+import { AlertState } from './alert/types';
+import { TransactionState } from './transaction/types';
+import { NotificationState } from './notification/types';
+import { SwapsState } from './swaps/types';
+import { ExperimentalSettingsState } from './experimentalSettings/types';
 
 /**
  * Infer state from a reducer
@@ -54,69 +64,31 @@ export type StateFromReducer<reducer> = reducer extends Reducer<
 // to this type. Once that is complete, we can automatically generate this type
 // using the `StateFromReducersMapObject` type from redux.
 export interface RootState {
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  legalNotices: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  collectibles: any;
+  legalNotices: LegalNoticesState;
+  collectibles: StateFromReducer<typeof collectiblesReducer>;
   engine: { backgroundState: EngineState };
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  privacy: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bookmarks: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  browser: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modals: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  settings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  alert: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  transaction: any;
+  privacy: PrivacyState;
+  bookmarks: StateFromReducer<typeof bookmarksReducer>;
+  browser: BrowserState;
+  modals: StateFromReducer<typeof modalsReducer>;
+  settings: SettingsState;
+  alert: AlertState;
+  transaction: TransactionState;
   user: UserState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wizard: any;
+  wizard: StateFromReducer<typeof wizardReducer>;
   onboarding: OnboardingState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  notification: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  swaps: any;
+  notification: NotificationState;
+  swaps: SwapsState;
   fiatOrders: StateFromReducer<typeof fiatOrders>;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  infuraAvailability: any;
+  infuraAvailability: StateFromReducer<typeof infuraAvailabilityReducer>;
   navigation: NavigationState;
-  // The networkOnboarded reducer is TypeScript but not yet a valid reducer
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  networkOnboarded: any;
+  networkOnboarded: StateFromReducer<typeof networkOnboardReducer>;
   security: SecurityState;
   sdk: StateFromReducer<typeof sdkReducer>;
-  // The experimentalSettings reducer is TypeScript but not yet a valid reducer
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  experimentalSettings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  signatureRequest: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rpcEvents: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  accounts: any;
+  experimentalSettings: ExperimentalSettingsState;
+  signatureRequest: StateFromReducer<typeof signatureRequestReducer>;
+  rpcEvents: iEventGroup;
+  accounts: iAccountEvent;
   inpageProvider: StateFromReducer<typeof inpageProviderReducer>;
   confirmationMetrics: StateFromReducer<typeof confirmationMetricsReducer>;
   originThrottling: StateFromReducer<typeof originThrottlingReducer>;
@@ -144,14 +116,18 @@ const baseReducers = {
   onboarding: onboardingReducer,
   notification: notificationReducer,
   signatureRequest: signatureRequestReducer,
-  swaps: swapsReducer,
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  swaps: swapsReducer as any,
   fiatOrders,
   infuraAvailability: infuraAvailabilityReducer,
   navigation: navigationReducer,
   networkOnboarded: networkOnboardReducer,
   security: securityReducer,
   sdk: sdkReducer,
-  experimentalSettings: experimentalSettingsReducer,
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  experimentalSettings: experimentalSettingsReducer as any,
   rpcEvents: rpcEventReducer,
   accounts: accountsReducer,
   inpageProvider: inpageProviderReducer,
