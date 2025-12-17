@@ -8,7 +8,7 @@ interface BrowserAction {
   hostname?: string;
   url?: string;
   name?: string;
-  id?: string;
+  id?: number;
   metricsEnabled?: boolean;
   marketingEnabled?: boolean;
   linkType?: string;
@@ -65,10 +65,10 @@ const browserReducer = (
               metricsEnabled: action.metricsEnabled ?? false,
               marketingEnabled: action.marketingEnabled ?? false,
             }).href,
-            id: action.id as string,
+            id: action.id as number,
           },
         ],
-        activeTab: action.id as string,
+        activeTab: action.id as number,
       };
     case 'CLOSE_ALL_TABS':
       return {
@@ -83,7 +83,7 @@ const browserReducer = (
           {
             url: action.url as string,
             ...(action.linkType && { linkType: action.linkType }),
-            id: action.id as string,
+            id: action.id as number,
           },
         ],
       };

@@ -5,7 +5,7 @@ export interface BrowserHistoryEntry {
 
 export interface BrowserTab {
   url: string;
-  id: string;
+  id: number;
   linkType?: string;
 }
 
@@ -19,6 +19,6 @@ export interface BrowserState {
   whitelist: string[];
   tabs: BrowserTab[];
   favicons: Favicon[];
-  activeTab: string | null;
+  activeTab: number | null;
   visitedDappsByHostname: Record<string, boolean>;
 }

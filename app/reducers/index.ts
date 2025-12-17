@@ -46,6 +46,11 @@ import { NotificationState } from './notification/types';
 import { SwapsState } from './swaps/types';
 import { ExperimentalSettingsState } from './experimentalSettings/types';
 
+// Typed reducer wrappers for JavaScript reducers that don't have proper TypeScript annotations
+const typedSwapsReducer = swapsReducer as Reducer<SwapsState>;
+const typedExperimentalSettingsReducer =
+  experimentalSettingsReducer as Reducer<ExperimentalSettingsState>;
+
 /**
  * Infer state from a reducer
  *
@@ -116,18 +121,14 @@ const baseReducers = {
   onboarding: onboardingReducer,
   notification: notificationReducer,
   signatureRequest: signatureRequestReducer,
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  swaps: swapsReducer as any,
+  swaps: typedSwapsReducer,
   fiatOrders,
   infuraAvailability: infuraAvailabilityReducer,
   navigation: navigationReducer,
   networkOnboarded: networkOnboardReducer,
   security: securityReducer,
   sdk: sdkReducer,
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  experimentalSettings: experimentalSettingsReducer as any,
+  experimentalSettings: typedExperimentalSettingsReducer,
   rpcEvents: rpcEventReducer,
   accounts: accountsReducer,
   inpageProvider: inpageProviderReducer,
