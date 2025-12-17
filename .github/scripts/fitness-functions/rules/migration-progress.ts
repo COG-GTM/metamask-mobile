@@ -207,6 +207,6 @@ export {
   calculateDirectoryProgress,
   countFilesByExtension,
   countAnyTypeUsage,
-  MigrationProgress,
-  ProgressReport,
 };
+
+export type { MigrationProgress, ProgressReport };
