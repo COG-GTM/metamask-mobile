@@ -13,6 +13,48 @@ export interface Identity {
   importTime?: number;
 }
 
+/**
+ * State structure for migration 036 (before AccountsController is created)
+ */
+interface Migration036StateInput {
+  engine: {
+    backgroundState: {
+      KeyringController?: unknown;
+      PreferencesController?: {
+        identities?: Record<string, Identity>;
+        selectedAddress?: string;
+      };
+      AccountsController?: {
+        internalAccounts: {
+          accounts: Record<string, InternalAccount>;
+          selectedAccount: string;
+        };
+      };
+    };
+  };
+}
+
+/**
+ * State structure for migration 036 (after AccountsController is created)
+ */
+interface Migration036State {
+  engine: {
+    backgroundState: {
+      KeyringController?: unknown;
+      PreferencesController?: {
+        identities?: Record<string, Identity>;
+        selectedAddress?: string;
+      };
+      AccountsController: {
+        internalAccounts: {
+          accounts: Record<string, InternalAccount>;
+          selectedAccount: string;
+        };
+      };
+    };
+  };
+}
+
 export default function migrate(state: unknown) {
   if (!isObject(state)) {
     captureException(
@@ -72,15 +114,15 @@ export default function migrate(state: unknown) {
     );
     return state;
   }
-  createDefaultAccountsController(state);
-  createInternalAccountsForAccountsController(state);
-  createSelectedAccountForAccountsController(state);
+  const typedState = state as unknown as Migration036StateInput;
+  createDefaultAccountsController(typedState);
+  const stateWithAccounts = typedState as Migration036State;
+  createInternalAccountsForAccountsController(stateWithAccounts);
+  createSelectedAccountForAccountsController(stateWithAccounts);
   return state;
 }
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function createDefaultAccountsController(state: Record<string, any>) {
+function createDefaultAccountsController(state: Migration036StateInput) {
   state.engine.backgroundState.AccountsController = {
     internalAccounts: {
       accounts: {},
@@ -90,9 +132,7 @@ function createDefaultAccountsController(state: Record<string, any>) {
 }
 
 function createInternalAccountsForAccountsController(
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  state: Record<string, any>,
+  state: Migration036State,
 ) {
   const identities: {
     [key: string]: Identity;
@@ -137,9 +177,7 @@ function createInternalAccountsForAccountsController(
 }
 
 function findInternalAccountByAddress(
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  state: Record<string, any>,
+  state: Migration036State,
   address: string,
 ): InternalAccount | undefined {
   return Object.values<InternalAccount>(
@@ -151,9 +189,7 @@ function findInternalAccountByAddress(
 }
 
 function createSelectedAccountForAccountsController(
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  state: Record<string, any>,
+  state: Migration036State,
 ) {
   const selectedAddress =
     state.engine.backgroundState.PreferencesController?.selectedAddress;
@@ -166,9 +202,12 @@ function createSelectedAccountForAccountsController(
       ),
     );
     // Get the first account if selectedAddress is not a string
-    const [firstAddress] = Object.keys(
-      state.engine.backgroundState.PreferencesController?.identities,
-    );
+    const identities =
+      state.engine.backgroundState.PreferencesController?.identities;
+    if (!identities) {
+      return;
+    }
+    const [firstAddress] = Object.keys(identities);
     const internalAccount = findInternalAccountByAddress(state, firstAddress);
 
     if (internalAccount) {
@@ -181,8 +220,10 @@ function createSelectedAccountForAccountsController(
       }
       state.engine.backgroundState.AccountsController.internalAccounts.selectedAccount =
         internalAccount.id;
-      state.engine.backgroundState.PreferencesController.selectedAddress =
-        internalAccount.address;
+      if (state.engine.backgroundState.PreferencesController) {
+        state.engine.backgroundState.PreferencesController.selectedAddress =
+          internalAccount.address;
+      }
     }
     return;
   }

@@ -26,6 +26,7 @@ import Avatar, {
 import { NetworkEducationModalSelectorsIDs } from '../../../../e2e/selectors/Network/NetworkEducationModal.selectors';
 import { isNonEvmChainId } from '../../../core/Multichain/utils';
 import { Hex } from '@metamask/utils';
+import { RootState } from '../../../reducers';
 
 const createStyles = (colors: {
   background: { default: string };
@@ -232,9 +233,7 @@ const NetworkInfo = (props: NetworkInfoProps) => {
   );
 };
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapStateToProps = (state: any) => ({
+const mapStateToProps = (state: RootState) => ({
   isTokenDetectionEnabled: selectUseTokenDetection(state),
 });
 

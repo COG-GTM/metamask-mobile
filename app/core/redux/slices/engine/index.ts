@@ -1,29 +1,44 @@
-import Engine from '../../../Engine';
+import Engine, { EngineState } from '../../../Engine';
 import { createAction, PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  backgroundState: {} as any,
+/**
+ * State interface for the engine reducer
+ */
+export interface EngineReduxState {
+  backgroundState: EngineState | Record<string, unknown>;
+}
+
+const initialState: EngineReduxState = {
+  backgroundState: {},
 };
 
 // Create an action to initialize the background state
 export const initBgState = createAction('INIT_BG_STATE');
 
-// Create an action to update the background state
-export const updateBgState = createAction('UPDATE_BG_STATE', (key) => ({
-  payload: key,
-}));
+/**
+ * Payload for updateBgState action - key is a string representing a controller name
+ */
+interface UpdateBgStatePayload {
+  key: string;
+}
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const counter: any = {};
+// Create an action to update the background state
+export const updateBgState = createAction(
+  'UPDATE_BG_STATE',
+  (key: string) => ({
+    payload: { key },
+  }),
+);
+
+/**
+ * Counter for tracking state updates (used for debugging/metrics)
+ */
+export const counter: Record<string, number> = {};
+
 const engineReducer = (
   // eslint-disable-next-line @typescript-eslint/default-param-last
-  state = initialState,
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: PayloadAction<{ key: any } | undefined>,
+  state: EngineReduxState = initialState,
+  action: PayloadAction<UpdateBgStatePayload | undefined>,
 ) => {
   switch (action.type) {
     case initBgState.type: {
@@ -33,10 +48,13 @@ const engineReducer = (
       const newState = { ...state };
 
       if (action.payload) {
-        const newControllerState =
-          Engine.state[action.payload.key as keyof typeof Engine.state];
+        const key = action.payload.key as keyof typeof Engine.state;
+        const newControllerState = Engine.state[key];
 
-        newState.backgroundState[action.payload.key] = newControllerState;
+        // Use type assertion to handle the dynamic key assignment
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (newState.backgroundState as Record<string, any>)[key] =
+          newControllerState;
       }
 
       return newState;
