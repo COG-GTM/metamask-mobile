@@ -1,5 +1,10 @@
-import { preventJavaScriptFileAdditions } from './javascript-additions';
+import {
+  preventJavaScriptFileAdditions,
+  preventJavaScriptFileAdditionsStrict,
+} from './javascript-additions';
 import { preventCodeBlocksRule } from './prevent-code-blocks';
+import { preventAnyTypeAdditions } from './typescript-any-additions';
+import { trackMigrationProgress } from './migration-progress';
 
 const RULES: IRule[] = [
   {
@@ -8,8 +13,18 @@ const RULES: IRule[] = [
     docURL: '[WIP] No documentation exists for this rule yet.',
   },
   {
-    name: 'Check for js or jsx file being added',
+    name: 'Check for js or jsx file being added in app folder',
     fn: preventJavaScriptFileAdditions,
+    docURL: '[WIP] No documentation exists for this rule yet.',
+  },
+  {
+    name: 'Check for js or jsx file being added in source folders (app, e2e)',
+    fn: preventJavaScriptFileAdditionsStrict,
+    docURL: '[WIP] No documentation exists for this rule yet.',
+  },
+  {
+    name: 'Check for explicit any type additions in TypeScript files',
+    fn: preventAnyTypeAdditions,
     docURL: '[WIP] No documentation exists for this rule yet.',
   },
 ];
@@ -38,5 +53,12 @@ function runFitnessFunctionRule(rule: IRule, diff: string): void {
   }
 }
 
-export { RULES, runFitnessFunctionRule, preventJavaScriptFileAdditions };
+export {
+  RULES,
+  runFitnessFunctionRule,
+  preventJavaScriptFileAdditions,
+  preventJavaScriptFileAdditionsStrict,
+  preventAnyTypeAdditions,
+  trackMigrationProgress,
+};
 export type { IRule };

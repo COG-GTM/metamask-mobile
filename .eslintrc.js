@@ -37,6 +37,21 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'error',
         // Under discussion
         '@typescript-eslint/no-duplicate-enum-values': 'off',
+        // Stricter type safety rules - set as warnings to gradually improve type safety
+        // These rules help catch unsafe usage of 'any' types that slip through
+        '@typescript-eslint/no-unsafe-assignment': 'warn',
+        '@typescript-eslint/no-unsafe-member-access': 'warn',
+        '@typescript-eslint/no-unsafe-call': 'warn',
+        '@typescript-eslint/no-unsafe-return': 'warn',
+        '@typescript-eslint/no-unsafe-argument': 'warn',
+        // Enforce consistent type imports for better tree-shaking
+        '@typescript-eslint/consistent-type-imports': [
+          'warn',
+          {
+            prefer: 'type-imports',
+            disallowTypeAnnotations: false,
+          },
+        ],
       },
     },
     {
