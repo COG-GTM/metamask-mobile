@@ -1,5 +1,7 @@
+import { cloneDeep, merge } from 'lodash';
 import type { RootState } from '../../reducers';
 import type { EngineState } from '../../core/Engine';
+import type { DeepPartial } from './renderWithProvider';
 import { initialState as initialFiatOrdersState } from '../../reducers/fiatOrders';
 import { initialState as initialSecurityState } from '../../reducers/security';
 import { initialState as initialInpageProvider } from '../../core/redux/slices/inpageProvider';
@@ -80,3 +82,7 @@ if (isTest) {
 }
 
 export default initialRootState;
+
+export function makeRootState(overrides: DeepPartial<RootState> = {}): RootState {
+  return merge(cloneDeep(initialRootState), overrides) as RootState;
+}
