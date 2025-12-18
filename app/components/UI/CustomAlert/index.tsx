@@ -5,7 +5,7 @@ import StyledButton from '../StyledButton';
 import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { Colors } from '../../../util/theme/models';
-import { Theme } from '../../../util/theme/models';
+import type { Theme } from '@metamask/design-tokens';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -92,10 +92,10 @@ interface CustomAlertProps {
  */
 export default class CustomAlert extends PureComponent<CustomAlertProps> {
   static contextType = ThemeContext;
-  declare context: Theme;
 
   render() {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
