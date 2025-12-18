@@ -610,6 +610,64 @@ workflows:
       bitrise.io:
         stack: linux-docker-android-22.04
         machine_type_id: standard
+  # Version verification workflow - ensures all version files are synchronized
+  # This workflow can be added as a before_run step to any build workflow
+  verify_version_sync:
+    steps:
+      - script@1:
+          title: Verify Version Synchronization
+          inputs:
+            - content: |-
+                #!/usr/bin/env bash
+                set -e
+                
+                echo "=============================================="
+                echo "Verifying version synchronization..."
+                echo "=============================================="
+                
+                # Read version from package.json (source of truth)
+                PKG_VERSION=$(jq -r '.version' package.json)
+                PKG_VERSION_CODE=$(jq -r '.build.versionCode // empty' package.json)
+                
+                if [[ -z "$PKG_VERSION" ]]; then
+                  echo "ERROR: Could not read version from package.json"
+                  exit 1
+                fi
+                
+                echo "package.json version: $PKG_VERSION"
+                echo "package.json versionCode: ${PKG_VERSION_CODE:-NOT_SET}"
+                
+                # Check Android build.gradle
+                ANDROID_VERSION=$(grep -E '^\s*versionName\s+"' android/app/build.gradle | sed -E 's/.*versionName\s+"([^"]+)".*/\1/')
+                if [[ "$ANDROID_VERSION" != "$PKG_VERSION" ]]; then
+                  echo "ERROR: Android versionName mismatch: $ANDROID_VERSION (expected: $PKG_VERSION)"
+                  exit 1
+                fi
+                echo "Android versionName: OK"
+                
+                # Check bitrise.yml VERSION_NAME
+                BITRISE_VERSION=$(grep -E '^\s+VERSION_NAME:' bitrise.yml | head -1 | awk '{print $2}')
+                if [[ "$BITRISE_VERSION" != "$PKG_VERSION" ]]; then
+                  echo "ERROR: Bitrise VERSION_NAME mismatch: $BITRISE_VERSION (expected: $PKG_VERSION)"
+                  exit 1
+                fi
+                echo "Bitrise VERSION_NAME: OK"
+                
+                # Check iOS MARKETING_VERSION
+                IOS_VERSION=$(grep -E '^\s*MARKETING_VERSION = ' ios/MetaMask.xcodeproj/project.pbxproj | head -1 | sed -E 's/.*MARKETING_VERSION = ([^;]+);.*/\1/')
+                if [[ "$IOS_VERSION" != "$PKG_VERSION" ]]; then
+                  echo "ERROR: iOS MARKETING_VERSION mismatch: $IOS_VERSION (expected: $PKG_VERSION)"
+                  exit 1
+                fi
+                echo "iOS MARKETING_VERSION: OK"
+                
+                echo "=============================================="
+                echo "All versions are synchronized!"
+                echo "=============================================="
+    meta:
+      bitrise.io:
+        stack: linux-docker-android-22.04
+        machine_type_id: standard
   # CI Steps
   ci_test:
     before_run:

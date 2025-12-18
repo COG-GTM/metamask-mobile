@@ -1,6 +1,10 @@
 {
   "name": "metamask",
   "version": "7.45.2",
+  "build": {
+    "versionCode": 1810,
+    "flaskVersionCode": 1810
+  },
   "private": true,
   "scripts": {
     "audit:ci": "./scripts/yarn-audit.sh",
@@ -93,18 +97,20 @@
     "gen-bundle:ios": "npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle",
     "gen-bundle:android": "npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/main.jsbundle",
     "circular:deps": "dpdm ./app/* --circular --exit-code circular:1 --warning=false",
-    "generate-icons": "npx ts-node app/component-library/components/Icons/Icon/scripts/generate-assets.ts"
+    "generate-icons": "npx ts-node app/component-library/components/Icons/Icon/scripts/generate-assets.ts",
+    "version:bump": "./scripts/set-versions.sh",
+    "version:verify": "./scripts/verify-versions.sh"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint '**/*.{js,ts,tsx}'"
-    ]
-  },
+    "husky": {
+      "hooks": {
+        "pre-commit": "./scripts/check-version-changes.sh && lint-staged"
+      }
+    },
+    "lint-staged": {
+      "*.{js,jsx,ts,tsx}": [
+        "eslint '**/*.{js,ts,tsx}'"
+      ]
+    },
   "resolutions": {
     "**/json-schema": "^0.4.0",
     "react-native-svg/**/nth-check": "^2.0.1",

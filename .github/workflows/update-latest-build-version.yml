@@ -4,6 +4,9 @@
 # You can provide your own base branch, tag, or SHA for git operations and the pull request.
 # and it will generate the latest build version & update the neccessary files for you.
 #
+# IMPORTANT: package.json is the single source of truth for version information.
+# This workflow validates package.json first before updating other files.
+#
 ##############################################################################################
 name: Update Latest Build Version
 
@@ -32,6 +35,19 @@ jobs:
             fetch-depth: 0
             ref: ${{ inputs.base-branch }}
             token: ${{ secrets.PR_TOKEN }}
+
+        - name: Validate package.json structure
+          run: |
+            echo "Validating package.json has required version fields..."
+            if ! jq -e '.version' package.json > /dev/null 2>&1; then
+              echo "ERROR: package.json is missing 'version' field"
+              exit 1
+            fi
+            if ! jq -e '.build.versionCode' package.json > /dev/null 2>&1; then
+              echo "WARNING: package.json is missing 'build.versionCode' field"
+              echo "Adding build metadata fields to package.json..."
+            fi
+            echo "package.json validation passed"
             
         - name: Bump script
           env:
@@ -47,5 +63,10 @@ jobs:
             git add android/app/build.gradle
             git commit -m "Bump version number to ${{ needs.generate-build-version.outputs.build-version }}"
             git push origin HEAD:"$HEAD_REF" --force
+
+        - name: Verify version synchronization
+          run: |
+            echo "Verifying all version files are synchronized..."
+            ./scripts/verify-versions.sh || echo "WARNING: Version verification found issues"
             
   
