@@ -6,6 +6,68 @@ declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
 declare module 'react-native-fade-in-image';
 
+declare module 'react-native-confetti' {
+  import { Component } from 'react';
+  interface ConfettiProps {
+    confettiCount?: number;
+    timeout?: number;
+    duration?: number;
+    colors?: string[];
+    size?: number;
+    bsize?: number;
+    untilStopped?: boolean;
+  }
+  export default class Confetti extends Component<ConfettiProps> {
+    startConfetti(): void;
+    stopConfetti(): void;
+  }
+}
+
+declare module 'react-native-confetti-cannon' {
+  import { Component } from 'react';
+  interface ConfettiCannonProps {
+    count?: number;
+    origin?: { x: number; y: number };
+    explosionSpeed?: number;
+    fallSpeed?: number;
+    fadeOut?: boolean;
+    colors?: string[];
+    autoStart?: boolean;
+    autoStartDelay?: number;
+    onAnimationStart?: () => void;
+    onAnimationResume?: () => void;
+    onAnimationStop?: () => void;
+    onAnimationEnd?: () => void;
+  }
+  export default class ConfettiCannon extends Component<ConfettiCannonProps> {
+    start(): void;
+    resume(): void;
+    stop(): void;
+  }
+}
+
+declare module 'react-native-progress/Bar' {
+  import { Component } from 'react';
+  import { StyleProp, ViewStyle } from 'react-native';
+  interface ProgressBarProps {
+    progress?: number;
+    indeterminate?: boolean;
+    indeterminateAnimationDuration?: number;
+    width?: number | null;
+    height?: number;
+    borderWidth?: number;
+    borderRadius?: number;
+    borderColor?: string;
+    unfilledColor?: string;
+    color?: string;
+    useNativeDriver?: boolean;
+    animationConfig?: object;
+    animationType?: 'decay' | 'timing' | 'spring';
+    style?: StyleProp<ViewStyle>;
+  }
+  export default class ProgressBar extends Component<ProgressBarProps> {}
+}
+
 declare module 'react-native-fast-crypto';
 
 declare module 'react-native-minimizer';
