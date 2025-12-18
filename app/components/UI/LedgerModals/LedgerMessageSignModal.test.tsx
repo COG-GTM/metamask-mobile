@@ -1,10 +1,16 @@
 import { renderScreen } from '../../../util/test/renderWithProvider';
 import LedgerMessageSignModal from './LedgerMessageSignModal';
-import { RPCStageTypes } from '../../../reducers/rpcEvents';
+import { RPCStageTypes, initialState as initialRpcEventsState } from '../../../reducers/rpcEvents';
+import { makeRootState } from '../../../util/test/initial-root-state';
 
-const initialState = {
-  rpcEvents: { signingEvent: RPCStageTypes.IDLE },
-};
+const initialState = makeRootState({
+  rpcEvents: {
+    signingEvent: {
+      eventStage: RPCStageTypes.IDLE,
+      rpcName: '',
+    },
+  },
+});
 
 describe('LedgerMessageSignModal', () => {
   it('should render correctly', () => {

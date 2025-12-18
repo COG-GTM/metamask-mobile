@@ -3,13 +3,13 @@ import Settings from './';
 
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { SettingsViewSelectorsIDs } from '../../../../e2e/selectors/Settings/SettingsView.selectors';
-import { backgroundState } from '../../../util/test/initial-root-state';
+import { backgroundState, makeRootState } from '../../../util/test/initial-root-state';
 import { fireEvent } from '@testing-library/react-native';
 import Routes from '../../../constants/navigation/Routes';
 
-const initialState = {
+const initialState = makeRootState({
   user: { seedphraseBackedUp: true, passwordSet: true },
-  privacy: { approvedHosts: [] },
+  privacy: { approvedHosts: {} },
   browser: { history: [] },
   settings: {
     lockTime: 1000,
@@ -19,7 +19,7 @@ const initialState = {
   engine: {
     backgroundState,
   },
-};
+});
 
 const mockSetOptions = jest.fn();
 const mockNavigate = jest.fn();

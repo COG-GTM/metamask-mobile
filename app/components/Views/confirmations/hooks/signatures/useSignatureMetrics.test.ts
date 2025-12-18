@@ -1,12 +1,23 @@
 import { MetaMetricsEvents } from '../../../../../core/Analytics';
 import {
-  securityAlertResponse,
+  securityAlertResponse as securityAlertResponseData,
   typedSignV4ConfirmationState,
   typedSignV4SignatureRequest,
 } from '../../../../../util/test/confirm-data-helpers';
 import { renderHookWithProvider } from '../../../../../util/test/renderWithProvider';
 import { useSignatureMetrics } from './useSignatureMetrics';
 import { ResultType, Reason, SecurityAlertSource } from '../../../../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
+import { makeSecurityAlertResponse } from '../../../../../util/test/initial-root-state';
+
+// Create a properly typed security alert response from the mock data
+const securityAlertResponse = makeSecurityAlertResponse({
+  block: securityAlertResponseData.block,
+  result_type: ResultType.Malicious,
+  reason: Reason.permitFarming,
+  features: securityAlertResponseData.features,
+  chainId: securityAlertResponseData.chainId,
+  source: SecurityAlertSource.API,
+});
 
 const mockTypedSignV4SignatureRequest = typedSignV4SignatureRequest;
 jest.mock('./useSignatureRequest', () => ({

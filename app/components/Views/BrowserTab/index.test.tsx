@@ -1,6 +1,6 @@
 import React from 'react';
 import renderWithProvider from '../../../util/test/renderWithProvider';
-import { backgroundState } from '../../../util/test/initial-root-state';
+import { backgroundState, makeRootState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
 import BrowserTab from './BrowserTab';
 import AppConstants from '../../../core/AppConstants';
@@ -22,8 +22,8 @@ jest.mock('@react-navigation/native', () => {
   };
 });
 
-const mockInitialState = {
-  browser: { activeTab: '' },
+const mockInitialState = makeRootState({
+  browser: { activeTab: 1 },
   engine: {
     backgroundState: {
       ...backgroundState,
@@ -31,9 +31,9 @@ const mockInitialState = {
     },
   },
   transaction: {
-    selectedAsset: '',
+    selectedAsset: {},
   },
-};
+});
 
 jest.mock('../../../core/Engine', () => ({
   context: {

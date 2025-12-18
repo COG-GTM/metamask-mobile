@@ -9,7 +9,7 @@ import { WALLET_CONNECT_ORIGIN } from '../../../../../../util/walletconnect';
 import { InteractionManager } from 'react-native';
 import { strings } from '../../../../../../../locales/i18n';
 import AppConstants from '../../../../../../core/AppConstants';
-import { backgroundState } from '../../../../../../util/test/initial-root-state';
+import { backgroundState, makeRootState, makeSecurityAlertResponse, ResultType, Reason } from '../../../../../../util/test/initial-root-state';
 import renderWithProvider from '../../../../../../util/test/renderWithProvider';
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { MetaMetrics } from '../../../../../../core/Analytics';
@@ -76,7 +76,7 @@ const messageParamsMock = {
 
 const mockStore = configureMockStore();
 
-const initialState = {
+const initialState = makeRootState({
   engine: {
     backgroundState: {
       ...backgroundState,
@@ -84,15 +84,14 @@ const initialState = {
     },
   },
   signatureRequest: {
-    securityAlertResponse: {
-      description: '',
+    securityAlertResponse: makeSecurityAlertResponse({
       features: [],
       providerRequestsCount: { eth_chainId: 1 },
-      reason: '',
-      result_type: 'Benign',
-    },
+      reason: Reason.other,
+      result_type: ResultType.Benign,
+    }),
   },
-};
+});
 
 const store = mockStore(initialState);
 

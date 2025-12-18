@@ -25,7 +25,7 @@ import Icon, {
   IconSize,
   IconName,
 } from '../../../../../component-library/components/Icons/Icon';
-import { BrowserTab } from '../../types';
+import { BrowserTab } from '../../../../../reducers/browser';
 import { WalletViewSelectorsIDs } from '../../../../../../e2e/selectors/wallet/WalletView.selectors';
 import { strings } from '../../../../../../locales/i18n';
 import { EYE_SLASH_ICON_TEST_ID, EYE_ICON_TEST_ID } from './index.constants';

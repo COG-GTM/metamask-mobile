@@ -1,5 +1,6 @@
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import { SecurityAlertResponse } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 
 export interface TransactionData {
   data?: string;
@@ -39,9 +40,12 @@ export interface TransactionState {
   type?: string;
   proposedNonce?: string;
   nonce?: string;
-  securityAlertResponses: Record<string, unknown>;
+  securityAlertResponses: Record<string, SecurityAlertResponse | undefined>;
   useMax: boolean;
   maxValueMode?: boolean;
+  // Additional properties used by components
+  chainId?: string;
+  origin?: string;
 }
 
 interface TransactionAction {
@@ -58,7 +62,7 @@ interface TransactionAction {
   transaction?: TransactionData & { selectedAsset?: SelectedAsset; assetType?: string };
   asset?: SelectedAsset;
   transactionId?: string;
-  securityAlertResponse?: unknown;
+  securityAlertResponse?: SecurityAlertResponse;
   maxValueMode?: boolean;
   value?: string;
 }

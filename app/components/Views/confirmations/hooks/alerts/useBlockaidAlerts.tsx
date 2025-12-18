@@ -80,13 +80,17 @@ export default function useBlockaidAlerts(): Alert[] {
     }
 
     const { result_type, reason, features } = securityAlertResponse;
+    // Filter features to only include string values for alertDetails
+    const alertDetails = features?.filter(
+      (f): f is string => typeof f === 'string',
+    ) as string[] | undefined;
 
     return [
       {
         key: AlertKeys.Blockaid,
         content: (
           <BlockaidAlertContent
-            alertDetails={features}
+            alertDetails={alertDetails}
             securityAlertResponse={securityAlertResponse as SecurityAlertResponse}
             onContactUsClicked={trackBlockaidAlertLinkClickedEvent}
           />

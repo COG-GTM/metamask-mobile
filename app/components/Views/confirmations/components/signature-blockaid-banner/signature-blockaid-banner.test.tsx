@@ -3,10 +3,11 @@ import { fireEvent } from '@testing-library/react-native';
 
 import renderWithProvider from '../../../../../util/test/renderWithProvider';
 import {
-  securityAlertResponse,
+  securityAlertResponse as securityAlertResponseData,
   typedSignV1ConfirmationState,
 } from '../../../../../util/test/confirm-data-helpers';
 import SignatureBlockaidBanner from './signature-blockaid-banner';
+import { makeSecurityAlertResponse, Reason, ResultType } from '../../../../../util/test/initial-root-state';
 
 jest.mock('react-native-gzip', () => ({
   deflate: (str: string) => str,
@@ -29,6 +30,15 @@ jest.mock('../../../../hooks/useMetrics', () => ({
 jest.mock('../../../../../util/confirmation/signatureUtils', () => ({
   getAnalyticsParams: () => ({}),
 }));
+
+// Create a properly typed security alert response from the mock data
+const securityAlertResponse = makeSecurityAlertResponse({
+  block: securityAlertResponseData.block,
+  result_type: ResultType.Malicious,
+  reason: Reason.permitFarming,
+  features: securityAlertResponseData.features,
+  chainId: securityAlertResponseData.chainId,
+});
 
 const typedSignV1ConfirmationStateWithBlockaidResponse = {
   ...typedSignV1ConfirmationState,

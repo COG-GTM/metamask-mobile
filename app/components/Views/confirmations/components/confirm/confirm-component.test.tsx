@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   generateContractInteractionState,
   personalSignatureConfirmationState,
-  securityAlertResponse,
+  securityAlertResponse as securityAlertResponseData,
   stakingClaimConfirmationState,
   stakingDepositConfirmationState,
   stakingWithdrawalConfirmationState,
@@ -16,6 +16,16 @@ import * as EditNonceHook from '../../../../../components/hooks/useEditNonce';
 // eslint-disable-next-line import/no-namespace
 import * as ConfirmationRedesignEnabled from '../../hooks/useConfirmationRedesignEnabled';
 import { Confirm } from './confirm-component';
+import { makeSecurityAlertResponse, Reason, ResultType } from '../../../../../util/test/initial-root-state';
+
+// Create a properly typed security alert response from the mock data
+const securityAlertResponse = makeSecurityAlertResponse({
+  block: securityAlertResponseData.block,
+  result_type: ResultType.Malicious,
+  reason: Reason.permitFarming,
+  features: securityAlertResponseData.features,
+  chainId: securityAlertResponseData.chainId,
+});
 
 jest.mock('../../../../../selectors/featureFlagController/confirmations', () => ({
   selectConfirmationRedesignFlags: () => ({

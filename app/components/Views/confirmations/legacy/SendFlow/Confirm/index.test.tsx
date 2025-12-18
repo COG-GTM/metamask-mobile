@@ -9,7 +9,7 @@ import {
   renderScreen,
 } from '../../../../../../util/test/renderWithProvider';
 import Routes from '../../../../../../constants/navigation/Routes';
-import { backgroundState } from '../../../../../../util/test/initial-root-state';
+import { backgroundState, makeSecurityAlertResponse, Reason, ResultType } from '../../../../../../util/test/initial-root-state';
 import { TESTID_ACCORDION_CONTENT } from '../../../../../../component-library/components/Accordions/Accordion/Accordion.constants';
 import { FALSE_POSITIVE_REPOST_LINE_TEST_ID } from '../../components/BlockaidBanner/BlockaidBanner.constants';
 import { createMockAccountsControllerState } from '../../../../../../util/test/accountsControllerTestUtils';
@@ -82,12 +82,12 @@ const mockInitialState: DeepPartial<RootState> = {
   },
   transaction: {
     securityAlertResponses: {
-      1: {
-        result_type: 'Malicious',
-        reason: 'blur_farming',
+      1: makeSecurityAlertResponse({
+        result_type: ResultType.Malicious,
+        reason: Reason.blurFarming,
         providerRequestsCount: {},
         chainId: '0x1',
-      },
+      }),
     },
     selectedAsset: {},
     chainId: '0x1',
@@ -314,12 +314,12 @@ describe('Confirm', () => {
     const testState = merge({}, mockInitialState, {
       transaction: {
         securityAlertResponses: {
-          1: {
-            result_type: 'Malicious',
-            reason: 'blur_farming',
+          1: makeSecurityAlertResponse({
+            result_type: ResultType.Malicious,
+            reason: Reason.blurFarming,
             providerRequestsCount: {},
             chainId: '0x1',
-          },
+          }),
         },
         selectedAsset: {
           address: '0x15249D1a506AFC731Ee941d0D40Cf33FacD34E58',

@@ -20,7 +20,7 @@ function SwapLiveness() {
   const dispatch = useDispatch();
   const setLiveness = useCallback(
     (_chainId: string, featureFlags?: FeatureFlags | null) => {
-      dispatch(setSwapsLiveness(_chainId, featureFlags));
+      dispatch(setSwapsLiveness(_chainId, featureFlags ?? null));
     },
     [dispatch],
   );

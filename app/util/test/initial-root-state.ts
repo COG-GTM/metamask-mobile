@@ -86,3 +86,25 @@ export default initialRootState;
 export function makeRootState(overrides: DeepPartial<RootState> = {}): RootState {
   return merge(cloneDeep(initialRootState), overrides) as RootState;
 }
+
+// Re-export types and enums commonly needed in tests
+export type { SecurityAlertResponse } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
+export { Reason } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
+export { ResultType } from '../../components/Views/confirmations/constants/signatures';
+
+import { Reason, SecurityAlertResponse } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
+import { ResultType } from '../../components/Views/confirmations/constants/signatures';
+
+/**
+ * Helper to create a properly typed SecurityAlertResponse for tests.
+ * Provides sensible defaults for required fields.
+ */
+export function makeSecurityAlertResponse(
+  overrides: Partial<SecurityAlertResponse> = {},
+): SecurityAlertResponse {
+  return {
+    reason: Reason.other,
+    result_type: ResultType.Benign,
+    ...overrides,
+  };
+}

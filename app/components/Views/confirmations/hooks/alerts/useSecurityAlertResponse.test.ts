@@ -1,10 +1,11 @@
 import { merge } from 'lodash';
 import { renderHookWithProvider } from '../../../../../util/test/renderWithProvider';
 import {
-  securityAlertResponse as mockSecurityAlertResponse,
+  securityAlertResponse as mockSecurityAlertResponseData,
   transferConfirmationState,
 } from '../../../../../util/test/confirm-data-helpers';
 import { useSecurityAlertResponse } from './useSecurityAlertResponse';
+import { makeSecurityAlertResponse, Reason, ResultType } from '../../../../../util/test/initial-root-state';
 
 jest.mock('../../../../../core/Engine', () => ({
   context: {
@@ -13,6 +14,15 @@ jest.mock('../../../../../core/Engine', () => ({
     },
   },
 }));
+
+// Create a properly typed security alert response from the mock data
+const mockSecurityAlertResponse = makeSecurityAlertResponse({
+  block: mockSecurityAlertResponseData.block,
+  result_type: ResultType.Malicious,
+  reason: Reason.permitFarming,
+  features: mockSecurityAlertResponseData.features,
+  chainId: mockSecurityAlertResponseData.chainId,
+});
 
 describe('useSecurityAlertResponse', () => {
   it('returns security alert response for signature request is present', () => {
