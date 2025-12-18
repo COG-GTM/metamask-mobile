@@ -37,16 +37,16 @@ if [[ -z "$PKG_FLASK_VERSION_CODE" || "$PKG_FLASK_VERSION_CODE" == "null" ]]; th
 fi
 
 echo "Reading versions from Android build.gradle..."
-ANDROID_VERSION_NAME=$(grep -oP 'versionName "\K[^"]+' "$ANDROID_BUILD_GRADLE_FILE" | head -1)
-ANDROID_VERSION_CODE=$(grep -oP 'versionCode \K[0-9]+' "$ANDROID_BUILD_GRADLE_FILE" | head -1)
+ANDROID_VERSION_NAME=$(sed -n 's/.*versionName "\([^"]*\)".*/\1/p' "$ANDROID_BUILD_GRADLE_FILE" | head -1)
+ANDROID_VERSION_CODE=$(sed -n 's/.*versionCode \([0-9]*\).*/\1/p' "$ANDROID_BUILD_GRADLE_FILE" | head -1)
 
 echo "  - versionName: $ANDROID_VERSION_NAME"
 echo "  - versionCode: $ANDROID_VERSION_CODE"
 echo ""
 
 echo "Reading versions from iOS project.pbxproj..."
-IOS_MARKETING_VERSIONS=$(grep -oP 'MARKETING_VERSION = \K[^;]+' "$IOS_PROJECT_FILE" | sort -u)
-IOS_PROJECT_VERSIONS=$(grep -oP 'CURRENT_PROJECT_VERSION = \K[0-9]+' "$IOS_PROJECT_FILE" | sort -u)
+IOS_MARKETING_VERSIONS=$(sed -n 's/.*MARKETING_VERSION = \([^;]*\);.*/\1/p' "$IOS_PROJECT_FILE" | sort -u)
+IOS_PROJECT_VERSIONS=$(sed -n 's/.*CURRENT_PROJECT_VERSION = \([0-9]*\).*/\1/p' "$IOS_PROJECT_FILE" | sort -u)
 
 IOS_MARKETING_VERSION_COUNT=$(echo "$IOS_MARKETING_VERSIONS" | wc -l)
 IOS_PROJECT_VERSION_COUNT=$(echo "$IOS_PROJECT_VERSIONS" | wc -l)

@@ -130,8 +130,8 @@ update_android () {
   
   local android_version_code
   local android_version_name
-  android_version_code=$(grep -oP 'versionCode \K[0-9]+' "$ANDROID_BUILD_GRADLE_FILE" | head -1)
-  android_version_name=$(grep -oP 'versionName "\K[^"]+' "$ANDROID_BUILD_GRADLE_FILE" | head -1)
+  android_version_code=$(sed -n 's/.*versionCode \([0-9]*\).*/\1/p' "$ANDROID_BUILD_GRADLE_FILE" | head -1)
+  android_version_name=$(sed -n 's/.*versionName "\([^"]*\)".*/\1/p' "$ANDROID_BUILD_GRADLE_FILE" | head -1)
   
   if [[ "$android_version_code" != "$VERSION_NUMBER" ]]; then
     echo "ERROR: Android versionCode update failed"
