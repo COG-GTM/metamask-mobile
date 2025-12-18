@@ -10,7 +10,7 @@ export const setReactNativeDefaultHandler = (handler: ErrorHandlerCallback) => {
   reactNativeDefaultHandler = handler;
 };
 
-export const handleCustomError = (error: Error, isFatal: boolean) => {
+export const handleCustomError: ErrorHandlerCallback = (error, isFatal) => {
   // Check whether the error is from the Ledger native bluetooth errors.
   if (
     error.name === 'EthAppPleaseEnableContractData' ||

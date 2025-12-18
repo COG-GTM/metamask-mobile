@@ -14,7 +14,7 @@ import * as Sentry from '@sentry/react-native'; // eslint-disable-line import/no
 import { setupSentry } from './app/util/sentry/utils';
 setupSentry();
 
-import { AppRegistry, LogBox, ErrorUtils } from 'react-native';
+import { AppRegistry, LogBox } from 'react-native';
 import Root from './app/components/Views/Root';
 import { name } from './app.config.js';
 import { isE2E } from './app/util/test/utils.js';
@@ -93,13 +93,12 @@ AppRegistry.registerComponent(name, () =>
   isE2E ? Root : Sentry.wrap(Root),
 );
 
-function setupGlobalErrorHandler() {
-  const reactNativeDefaultHandler = global.ErrorUtils.getGlobalHandler();
+function setupGlobalErrorHandler(): void {
+  const reactNativeDefaultHandler = ErrorUtils.getGlobalHandler();
   // set the base handler to the react native ExceptionsManager.handleException(), please refer to setupErrorHandling.js under react-native/Libraries/Core/ for details.
   setReactNativeDefaultHandler(reactNativeDefaultHandler);
   // override the global handler to provide custom error handling
-  global.ErrorUtils.setGlobalHandler(handleCustomError);
+  ErrorUtils.setGlobalHandler(handleCustomError);
 }
 
 setupGlobalErrorHandler();
-
