@@ -67,12 +67,16 @@ cleanup_backups () {
 trap 'rollback' ERR
 
 perform_updates () {
-  # update package.json - this is the source of truth
-  echo "Updating $PACKAGE_JSON_FILE..."
-  tmp="${PACKAGE_JSON_FILE}_temp"
-  jq ".version = \"$SEMVER_VERSION\" | .build.versionCode = $VERSION_NUMBER | .build.flaskVersionCode = $VERSION_NUMBER" $PACKAGE_JSON_FILE > "$tmp"
-  mv "$tmp" $PACKAGE_JSON_FILE
-  echo "- $PACKAGE_JSON_FILE updated"
+  # update package.json only if we're NOT reading from it (i.e., version was provided via args/env)
+  if [[ "$READING_FROM_PACKAGE_JSON" == "false" ]]; then
+    echo "Updating $PACKAGE_JSON_FILE..."
+    tmp="${PACKAGE_JSON_FILE}_temp"
+    jq ".version = \"$SEMVER_VERSION\" | .build.versionCode = $VERSION_NUMBER | .build.flaskVersionCode = $VERSION_NUMBER" $PACKAGE_JSON_FILE > "$tmp"
+    mv "$tmp" $PACKAGE_JSON_FILE
+    echo "- $PACKAGE_JSON_FILE updated"
+  else
+    echo "Skipping $PACKAGE_JSON_FILE (already source of truth)"
+  fi
 
   # Check operating system and adjust sed commands accordingly
   if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -84,12 +88,13 @@ perform_updates () {
     sed -i '' -E "s/(\s*versionName )\".*\"/\1\"$SEMVER_VERSION\"/" $ANDROID_BUILD_GRADLE_FILE
     echo "- $ANDROID_BUILD_GRADLE_FILE updated"
 
-    # update bitrise.yml
+    # update bitrise.yml - use specific patterns to only match env var definitions
+    # (lines starting with spaces followed by VERSION_NAME:, not echo statements)
     echo "Updating $BITRISE_YML_FILE..."
-    sed -i '' -E "s/(\s*VERSION_NAME: ).*/\1$SEMVER_VERSION/" $BITRISE_YML_FILE
-    sed -i '' -E "s/(\s*VERSION_NUMBER: )[0-9]+/\1$VERSION_NUMBER/" $BITRISE_YML_FILE
-    sed -i '' -E "s/(\s*FLASK_VERSION_NAME: ).*/\1$SEMVER_VERSION/" $BITRISE_YML_FILE
-    sed -i '' -E "s/(\s*FLASK_VERSION_NUMBER: )[0-9]+/\1$VERSION_NUMBER/" $BITRISE_YML_FILE
+    sed -i '' -E "s/^(      VERSION_NAME: ).*/\1$SEMVER_VERSION/" $BITRISE_YML_FILE
+    sed -i '' -E "s/^(      VERSION_NUMBER: )[0-9]+/\1$VERSION_NUMBER/" $BITRISE_YML_FILE
+    sed -i '' -E "s/^(      FLASK_VERSION_NAME: ).*/\1$SEMVER_VERSION/" $BITRISE_YML_FILE
+    sed -i '' -E "s/^(      FLASK_VERSION_NUMBER: )[0-9]+/\1$VERSION_NUMBER/" $BITRISE_YML_FILE
     echo "- $BITRISE_YML_FILE updated"
 
     # update ios/MetaMask.xcodeproj/project.pbxproj
@@ -106,12 +111,13 @@ perform_updates () {
     sed -Ei "s/(\s*versionName )\".*\"/\1\"$SEMVER_VERSION\"/" $ANDROID_BUILD_GRADLE_FILE
     echo "- $ANDROID_BUILD_GRADLE_FILE updated"
 
-    # update bitrise.yml
+    # update bitrise.yml - use specific patterns to only match env var definitions
+    # (lines starting with spaces followed by VERSION_NAME:, not echo statements)
     echo "Updating $BITRISE_YML_FILE..."
-    sed -Ei "s/(\s*VERSION_NAME: ).*/\1$SEMVER_VERSION/" $BITRISE_YML_FILE
-    sed -Ei "s/(\s*VERSION_NUMBER: )[0-9]+/\1$VERSION_NUMBER/" $BITRISE_YML_FILE
-    sed -Ei "s/(\s*FLASK_VERSION_NAME: ).*/\1$SEMVER_VERSION/" $BITRISE_YML_FILE
-    sed -Ei "s/(\s*FLASK_VERSION_NUMBER: )[0-9]+/\1$VERSION_NUMBER/" $BITRISE_YML_FILE
+    sed -Ei "s/^(      VERSION_NAME: ).*/\1$SEMVER_VERSION/" $BITRISE_YML_FILE
+    sed -Ei "s/^(      VERSION_NUMBER: )[0-9]+/\1$VERSION_NUMBER/" $BITRISE_YML_FILE
+    sed -Ei "s/^(      FLASK_VERSION_NAME: ).*/\1$SEMVER_VERSION/" $BITRISE_YML_FILE
+    sed -Ei "s/^(      FLASK_VERSION_NUMBER: )[0-9]+/\1$VERSION_NUMBER/" $BITRISE_YML_FILE
     echo "- $BITRISE_YML_FILE updated"
 
     # update ios/MetaMask.xcodeproj/project.pbxproj
@@ -127,10 +133,14 @@ perform_updates () {
   echo -e "  version number: $VERSION_NUMBER"
 }
 
+# Track whether we're reading from package.json (skip updating it in that case)
+READING_FROM_PACKAGE_JSON=false
+
 # Check if we should read from package.json (no arguments provided)
 # or use provided arguments for backward compatibility
 if [[ $# -eq 0 ]]; then
   echo "Reading version information from package.json (source of truth)..."
+  READING_FROM_PACKAGE_JSON=true
   
   # Read version from package.json
   SEMVER_VERSION=$(jq -r '.version' $PACKAGE_JSON_FILE)

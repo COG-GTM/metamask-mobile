@@ -4,6 +4,10 @@
 # other than package.json. It's designed to be used as a pre-commit hook
 # to prevent direct edits to version fields in non-package.json files.
 #
+# The script ALLOWS version changes if:
+# 1. package.json is also being committed (legitimate version bump workflow)
+# 2. All version files pass the verify-versions.sh check
+#
 # Usage: ./scripts/check-version-changes.sh [files...]
 #
 # If no files are provided, it checks staged files.
@@ -11,6 +15,7 @@
 set -e
 
 RED='\033[0;31m'
+GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
@@ -54,6 +59,15 @@ else
   STAGED_FILES=($(git diff --cached --name-only 2>/dev/null || echo ""))
 fi
 
+# Check if package.json is being committed
+PACKAGE_JSON_STAGED=false
+for file in "${STAGED_FILES[@]}"; do
+  if [[ "$file" == "package.json" ]]; then
+    PACKAGE_JSON_STAGED=true
+    break
+  fi
+done
+
 VIOLATIONS=()
 
 for file in "${STAGED_FILES[@]}"; do
@@ -67,6 +81,23 @@ for file in "${STAGED_FILES[@]}"; do
 done
 
 if [[ ${#VIOLATIONS[@]} -gt 0 ]]; then
+  # If package.json is also staged, this is likely a legitimate version bump
+  # Run verify-versions.sh to confirm all versions are synchronized
+  if [[ "$PACKAGE_JSON_STAGED" == "true" ]]; then
+    echo -e "${YELLOW}Version changes detected in protected files.${NC}"
+    echo "package.json is also staged - verifying version synchronization..."
+    
+    # Run verify-versions.sh to check if versions are synchronized
+    if ./scripts/verify-versions.sh > /dev/null 2>&1; then
+      echo -e "${GREEN}Version synchronization verified - allowing commit.${NC}"
+      exit 0
+    else
+      echo -e "${RED}Version synchronization check failed!${NC}"
+      echo "Please run 'yarn version:bump' to synchronize all version files."
+      exit 1
+    fi
+  fi
+  
   echo -e "${RED}=============================================="
   echo "VERSION FIELD CHANGE DETECTED"
   echo -e "==============================================${NC}"
@@ -81,8 +112,6 @@ if [[ ${#VIOLATIONS[@]} -gt 0 ]]; then
   echo ""
   echo "  1. Update package.json and run: yarn version:bump"
   echo "  2. Run the version sync script: ./scripts/set-versions.sh"
-  echo ""
-  echo "To bypass this check (not recommended), use: git commit --no-verify"
   echo ""
   exit 1
 fi
