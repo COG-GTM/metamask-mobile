@@ -5,7 +5,7 @@ import reducer, {
 } from './index';
 import mockedEngine from '../../core/__mocks__/MockedEngine';
 
-const emptyAction = { type: null };
+const emptyAction = { type: 'UNKNOWN' as const };
 
 const collectibleA1 = { tokenId: '101', address: '0xA' };
 const collectibleA2 = { tokenId: '102', address: '0xA' };

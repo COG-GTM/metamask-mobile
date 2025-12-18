@@ -69,11 +69,11 @@ describe('getSwapsIsLive', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false for EVM chain when swaps state is null', () => {
+    it('should return false for EVM chain when swaps state is undefined', () => {
       const result = getSwapsIsLive(
         {
           ...mockState,
-          swaps: { ...mockState.swaps, '0x1': null },
+          swaps: { ...mockState.swaps, '0x1': undefined },
         },
         mockChainId,
       );

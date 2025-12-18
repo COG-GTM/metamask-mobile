@@ -23,6 +23,10 @@ export interface SwapsFeatureFlags {
   smart_transactions?: unknown;
   smartTransactions?: {
     mobileActive?: boolean;
+    expectedDeadline?: number;
+    maxDeadline?: number;
+    mobileReturnTxHashAsap?: boolean;
+    batchStatusPollingInterval?: number;
     [key: string]: unknown;
   };
   [key: string]: unknown;
@@ -55,7 +59,7 @@ interface SwapsAction {
   type: string;
   payload?: {
     chainId?: string;
-    featureFlags?: SwapsFeatureFlags;
+    featureFlags?: SwapsFeatureFlags | null;
   } | boolean;
 }
 
@@ -72,7 +76,7 @@ export const SWAPS_SET_HAS_ONBOARDED = 'SWAPS_SET_HAS_ONBOARDED';
 const MAX_TOKENS_WITH_BALANCE = 5;
 
 // * Action Creator
-export const setSwapsLiveness = (chainId: string, featureFlags: SwapsFeatureFlags) => ({
+export const setSwapsLiveness = (chainId: string, featureFlags: SwapsFeatureFlags | null) => ({
   type: SWAPS_SET_LIVENESS,
   payload: { chainId, featureFlags },
 });

@@ -8,14 +8,17 @@ import reducer, {
   swapsSmartTxFlagEnabled,
   swapsTokensObjectSelector,
   selectSwapsChainFeatureFlags,
+  SwapsState,
+  SwapsChainState,
 } from './index';
 import { NetworkClientType } from '@metamask/network-controller';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
+import { makeRootState } from '../../util/test/initial-root-state';
 
 jest.mock('../../selectors/tokensController');
 
-const emptyAction = { type: null };
+const emptyAction = { type: 'UNKNOWN' as const };
 
 const DEFAULT_FEATURE_FLAGS = {
   ethereum: {
@@ -76,7 +79,7 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(true);
+      expect((liveState['0x1'] as SwapsChainState).isLive).toBe(true);
     });
     it('should set isLive to false for iOS when flag is false', () => {
       Device.isIos = jest.fn().mockReturnValue(true);
@@ -100,7 +103,6 @@ describe('swaps reducer', () => {
         },
       };
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
@@ -108,7 +110,7 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(false);
+      expect((liveState['0x1'] as SwapsChainState).isLive).toBe(false);
     });
     it('should set isLive to true for Android when flag is true', () => {
       Device.isIos = jest.fn().mockReturnValue(false);
@@ -132,7 +134,6 @@ describe('swaps reducer', () => {
         },
       };
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
@@ -140,7 +141,7 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(true);
+      expect((liveState['0x1'] as SwapsChainState).isLive).toBe(true);
     });
     it('should set isLive to false for Android when flag is false', () => {
       Device.isIos = jest.fn().mockReturnValue(false);
@@ -164,7 +165,6 @@ describe('swaps reducer', () => {
         },
       };
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
@@ -172,48 +172,14 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(false);
+      expect((liveState['0x1'] as SwapsChainState).isLive).toBe(false);
     });
   });
 
   describe('swapsSmartTxFlagEnabled', () => {
     it('should return true if smart transactions are enabled', () => {
-      const rootState = {
-        engine: {
-          backgroundState: {
-            NetworkController: {
-              getNetworkClientById: () => ({
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                configuration: {
-                  rpcUrl: 'https://mainnet.infura.io/v3',
-                  chainId: '0x1',
-                  ticker: 'ETH',
-                  type: NetworkClientType.Custom,
-                },
-              }),
-              networkConfigurations: {
-                mainnet: {
-                  id: 'mainnet',
-                  rpcUrl: 'https://mainnet.infura.io/v3',
-                  chainId: '0x1',
-                  ticker: 'ETH',
-                  nickname: 'Ethereum mainnet',
-                  rpcPrefs: {
-                    blockExplorerUrl: 'https://etherscan.com',
-                  },
-                },
-              },
-              selectedNetworkClientId: 'mainnet',
-              networksMetadata: {},
-            },
-          },
-        },
-        swaps: cloneDeep(initialState),
-      };
-
-      rootState.swaps = {
-        // @ts-ignore
+      const swapsState: SwapsState = {
+        ...initialState,
         featureFlags: {
           smart_transactions: {
             mobile_active: true,
@@ -227,7 +193,7 @@ describe('swaps reducer', () => {
           },
         },
         '0x1': {
-          // @ts-ignore
+          isLive: true,
           featureFlags: {
             smartTransactions: {
               expectedDeadline: 45,
@@ -238,37 +204,15 @@ describe('swaps reducer', () => {
         },
       };
 
+      const rootState = makeRootState({ swaps: swapsState });
+
       const enabled = swapsSmartTxFlagEnabled(rootState);
       expect(enabled).toEqual(true);
     });
 
     it('should return false if smart transactions flags are disabled', () => {
-      const rootState = {
-        engine: {
-          backgroundState: {
-            NetworkController: {
-              selectedNetworkClientId: 'mainnet',
-              networksMetadata: {},
-              networkConfigurations: {
-                mainnet: {
-                  id: 'mainnet',
-                  rpcUrl: 'https://mainnet.infura.io/v3',
-                  chainId: '0x36bbbe6d',
-                  ticker: 'ETH',
-                  nickname: 'Sepolia network',
-                  rpcPrefs: {
-                    blockExplorerUrl: 'https://etherscan.com',
-                  },
-                },
-              },
-            },
-          },
-        },
-        swaps: cloneDeep(initialState),
-      };
-
-      rootState.swaps = {
-        // @ts-ignore
+      const swapsState: SwapsState = {
+        ...initialState,
         featureFlags: {
           smart_transactions: {
             mobile_active: false,
@@ -282,7 +226,7 @@ describe('swaps reducer', () => {
           },
         },
         '0x1': {
-          // @ts-ignore
+          isLive: true,
           featureFlags: {
             smartTransactions: {
               expectedDeadline: 45,
@@ -293,34 +237,14 @@ describe('swaps reducer', () => {
         },
       };
 
+      const rootState = makeRootState({ swaps: swapsState });
+
       const enabled = swapsSmartTxFlagEnabled(rootState);
       expect(enabled).toEqual(false);
     });
 
     it('should return false if smart transactions flags are undefined', () => {
-      const rootState = {
-        engine: {
-          backgroundState: {
-            NetworkController: {
-              selectedNetworkClientId: 'mainnet',
-              networksMetadata: {},
-              networkConfigurations: {
-                mainnet: {
-                  id: 'mainnet',
-                  rpcUrl: 'https://mainnet.infura.io/v3',
-                  chainId: '0x36bbbe6d',
-                  ticker: 'ETH',
-                  nickname: 'Sepolia network',
-                  rpcPrefs: {
-                    blockExplorerUrl: 'https://etherscan.com',
-                  },
-                },
-              },
-            },
-          },
-        },
-        swaps: initialState,
-      };
+      const rootState = makeRootState({ swaps: initialState });
 
       const enabled = swapsSmartTxFlagEnabled(rootState);
       expect(enabled).toEqual(false);
@@ -332,33 +256,21 @@ describe('swaps reducer', () => {
       selectedChainId = '0x1',
       globalFeatureFlags = {},
       chainFeatureFlags = {},
-    } = {}) => ({
-      engine: {
-        backgroundState: {
-          NetworkController: {
-            selectedNetworkClientId: 'mainnet',
-            networkConfigurations: {
-              mainnet: {
-                id: 'mainnet',
-                chainId: selectedChainId,
-              },
-            },
-            getNetworkClientById: () => ({
-              configuration: {
-                chainId: selectedChainId,
-              },
-            }),
-          },
-        },
-      },
-      swaps: {
-        featureFlags: globalFeatureFlags,
+    }: {
+      selectedChainId?: string;
+      globalFeatureFlags?: Record<string, unknown>;
+      chainFeatureFlags?: Record<string, unknown>;
+    } = {}) => {
+      const swapsState: SwapsState = {
+        ...initialState,
+        featureFlags: globalFeatureFlags as SwapsState['featureFlags'],
         ...Object.entries(chainFeatureFlags).reduce(
-          (acc, [chainId, flags]) => ({ ...acc, [chainId]: { featureFlags: flags } }),
+          (acc, [chainId, flags]) => ({ ...acc, [chainId]: { isLive: true, featureFlags: flags } }),
           {}
         ),
-      },
-    });
+      };
+      return makeRootState({ swaps: swapsState });
+    };
 
     it('should return chain feature flags with merged smartTransactions from global flags', () => {
       const globalFlags = {
@@ -478,7 +390,7 @@ describe('swaps reducer', () => {
           aggregators: [],
         },
       ]);
-      const state = {
+      const state = makeRootState({
         engine: {
           backgroundState: {
             SwapsController: {
@@ -501,7 +413,7 @@ describe('swaps reducer', () => {
             },
           },
         },
-      };
+      });
       expect(swapsTokensObjectSelector(state)).toStrictEqual({
         '0x0000000000000000000000000000000000000000': undefined,
         '0x0000000000000000000000000000000000000001': undefined,
@@ -512,7 +424,7 @@ describe('swaps reducer', () => {
 
     it('should return an empty object if there are no Swaps tokens or user tokens', () => {
       jest.spyOn(tokensControllerSelectors, 'selectTokens').mockReturnValue([]);
-      const state = {
+      const state = makeRootState({
         engine: {
           backgroundState: {
             SwapsController: {
@@ -520,20 +432,18 @@ describe('swaps reducer', () => {
             },
           },
         },
-      };
+      });
       expect(swapsTokensObjectSelector(state)).toStrictEqual({});
     });
   });
 
   it('should set has onboarded', () => {
     const initalState = reducer(undefined, emptyAction);
-    // @ts-ignore
     const notOnboardedState = reducer(initalState, {
       type: SWAPS_SET_HAS_ONBOARDED,
       payload: false,
     });
     expect(notOnboardedState.hasOnboarded).toBe(false);
-    // @ts-ignore
     const liveState = reducer(initalState, {
       type: SWAPS_SET_HAS_ONBOARDED,
       payload: true,

@@ -172,6 +172,7 @@ function publishHook({
     approvalController,
     controllerMessenger:
       initMessenger as unknown as SubmitSmartTransactionRequest['controllerMessenger'],
+    // @ts-expect-error - SwapsFeatureFlags type doesn't match SubmitSmartTransactionRequest['featureFlags'] exactly
     featureFlags,
     signedTransactionInHex,
   });
@@ -233,6 +234,7 @@ function publishBatchSmartTransactionHook({
       initMessenger as unknown as SubmitSmartTransactionRequest['controllerMessenger'],
     shouldUseSmartTransaction,
     approvalController,
+    // @ts-expect-error - SwapsFeatureFlags type doesn't match SubmitSmartTransactionRequest['featureFlags'] exactly
     featureFlags,
     transactionMeta
   });
