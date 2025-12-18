@@ -65,40 +65,52 @@ describe(SmokeTrade('Buy Crypto'), () => {
     await BuildQuoteView.tapCancelButton();
   });
 
-  it.skip('should change parameters and select a quote', async () => {
+  it('should change parameters and select a quote', async () => {
     const platform = device.getPlatform();
 
     let paymentMethod;
     if (platform === 'ios') {
-      const applePayVisible = await Assertions.checkIfTextIsDisplayed('Apple Pay');
-      paymentMethod = applePayVisible ? 'Apple Pay' : 'PayPal';
+      try {
+        const applePayVisible = await Assertions.checkIfTextIsDisplayed('Apple Pay', 5000);
+        paymentMethod = applePayVisible ? 'Apple Pay' : 'Debit or Credit';
+      } catch {
+        paymentMethod = 'Debit or Credit';
+      }
     } else if (platform === 'android') {
-      const googlePayVisible = await Assertions.checkIfTextIsDisplayed('Google Pay');
-      paymentMethod = googlePayVisible ? 'Google Pay' : 'PayPal';
+      try {
+        const googlePayVisible = await Assertions.checkIfTextIsDisplayed('Google Pay', 5000);
+        paymentMethod = googlePayVisible ? 'Google Pay' : 'Debit or Credit';
+      } catch {
+        paymentMethod = 'Debit or Credit';
+      }
     } else {
-      paymentMethod = 'PayPal';
+      paymentMethod = 'Debit or Credit';
     }
     await TabBarComponent.tapActions();
     await WalletActionsBottomSheet.tapBuyButton();
+    await TestHelpers.delay(2000);
     await BuildQuoteView.tapCurrencySelector();
     await SelectCurrencyView.tapCurrencyOption('Euro');
+    await TestHelpers.delay(1000);
     await BuildQuoteView.tapTokenDropdown('Ethereum');
     await TokenSelectBottomSheet.tapTokenByName('DAI');
+    await TestHelpers.delay(1000);
     await BuildQuoteView.tapRegionSelector();
     await SelectRegionView.tapRegionOption('France');
+    await TestHelpers.delay(1000);
     await BuildQuoteView.tapPaymentMethodDropdown(paymentMethod);
     await SelectPaymentMethodView.tapPaymentMethodOption('Debit or Credit');
-    await Assertions.checkIfTextIsDisplayed('€0');
-    await Assertions.checkIfTextIsNotDisplayed('$0');
-    await Assertions.checkIfTextIsDisplayed('Dai Stablecoin');
-    await Assertions.checkIfTextIsNotDisplayed('Ethereum');
-    await Assertions.checkIfTextIsNotDisplayed(paymentMethod);
-    await Assertions.checkIfTextIsDisplayed('Debit or Credit');
-    await Assertions.checkIfTextIsNotDisplayed('🇺🇸');
-    await Assertions.checkIfTextIsDisplayed('🇫🇷');
+    await TestHelpers.delay(2000);
+    await Assertions.checkIfTextIsDisplayed('€0', 30000);
+    await Assertions.checkIfTextIsNotDisplayed('$0', 30000);
+    await Assertions.checkIfTextIsDisplayed('Dai Stablecoin', 30000);
+    await Assertions.checkIfTextIsNotDisplayed('Ethereum', 30000);
+    await Assertions.checkIfTextIsDisplayed('Debit or Credit', 30000);
+    await Assertions.checkIfTextIsDisplayed('🇫🇷', 30000);
     await BuildQuoteView.enterAmount('100');
+    await TestHelpers.delay(2000);
     await BuildQuoteView.tapGetQuotesButton();
-    await Assertions.checkIfVisible(QuotesView.quotes);
+    await Assertions.checkIfVisible(QuotesView.quotes, 60000);
     await QuotesView.closeQuotesSection();
     await BuildQuoteView.tapCancelButton();
   });

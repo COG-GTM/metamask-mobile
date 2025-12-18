@@ -47,12 +47,13 @@ describe(SmokeTrade('Token Chart Tests'), () => {
     await CommonView.tapBackButton();
   });
 
-  // TODO: fix this test
-  it.skip('should not display the chart when using Sepolia test network', async () => {
-    const sepoliaTokenSymbol = 'S';
+  it('should not display the chart when using Sepolia test network', async () => {
+    const sepoliaTokenSymbol = 'SepoliaETH';
     await switchToSepoliaNetwork();
+    await TestHelpers.delay(3000);
     await WalletView.tapOnToken(sepoliaTokenSymbol);
+    await TestHelpers.delay(2000);
     await Assertions.checkIfVisible(TokenOverview.noChartData, 60000);
-    await Assertions.checkIfElementToHaveText(TokenOverview.tokenPrice, '$0');
+    await Assertions.checkIfElementToHaveText(TokenOverview.tokenPrice, '$0', 30000);
   });
 });

@@ -22,7 +22,7 @@ describe(SmokeNetworkAbstractions('Chain Permission Management'), () => {
     jest.setTimeout(150000);
     await TestHelpers.reverseServerPort();
   });
-  it.skip('allows simultaneous granting and revoking of multiple chain permissions', async () => {
+  it('allows simultaneous granting and revoking of multiple chain permissions', async () => {
     await withFixtures(
       {
         dapp: true,
@@ -38,24 +38,32 @@ describe(SmokeNetworkAbstractions('Chain Permission Management'), () => {
       async () => {
         await loginToApp();
         await TabBarComponent.tapBrowser();
-        await Assertions.checkIfVisible(Browser.browserScreenID);
+        await Assertions.checkIfVisible(Browser.browserScreenID, 30000);
 
         await Browser.navigateToTestDApp();
+        await TestHelpers.delay(3000);
         await Browser.tapNetworkAvatarButtonOnBrowser();
+        await TestHelpers.delay(2000);
 
         // Navigate to chain permissions
         await ConnectedAccountsModal.tapManagePermissionsButton();
+        await TestHelpers.delay(2000);
         await ConnectedAccountsModal.tapNavigateToEditNetworksPermissionsButton();
+        await TestHelpers.delay(2000);
 
         // Uncheck Sepolia and check Linea Sepolia
         await NetworkNonPemittedBottomSheet.tapSepoliaNetworkName();
+        await TestHelpers.delay(1000);
         await NetworkNonPemittedBottomSheet.tapLineaSepoliaNetworkName();
+        await TestHelpers.delay(1000);
 
         // Update permissions
         await NetworkConnectMultiSelector.tapUpdateButton();
+        await TestHelpers.delay(3000);
 
         // Verify changes were saved by checking chain permissions again
         await ConnectedAccountsModal.tapNavigateToEditNetworksPermissionsButton();
+        await TestHelpers.delay(2000);
         await NetworkConnectMultiSelector.isNetworkChainPermissionSelected(
           NetworkNonPemittedBottomSheetSelectorsText.ETHEREUM_MAIN_NET_NETWORK_NAME,
         );

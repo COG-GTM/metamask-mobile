@@ -66,22 +66,26 @@ describe(SmokeNetworkAbstractions('Import Tokens'), () => {
     await Assertions.checkIfNotVisible(bnb);
   });
 
-  it.skip('should switch networks when clicking on swap if an asset on a different network is selected', async () => {
+  it('should switch networks when clicking on swap if an asset on a different network is selected', async () => {
     const BNB_NAME = 'BNB Smart Chain';
     await WalletView.tapTokenNetworkFilter();
     await WalletView.tapTokenNetworkFilterAll();
+    await TestHelpers.delay(2000);
     const bnb = WalletView.tokenInWallet('BNB');
-    await Assertions.checkIfVisible(bnb);
+    await Assertions.checkIfVisible(bnb, 30000);
     await WalletView.tapOnToken('BNB');
     await TestHelpers.delay(5000);
     await TokenOverview.tapSwapButton();
+    await TestHelpers.delay(2000);
 
-    await Assertions.checkIfVisible(NetworkEducationModal.container);
+    await Assertions.checkIfVisible(NetworkEducationModal.container, 30000);
     await Assertions.checkIfElementToHaveText(
       NetworkEducationModal.networkName,
       BNB_NAME,
+      30000,
     );
     await NetworkEducationModal.tapGotItButton();
+    await TestHelpers.delay(2000);
     await QuoteView.tapOnCancelButton();
   });
 

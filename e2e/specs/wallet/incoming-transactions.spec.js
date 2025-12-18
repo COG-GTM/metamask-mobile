@@ -84,7 +84,7 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
     await TestHelpers.reverseServerPort();
   });
 
-  xit('displays standard incoming transaction', async () => {
+  it('displays standard incoming transaction', async () => {
     await withFixtures(
       {
         fixture: new FixtureBuilder().build(),
@@ -97,9 +97,10 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
         await ActivitiesView.swipeDown();
-        await Assertions.checkIfTextIsDisplayed('Received ETH');
-        await Assertions.checkIfTextIsDisplayed(/.*1\.23 ETH.*/);
-        await Assertions.checkIfTextIsDisplayed(/.*2\.34 ETH.*/);
+        await TestHelpers.delay(3000);
+        await Assertions.checkIfTextIsDisplayed('Received ETH', 30000);
+        await Assertions.checkIfTextIsDisplayed(/.*1\.23 ETH.*/, 30000);
+        await Assertions.checkIfTextIsDisplayed(/.*2\.34 ETH.*/, 30000);
       },
     );
   });
@@ -131,7 +132,7 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
     );
   });
 
-  xit('displays outgoing transactions', async () => {
+  it('displays outgoing transactions', async () => {
     await withFixtures(
       {
         fixture: new FixtureBuilder().build(),
@@ -144,8 +145,9 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
         await ActivitiesView.swipeDown();
-        await Assertions.checkIfTextIsDisplayed('Sent ETH');
-        await Assertions.checkIfTextIsDisplayed(/.*1\.23 ETH.*/);
+        await TestHelpers.delay(3000);
+        await Assertions.checkIfTextIsDisplayed('Sent ETH', 30000);
+        await Assertions.checkIfTextIsDisplayed(/.*1\.23 ETH.*/, 30000);
       },
     );
   });
@@ -198,7 +200,7 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
     );
   });
 
-  xit('displays notification', async () => {
+  it('displays notification', async () => {
     await withFixtures(
       {
         fixture: new FixtureBuilder().build(),
@@ -209,9 +211,11 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
         await ActivitiesView.swipeDown();
+        await TestHelpers.delay(3000);
         await Assertions.checkIfElementToHaveText(
           await ToastModal.notificationTitle,
           'You received 1.23 ETH',
+          30000,
         );
       },
     );

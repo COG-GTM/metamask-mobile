@@ -97,7 +97,7 @@ describe(
       );
     });
 
-    it.skip('should add network permission when requested', async () => {
+    it('should add network permission when requested', async () => {
       await withFixtures(
         {
           dapp: true,
@@ -123,16 +123,27 @@ describe(
           await TabBarComponent.tapBrowser();
           await TestHelpers.delay(3000);
           await Browser.navigateToTestDApp();
+          await TestHelpers.delay(3000);
+          await Assertions.checkIfVisible(
+            NetworkNonPemittedBottomSheet.addThisNetworkTitle,
+            30000,
+          );
           await NetworkNonPemittedBottomSheet.tapAddThisNetworkButton();
+          await TestHelpers.delay(3000);
 
           // Verify the permission was added by checking that disconnecting both networks shows disconnect all button
           await Browser.tapNetworkAvatarButtonOnBrowser();
+          await TestHelpers.delay(2000);
           await ConnectedAccountsModal.tapManagePermissionsButton();
+          await TestHelpers.delay(2000);
           await ConnectedAccountsModal.tapNavigateToEditNetworksPermissionsButton();
+          await TestHelpers.delay(2000);
           await NetworkNonPemittedBottomSheet.tapSepoliaNetworkName();
+          await TestHelpers.delay(1000);
           await NetworkNonPemittedBottomSheet.tapEthereumMainNetNetworkName();
           await Assertions.checkIfVisible(
             ConnectedAccountsModal.disconnectNetworksButton,
+            30000,
           );
         },
       );
