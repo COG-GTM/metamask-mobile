@@ -1,0 +1,1444 @@
+{
+  "summary": {
+    "total": 286,
+    "byPriority": {
+      "P0": 0,
+      "P1": 31,
+      "P2": 3,
+      "P3": 162,
+      "P4": 90
+    }
+  },
+  "files": [
+    {
+      "path": "app/actions/alert/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/actions/bookmarks/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/actions/browser/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/actions/collectibles/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/actions/infuraAvailability/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/actions/modals/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/actions/notification/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/actions/privacy/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/actions/settings/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/actions/transaction/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/actions/wizard/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Base/DetailsModal.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Base/Keypad/components.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Base/Keypad/constants.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Base/Keypad/createKeypadRule.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Base/Keypad/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Base/Keypad/useCurrency.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Base/RangeInput.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Base/RemoteImage/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Base/StatusText.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Base/TabBar.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Nav/Main/MainNavigator.js",
+      "priority": "P2",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Nav/Main/RootRPCMethodsUI.js",
+      "priority": "P2",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Nav/Main/index.js",
+      "priority": "P2",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/AccountApproval/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/AccountInfoCard/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/AccountOverview/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/ActionModal/ActionContent/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/ActionModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/ActionView/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/AddCustomToken/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/AddressInputs/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/AnimatedSpinner/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/AnimatedTransactionModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/AssetList/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/BrowserBottomBar/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Button/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/CollectibleContractElement/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/CollectibleContractInformation/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/CollectibleContractOverview/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/CollectibleContracts/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/CollectibleOverview/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Collectibles/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Confetti/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/CustomAlert/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/DrawerView/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/EditGasFee1559/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/EditGasFeeLegacy/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/EthereumAddress/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/FadeAnimationView/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/FadeOutOverlay/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/FoxScreen/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/GlobalAlert/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/HintModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Navbar/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/NavbarBrowserTitle/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/NavbarTitle/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/NetworkMainAssetLogo/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Notification/BaseNotification/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Notification/SimpleNotification/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Notification/TransactionNotification/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Notification/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/OnboardingWizard/Coachmark/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/OptinMetrics/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/PaymentRequest/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/PaymentRequestSuccess/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/PhishingModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/ProtectYourWalletModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/ReceiveRequest/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Screen/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/SeedphraseModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/SelectComponent/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/SettingsDrawer/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/SettingsNotification/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/SkipAccountSecurityModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/SliderButton/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/SlippageSlider/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/StyledButton/index.android.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/StyledButton/index.ios.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/StyledButton/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/QuotesView.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/ActionAlert.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/ApprovalTransactionEditionModal.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/AssetSwapButton.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/GasEditModal.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/LoadingAnimation/backgroundShapes.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/LoadingAnimation/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/Onboarding.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/QuotesModal.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/QuotesSummary.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/SlippageModal.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/TokenIcon.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/TokenImportModal.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/TokenSelectButton.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/components/TokenSelectModal.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/utils/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/utils/useBalance.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/utils/useBlockExplorer.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Swaps/utils/useFetchTokenMetadata.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/SwitchCustomNetwork/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Tabs/TabCountIcon/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Tabs/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/TimeEstimateInfoModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/TokenImage/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/TransactionActionModal/TransactionActionContent/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/TransactionActionModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/TransactionElement/TransactionDetails/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/TransactionElement/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/TransactionElement/utils.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/TransactionHeader/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/Transactions/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/WarningExistingUserModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/WebsiteIcon/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/WebviewError/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/UI/WebviewProgressBar/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/AccountBackupStep1/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/AccountBackupStep1B/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/ActivityView/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/AddBookmark/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/AddressQRCode/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Asset/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Browser/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/ChoosePassword/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Collectible/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/CollectibleView/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/EnterPasswordSimple/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/ErrorBoundary/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/GasEducationCarousel/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/ImportFromSecretRecoveryPhrase/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/ImportPrivateKeySuccess/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/LockScreen/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/ManualBackupStep1/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/ManualBackupStep2/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/ManualBackupStep3/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/MediaPlayer/AndroidMediaPlayer.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/MediaPlayer/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/NavigationUnitTest/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/OfflineMode/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Onboarding/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/ResetPassword/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Settings/AdvancedSettings/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Settings/AppInformation/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Settings/Contacts/ContactForm/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Settings/Contacts/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Settings/GeneralSettings/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Settings/NetworksSettings/NetworkSettings/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Settings/NetworksSettings/NetworkSettings/withIsOriginalNativeToken.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/Settings/NetworksSettings/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/SimpleWebview/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/TermsAndConditions/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/TransactionSummary/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/TransactionsView/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/WalletConnectSessions/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/Approval/components/TransactionEditor/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/Approval/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/Approve/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/ApproveView/Approve/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/Send/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/SendFlow/AddressList/AddressList.jsx",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/SendFlow/AddressList/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/SendFlow/Amount/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/CustomGasModal.jsx",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/SendFlow/Confirm/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/SendFlow/ErrorMessage/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/SendFlow/SendTo/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/SendFlow/components/CustomNonceModal/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/Approval/ApprovalFlowLoader/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/ApproveTransactionReview/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/CustomNonce/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/EditGasFee1559Update/index.jsx",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/EditGasFeeLegacyUpdate/index.jsx",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/SignatureRequest/ExpandedMessage/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/SignatureRequest/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewData/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewDetailsCard/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update/index.jsx",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update/styles.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewInformation/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewSummary/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/TransactionReview/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/TypedSign/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/UpdateEIP1559Tx/index.jsx",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/components/Views/confirmations/legacy/components/WatchAssetRequest/index.js",
+      "priority": "P3",
+      "status": "Todo"
+    },
+    {
+      "path": "app/constants/navigation.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/constants/network.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/constants/onboarding.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/BackgroundBridge/BackgroundBridge.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/ClipboardManager.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/DrawerStatusTracker.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/EntryScriptWeb3.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/InpageBridgeWeb3.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/MobilePortStream.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/NotificationManager.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/Permissions/specifications.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/PreventScreenshot.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/RPCMethods/createEip1193MethodMiddleware/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/RPCMethods/eth-request-accounts.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/RPCMethods/handlers/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/RPCMethods/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/RPCMethods/lib/ethereum-chain-utils.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/RPCMethods/wallet_addEthereumChain.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/RPCMethods/wallet_switchEthereumChain.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/SecureKeychain.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/TransactionTypes.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/Vault.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/core/WalletConnect/WalletConnect.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/images/image-icons.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/lib/ens-ipfs/contracts/registry.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/lib/ens-ipfs/contracts/resolver.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/lib/ens-ipfs/resolver.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/lib/ppom/blockaid-version.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/lib/ppom/ppom.html.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/alert/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/bookmarks/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/browser/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/collectibles/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/infuraAvailability/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/modals/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/notification/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/privacy/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/settings/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/swaps/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/transaction/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/reducers/wizard/index.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/000.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/001.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/002.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/003.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/004.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/005.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/006.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/007.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/008.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/009.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/010.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/011.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/012.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/013.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/014.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/015.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/016.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/017.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/018.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/019.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/020.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/021.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/022.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/023.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/024.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/025.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/026.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/store/migrations/027.js",
+      "priority": "P4",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/ENSUtils.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/blockies.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/confirm-tx.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/confirmation/signatureUtils.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/confusables/index.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/conversion/index.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/conversions.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/custom-gas/index.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/dapp-url-list.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/date/index.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/device/index.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/etherscan.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/gasUtils.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/general/index.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/middlewares.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/networks/index.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/number/index.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/payment-link-generator.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/scaling.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/sentry/utils.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/streams.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/test/assetFileTransformer.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/test/contract-address-registry.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/test/ganache-seeder.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/test/ganache.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/test/network-store.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/test/smart-contracts.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/test/testSetup.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/test/utils.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/transactions/index.js",
+      "priority": "P1",
+      "status": "Todo"
+    },
+    {
+      "path": "app/util/walletconnect.js",
+      "priority": "P1",
+      "status": "Todo"
+    }
+  ]
+}
