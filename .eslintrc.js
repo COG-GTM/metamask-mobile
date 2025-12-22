@@ -49,8 +49,6 @@ module.exports = {
         },
       },
       rules: {
-        // under discussion
-        'no-unused-vars': 'off',
         'react/no-unstable-nested-components': [
           'warn',
           {

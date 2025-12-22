@@ -5,7 +5,11 @@ import {
   SetSecurityAlertsEnabled,
 } from '../../actions/experimental';
 
-const initialState = {
+export interface ExperimentalSettingsState {
+  securityAlertsEnabled: boolean;
+}
+
+const initialState: ExperimentalSettingsState = {
   securityAlertsEnabled: true,
 };
 
