@@ -14,13 +14,17 @@ import * as Sentry from '@sentry/react-native'; // eslint-disable-line import/no
 import { setupSentry } from './app/util/sentry/utils';
 setupSentry();
 
-import { AppRegistry, LogBox, ErrorUtils } from 'react-native';
+import { AppRegistry, LogBox } from 'react-native';
+import type { ErrorHandlerCallback } from 'react-native';
 import Root from './app/components/Views/Root';
 import { name } from './app.config.js';
 import { isE2E } from './app/util/test/utils.js';
 
 import { Performance } from './app/core/Performance';
-import { handleCustomError, setReactNativeDefaultHandler } from './app/core/ErrorHandler';
+import {
+  handleCustomError,
+  setReactNativeDefaultHandler,
+} from './app/core/ErrorHandler';
 Performance.setupPerformanceObservers();
 
 LogBox.ignoreAllLogs();
@@ -93,8 +97,22 @@ AppRegistry.registerComponent(name, () =>
   isE2E ? Root : Sentry.wrap(Root),
 );
 
-function setupGlobalErrorHandler() {
-  const reactNativeDefaultHandler = global.ErrorUtils.getGlobalHandler();
+/**
+ * Interface for the global ErrorUtils object in React Native
+ */
+interface ErrorUtils {
+  getGlobalHandler: () => ErrorHandlerCallback;
+  setGlobalHandler: (handler: ErrorHandlerCallback) => void;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var ErrorUtils: ErrorUtils;
+}
+
+function setupGlobalErrorHandler(): void {
+  const reactNativeDefaultHandler: ErrorHandlerCallback =
+    global.ErrorUtils.getGlobalHandler();
   // set the base handler to the react native ExceptionsManager.handleException(), please refer to setupErrorHandling.js under react-native/Libraries/Core/ for details.
   setReactNativeDefaultHandler(reactNativeDefaultHandler);
   // override the global handler to provide custom error handling
@@ -102,4 +120,3 @@ function setupGlobalErrorHandler() {
 }
 
 setupGlobalErrorHandler();
-
