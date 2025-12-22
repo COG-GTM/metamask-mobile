@@ -20,12 +20,12 @@ describe('capitalize', () => {
 });
 
 describe('tlc', () => {
-  const o = {
+  const o: { p: undefined } = {
     p: undefined,
   };
   it('should coerce a string toLowerCase', () => {
     expect(tlc('aBCDefH')).toEqual('abcdefh');
-    expect(tlc(NaN)).toEqual(undefined);
+    expect(tlc(NaN as unknown as string)).toEqual(undefined);
     expect(tlc(o.p)).toEqual(undefined);
   });
 });
@@ -47,7 +47,7 @@ describe('toLowerCaseEquals', () => {
     // case where a and b are both undefined, null or false
     expect(toLowerCaseEquals(undefined, undefined)).toEqual(false);
     expect(toLowerCaseEquals(null, null)).toEqual(false);
-    expect(toLowerCaseEquals(false, false)).toEqual(false);
+    expect(toLowerCaseEquals(false as unknown as string, false as unknown as string)).toEqual(false);
   });
 });
 
