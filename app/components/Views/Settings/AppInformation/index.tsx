@@ -24,7 +24,7 @@ import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import AppConstants from '../../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
-import { Theme } from '../../../../util/theme/models';
+import type { Theme } from '../../../../util/theme/models';
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
@@ -120,7 +120,8 @@ interface AppInformationState {
  * View that contains app information
  */
 export default class AppInformation extends PureComponent<AppInformationProps, AppInformationState> {
-  declare context: Theme;
+  static contextType = ThemeContext;
+  context: React.ContextType<typeof ThemeContext> = mockTheme;
 
   state: AppInformationState = {
     appInfo: '',
@@ -261,5 +262,3 @@ export default class AppInformation extends PureComponent<AppInformationProps, A
     );
   };
 }
-
-AppInformation.contextType = ThemeContext;
