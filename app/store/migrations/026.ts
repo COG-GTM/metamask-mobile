@@ -1,12 +1,27 @@
 import { captureException } from '@sentry/react-native';
 import { isObject } from '@metamask/utils';
 
+interface PhishingControllerState {
+  listState?: unknown;
+  hotlistLastFetched?: number;
+  stalelistLastFetched?: number;
+}
+
+interface State {
+  engine: {
+    backgroundState: {
+      KeyringController?: unknown;
+      PhishingController?: PhishingControllerState;
+    };
+  };
+}
+
 /**
  * This migration is to free space of unused data in the user devices
  * regarding the phishing list property listState, that is no longer used
  *
  **/
-export default function migrate(state) {
+export default function migrate(state: State): State {
   const keyringControllerState = state.engine.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
     captureException(
@@ -19,7 +34,7 @@ export default function migrate(state) {
   const phishingControllerState =
     state.engine.backgroundState.PhishingController;
   if (phishingControllerState?.listState) {
-    delete state.engine.backgroundState.PhishingController.listState;
+    delete state.engine.backgroundState.PhishingController?.listState;
   } else {
     captureException(
       new Error(
@@ -35,8 +50,10 @@ export default function migrate(state) {
     phishingControllerState?.stalelistLastFetched
   ) {
     // This will make the list be fetched again when the user updates the app
-    state.engine.backgroundState.PhishingController.hotlistLastFetched = 0;
-    state.engine.backgroundState.PhishingController.stalelistLastFetched = 0;
+    if (state.engine.backgroundState.PhishingController) {
+      state.engine.backgroundState.PhishingController.hotlistLastFetched = 0;
+      state.engine.backgroundState.PhishingController.stalelistLastFetched = 0;
+    }
   } else {
     captureException(
       new Error(

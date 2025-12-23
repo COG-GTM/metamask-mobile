@@ -1,13 +1,29 @@
 import AppConstants from '../../core/AppConstants';
 import { toLowerCaseEquals } from '../../util/general';
 
+interface Token {
+  symbol: string;
+  address: string;
+  [key: string]: unknown;
+}
+
+interface State {
+  engine: {
+    backgroundState: {
+      TokensController: {
+        tokens: Token[];
+      };
+    };
+  };
+}
+
 /**
  * MakerDAO DAI => SAI
  *
  **/
-export default function migrate(state) {
+export default function migrate(state: State): State {
   const tokens = state.engine.backgroundState.TokensController.tokens;
-  const migratedTokens = [];
+  const migratedTokens: Token[] = [];
   tokens.forEach((token) => {
     if (
       token.symbol === 'DAI' &&

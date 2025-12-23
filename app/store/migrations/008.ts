@@ -1,24 +1,45 @@
-export default function migrate(state) {
+interface Token {
+  address?: string;
+}
+
+interface TokensMap {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+interface State {
+  engine: {
+    backgroundState: {
+      TokensController: {
+        allIgnoredTokens?: TokensMap;
+        ignoredTokens?: (string | Token)[];
+        [key: string]: unknown;
+      };
+    };
+  };
+}
+
+export default function migrate(state: State): State {
   // This migration ensures that ignored tokens are in the correct form
   const allIgnoredTokens =
     state.engine.backgroundState.TokensController.allIgnoredTokens || {};
   const ignoredTokens =
     state.engine.backgroundState.TokensController.ignoredTokens || [];
 
-  const reduceTokens = (tokens) =>
-    tokens.reduce((final, token) => {
+  const reduceTokens = (tokens: (string | Token)[]): string[] =>
+    tokens.reduce<string[]>((final, token) => {
       const tokenAddress =
-        (typeof token === 'string' && token) || token?.address || '';
+        (typeof token === 'string' && token) || (token as Token)?.address || '';
       tokenAddress && final.push(tokenAddress);
       return final;
     }, []);
 
   const newIgnoredTokens = reduceTokens(ignoredTokens);
 
-  const newAllIgnoredTokens = {};
+  const newAllIgnoredTokens: TokensMap = {};
   Object.entries(allIgnoredTokens).forEach(
     ([chainId, tokensByAccountAddress]) => {
-      Object.entries(tokensByAccountAddress).forEach(
+      Object.entries(tokensByAccountAddress as Record<string, (string | Token)[]>).forEach(
         ([accountAddress, tokens]) => {
           const newTokens = reduceTokens(tokens);
           if (newAllIgnoredTokens[chainId] === undefined) {

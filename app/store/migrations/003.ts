@@ -3,9 +3,27 @@ import { isSafeChainId } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
 import { regex } from '../../../app/util/regex';
 
-export default function migrate(state) {
+interface Provider {
+  type?: string;
+  chainId?: string;
+  ticker?: string;
+  [key: string]: unknown;
+}
+
+interface State {
+  engine: {
+    backgroundState: {
+      NetworkController: {
+        provider: Provider;
+      };
+    };
+  };
+}
+
+export default function migrate(state: State): State {
   const provider = state.engine.backgroundState.NetworkController.provider;
-  const chainId = NetworksChainId[provider.type];
+  const chainId =
+    NetworksChainId[provider.type as keyof typeof NetworksChainId];
   // if chainId === '' is a rpc
   if (chainId) {
     state.engine.backgroundState.NetworkController.provider = {

@@ -7,7 +7,14 @@ import {
   EXPLORED,
 } from '../../constants/storage';
 
-export default function migrate(state) {
+interface State {
+  analytics?: {
+    enabled?: boolean;
+  };
+  [key: string]: unknown;
+}
+
+export default function migrate(state: State): State {
   state.analytics?.enabled
     ? DefaultPreference.set(METRICS_OPT_IN, AGREED)
     : DefaultPreference.set(METRICS_OPT_IN, DENIED);

@@ -3,6 +3,39 @@ import { captureException } from '@sentry/react-native';
 import { mapValues } from 'lodash';
 import ambiguousNetworks from './migration-data/amibiguous-networks.json';
 
+interface AddressEntry {
+  chainId: string;
+  [key: string]: unknown;
+}
+
+interface NetworkConfiguration {
+  chainId: string;
+  [key: string]: unknown;
+}
+
+interface State {
+  engine: {
+    backgroundState: {
+      KeyringController?: unknown;
+      NetworkController?: {
+        networkConfigurations?: Record<string, NetworkConfiguration>;
+      };
+      AddressBookController?: {
+        addressBook?: Record<string, Record<string, AddressEntry>>;
+      };
+    };
+  };
+  user?: {
+    ambiguousAddressEntries?: Record<string, string[]>;
+  };
+}
+
+interface AmbiguousNetworks {
+  [key: string]: {
+    chainIds: string[];
+  };
+}
+
 /**
  * Migrate address book state to be keyed by chain ID rather than network ID.
  *
@@ -23,7 +56,7 @@ import ambiguousNetworks from './migration-data/amibiguous-networks.json';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
+export default function migrate(state: State): State {
   const keyringControllerState = state.engine.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
     captureException(
@@ -60,16 +93,18 @@ export default function migrate(state) {
       (networkConfiguration) => !hasProperty(networkConfiguration, 'chainId'),
     )
   ) {
-    const [invalidConfigurationId, invalidConfiguration] = Object.entries(
+    const result = Object.entries(
       networkControllerState.networkConfigurations,
     ).find(
       ([_networkConfigId, networkConfiguration]) =>
         !hasProperty(networkConfiguration, 'chainId'),
     );
+    const invalidConfigurationId = result?.[0];
+    const invalidConfiguration = result?.[1];
     captureException(
       new Error(
         `Migration 23: Network configuration missing chain ID, id '${invalidConfigurationId}', keys '${Object.keys(
-          invalidConfiguration,
+          invalidConfiguration || {},
         )}'`,
       ),
     );
@@ -96,9 +131,11 @@ export default function migrate(state) {
       (addressEntries) => !isObject(addressEntries),
     )
   ) {
-    const [networkId, invalidEntries] = Object.entries(
+    const result = Object.entries(
       addressBookControllerState.addressBook,
     ).find(([_networkId, addressEntries]) => !isObject(addressEntries));
+    const networkId = result?.[0];
+    const invalidEntries = result?.[1];
     captureException(
       new Error(
         `Migration 23: Address book configuration invalid, network id '${networkId}', type '${typeof invalidEntries}'`,
@@ -113,20 +150,22 @@ export default function migrate(state) {
         ),
     )
   ) {
-    const [networkId, invalidEntries] = Object.entries(
+    const result = Object.entries(
       addressBookControllerState.addressBook,
     ).find(([_networkId, addressEntries]) =>
       Object.values(addressEntries).some(
         (addressEntry) => !hasProperty(addressEntry, 'chainId'),
       ),
     );
-    const invalidEntry = Object.values(invalidEntries).find(
+    const networkId = result?.[0];
+    const invalidEntries = result?.[1];
+    const invalidEntry = Object.values(invalidEntries || {}).find(
       (addressEntry) => !hasProperty(addressEntry, 'chainId'),
     );
     captureException(
       new Error(
         `Migration 23: Address book configuration entry missing chain ID, network id '${networkId}', keys '${Object.keys(
-          invalidEntry,
+          invalidEntry || {},
         )}'`,
       ),
     );
@@ -140,10 +179,10 @@ export default function migrate(state) {
 
   const localChainIds = Object.values(
     networkControllerState.networkConfigurations,
-  ).reduce((customChainIds, networkConfiguration) => {
-    customChainIds.add(networkConfiguration.chainId);
+  ).reduce((customChainIds: Set<string>, networkConfiguration) => {
+    customChainIds.add((networkConfiguration as NetworkConfiguration).chainId);
     return customChainIds;
-  }, new Set());
+  }, new Set<string>());
   const builtInNetworkChainIdsAsOfMigration22 = [
     '1',
     '5',
@@ -155,14 +194,14 @@ export default function migrate(state) {
     localChainIds.add(builtInChainId);
   }
 
-  const migratedAddressBook = {};
-  const ambiguousAddressEntries = {};
+  const migratedAddressBook: Record<string, Record<string, AddressEntry>> = {};
+  const ambiguousAddressEntries: Record<string, string[]> = {};
   for (const [networkId, addressEntries] of Object.entries(
     addressBookControllerState.addressBook,
   )) {
-    if (ambiguousNetworks[networkId]) {
-      const chainIdCandidates = ambiguousNetworks[networkId].chainIds;
-      const recognizedChainIdCandidates = chainIdCandidates.filter((chainId) =>
+    if ((ambiguousNetworks as AmbiguousNetworks)[networkId]) {
+      const chainIdCandidates = (ambiguousNetworks as AmbiguousNetworks)[networkId].chainIds;
+      const recognizedChainIdCandidates = chainIdCandidates.filter((chainId: string) =>
         localChainIds.has(chainId),
       );
 

@@ -1,10 +1,36 @@
-export default function migrate(state) {
+interface State {
+  engine: {
+    backgroundState: {
+      CollectiblesController?: {
+        allCollectibles?: unknown;
+        allCollectibleContracts?: unknown;
+        ignoredCollectibles?: unknown;
+        [key: string]: unknown;
+      };
+      CollectibleDetectionController?: unknown;
+      NftController?: {
+        allNfts?: unknown;
+        allNftContracts?: unknown;
+        ignoredNfts?: unknown;
+        [key: string]: unknown;
+      };
+      NftDetectionController?: unknown;
+      PreferencesController: {
+        useCollectibleDetection?: boolean;
+        useNftDetection?: boolean;
+        [key: string]: unknown;
+      };
+    };
+  };
+}
+
+export default function migrate(state: State): State {
   const {
     allCollectibles,
     allCollectibleContracts,
     ignoredCollectibles,
     ...unexpectedCollectiblesControllerState
-  } = state.engine.backgroundState.CollectiblesController;
+  } = state.engine.backgroundState.CollectiblesController || {};
   state.engine.backgroundState.NftController = {
     ...unexpectedCollectiblesControllerState,
     allNfts: allCollectibles,

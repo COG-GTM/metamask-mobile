@@ -1,6 +1,41 @@
 import { v1 as random } from 'uuid';
 
-export default function migrate(state) {
+interface Subject {
+  origin: string;
+  permissions: {
+    eth_accounts: {
+      id: string;
+      parentCapability: string;
+      invoker: string;
+      caveats: Array<{
+        type: string;
+        value: Array<{
+          address: string;
+          lastUsed: number;
+        }>;
+      }>;
+      date: number;
+    };
+  };
+}
+
+interface State {
+  privacy: {
+    approvedHosts: Record<string, boolean>;
+  };
+  engine: {
+    backgroundState: {
+      PreferencesController: {
+        selectedAddress: string;
+      };
+      PermissionController?: {
+        subjects?: Record<string, Subject>;
+      };
+    };
+  };
+}
+
+export default function migrate(state: State): State {
   // If for some reason we already have PermissionController state, bail out.
   const hasPermissionControllerState = Boolean(
     state.engine.backgroundState.PermissionController?.subjects,
@@ -15,7 +50,7 @@ export default function migrate(state) {
   // If no dapps connected, bail out.
   if (hosts.length < 1) return state;
 
-  const { subjects } = hosts.reduce(
+  const { subjects } = hosts.reduce<{ subjects: Record<string, Subject> }>(
     (accumulator, host, index) => ({
       subjects: {
         ...accumulator.subjects,
@@ -43,7 +78,7 @@ export default function migrate(state) {
         },
       },
     }),
-    {},
+    { subjects: {} },
   );
 
   const newState = { ...state };
