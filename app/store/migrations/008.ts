@@ -1,3 +1,5 @@
+import { isObject } from '@metamask/utils';
+
 interface Token {
   address?: string;
 }
@@ -7,24 +9,27 @@ interface TokensMap {
   [key: string]: any;
 }
 
-interface State {
-  engine: {
-    backgroundState: {
-      TokensController: {
-        allIgnoredTokens?: TokensMap;
-        ignoredTokens?: (string | Token)[];
-        [key: string]: unknown;
-      };
-    };
-  };
-}
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
 
-export default function migrate(state: State): State {
+  if (!isObject(state.engine)) {
+    return state;
+  }
+
+  if (!isObject(state.engine.backgroundState)) {
+    return state;
+  }
+
+  const tokensControllerState = state.engine.backgroundState.TokensController;
+  if (!isObject(tokensControllerState)) {
+    return state;
+  }
+
   // This migration ensures that ignored tokens are in the correct form
-  const allIgnoredTokens =
-    state.engine.backgroundState.TokensController.allIgnoredTokens || {};
-  const ignoredTokens =
-    state.engine.backgroundState.TokensController.ignoredTokens || [];
+  const allIgnoredTokens = (tokensControllerState.allIgnoredTokens as TokensMap) || {};
+  const ignoredTokens = (tokensControllerState.ignoredTokens as (string | Token)[]) || [];
 
   const reduceTokens = (tokens: (string | Token)[]): string[] =>
     tokens.reduce<string[]>((final, token) => {
@@ -55,11 +60,8 @@ export default function migrate(state: State): State {
     },
   );
 
-  state.engine.backgroundState.TokensController = {
-    ...state.engine.backgroundState.TokensController,
-    allIgnoredTokens: newAllIgnoredTokens,
-    ignoredTokens: newIgnoredTokens,
-  };
+  tokensControllerState.allIgnoredTokens = newAllIgnoredTokens;
+  tokensControllerState.ignoredTokens = newIgnoredTokens;
 
   return state;
 }

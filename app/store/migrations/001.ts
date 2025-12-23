@@ -1,3 +1,4 @@
+import { isObject, hasProperty } from '@metamask/utils';
 import AppConstants from '../../core/AppConstants';
 import { toLowerCaseEquals } from '../../util/general';
 
@@ -7,22 +8,29 @@ interface Token {
   [key: string]: unknown;
 }
 
-interface State {
-  engine: {
-    backgroundState: {
-      TokensController: {
-        tokens: Token[];
-      };
-    };
-  };
-}
-
 /**
  * MakerDAO DAI => SAI
  *
  **/
-export default function migrate(state: State): State {
-  const tokens = state.engine.backgroundState.TokensController.tokens;
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
+
+  if (!isObject(state.engine)) {
+    return state;
+  }
+
+  if (!isObject(state.engine.backgroundState)) {
+    return state;
+  }
+
+  const tokensControllerState = state.engine.backgroundState.TokensController;
+  if (!isObject(tokensControllerState) || !hasProperty(tokensControllerState, 'tokens')) {
+    return state;
+  }
+
+  const tokens = tokensControllerState.tokens as Token[];
   const migratedTokens: Token[] = [];
   tokens.forEach((token) => {
     if (
@@ -33,7 +41,7 @@ export default function migrate(state: State): State {
     }
     migratedTokens.push(token);
   });
-  state.engine.backgroundState.TokensController.tokens = migratedTokens;
+  tokensControllerState.tokens = migratedTokens;
 
   return state;
 }

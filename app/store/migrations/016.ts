@@ -1,21 +1,26 @@
-interface State {
-  engine: {
-    backgroundState: {
-      NetworkController: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        properties?: any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        networkDetails?: any;
-      };
-    };
-  };
-}
+import { isObject, hasProperty } from '@metamask/utils';
 
-export default function migrate(state: State): State {
-  if (state.engine.backgroundState.NetworkController.properties) {
-    state.engine.backgroundState.NetworkController.networkDetails =
-      state.engine.backgroundState.NetworkController.properties;
-    delete state.engine.backgroundState.NetworkController.properties;
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
+
+  if (!isObject(state.engine)) {
+    return state;
+  }
+
+  if (!isObject(state.engine.backgroundState)) {
+    return state;
+  }
+
+  const networkControllerState = state.engine.backgroundState.NetworkController;
+  if (!isObject(networkControllerState)) {
+    return state;
+  }
+
+  if (hasProperty(networkControllerState, 'properties')) {
+    networkControllerState.networkDetails = networkControllerState.properties;
+    delete networkControllerState.properties;
   }
   return state;
 }

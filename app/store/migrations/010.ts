@@ -1,20 +1,24 @@
-interface State {
-  engine: {
-    backgroundState: {
-      PreferencesController: {
-        useCollectibleDetection?: boolean;
-        openSeaEnabled?: boolean;
-        [key: string]: unknown;
-      };
-    };
-  };
-}
+import { isObject } from '@metamask/utils';
 
-export default function migrate(state: State): State {
-  state.engine.backgroundState.PreferencesController = {
-    ...state.engine.backgroundState.PreferencesController,
-    useCollectibleDetection: false,
-    openSeaEnabled: false,
-  };
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
+
+  if (!isObject(state.engine)) {
+    return state;
+  }
+
+  if (!isObject(state.engine.backgroundState)) {
+    return state;
+  }
+
+  const preferencesControllerState = state.engine.backgroundState.PreferencesController;
+  if (!isObject(preferencesControllerState)) {
+    return state;
+  }
+
+  preferencesControllerState.useCollectibleDetection = false;
+  preferencesControllerState.openSeaEnabled = false;
   return state;
 }

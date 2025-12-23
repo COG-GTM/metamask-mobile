@@ -1,3 +1,4 @@
+import { isObject } from '@metamask/utils';
 import { NetworkType } from '@metamask/controller-utils';
 
 interface Transaction {
@@ -31,40 +32,37 @@ interface SubmitHistoryEntry {
   rawTransaction?: string;
 }
 
-interface State {
-  engine: {
-    backgroundState: {
-      TransactionController?: {
-        transactions?: Transaction[];
-        submitHistory?: SubmitHistoryEntry[];
-      };
-      NetworkController?: {
-        providerConfig?: ProviderConfig;
-        networkConfigurations?: Record<string, NetworkConfiguration>;
-      };
-    };
-  };
-}
-
 /**
  * Populate the submitHistory in the TransactionController using any
  * transaction metadata entries that have a rawTransaction value.
  * @param {any} state - Redux state
  * @returns
  */
-export default function migrate(state: State): State {
-  const backgroundState = state.engine.backgroundState;
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
 
-  const transactionControllerState = backgroundState.TransactionController;
+  if (!isObject(state.engine)) {
+    return state;
+  }
+
+  if (!isObject(state.engine.backgroundState)) {
+    return state;
+  }
+
+  const backgroundState = state.engine.backgroundState as Record<string, unknown>;
+
+  const transactionControllerState = backgroundState.TransactionController as Record<string, unknown> | undefined;
 
   if (!transactionControllerState) return state;
 
-  const transactions = transactionControllerState.transactions || [];
-  const networkControllerState = backgroundState.NetworkController || {};
-  const providerConfig = networkControllerState.providerConfig || {};
+  const transactions = (transactionControllerState.transactions as Transaction[]) || [];
+  const networkControllerState = (backgroundState.NetworkController as Record<string, unknown>) || {};
+  const providerConfig = (networkControllerState.providerConfig as ProviderConfig) || {};
 
   const networkConfigurations =
-    networkControllerState.networkConfigurations || {};
+    (networkControllerState.networkConfigurations as Record<string, NetworkConfiguration>) || {};
 
   const submitHistory: SubmitHistoryEntry[] = transactions
     .filter((tx) => tx.rawTransaction?.length)
@@ -97,10 +95,7 @@ export default function migrate(state: State): State {
       };
     });
 
-  if (state.engine.backgroundState.TransactionController) {
-    state.engine.backgroundState.TransactionController.submitHistory =
-      submitHistory;
-  }
+  transactionControllerState.submitHistory = submitHistory;
 
   return state;
 }

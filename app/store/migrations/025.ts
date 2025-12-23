@@ -1,40 +1,34 @@
+import { isObject, hasProperty } from '@metamask/utils';
 import { ETHERSCAN_SUPPORTED_CHAIN_IDS } from '@metamask/preferences-controller';
 
-interface State {
-  privacy?: {
-    thirdPartyApiMode?: boolean;
-  };
-  engine?: {
-    backgroundState?: {
-      PreferencesController?: {
-        showIncomingTransactions?: Record<string, boolean>;
-      };
-    };
-  };
-}
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
 
-export default function migrate(state: State): State {
   try {
-    Object.values(ETHERSCAN_SUPPORTED_CHAIN_IDS).forEach((hexChainId) => {
-      const thirdPartyApiMode = state?.privacy?.thirdPartyApiMode ?? true;
-      if (
-        state?.engine?.backgroundState?.PreferencesController
-          ?.showIncomingTransactions
-      ) {
-        state.engine.backgroundState.PreferencesController.showIncomingTransactions =
-          {
-            ...state.engine.backgroundState.PreferencesController
-              .showIncomingTransactions,
-            [hexChainId]: thirdPartyApiMode,
-          };
-      } else if (state?.engine?.backgroundState?.PreferencesController) {
-        state.engine.backgroundState.PreferencesController.showIncomingTransactions =
-          { [hexChainId]: thirdPartyApiMode };
-      }
-    });
+    const privacy = state.privacy as Record<string, unknown> | undefined;
+    const thirdPartyApiMode = privacy?.thirdPartyApiMode ?? true;
 
-    if (state?.privacy?.thirdPartyApiMode !== undefined) {
-      delete state.privacy.thirdPartyApiMode;
+    if (isObject(state.engine) && isObject(state.engine.backgroundState)) {
+      const preferencesControllerState = state.engine.backgroundState.PreferencesController as Record<string, unknown> | undefined;
+
+      Object.values(ETHERSCAN_SUPPORTED_CHAIN_IDS).forEach((hexChainId) => {
+        if (preferencesControllerState?.showIncomingTransactions) {
+          preferencesControllerState.showIncomingTransactions = {
+            ...(preferencesControllerState.showIncomingTransactions as Record<string, boolean>),
+            [hexChainId]: thirdPartyApiMode as boolean,
+          };
+        } else if (preferencesControllerState) {
+          preferencesControllerState.showIncomingTransactions = {
+            [hexChainId]: thirdPartyApiMode as boolean,
+          };
+        }
+      });
+    }
+
+    if (privacy && hasProperty(privacy, 'thirdPartyApiMode')) {
+      delete privacy.thirdPartyApiMode;
     }
 
     return state;

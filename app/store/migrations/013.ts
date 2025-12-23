@@ -1,3 +1,4 @@
+import { isObject, hasProperty } from '@metamask/utils';
 import { v1 as random } from 'uuid';
 
 interface Subject {
@@ -19,32 +20,33 @@ interface Subject {
   };
 }
 
-interface State {
-  privacy: {
-    approvedHosts: Record<string, boolean>;
-  };
-  engine: {
-    backgroundState: {
-      PreferencesController: {
-        selectedAddress: string;
-      };
-      PermissionController?: {
-        subjects?: Record<string, Subject>;
-      };
-    };
-  };
-}
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
 
-export default function migrate(state: State): State {
+  if (!isObject(state.privacy) || !hasProperty(state.privacy, 'approvedHosts')) {
+    return state;
+  }
+
+  if (!isObject(state.engine)) {
+    return state;
+  }
+
+  if (!isObject(state.engine.backgroundState)) {
+    return state;
+  }
+
+  const backgroundState = state.engine.backgroundState as Record<string, unknown>;
+  const permissionController = backgroundState.PermissionController as Record<string, unknown> | undefined;
+  const preferencesController = backgroundState.PreferencesController as Record<string, unknown> | undefined;
+
   // If for some reason we already have PermissionController state, bail out.
-  const hasPermissionControllerState = Boolean(
-    state.engine.backgroundState.PermissionController?.subjects,
-  );
+  const hasPermissionControllerState = Boolean(permissionController?.subjects);
   if (hasPermissionControllerState) return state;
 
-  const { approvedHosts } = state.privacy;
-  const { selectedAddress } =
-    state.engine.backgroundState.PreferencesController;
+  const approvedHosts = state.privacy.approvedHosts as Record<string, boolean>;
+  const selectedAddress = preferencesController?.selectedAddress as string;
 
   const hosts = Object.keys(approvedHosts);
   // If no dapps connected, bail out.
@@ -81,10 +83,8 @@ export default function migrate(state: State): State {
     { subjects: {} },
   );
 
-  const newState = { ...state };
-
-  newState.engine.backgroundState.PermissionController = {
+  backgroundState.PermissionController = {
     subjects,
   };
-  return newState;
+  return state;
 }

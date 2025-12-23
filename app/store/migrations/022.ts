@@ -1,26 +1,21 @@
-interface State {
-  engine?: {
-    backgroundState?: {
-      PreferencesController?: {
-        openSeaEnabled?: boolean;
-        displayNftMedia?: boolean;
-      };
-    };
-  };
-  user?: {
-    nftDetectionDismissed?: boolean;
-  };
-}
+import { isObject, hasProperty } from '@metamask/utils';
 
-export default function migrate(state: State): State {
-  if (state?.engine?.backgroundState?.PreferencesController?.openSeaEnabled) {
-    state.engine.backgroundState.PreferencesController.displayNftMedia =
-      state.engine.backgroundState.PreferencesController.openSeaEnabled ?? true;
-
-    delete state.engine.backgroundState.PreferencesController.openSeaEnabled;
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
   }
-  if (state?.user?.nftDetectionDismissed) {
-    delete state.user.nftDetectionDismissed;
+
+  if (isObject(state.engine) && isObject(state.engine.backgroundState)) {
+    const preferencesControllerState = state.engine.backgroundState.PreferencesController as Record<string, unknown> | undefined;
+    if (preferencesControllerState && hasProperty(preferencesControllerState, 'openSeaEnabled') && preferencesControllerState.openSeaEnabled) {
+      preferencesControllerState.displayNftMedia = preferencesControllerState.openSeaEnabled ?? true;
+      delete preferencesControllerState.openSeaEnabled;
+    }
+  }
+
+  const user = state.user as Record<string, unknown> | undefined;
+  if (user && hasProperty(user, 'nftDetectionDismissed')) {
+    delete user.nftDetectionDismissed;
   }
 
   return state;

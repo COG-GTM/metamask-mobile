@@ -1,32 +1,33 @@
-interface State {
-  engine: {
-    backgroundState: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      AssetsController?: any;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      TokensController?: any;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      CollectiblesController?: any;
-    };
-  };
-}
+import { isObject } from '@metamask/utils';
 
-export default function migrate(state: State): State {
-  state.engine.backgroundState.TokensController = {
-    allTokens: state.engine.backgroundState.AssetsController?.allTokens,
-    ignoredTokens: state.engine.backgroundState.AssetsController?.ignoredTokens,
-  };
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
 
-  state.engine.backgroundState.CollectiblesController = {
-    allCollectibles:
-      state.engine.backgroundState.AssetsController?.allCollectibles,
-    allCollectibleContracts:
-      state.engine.backgroundState.AssetsController?.allCollectibleContracts,
-    ignoredCollectibles:
-      state.engine.backgroundState.AssetsController?.ignoredCollectibles,
+  if (!isObject(state.engine)) {
+    return state;
+  }
+
+  if (!isObject(state.engine.backgroundState)) {
+    return state;
+  }
+
+  const backgroundState = state.engine.backgroundState as Record<string, unknown>;
+  const assetsController = backgroundState.AssetsController as Record<string, unknown> | undefined;
+
+  backgroundState.TokensController = {
+    allTokens: assetsController?.allTokens,
+    ignoredTokens: assetsController?.ignoredTokens,
   };
 
-  delete state.engine.backgroundState.AssetsController;
+  backgroundState.CollectiblesController = {
+    allCollectibles: assetsController?.allCollectibles,
+    allCollectibleContracts: assetsController?.allCollectibleContracts,
+    ignoredCollectibles: assetsController?.ignoredCollectibles,
+  };
+
+  delete backgroundState.AssetsController;
 
   return state;
 }

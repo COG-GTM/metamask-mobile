@@ -1,52 +1,44 @@
-interface State {
-  engine: {
-    backgroundState: {
-      CollectiblesController?: {
-        allCollectibles?: unknown;
-        allCollectibleContracts?: unknown;
-        ignoredCollectibles?: unknown;
-        [key: string]: unknown;
-      };
-      CollectibleDetectionController?: unknown;
-      NftController?: {
-        allNfts?: unknown;
-        allNftContracts?: unknown;
-        ignoredNfts?: unknown;
-        [key: string]: unknown;
-      };
-      NftDetectionController?: unknown;
-      PreferencesController: {
-        useCollectibleDetection?: boolean;
-        useNftDetection?: boolean;
-        [key: string]: unknown;
-      };
-    };
-  };
-}
+import { isObject } from '@metamask/utils';
 
-export default function migrate(state: State): State {
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
+
+  if (!isObject(state.engine)) {
+    return state;
+  }
+
+  if (!isObject(state.engine.backgroundState)) {
+    return state;
+  }
+
+  const backgroundState = state.engine.backgroundState as Record<string, unknown>;
+  const collectiblesController = backgroundState.CollectiblesController as Record<string, unknown> | undefined;
+  const preferencesController = backgroundState.PreferencesController as Record<string, unknown> | undefined;
+
   const {
     allCollectibles,
     allCollectibleContracts,
     ignoredCollectibles,
     ...unexpectedCollectiblesControllerState
-  } = state.engine.backgroundState.CollectiblesController || {};
-  state.engine.backgroundState.NftController = {
+  } = collectiblesController || {};
+
+  backgroundState.NftController = {
     ...unexpectedCollectiblesControllerState,
     allNfts: allCollectibles,
     allNftContracts: allCollectibleContracts,
     ignoredNfts: ignoredCollectibles,
   };
-  delete state.engine.backgroundState.CollectiblesController;
+  delete backgroundState.CollectiblesController;
 
-  state.engine.backgroundState.NftDetectionController =
-    state.engine.backgroundState.CollectibleDetectionController;
-  delete state.engine.backgroundState.CollectibleDetectionController;
+  backgroundState.NftDetectionController = backgroundState.CollectibleDetectionController;
+  delete backgroundState.CollectibleDetectionController;
 
-  state.engine.backgroundState.PreferencesController.useNftDetection =
-    state.engine.backgroundState.PreferencesController.useCollectibleDetection;
-  delete state.engine.backgroundState.PreferencesController
-    .useCollectibleDetection;
+  if (preferencesController) {
+    preferencesController.useNftDetection = preferencesController.useCollectibleDetection;
+    delete preferencesController.useCollectibleDetection;
+  }
 
   return state;
 }

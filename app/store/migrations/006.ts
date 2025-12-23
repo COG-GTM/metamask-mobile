@@ -1,3 +1,4 @@
+import { isObject } from '@metamask/utils';
 import DefaultPreference from 'react-native-default-preference';
 import {
   ONBOARDING_WIZARD,
@@ -7,15 +8,13 @@ import {
   EXPLORED,
 } from '../../constants/storage';
 
-interface State {
-  analytics?: {
-    enabled?: boolean;
-  };
-  [key: string]: unknown;
-}
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
 
-export default function migrate(state: State): State {
-  state.analytics?.enabled
+  const analytics = state.analytics as { enabled?: boolean } | undefined;
+  analytics?.enabled
     ? DefaultPreference.set(METRICS_OPT_IN, AGREED)
     : DefaultPreference.set(METRICS_OPT_IN, DENIED);
   DefaultPreference.set(ONBOARDING_WIZARD, EXPLORED);

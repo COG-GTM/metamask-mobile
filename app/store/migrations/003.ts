@@ -1,32 +1,52 @@
-import { NetworksChainId } from '@metamask/controller-utils';
-import { isSafeChainId } from '../../util/networks';
+import { isObject, hasProperty } from '@metamask/utils';
+import { ChainId } from '@metamask/controller-utils';
 import { GOERLI } from '../../../app/constants/network';
 import { regex } from '../../../app/util/regex';
 
-interface Provider {
-  type?: string;
-  chainId?: string;
-  ticker?: string;
-  [key: string]: unknown;
-}
+// Safe chain ID check - chain ID must be a positive integer less than MAX_SAFE_CHAIN_ID
+const MAX_SAFE_CHAIN_ID = 4503599627370476;
+const isSafeChainId = (chainId: number): boolean =>
+  Number.isSafeInteger(chainId) && chainId > 0 && chainId <= MAX_SAFE_CHAIN_ID;
 
-interface State {
-  engine: {
-    backgroundState: {
-      NetworkController: {
-        provider: Provider;
-      };
-    };
-  };
-}
+// Map of network types to chain IDs
+const NetworksChainId: Record<string, string> = {
+  mainnet: ChainId.mainnet,
+  goerli: ChainId.goerli,
+  sepolia: ChainId.sepolia,
+  'linea-goerli': ChainId['linea-goerli'],
+  'linea-sepolia': ChainId['linea-sepolia'],
+  'linea-mainnet': ChainId['linea-mainnet'],
+};
 
-export default function migrate(state: State): State {
-  const provider = state.engine.backgroundState.NetworkController.provider;
-  const chainId =
-    NetworksChainId[provider.type as keyof typeof NetworksChainId];
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
+
+  if (!isObject(state.engine)) {
+    return state;
+  }
+
+  if (!isObject(state.engine.backgroundState)) {
+    return state;
+  }
+
+  const networkControllerState = state.engine.backgroundState.NetworkController;
+  if (!isObject(networkControllerState)) {
+    return state;
+  }
+
+  if (!hasProperty(networkControllerState, 'provider') || !isObject(networkControllerState.provider)) {
+    return state;
+  }
+
+  const provider = networkControllerState.provider;
+  const providerType = typeof provider.type === 'string' ? provider.type : '';
+  const chainId = NetworksChainId[providerType];
+  
   // if chainId === '' is a rpc
   if (chainId) {
-    state.engine.backgroundState.NetworkController.provider = {
+    networkControllerState.provider = {
       ...provider,
       chainId,
     };
@@ -42,10 +62,10 @@ export default function migrate(state: State): State {
 
   if (hasInvalidChainId) {
     // If the current network does not have a chainId, switch to testnet.
-    state.engine.backgroundState.NetworkController.provider = {
+    networkControllerState.provider = {
       ticker: 'ETH',
       type: GOERLI,
-      chainId: NetworksChainId.goerli,
+      chainId: ChainId.goerli,
     };
   }
   return state;

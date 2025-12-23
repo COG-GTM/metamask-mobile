@@ -1,13 +1,13 @@
-interface State {
-  networkOnboarded?: {
-    networkOnboardedState?: Record<string, unknown>;
-  };
-  [key: string]: unknown;
-}
+import { isObject } from '@metamask/utils';
 
-export default function migrate(state: State): State {
-  if (state.networkOnboarded && state.networkOnboarded.networkOnboardedState) {
-    state.networkOnboarded.networkOnboardedState = {};
+export default function migrate(state: unknown): unknown {
+  if (!isObject(state)) {
+    return state;
+  }
+
+  const networkOnboarded = state.networkOnboarded as { networkOnboardedState?: Record<string, unknown> } | undefined;
+  if (networkOnboarded && networkOnboarded.networkOnboardedState) {
+    networkOnboarded.networkOnboardedState = {};
   }
   return state;
 }
