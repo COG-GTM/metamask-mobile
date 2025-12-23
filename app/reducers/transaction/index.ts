@@ -1,7 +1,38 @@
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
 
-const initialState = {
+interface SelectedAsset {
+  isETH?: boolean;
+  tokenId?: string;
+  symbol?: string;
+  [key: string]: unknown;
+}
+
+export interface TransactionState {
+  ensRecipient?: string;
+  assetType?: string;
+  selectedAsset: SelectedAsset;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction: any;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  symbol?: string;
+  paymentRequest?: unknown;
+  readableValue?: string;
+  id?: string;
+  type?: string;
+  proposedNonce?: string;
+  nonce?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  securityAlertResponses: Record<string, any>;
+  useMax?: boolean;
+  maxValueMode?: boolean;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,7 +63,7 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+const getAssetType = (selectedAsset: SelectedAsset): string | undefined => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,7 +77,31 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+interface TransactionAction {
+  type: string;
+  selectedAsset?: SelectedAsset;
+  assetType?: string;
+  nonce?: string;
+  proposedNonce?: string;
+  from?: string;
+  to?: string;
+  ensRecipient?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction?: any;
+  transactionId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  securityAlertResponse?: any;
+  asset?: SelectedAsset;
+  maxValueMode?: boolean;
+  value?: string;
+}
+
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
@@ -60,7 +115,7 @@ const transactionReducer = (state = initialState, action) => {
       return {
         ...state,
         ...initialState,
-        selectedAsset: action.selectedAsset,
+        selectedAsset: action.selectedAsset ?? {},
         assetType: action.assetType,
       };
     case 'SET_NONCE':
@@ -83,7 +138,7 @@ const transactionReducer = (state = initialState, action) => {
         transactionFromName: action.transactionFromName,
       };
     case 'SET_SELECTED_ASSET': {
-      const selectedAsset = action.selectedAsset;
+      const selectedAsset = action.selectedAsset ?? {};
       const assetType = action.assetType || getAssetType(selectedAsset);
       return {
         ...state,
@@ -94,11 +149,11 @@ const transactionReducer = (state = initialState, action) => {
     case 'PREPARE_TRANSACTION':
       return {
         ...state,
-        transaction: action.transaction,
+        transaction: action.transaction ?? state.transaction,
       };
     case 'SET_TRANSACTION_OBJECT': {
-      const selectedAsset = action.transaction.selectedAsset;
-      if (selectedAsset) {
+      const selectedAsset = action.transaction?.selectedAsset;
+      if (selectedAsset && action.transaction) {
         const assetType = getAssetType(selectedAsset);
         action.transaction.assetType = assetType;
       }
@@ -115,11 +170,11 @@ const transactionReducer = (state = initialState, action) => {
       };
     }
     case 'SET_TOKENS_TRANSACTION': {
-      const selectedAsset = action.asset;
+      const selectedAsset = action.asset ?? {};
       const assetType = getAssetType(selectedAsset);
       return {
         ...state,
-        selectedAsset: action.asset,
+        selectedAsset: action.asset ?? {},
         assetType,
       };
     }
@@ -134,6 +189,9 @@ const transactionReducer = (state = initialState, action) => {
       };
     case 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE': {
       const { transactionId, securityAlertResponse } = action;
+      if (!transactionId || !securityAlertResponse) {
+        return state;
+      }
       return {
         ...state,
         securityAlertResponses: {
@@ -165,4 +223,5 @@ const transactionReducer = (state = initialState, action) => {
       return state;
   }
 };
+
 export default transactionReducer;
