@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native';
 import { ParamListBase, RouteProp, NavigationProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { StackNavigationProp, StackNavigationOptions } from '@react-navigation/stack';
 import { colors as importedColors, fontStyles } from '../../../styles/common';
 import { Colors } from '../../../util/theme/models';
 
@@ -80,21 +80,9 @@ import { BridgeViewMode } from '../Bridge/types';
 
 type ThemeColors = Colors;
 
-interface NavbarOptions {
-  headerTitle?: (() => React.ReactNode) | React.ReactNode;
-  headerLeft?: (() => React.ReactNode) | null;
-  headerRight?: (() => React.ReactNode) | null;
-  headerStyle?: object;
-  headerTitleStyle?: object;
-  headerTintColor?: string;
-  headerBackTitle?: string;
-  headerShown?: boolean;
-  title?: string | null;
-  header?: () => React.ReactNode;
-  // Allow additional properties for flexibility during migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
-}
+// NavbarOptions extends StackNavigationOptions to ensure type compatibility
+// when used with navigation.setOptions()
+type NavbarOptions = Partial<StackNavigationOptions>;
 
 interface OnboardingHeaderOptions {
   headerLeft?: (() => React.ReactNode) | null;
@@ -314,7 +302,7 @@ export function getTransactionsNavbarOptions(
   return {
     // @ts-expect-error NavbarTitle is a JS component without TS types
     headerTitle: () => <NavbarTitle title={title} />,
-    headerLeft: null,
+    headerLeft: () => <View />,
     headerRight: () => (
       <AccountRightButton
         selectedAddress={selectedAddress}
@@ -365,7 +353,7 @@ export function getNavigationOptionsTitle(
 
   return {
     title,
-    headerTitle: <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText>,
+    headerTitle: () => <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText>,
     headerRight: () =>
       isFullScreenModal ? (
         <ButtonIcon
@@ -564,7 +552,7 @@ export function getPaymentRequestSuccessOptionsTitle(
 
   return {
     headerStyle: innerStyles.headerStyle,
-    title: null,
+    title: undefined,
     headerLeft: () => <View />,
     headerRight: () => (
       <TouchableOpacity
@@ -1310,10 +1298,10 @@ export function getImportTokenNavbarOptions(
         />
       </TouchableOpacity>
     ),
-    headerLeft: null,
+    headerLeft: () => <View />,
     headerStyle: [
       innerStyles.headerStyle,
-      contentOffset && innerStyles.headerShadow,
+      contentOffset ? innerStyles.headerShadow : undefined,
     ],
   };
 }
@@ -1368,7 +1356,7 @@ export function getNftDetailsNavbarOptions(
       : () => <View />,
     headerStyle: [
       innerStyles.headerStyle,
-      contentOffset && innerStyles.headerShadow,
+      contentOffset ? innerStyles.headerShadow : undefined,
     ],
   };
 }
@@ -1411,7 +1399,7 @@ export function getNftFullImageNavbarOptions(
     headerLeft: () => <View />,
     headerStyle: [
       innerStyles.headerStyle,
-      contentOffset && innerStyles.headerShadow,
+      contentOffset ? innerStyles.headerShadow : undefined,
     ],
   };
 }
@@ -2098,8 +2086,8 @@ export const getEditAccountNameNavBarOptions = (
   });
 
   return {
-    headerTitle: <Text>{strings('account_actions.edit_name')}</Text>,
-    headerLeft: null,
+    headerTitle: () => <Text>{strings('account_actions.edit_name')}</Text>,
+    headerLeft: () => <View />,
     headerRight: () => (
       <ButtonIcon
         iconName={IconName.Close}
@@ -2124,8 +2112,8 @@ export const getSettingsNavigationOptions = (
     },
   });
   return {
-    headerLeft: null,
-    headerTitle: <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText>,
+    headerLeft: () => <View />,
+    headerTitle: () => <MorphText variant={TextVariant.HeadingMD}>{title}</MorphText>,
     ...innerStyles,
   };
 };
