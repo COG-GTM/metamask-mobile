@@ -15,23 +15,6 @@ import { setupSentry } from './app/util/sentry/utils';
 setupSentry();
 
 import { AppRegistry, LogBox, ErrorHandlerCallback } from 'react-native';
-
-// Type declaration for global.ErrorUtils which is provided by React Native
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace NodeJS {
-    interface Global {
-      ErrorUtils: {
-        setGlobalHandler: (callback: ErrorHandlerCallback) => void;
-        getGlobalHandler: () => ErrorHandlerCallback;
-      };
-    }
-  }
-  const ErrorUtils: {
-    setGlobalHandler: (callback: ErrorHandlerCallback) => void;
-    getGlobalHandler: () => ErrorHandlerCallback;
-  };
-}
 import Root from './app/components/Views/Root';
 import { name } from './app.config.js';
 import { isE2E } from './app/util/test/utils.js';
@@ -111,11 +94,11 @@ AppRegistry.registerComponent(name, () =>
 );
 
 function setupGlobalErrorHandler() {
-  const reactNativeDefaultHandler = global.ErrorUtils.getGlobalHandler();
+  const reactNativeDefaultHandler = ErrorUtils.getGlobalHandler();
   // set the base handler to the react native ExceptionsManager.handleException(), please refer to setupErrorHandling.js under react-native/Libraries/Core/ for details.
   setReactNativeDefaultHandler(reactNativeDefaultHandler);
   // override the global handler to provide custom error handling
-  global.ErrorUtils.setGlobalHandler(handleCustomError);
+  ErrorUtils.setGlobalHandler(handleCustomError as ErrorHandlerCallback);
 }
 
 setupGlobalErrorHandler();
