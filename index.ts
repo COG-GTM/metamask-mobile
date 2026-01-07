@@ -7,14 +7,31 @@ import '@walletconnect/react-native-compat';
 import 'react-native-gesture-handler';
 import 'react-native-url-polyfill/auto';
 
-import crypto from 'crypto'; // eslint-disable-line import/no-nodejs-modules, no-unused-vars
-require('react-native-browser-polyfill'); // eslint-disable-line import/no-commonjs
+import crypto from 'crypto'; // eslint-disable-line import/no-nodejs-modules, @typescript-eslint/no-unused-vars
+require('react-native-browser-polyfill'); // eslint-disable-line import/no-commonjs, @typescript-eslint/no-require-imports
 
 import * as Sentry from '@sentry/react-native'; // eslint-disable-line import/no-namespace
 import { setupSentry } from './app/util/sentry/utils';
 setupSentry();
 
-import { AppRegistry, LogBox, ErrorUtils } from 'react-native';
+import { AppRegistry, LogBox, ErrorHandlerCallback } from 'react-native';
+
+// Type declaration for global.ErrorUtils which is provided by React Native
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace NodeJS {
+    interface Global {
+      ErrorUtils: {
+        setGlobalHandler: (callback: ErrorHandlerCallback) => void;
+        getGlobalHandler: () => ErrorHandlerCallback;
+      };
+    }
+  }
+  const ErrorUtils: {
+    setGlobalHandler: (callback: ErrorHandlerCallback) => void;
+    getGlobalHandler: () => ErrorHandlerCallback;
+  };
+}
 import Root from './app/components/Views/Root';
 import { name } from './app.config.js';
 import { isE2E } from './app/util/test/utils.js';
