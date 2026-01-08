@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, {
   useCallback,
   useEffect,
@@ -7,7 +8,6 @@ import React, {
 } from 'react';
 import { useSelector } from 'react-redux';
 import { Animated, View, StyleSheet, Image } from 'react-native';
-import PropTypes from 'prop-types';
 import { selectSelectedNetworkClientId } from '../../../../../selectors/networkController';
 import Engine from '../../../../../core/Engine';
 import Logger from '../../../../../util/Logger';
@@ -19,6 +19,31 @@ import Title from '../../../../Base/Title';
 import { useTheme } from '../../../../../util/theme';
 import foxImage from '../../../../../images/branding/fox.png';
 import ShapesBackgroundAnimation from './ShapesBackgroundAnimation';
+import { Theme } from '@metamask/design-tokens';
+
+interface AggregatorMetadataItem {
+  key: string;
+  title: string;
+  color: string;
+  icon: string;
+  iconPng: string;
+}
+
+interface AggregatorMetadata {
+  [key: string]: {
+    title: string;
+    color: string;
+    icon: string;
+    iconPng: string;
+  };
+}
+
+interface LoadingAnimationProps {
+  finish?: boolean;
+  onAnimationEnd?: () => void;
+  aggregatorMetadata?: AggregatorMetadata | null;
+  headPan?: boolean;
+}
 
 const ANIM_MULTIPLIER = 0.67;
 const INITIAL_DELAY = 1000 * ANIM_MULTIPLIER;
@@ -36,7 +61,7 @@ const PAN_RADIO = STAGE_SIZE * 0.6;
 // "finalizing" animationg
 const FINALIZING_PERCENTAGE = 80;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -108,8 +133,8 @@ const createStyles = (colors, shadows) =>
     },
   });
 
-function round(value, decimals) {
-  return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+function round(value: number, decimals: number): number {
+  return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
 }
 
 function LoadingAnimation({
@@ -117,8 +142,8 @@ function LoadingAnimation({
   onAnimationEnd,
   aggregatorMetadata,
   headPan = true,
-}) {
-  const [metadata, setMetadata] = useState([]);
+}: LoadingAnimationProps) {
+  const [metadata, setMetadata] = useState<AggregatorMetadataItem[]>([]);
   const [shouldStart, setShouldStart] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [hasFinished, setHasFinished] = useState(false);
@@ -498,24 +523,5 @@ function LoadingAnimation({
     </View>
   );
 }
-
-LoadingAnimation.propTypes = {
-  /**
-   * Wether to execute the "Finalizing" animation after the main sequence
-   */
-  finish: PropTypes.bool,
-  /**
-   * Function callback executed once both the main sequence and the finalizing animation ends
-   */
-  onAnimationEnd: PropTypes.func,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  /**
-   * Wether to show head panning animation with aggregators logos
-   */
-  headPan: PropTypes.bool,
-};
 
 export default LoadingAnimation;

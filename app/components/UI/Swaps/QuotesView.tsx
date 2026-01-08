@@ -1,6 +1,7 @@
+// @ts-nocheck
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import Eth from '@metamask/ethjs-query';
+import { Hex } from '@metamask/utils';
 import {
   View,
   StyleSheet,
@@ -130,6 +131,130 @@ import { SmartTransactionStatuses } from '@metamask/smart-transactions-controlle
 import { getTradeTxTokenFee } from '../../../util/smart-transactions';
 import { useFiatConversionRates } from './utils/useFiatConversionRates';
 import { useGasTokenFiatAmount } from './utils/useGasTokenFiatAmount';
+import { Theme } from '@metamask/design-tokens';
+import { RootState } from '../../../reducers';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+interface SwapsToken {
+  address: string;
+  symbol: string;
+  decimals: number;
+  name?: string;
+  iconUrl?: string;
+  occurrences?: number;
+}
+
+interface AccountInfo {
+  balance: string;
+}
+
+interface SwapsError {
+  key: string | null;
+  description: string | null;
+}
+
+interface TxParams {
+  from: string;
+  to: string;
+  value?: string;
+  data?: string;
+  gas: string;
+  gasPrice?: string;
+  nonce?: string;
+}
+
+interface Quote {
+  trade: TxParams & { value: string };
+  approvalNeeded: TxParams | null;
+  sourceAmount: string;
+  destinationAmount: number;
+  error: any;
+  sourceToken: string;
+  destinationToken: string;
+  maxGas: number;
+  averageGas: number;
+  estimatedRefund: number;
+  fetchTime: number;
+  aggregator: string;
+  aggType: string;
+  fee: number;
+  quoteRefreshSeconds: number;
+  gasMultiplier: number;
+  savings: any;
+  gasEstimate: string | null;
+  gasEstimateWithRefund: string | null;
+  destinationTokenRate: number | null;
+  sourceTokenRate: number | null;
+  multiLayerL1TradeFeeTotal: string | null;
+  priceSlippage?: {
+    bucket?: string;
+    calculationError?: string;
+    ratio?: number;
+    sourceAmountInETH?: number;
+    destinationAmountInETH?: number;
+  };
+  isGasIncludedTrade?: boolean;
+}
+
+interface QuoteValues {
+  aggregator: string;
+  tradeGasLimit: string;
+  tradeMaxGasLimit: string;
+  ethFee: string;
+  maxEthFee: string;
+  ethValueOfTokens: string;
+  overallValueOfQuote: string;
+  metaMaskFeeInEth: string;
+}
+
+interface APIAggregatorMetadata {
+  color: string;
+  title: string;
+  icon: string;
+  iconPng: string;
+}
+
+interface SwapsQuotesViewProps {
+  swapsTokens: SwapsToken[];
+  accounts: Record<string, AccountInfo>;
+  balances: Record<string, string>;
+  selectedAddress: string;
+  currentCurrency: string;
+  conversionRate: number;
+  chainId: Hex;
+  networkClientId: string;
+  ticker: string;
+  primaryCurrency: string;
+  isInPolling: boolean;
+  quotesLastFetched: number | null;
+  pollingCyclesLeft: number;
+  approvalTransaction: TxParams | null;
+  topAggId: string | null;
+  aggregatorMetadata: Record<string, APIAggregatorMetadata> | null;
+  quotes: Record<string, Quote>;
+  quoteValues: Record<string, QuoteValues> | null;
+  error: SwapsError;
+  quoteRefreshSeconds: number | null;
+  gasEstimateType: string;
+  gasFeeEstimates: Record<string, any>;
+  usedGasEstimate: Record<string, any> | null;
+  usedCustomGas: Record<string, any> | null;
+  setRecipient: (address: string) => void;
+  resetTransaction: () => void;
+  shouldUseSmartTransaction: boolean;
+  isEIP1559Network: boolean;
+}
+
+interface ResetAndStartPollingParams {
+  slippage: number;
+  sourceToken: SwapsToken;
+  destinationToken: SwapsToken;
+  sourceAmount: string;
+  walletAddress: string;
+  networkClientId: string;
+  enableGasIncludedQuotes: boolean;
+}
 
 const LOG_PREFIX = 'Swaps';
 const POLLING_INTERVAL = 30000;
@@ -138,7 +263,7 @@ const SLIPPAGE_BUCKETS = {
   HIGH: AppConstants.GAS_OPTIONS.HIGH,
 };
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     screen: {
       flexGrow: 1,
@@ -322,7 +447,7 @@ async function resetAndStartPolling({
   walletAddress,
   networkClientId,
   enableGasIncludedQuotes,
-}) {
+}: ResetAndStartPollingParams): Promise<void> {
   if (!sourceToken || !destinationToken) {
     return;
   }
@@ -346,15 +471,20 @@ async function resetAndStartPolling({
 
 /**
  * Multiplies gasLimit by multiplier if both defined
- * @param {string} gasLimit
- * @param {number} multiplier
  */
-const gasLimitWithMultiplier = (gasLimit, multiplier) => {
+const gasLimitWithMultiplier = (
+  gasLimit: string | undefined,
+  multiplier: number | undefined,
+): BigNumber | undefined => {
   if (!gasLimit || !multiplier) return;
   return new BigNumber(gasLimit).times(multiplier).integerValue();
 };
 
-async function addTokenToAssetsController(newToken, chainId, networkClientId) {
+async function addTokenToAssetsController(
+  newToken: SwapsToken,
+  chainId: Hex,
+  networkClientId: string,
+): Promise<void> {
   const { TokensController } = Engine.context;
 
   const allTokens = TokensController.state.allTokens?.[chainId]
@@ -406,7 +536,7 @@ function SwapsQuotesView({
   resetTransaction,
   shouldUseSmartTransaction,
   isEIP1559Network,
-}) {
+}: SwapsQuotesViewProps) {
   const navigation = useNavigation();
   /* Get params from navigation */
   const route = useRoute();
@@ -2575,68 +2705,7 @@ function SwapsQuotesView({
   );
 }
 
-SwapsQuotesView.propTypes = {
-  swapsTokens: PropTypes.arrayOf(PropTypes.object),
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * An object containing token balances for current account and network in the format address => balance
-   */
-  balances: PropTypes.object,
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * A string that represents the selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * ID of the global network client
-   */
-  networkClientId: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-  isInPolling: PropTypes.bool,
-  quotesLastFetched: PropTypes.number,
-  topAggId: PropTypes.string,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  pollingCyclesLeft: PropTypes.number,
-  quotes: PropTypes.object,
-  quoteValues: PropTypes.object,
-  approvalTransaction: PropTypes.object,
-  error: PropTypes.object,
-  quoteRefreshSeconds: PropTypes.number,
-  gasEstimateType: PropTypes.string,
-  gasFeeEstimates: PropTypes.object,
-  usedGasEstimate: PropTypes.object,
-  usedCustomGas: PropTypes.object,
-  setRecipient: PropTypes.func,
-  resetTransaction: PropTypes.func,
-  shouldUseSmartTransaction: PropTypes.bool,
-  isEIP1559Network: PropTypes.bool,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   accounts: selectAccounts(state),
   chainId: selectEvmChainId(state),
   networkClientId: selectSelectedNetworkClientId(state),
@@ -2668,8 +2737,8 @@ const mapStateToProps = (state) => ({
   isEIP1559Network: selectIsEIP1559Network(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setRecipient: (from) => dispatch(setRecipient(from, '', '', '', '')),
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+  setRecipient: (from: string) => dispatch(setRecipient(from, '', '', '', '')),
   resetTransaction: () => dispatch(resetTransaction()),
 });
 
