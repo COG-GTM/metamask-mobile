@@ -226,7 +226,6 @@ interface TrackingParams {
  * PureComponent that renders scrollable content inside signature request user interface
  */
 class SignatureRequest extends PureComponent<SignatureRequestProps> {
-  declare context: Theme;
 
   /**
    * Calls trackCancelSignature and onReject callback
@@ -266,7 +265,7 @@ class SignatureRequest extends PureComponent<SignatureRequestProps> {
   };
 
   getStyles = (): SignatureRequestStyles => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 

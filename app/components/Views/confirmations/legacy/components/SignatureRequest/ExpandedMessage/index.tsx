@@ -112,7 +112,6 @@ interface ExpandedMessageProps {
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
 export default class ExpandedMessage extends PureComponent<ExpandedMessageProps> {
-  declare context: Theme;
 
   render(): ReactNode {
     const { currentPageInformation, renderMessage, toggleExpandedMessage } =
@@ -120,7 +119,7 @@ export default class ExpandedMessage extends PureComponent<ExpandedMessageProps>
     const url = currentPageInformation.url;
     const icon = currentPageInformation.icon;
     const title = getHost(url);
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

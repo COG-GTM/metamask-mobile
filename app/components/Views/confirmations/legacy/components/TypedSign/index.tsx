@@ -178,7 +178,6 @@ type TypedMessageObject = Record<string, unknown>;
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
 class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
-  declare context: Theme;
 
   state: TypedSignState = {
     truncateMessage: false,
@@ -266,7 +265,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
   };
 
   getStyles = (): TypedSignStyles => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
