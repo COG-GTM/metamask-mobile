@@ -15,7 +15,7 @@ import {
 import { escapeSpecialUnicode } from '../../../../../../util/string';
 import { useTheme } from '../../../../../../util/theme';
 import { WALLET_CONNECT_ORIGIN } from '../../../../../../util/walletconnect';
-import { SignatureRequest } from '../SignatureRequest';
+import SignatureRequest from '../SignatureRequest';
 import ExpandedMessage from '../SignatureRequest/ExpandedMessage';
 import createStyles from './styles';
 import { PersonalSignProps } from './types';
