@@ -27,7 +27,7 @@ exports[`SignatureRequest should render correctly 1`] = `
     }
   }
 >
-  <SignatureRequest
+  <QRHardwareAwareness
     currentPageInformation={
       {
         "title": "title",

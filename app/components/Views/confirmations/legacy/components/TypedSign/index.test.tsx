@@ -15,6 +15,9 @@ import { fireEvent, waitFor } from '@testing-library/react-native';
 import { MetaMetrics } from '../../../../../../core/Analytics';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../../../../util/test/accountsControllerTestUtils';
 import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selectors/Browser/SigningBottomSheet.selectors';
+import { useMetrics } from '../../../../../../components/hooks/useMetrics';
+
+jest.mock('../../../../../../components/hooks/useMetrics');
 
 jest.mock('../../../../../../core/Analytics/MetaMetrics');
 
@@ -23,6 +26,17 @@ const mockMetrics = {
 };
 
 (MetaMetrics.getInstance as jest.Mock).mockReturnValue(mockMetrics);
+
+const mockTrackEvent = jest.fn();
+const mockCreateEventBuilder = jest.fn().mockReturnValue({
+  addProperties: jest.fn().mockReturnThis(),
+  build: jest.fn().mockReturnThis(),
+});
+
+(useMetrics as jest.Mock).mockReturnValue({
+  trackEvent: mockTrackEvent,
+  createEventBuilder: mockCreateEventBuilder,
+});
 
 jest.mock('../../../../../../core/Engine', () => {
   const { MOCK_ACCOUNTS_CONTROLLER_STATE: mockAccountsControllerState } =
@@ -56,11 +70,22 @@ jest.mock('../../../../../../core/Engine', () => {
     },
     controllerMessenger: {
       subscribe: jest.fn(),
+      unsubscribe: jest.fn(),
     },
   };
 });
 
 jest.mock('../../../../../../core/NotificationManager');
+
+jest.mock('@react-navigation/native', () => {
+  const actualNav = jest.requireActual('@react-navigation/native');
+  return {
+    ...actualNav,
+    useNavigation: () => ({
+      navigate: jest.fn(),
+    }),
+  };
+});
 
 jest.mock('../../../../../../util/address', () => ({
   ...jest.requireActual('../../../../../../util/address'),

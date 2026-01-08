@@ -438,7 +438,6 @@ exports[`TypedSign onConfirm signs message 1`] = `
               </View>
             </View>
             <TouchableOpacity
-              onPress={null}
               style={
                 {
                   "alignSelf": "center",
@@ -1111,7 +1110,6 @@ exports[`TypedSign onReject rejects message 1`] = `
               </View>
             </View>
             <TouchableOpacity
-              onPress={null}
               style={
                 {
                   "alignSelf": "center",

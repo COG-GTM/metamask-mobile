@@ -1,13 +1,15 @@
-import React, { useState, useEffect, ComponentClass } from 'react';
+import React, { useState, useEffect, ComponentType } from 'react';
 import Engine from '../../../core/Engine';
 import { IQRState } from './types';
 
-const withQRHardwareAwareness = (
-  Children: ComponentClass<{
-    QRState?: IQRState;
-    isSigningQRObject?: boolean;
-    isSyncingQRHardware?: boolean;
-  }>,
+const withQRHardwareAwareness = <P extends object>(
+  Children: ComponentType<
+    P & {
+      QRState?: IQRState;
+      isSigningQRObject?: boolean;
+      isSyncingQRHardware?: boolean;
+    }
+  >,
 ) => {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

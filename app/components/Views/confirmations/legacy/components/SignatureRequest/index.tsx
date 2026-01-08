@@ -21,6 +21,7 @@ import BlockaidBanner from '../BlockaidBanner/BlockaidBanner';
 import { ResultType, SecurityAlertResponse } from '../BlockaidBanner/BlockaidBanner.types';
 import { PageMeta } from './types';
 import { IQRState } from '../../../../../UI/QRHardware/types';
+import withQRHardwareAwareness from '../../../../../UI/QRHardware/withQRHardwareAwareness';
 import { RootState } from '../../../../../../reducers';
 import { Theme } from '../../../../../../util/theme/models';
 
@@ -367,4 +368,4 @@ const SignatureRequest = ({
   return isSigningQRObject ? renderQRDetails() : renderSignatureRequest();
 };
 
-export default SignatureRequest;
+export default withQRHardwareAwareness(SignatureRequest);
