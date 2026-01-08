@@ -8,7 +8,8 @@ import { store } from '../../../../../../../store';
 import { useTheme } from '../../../../../../../util/theme';
 import { useConfirmationRedesignEnabled } from '../../../../hooks/useConfirmationRedesignEnabled';
 import PersonalSign from '../../PersonalSign';
-import TypedSign from '../../TypedSign';
+import { TypedSign } from '../../TypedSign';
+import { TypedSignMessageParams } from '../../TypedSign/types';
 import { MessageParams } from '../types';
 import { ApprovalTypes } from '../../../../../../../core/RPCMethods/RPCMethodMiddleware';
 
@@ -94,7 +95,7 @@ const Root = ({
       {approvalType === ApprovalTypes.ETH_SIGN_TYPED_DATA && (
         <TypedSign
           navigation={navigation}
-          messageParams={messageParams}
+          messageParams={messageParams as TypedSignMessageParams}
           onReject={onSignReject}
           onConfirm={onSignConfirm}
           currentPageInformation={currentPageMeta}
