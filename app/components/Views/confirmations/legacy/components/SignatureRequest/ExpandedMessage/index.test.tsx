@@ -11,7 +11,7 @@ describe('ExpandedMessage', () => {
       <ExpandedMessage
         currentPageInformation={{ title: 'title', url: 'url' }}
         renderMessage={renderMessageMock}
-        toggleExpandedMessageMock={toggleExpandedMessageMock}
+        toggleExpandedMessage={toggleExpandedMessageMock}
       />,
     );
     expect(wrapper).toMatchSnapshot();

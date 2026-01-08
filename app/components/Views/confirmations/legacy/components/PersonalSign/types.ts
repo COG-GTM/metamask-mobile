@@ -1,4 +1,15 @@
-import { MessageParams, PageMeta } from '../SignatureRequest/types';
+import { PageMeta } from '../SignatureRequest/types';
+
+/**
+ * PersonalSign-specific message params where data is always a string (hex-encoded message)
+ */
+export interface PersonalSignMessageParams {
+  data: string;
+  from: string;
+  metamaskId: string;
+  meta?: PageMeta;
+  origin: string;
+}
 
 export interface PersonalSignProps {
   /**
@@ -12,7 +23,7 @@ export interface PersonalSignProps {
   /**
    * Personal message to be displayed to the user
    */
-  messageParams: MessageParams;
+  messageParams: PersonalSignMessageParams;
   /**
    * Object containing current page title and url
    */

@@ -1373,7 +1373,7 @@ exports[`TypedSign should render correctly 1`] = `
     }
   }
 >
-  <Component
+  <TypedSign
     currentPageInformation={
       {
         "title": "title",

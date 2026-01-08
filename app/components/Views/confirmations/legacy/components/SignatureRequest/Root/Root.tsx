@@ -10,6 +10,7 @@ import { useConfirmationRedesignEnabled } from '../../../../hooks/useConfirmatio
 import PersonalSign from '../../PersonalSign';
 import TypedSign from '../../TypedSign';
 import { MessageParams } from '../types';
+import { PersonalSignMessageParams } from '../../PersonalSign/types';
 import { ApprovalTypes } from '../../../../../../../core/RPCMethods/RPCMethodMiddleware';
 
 interface RootProps {
@@ -83,7 +84,7 @@ const Root = ({
     >
       {approvalType === ApprovalTypes.PERSONAL_SIGN && (
         <PersonalSign
-          messageParams={messageParams}
+          messageParams={messageParams as PersonalSignMessageParams}
           onReject={onSignReject}
           onConfirm={onSignConfirm}
           currentPageInformation={currentPageMeta}
