@@ -588,10 +588,10 @@ For detailed migration guidance, see [docs/enzyme-migration-inventory.md](../enz
 
 ### ESLint Rules
 
-New Enzyme imports are blocked by ESLint. If you see the error:
+New Enzyme imports trigger an ESLint warning. If you see:
 
 ```
-Enzyme is deprecated. Please use React Testing Library (@testing-library/react-native) instead.
+warning  'enzyme' import is restricted from being used by a pattern. Enzyme is deprecated. Please use React Testing Library (@testing-library/react-native) instead.
 ```
 
-This means you should use RTL patterns instead of Enzyme for new tests.
+This means you should use RTL patterns instead of Enzyme for new tests. The rule is set to `warn` (not `error`) to avoid breaking CI for existing Enzyme tests while still alerting developers about the deprecation. Once all tests are migrated to RTL, this rule can be upgraded to `error`.

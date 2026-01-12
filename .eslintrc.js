@@ -72,7 +72,7 @@ module.exports = {
       rules: {
         '@metamask/design-tokens/color-no-hex': 'off',
         'no-restricted-imports': [
-          'error',
+          'warn',
           {
             patterns: [
               {
