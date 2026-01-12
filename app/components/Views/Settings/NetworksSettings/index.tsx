@@ -189,7 +189,6 @@ class NetworksSettings extends PureComponent<
   NetworksSettingsProps,
   NetworksSettingsState
 > {
-  declare context: ThemeContextType;
   static contextType = ThemeContext;
 
   actionSheet: InstanceType<typeof ActionSheet> | null = null;
@@ -202,7 +201,8 @@ class NetworksSettings extends PureComponent<
 
   updateNavBar = (): void => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as ThemeContextType)?.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.networks_title'),
@@ -311,7 +311,8 @@ class NetworksSettings extends PureComponent<
     isCustomRPC: boolean,
     color?: string,
   ): ReactNode {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as ThemeContextType)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
       <View key={`network-${networkTypeOrRpcUrl}`}>
@@ -435,7 +436,8 @@ class NetworksSettings extends PureComponent<
       return filtered;
     }, {});
 
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as ThemeContextType)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (Object.keys(filteredChain).length > 0) {
@@ -453,7 +455,8 @@ class NetworksSettings extends PureComponent<
 
   renderMainnet(): ReactNode {
     const { name: mainnetName } = Networks.mainnet;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as ThemeContextType)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -482,7 +485,8 @@ class NetworksSettings extends PureComponent<
 
   renderLineaMainnet(): ReactNode {
     const { name: lineaMainnetName } = Networks['linea-mainnet'];
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as ThemeContextType)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -515,7 +519,8 @@ class NetworksSettings extends PureComponent<
       this.props.nonEvmNetworkConfigurations,
     ).find((network) => network.chainId === SolScope.Mainnet);
     const solanaMainnetName = solanaNetwork?.name ?? 'Solana';
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as ThemeContextType)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -588,7 +593,8 @@ class NetworksSettings extends PureComponent<
     this.setState({ searchString: '', filteredNetworks: [] });
 
   filteredResult = (): ReactNode => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as ThemeContextType)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     if (this.state.filteredNetworks.length > 0) {
       return this.state.filteredNetworks.map((data, i) => {
@@ -616,8 +622,10 @@ class NetworksSettings extends PureComponent<
   };
 
   render(): ReactNode {
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance;
+    const colors =
+      (this.context as unknown as ThemeContextType)?.colors || mockTheme.colors;
+    const themeAppearance = (this.context as unknown as ThemeContextType)
+      ?.themeAppearance;
     const styles = createStyles(colors);
 
     return (
