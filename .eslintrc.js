@@ -71,6 +71,18 @@ module.exports = {
       files: ['**/*.test.{js,ts,tsx}', '**/*.stories.{js,ts,tsx}'],
       rules: {
         '@metamask/design-tokens/color-no-hex': 'off',
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['enzyme', 'enzyme/*'],
+                message:
+                  'Enzyme is deprecated. Please use React Testing Library (@testing-library/react-native) instead. See docs/enzyme-migration-inventory.md for migration guidance.',
+              },
+            ],
+          },
+        ],
       },
     },
     {

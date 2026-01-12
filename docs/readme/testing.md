@@ -372,3 +372,226 @@ Our CI/CD process is automated through various Bitrise pipelines, each designed 
 ### Best Practices
 
 For more guidelines and best practices, refer to our [Best Practices Document](https://github.com/MetaMask/contributor-docs/blob/main/docs/testing/e2e-testing.md).
+
+## Unit Testing with React Testing Library
+
+This section covers best practices for writing unit tests using React Testing Library (RTL). RTL is the standard testing library for React components in this codebase, replacing the deprecated Enzyme library.
+
+### Why React Testing Library?
+
+React Testing Library encourages testing components the way users interact with them, rather than testing implementation details. This approach leads to more maintainable tests that give you confidence your components work correctly from a user's perspective.
+
+Key principles:
+- Test behavior, not implementation
+- Query elements the way users would find them
+- Avoid testing internal state or props directly
+
+### Standard Test Utilities
+
+The codebase provides several test utilities located in `app/util/test/`:
+
+#### renderWithProvider
+
+The primary utility for rendering components with Redux store and theme context.
+
+```typescript
+import renderWithProvider from '../../../util/test/renderWithProvider';
+
+const mockState = {
+  engine: {
+    backgroundState: {
+      // ... your mock state
+    },
+  },
+};
+
+const { getByText, getByTestId } = renderWithProvider(
+  <MyComponent />,
+  { state: mockState }
+);
+```
+
+**Parameters:**
+- `component`: The React component to render
+- `providerValues`: Optional object containing:
+  - `state`: Partial Redux state to initialize the store
+  - `theme`: Optional theme override (defaults to mockTheme)
+- `includeNavigationContainer`: Boolean to include NavigationContainer (default: true)
+
+**Returns:** All RTL query methods plus `store` reference
+
+#### renderScreen
+
+For testing components that need to be rendered within a navigation stack.
+
+```typescript
+import { renderScreen } from '../../../util/test/renderWithProvider';
+
+const { getByText } = renderScreen(
+  MyScreenComponent,
+  { name: 'MyScreen', options: { title: 'My Screen' } },
+  { state: mockState },
+  { paramKey: 'paramValue' } // initialParams
+);
+```
+
+#### renderHookWithProvider
+
+For testing custom hooks that need Redux context.
+
+```typescript
+import { renderHookWithProvider } from '../../../util/test/renderWithProvider';
+
+const { result } = renderHookWithProvider(
+  () => useMyCustomHook(),
+  { state: mockState }
+);
+
+expect(result.current.someValue).toBe(expectedValue);
+```
+
+### Common Testing Patterns
+
+#### Basic Component Rendering
+
+```typescript
+import { render, screen } from '@testing-library/react-native';
+
+it('renders correctly', () => {
+  render(<MyComponent title="Hello" />);
+  expect(screen.getByText('Hello')).toBeTruthy();
+});
+```
+
+#### Snapshot Testing
+
+```typescript
+it('matches snapshot', () => {
+  const { toJSON } = renderWithProvider(<MyComponent />);
+  expect(toJSON()).toMatchSnapshot();
+});
+```
+
+#### Testing User Interactions
+
+```typescript
+import { fireEvent } from '@testing-library/react-native';
+
+it('handles button press', () => {
+  const onPress = jest.fn();
+  const { getByTestId } = render(<MyButton onPress={onPress} />);
+  
+  fireEvent.press(getByTestId('my-button'));
+  expect(onPress).toHaveBeenCalledTimes(1);
+});
+```
+
+#### Testing Text Input
+
+```typescript
+it('handles text input', () => {
+  const { getByTestId } = render(<MyInput />);
+  const input = getByTestId('my-input');
+  
+  fireEvent.changeText(input, 'new value');
+  expect(input.props.value).toBe('new value');
+});
+```
+
+#### Async Testing
+
+```typescript
+import { waitFor } from '@testing-library/react-native';
+
+it('loads data asynchronously', async () => {
+  const { getByText, queryByText } = renderWithProvider(<MyAsyncComponent />);
+  
+  // Initially shows loading
+  expect(getByText('Loading...')).toBeTruthy();
+  
+  // Wait for data to load
+  await waitFor(() => {
+    expect(queryByText('Loading...')).toBeNull();
+    expect(getByText('Data loaded')).toBeTruthy();
+  });
+});
+```
+
+### Query Priority
+
+RTL provides several query methods. Use them in this priority order:
+
+1. **getByRole** - Queries by accessibility role (best for accessibility)
+2. **getByText** - Queries by visible text content
+3. **getByTestId** - Queries by testID prop (use when other queries aren't suitable)
+
+Query variants:
+- `getBy*` - Throws if not found (use for elements that should exist)
+- `queryBy*` - Returns null if not found (use for asserting absence)
+- `findBy*` - Returns a promise, waits for element (use for async elements)
+
+### Mocking Best Practices
+
+#### Mocking Modules
+
+```typescript
+jest.mock('../../../core/Engine', () => ({
+  context: {
+    KeyringController: {
+      state: { keyrings: [] },
+    },
+  },
+}));
+```
+
+#### Mocking Hooks
+
+```typescript
+jest.mock('../hooks/useMyHook');
+
+beforeEach(() => {
+  (useMyHook as jest.Mock).mockReturnValue({
+    data: mockData,
+    loading: false,
+  });
+});
+```
+
+### Migration from Enzyme
+
+If you're migrating tests from Enzyme to RTL, use the migration helper script:
+
+```bash
+# Analyze a specific file
+node scripts/migrate-test.js app/components/MyComponent/MyComponent.test.tsx
+
+# Get a summary of all Enzyme files
+node scripts/migrate-test.js --summary
+
+# View migration patterns reference
+node scripts/migrate-test.js --patterns
+```
+
+For detailed migration guidance, see [docs/enzyme-migration-inventory.md](../enzyme-migration-inventory.md).
+
+### Common Migration Patterns
+
+| Enzyme | React Testing Library |
+|--------|----------------------|
+| `shallow(<Component />)` | `render(<Component />)` |
+| `wrapper.find('Text')` | `screen.getByText('...')` |
+| `wrapper.find('[testID="id"]')` | `screen.getByTestId('id')` |
+| `wrapper.simulate('press')` | `fireEvent.press(element)` |
+| `wrapper.props()` | Test behavior instead |
+| `wrapper.state()` | Test visible output instead |
+| `expect(wrapper).toMatchSnapshot()` | `expect(toJSON()).toMatchSnapshot()` |
+
+### ESLint Rules
+
+New Enzyme imports are blocked by ESLint. If you see the error:
+
+```
+Enzyme is deprecated. Please use React Testing Library (@testing-library/react-native) instead.
+```
+
+This means you should use RTL patterns instead of Enzyme for new tests.
