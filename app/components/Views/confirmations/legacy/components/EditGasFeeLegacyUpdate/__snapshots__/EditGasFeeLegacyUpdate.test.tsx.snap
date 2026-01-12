@@ -330,15 +330,19 @@ exports[`EditGasFeeLegacyUpdate should match snapshot 1`] = `
                 </View>
                 <View
                   style={
-                    {
-                      "alignItems": "center",
-                      "borderColor": "#b7bbc8",
-                      "borderRadius": 6,
-                      "borderWidth": 1,
-                      "flexDirection": "row",
-                      "height": 42,
-                      "justifyContent": "space-between",
-                    }
+                    [
+                      {
+                        "alignItems": "center",
+                        "borderRadius": 6,
+                        "borderWidth": 1,
+                        "flexDirection": "row",
+                        "height": 42,
+                        "justifyContent": "space-between",
+                      },
+                      {
+                        "borderColor": "#b7bbc8",
+                      },
+                    ]
                   }
                 >
                   <View
@@ -413,12 +417,16 @@ exports[`EditGasFeeLegacyUpdate should match snapshot 1`] = `
                       onBlur={[Function]}
                       onChangeText={[Function]}
                       style={
-                        {
-                          "color": "#121314",
-                          "height": 38,
-                          "minWidth": 10,
-                          "paddingRight": 6,
-                        }
+                        [
+                          {
+                            "height": 38,
+                            "minWidth": 10,
+                            "paddingRight": 6,
+                          },
+                          {
+                            "color": "#121314",
+                          },
+                        ]
                       }
                       value="21000"
                     />
@@ -533,7 +541,6 @@ exports[`EditGasFeeLegacyUpdate should match snapshot 1`] = `
                   style={
                     {
                       "alignItems": "center",
-                      "color": "#ca3542",
                       "flexDirection": "row",
                       "marginTop": 8,
                     }
@@ -710,15 +717,19 @@ exports[`EditGasFeeLegacyUpdate should match snapshot 1`] = `
                 </View>
                 <View
                   style={
-                    {
-                      "alignItems": "center",
-                      "borderColor": "#b7bbc8",
-                      "borderRadius": 6,
-                      "borderWidth": 1,
-                      "flexDirection": "row",
-                      "height": 42,
-                      "justifyContent": "space-between",
-                    }
+                    [
+                      {
+                        "alignItems": "center",
+                        "borderRadius": 6,
+                        "borderWidth": 1,
+                        "flexDirection": "row",
+                        "height": 42,
+                        "justifyContent": "space-between",
+                      },
+                      {
+                        "borderColor": "#b7bbc8",
+                      },
+                    ]
                   }
                 >
                   <View
@@ -793,12 +804,16 @@ exports[`EditGasFeeLegacyUpdate should match snapshot 1`] = `
                       onBlur={[Function]}
                       onChangeText={[Function]}
                       style={
-                        {
-                          "color": "#121314",
-                          "height": 38,
-                          "minWidth": 10,
-                          "paddingRight": 6,
-                        }
+                        [
+                          {
+                            "height": 38,
+                            "minWidth": 10,
+                            "paddingRight": 6,
+                          },
+                          {
+                            "color": "#121314",
+                          },
+                        ]
                       }
                       value="10"
                     />
