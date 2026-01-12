@@ -1,9 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`AvatarFavicon should match the snapshot 1`] = `
-<AvatarBase
-  size="32"
-  style={{}}
+<View
+  style={
+    {
+      "backgroundColor": "#ffffff",
+      "borderRadius": 16,
+      "height": 32,
+      "overflow": "hidden",
+      "width": 32,
+    }
+  }
 >
   <Image
     onError={[Function]}
@@ -22,7 +29,7 @@ exports[`AvatarFavicon should match the snapshot 1`] = `
     }
     testID="favicon-avatar-image"
   />
-</AvatarBase>
+</View>
 `;
 
 exports[`AvatarFavicon should render SVG 1`] = `
@@ -75,29 +82,4 @@ exports[`AvatarFavicon should render SVG 1`] = `
     />
   </RNSVGSvgView>
 </View>
-`;
-
-exports[`AvatarFavicon should render fallback when svg has error 1`] = `
-<AvatarBase
-  size="32"
-  style={{}}
->
-  <Image
-    onError={[Function]}
-    resizeMode="contain"
-    source={
-      {
-        "uri": "https://metamask.github.io/test-dapp/metamask-fox.svg",
-      }
-    }
-    style={
-      {
-        "flex": 1,
-        "height": undefined,
-        "width": undefined,
-      }
-    }
-    testID="favicon-avatar-image"
-  />
-</AvatarBase>
 `;
