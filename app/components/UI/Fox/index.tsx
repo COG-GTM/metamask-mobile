@@ -8,6 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Theme } from '@metamask/design-tokens';
+import { escapeHtml, sanitizeCss } from '../../../util/sanitizeHtml';
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -74,13 +75,13 @@ function Fox({
                         position: absolute;
           }
 
-                    ${customStyle}
+                    ${sanitizeCss(customStyle || '')}
           </style>
           <title>---</title>
           <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
           <meta charset=utf-8></head>
           <body>
-                    ${customContent}
+                    ${escapeHtml(customContent)}
           <script>
             (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
             const createViewer=require("../index"),viewer=createViewer({width:1,height:1,followMouse:!0,followMotion:!0});document.body.appendChild(viewer.container);

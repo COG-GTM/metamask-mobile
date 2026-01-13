@@ -7,6 +7,7 @@ import {
   setUpdateIntervalForType,
 } from 'react-native-sensors';
 import { getTotalMemorySync } from 'react-native-device-info';
+import { sanitizeCssColor } from '../../../util/sanitizeHtml';
 
 interface AnimatedFoxProps {
   bgColor: string;
@@ -84,7 +85,7 @@ const AnimatedFox: React.FC<AnimatedFoxProps> = ({ bgColor }) => {
           }
 
           body{
-            background: ${bgColor};
+            background: ${sanitizeCssColor(bgColor)};
             text-align: center;
             color: white;
             font-family: roboto;
