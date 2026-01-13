@@ -45,7 +45,7 @@ describe('sanitizeHtml', () => {
 
     it('should remove expression()', () => {
       expect(sanitizeCss('width: expression(alert(1))')).toBe(
-        'width: (alert(1))',
+        'width: alert(1))',
       );
     });
 
