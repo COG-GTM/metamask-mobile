@@ -8,7 +8,7 @@ import Logger from '../../util/Logger';
 import asyncInvoke from './invoke-lib';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { html } from './ppom.html.js';
+import { html } from './ppom.html';
 
 const styles = StyleSheet.create({
   webViewContainer: {
