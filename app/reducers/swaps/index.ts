@@ -368,9 +368,9 @@ export const swapsTokensWithBalanceSelector = createSelector(
     }
     const baseTokens = tokens;
     const tokensAddressesWithBalance = Object.entries(balances || {})
-      .filter(([, balance]) => balance !== 0)
+      .filter(([, balance]) => Number(balance) !== 0)
       .sort(([, balanceA], [, balanceB]) =>
-        lte(balanceB as string, balanceA as string) ? -1 : 1,
+        lte(Number(balanceB), Number(balanceA)) ? -1 : 1,
       )
       .map(([address]) => address.toLowerCase());
     const tokensWithBalance: TokenWithBalance[] = [];
@@ -458,8 +458,8 @@ function swapsReducer(
 
       const chain: SwapsChainState = {
         ...data,
-        featureFlags: chainFeatureFlags,
-        isLive: liveness,
+        featureFlags: chainFeatureFlags as unknown as FeatureFlags | undefined,
+        isLive: Boolean(liveness),
       };
 
       return {
