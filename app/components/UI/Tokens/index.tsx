@@ -231,14 +231,6 @@ const Tokens = memo(() => {
         destructiveButtonIndex={0}
         onPress={onActionSheetPress}
       />
-      <ActionSheet
-        ref={actionSheet as LegacyRef<typeof ActionSheet>}
-        title={strings('wallet.remove_token_title')}
-        options={[strings('wallet.remove'), strings('wallet.cancel')]}
-        cancelButtonIndex={1}
-        destructiveButtonIndex={0}
-        onPress={onActionSheetPress}
-      />
     </View>
   );
 });
