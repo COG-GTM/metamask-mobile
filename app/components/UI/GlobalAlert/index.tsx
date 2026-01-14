@@ -57,7 +57,6 @@ interface GlobalAlertProps {
  */
 class GlobalAlert extends PureComponent<GlobalAlertProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   onClose = () => {
     this.props.dismissAlert();
@@ -86,12 +85,14 @@ class GlobalAlert extends PureComponent<GlobalAlertProps> {
   }
 
   getStyles = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
   renderClipboardAlert = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = this.getStyles();
     const copyAlertStyle = createCopyAlertStyle(
       colors,

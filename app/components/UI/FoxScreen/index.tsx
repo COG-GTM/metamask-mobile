@@ -31,10 +31,10 @@ const foxImage = require('../../../images/branding/fox.png'); // eslint-disable-
  */
 export default class FoxScreen extends PureComponent {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   render = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

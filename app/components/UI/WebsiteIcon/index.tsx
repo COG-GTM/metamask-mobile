@@ -63,7 +63,6 @@ interface WebsiteIconState {
  */
 class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: WebsiteIconState = {
     renderIconUrlError: false,
@@ -87,7 +86,8 @@ class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
       icon,
       faviconSource,
     } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     // apiLogoUrl is the url of the icon to be rendered, but it's populated
     // from the icon prop, if it exists, or from the faviconSource prop
@@ -139,7 +139,7 @@ class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
           <FadeIn
             placeholderStyle={{
               backgroundColor: transparent
-                ? colors.transparent
+                ? 'transparent'
                 : colors.background.alternative,
             }}
           >
