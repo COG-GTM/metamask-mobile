@@ -1,7 +1,6 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { ReactNode } from 'react';
 import Text from './Text';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TextStyle, StyleProp } from 'react-native';
 import { FIAT_ORDER_STATES } from '../../constants/on-ramp';
 import { strings } from '../../../locales/i18n';
 import { useTheme } from '../../util/theme';
@@ -14,35 +13,38 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ConfirmedText = ({testID, ...props}) => (
-  <Text
-    testID={testID}
-    bold
-    green
-    style={styles.status}
-    {...props}
-  />
-);
-ConfirmedText.propTypes = {
-  testID: PropTypes.string,
-};
+interface StatusTextComponentProps {
+  testID?: string;
+  style?: StyleProp<TextStyle>;
+  children?: ReactNode;
+}
 
-export const PendingText = ({testID, ...props}) => {
+export const ConfirmedText: React.FC<StatusTextComponentProps> = ({
+  testID,
+  ...props
+}) => (
+  <Text testID={testID} bold green style={styles.status} {...props} />
+);
+
+export const PendingText: React.FC<StatusTextComponentProps> = ({
+  testID,
+  ...props
+}) => {
   const { colors } = useTheme();
   return (
     <Text
-     testID={testID}
+      testID={testID}
       bold
       style={[styles.status, { color: colors.warning.default }]}
       {...props}
     />
   );
 };
-PendingText.propTypes = {
-  testID: PropTypes.string,
-};
 
-export const FailedText = ({testID, ...props} ) => {
+export const FailedText: React.FC<StatusTextComponentProps> = ({
+  testID,
+  ...props
+}) => {
   const { colors } = useTheme();
   return (
     <Text
@@ -53,16 +55,40 @@ export const FailedText = ({testID, ...props} ) => {
     />
   );
 };
-FailedText.propTypes = {
-  testID: PropTypes.string,
-};
 
-function StatusText({ status, context, testID, ...props }) {
+type StatusType =
+  | 'Confirmed'
+  | 'confirmed'
+  | 'Pending'
+  | 'pending'
+  | 'Submitted'
+  | 'submitted'
+  | 'Failed'
+  | 'Cancelled'
+  | 'failed'
+  | 'cancelled'
+  | typeof FIAT_ORDER_STATES.COMPLETED
+  | typeof FIAT_ORDER_STATES.PENDING
+  | typeof FIAT_ORDER_STATES.FAILED
+  | typeof FIAT_ORDER_STATES.CANCELLED
+  | string;
+
+interface StatusTextProps extends StatusTextComponentProps {
+  status: StatusType;
+  context?: string;
+}
+
+function StatusText({
+  status,
+  context = 'transaction',
+  testID,
+  ...props
+}: StatusTextProps): React.ReactElement {
   switch (status) {
     case 'Confirmed':
     case 'confirmed':
       return (
-        <ConfirmedText testID={testID}  {...props}>
+        <ConfirmedText testID={testID} {...props}>
           {strings(`${context}.${status}`)}
         </ConfirmedText>
       );
@@ -71,14 +97,18 @@ function StatusText({ status, context, testID, ...props }) {
     case 'Submitted':
     case 'submitted':
       return (
-        <PendingText testID={testID} {...props}>{strings(`${context}.${status}`)}</PendingText>
+        <PendingText testID={testID} {...props}>
+          {strings(`${context}.${status}`)}
+        </PendingText>
       );
     case 'Failed':
     case 'Cancelled':
     case 'failed':
     case 'cancelled':
       return (
-        <FailedText testID={testID} {...props}>{strings(`${context}.${status}`)}</FailedText>
+        <FailedText testID={testID} {...props}>
+          {strings(`${context}.${status}`)}
+        </FailedText>
       );
 
     case FIAT_ORDER_STATES.COMPLETED:
@@ -92,7 +122,9 @@ function StatusText({ status, context, testID, ...props }) {
         <PendingText {...props}>{strings(`${context}.pending`)}</PendingText>
       );
     case FIAT_ORDER_STATES.FAILED:
-      return <FailedText {...props}>{strings(`${context}.failed`)}</FailedText>;
+      return (
+        <FailedText {...props}>{strings(`${context}.failed`)}</FailedText>
+      );
     case FIAT_ORDER_STATES.CANCELLED:
       return (
         <FailedText {...props}>{strings(`${context}.cancelled`)}</FailedText>
@@ -106,15 +138,5 @@ function StatusText({ status, context, testID, ...props }) {
       );
   }
 }
-
-StatusText.defaultProps = {
-  context: 'transaction',
-};
-
-StatusText.propTypes = {
-  status: PropTypes.string.isRequired,
-  context: PropTypes.string,
-  testID: PropTypes.string,
-};
 
 export default StatusText;

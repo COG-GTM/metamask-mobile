@@ -1,12 +1,24 @@
-import React, { useCallback, useRef, useEffect, useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import React, {
+  useCallback,
+  useRef,
+  useEffect,
+  useState,
+  ReactNode,
+} from 'react';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput as RNTextInput,
+} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Text from './Text';
-import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import { useTheme } from '../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     labelContainer: {
       flexDirection: 'row',
@@ -15,21 +27,29 @@ const createStyles = (colors) =>
       marginBottom: 14,
       flexWrap: 'wrap',
     },
-    rangeInputContainer: (error) => ({
-      borderColor: error ? colors.error.default : colors.border.default,
+    rangeInputContainer: {
       borderWidth: 1,
       borderRadius: 6,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       height: 42,
-    }),
-    input: (error) => ({
+    },
+    rangeInputContainerError: {
+      borderColor: colors.error.default,
+    },
+    rangeInputContainerDefault: {
+      borderColor: colors.border.default,
+    },
+    input: {
       height: 38,
       minWidth: 10,
       paddingRight: 6,
-      color: error ? colors.error.default : colors.text.default,
-    }),
+      color: colors.text.default,
+    },
+    inputError: {
+      color: colors.error.default,
+    },
     buttonContainerLeft: {
       marginLeft: 17,
       flex: 1,
@@ -88,12 +108,26 @@ const createStyles = (colors) =>
     },
   });
 
-const RangeInput = ({
+interface RangeInputProps {
+  leftLabelComponent?: ReactNode | string;
+  rightLabelComponent?: ReactNode | string;
+  value?: string;
+  unit?: string;
+  increment?: BigNumber;
+  onChangeValue?: (value: string) => void;
+  inputInsideLabel?: string;
+  error?: string;
+  min?: BigNumber;
+  max?: BigNumber;
+  name?: string;
+}
+
+const RangeInput: React.FC<RangeInputProps> = ({
   leftLabelComponent,
   rightLabelComponent,
   value,
   unit,
-  increment,
+  increment = new BigNumber(1),
   onChangeValue,
   inputInsideLabel,
   error,
@@ -101,8 +135,8 @@ const RangeInput = ({
   max,
   name,
 }) => {
-  const textInput = useRef(null);
-  const [errorState, setErrorState] = useState();
+  const textInput = useRef<RNTextInput>(null);
+  const [errorState, setErrorState] = useState<string>('');
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
@@ -111,7 +145,7 @@ const RangeInput = ({
   }, []);
 
   const changeValue = useCallback(
-    (newValue, dontEmptyError) => {
+    (newValue: string, dontEmptyError?: boolean) => {
       if (!dontEmptyError) setErrorState('');
       const cleanValue = newValue?.replace?.(',', '.');
       if (cleanValue && new BigNumber(cleanValue).isNaN()) {
@@ -125,18 +159,18 @@ const RangeInput = ({
   );
 
   const increaseNumber = useCallback(() => {
-    const newValue = new BigNumber(value).plus(new BigNumber(increment));
-    if (!new BigNumber(max).isNaN() && newValue.gt(max)) return;
+    const newValue = new BigNumber(value || 0).plus(new BigNumber(increment));
+    if (max && !new BigNumber(max).isNaN() && newValue.gt(max)) return;
     changeValue(newValue.toString());
   }, [changeValue, increment, max, value]);
 
   const decreaseNumber = useCallback(() => {
-    const newValue = new BigNumber(value).minus(new BigNumber(increment));
-    if (!new BigNumber(min).isNaN() && newValue.lt(min)) return;
+    const newValue = new BigNumber(value || 0).minus(new BigNumber(increment));
+    if (min && !new BigNumber(min).isNaN() && newValue.lt(min)) return;
     changeValue(newValue.toString());
   }, [changeValue, increment, min, value]);
 
-  const renderLabelComponent = useCallback((component) => {
+  const renderLabelComponent = useCallback((component: ReactNode | string) => {
     if (!component) return null;
     if (typeof component === 'string')
       return (
@@ -148,11 +182,11 @@ const RangeInput = ({
   }, []);
 
   const checkLimits = useCallback(() => {
-    if (new BigNumber(value || 0).lt(min)) {
+    if (min && new BigNumber(value || 0).lt(min)) {
       setErrorState(`${name} must be at least ${min}`);
       return changeValue(min.toString(), true);
     }
-    if (new BigNumber(value || 0).gt(max)) {
+    if (max && new BigNumber(value || 0).gt(max)) {
       setErrorState(`${name} must be at most ${max}`);
       return changeValue(max.toString());
     }
@@ -172,7 +206,14 @@ const RangeInput = ({
         {renderLabelComponent(rightLabelComponent)}
       </View>
 
-      <View style={styles.rangeInputContainer(Boolean(error))}>
+      <View
+        style={[
+          styles.rangeInputContainer,
+          hasError
+            ? styles.rangeInputContainerError
+            : styles.rangeInputContainerDefault,
+        ]}
+      >
         <View style={styles.buttonContainerLeft}>
           <TouchableOpacity
             style={styles.button}
@@ -184,7 +225,7 @@ const RangeInput = ({
         </View>
         <View style={styles.inputContainer}>
           <TextInput
-            style={styles.input(Boolean(error))}
+            style={[styles.input, hasError && styles.inputError]}
             onChangeText={changeValue}
             onBlur={checkLimits}
             value={value}
@@ -229,57 +270,6 @@ const RangeInput = ({
       )}
     </View>
   );
-};
-
-RangeInput.defaultProps = {
-  increment: new BigNumber(1),
-};
-
-RangeInput.propTypes = {
-  /**
-   * Component or text to render on the right side of the label
-   */
-  rightLabelComponent: PropTypes.node,
-  /**
-   * Component or text to render on the left side of the label
-   */
-  leftLabelComponent: PropTypes.node,
-  /**
-   * The value to be on the input
-   */
-  value: PropTypes.string,
-  /**
-   * The unit to show inside the input
-   */
-  unit: PropTypes.string,
-  /**
-   * Function that is called when the input is changed
-   */
-  onChangeValue: PropTypes.func,
-  /**
-   * A BigNumber value per which the input is incremented when clicking on the plus and minus button
-   */
-  increment: PropTypes.object,
-  /**
-   * The label to show inside the input
-   */
-  inputInsideLabel: PropTypes.string,
-  /**
-   * The error to show bellow the input. Also when the error exists the input text will turn red
-   */
-  error: PropTypes.string,
-  /**
-   * A BigNumber minimum value the input is allowed to have when clicking on the minus button
-   */
-  min: PropTypes.object,
-  /**
-   * A BigNumber maximum value the input is allowed to have when clicking on the plus button
-   */
-  max: PropTypes.object,
-  /**
-   * The name of the input
-   */
-  name: PropTypes.string,
 };
 
 export default RangeInput;

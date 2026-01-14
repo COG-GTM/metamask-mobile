@@ -6,6 +6,48 @@ declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
 declare module 'react-native-fade-in-image';
 
+declare module 'react-native-confetti' {
+  import { Component } from 'react';
+  import { ViewProps } from 'react-native';
+
+  interface ConfettiProps extends ViewProps {
+    confettiCount?: number;
+    timeout?: number;
+    duration?: number;
+    colors?: string[];
+    size?: number;
+    bsize?: number;
+    untilStopped?: boolean;
+  }
+
+  export default class Confetti extends Component<ConfettiProps> {
+    startConfetti(): void;
+    stopConfetti(): void;
+  }
+}
+
+declare module 'react-native-progress/Bar' {
+  import { Component } from 'react';
+  import { ViewProps } from 'react-native';
+
+  interface ProgressBarProps extends ViewProps {
+    animated?: boolean;
+    borderColor?: string;
+    borderRadius?: number;
+    borderWidth?: number;
+    color?: string;
+    height?: number;
+    indeterminate?: boolean;
+    indeterminateAnimationDuration?: number;
+    progress?: number;
+    unfilledColor?: string;
+    useNativeDriver?: boolean;
+    width?: number | null;
+  }
+
+  export default class ProgressBar extends Component<ProgressBarProps> {}
+}
+
 declare module 'react-native-fast-crypto';
 
 declare module 'react-native-minimizer';
