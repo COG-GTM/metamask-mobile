@@ -87,6 +87,7 @@ export interface RemoteImageProps {
   isFullRatio?: boolean;
   chainId?: string;
   testID?: string;
+  [key: string]: unknown;
 }
 
 const RemoteImage: React.FC<RemoteImageProps> = (props) => {
@@ -316,7 +317,7 @@ const RemoteImage: React.FC<RemoteImageProps> = (props) => {
         ) : (
           <FadeIn placeholderStyle={props.placeholderStyle}>
             <Image
-              style={props.style}
+              {...props}
               source={{ uri: uri || '' }}
               onError={onError}
             />
@@ -326,9 +327,7 @@ const RemoteImage: React.FC<RemoteImageProps> = (props) => {
     );
   }
 
-  return (
-    <Image style={props.style} source={{ uri: uri || '' }} onError={onError} />
-  );
+  return <Image {...props} source={{ uri: uri || '' }} onError={onError} />;
 };
 
 export default RemoteImage;
