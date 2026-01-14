@@ -6,7 +6,12 @@ const currentDate = new Date(Date.now());
 const newPrivacyPolicyDate = new Date('2024-06-18T12:00:00Z');
 export const isPastPrivacyPolicyDate = currentDate >= newPrivacyPolicyDate;
 
-const initialState = {
+export interface LegalNoticesState {
+  newPrivacyPolicyToastClickedOrClosed: boolean;
+  newPrivacyPolicyToastShownDate: number | null;
+}
+
+const initialState: LegalNoticesState = {
   newPrivacyPolicyToastClickedOrClosed: false,
   newPrivacyPolicyToastShownDate: null,
 };
@@ -30,11 +35,14 @@ export const shouldShowNewPrivacyToastSelector = (
 
   if (newPrivacyPolicyToastClickedOrClosed) return false;
 
-  const shownDate = new Date(newPrivacyPolicyToastShownDate);
+  const shownDate = newPrivacyPolicyToastShownDate
+    ? new Date(newPrivacyPolicyToastShownDate)
+    : null;
 
   const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
-  const isRecent =
-    currentDate.getTime() - shownDate.getTime() < oneDayInMilliseconds;
+  const isRecent = shownDate
+    ? currentDate.getTime() - shownDate.getTime() < oneDayInMilliseconds
+    : false;
 
   return (
     currentDate.getTime() >= newPrivacyPolicyDate.getTime() &&
@@ -49,13 +57,9 @@ export interface LegalNoticesAction extends Action {
 }
 
 const legalNoticesReducer = (
-  state = initialState,
-  action: LegalNoticesAction = {
-    type: '',
-    newPrivacyPolicyToastShownDate: false,
-    payload: 0,
-  },
-) => {
+  state: LegalNoticesState = initialState,
+  action: LegalNoticesAction,
+): LegalNoticesState => {
   switch (action.type) {
     case ACTIONS.STORE_PRIVACY_POLICY_SHOWN_DATE: {
       if (state.newPrivacyPolicyToastShownDate !== null) {
