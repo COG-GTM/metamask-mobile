@@ -30,6 +30,7 @@ import { strings } from '../../../locales/i18n';
 import { resemblesAddress, safeToChecksumAddress } from '../../util/address';
 import { store } from '../../store';
 import { removeBookmark } from '../../actions/bookmarks';
+import type { BookmarksState } from '../../reducers/bookmarks';
 import setOnboardingWizardStep from '../../actions/wizard';
 import { v1 as random } from 'uuid';
 import { getDefaultCaip25CaveatValue, getPermittedAccounts } from '../Permissions';
@@ -115,7 +116,7 @@ export interface RPCMethodsMiddleParameters {
   isWalletConnect: boolean;
   // For MM SDK
   isMMSDK: boolean;
-  injectHomePageScripts: (bookmarks?: []) => void;
+  injectHomePageScripts: (bookmarks?: BookmarksState) => void;
   analytics: { [key: string]: string | boolean };
 }
 
