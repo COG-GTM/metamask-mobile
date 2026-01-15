@@ -716,7 +716,7 @@ class FixtureBuilder {
    * @returns The FixtureBuilder instance for method chaining.
    */
   withPermissionController(data: PermissionControllerData): this {
-    merge(this.fixture.state.engine.backgroundState.PermissionController, data);
+    merge(this.fixture.state!.engine.backgroundState.PermissionController, data);
     return this;
   }
 
@@ -727,7 +727,7 @@ class FixtureBuilder {
    */
   withNetworkController(data: NetworkControllerData): this {
     const networkController =
-      this.fixture.state.engine.backgroundState.NetworkController;
+      this.fixture.state!.engine.backgroundState.NetworkController;
 
     // Extract providerConfig data
     const { providerConfig } = data;
@@ -775,7 +775,7 @@ class FixtureBuilder {
   ): PermissionControllerData {
     const caip25CaveatValue = additionalPermissions?.[
       Caip25EndowmentPermissionName
-    ]?.caveats?.find((caveat) => caveat.type === Caip25CaveatType)?.value ?? {
+    ]?.caveats?.find((caveat: { type: string; value: unknown }) => caveat.type === Caip25CaveatType)?.value ?? {
       optionalScopes: {
         'eip155:1': { accounts: [] },
       },
@@ -836,7 +836,7 @@ class FixtureBuilder {
     };
 
     // Use the provided region or fallback to the default
-    this.fixture.state.fiatOrders.selectedRegionAgg = region ?? defaultRegion;
+    this.fixture.state!.fiatOrders.selectedRegionAgg = region ?? defaultRegion;
     return this;
   }
 
@@ -844,7 +844,7 @@ class FixtureBuilder {
     const paymentType = '/payments/debit-credit-card';
 
     // Use the provided region or fallback to the default
-    this.fixture.state.fiatOrders.selectedPaymentMethodAgg = paymentType;
+    this.fixture.state!.fiatOrders.selectedPaymentMethodAgg = paymentType;
     return this;
   }
 
@@ -875,7 +875,7 @@ class FixtureBuilder {
         caveats: [
           {
             type: Caip25CaveatType,
-            value: setPermittedEthChainIds(defaultCaip25CaveatValue, chainIds),
+            value: setPermittedEthChainIds(defaultCaip25CaveatValue, chainIds as `0x${string}`[]),
           },
         ],
         date: 1732715918637,
@@ -900,7 +900,7 @@ class FixtureBuilder {
   }
 
   withGanacheNetwork(): this {
-    const fixtures = this.fixture.state.engine.backgroundState;
+    const fixtures = this.fixture.state!.engine.backgroundState;
 
     // Generate a unique key for the new network client ID
     const newNetworkClientId = `networkClientId${
@@ -937,7 +937,7 @@ class FixtureBuilder {
   }
 
   withSepoliaNetwork(): this {
-    const fixtures = this.fixture.state.engine.backgroundState;
+    const fixtures = this.fixture.state!.engine.backgroundState;
 
     // Extract Sepolia network configuration from CustomNetworks
     const sepoliaConfig = CustomNetworks.Sepolia.providerConfig;
@@ -977,13 +977,13 @@ class FixtureBuilder {
   }
 
   withPopularNetworks(): this {
-    const fixtures = this.fixture.state.engine.backgroundState;
+    const fixtures = this.fixture.state!.engine.backgroundState;
     const networkConfigurationsByChainId = {
       ...fixtures.NetworkController.networkConfigurationsByChainId,
     }; // Object to store network configurations
 
     // Loop through each network in PopularNetworksList
-    for (const key in PopularNetworksList) {
+    for (const key of Object.keys(PopularNetworksList) as Array<keyof typeof PopularNetworksList>) {
       const network = PopularNetworksList[key];
       const {
         rpcUrl: rpcTarget,
@@ -1029,14 +1029,14 @@ class FixtureBuilder {
 
   withPreferencesController(data: Record<string, any>): this {
     merge(
-      this.fixture.state.engine.backgroundState.PreferencesController,
+      this.fixture.state!.engine.backgroundState.PreferencesController,
       data,
     );
     return this;
   }
 
   withKeyringController(): this {
-    merge(this.fixture.state.engine.backgroundState.KeyringController, {
+    merge(this.fixture.state!.engine.backgroundState.KeyringController, {
       keyrings: [
         {
           type: 'HD Key Tree',
@@ -1051,7 +1051,7 @@ class FixtureBuilder {
   }
 
   withImportedAccountKeyringController(): this {
-    merge(this.fixture.state.engine.backgroundState.KeyringController, {
+    merge(this.fixture.state!.engine.backgroundState.KeyringController, {
       keyrings: [
         {
           type: 'HD Key Tree',
@@ -1069,7 +1069,7 @@ class FixtureBuilder {
   }
 
   withImportedHdKeyringController(): this {
-    merge(this.fixture.state.engine.backgroundState.KeyringController, {
+    merge(this.fixture.state!.engine.backgroundState.KeyringController, {
       keyrings: [
         {
           type: 'HD Key Tree',
@@ -1097,7 +1097,7 @@ class FixtureBuilder {
   }
 
   withImportedHdKeyringAndTwoDefaultAccountsOneImportedHdAccountKeyringController(): this {
-    merge(this.fixture.state.engine.backgroundState.KeyringController, {
+    merge(this.fixture.state!.engine.backgroundState.KeyringController, {
       keyrings: [
         {
           type: 'HD Key Tree',
@@ -1125,7 +1125,7 @@ class FixtureBuilder {
   }
 
   withTokens(tokens: Token[]): this {
-    merge(this.fixture.state.engine.backgroundState.TokensController, {
+    merge(this.fixture.state!.engine.backgroundState.TokensController, {
       allTokens: {
         [CHAIN_IDS.MAINNET]: {
           [DEFAULT_FIXTURE_ACCOUNT]: tokens,
@@ -1138,14 +1138,14 @@ class FixtureBuilder {
   withIncomingTransactionPreferences(
     incomingTransactionPreferences: Record<string, boolean>,
   ): this {
-    merge(this.fixture.state.engine.backgroundState.PreferencesController, {
+    merge(this.fixture.state!.engine.backgroundState.PreferencesController, {
       showIncomingTransactions: incomingTransactionPreferences,
     });
     return this;
   }
 
   withTransactions(transactions: Transaction[]): this {
-    merge(this.fixture.state.engine.backgroundState.TransactionController, {
+    merge(this.fixture.state!.engine.backgroundState.TransactionController, {
       transactions,
     });
     return this;

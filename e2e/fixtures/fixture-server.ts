@@ -1,6 +1,7 @@
 /* eslint-disable no-console, import/no-nodejs-modules */
 import { getFixturesServerPort } from './utils';
-import Koa, { Context } from 'koa';
+// @ts-expect-error - koa has no type definitions installed
+import Koa from 'koa';
 import { isObject, mapValues } from 'lodash';
 import type { Server } from 'http';
 import type ContractAddressRegistry from '../../app/util/test/contract-address-registry';
@@ -22,6 +23,14 @@ type FixtureSubstitutionCommand =
 
 interface FixtureState {
   [key: string]: unknown;
+}
+
+// Local Context interface for Koa middleware (since @types/koa is not installed)
+interface KoaContext {
+  method: string;
+  path: string;
+  body: unknown;
+  set(field: string, value: string): void;
 }
 
 /**
@@ -89,7 +98,7 @@ class FixtureServer {
     this._app = new Koa();
     this._stateMap = new Map([[DEFAULT_STATE_KEY, Object.create(null)]]);
 
-    this._app.use(async (ctx: Context) => {
+    this._app.use(async (ctx: KoaContext) => {
       // Middleware to handle requests
       ctx.set('Access-Control-Allow-Origin', '*');
       ctx.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -115,8 +124,8 @@ class FixtureServer {
     return new Promise<void>((resolve, reject) => {
       console.log('Starting fixture server...');
       this._server = this._app.listen(options);
-      this._server.once('error', reject);
-      this._server.once('listening', resolve);
+      this._server!.once('error', reject);
+      this._server!.once('listening', resolve);
     });
   }
 
@@ -147,7 +156,7 @@ class FixtureServer {
   }
 
   // Check if the request is for the current state
-  private _isStateRequest(ctx: Context): boolean {
+  private _isStateRequest(ctx: KoaContext): boolean {
     return ctx.method === 'GET' && ctx.path === '/state.json';
   }
 }
