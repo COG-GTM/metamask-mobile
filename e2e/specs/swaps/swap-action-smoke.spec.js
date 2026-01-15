@@ -8,7 +8,7 @@ import AccountListBottomSheet from '../../pages/wallet/AccountListBottomSheet.js
 import WalletView from '../../pages/wallet/WalletView.js';
 import WalletActionsBottomSheet from '../../pages/wallet/WalletActionsBottomSheet.js';
 import SettingsView from '../../pages/Settings/SettingsView';
-import FixtureBuilder from '../../fixtures/fixture-builder.js';
+import FixtureBuilder from '../../fixtures/fixture-builder';
 import Tenderly from '../../tenderly.js';
 import {
   loadFixture,
@@ -19,7 +19,7 @@ import { CustomNetworks } from '../../resources/networks.e2e.js';
 import NetworkListModal from '../../pages/Network/NetworkListModal.js';
 import NetworkEducationModal from '../../pages/Network/NetworkEducationModal.js';
 import TestHelpers from '../../helpers.js';
-import FixtureServer from '../../fixtures/fixture-server.js';
+import FixtureServer from '../../fixtures/fixture-server';
 import { getFixturesServerPort } from '../../fixtures/utils.js';
 import { SmokeTrade } from '../../tags.js';
 import ImportAccountView from '../../pages/importAccount/ImportAccountView.js';

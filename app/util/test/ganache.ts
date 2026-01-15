@@ -1,0 +1,89 @@
+import { getGanachePort } from '../../../e2e/fixtures/utils';
+import ganache, { EthereumProvider, ServerOptions } from 'ganache';
+
+export const DEFAULT_GANACHE_PORT = 8545;
+
+interface GanacheOptions extends ServerOptions {
+  mnemonic: string;
+  blockTime?: number;
+  network_id?: number;
+  port?: number;
+  vmErrorsOnRPCResponse?: boolean;
+  hardfork?: string;
+  quiet?: boolean;
+}
+
+interface GanacheServer {
+  provider: EthereumProvider;
+  listen(port: number): Promise<void>;
+  close(): Promise<void>;
+}
+
+const defaultOptions: Omit<GanacheOptions, 'mnemonic'> = {
+  blockTime: 2,
+  network_id: 1337,
+  port: DEFAULT_GANACHE_PORT,
+  vmErrorsOnRPCResponse: false,
+  hardfork: 'muirGlacier',
+  quiet: false,
+};
+
+export default class Ganache {
+  private _server: GanacheServer | undefined;
+
+  async start(opts: GanacheOptions): Promise<void> {
+    if (!opts.mnemonic) {
+      throw new Error('Missing required mnemonic');
+    }
+    const options = { ...defaultOptions, ...opts, port: getGanachePort() };
+    const { port } = options;
+    try {
+      this._server = ganache.server(options) as unknown as GanacheServer;
+      await this._server.listen(port);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  getProvider(): EthereumProvider | undefined {
+    return this._server?.provider;
+  }
+
+  async getAccounts(): Promise<string[]> {
+    const provider = this.getProvider();
+    if (!provider) {
+      throw new Error('Provider not available');
+    }
+    return (await provider.request({
+      method: 'eth_accounts',
+      params: [],
+    })) as string[];
+  }
+
+  async getBalance(): Promise<number | string> {
+    const accounts = await this.getAccounts();
+    const provider = this.getProvider();
+    if (!provider) {
+      throw new Error('Provider not available');
+    }
+    const balanceHex = (await provider.request({
+      method: 'eth_getBalance',
+      params: [accounts[0], 'latest'],
+    })) as string;
+    const balanceInt = parseInt(balanceHex, 16) / 10 ** 18;
+
+    const balanceFormatted =
+      balanceInt % 1 === 0 ? balanceInt : balanceInt.toFixed(4);
+
+    return balanceFormatted;
+  }
+
+  async quit(): Promise<void> {
+    if (!this._server) {
+      throw new Error('Server not running yet');
+    }
+    await this._server.close();
+    this._server = undefined;
+  }
+}

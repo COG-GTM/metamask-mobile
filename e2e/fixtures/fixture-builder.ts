@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { getGanachePort } from './utils';
 import { merge } from 'lodash';
@@ -23,16 +23,74 @@ export const DEFAULT_IMPORTED_FIXTURE_ACCOUNT =
 
 const DAPP_URL = 'localhost';
 
+interface FixtureBuilderOptions {
+  onboarding?: boolean;
+}
+
+interface AsyncState {
+  [key: string]: string;
+}
+
+interface FixtureState {
+  [key: string]: any;
+}
+
+interface Fixture {
+  state?: FixtureState;
+  asyncState?: AsyncState;
+}
+
+interface NetworkProviderConfig {
+  chainId: string;
+  rpcUrl?: string;
+  rpcTarget?: string;
+  type?: string;
+  nickname?: string;
+  ticker?: string;
+}
+
+interface NetworkControllerData {
+  providerConfig: NetworkProviderConfig;
+}
+
+interface PermissionControllerData {
+  subjects?: Record<string, any>;
+}
+
+interface Token {
+  address: string;
+  symbol: string;
+  decimals: number;
+  name?: string;
+}
+
+interface Transaction {
+  [key: string]: any;
+}
+
+interface Region {
+  currencies: string[];
+  emoji: string;
+  id: string;
+  name: string;
+  support: { buy: boolean; sell: boolean; recurringBuy: boolean };
+  unsupported: boolean;
+  recommended: boolean;
+  detected: boolean;
+}
+
 /**
  * FixtureBuilder class provides a fluent interface for building fixture data.
  */
 class FixtureBuilder {
+  fixture: Fixture = {};
+
   /**
    * Create a new instance of FixtureBuilder.
-   * @param {Object} options - Options for the fixture builder.
-   * @param {boolean} options.onboarding - Flag indicating if onboarding fixture should be used.
+   * @param options - Options for the fixture builder.
+   * @param options.onboarding - Flag indicating if onboarding fixture should be used.
    */
-  constructor({ onboarding = false } = {}) {
+  constructor({ onboarding = false }: FixtureBuilderOptions = {}) {
     // Initialize the fixture based on the onboarding flag
     onboarding === true
       ? this.withOnboardingFixture()
@@ -41,20 +99,20 @@ class FixtureBuilder {
 
   /**
    * Set the asyncState property of the fixture.
-   * @param {any} asyncState - The value to set for asyncState.
-   * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
+   * @param asyncState - The value to set for asyncState.
+   * @returns The FixtureBuilder instance for method chaining.
    */
-  withAsyncState(asyncState) {
+  withAsyncState(asyncState: AsyncState): this {
     this.fixture.asyncState = asyncState;
     return this;
   }
 
   /**
    * Set the state property of the fixture.
-   * @param {any} state - The value to set for state.
-   * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
+   * @param state - The value to set for state.
+   * @returns The FixtureBuilder instance for method chaining.
    */
-  withState(state) {
+  withState(state: FixtureState): this {
     this.fixture.state = state;
     return this;
   }
@@ -654,20 +712,20 @@ class FixtureBuilder {
 
   /**
    * Merges provided data into the background state of the PermissionController.
-   * @param {object} data - Data to merge into the PermissionController's state.
-   * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
+   * @param data - Data to merge into the PermissionController's state.
+   * @returns The FixtureBuilder instance for method chaining.
    */
-  withPermissionController(data) {
+  withPermissionController(data: PermissionControllerData): this {
     merge(this.fixture.state.engine.backgroundState.PermissionController, data);
     return this;
   }
 
   /**
    * Merges provided data into the background state of the NetworkController.
-   * @param {object} data - Data to merge into the NetworkController's state.
-   * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
+   * @param data - Data to merge into the NetworkController's state.
+   * @returns The FixtureBuilder instance for method chaining.
    */
-  withNetworkController(data) {
+  withNetworkController(data: NetworkControllerData): this {
     const networkController =
       this.fixture.state.engine.backgroundState.NetworkController;
 
@@ -709,10 +767,12 @@ class FixtureBuilder {
   /**
    * Private helper method to create permission controller configuration
    * @private
-   * @param {Object} additionalPermissions - Additional permissions to merge with permission
-   * @returns {Object} Permission controller configuration object
+   * @param additionalPermissions - Additional permissions to merge with permission
+   * @returns Permission controller configuration object
    */
-  createPermissionControllerConfig(additionalPermissions = {}) {
+  private createPermissionControllerConfig(
+    additionalPermissions: Record<string, any> = {},
+  ): PermissionControllerData {
     const caip25CaveatValue = additionalPermissions?.[
       Caip25EndowmentPermissionName
     ]?.caveats?.find((caveat) => caveat.type === Caip25CaveatType)?.value ?? {
@@ -751,18 +811,20 @@ class FixtureBuilder {
 
   /**
    * Connects the PermissionController to a test dapp with specific accounts permissions and origins.
-   * @param {Object} additionalPermissions - Additional permissions to merge.
-   * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
+   * @param additionalPermissions - Additional permissions to merge.
+   * @returns The FixtureBuilder instance for method chaining.
    */
-  withPermissionControllerConnectedToTestDapp(additionalPermissions = {}) {
+  withPermissionControllerConnectedToTestDapp(
+    additionalPermissions: Record<string, any> = {},
+  ): this {
     this.withPermissionController(
       this.createPermissionControllerConfig(additionalPermissions),
     );
     return this;
   }
 
-  withRampsSelectedRegion(region = null) {
-    const defaultRegion = {
+  withRampsSelectedRegion(region: Region | null = null): this {
+    const defaultRegion: Region = {
       currencies: ['/currencies/fiat/xcd'],
       emoji: '🇱🇨',
       id: '/regions/lc',
@@ -777,7 +839,8 @@ class FixtureBuilder {
     this.fixture.state.fiatOrders.selectedRegionAgg = region ?? defaultRegion;
     return this;
   }
-  withRampsSelectedPaymentMethod() {
+
+  withRampsSelectedPaymentMethod(): this {
     const paymentType = '/payments/debit-credit-card';
 
     // Use the provided region or fallback to the default
@@ -787,10 +850,10 @@ class FixtureBuilder {
 
   /**
    * Adds chain switching permission for specific chains.
-   * @param {string[]} chainIds - Array of chain IDs to permit (defaults to ['0x1']), other nexts like linea mainnet 0xe708
-   * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
+   * @param chainIds - Array of chain IDs to permit (defaults to ['0x1']), other nexts like linea mainnet 0xe708
+   * @returns The FixtureBuilder instance for method chaining.
    */
-  withChainPermission(chainIds = ['0x1']) {
+  withChainPermission(chainIds: string[] = ['0x1']): this {
     const optionalScopes = chainIds
       .map((id) => ({
         [`eip155:${parseInt(id)}`]: { accounts: [] },
@@ -827,16 +890,16 @@ class FixtureBuilder {
 
   /**
    * Set the fixture to an empty object for onboarding.
-   * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
+   * @returns The FixtureBuilder instance for method chaining.
    */
-  withOnboardingFixture() {
+  withOnboardingFixture(): this {
     this.fixture = {
       asyncState: {},
     };
     return this;
   }
 
-  withGanacheNetwork() {
+  withGanacheNetwork(): this {
     const fixtures = this.fixture.state.engine.backgroundState;
 
     // Generate a unique key for the new network client ID
@@ -873,7 +936,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withSepoliaNetwork() {
+  withSepoliaNetwork(): this {
     const fixtures = this.fixture.state.engine.backgroundState;
 
     // Extract Sepolia network configuration from CustomNetworks
@@ -913,7 +976,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withPopularNetworks() {
+  withPopularNetworks(): this {
     const fixtures = this.fixture.state.engine.backgroundState;
     const networkConfigurationsByChainId = {
       ...fixtures.NetworkController.networkConfigurationsByChainId,
@@ -964,7 +1027,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withPreferencesController(data) {
+  withPreferencesController(data: Record<string, any>): this {
     merge(
       this.fixture.state.engine.backgroundState.PreferencesController,
       data,
@@ -972,7 +1035,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withKeyringController() {
+  withKeyringController(): this {
     merge(this.fixture.state.engine.backgroundState.KeyringController, {
       keyrings: [
         {
@@ -987,7 +1050,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withImportedAccountKeyringController() {
+  withImportedAccountKeyringController(): this {
     merge(this.fixture.state.engine.backgroundState.KeyringController, {
       keyrings: [
         {
@@ -1005,7 +1068,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withImportedHdKeyringController() {
+  withImportedHdKeyringController(): this {
     merge(this.fixture.state.engine.backgroundState.KeyringController, {
       keyrings: [
         {
@@ -1033,7 +1096,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withImportedHdKeyringAndTwoDefaultAccountsOneImportedHdAccountKeyringController() {
+  withImportedHdKeyringAndTwoDefaultAccountsOneImportedHdAccountKeyringController(): this {
     merge(this.fixture.state.engine.backgroundState.KeyringController, {
       keyrings: [
         {
@@ -1061,7 +1124,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withTokens(tokens) {
+  withTokens(tokens: Token[]): this {
     merge(this.fixture.state.engine.backgroundState.TokensController, {
       allTokens: {
         [CHAIN_IDS.MAINNET]: {
@@ -1072,14 +1135,16 @@ class FixtureBuilder {
     return this;
   }
 
-  withIncomingTransactionPreferences(incomingTransactionPreferences) {
+  withIncomingTransactionPreferences(
+    incomingTransactionPreferences: Record<string, boolean>,
+  ): this {
     merge(this.fixture.state.engine.backgroundState.PreferencesController, {
       showIncomingTransactions: incomingTransactionPreferences,
     });
     return this;
   }
 
-  withTransactions(transactions) {
+  withTransactions(transactions: Transaction[]): this {
     merge(this.fixture.state.engine.backgroundState.TransactionController, {
       transactions,
     });
@@ -1088,9 +1153,9 @@ class FixtureBuilder {
 
   /**
    * Build and return the fixture object.
-   * @returns {Object} - The built fixture object.
+   * @returns The built fixture object.
    */
-  build() {
+  build(): Fixture {
     return this.fixture;
   }
 }

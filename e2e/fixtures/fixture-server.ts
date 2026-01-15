@@ -1,7 +1,9 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, import/no-nodejs-modules */
 import { getFixturesServerPort } from './utils';
-import Koa from 'koa';
+import Koa, { Context } from 'koa';
 import { isObject, mapValues } from 'lodash';
+import type { Server } from 'http';
+import type ContractAddressRegistry from '../../app/util/test/contract-address-registry';
 
 const CURRENT_STATE_KEY = '__CURRENT__';
 const DEFAULT_STATE_KEY = '__DEFAULT__';
@@ -13,22 +15,32 @@ const fixtureSubstitutionPrefix = '__FIXTURE_SUBSTITUTION__';
 const CONTRACT_KEY = 'CONTRACT';
 const fixtureSubstitutionCommands = {
   currentDateInMilliseconds: 'currentDateInMilliseconds',
-};
+} as const;
+
+type FixtureSubstitutionCommand =
+  (typeof fixtureSubstitutionCommands)[keyof typeof fixtureSubstitutionCommands];
+
+interface FixtureState {
+  [key: string]: unknown;
+}
 
 /**
  * Perform substitutions on a single piece of state.
  *
- * @param {unknown} partialState - The piece of state to perform substitutions on.
- * @param {object} contractRegistry - The smart contract registry.
- * @returns {unknown} The partial state with substitutions performed.
+ * @param partialState - The piece of state to perform substitutions on.
+ * @param contractRegistry - The smart contract registry.
+ * @returns The partial state with substitutions performed.
  */
-function performSubstitution(partialState, contractRegistry) {
+function performSubstitution(
+  partialState: unknown,
+  contractRegistry?: ContractAddressRegistry,
+): unknown {
   if (Array.isArray(partialState)) {
     return partialState.map((item) =>
       performSubstitution(item, contractRegistry),
     );
   } else if (isObject(partialState)) {
-    return mapValues(partialState, (item) =>
+    return mapValues(partialState as Record<string, unknown>, (item) =>
       performSubstitution(item, contractRegistry),
     );
   } else if (
@@ -37,7 +49,7 @@ function performSubstitution(partialState, contractRegistry) {
   ) {
     const substitutionCommand = partialState.substring(
       fixtureSubstitutionPrefix.length,
-    );
+    ) as FixtureSubstitutionCommand;
     if (
       substitutionCommand ===
       fixtureSubstitutionCommands.currentDateInMilliseconds
@@ -45,7 +57,7 @@ function performSubstitution(partialState, contractRegistry) {
       return new Date().getTime();
     } else if (partialState.includes(CONTRACT_KEY)) {
       const contract = partialState.split(CONTRACT_KEY).pop();
-      return contractRegistry.getContractAddress(contract);
+      return contractRegistry?.getContractAddress(contract ?? '');
     }
     throw new Error(`Unknown substitution command: ${substitutionCommand}`);
   }
@@ -55,22 +67,29 @@ function performSubstitution(partialState, contractRegistry) {
 /**
  * Substitute values in the state fixture.
  *
- * @param {object} rawState - The state fixture.
- * @param {object} contractRegistry - The smart contract registry.
- * @returns {object} The state fixture with substitutions performed.
+ * @param rawState - The state fixture.
+ * @param contractRegistry - The smart contract registry.
+ * @returns The state fixture with substitutions performed.
  */
-function performStateSubstitutions(rawState, contractRegistry) {
+function performStateSubstitutions(
+  rawState: FixtureState,
+  contractRegistry?: ContractAddressRegistry,
+): FixtureState {
   return mapValues(rawState, (item) =>
     performSubstitution(item, contractRegistry),
   );
 }
 
 class FixtureServer {
+  private _app: Koa;
+  private _server: Server | undefined;
+  private _stateMap: Map<string, FixtureState>;
+
   constructor() {
     this._app = new Koa();
     this._stateMap = new Map([[DEFAULT_STATE_KEY, Object.create(null)]]);
 
-    this._app.use(async (ctx) => {
+    this._app.use(async (ctx: Context) => {
       // Middleware to handle requests
       ctx.set('Access-Control-Allow-Origin', '*');
       ctx.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -86,43 +105,49 @@ class FixtureServer {
   }
 
   // Start the fixture server
-  async start() {
+  async start(): Promise<void> {
     const options = {
       host: FIXTURE_SERVER_HOST,
       port: getFixturesServerPort(),
       exclusive: true,
     };
 
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       console.log('Starting fixture server...');
       this._server = this._app.listen(options);
       this._server.once('error', reject);
       this._server.once('listening', resolve);
     });
   }
+
   // Stop the fixture server
-  async stop() {
+  async stop(): Promise<void> {
     if (!this._server) {
       return;
     }
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       console.log('Stopping fixture server...');
-      this._server.close();
-      this._server.once('error', reject);
-      this._server.once('close', resolve);
+      this._server?.close();
+      this._server?.once('error', reject);
+      this._server?.once('close', resolve);
       this._server = undefined;
     });
   }
+
   // Load JSON state into the server
-  loadJsonState(rawState, contractRegistry) {
+  loadJsonState(
+    rawState: FixtureState,
+    contractRegistry?: ContractAddressRegistry,
+  ): void {
     console.log('Loading JSON state...');
     const state = performStateSubstitutions(rawState, contractRegistry);
     this._stateMap.set(CURRENT_STATE_KEY, state);
     console.log('JSON state loaded');
   }
+
   // Check if the request is for the current state
-  _isStateRequest(ctx) {
+  private _isStateRequest(ctx: Context): boolean {
     return ctx.method === 'GET' && ctx.path === '/state.json';
   }
 }
