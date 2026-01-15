@@ -10,6 +10,7 @@ import initialBackgroundState from './initial-background-state.json';
 import { userInitialState } from '../../reducers/user';
 import { initialNavigationState } from '../../reducers/navigation';
 import { initialOnboardingState } from '../../reducers/onboarding';
+import { wizardInitialState } from '../../reducers/wizard';
 import { initialState as initialPerformanceState } from '../../core/redux/slices/performance';
 import { isTest } from './utils';
 // A cast is needed here because we use enums in some controllers, and TypeScript doesn't consider
@@ -29,7 +30,7 @@ const initialRootState: RootState = {
   alert: undefined,
   transaction: undefined,
   user: userInitialState,
-  wizard: undefined,
+  wizard: wizardInitialState,
   onboarding: initialOnboardingState,
   notification: undefined,
   swaps: undefined,
