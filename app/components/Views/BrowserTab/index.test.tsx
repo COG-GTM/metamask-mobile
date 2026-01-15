@@ -24,7 +24,7 @@ jest.mock('@react-navigation/native', () => {
 
 const mockInitialState = {
   browser: {
-    activeTab: 1,
+    activeTab: null,
     history: [],
     whitelist: [],
     tabs: [],
