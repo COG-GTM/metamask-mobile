@@ -4,14 +4,18 @@ import { RootState } from '../reducers';
 import { selectGasFeeControllerEstimates } from './gasFeeController';
 import { selectTransactions } from './transactionController';
 import { createDeepEqualSelector } from './util';
+import { SecurityAlertResponse as BlockaidSecurityAlertResponse } from '../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 
 const selectCurrentTransactionId = (state: RootState) => state.transaction?.id;
 
 export const selectCurrentTransactionSecurityAlertResponse = (
   state: RootState,
-) => {
+): BlockaidSecurityAlertResponse | undefined => {
   const { id, securityAlertResponses } = state.transaction;
-  return securityAlertResponses?.[id];
+  if (id === undefined) {
+    return undefined;
+  }
+  return securityAlertResponses?.[id] as BlockaidSecurityAlertResponse | undefined;
 };
 
 export const selectCurrentTransactionMetadata = createSelector(

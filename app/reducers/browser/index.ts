@@ -1,8 +1,12 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { BrowserActionTypes } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
+import { BrowserState, BrowserTab } from './types';
 
-const initialState = {
+export * from './types';
+
+export const initialState: BrowserState = {
   history: [],
   whitelist: [],
   tabs: [],
@@ -11,7 +15,13 @@ const initialState = {
   // Keep track of viewed Dapps, which is used for MetaMetricsEvents.DAPP_VIEWED event
   visitedDappsByHostname: {},
 };
-const browserReducer = (state = initialState, action) => {
+
+const browserReducer = (
+  state: BrowserState = initialState,
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: any,
+): BrowserState => {
   switch (action.type) {
     case BrowserActionTypes.ADD_TO_VIEWED_DAPP: {
       const { hostname } = action;
@@ -72,7 +82,7 @@ const browserReducer = (state = initialState, action) => {
     case 'CLOSE_TAB':
       return {
         ...state,
-        tabs: state.tabs.filter((tab) => tab.id !== action.id),
+        tabs: state.tabs.filter((tab: BrowserTab) => tab.id !== action.id),
       };
     case 'SET_ACTIVE_TAB':
       return {
@@ -82,7 +92,7 @@ const browserReducer = (state = initialState, action) => {
     case 'UPDATE_TAB':
       return {
         ...state,
-        tabs: state.tabs.map((tab) => {
+        tabs: state.tabs.map((tab: BrowserTab) => {
           if (tab.id === action.id) {
             return { ...tab, ...action.data };
           }
@@ -101,4 +111,5 @@ const browserReducer = (state = initialState, action) => {
       return state;
   }
 };
+
 export default browserReducer;

@@ -1,4 +1,9 @@
-const initialState = {
+/* eslint-disable @typescript-eslint/default-param-last */
+import { ModalsState } from './types';
+
+export * from './types';
+
+export const initialState: ModalsState = {
   networkModalVisible: false,
   shouldNetworkSwitchPopToWallet: true,
   collectibleContractModalVisible: false,
@@ -6,7 +11,12 @@ const initialState = {
   signMessageModalVisible: true,
 };
 
-const modalsReducer = (state = initialState, action) => {
+const modalsReducer = (
+  state: ModalsState = initialState,
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: any,
+): ModalsState => {
   switch (action.type) {
     case 'TOGGLE_NETWORK_MODAL':
       return {
@@ -59,4 +69,5 @@ const modalsReducer = (state = initialState, action) => {
       return state;
   }
 };
+
 export default modalsReducer;

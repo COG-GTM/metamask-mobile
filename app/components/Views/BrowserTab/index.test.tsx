@@ -23,7 +23,14 @@ jest.mock('@react-navigation/native', () => {
 });
 
 const mockInitialState = {
-  browser: { activeTab: '' },
+  browser: {
+    activeTab: 1,
+    history: [],
+    whitelist: [],
+    tabs: [],
+    favicons: [],
+    visitedDappsByHostname: {},
+  },
   engine: {
     backgroundState: {
       ...backgroundState,
@@ -31,7 +38,9 @@ const mockInitialState = {
     },
   },
   transaction: {
-    selectedAsset: '',
+    selectedAsset: {},
+    transaction: {},
+    securityAlertResponses: {},
   },
 };
 

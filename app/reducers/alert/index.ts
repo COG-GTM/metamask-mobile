@@ -1,11 +1,21 @@
-const initialState = {
+/* eslint-disable @typescript-eslint/default-param-last */
+import { AlertState } from './types';
+
+export * from './types';
+
+export const initialState: AlertState = {
   isVisible: false,
   autodismiss: null,
   content: null,
   data: null,
 };
 
-const alertReducer = (state = initialState, action) => {
+const alertReducer = (
+  state: AlertState = initialState,
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: any,
+): AlertState => {
   switch (action.type) {
     case 'SHOW_ALERT':
       return {
@@ -25,4 +35,5 @@ const alertReducer = (state = initialState, action) => {
       return state;
   }
 };
+
 export default alertReducer;

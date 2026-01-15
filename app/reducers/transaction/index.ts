@@ -1,7 +1,11 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import { TransactionState, SelectedAsset, AssetType } from './types';
 
-const initialState = {
+export * from './types';
+
+export const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,8 +36,8 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
-  let assetType;
+const getAssetType = (selectedAsset: SelectedAsset): AssetType => {
+  let assetType: AssetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
       assetType = 'ERC721';
@@ -46,7 +50,12 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: any,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
@@ -165,4 +174,5 @@ const transactionReducer = (state = initialState, action) => {
       return state;
   }
 };
+
 export default transactionReducer;

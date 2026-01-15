@@ -1,8 +1,13 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { createSelector } from 'reselect';
 import { NotificationTypes } from '../../util/notifications';
+import { NotificationState, Notification } from './types';
+
+export * from './types';
+
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-export const initialState = {
+export const initialState: NotificationState = {
   notifications: [],
 };
 
@@ -19,23 +24,27 @@ export const ACTIONS = {
   SHOW_SIMPLE_NOTIFICATION: 'SHOW_SIMPLE_NOTIFICATION',
   SHOW_TRANSACTION_NOTIFICATION: 'SHOW_TRANSACTION_NOTIFICATION',
   UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
-};
+} as const;
 
-const enqueue = (notifications, notification) => [
-  ...notifications,
-  notification,
-];
-const dequeue = (notifications) => notifications.slice(1);
+const enqueue = (
+  notifications: Notification[],
+  notification: Notification,
+): Notification[] => [...notifications, notification];
+
+const dequeue = (notifications: Notification[]): Notification[] =>
+  notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
-  (
-    /** @type {import('..').RootState} */
-    state,
-  ) => state?.notifications,
-  (notifications) => notifications[0] || {},
+  (state: NotificationState) => state?.notifications,
+  (notifications: Notification[]) => notifications[0] || {},
 );
 
-const notificationReducer = (state = initialState, action) => {
+const notificationReducer = (
+  state: NotificationState = initialState,
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: any,
+): NotificationState => {
   const { notifications } = state;
   switch (action.type) {
     // make current notification isVisible props false
@@ -190,7 +199,9 @@ const notificationReducer = (state = initialState, action) => {
     }
     case ACTIONS.REMOVE_NOT_VISIBLE_NOTIFICATIONS: {
       const visibleNotifications =
-        notifications?.filter((notification) => notification.isVisible) || [];
+        notifications?.filter(
+          (notification: Notification) => notification.isVisible,
+        ) || [];
       return {
         ...state,
         notifications: visibleNotifications,
@@ -200,4 +211,5 @@ const notificationReducer = (state = initialState, action) => {
       return state;
   }
 };
+
 export default notificationReducer;

@@ -1,7 +1,4 @@
-export interface BrowserTab {
-  id: string;
-  url: string;
-}
+export type { BrowserTab } from '../../../reducers/browser/types';
 
 export interface TokenI {
   address: string;

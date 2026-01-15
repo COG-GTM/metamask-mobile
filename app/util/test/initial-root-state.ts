@@ -12,6 +12,12 @@ import { initialNavigationState } from '../../reducers/navigation';
 import { initialOnboardingState } from '../../reducers/onboarding';
 import { initialState as initialPerformanceState } from '../../core/redux/slices/performance';
 import { isTest } from './utils';
+import { initialState as initialBrowserState } from '../../reducers/browser';
+import { initialState as initialModalsState } from '../../reducers/modals';
+import { initialState as initialSettingsState } from '../../reducers/settings';
+import { initialState as initialAlertState } from '../../reducers/alert';
+import { initialState as initialNotificationState } from '../../reducers/notification';
+import { initialState as initialTransactionState } from '../../reducers/transaction';
 // A cast is needed here because we use enums in some controllers, and TypeScript doesn't consider
 // the string value of an enum as satisfying an enum type.
 export const backgroundState: EngineState =
@@ -23,15 +29,15 @@ const initialRootState: RootState = {
   engine: { backgroundState },
   privacy: undefined,
   bookmarks: undefined,
-  browser: undefined,
-  modals: undefined,
-  settings: undefined,
-  alert: undefined,
-  transaction: undefined,
+  browser: initialBrowserState,
+  modals: initialModalsState,
+  settings: initialSettingsState,
+  alert: initialAlertState,
+  transaction: initialTransactionState,
   user: userInitialState,
   wizard: undefined,
   onboarding: initialOnboardingState,
-  notification: undefined,
+  notification: initialNotificationState,
   swaps: undefined,
   fiatOrders: initialFiatOrdersState,
   infuraAvailability: undefined,
