@@ -305,16 +305,14 @@ function setupGlobalState({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .spyOn(store as Store<Partial<RootState>, any>, 'getState')
     .mockImplementation(() => ({
-      browser: activeTab
-        ? {
-          activeTab,
-          history: [],
-          whitelist: [],
-          tabs: [],
-          favicons: [],
-          visitedDappsByHostname: {},
-        }
-        : undefined,
+      browser: {
+        activeTab: activeTab ?? null,
+        history: [],
+        whitelist: [],
+        tabs: [],
+        favicons: [],
+        visitedDappsByHostname: {},
+      },
       engine: {
         backgroundState: {
           ...backgroundState,
