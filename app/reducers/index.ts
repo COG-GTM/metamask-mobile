@@ -6,7 +6,7 @@ import modalsReducer from './modals';
 import settingsReducer from './settings';
 import alertReducer from './alert';
 import transactionReducer from './transaction';
-import legalNoticesReducer from './legalNotices';
+import legalNoticesReducer, { LegalNoticesState } from './legalNotices';
 import userReducer, { UserState } from './user';
 import wizardReducer from './wizard';
 import onboardingReducer, { OnboardingState } from './onboarding';
@@ -54,9 +54,7 @@ export type StateFromReducer<reducer> = reducer extends Reducer<
 // to this type. Once that is complete, we can automatically generate this type
 // using the `StateFromReducersMapObject` type from redux.
 export interface RootState {
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  legalNotices: any;
+  legalNotices: StateFromReducer<typeof legalNoticesReducer>;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   collectibles: any;
@@ -64,9 +62,7 @@ export interface RootState {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   privacy: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bookmarks: any;
+  bookmarks: StateFromReducer<typeof bookmarksReducer>;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   browser: any;
@@ -76,16 +72,12 @@ export interface RootState {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   settings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  alert: any;
+  alert: StateFromReducer<typeof alertReducer>;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transaction: any;
   user: UserState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wizard: any;
+  wizard: StateFromReducer<typeof wizardReducer>;
   onboarding: OnboardingState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -94,9 +86,7 @@ export interface RootState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   swaps: any;
   fiatOrders: StateFromReducer<typeof fiatOrders>;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  infuraAvailability: any;
+  infuraAvailability: StateFromReducer<typeof infuraAvailabilityReducer>;
   navigation: NavigationState;
   // The networkOnboarded reducer is TypeScript but not yet a valid reducer
   // TODO: Replace "any" with type

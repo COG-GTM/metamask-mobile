@@ -325,7 +325,7 @@ describe('captureSentryFeedback', () => {
         },
       },
       privacy: {},
-      bookmarks: {},
+      bookmarks: [],
       browser: {
         activeTab: null,
         favicons: [],

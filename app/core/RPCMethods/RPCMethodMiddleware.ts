@@ -115,7 +115,7 @@ export interface RPCMethodsMiddleParameters {
   isWalletConnect: boolean;
   // For MM SDK
   isMMSDK: boolean;
-  injectHomePageScripts: (bookmarks?: []) => void;
+  injectHomePageScripts: (bookmarks?: { url: string; name: string }[]) => void;
   analytics: { [key: string]: string | boolean };
 }
 

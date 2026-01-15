@@ -1,12 +1,20 @@
 import { RootState } from '..';
-import { Action } from 'redux';
+import { Action, Reducer } from 'redux';
 import ACTIONS from './types';
 
 const currentDate = new Date(Date.now());
 const newPrivacyPolicyDate = new Date('2024-06-18T12:00:00Z');
 export const isPastPrivacyPolicyDate = currentDate >= newPrivacyPolicyDate;
 
-const initialState = {
+/**
+ * State shape for the legalNotices reducer
+ */
+export interface LegalNoticesState {
+  newPrivacyPolicyToastClickedOrClosed: boolean;
+  newPrivacyPolicyToastShownDate: number | null;
+}
+
+export const initialState: LegalNoticesState = {
   newPrivacyPolicyToastClickedOrClosed: false,
   newPrivacyPolicyToastShownDate: null,
 };
@@ -30,7 +38,9 @@ export const shouldShowNewPrivacyToastSelector = (
 
   if (newPrivacyPolicyToastClickedOrClosed) return false;
 
-  const shownDate = new Date(newPrivacyPolicyToastShownDate);
+  const shownDate = newPrivacyPolicyToastShownDate
+    ? new Date(newPrivacyPolicyToastShownDate)
+    : new Date(0);
 
   const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
   const isRecent =
@@ -48,14 +58,14 @@ export interface LegalNoticesAction extends Action {
   payload: number;
 }
 
-const legalNoticesReducer = (
+const legalNoticesReducer: Reducer<LegalNoticesState, LegalNoticesAction> = (
   state = initialState,
-  action: LegalNoticesAction = {
+  action = {
     type: '',
     newPrivacyPolicyToastShownDate: false,
     payload: 0,
   },
-) => {
+): LegalNoticesState => {
   switch (action.type) {
     case ACTIONS.STORE_PRIVACY_POLICY_SHOWN_DATE: {
       if (state.newPrivacyPolicyToastShownDate !== null) {
