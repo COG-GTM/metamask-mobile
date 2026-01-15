@@ -27,9 +27,7 @@ function networkOnboardReducer(
     networkStatus: boolean;
     showNetworkOnboarding: boolean;
     type: string;
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    payload: any;
+    payload: string;
   } = {
     nativeToken: '',
     networkType: '',
@@ -37,7 +35,7 @@ function networkOnboardReducer(
     networkStatus: false,
     showNetworkOnboarding: false,
     type: '',
-    payload: undefined,
+    payload: '',
   },
 ) {
   switch (action.type) {

@@ -1468,12 +1468,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
 };
 
 const mapStateToProps = (state: RootState) => ({
-  bookmarks: state.bookmarks,
+  bookmarks: state.bookmarks ?? [],
   ipfsGateway: selectIpfsGateway(state),
   selectedAddress:
     selectSelectedInternalAccountFormattedAddress(state)?.toLowerCase(),
   isIpfsGatewayEnabled: selectIsIpfsGatewayEnabled(state),
-  wizardStep: state.wizard.step,
+  wizardStep: state.wizard?.step ?? 0,
   activeChainId: selectEvmChainId(state),
 });
 

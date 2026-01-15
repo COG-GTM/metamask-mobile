@@ -43,12 +43,9 @@ const navigationReducer = (
 /**
  * Selectors
  */
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getCurrentRoute = (state: any) => state.navigation.currentRoute;
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getCurrentBottomNavRoute = (state: any) =>
+export const getCurrentRoute = (state: { navigation: NavigationState }) => state.navigation.currentRoute;
+
+export const getCurrentBottomNavRoute = (state: { navigation: NavigationState }) =>
   state.navigation.currentBottomNavRoute;
 
 export default navigationReducer;
