@@ -44,7 +44,7 @@ import {
   selectProviderType,
 } from '../../../selectors/networkController';
 import WatchAssetApproval from '../../Approvals/WatchAssetApproval';
-import SignatureApproval from '../../Approvals/SignatureApproval';
+import SignatureRequestBase from '../UI/SignatureRequestBase';
 import AddChainApproval from '../../Approvals/AddChainApproval';
 import SwitchChainApproval from '../../Approvals/SwitchChainApproval';
 import WalletConnectApproval from '../../Approvals/WalletConnectApproval';
@@ -519,7 +519,7 @@ const RootRPCMethodsUI = (props) => {
   return (
     <React.Fragment>
       <ConfirmRoot />
-      <SignatureApproval />
+      <SignatureRequestBase />
       <WalletConnectApproval />
       <TransactionApproval
         transactionType={transactionModalType}
