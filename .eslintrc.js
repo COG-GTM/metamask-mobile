@@ -247,5 +247,5 @@ module.exports = {
     radix: 0,
   },
 
-  ignorePatterns: ['wdio.conf.js', 'app/util/termsOfUse/termsOfUseContent.ts'],
+  ignorePatterns: ['wdio.conf.ts', 'app/util/termsOfUse/termsOfUseContent.ts'],
 };

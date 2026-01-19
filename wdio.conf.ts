@@ -1,4 +1,4 @@
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 dotenv.config({ path: '.e2e.env' });
 
 import generateTestReports from './wdio/utils/generateTestReports';
@@ -14,7 +14,10 @@ import {
 import FixtureBuilder from './e2e/fixtures/fixture-builder';
 import { loadFixture, startFixtureServer, stopFixtureServer } from './e2e/fixtures/fixture-helper';
 import FixtureServer from './e2e/fixtures/fixture-server';
-const { removeSync } = require('fs-extra');
+import { removeSync } from 'fs-extra';
+import type { Options, Capabilities } from '@wdio/types';
+import type { Feature, Pickle } from '@cucumber/messages';
+import type { ITestCaseHookParameter } from '@cucumber/cucumber/lib/support_code_library_builder/types';
 
 const fixtureServer = new FixtureServer();
 
@@ -25,9 +28,36 @@ const ERC20 = '@erc20';
 const ERC721 = '@erc721';
 const GAS_API_DOWN = '@gasApiDown';
 const MOCK = '@mock';
-const FIXTURES_SKIP_ONBOARDING = '@fixturesSkipOnboarding'
+const FIXTURES_SKIP_ONBOARDING = '@fixturesSkipOnboarding';
 
-export const config = {
+interface CucumberWorldContext {
+  multisig?: unknown;
+  erc20?: unknown;
+  erc721?: unknown;
+  mock?: unknown;
+}
+
+interface CapabilitiesWithBundleId extends Capabilities.DesiredCapabilities {
+  bundleId?: string;
+}
+
+type WdioConfig = Options.Testrunner & {
+  cucumberOpts: {
+    require: string[];
+    backtrace: boolean;
+    requireModule: string[];
+    dryRun: boolean;
+    failFast: boolean;
+    snippets: boolean;
+    source: boolean;
+    strict: boolean;
+    tagExpression: string;
+    timeout: number;
+    ignoreUndefinedDefinitions: boolean;
+  };
+};
+
+export const config: WdioConfig = {
   //
   // ====================
   // Runner Configuration
@@ -218,7 +248,7 @@ export const config = {
       'junit',
       {
         outputDir: './wdio/reports/junit-results',
-        outputFileFormat: function (options) {
+        outputFileFormat: function (options: { cid: string; capabilities: { platformName: string } }) {
           // optional
           return `results-${options.cid}.${options.capabilities.platformName}.xml`;
         },
@@ -266,7 +296,7 @@ export const config = {
    * @param {Object} config wdio configuration object
    * @param {Array.<Object>} capabilities list of capabilities details
    */
-  onPrepare: function (config, capabilities) {
+  onPrepare: function (_config: Options.Testrunner, _capabilities: Capabilities.RemoteCapabilities) {
     removeSync('./wdio/reports');
   },
   /**
@@ -306,7 +336,7 @@ export const config = {
    * @param {Array.<String>} specs        List of spec file paths that are to be run
    * @param {Object}         browser      instance of created browser/device session
    */
-  before: async function (capabilities) {
+  before: async function (capabilities: Capabilities.DesiredCapabilities) {
     driver.getPlatform = function getPlatform() {
       return capabilities.platformName;
     };
@@ -331,14 +361,14 @@ export const config = {
    * @param {String}                   uri      path to feature file
    * @param {GherkinDocument.IFeature} feature  Cucumber feature object
    */
-  beforeFeature: function (uri, feature) { },
+  beforeFeature: function (_uri: string, _feature: Feature) { },
   /**
    *
    * Runs before a Cucumber Scenario.
    * @param {ITestCaseHookParameter} world    world object containing information on pickle and test step
    * @param {Object}                 context  Cucumber World object
    */
-  beforeScenario: async function (world, context) {
+  beforeScenario: async function (world: ITestCaseHookParameter, context: CucumberWorldContext) {
     const tags = world.pickle.tags;
 
     if (tags.filter((e) => e.name === GANACHE).length > 0) {
@@ -402,7 +432,7 @@ export const config = {
    * @param {number}                 result.duration  duration of scenario in milliseconds
    * @param {Object}                 context          Cucumber World object
    */
-  afterScenario: async function (world, context) {
+  afterScenario: async function (world: ITestCaseHookParameter, _context: CucumberWorldContext) {
     const tags = world.pickle.tags;
 
     if (tags.filter((e) => e.name === GANACHE).length > 0) {
@@ -419,7 +449,7 @@ export const config = {
    * @param {String}                   uri      path to feature file
    * @param {GherkinDocument.IFeature} feature  Cucumber feature object
    */
-  afterFeature: function (uri, feature) { },
+  afterFeature: function (_uri: string, _feature: Feature) { },
 
   /**
    * Runs after a WebdriverIO command gets executed
@@ -437,7 +467,7 @@ export const config = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that ran
    */
-  after: async function (result, capabilities) {
+  after: async function (_result: number, capabilities: CapabilitiesWithBundleId) {
     // Stop the fixture server
     await stopFixtureServer(fixtureServer);
 
@@ -461,7 +491,7 @@ export const config = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {<Object>} results object containing test results
    */
-  onComplete: async function (exitCode, config, capabilities) {
+  onComplete: async function (_exitCode: number, _config: Options.Testrunner, _capabilities: Capabilities.RemoteCapabilities) {
     generateTestReports();
   },
   /**

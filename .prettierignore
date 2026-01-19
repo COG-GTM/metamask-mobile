@@ -8,7 +8,7 @@ jest.preprocessor.js
 node_modules
 CHANGELOG.md
 wdio
-wdio.conf.js
+wdio.conf.ts
 scripts
 .detoxrc.js
 .prettierignore
