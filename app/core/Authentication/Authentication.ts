@@ -43,7 +43,7 @@ import {
  */
 export interface AuthData {
   currentAuthType: AUTHENTICATION_TYPE; //Enum used to show type for authentication
-  availableBiometryType?: BIOMETRY_TYPE;
+  availableBiometryType?: BIOMETRY_TYPE | null;
 }
 
 class AuthenticationService {
@@ -145,9 +145,7 @@ class AuthenticationService {
    * @returns @AuthData
    */
   private checkAuthenticationMethod = async (): Promise<AuthData> => {
-    const biometryType = await SecureKeychain.getSupportedBiometryType();
-    // Convert null to undefined for compatibility with AuthData interface
-    const availableBiometryType = biometryType ?? undefined;
+    const availableBiometryType = await SecureKeychain.getSupportedBiometryType();
     const biometryPreviouslyDisabled = await StorageWrapper.getItem(
       BIOMETRY_CHOICE_DISABLED,
     );
@@ -273,9 +271,7 @@ class AuthenticationService {
     biometryChoice: boolean,
     rememberMe: boolean,
   ): Promise<AuthData> => {
-    const biometryType = await SecureKeychain.getSupportedBiometryType();
-    // Convert null to undefined for compatibility with AuthData interface
-    const availableBiometryType = biometryType ?? undefined;
+    const availableBiometryType = await SecureKeychain.getSupportedBiometryType();
     const biometryPreviouslyDisabled = await StorageWrapper.getItem(
       BIOMETRY_CHOICE_DISABLED,
     );

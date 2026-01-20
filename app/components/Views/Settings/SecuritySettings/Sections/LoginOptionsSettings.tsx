@@ -27,7 +27,7 @@ const LoginOptionsSettings = ({
   onSignWithPasscodeOptionUpdated,
 }: BiometricOptionSectionProps) => {
   const [biometryType, setBiometryType] = useState<
-    BIOMETRY_TYPE | AUTHENTICATION_TYPE.BIOMETRIC | undefined
+    BIOMETRY_TYPE | AUTHENTICATION_TYPE.BIOMETRIC | null | undefined
   >(undefined);
   const [biometryChoice, setBiometryChoice] = useState<boolean>(false);
   const [passcodeChoice, setPasscodeChoice] = useState<boolean>(false);
