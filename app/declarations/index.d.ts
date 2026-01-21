@@ -12,10 +12,33 @@ declare module 'react-native-minimizer';
 
 declare module 'xhr2';
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const content: React.FC<any>;
-  export default content;
+  import { StyleProp, TextStyle, ViewStyle } from 'react-native';
+
+  interface DefaultTabBarProps {
+    goToPage?: (page: number) => void;
+    activeTab?: number;
+    tabs?: React.ReactNode[];
+    backgroundColor?: string;
+    activeTextColor?: string;
+    inactiveTextColor?: string;
+    textStyle?: StyleProp<TextStyle>;
+    tabStyle?: StyleProp<ViewStyle>;
+    renderTab?: (
+      name: string,
+      page: number,
+      isTabActive: boolean,
+      onPressHandler: (page: number) => void,
+    ) => React.ReactNode;
+    underlineStyle?: StyleProp<ViewStyle>;
+    containerWidth?: number;
+    // Using a generic type to avoid conflicts between different Animated.Value types
+    scrollValue?: { interpolate: (config: { inputRange: number[]; outputRange: number[] | string[] }) => unknown };
+    style?: StyleProp<ViewStyle>;
+    tabPadding?: number;
+  }
+
+  const DefaultTabBar: React.FC<DefaultTabBarProps>;
+  export default DefaultTabBar;
 }
 
 declare module '*.svg' {
