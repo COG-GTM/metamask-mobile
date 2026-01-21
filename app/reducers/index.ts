@@ -1,29 +1,29 @@
-import bookmarksReducer from './bookmarks';
-import browserReducer from './browser';
+import bookmarksReducer, { BookmarksState } from './bookmarks';
+import browserReducer, { BrowserState } from './browser';
 import engineReducer from '../core/redux/slices/engine';
-import privacyReducer from './privacy';
-import modalsReducer from './modals';
-import settingsReducer from './settings';
-import alertReducer from './alert';
-import transactionReducer from './transaction';
+import privacyReducer, { PrivacyState } from './privacy';
+import modalsReducer, { ModalsState } from './modals';
+import settingsReducer, { SettingsState } from './settings';
+import alertReducer, { AlertState } from './alert';
+import transactionReducer, { TransactionState } from './transaction';
 import legalNoticesReducer from './legalNotices';
 import userReducer, { UserState } from './user';
-import wizardReducer from './wizard';
+import wizardReducer, { WizardState } from './wizard';
 import onboardingReducer, { OnboardingState } from './onboarding';
 import fiatOrders from './fiatOrders';
-import swapsReducer from './swaps';
+import swapsReducer, { SwapsState } from './swaps';
 import signatureRequestReducer from './signatureRequest';
-import notificationReducer from './notification';
-import infuraAvailabilityReducer from './infuraAvailability';
-import collectiblesReducer from './collectibles';
+import notificationReducer, { NotificationState } from './notification';
+import infuraAvailabilityReducer, { InfuraAvailabilityState } from './infuraAvailability';
+import collectiblesReducer, { CollectiblesState } from './collectibles';
 import navigationReducer, { NavigationState } from './navigation';
 import networkOnboardReducer from './networkSelector';
 import securityReducer, { SecurityState } from './security';
 import { combineReducers, Reducer } from 'redux';
 import experimentalSettingsReducer from './experimentalSettings';
 import { EngineState } from '../core/Engine';
-import rpcEventReducer from './rpcEvents';
-import accountsReducer from './accounts';
+import rpcEventReducer, { iEventGroup } from './rpcEvents';
+import accountsReducer, { iAccountEvent } from './accounts';
 import sdkReducer from './sdk';
 import inpageProviderReducer from '../core/redux/slices/inpageProvider';
 import confirmationMetricsReducer from '../core/redux/slices/confirmationMetrics';
@@ -54,69 +54,31 @@ export type StateFromReducer<reducer> = reducer extends Reducer<
 // to this type. Once that is complete, we can automatically generate this type
 // using the `StateFromReducersMapObject` type from redux.
 export interface RootState {
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  legalNotices: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  collectibles: any;
+  legalNotices: StateFromReducer<typeof legalNoticesReducer>;
+  collectibles: CollectiblesState;
   engine: { backgroundState: EngineState };
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  privacy: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bookmarks: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  browser: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modals: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  settings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  alert: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  transaction: any;
+  privacy: PrivacyState;
+  bookmarks: BookmarksState;
+  browser: BrowserState;
+  modals: ModalsState;
+  settings: SettingsState;
+  alert: AlertState;
+  transaction: TransactionState;
   user: UserState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wizard: any;
+  wizard: WizardState;
   onboarding: OnboardingState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  notification: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  swaps: any;
+  notification: NotificationState;
+  swaps: SwapsState;
   fiatOrders: StateFromReducer<typeof fiatOrders>;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  infuraAvailability: any;
+  infuraAvailability: InfuraAvailabilityState;
   navigation: NavigationState;
-  // The networkOnboarded reducer is TypeScript but not yet a valid reducer
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  networkOnboarded: any;
+  networkOnboarded: StateFromReducer<typeof networkOnboardReducer>;
   security: SecurityState;
   sdk: StateFromReducer<typeof sdkReducer>;
-  // The experimentalSettings reducer is TypeScript but not yet a valid reducer
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  experimentalSettings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  signatureRequest: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rpcEvents: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  accounts: any;
+  experimentalSettings: StateFromReducer<typeof experimentalSettingsReducer>;
+  signatureRequest: StateFromReducer<typeof signatureRequestReducer>;
+  rpcEvents: iEventGroup;
+  accounts: iAccountEvent;
   inpageProvider: StateFromReducer<typeof inpageProviderReducer>;
   confirmationMetrics: StateFromReducer<typeof confirmationMetricsReducer>;
   originThrottling: StateFromReducer<typeof originThrottlingReducer>;
