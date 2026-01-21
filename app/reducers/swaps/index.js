@@ -353,6 +353,7 @@ export const swapsTopAssetsSelector = createSelector(
 );
 
 // * Reducer
+/** @type {import('./types').SwapsState} */
 export const initialState = {
   isLive: true, // TODO: should we remove it?
   hasOnboarded: true, // TODO: Once we have updated UI / content for the modal, we should enable it again.

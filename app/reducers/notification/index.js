@@ -2,6 +2,7 @@ import { createSelector } from 'reselect';
 import { NotificationTypes } from '../../util/notifications';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
+/** @type {import('./types').NotificationState} */
 export const initialState = {
   notifications: [],
 };

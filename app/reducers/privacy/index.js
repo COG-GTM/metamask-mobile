@@ -1,4 +1,5 @@
-const initialState = {
+/** @type {import('./types').PrivacyState} */
+export const initialState = {
   approvedHosts: {},
   revealSRPTimestamps: [],
 };

@@ -1,6 +1,7 @@
 import { REHYDRATE } from 'redux-persist';
 
-const initialState = {
+/** @type {import('./types').WizardState} */
+export const initialState = {
   step: 0,
 };
 

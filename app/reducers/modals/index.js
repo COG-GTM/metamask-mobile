@@ -1,4 +1,5 @@
-const initialState = {
+/** @type {import('./types').ModalsState} */
+export const initialState = {
   networkModalVisible: false,
   shouldNetworkSwitchPopToWallet: true,
   collectibleContractModalVisible: false,

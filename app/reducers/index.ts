@@ -6,7 +6,7 @@ import modalsReducer from './modals';
 import settingsReducer from './settings';
 import alertReducer from './alert';
 import transactionReducer from './transaction';
-import legalNoticesReducer from './legalNotices';
+import legalNoticesReducer, { LegalNoticesState } from './legalNotices';
 import userReducer, { UserState } from './user';
 import wizardReducer from './wizard';
 import onboardingReducer, { OnboardingState } from './onboarding';
@@ -35,6 +35,15 @@ import performanceReducer, {
   PerformanceState,
 } from '../core/redux/slices/performance';
 import { isTest } from '../util/test/utils';
+import { CollectiblesState } from './collectibles/types';
+import { PrivacyState } from './privacy/types';
+import { BrowserState } from './browser/types';
+import { ModalsState } from './modals/types';
+import { SettingsState } from './settings/types';
+import { TransactionState } from './transaction/types';
+import { WizardState } from './wizard/types';
+import { NotificationState } from './notification/types';
+import { SwapsState } from './swaps/types';
 
 /**
  * Infer state from a reducer
@@ -54,45 +63,25 @@ export type StateFromReducer<reducer> = reducer extends Reducer<
 // to this type. Once that is complete, we can automatically generate this type
 // using the `StateFromReducersMapObject` type from redux.
 export interface RootState {
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  legalNotices: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  collectibles: any;
+  legalNotices: LegalNoticesState;
+  collectibles: CollectiblesState;
   engine: { backgroundState: EngineState };
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  privacy: any;
+  privacy: PrivacyState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   bookmarks: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  browser: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modals: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  settings: any;
+  browser: BrowserState;
+  modals: ModalsState;
+  settings: SettingsState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   alert: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  transaction: any;
+  transaction: TransactionState;
   user: UserState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wizard: any;
+  wizard: WizardState;
   onboarding: OnboardingState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  notification: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  swaps: any;
+  notification: NotificationState;
+  swaps: SwapsState;
   fiatOrders: StateFromReducer<typeof fiatOrders>;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

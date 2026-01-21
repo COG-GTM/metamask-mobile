@@ -2,7 +2,8 @@ import { BrowserActionTypes } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
 
-const initialState = {
+/** @type {import('./types').BrowserState} */
+export const initialState = {
   history: [],
   whitelist: [],
   tabs: [],
