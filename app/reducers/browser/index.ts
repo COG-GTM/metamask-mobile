@@ -1,17 +1,48 @@
-import { BrowserActionTypes } from '../../actions/browser';
+import { BrowserActionTypes, BrowserAction, TabData } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
 
-const initialState = {
+export interface HistoryEntry {
+  url: string;
+  name: string;
+}
+
+export interface Tab {
+  url: string;
+  id: number;
+  linkType?: string;
+  isArchived?: boolean;
+  image?: string;
+}
+
+export interface Favicon {
+  origin: string;
+  url: string;
+}
+
+export interface BrowserState {
+  history: HistoryEntry[];
+  whitelist: string[];
+  tabs: Tab[];
+  favicons: Favicon[];
+  activeTab: number | null;
+  visitedDappsByHostname: Record<string, boolean>;
+}
+
+export const browserInitialState: BrowserState = {
   history: [],
   whitelist: [],
   tabs: [],
   favicons: [],
   activeTab: null,
-  // Keep track of viewed Dapps, which is used for MetaMetricsEvents.DAPP_VIEWED event
   visitedDappsByHostname: {},
 };
-const browserReducer = (state = initialState, action) => {
+
+/* eslint-disable @typescript-eslint/default-param-last */
+const browserReducer = (
+  state: BrowserState = browserInitialState,
+  action: BrowserAction,
+): BrowserState => {
   switch (action.type) {
     case BrowserActionTypes.ADD_TO_VIEWED_DAPP: {
       const { hostname } = action;
@@ -23,7 +54,7 @@ const browserReducer = (state = initialState, action) => {
         },
       };
     }
-    case 'ADD_TO_BROWSER_HISTORY': {
+    case BrowserActionTypes.ADD_TO_BROWSER_HISTORY: {
       const { url, name } = action;
 
       return {
@@ -31,12 +62,12 @@ const browserReducer = (state = initialState, action) => {
         history: [...state.history, { url, name }].slice(-50),
       };
     }
-    case 'ADD_TO_BROWSER_WHITELIST':
+    case BrowserActionTypes.ADD_TO_BROWSER_WHITELIST:
       return {
         ...state,
         whitelist: [...state.whitelist, action.url],
       };
-    case 'CLEAR_BROWSER_HISTORY':
+    case BrowserActionTypes.CLEAR_BROWSER_HISTORY:
       return {
         ...state,
         history: [],
@@ -52,12 +83,12 @@ const browserReducer = (state = initialState, action) => {
         ],
         activeTab: action.id,
       };
-    case 'CLOSE_ALL_TABS':
+    case BrowserActionTypes.CLOSE_ALL_TABS:
       return {
         ...state,
         tabs: [],
       };
-    case 'CREATE_NEW_TAB':
+    case BrowserActionTypes.CREATE_NEW_TAB:
       return {
         ...state,
         tabs: [
@@ -69,17 +100,17 @@ const browserReducer = (state = initialState, action) => {
           },
         ],
       };
-    case 'CLOSE_TAB':
+    case BrowserActionTypes.CLOSE_TAB:
       return {
         ...state,
         tabs: state.tabs.filter((tab) => tab.id !== action.id),
       };
-    case 'SET_ACTIVE_TAB':
+    case BrowserActionTypes.SET_ACTIVE_TAB:
       return {
         ...state,
         activeTab: action.id,
       };
-    case 'UPDATE_TAB':
+    case BrowserActionTypes.UPDATE_TAB:
       return {
         ...state,
         tabs: state.tabs.map((tab) => {
@@ -89,7 +120,7 @@ const browserReducer = (state = initialState, action) => {
           return { ...tab };
         }),
       };
-    case 'STORE_FAVICON_URL':
+    case BrowserActionTypes.STORE_FAVICON_URL:
       return {
         ...state,
         favicons: [
@@ -101,4 +132,5 @@ const browserReducer = (state = initialState, action) => {
       return state;
   }
 };
+
 export default browserReducer;
