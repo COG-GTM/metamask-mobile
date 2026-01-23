@@ -32,7 +32,8 @@ export interface TopAsset {
 
 export interface ChainSwapsState {
   isLive: boolean;
-  featureFlags?: FeatureFlags;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  featureFlags?: any;
 }
 
 export interface SmartTransactionsFlags {
@@ -371,9 +372,9 @@ export const swapsTokensWithBalanceSelector = createSelector(
     }
     const baseTokens = tokens;
     const tokensAddressesWithBalance = Object.entries(balances || {})
-      .filter(([, balance]) => balance !== 0)
+      .filter(([, balance]) => balance !== '0x0' && balance !== '0x00')
       .sort(([, balanceA], [, balanceB]) =>
-        lte(balanceB as string, balanceA as string) ? -1 : 1,
+        lte(Number(balanceB), Number(balanceA)) ? -1 : 1,
       )
       .map(([address]) => address.toLowerCase());
     const tokensWithBalance: SwapsToken[] = [];
@@ -476,7 +477,7 @@ function swapsReducer(
       const chain: ChainSwapsState = {
         ...data,
         featureFlags: chainFeatureFlags,
-        isLive: liveness,
+        isLive: Boolean(liveness),
       };
 
       return {
