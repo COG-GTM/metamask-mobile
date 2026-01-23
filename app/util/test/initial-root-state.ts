@@ -12,6 +12,18 @@ import { initialNavigationState } from '../../reducers/navigation';
 import { initialOnboardingState } from '../../reducers/onboarding';
 import { initialState as initialPerformanceState } from '../../core/redux/slices/performance';
 import { isTest } from './utils';
+import { collectiblesInitialState } from '../../reducers/collectibles';
+import { privacyInitialState } from '../../reducers/privacy';
+import { bookmarksInitialState } from '../../reducers/bookmarks';
+import { browserInitialState } from '../../reducers/browser';
+import { modalsInitialState } from '../../reducers/modals';
+import { settingsInitialState } from '../../reducers/settings';
+import { alertInitialState } from '../../reducers/alert';
+import { transactionInitialState } from '../../reducers/transaction';
+import { wizardInitialState } from '../../reducers/wizard';
+import { initialState as initialNotificationState } from '../../reducers/notification';
+import { initialState as initialSwapsState } from '../../reducers/swaps';
+import { infuraAvailabilityInitialState } from '../../reducers/infuraAvailability';
 // A cast is needed here because we use enums in some controllers, and TypeScript doesn't consider
 // the string value of an enum as satisfying an enum type.
 export const backgroundState: EngineState =
@@ -19,22 +31,22 @@ export const backgroundState: EngineState =
 
 const initialRootState: RootState = {
   legalNotices: undefined,
-  collectibles: undefined,
+  collectibles: collectiblesInitialState,
   engine: { backgroundState },
-  privacy: undefined,
-  bookmarks: undefined,
-  browser: undefined,
-  modals: undefined,
-  settings: undefined,
-  alert: undefined,
-  transaction: undefined,
+  privacy: privacyInitialState,
+  bookmarks: bookmarksInitialState,
+  browser: browserInitialState,
+  modals: modalsInitialState,
+  settings: settingsInitialState,
+  alert: alertInitialState,
+  transaction: transactionInitialState,
   user: userInitialState,
-  wizard: undefined,
+  wizard: wizardInitialState,
   onboarding: initialOnboardingState,
-  notification: undefined,
-  swaps: undefined,
+  notification: initialNotificationState,
+  swaps: initialSwapsState,
   fiatOrders: initialFiatOrdersState,
-  infuraAvailability: undefined,
+  infuraAvailability: infuraAvailabilityInitialState,
   navigation: initialNavigationState,
   networkOnboarded: undefined,
   security: initialSecurityState,

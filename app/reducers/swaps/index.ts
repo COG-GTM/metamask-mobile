@@ -146,11 +146,13 @@ export const selectSwapsChainFeatureFlags = createSelector(
   (_state: RootState, transactionChainId?: Hex) =>
     transactionChainId || selectEvmChainId(_state),
   (swapsState, chainId) => {
-    const chainState = swapsState[chainId as string] as ChainSwapsState | undefined;
+    // Access directly without optional chaining to preserve original throwing behavior
+    // when chain entry doesn't exist (as expected by tests)
+    const chainState = swapsState[chainId as string] as ChainSwapsState;
     return {
-      ...chainState?.featureFlags,
+      ...chainState.featureFlags,
       smartTransactions: {
-        ...(chainState?.featureFlags?.smartTransactions || {}),
+        ...(chainState.featureFlags?.smartTransactions || {}),
         ...(swapsState.featureFlags?.smartTransactions || {}),
       },
     };
