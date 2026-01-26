@@ -8,6 +8,11 @@ export interface iAccountEvent {
 }
 
 /**
+ * State shape for the accounts reducer
+ */
+export type AccountsState = iAccountEvent;
+
+/**
  * Initial state of the Accounts event flow
  */
 const initialState: iAccountEvent = {

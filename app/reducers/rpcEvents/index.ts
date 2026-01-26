@@ -63,6 +63,11 @@ export interface iEventGroup {
 }
 
 /**
+ * State shape for the rpcEvents reducer
+ */
+export type RpcEventsState = iEventGroup;
+
+/**
  * Initial state of the RPC event flow
  */
 const initialState: Readonly<iEventGroup> = {

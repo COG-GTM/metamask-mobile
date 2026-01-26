@@ -1,4 +1,31 @@
-export const initialState = {
+/**
+ * Represents the network state during onboarding
+ */
+export interface NetworkStateInfo {
+  showNetworkOnboarding: boolean;
+  nativeToken: string;
+  networkType: string;
+  networkUrl: string;
+}
+
+/**
+ * Represents the switched network state
+ */
+export interface SwitchedNetworkInfo {
+  networkUrl: string;
+  networkStatus: boolean;
+}
+
+/**
+ * State shape for the networkOnboarded reducer
+ */
+export interface NetworkOnboardedState {
+  networkOnboardedState: Record<string, boolean>;
+  networkState: NetworkStateInfo;
+  switchedNetwork: SwitchedNetworkInfo;
+}
+
+export const initialState: NetworkOnboardedState = {
   networkOnboardedState: {},
   networkState: {
     showNetworkOnboarding: false,
@@ -18,28 +45,37 @@ export const initialState = {
  * @returns
  */
 
+/**
+ * Action types for networkOnboarded reducer
+ */
+interface ShowNetworkOnboardingAction {
+  type: 'SHOW_NETWORK_ONBOARDING';
+  nativeToken: string;
+  networkType: string;
+  networkUrl: string;
+  showNetworkOnboarding: boolean;
+}
+
+interface NetworkSwitchedAction {
+  type: 'NETWORK_SWITCHED';
+  networkUrl: string;
+  networkStatus: boolean;
+}
+
+interface NetworkOnboardedAction {
+  type: 'NETWORK_ONBOARDED';
+  payload: string;
+}
+
+type NetworkOnboardAction =
+  | ShowNetworkOnboardingAction
+  | NetworkSwitchedAction
+  | NetworkOnboardedAction;
+
 function networkOnboardReducer(
-  state = initialState,
-  action: {
-    nativeToken: string;
-    networkType: string;
-    networkUrl: string;
-    networkStatus: boolean;
-    showNetworkOnboarding: boolean;
-    type: string;
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    payload: any;
-  } = {
-    nativeToken: '',
-    networkType: '',
-    networkUrl: '',
-    networkStatus: false,
-    showNetworkOnboarding: false,
-    type: '',
-    payload: undefined,
-  },
-) {
+  state: NetworkOnboardedState = initialState,
+  action: NetworkOnboardAction,
+): NetworkOnboardedState {
   switch (action.type) {
     case 'SHOW_NETWORK_ONBOARDING':
       return {
