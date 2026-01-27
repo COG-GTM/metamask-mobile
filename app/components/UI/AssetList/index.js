@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
 import { View, StyleSheet } from 'react-native';
+import PropTypes from 'prop-types';
 import { strings } from '../../../../locales/i18n';
-import StyledButton from '../StyledButton';
+import StyledButton from '../StyledButton'; // eslint-disable-line  import/no-unresolved
 import AssetIcon from '../AssetIcon';
 import { fontStyles } from '../../../styles/common';
 import Text from '../../Base/Text';
@@ -27,45 +28,43 @@ const styles = StyleSheet.create({
   },
 });
 
-interface Asset {
-  symbol?: string;
-  name?: string;
-  address?: string;
-  iconUrl?: string;
-}
-
-interface AssetListProps {
-  searchResults?: Asset[];
-  handleSelectAsset?: (asset: Asset) => void;
-  selectedAsset?: Asset;
-  searchQuery?: string;
-}
-
 /**
  * PureComponent that provides ability to search assets.
  */
-export default class AssetList extends PureComponent<AssetListProps> {
-  onToggleAsset = (key: number): void => {
-    const { searchResults, handleSelectAsset } = this.props;
-    if (searchResults && handleSelectAsset) {
-      handleSelectAsset(searchResults[key]);
-    }
+export default class AssetList extends PureComponent {
+  static propTypes = {
+    /**
+     * Array of assets objects returned from the search
+     */
+    searchResults: PropTypes.array,
+    /**
+     * Callback triggered when a token is selected
+     */
+    handleSelectAsset: PropTypes.func,
+    /**
+     * Object of the currently-selected token
+     */
+    selectedAsset: PropTypes.object,
+    /**
+     * Search query that generated "searchResults"
+     */
+    searchQuery: PropTypes.string,
   };
 
-  render = (): React.ReactElement => {
-    const {
-      searchResults = [],
-      handleSelectAsset,
-      selectedAsset,
-      searchQuery = '',
-    } = this.props;
+  onToggleAsset = (key) => {
+    const { searchResults, handleSelectAsset } = this.props;
+    handleSelectAsset(searchResults[key]);
+  };
+
+  render = () => {
+    const { searchResults = [], handleSelectAsset, selectedAsset } = this.props;
 
     return (
       <View style={styles.rowWrapper}>
         {searchResults.length > 0 ? (
           <Text style={styles.normalText}>{strings('token.select_token')}</Text>
         ) : null}
-        {searchResults.length === 0 && searchQuery.length ? (
+        {searchResults.length === 0 && this.props.searchQuery.length ? (
           <Text style={styles.normalText}>
             {strings('token.no_tokens_found')}
           </Text>
@@ -78,7 +77,7 @@ export default class AssetList extends PureComponent<AssetListProps> {
             <StyledButton
               type={isSelected ? 'normal' : 'transparent'}
               containerStyle={styles.item}
-              onPress={() => handleSelectAsset?.(searchResults[i])}
+              onPress={() => handleSelectAsset(searchResults[i])} // eslint-disable-line
               key={i}
             >
               <View style={styles.assetListElement}>

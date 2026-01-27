@@ -88,7 +88,6 @@ interface NavbarBrowserTitleProps {
  */
 class NavbarBrowserTitle extends PureComponent<NavbarBrowserTitleProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   onTitlePress = (): void => {
     this.props.route?.params?.showUrlModal?.();
@@ -114,7 +113,7 @@ class NavbarBrowserTitle extends PureComponent<NavbarBrowserTitleProps> {
 
   render = (): React.ReactElement => {
     const { https, providerConfig, hostname, error, icon } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const color =
       (providerConfig.type &&

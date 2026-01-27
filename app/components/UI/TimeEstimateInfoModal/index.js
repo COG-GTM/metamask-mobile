@@ -2,20 +2,11 @@ import React from 'react';
 import { View } from 'react-native';
 import Text from '../../Base/Text';
 import InfoModal from '../Swaps/components/InfoModal';
+import PropTypes from 'prop-types';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 
-interface TimeEstimateInfoModalProps {
-  timeEstimateId?: string;
-  isVisible?: boolean;
-  onHideModal?: () => void;
-}
-
-const TimeEstimateInfoModal: React.FC<TimeEstimateInfoModalProps> = ({
-  timeEstimateId,
-  isVisible,
-  onHideModal,
-}) => (
+const TimeEstimateInfoModal = ({ timeEstimateId, isVisible, onHideModal }) => (
   <InfoModal
     isVisible={isVisible}
     toggleModal={onHideModal}
@@ -42,5 +33,20 @@ const TimeEstimateInfoModal: React.FC<TimeEstimateInfoModalProps> = ({
     }
   />
 );
+
+TimeEstimateInfoModal.propTypes = {
+  /**
+   * Time estimate name (unknown, low, medium, high, less_than, range)
+   */
+  timeEstimateId: PropTypes.string,
+  /**
+   * If the modal is visible
+   */
+  isVisible: PropTypes.bool,
+  /**
+   * Function to hide the modal
+   */
+  onHideModal: PropTypes.func,
+};
 
 export default TimeEstimateInfoModal;

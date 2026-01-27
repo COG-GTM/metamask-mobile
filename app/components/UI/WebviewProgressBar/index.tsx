@@ -1,7 +1,9 @@
 import React, { PureComponent } from 'react';
+// @ts-expect-error - react-native-progress has no type declarations
 import ProgressBar from 'react-native-progress/Bar';
 import FadeView from '../FadeView';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 
 interface WebviewProgressBarProps {
   progress?: number;
@@ -21,7 +23,6 @@ export default class WebviewProgressBar extends PureComponent<
   WebviewProgressBarState
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   private mounted = false;
 
@@ -56,7 +57,7 @@ export default class WebviewProgressBar extends PureComponent<
   }
 
   render = (): React.ReactElement => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
 
     return (
       <FadeView visible={this.state.visible}>

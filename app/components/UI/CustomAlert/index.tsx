@@ -58,10 +58,9 @@ interface CustomAlertProps {
 */
 export default class CustomAlert extends PureComponent<CustomAlertProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   render(): React.ReactElement {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

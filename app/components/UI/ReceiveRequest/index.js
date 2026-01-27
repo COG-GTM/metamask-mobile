@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import PropTypes from 'prop-types';
 import {
   SafeAreaView,
   Dimensions,
@@ -32,18 +33,10 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { getDecimalChainId } from '../../../util/networks';
 import QRAccountDisplay from '../../Views/QRAccountDisplay';
 import PNG_MM_LOGO_PATH from '../../../images/branding/fox.png';
-import { RootState } from '../../../reducers';
-import { Theme } from '@metamask/design-tokens';
 
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
-interface ThemeColors extends Theme {
-  brandColors: {
-    white: string;
-  };
-}
-
-const createStyles = (theme: ThemeColors) =>
+const createStyles = (theme) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: theme.colors.background.default,
@@ -113,49 +106,55 @@ const createStyles = (theme: ThemeColors) =>
     },
   });
 
-interface NavigationProp {
-  navigate: (screen: string, params?: object) => void;
-}
-
-interface MetricsProp {
-  trackEvent: (event: object) => void;
-  createEventBuilder: (event: string) => {
-    addProperties: (params: object) => {
-      build: () => object;
-    };
-    build: () => object;
-  };
-}
-
-interface ReceiveRequestProps {
-  navigation: NavigationProp;
-  selectedAddress?: string;
-  receiveAsset?: object;
-  showAlert: (config: object) => void;
-  chainId?: string;
-  protectWalletModalVisible: () => void;
-  hideModal?: () => void;
-  seedphraseBackedUp?: boolean;
-  isNetworkBuySupported?: boolean;
-  metrics: MetricsProp;
-}
-
-interface ReceiveRequestState {
-  qrModalVisible: boolean;
-  buyModalVisible: boolean;
-}
-
 /**
  * PureComponent that renders receive options
  */
-class ReceiveRequest extends PureComponent<
-  ReceiveRequestProps,
-  ReceiveRequestState
-> {
-  static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
+class ReceiveRequest extends PureComponent {
+  static propTypes = {
+    /**
+     * The navigator object
+     */
+    navigation: PropTypes.object,
+    /**
+     * Selected address as string
+     */
+    selectedAddress: PropTypes.string,
+    /**
+     * Asset to receive, could be not defined
+     */
+    receiveAsset: PropTypes.object,
+    /**
+     /* Triggers global alert
+     */
+    showAlert: PropTypes.func,
+    /**
+     * Network provider chain id
+     */
+    chainId: PropTypes.string,
+    /**
+     * Prompts protect wallet modal
+     */
+    protectWalletModalVisible: PropTypes.func,
+    /**
+     * Hides the modal that contains the component
+     */
+    hideModal: PropTypes.func,
+    /**
+     * redux flag that indicates if the user
+     * completed the seed phrase backup flow
+     */
+    seedphraseBackedUp: PropTypes.bool,
+    /**
+     * Boolean that indicates if the network supports buy
+     */
+    isNetworkBuySupported: PropTypes.bool,
+    /**
+     * Metrics injected by withMetricsAwareness HOC
+     */
+    metrics: PropTypes.object,
+  };
 
-  state: ReceiveRequestState = {
+  state = {
     qrModalVisible: false,
     buyModalVisible: false,
   };
@@ -163,16 +162,16 @@ class ReceiveRequest extends PureComponent<
   /**
    * Share current account public address
    */
-  onShare = (): void => {
+  onShare = () => {
     const { selectedAddress } = this.props;
     Share.open({
-      message: generateUniversalLinkAddress(selectedAddress || ''),
+      message: generateUniversalLinkAddress(selectedAddress),
     })
       .then(() => {
-        this.props.hideModal?.();
+        this.props.hideModal();
         setTimeout(() => this.props.protectWalletModalVisible(), 1000);
       })
-      .catch((err: Error) => {
+      .catch((err) => {
         Logger.log('Error while trying to share address', err);
       });
 
@@ -186,7 +185,7 @@ class ReceiveRequest extends PureComponent<
   /**
    * Shows an alert message with a coming soon message
    */
-  onBuy = async (): Promise<void> => {
+  onBuy = async () => {
     const { navigation, isNetworkBuySupported } = this.props;
     if (!isNetworkBuySupported) {
       Alert.alert(
@@ -202,16 +201,16 @@ class ReceiveRequest extends PureComponent<
           .addProperties({
             text: 'Buy Native Token',
             location: 'Receive Modal',
-            chain_id_destination: getDecimalChainId(this.props.chainId || ''),
+            chain_id_destination: getDecimalChainId(this.props.chainId),
           })
           .build(),
       );
     }
   };
 
-  copyAccountToClipboard = async (): Promise<void> => {
+  copyAccountToClipboard = async () => {
     const { selectedAddress } = this.props;
-    ClipboardManager.setString(selectedAddress || '');
+    ClipboardManager.setString(selectedAddress);
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -219,12 +218,12 @@ class ReceiveRequest extends PureComponent<
       data: { msg: strings('account_details.account_copied_to_clipboard') },
     });
     if (!this.props.seedphraseBackedUp) {
-      setTimeout(() => this.props.hideModal?.(), 1000);
+      setTimeout(() => this.props.hideModal(), 1000);
       setTimeout(() => this.props.protectWalletModalVisible(), 1500);
     }
   };
 
-  onReceive = (): void => {
+  onReceive = () => {
     this.props.navigation.navigate('PaymentRequestView', {
       screen: 'PaymentRequest',
       params: { receiveAsset: this.props.receiveAsset },
@@ -237,8 +236,8 @@ class ReceiveRequest extends PureComponent<
     );
   };
 
-  render(): React.ReactElement {
-    const theme = (this.context || mockTheme) as ThemeColors;
+  render() {
+    const theme = this.context || mockTheme;
     const styles = createStyles(theme);
 
     return (
@@ -274,7 +273,9 @@ class ReceiveRequest extends PureComponent<
   }
 }
 
-const mapStateToProps = (state: RootState) => ({
+ReceiveRequest.contextType = ThemeContext;
+
+const mapStateToProps = (state) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   receiveAsset: state.modals.receiveAsset,
@@ -285,8 +286,8 @@ const mapStateToProps = (state: RootState) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch: (action: object) => void) => ({
-  showAlert: (config: object) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch) => ({
+  showAlert: (config) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 

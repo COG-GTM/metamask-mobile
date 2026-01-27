@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
+import PropTypes from 'prop-types';
 import { fontStyles, baseStyles } from '../../../../styles/common';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AnimatedSpinner from '../../AnimatedSpinner';
@@ -9,9 +10,8 @@ import AntIcon from 'react-native-vector-icons/AntDesign';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
 import { ToastSelectorsIDs } from '../../../../../e2e/selectors/wallet/ToastModal.selectors';
-import { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors: Theme['colors']) =>
+const createStyles = (colors) =>
   StyleSheet.create({
     floatingBackground: {
       backgroundColor: colors.background.default,
@@ -58,31 +58,9 @@ const createStyles = (colors: Theme['colors']) =>
       alignItems: 'flex-start',
       marginTop: -8,
     },
-    checkIcon: {},
   });
 
-type NotificationStatus =
-  | 'pending'
-  | 'pending_withdrawal'
-  | 'pending_deposit'
-  | 'speedup'
-  | 'success_deposit'
-  | 'success_withdrawal'
-  | 'success'
-  | 'received'
-  | 'received_payment'
-  | 'eth_received'
-  | 'cancelled'
-  | 'error'
-  | 'import_success'
-  | 'simple_notification_rejected'
-  | 'simple_notification';
-
-export const getIcon = (
-  status: NotificationStatus,
-  colors: Theme['colors'],
-  styles: ReturnType<typeof createStyles>,
-): React.ReactElement | undefined => {
+export const getIcon = (status, colors, styles) => {
   switch (status) {
     case 'pending':
     case 'pending_withdrawal':
@@ -143,19 +121,7 @@ export const getIcon = (
   }
 };
 
-interface NotificationData {
-  nonce?: string | number;
-  amount?: string | number;
-  assetType?: string;
-  type?: string;
-  title?: string;
-  description?: string;
-}
-
-const getTitle = (
-  status: NotificationStatus,
-  { nonce, amount, assetType }: NotificationData,
-): string | undefined => {
+const getTitle = (status, { nonce, amount, assetType }) => {
   switch (status) {
     case 'pending':
       return strings('notifications.pending_title');
@@ -164,9 +130,7 @@ const getTitle = (
     case 'pending_withdrawal':
       return strings('notifications.pending_withdrawal_title');
     case 'success':
-      return strings('notifications.success_title', {
-        nonce: parseInt(String(nonce)),
-      });
+      return strings('notifications.success_title', { nonce: parseInt(nonce) });
     case 'success_deposit':
       return strings('notifications.success_deposit_title');
     case 'success_withdrawal':
@@ -177,9 +141,7 @@ const getTitle = (
         assetType,
       });
     case 'speedup':
-      return strings('notifications.speedup_title', {
-        nonce: parseInt(String(nonce)),
-      });
+      return strings('notifications.speedup_title', { nonce: parseInt(nonce) });
     case 'received_payment':
       return strings('notifications.received_payment_title');
     case 'cancelled':
@@ -189,37 +151,26 @@ const getTitle = (
   }
 };
 
-export const getDescription = (
-  status: NotificationStatus,
-  { amount = null, type = null }: NotificationData,
-): string => {
+export const getDescription = (status, { amount = null, type = null }) => {
   if (amount && typeof amount !== 'object' && type) {
     return strings(`notifications.${type}_${status}_message`, { amount });
   }
   return strings(`notifications.${status}_message`);
 };
 
-interface BaseNotificationProps {
-  status: NotificationStatus;
-  data?: NotificationData;
-  onPress?: () => void;
-  onHide?: () => void;
-  autoDismiss?: boolean;
-}
-
 /**
  * BaseNotification component used to render in-app notifications
  */
-const BaseNotification: React.FC<BaseNotificationProps> = ({
+const BaseNotification = ({
   status,
-  data = {},
+  data = null,
+  data: { description = null, title = null },
   onPress,
   onHide,
-  autoDismiss = false,
+  autoDismiss,
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const { description = null, title = null } = data;
 
   return (
     <View style={baseStyles.flexGrow}>
@@ -254,6 +205,18 @@ const BaseNotification: React.FC<BaseNotificationProps> = ({
       </View>
     </View>
   );
+};
+
+BaseNotification.propTypes = {
+  status: PropTypes.string,
+  data: PropTypes.object,
+  onPress: PropTypes.func,
+  onHide: PropTypes.func,
+  autoDismiss: PropTypes.bool,
+};
+
+BaseNotification.defaultProps = {
+  autoDismiss: false,
 };
 
 export default BaseNotification;

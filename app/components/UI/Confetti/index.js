@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import Device from '../../../util/device';
 import ConfettiNormal from 'react-native-confetti';
@@ -7,21 +7,17 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 const isAndroid = Platform.OS === 'android';
 const ORIGIN = { x: Device.getDeviceWidth() / 2, y: 0 };
 
-interface ConfettiProps {
-  [key: string]: unknown;
-}
-
-const Confetti: React.FC<ConfettiProps> = (props) => {
-  const confettiRef = useRef<ConfettiNormal | null>(null);
+const Confetti = (props) => {
+  let confettiView = false;
 
   useEffect(() => {
-    if (isAndroid && confettiRef.current) {
-      confettiRef.current.startConfetti();
+    if (isAndroid && confettiView) {
+      confettiView.startConfetti();
     }
-  }, []);
+  }, [confettiView]);
 
   return isAndroid ? (
-    <ConfettiNormal ref={confettiRef} {...props} />
+    <ConfettiNormal ref={(node) => (confettiView = node)} {...props} />
   ) : (
     <ConfettiCannon fadeOut count={300} origin={ORIGIN} {...props} />
   );
