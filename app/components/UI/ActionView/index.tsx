@@ -1,25 +1,30 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import StyledButton from '../StyledButton';
-import PropTypes from 'prop-types';
 import {
   Keyboard,
   StyleSheet,
   View,
   ActivityIndicator,
   TouchableWithoutFeedback,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import { baseStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useTheme } from '../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 
 export const ConfirmButtonState = {
   Error: 'error',
   Warning: 'warning',
   Normal: 'normal',
-};
+} as const;
 
-const getStyles = (colors) =>
+type ConfirmButtonStateType =
+  (typeof ConfirmButtonState)[keyof typeof ConfirmButtonState];
+
+const getStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     actionContainer: {
       flex: 0,
@@ -46,33 +51,55 @@ const getStyles = (colors) =>
     },
   });
 
+interface ActionViewProps {
+  cancelTestID?: string;
+  confirmTestID?: string;
+  cancelText?: string;
+  children?: ReactNode;
+  confirmText?: string;
+  confirmButtonMode?: 'normal' | 'confirm' | 'sign';
+  onCancelPress?: () => void;
+  onConfirmPress?: () => void;
+  onTouchablePress?: () => void;
+  showCancelButton?: boolean;
+  showConfirmButton?: boolean;
+  confirmed?: boolean;
+  confirmDisabled?: boolean;
+  loading?: boolean;
+  keyboardShouldPersistTaps?: 'always' | 'never' | 'handled';
+  style?: StyleProp<ViewStyle>;
+  confirmButtonState?: ConfirmButtonStateType;
+  scrollViewTestID?: string;
+  contentContainerStyle?: StyleProp<ViewStyle>;
+}
+
 /**
  * PureComponent that renders scrollable content above configurable buttons
  */
-export default function ActionView({
-  cancelTestID,
-  confirmTestID,
-  cancelText,
+const ActionView: React.FC<ActionViewProps> = ({
+  cancelTestID = '',
+  confirmTestID = '',
+  cancelText: cancelTextProp = '',
   children,
-  confirmText,
-  confirmButtonMode,
+  confirmText: confirmTextProp = '',
+  confirmButtonMode = 'normal',
   onCancelPress,
   onConfirmPress,
   onTouchablePress,
-  showCancelButton,
-  showConfirmButton,
-  confirmed,
+  showCancelButton = true,
+  showConfirmButton = true,
+  confirmed = false,
   confirmDisabled,
   loading = false,
   keyboardShouldPersistTaps = 'never',
   style = undefined,
   confirmButtonState = ConfirmButtonState.Normal,
   scrollViewTestID,
-  contentContainerStyle,
-}) {
+  contentContainerStyle = undefined,
+}) => {
   const { colors } = useTheme();
-  confirmText = confirmText || strings('action_view.confirm');
-  cancelText = cancelText || strings('action_view.cancel');
+  const confirmText = confirmTextProp || strings('action_view.confirm');
+  const cancelText = cancelTextProp || strings('action_view.cancel');
   const styles = getStyles(colors);
 
   return (
@@ -86,7 +113,6 @@ export default function ActionView({
       >
         <TouchableWithoutFeedback
           style={baseStyles.flexGrow}
-          // eslint-disable-next-line react/jsx-no-bind
           onPress={() => {
             if (keyboardShouldPersistTaps === 'handled') {
               Keyboard.dismiss();
@@ -140,97 +166,6 @@ export default function ActionView({
       </KeyboardAwareScrollView>
     </View>
   );
-}
-
-ActionView.defaultProps = {
-  cancelText: '',
-  confirmButtonMode: 'normal',
-  confirmText: '',
-  confirmTestID: '',
-  confirmed: false,
-  cancelTestID: '',
-  showCancelButton: true,
-  showConfirmButton: true,
-  contentContainerStyle: undefined,
 };
 
-ActionView.propTypes = {
-  /**
-   * TestID for the cancel button
-   */
-  cancelTestID: PropTypes.string,
-  /**
-   * TestID for the confirm button
-   */
-  confirmTestID: PropTypes.string,
-  /**
-   * Text to show in the cancel button
-   */
-  cancelText: PropTypes.string,
-  /**
-   * Content to display above the action buttons
-   */
-  children: PropTypes.node,
-  /**
-   * Type of button to show as the confirm button
-   */
-  confirmButtonMode: PropTypes.oneOf(['normal', 'confirm', 'sign']),
-  /**
-   * Text to show in the confirm button
-   */
-  confirmText: PropTypes.string,
-  /**
-   * Whether action view was confirmed in order to block any other interaction
-   */
-  confirmed: PropTypes.bool,
-  /**
-   * Whether action view confirm button should be disabled
-   */
-  confirmDisabled: PropTypes.bool,
-  /**
-   * Called when the cancel button is clicked
-   */
-  onCancelPress: PropTypes.func,
-  /**
-   * Called when the confirm button is clicked
-   */
-  onConfirmPress: PropTypes.func,
-  /**
-   * Called when the touchable without feedback is clicked
-   */
-  onTouchablePress: PropTypes.func,
-
-  /**
-   * Whether cancel button is shown
-   */
-  showCancelButton: PropTypes.bool,
-  /**
-   * Whether confirm button is shown
-   */
-  showConfirmButton: PropTypes.bool,
-  /**
-   * Loading after confirm
-   */
-  loading: PropTypes.bool,
-  /**
-   * Determines if the keyboard should stay visible after a tap
-   */
-  keyboardShouldPersistTaps: PropTypes.string,
-  /**
-   * Optional View styles. Applies to scroll view
-   */
-  style: PropTypes.object,
-  /**
-   * Optional Confirm button state - this can be Error/Warning/Normal.
-   */
-  confirmButtonState: PropTypes.string,
-
-  /**
-   * Optional TestID for the parent scroll View
-   */
-  scrollViewTestID: PropTypes.string,
-  /**
-   * Optional View styles. Applies to scroll view
-   */
-  contentContainerStyle: PropTypes.object,
-};
+export default ActionView;

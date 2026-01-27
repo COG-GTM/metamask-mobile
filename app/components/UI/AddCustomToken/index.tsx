@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, createRef } from 'react';
 import {
   Text,
   TextInput,
@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import Engine from '../../../core/Engine';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../locales/i18n';
 import { isValidAddress } from 'ethereumjs-util';
 import { isSmartContractAddress } from '../../../util/transactions';
@@ -51,8 +50,9 @@ import Avatar, {
 } from '../../../component-library/components/Avatars/Avatar';
 import ButtonIcon from '../../../component-library/components/Buttons/ButtonIcon';
 import { endTrace, trace, TraceName } from '../../../util/trace';
+import { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -146,13 +146,62 @@ const createStyles = (colors) =>
       color: colors.text.default,
       fontSize: 16,
     },
+    buttonIcon: {},
   });
 
+interface NavigationProp {
+  goBack: () => void;
+  navigate: (screen: string, params?: object) => void;
+  push: (screen: string, params?: object) => void;
+}
+
+interface MetricsProp {
+  trackEvent: (event: object) => void;
+  createEventBuilder: (event: string) => {
+    addProperties: (params: object) => {
+      build: () => object;
+    };
+  };
+}
+
+interface AddCustomTokenProps {
+  chainId?: string;
+  networkName?: string;
+  ticker?: string;
+  type?: string;
+  navigation: NavigationProp;
+  isTokenDetectionSupported?: boolean;
+  metrics: MetricsProp;
+  setOpenNetworkSelector?: (open: boolean) => void;
+  selectedNetwork?: string;
+  networkClientId?: string;
+}
+
+interface AddCustomTokenState {
+  address: string;
+  symbol: string;
+  decimals: string;
+  name: string;
+  warningAddress: string;
+  warningSymbol: string;
+  warningDecimals: string;
+  isSymbolEditable: boolean;
+  isDecimalEditable: boolean;
+  onFocusAddress: boolean;
+  showTokenSymbolAndDecimalsInput?: boolean;
+}
+
 /**
- * Copmonent that provides ability to add custom tokens.
+ * Component that provides ability to add custom tokens.
  */
-class AddCustomToken extends PureComponent {
-  state = {
+class AddCustomToken extends PureComponent<
+  AddCustomTokenProps,
+  AddCustomTokenState
+> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  state: AddCustomTokenState = {
     address: '',
     symbol: '',
     decimals: '',
@@ -165,69 +214,26 @@ class AddCustomToken extends PureComponent {
     onFocusAddress: false,
   };
 
-  static propTypes = {
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string,
-    /**
-     * The network name
-     */
-    networkName: PropTypes.string,
-    /**
-     * The network ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * The network type
-     */
-    type: PropTypes.string,
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Checks if token detection is supported
-     */
-    isTokenDetectionSupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
+  assetSymbolInput = createRef<TextInput>();
+  assetPrecisionInput = createRef<TextInput>();
 
-    /**
-     * Function to set the open network selector
-     */
-    setOpenNetworkSelector: PropTypes.func,
-
-    /**
-     * The selected network
-     */
-    selectedNetwork: PropTypes.string,
-
-    /**
-     * The network client ID
-     */
-    networkClientId: PropTypes.string,
-  };
-
-  getTokenAddedAnalyticsParams = () => {
+  getTokenAddedAnalyticsParams = (): object | undefined => {
     try {
       const { chainId } = this.props;
       const { address, symbol } = this.state;
       return {
         token_address: address,
         token_symbol: symbol,
-        chain_id: getDecimalChainId(chainId),
+        chain_id: chainId ? getDecimalChainId(chainId) : undefined,
         source: 'Custom token',
       };
     } catch (error) {
-      Logger.error(error, 'AddCustomToken.getTokenAddedAnalyticsParams error');
+      Logger.error(error as Error, 'AddCustomToken.getTokenAddedAnalyticsParams error');
       return undefined;
     }
   };
 
-  addToken = async () => {
+  addToken = async (): Promise<void> => {
     if (!(await this.validateCustomToken())) return;
     const { TokensController } = Engine.context;
     const { address, symbol, decimals, name } = this.state;
@@ -238,7 +244,7 @@ class AddCustomToken extends PureComponent {
     await TokensController.addToken({
       address,
       symbol,
-      decimals,
+      decimals: Number(decimals),
       name,
       chainId,
       networkClientId,
@@ -256,7 +262,6 @@ class AddCustomToken extends PureComponent {
       );
     }
 
-    // Clear state before closing
     this.setState(
       {
         address: '',
@@ -281,11 +286,11 @@ class AddCustomToken extends PureComponent {
     );
   };
 
-  cancelAddToken = () => {
+  cancelAddToken = (): void => {
     this.props.navigation.goBack();
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: AddCustomTokenProps): void {
     if (prevProps.networkClientId !== this.props.networkClientId) {
       this.setState({
         address: '',
@@ -297,7 +302,7 @@ class AddCustomToken extends PureComponent {
     }
   }
 
-  onAddressChange = async (address) => {
+  onAddressChange = async (address: string): Promise<void> => {
     this.setState({ address });
     if (address.length === 42) {
       try {
@@ -324,8 +329,8 @@ class AddCustomToken extends PureComponent {
 
           this.setState({
             decimals: String(decimals),
-            symbol,
-            name,
+            symbol: symbol as string,
+            name: name as string,
           });
         } else {
           this.setState({ isSymbolEditable: true });
@@ -336,7 +341,6 @@ class AddCustomToken extends PureComponent {
         this.setState({ isDecimalEditable: true });
       }
     } else {
-      // We are cleaning other fields when changing the token address
       this.setState({
         decimals: '',
         symbol: '',
@@ -348,21 +352,23 @@ class AddCustomToken extends PureComponent {
     }
   };
 
-  onSymbolChange = (symbol) => {
+  onSymbolChange = (symbol: string): void => {
     this.setState({ symbol });
   };
 
-  onDecimalsChange = (decimals) => {
+  onDecimalsChange = (decimals: string): void => {
     this.setState({ decimals });
   };
 
-  validateCustomTokenAddress = async (address) => {
+  validateCustomTokenAddress = async (address: string): Promise<boolean> => {
     let validated = true;
     const isValidTokenAddress = isValidAddress(address);
 
     const { chainId } = this.props;
     const toSmartContract =
-      isValidTokenAddress && (await isSmartContractAddress(address, chainId));
+      isValidTokenAddress &&
+      chainId &&
+      (await isSmartContractAddress(address, chainId));
 
     const addressWithoutSpaces = address.replace(regex.addressWithSpaces, '');
 
@@ -387,7 +393,7 @@ class AddCustomToken extends PureComponent {
     return validated;
   };
 
-  validateCustomTokenSymbol = () => {
+  validateCustomTokenSymbol = (): boolean => {
     let validated = true;
     const symbol = this.state.symbol;
     const symbolWithoutSpaces = symbol.replace(regex.addressWithSpaces, '');
@@ -404,7 +410,7 @@ class AddCustomToken extends PureComponent {
     return validated;
   };
 
-  validateCustomTokenDecimals = () => {
+  validateCustomTokenDecimals = (): boolean => {
     let validated = true;
     const decimals = this.state.decimals;
     const decimalsWithoutSpaces = decimals.replace(regex.addressWithSpaces, '');
@@ -419,7 +425,7 @@ class AddCustomToken extends PureComponent {
     return validated;
   };
 
-  validateCustomToken = async () => {
+  validateCustomToken = async (): Promise<boolean> => {
     const validatedAddress = await this.validateCustomTokenAddress(
       this.state.address,
     );
@@ -428,32 +434,29 @@ class AddCustomToken extends PureComponent {
     return validatedAddress && validatedSymbol && validatedDecimals;
   };
 
-  assetSymbolInput = React.createRef();
-  assetPrecisionInput = React.createRef();
-
-  jumpToAssetSymbol = () => {
+  jumpToAssetSymbol = (): void => {
     this.validateCustomToken();
     this.validateCustomTokenSymbol();
     this.setState({ showTokenSymbolAndDecimalsInput: true });
     this.setState({ isSymbolEditable: true });
   };
 
-  handleFocusAddress = () => {
+  handleFocusAddress = (): void => {
     this.setState({ onFocusAddress: true });
   };
 
-  handleBlurAddress = () => {
+  handleBlurAddress = (): void => {
     this.setState({ onFocusAddress: false });
   };
 
-  jumpToAssetPrecision = () => {
+  jumpToAssetPrecision = (): void => {
     const { current } = this.assetPrecisionInput;
     current && current.focus();
   };
 
-  renderInfoBanner = () => {
+  renderInfoBanner = (): React.ReactElement => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -493,13 +496,12 @@ class AddCustomToken extends PureComponent {
     );
   };
 
-  renderWarningBanner = () => {
+  renderWarningBanner = (): React.ReactElement => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
-    const goToWebView = () => {
-      // TODO: This functionality exists in a bunch of other places. We need to unify this into a utils function
+    const goToWebView = (): void => {
       navigation.navigate('Webview', {
         screen: 'SimpleWebview',
         params: {
@@ -528,7 +530,7 @@ class AddCustomToken extends PureComponent {
     );
   };
 
-  goToConfirmAddToken = () => {
+  goToConfirmAddToken = (): void => {
     const { symbol, address, name, decimals } = this.state;
     const { networkName, chainId, ticker } = this.props;
     const selectedAsset = [
@@ -554,12 +556,12 @@ class AddCustomToken extends PureComponent {
     });
   };
 
-  renderBanner = () =>
+  renderBanner = (): React.ReactElement =>
     this.props.isTokenDetectionSupported
       ? this.renderWarningBanner()
       : this.renderInfoBanner();
 
-  render = () => {
+  render = (): React.ReactElement => {
     const {
       onFocusAddress,
       isSymbolEditable,
@@ -570,8 +572,8 @@ class AddCustomToken extends PureComponent {
       warningDecimals,
       warningAddress,
     } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = this.context?.colors || mockTheme.colors;
+    const themeAppearance = this.context?.themeAppearance || 'light';
     const styles = createStyles(colors);
     const isDisabled = !symbol || !decimals || !this.props.selectedNetwork;
 
@@ -605,8 +607,8 @@ class AddCustomToken extends PureComponent {
           <View style={styles.addressWrapper}>
             <TouchableOpacity
               style={styles.networkSelectorContainer}
-              onPress={() => this.props.setOpenNetworkSelector(true)}
-              onLongPress={() => this.props.setOpenNetworkSelector(true)}
+              onPress={() => this.props.setOpenNetworkSelector?.(true)}
+              onLongPress={() => this.props.setOpenNetworkSelector?.(true)}
             >
               <Text style={styles.networkSelectorText}>
                 {this.props.selectedNetwork ||
@@ -630,7 +632,7 @@ class AddCustomToken extends PureComponent {
                   iconName={IconName.ArrowDown}
                   iconColor={IconColor.Default}
                   testID={ImportTokenViewSelectorsIDs.SELECT_NETWORK_BUTTON}
-                  onPress={() => this.props.setOpenNetworkSelector(true)}
+                  onPress={() => this.props.setOpenNetworkSelector?.(true)}
                   accessibilityRole="button"
                   style={styles.buttonIcon}
                 />
@@ -752,7 +754,5 @@ class AddCustomToken extends PureComponent {
     );
   };
 }
-
-AddCustomToken.contextType = ThemeContext;
 
 export default withMetricsAwareness(AddCustomToken);
