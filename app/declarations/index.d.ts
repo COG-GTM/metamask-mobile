@@ -6,6 +6,32 @@ declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
 declare module 'react-native-fade-in-image';
 
+declare module 'react-native-progress/Bar' {
+  import { ComponentType } from 'react';
+  import { ViewStyle } from 'react-native';
+
+  interface ProgressBarProps {
+    progress?: number;
+    indeterminate?: boolean;
+    indeterminateAnimationDuration?: number;
+    color?: string;
+    unfilledColor?: string;
+    borderWidth?: number;
+    borderColor?: string;
+    borderRadius?: number;
+    width?: number | null;
+    height?: number;
+    animated?: boolean;
+    useNativeDriver?: boolean;
+    animationConfig?: object;
+    animationType?: 'decay' | 'timing' | 'spring';
+    style?: ViewStyle;
+  }
+
+  const ProgressBar: ComponentType<ProgressBarProps>;
+  export default ProgressBar;
+}
+
 declare module 'react-native-fast-crypto';
 
 declare module 'react-native-minimizer';
