@@ -59,9 +59,8 @@ class AnimatedTransactionModal extends PureComponent<
   AnimatedTransactionModalState
 > {
   static contextType = ThemeContext;
-  declare context: Theme;
 
-  reviewToEditValue = new Animated.Value(0);
+  reviewToEditValue= new Animated.Value(0);
   reviewToDataValue = new Animated.Value(0);
   editToAdvancedValue = new Animated.Value(0);
 
@@ -227,7 +226,8 @@ class AnimatedTransactionModal extends PureComponent<
       toAdvancedFrom,
     } = this.state;
     const { ready, children } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const components = React.Children.toArray(children);
     let gasTransformStyle;
