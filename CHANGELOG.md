@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- chore: convert app entry point and build tooling files to TypeScript (`index.js` -> `index.ts`, `metro.transform.js` -> `metro.transform.ts`, `scripts/inpage-bridge/webpack.config.js` -> `webpack.config.ts`)
+- chore: convert app entry point and webpack config to TypeScript (`index.js` -> `index.ts`, `scripts/inpage-bridge/webpack.config.js` -> `webpack.config.ts`)
 
 ### Added
 

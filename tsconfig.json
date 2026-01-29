@@ -63,8 +63,7 @@
     "app/**/*",
     "node_modules/expect-webdriverio",
     "node_modules/expect-webdriverio/jest",
-    "e2e/**/*",
-    "metro.transform.ts"
+    "e2e/**/*"
   ],
   "exclude": [
     "node_modules",

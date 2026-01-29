@@ -35,7 +35,7 @@ module.exports = function (baseConfig) {
         },
       },
       transformer: {
-        babelTransformerPath: require.resolve('./metro.transform.ts'),
+        babelTransformerPath: require.resolve('./metro.transform.js'),
         assetPlugins: [
           'react-native-svg-asset-plugin',
           'expo-asset/tools/hashAssetFiles',
