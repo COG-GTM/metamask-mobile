@@ -62,7 +62,7 @@ const scale = (
     factor = 1,
     scaleVertical = false,
     scaleUp = false,
-    baseSize = undefined,
+    baseSize,
     baseModel,
   }: ScaleOptions = {},
 ): number => {
