@@ -40,7 +40,7 @@ module.exports = {
       },
     },
     {
-      files: ['*.js', '*.jsx'],
+      files: ['*.js', 'scripts/**/*.js'],
       parser: '@babel/eslint-parser',
       parserOptions: {
         requireConfigFile: false,
@@ -49,39 +49,26 @@ module.exports = {
         },
       },
       rules: {
-        // under discussion
-        'no-unused-vars': 'off',
-        'react/no-unstable-nested-components': [
-          'warn',
-          {
-            allowAsProps: true,
-          },
-        ],
-      },
-    },
-    {
-      files: ['scripts/**/*.js', 'app.config.js'],
-      rules: {
         'no-console': 0,
         'import/no-commonjs': 0,
         'import/no-nodejs-modules': 0,
       },
     },
     {
-      files: ['**/*.test.{js,ts,tsx}', '**/*.stories.{js,ts,tsx}'],
+      files: ['**/*.test.{ts,tsx}', '**/*.stories.{ts,tsx}'],
       rules: {
         '@metamask/design-tokens/color-no-hex': 'off',
       },
     },
     {
       files: [
-        'app/components/UI/Name/**/*.{js,ts,tsx}',
-        'app/components/UI/SimulationDetails/**/*.{js,ts,tsx}',
-        'app/components/hooks/DisplayName/**/*.{js,ts,tsx}',
-        'app/components/Views/confirmations/**/*.{js,ts,tsx}',
+        'app/components/UI/Name/**/*.{ts,tsx}',
+        'app/components/UI/SimulationDetails/**/*.{ts,tsx}',
+        'app/components/hooks/DisplayName/**/*.{ts,tsx}',
+        'app/components/Views/confirmations/**/*.{ts,tsx}',
       ],
       excludedFiles: [
-        'app/components/Views/confirmations/components/WatchAssetRequest/**/*.{js,ts,tsx}',
+        'app/components/Views/confirmations/components/WatchAssetRequest/**/*.{ts,tsx}',
       ],
       rules: {
         'no-restricted-syntax': [

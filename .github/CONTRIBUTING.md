@@ -2,6 +2,10 @@
 
 If you're submitting code to MetaMask, there are some simple things we'd appreciate you doing to help us stay organized!
 
+### TypeScript-Only Codebase
+
+This project uses TypeScript exclusively for the `app/` directory. All new code contributions must be written in TypeScript (`.ts` or `.tsx` files). JavaScript files (`.js` or `.jsx`) are not accepted in the `app/` directory and will be rejected by our CI fitness functions.
+
 ### Finding the right project
 
 Before taking the time to code and implement something, feel free to open an issue and discuss it! There may even be an issue already open, and together we may come up with a specific strategy before you take your precious time to write code.
