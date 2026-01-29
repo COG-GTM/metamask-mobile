@@ -4,6 +4,20 @@ const {
   ASSET: { ETH, ERC20, ERC721 },
 } = TransactionTypes;
 
+interface SelectedAsset {
+  isETH?: boolean;
+  tokenId?: string;
+  [key: string]: unknown;
+}
+
+interface Transaction {
+  [key: string]: unknown;
+}
+
+interface SecurityAlertResponse {
+  [key: string]: unknown;
+}
+
 /**
  * Clears transaction object completely
  */
@@ -16,9 +30,9 @@ export function resetTransaction() {
 /**
  * Starts a new transaction state with an asset
  *
- * @param {object} selectedAsset - Asset to start the transaction with
+ * @param selectedAsset - Asset to start the transaction with
  */
-export function newAssetTransaction(selectedAsset) {
+export function newAssetTransaction(selectedAsset: SelectedAsset) {
   return {
     type: 'NEW_ASSET_TRANSACTION',
     selectedAsset,
@@ -33,18 +47,18 @@ export function newAssetTransaction(selectedAsset) {
 /**
  * Sets transaction to address and ensRecipient in case is available
  *
- * @param {string} from - Address to send the transaction from
- * @param {string} to - Address to send the transaction to
- * @param {string} ensRecipient - Resolved ens name to send the transaction to
- * @param {string} transactionToName - Resolved address book name for to address
- * @param {string} transactionFromName - Resolved address book name for from address
+ * @param from - Address to send the transaction from
+ * @param to - Address to send the transaction to
+ * @param ensRecipient - Resolved ens name to send the transaction to
+ * @param transactionToName - Resolved address book name for to address
+ * @param transactionFromName - Resolved address book name for from address
  */
 export function setRecipient(
-  from,
-  to,
-  ensRecipient,
-  transactionToName,
-  transactionFromName,
+  from: string,
+  to: string,
+  ensRecipient: string,
+  transactionToName: string,
+  transactionFromName: string,
 ) {
   return {
     type: 'SET_RECIPIENT',
@@ -59,9 +73,9 @@ export function setRecipient(
 /**
  * Sets asset as selectedAsset
  *
- * @param {object} selectedAsset - Asset to start the transaction with
+ * @param selectedAsset - Asset to start the transaction with
  */
-export function setSelectedAsset(selectedAsset) {
+export function setSelectedAsset(selectedAsset: SelectedAsset) {
   return {
     type: 'SET_SELECTED_ASSET',
     selectedAsset,
@@ -76,9 +90,9 @@ export function setSelectedAsset(selectedAsset) {
 /**
  * Sets transaction object to be sent
  *
- * @param {object} transaction - Transaction object with from, to, data, gas, gasPrice, value
+ * @param transaction - Transaction object with from, to, data, gas, gasPrice, value
  */
-export function prepareTransaction(transaction) {
+export function prepareTransaction(transaction: Transaction) {
   return {
     type: 'PREPARE_TRANSACTION',
     transaction,
@@ -86,8 +100,8 @@ export function prepareTransaction(transaction) {
 }
 
 export function setTransactionSecurityAlertResponse(
-  transactionId,
-  securityAlertResponse,
+  transactionId: string,
+  securityAlertResponse: SecurityAlertResponse,
 ) {
   return {
     type: 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE',
@@ -99,9 +113,9 @@ export function setTransactionSecurityAlertResponse(
 /**
  * Sets any attribute in transaction object
  *
- * @param {object} transaction - New transaction object
+ * @param transaction - New transaction object
  */
-export function setTransactionObject(transaction) {
+export function setTransactionObject(transaction: Transaction) {
   return {
     type: 'SET_TRANSACTION_OBJECT',
     transaction,
@@ -111,9 +125,9 @@ export function setTransactionObject(transaction) {
 /**
  * Sets the current transaction ID only.
  *
- * @param {object} transactionId - Id of the current transaction.
+ * @param transactionId - Id of the current transaction.
  */
-export function setTransactionId(transactionId) {
+export function setTransactionId(transactionId: string) {
   return {
     type: 'SET_TRANSACTION_ID',
     transactionId,
@@ -123,9 +137,9 @@ export function setTransactionId(transactionId) {
 /**
  * Enable selectable tokens (ERC20 and Ether) to send in a transaction
  *
- * @param {object} asset - Asset to start the transaction with
+ * @param asset - Asset to start the transaction with
  */
-export function setTokensTransaction(asset) {
+export function setTokensTransaction(asset: SelectedAsset) {
   return {
     type: 'SET_TOKENS_TRANSACTION',
     asset,
@@ -135,37 +149,37 @@ export function setTokensTransaction(asset) {
 /**
  * Enable Ether only to send in a transaction
  *
- * @param {object} transaction - Transaction additional object
+ * @param transaction - Transaction additional object
  */
-export function setEtherTransaction(transaction) {
+export function setEtherTransaction(transaction: Transaction) {
   return {
     type: 'SET_ETHER_TRANSACTION',
     transaction,
   };
 }
 
-export function setNonce(nonce) {
+export function setNonce(nonce: string) {
   return {
     type: 'SET_NONCE',
     nonce,
   };
 }
 
-export function setProposedNonce(proposedNonce) {
+export function setProposedNonce(proposedNonce: string) {
   return {
     type: 'SET_PROPOSED_NONCE',
     proposedNonce,
   };
 }
 
-export function setMaxValueMode(maxValueMode) {
+export function setMaxValueMode(maxValueMode: boolean) {
   return {
     type: 'SET_MAX_VALUE_MODE',
     maxValueMode,
   };
 }
 
-export function setTransactionValue(value) {
+export function setTransactionValue(value: string) {
   return {
     type: 'SET_TRANSACTION_VALUE',
     value,

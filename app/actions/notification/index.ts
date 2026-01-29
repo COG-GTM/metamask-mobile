@@ -9,18 +9,27 @@ export function hideCurrentNotification() {
   };
 }
 
-export function hideNotificationById(id) {
+export function hideNotificationById(id: string) {
   return {
     type: ACTIONS.HIDE_NOTIFICATION_BY_ID,
     id,
   };
 }
 
+interface TransactionNotificationParams {
+  autodismiss: number;
+  transaction: {
+    id: string;
+    [key: string]: unknown;
+  };
+  status: string;
+}
+
 export function modifyOrShowTransactionNotificationById({
   autodismiss,
   transaction,
   status,
-}) {
+}: TransactionNotificationParams) {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION,
     autodismiss,
@@ -29,12 +38,19 @@ export function modifyOrShowTransactionNotificationById({
   };
 }
 
+interface SimpleNotificationParams {
+  autodismiss: number;
+  title: string;
+  description: string;
+  status: string;
+}
+
 export function modifyOrShowSimpleNotificationById({
   autodismiss,
   title,
   description,
   status,
-}) {
+}: SimpleNotificationParams) {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION,
     autodismiss,
@@ -44,7 +60,12 @@ export function modifyOrShowSimpleNotificationById({
   };
 }
 
-export function replaceNotificationById(notification) {
+interface Notification {
+  id: string;
+  [key: string]: unknown;
+}
+
+export function replaceNotificationById(notification: Notification) {
   return {
     type: ACTIONS.REPLACE_NOTIFICATION_BY_ID,
     notification,
@@ -52,7 +73,7 @@ export function replaceNotificationById(notification) {
   };
 }
 
-export function removeNotificationById(id) {
+export function removeNotificationById(id: string) {
   return {
     type: ACTIONS.REMOVE_NOTIFICATION_BY_ID,
     id,
@@ -65,13 +86,21 @@ export function removeCurrentNotification() {
   };
 }
 
+interface ShowSimpleNotificationParams {
+  autodismiss: number;
+  title: string;
+  description: string;
+  status: string;
+  id: string;
+}
+
 export function showSimpleNotification({
   autodismiss,
   title,
   description,
   status,
   id,
-}) {
+}: ShowSimpleNotificationParams) {
   return {
     id,
     type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
@@ -86,7 +115,7 @@ export function showTransactionNotification({
   autodismiss,
   transaction,
   status,
-}) {
+}: TransactionNotificationParams) {
   return {
     type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
     autodismiss,
