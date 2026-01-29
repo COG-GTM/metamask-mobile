@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import { useNavigationState } from '@react-navigation/native';
 import {
   removeCurrentNotification,
@@ -9,7 +8,7 @@ import {
 import { NotificationTypes } from '../../../util/notifications';
 import TransactionNotification from './TransactionNotification';
 import SimpleNotification from './SimpleNotification';
-import { currentNotificationSelector } from '../../../reducers/notification';
+// currentNotificationSelector not used - we inline the logic to avoid type issues
 
 import { findRouteNameFromNavigatorState } from '../../../util/general';
 import usePrevious from '../../hooks/usePrevious';
@@ -18,24 +17,40 @@ import {
   withTiming,
   Easing,
   runOnJS,
+  SharedValue,
 } from 'react-native-reanimated';
+import { RootState } from '../../../reducers';
 
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
 const BROWSER_ROUTE = 'BrowserView';
 
+interface CurrentNotification {
+  type?: string;
+  autodismiss?: number;
+  isVisible?: boolean;
+  [key: string]: unknown;
+}
+
+interface NotificationProps {
+  currentNotification: CurrentNotification;
+  currentNotificationIsVisible: boolean;
+  hideCurrentNotification: () => void;
+  removeCurrentNotification: () => void;
+}
+
 function Notification({
   currentNotification,
   currentNotificationIsVisible,
-  hideCurrentNotification,
-  removeCurrentNotification,
-}) {
+  hideCurrentNotification: hideNotification,
+  removeCurrentNotification: removeNotification,
+}: NotificationProps) {
   const notificationAnimated = useSharedValue(200);
   const routes = useNavigationState((state) => state.routes);
 
   const prevNotificationIsVisible = usePrevious(currentNotificationIsVisible);
 
-  const animatedTimingStart = useCallback((animatedRef, toValue, callback) => {
+  const animatedTimingStart = useCallback((animatedRef: SharedValue<number>, toValue: number, callback?: () => void) => {
     animatedRef.value = withTiming(
       toValue,
       { duration: 500, easing: Easing.linear },
@@ -50,33 +65,33 @@ function Notification({
 
   useEffect(
     () => () => {
-      animatedTimingStart(notificationAnimated, 200, removeCurrentNotification);
-      hideCurrentNotification();
+      animatedTimingStart(notificationAnimated, 200, removeNotification);
+      hideNotification();
     },
     [
       notificationAnimated,
       animatedTimingStart,
-      hideCurrentNotification,
-      removeCurrentNotification,
+      hideNotification,
+      removeNotification,
     ],
   );
 
   useEffect(() => {
     if (!prevNotificationIsVisible && currentNotificationIsVisible) {
       animatedTimingStart(notificationAnimated, 0);
-      hideCurrentNotification();
+      hideNotification();
       setTimeout(() => {
         animatedTimingStart(
           notificationAnimated,
           200,
-          removeCurrentNotification,
+          removeNotification,
         );
       }, currentNotification.autodismiss || 5000);
     }
   }, [
     animatedTimingStart,
-    hideCurrentNotification,
-    removeCurrentNotification,
+    hideNotification,
+    removeNotification,
     currentNotificationIsVisible,
     prevNotificationIsVisible,
     currentNotification.autodismiss,
@@ -87,7 +102,7 @@ function Notification({
   if (currentNotification.type === TRANSACTION)
     return (
       <TransactionNotification
-        onClose={hideCurrentNotification}
+        onClose={hideNotification}
         isInBrowserView={isInBrowserView}
         notificationAnimated={notificationAnimated}
         animatedTimingStart={animatedTimingStart}
@@ -105,24 +120,19 @@ function Notification({
   return null;
 }
 
-Notification.propTypes = {
-  currentNotification: PropTypes.object,
-  currentNotificationIsVisible: PropTypes.bool,
-  hideCurrentNotification: PropTypes.func,
-  removeCurrentNotification: PropTypes.func,
-};
-
-const mapStateToProps = (state) => {
-  const currentNotification = currentNotificationSelector(state.notification);
+const mapStateToProps = (state: RootState) => {
+  // The notification state has a notifications array, and we want the first one
+  const notificationState = state.notification as { notifications: CurrentNotification[] };
+  const currentNotification: CurrentNotification = notificationState?.notifications?.[0] || {};
   return {
     currentNotification,
     currentNotificationIsVisible: Boolean(currentNotification.isVisible),
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  removeCurrentNotification: () => dispatch(removeCurrentNotification()),
-  hideCurrentNotification: () => dispatch(hideCurrentNotification()),
-});
+const mapDispatchToProps = {
+  removeCurrentNotification,
+  hideCurrentNotification,
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Notification);
