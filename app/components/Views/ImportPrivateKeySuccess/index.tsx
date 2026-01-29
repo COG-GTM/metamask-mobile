@@ -84,7 +84,7 @@ const createStyles = (colors: Theme['colors']) =>
  * View that's displayed the first time imports account
  */
 class ImportPrivateKeySuccess extends PureComponent<ImportPrivateKeySuccessProps> {
-  declare context: { colors: Theme['colors'] };
+  static contextType = ThemeContext;
 
   componentDidMount = () => {
     InteractionManager.runAfterInteractions(() => {
@@ -113,7 +113,7 @@ class ImportPrivateKeySuccess extends PureComponent<ImportPrivateKeySuccessProps
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as { colors: Theme['colors'] }).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -159,7 +159,5 @@ class ImportPrivateKeySuccess extends PureComponent<ImportPrivateKeySuccessProps
     );
   }
 }
-
-ImportPrivateKeySuccess.contextType = ThemeContext;
 
 export default ImportPrivateKeySuccess;
