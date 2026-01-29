@@ -1,6 +1,6 @@
 interface Bookmark {
   url: string;
-  name: string;
+  name?: string;
 }
 
 export function addBookmark(bookmark: Bookmark) {
