@@ -1,6 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, GestureResponderEvent } from 'react-native';
 
 import SelectorButton from '../../../Base/SelectorButton';
 import Text from '../../../Base/Text';
@@ -12,7 +11,15 @@ const styles = StyleSheet.create({
   },
 });
 
-function TokenSelectButton({ icon, symbol, onPress, disabled, label }) {
+interface TokenSelectButtonProps {
+  icon?: string;
+  symbol?: string;
+  label?: string;
+  onPress?: (event: GestureResponderEvent) => void;
+  disabled?: boolean;
+}
+
+function TokenSelectButton({ icon, symbol, onPress = () => undefined, disabled, label }: TokenSelectButtonProps) {
   return (
     <SelectorButton onPress={onPress} disabled={disabled}>
       <View style={styles.icon}>
@@ -22,13 +29,5 @@ function TokenSelectButton({ icon, symbol, onPress, disabled, label }) {
     </SelectorButton>
   );
 }
-
-TokenSelectButton.propTypes = {
-  icon: PropTypes.string,
-  symbol: PropTypes.string,
-  label: PropTypes.string,
-  onPress: PropTypes.func,
-  disabled: PropTypes.bool,
-};
 
 export default TokenSelectButton;
