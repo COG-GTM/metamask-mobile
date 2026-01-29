@@ -24,11 +24,11 @@ interface SimpleWebviewProps {
 }
 
 export default class SimpleWebview extends PureComponent<SimpleWebviewProps> {
-  declare context: { colors: Theme['colors'] };
+  static contextType = ThemeContext;
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as { colors: Theme['colors'] }).colors || mockTheme.colors;
     navigation.setOptions(getWebviewNavbar(navigation, route, colors));
   };
 
@@ -67,5 +67,3 @@ export default class SimpleWebview extends PureComponent<SimpleWebviewProps> {
 }
 
 export { default as createWebviewNavDetails } from './SimpleWebview.types';
-
-SimpleWebview.contextType = ThemeContext;
