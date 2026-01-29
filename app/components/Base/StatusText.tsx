@@ -1,10 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Text from './Text';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, StyleProp, TextStyle } from 'react-native';
 import { FIAT_ORDER_STATES } from '../../constants/on-ramp';
 import { strings } from '../../../locales/i18n';
 import { useTheme } from '../../util/theme';
+
+interface StatusTextComponentProps {
+  testID?: string;
+  children?: React.ReactNode;
+}
+
+interface StatusTextProps {
+  status: string;
+  context?: string;
+  testID?: string;
+  style?: StyleProp<TextStyle>;
+}
 
 const styles = StyleSheet.create({
   status: {
@@ -14,7 +26,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ConfirmedText = ({testID, ...props}) => (
+export const ConfirmedText = ({testID, ...props}: StatusTextComponentProps) => (
   <Text
     testID={testID}
     bold
@@ -27,7 +39,7 @@ ConfirmedText.propTypes = {
   testID: PropTypes.string,
 };
 
-export const PendingText = ({testID, ...props}) => {
+export const PendingText = ({testID, ...props}: StatusTextComponentProps) => {
   const { colors } = useTheme();
   return (
     <Text
@@ -42,7 +54,7 @@ PendingText.propTypes = {
   testID: PropTypes.string,
 };
 
-export const FailedText = ({testID, ...props} ) => {
+export const FailedText = ({testID, ...props}: StatusTextComponentProps) => {
   const { colors } = useTheme();
   return (
     <Text
@@ -57,7 +69,7 @@ FailedText.propTypes = {
   testID: PropTypes.string,
 };
 
-function StatusText({ status, context, testID, ...props }) {
+function StatusText({ status, context = 'transaction', testID, ...props }: StatusTextProps) {
   switch (status) {
     case 'Confirmed':
     case 'confirmed':
