@@ -22,7 +22,7 @@ const zeroWidthPoints = new Set<string>([
   '\u200d', // zero width joiner
   '\ufeff', // zero width no-break space
   '\u2028', // line separator
-  '\u2029', // paragraph separator,
+  '\u2029', // paragraph separator
 ]);
 
 export const hasZeroWidthPoints = (char: string): boolean => zeroWidthPoints.has(char);

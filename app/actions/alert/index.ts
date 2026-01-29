@@ -1,7 +1,7 @@
 interface ShowAlertPayload {
   isVisible: boolean;
   autodismiss?: number;
-  content: unknown;
+  content: string | React.ReactNode | null;
   data?: Record<string, unknown>;
 }
 
