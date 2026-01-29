@@ -103,7 +103,7 @@ const TransactionSummary = ({
       </Summary.Row>
       <Summary.Row>
         <Summary.Col>
-          <Text small primary>
+          <Text small primary italic>
             {!fee
               ? strings('transaction.transaction_fee_less')
               : strings('transaction.transaction_fee_estimated')}

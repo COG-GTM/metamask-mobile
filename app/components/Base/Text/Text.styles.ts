@@ -79,6 +79,9 @@ const createStyles = (colors: Colors) =>
     noMargin: {
       marginVertical: 0,
     },
+    italic: {
+      fontStyle: 'italic',
+    },
   });
 
 export default createStyles;

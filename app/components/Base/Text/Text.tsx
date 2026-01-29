@@ -27,6 +27,7 @@ interface TextProps extends React.ComponentPropsWithoutRef<typeof RNText> {
   link?: boolean;
   strikethrough?: boolean;
   underline?: boolean;
+  italic?: boolean;
 }
 
 /**
@@ -62,6 +63,7 @@ const Text: React.FC<TextProps> = ({
   strikethrough,
   underline,
   noMargin,
+  italic,
   style: externalStyle,
   ...props
 }: TextProps) => {
@@ -95,6 +97,7 @@ const Text: React.FC<TextProps> = ({
         strikethrough && style.strikethrough,
         underline && style.underline,
         noMargin && style.noMargin,
+        italic && style.italic,
         externalStyle,
       ]}
       {...props}
