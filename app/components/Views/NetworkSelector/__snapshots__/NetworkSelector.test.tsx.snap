@@ -3474,6 +3474,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                                             undefined,
                                             undefined,
                                             undefined,
+                                            undefined,
                                           ]
                                         }
                                       >
@@ -3520,6 +3521,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                                             {
                                               "color": "#4459ff",
                                             },
+                                            undefined,
                                             undefined,
                                             undefined,
                                             undefined,
@@ -3600,6 +3602,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                                             undefined,
                                             undefined,
                                             false,
+                                            undefined,
                                             undefined,
                                             undefined,
                                             undefined,
@@ -3671,6 +3674,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                                             undefined,
                                             undefined,
                                             undefined,
+                                            undefined,
                                           ]
                                         }
                                       >
@@ -3747,6 +3751,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                                             undefined,
                                             undefined,
                                             false,
+                                            undefined,
                                             undefined,
                                             undefined,
                                             undefined,
@@ -3818,6 +3823,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                                             undefined,
                                             undefined,
                                             undefined,
+                                            undefined,
                                           ]
                                         }
                                       >
@@ -3894,6 +3900,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                                             undefined,
                                             undefined,
                                             false,
+                                            undefined,
                                             undefined,
                                             undefined,
                                             undefined,
@@ -3965,6 +3972,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                                             undefined,
                                             undefined,
                                             undefined,
+                                            undefined,
                                           ]
                                         }
                                       >
@@ -4062,6 +4070,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                                             undefined,
                                             undefined,
                                             undefined,
+                                            undefined,
                                           ]
                                         }
                                       >
@@ -4108,6 +4117,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                                             {
                                               "color": "#4459ff",
                                             },
+                                            undefined,
                                             undefined,
                                             undefined,
                                             undefined,
