@@ -1,10 +1,10 @@
-const webpack = require('webpack');
-const path = require('path');
-const { readFileSync } = require('fs');
+import webpack, { Configuration } from 'webpack';
+import path from 'path';
+import { readFileSync } from 'fs';
 
-const SVG_LOGO_PATH =
-  '../../app/images/fox.svg';
-function getBuildIcon() {
+const SVG_LOGO_PATH = '../../app/images/fox.svg';
+
+function getBuildIcon(): string {
   const svg = readFileSync(SVG_LOGO_PATH, 'utf8');
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
@@ -13,7 +13,7 @@ function getBuildIcon() {
 const isBuildTypeFlask = process.env.METAMASK_BUILD_TYPE === 'flask';
 const appId = isBuildTypeFlask ? 'io.metamask.mobile.flask' : 'io.metamask.mobile';
 
-const config = {
+const config: Configuration = {
   entry: './src/index.js',
 
   output: {
@@ -59,7 +59,10 @@ const config = {
   ],
 };
 
-module.exports = (_env, argv) => {
+export default (
+  _env: Record<string, string | boolean | undefined>,
+  argv: { mode?: 'development' | 'production' | 'none' },
+): Configuration => {
   if (argv.mode === 'development') {
     config.mode = 'development';
   }
