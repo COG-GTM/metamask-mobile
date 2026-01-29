@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, {
   useCallback,
   useContext,
@@ -31,7 +30,7 @@ import Logger from '../../../util/Logger';
 import getAccountNameWithENS from '../../../util/accounts';
 import Tabs from '../../UI/Tabs';
 import BrowserTab from '../BrowserTab/BrowserTab';
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import { useMetrics } from '../../hooks/useMetrics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appendURLParams } from '../../../util/browser';
@@ -44,6 +43,8 @@ import {
 import { useStyles } from '../../hooks/useStyles';
 import styleSheet from './styles';
 import Routes from '../../../constants/navigation/Routes';
+import { type RootState } from '../../../reducers';
+import { type Dispatch } from 'redux';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
 import { isSolanaAccount } from '../../../core/Multichain/utils';
@@ -52,23 +53,62 @@ import { useFocusEffect } from '@react-navigation/native';
 
 const MAX_BROWSER_TABS = 5;
 
+interface BrowserTab {
+  id: number;
+  url: string;
+  image?: string;
+  linkType?: string;
+  isArchived?: boolean;
+}
+
+interface TabUpdateInfo {
+  url?: string;
+  isArchived?: boolean;
+  image?: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BrowserNavigationProp = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BrowserRouteProp = any;
+
+interface BrowserOwnProps {
+  navigation: BrowserNavigationProp;
+  route: BrowserRouteProp;
+}
+
+interface BrowserStateProps {
+  tabs: BrowserTab[];
+  activeTab: number | null;
+}
+
+interface BrowserDispatchProps {
+  createNewTab: (url: string, linkType?: string) => void;
+  closeAllTabs: () => void;
+  closeTab: (id: number) => void;
+  setActiveTab: (id: number) => void;
+  updateTab: (id: number, data: TabUpdateInfo) => void;
+}
+
+type BrowserProps = BrowserOwnProps & BrowserStateProps & BrowserDispatchProps;
+
 /**
  * Component that wraps all the browser
  * individual tabs and the tabs view
  */
-export const Browser = (props) => {
+export const Browser: React.FC<BrowserProps> = (props) => {
   const {
     route,
     navigation,
-    createNewTab,
+    createNewTab: triggerCreateNewTab,
     closeAllTabs: triggerCloseAllTabs,
     closeTab: triggerCloseTab,
-    setActiveTab,
-    updateTab,
+    setActiveTab: triggerSetActiveTab,
+    updateTab: triggerUpdateTab,
     activeTab: activeTabId,
     tabs,
   } = props;
-  const previousTabs = useRef(null);
+  const previousTabs = useRef<BrowserTab[] | null>(null);
   const { top: topInset } = useSafeAreaInsets();
   const { styles } = useStyles(styleSheet, { topInset });
   const { trackEvent, createEventBuilder, isEnabled } = useMetrics();
@@ -77,14 +117,14 @@ export const Browser = (props) => {
   const linkType = props.route?.params?.linkType;
   const prevSiteHostname = useRef(browserUrl);
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
-  const [_tabIdleTimes, setTabIdleTimes] = useState({});
-  const accountAvatarType = useSelector((state) =>
+  const [, setTabIdleTimes] = useState<Record<number, number>>({});
+  const accountAvatarType = useSelector((state: RootState) =>
     state.settings.useBlockieIcon
       ? AvatarAccountType.Blockies
       : AvatarAccountType.JazzIcon,
   );
   const isDataCollectionForMarketingEnabled = useSelector(
-    (state) => state.security.dataCollectionForMarketing,
+    (state: RootState) => state.security.dataCollectionForMarketing,
   );
 
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
@@ -104,10 +144,12 @@ export const Browser = (props) => {
   // TODO remove after we release Solana dapp connectivity
   useFocusEffect(
     useCallback(() => {
-      if (isSolanaAccount(currentSelectedAccount)) {
+      if (currentSelectedAccount && isSolanaAccount(currentSelectedAccount)) {
         toastRef?.current?.showToast({
           variant: ToastVariants.Network,
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           networkImageSource: require('../../../images/solana-logo.png'),
+          hasNoTimeout: false,
           labelOptions: [
             {
               label: `${strings(
@@ -128,26 +170,26 @@ export const Browser = (props) => {
   ///: END:ONLY_INCLUDE_IF
 
   const newTab = useCallback(
-    (url, linkType) => {
+    (url?: string, newLinkType?: string) => {
       // if tabs.length > MAX_BROWSER_TABS, show the max browser tabs modal
       if (tabs.length >= MAX_BROWSER_TABS) {
         navigation.navigate(Routes.MODAL.MAX_BROWSER_TABS_MODAL);
       } else {
         // When a new tab is created, a new tab is rendered, which automatically sets the url source on the webview
-        createNewTab(url || homePageUrl(), linkType);
+        triggerCreateNewTab(url || homePageUrl(), newLinkType);
       }
     },
-    [tabs, navigation, homePageUrl, createNewTab],
+    [tabs, navigation, homePageUrl, triggerCreateNewTab],
   );
 
   const updateTabInfo = useCallback(
-    (tabID, info) => {
-      updateTab(tabID, info);
+    (tabID: number, info: TabUpdateInfo) => {
+      triggerUpdateTab(tabID, info);
     },
-    [updateTab],
+    [triggerUpdateTab],
   );
 
-  const hideTabsAndUpdateUrl = (url) => {
+  const hideTabsAndUpdateUrl = (url: string) => {
     navigation.setParams({
       ...route.params,
       showTabs: false,
@@ -155,11 +197,11 @@ export const Browser = (props) => {
     });
   };
 
-  const switchToTab = (tab) => {
+  const switchToTab = (tab: BrowserTab) => {
     trackEvent(
       createEventBuilder(MetaMetricsEvents.BROWSER_SWITCH_TAB).build(),
     );
-    setActiveTab(tab.id);
+    triggerSetActiveTab(tab.id);
     hideTabsAndUpdateUrl(tab.url);
     updateTabInfo(tab.id, {
       url: tab.url,
@@ -184,7 +226,7 @@ export const Browser = (props) => {
             // if the tab has surpassed the maximum
             if (newIdleTimes[tab.id] > IDLE_TIME_MAX) {
               // then "archive" it
-              updateTab(tab.id, {
+              triggerUpdateTab(tab.id, {
                 isArchived: true,
               });
             }
@@ -192,7 +234,7 @@ export const Browser = (props) => {
             // set any active tab as NOT "archived"
             // this can mean "unarchiving" a tab so that, for example,
             // the actual browser tab window is mounted again
-            updateTab(tab.id, {
+            triggerUpdateTab(tab.id, {
               isArchived: false,
             });
             // also set new tab idle time back to zero
@@ -204,11 +246,12 @@ export const Browser = (props) => {
     }, IDLE_TIME_CALC_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [tabs, activeTabId, updateTab]);
+  }, [tabs, activeTabId, triggerUpdateTab]);
 
   useEffect(() => {
     const checkIfActiveAccountChanged = () => {
-      const hostname = new URL(browserUrl).hostname;
+      if (!browserUrl) return;
+      const hostname = new URLParse(browserUrl).hostname;
       const permittedAccounts = getPermittedAccounts(hostname);
       const activeAccountAddress = permittedAccounts?.[0];
 
@@ -221,6 +264,7 @@ export const Browser = (props) => {
         // Show active account toast
         toastRef?.current?.showToast({
           variant: ToastVariants.Account,
+          hasNoTimeout: false,
           labelOptions: [
             {
               label: `${accountName} `,
@@ -236,7 +280,7 @@ export const Browser = (props) => {
 
     // Handle when the Browser initially mounts and when url changes.
     if (accounts.length && browserUrl) {
-      const hostname = new URL(browserUrl).hostname;
+      const hostname = new URLParse(browserUrl).hostname;
       if (prevSiteHostname.current !== hostname || !hasAccounts.current) {
         checkIfActiveAccountChanged();
       }
@@ -313,16 +357,16 @@ export const Browser = (props) => {
   );
 
   const takeScreenshot = useCallback(
-    (url, tabID) =>
-      new Promise((resolve, reject) => {
+    (url: string, tabID: number) =>
+      new Promise<boolean>((resolve, reject) => {
         captureScreen({
           format: 'jpg',
           quality: 0.2,
-          THUMB_WIDTH,
-          THUMB_HEIGHT,
+          width: THUMB_WIDTH,
+          height: THUMB_HEIGHT,
         }).then(
           (uri) => {
-            updateTab(tabID, {
+            triggerUpdateTab(tabID, {
               url,
               image: uri,
             });
@@ -334,15 +378,17 @@ export const Browser = (props) => {
           },
         );
       }),
-    [updateTab],
+    [triggerUpdateTab],
   );
 
   const showTabs = useCallback(async () => {
     try {
       const activeTab = tabs.find((tab) => tab.id === activeTabId);
-      await takeScreenshot(activeTab.url, activeTab.id);
+      if (activeTab) {
+        await takeScreenshot(activeTab.url, activeTab.id);
+      }
     } catch (e) {
-      Logger.error(e);
+      Logger.error(e as Error);
     }
 
     navigation.setParams({
@@ -351,17 +397,17 @@ export const Browser = (props) => {
     });
   }, [tabs, activeTabId, route.params, navigation, takeScreenshot]);
 
-  const closeAllTabs = () => {
+  const handleCloseAllTabs = () => {
     if (tabs.length) {
       triggerCloseAllTabs();
       navigation.setParams({
         ...route.params,
-        url: null,
+        url: undefined,
       });
     }
   };
 
-  const closeTab = (tab) => {
+  const handleCloseTab = (tab: BrowserTab) => {
     // If the tab was selected we have to select
     // the next one, and if there's no next one,
     // we select the previous one.
@@ -369,21 +415,21 @@ export const Browser = (props) => {
       if (tabs.length > 1) {
         tabs.forEach((t, i) => {
           if (t.id === tab.id) {
-            let newTab = tabs[i - 1];
+            let nextTab = tabs[i - 1];
             if (tabs[i + 1]) {
-              newTab = tabs[i + 1];
+              nextTab = tabs[i + 1];
             }
-            setActiveTab(newTab.id);
+            triggerSetActiveTab(nextTab.id);
             navigation.setParams({
               ...route.params,
-              url: newTab.url,
+              url: nextTab.url,
             });
           }
         });
       } else {
         navigation.setParams({
           ...route.params,
-          url: null,
+          url: undefined,
         });
       }
     }
@@ -401,17 +447,17 @@ export const Browser = (props) => {
   };
 
   const renderTabList = () => {
-    const showTabs = route.params?.showTabs;
-    if (showTabs) {
+    const shouldShowTabs = route.params?.showTabs;
+    if (shouldShowTabs) {
       return (
         <Tabs
           tabs={tabs}
           activeTab={activeTabId}
           switchToTab={switchToTab}
           newTab={newTab}
-          closeTab={closeTab}
+          closeTab={handleCloseTab}
           closeTabsView={closeTabsView}
-          closeAllTabs={closeAllTabs}
+          closeAllTabs={handleCloseAllTabs}
         />
       );
     }
@@ -422,19 +468,34 @@ export const Browser = (props) => {
     () =>
       tabs
         .filter((tab) => !tab.isArchived)
-        .map((tab) => (
-          <BrowserTab
-            id={tab.id}
-            key={`tab_${tab.id}`}
-            initialUrl={tab.url}
-            linkType={tab.linkType}
-            updateTabInfo={updateTabInfo}
-            showTabs={showTabs}
-            newTab={newTab}
-            isInTabsView={route.params?.showTabs}
-            homePageUrl={homePageUrl()}
-          />
-        )),
+        .map((tab) => {
+          // BrowserTab is connected to Redux and receives additional props from mapStateToProps/mapDispatchToProps
+          // The connected component only requires own props, not the Redux-injected ones
+          const BrowserTabComponent = BrowserTab as unknown as React.ComponentType<{
+            id: number;
+            key?: string;
+            initialUrl: string;
+            linkType?: string;
+            updateTabInfo: (tabID: number, info: TabUpdateInfo) => void;
+            showTabs: () => void;
+            newTab: (url?: string) => void;
+            isInTabsView: boolean;
+            homePageUrl: string;
+          }>;
+          return (
+            <BrowserTabComponent
+              id={tab.id}
+              key={`tab_${tab.id}`}
+              initialUrl={tab.url}
+              linkType={tab.linkType}
+              updateTabInfo={updateTabInfo}
+              showTabs={showTabs}
+              newTab={newTab}
+              isInTabsView={route.params?.showTabs ?? false}
+              homePageUrl={homePageUrl()}
+            />
+          );
+        }),
     [
       tabs,
       route.params?.showTabs,
@@ -456,57 +517,25 @@ export const Browser = (props) => {
   );
 };
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): BrowserStateProps => ({
   tabs: state.browser.tabs,
   activeTab: state.browser.activeTab,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  createNewTab: (url, linkType) => dispatch(createNewTab(url, linkType)),
-  closeAllTabs: () => dispatch(closeAllTabs()),
-  closeTab: (id) => dispatch(closeTab(id)),
-  setActiveTab: (id) => dispatch(setActiveTab(id)),
-  updateTab: (id, url) => dispatch(updateTab(id, url)),
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: Dispatch): BrowserDispatchProps => ({
+  createNewTab: (url: string, linkType?: string) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    dispatch((createNewTab as any)(url, linkType)),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  closeAllTabs: () => dispatch(closeAllTabs() as any),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  closeTab: (id: number) => dispatch(closeTab(id) as any),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setActiveTab: (id: number) => dispatch(setActiveTab(id) as any),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateTab: (id: number, data: TabUpdateInfo) => dispatch(updateTab(id, data) as any),
 });
-
-Browser.propTypes = {
-  /**
-   * react-navigation object used to switch between screens
-   */
-  navigation: PropTypes.object,
-  /**
-   * Function to create a new tab
-   */
-  createNewTab: PropTypes.func,
-  /**
-   * Function to close all the existing tabs
-   */
-  closeAllTabs: PropTypes.func,
-  /**
-   * Function to close a specific tab
-   */
-  closeTab: PropTypes.func,
-  /**
-   * Function to set the active tab
-   */
-  setActiveTab: PropTypes.func,
-  /**
-   * Function to set the update the url of a tab
-   */
-  updateTab: PropTypes.func,
-  /**
-   * Array of tabs
-   */
-  tabs: PropTypes.array,
-  /**
-   * ID of the active tab
-   */
-  activeTab: PropTypes.number,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-};
 
 export { default as createBrowserNavDetails } from './Browser.types';
 
