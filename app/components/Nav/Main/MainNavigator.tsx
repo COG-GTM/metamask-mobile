@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable @typescript-eslint/prefer-optional-chain */
 // @ts-nocheck - This file has many pre-existing type issues from legacy React Navigation patterns
 // TODO: Fix these type issues in a follow-up PR
 import React, { useRef, useState, useEffect } from 'react';

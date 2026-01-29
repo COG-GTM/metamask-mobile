@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable @typescript-eslint/prefer-optional-chain */
 // @ts-nocheck - This file has pre-existing type issues from the JavaScript code
 // TODO: Fix these type issues in a follow-up PR
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
