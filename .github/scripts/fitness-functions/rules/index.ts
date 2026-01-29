@@ -1,5 +1,9 @@
 import { preventJavaScriptFileAdditions } from './javascript-additions';
 import { preventCodeBlocksRule } from './prevent-code-blocks';
+import {
+  reportTypeScriptAdoption,
+  getTypeScriptAdoptionStats,
+} from './typescript-adoption';
 
 const RULES: IRule[] = [
   {
@@ -10,7 +14,8 @@ const RULES: IRule[] = [
   {
     name: 'Check for js or jsx file being added',
     fn: preventJavaScriptFileAdditions,
-    docURL: '[WIP] No documentation exists for this rule yet.',
+    docURL:
+      'https://github.com/MetaMask/metamask-mobile/blob/main/.github/scripts/fitness-functions/README.md',
   },
 ];
 
@@ -38,5 +43,11 @@ function runFitnessFunctionRule(rule: IRule, diff: string): void {
   }
 }
 
-export { RULES, runFitnessFunctionRule, preventJavaScriptFileAdditions };
+export {
+  RULES,
+  runFitnessFunctionRule,
+  preventJavaScriptFileAdditions,
+  reportTypeScriptAdoption,
+  getTypeScriptAdoptionStats,
+};
 export type { IRule };
