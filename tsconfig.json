@@ -59,10 +59,12 @@
   },
   "include": [
     "app/declarations/index.d.ts",
+    "index.ts",
     "app/**/*",
     "node_modules/expect-webdriverio",
     "node_modules/expect-webdriverio/jest",
-    "e2e/**/*"
+    "e2e/**/*",
+    "metro.transform.ts"
   ],
   "exclude": [
     "node_modules",

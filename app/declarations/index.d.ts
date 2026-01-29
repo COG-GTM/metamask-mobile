@@ -2,6 +2,7 @@
 // Ex. This makes it so that when you import CloseIcon from './close-icon.svg, CloseIcon, will be detected as a React.FC component.
 declare module '*.mp4';
 
+
 declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
 declare module 'react-native-fade-in-image';
