@@ -7,8 +7,8 @@ const pump = require('pump');
  * Returns a stream transform that parses JSON strings passing through
  * @return {stream.Transform}
  */
-function jsonParseStream() {
-  return Through.obj(function (serialized, _, cb) {
+function jsonParseStream(): NodeJS.ReadWriteStream {
+  return Through.obj(function (this: NodeJS.ReadWriteStream, serialized: string, _: unknown, cb: (error?: Error | null) => void) {
     this.push(JSON.parse(serialized));
     cb();
   });
@@ -19,8 +19,8 @@ function jsonParseStream() {
  * on objects passing through
  * @return {stream.Transform} the stream transform
  */
-function jsonStringifyStream() {
-  return Through.obj(function (obj, _, cb) {
+function jsonStringifyStream(): NodeJS.ReadWriteStream {
+  return Through.obj(function (this: NodeJS.ReadWriteStream, obj: unknown, _: unknown, cb: (error?: Error | null) => void) {
     this.push(JSON.stringify(obj));
     cb();
   });
@@ -31,9 +31,11 @@ function jsonStringifyStream() {
  * @param {any} connectionStream - the stream to mux
  * @return {stream.Stream} the multiplexed stream
  */
-function setupMultiplex(connectionStream) {
-  const mux = new ObjectMultiplex();
-  pump(connectionStream, mux, connectionStream, (err) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function setupMultiplex(connectionStream: any): any {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mux = new ObjectMultiplex() as any;
+  pump(connectionStream, mux, connectionStream, (err: Error | null) => {
     if (err) {
       console.warn(err);
     }
