@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fix(bridge): show "Auto" slippage for Solana swaps
 
+### Changed
+- chore: convert `app/components/Base/TabBar.js` to TypeScript
+
 ### Added
 
 - feat: migrate eth_accounts and permittedChains to CAIP-25 endowment ([#13970](https://github.com/MetaMask/metamask-mobile/pull/13970))
