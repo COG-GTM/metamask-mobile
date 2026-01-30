@@ -1,12 +1,34 @@
 import { hasProperty, isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
-import {
-  TokenListState,
-  TokenRatesControllerState,
-  TokensControllerState,
-} from '@metamask/assets-controllers';
 import { toHex } from '@metamask/controller-utils';
 import { isHexString } from 'ethereumjs-util';
+
+/**
+ * Legacy TokenListController state structure at the time of migration 31.
+ * This interface represents the state shape that users may have stored on their devices.
+ */
+interface LegacyTokenListControllerState {
+  tokensChainsCache: Record<string, unknown>;
+}
+
+/**
+ * Legacy TokenRatesController state structure at the time of migration 31.
+ * The contractExchangeRatesByChainId property existed in older versions of the controller.
+ */
+interface LegacyTokenRatesControllerState {
+  contractExchangeRatesByChainId?: Record<string, Record<string, unknown>>;
+}
+
+/**
+ * Legacy TokensController state structure at the time of migration 31.
+ * These properties represent the token storage format that needed chain ID migration.
+ * Each property is optional since they are validated separately in the migration.
+ */
+interface LegacyTokensControllerState {
+  allTokens?: Record<string, Record<string, unknown>>;
+  allIgnoredTokens?: Record<string, Record<string, unknown>>;
+  allDetectedTokens?: Record<string, Record<string, unknown>>;
+}
 
 /**
  * This migration is to address the users that were impacted by the tokens missing on their wallet
@@ -49,7 +71,7 @@ export default async function migrate(stateAsync: unknown) {
   const tokenListControllerState =
     state?.engine?.backgroundState?.TokenListController;
   const newTokenListControllerState = state?.engine?.backgroundState
-    ?.TokenListController as TokenListState;
+    ?.TokenListController as LegacyTokenListControllerState;
 
   if (!isObject(tokenListControllerState)) {
     captureException(
@@ -88,9 +110,10 @@ export default async function migrate(stateAsync: unknown) {
               hexChainId,
             )
           ) {
+            const legacyTokenListState =
+              tokenListControllerState as LegacyTokenListControllerState;
             newTokenListControllerState.tokensChainsCache[hexChainId] =
-              //@ts-expect-error Is verified on Line 508 that tokenChainsCache is a property
-              tokenListControllerState.tokensChainsCache[chainId];
+              legacyTokenListState.tokensChainsCache[chainId];
           }
 
           if (isObject(tokenListControllerState.tokensChainsCache)) {
@@ -104,7 +127,7 @@ export default async function migrate(stateAsync: unknown) {
   const tokenRatesControllerState =
     state?.engine?.backgroundState?.TokenRatesController;
   const newTokenRatesControllerState = state?.engine?.backgroundState
-    ?.TokenRatesController as TokenRatesControllerState;
+    ?.TokenRatesController as LegacyTokenRatesControllerState;
 
   if (!isObject(tokenRatesControllerState)) {
     captureException(
@@ -127,19 +150,19 @@ export default async function migrate(stateAsync: unknown) {
       if (!isHexString(chainId)) {
         const hexChainId = toHex(chainId);
 
+        const legacyTokenRatesState =
+          tokenRatesControllerState as LegacyTokenRatesControllerState;
         if (
+          newTokenRatesControllerState.contractExchangeRatesByChainId &&
           !Object.prototype.hasOwnProperty.call(
-            //@ts-expect-error At the time of that migrations assets controllers version had those properties, so those users will have that property on their phone storage, the migration was casted and that where it's wrong, we shouldn't cast migrations because the structure and property names change over time.
             newTokenRatesControllerState.contractExchangeRatesByChainId,
             hexChainId,
-          )
+          ) &&
+          legacyTokenRatesState.contractExchangeRatesByChainId
         ) {
-          //@ts-expect-error At the time of that migrations assets controllers version had those properties, so those users will have that property on their phone storage, the migration was casted and that where it's wrong, we shouldn't cast migrations because the structure and property names change over time.
           newTokenRatesControllerState.contractExchangeRatesByChainId[
             hexChainId
-          ] =
-            //@ts-expect-error Is verified on Line 558 that contractExchangeRatesByChainId is a property
-            tokenRatesControllerState.contractExchangeRatesByChainId[chainId];
+          ] = legacyTokenRatesState.contractExchangeRatesByChainId[chainId];
         }
 
         if (
@@ -156,7 +179,7 @@ export default async function migrate(stateAsync: unknown) {
   const tokensControllerState =
     state?.engine?.backgroundState?.TokensController;
   const newTokensControllerState = state?.engine?.backgroundState
-    ?.TokensController as TokensControllerState;
+    ?.TokensController as LegacyTokensControllerState;
 
   if (!isObject(tokensControllerState)) {
     captureException(
@@ -188,14 +211,18 @@ export default async function migrate(stateAsync: unknown) {
       if (!isHexString(chainId)) {
         const hexChainId = toHex(chainId);
         if (
+          newTokensControllerState.allTokens &&
           !Object.prototype.hasOwnProperty.call(
             newTokensControllerState.allTokens,
             hexChainId,
           )
         ) {
-          newTokensControllerState.allTokens[hexChainId] =
-            //@ts-expect-error Is verified on Line 613 that allTokens is a property
-            tokensControllerState.allTokens[chainId];
+          const legacyTokensState =
+            tokensControllerState as LegacyTokensControllerState;
+          if (legacyTokensState.allTokens) {
+            newTokensControllerState.allTokens[hexChainId] =
+              legacyTokensState.allTokens[chainId];
+          }
         }
         if (isObject(tokensControllerState.allTokens)) {
           delete tokensControllerState.allTokens[chainId];
@@ -223,14 +250,18 @@ export default async function migrate(stateAsync: unknown) {
       if (!isHexString(chainId)) {
         const hexChainId = toHex(chainId);
         if (
+          newTokensControllerState.allIgnoredTokens &&
           !Object.prototype.hasOwnProperty.call(
             newTokensControllerState.allIgnoredTokens,
             hexChainId,
           )
         ) {
-          newTokensControllerState.allIgnoredTokens[hexChainId] =
-            //@ts-expect-error Is verified on Line 643 that allIgnoredTokens is a property
-            tokensControllerState.allIgnoredTokens[chainId];
+          const legacyTokensState =
+            tokensControllerState as LegacyTokensControllerState;
+          if (legacyTokensState.allIgnoredTokens) {
+            newTokensControllerState.allIgnoredTokens[hexChainId] =
+              legacyTokensState.allIgnoredTokens[chainId];
+          }
         }
         if (isObject(tokensControllerState.allIgnoredTokens)) {
           delete tokensControllerState.allIgnoredTokens[chainId];
@@ -258,14 +289,18 @@ export default async function migrate(stateAsync: unknown) {
       if (!isHexString(chainId)) {
         const hexChainId = toHex(chainId);
         if (
+          newTokensControllerState.allDetectedTokens &&
           !Object.prototype.hasOwnProperty.call(
             newTokensControllerState.allDetectedTokens,
             hexChainId,
           )
         ) {
-          newTokensControllerState.allDetectedTokens[hexChainId] =
-            //@ts-expect-error Is verified on Line 671 that allIgnoredTokens is a property
-            tokensControllerState.allDetectedTokens[chainId];
+          const legacyTokensState =
+            tokensControllerState as LegacyTokensControllerState;
+          if (legacyTokensState.allDetectedTokens) {
+            newTokensControllerState.allDetectedTokens[hexChainId] =
+              legacyTokensState.allDetectedTokens[chainId];
+          }
         }
         if (isObject(tokensControllerState.allDetectedTokens)) {
           delete tokensControllerState.allDetectedTokens[chainId];

@@ -9,14 +9,34 @@ import {
   AddressBookEntry,
   AddressBookControllerState,
 } from '@metamask/address-book-controller';
-import {
-  Nft,
-  NftContract,
-  NftControllerState,
-  TokenListState,
-  TokenRatesControllerState,
-  TokensControllerState,
-} from '@metamask/assets-controllers';
+import { Nft, NftContract, NftControllerState } from '@metamask/assets-controllers';
+
+/**
+ * Legacy TokenListController state structure at the time of migration 29.
+ * This interface represents the state shape that users may have stored on their devices.
+ */
+interface LegacyTokenListControllerState {
+  tokensChainsCache: Record<string, unknown>;
+}
+
+/**
+ * Legacy TokenRatesController state structure at the time of migration 29.
+ * The contractExchangeRatesByChainId property existed in older versions of the controller.
+ */
+interface LegacyTokenRatesControllerState {
+  contractExchangeRatesByChainId?: Record<string, Record<string, unknown>>;
+}
+
+/**
+ * Legacy TokensController state structure at the time of migration 29.
+ * These properties represent the token storage format that needed chain ID migration.
+ * Each property is optional since they are validated separately in the migration.
+ */
+interface LegacyTokensControllerState {
+  allTokens?: Record<string, Record<string, unknown>>;
+  allIgnoredTokens?: Record<string, Record<string, unknown>>;
+  allDetectedTokens?: Record<string, Record<string, unknown>>;
+}
 
 interface NetworkState {
   selectedNetworkClientId: string;
@@ -482,7 +502,7 @@ export default async function migrate(stateAsync: unknown) {
   const tokenListControllerState =
     state?.engine?.backgroundState?.TokenListController;
   const newTokenListControllerState = state?.engine?.backgroundState
-    ?.TokenListController as TokenListState;
+    ?.TokenListController as LegacyTokenListControllerState;
 
   if (!isObject(tokenListControllerState)) {
     captureException(
@@ -514,9 +534,10 @@ export default async function migrate(stateAsync: unknown) {
       (chainId) => {
         if (!isHexString(chainId)) {
           const hexChainId = toHex(chainId);
+          const legacyTokenListState =
+            tokenListControllerState as LegacyTokenListControllerState;
           newTokenListControllerState.tokensChainsCache[hexChainId] =
-            //@ts-expect-error Is verified on Line 508 that tokenChainsCache is a property
-            tokenListControllerState.tokensChainsCache[chainId];
+            legacyTokenListState.tokensChainsCache[chainId];
 
           if (isObject(tokenListControllerState.tokensChainsCache)) {
             delete tokenListControllerState.tokensChainsCache[chainId];
@@ -529,7 +550,7 @@ export default async function migrate(stateAsync: unknown) {
   const tokenRatesControllerState =
     state?.engine?.backgroundState?.TokenRatesController;
   const newTokenRatesControllerState = state?.engine?.backgroundState
-    ?.TokenRatesController as TokenRatesControllerState;
+    ?.TokenRatesController as LegacyTokenRatesControllerState;
 
   if (!isObject(tokenRatesControllerState)) {
     captureException(
@@ -551,12 +572,16 @@ export default async function migrate(stateAsync: unknown) {
     ).forEach((chainId) => {
       if (!isHexString(chainId)) {
         const hexChainId = toHex(chainId);
-        //@ts-expect-error At the time of that migrations assets controllers version had those properties, so those users will have that property on their phone storage, the migration was casted and that where it's wrong, we shouldn't cast migrations because the structure and property names change over time.
-        newTokenRatesControllerState.contractExchangeRatesByChainId[
-          hexChainId
-        ] =
-          //@ts-expect-error Is verified on Line 558 that contractExchangeRatesByChainId is a property
-          tokenRatesControllerState.contractExchangeRatesByChainId[chainId];
+        const legacyTokenRatesState =
+          tokenRatesControllerState as LegacyTokenRatesControllerState;
+        if (
+          newTokenRatesControllerState.contractExchangeRatesByChainId &&
+          legacyTokenRatesState.contractExchangeRatesByChainId
+        ) {
+          newTokenRatesControllerState.contractExchangeRatesByChainId[
+            hexChainId
+          ] = legacyTokenRatesState.contractExchangeRatesByChainId[chainId];
+        }
 
         if (
           isObject(tokenRatesControllerState.contractExchangeRatesByChainId)
@@ -572,7 +597,7 @@ export default async function migrate(stateAsync: unknown) {
   const tokensControllerState =
     state?.engine?.backgroundState?.TokensController;
   const newTokensControllerState = state?.engine?.backgroundState
-    ?.TokensController as TokensControllerState;
+    ?.TokensController as LegacyTokensControllerState;
 
   if (!isObject(tokensControllerState)) {
     captureException(
@@ -603,9 +628,15 @@ export default async function migrate(stateAsync: unknown) {
     Object.keys(tokensControllerState.allTokens).forEach((chainId) => {
       if (!isHexString(chainId)) {
         const hexChainId = toHex(chainId);
-        newTokensControllerState.allTokens[hexChainId] =
-          //@ts-expect-error Is verified on Line 613 that allTokens is a property
-          tokensControllerState.allTokens[chainId];
+        const legacyTokensState =
+          tokensControllerState as LegacyTokensControllerState;
+        if (
+          newTokensControllerState.allTokens &&
+          legacyTokensState.allTokens
+        ) {
+          newTokensControllerState.allTokens[hexChainId] =
+            legacyTokensState.allTokens[chainId];
+        }
 
         if (isObject(tokensControllerState.allTokens)) {
           delete tokensControllerState.allTokens[chainId];
@@ -632,9 +663,15 @@ export default async function migrate(stateAsync: unknown) {
     Object.keys(tokensControllerState.allIgnoredTokens).forEach((chainId) => {
       if (!isHexString(chainId)) {
         const hexChainId = toHex(chainId);
-        newTokensControllerState.allIgnoredTokens[hexChainId] =
-          //@ts-expect-error Is verified on Line 643 that allIgnoredTokens is a property
-          tokensControllerState.allIgnoredTokens[chainId];
+        const legacyTokensState =
+          tokensControllerState as LegacyTokensControllerState;
+        if (
+          newTokensControllerState.allIgnoredTokens &&
+          legacyTokensState.allIgnoredTokens
+        ) {
+          newTokensControllerState.allIgnoredTokens[hexChainId] =
+            legacyTokensState.allIgnoredTokens[chainId];
+        }
 
         if (isObject(tokensControllerState.allIgnoredTokens)) {
           delete tokensControllerState.allIgnoredTokens[chainId];
@@ -661,9 +698,15 @@ export default async function migrate(stateAsync: unknown) {
     Object.keys(tokensControllerState.allDetectedTokens).forEach((chainId) => {
       if (!isHexString(chainId)) {
         const hexChainId = toHex(chainId);
-        newTokensControllerState.allDetectedTokens[hexChainId] =
-          //@ts-expect-error Is verified on Line 671 that allIgnoredTokens is a property
-          tokensControllerState.allDetectedTokens[chainId];
+        const legacyTokensState =
+          tokensControllerState as LegacyTokensControllerState;
+        if (
+          newTokensControllerState.allDetectedTokens &&
+          legacyTokensState.allDetectedTokens
+        ) {
+          newTokensControllerState.allDetectedTokens[hexChainId] =
+            legacyTokensState.allDetectedTokens[chainId];
+        }
 
         if (isObject(tokensControllerState.allDetectedTokens)) {
           delete tokensControllerState.allDetectedTokens[chainId];

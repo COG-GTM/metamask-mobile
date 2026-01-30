@@ -27,6 +27,16 @@ interface InternalScopeObject {
 
 type InternalScopesObject = Record<CaipChainId, InternalScopeObject>;
 
+/**
+ * CAIP-25 caveat value structure for the migration.
+ * This represents the authorized scopes format used in the permission system.
+ */
+interface Caip25CaveatValue {
+  requiredScopes: InternalScopesObject;
+  optionalScopes: InternalScopesObject;
+  isMultichainOrigin: boolean;
+}
+
 // Locally defined types
 type Caip25Caveat = Caveat<typeof Caip25CaveatType, Json>;
 
@@ -386,18 +396,19 @@ export default function migrate(oldState: unknown) {
       };
     });
 
+    const caip25CaveatValue: Caip25CaveatValue = {
+      requiredScopes: {},
+      optionalScopes: scopes,
+      isMultichainOrigin: false,
+    };
+
     const caip25Permission: Caip25Permission = {
       ...basePermission,
       parentCapability: Caip25EndowmentPermissionName,
       caveats: [
         {
           type: Caip25CaveatType,
-          //@ts-expect-error this is a valid CAIP-25 caveat value
-          value: {
-            requiredScopes: {},
-            optionalScopes: scopes,
-            isMultichainOrigin: false,
-          },
+          value: caip25CaveatValue as unknown as Json,
         },
       ],
     };
