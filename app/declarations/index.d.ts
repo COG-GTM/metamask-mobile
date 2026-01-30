@@ -408,3 +408,24 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'koa' {
+  import { Server } from 'http';
+
+  interface Context {
+    method: string;
+    path: string;
+    body: unknown;
+    set(field: string, value: string): void;
+  }
+
+  type Middleware = (ctx: Context, next: () => Promise<void>) => Promise<void>;
+
+  class Koa {
+    use(middleware: Middleware): this;
+    listen(options: { host: string; port: number; exclusive?: boolean }): Server;
+  }
+
+  export default Koa;
+  export { Context };
+}
