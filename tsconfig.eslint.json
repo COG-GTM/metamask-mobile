@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "index.ts",
+    "app/declarations/index.d.ts",
+    "app/**/*",
+    "node_modules/expect-webdriverio",
+    "node_modules/expect-webdriverio/jest",
+    "e2e/**/*"
+  ],
+  "compilerOptions": {
+    "noEmit": true
+  }
+}
