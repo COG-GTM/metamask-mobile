@@ -14,9 +14,12 @@ const mockEventListeners: { [key: string]: (data: string) => void } = {};
 
 jest.mock('../SDKConnect');
 jest.mock('react-native', () => {
+  const actualRN = jest.requireActual('react-native');
   const listeners: { [key: string]: (data: string) => void } = {};
   return {
+    ...actualRN,
     NativeModules: {
+      ...actualRN.NativeModules,
       CommunicationClient: {
         sendMessage: jest.fn(),
       },
