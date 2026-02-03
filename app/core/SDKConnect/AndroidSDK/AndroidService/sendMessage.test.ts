@@ -44,6 +44,7 @@ describe('sendMessage', () => {
     jest.clearAllMocks();
     // Reset mock implementations to prevent test interference
     mockSendMessage.mockReset();
+    (handleBatchRpcResponse as jest.Mock).mockReset();
 
     instance = {
       rpcQueueManager: {

@@ -45,8 +45,6 @@ jest.mock('../../Permissions', () => ({
   getDefaultCaip25CaveatValue: jest.fn().mockReturnValue({}),
 }));
 
-const mockEventListeners: { [key: string]: (data: string) => void } = {};
-
 const MOCK_ADDRESS = '0xc4955c0d639d99699bfd7ec54d9fafee40e4d272';
 const mockInternalAccount = createMockInternalAccount(MOCK_ADDRESS, 'Account 1');
 
