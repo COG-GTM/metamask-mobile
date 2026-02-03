@@ -2,8 +2,8 @@ import bookmarksReducer from './bookmarks';
 import browserReducer from './browser';
 import engineReducer from '../core/redux/slices/engine';
 import privacyReducer from './privacy';
-import modalsReducer from './modals';
-import settingsReducer from './settings';
+import modalsReducer, { ModalsState } from './modals';
+import settingsReducer, { SettingsState } from './settings';
 import alertReducer from './alert';
 import transactionReducer from './transaction';
 import legalNoticesReducer from './legalNotices';
@@ -70,12 +70,8 @@ export interface RootState {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   browser: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modals: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  settings: any;
+  modals: ModalsState;
+  settings: SettingsState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   alert: any;
