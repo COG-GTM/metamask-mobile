@@ -124,7 +124,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
   const linkType = props.route?.params?.linkType;
   const prevSiteHostname = useRef<string | undefined>(browserUrl);
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
-  const [_tabIdleTimes, setTabIdleTimes] = useState<TabIdleTimes>({});
+  const [, setTabIdleTimes] = useState<TabIdleTimes>({});
   const accountAvatarType = useSelector((state: RootState) =>
     state.settings.useBlockieIcon
       ? AvatarAccountType.Blockies
