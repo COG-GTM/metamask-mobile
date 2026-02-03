@@ -45,11 +45,13 @@ import styleSheet from './styles';
 import Routes from '../../../constants/navigation/Routes';
 import { type RootState } from '../../../reducers';
 import { type Dispatch } from 'redux';
-import { type RouteProp, useFocusEffect } from '@react-navigation/native';
-import { type StackNavigationProp } from '@react-navigation/stack';
+import type { RouteProp } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
 import { isSolanaAccount } from '../../../core/Multichain/utils';
+// eslint-disable-next-line no-duplicate-imports
+import { useFocusEffect } from '@react-navigation/native';
 ///: END:ONLY_INCLUDE_IF
 
 const MAX_BROWSER_TABS = 5;
