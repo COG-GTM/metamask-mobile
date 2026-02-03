@@ -1,0 +1,4665 @@
+{
+  "generatedAt": "2026-02-03T20:36:32.171Z",
+  "summary": {
+    "totalJsFiles": 326,
+    "totalTsFiles": 3919,
+    "migrationProgress": "92.3%",
+    "byCategory": {
+      "other": 230,
+      "test": 40,
+      "style": 3,
+      "component": 36,
+      "utility": 4,
+      "library": 1,
+      "reducer": 12
+    },
+    "byComplexity": {
+      "low": 112,
+      "medium": 137,
+      "high": 77
+    }
+  },
+  "directories": [
+    {
+      "directory": "store/migrations",
+      "jsFileCount": 38,
+      "tsFileCount": 0,
+      "files": [
+        "000.js",
+        "001.js",
+        "002.js",
+        "003.js",
+        "004.js",
+        "005.js",
+        "006.js",
+        "007.js",
+        "008.js",
+        "009.js",
+        "010.js",
+        "011.js",
+        "012.js",
+        "013.js",
+        "014.js",
+        "015.js",
+        "016.js",
+        "017.js",
+        "018.js",
+        "019.js",
+        "019.test.js",
+        "020.js",
+        "020.test.js",
+        "021.js",
+        "021.test.js",
+        "022.js",
+        "022.test.js",
+        "023.js",
+        "023.test.js",
+        "024.js",
+        "024.test.js",
+        "025.js",
+        "025.test.js",
+        "026.js",
+        "026.test.js",
+        "027.js",
+        "027.test.js",
+        "028.test.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Swaps/components",
+      "jsFileCount": 14,
+      "tsFileCount": 0,
+      "files": [
+        "ActionAlert.js",
+        "ApprovalTransactionEditionModal.js",
+        "AssetSwapButton.js",
+        "GasEditModal.js",
+        "Onboarding.js",
+        "QuotesModal.js",
+        "QuotesSummary.js",
+        "SlippageModal.js",
+        "TokenIcon.js",
+        "TokenIcon.test.js",
+        "TokenImportModal.js",
+        "TokenSelectButton.js",
+        "TokenSelectButton.test.js",
+        "TokenSelectModal.js"
+      ]
+    },
+    {
+      "directory": "util",
+      "jsFileCount": 13,
+      "tsFileCount": 0,
+      "files": [
+        "ENSUtils.js",
+        "blockies.js",
+        "confirm-tx.js",
+        "conversions.js",
+        "conversions.test.js",
+        "dapp-url-list.js",
+        "etherscan.js",
+        "gasUtils.js",
+        "middlewares.js",
+        "payment-link-generator.js",
+        "scaling.js",
+        "streams.js",
+        "walletconnect.js"
+      ]
+    },
+    {
+      "directory": "core",
+      "jsFileCount": 10,
+      "tsFileCount": 0,
+      "files": [
+        "ClipboardManager.js",
+        "DrawerStatusTracker.js",
+        "EntryScriptWeb3.js",
+        "InpageBridgeWeb3.js",
+        "MobilePortStream.js",
+        "NotificationManager.js",
+        "PreventScreenshot.js",
+        "SecureKeychain.js",
+        "TransactionTypes.js",
+        "Vault.js"
+      ]
+    },
+    {
+      "directory": "util/test",
+      "jsFileCount": 8,
+      "tsFileCount": 0,
+      "files": [
+        "assetFileTransformer.js",
+        "contract-address-registry.js",
+        "ganache-seeder.js",
+        "ganache.js",
+        "network-store.js",
+        "smart-contracts.js",
+        "testSetup.js",
+        "utils.js"
+      ]
+    },
+    {
+      "directory": "components/Base/Keypad",
+      "jsFileCount": 7,
+      "tsFileCount": 0,
+      "files": [
+        "Keypad.test.js",
+        "components.js",
+        "constants.js",
+        "createKeypadRule.js",
+        "createKeypadRule.test.js",
+        "index.js",
+        "useCurrency.js"
+      ]
+    },
+    {
+      "directory": "core/RPCMethods",
+      "jsFileCount": 6,
+      "tsFileCount": 0,
+      "files": [
+        "eth-request-accounts.js",
+        "index.js",
+        "wallet_addEthereumChain.js",
+        "wallet_addEthereumChain.test.js",
+        "wallet_switchEthereumChain.js",
+        "wallet_switchEthereumChain.test.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Swaps/utils",
+      "jsFileCount": 5,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "index.test.js",
+        "useBalance.js",
+        "useBlockExplorer.js",
+        "useFetchTokenMetadata.js"
+      ]
+    },
+    {
+      "directory": "components/Base",
+      "jsFileCount": 4,
+      "tsFileCount": 0,
+      "files": [
+        "DetailsModal.js",
+        "RangeInput.js",
+        "StatusText.js",
+        "TabBar.js"
+      ]
+    },
+    {
+      "directory": "components/Views/NavigationUnitTest",
+      "jsFileCount": 4,
+      "tsFileCount": 0,
+      "files": [
+        "TestScreen1.test.js",
+        "TestScreen2.test.js",
+        "TestScreen3.test.js",
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Nav/Main",
+      "jsFileCount": 3,
+      "tsFileCount": 0,
+      "files": [
+        "MainNavigator.js",
+        "RootRPCMethodsUI.js",
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/StyledButton",
+      "jsFileCount": 3,
+      "tsFileCount": 0,
+      "files": [
+        "index.android.js",
+        "index.ios.js",
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/TransactionElement",
+      "jsFileCount": 3,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "utils.js",
+        "utils.test.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update",
+      "jsFileCount": 3,
+      "tsFileCount": 0,
+      "files": [
+        "index.jsx",
+        "index.test.jsx",
+        "styles.js"
+      ]
+    },
+    {
+      "directory": "constants",
+      "jsFileCount": 3,
+      "tsFileCount": 0,
+      "files": [
+        "navigation.js",
+        "network.js",
+        "onboarding.js"
+      ]
+    },
+    {
+      "directory": "components/UI/AddressInputs",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "index.test.jsx"
+      ]
+    },
+    {
+      "directory": "components/UI/Navbar",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "index.test.jsx"
+      ]
+    },
+    {
+      "directory": "components/UI/NavbarTitle",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "index.test.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Notification/BaseNotification",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "index.test.jsx"
+      ]
+    },
+    {
+      "directory": "components/UI/Swaps",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "QuotesView.js",
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Swaps/components/LoadingAnimation",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "backgroundShapes.js",
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/Asset",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "index.test.js"
+      ]
+    },
+    {
+      "directory": "components/Views/MediaPlayer",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "AndroidMediaPlayer.js",
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/Settings/NetworksSettings/NetworkSettings",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "withIsOriginalNativeToken.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/SendFlow/AddressList",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "AddressList.jsx",
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "CustomGasModal.jsx",
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/ApproveTransactionReview",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "index.test.jsx"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewDetailsCard",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "index.test.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "index.test.jsx"
+      ]
+    },
+    {
+      "directory": "core/BackgroundBridge",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "BackgroundBridge.js",
+        "BackgroundBridge.test.js"
+      ]
+    },
+    {
+      "directory": "core/Permissions",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "specifications.js",
+        "specifications.test.js"
+      ]
+    },
+    {
+      "directory": "core/RPCMethods/createEip1193MethodMiddleware",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "index.test.js"
+      ]
+    },
+    {
+      "directory": "lib/ens-ipfs/contracts",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "registry.js",
+        "resolver.js"
+      ]
+    },
+    {
+      "directory": "reducers/browser",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "index.test.js"
+      ]
+    },
+    {
+      "directory": "reducers/notification",
+      "jsFileCount": 2,
+      "tsFileCount": 0,
+      "files": [
+        "index.js",
+        "notification.test.js"
+      ]
+    },
+    {
+      "directory": "actions/alert",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "actions/bookmarks",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "actions/browser",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "actions/collectibles",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "actions/infuraAvailability",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "actions/modals",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "actions/notification",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "actions/privacy",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "actions/settings",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "actions/transaction",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "actions/wizard",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Base/RemoteImage",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/AccountApproval",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/AccountInfoCard",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/AccountOverview",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/ActionModal/ActionContent",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/ActionModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/ActionView",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/AddCustomToken",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/AnimatedSpinner",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/AnimatedTransactionModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/AssetList",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/BasicFunctionality",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "BasicFunctionality.test.js"
+      ]
+    },
+    {
+      "directory": "components/UI/BasicFunctionality/BasicFunctionalityModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "BasicFunctionalityModal.test.js"
+      ]
+    },
+    {
+      "directory": "components/UI/BrowserBottomBar",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Button",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/CollectibleContractElement",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/CollectibleContractInformation",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/CollectibleContractOverview",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/CollectibleContracts",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/CollectibleOverview",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Collectibles",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Confetti",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/CustomAlert",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/DrawerView",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/EditGasFee1559",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/EditGasFeeLegacy",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/EthereumAddress",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/FadeAnimationView",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/FadeOutOverlay",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/FoxScreen",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/GlobalAlert",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/HintModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/ManageNetworks",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "ManageNetworks.test.js"
+      ]
+    },
+    {
+      "directory": "components/UI/NavbarBrowserTitle",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/NetworkMainAssetLogo",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Notification/SimpleNotification",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Notification/TransactionNotification",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Notification",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/OnboardingWizard/Coachmark",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/OptinMetrics",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/PaymentRequest",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/PaymentRequestSuccess",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/PhishingModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/ProtectYourWalletModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/ReceiveRequest",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Screen",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/SeedphraseModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/SelectComponent",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/SettingsDrawer",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/SettingsNotification",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/SkipAccountSecurityModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/SliderButton",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/SlippageSlider",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/SwitchCustomNetwork",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Tabs/TabCountIcon",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Tabs",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/TimeEstimateInfoModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/TokenImage",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/TransactionActionModal/TransactionActionContent",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/TransactionActionModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/TransactionElement/TransactionDetails",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/TransactionHeader",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/Transactions",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/WarningExistingUserModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/WebsiteIcon",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/WebviewError",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/UI/WebviewProgressBar",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/AccountBackupStep1",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/AccountBackupStep1B",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/ActivityView",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/AddBookmark",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/AddressQRCode",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/Browser",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/ChoosePassword",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/Collectible",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/CollectibleView",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/EnterPasswordSimple",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/ErrorBoundary",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/GasEducationCarousel",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/ImportFromSecretRecoveryPhrase",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/ImportPrivateKeySuccess",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/LockScreen",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/ManualBackupStep1",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/ManualBackupStep2",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/ManualBackupStep3",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/OfflineMode",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/Onboarding",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/OnboardingSuccess",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.test.js"
+      ]
+    },
+    {
+      "directory": "components/Views/ResetPassword",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/Settings/AdvancedSettings",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/Settings/AppInformation",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/Settings/Contacts/ContactForm",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/Settings/Contacts",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/Settings/GeneralSettings",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/Settings/NetworksSettings",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/SimpleWebview",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/TermsAndConditions",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/TransactionSummary",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/TransactionsView",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/WalletConnectSessions",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/Approval/components/TransactionEditor",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/Approval",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/Approve",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/ApproveView/Approve",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/Send",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/SendFlow/Amount",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/SendFlow/Confirm",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/SendFlow/ErrorMessage",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/SendFlow/SendTo",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/SendFlow/components/CustomNonceModal",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/Approval/ApprovalFlowLoader",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/CustomNonce",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/EditGasFee1559Update",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.jsx"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/EditGasFeeLegacyUpdate",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.jsx"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/SignatureRequest/ExpandedMessage",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/SignatureRequest",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewData",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewInformation",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewSummary",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/TypedSign",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/UpdateEIP1559Tx",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.jsx"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations/legacy/components/WatchAssetRequest",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "components/Views/confirmations",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "mock-data.js"
+      ]
+    },
+    {
+      "directory": "core/RPCMethods/handlers",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "core/RPCMethods/lib",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "ethereum-chain-utils.js"
+      ]
+    },
+    {
+      "directory": "core/WalletConnect",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "WalletConnect.js"
+      ]
+    },
+    {
+      "directory": "images",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "image-icons.js"
+      ]
+    },
+    {
+      "directory": "lib/ens-ipfs",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "resolver.js"
+      ]
+    },
+    {
+      "directory": "lib/ppom",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "blockaid-version.js"
+      ]
+    },
+    {
+      "directory": "reducers/alert",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "reducers/bookmarks",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "reducers/collectibles",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "reducers/infuraAvailability",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "reducers/modals",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "reducers/privacy",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "reducers/settings",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "reducers/swaps",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "reducers/transaction",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "reducers/wizard",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "util/confirmation",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "signatureUtils.js"
+      ]
+    },
+    {
+      "directory": "util/confusables",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "util/conversion",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "util/custom-gas",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "util/date",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "util/device",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "util/general",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "util/networks",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "util/number",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "directory": "util/sentry",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "utils.js"
+      ]
+    },
+    {
+      "directory": "util/transactions",
+      "jsFileCount": 1,
+      "tsFileCount": 0,
+      "files": [
+        "index.js"
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "actions/alert/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "actions/alert",
+      "sizeBytes": 244,
+      "complexity": "low"
+    },
+    {
+      "path": "actions/bookmarks/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "actions/bookmarks",
+      "sizeBytes": 203,
+      "complexity": "low"
+    },
+    {
+      "path": "actions/browser/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "actions/browser",
+      "sizeBytes": 2435,
+      "complexity": "medium"
+    },
+    {
+      "path": "actions/collectibles/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "actions/collectibles",
+      "sizeBytes": 466,
+      "complexity": "low"
+    },
+    {
+      "path": "actions/infuraAvailability/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "actions/infuraAvailability",
+      "sizeBytes": 340,
+      "complexity": "low"
+    },
+    {
+      "path": "actions/modals/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "actions/modals",
+      "sizeBytes": 619,
+      "complexity": "low"
+    },
+    {
+      "path": "actions/notification/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "actions/notification",
+      "sizeBytes": 1786,
+      "complexity": "low"
+    },
+    {
+      "path": "actions/privacy/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "actions/privacy",
+      "sizeBytes": 324,
+      "complexity": "low"
+    },
+    {
+      "path": "actions/settings/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "actions/settings",
+      "sizeBytes": 1456,
+      "complexity": "low"
+    },
+    {
+      "path": "actions/transaction/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "actions/transaction",
+      "sizeBytes": 3532,
+      "complexity": "medium"
+    },
+    {
+      "path": "actions/wizard/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "actions/wizard",
+      "sizeBytes": 163,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Base/DetailsModal.js",
+      "name": "DetailsModal.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Base",
+      "sizeBytes": 4839,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Base/Keypad/components.js",
+      "name": "components.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Base/Keypad",
+      "sizeBytes": 2746,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Base/Keypad/constants.js",
+      "name": "constants.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Base/Keypad",
+      "sizeBytes": 4412,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Base/Keypad/createKeypadRule.js",
+      "name": "createKeypadRule.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Base/Keypad",
+      "sizeBytes": 1503,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Base/Keypad/createKeypadRule.test.js",
+      "name": "createKeypadRule.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/Base/Keypad",
+      "sizeBytes": 25463,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Base/Keypad/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Base/Keypad",
+      "sizeBytes": 6776,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Base/Keypad/Keypad.test.js",
+      "name": "Keypad.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/Base/Keypad",
+      "sizeBytes": 1295,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Base/Keypad/useCurrency.js",
+      "name": "useCurrency.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Base/Keypad",
+      "sizeBytes": 888,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Base/RangeInput.js",
+      "name": "RangeInput.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Base",
+      "sizeBytes": 7660,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Base/RemoteImage/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Base/RemoteImage",
+      "sizeBytes": 9364,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Base/StatusText.js",
+      "name": "StatusText.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Base",
+      "sizeBytes": 2770,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Base/TabBar.js",
+      "name": "TabBar.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Base",
+      "sizeBytes": 1063,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Nav/Main/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Nav/Main",
+      "sizeBytes": 17118,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Nav/Main/MainNavigator.js",
+      "name": "MainNavigator.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Nav/Main",
+      "sizeBytes": 28407,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Nav/Main/RootRPCMethodsUI.js",
+      "name": "RootRPCMethodsUI.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Nav/Main",
+      "sizeBytes": 20396,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/AccountApproval/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/AccountApproval",
+      "sizeBytes": 13439,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/AccountInfoCard/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/AccountInfoCard",
+      "sizeBytes": 7409,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/AccountOverview/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/AccountOverview",
+      "sizeBytes": 14332,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/ActionModal/ActionContent/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/ActionModal/ActionContent",
+      "sizeBytes": 5082,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/ActionModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/ActionModal",
+      "sizeBytes": 4430,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/ActionView/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/ActionView",
+      "sizeBytes": 6098,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/AddCustomToken/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/AddCustomToken",
+      "sizeBytes": 22495,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/AddressInputs/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/AddressInputs",
+      "sizeBytes": 18344,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/AddressInputs/index.test.jsx",
+      "name": "index.test.jsx",
+      "extension": ".jsx",
+      "category": "test",
+      "directory": "components/UI/AddressInputs",
+      "sizeBytes": 3388,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/AnimatedSpinner/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/AnimatedSpinner",
+      "sizeBytes": 3068,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/AnimatedTransactionModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/AnimatedTransactionModal",
+      "sizeBytes": 8994,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/AssetList/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/AssetList",
+      "sizeBytes": 2705,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/BasicFunctionality/BasicFunctionality.test.js",
+      "name": "BasicFunctionality.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/UI/BasicFunctionality",
+      "sizeBytes": 407,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test.js",
+      "name": "BasicFunctionalityModal.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/UI/BasicFunctionality/BasicFunctionalityModal",
+      "sizeBytes": 1873,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/BrowserBottomBar/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/BrowserBottomBar",
+      "sizeBytes": 6208,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Button/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Button",
+      "sizeBytes": 1930,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/CollectibleContractElement/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/CollectibleContractElement",
+      "sizeBytes": 9288,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/CollectibleContractInformation/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/CollectibleContractInformation",
+      "sizeBytes": 6330,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/CollectibleContractOverview/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/CollectibleContractOverview",
+      "sizeBytes": 5534,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/CollectibleContracts/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/CollectibleContracts",
+      "sizeBytes": 18336,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/CollectibleOverview/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/CollectibleOverview",
+      "sizeBytes": 16645,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/Collectibles/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Collectibles",
+      "sizeBytes": 5852,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Confetti/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Confetti",
+      "sizeBytes": 729,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/CustomAlert/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/CustomAlert",
+      "sizeBytes": 3221,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/DrawerView/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/DrawerView",
+      "sizeBytes": 38558,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/EditGasFee1559/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/EditGasFee1559",
+      "sizeBytes": 31819,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/EditGasFeeLegacy/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/EditGasFeeLegacy",
+      "sizeBytes": 18768,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/EthereumAddress/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/EthereumAddress",
+      "sizeBytes": 1775,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/FadeAnimationView/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/FadeAnimationView",
+      "sizeBytes": 3491,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/FadeOutOverlay/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/FadeOutOverlay",
+      "sizeBytes": 1407,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/FoxScreen/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/FoxScreen",
+      "sizeBytes": 1206,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/GlobalAlert/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/GlobalAlert",
+      "sizeBytes": 3891,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/HintModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/HintModal",
+      "sizeBytes": 3538,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/ManageNetworks/ManageNetworks.test.js",
+      "name": "ManageNetworks.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/UI/ManageNetworks",
+      "sizeBytes": 2111,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Navbar/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Navbar",
+      "sizeBytes": 58792,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/Navbar/index.test.jsx",
+      "name": "index.test.jsx",
+      "extension": ".jsx",
+      "category": "test",
+      "directory": "components/UI/Navbar",
+      "sizeBytes": 1221,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/NavbarBrowserTitle/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/NavbarBrowserTitle",
+      "sizeBytes": 4613,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/NavbarTitle/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/NavbarTitle",
+      "sizeBytes": 5142,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/NavbarTitle/index.test.js",
+      "name": "index.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/UI/NavbarTitle",
+      "sizeBytes": 524,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/NetworkMainAssetLogo/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/NetworkMainAssetLogo",
+      "sizeBytes": 1118,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/Notification/BaseNotification/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Notification/BaseNotification",
+      "sizeBytes": 6136,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Notification/BaseNotification/index.test.jsx",
+      "name": "index.test.jsx",
+      "extension": ".jsx",
+      "category": "test",
+      "directory": "components/UI/Notification/BaseNotification",
+      "sizeBytes": 2337,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Notification/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Notification",
+      "sizeBytes": 3843,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Notification/SimpleNotification/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Notification/SimpleNotification",
+      "sizeBytes": 1718,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/Notification/TransactionNotification/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Notification/TransactionNotification",
+      "sizeBytes": 14325,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/OnboardingWizard/Coachmark/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/OnboardingWizard/Coachmark",
+      "sizeBytes": 11172,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/OptinMetrics/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/OptinMetrics",
+      "sizeBytes": 19744,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/PaymentRequest/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/PaymentRequest",
+      "sizeBytes": 27550,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/PaymentRequestSuccess/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/PaymentRequestSuccess",
+      "sizeBytes": 12137,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/PhishingModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/PhishingModal",
+      "sizeBytes": 5637,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/ProtectYourWalletModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/ProtectYourWalletModal",
+      "sizeBytes": 6143,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/ReceiveRequest/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/ReceiveRequest",
+      "sizeBytes": 8530,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Screen/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Screen",
+      "sizeBytes": 641,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/SeedphraseModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/SeedphraseModal",
+      "sizeBytes": 2981,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/SelectComponent/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/SelectComponent",
+      "sizeBytes": 6395,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/SettingsDrawer/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/SettingsDrawer",
+      "sizeBytes": 3556,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/SettingsNotification/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/SettingsNotification",
+      "sizeBytes": 2362,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/SkipAccountSecurityModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/SkipAccountSecurityModal",
+      "sizeBytes": 4607,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/SliderButton/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/SliderButton",
+      "sizeBytes": 9484,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/SlippageSlider/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/SlippageSlider",
+      "sizeBytes": 9173,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/StyledButton/index.android.js",
+      "name": "index.android.js",
+      "extension": ".js",
+      "category": "style",
+      "directory": "components/UI/StyledButton",
+      "sizeBytes": 4294,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/StyledButton/index.ios.js",
+      "name": "index.ios.js",
+      "extension": ".js",
+      "category": "style",
+      "directory": "components/UI/StyledButton",
+      "sizeBytes": 3153,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/StyledButton/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "style",
+      "directory": "components/UI/StyledButton",
+      "sizeBytes": 814,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/Swaps/components/ActionAlert.js",
+      "name": "ActionAlert.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 3814,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Swaps/components/ApprovalTransactionEditionModal.js",
+      "name": "ApprovalTransactionEditionModal.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 5668,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Swaps/components/AssetSwapButton.js",
+      "name": "AssetSwapButton.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 1891,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/Swaps/components/GasEditModal.js",
+      "name": "GasEditModal.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 16422,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/Swaps/components/LoadingAnimation/backgroundShapes.js",
+      "name": "backgroundShapes.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components/LoadingAnimation",
+      "sizeBytes": 8401,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Swaps/components/LoadingAnimation/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components/LoadingAnimation",
+      "sizeBytes": 15922,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/Swaps/components/Onboarding.js",
+      "name": "Onboarding.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 4507,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Swaps/components/QuotesModal.js",
+      "name": "QuotesModal.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 16939,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/Swaps/components/QuotesSummary.js",
+      "name": "QuotesSummary.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 3112,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Swaps/components/SlippageModal.js",
+      "name": "SlippageModal.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 2520,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Swaps/components/TokenIcon.js",
+      "name": "TokenIcon.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 4016,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Swaps/components/TokenIcon.test.js",
+      "name": "TokenIcon.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 1201,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/Swaps/components/TokenImportModal.js",
+      "name": "TokenImportModal.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 3753,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Swaps/components/TokenSelectButton.js",
+      "name": "TokenSelectButton.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 845,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/Swaps/components/TokenSelectButton.test.js",
+      "name": "TokenSelectButton.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 1149,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/Swaps/components/TokenSelectModal.js",
+      "name": "TokenSelectModal.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/UI/Swaps/components",
+      "sizeBytes": 17641,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/Swaps/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Swaps",
+      "sizeBytes": 33203,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/Swaps/QuotesView.js",
+      "name": "QuotesView.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Swaps",
+      "sizeBytes": 86191,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/Swaps/utils/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "utility",
+      "directory": "components/UI/Swaps/utils",
+      "sizeBytes": 7249,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Swaps/utils/index.test.js",
+      "name": "index.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/UI/Swaps/utils",
+      "sizeBytes": 6692,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Swaps/utils/useBalance.js",
+      "name": "useBalance.js",
+      "extension": ".js",
+      "category": "utility",
+      "directory": "components/UI/Swaps/utils",
+      "sizeBytes": 1360,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/Swaps/utils/useBlockExplorer.js",
+      "name": "useBlockExplorer.js",
+      "extension": ".js",
+      "category": "utility",
+      "directory": "components/UI/Swaps/utils",
+      "sizeBytes": 3397,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Swaps/utils/useFetchTokenMetadata.js",
+      "name": "useFetchTokenMetadata.js",
+      "extension": ".js",
+      "category": "utility",
+      "directory": "components/UI/Swaps/utils",
+      "sizeBytes": 1565,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/SwitchCustomNetwork/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/SwitchCustomNetwork",
+      "sizeBytes": 2002,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Tabs/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Tabs",
+      "sizeBytes": 9057,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Tabs/TabCountIcon/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Tabs/TabCountIcon",
+      "sizeBytes": 1709,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/TimeEstimateInfoModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/TimeEstimateInfoModal",
+      "sizeBytes": 1612,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/TokenImage/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/TokenImage",
+      "sizeBytes": 1750,
+      "complexity": "low"
+    },
+    {
+      "path": "components/UI/TransactionActionModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/TransactionActionModal",
+      "sizeBytes": 2450,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/TransactionActionModal/TransactionActionContent/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/TransactionActionModal/TransactionActionContent",
+      "sizeBytes": 2901,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/TransactionElement/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/TransactionElement",
+      "sizeBytes": 23307,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/TransactionElement/TransactionDetails/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/TransactionElement/TransactionDetails",
+      "sizeBytes": 17055,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/TransactionElement/utils.js",
+      "name": "utils.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/TransactionElement",
+      "sizeBytes": 29750,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/TransactionElement/utils.test.js",
+      "name": "utils.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/UI/TransactionElement",
+      "sizeBytes": 10667,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/TransactionHeader/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/TransactionHeader",
+      "sizeBytes": 7117,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/Transactions/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/Transactions",
+      "sizeBytes": 29532,
+      "complexity": "high"
+    },
+    {
+      "path": "components/UI/WarningExistingUserModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/WarningExistingUserModal",
+      "sizeBytes": 3049,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/WebsiteIcon/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/WebsiteIcon",
+      "sizeBytes": 4652,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/WebviewError/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/WebviewError",
+      "sizeBytes": 3480,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/UI/WebviewProgressBar/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/UI/WebviewProgressBar",
+      "sizeBytes": 1527,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/AccountBackupStep1/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/AccountBackupStep1",
+      "sizeBytes": 9750,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/AccountBackupStep1B/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/AccountBackupStep1B",
+      "sizeBytes": 12212,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/ActivityView/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/ActivityView",
+      "sizeBytes": 8097,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/AddBookmark/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/AddBookmark",
+      "sizeBytes": 5051,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/AddressQRCode/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/AddressQRCode",
+      "sizeBytes": 5320,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/Asset/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Asset",
+      "sizeBytes": 18816,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/Asset/index.test.js",
+      "name": "index.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/Views/Asset",
+      "sizeBytes": 4952,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/Browser/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Browser",
+      "sizeBytes": 14632,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/ChoosePassword/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/ChoosePassword",
+      "sizeBytes": 24705,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/Collectible/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Collectible",
+      "sizeBytes": 5697,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/CollectibleView/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/CollectibleView",
+      "sizeBytes": 3788,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/Approval/components/TransactionEditor/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/Approval/components/TransactionEditor",
+      "sizeBytes": 31979,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/Approval/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/confirmations/legacy/Approval",
+      "sizeBytes": 24573,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/Approve/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/confirmations/legacy/Approve",
+      "sizeBytes": 31297,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/ApproveView/Approve/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/confirmations/legacy/ApproveView/Approve",
+      "sizeBytes": 31427,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/Approval/ApprovalFlowLoader/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/Approval/ApprovalFlowLoader",
+      "sizeBytes": 1344,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/ApproveTransactionReview/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/ApproveTransactionReview",
+      "sizeBytes": 45252,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/ApproveTransactionReview/index.test.jsx",
+      "name": "index.test.jsx",
+      "extension": ".jsx",
+      "category": "test",
+      "directory": "components/Views/confirmations/legacy/components/ApproveTransactionReview",
+      "sizeBytes": 7020,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/CustomNonce/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/CustomNonce",
+      "sizeBytes": 1364,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/EditGasFee1559Update/index.jsx",
+      "name": "index.jsx",
+      "extension": ".jsx",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/EditGasFee1559Update",
+      "sizeBytes": 25969,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/EditGasFeeLegacyUpdate/index.jsx",
+      "name": "index.jsx",
+      "extension": ".jsx",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/EditGasFeeLegacyUpdate",
+      "sizeBytes": 14021,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/SignatureRequest/ExpandedMessage/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/SignatureRequest/ExpandedMessage",
+      "sizeBytes": 3783,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/SignatureRequest/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/SignatureRequest",
+      "sizeBytes": 11640,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TransactionReview/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview",
+      "sizeBytes": 23661,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TransactionReview/index.test.jsx",
+      "name": "index.test.jsx",
+      "extension": ".jsx",
+      "category": "test",
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview",
+      "sizeBytes": 10310,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewData/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewData",
+      "sizeBytes": 5666,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewDetailsCard/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewDetailsCard",
+      "sizeBytes": 6313,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewDetailsCard/index.test.js",
+      "name": "index.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewDetailsCard",
+      "sizeBytes": 693,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559",
+      "sizeBytes": 14070,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update/index.jsx",
+      "name": "index.jsx",
+      "extension": ".jsx",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update",
+      "sizeBytes": 16132,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update/index.test.jsx",
+      "name": "index.test.jsx",
+      "extension": ".jsx",
+      "category": "test",
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update",
+      "sizeBytes": 2418,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update/styles.js",
+      "name": "styles.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update",
+      "sizeBytes": 1056,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewInformation/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewInformation",
+      "sizeBytes": 22796,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewSummary/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewSummary",
+      "sizeBytes": 4239,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/TypedSign/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/TypedSign",
+      "sizeBytes": 9390,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/UpdateEIP1559Tx/index.jsx",
+      "name": "index.jsx",
+      "extension": ".jsx",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/UpdateEIP1559Tx",
+      "sizeBytes": 9074,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/components/WatchAssetRequest/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/components/WatchAssetRequest",
+      "sizeBytes": 7782,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/Send/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/confirmations/legacy/Send",
+      "sizeBytes": 25125,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/SendFlow/AddressList/AddressList.jsx",
+      "name": "AddressList.jsx",
+      "extension": ".jsx",
+      "category": "other",
+      "directory": "components/Views/confirmations/legacy/SendFlow/AddressList",
+      "sizeBytes": 7994,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/SendFlow/AddressList/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/confirmations/legacy/SendFlow/AddressList",
+      "sizeBytes": 41,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/SendFlow/Amount/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/confirmations/legacy/SendFlow/Amount",
+      "sizeBytes": 48983,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/SendFlow/components/CustomNonceModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/SendFlow/components/CustomNonceModal",
+      "sizeBytes": 7932,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/CustomGasModal.jsx",
+      "name": "CustomGasModal.jsx",
+      "extension": ".jsx",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal",
+      "sizeBytes": 5945,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "component",
+      "directory": "components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal",
+      "sizeBytes": 44,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/SendFlow/Confirm/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/confirmations/legacy/SendFlow/Confirm",
+      "sizeBytes": 51991,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/SendFlow/ErrorMessage/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/confirmations/legacy/SendFlow/ErrorMessage",
+      "sizeBytes": 1786,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/confirmations/legacy/SendFlow/SendTo/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/confirmations/legacy/SendFlow/SendTo",
+      "sizeBytes": 23408,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/confirmations/mock-data.js",
+      "name": "mock-data.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/confirmations",
+      "sizeBytes": 4234,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/EnterPasswordSimple/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/EnterPasswordSimple",
+      "sizeBytes": 4492,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/ErrorBoundary/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/ErrorBoundary",
+      "sizeBytes": 15055,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/GasEducationCarousel/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/GasEducationCarousel",
+      "sizeBytes": 13529,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/ImportFromSecretRecoveryPhrase/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/ImportFromSecretRecoveryPhrase",
+      "sizeBytes": 22047,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/ImportPrivateKeySuccess/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/ImportPrivateKeySuccess",
+      "sizeBytes": 4189,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/LockScreen/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/LockScreen",
+      "sizeBytes": 6739,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/ManualBackupStep1/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/ManualBackupStep1",
+      "sizeBytes": 10496,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/ManualBackupStep2/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/ManualBackupStep2",
+      "sizeBytes": 9527,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/ManualBackupStep3/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/ManualBackupStep3",
+      "sizeBytes": 6887,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/MediaPlayer/AndroidMediaPlayer.js",
+      "name": "AndroidMediaPlayer.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/MediaPlayer",
+      "sizeBytes": 16576,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/MediaPlayer/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/MediaPlayer",
+      "sizeBytes": 5437,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/NavigationUnitTest/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/NavigationUnitTest",
+      "sizeBytes": 2236,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/NavigationUnitTest/TestScreen1.test.js",
+      "name": "TestScreen1.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/Views/NavigationUnitTest",
+      "sizeBytes": 344,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/NavigationUnitTest/TestScreen2.test.js",
+      "name": "TestScreen2.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/Views/NavigationUnitTest",
+      "sizeBytes": 345,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/NavigationUnitTest/TestScreen3.test.js",
+      "name": "TestScreen3.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/Views/NavigationUnitTest",
+      "sizeBytes": 304,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/OfflineMode/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/OfflineMode",
+      "sizeBytes": 3354,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/Onboarding/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Onboarding",
+      "sizeBytes": 14141,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/OnboardingSuccess/index.test.js",
+      "name": "index.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "components/Views/OnboardingSuccess",
+      "sizeBytes": 2552,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/ResetPassword/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/ResetPassword",
+      "sizeBytes": 25018,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/Settings/AdvancedSettings/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Settings/AdvancedSettings",
+      "sizeBytes": 17275,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/Settings/AppInformation/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Settings/AppInformation",
+      "sizeBytes": 6681,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/Settings/Contacts/ContactForm/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Settings/Contacts/ContactForm",
+      "sizeBytes": 15184,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/Settings/Contacts/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Settings/Contacts",
+      "sizeBytes": 5168,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/Settings/GeneralSettings/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Settings/GeneralSettings",
+      "sizeBytes": 16907,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/Settings/NetworksSettings/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Settings/NetworksSettings",
+      "sizeBytes": 19486,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/Settings/NetworksSettings/NetworkSettings/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Settings/NetworksSettings/NetworkSettings",
+      "sizeBytes": 80079,
+      "complexity": "high"
+    },
+    {
+      "path": "components/Views/Settings/NetworksSettings/NetworkSettings/withIsOriginalNativeToken.js",
+      "name": "withIsOriginalNativeToken.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/Settings/NetworksSettings/NetworkSettings",
+      "sizeBytes": 937,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/SimpleWebview/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/SimpleWebview",
+      "sizeBytes": 1810,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/TermsAndConditions/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/TermsAndConditions",
+      "sizeBytes": 1954,
+      "complexity": "low"
+    },
+    {
+      "path": "components/Views/TransactionSummary/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/TransactionSummary",
+      "sizeBytes": 4462,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/TransactionsView/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/TransactionsView",
+      "sizeBytes": 7479,
+      "complexity": "medium"
+    },
+    {
+      "path": "components/Views/WalletConnectSessions/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "components/Views/WalletConnectSessions",
+      "sizeBytes": 7808,
+      "complexity": "medium"
+    },
+    {
+      "path": "constants/navigation.js",
+      "name": "navigation.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "constants",
+      "sizeBytes": 124,
+      "complexity": "low"
+    },
+    {
+      "path": "constants/network.js",
+      "name": "network.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "constants",
+      "sizeBytes": 3610,
+      "complexity": "medium"
+    },
+    {
+      "path": "constants/onboarding.js",
+      "name": "onboarding.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "constants",
+      "sizeBytes": 519,
+      "complexity": "low"
+    },
+    {
+      "path": "core/BackgroundBridge/BackgroundBridge.js",
+      "name": "BackgroundBridge.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core/BackgroundBridge",
+      "sizeBytes": 19025,
+      "complexity": "high"
+    },
+    {
+      "path": "core/BackgroundBridge/BackgroundBridge.test.js",
+      "name": "BackgroundBridge.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "core/BackgroundBridge",
+      "sizeBytes": 6160,
+      "complexity": "medium"
+    },
+    {
+      "path": "core/ClipboardManager.js",
+      "name": "ClipboardManager.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core",
+      "sizeBytes": 786,
+      "complexity": "low"
+    },
+    {
+      "path": "core/DrawerStatusTracker.js",
+      "name": "DrawerStatusTracker.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core",
+      "sizeBytes": 640,
+      "complexity": "low"
+    },
+    {
+      "path": "core/EntryScriptWeb3.js",
+      "name": "EntryScriptWeb3.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core",
+      "sizeBytes": 690,
+      "complexity": "low"
+    },
+    {
+      "path": "core/InpageBridgeWeb3.js",
+      "name": "InpageBridgeWeb3.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core",
+      "sizeBytes": 610092,
+      "complexity": "high"
+    },
+    {
+      "path": "core/MobilePortStream.js",
+      "name": "MobilePortStream.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core",
+      "sizeBytes": 1873,
+      "complexity": "low"
+    },
+    {
+      "path": "core/NotificationManager.js",
+      "name": "NotificationManager.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core",
+      "sizeBytes": 16406,
+      "complexity": "high"
+    },
+    {
+      "path": "core/Permissions/specifications.js",
+      "name": "specifications.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core/Permissions",
+      "sizeBytes": 5354,
+      "complexity": "medium"
+    },
+    {
+      "path": "core/Permissions/specifications.test.js",
+      "name": "specifications.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "core/Permissions",
+      "sizeBytes": 5761,
+      "complexity": "medium"
+    },
+    {
+      "path": "core/PreventScreenshot.js",
+      "name": "PreventScreenshot.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core",
+      "sizeBytes": 495,
+      "complexity": "low"
+    },
+    {
+      "path": "core/RPCMethods/createEip1193MethodMiddleware/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core/RPCMethods/createEip1193MethodMiddleware",
+      "sizeBytes": 644,
+      "complexity": "low"
+    },
+    {
+      "path": "core/RPCMethods/createEip1193MethodMiddleware/index.test.js",
+      "name": "index.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "core/RPCMethods/createEip1193MethodMiddleware",
+      "sizeBytes": 5106,
+      "complexity": "medium"
+    },
+    {
+      "path": "core/RPCMethods/eth-request-accounts.js",
+      "name": "eth-request-accounts.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core/RPCMethods",
+      "sizeBytes": 3193,
+      "complexity": "medium"
+    },
+    {
+      "path": "core/RPCMethods/handlers/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core/RPCMethods/handlers",
+      "sizeBytes": 182,
+      "complexity": "low"
+    },
+    {
+      "path": "core/RPCMethods/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core/RPCMethods",
+      "sizeBytes": 421,
+      "complexity": "low"
+    },
+    {
+      "path": "core/RPCMethods/lib/ethereum-chain-utils.js",
+      "name": "ethereum-chain-utils.js",
+      "extension": ".js",
+      "category": "library",
+      "directory": "core/RPCMethods/lib",
+      "sizeBytes": 11113,
+      "complexity": "high"
+    },
+    {
+      "path": "core/RPCMethods/wallet_addEthereumChain.js",
+      "name": "wallet_addEthereumChain.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core/RPCMethods",
+      "sizeBytes": 9071,
+      "complexity": "medium"
+    },
+    {
+      "path": "core/RPCMethods/wallet_addEthereumChain.test.js",
+      "name": "wallet_addEthereumChain.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "core/RPCMethods",
+      "sizeBytes": 14874,
+      "complexity": "high"
+    },
+    {
+      "path": "core/RPCMethods/wallet_switchEthereumChain.js",
+      "name": "wallet_switchEthereumChain.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core/RPCMethods",
+      "sizeBytes": 3915,
+      "complexity": "medium"
+    },
+    {
+      "path": "core/RPCMethods/wallet_switchEthereumChain.test.js",
+      "name": "wallet_switchEthereumChain.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "core/RPCMethods",
+      "sizeBytes": 8717,
+      "complexity": "medium"
+    },
+    {
+      "path": "core/SecureKeychain.js",
+      "name": "SecureKeychain.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core",
+      "sizeBytes": 7372,
+      "complexity": "medium"
+    },
+    {
+      "path": "core/TransactionTypes.js",
+      "name": "TransactionTypes.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core",
+      "sizeBytes": 272,
+      "complexity": "low"
+    },
+    {
+      "path": "core/Vault.js",
+      "name": "Vault.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core",
+      "sizeBytes": 5188,
+      "complexity": "medium"
+    },
+    {
+      "path": "core/WalletConnect/WalletConnect.js",
+      "name": "WalletConnect.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "core/WalletConnect",
+      "sizeBytes": 14837,
+      "complexity": "high"
+    },
+    {
+      "path": "images/image-icons.js",
+      "name": "image-icons.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "images",
+      "sizeBytes": 1484,
+      "complexity": "low"
+    },
+    {
+      "path": "lib/ens-ipfs/contracts/registry.js",
+      "name": "registry.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "lib/ens-ipfs/contracts",
+      "sizeBytes": 2371,
+      "complexity": "medium"
+    },
+    {
+      "path": "lib/ens-ipfs/contracts/resolver.js",
+      "name": "resolver.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "lib/ens-ipfs/contracts",
+      "sizeBytes": 5354,
+      "complexity": "medium"
+    },
+    {
+      "path": "lib/ens-ipfs/resolver.js",
+      "name": "resolver.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "lib/ens-ipfs",
+      "sizeBytes": 3595,
+      "complexity": "medium"
+    },
+    {
+      "path": "lib/ppom/blockaid-version.js",
+      "name": "blockaid-version.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "lib/ppom",
+      "sizeBytes": 245,
+      "complexity": "low"
+    },
+    {
+      "path": "reducers/alert/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/alert",
+      "sizeBytes": 559,
+      "complexity": "low"
+    },
+    {
+      "path": "reducers/bookmarks/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/bookmarks",
+      "sizeBytes": 315,
+      "complexity": "low"
+    },
+    {
+      "path": "reducers/browser/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/browser",
+      "sizeBytes": 2589,
+      "complexity": "medium"
+    },
+    {
+      "path": "reducers/browser/index.test.js",
+      "name": "index.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "reducers/browser",
+      "sizeBytes": 1605,
+      "complexity": "low"
+    },
+    {
+      "path": "reducers/collectibles/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/collectibles",
+      "sizeBytes": 4745,
+      "complexity": "medium"
+    },
+    {
+      "path": "reducers/infuraAvailability/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/infuraAvailability",
+      "sizeBytes": 689,
+      "complexity": "low"
+    },
+    {
+      "path": "reducers/modals/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/modals",
+      "sizeBytes": 1656,
+      "complexity": "low"
+    },
+    {
+      "path": "reducers/notification/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/notification",
+      "sizeBytes": 6037,
+      "complexity": "medium"
+    },
+    {
+      "path": "reducers/notification/notification.test.js",
+      "name": "notification.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "reducers/notification",
+      "sizeBytes": 9463,
+      "complexity": "medium"
+    },
+    {
+      "path": "reducers/privacy/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/privacy",
+      "sizeBytes": 843,
+      "complexity": "low"
+    },
+    {
+      "path": "reducers/settings/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/settings",
+      "sizeBytes": 1729,
+      "complexity": "low"
+    },
+    {
+      "path": "reducers/swaps/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/swaps",
+      "sizeBytes": 12143,
+      "complexity": "high"
+    },
+    {
+      "path": "reducers/transaction/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/transaction",
+      "sizeBytes": 4319,
+      "complexity": "medium"
+    },
+    {
+      "path": "reducers/wizard/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "reducer",
+      "directory": "reducers/wizard",
+      "sizeBytes": 432,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/000.js",
+      "name": "000.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 719,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/001.js",
+      "name": "001.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 593,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/002.js",
+      "name": "002.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 851,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/003.js",
+      "name": "003.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 1179,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/004.js",
+      "name": "004.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 2420,
+      "complexity": "medium"
+    },
+    {
+      "path": "store/migrations/005.js",
+      "name": "005.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 684,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/006.js",
+      "name": "006.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 426,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/007.js",
+      "name": "007.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 1372,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/008.js",
+      "name": "008.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 1445,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/009.js",
+      "name": "009.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 210,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/010.js",
+      "name": "010.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 243,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/011.js",
+      "name": "011.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 209,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/012.js",
+      "name": "012.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 959,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/013.js",
+      "name": "013.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 1461,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/014.js",
+      "name": "014.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 328,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/015.js",
+      "name": "015.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 594,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/016.js",
+      "name": "016.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 333,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/017.js",
+      "name": "017.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 198,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/018.js",
+      "name": "018.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 208,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/019.js",
+      "name": "019.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 112,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/019.test.js",
+      "name": "019.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "store/migrations",
+      "sizeBytes": 452,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/020.js",
+      "name": "020.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 1568,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/020.test.js",
+      "name": "020.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "store/migrations",
+      "sizeBytes": 7488,
+      "complexity": "medium"
+    },
+    {
+      "path": "store/migrations/021.js",
+      "name": "021.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 592,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/021.test.js",
+      "name": "021.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "store/migrations",
+      "sizeBytes": 1498,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/022.js",
+      "name": "022.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 469,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/022.test.js",
+      "name": "022.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "store/migrations",
+      "sizeBytes": 604,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/023.js",
+      "name": "023.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 6637,
+      "complexity": "medium"
+    },
+    {
+      "path": "store/migrations/023.test.js",
+      "name": "023.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "store/migrations",
+      "sizeBytes": 13820,
+      "complexity": "high"
+    },
+    {
+      "path": "store/migrations/024.js",
+      "name": "024.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 1690,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/024.test.js",
+      "name": "024.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "store/migrations",
+      "sizeBytes": 2318,
+      "complexity": "medium"
+    },
+    {
+      "path": "store/migrations/025.js",
+      "name": "025.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 1059,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/025.test.js",
+      "name": "025.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "store/migrations",
+      "sizeBytes": 1889,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/026.js",
+      "name": "026.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 1721,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/026.test.js",
+      "name": "026.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "store/migrations",
+      "sizeBytes": 2185,
+      "complexity": "medium"
+    },
+    {
+      "path": "store/migrations/027.js",
+      "name": "027.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "store/migrations",
+      "sizeBytes": 1796,
+      "complexity": "low"
+    },
+    {
+      "path": "store/migrations/027.test.js",
+      "name": "027.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "store/migrations",
+      "sizeBytes": 6365,
+      "complexity": "medium"
+    },
+    {
+      "path": "store/migrations/028.test.js",
+      "name": "028.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "store/migrations",
+      "sizeBytes": 5616,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/blockies.js",
+      "name": "blockies.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 12226,
+      "complexity": "high"
+    },
+    {
+      "path": "util/confirm-tx.js",
+      "name": "confirm-tx.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 3592,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/confirmation/signatureUtils.js",
+      "name": "signatureUtils.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/confirmation",
+      "sizeBytes": 4393,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/confusables/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/confusables",
+      "sizeBytes": 1076,
+      "complexity": "low"
+    },
+    {
+      "path": "util/conversion/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/conversion",
+      "sizeBytes": 8588,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/conversions.js",
+      "name": "conversions.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 5190,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/conversions.test.js",
+      "name": "conversions.test.js",
+      "extension": ".js",
+      "category": "test",
+      "directory": "util",
+      "sizeBytes": 319,
+      "complexity": "low"
+    },
+    {
+      "path": "util/custom-gas/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/custom-gas",
+      "sizeBytes": 4169,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/dapp-url-list.js",
+      "name": "dapp-url-list.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 8281,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/date/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/date",
+      "sizeBytes": 3027,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/device/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/device",
+      "sizeBytes": 2156,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/ENSUtils.js",
+      "name": "ENSUtils.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 3736,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/etherscan.js",
+      "name": "etherscan.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 1705,
+      "complexity": "low"
+    },
+    {
+      "path": "util/gasUtils.js",
+      "name": "gasUtils.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 246,
+      "complexity": "low"
+    },
+    {
+      "path": "util/general/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/general",
+      "sizeBytes": 5491,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/middlewares.js",
+      "name": "middlewares.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 3523,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/networks/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/networks",
+      "sizeBytes": 19171,
+      "complexity": "high"
+    },
+    {
+      "path": "util/number/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/number",
+      "sizeBytes": 27983,
+      "complexity": "high"
+    },
+    {
+      "path": "util/payment-link-generator.js",
+      "name": "payment-link-generator.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 2129,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/scaling.js",
+      "name": "scaling.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 1678,
+      "complexity": "low"
+    },
+    {
+      "path": "util/sentry/utils.js",
+      "name": "utils.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/sentry",
+      "sizeBytes": 17924,
+      "complexity": "high"
+    },
+    {
+      "path": "util/streams.js",
+      "name": "streams.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 1142,
+      "complexity": "low"
+    },
+    {
+      "path": "util/test/assetFileTransformer.js",
+      "name": "assetFileTransformer.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/test",
+      "sizeBytes": 287,
+      "complexity": "low"
+    },
+    {
+      "path": "util/test/contract-address-registry.js",
+      "name": "contract-address-registry.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/test",
+      "sizeBytes": 645,
+      "complexity": "low"
+    },
+    {
+      "path": "util/test/ganache-seeder.js",
+      "name": "ganache-seeder.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/test",
+      "sizeBytes": 2606,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/test/ganache.js",
+      "name": "ganache.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/test",
+      "sizeBytes": 1476,
+      "complexity": "low"
+    },
+    {
+      "path": "util/test/network-store.js",
+      "name": "network-store.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/test",
+      "sizeBytes": 2941,
+      "complexity": "medium"
+    },
+    {
+      "path": "util/test/smart-contracts.js",
+      "name": "smart-contracts.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/test",
+      "sizeBytes": 1320,
+      "complexity": "low"
+    },
+    {
+      "path": "util/test/testSetup.js",
+      "name": "testSetup.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/test",
+      "sizeBytes": 12859,
+      "complexity": "high"
+    },
+    {
+      "path": "util/test/utils.js",
+      "name": "utils.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/test",
+      "sizeBytes": 750,
+      "complexity": "low"
+    },
+    {
+      "path": "util/transactions/index.js",
+      "name": "index.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util/transactions",
+      "sizeBytes": 49409,
+      "complexity": "high"
+    },
+    {
+      "path": "util/walletconnect.js",
+      "name": "walletconnect.js",
+      "extension": ".js",
+      "category": "other",
+      "directory": "util",
+      "sizeBytes": 242,
+      "complexity": "low"
+    }
+  ]
+}

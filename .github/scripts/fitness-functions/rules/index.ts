@@ -10,7 +10,7 @@ const RULES: IRule[] = [
   {
     name: 'Check for js or jsx file being added',
     fn: preventJavaScriptFileAdditions,
-    docURL: '[WIP] No documentation exists for this rule yet.',
+    docURL: 'https://github.com/COG-GTM/metamask-mobile/blob/main/TYPESCRIPT_MIGRATION_PROGRESS.md#migration-protection',
   },
 ];
 
