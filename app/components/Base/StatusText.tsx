@@ -24,7 +24,13 @@ export const ConfirmedText: React.FC<StatusTextComponentProps> = ({
   style,
   ...props
 }) => (
-  <Text testID={testID} bold green style={[styles.status, style]} {...props} />
+  <Text
+    testID={testID}
+    bold
+    green
+    style={style ? [styles.status, style] : styles.status}
+    {...props}
+  />
 );
 
 export const PendingText: React.FC<StatusTextComponentProps> = ({
@@ -37,7 +43,11 @@ export const PendingText: React.FC<StatusTextComponentProps> = ({
     <Text
       testID={testID}
       bold
-      style={[styles.status, { color: colors.warning.default }, style]}
+      style={
+        style
+          ? [styles.status, { color: colors.warning.default }, style]
+          : [styles.status, { color: colors.warning.default }]
+      }
       {...props}
     />
   );
@@ -53,7 +63,11 @@ export const FailedText: React.FC<StatusTextComponentProps> = ({
     <Text
       testID={testID}
       bold
-      style={[styles.status, { color: colors.error.default }, style]}
+      style={
+        style
+          ? [styles.status, { color: colors.error.default }, style]
+          : [styles.status, { color: colors.error.default }]
+      }
       {...props}
     />
   );
@@ -140,7 +154,7 @@ const StatusText: React.FC<StatusTextProps> = ({
 
     default:
       return (
-        <Text bold style={[styles.status, style]}>
+        <Text bold style={style ? [styles.status, style] : styles.status}>
           {status}
         </Text>
       );
