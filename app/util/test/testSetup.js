@@ -405,6 +405,8 @@ jest.mock('react-native-safe-area-context', () => ({
 
 afterEach(() => {
   jest.restoreAllMocks();
+  jest.clearAllMocks();
+  jest.resetModules();
   global.gc && global.gc(true);
 });
 

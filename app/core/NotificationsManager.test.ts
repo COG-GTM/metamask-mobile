@@ -128,7 +128,7 @@ describe('NotificationManager', () => {
   });
 
   describe('smartTransactionListener', () => {
-    const mockTransactionController = {
+    const createMockTransactionController = () => ({
       getTransactions: jest.fn(),
       state: {
         transactions: [{
@@ -143,35 +143,38 @@ describe('NotificationManager', () => {
           error: { message: 'test error', rpc: { code: 0 }, name: 'Error' }
         }]
       }
-    };
+    });
 
-    const mockControllerMessenger = {
+    const createMockControllerMessenger = () => ({
       subscribe: jest.fn(),
       unsubscribe: jest.fn(),
       subscribeOnceIf: jest.fn(),
       tryUnsubscribe: jest.fn()
-    };
+    });
 
+    let mockTransactionController: ReturnType<typeof createMockTransactionController>;
+    let mockControllerMessenger: ReturnType<typeof createMockControllerMessenger>;
     let showNotificationSpy: jest.SpyInstance;
 
-    beforeAll(() => {
-      // Set up spies and mocks once before all tests
+    beforeEach(() => {
+      // Create fresh mock instances for each test to ensure isolation
+      mockTransactionController = createMockTransactionController();
+      mockControllerMessenger = createMockControllerMessenger();
+
+      // Set up Engine mocks with fresh instances
       Object.defineProperty(Engine, 'context', {
         value: {
           TransactionController: mockTransactionController,
         },
-        writable: true
+        writable: true,
+        configurable: true
       });
 
       Object.defineProperty(Engine, 'controllerMessenger', {
         value: mockControllerMessenger,
-        writable: true
+        writable: true,
+        configurable: true
       });
-    });
-
-    beforeEach(() => {
-      // Clear all mock interactions before each test
-      jest.clearAllMocks();
 
       // Reset the notification manager before each test
       notificationManager = NotificationManager.init({
@@ -186,8 +189,8 @@ describe('NotificationManager', () => {
       showNotificationSpy = jest.spyOn(notificationManager, '_showNotification');
     });
 
-    afterAll(() => {
-      // Clean up spy after all tests are done
+    afterEach(() => {
+      // Clean up spy after each test
       showNotificationSpy.mockRestore();
     });
 
