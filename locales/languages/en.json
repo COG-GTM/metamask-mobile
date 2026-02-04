@@ -3982,5 +3982,23 @@
     "asset_selector": {
       "title": "Select an asset"
     }
+  },
+  "portfolio_analytics": {
+    "title": "Portfolio Analytics",
+    "portfolio_value": "Portfolio Value",
+    "asset_allocation": "Asset Allocation",
+    "gas_fee_analytics": "Gas Fee Analytics",
+    "total_value": "Total Value",
+    "total_gas_fees": "Total Gas Fees",
+    "no_allocation_data": "No asset allocation data available",
+    "no_gas_data": "No gas fee data available",
+    "no_portfolio_data": "No portfolio data available",
+    "time_period": {
+      "1d": "1 Day",
+      "7d": "7 Days",
+      "1m": "1 Month",
+      "3m": "3 Months",
+      "1y": "1 Year"
+    }
   }
 }
