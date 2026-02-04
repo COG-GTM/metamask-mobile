@@ -34,6 +34,7 @@ import { useSelectedAccountMultichainBalances } from '../../../../hooks/useMulti
 import Loader from '../../../../../component-library/components-temp/Loader/Loader';
 import NonEvmAggregatedPercentage from '../../../../../component-library/components-temp/Price/AggregatedPercentage/NonEvmAggregatedPercentage';
 import { selectIsEvmNetworkSelected } from '../../../../../selectors/multichainNetworkController';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 export const PortfolioBalance = React.memo(() => {
   const { PreferencesController } = Engine.context;
@@ -44,7 +45,7 @@ export const PortfolioBalance = React.memo(() => {
   const isMultichainBalancesCollectionForMarketingEnabled = useSelector(
     (state: RootState) => state.security.dataCollectionForMarketing,
   );
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<Record<string, undefined>>>();
   const { trackEvent, isEnabled, createEventBuilder } = useMetrics();
 
   const { selectedAccountMultichainBalance } =
@@ -134,6 +135,17 @@ export const PortfolioBalance = React.memo(() => {
     [PreferencesController],
   );
 
+  const onOpenPortfolioAnalytics = useCallback(() => {
+    navigation.navigate(Routes.PORTFOLIO_ANALYTICS);
+    trackEvent(
+      createEventBuilder(MetaMetricsEvents.PORTFOLIO_LINK_CLICKED)
+        .addProperties({
+          location: 'portfolio_analytics',
+        })
+        .build(),
+    );
+  }, [navigation, trackEvent, createEventBuilder]);
+
   return (
     <View style={styles.portfolioBalance}>
       <View>
@@ -182,6 +194,14 @@ export const PortfolioBalance = React.memo(() => {
           label={strings('asset_overview.portfolio_button')}
           testID={WalletViewSelectorsIDs.PORTFOLIO_BUTTON}
           endIconName={IconName.Export}
+        />
+        <Button
+          variant={ButtonVariants.Secondary}
+          size={ButtonSize.Md}
+          onPress={onOpenPortfolioAnalytics}
+          label={strings('portfolio_analytics.analytics_button')}
+          testID={WalletViewSelectorsIDs.PORTFOLIO_ANALYTICS_BUTTON}
+          endIconName={IconName.Chart}
         />
       </View>
     </View>

@@ -205,6 +205,7 @@ const Routes = {
   ///: END:ONLY_INCLUDE_IF
   FOX_LOADER: 'FoxLoader',
   EDIT_ACCOUNT_NAME: 'EditAccountName',
+  PORTFOLIO_ANALYTICS: 'PortfolioAnalytics',
 };
 
 export default Routes;

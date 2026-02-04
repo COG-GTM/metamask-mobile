@@ -3926,5 +3926,16 @@
     "transaction_details": "ट्रांसेक्शन संबंधी विवरण",
     "bridge_to_chain": "{{chainName}} पर ब्रिज करें",
     "recipient": "प्राप्तकर्ता"
+  },
+  "portfolio_analytics": {
+    "title": "Portfolio Analytics",
+    "analytics_button": "Analytics",
+    "total_balance": "Total Balance",
+    "performance_metrics": "Performance Metrics",
+    "daily_change": "24h Change",
+    "weekly_change": "7d Change",
+    "monthly_change": "30d Change",
+    "asset_allocation": "Asset Allocation",
+    "coming_soon": "Coming soon"
   }
 }

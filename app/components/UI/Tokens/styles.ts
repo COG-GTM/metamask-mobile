@@ -236,7 +236,9 @@ const createStyles = (colors: Colors) =>
       paddingLeft: 40,
     },
     portfolioButtonContainer: {
+      flexDirection: 'row',
       alignItems: 'center',
+      gap: 8,
     },
     networkImageContainer: {
       position: 'absolute',

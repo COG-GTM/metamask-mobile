@@ -8,6 +8,7 @@ export const WalletViewSelectorsIDs = {
   WALLET_NOTIFICATIONS_BUTTON: 'wallet-notifications-button',
   WALLET_TOKEN_DETECTION_LINK_BUTTON: 'wallet-token-detection-link-button',
   PORTFOLIO_BUTTON: 'portfolio-button',
+  PORTFOLIO_ANALYTICS_BUTTON: 'portfolio-analytics-button',
   TOTAL_BALANCE_TEXT: 'total-balance-text',
   STAKE_BUTTON: 'stake-button',
   STAKE_EARNINGS_HISTORY_BUTTON: 'stake-earnings-history-button',

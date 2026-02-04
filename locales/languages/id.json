@@ -3926,5 +3926,16 @@
     "transaction_details": "Detail Transaksi",
     "bridge_to_chain": "Bridge ke {{chainName}}",
     "recipient": "Penerima"
+  },
+  "portfolio_analytics": {
+    "title": "Portfolio Analytics",
+    "analytics_button": "Analytics",
+    "total_balance": "Total Balance",
+    "performance_metrics": "Performance Metrics",
+    "daily_change": "24h Change",
+    "weekly_change": "7d Change",
+    "monthly_change": "30d Change",
+    "asset_allocation": "Asset Allocation",
+    "coming_soon": "Coming soon"
   }
 }
