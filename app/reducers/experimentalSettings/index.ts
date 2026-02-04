@@ -1,26 +1,29 @@
 /* eslint-disable @typescript-eslint/default-param-last */
 
-import {
-  ActionType,
-  SetSecurityAlertsEnabled,
-} from '../../actions/experimental';
+import { ActionType } from '../../actions/experimental';
 
-const initialState = {
+export interface ExperimentalSettingsState {
+  securityAlertsEnabled: boolean;
+}
+
+const initialState: ExperimentalSettingsState = {
   securityAlertsEnabled: true,
 };
 
+interface ExperimentalSettingsAction {
+  type: string;
+  securityAlertsEnabled?: boolean;
+}
+
 const experimentalSettingsReducer = (
-  state = initialState,
-  action: {
-    securityAlertsEnabled: SetSecurityAlertsEnabled;
-    type: string;
-  },
-) => {
+  state: ExperimentalSettingsState = initialState,
+  action: ExperimentalSettingsAction,
+): ExperimentalSettingsState => {
   switch (action.type) {
     case ActionType.SET_SECURITY_ALERTS_ENABLED:
       return {
         ...state,
-        securityAlertsEnabled: action.securityAlertsEnabled,
+        securityAlertsEnabled: action.securityAlertsEnabled ?? state.securityAlertsEnabled,
       };
     default:
       return state;

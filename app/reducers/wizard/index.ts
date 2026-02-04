@@ -1,10 +1,22 @@
 import { REHYDRATE } from 'redux-persist';
 
-const initialState = {
+export interface WizardState {
+  step: number;
+}
+
+const initialState: WizardState = {
   step: 0,
 };
 
-const onboardingWizardReducer = (state = initialState, action) => {
+interface WizardAction {
+  type: string;
+  step?: number;
+}
+
+const onboardingWizardReducer = (
+  state: WizardState = initialState,
+  action: WizardAction,
+): WizardState => {
   switch (action.type) {
     case REHYDRATE:
       return {
@@ -13,7 +25,7 @@ const onboardingWizardReducer = (state = initialState, action) => {
     case 'SET_ONBOARDING_WIZARD_STEP':
       return {
         ...state,
-        step: action.step,
+        step: action.step ?? state.step,
       };
     default:
       return state;
