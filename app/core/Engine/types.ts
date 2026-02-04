@@ -262,6 +262,12 @@ import {
 import { Hex } from '@metamask/utils';
 
 import { CONTROLLER_MESSENGERS } from './messengers';
+import {
+  PortfolioAnalyticsController,
+  PortfolioAnalyticsControllerState,
+  PortfolioAnalyticsControllerActions,
+  PortfolioAnalyticsControllerEvents,
+} from './controllers/portfolio-analytics-controller';
 import type { RootState } from '../../reducers';
 import {
   AppMetadataController,
@@ -354,7 +360,8 @@ type GlobalActions =
   | BridgeControllerActions
   | BridgeStatusControllerActions
   | EarnControllerActions
-  | AppMetadataControllerActions;
+  | AppMetadataControllerActions
+  | PortfolioAnalyticsControllerActions;
 
 type GlobalEvents =
   | ComposableControllerEvents<EngineState>
@@ -405,7 +412,8 @@ type GlobalEvents =
   | BridgeControllerEvents
   | BridgeStatusControllerEvents
   | EarnControllerEvents
-  | AppMetadataControllerEvents;
+  | AppMetadataControllerEvents
+  | PortfolioAnalyticsControllerEvents;
 
 /**
  * Type definition for the controller messenger used in the Engine.
@@ -479,6 +487,7 @@ export type Controllers = {
   BridgeController: BridgeController;
   BridgeStatusController: BridgeStatusController;
   EarnController: EarnController;
+  PortfolioAnalyticsController: PortfolioAnalyticsController;
 };
 
 /**
@@ -542,6 +551,7 @@ export type EngineState = {
   BridgeController: BridgeControllerState;
   BridgeStatusController: BridgeStatusControllerState;
   EarnController: EarnControllerState;
+  PortfolioAnalyticsController: PortfolioAnalyticsControllerState;
 };
 
 /** Controller names */
@@ -591,9 +601,10 @@ export type ControllersToInitialize =
   | 'CurrencyRateController'
   | 'AccountsController'
   | 'MultichainNetworkController'
-  | 'TransactionController'
-  | 'GasFeeController'
-  | 'SignatureController';
+    | 'TransactionController'
+    | 'GasFeeController'
+    | 'SignatureController'
+    | 'PortfolioAnalyticsController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.

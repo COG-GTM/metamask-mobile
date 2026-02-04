@@ -203,6 +203,7 @@ import I18n from '../../../locales/i18n';
 import { Platform } from '@metamask/profile-sync-controller/sdk';
 import { isProductSafetyDappScanningEnabled } from '../../util/phishingDetection';
 import { appMetadataControllerInit } from './controllers/app-metadata-controller';
+import { PortfolioAnalyticsControllerInit } from './controllers/portfolio-analytics-controller';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { toFormattedAddress } from '../../util/address';
 
@@ -1047,9 +1048,10 @@ export class Engine {
         MultichainAssetsController: multichainAssetsControllerInit,
         MultichainAssetsRatesController: multichainAssetsRatesControllerInit,
         MultichainBalancesController: multichainBalancesControllerInit,
-        MultichainTransactionsController: multichainTransactionsControllerInit,
-        ///: END:ONLY_INCLUDE_IF
-      },
+              MultichainTransactionsController: multichainTransactionsControllerInit,
+              ///: END:ONLY_INCLUDE_IF
+              PortfolioAnalyticsController: PortfolioAnalyticsControllerInit,
+            },
       persistedState: initialState as EngineState,
       existingControllersByName,
       baseControllerMessenger: this.controllerMessenger,
@@ -1400,10 +1402,12 @@ export class Engine {
       MultichainNetworkController: multichainNetworkController,
       BridgeController: bridgeController,
       BridgeStatusController: bridgeStatusController,
-      EarnController: earnController,
-    };
+          EarnController: earnController,
+          PortfolioAnalyticsController:
+            controllersByName.PortfolioAnalyticsController,
+        };
 
-    const childControllers = Object.assign({}, this.context);
+        const childControllers = Object.assign({}, this.context);
     STATELESS_NON_CONTROLLER_NAMES.forEach((name) => {
       if (name in childControllers && childControllers[name]) {
         delete childControllers[name];

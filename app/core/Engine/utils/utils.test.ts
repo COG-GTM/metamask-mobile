@@ -49,6 +49,10 @@ import { createMockControllerInitFunction } from './test-utils';
 import { getControllerOrThrow, initModularizedControllers } from './utils';
 import { AppMetadataController } from '@metamask/app-metadata-controller';
 import { appMetadataControllerInit } from '../controllers/app-metadata-controller';
+import {
+  PortfolioAnalyticsController,
+  PortfolioAnalyticsControllerInit,
+} from '../controllers/portfolio-analytics-controller';
 
 jest.mock('../controllers/accounts-controller');
 jest.mock('../controllers/app-metadata-controller');
@@ -78,6 +82,7 @@ jest.mock(
 jest.mock('../controllers/snaps');
 jest.mock('../controllers/signature-controller');
 jest.mock('../controllers/transaction-controller');
+jest.mock('../controllers/portfolio-analytics-controller');
 
 describe('initModularizedControllers', () => {
   const mockAccountsControllerInit = jest.mocked(accountsControllerInit);
@@ -114,9 +119,12 @@ describe('initModularizedControllers', () => {
     notificationServicesPushControllerInit,
   );
   const mockGasFeeControllerInit = jest.mocked(GasFeeControllerInit);
-  const mockAppMetadataControllerInit = jest.mocked(appMetadataControllerInit);
-  const mockSignatureControllerInit = jest.mocked(SignatureControllerInit);
-  function buildModularizedControllerRequest(
+    const mockAppMetadataControllerInit = jest.mocked(appMetadataControllerInit);
+    const mockSignatureControllerInit = jest.mocked(SignatureControllerInit);
+    const mockPortfolioAnalyticsControllerInit = jest.mocked(
+      PortfolioAnalyticsControllerInit,
+    );
+    function buildModularizedControllerRequest(
     overrides?: Record<string, unknown>,
   ) {
     return merge(
@@ -143,9 +151,10 @@ describe('initModularizedControllers', () => {
           SnapController: mockSnapControllerInit,
           SnapInterfaceController: mockSnapInterfaceControllerInit,
           SnapsRegistry: mockSnapsRegistryInit,
-          TransactionController: mockTransactionControllerInit,
-          AppMetadataController: mockAppMetadataControllerInit,
-        },
+                  TransactionController: mockTransactionControllerInit,
+                  AppMetadataController: mockAppMetadataControllerInit,
+                  PortfolioAnalyticsController: mockPortfolioAnalyticsControllerInit,
+                },
         persistedState: {},
         baseControllerMessenger: new ExtendedControllerMessenger(),
         getGlobalChainId: jest.fn(),
@@ -209,12 +218,15 @@ describe('initModularizedControllers', () => {
     mockAppMetadataControllerInit.mockReturnValue({
       controller: {} as unknown as AppMetadataController,
     });
-    mockSignatureControllerInit.mockReturnValue({
-      controller: {} as unknown as SignatureController,
+      mockSignatureControllerInit.mockReturnValue({
+        controller: {} as unknown as SignatureController,
+      });
+      mockPortfolioAnalyticsControllerInit.mockReturnValue({
+        controller: {} as unknown as PortfolioAnalyticsController,
+      });
     });
-  });
 
-  it('initializes controllers', () => {
+    it('initializes controllers', () => {
     const request = buildModularizedControllerRequest();
     const controllers = initModularizedControllers(request);
 
