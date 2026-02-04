@@ -11,6 +11,7 @@ import { userInitialState } from '../../reducers/user';
 import { initialNavigationState } from '../../reducers/navigation';
 import { initialOnboardingState } from '../../reducers/onboarding';
 import { initialState as initialPerformanceState } from '../../core/redux/slices/performance';
+import { initialState as initialSwapsState } from '../../reducers/swaps';
 import { isTest } from './utils';
 // A cast is needed here because we use enums in some controllers, and TypeScript doesn't consider
 // the string value of an enum as satisfying an enum type.
@@ -32,7 +33,7 @@ const initialRootState: RootState = {
   wizard: undefined,
   onboarding: initialOnboardingState,
   notification: undefined,
-  swaps: undefined,
+  swaps: initialSwapsState,
   fiatOrders: initialFiatOrdersState,
   infuraAvailability: undefined,
   navigation: initialNavigationState,

@@ -34,15 +34,15 @@ export const getFeatureFlagDeviceKey: () => FeatureFlagDeviceKey = () => {
 export const getSwapsLiveness = (
   featureFlags: FeatureFlags,
   chainId: `0x${string}`,
-) => {
+): boolean => {
   const chainFeatureFlags = getChainFeatureFlags(featureFlags, chainId);
   const featureFlagKey = getFeatureFlagDeviceKey();
 
   const liveness =
-    // @ts-expect-error interface mismatch
+    // @ts-expect-error interface mismatch - featureFlagsByChainId is undefined, this always returns the second branch
     typeof featureFlagsByChainId === 'boolean'
       ? chainFeatureFlags
       : chainFeatureFlags?.[featureFlagKey] ?? false;
 
-  return liveness;
+  return Boolean(liveness);
 };

@@ -11,7 +11,7 @@ import userReducer, { UserState } from './user';
 import wizardReducer from './wizard';
 import onboardingReducer, { OnboardingState } from './onboarding';
 import fiatOrders from './fiatOrders';
-import swapsReducer from './swaps';
+import swapsReducer, { SwapsState } from './swaps';
 import signatureRequestReducer from './signatureRequest';
 import notificationReducer from './notification';
 import infuraAvailabilityReducer from './infuraAvailability';
@@ -90,9 +90,7 @@ export interface RootState {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   notification: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  swaps: any;
+  swaps: SwapsState;
   fiatOrders: StateFromReducer<typeof fiatOrders>;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

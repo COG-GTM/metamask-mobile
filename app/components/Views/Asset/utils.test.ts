@@ -63,7 +63,7 @@ describe('getSwapsIsLive', () => {
         {
           ...mockState,
           swaps: { ...mockState.swaps, '0x1': { isLive: false } },
-        },
+        } as unknown as RootState,
         mockChainId,
       );
       expect(result).toBe(false);
@@ -74,7 +74,7 @@ describe('getSwapsIsLive', () => {
         {
           ...mockState,
           swaps: { ...mockState.swaps, '0x1': null },
-        },
+        } as unknown as RootState,
         mockChainId,
       );
       expect(result).toBe(false);
