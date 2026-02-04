@@ -98,6 +98,11 @@ enum EVENT_NAME {
   // Portfolio
   PORTFOLIO_LINK_CLICKED = 'Portfolio Link Clicked',
 
+  // Portfolio Analytics
+  PORTFOLIO_ANALYTICS_VIEWED = 'Portfolio Analytics Viewed',
+  ANALYTICS_CHART_INTERACTED = 'Analytics Chart Interacted',
+  ANALYTICS_TIME_PERIOD_CHANGED = 'Analytics Time Period Changed',
+
   // Link redirects
   LINK_CLICKED = 'Link Clicked',
 
@@ -1025,6 +1030,17 @@ const events = {
   // Bridge
   BRIDGE_PAGE_VIEWED: generateOpt(EVENT_NAME.BRIDGE_PAGE_VIEWED),
   SWAP_PAGE_VIEWED: generateOpt(EVENT_NAME.SWAP_PAGE_VIEWED), // Temporary event until unified swap/bridge is done
+
+  // Portfolio Analytics
+  PORTFOLIO_ANALYTICS_VIEWED: generateOpt(
+    EVENT_NAME.PORTFOLIO_ANALYTICS_VIEWED,
+  ),
+  ANALYTICS_CHART_INTERACTED: generateOpt(
+    EVENT_NAME.ANALYTICS_CHART_INTERACTED,
+  ),
+  ANALYTICS_TIME_PERIOD_CHANGED: generateOpt(
+    EVENT_NAME.ANALYTICS_TIME_PERIOD_CHANGED,
+  ),
 };
 
 /**
