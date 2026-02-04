@@ -142,11 +142,11 @@ export const selectSwapsChainFeatureFlags = createSelector(
   (_state: RootState, transactionChainId?: string) =>
     transactionChainId || selectEvmChainId(_state),
   (swapsState, chainId) => {
-    const chainState = swapsState[chainId] as SwapsChainState | undefined;
+    const chainState = swapsState[chainId] as SwapsChainState;
     return {
-      ...(chainState?.featureFlags || {}),
+      ...chainState.featureFlags,
       smartTransactions: {
-        ...(chainState?.featureFlags?.smartTransactions || {}),
+        ...(chainState.featureFlags?.smartTransactions || {}),
         ...(swapsState.featureFlags?.smartTransactions || {}),
       },
     };
