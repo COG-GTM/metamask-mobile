@@ -169,3 +169,5 @@ yarn start:ios
 ```bash
 yarn start:android
 ```
+
+Hello world
