@@ -50,10 +50,12 @@ function buildTransactionMeta(
 describe('PortfolioAnalyticsController', () => {
   let controller: PortfolioAnalyticsController;
   let messenger: PortfolioAnalyticsControllerMessenger;
+  let baseTime: number;
 
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+    baseTime = Date.now();
     messenger = getMessengerMock();
     controller = new PortfolioAnalyticsController({
       messenger,
@@ -221,17 +223,17 @@ describe('PortfolioAnalyticsController', () => {
       const tx1 = buildTransactionMeta({
         id: 'tx1',
         chainId: '0x1' as Hex,
-        time: 1000,
+        time: baseTime - 2000,
       });
       const tx2 = buildTransactionMeta({
         id: 'tx2',
         chainId: '0x89' as Hex,
-        time: 2000,
+        time: baseTime - 1000,
       });
       const tx3 = buildTransactionMeta({
         id: 'tx3',
         chainId: '0x1' as Hex,
-        time: 3000,
+        time: baseTime,
       });
 
       controller.recordTransactionFinished(tx1);
@@ -254,14 +256,14 @@ describe('PortfolioAnalyticsController', () => {
 
     it('filters by startTime', () => {
       const analytics = controller.getTransactionAnalytics({
-        startTime: 1500,
+        startTime: baseTime - 1500,
       });
       expect(analytics).toHaveLength(2);
     });
 
     it('filters by endTime', () => {
       const analytics = controller.getTransactionAnalytics({
-        endTime: 2500,
+        endTime: baseTime - 500,
       });
       expect(analytics).toHaveLength(2);
     });
@@ -269,8 +271,8 @@ describe('PortfolioAnalyticsController', () => {
     it('filters by multiple criteria', () => {
       const analytics = controller.getTransactionAnalytics({
         chainId: '0x1' as Hex,
-        startTime: 500,
-        endTime: 2500,
+        startTime: baseTime - 2500,
+        endTime: baseTime - 500,
       });
       expect(analytics).toHaveLength(1);
       expect(analytics[0].id).toBe('tx1');
@@ -284,19 +286,19 @@ describe('PortfolioAnalyticsController', () => {
         state: {
           portfolioSnapshots: [
             {
-              timestamp: 1000,
+              timestamp: baseTime - 2000,
               chainId: '0x1' as Hex,
               totalValueUsd: 100,
               tokenBalances: {},
             },
             {
-              timestamp: 2000,
+              timestamp: baseTime - 1000,
               chainId: '0x89' as Hex,
               totalValueUsd: 200,
               tokenBalances: {},
             },
             {
-              timestamp: 3000,
+              timestamp: baseTime,
               chainId: '0x1' as Hex,
               totalValueUsd: 300,
               tokenBalances: {},
@@ -321,34 +323,34 @@ describe('PortfolioAnalyticsController', () => {
 
     it('filters by time range', () => {
       const snapshots = controller.getPortfolioSnapshots({
-        startTime: 1500,
-        endTime: 2500,
+        startTime: baseTime - 1500,
+        endTime: baseTime - 500,
       });
       expect(snapshots).toHaveLength(1);
-      expect(snapshots[0].timestamp).toBe(2000);
+      expect(snapshots[0].timestamp).toBe(baseTime - 1000);
     });
   });
 
   describe('generateAggregatedMetrics', () => {
     beforeEach(() => {
-            const tx1 = buildTransactionMeta({
-              id: 'tx1',
-              chainId: '0x1' as Hex,
-              type: TransactionType.simpleSend,
-              time: 1000,
-            });
-            const tx2 = buildTransactionMeta({
-              id: 'tx2',
-              chainId: '0x89' as Hex,
-              type: TransactionType.swap,
-              time: 2000,
-            });
-            const tx3 = buildTransactionMeta({
-              id: 'tx3',
-              chainId: '0x1' as Hex,
-              type: TransactionType.simpleSend,
-              time: 3000,
-            });
+      const tx1 = buildTransactionMeta({
+        id: 'tx1',
+        chainId: '0x1' as Hex,
+        type: TransactionType.simpleSend,
+        time: baseTime - 2000,
+      });
+      const tx2 = buildTransactionMeta({
+        id: 'tx2',
+        chainId: '0x89' as Hex,
+        type: TransactionType.swap,
+        time: baseTime - 1000,
+      });
+      const tx3 = buildTransactionMeta({
+        id: 'tx3',
+        chainId: '0x1' as Hex,
+        type: TransactionType.simpleSend,
+        time: baseTime,
+      });
 
       controller.recordTransactionFinished(tx1);
       controller.recordTransactionFinished(tx2);
@@ -356,22 +358,22 @@ describe('PortfolioAnalyticsController', () => {
     });
 
     it('generates aggregated metrics for period', () => {
-      const metrics = controller.generateAggregatedMetrics(0, 5000);
+      const metrics = controller.generateAggregatedMetrics(baseTime - 5000, baseTime + 1000);
 
       expect(metrics.totalTransactions).toBe(3);
-      expect(metrics.periodStart).toBe(0);
-      expect(metrics.periodEnd).toBe(5000);
+      expect(metrics.periodStart).toBe(baseTime - 5000);
+      expect(metrics.periodEnd).toBe(baseTime + 1000);
     });
 
     it('counts transactions by type', () => {
-      const metrics = controller.generateAggregatedMetrics(0, 5000);
+      const metrics = controller.generateAggregatedMetrics(baseTime - 5000, baseTime + 1000);
 
       expect(metrics.transactionsByType['simpleSend']).toBe(2);
       expect(metrics.transactionsByType['swap']).toBe(1);
     });
 
     it('counts transactions by chain', () => {
-      const metrics = controller.generateAggregatedMetrics(0, 5000);
+      const metrics = controller.generateAggregatedMetrics(baseTime - 5000, baseTime + 1000);
 
       expect(metrics.transactionsByChain['0x1']).toBe(2);
       expect(metrics.transactionsByChain['0x89']).toBe(1);
