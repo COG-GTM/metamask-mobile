@@ -8,7 +8,7 @@ declare const global: typeof globalThis & {
   };
 };
 
-import './shim.js';
+import '../shim.js';
 
 // Needed to polyfill random number generation.
 import 'react-native-get-random-values';
@@ -23,16 +23,16 @@ import crypto from 'crypto';
 require('react-native-browser-polyfill');
 
 import * as Sentry from '@sentry/react-native'; // eslint-disable-line import/no-namespace
-import { setupSentry } from './app/util/sentry/utils';
+import { setupSentry } from './util/sentry/utils';
 setupSentry();
 
 import { AppRegistry, LogBox } from 'react-native'; // eslint-disable-line no-duplicate-imports
-import Root from './app/components/Views/Root';
-import { name } from './app.config.js';
-import { isE2E } from './app/util/test/utils.js';
+import Root from './components/Views/Root';
+import { name } from '../app.config.js';
+import { isE2E } from './util/test/utils.js';
 
-import { Performance } from './app/core/Performance';
-import { handleCustomError, setReactNativeDefaultHandler } from './app/core/ErrorHandler';
+import { Performance } from './core/Performance';
+import { handleCustomError, setReactNativeDefaultHandler } from './core/ErrorHandler';
 Performance.setupPerformanceObservers();
 
 LogBox.ignoreAllLogs();
