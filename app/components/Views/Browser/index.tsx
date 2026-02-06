@@ -13,9 +13,9 @@ import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/Brows
 import {
   closeAllTabs,
   closeTab,
-  createNewTab,
-  setActiveTab,
-  updateTab,
+  createNewTab as createNewTabAction,
+  setActiveTab as setActiveTabAction,
+  updateTab as updateTabAction,
 } from '../../../actions/browser';
 import { AvatarAccountType } from '../../../component-library/components/Avatars/Avatar/variants/AvatarAccount';
 import {
@@ -30,7 +30,7 @@ import Logger from '../../../util/Logger';
 import getAccountNameWithENS from '../../../util/accounts';
 import Tabs from '../../UI/Tabs';
 import BrowserTab from '../BrowserTab/BrowserTab';
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import { useMetrics } from '../../hooks/useMetrics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appendURLParams } from '../../../util/browser';
@@ -122,7 +122,8 @@ export const Browser: React.FC<BrowserProps> = (props) => {
   const linkType = props.route?.params?.linkType;
   const prevSiteHostname = useRef<string | undefined>(browserUrl);
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
-  const [_tabIdleTimes, setTabIdleTimes] = useState<Record<number, number>>({});
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [tabIdleTimes, setTabIdleTimes] = useState<Record<number, number>>({});
   const accountAvatarType = useSelector((state: RootState) =>
     state.settings.useBlockieIcon
       ? AvatarAccountType.Blockies
@@ -152,6 +153,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
       if (currentSelectedAccount && isSolanaAccount(currentSelectedAccount)) {
         toastRef?.current?.showToast({
           variant: ToastVariants.Network,
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           networkImageSource: require('../../../images/solana-logo.png'),
           labelOptions: [
             {
@@ -252,7 +254,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
 
   useEffect(() => {
     const checkIfActiveAccountChanged = () => {
-      const hostname = new URL(browserUrl as string).hostname;
+      const hostname = new URLParse(browserUrl as string).hostname;
       const permittedAccounts = getPermittedAccounts(hostname);
       const activeAccountAddress = permittedAccounts?.[0];
 
@@ -281,7 +283,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
 
     // Handle when the Browser initially mounts and when url changes.
     if (accounts.length && browserUrl) {
-      const hostname = new URL(browserUrl).hostname;
+      const hostname = new URLParse(browserUrl).hostname;
       if (prevSiteHostname.current !== hostname || !hasAccounts.current) {
         checkIfActiveAccountChanged();
       }
@@ -508,11 +510,11 @@ const mapStateToProps = (state: RootState) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   createNewTab: (url: string, linkType?: string) =>
-    dispatch(createNewTab(url, linkType as string)),
+    dispatch(createNewTabAction(url, linkType as string)),
   closeAllTabs: () => dispatch(closeAllTabs()),
   closeTab: (id: number) => dispatch(closeTab(id)),
-  setActiveTab: (id: number) => dispatch(setActiveTab(id)),
-  updateTab: (id: number, data: TabUpdateInfo) => dispatch(updateTab(id, data)),
+  setActiveTab: (id: number) => dispatch(setActiveTabAction(id)),
+  updateTab: (id: number, data: TabUpdateInfo) => dispatch(updateTabAction(id, data)),
 });
 
 export { default as createBrowserNavDetails } from './Browser.types';
