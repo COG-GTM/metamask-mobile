@@ -100,8 +100,6 @@ interface AppInformationState {
 }
 
 export default class AppInformation extends PureComponent<AppInformationProps, AppInformationState> {
-  declare context: Theme;
-
   state: AppInformationState = {
     appInfo: '',
     appVersion: '',
@@ -109,7 +107,7 @@ export default class AppInformation extends PureComponent<AppInformationProps, A
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.info_title'),
@@ -178,7 +176,7 @@ export default class AppInformation extends PureComponent<AppInformationProps, A
   };
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
