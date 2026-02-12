@@ -8,6 +8,7 @@ import { initialState as originThrottling } from '../../core/redux/slices/origin
 import { initialState as initialBridgeState } from '../../core/redux/slices/bridge';
 import initialBackgroundState from './initial-background-state.json';
 import { userInitialState } from '../../reducers/user';
+import { initialAlertState } from '../../reducers/alert';
 import { initialNavigationState } from '../../reducers/navigation';
 import { initialOnboardingState } from '../../reducers/onboarding';
 import { initialState as initialPerformanceState } from '../../core/redux/slices/performance';
@@ -26,7 +27,7 @@ const initialRootState: RootState = {
   browser: undefined,
   modals: undefined,
   settings: undefined,
-  alert: undefined,
+  alert: initialAlertState,
   transaction: undefined,
   user: userInitialState,
   wizard: undefined,
