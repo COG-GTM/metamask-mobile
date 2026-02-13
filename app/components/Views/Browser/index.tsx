@@ -11,11 +11,11 @@ import { connect, useSelector } from 'react-redux';
 import { strings } from '../../../../locales/i18n';
 import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/BrowserView.selectors';
 import {
-  closeAllTabs,
-  closeTab,
-  createNewTab,
-  setActiveTab,
-  updateTab,
+  closeAllTabs as closeAllTabsAction,
+  closeTab as closeTabAction,
+  createNewTab as createNewTabAction,
+  setActiveTab as setActiveTabAction,
+  updateTab as updateTabAction,
 } from '../../../actions/browser';
 import { AvatarAccountType } from '../../../component-library/components/Avatars/Avatar/variants/AvatarAccount';
 import {
@@ -30,7 +30,7 @@ import Logger from '../../../util/Logger';
 import getAccountNameWithENS from '../../../util/accounts';
 import Tabs from '../../UI/Tabs';
 import BrowserTab from '../BrowserTab/BrowserTab';
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import { useMetrics } from '../../hooks/useMetrics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appendURLParams } from '../../../util/browser';
@@ -108,7 +108,7 @@ export const Browser = (props: BrowserProps) => {
   const linkType = props.route?.params?.linkType;
   const prevSiteHostname = useRef(browserUrl);
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
-  const [_tabIdleTimes, setTabIdleTimes] = useState<Record<number, number>>(
+  const [, setTabIdleTimes] = useState<Record<number, number>>(
     {},
   );
   const accountAvatarType = useSelector((state: RootState) =>
@@ -161,13 +161,13 @@ export const Browser = (props: BrowserProps) => {
   ///: END:ONLY_INCLUDE_IF
 
   const newTab = useCallback(
-    (url?: string, linkType?: string) => {
+    (url?: string, tabLinkType?: string) => {
       // if tabs.length > MAX_BROWSER_TABS, show the max browser tabs modal
       if (tabs.length >= MAX_BROWSER_TABS) {
         navigation.navigate(Routes.MODAL.MAX_BROWSER_TABS_MODAL);
       } else {
         // When a new tab is created, a new tab is rendered, which automatically sets the url source on the webview
-        createNewTab(url || homePageUrl(), linkType);
+        createNewTab(url || homePageUrl(), tabLinkType);
       }
     },
     [tabs, navigation, homePageUrl, createNewTab],
@@ -241,7 +241,7 @@ export const Browser = (props: BrowserProps) => {
 
   useEffect(() => {
     const checkIfActiveAccountChanged = () => {
-      const hostname = new URL(browserUrl).hostname;
+      const hostname = new URLParse(browserUrl).hostname;
       const permittedAccounts = getPermittedAccounts(hostname);
       const activeAccountAddress = permittedAccounts?.[0];
 
@@ -269,7 +269,7 @@ export const Browser = (props: BrowserProps) => {
 
     // Handle when the Browser initially mounts and when url changes.
     if (accounts.length && browserUrl) {
-      const hostname = new URL(browserUrl).hostname;
+      const hostname = new URLParse(browserUrl).hostname;
       if (prevSiteHostname.current !== hostname || !hasAccounts.current) {
         checkIfActiveAccountChanged();
       }
@@ -404,14 +404,14 @@ export const Browser = (props: BrowserProps) => {
       if (tabs.length > 1) {
         tabs.forEach((t, i) => {
           if (t.id === tab.id) {
-            let newTab = tabs[i - 1];
+            let nextTab = tabs[i - 1];
             if (tabs[i + 1]) {
-              newTab = tabs[i + 1];
+              nextTab = tabs[i + 1];
             }
-            setActiveTab(newTab.id);
+            setActiveTab(nextTab.id);
             navigation.setParams({
               ...route.params,
-              url: newTab.url,
+              url: nextTab.url,
             });
           }
         });
@@ -436,8 +436,8 @@ export const Browser = (props: BrowserProps) => {
   };
 
   const renderTabList = () => {
-    const showTabs = route.params?.showTabs;
-    if (showTabs) {
+    const shouldShowTabs = route.params?.showTabs;
+    if (shouldShowTabs) {
       return (
         <Tabs
           tabs={tabs}
@@ -498,12 +498,12 @@ const mapStateToProps = (state: RootState) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   createNewTab: (url: string, linkType?: string) =>
-    dispatch(createNewTab(url, linkType)),
-  closeAllTabs: () => dispatch(closeAllTabs()),
-  closeTab: (id: number) => dispatch(closeTab(id)),
-  setActiveTab: (id: number) => dispatch(setActiveTab(id)),
+    dispatch(createNewTabAction(url, linkType)),
+  closeAllTabs: () => dispatch(closeAllTabsAction()),
+  closeTab: (id: number) => dispatch(closeTabAction(id)),
+  setActiveTab: (id: number) => dispatch(setActiveTabAction(id)),
   updateTab: (id: number, data: Record<string, unknown>) =>
-    dispatch(updateTab(id, data)),
+    dispatch(updateTabAction(id, data)),
 });
 
 export { default as createBrowserNavDetails } from './Browser.types';
