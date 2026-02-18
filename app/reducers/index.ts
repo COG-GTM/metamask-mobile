@@ -35,7 +35,6 @@ import performanceReducer, {
   PerformanceState,
 } from '../core/redux/slices/performance';
 import { isTest } from '../util/test/utils';
-import { SecurityAlertResponse } from '../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 
 export interface LegalNoticesState {
   newPrivacyPolicyToastClickedOrClosed: boolean;
@@ -59,7 +58,7 @@ export interface PrivacyState {
 
 export interface Bookmark {
   url: string;
-  name?: string;
+  name: string;
 }
 
 export interface BrowserTab {
@@ -172,7 +171,7 @@ export interface SwapsState {
   isLive: boolean;
   hasOnboarded: boolean;
   featureFlags: Record<string, unknown> | undefined;
-  [chainId: string]: SwapsChainData | boolean | Record<string, unknown> | undefined;
+  [chainId: string]: SwapsChainData | boolean | Record<string, unknown> | null | undefined;
 }
 
 export interface InfuraAvailabilityState {
@@ -198,7 +197,19 @@ export interface ExperimentalSettingsState {
 }
 
 export interface SignatureRequestState {
-  securityAlertResponse?: SecurityAlertResponse;
+  securityAlertResponse?: {
+    reason?: string;
+    result_type?: string;
+    description?: string;
+    features?: string[];
+    block?: number;
+    chainId?: string;
+    source?: string;
+    securityAlertId?: string;
+    providerRequestsCount?: Record<string, number>;
+    req?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
 }
 
 /**
@@ -255,30 +266,30 @@ export interface RootState {
 
 const baseReducers = {
   legalNotices: legalNoticesReducer,
-  collectibles: collectiblesReducer,
+  collectibles: collectiblesReducer as Reducer<CollectiblesState>,
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   engine: engineReducer as any,
-  privacy: privacyReducer,
-  bookmarks: bookmarksReducer,
-  browser: browserReducer,
-  modals: modalsReducer,
-  settings: settingsReducer,
-  alert: alertReducer,
-  transaction: transactionReducer,
+  privacy: privacyReducer as Reducer<PrivacyState>,
+  bookmarks: bookmarksReducer as Reducer<Bookmark[]>,
+  browser: browserReducer as Reducer<BrowserState>,
+  modals: modalsReducer as Reducer<ModalsState>,
+  settings: settingsReducer as Reducer<SettingsState>,
+  alert: alertReducer as Reducer<AlertState>,
+  transaction: transactionReducer as Reducer<TransactionState>,
   user: userReducer,
-  wizard: wizardReducer,
+  wizard: wizardReducer as Reducer<WizardState>,
   onboarding: onboardingReducer,
-  notification: notificationReducer,
-  signatureRequest: signatureRequestReducer,
-  swaps: swapsReducer,
+  notification: notificationReducer as Reducer<NotificationState>,
+  signatureRequest: signatureRequestReducer as Reducer<SignatureRequestState>,
+  swaps: swapsReducer as Reducer<SwapsState>,
   fiatOrders,
-  infuraAvailability: infuraAvailabilityReducer,
+  infuraAvailability: infuraAvailabilityReducer as Reducer<InfuraAvailabilityState>,
   navigation: navigationReducer,
-  networkOnboarded: networkOnboardReducer,
+  networkOnboarded: networkOnboardReducer as Reducer<NetworkOnboardedState>,
   security: securityReducer,
   sdk: sdkReducer,
-  experimentalSettings: experimentalSettingsReducer,
+  experimentalSettings: experimentalSettingsReducer as Reducer<ExperimentalSettingsState>,
   rpcEvents: rpcEventReducer,
   accounts: accountsReducer,
   inpageProvider: inpageProviderReducer,

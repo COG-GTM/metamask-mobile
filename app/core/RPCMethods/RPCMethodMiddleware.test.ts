@@ -39,7 +39,7 @@ import {
 import PPOMUtil from '../../lib/ppom/ppom-util';
 import { backgroundState } from '../../util/test/initial-root-state';
 import { Store } from 'redux';
-import { RootState } from 'app/reducers';
+import { BrowserState, RootState } from 'app/reducers';
 import { addTransaction } from '../../util/transaction-controller';
 import { Messenger } from '@metamask/base-controller';
 import {
@@ -308,8 +308,8 @@ function setupGlobalState({
       browser: activeTab
         ? {
           activeTab,
-        }
-        : {},
+        } as unknown as BrowserState
+        : {} as unknown as BrowserState,
       engine: {
         backgroundState: {
           ...backgroundState,

@@ -10,7 +10,8 @@ import { InteractionManager } from 'react-native';
 import { strings } from '../../../../../../../locales/i18n';
 import AppConstants from '../../../../../../core/AppConstants';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
-import renderWithProvider from '../../../../../../util/test/renderWithProvider';
+import renderWithProvider, { DeepPartial } from '../../../../../../util/test/renderWithProvider';
+import { RootState } from '../../../../../../reducers';
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { MetaMetrics } from '../../../../../../core/Analytics';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../../../../util/test/accountsControllerTestUtils';
@@ -76,7 +77,7 @@ const messageParamsMock = {
 
 const mockStore = configureMockStore();
 
-const initialState = {
+const initialState: DeepPartial<RootState> = {
   engine: {
     backgroundState: {
       ...backgroundState,

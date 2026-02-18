@@ -1,15 +1,16 @@
 import React from 'react';
 import Settings from './';
 
-import renderWithProvider from '../../../util/test/renderWithProvider';
+import renderWithProvider, { DeepPartial } from '../../../util/test/renderWithProvider';
+import { RootState } from '../../../reducers';
 import { SettingsViewSelectorsIDs } from '../../../../e2e/selectors/Settings/SettingsView.selectors';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { fireEvent } from '@testing-library/react-native';
 import Routes from '../../../constants/navigation/Routes';
 
-const initialState = {
+const initialState: DeepPartial<RootState> = {
   user: { seedphraseBackedUp: true, passwordSet: true },
-  privacy: { approvedHosts: [] },
+  privacy: { approvedHosts: {} },
   browser: { history: [] },
   settings: {
     lockTime: 1000,

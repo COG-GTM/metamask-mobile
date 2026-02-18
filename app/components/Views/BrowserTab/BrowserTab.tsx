@@ -48,6 +48,7 @@ import DrawerStatusTracker from '../../../core/DrawerStatusTracker';
 import EntryScriptWeb3 from '../../../core/EntryScriptWeb3';
 import ErrorBoundary from '../ErrorBoundary';
 import { getRpcMethodMiddleware } from '../../../core/RPCMethods/RPCMethodMiddleware';
+import { Bookmark } from '../../../reducers';
 import downloadFile from '../../../util/browser/downloadFile';
 import { MAX_MESSAGE_LENGTH } from '../../../constants/dapp';
 import sanitizeUrlInput from '../../../util/url/sanitizeUrlInput';
@@ -567,7 +568,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    * Inject home page scripts to get the favourites and set analytics key
    */
   const injectHomePageScripts = useCallback(
-    async (injectedBookmarks?: string[]) => {
+    async (injectedBookmarks?: Bookmark[]) => {
       const { current } = webviewRef;
       const analyticsEnabled = isEnabled();
       const disctinctId = await getMetaMetricsId();

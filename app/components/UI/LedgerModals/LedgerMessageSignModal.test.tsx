@@ -3,7 +3,7 @@ import LedgerMessageSignModal from './LedgerMessageSignModal';
 import { RPCStageTypes } from '../../../reducers/rpcEvents';
 
 const initialState = {
-  rpcEvents: { signingEvent: RPCStageTypes.IDLE },
+  rpcEvents: { signingEvent: { eventStage: RPCStageTypes.IDLE, rpcName: '' } },
 };
 
 describe('LedgerMessageSignModal', () => {

@@ -11,7 +11,7 @@ export const selectCurrentTransactionSecurityAlertResponse = (
   state: RootState,
 ) => {
   const { id, securityAlertResponses } = state.transaction;
-  return securityAlertResponses?.[id];
+  return id !== undefined ? securityAlertResponses?.[id] : undefined;
 };
 
 export const selectCurrentTransactionMetadata = createSelector(
