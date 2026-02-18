@@ -45,11 +45,11 @@ import styleSheet from './styles';
 import Routes from '../../../constants/navigation/Routes';
 import { type RootState } from '../../../reducers';
 import { type Dispatch } from 'redux';
-import solanaLogo from '../../../images/solana-logo.png';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
 import { isSolanaAccount } from '../../../core/Multichain/utils';
 import { useFocusEffect } from '@react-navigation/native';
+import solanaLogo from '../../../images/solana-logo.png';
 ///: END:ONLY_INCLUDE_IF
 
 const MAX_BROWSER_TABS = 5;
