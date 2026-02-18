@@ -11,7 +11,7 @@ exports[`captureSentryFeedback maskObject masks initial root state fixture 1`] =
     "data": null,
     "isVisible": false,
   },
-  "bookmarks": {},
+  "bookmarks": [],
   "browser": {
     "activeTab": null,
     "favicons": [],
@@ -192,8 +192,6 @@ exports[`captureSentryFeedback maskObject masks initial root state fixture 1`] =
     "collectibleContractModalVisible": false,
     "dappTransactionModalVisible": false,
     "networkModalVisible": false,
-    "receiveAsset": undefined,
-    "receiveModalVisible": false,
     "shouldNetworkSwitchPopToWallet": true,
     "signMessageModalVisible": true,
   },
@@ -215,9 +213,6 @@ exports[`captureSentryFeedback maskObject masks initial root state fixture 1`] =
     },
   },
   "notification": {
-    "notification": {
-      "notificationsSettings": {},
-    },
     "notifications": [],
   },
   "onboarding": {
