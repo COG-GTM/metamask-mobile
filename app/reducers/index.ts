@@ -22,8 +22,8 @@ import securityReducer, { SecurityState } from './security';
 import { combineReducers, Reducer } from 'redux';
 import experimentalSettingsReducer from './experimentalSettings';
 import { EngineState } from '../core/Engine';
-import rpcEventReducer from './rpcEvents';
-import accountsReducer from './accounts';
+import rpcEventReducer, { iEventGroup } from './rpcEvents';
+import accountsReducer, { iAccountEvent } from './accounts';
 import sdkReducer from './sdk';
 import inpageProviderReducer from '../core/redux/slices/inpageProvider';
 import confirmationMetricsReducer from '../core/redux/slices/confirmationMetrics';
@@ -35,6 +35,171 @@ import performanceReducer, {
   PerformanceState,
 } from '../core/redux/slices/performance';
 import { isTest } from '../util/test/utils';
+import { SecurityAlertResponse } from '../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
+
+export interface LegalNoticesState {
+  newPrivacyPolicyToastClickedOrClosed: boolean;
+  newPrivacyPolicyToastShownDate: number | null;
+}
+
+export interface CollectiblesFavorite {
+  tokenId: string;
+  address: string;
+}
+
+export interface CollectiblesState {
+  favorites: Record<string, Record<string, CollectiblesFavorite[]>>;
+  isNftFetchingProgress: boolean;
+}
+
+export interface PrivacyState {
+  approvedHosts: Record<string, boolean>;
+  revealSRPTimestamps: number[];
+}
+
+export interface Bookmark {
+  url: string;
+  name?: string;
+}
+
+export interface BrowserTab {
+  url: string;
+  id: number;
+  linkType?: string;
+}
+
+export interface BrowserFavicon {
+  origin: string;
+  url: string;
+}
+
+export interface BrowserState {
+  history: { url: string; name: string }[];
+  whitelist: string[];
+  tabs: BrowserTab[];
+  favicons: BrowserFavicon[];
+  activeTab: number | null;
+  visitedDappsByHostname: Record<string, boolean>;
+}
+
+export interface ModalsState {
+  networkModalVisible: boolean;
+  shouldNetworkSwitchPopToWallet: boolean;
+  collectibleContractModalVisible: boolean;
+  dappTransactionModalVisible: boolean;
+  signMessageModalVisible: boolean;
+  infoNetworkModalVisible?: boolean;
+}
+
+export interface SettingsState {
+  searchEngine: string;
+  primaryCurrency: string;
+  lockTime: number;
+  useBlockieIcon: boolean;
+  hideZeroBalanceTokens: boolean;
+  basicFunctionalityEnabled: boolean;
+  showHexData?: boolean;
+  showCustomNonce?: boolean;
+  showFiatOnTestnets?: boolean;
+  deviceNotificationEnabled?: boolean;
+}
+
+export interface AlertState {
+  isVisible: boolean;
+  autodismiss: number | null;
+  content: string | null;
+  data: unknown | null;
+}
+
+export interface TransactionInner {
+  data: string | undefined;
+  from: string | undefined;
+  gas: string | undefined;
+  gasPrice: string | undefined;
+  to: string | undefined;
+  value: string | undefined;
+  maxFeePerGas: string | undefined;
+  maxPriorityFeePerGas: string | undefined;
+}
+
+export interface TransactionState {
+  ensRecipient: string | undefined;
+  assetType: string | undefined;
+  selectedAsset: Record<string, unknown>;
+  transaction: TransactionInner;
+  warningGasPriceHigh: string | undefined;
+  transactionTo: string | undefined;
+  transactionToName: string | undefined;
+  transactionFromName: string | undefined;
+  transactionValue: string | undefined;
+  symbol: string | undefined;
+  paymentRequest: unknown | undefined;
+  readableValue: string | undefined;
+  id: string | undefined;
+  type: string | undefined;
+  proposedNonce: string | undefined;
+  nonce: string | undefined;
+  securityAlertResponses: Record<string, unknown>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+}
+
+export interface WizardState {
+  step: number;
+}
+
+export interface NotificationItem {
+  id: string;
+  isVisible: boolean;
+  autodismiss?: number;
+  title?: string;
+  description?: string;
+  status?: string;
+  type?: string;
+  transaction?: Record<string, unknown>;
+}
+
+export interface NotificationState {
+  notifications: NotificationItem[];
+}
+
+export interface SwapsChainData {
+  isLive: boolean;
+  featureFlags: Record<string, unknown> | undefined;
+}
+
+export interface SwapsState {
+  isLive: boolean;
+  hasOnboarded: boolean;
+  featureFlags: Record<string, unknown> | undefined;
+  [chainId: string]: SwapsChainData | boolean | Record<string, unknown> | undefined;
+}
+
+export interface InfuraAvailabilityState {
+  isBlocked: boolean;
+}
+
+export interface NetworkOnboardedState {
+  networkOnboardedState: Record<string, boolean>;
+  networkState: {
+    showNetworkOnboarding: boolean;
+    nativeToken: string;
+    networkType: string;
+    networkUrl: string;
+  };
+  switchedNetwork: {
+    networkUrl: string;
+    networkStatus: boolean;
+  };
+}
+
+export interface ExperimentalSettingsState {
+  securityAlertsEnabled: boolean;
+}
+
+export interface SignatureRequestState {
+  securityAlertResponse?: SecurityAlertResponse;
+}
 
 /**
  * Infer state from a reducer
@@ -54,69 +219,31 @@ export type StateFromReducer<reducer> = reducer extends Reducer<
 // to this type. Once that is complete, we can automatically generate this type
 // using the `StateFromReducersMapObject` type from redux.
 export interface RootState {
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  legalNotices: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  collectibles: any;
+  legalNotices: LegalNoticesState;
+  collectibles: CollectiblesState;
   engine: { backgroundState: EngineState };
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  privacy: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bookmarks: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  browser: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modals: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  settings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  alert: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  transaction: any;
+  privacy: PrivacyState;
+  bookmarks: Bookmark[];
+  browser: BrowserState;
+  modals: ModalsState;
+  settings: SettingsState;
+  alert: AlertState;
+  transaction: TransactionState;
   user: UserState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wizard: any;
+  wizard: WizardState;
   onboarding: OnboardingState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  notification: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  swaps: any;
+  notification: NotificationState;
+  swaps: SwapsState;
   fiatOrders: StateFromReducer<typeof fiatOrders>;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  infuraAvailability: any;
+  infuraAvailability: InfuraAvailabilityState;
   navigation: NavigationState;
-  // The networkOnboarded reducer is TypeScript but not yet a valid reducer
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  networkOnboarded: any;
+  networkOnboarded: NetworkOnboardedState;
   security: SecurityState;
   sdk: StateFromReducer<typeof sdkReducer>;
-  // The experimentalSettings reducer is TypeScript but not yet a valid reducer
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  experimentalSettings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  signatureRequest: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rpcEvents: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  accounts: any;
+  experimentalSettings: ExperimentalSettingsState;
+  signatureRequest: SignatureRequestState;
+  rpcEvents: iEventGroup;
+  accounts: iAccountEvent;
   inpageProvider: StateFromReducer<typeof inpageProviderReducer>;
   confirmationMetrics: StateFromReducer<typeof confirmationMetricsReducer>;
   originThrottling: StateFromReducer<typeof originThrottlingReducer>;
