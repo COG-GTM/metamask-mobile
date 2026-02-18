@@ -169,7 +169,7 @@ describe('Browser', () => {
               {() => (
                 <Browser
                   route={{
-                    params: { newTabUrl: 'about:blank', timestamp: '987' },
+                    params: { newTabUrl: 'about:blank', timestamp: 987 },
                   }}
                   tabs={mockTabs}
                   activeTab={1}

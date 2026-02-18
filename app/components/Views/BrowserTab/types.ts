@@ -33,7 +33,7 @@ export type BrowserTabProps = {
   /**
    * The ID of the active tab
    */
-  activeTab: number;
+  activeTab?: number;
   /**
    * InitialUrl
    */
@@ -45,7 +45,7 @@ export type BrowserTabProps = {
   /**
    * Protocol string to append to URLs that have none
    */
-  defaultProtocol: string;
+  defaultProtocol?: string;
   /**
    * A string that of the chosen ipfs gateway
    */
@@ -70,7 +70,7 @@ export type BrowserTabProps = {
   /**
    * Function to store bookmarks
    */
-  addBookmark: (bookmark: { name: string; url: string }) => void;
+  addBookmark?: (bookmark: { name: string; url: string }) => void;
   /**
    * Array of bookmarks
    */
@@ -78,7 +78,7 @@ export type BrowserTabProps = {
   /**
    * String representing the current search engine
    */
-  searchEngine: string;
+  searchEngine?: string;
   /**
    * Function to store the a page in the browser history
    */
