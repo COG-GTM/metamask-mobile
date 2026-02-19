@@ -301,7 +301,7 @@ const SnapsSettingsStack = () => (
 ///: END:ONLY_INCLUDE_IF
 
 const NotificationsOptInStack = () => (
-  <Stack.Navigator initialRouteName={Routes.NOTIFICATIONS.OPT_IN} mode={'modal'}>
+  <Stack.Navigator initialRouteName={Routes.NOTIFICATIONS.OPT_IN}>
     <Stack.Screen
       name={Routes.NOTIFICATIONS.OPT_IN}
       component={OptIn}
@@ -648,7 +648,7 @@ const HomeTabs = () => {
 };
 
 const Webview = () => (
-  <Stack.Navigator mode={'modal'}>
+  <Stack.Navigator>
     <Stack.Screen
       name="SimpleWebview"
       component={SimpleWebview}
