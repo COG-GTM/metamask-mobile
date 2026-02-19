@@ -1,15 +1,42 @@
-import { NetworksChainId } from '@metamask/controller-utils';
+const NetworksChainId: Record<string, string> = {
+  mainnet: '1',
+  goerli: '5',
+  sepolia: '11155111',
+  'linea-goerli': '59140',
+  'linea-mainnet': '59144',
+};
 
-export default function migrate(state) {
-  const { allTokens } = state.engine.backgroundState.TokensController;
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      TokensController: {
+        allTokens: Record<string, Record<string, unknown>>;
+        [key: string]: unknown;
+      };
+      CollectiblesController: {
+        allCollectibleContracts: Record<string, Record<string, unknown>>;
+        allCollectibles: Record<string, Record<string, unknown>>;
+        [key: string]: unknown;
+      };
+      PreferencesController: {
+        frequentRpcList: { chainId: string }[];
+      };
+    };
+  };
+}
+
+export default function migrate(state: unknown): unknown {
+  const s = state as MigrationState;
+  const { allTokens } = s.engine.backgroundState.TokensController;
   const { allCollectibleContracts, allCollectibles } =
-    state.engine.backgroundState.CollectiblesController;
+    s.engine.backgroundState.CollectiblesController;
   const { frequentRpcList } =
-    state.engine.backgroundState.PreferencesController;
+    s.engine.backgroundState.PreferencesController;
 
-  const newAllCollectibleContracts = {};
-  const newAllCollectibles = {};
-  const newAllTokens = {};
+  const newAllCollectibleContracts: Record<string, Record<string, unknown>> =
+    {};
+  const newAllCollectibles: Record<string, Record<string, unknown>> = {};
+  const newAllTokens: Record<string, Record<string, unknown>> = {};
 
   Object.keys(allTokens).forEach((address) => {
     newAllTokens[address] = {};
@@ -55,12 +82,12 @@ export default function migrate(state) {
     });
   });
 
-  state.engine.backgroundState.TokensController = {
-    ...state.engine.backgroundState.TokensController,
+  s.engine.backgroundState.TokensController = {
+    ...s.engine.backgroundState.TokensController,
     allTokens: newAllTokens,
   };
-  state.engine.backgroundState.CollectiblesController = {
-    ...state.engine.backgroundState.CollectiblesController,
+  s.engine.backgroundState.CollectiblesController = {
+    ...s.engine.backgroundState.CollectiblesController,
     allCollectibles: newAllCollectibles,
     allCollectibleContracts: newAllCollectibleContracts,
   };
