@@ -10,7 +10,7 @@ export interface AlertState {
   data: unknown;
 }
 
-const initialState: AlertState = {
+export const initialAlertState: AlertState = {
   isVisible: false,
   autodismiss: null,
   content: null,
@@ -18,7 +18,7 @@ const initialState: AlertState = {
 };
 
 const alertReducer = (
-  state: AlertState = initialState,
+  state: AlertState = initialAlertState,
   action: AlertAction = { type: AlertActionType.HIDE_ALERT },
 ): AlertState => {
   switch (action.type) {
