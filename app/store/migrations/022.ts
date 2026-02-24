@@ -1,4 +1,7 @@
-export default function migrate(state) {
+import type { MigrationState } from './migration-types';
+
+export default function migrate(stateArg: unknown): unknown {
+  const state = stateArg as MigrationState;
   if (state?.engine?.backgroundState?.PreferencesController?.openSeaEnabled) {
     state.engine.backgroundState.PreferencesController.displayNftMedia =
       state.engine.backgroundState.PreferencesController.openSeaEnabled ?? true;

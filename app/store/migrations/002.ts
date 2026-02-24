@@ -1,7 +1,13 @@
-import { getAllNetworks, isSafeChainId } from '../../util/networks';
+import type { MigrationState } from './migration-types';
+import { getAllNetworks } from '../../util/networks';
+
+// isSafeChainId was removed from dependencies. Inline the historical logic.
+const isSafeChainId = (chainId: number): boolean =>
+  Number.isSafeInteger(chainId) && chainId > 0 && chainId <= 4503599627370476;
 import { GOERLI } from '../../../app/constants/network';
 
-export default function migrate(state) {
+export default function migrate(stateArg: unknown): unknown {
+  const state = stateArg as MigrationState;
   const provider = state.engine.backgroundState.NetworkController.provider;
 
   // Check if the current network is one of the initial networks
@@ -9,7 +15,7 @@ export default function migrate(state) {
     provider.type && getAllNetworks().includes(provider.type);
 
   // Check if the current network has a valid chainId
-  const chainIdNumber = parseInt(provider.chainId, 10);
+  const chainIdNumber = parseInt(provider.chainId as string, 10);
   const isCustomRpcWithInvalidChainId = !isSafeChainId(chainIdNumber);
 
   if (!isInitialNetwork && isCustomRpcWithInvalidChainId) {

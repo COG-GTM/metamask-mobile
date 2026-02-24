@@ -1,3 +1,4 @@
+import type { MigrationState } from './migration-types';
 import migrate from './024';
 import { merge } from 'lodash';
 import initialRootState from '../../util/test/initial-root-state';
@@ -63,7 +64,7 @@ describe('Migration #24', () => {
 
     const newState = migrate(state);
 
-    expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
+    expect((newState as MigrationState).engine.backgroundState.NetworkController).toStrictEqual({
       networkId: null,
       networkStatus: 'unknown',
     });
@@ -82,7 +83,7 @@ describe('Migration #24', () => {
 
     const newState = migrate(state);
 
-    expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
+    expect((newState as MigrationState).engine.backgroundState.NetworkController).toStrictEqual({
       networkId: '1',
       networkStatus: 'available',
     });

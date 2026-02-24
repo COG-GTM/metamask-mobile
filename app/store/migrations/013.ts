@@ -1,6 +1,8 @@
+import type { MigrationState } from './migration-types';
 import { v1 as random } from 'uuid';
 
-export default function migrate(state) {
+export default function migrate(stateArg: unknown): unknown {
+  const state = stateArg as MigrationState;
   // If for some reason we already have PermissionController state, bail out.
   const hasPermissionControllerState = Boolean(
     state.engine.backgroundState.PermissionController?.subjects,
@@ -15,7 +17,7 @@ export default function migrate(state) {
   // If no dapps connected, bail out.
   if (hosts.length < 1) return state;
 
-  const { subjects } = hosts.reduce(
+  const { subjects } = hosts.reduce<{ subjects: Record<string, MigrationState> }>(
     (accumulator, host, index) => ({
       subjects: {
         ...accumulator.subjects,
@@ -43,7 +45,7 @@ export default function migrate(state) {
         },
       },
     }),
-    {},
+    { subjects: {} },
   );
 
   const newState = { ...state };

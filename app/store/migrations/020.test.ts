@@ -99,7 +99,7 @@ describe('Migration #20', () => {
   });
 
   it('should convert chain ID to decimal string', () => {
-    v4.mockImplementationOnce(() => 'networkId1');
+    (v4 as jest.Mock).mockImplementationOnce(() => 'networkId1');
     const oldState = {
       foo: 'bar',
       engine: {
@@ -156,7 +156,7 @@ describe('Migration #20', () => {
   });
 
   it('should migrate multiple network configurations to network controller', () => {
-    v4.mockImplementationOnce(() => 'networkId1')
+    (v4 as jest.Mock).mockImplementationOnce(() => 'networkId1')
       .mockImplementationOnce(() => 'networkId2')
       .mockImplementationOnce(() => 'networkId3');
     const oldState = {
@@ -246,7 +246,7 @@ describe('Migration #20', () => {
   });
 
   it('should convert networkConfigurations to an empty object if frequentRpcList is an empty array', () => {
-    v4.mockImplementationOnce(() => 'networkId1');
+    (v4 as jest.Mock).mockImplementationOnce(() => 'networkId1');
     const oldState = {
       foo: 'bar',
       engine: {

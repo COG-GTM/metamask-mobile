@@ -1,6 +1,9 @@
-export default function migrate(state) {
+import type { MigrationState } from './migration-types';
+
+export default function migrate(stateArg: unknown): unknown {
+  const state = stateArg as MigrationState;
   const allTokens = state.engine.backgroundState.TokensController.allTokens;
-  const newAllTokens = {};
+  const newAllTokens: Record<string, Record<string, MigrationState>> = {};
   if (allTokens) {
     Object.keys(allTokens).forEach((accountAddress) => {
       Object.keys(allTokens[accountAddress]).forEach((chainId) => {
@@ -19,7 +22,7 @@ export default function migrate(state) {
 
   const ignoredTokens =
     state.engine.backgroundState.TokensController.ignoredTokens;
-  const newAllIgnoredTokens = {};
+  const newAllIgnoredTokens: Record<string, Record<string, MigrationState>> = {};
   Object.keys(allTokens).forEach((accountAddress) => {
     Object.keys(allTokens[accountAddress]).forEach((chainId) => {
       if (newAllIgnoredTokens[chainId] === undefined) {

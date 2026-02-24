@@ -1,9 +1,21 @@
-import { NetworksChainId } from '@metamask/controller-utils';
-import { isSafeChainId } from '../../util/networks';
+import type { MigrationState } from './migration-types';
+// NetworksChainId was removed from @metamask/controller-utils.
+// Inline the historical mapping used by this migration.
+const NetworksChainId: Record<string, string> = {
+  mainnet: '1',
+  goerli: '5',
+  sepolia: '11155111',
+  'linea-goerli': '59140',
+  'linea-mainnet': '59144',
+};
+// isSafeChainId was removed from dependencies. Inline the historical logic.
+const isSafeChainId = (chainId: number): boolean =>
+  Number.isSafeInteger(chainId) && chainId > 0 && chainId <= 4503599627370476;
 import { GOERLI } from '../../../app/constants/network';
 import { regex } from '../../../app/util/regex';
 
-export default function migrate(state) {
+export default function migrate(stateArg: unknown): unknown {
+  const state = stateArg as MigrationState;
   const provider = state.engine.backgroundState.NetworkController.provider;
   const chainId = NetworksChainId[provider.type];
   // if chainId === '' is a rpc

@@ -1,3 +1,4 @@
+import type { MigrationState } from './migration-types';
 import { NetworkType } from '@metamask/controller-utils';
 
 /**
@@ -6,7 +7,8 @@ import { NetworkType } from '@metamask/controller-utils';
  * @param {any} state - Redux state
  * @returns
  */
-export default function migrate(state) {
+export default function migrate(stateArg: unknown): unknown {
+  const state = stateArg as MigrationState;
   const backgroundState = state.engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;
@@ -21,16 +23,16 @@ export default function migrate(state) {
     networkControllerState.networkConfigurations || {};
 
   const submitHistory = transactions
-    .filter((tx) => tx.rawTransaction?.length)
-    .map((tx) => {
+    .filter((tx: MigrationState) => tx.rawTransaction?.length)
+    .map((tx: MigrationState) => {
       const matchingProviderConfig =
         providerConfig.chainId === tx.chainId ? providerConfig : undefined;
 
       const matchingNetworkConfigurations = Object.values(
         networkConfigurations,
-      ).filter((c) => c.chainId === tx.chainId);
+      ).filter((c: unknown) => (c as MigrationState).chainId === tx.chainId);
 
-      const networkUrl = matchingNetworkConfigurations.map((c) => c.rpcUrl);
+      const networkUrl = matchingNetworkConfigurations.map((c: unknown) => (c as MigrationState).rpcUrl);
 
       const networkType = matchingProviderConfig
         ? matchingProviderConfig.type

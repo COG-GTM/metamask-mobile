@@ -1,3 +1,4 @@
+import type { MigrationState } from './migration-types';
 import migrate from './023';
 import { merge } from 'lodash';
 import initialRootState, {
@@ -231,8 +232,8 @@ describe('Migration #23', () => {
 
     const newState = migrate(state);
 
-    expect(newState.user).toStrictEqual(userInitialState);
-    expect(newState.engine.backgroundState).toStrictEqual(
+    expect((newState as MigrationState).user).toStrictEqual(userInitialState);
+    expect((newState as MigrationState).engine.backgroundState).toStrictEqual(
       merge({}, backgroundState, {
         AddressBookController: {
           addressBook: {
@@ -317,7 +318,7 @@ describe('Migration #23', () => {
 
     const newState = migrate(state);
 
-    expect(newState.user).toStrictEqual(
+    expect((newState as MigrationState).user).toStrictEqual(
       merge({}, userInitialState, {
         ambiguousAddressEntries: {
           10: ['0x0000000000000000000000000000000000000002'],
@@ -325,7 +326,7 @@ describe('Migration #23', () => {
         },
       }),
     );
-    expect(newState.engine.backgroundState).toStrictEqual(
+    expect((newState as MigrationState).engine.backgroundState).toStrictEqual(
       merge({}, backgroundState, {
         AddressBookController: {
           addressBook: {
@@ -404,8 +405,8 @@ describe('Migration #23', () => {
 
     const newState = migrate(state);
 
-    expect(newState.user).toStrictEqual(userInitialState);
-    expect(newState.engine.backgroundState).toStrictEqual(
+    expect((newState as MigrationState).user).toStrictEqual(userInitialState);
+    expect((newState as MigrationState).engine.backgroundState).toStrictEqual(
       merge({}, backgroundState, {
         AddressBookController: {
           addressBook: {

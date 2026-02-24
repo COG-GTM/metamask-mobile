@@ -1,3 +1,4 @@
+import type { MigrationState } from './migration-types';
 import migration from './027';
 
 describe('Migration #27', () => {
@@ -71,7 +72,7 @@ describe('Migration #27', () => {
     const newState = migration(oldState);
 
     expect(
-      newState.engine.backgroundState.TransactionController.submitHistory,
+      (newState as MigrationState).engine.backgroundState.TransactionController.submitHistory,
     ).toStrictEqual([
       {
         chainId: '5',
@@ -139,7 +140,7 @@ describe('Migration #27', () => {
     const newState = migration(oldState);
 
     expect(
-      newState.engine.backgroundState.TransactionController.submitHistory,
+      (newState as MigrationState).engine.backgroundState.TransactionController.submitHistory,
     ).toStrictEqual([
       {
         chainId: '5',
@@ -229,7 +230,7 @@ describe('Migration #27', () => {
     const newState = migration(oldState);
 
     expect(
-      newState.engine.backgroundState.TransactionController.submitHistory,
+      (newState as MigrationState).engine.backgroundState.TransactionController.submitHistory,
     ).toStrictEqual([
       {
         chainId: '5',

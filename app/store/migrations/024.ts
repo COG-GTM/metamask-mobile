@@ -1,3 +1,4 @@
+import type { MigrationState } from './migration-types';
 import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
 import { NetworkStatus } from '@metamask/network-controller';
@@ -16,7 +17,8 @@ import { NetworkStatus } from '@metamask/network-controller';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
+export default function migrate(stateArg: unknown): unknown {
+  const state = stateArg as MigrationState;
   const networkControllerState = state.engine.backgroundState.NetworkController;
 
   if (!isObject(networkControllerState)) {

@@ -1,3 +1,4 @@
+import type { MigrationState } from './migration-types';
 import { captureException } from '@sentry/react-native';
 import { isObject } from '@metamask/utils';
 
@@ -6,11 +7,11 @@ import { isObject } from '@metamask/utils';
  * regarding the phishing list property listState, that is no longer used
  *
  **/
-export default function migrate(state) {
+export default function migrate(stateArg: unknown): unknown {
+  const state = stateArg as MigrationState;
   const keyringControllerState = state.engine.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
     captureException(
-      // @ts-expect-error We are not returning state not to stop the flow of Vault recovery
       new Error(
         `Migration 26: Invalid vault in KeyringController: '${typeof keyringControllerState}'`,
       ),
