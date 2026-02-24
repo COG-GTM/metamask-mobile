@@ -115,10 +115,10 @@ function addMetadata(
   });
 }
 
-const getChainState = (swapsState: SwapsState, chainId: string) => {
+const getChainState = (swapsState: SwapsState, chainId: string): SwapsChainState => {
   const chainEntry = swapsState[chainId];
   if (!chainEntry || typeof chainEntry !== 'object') {
-    throw new Error(`No swaps state for chainId: ${chainId}`);
+    return {} as SwapsChainState;
   }
   return chainEntry as SwapsChainState;
 };
