@@ -128,8 +128,8 @@ export default function migrate(stateArg: unknown): unknown {
     );
     captureException(
       new Error(
-        `Migration 23: Address book configuration entry missing chain ID, network id '${networkId}',         keys '${Object.keys(
-                  invalidEntry as Record<string, unknown>,
+        `Migration 23: Address book configuration entry missing chain ID, network id '${networkId}', keys '${Object.keys(
+          invalidEntry as Record<string, unknown>,
         )}'`,
       ),
     );
