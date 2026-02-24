@@ -453,7 +453,7 @@ describe('swaps reducer', () => {
       });
     });
 
-    it('should throw when no chain entry exists', () => {
+    it('should return empty object when no chain entry exists', () => {
       const rootState = createTestState({
         selectedChainId: '0x89',  // Chain ID not in swaps state
         globalFeatureFlags: {
@@ -464,7 +464,11 @@ describe('swaps reducer', () => {
         // No chain feature flags for 0x89
       });
 
-      expect(() => selectSwapsChainFeatureFlags(rootState)).toThrow();
+      expect(selectSwapsChainFeatureFlags(rootState)).toStrictEqual({
+        smartTransactions: {
+          globalSetting: true,
+        },
+      });
     });
   });
 
