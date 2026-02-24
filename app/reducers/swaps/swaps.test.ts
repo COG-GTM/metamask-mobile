@@ -213,6 +213,8 @@ describe('swaps reducer', () => {
       };
 
       rootState.swaps = {
+        isLive: true,
+        hasOnboarded: true,
         // @ts-ignore
         featureFlags: {
           smart_transactions: {
@@ -227,6 +229,7 @@ describe('swaps reducer', () => {
           },
         },
         '0x1': {
+          isLive: true,
           // @ts-ignore
           featureFlags: {
             smartTransactions: {
@@ -268,6 +271,8 @@ describe('swaps reducer', () => {
       };
 
       rootState.swaps = {
+        isLive: true,
+        hasOnboarded: true,
         // @ts-ignore
         featureFlags: {
           smart_transactions: {
@@ -282,6 +287,7 @@ describe('swaps reducer', () => {
           },
         },
         '0x1': {
+          isLive: true,
           // @ts-ignore
           featureFlags: {
             smartTransactions: {

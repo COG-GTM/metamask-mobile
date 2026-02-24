@@ -9,7 +9,21 @@ const initialState = {
   basicFunctionalityEnabled: true,
 };
 
-const settingsReducer = (state = initialState, action) => {
+interface SettingsAction {
+  type: string;
+  searchEngine?: string;
+  lockTime?: number;
+  showHexData?: boolean;
+  showCustomNonce?: boolean;
+  hideZeroBalanceTokens?: boolean;
+  useBlockieIcon?: boolean;
+  primaryCurrency?: string;
+  showFiatOnTestnets?: boolean;
+  basicFunctionalityEnabled?: boolean;
+  deviceNotificationEnabled?: boolean;
+}
+
+const settingsReducer = (state = initialState, action: SettingsAction) => {
   switch (action.type) {
     case 'SET_SEARCH_ENGINE':
       return {

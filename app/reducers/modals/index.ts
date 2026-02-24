@@ -4,9 +4,16 @@ const initialState = {
   collectibleContractModalVisible: false,
   dappTransactionModalVisible: false,
   signMessageModalVisible: true,
+  infoNetworkModalVisible: false,
 };
 
-const modalsReducer = (state = initialState, action) => {
+interface ModalsAction {
+  type: string;
+  shouldNetworkSwitchPopToWallet?: boolean;
+  show?: boolean | null;
+}
+
+const modalsReducer = (state = initialState, action: ModalsAction) => {
   switch (action.type) {
     case 'TOGGLE_NETWORK_MODAL':
       return {

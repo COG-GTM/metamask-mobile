@@ -4,7 +4,12 @@ const initialState = {
   step: 0,
 };
 
-const onboardingWizardReducer = (state = initialState, action) => {
+interface WizardAction {
+  type: string;
+  step?: number;
+}
+
+const onboardingWizardReducer = (state = initialState, action: WizardAction) => {
   switch (action.type) {
     case REHYDRATE:
       return {

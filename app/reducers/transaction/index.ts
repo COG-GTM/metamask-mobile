@@ -32,7 +32,26 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+interface TransactionAction {
+  type: string;
+  selectedAsset?: Record<string, unknown>;
+  assetType?: string;
+  nonce?: string;
+  proposedNonce?: string;
+  from?: string;
+  to?: string;
+  ensRecipient?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transaction?: Record<string, unknown>;
+  transactionId?: string;
+  securityAlertResponse?: Record<string, unknown>;
+  asset?: Record<string, unknown>;
+  maxValueMode?: boolean;
+  value?: string;
+}
+
+const getAssetType = (selectedAsset: Record<string, unknown>) => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,7 +65,7 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (state = initialState, action: TransactionAction) => {
   switch (action.type) {
     case REHYDRATE:
       return {
@@ -83,7 +102,7 @@ const transactionReducer = (state = initialState, action) => {
         transactionFromName: action.transactionFromName,
       };
     case 'SET_SELECTED_ASSET': {
-      const selectedAsset = action.selectedAsset;
+      const selectedAsset = action.selectedAsset!;
       const assetType = action.assetType || getAssetType(selectedAsset);
       return {
         ...state,
@@ -97,17 +116,18 @@ const transactionReducer = (state = initialState, action) => {
         transaction: action.transaction,
       };
     case 'SET_TRANSACTION_OBJECT': {
-      const selectedAsset = action.transaction.selectedAsset;
+      const txObj = action.transaction!;
+      const selectedAsset = txObj.selectedAsset as Record<string, unknown> | undefined;
       if (selectedAsset) {
         const assetType = getAssetType(selectedAsset);
-        action.transaction.assetType = assetType;
+        txObj.assetType = assetType;
       }
-      const txMeta = getTxMeta(action.transaction);
+      const txMeta = getTxMeta(txObj);
       return {
         ...state,
         transaction: {
           ...state.transaction,
-          ...getTxData(action.transaction),
+          ...getTxData(txObj),
         },
         ...txMeta,
         // Retain the securityAlertResponses from the old state
@@ -115,7 +135,7 @@ const transactionReducer = (state = initialState, action) => {
       };
     }
     case 'SET_TOKENS_TRANSACTION': {
-      const selectedAsset = action.asset;
+      const selectedAsset = action.asset!;
       const assetType = getAssetType(selectedAsset);
       return {
         ...state,
@@ -129,8 +149,8 @@ const transactionReducer = (state = initialState, action) => {
         symbol: 'ETH',
         assetType: 'ETH',
         selectedAsset: { isETH: true, symbol: 'ETH' },
-        ...getTxMeta(action.transaction),
-        transaction: getTxData(action.transaction),
+        ...getTxMeta(action.transaction!),
+        transaction: getTxData(action.transaction!),
       };
     case 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE': {
       const { transactionId, securityAlertResponse } = action;
@@ -138,7 +158,7 @@ const transactionReducer = (state = initialState, action) => {
         ...state,
         securityAlertResponses: {
           ...state.securityAlertResponses,
-          [transactionId]: securityAlertResponse,
+          [transactionId!]: securityAlertResponse,
         },
       };
     }

@@ -4,7 +4,7 @@ export function dismissAlert() {
   };
 }
 
-export function showAlert({ isVisible, autodismiss, content, data }) {
+export function showAlert({ isVisible, autodismiss, content, data }: { isVisible: boolean; autodismiss: number; content: string; data: unknown }) {
   return {
     type: 'SHOW_ALERT',
     isVisible,

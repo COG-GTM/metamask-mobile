@@ -5,7 +5,14 @@ const initialState = {
   data: null,
 };
 
-const alertReducer = (state = initialState, action) => {
+interface AlertAction {
+  type: string;
+  autodismiss?: number | null;
+  content?: string | null;
+  data?: unknown;
+}
+
+const alertReducer = (state = initialState, action: AlertAction) => {
   switch (action.type) {
     case 'SHOW_ALERT':
       return {

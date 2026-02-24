@@ -6,10 +6,14 @@ export const INFURA_AVAILABILITY_BLOCKED = 'INFURA_AVAILABILITY_BLOCKED';
 export const INFURA_AVAILABILITY_NOT_BLOCKED =
   'INFURA_AVAILABILITY_NOT_BLOCKED';
 
-export const getInfuraBlockedSelector = (state) =>
+export const getInfuraBlockedSelector = (state: { infuraAvailability?: { isBlocked: boolean } }) =>
   state.infuraAvailability?.isBlocked;
 
-const infuraAvailabilityReducer = (state = initialState, action) => {
+interface InfuraAction {
+  type: string;
+}
+
+const infuraAvailabilityReducer = (state = initialState, action: InfuraAction) => {
   switch (action.type) {
     case INFURA_AVAILABILITY_BLOCKED:
       return {

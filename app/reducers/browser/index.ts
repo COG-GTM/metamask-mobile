@@ -2,7 +2,41 @@ import { BrowserActionTypes } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
 
-const initialState = {
+interface BrowserTab {
+  url: string;
+  id: number;
+  linkType?: string;
+  [key: string]: unknown;
+}
+
+interface Favicon {
+  origin: string;
+  url: string;
+}
+
+interface BrowserState {
+  history: { url: string; name: string }[];
+  whitelist: string[];
+  tabs: BrowserTab[];
+  favicons: Favicon[];
+  activeTab: number | null;
+  visitedDappsByHostname: Record<string, boolean>;
+}
+
+interface BrowserAction {
+  type: string | null;
+  hostname?: string;
+  url?: string;
+  name?: string;
+  id?: number;
+  data?: Record<string, unknown>;
+  linkType?: string;
+  origin?: string;
+  metricsEnabled?: boolean;
+  marketingEnabled?: boolean;
+}
+
+const initialState: BrowserState = {
   history: [],
   whitelist: [],
   tabs: [],
@@ -11,7 +45,7 @@ const initialState = {
   // Keep track of viewed Dapps, which is used for MetaMetricsEvents.DAPP_VIEWED event
   visitedDappsByHostname: {},
 };
-const browserReducer = (state = initialState, action) => {
+const browserReducer = (state: BrowserState = initialState, action: BrowserAction) => {
   switch (action.type) {
     case BrowserActionTypes.ADD_TO_VIEWED_DAPP: {
       const { hostname } = action;
@@ -19,7 +53,7 @@ const browserReducer = (state = initialState, action) => {
         ...state,
         visitedDappsByHostname: {
           ...state.visitedDappsByHostname,
-          [hostname]: true,
+          [hostname!]: true,
         },
       };
     }
@@ -28,7 +62,7 @@ const browserReducer = (state = initialState, action) => {
 
       return {
         ...state,
-        history: [...state.history, { url, name }].slice(-50),
+        history: [...state.history, { url: url!, name: name! }].slice(-50),
       };
     }
     case 'ADD_TO_BROWSER_WHITELIST':
@@ -44,8 +78,8 @@ const browserReducer = (state = initialState, action) => {
         tabs: [
           {
             url: appendURLParams(AppConstants.HOMEPAGE_URL, {
-              metricsEnabled: action.metricsEnabled,
-              marketingEnabled: action.marketingEnabled,
+              metricsEnabled: Boolean(action.metricsEnabled),
+              marketingEnabled: Boolean(action.marketingEnabled),
             }).href,
             id: action.id,
           },
