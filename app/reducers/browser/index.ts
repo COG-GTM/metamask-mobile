@@ -2,7 +2,48 @@ import { BrowserActionTypes } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
 
-const initialState = {
+export interface BrowserHistoryEntry {
+  url: string;
+  name: string;
+}
+
+export interface BrowserTab {
+  url: string;
+  id: number;
+  linkType?: string;
+  image?: string;
+  isArchived?: boolean;
+}
+
+export interface Favicon {
+  origin: string;
+  url: string;
+}
+
+export interface BrowserState {
+  history: BrowserHistoryEntry[];
+  whitelist: string[];
+  tabs: BrowserTab[];
+  favicons: Favicon[];
+  activeTab: number | null;
+  visitedDappsByHostname: Record<string, boolean>;
+}
+
+interface BrowserActionBase {
+  type: string;
+  hostname?: string;
+  url?: string;
+  name?: string;
+  id?: number;
+  metricsEnabled?: boolean;
+  marketingEnabled?: boolean;
+  linkType?: string;
+  data?: Partial<BrowserTab>;
+  origin?: string;
+  show?: boolean | null;
+}
+
+const initialState: BrowserState = {
   history: [],
   whitelist: [],
   tabs: [],
@@ -11,10 +52,13 @@ const initialState = {
   // Keep track of viewed Dapps, which is used for MetaMetricsEvents.DAPP_VIEWED event
   visitedDappsByHostname: {},
 };
-const browserReducer = (state = initialState, action) => {
+const browserReducer = (
+  state: BrowserState = initialState,
+  action: BrowserActionBase = { type: '' },
+): BrowserState => {
   switch (action.type) {
     case BrowserActionTypes.ADD_TO_VIEWED_DAPP: {
-      const { hostname } = action;
+      const hostname = action.hostname as string;
       return {
         ...state,
         visitedDappsByHostname: {
@@ -24,7 +68,8 @@ const browserReducer = (state = initialState, action) => {
       };
     }
     case 'ADD_TO_BROWSER_HISTORY': {
-      const { url, name } = action;
+      const url = action.url as string;
+      const name = action.name as string;
 
       return {
         ...state,
@@ -34,7 +79,7 @@ const browserReducer = (state = initialState, action) => {
     case 'ADD_TO_BROWSER_WHITELIST':
       return {
         ...state,
-        whitelist: [...state.whitelist, action.url],
+        whitelist: [...state.whitelist, action.url as string],
       };
     case 'CLEAR_BROWSER_HISTORY':
       return {
@@ -47,10 +92,10 @@ const browserReducer = (state = initialState, action) => {
               metricsEnabled: action.metricsEnabled,
               marketingEnabled: action.marketingEnabled,
             }).href,
-            id: action.id,
+            id: action.id as number,
           },
         ],
-        activeTab: action.id,
+        activeTab: action.id as number,
       };
     case 'CLOSE_ALL_TABS':
       return {
@@ -63,27 +108,27 @@ const browserReducer = (state = initialState, action) => {
         tabs: [
           ...state.tabs,
           {
-            url: action.url,
+            url: action.url as string,
             ...(action.linkType && { linkType: action.linkType }),
-            id: action.id,
+            id: action.id as number,
           },
         ],
       };
     case 'CLOSE_TAB':
       return {
         ...state,
-        tabs: state.tabs.filter((tab) => tab.id !== action.id),
+        tabs: state.tabs.filter((tab) => tab.id !== (action.id as number)),
       };
     case 'SET_ACTIVE_TAB':
       return {
         ...state,
-        activeTab: action.id,
+        activeTab: action.id as number,
       };
     case 'UPDATE_TAB':
       return {
         ...state,
         tabs: state.tabs.map((tab) => {
-          if (tab.id === action.id) {
+          if (tab.id === (action.id as number)) {
             return { ...tab, ...action.data };
           }
           return { ...tab };
@@ -93,7 +138,7 @@ const browserReducer = (state = initialState, action) => {
       return {
         ...state,
         favicons: [
-          { origin: action.origin, url: action.url },
+          { origin: action.origin as string, url: action.url as string },
           ...state.favicons,
         ].slice(0, AppConstants.FAVICON_CACHE_MAX_SIZE),
       };
