@@ -4,6 +4,19 @@ declare module '*.mp4';
 
 declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
+declare module 'ethjs-ens' {
+  interface ENSOptions {
+    provider: unknown;
+    network: string;
+  }
+  class ENS {
+    constructor(options: ENSOptions);
+    reverse(address: string): Promise<string>;
+    lookup(name: string): Promise<string>;
+  }
+  export default ENS;
+}
+
 declare module 'unicode-confusables' {
   interface ConfusableResult {
     point: string;
