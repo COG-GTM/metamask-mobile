@@ -1,8 +1,7 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - Snaps team directory
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { Snap, Status } from '@metamask/snaps-utils';
+import { SnapId } from '@metamask/snaps-sdk';
 import SnapDetails from '../SnapDetails';
 import Engine from '../../../../../../core/Engine';
 import { SemVerVersion } from '@metamask/utils';
@@ -27,15 +26,14 @@ describe('SnapDetails', () => {
   const mockSnap: Snap = {
     blocked: false,
     enabled: true,
-    permissionName: 'wallet_snap_npm:@chainsafe/filsnap',
-    id: 'npm:@chainsafe/filsnap',
+    id: 'npm:@chainsafe/filsnap' as SnapId,
     initialPermissions: {
       'endowment:network-access': {},
       'endowment:rpc': {
         dapps: true,
         snaps: true,
       },
-      snap_confirm: {},
+      snap_dialog: {},
       snap_getBip44Entropy: [
         {
           coinType: 1,
@@ -46,6 +44,7 @@ describe('SnapDetails', () => {
       ],
       snap_manageState: {},
     },
+    sourceCode: '',
     manifest: {
       version: '2.3.13' as SemVerVersion,
       proposedName: 'Filsnap',
@@ -70,7 +69,7 @@ describe('SnapDetails', () => {
           dapps: true,
           snaps: true,
         },
-        snap_confirm: {},
+        snap_dialog: {},
         snap_getBip44Entropy: [
           {
             coinType: 1,

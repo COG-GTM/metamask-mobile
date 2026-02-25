@@ -2,8 +2,6 @@
 /* eslint-disable import/no-commonjs */
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-var-requires */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 // eslint-disable-next-line import/no-nodejs-modules
 import { Duplex } from 'stream';
 import {
@@ -47,7 +45,9 @@ export default class SnapBridge {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   blockTracker: any;
 
-  #mux: typeof ObjectMultiplex;
+  deprecatedNetworkVersions: Record<string, string | null>;
+
+  #mux: ObjectMultiplex;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   #providerProxy: any;
@@ -210,13 +210,13 @@ export default class SnapBridge {
     let networkVersion = this.deprecatedNetworkVersions[networkClientId];
     if (!networkVersion) {
       const ethQuery = new EthQuery(networkClient.provider);
-      networkVersion = await new Promise((resolve) => {
+      networkVersion = await new Promise<string | null>((resolve) => {
         ethQuery.sendAsync({ method: 'net_version' }, (error, result) => {
           if (error) {
             console.error(error);
             resolve(null);
           } else {
-            resolve(result);
+            resolve(result as string);
           }
         });
       });

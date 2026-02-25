@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - Snaps team directory
 ///: BEGIN:ONLY_INCLUDE_IF(external-snaps)
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Switch } from 'react-native';
@@ -38,7 +36,7 @@ const SnapDetails = ({ snap }: SnapDetailsProps) => {
   const [enabled, setEnabled] = useState<boolean>(snap.enabled);
 
   const toggleSnap = useCallback(
-    (enable) => {
+    (enable: boolean) => {
       const { SnapController } = Engine.context;
 
       if (!SnapController) return;

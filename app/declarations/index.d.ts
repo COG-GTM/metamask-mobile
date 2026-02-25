@@ -274,6 +274,24 @@ declare module 'react-native-vector-icons/Zocial' {
   export default Zocial;
 }
 
+declare module '@metamask/eth-json-rpc-filters' {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function createFilterMiddleware(args: { provider: any; blockTracker: any }): any;
+  export = createFilterMiddleware;
+}
+
+declare module '@metamask/eth-json-rpc-filters/subscriptionManager' {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function createSubscriptionManager(args: { provider: any; blockTracker: any }): {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    middleware: any;
+    events: import('events').EventEmitter;
+  };
+  export = createSubscriptionManager;
+}
+
 declare module '@metamask/contract-metadata' {
   const content: Record<string, TokenListToken>;
   export default content;
