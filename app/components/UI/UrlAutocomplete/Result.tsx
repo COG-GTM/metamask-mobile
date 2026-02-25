@@ -35,7 +35,9 @@ export const Result: React.FC<ResultProps> = memo(({ result, onPress, onSwapPres
     const dispatch = useDispatch();
 
     const onPressRemove = useCallback(() => {
-        dispatch(removeBookmark(result));
+        if ('url' in result) {
+            dispatch(removeBookmark(result));
+        }
     }, [dispatch, result]);
 
     const swapsEnabled = result.category === UrlAutocompleteCategory.Tokens && isSwapsAllowed(result.chainId) && AppConstants.SWAPS.ACTIVE;

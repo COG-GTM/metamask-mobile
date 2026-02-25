@@ -1,20 +1,20 @@
-import bookmarksReducer from './bookmarks';
+import bookmarksReducer, { BookmarksState } from './bookmarks';
 import browserReducer from './browser';
 import engineReducer from '../core/redux/slices/engine';
-import privacyReducer from './privacy';
+import privacyReducer, { PrivacyState } from './privacy';
 import modalsReducer from './modals';
 import settingsReducer from './settings';
-import alertReducer from './alert';
+import alertReducer, { AlertState } from './alert';
 import transactionReducer from './transaction';
 import legalNoticesReducer from './legalNotices';
 import userReducer, { UserState } from './user';
-import wizardReducer from './wizard';
+import wizardReducer, { WizardState } from './wizard';
 import onboardingReducer, { OnboardingState } from './onboarding';
 import fiatOrders from './fiatOrders';
 import swapsReducer from './swaps';
 import signatureRequestReducer from './signatureRequest';
 import notificationReducer from './notification';
-import infuraAvailabilityReducer from './infuraAvailability';
+import infuraAvailabilityReducer, { InfuraAvailabilityState } from './infuraAvailability';
 import collectiblesReducer from './collectibles';
 import navigationReducer, { NavigationState } from './navigation';
 import networkOnboardReducer from './networkSelector';
@@ -61,12 +61,8 @@ export interface RootState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   collectibles: any;
   engine: { backgroundState: EngineState };
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  privacy: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bookmarks: any;
+  privacy: PrivacyState;
+  bookmarks: BookmarksState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   browser: any;
@@ -76,16 +72,12 @@ export interface RootState {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   settings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  alert: any;
+  alert: AlertState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transaction: any;
   user: UserState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wizard: any;
+  wizard: WizardState;
   onboarding: OnboardingState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -94,9 +86,7 @@ export interface RootState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   swaps: any;
   fiatOrders: StateFromReducer<typeof fiatOrders>;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  infuraAvailability: any;
+  infuraAvailability: InfuraAvailabilityState;
   navigation: NavigationState;
   // The networkOnboarded reducer is TypeScript but not yet a valid reducer
   // TODO: Replace "any" with type
