@@ -1,5 +1,6 @@
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import type BN from 'bnjs4';
 
 export interface SelectedAsset {
   tokenId?: string;
@@ -15,12 +16,13 @@ export interface SelectedAsset {
 export interface TransactionData {
   data?: string;
   from?: string;
-  gas?: string;
-  gasPrice?: string;
+  gas?: string | BN;
+  gasPrice?: string | BN;
   to?: string;
-  value?: string;
-  maxFeePerGas?: string;
-  maxPriorityFeePerGas?: string;
+  value?: string | BN;
+  maxFeePerGas?: string | BN;
+  maxPriorityFeePerGas?: string | BN;
+  securityAlertResponse?: Record<string, unknown>;
 }
 
 export interface SecurityAlertResponse {
