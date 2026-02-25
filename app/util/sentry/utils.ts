@@ -1,5 +1,6 @@
 /* eslint-disable import/no-namespace */
 import * as Sentry from '@sentry/react-native';
+import type { ErrorEvent, TransactionEvent } from '@sentry/core';
 import { dedupeIntegration, extraErrorDataIntegration } from '@sentry/browser';
 import extractEthJsErrorMessage from '../extractEthJsErrorMessage';
 import StorageWrapper from '../../store/storage-wrapper';
@@ -274,7 +275,7 @@ const ERROR_URL_ALLOWLIST = [
  * @param options.sentryId - ID of captured exception
  * @param options.comments - User's feedback/comments
  */
-export const captureSentryFeedback = ({ sentryId, comments }) => {
+export const captureSentryFeedback = ({ sentryId, comments }: { sentryId: string; comments: string }) => {
   const userFeedback = {
     event_id: sentryId,
     name: '',
@@ -284,11 +285,11 @@ export const captureSentryFeedback = ({ sentryId, comments }) => {
   Sentry.captureUserFeedback(userFeedback);
 };
 
-function getProtocolFromURL(url) {
+function getProtocolFromURL(url: string): string {
   return new URL(url).protocol;
 }
 
-function rewriteBreadcrumb(breadcrumb) {
+function rewriteBreadcrumb(breadcrumb: Sentry.Breadcrumb): Sentry.Breadcrumb {
   if (breadcrumb.data?.url) {
     breadcrumb.data.url = getProtocolFromURL(breadcrumb.data.url);
   }
@@ -302,7 +303,7 @@ function rewriteBreadcrumb(breadcrumb) {
   return breadcrumb;
 }
 
-function rewriteErrorMessages(report, rewriteFn) {
+function rewriteErrorMessages(report: Sentry.Event, rewriteFn: (msg: string) => string) {
   // rewrite top level message
   if (typeof report.message === 'string') {
     /** @todo parse and remove/replace URL(s) found in report.message  */
@@ -318,7 +319,7 @@ function rewriteErrorMessages(report, rewriteFn) {
   }
 }
 
-function simplifyErrorMessages(report) {
+function simplifyErrorMessages(report: Sentry.Event) {
   rewriteErrorMessages(report, (errorMessage) => {
     // simplify ethjs error messages
     let simplifiedErrorMessage = extractEthJsErrorMessage(errorMessage);
@@ -335,14 +336,14 @@ function simplifyErrorMessages(report) {
   });
 }
 
-function removeDeviceTimezone(report) {
+function removeDeviceTimezone(report: Sentry.Event) {
   if (report.contexts && report.contexts.device)
-    report.contexts.device.timezone = null;
+    report.contexts.device.timezone = undefined;
 }
 
-function removeDeviceName(report) {
+function removeDeviceName(report: Sentry.Event) {
   if (report.contexts && report.contexts.device)
-    report.contexts.device.name = null;
+    report.contexts.device.name = undefined;
 }
 
 /**
@@ -352,13 +353,18 @@ function removeDeviceName(report) {
  * since the 'context_line' is rather verbose.
  * @param {*} report - the error event
  */
-function removeSES(report) {
-  const stacktraceFrames = report?.exception?.values[0]?.stacktrace?.frames;
+function removeSES(report: Sentry.Event) {
+  const values = report?.exception?.values;
+  if (!values || values.length === 0) return;
+  const stacktraceFrames = values[0]?.stacktrace?.frames;
   if (stacktraceFrames) {
     const filteredFrames = stacktraceFrames.filter(
       (frame) => frame.filename !== 'app:///ses.cjs',
     );
-    report.exception.values[0].stacktrace.frames = filteredFrames;
+    const stacktrace = values[0]?.stacktrace;
+    if (stacktrace) {
+      stacktrace.frames = filteredFrames;
+    }
   }
 }
 
@@ -380,7 +386,13 @@ function removeSES(report) {
  * @param {{[key: string]: object | boolean}} mask - The mask to apply to the object
  * @returns {object} - The masked object
  */
-export function maskObject(objectToMask, mask = {}) {
+interface MaskRule {
+  [key: string]: boolean | symbol | MaskRule;
+  [key: symbol]: boolean | symbol | MaskRule;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+export function maskObject(objectToMask: Record<string, unknown> | undefined | null, mask: MaskRule = {}): Record<string, unknown> {
   if (!objectToMask) return {};
 
   // Include both string and symbol keys.
@@ -389,7 +401,7 @@ export function maskObject(objectToMask, mask = {}) {
     ? mask[AllProperties]
     : undefined;
 
-  return Object.keys(objectToMask).reduce((maskedObject, key) => {
+  return Object.keys(objectToMask).reduce<Record<string, unknown>>((maskedObject, key) => {
     // Start with the AllProperties mask if available
     let maskKey = allPropertiesMask;
 
@@ -402,13 +414,13 @@ export function maskObject(objectToMask, mask = {}) {
     const shouldIterateSubMask =
       Boolean(maskKey) &&
       typeof maskKey === 'object' &&
-      maskKey !== AllProperties;
+      !((maskKey as unknown) === AllProperties);
     const shouldPrintType = maskKey === undefined || maskKey === false;
 
     if (shouldPrintValue) {
       maskedObject[key] = objectToMask[key];
     } else if (shouldIterateSubMask) {
-      maskedObject[key] = maskObject(objectToMask[key], maskKey);
+      maskedObject[key] = maskObject(objectToMask[key] as Record<string, unknown>, maskKey as MaskRule);
     } else if (shouldPrintType) {
       // For excluded fields, return their type or a placeholder
       maskedObject[key] =
@@ -419,7 +431,7 @@ export function maskObject(objectToMask, mask = {}) {
   }, {});
 }
 
-function rewriteReport(report) {
+function rewriteReport(report: Sentry.Event) {
   try {
     // filter out SES from error stack trace
     removeSES(report);
@@ -438,8 +450,10 @@ function rewriteReport(report) {
     removeDeviceName(report);
 
     const appState = store?.getState();
-    const maskedState = maskObject(appState, sentryStateMask);
-    report.contexts.appState = maskedState;
+    const maskedState = maskObject(appState as unknown as Record<string, unknown>, sentryStateMask as unknown as MaskRule);
+    if (report.contexts) {
+      report.contexts.appState = maskedState;
+    }
   } catch (err) {
     console.error('ENTER ERROR OF REPORT ', err);
     throw err;
@@ -453,7 +467,7 @@ function rewriteReport(report) {
  * @param {*} event - to be logged
  * @returns {(event|null)}
  */
-export function excludeEvents(event) {
+export function excludeEvents(event: Sentry.Event) {
   // This is needed because store starts to initialise before performance observers completes to measure app start time
   if (event?.transaction === TraceName.UIStartup) {
     event.tags = getTraceTags(store.getState());
@@ -480,7 +494,7 @@ export function excludeEvents(event) {
   return event;
 }
 
-function sanitizeUrlsFromErrorMessages(report) {
+function sanitizeUrlsFromErrorMessages(report: Sentry.Event) {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
 
@@ -493,7 +507,7 @@ function sanitizeUrlsFromErrorMessages(report) {
   });
 }
 
-function sanitizeAddressesFromErrorMessages(report) {
+function sanitizeAddressesFromErrorMessages(report: Sentry.Event) {
   rewriteErrorMessages(report, (errorMessage) => {
     const newErrorMessage = errorMessage.replace(
       regex.replaceNetworkErrorSentry,
@@ -519,10 +533,10 @@ function sanitizeAddressesFromErrorMessages(report) {
  * @returns {string} - "metamaskEnvironment-metamaskBuildType" or just "metamaskEnvironment" if the build type is "main".
  */
 export function deriveSentryEnvironment(
-  isDev,
+  isDev: boolean,
   metamaskEnvironment = 'local',
   metamaskBuildType = 'main',
-) {
+): string {
   if (isDev || !metamaskEnvironment) {
     return 'development';
   }
@@ -535,7 +549,7 @@ export function deriveSentryEnvironment(
 }
 
 // Setup sentry remote error reporting
-export function setupSentry() {
+export function setupSentry(): void {
   const dsn = process.env.MM_SENTRY_DSN;
 
   // Disable Sentry for E2E tests or when DSN is not provided
@@ -564,9 +578,9 @@ export function setupSentry() {
       // Set tracesSampleRate to 1.0, as that ensures that every transaction will be sent to Sentry for development builds.
       tracesSampleRate: isDev || isQa ? 1.0 : 0.03,
       profilesSampleRate: 1.0,
-      beforeSend: (report) => rewriteReport(report),
+      beforeSend: (report) => rewriteReport(report) as ErrorEvent,
       beforeBreadcrumb: (breadcrumb) => rewriteBreadcrumb(breadcrumb),
-      beforeSendTransaction: (event) => excludeEvents(event),
+      beforeSendTransaction: (event) => excludeEvents(event) as TransactionEvent | null,
       enabled: metricsOptIn === AGREED,
       // Use tracePropagationTargets from v5 SDK as default
       tracePropagationTargets: ['localhost', /^\/(?!\/)/],
@@ -576,4 +590,4 @@ export function setupSentry() {
 }
 
 // eslint-disable-next-line no-empty-function
-export function deleteSentryData() {}
+export function deleteSentryData(): void {}
