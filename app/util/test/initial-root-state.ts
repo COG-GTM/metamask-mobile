@@ -12,41 +12,132 @@ import { initialNavigationState } from '../../reducers/navigation';
 import { initialOnboardingState } from '../../reducers/onboarding';
 import { initialState as initialPerformanceState } from '../../core/redux/slices/performance';
 import { isTest } from './utils';
+import { initialState as initialNotificationState } from '../../reducers/notification';
+import { initialState as initialSwapsState } from '../../reducers/swaps';
 // A cast is needed here because we use enums in some controllers, and TypeScript doesn't consider
 // the string value of an enum as satisfying an enum type.
 export const backgroundState: EngineState =
   initialBackgroundState as unknown as EngineState;
 
 const initialRootState: RootState = {
-  legalNotices: undefined,
-  collectibles: undefined,
+  legalNotices: {
+    newPrivacyPolicyToastClickedOrClosed: false,
+    newPrivacyPolicyToastShownDate: null,
+  },
+  collectibles: {
+    favorites: {},
+    isNftFetchingProgress: false,
+  },
   engine: { backgroundState },
-  privacy: undefined,
-  bookmarks: undefined,
-  browser: undefined,
-  modals: undefined,
-  settings: undefined,
-  alert: undefined,
-  transaction: undefined,
+  privacy: {
+    approvedHosts: {},
+    revealSRPTimestamps: [],
+  },
+  bookmarks: [],
+  browser: {
+    history: [],
+    whitelist: [],
+    tabs: [],
+    favicons: [],
+    activeTab: null,
+    visitedDappsByHostname: {},
+  },
+  modals: {
+    networkModalVisible: false,
+    shouldNetworkSwitchPopToWallet: true,
+    collectibleContractModalVisible: false,
+    dappTransactionModalVisible: false,
+    signMessageModalVisible: true,
+  },
+  settings: {
+    searchEngine: 'DuckDuckGo',
+    primaryCurrency: 'ETH',
+    lockTime: -1,
+    useBlockieIcon: true,
+    hideZeroBalanceTokens: false,
+    basicFunctionalityEnabled: true,
+  },
+  alert: {
+    isVisible: false,
+    autodismiss: null,
+    content: null,
+    data: null,
+  },
+  transaction: {
+    ensRecipient: undefined,
+    assetType: undefined,
+    selectedAsset: {},
+    transaction: {
+      data: undefined,
+      from: undefined,
+      gas: undefined,
+      gasPrice: undefined,
+      to: undefined,
+      value: undefined,
+      maxFeePerGas: undefined,
+      maxPriorityFeePerGas: undefined,
+    },
+    warningGasPriceHigh: undefined,
+    transactionTo: undefined,
+    transactionToName: undefined,
+    transactionFromName: undefined,
+    transactionValue: undefined,
+    symbol: undefined,
+    paymentRequest: undefined,
+    readableValue: undefined,
+    id: undefined,
+    type: undefined,
+    proposedNonce: undefined,
+    nonce: undefined,
+    securityAlertResponses: {},
+    useMax: false,
+  },
   user: userInitialState,
-  wizard: undefined,
+  wizard: {
+    step: 0,
+  },
   onboarding: initialOnboardingState,
-  notification: undefined,
-  swaps: undefined,
+  notification: initialNotificationState,
+  swaps: initialSwapsState,
   fiatOrders: initialFiatOrdersState,
-  infuraAvailability: undefined,
+  infuraAvailability: {
+    isBlocked: false,
+  },
   navigation: initialNavigationState,
-  networkOnboarded: undefined,
+  networkOnboarded: {
+    networkOnboardedState: {},
+    networkState: {
+      showNetworkOnboarding: false,
+      nativeToken: '',
+      networkType: '',
+      networkUrl: '',
+    },
+    switchedNetwork: {
+      networkUrl: '',
+      networkStatus: false,
+    },
+  },
   security: initialSecurityState,
-  signatureRequest: undefined,
+  signatureRequest: {
+    securityAlertResponse: undefined,
+  },
   sdk: {
     connections: {},
     approvedHosts: {},
     dappConnections: {},
   },
-  experimentalSettings: undefined,
-  rpcEvents: undefined,
-  accounts: undefined,
+  experimentalSettings: {
+    securityAlertsEnabled: true,
+  },
+  rpcEvents: {
+    signingEvent: {
+      eventStage: 'idle',
+      rpcName: '',
+    },
+  },
+  accounts: {
+    reloadAccounts: false,
+  },
   inpageProvider: initialInpageProvider,
   confirmationMetrics,
   originThrottling,

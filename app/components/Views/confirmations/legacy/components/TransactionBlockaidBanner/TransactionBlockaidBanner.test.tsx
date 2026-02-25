@@ -9,6 +9,7 @@ import { TESTID_ACCORDIONHEADER } from '../../../../../../component-library/comp
 import { ResultType, Reason } from '../BlockaidBanner/BlockaidBanner.types';
 import TransactionBlockaidBanner from './TransactionBlockaidBanner';
 import { RootState } from '../../../../../../reducers';
+import { TransactionState } from '../../../../../../reducers/transaction';
 
 jest.mock('../../../../../../core/Engine', () => ({
   context: {
@@ -35,14 +36,11 @@ const mockState: DeepPartial<RootState> = {
   transaction: {
     id: 123,
     securityAlertResponses: {
-      123: {
+      '123': {
         result_type: ResultType.Warning,
         reason: Reason.approvalFarming,
-        block: 123,
-        req: {},
-        chainId: '0x1',
       },
-    },
+    } as TransactionState['securityAlertResponses'],
   },
 };
 

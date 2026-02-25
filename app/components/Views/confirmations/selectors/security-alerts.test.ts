@@ -10,7 +10,7 @@ describe('Security Alert Selectors', () => {
           signatureRequest: {
             securityAlertResponse,
           },
-        } as RootState),
+        } as unknown as RootState),
       ).toEqual({ securityAlertResponse });
     });
 

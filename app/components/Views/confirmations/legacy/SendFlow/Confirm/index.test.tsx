@@ -14,6 +14,7 @@ import { TESTID_ACCORDION_CONTENT } from '../../../../../../component-library/co
 import { FALSE_POSITIVE_REPOST_LINE_TEST_ID } from '../../components/BlockaidBanner/BlockaidBanner.constants';
 import { createMockAccountsControllerState } from '../../../../../../util/test/accountsControllerTestUtils';
 import { RootState } from '../../../../../../reducers';
+import { TransactionState } from '../../../../../../reducers/transaction';
 import { RpcEndpointType } from '@metamask/network-controller';
 import { ConfirmViewSelectorsIDs } from '../../../../../../../e2e/selectors/SendFlow/ConfirmView.selectors';
 import { updateConfirmationMetric } from '../../../../../../core/redux/slices/confirmationMetrics';
@@ -82,13 +83,11 @@ const mockInitialState: DeepPartial<RootState> = {
   },
   transaction: {
     securityAlertResponses: {
-      1: {
+      '1': {
         result_type: 'Malicious',
         reason: 'blur_farming',
-        providerRequestsCount: {},
-        chainId: '0x1',
       },
-    },
+    } as TransactionState['securityAlertResponses'],
     selectedAsset: {},
     chainId: '0x1',
     transaction: {

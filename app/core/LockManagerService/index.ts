@@ -41,7 +41,7 @@ export class LockManagerService {
   #handleAppStateChange = async (nextAppState: AppStateStatus) => {
     // Don't auto-lock.
     try {
-      const lockTime = ReduxService.store.getState().settings.lockTime;
+      const lockTime = ReduxService.store.getState().settings.lockTime ?? -1;
       if (
         lockTime === -1 || // Lock timer isn't set.
         nextAppState === 'inactive' || // Ignore inactive state.

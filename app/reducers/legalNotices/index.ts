@@ -30,7 +30,7 @@ export const shouldShowNewPrivacyToastSelector = (
 
   if (newPrivacyPolicyToastClickedOrClosed) return false;
 
-  const shownDate = new Date(newPrivacyPolicyToastShownDate);
+  const shownDate = new Date(newPrivacyPolicyToastShownDate as number);
 
   const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
   const isRecent =
@@ -43,19 +43,20 @@ export const shouldShowNewPrivacyToastSelector = (
   );
 };
 
+export interface LegalNoticesState {
+  newPrivacyPolicyToastClickedOrClosed: boolean;
+  newPrivacyPolicyToastShownDate: number | null;
+}
+
 export interface LegalNoticesAction extends Action {
   newPrivacyPolicyToastShownDate: boolean;
   payload: number;
 }
 
 const legalNoticesReducer = (
-  state = initialState,
-  action: LegalNoticesAction = {
-    type: '',
-    newPrivacyPolicyToastShownDate: false,
-    payload: 0,
-  },
-) => {
+  state: LegalNoticesState = initialState,
+  action: LegalNoticesAction,
+): LegalNoticesState => {
   switch (action.type) {
     case ACTIONS.STORE_PRIVACY_POLICY_SHOWN_DATE: {
       if (state.newPrivacyPolicyToastShownDate !== null) {

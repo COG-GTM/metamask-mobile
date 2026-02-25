@@ -193,8 +193,7 @@ const renderWithoutDetectedTokens = (Component: React.ComponentType) =>
             ...mockInitialState.engine.backgroundState,
             TokensController: {
               ...mockInitialState.engine.backgroundState.TokensController,
-              // @ts-expect-error we are testing the invalid case
-              detectedTokens: 'invalid-array',
+              detectedTokens: 'invalid-array' as unknown as typeof mockInitialState.engine.backgroundState.TokensController.detectedTokens,
             },
           },
         },

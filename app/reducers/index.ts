@@ -54,69 +54,31 @@ export type StateFromReducer<reducer> = reducer extends Reducer<
 // to this type. Once that is complete, we can automatically generate this type
 // using the `StateFromReducersMapObject` type from redux.
 export interface RootState {
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  legalNotices: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  collectibles: any;
+  legalNotices: StateFromReducer<typeof legalNoticesReducer>;
+  collectibles: StateFromReducer<typeof collectiblesReducer>;
   engine: { backgroundState: EngineState };
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  privacy: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bookmarks: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  browser: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modals: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  settings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  alert: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  transaction: any;
+  privacy: StateFromReducer<typeof privacyReducer>;
+  bookmarks: StateFromReducer<typeof bookmarksReducer>;
+  browser: StateFromReducer<typeof browserReducer>;
+  modals: StateFromReducer<typeof modalsReducer>;
+  settings: StateFromReducer<typeof settingsReducer>;
+  alert: StateFromReducer<typeof alertReducer>;
+  transaction: StateFromReducer<typeof transactionReducer>;
   user: UserState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wizard: any;
+  wizard: StateFromReducer<typeof wizardReducer>;
   onboarding: OnboardingState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  notification: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  swaps: any;
+  notification: StateFromReducer<typeof notificationReducer>;
+  swaps: StateFromReducer<typeof swapsReducer>;
   fiatOrders: StateFromReducer<typeof fiatOrders>;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  infuraAvailability: any;
+  infuraAvailability: StateFromReducer<typeof infuraAvailabilityReducer>;
   navigation: NavigationState;
-  // The networkOnboarded reducer is TypeScript but not yet a valid reducer
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  networkOnboarded: any;
+  networkOnboarded: StateFromReducer<typeof networkOnboardReducer>;
   security: SecurityState;
   sdk: StateFromReducer<typeof sdkReducer>;
-  // The experimentalSettings reducer is TypeScript but not yet a valid reducer
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  experimentalSettings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  signatureRequest: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rpcEvents: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  accounts: any;
+  experimentalSettings: StateFromReducer<typeof experimentalSettingsReducer>;
+  signatureRequest: StateFromReducer<typeof signatureRequestReducer>;
+  rpcEvents: StateFromReducer<typeof rpcEventReducer>;
+  accounts: StateFromReducer<typeof accountsReducer>;
   inpageProvider: StateFromReducer<typeof inpageProviderReducer>;
   confirmationMetrics: StateFromReducer<typeof confirmationMetricsReducer>;
   originThrottling: StateFromReducer<typeof originThrottlingReducer>;

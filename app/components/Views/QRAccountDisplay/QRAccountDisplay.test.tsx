@@ -40,7 +40,6 @@ describe('QRAccountDisplay', () => {
     const { toJSON } = renderScreen(
       () => <TestWrapper accountAddress={ACCOUNT} />,
       { name: 'QRAccountDisplay' },
-      // @ts-expect-error initialBackgroundState throws error
       { state: initialState },
     );
     expect(toJSON()).toMatchSnapshot();
@@ -50,7 +49,6 @@ describe('QRAccountDisplay', () => {
     const { getByTestId } = renderScreen(
       () => <TestWrapper accountAddress={ACCOUNT} />,
       { name: 'QRAccountDisplay' },
-      // @ts-expect-error initialBackgroundState throws error
       { state: initialState },
     );
 
@@ -81,7 +79,6 @@ describe('QRAccountDisplay', () => {
     const { getByText, queryByText } = renderScreen(
       () => <TestWrapper accountAddress={MOCK_SOLANA_ACCOUNT.address} />,
       { name: 'QRAccountDisplay' },
-      // @ts-expect-error initialBackgroundState throws error
       { state: stateWithSolanaAccount },
     );
 

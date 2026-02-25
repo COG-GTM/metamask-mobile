@@ -308,8 +308,8 @@ function setupGlobalState({
       browser: activeTab
         ? {
           activeTab,
-        }
-        : {},
+        } as RootState['browser']
+        : {} as RootState['browser'],
       engine: {
         backgroundState: {
           ...backgroundState,

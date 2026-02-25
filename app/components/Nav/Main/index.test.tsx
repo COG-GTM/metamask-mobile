@@ -76,8 +76,7 @@ function renderUseSwapConfirmedEventHook({
         engine: {
           backgroundState: {
             TransactionController: {
-              //@ts-expect-error - swaps transactions is something we do not have implemented on TransacitonController yet
-              swapsTransactions,
+                swapsTransactions,
             },
           },
         },

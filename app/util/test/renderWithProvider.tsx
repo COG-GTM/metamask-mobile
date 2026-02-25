@@ -29,8 +29,15 @@ export type DeepPartial<T> = T extends (...args: unknown[]) => unknown
     { [K in keyof T]?: DeepPartial<T[K]> }
   : // Otherwise, return T or undefined.
     T | undefined;
+
+// Looser type for test state that allows partial state objects with arbitrary properties
+// This is needed because test mock state objects may include extra properties or
+// partial slices that don't match the strict DeepPartial<RootState> type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TestState = DeepPartial<RootState> | Record<string, any>;
+
 interface ProviderValues {
-  state?: DeepPartial<RootState>;
+  state?: TestState;
   theme?: Theme;
 }
 

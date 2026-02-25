@@ -19,7 +19,7 @@ const TransactionBlockaidBanner = (
   }
 
   return (
-    <BlockaidBanner securityAlertResponse={securityAlertResponse} {...rest} />
+    <BlockaidBanner securityAlertResponse={securityAlertResponse as import('../BlockaidBanner/BlockaidBanner.types').SecurityAlertResponse} {...rest} />
   );
 };
 

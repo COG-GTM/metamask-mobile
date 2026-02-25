@@ -96,7 +96,7 @@ const ApproveTransactionHeader = ({
           name: networkName,
           imageSource: networkImage,
         }}
-        useBlockieIcon={useBlockieIcon}
+        useBlockieIcon={useBlockieIcon ?? true}
       />
     </View>
   );

@@ -8,6 +8,7 @@ import reducer, {
   swapsSmartTxFlagEnabled,
   swapsTokensObjectSelector,
   selectSwapsChainFeatureFlags,
+  SwapsAction,
 } from './index';
 import { NetworkClientType } from '@metamask/network-controller';
 // eslint-disable-next-line import/no-namespace
@@ -15,7 +16,7 @@ import * as tokensControllerSelectors from '../../selectors/tokensController';
 
 jest.mock('../../selectors/tokensController');
 
-const emptyAction = { type: null };
+const emptyAction = { type: 'NOOP' } as unknown as SwapsAction;
 
 const DEFAULT_FEATURE_FLAGS = {
   ethereum: {
@@ -76,7 +77,7 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(true);
+      expect((liveState['0x1'] as { isLive: boolean }).isLive).toBe(true);
     });
     it('should set isLive to false for iOS when flag is false', () => {
       Device.isIos = jest.fn().mockReturnValue(true);
@@ -108,7 +109,7 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(false);
+      expect((liveState['0x1'] as { isLive: boolean }).isLive).toBe(false);
     });
     it('should set isLive to true for Android when flag is true', () => {
       Device.isIos = jest.fn().mockReturnValue(false);
@@ -140,7 +141,7 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(true);
+      expect((liveState['0x1'] as { isLive: boolean }).isLive).toBe(true);
     });
     it('should set isLive to false for Android when flag is false', () => {
       Device.isIos = jest.fn().mockReturnValue(false);
@@ -172,7 +173,7 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(false);
+      expect((liveState['0x1'] as { isLive: boolean }).isLive).toBe(false);
     });
   });
 
@@ -212,8 +213,8 @@ describe('swaps reducer', () => {
         swaps: cloneDeep(initialState),
       };
 
+      // @ts-ignore - test mock with partial state
       rootState.swaps = {
-        // @ts-ignore
         featureFlags: {
           smart_transactions: {
             mobile_active: true,
@@ -226,8 +227,8 @@ describe('swaps reducer', () => {
             mobileActiveAndroid: true,
           },
         },
+        // @ts-ignore - test mock with partial chain state
         '0x1': {
-          // @ts-ignore
           featureFlags: {
             smartTransactions: {
               expectedDeadline: 45,
@@ -267,8 +268,8 @@ describe('swaps reducer', () => {
         swaps: cloneDeep(initialState),
       };
 
+      // @ts-ignore - test mock with partial state
       rootState.swaps = {
-        // @ts-ignore
         featureFlags: {
           smart_transactions: {
             mobile_active: false,
@@ -281,8 +282,8 @@ describe('swaps reducer', () => {
             mobileActiveAndroid: false,
           },
         },
+        // @ts-ignore - test mock with partial chain state
         '0x1': {
-          // @ts-ignore
           featureFlags: {
             smartTransactions: {
               expectedDeadline: 45,

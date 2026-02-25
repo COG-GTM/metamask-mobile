@@ -115,7 +115,9 @@ export interface RPCMethodsMiddleParameters {
   isWalletConnect: boolean;
   // For MM SDK
   isMMSDK: boolean;
-  injectHomePageScripts: (bookmarks?: []) => void;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  injectHomePageScripts: (bookmarks?: any) => void;
   analytics: { [key: string]: string | boolean };
 }
 

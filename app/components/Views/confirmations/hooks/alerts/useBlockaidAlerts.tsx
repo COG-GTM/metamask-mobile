@@ -86,7 +86,7 @@ export default function useBlockaidAlerts(): Alert[] {
         key: AlertKeys.Blockaid,
         content: (
           <BlockaidAlertContent
-            alertDetails={features}
+            alertDetails={features as string[]}
             securityAlertResponse={securityAlertResponse as SecurityAlertResponse}
             onContactUsClicked={trackBlockaidAlertLinkClickedEvent}
           />
