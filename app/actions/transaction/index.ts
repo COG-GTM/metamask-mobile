@@ -1,4 +1,5 @@
 import TransactionTypes from '../../core/TransactionTypes';
+import { SelectedAsset, SecurityAlertResponse } from '../../reducers/transaction';
 
 const {
   ASSET: { ETH, ERC20, ERC721 },
@@ -9,7 +10,7 @@ const {
  */
 export function resetTransaction() {
   return {
-    type: 'RESET_TRANSACTION',
+    type: 'RESET_TRANSACTION' as const,
   };
 }
 
@@ -18,9 +19,9 @@ export function resetTransaction() {
  *
  * @param {object} selectedAsset - Asset to start the transaction with
  */
-export function newAssetTransaction(selectedAsset) {
+export function newAssetTransaction(selectedAsset: SelectedAsset) {
   return {
-    type: 'NEW_ASSET_TRANSACTION',
+    type: 'NEW_ASSET_TRANSACTION' as const,
     selectedAsset,
     assetType: selectedAsset.isETH
       ? ETH
@@ -40,14 +41,14 @@ export function newAssetTransaction(selectedAsset) {
  * @param {string} transactionFromName - Resolved address book name for from address
  */
 export function setRecipient(
-  from,
-  to,
-  ensRecipient,
-  transactionToName,
-  transactionFromName,
+  from: string,
+  to: string,
+  ensRecipient: string,
+  transactionToName: string,
+  transactionFromName: string,
 ) {
   return {
-    type: 'SET_RECIPIENT',
+    type: 'SET_RECIPIENT' as const,
     from,
     to,
     ensRecipient,
@@ -61,9 +62,9 @@ export function setRecipient(
  *
  * @param {object} selectedAsset - Asset to start the transaction with
  */
-export function setSelectedAsset(selectedAsset) {
+export function setSelectedAsset(selectedAsset: SelectedAsset) {
   return {
-    type: 'SET_SELECTED_ASSET',
+    type: 'SET_SELECTED_ASSET' as const,
     selectedAsset,
     assetType: selectedAsset.isETH
       ? ETH
@@ -78,19 +79,19 @@ export function setSelectedAsset(selectedAsset) {
  *
  * @param {object} transaction - Transaction object with from, to, data, gas, gasPrice, value
  */
-export function prepareTransaction(transaction) {
+export function prepareTransaction(transaction: Record<string, unknown>) {
   return {
-    type: 'PREPARE_TRANSACTION',
+    type: 'PREPARE_TRANSACTION' as const,
     transaction,
   };
 }
 
 export function setTransactionSecurityAlertResponse(
-  transactionId,
-  securityAlertResponse,
+  transactionId: string,
+  securityAlertResponse: SecurityAlertResponse,
 ) {
   return {
-    type: 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE',
+    type: 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE' as const,
     transactionId,
     securityAlertResponse,
   };
@@ -101,9 +102,9 @@ export function setTransactionSecurityAlertResponse(
  *
  * @param {object} transaction - New transaction object
  */
-export function setTransactionObject(transaction) {
+export function setTransactionObject(transaction: Record<string, unknown>) {
   return {
-    type: 'SET_TRANSACTION_OBJECT',
+    type: 'SET_TRANSACTION_OBJECT' as const,
     transaction,
   };
 }
@@ -113,9 +114,9 @@ export function setTransactionObject(transaction) {
  *
  * @param {object} transactionId - Id of the current transaction.
  */
-export function setTransactionId(transactionId) {
+export function setTransactionId(transactionId: string) {
   return {
-    type: 'SET_TRANSACTION_ID',
+    type: 'SET_TRANSACTION_ID' as const,
     transactionId,
   };
 }
@@ -125,9 +126,9 @@ export function setTransactionId(transactionId) {
  *
  * @param {object} asset - Asset to start the transaction with
  */
-export function setTokensTransaction(asset) {
+export function setTokensTransaction(asset: SelectedAsset) {
   return {
-    type: 'SET_TOKENS_TRANSACTION',
+    type: 'SET_TOKENS_TRANSACTION' as const,
     asset,
   };
 }
@@ -137,37 +138,37 @@ export function setTokensTransaction(asset) {
  *
  * @param {object} transaction - Transaction additional object
  */
-export function setEtherTransaction(transaction) {
+export function setEtherTransaction(transaction: Record<string, unknown>) {
   return {
-    type: 'SET_ETHER_TRANSACTION',
+    type: 'SET_ETHER_TRANSACTION' as const,
     transaction,
   };
 }
 
-export function setNonce(nonce) {
+export function setNonce(nonce: string) {
   return {
-    type: 'SET_NONCE',
+    type: 'SET_NONCE' as const,
     nonce,
   };
 }
 
-export function setProposedNonce(proposedNonce) {
+export function setProposedNonce(proposedNonce: string) {
   return {
-    type: 'SET_PROPOSED_NONCE',
+    type: 'SET_PROPOSED_NONCE' as const,
     proposedNonce,
   };
 }
 
-export function setMaxValueMode(maxValueMode) {
+export function setMaxValueMode(maxValueMode: boolean) {
   return {
-    type: 'SET_MAX_VALUE_MODE',
+    type: 'SET_MAX_VALUE_MODE' as const,
     maxValueMode,
   };
 }
 
-export function setTransactionValue(value) {
+export function setTransactionValue(value: string) {
   return {
-    type: 'SET_TRANSACTION_VALUE',
+    type: 'SET_TRANSACTION_VALUE' as const,
     value,
   };
 }

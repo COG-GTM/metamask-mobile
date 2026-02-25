@@ -1,7 +1,7 @@
 /**
  * This file contains all the actions related to the in app (old/v1) notification system.
  */
-import { ACTIONS } from '../../reducers/notification';
+import { ACTIONS, NotificationItem } from '../../reducers/notification';
 
 export function hideCurrentNotification() {
   return {
@@ -9,7 +9,7 @@ export function hideCurrentNotification() {
   };
 }
 
-export function hideNotificationById(id) {
+export function hideNotificationById(id: string | number) {
   return {
     type: ACTIONS.HIDE_NOTIFICATION_BY_ID,
     id,
@@ -20,6 +20,10 @@ export function modifyOrShowTransactionNotificationById({
   autodismiss,
   transaction,
   status,
+}: {
+  autodismiss: number | null;
+  transaction: Record<string, unknown>;
+  status: string;
 }) {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION,
@@ -34,6 +38,11 @@ export function modifyOrShowSimpleNotificationById({
   title,
   description,
   status,
+}: {
+  autodismiss: number | null;
+  title: string;
+  description: string;
+  status: string;
 }) {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION,
@@ -44,7 +53,7 @@ export function modifyOrShowSimpleNotificationById({
   };
 }
 
-export function replaceNotificationById(notification) {
+export function replaceNotificationById(notification: NotificationItem) {
   return {
     type: ACTIONS.REPLACE_NOTIFICATION_BY_ID,
     notification,
@@ -52,7 +61,7 @@ export function replaceNotificationById(notification) {
   };
 }
 
-export function removeNotificationById(id) {
+export function removeNotificationById(id: string | number) {
   return {
     type: ACTIONS.REMOVE_NOTIFICATION_BY_ID,
     id,
@@ -71,6 +80,12 @@ export function showSimpleNotification({
   description,
   status,
   id,
+}: {
+  autodismiss: number | null;
+  title: string;
+  description: string;
+  status: string;
+  id?: string | number;
 }) {
   return {
     id,
@@ -86,6 +101,10 @@ export function showTransactionNotification({
   autodismiss,
   transaction,
   status,
+}: {
+  autodismiss: number | null;
+  transaction: Record<string, unknown>;
+  status: string;
 }) {
   return {
     type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
