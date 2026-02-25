@@ -7,11 +7,11 @@ const ClipboardManager = {
   async getString() {
     return await Clipboard.getString();
   },
-  async setString(string) {
+  async setString(string: string) {
     await Clipboard.setString(string);
   },
-  expireTime: null,
-  async setStringExpire(string) {
+  expireTime: null as ReturnType<typeof setTimeout> | null,
+  async setStringExpire(string: string) {
     if (Device.isIos()) {
       await Clipboard.setStringExpire(string);
     } else {

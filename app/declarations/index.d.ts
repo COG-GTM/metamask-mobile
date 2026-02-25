@@ -25,6 +25,14 @@ declare module 'unicode-confusables' {
   export function confusables(str: string): ConfusableResult[];
 }
 
+declare module 'readable-stream' {
+  import { Duplex as NodeDuplex } from 'stream';
+  export class Duplex extends NodeDuplex {}
+  export class Readable extends NodeDuplex {}
+  export class Writable extends NodeDuplex {}
+  export class Transform extends NodeDuplex {}
+}
+
 declare module 'react-native-fade-in-image';
 
 declare module 'react-native-fast-crypto';
