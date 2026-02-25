@@ -1,8 +1,26 @@
 import { createSelector } from 'reselect';
 import { NotificationTypes } from '../../util/notifications';
+import { Action } from 'redux';
+import { RootState } from '..';
+
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-export const initialState = {
+export interface NotificationItem {
+  id: string | number;
+  isVisible: boolean;
+  autodismiss: number | null;
+  type: string;
+  status?: string;
+  title?: string;
+  description?: string;
+  transaction?: Record<string, unknown>;
+}
+
+export interface NotificationState {
+  notifications: NotificationItem[];
+}
+
+export const initialState: NotificationState = {
   notifications: [],
 };
 
@@ -19,23 +37,83 @@ export const ACTIONS = {
   SHOW_SIMPLE_NOTIFICATION: 'SHOW_SIMPLE_NOTIFICATION',
   SHOW_TRANSACTION_NOTIFICATION: 'SHOW_TRANSACTION_NOTIFICATION',
   UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
-};
+} as const;
 
-const enqueue = (notifications, notification) => [
+const enqueue = (notifications: NotificationItem[], notification: NotificationItem): NotificationItem[] => [
   ...notifications,
   notification,
 ];
-const dequeue = (notifications) => notifications.slice(1);
+const dequeue = (notifications: NotificationItem[]): NotificationItem[] => notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
-  (
-    /** @type {import('..').RootState} */
-    state,
-  ) => state?.notifications,
-  (notifications) => notifications[0] || {},
+  (state: RootState) => state?.notification?.notifications,
+  (notifications: NotificationItem[]) => notifications[0] || {},
 );
 
-const notificationReducer = (state = initialState, action) => {
+interface HideCurrentNotificationAction extends Action<typeof ACTIONS.HIDE_CURRENT_NOTIFICATION> {}
+
+interface HideNotificationByIdAction extends Action<typeof ACTIONS.HIDE_NOTIFICATION_BY_ID> {
+  id: string | number;
+}
+
+interface ModifyOrShowTransactionNotificationAction extends Action<typeof ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION> {
+  id: string | number;
+  autodismiss: number | null;
+  transaction: Record<string, unknown> & { id: string | number };
+  status: string;
+}
+
+interface ModifyOrShowSimpleNotificationAction extends Action<typeof ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION> {
+  id: string | number;
+  autodismiss: number | null;
+  title: string;
+  description: string;
+  status: string;
+}
+
+interface ReplaceNotificationByIdAction extends Action<typeof ACTIONS.REPLACE_NOTIFICATION_BY_ID> {
+  id: string | number;
+  notification: NotificationItem;
+}
+
+interface RemoveNotificationByIdAction extends Action<typeof ACTIONS.REMOVE_NOTIFICATION_BY_ID> {
+  id: string | number;
+}
+
+interface RemoveCurrentNotificationAction extends Action<typeof ACTIONS.REMOVE_CURRENT_NOTIFICATION> {}
+
+interface ShowSimpleNotificationAction extends Action<typeof ACTIONS.SHOW_SIMPLE_NOTIFICATION> {
+  id: string | number;
+  autodismiss: number | null;
+  title: string;
+  description: string;
+  status: string;
+}
+
+interface ShowTransactionNotificationAction extends Action<typeof ACTIONS.SHOW_TRANSACTION_NOTIFICATION> {
+  autodismiss: number | null;
+  transaction: Record<string, unknown> & { id: string | number };
+  status: string;
+}
+
+interface RemoveNotVisibleNotificationsAction extends Action<typeof ACTIONS.REMOVE_NOT_VISIBLE_NOTIFICATIONS> {}
+
+type NotificationAction =
+  | HideCurrentNotificationAction
+  | HideNotificationByIdAction
+  | ModifyOrShowTransactionNotificationAction
+  | ModifyOrShowSimpleNotificationAction
+  | ReplaceNotificationByIdAction
+  | RemoveNotificationByIdAction
+  | RemoveCurrentNotificationAction
+  | ShowSimpleNotificationAction
+  | ShowTransactionNotificationAction
+  | RemoveNotVisibleNotificationsAction;
+
+const notificationReducer = (
+  state: NotificationState = initialState,
+  action: NotificationAction = { type: ACTIONS.REMOVE_NOT_VISIBLE_NOTIFICATIONS },
+): NotificationState => {
   const { notifications } = state;
   switch (action.type) {
     // make current notification isVisible props false
