@@ -11,7 +11,7 @@ exports[`captureSentryFeedback maskObject masks initial root state fixture 1`] =
     "data": null,
     "isVisible": false,
   },
-  "bookmarks": {},
+  "bookmarks": [],
   "browser": {
     "activeTab": null,
     "favicons": [],
@@ -223,7 +223,10 @@ exports[`captureSentryFeedback maskObject masks initial root state fixture 1`] =
   "onboarding": {
     "events": [],
   },
-  "privacy": {},
+  "privacy": {
+    "approvedHosts": {},
+    "revealSRPTimestamps": [],
+  },
   "rpcEvents": {
     "signingEvent": {
       "eventStage": "idle",
