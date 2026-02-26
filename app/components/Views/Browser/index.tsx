@@ -43,7 +43,7 @@ import {
 import { useStyles } from '../../hooks/useStyles';
 import styleSheet from './styles';
 import Routes from '../../../constants/navigation/Routes';
-import { Dispatch } from 'redux';
+import { AnyAction, Dispatch } from 'redux';
 import { RootState } from '../../../reducers';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
@@ -52,6 +52,9 @@ import { useFocusEffect } from '@react-navigation/native';
 ///: END:ONLY_INCLUDE_IF
 
 const MAX_BROWSER_TABS = 5;
+
+const createNewTabAction =
+  createNewTab as unknown as (url: string, linkType?: string) => AnyAction;
 
 /**
  * Tab object stored in the browser Redux state.
@@ -70,7 +73,7 @@ interface BrowserTabEntry {
 interface BrowserRouteParams {
   url?: string;
   newTabUrl?: string;
-  timestamp?: number;
+  timestamp?: number | string;
   existingTabId?: number;
   showTabs?: boolean;
   linkType?: string;
@@ -126,6 +129,20 @@ interface BrowserProps {
   route: BrowserRoute;
 }
 
+type ConnectedBrowserTabProps = {
+  id: number;
+  initialUrl: string;
+  linkType?: string;
+  updateTabInfo: (tabID: number, info: TabUpdateData) => void;
+  showTabs: () => void;
+  newTab: (url?: string) => void;
+  isInTabsView: boolean;
+  homePageUrl: string;
+};
+
+const ConnectedBrowserTab =
+  BrowserTab as unknown as React.ComponentType<ConnectedBrowserTabProps>;
+
 /**
  * Component that wraps all the browser
  * individual tabs and the tabs view
@@ -180,10 +197,11 @@ export const Browser = (props: BrowserProps) => {
   // TODO remove after we release Solana dapp connectivity
   useFocusEffect(
     useCallback(() => {
-      if (isSolanaAccount(currentSelectedAccount)) {
+      if (currentSelectedAccount && isSolanaAccount(currentSelectedAccount)) {
         toastRef?.current?.showToast({
           variant: ToastVariants.Network,
           networkImageSource: require('../../../images/solana-logo.png'),
+          hasNoTimeout: false,
           labelOptions: [
             {
               label: `${strings(
@@ -283,8 +301,8 @@ export const Browser = (props: BrowserProps) => {
   }, [tabs, activeTabId, updateTab]);
 
   useEffect(() => {
-    const checkIfActiveAccountChanged = () => {
-      const hostname = new URL(browserUrl).hostname;
+    const checkIfActiveAccountChanged = (url: string) => {
+      const hostname = new URL(url).hostname;
       const permittedAccounts = getPermittedAccounts(hostname);
       const activeAccountAddress = permittedAccounts?.[0];
 
@@ -297,6 +315,7 @@ export const Browser = (props: BrowserProps) => {
         // Show active account toast
         toastRef?.current?.showToast({
           variant: ToastVariants.Account,
+          hasNoTimeout: false,
           labelOptions: [
             {
               label: `${accountName} `,
@@ -314,7 +333,7 @@ export const Browser = (props: BrowserProps) => {
     if (accounts.length && browserUrl) {
       const hostname = new URL(browserUrl).hostname;
       if (prevSiteHostname.current !== hostname || !hasAccounts.current) {
-        checkIfActiveAccountChanged();
+        checkIfActiveAccountChanged(browserUrl);
       }
       hasAccounts.current = true;
       prevSiteHostname.current = hostname;
@@ -394,8 +413,8 @@ export const Browser = (props: BrowserProps) => {
         captureScreen({
           format: 'jpg',
           quality: 0.2,
-          THUMB_WIDTH,
-          THUMB_HEIGHT,
+          width: THUMB_WIDTH,
+          height: THUMB_HEIGHT,
         }).then(
           (uri) => {
             updateTab(tabID, {
@@ -413,20 +432,24 @@ export const Browser = (props: BrowserProps) => {
     [updateTab],
   );
 
-  const showTabs = useCallback(async () => {
-    try {
-      const activeTab = tabs.find((tab) => tab.id === activeTabId);
-      if (activeTab) {
-        await takeScreenshot(activeTab.url, activeTab.id);
+  const showTabs = useCallback(() => {
+    const showTabsAsync = async () => {
+      try {
+        const activeTab = tabs.find((tab) => tab.id === activeTabId);
+        if (activeTab) {
+          await takeScreenshot(activeTab.url, activeTab.id);
+        }
+      } catch (e) {
+        Logger.error(e as Error);
       }
-    } catch (e) {
-      Logger.error(e as Error);
-    }
 
-    navigation.setParams({
-      ...route.params,
-      showTabs: true,
-    });
+      navigation.setParams({
+        ...route.params,
+        showTabs: true,
+      });
+    };
+
+    void showTabsAsync();
   }, [tabs, activeTabId, route.params, navigation, takeScreenshot]);
 
   const closeAllTabs = () => {
@@ -501,15 +524,15 @@ export const Browser = (props: BrowserProps) => {
       tabs
         .filter((tab) => !tab.isArchived)
         .map((tab) => (
-          <BrowserTab
+          <ConnectedBrowserTab
             id={tab.id}
             key={`tab_${tab.id}`}
             initialUrl={tab.url}
             linkType={tab.linkType}
             updateTabInfo={updateTabInfo}
             showTabs={showTabs}
-            newTab={newTab}
-            isInTabsView={route.params?.showTabs}
+            newTab={(url?: string) => newTab(url)}
+            isInTabsView={route.params?.showTabs ?? false}
             homePageUrl={homePageUrl()}
           />
         )),
@@ -541,7 +564,7 @@ const mapStateToProps = (state: RootState) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   createNewTab: (url: string, linkType?: string) =>
-    dispatch(createNewTab(url, linkType)),
+    dispatch(createNewTabAction(url, linkType)),
   closeAllTabs: () => dispatch(closeAllTabs()),
   closeTab: (id: number) => dispatch(closeTab(id)),
   setActiveTab: (id: number) => dispatch(setActiveTab(id)),
