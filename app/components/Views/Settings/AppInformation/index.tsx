@@ -88,15 +88,18 @@ const createStyles = (colors: Colors) =>
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const foxImage = require('../../../../images/branding/fox.png'); // eslint-disable-line import/no-commonjs
 
+interface AppInformationNavigation {
+  navigate: (route: string, params?: Record<string, unknown>) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setOptions: (options: Record<string, any>) => void;
+}
+
 interface AppInformationProps {
   /**
    * navigation object required to push new views
+   * Provided by React Navigation when used as a screen component
    */
-  navigation: {
-    navigate: (route: string, params?: Record<string, unknown>) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setOptions: (options: Record<string, any>) => void;
-  };
+  navigation?: AppInformationNavigation;
 }
 
 interface AppInformationState {
@@ -120,6 +123,7 @@ export default class AppInformation extends PureComponent<
 
   updateNavBar = () => {
     const { navigation } = this.props;
+    if (!navigation) return;
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -148,7 +152,7 @@ export default class AppInformation extends PureComponent<
 
   goTo = (url: string, title: string) => {
     InteractionManager.runAfterInteractions(() => {
-      this.props.navigation.navigate('Webview', {
+      this.props.navigation?.navigate('Webview', {
         screen: 'SimpleWebview',
         params: {
           url,
