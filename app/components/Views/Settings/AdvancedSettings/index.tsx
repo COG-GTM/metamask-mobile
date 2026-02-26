@@ -185,8 +185,6 @@ class AdvancedSettings extends PureComponent<
   AdvancedSettingsProps,
   AdvancedSettingsState
 > {
-  declare context: Theme;
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scrollView = React.createRef<any>();
 
@@ -198,7 +196,8 @@ class AdvancedSettings extends PureComponent<
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     return { styles, colors };
   };
@@ -298,7 +297,7 @@ class AdvancedSettings extends PureComponent<
     } = this.props;
     const { resetModalVisible } = this.state;
     const { styles, colors } = this.getStyles();
-    const theme = this.context || mockTheme;
+    const theme = (this.context as unknown as Theme) || mockTheme;
 
     return (
       <SafeAreaView style={baseStyles.flexGrow}>
