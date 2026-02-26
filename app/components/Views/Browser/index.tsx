@@ -30,7 +30,7 @@ import Logger from '../../../util/Logger';
 import getAccountNameWithENS from '../../../util/accounts';
 import Tabs from '../../UI/Tabs';
 import BrowserTab from '../BrowserTab/BrowserTab';
-import URL from 'url-parse';
+import UrlParse from 'url-parse';
 import { useMetrics } from '../../hooks/useMetrics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appendURLParams } from '../../../util/browser';
@@ -129,7 +129,7 @@ interface BrowserProps {
   route: BrowserRoute;
 }
 
-type ConnectedBrowserTabProps = {
+interface ConnectedBrowserTabProps {
   id: number;
   initialUrl: string;
   linkType?: string;
@@ -138,7 +138,7 @@ type ConnectedBrowserTabProps = {
   newTab: (url?: string) => void;
   isInTabsView: boolean;
   homePageUrl: string;
-};
+}
 
 const ConnectedBrowserTab =
   BrowserTab as unknown as React.ComponentType<ConnectedBrowserTabProps>;
@@ -151,11 +151,11 @@ export const Browser = (props: BrowserProps) => {
   const {
     route,
     navigation,
-    createNewTab,
+    createNewTab: dispatchCreateNewTab,
     closeAllTabs: triggerCloseAllTabs,
     closeTab: triggerCloseTab,
-    setActiveTab,
-    updateTab,
+    setActiveTab: dispatchSetActiveTab,
+    updateTab: dispatchUpdateTab,
     activeTab: activeTabId,
     tabs,
   } = props;
@@ -168,7 +168,7 @@ export const Browser = (props: BrowserProps) => {
   const linkType = props.route?.params?.linkType;
   const prevSiteHostname = useRef<string | undefined>(browserUrl);
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
-  const [_tabIdleTimes, setTabIdleTimes] = useState<Record<number, number>>(
+  const [, setTabIdleTimes] = useState<Record<number, number>>(
     {},
   );
   const accountAvatarType = useSelector((state: RootState) =>
@@ -200,6 +200,7 @@ export const Browser = (props: BrowserProps) => {
       if (currentSelectedAccount && isSolanaAccount(currentSelectedAccount)) {
         toastRef?.current?.showToast({
           variant: ToastVariants.Network,
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           networkImageSource: require('../../../images/solana-logo.png'),
           hasNoTimeout: false,
           labelOptions: [
@@ -222,23 +223,23 @@ export const Browser = (props: BrowserProps) => {
   ///: END:ONLY_INCLUDE_IF
 
   const newTab = useCallback(
-    (url?: string, linkType?: string) => {
+    (url?: string, tabLinkType?: string) => {
       // if tabs.length > MAX_BROWSER_TABS, show the max browser tabs modal
       if (tabs.length >= MAX_BROWSER_TABS) {
         navigation.navigate(Routes.MODAL.MAX_BROWSER_TABS_MODAL);
       } else {
         // When a new tab is created, a new tab is rendered, which automatically sets the url source on the webview
-        createNewTab(url || homePageUrl(), linkType);
+        dispatchCreateNewTab(url || homePageUrl(), tabLinkType);
       }
     },
-    [tabs, navigation, homePageUrl, createNewTab],
+    [tabs, navigation, homePageUrl, dispatchCreateNewTab],
   );
 
   const updateTabInfo = useCallback(
     (tabID: number, info: TabUpdateData) => {
-      updateTab(tabID, info);
+      dispatchUpdateTab(tabID, info);
     },
-    [updateTab],
+    [dispatchUpdateTab],
   );
 
   const hideTabsAndUpdateUrl = (url: string) => {
@@ -253,7 +254,7 @@ export const Browser = (props: BrowserProps) => {
     trackEvent(
       createEventBuilder(MetaMetricsEvents.BROWSER_SWITCH_TAB).build(),
     );
-    setActiveTab(tab.id);
+    dispatchSetActiveTab(tab.id);
     hideTabsAndUpdateUrl(tab.url);
     updateTabInfo(tab.id, {
       url: tab.url,
@@ -278,7 +279,7 @@ export const Browser = (props: BrowserProps) => {
             // if the tab has surpassed the maximum
             if (newIdleTimes[tab.id] > IDLE_TIME_MAX) {
               // then "archive" it
-              updateTab(tab.id, {
+              dispatchUpdateTab(tab.id, {
                 isArchived: true,
               });
             }
@@ -286,7 +287,7 @@ export const Browser = (props: BrowserProps) => {
             // set any active tab as NOT "archived"
             // this can mean "unarchiving" a tab so that, for example,
             // the actual browser tab window is mounted again
-            updateTab(tab.id, {
+            dispatchUpdateTab(tab.id, {
               isArchived: false,
             });
             // also set new tab idle time back to zero
@@ -298,11 +299,11 @@ export const Browser = (props: BrowserProps) => {
     }, IDLE_TIME_CALC_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [tabs, activeTabId, updateTab]);
+  }, [tabs, activeTabId, dispatchUpdateTab]);
 
   useEffect(() => {
     const checkIfActiveAccountChanged = (url: string) => {
-      const hostname = new URL(url).hostname;
+      const hostname = new UrlParse(url).hostname;
       const permittedAccounts = getPermittedAccounts(hostname);
       const activeAccountAddress = permittedAccounts?.[0];
 
@@ -331,7 +332,7 @@ export const Browser = (props: BrowserProps) => {
 
     // Handle when the Browser initially mounts and when url changes.
     if (accounts.length && browserUrl) {
-      const hostname = new URL(browserUrl).hostname;
+      const hostname = new UrlParse(browserUrl).hostname;
       if (prevSiteHostname.current !== hostname || !hasAccounts.current) {
         checkIfActiveAccountChanged(browserUrl);
       }
@@ -417,7 +418,7 @@ export const Browser = (props: BrowserProps) => {
           height: THUMB_HEIGHT,
         }).then(
           (uri) => {
-            updateTab(tabID, {
+            dispatchUpdateTab(tabID, {
               url,
               image: uri,
             });
@@ -429,7 +430,7 @@ export const Browser = (props: BrowserProps) => {
           },
         );
       }),
-    [updateTab],
+    [dispatchUpdateTab],
   );
 
   const showTabs = useCallback(() => {
@@ -449,10 +450,10 @@ export const Browser = (props: BrowserProps) => {
       });
     };
 
-    void showTabsAsync();
+    showTabsAsync().catch((e: Error) => Logger.error(e));
   }, [tabs, activeTabId, route.params, navigation, takeScreenshot]);
 
-  const closeAllTabs = () => {
+  const handleCloseAllTabs = () => {
     if (tabs.length) {
       triggerCloseAllTabs();
       navigation.setParams({
@@ -462,7 +463,7 @@ export const Browser = (props: BrowserProps) => {
     }
   };
 
-  const closeTab = (tab: BrowserTabEntry) => {
+  const handleCloseTab = (tab: BrowserTabEntry) => {
     // If the tab was selected we have to select
     // the next one, and if there's no next one,
     // we select the previous one.
@@ -470,14 +471,14 @@ export const Browser = (props: BrowserProps) => {
       if (tabs.length > 1) {
         tabs.forEach((t, i) => {
           if (t.id === tab.id) {
-            let newTab = tabs[i - 1];
+            let nextTab = tabs[i - 1];
             if (tabs[i + 1]) {
-              newTab = tabs[i + 1];
+              nextTab = tabs[i + 1];
             }
-            setActiveTab(newTab.id);
+            dispatchSetActiveTab(nextTab.id);
             navigation.setParams({
               ...route.params,
-              url: newTab.url,
+              url: nextTab.url,
             });
           }
         });
@@ -502,17 +503,17 @@ export const Browser = (props: BrowserProps) => {
   };
 
   const renderTabList = () => {
-    const showTabs = route.params?.showTabs;
-    if (showTabs) {
+    const isShowingTabs = route.params?.showTabs;
+    if (isShowingTabs) {
       return (
         <Tabs
           tabs={tabs}
           activeTab={activeTabId}
           switchToTab={switchToTab}
           newTab={newTab}
-          closeTab={closeTab}
+          closeTab={handleCloseTab}
           closeTabsView={closeTabsView}
-          closeAllTabs={closeAllTabs}
+          closeAllTabs={handleCloseAllTabs}
         />
       );
     }
