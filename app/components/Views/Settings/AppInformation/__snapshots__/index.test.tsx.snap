@@ -443,7 +443,9 @@ exports[`AppInformation should render correctly 1`] = `
                           >
                             Links
                           </Text>
-                          <View>
+                          <View
+                            style={{}}
+                          >
                             <TouchableOpacity
                               onPress={[Function]}
                             >
@@ -509,7 +511,9 @@ exports[`AppInformation should render correctly 1`] = `
                               }
                             }
                           />
-                          <View>
+                          <View
+                            style={{}}
+                          >
                             <TouchableOpacity
                               onPress={[Function]}
                             >
