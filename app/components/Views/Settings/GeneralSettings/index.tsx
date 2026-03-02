@@ -30,6 +30,7 @@ import PickComponent from '../../PickComponent';
 import { toDataUrl } from '../../../../util/blockies.js';
 import Jazzicon from 'react-native-jazzicon';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
+import { Theme } from '../../../../util/theme/models';
 import { selectCurrentCurrency } from '../../../../selectors/currencyRateController';
 import { withMetricsAwareness } from '../../../../components/hooks/useMetrics';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../../selectors/accountsController';
@@ -204,8 +205,6 @@ interface GeneralSettingsState {
  * Main view for general app configurations
  */
 class Settings extends PureComponent<GeneralSettingsProps, GeneralSettingsState> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   languageOptions: SelectOption[] | undefined;
   searchEngineOptions: SelectOption[] | undefined;
   primaryCurrencyOptions: SelectOption[] | undefined;
@@ -244,7 +243,7 @@ class Settings extends PureComponent<GeneralSettingsProps, GeneralSettingsState>
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme)?.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.general_title'),
@@ -326,7 +325,7 @@ class Settings extends PureComponent<GeneralSettingsProps, GeneralSettingsState>
       selectedAddress,
       hideZeroBalanceTokens,
     } = this.props;
-    const themeTokens = this.context || mockTheme;
+    const themeTokens = (this.context as unknown as Theme) || mockTheme;
     const { colors } = themeTokens;
     const styles = createStyles(colors);
 

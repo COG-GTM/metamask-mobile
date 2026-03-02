@@ -47,7 +47,7 @@ import { wipeTransactions } from '../../../../util/transaction-controller';
 import AppConstants from '../../../../../app/core/AppConstants';
 import { downloadStateLogs } from '../../../../util/logs';
 import AutoDetectTokensSettings from '../AutoDetectTokensSettings';
-import { Colors } from '../../../../util/theme/models';
+import { Colors, Theme } from '../../../../util/theme/models';
 import { RootState } from '../../../../reducers';
 import { IUseMetricsHook } from '../../../../components/hooks/useMetrics/useMetrics.types';
 
@@ -174,8 +174,6 @@ class AdvancedSettings extends PureComponent<
   AdvancedSettingsProps,
   AdvancedSettingsState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   private mounted: boolean = false;
 
   scrollView = React.createRef<KeyboardAwareScrollView>();
@@ -186,7 +184,7 @@ class AdvancedSettings extends PureComponent<
   };
 
   getStyles = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return { styles, colors };
   };
@@ -283,7 +281,7 @@ class AdvancedSettings extends PureComponent<
     } = this.props;
     const { resetModalVisible } = this.state;
     const { styles, colors } = this.getStyles();
-    const theme = this.context || mockTheme;
+    const theme = (this.context as unknown as Theme) || mockTheme;
 
     return (
       <SafeAreaView style={baseStyles.flexGrow}>
