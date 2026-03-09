@@ -708,3 +708,40 @@ export type InitModularizedControllersFunction = (request: {
 }) => {
   controllersByName: ControllerByName;
 };
+
+// ---------------------------------------------------------------------------
+// Utility types — return types for Engine methods
+// ---------------------------------------------------------------------------
+
+/**
+ * The result of computing the total EVM fiat account balance.
+ * Returned by `Engine.getTotalEvmFiatAccountBalance()`.
+ */
+export interface TotalFiatBalance {
+  /** Fiat value of the native token (e.g. ETH) balance, including staked balance. */
+  ethFiat: number;
+  /** Fiat value of all ERC-20 token balances. */
+  tokenFiat: number;
+  /** Estimated fiat value of all ERC-20 token balances from 1 day ago. */
+  tokenFiat1dAgo: number;
+  /** Estimated fiat value of the native token balance from 1 day ago. */
+  ethFiat1dAgo: number;
+  /** Human-readable native token balance (e.g. "1.5"). */
+  totalNativeTokenBalance: string;
+  /** Ticker symbol for the native token (e.g. "ETH"). */
+  ticker: string;
+}
+
+/**
+ * Subset of user preferences passed to snaps.
+ * Returned by `Engine.getPreferences()`.
+ */
+export interface SnapPreferences {
+  securityAlertsEnabled: boolean;
+  useTransactionSimulations: boolean;
+  useTokenDetection: boolean;
+  privacyMode: boolean;
+  useNftDetection: boolean;
+  displayNftMedia: boolean;
+  isMultiAccountBalancesEnabled: boolean;
+}
