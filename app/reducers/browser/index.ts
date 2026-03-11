@@ -2,7 +2,34 @@ import { BrowserActionTypes } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
 
-const initialState = {
+interface BrowserTab {
+  url: string;
+  id: number | string;
+  linkType?: string;
+  image?: string;
+  isArchived?: boolean;
+}
+
+interface HistoryEntry {
+  url: string;
+  name: string;
+}
+
+interface Favicon {
+  origin: string;
+  url: string;
+}
+
+export interface BrowserState {
+  history: HistoryEntry[];
+  whitelist: string[];
+  tabs: BrowserTab[];
+  favicons: Favicon[];
+  activeTab: number | null;
+  visitedDappsByHostname: Record<string, boolean>;
+}
+
+const initialState: BrowserState = {
   history: [],
   whitelist: [],
   tabs: [],
@@ -11,7 +38,9 @@ const initialState = {
   // Keep track of viewed Dapps, which is used for MetaMetricsEvents.DAPP_VIEWED event
   visitedDappsByHostname: {},
 };
-const browserReducer = (state = initialState, action) => {
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const browserReducer = (state: BrowserState = initialState, action: any): BrowserState => {
   switch (action.type) {
     case BrowserActionTypes.ADD_TO_VIEWED_DAPP: {
       const { hostname } = action;
