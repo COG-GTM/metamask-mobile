@@ -5,7 +5,7 @@ export interface WizardState {
   step: number;
 }
 
-const initialState: WizardState = {
+export const initialState: WizardState = {
   step: 0,
 };
 

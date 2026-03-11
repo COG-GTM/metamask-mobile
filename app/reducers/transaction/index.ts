@@ -38,7 +38,7 @@ export interface TransactionState {
   maxValueMode?: boolean;
 }
 
-const initialState: TransactionState = {
+export const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},

@@ -4,7 +4,7 @@ export interface InfuraAvailabilityState {
   isBlocked: boolean;
 }
 
-const initialState: InfuraAvailabilityState = {
+export const initialState: InfuraAvailabilityState = {
   isBlocked: false,
 };
 

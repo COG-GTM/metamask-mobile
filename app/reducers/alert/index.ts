@@ -7,7 +7,7 @@ export interface AlertState {
   data: unknown;
 }
 
-const initialState: AlertState = {
+export const initialState: AlertState = {
   isVisible: false,
   autodismiss: null,
   content: null,

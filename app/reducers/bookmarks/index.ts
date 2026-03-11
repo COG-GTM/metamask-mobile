@@ -2,8 +2,10 @@ import { ADD_BOOKMARK, REMOVE_BOOKMARK, Bookmark, BookmarkAction } from '../../a
 
 export type BookmarksState = Bookmark[];
 
+export const initialState: BookmarksState = [];
+
 const bookmarksReducer = (
-  state: BookmarksState = [],
+  state: BookmarksState = initialState,
   action: BookmarkAction,
 ): BookmarksState => {
   switch (action.type) {

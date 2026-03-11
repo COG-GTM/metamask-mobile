@@ -16,7 +16,7 @@ export interface ModalsState {
   infoNetworkModalVisible?: boolean;
 }
 
-const initialState: ModalsState = {
+export const initialState: ModalsState = {
   networkModalVisible: false,
   shouldNetworkSwitchPopToWallet: true,
   collectibleContractModalVisible: false,

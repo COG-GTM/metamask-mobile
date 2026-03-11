@@ -18,7 +18,7 @@ interface ClearHostsAction {
 
 type PrivacyReducerAction = PrivacyAction | ClearHostsAction;
 
-const initialState: PrivacyState = {
+export const initialState: PrivacyState = {
   approvedHosts: {},
   revealSRPTimestamps: [],
 };

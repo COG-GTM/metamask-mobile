@@ -28,7 +28,7 @@ export interface SettingsState {
   tokenSortConfig?: Record<string, unknown>;
 }
 
-const initialState: SettingsState = {
+export const initialState: SettingsState = {
   searchEngine: AppConstants.DEFAULT_SEARCH_ENGINE,
   primaryCurrency: 'ETH',
   lockTime: -1, // Disabled by default
