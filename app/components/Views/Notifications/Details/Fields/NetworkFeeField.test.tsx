@@ -59,13 +59,13 @@ describe('NetworkFeeField', () => {
           Promise.resolve({
             gasUsed: 0,
             gasLimit: 0,
-            baseFee: 0,
-            priorityFee: 0,
-            maxFeePerGas: 0,
+            baseFee: '0',
+            priorityFee: '0',
+            maxFeePerGas: '0',
             effectiveGasPrice: 0,
             transactionFeeInEth: '0',
             transactionFeeInUsd: '0',
-            chainId: '0x1',
+            chainId: '0x1' as `0x${string}`,
           })
         }
         notification={MOCK_NOTIFICATION}
@@ -93,13 +93,13 @@ describe('NetworkFeeField', () => {
           Promise.resolve({
             gasUsed: 0,
             gasLimit: 0,
-            baseFee: 0,
-            priorityFee: 0,
-            maxFeePerGas: 0,
+            baseFee: '0',
+            priorityFee: '0',
+            maxFeePerGas: '0',
             effectiveGasPrice: 0,
             transactionFeeInEth: '0',
             transactionFeeInUsd: '0',
-            chainId: '0x1',
+            chainId: '0x1' as `0x${string}`,
           })
         }
         notification={MOCK_NOTIFICATION}
