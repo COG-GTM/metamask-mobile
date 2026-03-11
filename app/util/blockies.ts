@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-this-alias, @typescript-eslint/no-explicit-any */
 (function (global, factory) {
   exports && typeof exports === 'object' && typeof module !== 'undefined'
     ? factory(exports)
@@ -417,6 +419,10 @@
  * Utility class with the single responsibility
  * of caching Blockies Data URIs
  */
-class Blockies {
-  static cache = {};
+export class Blockies {
+  static cache: Record<string, string> = {};
 }
+
+// Re-export toDataUrl for TypeScript module resolution
+// The UMD factory above assigns toDataUrl to exports at runtime
+export declare function toDataUrl(address: string | undefined): string;
