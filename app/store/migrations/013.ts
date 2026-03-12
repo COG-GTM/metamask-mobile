@@ -1,22 +1,24 @@
 import { v1 as random } from 'uuid';
 
-export default function migrate(state) {
+export default function migrate(state: unknown) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const s = state as Record<string, any>;
   // If for some reason we already have PermissionController state, bail out.
   const hasPermissionControllerState = Boolean(
-    state.engine.backgroundState.PermissionController?.subjects,
+    s.engine.backgroundState.PermissionController?.subjects,
   );
-  if (hasPermissionControllerState) return state;
+  if (hasPermissionControllerState) return s;
 
-  const { approvedHosts } = state.privacy;
+  const { approvedHosts } = s.privacy;
   const { selectedAddress } =
-    state.engine.backgroundState.PreferencesController;
+    s.engine.backgroundState.PreferencesController;
 
   const hosts = Object.keys(approvedHosts);
   // If no dapps connected, bail out.
-  if (hosts.length < 1) return state;
+  if (hosts.length < 1) return s;
 
   const { subjects } = hosts.reduce(
-    (accumulator, host, index) => ({
+    (accumulator: Record<string, any>, host: string, index: number) => ({
       subjects: {
         ...accumulator.subjects,
         [host]: {
@@ -46,7 +48,7 @@ export default function migrate(state) {
     {},
   );
 
-  const newState = { ...state };
+  const newState = { ...s } as Record<string, any>;
 
   newState.engine.backgroundState.PermissionController = {
     subjects,

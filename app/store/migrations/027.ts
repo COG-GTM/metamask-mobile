@@ -6,12 +6,14 @@ import { NetworkType } from '@metamask/controller-utils';
  * @param {any} state - Redux state
  * @returns
  */
-export default function migrate(state) {
-  const backgroundState = state.engine.backgroundState;
+export default function migrate(state: unknown) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const s = state as Record<string, any>;
+  const backgroundState = s.engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;
 
-  if (!transactionControllerState) return state;
+  if (!transactionControllerState) return s;
 
   const transactions = transactionControllerState.transactions || [];
   const networkControllerState = backgroundState.NetworkController || {};
@@ -21,14 +23,14 @@ export default function migrate(state) {
     networkControllerState.networkConfigurations || {};
 
   const submitHistory = transactions
-    .filter((tx) => tx.rawTransaction?.length)
-    .map((tx) => {
+    .filter((tx: Record<string, any>) => tx.rawTransaction?.length)
+    .map((tx: Record<string, any>) => {
       const matchingProviderConfig =
         providerConfig.chainId === tx.chainId ? providerConfig : undefined;
 
-      const matchingNetworkConfigurations = Object.values(
+      const matchingNetworkConfigurations = (Object.values(
         networkConfigurations,
-      ).filter((c) => c.chainId === tx.chainId);
+      ) as Record<string, any>[]).filter((c) => c.chainId === tx.chainId);
 
       const networkUrl = matchingNetworkConfigurations.map((c) => c.rpcUrl);
 
@@ -51,8 +53,8 @@ export default function migrate(state) {
       };
     });
 
-  state.engine.backgroundState.TransactionController.submitHistory =
+  s.engine.backgroundState.TransactionController.submitHistory =
     submitHistory;
 
-  return state;
+  return s;
 }

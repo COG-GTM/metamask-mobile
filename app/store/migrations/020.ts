@@ -11,14 +11,16 @@ import { v4 } from 'uuid';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
+export default function migrate(state: unknown) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const s = state as Record<string, any>;
   const preferencesControllerState =
-    state.engine.backgroundState.PreferencesController;
-  const networkControllerState = state.engine.backgroundState.NetworkController;
+    s.engine.backgroundState.PreferencesController;
+  const networkControllerState = s.engine.backgroundState.NetworkController;
   const frequentRpcList = preferencesControllerState?.frequentRpcList;
   if (networkControllerState && frequentRpcList) {
     const networkConfigurations = frequentRpcList.reduce(
-      (networkConfigs, networkConfig) => {
+      (networkConfigs: Record<string, any>, networkConfig: Record<string, any>) => {
         const networkConfigurationId = v4();
         return {
           ...networkConfigs,
@@ -37,5 +39,5 @@ export default function migrate(state) {
 
     networkControllerState.networkConfigurations = networkConfigurations ?? {};
   }
-  return state;
+  return s;
 }

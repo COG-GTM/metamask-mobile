@@ -1,12 +1,14 @@
-export default function migrate(state) {
+export default function migrate(state: unknown) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const s = state as Record<string, any>;
   // This migration ensures that ignored tokens are in the correct form
   const allIgnoredTokens =
-    state.engine.backgroundState.TokensController.allIgnoredTokens || {};
+    s.engine.backgroundState.TokensController.allIgnoredTokens || {};
   const ignoredTokens =
-    state.engine.backgroundState.TokensController.ignoredTokens || [];
+    s.engine.backgroundState.TokensController.ignoredTokens || [];
 
-  const reduceTokens = (tokens) =>
-    tokens.reduce((final, token) => {
+  const reduceTokens = (tokens: any[]) =>
+    tokens.reduce((final: string[], token: any) => {
       const tokenAddress =
         (typeof token === 'string' && token) || token?.address || '';
       tokenAddress && final.push(tokenAddress);
@@ -15,10 +17,10 @@ export default function migrate(state) {
 
   const newIgnoredTokens = reduceTokens(ignoredTokens);
 
-  const newAllIgnoredTokens = {};
+  const newAllIgnoredTokens: Record<string, any> = {};
   Object.entries(allIgnoredTokens).forEach(
     ([chainId, tokensByAccountAddress]) => {
-      Object.entries(tokensByAccountAddress).forEach(
+      Object.entries(tokensByAccountAddress as Record<string, any>).forEach(
         ([accountAddress, tokens]) => {
           const newTokens = reduceTokens(tokens);
           if (newAllIgnoredTokens[chainId] === undefined) {
@@ -34,11 +36,11 @@ export default function migrate(state) {
     },
   );
 
-  state.engine.backgroundState.TokensController = {
-    ...state.engine.backgroundState.TokensController,
+  s.engine.backgroundState.TokensController = {
+    ...s.engine.backgroundState.TokensController,
     allIgnoredTokens: newAllIgnoredTokens,
     ignoredTokens: newIgnoredTokens,
   };
 
-  return state;
+  return s;
 }

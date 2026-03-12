@@ -2,10 +2,12 @@
  * Needed after https://github.com/MetaMask/controllers/pull/152
  *
  **/
-export default function migrate(state) {
+export default function migrate(state: unknown) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const s = state as Record<string, any>;
   const addressBook =
-    state.engine.backgroundState.AddressBookController.addressBook;
-  const migratedAddressBook = {};
+    s.engine.backgroundState.AddressBookController.addressBook;
+  const migratedAddressBook: Record<string, any> = {};
   Object.keys(addressBook).forEach((address) => {
     const chainId = addressBook[address].chainId.toString();
     migratedAddressBook[chainId]
@@ -15,7 +17,7 @@ export default function migrate(state) {
         })
       : (migratedAddressBook[chainId] = { [address]: addressBook[address] });
   });
-  state.engine.backgroundState.AddressBookController.addressBook =
+  s.engine.backgroundState.AddressBookController.addressBook =
     migratedAddressBook;
-  return state;
+  return s;
 }

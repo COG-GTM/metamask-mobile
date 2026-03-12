@@ -1,15 +1,25 @@
-import { NetworksChainId } from '@metamask/controller-utils';
+// NetworksChainId was removed from @metamask/controller-utils in a later version.
+// Using a local copy for this legacy migration.
+const NetworksChainId: Record<string, string> = {
+  mainnet: '1',
+  goerli: '5',
+  sepolia: '11155111',
+  linea_goerli: '59140',
+  linea_mainnet: '59144',
+};
 
-export default function migrate(state) {
-  const { allTokens } = state.engine.backgroundState.TokensController;
+export default function migrate(state: unknown) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const s = state as Record<string, any>;
+  const { allTokens } = s.engine.backgroundState.TokensController;
   const { allCollectibleContracts, allCollectibles } =
-    state.engine.backgroundState.CollectiblesController;
+    s.engine.backgroundState.CollectiblesController;
   const { frequentRpcList } =
-    state.engine.backgroundState.PreferencesController;
+    s.engine.backgroundState.PreferencesController;
 
-  const newAllCollectibleContracts = {};
-  const newAllCollectibles = {};
-  const newAllTokens = {};
+  const newAllCollectibleContracts: Record<string, any> = {};
+  const newAllCollectibles: Record<string, any> = {};
+  const newAllTokens: Record<string, any> = {};
 
   Object.keys(allTokens).forEach((address) => {
     newAllTokens[address] = {};
@@ -18,7 +28,7 @@ export default function migrate(state) {
         newAllTokens[address][NetworksChainId[networkType]] =
           allTokens[address][networkType];
       } else {
-        frequentRpcList.forEach(({ chainId }) => {
+        frequentRpcList.forEach(({ chainId }: { chainId: string }) => {
           newAllTokens[address][chainId] = allTokens[address][networkType];
         });
       }
@@ -32,7 +42,7 @@ export default function migrate(state) {
         newAllCollectibles[address][NetworksChainId[networkType]] =
           allCollectibles[address][networkType];
       } else {
-        frequentRpcList.forEach(({ chainId }) => {
+        frequentRpcList.forEach(({ chainId }: { chainId: string }) => {
           newAllCollectibles[address][chainId] =
             allCollectibles[address][networkType];
         });
@@ -47,7 +57,7 @@ export default function migrate(state) {
         newAllCollectibleContracts[address][NetworksChainId[networkType]] =
           allCollectibleContracts[address][networkType];
       } else {
-        frequentRpcList.forEach(({ chainId }) => {
+        frequentRpcList.forEach(({ chainId }: { chainId: string }) => {
           newAllCollectibleContracts[address][chainId] =
             allCollectibleContracts[address][networkType];
         });
@@ -55,14 +65,14 @@ export default function migrate(state) {
     });
   });
 
-  state.engine.backgroundState.TokensController = {
-    ...state.engine.backgroundState.TokensController,
+  s.engine.backgroundState.TokensController = {
+    ...s.engine.backgroundState.TokensController,
     allTokens: newAllTokens,
   };
-  state.engine.backgroundState.CollectiblesController = {
-    ...state.engine.backgroundState.CollectiblesController,
+  s.engine.backgroundState.CollectiblesController = {
+    ...s.engine.backgroundState.CollectiblesController,
     allCollectibles: newAllCollectibles,
     allCollectibleContracts: newAllCollectibleContracts,
   };
-  return state;
+  return s;
 }
