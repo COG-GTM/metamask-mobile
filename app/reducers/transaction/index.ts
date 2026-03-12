@@ -1,7 +1,51 @@
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
 
-const initialState = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+interface TransactionData {
+  data?: string;
+  from?: string;
+  gas?: string;
+  gasPrice?: string;
+  to?: string;
+  value?: string;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+export interface TransactionState {
+  ensRecipient?: string;
+  assetType?: string;
+  selectedAsset: Record<string, any>;
+  transaction: TransactionData;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  symbol?: string;
+  paymentRequest?: any;
+  readableValue?: string;
+  id?: string;
+  type?: string;
+  proposedNonce?: string;
+  nonce?: string;
+  securityAlertResponses: Record<string, any>;
+  useMax?: boolean;
+  maxValueMode?: boolean;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+interface TransactionAction {
+  type: string;
+  [key: string]: any;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,7 +76,9 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+const getAssetType = (selectedAsset: any): string | undefined => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,7 +92,10 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {

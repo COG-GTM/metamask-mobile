@@ -17,7 +17,7 @@ import { selectSelectedInternalAccountAddress } from '../../selectors/accountsCo
 
 // If we are in dev and on a testnet, just use mainnet feature flags,
 // since we don't have feature flags for testnets in the API
-export const getFeatureFlagChainId = (chainId) =>
+export const getFeatureFlagChainId = (chainId: string): string =>
   __DEV__ && allowedTestnetChainIds.includes(chainId)
     ? NETWORKS_CHAIN_ID.MAINNET
     : chainId;
@@ -28,18 +28,22 @@ export const SWAPS_SET_HAS_ONBOARDED = 'SWAPS_SET_HAS_ONBOARDED';
 const MAX_TOKENS_WITH_BALANCE = 5;
 
 // * Action Creator
-export const setSwapsLiveness = (chainId, featureFlags) => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+export const setSwapsLiveness = (chainId: string, featureFlags: any) => ({
   type: SWAPS_SET_LIVENESS,
   payload: { chainId, featureFlags },
 });
-export const setSwapsHasOnboarded = (hasOnboarded) => ({
+export const setSwapsHasOnboarded = (hasOnboarded: boolean) => ({
   type: SWAPS_SET_HAS_ONBOARDED,
   payload: hasOnboarded,
 });
 
 // * Functions
 
-function addMetadata(chainId, tokens, tokenList) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+function addMetadata(chainId: string, tokens: any[], tokenList: Record<string, any>): any[] {
   if (!isMainnetByChainId(chainId)) {
     return tokens;
   }
@@ -55,7 +59,9 @@ function addMetadata(chainId, tokens, tokenList) {
 
 // * Selectors
 const chainIdSelector = selectEvmChainId;
-const swapsStateSelector = (state) => state.swaps;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+const swapsStateSelector = (state: any) => state.swaps;
 /**
  * Returns the swaps liveness state
  */
@@ -108,13 +114,17 @@ export const swapsHasOnboardedSelector = createSelector(
   (swapsState) => swapsState.hasOnboarded,
 );
 
-const selectSwapsControllerState = (state) =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+const selectSwapsControllerState = (state: any) =>
   state.engine.backgroundState.SwapsController;
 
 /**
  * Returns the swaps tokens from the state
  */
-export const swapsControllerTokens = (state) =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+export const swapsControllerTokens = (state: any) =>
   state.engine.backgroundState.SwapsController.tokens;
 
 export const selectSwapsApprovalTransaction = createSelector(
@@ -353,7 +363,16 @@ export const swapsTopAssetsSelector = createSelector(
 );
 
 // * Reducer
-export const initialState = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+export interface SwapsState {
+  isLive: boolean;
+  hasOnboarded: boolean;
+  featureFlags: any;
+  [chainId: string]: any;
+}
+
+export const initialState: SwapsState = {
   isLive: true, // TODO: should we remove it?
   hasOnboarded: true, // TODO: Once we have updated UI / content for the modal, we should enable it again.
 
@@ -364,7 +383,9 @@ export const initialState = {
   },
 };
 
-function swapsReducer(state = initialState, action) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+function swapsReducer(state: SwapsState = initialState, action: any): SwapsState {
   switch (action.type) {
     case SWAPS_SET_LIVENESS: {
       const { chainId: rawChainId, featureFlags } = action.payload;

@@ -18,7 +18,9 @@ export function resetTransaction() {
  *
  * @param {object} selectedAsset - Asset to start the transaction with
  */
-export function newAssetTransaction(selectedAsset) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+export function newAssetTransaction(selectedAsset: any) {
   return {
     type: 'NEW_ASSET_TRANSACTION',
     selectedAsset,
@@ -40,11 +42,11 @@ export function newAssetTransaction(selectedAsset) {
  * @param {string} transactionFromName - Resolved address book name for from address
  */
 export function setRecipient(
-  from,
-  to,
-  ensRecipient,
-  transactionToName,
-  transactionFromName,
+  from: string,
+  to: string,
+  ensRecipient?: string,
+  transactionToName?: string,
+  transactionFromName?: string,
 ) {
   return {
     type: 'SET_RECIPIENT',
@@ -61,7 +63,9 @@ export function setRecipient(
  *
  * @param {object} selectedAsset - Asset to start the transaction with
  */
-export function setSelectedAsset(selectedAsset) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+export function setSelectedAsset(selectedAsset: any) {
   return {
     type: 'SET_SELECTED_ASSET',
     selectedAsset,
@@ -78,16 +82,20 @@ export function setSelectedAsset(selectedAsset) {
  *
  * @param {object} transaction - Transaction object with from, to, data, gas, gasPrice, value
  */
-export function prepareTransaction(transaction) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+export function prepareTransaction(transaction: any) {
   return {
     type: 'PREPARE_TRANSACTION',
     transaction,
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
 export function setTransactionSecurityAlertResponse(
-  transactionId,
-  securityAlertResponse,
+  transactionId: string,
+  securityAlertResponse: any,
 ) {
   return {
     type: 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE',
@@ -101,7 +109,9 @@ export function setTransactionSecurityAlertResponse(
  *
  * @param {object} transaction - New transaction object
  */
-export function setTransactionObject(transaction) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+export function setTransactionObject(transaction: any) {
   return {
     type: 'SET_TRANSACTION_OBJECT',
     transaction,
@@ -113,7 +123,7 @@ export function setTransactionObject(transaction) {
  *
  * @param {object} transactionId - Id of the current transaction.
  */
-export function setTransactionId(transactionId) {
+export function setTransactionId(transactionId: string) {
   return {
     type: 'SET_TRANSACTION_ID',
     transactionId,
@@ -125,7 +135,9 @@ export function setTransactionId(transactionId) {
  *
  * @param {object} asset - Asset to start the transaction with
  */
-export function setTokensTransaction(asset) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+export function setTokensTransaction(asset: any) {
   return {
     type: 'SET_TOKENS_TRANSACTION',
     asset,
@@ -137,35 +149,37 @@ export function setTokensTransaction(asset) {
  *
  * @param {object} transaction - Transaction additional object
  */
-export function setEtherTransaction(transaction) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+export function setEtherTransaction(transaction: any) {
   return {
     type: 'SET_ETHER_TRANSACTION',
     transaction,
   };
 }
 
-export function setNonce(nonce) {
+export function setNonce(nonce: string) {
   return {
     type: 'SET_NONCE',
     nonce,
   };
 }
 
-export function setProposedNonce(proposedNonce) {
+export function setProposedNonce(proposedNonce: string) {
   return {
     type: 'SET_PROPOSED_NONCE',
     proposedNonce,
   };
 }
 
-export function setMaxValueMode(maxValueMode) {
+export function setMaxValueMode(maxValueMode: boolean) {
   return {
     type: 'SET_MAX_VALUE_MODE',
     maxValueMode,
   };
 }
 
-export function setTransactionValue(value) {
+export function setTransactionValue(value: string) {
   return {
     type: 'SET_TRANSACTION_VALUE',
     value,

@@ -1,6 +1,27 @@
 import AppConstants from '../../core/AppConstants';
 
-const initialState = {
+export interface SettingsState {
+  searchEngine: string;
+  primaryCurrency: string;
+  lockTime: number;
+  useBlockieIcon: boolean;
+  hideZeroBalanceTokens: boolean;
+  basicFunctionalityEnabled: boolean;
+  showHexData?: boolean;
+  showCustomNonce?: boolean;
+  showFiatOnTestnets?: boolean;
+  deviceNotificationEnabled?: boolean;
+  tokenSortConfig?: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+interface SettingsAction {
+  type: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
+const initialState: SettingsState = {
   searchEngine: AppConstants.DEFAULT_SEARCH_ENGINE,
   primaryCurrency: 'ETH',
   lockTime: -1, // Disabled by default
@@ -9,7 +30,10 @@ const initialState = {
   basicFunctionalityEnabled: true,
 };
 
-const settingsReducer = (state = initialState, action) => {
+const settingsReducer = (
+  state: SettingsState = initialState,
+  action: SettingsAction,
+): SettingsState => {
   switch (action.type) {
     case 'SET_SEARCH_ENGINE':
       return {

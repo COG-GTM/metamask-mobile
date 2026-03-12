@@ -11,21 +11,21 @@ export function toggleCollectibleContractModal() {
   };
 }
 
-export function toggleDappTransactionModal(show) {
+export function toggleDappTransactionModal(show?: boolean | null) {
   return {
     type: 'TOGGLE_DAPP_TRANSACTION_MODAL',
     show,
   };
 }
 
-export function toggleInfoNetworkModal(show) {
+export function toggleInfoNetworkModal(show?: boolean | null) {
   return {
     type: 'TOGGLE_INFO_NETWORK_MODAL',
     show,
   };
 }
 
-export function toggleSignModal(show) {
+export function toggleSignModal(show?: boolean | null) {
   return {
     type: 'TOGGLE_SIGN_MODAL',
     show,

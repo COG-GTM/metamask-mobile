@@ -8,9 +8,13 @@ import { selectSelectedInternalAccountAddress } from '../../selectors/accountsCo
 import { compareTokenIds } from '../../util/tokens';
 import { createDeepEqualSelector } from '../../selectors/util';
 
-const favoritesSelector = (state) => state.collectibles.favorites;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+const favoritesSelector = (state: any) => state.collectibles.favorites;
 
-export const isNftFetchingProgressSelector = (state) =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+export const isNftFetchingProgressSelector = (state: any): boolean =>
   state.collectibles.isNftFetchingProgress;
 
 export const collectibleContractsSelector = createSelector(
@@ -61,23 +65,45 @@ export const isCollectibleInFavoritesSelector = createSelector(
     ),
 );
 
+interface FavoriteCollectible {
+  tokenId: string;
+  address: string;
+}
+
+export interface CollectiblesState {
+  favorites: Record<string, Record<string, FavoriteCollectible[]>>;
+  isNftFetchingProgress: boolean;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+interface CollectiblesAction {
+  type: string;
+  selectedAddress?: string;
+  chainId?: string;
+  collectible?: FavoriteCollectible;
+}
+
 const getFavoritesCollectibles = (
-  favoriteCollectibles,
-  selectedAddress,
-  chainId,
-) => favoriteCollectibles[selectedAddress]?.[chainId] || [];
+  favoriteCollectibles: Record<string, Record<string, FavoriteCollectible[]>>,
+  selectedAddress: string,
+  chainId: string,
+): FavoriteCollectible[] => favoriteCollectibles[selectedAddress]?.[chainId] || [];
 
 export const ADD_FAVORITE_COLLECTIBLE = 'ADD_FAVORITE_COLLECTIBLE';
 export const REMOVE_FAVORITE_COLLECTIBLE = 'REMOVE_FAVORITE_COLLECTIBLE';
 export const SHOW_NFT_FETCHING_LOADER = 'SHOW_NFT_FETCHING_LOADER';
 export const HIDE_NFT_FETCHING_LOADER = 'HIDE_NFT_FETCHING_LOADER';
 
-const initialState = {
+const initialState: CollectiblesState = {
   favorites: {},
   isNftFetchingProgress: false,
 };
 
-const collectiblesFavoritesReducer = (state = initialState, action) => {
+const collectiblesFavoritesReducer = (
+  state: CollectiblesState = initialState,
+  action: CollectiblesAction,
+): CollectiblesState => {
   switch (action.type) {
     case ADD_FAVORITE_COLLECTIBLE: {
       const { selectedAddress, chainId, collectible } = action;
@@ -148,11 +174,11 @@ const collectiblesFavoritesReducer = (state = initialState, action) => {
   }
 };
 
-export const showNftFetchingLoadingIndicator = () => ({
+export const showNftFetchingLoadingIndicator = (): { type: string } => ({
   type: SHOW_NFT_FETCHING_LOADER,
 });
 
-export const hideNftFetchingLoadingIndicator = () => ({
+export const hideNftFetchingLoadingIndicator = (): { type: string } => ({
   type: HIDE_NFT_FETCHING_LOADER,
 });
 
