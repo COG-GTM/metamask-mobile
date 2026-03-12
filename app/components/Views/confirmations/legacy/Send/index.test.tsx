@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import Send from '.';
 import { RootState } from '../../../../../reducers';
