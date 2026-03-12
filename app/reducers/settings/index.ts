@@ -1,6 +1,34 @@
 import AppConstants from '../../core/AppConstants';
 
-const initialState = {
+interface SettingsState {
+  searchEngine: string;
+  primaryCurrency: string;
+  lockTime: number;
+  useBlockieIcon: boolean;
+  hideZeroBalanceTokens: boolean;
+  basicFunctionalityEnabled: boolean;
+  showHexData?: boolean;
+  showCustomNonce?: boolean;
+  showFiatOnTestnets?: boolean;
+  deviceNotificationEnabled?: boolean | null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface SettingsAction {
+  type: string;
+  searchEngine?: string;
+  lockTime?: number;
+  showHexData?: boolean;
+  showCustomNonce?: boolean;
+  hideZeroBalanceTokens?: boolean;
+  useBlockieIcon?: boolean;
+  primaryCurrency?: string;
+  showFiatOnTestnets?: boolean;
+  basicFunctionalityEnabled?: boolean | null;
+  deviceNotificationEnabled?: boolean | null;
+}
+
+const initialState: SettingsState = {
   searchEngine: AppConstants.DEFAULT_SEARCH_ENGINE,
   primaryCurrency: 'ETH',
   lockTime: -1, // Disabled by default
@@ -9,17 +37,17 @@ const initialState = {
   basicFunctionalityEnabled: true,
 };
 
-const settingsReducer = (state = initialState, action) => {
+const settingsReducer = (state = initialState, action: SettingsAction): SettingsState => {
   switch (action.type) {
     case 'SET_SEARCH_ENGINE':
       return {
         ...state,
-        searchEngine: action.searchEngine,
+        searchEngine: action.searchEngine!,
       };
     case 'SET_LOCK_TIME':
       return {
         ...state,
-        lockTime: action.lockTime,
+        lockTime: action.lockTime!,
       };
     case 'SET_SHOW_HEX_DATA':
       return {
@@ -34,17 +62,17 @@ const settingsReducer = (state = initialState, action) => {
     case 'SET_HIDE_ZERO_BALANCE_TOKENS':
       return {
         ...state,
-        hideZeroBalanceTokens: action.hideZeroBalanceTokens,
+        hideZeroBalanceTokens: action.hideZeroBalanceTokens!,
       };
     case 'SET_USE_BLOCKIE_ICON':
       return {
         ...state,
-        useBlockieIcon: action.useBlockieIcon,
+        useBlockieIcon: action.useBlockieIcon!,
       };
     case 'SET_PRIMARY_CURRENCY':
       return {
         ...state,
-        primaryCurrency: action.primaryCurrency,
+        primaryCurrency: action.primaryCurrency!,
       };
     case 'SET_SHOW_FIAT_ON_TESTNETS':
       return {
@@ -54,7 +82,7 @@ const settingsReducer = (state = initialState, action) => {
     case 'TOGGLE_BASIC_FUNCTIONALITY':
       return {
         ...state,
-        basicFunctionalityEnabled: action.basicFunctionalityEnabled,
+        basicFunctionalityEnabled: !!action.basicFunctionalityEnabled,
       };
 
     case 'TOGGLE_DEVICE_NOTIFICATIONS':
