@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import BigNumber from 'bignumber.js';
 import { addHexPrefix } from './number';

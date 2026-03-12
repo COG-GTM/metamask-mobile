@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { Web3Provider } from '@ethersproject/providers';
 import { ContractFactory } from '@ethersproject/contracts';

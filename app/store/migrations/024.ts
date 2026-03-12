@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';

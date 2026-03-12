@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import StyledButton from './StyledButton'; // eslint-disable-line import/no-unresolved
 /**

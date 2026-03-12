@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 /**
  * This view was created in order to test the navigation api since it's possible it can change even with minor upgrades.

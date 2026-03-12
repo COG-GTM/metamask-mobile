@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { getGanachePort } from '../../../e2e/fixtures/utils';
 import ganache from 'ganache';

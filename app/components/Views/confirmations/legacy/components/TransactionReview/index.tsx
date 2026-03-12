@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import Eth from '@metamask/ethjs-query';
 import { withNavigation } from '@react-navigation/compat';

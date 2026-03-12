@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useRef, useCallback } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';

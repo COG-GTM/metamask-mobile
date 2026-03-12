@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import BN from 'bnjs4';
 import { renderFromWei, weiToFiat, toWei, conversionUtil } from '../number';

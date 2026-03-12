@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 /* eslint-disable no-mixed-spaces-and-tabs */
 import React, { useEffect, useState, useCallback } from 'react';

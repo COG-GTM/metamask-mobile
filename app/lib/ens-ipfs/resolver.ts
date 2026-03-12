@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import namehash from 'eth-ens-namehash';
 import Eth from '@metamask/ethjs-query';

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { ApprovalType } from '@metamask/controller-utils';
 import { SignatureRequest } from '@metamask/signature-controller';

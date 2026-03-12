@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { PureComponent } from 'react';
 import { Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';

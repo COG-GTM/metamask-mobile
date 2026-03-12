@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { equal } from 'uri-js';
 import { InteractionManager } from 'react-native';

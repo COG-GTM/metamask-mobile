@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import isUrl from 'is-url';
 import PropTypes from 'prop-types';

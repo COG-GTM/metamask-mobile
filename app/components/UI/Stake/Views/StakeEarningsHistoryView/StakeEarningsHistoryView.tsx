@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect } from 'react';

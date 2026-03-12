@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import URL from 'url-parse';
 import networksWithImages from 'images/image-icons';

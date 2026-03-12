@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 export default function migrate(state) {
   // This migration ensures that ignored tokens are in the correct form

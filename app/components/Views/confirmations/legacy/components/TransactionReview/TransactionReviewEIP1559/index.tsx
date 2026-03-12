@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useState, useCallback } from 'react';
 import { TouchableOpacity, View, StyleSheet, Linking } from 'react-native';

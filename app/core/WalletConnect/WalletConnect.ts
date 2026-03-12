@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import RNWalletConnect from '@walletconnect/client';
 import { v1 as random } from 'uuid';

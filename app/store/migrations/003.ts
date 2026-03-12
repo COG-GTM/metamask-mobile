@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { NetworksChainId } from '@metamask/controller-utils';
 import { isSafeChainId } from '../../util/networks';

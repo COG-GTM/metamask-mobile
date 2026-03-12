@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { useDispatch } from 'react-redux';
 import { strings } from '../../../../../../locales/i18n';

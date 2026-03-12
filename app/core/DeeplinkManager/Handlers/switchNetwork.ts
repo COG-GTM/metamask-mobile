@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { strings } from '../../../../locales/i18n';
 import { showAlert } from '../../../actions/alert';

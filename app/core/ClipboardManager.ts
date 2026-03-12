@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import Clipboard from '@react-native-clipboard/clipboard';
 import Device from '../util/device';

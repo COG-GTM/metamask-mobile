@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 (function (global, factory) {
   exports && typeof exports === 'object' && typeof module !== 'undefined'

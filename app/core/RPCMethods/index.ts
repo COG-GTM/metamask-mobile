@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import eth_sendTransaction from './eth_sendTransaction';
 import { wallet_addEthereumChain } from './wallet_addEthereumChain';

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { getAllNetworks, isSafeChainId } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
