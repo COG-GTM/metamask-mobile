@@ -8,13 +8,14 @@ import { withLedgerKeyring } from './Ledger/Ledger';
  *
  * @param {unknown} serializedQrKeyring - A serialized QR keyring.
  */
-export const restoreQRKeyring = async (serializedQrKeyring) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const restoreQRKeyring = async (serializedQrKeyring: any) => {
   const { KeyringController } = Engine.context;
 
   try {
     await KeyringController.restoreQRKeyring(serializedQrKeyring);
   } catch (e) {
-    Logger.error(e, 'error while trying to get qr accounts on recreate vault');
+    Logger.error(e as Error, 'error while trying to get qr accounts on recreate vault');
   }
 };
 
@@ -23,14 +24,15 @@ export const restoreQRKeyring = async (serializedQrKeyring) => {
  *
  * @param {unknown} serializedLedgerKeyring - A serialized Ledger keyring.
  */
-export const restoreLedgerKeyring = async (serializedLedgerKeyring) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const restoreLedgerKeyring = async (serializedLedgerKeyring: any) => {
   try {
-    await withLedgerKeyring(async (keyring) => {
+    await withLedgerKeyring(async (keyring: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       await keyring.deserialize(serializedLedgerKeyring);
     });
   } catch (e) {
     Logger.error(
-      e,
+      e as Error,
       'error while trying to restore Ledger accounts on recreate vault',
     );
   }
@@ -53,15 +55,16 @@ export const getSeedPhrase = async (password = '') => {
  * @param newPassword - new password
  * @param selectedAddress
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const recreateVaultWithNewPassword = async (
-  password,
-  newPassword,
-  selectedAddress,
+  password: any,
+  newPassword: any,
+  selectedAddress: any,
 ) => {
   const { KeyringController } = Engine.context;
   const seedPhrase = await getSeedPhrase(password);
 
-  let importedAccounts = [];
+  let importedAccounts: string[] = [];
   try {
     // Get imported accounts
     const simpleKeyrings = KeyringController.state.keyrings.filter(
@@ -78,7 +81,7 @@ export const recreateVaultWithNewPassword = async (
     }
   } catch (e) {
     Logger.error(
-      e,
+      e as Error,
       'error while trying to get imported accounts on recreate vault',
     );
   }
@@ -118,12 +121,12 @@ export const recreateVaultWithNewPassword = async (
   try {
     // Import imported accounts again
     for (let i = 0; i < importedAccounts.length; i++) {
-      await KeyringController.importAccountWithStrategy('privateKey', [
+      await KeyringController.importAccountWithStrategy('privateKey' as any, [ // eslint-disable-line @typescript-eslint/no-explicit-any
         importedAccounts[i],
       ]);
     }
   } catch (e) {
-    Logger.error(e, 'error while trying to import accounts on recreate vault');
+    Logger.error(e as Error, 'error while trying to import accounts on recreate vault');
   }
   const recreatedKeyrings = KeyringController.state.keyrings;
   // Reselect previous selected account if still available
@@ -140,9 +143,10 @@ export const recreateVaultWithNewPassword = async (
  *
  * @param password - Password to recreate and set the vault with
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const recreateVaultWithSamePassword = async (
   password = '',
-  selectedAddress,
+  selectedAddress: any,
 ) => recreateVaultWithNewPassword(password, password, selectedAddress);
 
 /**
@@ -152,8 +156,9 @@ export const recreateVaultWithSamePassword = async (
  * @param {KeyringTypes} type - The keyring type to check for.
  * @returns Whether the type was found in state.
  */
-function hasKeyringType(state, type) {
-  return state?.keyrings?.some((keyring) => keyring.type === type);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function hasKeyringType(state: any, type: any) {
+  return state?.keyrings?.some((keyring: any) => keyring.type === type); // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 /**
@@ -162,7 +167,8 @@ function hasKeyringType(state, type) {
  * @param {KeyringTypes} type - The type of keyring to serialize.
  * @returns The serialized state for the first keyring found of the given type.
  */
-async function getSerializedKeyring(type) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getSerializedKeyring(type: any) {
   const { KeyringController } = Engine.context;
   return await KeyringController.withKeyring({ type }, ({ keyring }) =>
     keyring.serialize(),

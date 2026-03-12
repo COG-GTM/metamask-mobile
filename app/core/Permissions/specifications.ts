@@ -52,11 +52,11 @@ export const CaveatFactories = Object.freeze({
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
-}) => ({
+}: { listAccounts: any; findNetworkClientIdByChainId: any }) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
-  }),
+  } as any), // eslint-disable-line @typescript-eslint/no-explicit-any
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   ...snapsCaveatsSpecifications,
   ...snapsEndowmentCaveatSpecifications,

@@ -1,12 +1,18 @@
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
-import { Duplex } from 'readable-stream';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { Duplex } = require('readable-stream');
 
 // eslint-disable-next-line no-empty-function
 const noop = () => {};
 
-export default class PortDuplexStream extends Duplex {
-  constructor(port, url) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default class PortDuplexStream extends (Duplex as any) {
+  _port: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  _url: string;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(port: any, url: string) {
     super({
       objectMode: true,
     });
@@ -23,10 +29,11 @@ export default class PortDuplexStream extends Duplex {
    * @private
    * @param {Object} msg - Payload from the onMessage listener of Port
    */
-  _onMessage = function (msg) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _onMessage = function (this: PortDuplexStream, msg: any) {
     if (Buffer.isBuffer(msg)) {
-      delete msg._isBuffer;
-      const data = new Buffer(msg);
+      delete (msg as any)._isBuffer; // eslint-disable-line @typescript-eslint/no-explicit-any
+      const data = Buffer.from(msg);
       this.push(data);
     } else {
       this.push(msg);
@@ -39,7 +46,7 @@ export default class PortDuplexStream extends Duplex {
    *
    * @private
    */
-  _onDisconnect = function () {
+  _onDisconnect = function (this: PortDuplexStream) {
     this.destroy && this.destroy();
   };
 
@@ -57,10 +64,11 @@ export default class PortDuplexStream extends Duplex {
    * @param {string} encoding Encoding to use when writing payload
    * @param {Function} cb Called when writing is complete or an error occurs
    */
-  _write = function (msg, encoding, cb) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _write = function (this: PortDuplexStream, msg: any, encoding: string, cb: (error?: Error) => void) {
     try {
       if (Buffer.isBuffer(msg)) {
-        const data = msg.toJSON();
+        const data: any = msg.toJSON(); // eslint-disable-line @typescript-eslint/no-explicit-any
         data._isBuffer = true;
         this._port.postMessage(data, this._url);
       } else {

@@ -7,13 +7,14 @@ const ClipboardManager = {
   async getString() {
     return await Clipboard.getString();
   },
-  async setString(string) {
+  async setString(string: string) {
     await Clipboard.setString(string);
   },
-  expireTime: null,
-  async setStringExpire(string) {
+  expireTime: null as ReturnType<typeof setTimeout> | null,
+  async setStringExpire(string: string) {
     if (Device.isIos()) {
-      await Clipboard.setStringExpire(string);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (Clipboard as any).setStringExpire(string);
     } else {
       await this.setString(string);
       if (this.expireTime) {
@@ -24,7 +25,8 @@ const ClipboardManager = {
 
         if (!string) return;
 
-        await Clipboard.clearString();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (Clipboard as any).clearString();
       }, EXPIRE_TIME_MS);
     }
   },

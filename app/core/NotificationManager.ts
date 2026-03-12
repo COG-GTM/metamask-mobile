@@ -17,7 +17,8 @@ import { SmartTransactionStatuses } from '@metamask/smart-transactions-controlle
 
 import Logger from '../util/Logger';
 import { TransactionStatus } from '@metamask/transaction-controller';
-export const constructTitleAndMessage = (notification) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const constructTitleAndMessage = (notification: any) => {
   let title, message;
   switch (notification.type) {
     case NotificationTransactionTypes.pending:
@@ -91,36 +92,55 @@ export const constructTitleAndMessage = (notification) => {
  * depending on the state of the app
  */
 class NotificationManager {
+  static instance: NotificationManager | undefined;
+
   /**
    * Navigation object from react-navigation
    */
-  _navigation;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _navigation: any;
   /**
    * Array containing the id of the transaction that should be
    * displayed while interacting with a notification
    */
-  _transactionToView;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _transactionToView: any[] = [];
   /**
    * Boolean based on the current state of the app
    */
-  _backgroundMode;
+  _backgroundMode = false;
 
   /**
    * Object containing watched transaction ids list by transaction nonce
    */
-  _transactionsWatchTable = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _transactionsWatchTable: Record<string, any[]> = {};
 
-  _transactionFailedListener;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _transactionFailedListener: any;
 
-  _transactionConfirmedListener;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _transactionConfirmedListener: any;
 
-  _transactionSpeedupListener;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _transactionSpeedupListener: any;
 
-  _handleAppStateChange = (appState) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _showTransactionNotification: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _hideTransactionNotification: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _showSimpleNotificationFn: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _removeNotificationById: any;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _handleAppStateChange = (appState: any) => {
     this._backgroundMode = appState === 'background';
   };
 
-  _viewTransaction = (id) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _viewTransaction = (id: any) => {
     this._transactionToView.push(id);
     this.goTo('TransactionsHome');
   };
@@ -142,7 +162,8 @@ class NotificationManager {
     );
   };
 
-  _showNotification = async (data) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _showNotification = async (data: any) => {
     if (this._backgroundMode) {
       const { title, message } = constructTitleAndMessage(data);
       const id = data?.transaction?.id || '';
@@ -150,7 +171,8 @@ class NotificationManager {
         this._transactionToView.push(id);
       }
 
-      const pushData = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pushData: Record<string, any> = {
         channelId: ChannelId.DEFAULT_NOTIFICATION_CHANNEL_ID,
         title,
         body: message,
@@ -168,7 +190,7 @@ class NotificationManager {
       } else {
         pushData.userInfo = extraData;
       }
-      await NotificationsService.displayNotification(pushData);
+      await NotificationsService.displayNotification(pushData as any); // eslint-disable-line @typescript-eslint/no-explicit-any
     } else {
       this._showTransactionNotification({
         autodismiss: data.duration,
@@ -178,7 +200,8 @@ class NotificationManager {
     }
   };
 
-  _failedCallback = (transactionMeta) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _failedCallback = (transactionMeta: any) => {
     // If it fails we hide the pending tx notification
     this._removeNotificationById(transactionMeta.id);
     const transaction =
@@ -194,12 +217,13 @@ class NotificationManager {
           duration: 5000,
         });
         // Clean up
-        this._removeListeners(transactionMeta.id);
+        this._removeListeners();
         delete this._transactionsWatchTable[transactionMeta.txParams.nonce];
       }, 2000);
   };
 
-  _confirmedCallback = (transactionMeta, originalTransaction) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _confirmedCallback = (transactionMeta: any, originalTransaction: any) => {
     // Once it's confirmed we hide the pending tx notification
     this._removeNotificationById(transactionMeta.id);
     this._transactionsWatchTable[transactionMeta.txParams.nonce].length &&
@@ -215,7 +239,7 @@ class NotificationManager {
           duration: 5000,
         });
         // Clean up
-        this._removeListeners(transactionMeta.id);
+        this._removeListeners();
 
         const {
           TokenBalancesController,
@@ -227,7 +251,7 @@ class NotificationManager {
         // Detect assets for ERC721 txs
         // right after a transaction was confirmed
         const pollPromises = [
-          AccountTrackerController.refresh(),
+          (AccountTrackerController as any).refresh(), // eslint-disable-line @typescript-eslint/no-explicit-any
           TokenBalancesController.updateBalancesByChainId({
             chainId: transactionMeta.chainId,
           }),
@@ -249,12 +273,13 @@ class NotificationManager {
         // Prompt review
         ReviewManager.promptReview();
 
-        this._removeListeners(transactionMeta.id);
+        this._removeListeners();
         delete this._transactionsWatchTable[transactionMeta.txParams.nonce];
       }, 2000);
   };
 
-  _speedupCallback = (transactionMeta) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _speedupCallback = (transactionMeta: any) => {
     this.watchSubmittedTransaction(transactionMeta, true);
     setTimeout(() => {
       this._showNotification({
@@ -271,18 +296,19 @@ class NotificationManager {
   /**
    * Creates a NotificationManager instance
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(
-    _navigation,
-    _showTransactionNotification,
-    _hideTransactionNotification,
-    _showSimpleNotification,
-    _removeNotificationById,
+    _navigation: any,
+    _showTransactionNotification: any,
+    _hideTransactionNotification: any,
+    _showSimpleNotification: any,
+    _removeNotificationById: any,
   ) {
     if (!NotificationManager.instance) {
       this._navigation = _navigation;
       this._showTransactionNotification = _showTransactionNotification;
       this._hideTransactionNotification = _hideTransactionNotification;
-      this._showSimpleNotification = _showSimpleNotification;
+      this._showSimpleNotificationFn = _showSimpleNotification;
       this._removeNotificationById = _removeNotificationById;
       this._transactionToView = [];
       this._backgroundMode = false;
@@ -290,17 +316,19 @@ class NotificationManager {
       AppState.addEventListener('change', this._handleAppStateChange);
     }
 
-    return NotificationManager.instance;
+    return NotificationManager.instance!;
   }
 
   /**
    * Navigates to a specific view
    */
-  goTo(view) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  goTo(view: any) {
     this._navigation.navigate(view);
   }
 
-  onMessageReceived(data) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onMessageReceived(data: any) {
     this._showNotification(data);
   }
 
@@ -314,16 +342,18 @@ class NotificationManager {
    * Sets the id of the transaction that should
    * be displayed in memory
    */
-  setTransactionToView = (id) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setTransactionToView = (id: any) => {
     this._transactionToView.push(id);
   };
 
   /**
    * Shows a notification with title and description
    */
-  showSimpleNotification = (data) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showSimpleNotification = (data: any) => {
     const id = Date.now();
-    this._showSimpleNotification({
+    this._showSimpleNotificationFn({
       id,
       autodismiss: data.duration,
       title: data.title,
@@ -338,27 +368,28 @@ class NotificationManager {
    * and generates the corresponding notification
    * based on the status of the transaction (failed or confirmed)
    */
-  watchSubmittedTransaction(transaction, speedUp = false) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  watchSubmittedTransaction(transaction: any, speedUp = false) {
     if (transaction.silent) return false;
     const { TransactionController } = Engine.context;
     const transactionMeta = TransactionController.state.transactions.find(
       ({ id }) => id === transaction.id,
     );
 
-    const nonce = transactionMeta.txParams.nonce;
+    const nonce = transactionMeta!.txParams.nonce;
     // First we show the pending tx notification if is not an speed up tx
     !speedUp &&
       this._showNotification({
         type: 'pending',
         autoHide: false,
         transaction: {
-          id: transactionMeta.id,
+          id: transactionMeta!.id,
         },
       });
 
-    this._transactionsWatchTable[nonce]
-      ? this._transactionsWatchTable[nonce].push(transactionMeta.id)
-      : (this._transactionsWatchTable[nonce] = [transactionMeta.id]);
+    this._transactionsWatchTable[nonce!]
+      ? this._transactionsWatchTable[nonce!].push(transactionMeta!.id)
+      : (this._transactionsWatchTable[nonce!] = [transactionMeta!.id]);
 
     this._transactionConfirmedListener =
       Engine.controllerMessenger.subscribeOnceIf(
@@ -375,7 +406,7 @@ class NotificationManager {
         (transactionMeta) => {
           this._failedCallback(transactionMeta);
         },
-        (transactionMeta) => transactionMeta.id === transaction.id,
+        (transactionMeta: any) => transactionMeta.id === transaction.id, // eslint-disable-line @typescript-eslint/no-explicit-any
       );
 
     this._transactionSpeedupListener =
@@ -387,7 +418,8 @@ class NotificationManager {
         (transactionMeta) => transactionMeta.id === transaction.id,
       );
 
-    const smartTransactionListener = async (smartTransaction) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const smartTransactionListener = async (smartTransaction: any) => {
       if (smartTransaction.status === SmartTransactionStatuses.PENDING) {
         return;
       }
@@ -401,7 +433,7 @@ class NotificationManager {
       }
       const transactions = TransactionController.getTransactions({
         filterToCurrentNetwork: false,
-      });
+      } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
       const foundTransaction = transactions.find(
         (tx) => tx.id === smartTransaction.transactionId,
       );
@@ -422,7 +454,8 @@ class NotificationManager {
   /**
    * Generates a notification for an incoming transaction
    */
-  gotIncomingTransaction = async (incomingTransactions) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gotIncomingTransaction = async (incomingTransactions: any[]) => {
     try {
       const { AccountTrackerController, AccountsController } = Engine.context;
 
@@ -440,8 +473,8 @@ class NotificationManager {
       const filteredTransactions = incomingTransactions
         .reverse()
         .filter(
-          (tx) =>
-            safeToChecksumAddress(tx.txParams?.to) ===
+            (tx: any) => // eslint-disable-line @typescript-eslint/no-explicit-any
+              safeToChecksumAddress(tx.txParams?.to) ===
               selectedInternalAccountChecksummedAddress &&
             safeToChecksumAddress(tx.txParams?.from) !==
               selectedInternalAccountChecksummedAddress &&
@@ -472,7 +505,7 @@ class NotificationManager {
       });
 
       // Update balance upon detecting a new incoming transaction
-      AccountTrackerController.refresh();
+      (AccountTrackerController as any).refresh(); // eslint-disable-line @typescript-eslint/no-explicit-any
     } catch (error) {
       Logger.log(
         'Notifications',
@@ -483,16 +516,17 @@ class NotificationManager {
   };
 }
 
-let instance;
+let instance: NotificationManager | undefined;
 
 export default {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   init({
     navigation,
     showTransactionNotification,
     hideCurrentNotification,
     showSimpleNotification,
     removeNotificationById,
-  }) {
+  }: Record<string, any>) {
     instance = new NotificationManager(
       navigation,
       showTransactionNotification,
@@ -502,22 +536,31 @@ export default {
     );
     return instance;
   },
-  watchSubmittedTransaction(transaction) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  watchSubmittedTransaction(transaction: any) {
     return instance?.watchSubmittedTransaction(transaction);
+  },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  goTo(view: any) {
+    return instance?.goTo(view);
   },
   getTransactionToView() {
     return instance?.getTransactionToView();
   },
-  setTransactionToView(id) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setTransactionToView(id: any) {
     return instance?.setTransactionToView(id);
   },
-  gotIncomingTransaction(incomingTransactions) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gotIncomingTransaction(incomingTransactions: any[]) {
     return instance?.gotIncomingTransaction(incomingTransactions);
   },
-  showSimpleNotification(data) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showSimpleNotification(data: any) {
     return instance?.showSimpleNotification(data);
   },
-  onMessageReceived(data) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onMessageReceived(data: any) {
     return instance?.onMessageReceived(data);
   },
 };

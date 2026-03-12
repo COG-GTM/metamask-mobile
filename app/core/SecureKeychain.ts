@@ -37,9 +37,12 @@ import { MetricsEventBuilder } from './Analytics/MetricsEventBuilder';
  * the phone's keychain
  */
 class SecureKeychain {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static instance: SecureKeychain | undefined;
   isAuthenticating = false;
 
-  constructor(code) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(code: any) {
     if (!SecureKeychain.instance) {
       privates.set(this, { code });
       SecureKeychain.instance = this;
@@ -48,21 +51,24 @@ class SecureKeychain {
     return SecureKeychain.instance;
   }
 
-  encryptPassword(password) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  encryptPassword(password: any) {
     return encryptor.encrypt(privates.get(this).code, { password });
   }
 
-  decryptPassword(str) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  decryptPassword(str: any) {
     return encryptor.decrypt(privates.get(this).code, str);
   }
 }
-let instance;
+let instance: SecureKeychain | undefined;
 
 export default {
-  init(salt) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  init(salt: any) {
     instance = new SecureKeychain(salt);
 
-    if (Device.isAndroid && Keychain.SECURITY_LEVEL?.SECURE_HARDWARE)
+    if (Device.isAndroid() && Keychain.SECURITY_LEVEL?.SECURE_HARDWARE)
       MetaMetrics.getInstance().trackEvent(
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.ANDROID_HARDWARE_KEYSTORE,
@@ -99,24 +105,25 @@ export default {
         const keychainObject = await Keychain.getGenericPassword(
           defaultOptions,
         );
-        if (keychainObject.password) {
+        if (keychainObject && keychainObject.password) {
           const encryptedPassword = keychainObject.password;
-          const decrypted = await instance.decryptPassword(encryptedPassword);
-          keychainObject.password = decrypted.password;
+          const decrypted: any = await instance.decryptPassword(encryptedPassword); // eslint-disable-line @typescript-eslint/no-explicit-any
+          (keychainObject as any).password = decrypted.password; // eslint-disable-line @typescript-eslint/no-explicit-any
           instance.isAuthenticating = false;
           return keychainObject;
         }
         instance.isAuthenticating = false;
       } catch (error) {
         instance.isAuthenticating = false;
-        throw new Error(error.message);
+        throw new Error((error as Error).message);
       }
     }
     return null;
   },
 
-  async setGenericPassword(password, type) {
-    const authOptions = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async setGenericPassword(password: any, type: any) {
+    const authOptions: Record<string, any> = { // eslint-disable-line @typescript-eslint/no-explicit-any
       accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     };
 
@@ -144,7 +151,7 @@ export default {
       return await this.resetGenericPassword();
     }
 
-    const encryptedPassword = await instance.encryptPassword(password);
+    const encryptedPassword = await instance!.encryptPassword(password);
     await Keychain.setGenericPassword('metamask-user', encryptedPassword, {
       ...defaultOptions,
       ...authOptions,
@@ -163,9 +170,9 @@ export default {
           await this.getGenericPassword();
         } catch (error) {
           // Specifically check for user cancellation
-          if (error.message === 'User canceled the operation.') {
+          if ((error as Error).message === 'User canceled the operation.') {
             // Store password without biometrics
-            const encryptedPassword = await instance.encryptPassword(password);
+            const encryptedPassword = await instance!.encryptPassword(password);
             await Keychain.setGenericPassword(
               'metamask-user',
               encryptedPassword,

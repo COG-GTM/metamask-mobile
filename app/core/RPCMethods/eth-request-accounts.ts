@@ -37,17 +37,18 @@ const locks = new Set();
  * @param options.requestPermissionsForOrigin - A hook that requests CAIP-25 permissions for the origin.
  * @returns A promise that resolves to nothing
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: any,
+  res: any,
+  _next: any,
+  end: any,
   {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
-  },
+  }: { getAccounts: any; getUnlockPromise: any; getCaip25PermissionFromLegacyPermissionsForOrigin: any; requestPermissionsForOrigin: any }, // eslint-disable-line @typescript-eslint/no-explicit-any
 ) {
   const { origin } = req;
   if (locks.has(origin)) {
@@ -87,7 +88,7 @@ async function requestEthereumAccountsHandler(
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent(origin, ethAccounts.length);
+  trackDappViewedEvent(origin);
 
   res.result = ethAccounts;
   return end();

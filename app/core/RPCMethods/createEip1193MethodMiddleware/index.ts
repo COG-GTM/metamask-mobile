@@ -11,7 +11,7 @@ import { eip1193OnlyHandlers } from '../handlers';
 export const createEip1193MethodMiddleware = makeMethodMiddlewareMaker([
   ...eip1193OnlyHandlers,
   // EIP-2255 Permission handlers
-  getPermissionsHandler,
-  requestPermissionsHandler,
-  revokePermissionsHandler,
+  getPermissionsHandler as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  requestPermissionsHandler as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  revokePermissionsHandler as any, // eslint-disable-line @typescript-eslint/no-explicit-any
 ]);

@@ -57,6 +57,42 @@ const legacyNetworkId = () => {
 };
 
 export class BackgroundBridge extends EventEmitter {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  url: any;
+  hostname: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  remoteConnHost: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  isMainFrame: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  isWalletConnect: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  isMMSDK: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  isRemoteConn: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _webviewRef: any;
+  disconnected: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getApprovedHosts: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  channelId: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  deprecatedNetworkVersions: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createMiddleware: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  port: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  engine: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  lastChainIdSent: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  networkVersionSent: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addressSent: any;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor({
     webview,
     url,
@@ -70,7 +106,7 @@ export class BackgroundBridge extends EventEmitter {
     remoteConnHost,
     isMMSDK,
     channelId,
-  }) {
+  }: Record<string, any>) {
     super();
     this.url = url;
     // TODO - When WalletConnect and MMSDK uses the Permission System, URL does not apply in all conditions anymore since hosts may not originate from web. This will need to change!
@@ -264,15 +300,17 @@ export class BackgroundBridge extends EventEmitter {
     };
   }
 
-  async notifyChainChanged(params) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async notifyChainChanged(params?: any) {
     DevLogger.log(`notifyChainChanged: `, params);
     this.sendNotification({
       method: NOTIFICATION_NAMES.chainChanged,
-      params: params ?? (await this.getProviderNetworkState(this.hostname)),
+      params: params ?? (await this.getProviderNetworkState(this.hostname as any)), // eslint-disable-line @typescript-eslint/no-explicit-any
     });
   }
 
-  async notifySelectedAddressChanged(selectedAddress) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async notifySelectedAddressChanged(selectedAddress: any) {
     try {
       let approvedAccounts = [];
       DevLogger.log(
@@ -318,11 +356,12 @@ export class BackgroundBridge extends EventEmitter {
     }
   }
 
-  async onStateUpdate(memState) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async onStateUpdate(memState?: any) {
     if (!memState) {
       memState = this.getState();
     }
-    const publicState = await this.getProviderNetworkState(this.hostname);
+    const publicState = await this.getProviderNetworkState(this.hostname as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
     // Check if update already sent
     if (
@@ -350,10 +389,10 @@ export class BackgroundBridge extends EventEmitter {
     return Engine.context.KeyringController.isUnlocked();
   }
 
-  async getProviderState(origin) {
+  async getProviderState(origin?: string) {
     return {
       isUnlocked: this.isUnlocked(),
-      ...(await this.getProviderNetworkState(origin)),
+      ...(await this.getProviderNetworkState(origin as any)), // eslint-disable-line @typescript-eslint/no-explicit-any
     };
   }
 
@@ -361,7 +400,8 @@ export class BackgroundBridge extends EventEmitter {
     this.emit('update');
   };
 
-  onMessage = (msg) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onMessage = (msg: any) => {
     this.port.emit('message', { name: msg.name, data: msg.data });
   };
 
@@ -383,13 +423,14 @@ export class BackgroundBridge extends EventEmitter {
    * A method for serving our ethereum provider over a given stream.
    * @param {*} outStream - The stream to provide over.
    */
-  setupProviderConnection(outStream) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setupProviderConnection(outStream: any) {
     this.engine = this.setupProviderEngine();
 
     // setup connection
     const providerStream = createEngineStream({ engine: this.engine });
 
-    pump(outStream, providerStream, outStream, (err) => {
+    pump(outStream, providerStream, outStream, (err: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       // handle any middleware cleanup
       this.engine.destroy();
       if (err) Logger.log('Error with provider stream conn', err);
@@ -421,14 +462,16 @@ export class BackgroundBridge extends EventEmitter {
 
     // create subscription polyfill middleware
     const subscriptionManager = createSubscriptionManager(proxyClient);
-    subscriptionManager.events.on('notification', (message) =>
+    subscriptionManager.events.on('notification', (message: any) => // eslint-disable-line @typescript-eslint/no-explicit-any
       engine.emit('notification', message),
     );
 
     // metadata
-    engine.push(createOriginMiddleware({ origin }));
-    engine.push(createSelectedNetworkMiddleware(Engine.controllerMessenger));
-    engine.push(createLoggerMiddleware({ origin }));
+    engine.push(createOriginMiddleware({ origin }) as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    engine.push(createSelectedNetworkMiddleware(Engine.controllerMessenger as any));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    engine.push(createLoggerMiddleware({ origin }) as any);
     // filter and subscription polyfills
     engine.push(filterMiddleware);
     engine.push(subscriptionManager.middleware);
@@ -440,10 +483,10 @@ export class BackgroundBridge extends EventEmitter {
     engine.push(
       createEip1193MethodMiddleware({
         // Permission-related
-        getAccounts: (...args) =>
+        getAccounts: (...args: any[]) => // eslint-disable-line @typescript-eslint/no-explicit-any
           getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
         getCaip25PermissionFromLegacyPermissionsForOrigin: (
-          requestedPermissions,
+          requestedPermissions: any, // eslint-disable-line @typescript-eslint/no-explicit-any
         ) =>
           getCaip25PermissionFromLegacyPermissions(
             origin,
@@ -453,12 +496,12 @@ export class BackgroundBridge extends EventEmitter {
           PermissionController,
           origin,
         ),
-        requestPermissionsForOrigin: (requestedPermissions) =>
+        requestPermissionsForOrigin: (requestedPermissions: any) => // eslint-disable-line @typescript-eslint/no-explicit-any
           PermissionController.requestPermissions(
             { origin },
             requestedPermissions,
           ),
-        revokePermissionsForOrigin: (permissionKeys) => {
+        revokePermissionsForOrigin: (permissionKeys: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
           try {
             PermissionController.revokePermissions({
               [origin]: permissionKeys,
@@ -483,7 +526,7 @@ export class BackgroundBridge extends EventEmitter {
           return new Promise((resolve) => {
             Engine.controllerMessenger.subscribeOnceIf(
               'KeyringController:unlock',
-              resolve,
+              resolve as () => void,
               () => true,
             );
           });
@@ -494,7 +537,7 @@ export class BackgroundBridge extends EventEmitter {
     // Legacy RPC methods that need to be implemented ahead of the permission middleware
     engine.push(
       createEthAccountsMethodMiddleware({
-        getAccounts: (...args) =>
+        getAccounts: (...args: any[]) => // eslint-disable-line @typescript-eslint/no-explicit-any
           getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
       }),
     );
@@ -531,7 +574,7 @@ export class BackgroundBridge extends EventEmitter {
       engine.push(
         snapMethodMiddlewareBuilder(
           Engine.context,
-          Engine.controllerMessenger,
+          Engine.controllerMessenger as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           this.url,
           // We assume that origins connecting through the BackgroundBridge are websites
           SubjectType.Website,
@@ -555,7 +598,8 @@ export class BackgroundBridge extends EventEmitter {
     return engine;
   }
 
-  sendNotification(payload) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sendNotification(payload: any) {
     DevLogger.log(`BackgroundBridge::sendNotification: `, payload);
     this.engine && this.engine.emit('notification', payload);
   }

@@ -19,13 +19,14 @@ import { MESSAGE_TYPE } from '../createTracingMiddleware';
  * @param params.hooks - Method hooks passed to the method implementation.
  * @returns {void}.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const wallet_switchEthereumChain = async ({
   req,
   res,
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: Record<string, any>) => {
   const {
     CurrencyRateController,
     NetworkController,
@@ -46,7 +47,7 @@ export const wallet_switchEthereumChain = async ({
     chainId: true,
   };
 
-  const extraKeys = Object.keys(params).filter((key) => !allowedKeys[key]);
+  const extraKeys = Object.keys(params).filter((key) => !(allowedKeys as Record<string, boolean>)[key]);
   if (extraKeys.length) {
     throw rpcErrors.invalidParams(
       `Received unexpected keys on object parameter. Unsupported keys:\n${extraKeys}`,
