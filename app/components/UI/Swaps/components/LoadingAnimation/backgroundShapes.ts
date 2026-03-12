@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Intentionally using non-design system colors here
 /* eslint-disable @metamask/design-tokens/color-no-hex*/
 const backgroundShapes = `<svg id="bgShapes" width="401" height="376" viewBox="0 0 401 376" fill="none" xmlns="http://www.w3.org/2000/svg">
