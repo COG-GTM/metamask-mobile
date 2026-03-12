@@ -11,7 +11,7 @@ import { act } from '@testing-library/react-hooks';
 import { PreferencesState } from '@metamask/preferences-controller';
 
 // eslint-disable-next-line import/no-namespace
-import * as allSelectors from '../../../../app/reducers/collectibles/index.js';
+import * as allSelectors from '../../../../app/reducers/collectibles/index';
 // eslint-disable-next-line import/no-namespace
 import * as networkSelectors from '../../../selectors/networkController';
 import { cleanup, waitFor } from '@testing-library/react-native';

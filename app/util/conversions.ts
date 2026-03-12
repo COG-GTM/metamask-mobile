@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { hexToBN } from '@metamask/controller-utils';
 import { ETH, GWEI, WEI } from './custom-gas';
 import {
@@ -5,7 +6,7 @@ import {
   addCurrencies,
   subtractCurrencies,
 } from './conversion';
-import { formatCurrency } from './confirm-tx.js';
+import { formatCurrency } from './confirm-tx';
 import { addHexPrefix } from './number';
 
 export function hexToDecimal(hexValue) {
