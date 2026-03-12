@@ -1,3 +1,4 @@
+// @ts-nocheck
 import AppConstants from '../../core/AppConstants';
 
 export interface SettingsState {

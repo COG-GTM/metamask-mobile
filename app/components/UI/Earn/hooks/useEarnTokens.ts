@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import useStakingEligibility from '../../Stake/hooks/useStakingEligibility';

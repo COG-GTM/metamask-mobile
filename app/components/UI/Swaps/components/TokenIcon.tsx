@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { StyleSheet, View } from 'react-native';

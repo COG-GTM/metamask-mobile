@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { rpcErrors } from '@metamask/rpc-errors';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 import {

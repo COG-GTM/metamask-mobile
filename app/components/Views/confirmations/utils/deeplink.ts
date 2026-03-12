@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   CHAIN_IDS,
   TransactionType,

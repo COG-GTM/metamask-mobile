@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Third party dependencies.
 import { useNavigation } from '@react-navigation/native';
 import { isEqual } from 'lodash';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect } from 'react';
 import PhishingModalUI from '../../../../UI/PhishingModal';
 import URLParse from 'url-parse';

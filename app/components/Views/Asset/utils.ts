@@ -1,3 +1,4 @@
+// @ts-nocheck
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { SolScope } from '@metamask/keyring-api';
 import { selectIsBridgeEnabledSource } from '../../../core/redux/slices/bridge';

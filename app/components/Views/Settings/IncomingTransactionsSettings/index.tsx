@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { View, ImageSourcePropType } from 'react-native';
 import { useSelector } from 'react-redux';

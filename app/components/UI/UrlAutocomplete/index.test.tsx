@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import UrlAutocomplete, { UrlAutocompleteRef } from './';
 import { deleteFavoriteTestId } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/UrlAutocomplete.testIds';

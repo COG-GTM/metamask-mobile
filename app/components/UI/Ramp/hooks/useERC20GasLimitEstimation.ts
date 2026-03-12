@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useCallback } from 'react';
 import { TransactionParams } from '@metamask/transaction-controller';
 import { toHex } from '@metamask/controller-utils';

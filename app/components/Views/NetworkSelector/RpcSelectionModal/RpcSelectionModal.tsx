@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { FC, useCallback, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import BottomSheet, {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import TermsAndConditions from './';

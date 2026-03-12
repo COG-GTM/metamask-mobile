@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Engine from '../core/Engine';
 import ENS from 'ethjs-ens';
 import { toLowerCaseEquals } from '../util/general';

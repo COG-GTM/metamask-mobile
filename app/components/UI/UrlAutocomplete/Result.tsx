@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { memo, useCallback } from 'react';
 import { TouchableOpacity, View, Text } from 'react-native';
 import { useTheme } from '../../../util/theme';

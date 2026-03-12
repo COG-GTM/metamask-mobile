@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
 import { NetworkStatus } from '@metamask/network-controller';

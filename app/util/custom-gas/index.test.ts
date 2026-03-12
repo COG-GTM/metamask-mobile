@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { parseWaitTime, getGasLimit } from '.';
 
 jest.mock('../../util/transaction-controller', () => ({

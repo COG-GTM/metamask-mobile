@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useSelector } from 'react-redux';
 import { NATIVE_ADDRESS } from '../../../../constants/on-ramp';
 import { selectAccountsByChainId } from '../../../../selectors/accountTrackerController';

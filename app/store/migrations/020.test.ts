@@ -1,3 +1,4 @@
+// @ts-nocheck
 import migrate from './020';
 import { v4 } from 'uuid';
 

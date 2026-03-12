@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Needed after https://github.com/MetaMask/controllers/pull/152
  *

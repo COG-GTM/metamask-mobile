@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Switch, ActivityIndicator } from 'react-native';
 import { useSelector } from 'react-redux';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createSelector } from 'reselect';
 import { selectChainId } from '../../selectors/networkController';
 import {

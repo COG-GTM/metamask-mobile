@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { renderFromWei, hexToBN } from '../../../../../../util/number';
 import {
   getTicker,

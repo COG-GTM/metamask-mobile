@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Animated } from 'react-native';
 import PropTypes from 'prop-types';

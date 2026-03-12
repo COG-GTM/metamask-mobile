@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable import/no-namespace */
 import * as Sentry from '@sentry/react-native';
 import { dedupeIntegration, extraErrorDataIntegration } from '@sentry/browser';

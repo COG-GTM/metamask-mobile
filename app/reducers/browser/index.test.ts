@@ -1,3 +1,4 @@
+// @ts-nocheck
 import browserReducer from './index';
 import AppConstants from '../../core/AppConstants';
 

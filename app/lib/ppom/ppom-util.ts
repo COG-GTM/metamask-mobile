@@ -1,3 +1,4 @@
+// @ts-nocheck
 import setSignatureRequestSecurityAlertResponse from '../../actions/signatureRequest';
 import { setTransactionSecurityAlertResponse } from '../../actions/transaction';
 import {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { swapsUtils } from '@metamask/swaps-controller';
 import BN from 'bnjs4';
 

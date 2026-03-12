@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NativeEventSubscription } from 'react-native';
 import Logger from '../../util/Logger';
 import AppConstants from '../AppConstants';

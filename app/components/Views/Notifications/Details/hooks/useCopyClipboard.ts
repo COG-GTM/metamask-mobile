@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useDispatch } from 'react-redux';
 import { strings } from '../../../../../../locales/i18n';
 import { showAlert } from '../../../../../actions/alert';

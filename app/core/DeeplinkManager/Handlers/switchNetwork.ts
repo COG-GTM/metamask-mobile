@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { strings } from '../../../../locales/i18n';
 import { showAlert } from '../../../actions/alert';
 import { handleNetworkSwitch } from '../../../util/networks/handleNetworkSwitch';

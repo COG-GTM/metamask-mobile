@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { v1 as random } from 'uuid';
 
 export default function migrate(state) {

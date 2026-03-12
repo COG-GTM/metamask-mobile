@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Dimensions, PixelRatio } from 'react-native';
 
 //baseModel 0

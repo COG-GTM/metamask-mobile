@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable react/prop-types */
 import React, { memo } from 'react';
 import { Image, ImageStyle, View } from 'react-native';

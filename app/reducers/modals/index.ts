@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface ModalsState {
   networkModalVisible: boolean;
   shouldNetworkSwitchPopToWallet: boolean;

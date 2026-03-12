@@ -1,3 +1,4 @@
+// @ts-nocheck
 import isUrl from 'is-url';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';

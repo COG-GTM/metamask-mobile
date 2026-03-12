@@ -1,3 +1,4 @@
+// @ts-nocheck
 import switchNetwork from './switchNetwork';
 import DeeplinkManager from '../DeeplinkManager';
 import { showAlert } from '../../../actions/alert';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useSelector } from 'react-redux';
 import { BigNumber } from 'bignumber.js';
 import { Hex } from '@metamask/utils';

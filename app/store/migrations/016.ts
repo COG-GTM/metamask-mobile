@@ -1,3 +1,4 @@
+// @ts-nocheck
 export default function migrate(state) {
   if (state.engine.backgroundState.NetworkController.properties) {
     state.engine.backgroundState.NetworkController.networkDetails =

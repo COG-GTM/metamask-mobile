@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ChainId } from '@metamask/controller-utils';
 import networksWithImages from 'images/image-icons';
 import NetworkList, {

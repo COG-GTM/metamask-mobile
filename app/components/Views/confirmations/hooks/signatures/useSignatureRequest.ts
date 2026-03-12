@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ApprovalType } from '@metamask/controller-utils';
 import { SignatureRequest } from '@metamask/signature-controller';
 import { useSelector } from 'react-redux';

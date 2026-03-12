@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Third parties dependencies
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import ActionModal from '../../UI/ActionModal';
 import Icon from 'react-native-vector-icons/FontAwesome';

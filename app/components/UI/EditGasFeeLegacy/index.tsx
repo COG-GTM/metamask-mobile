@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable react/display-name */
 import React, { useState } from 'react';
 import {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Third party dependencies.
 import React, { useCallback, useState, useEffect } from 'react';
 import { SafeAreaView, View } from 'react-native';

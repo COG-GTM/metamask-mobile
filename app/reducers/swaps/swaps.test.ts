@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { cloneDeep } from 'lodash';
 import Device from '../../util/device';

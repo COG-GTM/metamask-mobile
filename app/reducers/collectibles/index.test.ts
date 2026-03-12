@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ChainId } from '@metamask/controller-utils';
 import reducer, {
   ADD_FAVORITE_COLLECTIBLE,

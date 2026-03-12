@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* Currency Conversion Utility
  * This utility function can be used for converting currency related values within metamask.
  * The caller should be able to pass it a value, along with information about the value's

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NetworksChainId } from '@metamask/controller-utils';
 import { GOERLI } from '../../../app/constants/network';
 

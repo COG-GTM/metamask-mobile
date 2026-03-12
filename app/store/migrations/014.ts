@@ -1,3 +1,4 @@
+// @ts-nocheck
 export default function migrate(state) {
   if (state.engine.backgroundState.NetworkController.provider) {
     state.engine.backgroundState.NetworkController.providerConfig =

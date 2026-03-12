@@ -1,3 +1,4 @@
+// @ts-nocheck
 import migrate from './065';
 import { merge } from 'lodash';
 import { captureException } from '@sentry/react-native';

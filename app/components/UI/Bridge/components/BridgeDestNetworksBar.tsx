@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useCallback, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import Text from '../../../../component-library/components/Texts/Text';

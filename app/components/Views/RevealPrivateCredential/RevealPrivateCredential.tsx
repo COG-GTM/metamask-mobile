@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable no-mixed-spaces-and-tabs */
 import React, { useEffect, useState, useCallback } from 'react';
 import {

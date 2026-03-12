@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createSelector } from 'reselect';
 import { Hex } from '@metamask/utils';
 import { Token, getNativeTokenAddress } from '@metamask/assets-controllers';

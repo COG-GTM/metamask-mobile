@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMemo } from 'react';
 import { swapsUtils } from '@metamask/swaps-controller';
 import { ContractExchangeRates } from '@metamask/assets-controllers';

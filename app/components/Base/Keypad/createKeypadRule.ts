@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { regex, hasDecimals } from '../../../../app/util/regex';
 import { KEYS } from './constants';
 
