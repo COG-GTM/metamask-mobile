@@ -1,0 +1,44 @@
+# See spec at https://docs.devin.ai/onboard-devin/repo-setup
+initialize: |
+  # Install Node.js 20.18.0 (required by .nvmrc)
+  source /home/ubuntu/.nvm/nvm.sh
+  nvm install 20.18.0
+  nvm use 20.18.0
+  npm install -g yarn
+maintenance: |
+  source /home/ubuntu/.nvm/nvm.sh
+  nvm use 20.18.0
+  # Install dependencies (ignore-scripts is set in .yarnrc)
+  yarn install --frozen-lockfile
+  # Run the Expo setup (skips native iOS/Android builds)
+  node scripts/setup.mjs --no-build-ios --no-build-android
+knowledge:
+  - name: lint
+    contents: |
+      # ESLint
+      yarn lint
+      # TypeScript type check
+      yarn lint:tsc
+  - name: test
+    contents: |
+      # Unit tests
+      yarn test:unit
+  - name: startup
+    contents: |
+      # Start Metro bundler (Expo mode)
+      yarn watch
+  - name: setup
+    contents: |
+      # Full Expo setup (recommended for JS-only development, no native env needed):
+      yarn setup:expo
+      # Full native setup (requires Xcode for iOS, Android Studio for Android):
+      yarn setup
+      # Node.js version: 20.18.0 (see .nvmrc)
+      # Yarn version: v1 (classic)
+      # Ruby version: 3.1.6 (see .ruby-version, only needed for native iOS builds)
+  - name: notes
+    contents: |
+      # .yarnrc has ignore-scripts=true, so yarn install alone won't run postinstall.
+      # Use the setup.mjs script to handle env vars, git submodules, inpage bridge, nodeify, patches, PPOM build, and Terms of Use generation.
+      # Environment files (.js.env, .ios.env, .android.env, .e2e.env) are copied from .example files during setup.
+      # Firebase config (GOOGLE_SERVICES_B64_ANDROID/IOS) is needed for push notifications but not required for basic dev.
