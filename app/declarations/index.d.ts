@@ -1,5 +1,19 @@
 // This file contains type declarations for asset types.
 // Ex. This makes it so that when you import CloseIcon from './close-icon.svg, CloseIcon, will be detected as a React.FC component.
+
+// Augment globalThis so that `global.ErrorUtils` resolves in TypeScript.
+// React Native declares ErrorUtils as a global `const`, which does not
+// appear on `typeof globalThis`. Re-declaring as `var` fixes this.
+// eslint-disable-next-line no-var
+declare var ErrorUtils: {
+  setGlobalHandler: (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    callback: (error: any, isFatal?: boolean) => void,
+  ) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getGlobalHandler: () => (error: any, isFatal?: boolean) => void;
+};
+
 declare module '*.mp4';
 
 declare module '@metamask/react-native-payments/lib/js/__mocks__';
