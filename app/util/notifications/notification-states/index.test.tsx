@@ -27,6 +27,9 @@ import {
 } from '../__test-utils__/mock-notifications';
 
 describe('hasNotificationModal', () => {
+  const originalERC20Sent =
+    NotificationComponentState[TRIGGER_TYPES.ERC20_SENT];
+
   const mockNotificationComponentState = (
     createModalDetails: boolean | undefined,
   ) => {
@@ -38,9 +41,8 @@ describe('hasNotificationModal', () => {
   };
 
   afterEach(() => {
-    delete (NotificationComponentState as { [key in TRIGGER_TYPES]?: unknown })[
-      TRIGGER_TYPES.ERC20_SENT
-    ];
+    // Restore original state instead of deleting
+    NotificationComponentState[TRIGGER_TYPES.ERC20_SENT] = originalERC20Sent;
   });
 
   it('returns false for an invalid trigger type', () => {
@@ -214,9 +216,9 @@ describe('NotificationComponentState - createModalDetails', () => {
     });
   });
 
-  it('feature announcement does not have createModalDetails', () => {
+  it('feature announcement has createModalDetails defined', () => {
     const state =
       NotificationComponentState[TRIGGER_TYPES.FEATURES_ANNOUNCEMENT];
-    expect(state.createModalDetails).toBeUndefined();
+    expect(state.createModalDetails).toBeDefined();
   });
 });

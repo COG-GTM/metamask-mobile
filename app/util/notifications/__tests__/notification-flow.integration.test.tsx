@@ -1,12 +1,12 @@
 import { act } from '@testing-library/react-hooks';
 import { waitFor } from '@testing-library/react-native';
 // eslint-disable-next-line import/no-namespace
-import * as Actions from '../../../../actions/notification/helpers';
+import * as Actions from '../../../actions/notification/helpers';
 // eslint-disable-next-line import/no-namespace
-import * as Selectors from '../../../../selectors/notifications';
+import * as Selectors from '../../../selectors/notifications';
 // eslint-disable-next-line import/no-namespace
 import * as UsePushNotifications from '../hooks/usePushNotifications';
-import { renderHookWithProvider } from '../../../util/test/renderWithProvider';
+import { renderHookWithProvider } from '../../test/renderWithProvider';
 import {
   useEnableNotifications,
   useDisableNotifications,
