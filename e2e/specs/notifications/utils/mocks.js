@@ -132,6 +132,87 @@ export async function mockNotificationServices(server) {
  *   response: unknown;
  * }} response
  */
+/**
+ * E2E mock setup for notification APIs that return error responses (500s)
+ *
+ * @param {import('mockttp').Mockttp} server - obj used to mock our endpoints
+ */
+export async function mockNotificationServicesWithErrors(server) {
+  // Auth - still succeeds so we can get past authentication
+  mockAPICall(server, getMockAuthNonceResponse());
+  mockAPICall(server, getMockAuthLoginResponse());
+  mockAPICall(server, getMockAuthAccessTokenResponse());
+
+  // Notifications - return 500 errors
+  mockAPICallWithError(server, getMockBatchCreateTriggersResponse(), 500);
+  mockAPICallWithError(server, getMockBatchDeleteTriggersResponse(), 500);
+  mockAPICallWithError(server, mockListNotificationsResponse, 500);
+  mockAPICallWithError(server, getMockMarkNotificationsAsReadResponse(), 500);
+
+  // Push Notifications - return 500 errors
+  mockAPICallWithError(
+    server,
+    getMockRetrievePushNotificationLinksResponse(),
+    500,
+  );
+  mockAPICallWithError(
+    server,
+    getMockUpdatePushNotificationLinksResponse(),
+    500,
+  );
+  mockAPICallWithError(
+    server,
+    getMockCreateFCMRegistrationTokenResponse(),
+    500,
+  );
+  mockAPICallWithError(
+    server,
+    getMockDeleteFCMRegistrationTokenResponse(),
+    500,
+  );
+}
+
+/**
+ *
+ * @param {import('mockttp').Mockttp} server
+ * @param {{
+ *   requestMethod: 'GET' | 'POST' | 'PUT' | 'DELETE';
+ *   url: string | RegExp;
+ *   response: unknown;
+ * }} response
+ * @param {number} statusCode
+ */
+function mockAPICallWithError(server, response, statusCode) {
+  let requestRuleBuilder;
+
+  if (response.requestMethod === 'GET') {
+    requestRuleBuilder = server.forGet('/proxy');
+  }
+
+  if (response.requestMethod === 'POST') {
+    requestRuleBuilder = server.forPost('/proxy');
+  }
+
+  if (response.requestMethod === 'PUT') {
+    requestRuleBuilder = server.forPut('/proxy');
+  }
+
+  if (response.requestMethod === 'DELETE') {
+    requestRuleBuilder = server.forDelete('/proxy');
+  }
+
+  requestRuleBuilder
+    ?.matching((request) => {
+      const url = getDecodedProxiedURL(request.url);
+
+      return url.includes(String(response.url));
+    })
+    .thenCallback(() => ({
+      statusCode,
+      json: { error: 'Internal Server Error' },
+    }));
+}
+
 function mockAPICall(server, response) {
   let requestRuleBuilder;
 

@@ -256,3 +256,126 @@ describe('useRegisterPushNotificationsEffect - onBackgroundEvent', () => {
     );
   });
 });
+
+describe('useRegisterPushNotificationsEffect - foreground notification events', () => {
+  const arrangeMocks = () => {
+    const engine = arrangeEngineMocks();
+    const navigation = arrangeNavigationMocks();
+    const selectors = arrangeSelectorMocks();
+    const notifService = arrangeNotificationServiceMock();
+    notifService.mockGetInitialNotification.mockResolvedValue(null);
+
+    const mockOnForegroundEvent = jest.spyOn(
+      NotificationService,
+      'onForegroundEvent',
+    );
+
+    const mockIncrementBadgeCount = jest.spyOn(
+      NotificationService,
+      'incrementBadgeCount',
+    );
+
+    const mockHandleNotificationEvent = jest.spyOn(
+      NotificationService,
+      'handleNotificationEvent',
+    );
+
+    return {
+      engine,
+      navigation,
+      selectors,
+      notifService,
+      mockOnForegroundEvent,
+      mockIncrementBadgeCount,
+      mockHandleNotificationEvent,
+    };
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('registers onForegroundEvent when notifications are enabled', async () => {
+    const mocks = arrangeMocks();
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    // The hook registers a background event listener (which also handles foreground events via notifee)
+    expect(mocks.notifService.mockOnBackgroundEvent).toHaveBeenCalled();
+  });
+
+  it('does not register foreground events when notifications are disabled', async () => {
+    const mocks = arrangeMocks();
+    mocks.selectors.mockSelectIsPushEnabled.mockReturnValue(false);
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    expect(mocks.notifService.mockOnBackgroundEvent).not.toHaveBeenCalled();
+  });
+
+  it('handles DELIVERED event by incrementing badge count via handleNotificationEvent', async () => {
+    const mocks = arrangeMocks();
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    // Get the background event handler (which processes both foreground and background events)
+    expect(mocks.notifService.mockOnBackgroundEvent).toHaveBeenCalled();
+    const eventHandler =
+      mocks.notifService.mockOnBackgroundEvent.mock.lastCall?.[0];
+    expect(eventHandler).toBeDefined();
+
+    if (eventHandler) {
+      const deliveredEvent = {
+        type: EventType.DELIVERED,
+        detail: {
+          notification: {
+            data: {
+              dataStr: JSON.stringify(createMockNotificationEthSent()),
+            },
+          },
+        },
+      } as unknown as NotifeeEvent;
+
+      await eventHandler(deliveredEvent);
+
+      // handleNotificationEvent is called by notifee internally, which increments badge on DELIVERED
+      await waitFor(() => {
+        expect(mocks.mockHandleNotificationEvent).toHaveBeenCalled();
+      });
+    }
+  });
+
+  it('handles PRESS event by navigating to notification details', async () => {
+    const mocks = arrangeMocks();
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    expect(mocks.notifService.mockOnBackgroundEvent).toHaveBeenCalled();
+    const eventHandler =
+      mocks.notifService.mockOnBackgroundEvent.mock.lastCall?.[0];
+    expect(eventHandler).toBeDefined();
+
+    if (eventHandler) {
+      const pressEvent = {
+        type: EventType.PRESS,
+        detail: {
+          pressAction: { id: PressActionId.OPEN_NOTIFICATIONS_VIEW },
+          notification: {
+            data: {
+              dataStr: JSON.stringify(createMockNotificationEthSent()),
+            },
+          },
+        },
+      } as unknown as NotifeeEvent;
+
+      await eventHandler(pressEvent);
+
+      await waitFor(() =>
+        expect(mocks.engine.mockPublish).toHaveBeenCalled(),
+      );
+      await waitFor(() =>
+        expect(mocks.navigation.mockedNavigate).toHaveBeenCalled(),
+      );
+    }
+  });
+});

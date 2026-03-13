@@ -486,3 +486,78 @@ describe('useSwitchNotifications - useSwitchNotificationLoadingText()', () => {
     expect(hook.result.current).toBeUndefined();
   });
 });
+
+describe('useSwitchNotifications - race conditions', () => {
+  it('handles rapid enable/disable toggle without errors', async () => {
+    const mockEnableNotifications = jest.fn().mockResolvedValue(undefined);
+    jest
+      .spyOn(UseNotificationsModule, 'useEnableNotifications')
+      .mockReturnValue({
+        data: true,
+        isEnablingNotifications: false,
+        isEnablingPushNotifications: false,
+        loading: false,
+        error: null,
+        enableNotifications: mockEnableNotifications,
+      });
+
+    const mockDisableNotifications = jest.fn().mockResolvedValue(undefined);
+    jest
+      .spyOn(UseNotificationsModule, 'useDisableNotifications')
+      .mockReturnValue({
+        data: true,
+        loading: false,
+        error: null,
+        disableNotifications: mockDisableNotifications,
+      });
+
+    const hook = renderHookWithProvider(() => useNotificationsToggle());
+
+    // Rapidly toggle on then off
+    await act(async () => {
+      hook.result.current.switchNotifications(true);
+      hook.result.current.switchNotifications(false);
+    });
+
+    await waitFor(() => {
+      expect(mockEnableNotifications).toHaveBeenCalled();
+      expect(mockDisableNotifications).toHaveBeenCalled();
+    });
+  });
+});
+
+describe('useSwitchNotifications - useAccountNotificationsToggle error recovery', () => {
+  it('recovers from error and can be called again', async () => {
+    const mockListNotifications = jest.fn();
+    jest
+      .spyOn(UseNotificationsModule, 'useListNotifications')
+      .mockReturnValue({
+        error: null,
+        isLoading: false,
+        notificationsData: [],
+        listNotifications: mockListNotifications,
+      });
+
+    const mockCreateNotificationsForAccount = jest
+      .spyOn(Actions, 'createNotificationsForAccount')
+      .mockRejectedValueOnce(new Error('First call fails'))
+      .mockResolvedValueOnce(undefined);
+
+    const hook = renderHookWithProvider(() => useAccountNotificationsToggle());
+
+    // First call fails
+    await act(async () => {
+      await hook.result.current.onToggle(['0x123'], true);
+    });
+    expect(hook.result.current.error).toBe('First call fails');
+
+    // Second call succeeds
+    await act(async () => {
+      await hook.result.current.onToggle(['0x123'], true);
+    });
+
+    await waitFor(() =>
+      expect(mockCreateNotificationsForAccount).toHaveBeenCalledTimes(2),
+    );
+  });
+});

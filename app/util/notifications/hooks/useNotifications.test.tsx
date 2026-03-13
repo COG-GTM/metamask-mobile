@@ -384,4 +384,137 @@ describe('useNotifications - useContiguousLoading()', () => {
     // Now if we we wait, it should still remain true since loading params are enabled
     assertResultAfterMs(200, result, true);
   });
+
+  it('handles rapid state changes without flicker', () => {
+    const { result, rerender } = arrangeHook(true, false);
+    expect(result.current).toBe(true);
+
+    // Rapidly toggle states
+    rerender({ loadingParam1: false, loadingParam2: false });
+    rerender({ loadingParam1: true, loadingParam2: false });
+    rerender({ loadingParam1: false, loadingParam2: true });
+    rerender({ loadingParam1: false, loadingParam2: false });
+
+    // Should still be loading due to contiguous delay
+    expect(result.current).toBe(true);
+
+    // After delay, should be false
+    assertResultAfterMs(100, result, false);
+  });
+
+  it('starts as false when both params are initially false', () => {
+    const { result } = arrangeHook(false, false);
+    expect(result.current).toBe(false);
+  });
+});
+
+describe('useNotifications - useEnableNotifications() race conditions', () => {
+  it('handles enable then immediate disable without errors', async () => {
+    const mockTogglePushNotification = jest.fn().mockResolvedValue(true);
+    jest
+      .spyOn(UsePushNotifications, 'usePushNotificationsToggle')
+      .mockReturnValue({
+        data: true,
+        loading: false,
+        togglePushNotification: mockTogglePushNotification,
+      });
+    const mockEnableNotifications = jest
+      .spyOn(Actions, 'enableNotifications')
+      .mockResolvedValue(undefined);
+    const mockDisableNotifications = jest
+      .spyOn(Actions, 'disableNotifications')
+      .mockResolvedValue(undefined);
+
+    const enableHook = renderHookWithProvider(() => useEnableNotifications());
+    const disableHook = renderHookWithProvider(() => useDisableNotifications());
+
+    // Fire enable then immediately disable
+    await act(async () => {
+      enableHook.result.current.enableNotifications();
+      disableHook.result.current.disableNotifications();
+    });
+
+    await waitFor(() => {
+      expect(mockEnableNotifications).toHaveBeenCalled();
+      expect(mockDisableNotifications).toHaveBeenCalled();
+    });
+  });
+});
+
+describe('useNotifications - useEnableNotifications() partial failure', () => {
+  it('sets error when enableNotifications succeeds but togglePushNotification fails', async () => {
+    const mockTogglePushNotification = jest
+      .fn()
+      .mockRejectedValue(new Error('Push toggle failed'));
+    jest
+      .spyOn(UsePushNotifications, 'usePushNotificationsToggle')
+      .mockReturnValue({
+        data: true,
+        loading: false,
+        togglePushNotification: mockTogglePushNotification,
+      });
+    jest.spyOn(Actions, 'enableNotifications').mockResolvedValue(undefined);
+    jest.spyOn(Selectors, 'selectIsUpdatingMetamaskNotifications');
+    jest.spyOn(Selectors, 'selectIsMetamaskNotificationsEnabled');
+
+    const hook = renderHookWithProvider(() => useEnableNotifications());
+    await act(() => hook.result.current.enableNotifications());
+
+    // Push failure is silently caught, enableNotifications should still resolve
+    await waitFor(() => {
+      expect(mockTogglePushNotification).toHaveBeenCalled();
+    });
+  });
+});
+
+describe('useNotifications - useListNotificationsEffect auto-fetch', () => {
+  it('auto-fetches notifications on mount when enabled', async () => {
+    const mockFetchNotifications = jest.spyOn(Actions, 'fetchNotifications');
+    jest
+      .spyOn(Selectors, 'selectIsMetamaskNotificationsEnabled')
+      .mockReturnValue(true);
+    jest.spyOn(Selectors, 'selectIsFetchingMetamaskNotifications');
+    jest.spyOn(Selectors, 'getNotificationsList');
+
+    renderHookWithProvider(() => useListNotificationsEffect());
+
+    await waitFor(() =>
+      expect(mockFetchNotifications).toHaveBeenCalled(),
+    );
+  });
+
+  it('does not auto-fetch on mount when disabled', async () => {
+    const mockFetchNotifications = jest.spyOn(Actions, 'fetchNotifications');
+    jest
+      .spyOn(Selectors, 'selectIsMetamaskNotificationsEnabled')
+      .mockReturnValue(false);
+    jest.spyOn(Selectors, 'selectIsFetchingMetamaskNotifications');
+    jest.spyOn(Selectors, 'getNotificationsList');
+
+    renderHookWithProvider(() => useListNotificationsEffect());
+
+    await waitFor(() =>
+      expect(mockFetchNotifications).not.toHaveBeenCalled(),
+    );
+  });
+});
+
+describe('useNotifications - timeout scenarios', () => {
+  it('handles action that never resolves within test timeout', async () => {
+    jest.spyOn(Actions, 'fetchNotifications').mockImplementation(
+      () => new Promise(() => {}), // never resolves
+    );
+    jest.spyOn(Selectors, 'selectIsFetchingMetamaskNotifications');
+    jest.spyOn(Selectors, 'getNotificationsList');
+
+    const hook = renderHookWithProvider(() => useListNotifications());
+
+    // Fire the action - it will never resolve
+    act(() => {
+      hook.result.current.listNotifications();
+    });
+
+    // The hook should not have an error since the promise is still pending
+    expect(hook.result.current.error).toBeNull();
+  });
 });

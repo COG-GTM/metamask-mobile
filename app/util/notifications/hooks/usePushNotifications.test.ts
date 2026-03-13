@@ -138,4 +138,40 @@ describe('useNotifications - usePushNotificationsToggle()', () => {
       expect(mocks.mockDisablePushNotifications).toHaveBeenCalled(),
     );
   });
+
+  it('handles enable then immediate disable race condition', async () => {
+    const mocks = arrangeMocks();
+    mocks.mockEnablePushNotifications.mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
+    );
+    mocks.mockDisablePushNotifications.mockResolvedValue(undefined);
+
+    const hook = renderHookWithProvider(() => usePushNotificationsToggle());
+
+    // Fire enable then immediately disable
+    await act(async () => {
+      hook.result.current.togglePushNotification(true);
+      hook.result.current.togglePushNotification(false);
+    });
+
+    await waitFor(() => {
+      expect(mocks.mockDisablePushNotifications).toHaveBeenCalled();
+    });
+  });
+
+  it('handles concurrent enable calls gracefully', async () => {
+    const mocks = arrangeMocks();
+    mocks.mockEnablePushNotifications.mockResolvedValue(undefined);
+
+    const hook = renderHookWithProvider(() => usePushNotificationsToggle());
+
+    await act(async () => {
+      hook.result.current.togglePushNotification(true);
+      hook.result.current.togglePushNotification(true);
+    });
+
+    await waitFor(() => {
+      expect(mocks.mockRequestPermission).toHaveBeenCalled();
+    });
+  });
 });
