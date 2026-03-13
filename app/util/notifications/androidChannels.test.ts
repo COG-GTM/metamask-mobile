@@ -74,7 +74,7 @@ describe('notificationChannels', () => {
     });
   });
 
-  it('SECURITY_CHANNEL_ID has correct properties with MAX importance', () => {
+  it('SECURITY_CHANNEL_ID has correct properties with HIGH importance', () => {
     const channel = notificationChannels.find(
       (c) => c.id === ChannelId.SECURITY_CHANNEL_ID,
     ) as MetaMaskAndroidChannel;
@@ -85,7 +85,7 @@ describe('notificationChannels', () => {
         'Critical security notifications requiring immediate attention',
       lights: true,
       vibration: true,
-      importance: AndroidImportance.MAX,
+      importance: AndroidImportance.HIGH,
       title: 'Security',
       subtitle: 'Security Alerts',
     });

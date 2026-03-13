@@ -31,7 +31,6 @@ jest.mock('@notifee/react-native', () => ({
   AndroidImportance: {
     DEFAULT: 'default',
     HIGH: 'high',
-    MAX: 'max',
     LOW: 'low',
     MIN: 'min',
     NONE: 'none',
