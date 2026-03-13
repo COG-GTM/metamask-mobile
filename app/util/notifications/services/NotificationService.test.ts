@@ -32,6 +32,7 @@ jest.mock('@notifee/react-native', () => ({
     DEFAULT: 'default',
     HIGH: 'high',
     LOW: 'low',
+    MAX: 'max',
     MIN: 'min',
     NONE: 'none',
   },
