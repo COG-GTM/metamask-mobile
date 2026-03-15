@@ -2,7 +2,6 @@ import { NotificationTransactionTypes } from '../util/notifications';
 
 import NotificationManager, {
   constructTitleAndMessage,
-  type NotificationManagerInitParams,
 } from './NotificationManager';
 import { strings } from '../../locales/i18n';
 import { SmartTransactionStatuses } from '@metamask/smart-transactions-controller/dist/types';

@@ -546,6 +546,7 @@ describe('useSwitchNotifications - timeout scenarios', () => {
     // Mock action that never resolves
     jest
       .spyOn(Actions, 'toggleFeatureAnnouncements')
+      // eslint-disable-next-line no-empty-function
       .mockReturnValue(new Promise(() => {}));
 
     const hook = renderHookWithProvider(() => useFeatureAnnouncementToggle());

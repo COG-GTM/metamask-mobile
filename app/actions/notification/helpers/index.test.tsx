@@ -19,20 +19,6 @@ jest.mock('../../../util/notifications', () => ({
   isNotificationsFeatureEnabled: () => true,
 }));
 
-const mockNotificationServicesController = {
-  enableMetamaskNotifications: jest.fn(),
-  disableNotificationServices: jest.fn(),
-  checkAccountsPresence: jest.fn(),
-  deleteOnChainTriggersByAccount: jest.fn(),
-  updateOnChainTriggersByAccount: jest.fn(),
-  createOnChainTriggers: jest.fn(),
-  setFeatureAnnouncementsEnabled: jest.fn(),
-  fetchAndUpdateMetamaskNotifications: jest.fn(),
-  markMetamaskNotificationsAsRead: jest.fn(),
-  enablePushNotifications: jest.fn(),
-  disablePushNotifications: jest.fn(),
-};
-
 jest.mock('../../../core/Engine', () => ({
   context: {
     NotificationServicesController: {
@@ -335,7 +321,9 @@ describe('helpers - concurrent call behavior', () => {
     const promise1 = enableNotifications();
     const promise2 = enableNotifications();
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     resolveFirst!();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     resolveSecond!();
 
     await Promise.all([promise1, promise2]);

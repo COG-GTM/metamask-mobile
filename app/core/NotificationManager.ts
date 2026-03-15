@@ -253,8 +253,7 @@ class NotificationManager {
     this._removeNotificationById(transactionMeta.id);
     const transaction =
       this._transactionsWatchTable[transactionMeta.txParams.nonce];
-    transaction &&
-      transaction.length &&
+    transaction?.length &&
       setTimeout(() => {
         // Then we show the error notification
         this._showNotification({
@@ -433,28 +432,28 @@ class NotificationManager {
     this._transactionConfirmedListener =
       Engine.controllerMessenger.subscribeOnceIf(
         'TransactionController:transactionConfirmed',
-        (transactionMeta) => {
-          this._confirmedCallback(transactionMeta, transaction);
+        (confirmedTxMeta) => {
+          this._confirmedCallback(confirmedTxMeta, transaction);
         },
-        (transactionMeta) => transactionMeta.id === transaction.id,
+        (confirmedTxMeta) => confirmedTxMeta.id === transaction.id,
       );
 
     this._transactionFailedListener =
       Engine.controllerMessenger.subscribeOnceIf(
         'TransactionController:transactionFailed',
-        (transactionMeta) => {
-          this._failedCallback(transactionMeta);
+        (failedTxMeta) => {
+          this._failedCallback(failedTxMeta);
         },
-        (transactionMeta) => transactionMeta.id === transaction.id,
+        (failedTxMeta) => failedTxMeta.id === transaction.id,
       );
 
     this._transactionSpeedupListener =
       Engine.controllerMessenger.subscribeOnceIf(
         'TransactionController:speedupTransactionAdded',
-        (transactionMeta) => {
-          this._speedupCallback(transactionMeta);
+        (speedupTxMeta) => {
+          this._speedupCallback(speedupTxMeta);
         },
-        (transactionMeta) => transactionMeta.id === transaction.id,
+        (speedupTxMeta) => speedupTxMeta.id === transaction.id,
       );
 
     const smartTransactionListener = async (smartTransaction: { status: string; transactionId?: string }) => {

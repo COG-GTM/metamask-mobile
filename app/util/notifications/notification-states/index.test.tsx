@@ -22,7 +22,6 @@ import {
   createMockNotificationLidoStakeCompleted,
   createMockNotificationLidoWithdrawalRequested,
   createMockNotificationLidoReadyToBeWithdrawn,
-  createMockNotificationLidoWithdrawalCompleted,
   createMockFeatureAnnouncementRaw,
 } from '../__test-utils__/mock-notifications';
 

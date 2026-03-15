@@ -465,6 +465,7 @@ describe('useNotifications - timeout scenarios', () => {
     // Mock an action that never resolves
     jest
       .spyOn(Actions, 'enableNotifications')
+      // eslint-disable-next-line no-empty-function
       .mockReturnValue(new Promise(() => {}));
     jest
       .spyOn(Selectors, 'selectIsUpdatingMetamaskNotifications')

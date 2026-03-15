@@ -205,6 +205,7 @@ describe('usePushNotifications - timeout scenarios', () => {
     jest.spyOn(NotificationServiceModule, 'hasPushPermission');
     jest
       .spyOn(Actions, 'enablePushNotifications')
+      // eslint-disable-next-line no-empty-function
       .mockReturnValue(new Promise(() => {}));
     jest.spyOn(Actions, 'disablePushNotifications');
 
