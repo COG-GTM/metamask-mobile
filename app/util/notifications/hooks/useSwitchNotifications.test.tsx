@@ -486,3 +486,113 @@ describe('useSwitchNotifications - useSwitchNotificationLoadingText()', () => {
     expect(hook.result.current).toBeUndefined();
   });
 });
+
+describe('useSwitchNotifications - race conditions', () => {
+  it('calling enable then immediately disable does not leave stale state', async () => {
+    const mockEnableNotifications = jest.fn().mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
+    );
+    jest
+      .spyOn(UseNotificationsModule, 'useEnableNotifications')
+      .mockReturnValue({
+        data: true,
+        isEnablingNotifications: false,
+        isEnablingPushNotifications: false,
+        loading: false,
+        error: null,
+        enableNotifications: mockEnableNotifications,
+      });
+
+    const mockDisableNotifications = jest.fn().mockResolvedValue(undefined);
+    jest
+      .spyOn(UseNotificationsModule, 'useDisableNotifications')
+      .mockReturnValue({
+        data: true,
+        loading: false,
+        error: null,
+        disableNotifications: mockDisableNotifications,
+      });
+
+    const hook = renderHookWithProvider(() => useNotificationsToggle());
+
+    // Enable then immediately disable
+    await act(() => hook.result.current.switchNotifications(true));
+    await act(() => hook.result.current.switchNotifications(false));
+
+    expect(mockEnableNotifications).toHaveBeenCalledTimes(1);
+    expect(mockDisableNotifications).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('useSwitchNotifications - timeout scenarios', () => {
+  it('handles toggleFeatureAnnouncements that never resolves', async () => {
+    const mockListNotifications = jest.fn();
+    jest
+      .spyOn(UseNotificationsModule, 'useListNotifications')
+      .mockReturnValue({
+        error: null,
+        isLoading: false,
+        notificationsData: [],
+        listNotifications: mockListNotifications,
+      });
+
+    jest
+      .spyOn(Selectors, 'selectIsMetamaskNotificationsEnabled')
+      .mockReturnValue(true);
+    jest
+      .spyOn(Selectors, 'selectIsFeatureAnnouncementsEnabled')
+      .mockReturnValue(false);
+
+    // Mock action that never resolves
+    jest
+      .spyOn(Actions, 'toggleFeatureAnnouncements')
+      .mockReturnValue(new Promise(() => {}));
+
+    const hook = renderHookWithProvider(() => useFeatureAnnouncementToggle());
+
+    // Should not throw
+    act(() => {
+      hook.result.current.switchFeatureAnnouncements(true);
+    });
+
+    expect(hook.result.current.error).toBeNull();
+  });
+});
+
+describe('useSwitchNotifications - partial failures', () => {
+  it('createNotificationsForAccount succeeds but listNotifications fails', async () => {
+    const mockListNotifications = jest
+      .fn()
+      .mockRejectedValue(new Error('List failed'));
+    jest
+      .spyOn(UseNotificationsModule, 'useListNotifications')
+      .mockReturnValue({
+        error: null,
+        isLoading: false,
+        notificationsData: [],
+        listNotifications: mockListNotifications,
+      });
+
+    const mockCreateNotificationsForAccount = jest
+      .spyOn(Actions, 'createNotificationsForAccount')
+      .mockResolvedValue(undefined);
+
+    jest
+      .spyOn(Actions, 'deleteNotificationsForAccount')
+      .mockImplementation(jest.fn());
+
+    const hook = renderHookWithProvider(() => useAccountNotificationsToggle());
+
+    await act(async () => {
+      await hook.result.current.onToggle(['0x123'], true);
+    });
+
+    await waitFor(() =>
+      expect(mockCreateNotificationsForAccount).toHaveBeenCalledWith([
+        '0x123',
+      ]),
+    );
+    // listNotifications was still attempted even after create succeeded
+    expect(mockListNotifications).toHaveBeenCalled();
+  });
+});

@@ -139,3 +139,106 @@ describe('useNotifications - usePushNotificationsToggle()', () => {
     );
   });
 });
+
+describe('usePushNotifications - race conditions', () => {
+  const arrangeMocks = () => {
+    const mockSelectEnabled = jest.spyOn(
+      Selectors,
+      'selectIsMetaMaskPushNotificationsEnabled',
+    );
+    const mockRequestPermission = jest.spyOn(
+      NotificationServiceModule,
+      'requestPushPermissions',
+    );
+    const mockHasPermission = jest.spyOn(
+      NotificationServiceModule,
+      'hasPushPermission',
+    );
+    const mockEnablePushNotifications = jest.spyOn(
+      Actions,
+      'enablePushNotifications',
+    );
+    const mockDisablePushNotifications = jest.spyOn(
+      Actions,
+      'disablePushNotifications',
+    );
+
+    return {
+      mockSelectEnabled,
+      mockRequestPermission,
+      mockHasPermission,
+      mockEnablePushNotifications,
+      mockDisablePushNotifications,
+    };
+  };
+
+  it('calling enable then immediately disable invokes both', async () => {
+    const mocks = arrangeMocks();
+    mocks.mockEnablePushNotifications.mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 50)),
+    );
+    mocks.mockDisablePushNotifications.mockResolvedValue(undefined);
+
+    const hook = renderHookWithProvider(() => usePushNotificationsToggle());
+
+    const enablePromise = act(() =>
+      hook.result.current.togglePushNotification(true),
+    );
+    const disablePromise = act(() =>
+      hook.result.current.togglePushNotification(false),
+    );
+
+    await Promise.allSettled([enablePromise, disablePromise]);
+
+    expect(mocks.mockRequestPermission).toHaveBeenCalled();
+    expect(mocks.mockDisablePushNotifications).toHaveBeenCalled();
+  });
+});
+
+describe('usePushNotifications - timeout scenarios', () => {
+  it('handles enablePushNotifications that never resolves', async () => {
+    const mockSelectEnabled = jest.spyOn(
+      Selectors,
+      'selectIsMetaMaskPushNotificationsEnabled',
+    );
+    jest.spyOn(NotificationServiceModule, 'requestPushPermissions');
+    jest.spyOn(NotificationServiceModule, 'hasPushPermission');
+    jest
+      .spyOn(Actions, 'enablePushNotifications')
+      .mockReturnValue(new Promise(() => {}));
+    jest.spyOn(Actions, 'disablePushNotifications');
+
+    const hook = renderHookWithProvider(() => usePushNotificationsToggle());
+
+    // Start enable - should not throw
+    act(() => {
+      hook.result.current.togglePushNotification(true);
+    });
+
+    expect(mockSelectEnabled).toHaveBeenCalled();
+  });
+});
+
+describe('usePushNotifications - partial failures', () => {
+  it('requestPermission succeeds but enablePushNotifications fails', async () => {
+    const mockRequestPermission = jest
+      .spyOn(NotificationServiceModule, 'requestPushPermissions')
+      .mockResolvedValue(undefined);
+    jest.spyOn(NotificationServiceModule, 'hasPushPermission');
+    jest.spyOn(Selectors, 'selectIsMetaMaskPushNotificationsEnabled');
+    const mockEnablePushNotifications = jest
+      .spyOn(Actions, 'enablePushNotifications')
+      .mockRejectedValue(new Error('Enable failed'));
+    jest.spyOn(Actions, 'disablePushNotifications');
+
+    const hook = renderHookWithProvider(() => usePushNotificationsToggle());
+    await act(() => hook.result.current.togglePushNotification(true));
+
+    await waitFor(() =>
+      expect(mockRequestPermission).toHaveBeenCalled(),
+    );
+    await waitFor(() =>
+      expect(mockEnablePushNotifications).toHaveBeenCalled(),
+    );
+  });
+});
