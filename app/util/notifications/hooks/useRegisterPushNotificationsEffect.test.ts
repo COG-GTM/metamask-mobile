@@ -256,3 +256,159 @@ describe('useRegisterPushNotificationsEffect - onBackgroundEvent', () => {
     );
   });
 });
+
+describe('useRegisterPushNotificationsEffect - foreground notification events', () => {
+  const arrangeMocks = () => {
+    const engine = arrangeEngineMocks();
+    const navigation = arrangeNavigationMocks();
+    const selectors = arrangeSelectorMocks();
+    const notifService = arrangeNotificationServiceMock();
+    notifService.mockGetInitialNotification.mockResolvedValue(null);
+
+    const mockOnForegroundEvent = jest.spyOn(
+      NotificationService,
+      'onForegroundEvent',
+    );
+
+    const mockIncrementBadgeCount = jest.spyOn(
+      NotificationService,
+      'incrementBadgeCount',
+    );
+
+    const mockHandleNotificationPress = jest.spyOn(
+      NotificationService,
+      'handleNotificationPress',
+    );
+
+    const mockHandleNotificationEvent = jest.spyOn(
+      NotificationService,
+      'handleNotificationEvent',
+    );
+
+    return {
+      engine,
+      navigation,
+      selectors,
+      notifService,
+      mockOnForegroundEvent,
+      mockIncrementBadgeCount,
+      mockHandleNotificationPress,
+      mockHandleNotificationEvent,
+    };
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('registers onBackgroundEvent handler when notifications are enabled', async () => {
+    const mocks = arrangeMocks();
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    expect(mocks.notifService.mockOnBackgroundEvent).toHaveBeenCalled();
+  });
+
+  it('NotificationService.handleNotificationEvent increments badge on DELIVERED event', async () => {
+    const mocks = arrangeMocks();
+
+    await NotificationService.handleNotificationEvent({
+      type: EventType.DELIVERED,
+      detail: {
+        notification: {
+          data: {
+            dataStr: JSON.stringify(createMockNotificationEthSent()),
+          },
+        },
+      },
+    } as unknown as NotifeeEvent);
+
+    expect(mocks.mockIncrementBadgeCount).toHaveBeenCalledWith(1);
+  });
+
+  it('NotificationService.handleNotificationEvent calls handleNotificationPress on PRESS event', async () => {
+    const mocks = arrangeMocks();
+
+    const mockNotification = {
+      id: 'test-id',
+      data: {
+        dataStr: JSON.stringify(createMockNotificationEthSent()),
+      },
+    };
+
+    await NotificationService.handleNotificationEvent({
+      type: EventType.PRESS,
+      detail: {
+        pressAction: { id: PressActionId.OPEN_NOTIFICATIONS_VIEW },
+        notification: mockNotification,
+      },
+    } as unknown as NotifeeEvent);
+
+    expect(mocks.mockHandleNotificationPress).toHaveBeenCalled();
+  });
+
+  it('foreground PRESS events navigate correctly via background event handler', async () => {
+    const mocks = arrangeMocks();
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    // Get the callback registered with onBackgroundEvent
+    expect(mocks.notifService.mockOnBackgroundEvent).toHaveBeenCalled();
+    const callMockEvent =
+      mocks.notifService.mockOnBackgroundEvent.mock.lastCall?.[0];
+    if (!callMockEvent) {
+      throw new Error('TEST FAILURE - failed to setup mockOnBackgroundEvent mock');
+    }
+
+    const event = {
+      type: EventType.PRESS,
+      detail: {
+        pressAction: { id: PressActionId.OPEN_NOTIFICATIONS_VIEW },
+        notification: {
+          data: {
+            dataStr: JSON.stringify(createMockNotificationEthSent()),
+          },
+        },
+      },
+    } as unknown as NotifeeEvent;
+
+    await callMockEvent(event);
+
+    await waitFor(() =>
+      expect(mocks.engine.mockPublish).toHaveBeenCalled(),
+    );
+    await waitFor(() =>
+      expect(mocks.navigation.mockedNavigate).toHaveBeenCalled(),
+    );
+  });
+
+  it('foreground DELIVERED events increment badge count', async () => {
+    const mocks = arrangeMocks();
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    expect(mocks.notifService.mockOnBackgroundEvent).toHaveBeenCalled();
+    const callMockEvent =
+      mocks.notifService.mockOnBackgroundEvent.mock.lastCall?.[0];
+    if (!callMockEvent) {
+      throw new Error('TEST FAILURE - failed to setup mockOnBackgroundEvent mock');
+    }
+
+    const event = {
+      type: EventType.DELIVERED,
+      detail: {
+        notification: {
+          data: {
+            dataStr: JSON.stringify(createMockNotificationEthSent()),
+          },
+        },
+      },
+    } as unknown as NotifeeEvent;
+
+    await callMockEvent(event);
+
+    await waitFor(() =>
+      expect(mocks.mockIncrementBadgeCount).toHaveBeenCalledWith(1),
+    );
+  });
+});
