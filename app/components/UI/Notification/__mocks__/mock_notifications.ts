@@ -19,4 +19,4 @@ export {
   MOCK_ON_CHAIN_NOTIFICATIONS,
   MOCK_FEATURE_ANNOUNCEMENT_NOTIFICATIONS,
   MOCK_ALL_NOTIFICATIONS as default,
-} from '../../../util/notifications/__test-utils__/mock-notifications';
+} from '../../../../util/notifications/__test-utils__/mock-notifications';
