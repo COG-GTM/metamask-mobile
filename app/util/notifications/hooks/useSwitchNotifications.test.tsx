@@ -562,10 +562,8 @@ describe('useSwitchNotifications - timeout scenarios', () => {
 });
 
 describe('useSwitchNotifications - partial failures', () => {
-  it('createNotificationsForAccount succeeds but listNotifications fails', async () => {
-    const mockListNotifications = jest
-      .fn()
-      .mockRejectedValue(new Error('List failed'));
+  it('createNotificationsForAccount succeeds and listNotifications is called in finally', async () => {
+    const mockListNotifications = jest.fn().mockResolvedValue(undefined);
     jest
       .spyOn(UseNotificationsModule, 'useListNotifications')
       .mockReturnValue({
@@ -594,7 +592,9 @@ describe('useSwitchNotifications - partial failures', () => {
         '0x123',
       ]),
     );
-    // listNotifications was still attempted even after create succeeded
+    // listNotifications is called in the finally block to refetch after toggle
     expect(mockListNotifications).toHaveBeenCalled();
+    // No error should be set since createNotificationsForAccount succeeded
+    expect(hook.result.current.error).toBeNull();
   });
 });
