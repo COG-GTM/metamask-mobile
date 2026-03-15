@@ -224,7 +224,7 @@ describe('usePushNotifications - partial failures', () => {
   it('requestPermission succeeds but enablePushNotifications fails', async () => {
     const mockRequestPermission = jest
       .spyOn(NotificationServiceModule, 'requestPushPermissions')
-      .mockResolvedValue(undefined);
+      .mockResolvedValue(true);
     jest.spyOn(NotificationServiceModule, 'hasPushPermission');
     jest.spyOn(Selectors, 'selectIsMetaMaskPushNotificationsEnabled');
     const mockEnablePushNotifications = jest
