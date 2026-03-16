@@ -1,8 +1,8 @@
 // @ts-nocheck
 import eth_sendTransaction from './eth_sendTransaction';
-import { wallet_addEthereumChain } from './wallet_addEthereumChain.js';
-import { wallet_switchEthereumChain } from './wallet_switchEthereumChain.js';
-import { wallet_watchAsset } from './wallet_watchAsset.ts';
+import { wallet_addEthereumChain } from './wallet_addEthereumChain';
+import { wallet_switchEthereumChain } from './wallet_switchEthereumChain';
+import { wallet_watchAsset } from './wallet_watchAsset';
 
 const RPCMethods = {
   eth_sendTransaction,
