@@ -50,7 +50,7 @@ interface ToggleDeviceNotificationAction {
 
 interface SetTokenSortConfigAction {
   type: 'SET_TOKEN_SORT_CONFIG';
-  tokenSortConfig: string;
+  tokenSortConfig: { key: string; order?: string; sortCallback?: string };
 }
 
 export type SettingsActionTypes =
@@ -136,7 +136,7 @@ export function toggleDeviceNotification(deviceNotificationEnabled: boolean): To
   };
 }
 
-export function setTokenSortConfig(tokenSortConfig: string): SetTokenSortConfigAction {
+export function setTokenSortConfig(tokenSortConfig: { key: string; order?: string; sortCallback?: string }): SetTokenSortConfigAction {
   return {
     type: 'SET_TOKEN_SORT_CONFIG',
     tokenSortConfig,

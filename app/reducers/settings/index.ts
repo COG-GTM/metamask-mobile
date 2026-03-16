@@ -12,7 +12,7 @@ interface SettingsState {
   showCustomNonce?: boolean;
   showFiatOnTestnets?: boolean;
   deviceNotificationEnabled?: boolean;
-  tokenSortConfig?: string;
+  tokenSortConfig?: { key: string; order?: string; sortCallback?: string };
 }
 
 const initialState: SettingsState = {
@@ -77,12 +77,6 @@ const settingsReducer = (state: SettingsState = initialState, action: SettingsAc
       return {
         ...state,
         deviceNotificationEnabled: action.deviceNotificationEnabled,
-      };
-
-    case 'SET_TOKEN_SORT_CONFIG':
-      return {
-        ...state,
-        tokenSortConfig: action.tokenSortConfig,
       };
 
     default:
