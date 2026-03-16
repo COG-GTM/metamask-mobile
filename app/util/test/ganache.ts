@@ -37,7 +37,7 @@ export default class Ganache {
   }
 
   async getAccounts() {
-    return await this.getProvider()?.request({
+    return await this.getProvider()!.request({
       method: 'eth_accounts',
       params: [],
     });
@@ -45,9 +45,9 @@ export default class Ganache {
 
   async getBalance() {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider()?.request({
+    const balanceHex = await this.getProvider()!.request({
       method: 'eth_getBalance',
-      params: [(accounts as string[])[0], 'latest'],
+      params: [accounts[0], 'latest'],
     });
     const balanceInt = parseInt(balanceHex as string, 16) / 10 ** 18;
 
