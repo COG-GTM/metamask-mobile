@@ -15,6 +15,38 @@ import { allowedTestnetChainIds } from '../../components/UI/Swaps/utils';
 import { NETWORKS_CHAIN_ID } from '../../constants/network';
 import { selectSelectedInternalAccountAddress } from '../../selectors/accountsController';
 
+declare const __DEV__: boolean;
+
+// TODO: Replace 'any' with proper type
+interface SwapsToken {
+  address: string;
+  symbol?: string;
+  decimals?: number | string;
+  name?: string;
+  hasBalanceError?: boolean;
+  image?: string;
+  occurrences?: number;
+  [key: string]: unknown;
+}
+
+// TODO: Replace 'any' with proper type
+interface FeatureFlags {
+  smart_transactions?: Record<string, unknown>;
+  smartTransactions?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface SwapsChainState {
+  isLive: boolean;
+  featureFlags: Record<string, unknown> | undefined;
+}
+
+interface SwapsState {
+  isLive: boolean;
+  hasOnboarded: boolean;
+  featureFlags: Record<string, unknown> | undefined;
+  [key: string]: unknown;
+}
 // If we are in dev and on a testnet, just use mainnet feature flags,
 // since we don't have feature flags for testnets in the API
 export const getFeatureFlagChainId = (chainId) =>

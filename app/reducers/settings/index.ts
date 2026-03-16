@@ -1,6 +1,21 @@
 import AppConstants from '../../core/AppConstants';
+import { SettingsActionTypes } from '../../actions/settings';
 
-const initialState = {
+interface SettingsState {
+  searchEngine: string;
+  primaryCurrency: string;
+  lockTime: number;
+  useBlockieIcon: boolean;
+  hideZeroBalanceTokens: boolean;
+  basicFunctionalityEnabled: boolean;
+  showHexData?: boolean;
+  showCustomNonce?: boolean;
+  showFiatOnTestnets?: boolean;
+  deviceNotificationEnabled?: boolean;
+  tokenSortConfig?: string;
+}
+
+const initialState: SettingsState = {
   searchEngine: AppConstants.DEFAULT_SEARCH_ENGINE,
   primaryCurrency: 'ETH',
   lockTime: -1, // Disabled by default
@@ -9,7 +24,8 @@ const initialState = {
   basicFunctionalityEnabled: true,
 };
 
-const settingsReducer = (state = initialState, action) => {
+/* eslint-disable @typescript-eslint/default-param-last */
+const settingsReducer = (state: SettingsState = initialState, action: SettingsActionTypes): SettingsState => {
   switch (action.type) {
     case 'SET_SEARCH_ENGINE':
       return {
@@ -61,6 +77,12 @@ const settingsReducer = (state = initialState, action) => {
       return {
         ...state,
         deviceNotificationEnabled: action.deviceNotificationEnabled,
+      };
+
+    case 'SET_TOKEN_SORT_CONFIG':
+      return {
+        ...state,
+        tokenSortConfig: action.tokenSortConfig,
       };
 
     default:

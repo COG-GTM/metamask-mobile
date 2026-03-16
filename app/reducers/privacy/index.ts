@@ -1,9 +1,23 @@
-const initialState = {
+import { PrivacyActionTypes } from '../../actions/privacy';
+
+interface PrivacyState {
+  approvedHosts: Record<string, boolean>;
+  revealSRPTimestamps: number[];
+}
+
+const initialState: PrivacyState = {
   approvedHosts: {},
   revealSRPTimestamps: [],
 };
 
-const privacyReducer = (state = initialState, action) => {
+interface ClearHostsAction {
+  type: 'CLEAR_HOSTS';
+}
+
+type PrivacyReducerAction = PrivacyActionTypes | ClearHostsAction;
+
+/* eslint-disable @typescript-eslint/default-param-last */
+const privacyReducer = (state: PrivacyState = initialState, action: PrivacyReducerAction): PrivacyState => {
   const newHosts = { ...state.approvedHosts };
   switch (action.type) {
     case 'APPROVE_HOST':
