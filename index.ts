@@ -7,17 +7,17 @@ import '@walletconnect/react-native-compat';
 import 'react-native-gesture-handler';
 import 'react-native-url-polyfill/auto';
 
-import crypto from 'crypto'; // eslint-disable-line import/no-nodejs-modules, no-unused-vars
-require('react-native-browser-polyfill'); // eslint-disable-line import/no-commonjs
+import crypto from 'crypto'; // eslint-disable-line import/no-nodejs-modules, @typescript-eslint/no-unused-vars
+require('react-native-browser-polyfill'); // eslint-disable-line import/no-commonjs, @typescript-eslint/no-require-imports
 
 import * as Sentry from '@sentry/react-native'; // eslint-disable-line import/no-namespace
 import { setupSentry } from './app/util/sentry/utils';
 setupSentry();
 
-import { AppRegistry, LogBox, ErrorUtils } from 'react-native';
+import { AppRegistry, LogBox } from 'react-native';
 import Root from './app/components/Views/Root';
-import { name } from './app.config.js';
-import { isE2E } from './app/util/test/utils.js';
+import { name } from './app.config.js'; // eslint-disable-line import/extensions
+import { isE2E } from './app/util/test/utils.js'; // eslint-disable-line import/extensions
 
 import { Performance } from './app/core/Performance';
 import { handleCustomError, setReactNativeDefaultHandler } from './app/core/ErrorHandler';
@@ -93,12 +93,14 @@ AppRegistry.registerComponent(name, () =>
   isE2E ? Root : Sentry.wrap(Root),
 );
 
-function setupGlobalErrorHandler() {
-  const reactNativeDefaultHandler = global.ErrorUtils.getGlobalHandler();
+function setupGlobalErrorHandler(): void {
+  const reactNativeDefaultHandler = ErrorUtils.getGlobalHandler();
   // set the base handler to the react native ExceptionsManager.handleException(), please refer to setupErrorHandling.js under react-native/Libraries/Core/ for details.
   setReactNativeDefaultHandler(reactNativeDefaultHandler);
   // override the global handler to provide custom error handling
-  global.ErrorUtils.setGlobalHandler(handleCustomError);
+  ErrorUtils.setGlobalHandler((error, isFatal) =>
+    handleCustomError(error, isFatal ?? false),
+  );
 }
 
 setupGlobalErrorHandler();
