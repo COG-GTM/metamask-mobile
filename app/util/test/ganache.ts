@@ -1,5 +1,5 @@
 import { getGanachePort } from '../../../e2e/fixtures/utils';
-import ganache from 'ganache';
+import ganache, { Server, ServerOptions } from 'ganache';
 
 export const DEFAULT_GANACHE_PORT = 8545;
 
@@ -12,8 +12,12 @@ const defaultOptions = {
   quiet: false,
 };
 
+type GanacheStartOptions = ServerOptions & { mnemonic: string };
+
 export default class Ganache {
-  async start(opts) {
+  private _server: Server | undefined;
+
+  async start(opts: GanacheStartOptions): Promise<void> {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
@@ -33,7 +37,7 @@ export default class Ganache {
   }
 
   async getAccounts() {
-    return await this.getProvider().request({
+    return await this.getProvider()?.request({
       method: 'eth_accounts',
       params: [],
     });
@@ -41,11 +45,11 @@ export default class Ganache {
 
   async getBalance() {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider().request({
+    const balanceHex = await this.getProvider()?.request({
       method: 'eth_getBalance',
-      params: [accounts[0], 'latest'],
+      params: [(accounts as string[])[0], 'latest'],
     });
-    const balanceInt = parseInt(balanceHex, 16) / 10 ** 18;
+    const balanceInt = parseInt(balanceHex as string, 16) / 10 ** 18;
 
     const balanceFormatted =
       balanceInt % 1 === 0 ? balanceInt : balanceInt.toFixed(4);
@@ -53,7 +57,7 @@ export default class Ganache {
     return balanceFormatted;
   }
 
-  async quit() {
+  async quit(): Promise<void> {
     if (!this._server) {
       throw new Error('Server not running yet');
     }
