@@ -197,6 +197,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protectWalletModalNotVisible: (enable) =>
     dispatch(protectWalletModalNotVisible()),
 });

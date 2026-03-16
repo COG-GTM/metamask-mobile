@@ -154,6 +154,7 @@ function TransactionNotification(props) {
   }, [onCloseDetails, onClose]);
 
   const onSpeedUpPress = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const transactionActionDisabled = validateTransactionActionBalance(
       tx,
       SPEED_UP_RATE,
@@ -171,6 +172,7 @@ function TransactionNotification(props) {
   ]);
 
   const onCancelPress = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const transactionActionDisabled = validateTransactionActionBalance(
       tx,
       CANCEL_RATE,
@@ -216,6 +218,7 @@ function TransactionNotification(props) {
 
   useEffect(() => {
     async function getTransactionInfo() {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const tx = transactions.find(
         ({ id }) => id === currentNotification.transaction.id,
       );
@@ -234,6 +237,7 @@ function TransactionNotification(props) {
         swapsTransactions,
         swapsTokens,
       } = props;
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const [transactionElement, transactionDetails] = await decodeTransaction({
         ...props,
         tx,

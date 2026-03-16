@@ -91,6 +91,7 @@ export default class StyledButton extends PureComponent {
 
     const children = coalesceNonElementChildren(
       this.props.children,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       (children, index) => (
         <Text
           key={index}

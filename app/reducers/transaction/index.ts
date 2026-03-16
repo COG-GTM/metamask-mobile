@@ -124,6 +124,7 @@ const transactionReducer = (state: TransactionState = initialState, action: Tran
       return {
         ...state,
         ...initialState,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         selectedAsset: action.selectedAsset!,
         assetType: action.assetType,
       };
@@ -147,6 +148,7 @@ const transactionReducer = (state: TransactionState = initialState, action: Tran
         transactionFromName: action.transactionFromName,
       };
     case 'SET_SELECTED_ASSET': {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const selectedAsset = action.selectedAsset!;
       const assetType = action.assetType || getAssetType(selectedAsset);
       return {
@@ -164,6 +166,7 @@ const transactionReducer = (state: TransactionState = initialState, action: Tran
       const selectedAsset = action.transaction?.selectedAsset as SelectedAsset | undefined;
       if (selectedAsset) {
         const assetType = getAssetType(selectedAsset);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         action.transaction!.assetType = assetType;
       }
       const txMeta = getTxMeta(action.transaction);
@@ -179,10 +182,12 @@ const transactionReducer = (state: TransactionState = initialState, action: Tran
       };
     }
     case 'SET_TOKENS_TRANSACTION': {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const selectedAsset = action.asset!;
       const assetType = getAssetType(selectedAsset);
       return {
         ...state,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         selectedAsset: action.asset!,
         assetType,
       };
@@ -202,6 +207,7 @@ const transactionReducer = (state: TransactionState = initialState, action: Tran
         ...state,
         securityAlertResponses: {
           ...state.securityAlertResponses,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           [transactionId!]: securityAlertResponse,
         },
       };

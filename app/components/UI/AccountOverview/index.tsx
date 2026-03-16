@@ -221,7 +221,7 @@ class AccountOverview extends PureComponent {
     const { internalAccounts, selectedAddress, onRef } = this.props;
     const accountLabel = renderAccountName(selectedAddress, internalAccounts);
     this.setState({ accountLabel });
-    onRef && onRef(this);
+    onRef?.(this);
     InteractionManager.runAfterInteractions(() => {
       this.doENSLookup();
     });
@@ -268,7 +268,7 @@ class AccountOverview extends PureComponent {
     const accountLabel = renderAccountName(selectedAddress, internalAccounts);
     this.setState({ accountLabelEditable: true, accountLabel });
     setTimeout(() => {
-      this.input && this.input.current && this.input.current.focus();
+      this.input?.current?.focus();
     }, 100);
   };
 

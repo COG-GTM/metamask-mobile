@@ -195,8 +195,7 @@ class Tabs extends PureComponent {
       const pos = (row - 1) * THUMB_HEIGHT;
 
       InteractionManager.runAfterInteractions(() => {
-        this.scrollview.current &&
-          this.scrollview.current.scrollTo({ x: 0, y: pos, animated: true });
+        this.scrollview.current?.scrollTo({ x: 0, y: pos, animated: true });
       });
     }
   }

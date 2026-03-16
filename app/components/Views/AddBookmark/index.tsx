@@ -110,7 +110,7 @@ export default class AddBookmark extends PureComponent {
 
   jumpToUrl = () => {
     const { current } = this.urlInput;
-    current && current.focus();
+    current?.focus();
   };
 
   render = () => {

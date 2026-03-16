@@ -40,7 +40,7 @@ export default class PortDuplexStream extends Duplex {
    * @private
    */
   _onDisconnect = function () {
-    this.destroy && this.destroy();
+    this.destroy?.();
   };
 
   /**
@@ -57,6 +57,7 @@ export default class PortDuplexStream extends Duplex {
    * @param {string} encoding Encoding to use when writing payload
    * @param {Function} cb Called when writing is complete or an error occurs
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _write = function (msg, encoding, cb) {
     try {
       if (Buffer.isBuffer(msg)) {

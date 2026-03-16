@@ -436,7 +436,7 @@ class ResetPassword extends PureComponent {
 
   jumpToConfirmPassword = () => {
     const { current } = this.confirmPasswordInput;
-    current && current.focus();
+    current?.focus();
   };
 
   updateBiometryChoice = async (biometryChoice) => {
@@ -607,6 +607,7 @@ class ResetPassword extends PureComponent {
           <View style={styles.loadingWrapper}>
             <View style={styles.foxWrapper}>
               <Image
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
                 source={require('../../../images/branding/fox.png')}
                 style={styles.image}
                 resizeMethod={'auto'}

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import networksWithImages from 'images/image-icons';
 import {
@@ -427,7 +428,7 @@ export function getBlockExplorerName(blockExplorerUrl) {
   const hostname = new URL(blockExplorerUrl).hostname;
   if (!hostname) return undefined;
   const tempBlockExplorerName = fastSplit(hostname);
-  if (!tempBlockExplorerName || !tempBlockExplorerName[0]) return undefined;
+  if (!tempBlockExplorerName?.[0]) return undefined;
   return (
     tempBlockExplorerName[0].toUpperCase() + tempBlockExplorerName.slice(1)
   );
@@ -493,7 +494,7 @@ export const getNetworkNameFromProviderConfig = (providerConfig) => {
  * Gets the image source given both the network type and the chain ID.
  *
  * @param {object} params - Params that contains information about the network.
- * @param {string=} params.networkType - Type of network from the provider.
+ * @param string= params.networkType - Type of network from the provider.
  * @param {string} params.chainId - ChainID of the network.
  * @returns {Object} - Image source of the network.
  */

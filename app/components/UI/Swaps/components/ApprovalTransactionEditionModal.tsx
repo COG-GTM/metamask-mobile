@@ -49,6 +49,7 @@ function ApprovalTransactionEditionModal({
   const { colors } = useTheme();
 
   const onSpendLimitCustomValueChange = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     (approvalCustomValue) => setApprovalCustomValue(approvalCustomValue),
     [],
   );
@@ -96,6 +97,7 @@ function ApprovalTransactionEditionModal({
       : customApprovalTransaction;
     setApprovalTransaction(newApprovalTx);
     if (newApprovalTx) {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const approvalTransactionAmount = decodeApproveData(
         newApprovalTx.data,
       ).encodedAmount;

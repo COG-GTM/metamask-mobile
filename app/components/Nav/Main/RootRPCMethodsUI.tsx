@@ -94,6 +94,7 @@ export const useSwapConfirmedEvent = ({ trackSwaps }) => {
     useState([]);
 
   const addTransactionMetaIdForListening = useCallback((txMetaId) => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     setTransactionMetaIdsForListening((transactionMetaIdsForListening) => [
       ...transactionMetaIdsForListening,
       txMetaId,
@@ -136,7 +137,9 @@ const RootRPCMethodsUI = (props) => {
   const { trackEvent, createEventBuilder } = useMetrics();
   const [transactionModalType, setTransactionModalType] = useState(undefined);
   const tokenList = useSelector(selectTokenList);
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const setTransactionObject = props.setTransactionObject;
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const setEtherTransaction = props.setEtherTransaction;
 
   const initializeWalletConnect = () => {
@@ -298,6 +301,7 @@ const RootRPCMethodsUI = (props) => {
       try {
         Engine.controllerMessenger.subscribeOnceIf(
           'TransactionController:transactionFinished',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
           (transactionMeta) => {
             if (transactionMeta.status === 'submitted') {
               NotificationManager.watchSubmittedTransaction({
@@ -315,6 +319,7 @@ const RootRPCMethodsUI = (props) => {
               throw transactionMeta.error;
             }
           },
+          // eslint-disable-next-line @typescript-eslint/no-shadow
           (transactionMeta) => transactionMeta.id === transactionId,
         );
 
@@ -351,7 +356,7 @@ const RootRPCMethodsUI = (props) => {
         ) {
           Alert.alert(
             strings('transactions.transaction_error'),
-            error && error.message,
+            error?.message,
             [{ text: strings('navigation.ok') }],
           );
           Logger.error(error, 'error while trying to send transaction (Main)');
@@ -396,6 +401,7 @@ const RootRPCMethodsUI = (props) => {
         const {
           chainId,
           networkClientId,
+          // eslint-disable-next-line @typescript-eslint/no-shadow
           txParams: { value, gas, gasPrice, data },
         } = transactionMeta;
         const { AssetsContractController } = Engine.context;

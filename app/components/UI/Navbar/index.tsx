@@ -67,6 +67,7 @@ import { getFormattedAddressFromInternalAccount } from '../../../core/Multichain
 import { withMetaMetrics } from '../Stake/utils/metaMetrics/withMetaMetrics';
 import { BridgeViewMode } from '../Bridge/types';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const trackEvent = (event, params = {}) => {
   MetaMetrics.getInstance().trackEvent(event);
 };
@@ -642,6 +643,7 @@ export function getModalNavbarOptions(title) {
  */
 export function getOnboardingNavbarOptions(
   route,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
   { headerLeft } = {},
   themeColors,
 ) {
@@ -1289,9 +1291,11 @@ export function getNetworkNavbarOptions(
   title,
   translate,
   navigation,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   themeColors,
   onRightPress = undefined,
   disableNetwork = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   contentOffset = 0,
   networkName = '',
 ) {
@@ -1798,6 +1802,7 @@ export function getBridgeTransactionDetailsNavbar(navigation) {
 
 export function getFiatOnRampAggNavbar(
   navigation,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
   { title = 'Buy', showBack = true, showCancel = true } = {},
   themeColors,
   onCancel,

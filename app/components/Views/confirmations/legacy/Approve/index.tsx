@@ -48,6 +48,7 @@ import {
   selectEvmNetworkConfigurationsByChainId,
   selectProviderTypeByChainId,
   selectRpcUrlByChainId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   selectEvmChainId,
 } from '../../../../../selectors/networkController';
 import {
@@ -282,6 +283,7 @@ class Approve extends PureComponent {
   };
 
   setNetworkNonce = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(transaction, networkClientId);
@@ -310,6 +312,7 @@ class Approve extends PureComponent {
 
   handleGetGasLimit = async () => {
     const { networkClientId } = this.props;
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { setTransactionObject, transaction } = this.props;
     const estimation = await getGasLimit(
       { ...transaction, gas: undefined },
@@ -466,6 +469,7 @@ class Approve extends PureComponent {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onLedgerConfirmation = (approve, transactionId, gaParams) => {
     const { metrics } = this.props;
     try {
@@ -629,7 +633,7 @@ class Approve extends PureComponent {
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: 'OK' }],
         );
         Logger.error(error, 'error while trying to send transaction (Approve)');

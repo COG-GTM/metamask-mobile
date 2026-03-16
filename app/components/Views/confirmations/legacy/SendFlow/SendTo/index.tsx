@@ -163,6 +163,7 @@ class SendFlow extends PureComponent {
   };
 
   updateNavBar = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { navigation, route, resetTransaction } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
@@ -192,9 +193,7 @@ class SendFlow extends PureComponent {
     const networkAddressBook = addressBook[globalChainId] || {};
     if (!Object.keys(networkAddressBook).length) {
       setTimeout(() => {
-        this.addressToInputRef &&
-          this.addressToInputRef.current &&
-          this.addressToInputRef.current.focus();
+        this.addressToInputRef?.current?.focus();
       }, 500);
     }
     //Fills in to address and sets the transaction if coming from QR code scan
@@ -249,6 +248,7 @@ class SendFlow extends PureComponent {
 
   handleNetworkSwitch = (globalChainId) => {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const { showAlert } = this.props;
       const networkName = handleNetworkSwitch(globalChainId);
 
@@ -278,6 +278,7 @@ class SendFlow extends PureComponent {
   };
 
   onTransactionDirectionSet = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { setRecipient, navigation, providerType } = this.props;
     const {
       fromSelectedAddress,
@@ -332,6 +333,7 @@ class SendFlow extends PureComponent {
 
   renderBuyEth = () => {
     const colors = this.context.colors || mockTheme.colors;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const styles = createStyles(colors);
 
     if (!this.props.isNativeTokenBuySupported) {
@@ -427,8 +429,7 @@ class SendFlow extends PureComponent {
 
   onToSelectedAddressChange = (toAccount) => {
     const currentChain =
-      this.props.ambiguousAddressEntries &&
-      this.props.ambiguousAddressEntries[this.props.globalChainId];
+      this.props.ambiguousAddressEntries?.[this.props.globalChainId];
     const isAmbiguousAddress = includes(currentChain, toAccount);
     if (isAmbiguousAddress) {
       this.setState({ showAmbiguousAcountWarning: isAmbiguousAddress });
@@ -505,11 +506,11 @@ class SendFlow extends PureComponent {
     );
     const existingContact =
       checksummedAddress &&
-      addressBook[globalChainId] &&
-      addressBook[globalChainId][checksummedAddress];
+      addressBook[globalChainId]?.[checksummedAddress];
     const displayConfusableWarning =
       !existingContact && confusableCollection && !!confusableCollection.length;
     const displayAsWarning =
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
       confusableCollection &&
       confusableCollection.length &&
       !confusableCollection.some(hasZeroWidthPoints);
@@ -612,6 +613,7 @@ class SendFlow extends PureComponent {
                 </View>
               )}
               <AddToAddressBookWrapper
+                // eslint-disable-next-line @typescript-eslint/no-shadow
                 setToAddressName={(toSelectedAddressName) =>
                   this.setState({ toSelectedAddressName })
                 }

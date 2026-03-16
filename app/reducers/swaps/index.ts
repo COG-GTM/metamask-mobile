@@ -15,9 +15,11 @@ import { allowedTestnetChainIds } from '../../components/UI/Swaps/utils';
 import { NETWORKS_CHAIN_ID } from '../../constants/network';
 import { selectSelectedInternalAccountAddress } from '../../selectors/accountsController';
 
+// eslint-disable-next-line @typescript-eslint/no-shadow
 declare const __DEV__: boolean;
 
 // TODO: Replace 'any' with proper type
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface SwapsToken {
   address: string;
   symbol?: string;
@@ -30,17 +32,20 @@ interface SwapsToken {
 }
 
 // TODO: Replace 'any' with proper type
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface FeatureFlags {
   smart_transactions?: Record<string, unknown>;
   smartTransactions?: Record<string, unknown>;
   [key: string]: unknown;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface SwapsChainState {
   isLive: boolean;
   featureFlags: Record<string, unknown> | undefined;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface SwapsState {
   isLive: boolean;
   hasOnboarded: boolean;
@@ -338,6 +343,7 @@ export const swapsTokensWithBalanceSelector = createSelector(
     const tokensWithBalance = [];
     const originalTokens = [];
 
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < baseTokens.length; i++) {
       if (tokensAddressesWithBalance.includes(baseTokens[i].address)) {
         tokensWithBalance.push(baseTokens[i]);
@@ -371,6 +377,7 @@ export const swapsTopAssetsSelector = createSelector(
   swapsControllerAndUserTokens,
   selectTokenList,
   topAssets,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   (chainId, tokens, tokenList, topAssets) => {
     if (!topAssets || !tokens) {
       return [];
@@ -396,6 +403,7 @@ export const initialState = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/default-param-last
 function swapsReducer(state = initialState, action) {
   switch (action.type) {
     case SWAPS_SET_LIVENESS: {

@@ -352,6 +352,7 @@ class ApproveTransactionReview extends PureComponent {
     const {
       // We need to extract transaction.transaction here to retrieve up-to-date nonce
       transaction: { origin, to, data, from, transaction },
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setTransactionObject,
       tokenList,
       tokenAllowanceState,
@@ -465,6 +466,7 @@ class ApproveTransactionReview extends PureComponent {
     });
 
     const token = Object.values(tokenList).filter(
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       (token) => token.address === to,
     );
 
@@ -511,6 +513,7 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   componentDidUpdate = (_, prevState) => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { transaction, setTransactionObject } = this.props;
     const {
       tokenSpendValue,
@@ -702,7 +705,7 @@ class ApproveTransactionReview extends PureComponent {
       tokenDecimals,
       tokenName,
     });
-    onModeChange && onModeChange('edit');
+    onModeChange?.('edit');
   };
 
   openLinkAboutGas = () =>
@@ -1251,7 +1254,7 @@ class ApproveTransactionReview extends PureComponent {
 
   onCancelPress = () => {
     const { onCancel, transaction } = this.props;
-    onCancel && onCancel();
+    onCancel?.();
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.APPROVAL_PERMISSION_UPDATED)
@@ -1283,7 +1286,7 @@ class ApproveTransactionReview extends PureComponent {
       return this.setState({ isReadyToApprove: true });
     }
 
-    return onConfirm && onConfirm();
+    return onConfirm?.();
   };
 
   goToFaucet = () => {

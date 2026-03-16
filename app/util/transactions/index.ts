@@ -424,6 +424,7 @@ export async function isCollectibleAddress(address, tokenId) {
     address,
     tokenId,
   );
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const isCollectibleAddress = ownerOf && ownerOf !== '0x';
   CollectibleAddresses.cache[address] = isCollectibleAddress;
   return isCollectibleAddress;
@@ -603,10 +604,8 @@ export function getTransactionToName({
   const matchingAccount = internalAccountsMap[checksummedToAddress];
 
   const transactionToName =
-    (networkAddressBook &&
-      networkAddressBook[checksummedToAddress] &&
-      networkAddressBook[checksummedToAddress].name) ||
-    (matchingAccount && matchingAccount.metadata.name);
+    (networkAddressBook?.[checksummedToAddress]?.name) ||
+    (matchingAccount?.metadata.name);
 
   return transactionToName;
 }
@@ -812,8 +811,7 @@ export const calculateEIP1559Times = ({
 
     if (
       selectedOption &&
-      gasFeeEstimates &&
-      gasFeeEstimates[LOW] &&
+      gasFeeEstimates?.[LOW] &&
       gasFeeEstimates[MEDIUM] &&
       gasFeeEstimates[HIGH]
     ) {
@@ -1336,6 +1334,7 @@ export const parseTransactionLegacy = (
   const gasLimitHex = BNToHex(new BN(selectedGasFee.suggestedGasLimit));
 
   let weiTransactionFee =
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     gasLimit &&
     gasLimit.mul(hexToBN(decGWEIToHexWEI(selectedGasFee.suggestedGasPrice)));
   if (multiLayerL1FeeTotal) {
@@ -1375,6 +1374,7 @@ export const parseTransactionLegacy = (
 
   if (selectedAsset.isETH) {
     const transactionTotalAmountBN =
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
       weiTransactionFee && weiTransactionFee.add(valueBN);
     transactionTotalAmount = `${renderFromWei(
       transactionTotalAmountBN,
@@ -1386,6 +1386,7 @@ export const parseTransactionLegacy = (
     );
   } else if (selectedAsset.tokenId) {
     const transactionTotalAmountBN =
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
       weiTransactionFee && weiTransactionFee.add(valueBN);
     transactionTotalAmount = `${renderFromWei(
       weiTransactionFee,
@@ -1472,7 +1473,7 @@ export function validateTransactionActionBalance(transaction, rate, accounts) {
 
 /**
  * @param {number|string|BigNumber} value
- * @param {number=} decimals
+ * @param number= decimals
  * @returns {BigNumber}
  */
 export function calcTokenAmount(value, decimals) {
@@ -1489,8 +1490,8 @@ export function calcTokenValue(value, decimals) {
  * Attempts to get the address parameter of the given token transaction data
  * (i.e. function call) per the Human Standard Token ABI, in the following
  * order:
- *   - The '_to' parameter, if present
- *   - The first parameter, if present
+ * - The '_to' parameter, if present
+ * - The first parameter, if present
  *
  * @param {Object} tokenData - ethers Interface token data.
  * @returns {string | undefined} A lowercase address string.
@@ -1525,7 +1526,7 @@ export function getTokenValueParam(tokenData = {}) {
 
 export function getTokenValue(tokenParams = []) {
   const valueData = tokenParams.find((param) => param.name === '_value');
-  return valueData && valueData.value;
+  return valueData?.value;
 }
 
 /**

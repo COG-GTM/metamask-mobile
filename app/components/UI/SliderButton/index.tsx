@@ -20,7 +20,9 @@ import { useTheme } from '../../../util/theme';
 import { SwapsViewSelectors } from '../../../../e2e/selectors/swaps/SwapsView.selectors';
 
 /* eslint-disable import/no-commonjs */
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const SliderBgImg = require('./assets/slider_button_gradient.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const SliderShineImg = require('./assets/slider_button_shine.png');
 /* eslint-enable import/no-commonjs */
 
@@ -120,6 +122,7 @@ function SliderButton({
   const styles = createStyles(colors, shadows);
 
   const handleIsPressed = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     (isPressed) => {
       onSwipeChange?.(isPressed);
       setIsPressed(isPressed);
@@ -207,6 +210,7 @@ function SliderButton({
             useNativeDriver: false,
           }).start();
         },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onPanResponderRelease: (evt, gestureState) => {
           handleIsPressed(false);
           if (

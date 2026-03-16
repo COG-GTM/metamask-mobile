@@ -67,6 +67,7 @@ export const recreateVaultWithNewPassword = async (
     const simpleKeyrings = KeyringController.state.keyrings.filter(
       (keyring) => keyring.type === KeyringTypes.simple,
     );
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < simpleKeyrings.length; i++) {
       const simpleKeyring = simpleKeyrings[i];
       const simpleKeyringAccounts = await Promise.all(
@@ -117,6 +118,7 @@ export const recreateVaultWithNewPassword = async (
 
   try {
     // Import imported accounts again
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < importedAccounts.length; i++) {
       await KeyringController.importAccountWithStrategy('privateKey', [
         importedAccounts[i],
@@ -141,6 +143,7 @@ export const recreateVaultWithNewPassword = async (
  * @param password - Password to recreate and set the vault with
  */
 export const recreateVaultWithSamePassword = async (
+  // eslint-disable-next-line @typescript-eslint/default-param-last
   password = '',
   selectedAddress,
 ) => recreateVaultWithNewPassword(password, password, selectedAddress);

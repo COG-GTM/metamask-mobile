@@ -165,6 +165,7 @@ export default {
           // Specifically check for user cancellation
           if (error.message === 'User canceled the operation.') {
             // Store password without biometrics
+            // eslint-disable-next-line @typescript-eslint/no-shadow
             const encryptedPassword = await instance.encryptPassword(password);
             await Keychain.setGenericPassword(
               'metamask-user',

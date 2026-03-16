@@ -45,6 +45,7 @@ const measures = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-shadow
 const createStyles = (colors, measures) =>
   StyleSheet.create({
     view: {

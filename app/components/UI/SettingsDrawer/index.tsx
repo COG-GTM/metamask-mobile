@@ -18,6 +18,7 @@ import Text, {
   TextColor,
 } from '../../../component-library/components/Texts/Text';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const createStyles = (colors, titleColor) =>
   StyleSheet.create({
     root: {

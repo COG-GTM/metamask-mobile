@@ -154,7 +154,9 @@ const CollectibleOverview = ({
   selectedAddress,
   tradable,
   onSend,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   addFavoriteCollectible,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   removeFavoriteCollectible,
   isInFavorites,
   openLink,

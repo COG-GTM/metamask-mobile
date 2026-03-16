@@ -50,6 +50,7 @@ const TestStack = ({ secondRoute }) => (
   </Stack.Navigator>
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const NavigationUnitTest = ({ firstRoute, secondRoute }) => (
   <NavigationContainer>
     <Stack.Navigator initialRouteName={firstRoute || 'TestStack'}>

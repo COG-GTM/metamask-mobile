@@ -94,6 +94,7 @@ export default class WebviewError extends PureComponent {
       <View style={styles.wrapper}>
         <View style={styles.foxWrapper}>
           <Image
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             source={require('../../../images/branding/fox.png')}
             style={styles.image}
             resizeMethod={'auto'}

@@ -36,11 +36,14 @@ describe('Migration #28', () => {
 
     expect(result).toEqual(state);
     expect(
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
       require('@sentry/react-native').captureException,
     ).toHaveBeenCalledWith(expect.any(Error));
     expect(
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
       require('@sentry/react-native').captureException,
     ).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
     expect(require('@metamask/utils').isObject).toHaveBeenCalledTimes(1);
   });
 
@@ -50,8 +53,10 @@ describe('Migration #28', () => {
 
     expect(result).toEqual(state);
     expect(
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
       require('redux-persist-filesystem-storage').getItem,
     ).not.toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
     expect(require('@metamask/utils').isObject).toHaveBeenCalledTimes(1);
   });
 
@@ -65,11 +70,17 @@ describe('Migration #28', () => {
     const deepJSONParseMock = jest.fn().mockReturnValue(persistedData);
     const hasPropertyMock = jest.fn().mockReturnValue(false);
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
     require('@metamask/utils').isObject.mockReturnValue(true);
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
     require('../../util/general').deepJSONParse = deepJSONParseMock;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
     require('redux-persist-filesystem-storage').getItem = getItemMock;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
     require('redux-persist-filesystem-storage').setItem = setItemMock;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
     require('redux-persist-filesystem-storage').removeItem = removeItemMock;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
     require('@metamask/utils').hasProperty = hasPropertyMock;
 
     const state = {};
@@ -111,6 +122,7 @@ describe('Migration #28', () => {
     expect(removeItemMock).toHaveBeenCalledTimes(controllerList.length);
     expect(result).toEqual({ engine: { backgroundState: mockEngine } });
     expect(
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
       require('@sentry/react-native').captureException,
     ).not.toHaveBeenCalled();
   });

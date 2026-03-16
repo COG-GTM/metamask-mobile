@@ -101,7 +101,7 @@ class GlobalAlert extends PureComponent {
 
     return (
       <ElevatedView
-        style={styles.copyAlert(this.props.data && this.props.data.width)}
+        style={styles.copyAlert(this.props.data?.width)}
         elevation={5}
       >
         <View style={styles.copyAlertIcon}>
@@ -112,7 +112,7 @@ class GlobalAlert extends PureComponent {
           />
         </View>
         <Text style={styles.copyAlertText}>
-          {this.props.data && this.props.data.msg}
+          {this.props.data?.msg}
         </Text>
       </ElevatedView>
     );

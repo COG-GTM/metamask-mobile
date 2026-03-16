@@ -47,6 +47,7 @@ import { OnboardingSelectorIDs } from '../../../../e2e/selectors/Onboarding/Onbo
 import Routes from '../../../constants/navigation/Routes';
 import { selectAccounts } from '../../../selectors/accountTrackerController';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { trace, TraceName, TraceOperation } from '../../../util/trace';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
@@ -367,6 +368,7 @@ class Onboarding extends PureComponent {
       <View style={styles.ctas}>
         <View style={styles.largeFoxWrapper}>
           <Image
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             source={require('../../../images/branding/fox.png')}
             style={styles.foxImage}
             resizeMethod={'auto'}
@@ -456,6 +458,7 @@ class Onboarding extends PureComponent {
             {loading && (
               <View style={styles.foxWrapper}>
                 <Image
+                  // eslint-disable-next-line @typescript-eslint/no-require-imports
                   source={require('../../../images/branding/fox.png')}
                   style={styles.image}
                   resizeMethod={'auto'}

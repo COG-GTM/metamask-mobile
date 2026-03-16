@@ -330,6 +330,7 @@ export default function VideoPlayer({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onSeek = (data = {}) => {
     if (scrubbing) {
       if (!seeking) {
@@ -360,7 +361,9 @@ export default function VideoPlayer({
     () =>
       PanResponder.create({
         // Ask to be the responder.
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onStartShouldSetPanResponder: (evt, gestureState) => true,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onMoveShouldSetPanResponder: (evt, gestureState) => true,
 
         /**
@@ -368,6 +371,7 @@ export default function VideoPlayer({
          * seeking. This stops it from updating the seekbar
          * position in the onProgress listener.
          */
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onPanResponderGrant: (evt, gestureState) => {
           const position = evt.nativeEvent.locationX;
           updateSeekerPosition(position);
@@ -380,6 +384,7 @@ export default function VideoPlayer({
         /**
          * When panning, update the seekbar position, duh.
          */
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onPanResponderMove: (evt, gestureState) => {
           const position = seekerOffset + gestureState.dx;
           updateSeekerPosition(position);
@@ -399,6 +404,7 @@ export default function VideoPlayer({
         /**
          * On release we update the time and seek to it in the video.
          */
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onPanResponderRelease: (evt, gestureState) => {
           const time = calculateTimeFromSeekerPosition();
           if (time >= duration && !loading) {
@@ -425,6 +431,7 @@ export default function VideoPlayer({
   );
 
   const renderControl = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     (children, callback, style = {}) => (
       <TouchableHighlight
         underlayColor="transparent"

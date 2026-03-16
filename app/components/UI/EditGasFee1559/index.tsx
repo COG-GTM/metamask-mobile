@@ -211,6 +211,7 @@ const EditGasFee1559 = ({
         gas_mode: selectedOption ? 'Basic' : 'Advanced',
         speed_set: selectedOption || undefined,
       };
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     } catch (error) {
       return {};
     }
@@ -224,10 +225,12 @@ const EditGasFee1559 = ({
           .build(),
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     setShowAdvancedOptions((showAdvancedOptions) => !showAdvancedOptions);
   };
 
   const toggleLearnMoreModal = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     setShowLearnMoreModal((showLearnMoreModal) => !showLearnMoreModal);
   };
 
@@ -241,6 +244,7 @@ const EditGasFee1559 = ({
     onSave(selectedOption);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const changeGas = (gas, selectedOption) => {
     setSelectedOption(selectedOption);
     onChange(gas, selectedOption);
@@ -332,6 +336,7 @@ const EditGasFee1559 = ({
   const shouldIgnore = (option) =>
     ignoreOptions.find((item) => item === option);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const renderLabel = (selected, disabled, label) => (
     <Text bold primary={selected && !disabled}>
       {label}
@@ -759,8 +764,7 @@ const EditGasFee1559 = ({
                     {showInfoModal === 'max_fee' &&
                       strings('edit_gas_fee_eip1559.learn_more_max_fee')}
                     {showInfoModal === 'new_gas_fee' &&
-                    updateOption &&
-                    updateOption.isCancel
+                    updateOption?.isCancel
                       ? strings(
                           'edit_gas_fee_eip1559.learn_more_cancel_gas_fee',
                         )

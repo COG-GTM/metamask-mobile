@@ -9,6 +9,7 @@ import {
   renderShortAddress,
   renderSlightlyLongAddress,
   isENS,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getLabelTextByAddress,
 } from '../../../util/address';
 import { strings } from '../../../../locales/i18n';
@@ -17,6 +18,7 @@ import { useTheme } from '../../../util/theme';
 import AddToAddressBookWrapper from '../AddToAddressBookWrapper/AddToAddressBookWrapper';
 import { SendViewSelectorsIDs } from '../../../../e2e/selectors/SendFlow/SendView.selectors';
 import Text, {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 

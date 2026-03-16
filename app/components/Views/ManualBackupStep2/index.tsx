@@ -24,6 +24,7 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
+// eslint-disable-next-line @typescript-eslint/no-shadow
 const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -100,6 +101,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
 
   const clearConfirmedWordAt = (i) => {
     const { word, originalPosition } = confirmedWords[i];
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const currentIndex = i;
     if (word && (originalPosition || originalPosition === 0)) {
       wordsDict[[word, originalPosition]].currentPosition = undefined;
@@ -125,6 +127,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     if (validateWords()) {
       seedphraseBackedUp();
       InteractionManager.runAfterInteractions(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         const words = route.params?.words;
         navigation.navigate('ManualBackupStep3', {
           steps: route.params?.steps,
@@ -145,6 +148,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   };
 
   const renderSuccess = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const styles = createStyles(colors);
 
     return (
@@ -162,6 +166,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   };
 
   const renderWordBox = (word, i) => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const styles = createStyles(colors);
 
     return (
@@ -188,6 +193,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     (key, i) => {
       const [word] = key.split(',');
       const selected = wordsDict[key].currentPosition !== undefined;
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const styles = createStyles(colors);
 
       return (

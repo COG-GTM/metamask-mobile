@@ -78,9 +78,13 @@ const IOS_REJECTED_BIOMETRICS_ERROR =
  */
 const ImportFromSecretRecoveryPhrase = ({
   navigation,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   passwordSet,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   setLockTime,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   seedphraseBackedUp,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   setOnboardingWizardStep,
   route,
 }) => {
@@ -154,6 +158,7 @@ const ImportFromSecretRecoveryPhrase = ({
     termsOfUse();
   }, [termsOfUse]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const updateBiometryChoice = async (biometryChoice) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     setBiometryChoice(biometryChoice);
@@ -190,6 +195,7 @@ const ImportFromSecretRecoveryPhrase = ({
 
     if (loading) return;
     track(MetaMetricsEvents.WALLET_IMPORT_ATTEMPTED);
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     let error = null;
     if (!passwordRequirementsMet(password)) {
       error = strings('import_from_seed.password_length_error');
@@ -249,6 +255,7 @@ const ImportFromSecretRecoveryPhrase = ({
           index: 1,
           routes: [{ name: Routes.ONBOARDING.SUCCESS_FLOW }],
         });
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       } catch (error) {
         // Should we force people to enable passcode / biometrics?
         if (error.toString() === PASSCODE_NOT_SET_ERROR) {
@@ -270,6 +277,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const clearSecretRecoveryPhrase = async (seed) => {
     // get clipboard contents
     const clipboardContents = await Clipboard.getString();
@@ -285,6 +293,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const onSeedWordsChange = useCallback(async (seed) => {
     setSeed(seed);
     // Only clear on android since iOS will notify users when we getString()
@@ -310,15 +319,16 @@ const ImportFromSecretRecoveryPhrase = ({
 
   const jumpToPassword = useCallback(() => {
     const { current } = passwordInput;
-    current && current.focus();
+    current?.focus();
   }, [passwordInput]);
 
   const jumpToConfirmPassword = () => {
     const { current } = confirmPasswordInput;
-    current && current.focus();
+    current?.focus();
   };
 
   const renderSwitch = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const handleUpdateRememberMe = (rememberMe) => {
       setRememberMe(rememberMe);
     };
@@ -350,6 +360,7 @@ const ImportFromSecretRecoveryPhrase = ({
     navigation.navigate(Routes.QR_TAB_SWITCHER, {
       initialScreen: QRTabSwitcherScreens.Scanner,
       disableTabber: true,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       onScanSuccess: ({ seed = undefined }) => {
         if (seed) {
           setSeed(seed);
@@ -361,6 +372,7 @@ const ImportFromSecretRecoveryPhrase = ({
         }
         setHideSeedPhraseInput(shouldHideSRP);
       },
+      // eslint-disable-next-line @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars
       onScanError: (error) => {
         setHideSeedPhraseInput(shouldHideSRP);
       },

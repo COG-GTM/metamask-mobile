@@ -105,6 +105,7 @@ const notificationReducer = (state: NotificationState = initialState, action: No
             {
               ...notifications[index],
               ...{
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 id: action.transaction!.id as string | number,
                 isVisible: true,
                 autodismiss: action.autodismiss,
@@ -120,6 +121,7 @@ const notificationReducer = (state: NotificationState = initialState, action: No
       return {
         ...state,
         notifications: enqueue(notifications, {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           id: action.transaction!.id as string | number,
           isVisible: true,
           autodismiss: action.autodismiss,
@@ -174,6 +176,7 @@ const notificationReducer = (state: NotificationState = initialState, action: No
         ...state,
         notifications: [
           ...notifications.slice(0, index),
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           action.notification!,
           ...notifications.slice(index + 1),
         ],
@@ -209,6 +212,7 @@ const notificationReducer = (state: NotificationState = initialState, action: No
       return {
         ...state,
         notifications: enqueue(notifications, {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           id: action.transaction!.id as string | number,
           isVisible: true,
           autodismiss: action.autodismiss || 5000,

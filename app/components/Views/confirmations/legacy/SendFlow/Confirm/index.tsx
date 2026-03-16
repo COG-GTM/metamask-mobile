@@ -331,6 +331,7 @@ class Confirm extends PureComponent {
   );
 
   setNetworkNonce = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { globalNetworkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(
@@ -393,6 +394,7 @@ class Confirm extends PureComponent {
   };
 
   updateNavBar = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { navigation, route, resetTransaction, transaction } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
@@ -476,6 +478,7 @@ class Confirm extends PureComponent {
       navigation,
       providerType,
       isPaymentRequest,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setTransactionId,
     } = this.props;
 
@@ -530,7 +533,7 @@ class Confirm extends PureComponent {
       navigation.navigate(Routes.WALLET_VIEW);
       Alert.alert(
         strings('transactions.transaction_error'),
-        error && error.message,
+        error?.message,
         [{ text: 'OK' }],
       );
       return;
@@ -729,6 +732,7 @@ class Confirm extends PureComponent {
 
   getGasLimit = async () => {
     const {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       prepareTransaction,
       transactionState: { transaction },
     } = this.props;
@@ -771,6 +775,7 @@ class Confirm extends PureComponent {
     } else {
       const {
         address,
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         symbol = 'ERC20',
         decimals,
         image,
@@ -872,6 +877,7 @@ class Confirm extends PureComponent {
       transactionState: {
         transaction: { value },
       },
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       updateConfirmationMetric,
     } = this.props;
     const { EIP1559GasTransaction, legacyGasTransaction, transactionMeta } =
@@ -968,7 +974,7 @@ class Confirm extends PureComponent {
       }
     } finally {
       // Error handling derived to LedgerConfirmationModal component
-      navigation && navigation.dangerouslyGetParent()?.popToTop();
+      navigation?.dangerouslyGetParent()?.popToTop();
     }
   };
 
@@ -977,6 +983,7 @@ class Confirm extends PureComponent {
     const {
       transactionState: { assetType },
       navigation,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       resetTransaction,
       shouldUseSmartTransaction,
       transactionMetadata,
@@ -1101,7 +1108,7 @@ class Confirm extends PureComponent {
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: 'OK' }],
         );
         Logger.error(error, 'error while trying to send transaction (Confirm)');

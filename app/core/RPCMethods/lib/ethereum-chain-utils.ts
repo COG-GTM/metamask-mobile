@@ -16,6 +16,7 @@ import {
 import { MetaMetrics, MetaMetricsEvents } from '../../../core/Analytics';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getDefaultCaip25CaveatValue,
   getPermittedAccounts,
 } from '../../Permissions';
@@ -42,7 +43,7 @@ export function validateChainId(chainId) {
 }
 
 export function validateAddEthereumChainParams(params) {
-  if (!params || !params?.[0] || typeof params[0] !== 'object') {
+  if (!params?.[0] || typeof params[0] !== 'object') {
     throw rpcErrors.invalidParams({
       message: `Expected single, object parameter. Received:\n${JSON.stringify(
         params,
@@ -269,7 +270,7 @@ export async function switchToNetwork({
 
   const shouldGrantPermissions =
     chainPermissionsFeatureEnabled &&
-    (!ethChainIds || !ethChainIds.includes(chainId));
+    (!ethChainIds?.includes(chainId));
 
   const requestModalType = isAddNetworkFlow ? 'new' : 'switch';
 

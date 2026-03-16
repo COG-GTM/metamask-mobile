@@ -4,6 +4,7 @@ interface AlertContent {
 }
 
 // TODO: Replace 'any' with proper type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AlertData = Record<string, any>;
 
 interface ShowAlertAction {

@@ -86,8 +86,8 @@ export function createLoggerMiddleware(opts) {
             /**
              * Example of a rpc error:
              * { "code":-32603,
-             *   "message":"Internal JSON-RPC error.",
-             *   "data":{"code":-32000,"message":"gas required exceeds allowance (59956966) or always failing transaction"}
+             * "message":"Internal JSON-RPC error.",
+             * "data":{"code":-32000,"message":"gas required exceeds allowance (59956966) or always failing transaction"}
              * }
              * This will make the error log to sentry with the title "gas required exceeds allowance (59956966) or always failing transaction"
              * making it easier to differentiate each error.

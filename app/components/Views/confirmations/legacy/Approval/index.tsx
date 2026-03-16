@@ -253,8 +253,7 @@ class Approval extends PureComponent {
       'change',
       this.handleAppStateChange,
     );
-    navigation &&
-      navigation.setParams({ mode: REVIEW, dispatch: this.onModeChange });
+    navigation?.setParams({ mode: REVIEW, dispatch: this.onModeChange });
     this.initialise();
   };
 
@@ -430,8 +429,7 @@ class Approval extends PureComponent {
   showWalletConnectNotification = (confirmation = false) => {
     const { transaction } = this.props;
     InteractionManager.runAfterInteractions(() => {
-      transaction.origin &&
-        transaction.origin.startsWith(WALLET_CONNECT_ORIGIN) &&
+      transaction.origin?.startsWith(WALLET_CONNECT_ORIGIN) &&
         NotificationManager.showSimpleNotification({
           status: `simple_notification${!confirmation ? '_rejected' : ''}`,
           duration: 5000,
@@ -459,6 +457,7 @@ class Approval extends PureComponent {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onLedgerConfirmation = (approve, transactionId, gaParams) => {
     try {
       //manual cancel from UI when transaction is awaiting from ledger confirmation
@@ -617,7 +616,7 @@ class Approval extends PureComponent {
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: strings('navigation.ok') }],
         );
         Logger.error(
@@ -662,7 +661,7 @@ class Approval extends PureComponent {
    */
   onModeChange = (mode) => {
     const { navigation } = this.props;
-    navigation && navigation.setParams({ mode });
+    navigation?.setParams({ mode });
     this.setState({ mode });
     InteractionManager.runAfterInteractions(() => {
       mode === REVIEW && this.trackConfirmScreen();

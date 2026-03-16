@@ -82,6 +82,7 @@ const RemoteImage = (props) => {
       ? ''
       : source.uri);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const onError = ({ nativeEvent: { error } }) => setError(error);
 
   const [dimensions, setDimensions] = useState(null);
@@ -166,9 +167,7 @@ const RemoteImage = (props) => {
   }, [chainId]);
 
   const isSVG =
-    source &&
-    source.uri &&
-    source.uri.match('.svg') &&
+    source?.uri?.match('.svg') &&
     (isImageUrl || resolvedIpfsUrl);
 
   const viewbox = useSvgUriViewBox(uri, isSVG);

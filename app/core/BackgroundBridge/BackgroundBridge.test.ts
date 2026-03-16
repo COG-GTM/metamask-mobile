@@ -45,6 +45,7 @@ jest.mock('../../store', () => ({
 
 jest.mock('../RPCMethods/createEthAccountsMethodMiddleware');
 
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 createEthAccountsMethodMiddleware;
 
 jest.mock('@metamask/eth-json-rpc-filters');

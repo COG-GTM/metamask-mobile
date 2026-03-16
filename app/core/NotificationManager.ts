@@ -12,6 +12,7 @@ import ReviewManager from './ReviewManager';
 import { selectEvmTicker } from '../selectors/networkController';
 import { store } from '../store';
 import { getTicker } from '../../app/util/transactions';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { updateTransaction } from '../../app/util/transaction-controller';
 import { SmartTransactionStatuses } from '@metamask/smart-transactions-controller/dist/types';
 
@@ -183,8 +184,7 @@ class NotificationManager {
     this._removeNotificationById(transactionMeta.id);
     const transaction =
       this._transactionsWatchTable[transactionMeta.txParams.nonce];
-    transaction &&
-      transaction.length &&
+    transaction?.length &&
       setTimeout(() => {
         // Then we show the error notification
         this._showNotification({
@@ -363,27 +363,33 @@ class NotificationManager {
     this._transactionConfirmedListener =
       Engine.controllerMessenger.subscribeOnceIf(
         'TransactionController:transactionConfirmed',
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         (transactionMeta) => {
           this._confirmedCallback(transactionMeta, transaction);
         },
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         (transactionMeta) => transactionMeta.id === transaction.id,
       );
 
     this._transactionFailedListener =
       Engine.controllerMessenger.subscribeOnceIf(
         'TransactionController:transactionFailed',
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         (transactionMeta) => {
           this._failedCallback(transactionMeta);
         },
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         (transactionMeta) => transactionMeta.id === transaction.id,
       );
 
     this._transactionSpeedupListener =
       Engine.controllerMessenger.subscribeOnceIf(
         'TransactionController:speedupTransactionAdded',
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         (transactionMeta) => {
           this._speedupCallback(transactionMeta);
         },
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         (transactionMeta) => transactionMeta.id === transaction.id,
       );
 

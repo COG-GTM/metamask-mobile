@@ -156,6 +156,7 @@ class TransactionEditor extends PureComponent {
       transaction,
       gasEstimateType,
       gasFeeEstimates,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setTransactionObject,
     } = this.props;
     const { dappSuggestedGasPrice, dappSuggestedEIP1559Gas } = this.state;
@@ -296,6 +297,7 @@ class TransactionEditor extends PureComponent {
   };
 
   componentDidMount = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { transaction, setTransactionObject } = this.props;
 
     const zeroGas = new BN('00');
@@ -326,17 +328,18 @@ class TransactionEditor extends PureComponent {
       );
     }
 
-    if (transaction && transaction.value) {
+    if (transaction?.value) {
       this.handleUpdateAmount(transaction.value, true);
     }
     if (transaction && transaction.assetType === 'ETH') {
       this.handleUpdateReadableValue(fromWei(transaction.value));
     }
-    if (transaction && transaction.data) {
+    if (transaction?.data) {
       this.setState({ data: transaction.data });
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   parseTransactionDataEIP1559 = (gasFee, options) => {
     const { ticker } = this.props;
 
@@ -359,6 +362,7 @@ class TransactionEditor extends PureComponent {
     return parsedTransactionEIP1559;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   parseTransactionDataLegacy = (gasFee, options) => {
     const { ticker } = this.props;
 
@@ -421,7 +425,7 @@ class TransactionEditor extends PureComponent {
    */
   onCancel = () => {
     const { onCancel } = this.props;
-    onCancel && onCancel();
+    onCancel?.();
   };
 
   /**
@@ -431,8 +435,7 @@ class TransactionEditor extends PureComponent {
     const { onConfirm, gasEstimateType } = this.props;
     const { EIP1559GasData, gasSelected } = this.state;
     !(await this.validate()) &&
-      onConfirm &&
-      onConfirm({ gasEstimateType, EIP1559GasData, gasSelected });
+      onConfirm?.({ gasEstimateType, EIP1559GasData, gasSelected });
   };
 
   /**
@@ -514,7 +517,7 @@ class TransactionEditor extends PureComponent {
           return transaction.data;
         }
 
-        const tokenAmountToSend = selectedAsset && value && value.toString(16);
+        const tokenAmountToSend = selectedAsset && value?.toString(16);
         return to && tokenAmountToSend
           ? generateTransferData('transfer', {
             toAddress: to,
@@ -672,6 +675,7 @@ class TransactionEditor extends PureComponent {
   };
 
   saveGasEdition = (gasSelected) => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { gasEstimateType, setTransactionObject } = this.props;
     const { LegacyGasDataTemp } = this.state;
 
@@ -726,6 +730,7 @@ class TransactionEditor extends PureComponent {
   });
 
   saveGasEditionLegacy = (legacyGasTransaction, legacyGasObject) => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { setTransactionObject, gasEstimateType } = this.props;
     const totalHex = legacyGasTransaction?.totalHex;
     legacyGasTransaction.error = this.validateTotal(totalHex);

@@ -211,7 +211,7 @@ export default class Collectibles extends PureComponent {
 
     return (
       <View style={styles.wrapper} testID={'collectibles'}>
-        {collectibles && collectibles.length
+        {collectibles?.length
           ? this.renderCollectiblesList()
           : this.renderEmpty()}
         <ActionSheet

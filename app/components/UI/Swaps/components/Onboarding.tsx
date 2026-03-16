@@ -18,8 +18,11 @@ import StyledButton from '../../StyledButton';
 import { useTheme, useAssetFromTheme } from '../../../../util/theme';
 
 /* eslint-disable import/no-commonjs */
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const onboardingDeviceImage = require('../../../../images/swaps_onboard_device.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const swapsAggregatorsLight = require('../../../../images/swaps_aggs-light.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const swapsAggregatorsDark = require('../../../../images/swaps_aggs-dark.png');
 /* eslint-enable import/no-commonjs */
 

@@ -448,7 +448,7 @@ class AddCustomToken extends PureComponent {
 
   jumpToAssetPrecision = () => {
     const { current } = this.assetPrecisionInput;
-    current && current.focus();
+    current?.focus();
   };
 
   renderInfoBanner = () => {

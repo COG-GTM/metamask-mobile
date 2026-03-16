@@ -79,6 +79,7 @@ import { selectGasFeeEstimates } from '../../../selectors/confirmTransaction';
 import { decGWEIToHexWEI } from '../../../util/conversions';
 import { ActivitiesViewSelectorsIDs } from '../../../../e2e/selectors/Transactions/ActivitiesView.selectors';
 import { isNonEvmChainId } from '../../../core/Multichain/utils';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { isEqual } from 'lodash';
 import {
   getFontFamily,
@@ -264,7 +265,7 @@ class Transactions extends PureComponent {
     setTimeout(() => {
       this.mounted && this.setState({ ready: true });
       this.init();
-      this.props.onRefSet && this.props.onRefSet(this.flatList);
+      this.props.onRefSet?.(this.flatList);
     }, 100);
     this.setState({
       isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress),
@@ -341,8 +342,8 @@ class Transactions extends PureComponent {
   };
 
   toggleDetailsView = (id, index) => {
-    const oldId = this.selectedTx && this.selectedTx.id;
-    const oldIndex = this.selectedTx && this.selectedTx.index;
+    const oldId = this.selectedTx?.id;
+    const oldIndex = this.selectedTx?.index;
 
     if (this.selectedTx && oldId !== id && oldIndex !== index) {
       this.selectedTx = null;
@@ -425,7 +426,7 @@ class Transactions extends PureComponent {
           title,
         },
       });
-      close && close();
+      close?.();
     } catch (e) {
       Logger.error(e, {
         message: `can't get a block explorer link for network `,
@@ -469,6 +470,7 @@ class Transactions extends PureComponent {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getItemLayout = (data, index) => ({
     length: ROW_HEIGHT,
     offset: this.props.headerHeight + ROW_HEIGHT * index,
@@ -784,7 +786,7 @@ class Transactions extends PureComponent {
     const styles = createStyles(colors, typography);
 
     const transactions =
-      submittedTransactions && submittedTransactions.length
+      submittedTransactions?.length
         ? submittedTransactions
             .sort((a, b) => b.time - a.time)
             .concat(confirmedTransactions)

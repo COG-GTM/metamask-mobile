@@ -15,6 +15,7 @@ import { connect } from 'react-redux';
 import {
   setSelectedAsset,
   prepareTransaction,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setTransactionObject,
   resetTransaction,
   setMaxValueMode,
@@ -519,6 +520,7 @@ class Amount extends PureComponent {
   collectibles = [];
 
   updateNavBar = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { navigation, route, resetTransaction } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
@@ -646,6 +648,7 @@ class Amount extends PureComponent {
     const {
       navigation,
       selectedAsset,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setSelectedAsset,
       transactionState: { transaction },
       providerType,
@@ -675,7 +678,7 @@ class Amount extends PureComponent {
         )}`;
       }
     }
-    if (value && value.includes(',')) {
+    if (value?.includes(',')) {
       value = inputValue.replace(',', '.');
     }
 
@@ -777,6 +780,7 @@ class Amount extends PureComponent {
 
   prepareTransaction = async (value) => {
     const {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       prepareTransaction,
       selectedAsset,
       transactionState: { transaction, transactionTo },
@@ -929,6 +933,7 @@ class Amount extends PureComponent {
       conversionRate,
       currentCurrency,
       ticker,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setMaxValueMode,
     } = this.props;
     const { internalPrimaryCurrencyIsCrypto } = this.state;
@@ -940,9 +945,9 @@ class Amount extends PureComponent {
       hasExchangeRate,
       comma;
     // Remove spaces from input
-    inputValue = inputValue && inputValue.replace(regex.whiteSpaces, '');
+    inputValue = inputValue?.replace(regex.whiteSpaces, '');
     // Handle semicolon for other languages
-    if (inputValue && inputValue.includes(',')) {
+    if (inputValue?.includes(',')) {
       comma = true;
       inputValue = inputValue.replace(',', '.');
     }
@@ -1005,7 +1010,7 @@ class Amount extends PureComponent {
         renderableInputValueConversion = `${inputValueConversion} ${selectedAsset.symbol}`;
       }
     }
-    if (comma) inputValue = inputValue && inputValue.replace('.', ',');
+    if (comma) inputValue = inputValue?.replace('.', ',');
     inputValueConversion =
       inputValueConversion === '0' ? undefined : inputValueConversion;
     this.setState({
@@ -1050,9 +1055,7 @@ class Amount extends PureComponent {
       // Wait for input to mount first
       setTimeout(
         () =>
-          this.amountInput &&
-          this.amountInput.current &&
-          this.amountInput.current.focus(),
+          this.amountInput?.current?.focus(),
         500,
       );
     }

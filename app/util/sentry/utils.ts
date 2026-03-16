@@ -309,7 +309,7 @@ function rewriteErrorMessages(report, rewriteFn) {
     report.message = rewriteFn(report.message);
   }
   // rewrite each exception message
-  if (report.exception && report.exception.values) {
+  if (report.exception?.values) {
     report.exception.values.forEach((item) => {
       if (typeof item.value === 'string') {
         item.value = rewriteFn(item.value);
@@ -336,12 +336,12 @@ function simplifyErrorMessages(report) {
 }
 
 function removeDeviceTimezone(report) {
-  if (report.contexts && report.contexts.device)
+  if (report.contexts?.device)
     report.contexts.device.timezone = null;
 }
 
 function removeDeviceName(report) {
-  if (report.contexts && report.contexts.device)
+  if (report.contexts?.device)
     report.contexts.device.name = null;
 }
 
@@ -510,11 +510,11 @@ function sanitizeAddressesFromErrorMessages(report) {
  *
  * @param {boolean} isDev - Represents if the current environment is development (__DEV__ global variable).
  * @param {string} [metamaskEnvironment='local'] - The environment MetaMask is running in
- *                                                  (process.env.METAMASK_ENVIRONMENT).
- *                                                  It defaults to 'local' if not provided.
+ * (process.env.METAMASK_ENVIRONMENT).
+ * It defaults to 'local' if not provided.
  * @param {string} [metamaskBuildType='main'] - The build type of MetaMask
- *                                              (process.env.METAMASK_BUILD_TYPE).
- *                                              It defaults to 'main' if not provided.
+ * (process.env.METAMASK_BUILD_TYPE).
+ * It defaults to 'main' if not provided.
  *
  * @returns {string} - "metamaskEnvironment-metamaskBuildType" or just "metamaskEnvironment" if the build type is "main".
  */

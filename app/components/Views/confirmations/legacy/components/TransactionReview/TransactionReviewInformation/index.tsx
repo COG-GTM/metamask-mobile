@@ -257,6 +257,7 @@ class TransactionReviewInformation extends PureComponent {
   };
 
   setNetworkNonce = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(transaction, networkClientId);
@@ -268,6 +269,7 @@ class TransactionReviewInformation extends PureComponent {
     this.setState((state) => ({ nonceModalVisible: !state.nonceModalVisible }));
 
   renderCustomNonceModal = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { setNonce } = this.props;
     const { proposedNonce, nonce } = this.props.transaction;
     return (
@@ -281,6 +283,7 @@ class TransactionReviewInformation extends PureComponent {
   };
 
   getTotalFiat = (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     asset,
     totalGas,
     conversionRate,
@@ -319,7 +322,7 @@ class TransactionReviewInformation extends PureComponent {
 
   edit = () => {
     const { edit } = this.props;
-    edit && edit();
+    edit?.();
   };
 
   getRenderTotals = (totalGas, totalGasFiat) => {
@@ -540,7 +543,7 @@ class TransactionReviewInformation extends PureComponent {
 
   onCancelPress = () => {
     const { onCancelPress } = this.props;
-    onCancelPress && onCancelPress();
+    onCancelPress?.();
   };
 
   goToFaucet = () => {

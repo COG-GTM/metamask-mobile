@@ -330,9 +330,11 @@ class OptinMetrics extends PureComponent {
   onCancel = async () => {
     const {
       isDataCollectionForMarketingEnabled,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setDataCollectionForMarketing,
     } = this.props;
     setTimeout(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const { clearOnboardingEvents, metrics } = this.props;
       if (
         isDataCollectionForMarketingEnabled === null &&
@@ -357,6 +359,7 @@ class OptinMetrics extends PureComponent {
       events,
       metrics,
       isDataCollectionForMarketingEnabled,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setDataCollectionForMarketing,
     } = this.props;
 
@@ -390,7 +393,7 @@ class OptinMetrics extends PureComponent {
 
     // track onboarding events that were stored before user opted in
     // only if the user eventually opts in.
-    if (events && events.length) {
+    if (events?.length) {
       let delay = 0; // Initialize delay
       const eventTrackingDelay = 200; // ms delay between each event
       events.forEach((eventArgs) => {
@@ -592,6 +595,7 @@ class OptinMetrics extends PureComponent {
   render() {
     const {
       isDataCollectionForMarketingEnabled,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setDataCollectionForMarketing,
     } = this.props;
 

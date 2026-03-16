@@ -63,7 +63,9 @@ const createStyles = (colors) =>
     },
   });
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const wordmarkLight = require('../../../animations/wordmark-light.json');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const wordmarkDark = require('../../../animations/wordmark-dark.json');
 
 /**
@@ -189,6 +191,7 @@ class LockScreen extends PureComponent {
             this.firstAnimation = animation;
           }}
           style={styles.animation}
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={require('../../../animations/bounce.json')}
         />
       );
@@ -203,6 +206,7 @@ class LockScreen extends PureComponent {
           }}
           style={styles.animation}
           loop={false}
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={require('../../../animations/fox-in.json')}
           onAnimationFinish={this.onAnimationFinished}
         />

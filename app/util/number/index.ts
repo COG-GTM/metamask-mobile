@@ -322,6 +322,7 @@ export function fiatNumberToTokenMinimalUnit(
  * If value is less than 5 precision decimals will show '< 0.00001'
  */
 export function renderFromWei(value, decimalsToShow = 5) {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   let renderWei = '0';
   // avoid undefined
   if (value) {
@@ -485,6 +486,7 @@ export function renderToGwei(value, unit = 'ether') {
  */
 export function weiToFiat(
   wei,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
   conversionRate = null,
   currencyCode,
   decimalsToShow = 5,
@@ -726,6 +728,7 @@ export function renderFiat(value, currencyCode, decimalsToShow = 5) {
 export function renderWei(value) {
   if (!value) return '0';
   const wei = fromWei(value);
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const renderWei = wei * Math.pow(10, 18);
   return renderWei.toString();
 }

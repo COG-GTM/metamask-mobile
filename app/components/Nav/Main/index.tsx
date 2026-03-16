@@ -120,6 +120,7 @@ const Main = (props) => {
 
   const { connectionChangeHandler } = useConnectionHandler(props.navigation);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const removeNotVisibleNotifications = props.removeNotVisibleNotifications;
   useNotificationHandler();
   useIdentityEffects();
@@ -244,6 +245,7 @@ const Main = (props) => {
   const tokenNetworkFilter = useSelector(selectTokenNetworkFilter);
 
   const hasNetworkChanged = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     (chainId, previousConfig, isEvmSelected) => {
       if (!previousConfig) return false;
 
@@ -380,8 +382,7 @@ const Main = (props) => {
 
     return function cleanup() {
       appStateListener.remove();
-      removeConnectionStatusListener.current &&
-        removeConnectionStatusListener.current();
+      removeConnectionStatusListener.current?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionChangeHandler]);
@@ -400,6 +401,7 @@ const Main = (props) => {
     Linking.openURL(GOERLI_DEPRECATED_ARTICLE);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const renderDeprecatedNetworkAlert = (chainId, backUpSeedphraseVisible) => {
     if (DEPRECATED_NETWORKS.includes(chainId) && showDeprecatedAlert) {
       if (NETWORKS_CHAIN_ID.MUMBAI === chainId) {

@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { View, StyleSheet, Text, Platform } from 'react-native';
 import PropTypes from 'prop-types';
 import { fontStyles } from '../../../../styles/common';

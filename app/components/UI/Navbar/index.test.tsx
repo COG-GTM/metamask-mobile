@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { getNetworkNavbarOptions } from '.';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { SolScope } from '@metamask/keyring-api';
 
 describe('getNetworkNavbarOptions', () => {
@@ -30,6 +31,7 @@ describe('getNetworkNavbarOptions', () => {
       mockNavigation,
     );
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { getByText, getByRole } = renderWithProvider(
       <TestNavigator options={options} />,
       {

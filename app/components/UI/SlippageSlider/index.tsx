@@ -19,6 +19,7 @@ import { useTheme } from '../../../util/theme';
 import Svg, { Path } from 'react-native-svg';
 
 /* eslint-disable import/no-commonjs */
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const SlippageSliderBgImg = require('../../../images/slippage-slider-bg.png');
 /* eslint-enable import/no-commonjs */
 
@@ -177,6 +178,7 @@ const SlippageSlider = ({
          * When the slider is being dragged, this handler will figure out which tick
          * it should snap to
          */
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onPanResponderMove: (ev, gestureState) => {
           pan.setValue(gestureState.dx);
           const relativeValue = pan

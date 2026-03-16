@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { StyleSheet, View, Text, InteractionManager } from 'react-native';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import { useSelector } from 'react-redux';
 import { fontStyles } from '../../../../../../styles/common';
@@ -126,6 +127,7 @@ const WatchAssetRequest = ({
         chain_id: getDecimalChainId(chainId),
         source: 'Dapp suggested (watchAsset)',
       };
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     } catch (error) {
       Logger.error(error, 'WatchAssetRequest.getTokenAddedAnalyticsParams');
       return undefined;

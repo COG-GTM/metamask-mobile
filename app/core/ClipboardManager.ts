@@ -20,6 +20,7 @@ const ClipboardManager = {
         clearTimeout(this.expireTime);
       }
       this.expireTime = setTimeout(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         const string = await this.getString();
 
         if (!string) return;

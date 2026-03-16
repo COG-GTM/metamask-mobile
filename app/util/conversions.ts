@@ -212,6 +212,7 @@ export function sumHexWEIsToRenderableFiat(
   return formatCurrency(convertedTotal, convertedCurrency);
 }
 
+// eslint-disable-next-line @typescript-eslint/default-param-last
 export function formatETHFee(ethFee, currencySymbol = 'ETH', showLessThan) {
   if (showLessThan && ethFee === '0') return `< 0.000001 ${currencySymbol}`;
   return `${ethFee} ${currencySymbol}`;

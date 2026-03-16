@@ -160,6 +160,7 @@ const EditGasFeeLegacy = ({
         gas_mode: selectedOption ? 'Basic' : 'Advanced',
         speed_set: selectedOption || undefined,
       };
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     } catch (error) {
       return {};
     }
@@ -173,6 +174,7 @@ const EditGasFeeLegacy = ({
           .build(),
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     setShowAdvancedOptions((showAdvancedOptions) => !showAdvancedOptions);
   };
 
@@ -186,6 +188,7 @@ const EditGasFeeLegacy = ({
     onSave(selectedOption);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const changeGas = (gas, selectedOption) => {
     setSelectedOption(selectedOption);
     onChange(gas, selectedOption);
@@ -233,6 +236,7 @@ const EditGasFeeLegacy = ({
   const shouldIgnore = (option) =>
     ignoreOptions.find((item) => item === option);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const renderLabel = (selected, disabled, label) => (
     <Text bold primary={selected && !disabled}>
       {label}

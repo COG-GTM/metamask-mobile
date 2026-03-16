@@ -156,6 +156,7 @@ describe('notifications reducer', () => {
         id,
       });
       const notification = state.notifications.find(
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         (notification) => notification.id === id,
       );
       expect(notification.isVisible).toBe(false);
@@ -236,6 +237,7 @@ describe('notifications reducer', () => {
       });
 
       const replacedNotification = state.notifications.find(
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         (notification) => notification.id === notificationId,
       );
       expect(state.notifications.length).toBe(currentCount);

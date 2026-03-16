@@ -265,7 +265,7 @@ export default class Coachmark extends PureComponent {
    */
   onNext = () => {
     const { onNext } = this.props;
-    onNext && onNext();
+    onNext?.();
   };
 
   /**
@@ -273,7 +273,7 @@ export default class Coachmark extends PureComponent {
    */
   onBack = () => {
     const { onBack } = this.props;
-    onBack && onBack();
+    onBack?.();
   };
 
   getStyles = () => {

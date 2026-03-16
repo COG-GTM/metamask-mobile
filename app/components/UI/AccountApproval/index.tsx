@@ -13,6 +13,7 @@ import { MetaMetricsEvents } from '../../../core/Analytics';
 
 import CheckBox from '@react-native-community/checkbox';
 import { shuffle } from 'lodash';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import AppConstants from '../../../../app/core/AppConstants';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';

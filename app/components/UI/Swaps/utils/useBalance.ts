@@ -23,11 +23,11 @@ function useBalance(
       if (asUnits) {
         // Controller stores balances in hex for ETH
         return safeNumberToBN(
-          (accounts[selectedAddress] && accounts[selectedAddress].balance) || 0,
+          (accounts[selectedAddress]?.balance) || 0,
         );
       }
       return renderFromWei(
-        accounts[selectedAddress] && accounts[selectedAddress].balance,
+        accounts[selectedAddress]?.balance,
       );
     }
     const tokenAddress = safeToChecksumAddress(sourceToken.address);

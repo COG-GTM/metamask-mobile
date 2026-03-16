@@ -63,6 +63,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
   }, [colors, navigation, route]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const tryExportSeedPhrase = async (password) => {
     const { KeyringController } = Engine.context;
     const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(
@@ -101,6 +102,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     updateNavBar();
   }, [updateNavBar]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const onPasswordChange = (password) => {
     setPassword(password);
   };
@@ -121,6 +123,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const tryUnlockWithPassword = async (password) => {
     setReady(false);
     try {

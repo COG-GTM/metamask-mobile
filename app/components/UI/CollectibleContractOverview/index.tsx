@@ -93,6 +93,7 @@ class CollectibleContractOverview extends PureComponent {
 
   onSend = () => {
     const { collectibleContract, collectibles } = this.props;
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const collectible = collectibles.find((collectible) =>
       toLowerCaseEquals(collectible.address, collectibleContract.address),
     );

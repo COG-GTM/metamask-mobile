@@ -328,6 +328,7 @@ function LoadingAnimation({
           );
         }
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         const metadata = Object.entries(aggregatorMetadata).map(
           ([key, value]) => ({
             key,
@@ -470,6 +471,7 @@ function LoadingAnimation({
         </View>
         {renderLogos &&
           headPan &&
+          // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
           metadata &&
           metadata.map((agg) => (
             <Animated.View

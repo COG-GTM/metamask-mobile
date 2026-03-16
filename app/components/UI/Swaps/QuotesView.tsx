@@ -85,6 +85,7 @@ import {
   selectSwapsUsedGasEstimate,
   swapsTokensSelector,
 } from '../../../reducers/swaps';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { decGWEIToHexWEI, hexToDecimal } from '../../../util/conversions';
 import FadeAnimationView from '../FadeAnimationView';
 import Logger from '../../../util/Logger';
@@ -402,7 +403,9 @@ function SwapsQuotesView({
   gasFeeEstimates,
   usedGasEstimate,
   usedCustomGas,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   setRecipient,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   resetTransaction,
   shouldUseSmartTransaction,
   isEIP1559Network,
@@ -621,7 +624,9 @@ function SwapsQuotesView({
     // Token
     const sourceBN = new BigNumber(sourceAmount);
     const tokenBalanceBN = new BigNumber(balance.toString(10));
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const hasEnoughTokenBalance = tokenBalanceBN.gte(sourceBN);
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const missingTokenBalance = hasEnoughTokenBalance
       ? null
       : sourceBN.minus(tokenBalanceBN);
@@ -631,9 +636,11 @@ function SwapsQuotesView({
       : new BigNumber(0);
     const ethBalanceBN = new BigNumber(accounts[selectedAddress].balance);
     const gasBN = toWei(selectedQuoteValue?.maxEthFee || '0');
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const hasEnoughEthBalance = canUseGasIncludedSwap
       ? true
       : ethBalanceBN.gte(ethAmountBN.plus(gasBN));
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const missingEthBalance = hasEnoughEthBalance
       ? null
       : ethAmountBN.plus(gasBN).minus(ethBalanceBN);
@@ -921,6 +928,7 @@ function SwapsQuotesView({
   );
 
   const startSwapAnalytics = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     (selectedQuote, selectedAddress) => {
       const parameters = {
         account_type: getAddressAccountType(selectedAddress),
@@ -1117,11 +1125,13 @@ function SwapsQuotesView({
 
           Engine.controllerMessenger.subscribeOnceIf(
             'TransactionController:transactionConfirmed',
+            // eslint-disable-next-line @typescript-eslint/no-shadow
             (transactionMeta) => {
               if (transactionMeta.status === TransactionStatus.confirmed) {
                 handleSwapTransaction(approvalTransactionMetaId);
               }
             },
+            // eslint-disable-next-line @typescript-eslint/no-shadow
             (transactionMeta) => transactionMeta.id === transactionId,
           );
         }
@@ -1428,6 +1438,7 @@ function SwapsQuotesView({
   ]);
 
   const handleQuotesErrorMetric = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     (error) => {
       const data = {
         token_from: sourceToken.symbol,
@@ -1491,6 +1502,7 @@ function SwapsQuotesView({
   const buyEth = useCallback(() => {
     try {
       navigation.navigate(...createBuyNavigationDetails());
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     } catch (error) {
       Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
     }

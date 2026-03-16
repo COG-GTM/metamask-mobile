@@ -447,6 +447,7 @@ class Asset extends PureComponent {
       // If the account added "Insert Point" is not found add it to the last transaction
       if (
         !accountAddedTimeInsertPointFound &&
+        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
         filteredTransactions &&
         filteredTransactions.length
       ) {

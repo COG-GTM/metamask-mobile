@@ -11,6 +11,7 @@ import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
@@ -137,6 +138,7 @@ export default class PhishingModal extends PureComponent {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const urlObj = new URL(this.props.fullUrl);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const host = urlObj.hostname;
 
     return (

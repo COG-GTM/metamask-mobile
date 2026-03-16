@@ -95,7 +95,7 @@ class Contacts extends PureComponent {
 
   onAddressLongPress = (address) => {
     this.contactAddressToRemove = address;
-    this.actionSheet && this.actionSheet.show();
+    this.actionSheet?.show();
   };
 
   deleteContact = () => {

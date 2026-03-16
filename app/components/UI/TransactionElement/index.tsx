@@ -22,6 +22,7 @@ import { TRANSACTION_TYPES } from '../../../util/transactions';
 import ListItem from '../../Base/ListItem';
 import StatusText from '../../Base/StatusText';
 import DetailsModal from '../../Base/DetailsModal';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { isMainNet, isTestNet } from '../../../util/networks';
 import { weiHexToGweiDec } from '@metamask/controller-utils';
 import {
@@ -30,8 +31,10 @@ import {
 } from '@metamask/transaction-controller';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   selectChainId,
   selectEvmNetworkConfigurationsByChainId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   selectEvmTicker,
 } from '../../../selectors/networkController';
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
@@ -43,8 +46,11 @@ import {
   useBridgeTxHistoryData,
 } from '../../../util/bridge/hooks/useBridgeTxHistoryData';
 import BridgeActivityItemTxSegments from '../Bridge/components/TransactionDetails/BridgeActivityItemTxSegments';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { NETWORK_TO_SHORT_NETWORK_NAME_MAP } from '../../../constants/bridge';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { decimalToHex } from '../../../util/conversions';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { addHexPrefix } from '../../../util/number';
 import BadgeWrapper from '../../../component-library/components/Badges/BadgeWrapper';
 import Badge, {
@@ -57,8 +63,11 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 import {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   formatChainIdToCaip,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   formatChainIdToHex,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isSolanaChainId,
 } from '@metamask/bridge-controller';
 import { getBridgeTxActivityTitle } from '../Bridge/utils/transaction-history';
@@ -136,16 +145,26 @@ const createStyles = (colors, typography) =>
   });
 
 /* eslint-disable import/no-commonjs */
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const transactionIconApprove = require('../../../images/transaction-icons/approve.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const transactionIconInteraction = require('../../../images/transaction-icons/interaction.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const transactionIconSent = require('../../../images/transaction-icons/send.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const transactionIconReceived = require('../../../images/transaction-icons/receive.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const transactionIconSwap = require('../../../images/transaction-icons/swap.png');
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const transactionIconApproveFailed = require('../../../images/transaction-icons/approve-failed.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const transactionIconInteractionFailed = require('../../../images/transaction-icons/interaction-failed.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const transactionIconSentFailed = require('../../../images/transaction-icons/send-failed.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const transactionIconReceivedFailed = require('../../../images/transaction-icons/receive-failed.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const transactionIconSwapFailed = require('../../../images/transaction-icons/swap-failed.png');
 /* eslint-enable import/no-commonjs */
 

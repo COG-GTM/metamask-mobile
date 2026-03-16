@@ -41,7 +41,7 @@ import {
 import AppConstants from '../../../core/AppConstants';
 import { useSelector } from 'react-redux';
 import { isTest } from '../../../util/test/utils';
-// eslint-disable-next-line import/no-commonjs
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-commonjs
 const WarningIcon = require('./warning-icon.png');
 
 const createStyles = (colors) =>

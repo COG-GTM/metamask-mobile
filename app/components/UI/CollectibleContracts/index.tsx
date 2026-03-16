@@ -44,6 +44,7 @@ import { selectSelectedInternalAccountFormattedAddress } from '../../../selector
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 import { RefreshTestId, SpinnerTestId } from './constants';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { debounce, cloneDeep, isEqual } from 'lodash';
 import ButtonBase from '../../../component-library/components/Buttons/Button/foundation/ButtonBase';
 import { IconName } from '../../../component-library/components/Icons/Icon';
@@ -164,6 +165,7 @@ const CollectibleContracts = ({
   collectibles: allCollectibles,
   isNftFetchingProgress,
   favoriteCollectibles,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   removeFavoriteCollectible,
   useNftDetection,
   isIpfsGatewayEnabled,
@@ -216,10 +218,10 @@ const CollectibleContracts = ({
   );
 
   /**
-   *  Method that checks if the collectible is inside the collectibles array. If it is not it means the
-   *  collectible has been ignored, hence we should not call the updateMetadata which executes the addNft fct
+   * Method that checks if the collectible is inside the collectibles array. If it is not it means the
+   * collectible has been ignored, hence we should not call the updateMetadata which executes the addNft fct
    *
-   *  @returns Boolean indicating if the collectible is ignored or not.
+   * @returns Boolean indicating if the collectible is ignored or not.
    */
   const isCollectibleIgnored = useCallback(
     (collectible) => {
@@ -235,7 +237,7 @@ const CollectibleContracts = ({
   );
 
   /**
-   *  Method to check the token id data type of the current collectibles.
+   * Method to check the token id data type of the current collectibles.
    *
    * @param collectible - Collectible object.
    * @returns Boolean indicating if the collectible should be updated.
@@ -245,6 +247,7 @@ const CollectibleContracts = ({
     (typeof collectible.tokenId === 'string' && !isNaN(collectible.tokenId));
 
   const updateAllCollectibleMetadata = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     async (collectibles) => {
       const { NftController } = Engine.context;
       // Filter out ignored collectibles
@@ -355,6 +358,7 @@ const CollectibleContracts = ({
   );
 
   const renderFavoriteCollectibles = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const filteredCollectibles = favoriteCollectibles.map((collectible) =>
       collectibles.find(
         ({ tokenId, address }) =>
@@ -447,6 +451,7 @@ const CollectibleContracts = ({
       <View style={styles.emptyContainer}>
         <Image
           style={styles.emptyImageContainer}
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={require('../../../images/no-nfts-placeholder.png')}
           resizeMode={'contain'}
         />

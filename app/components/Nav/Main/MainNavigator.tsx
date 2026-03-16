@@ -77,6 +77,7 @@ import { selectAccountsLength } from '../../../selectors/accountTrackerControlle
 import isUrl from 'is-url';
 import SDKSessionsManager from '../../Views/SDK/SDKSessionsManager/SDKSessionsManager';
 import PermissionsManager from '../../Views/Settings/PermissionsSettings/PermissionsManager';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import Logger from '../../../util/Logger';
 import { getDecimalChainId } from '../../../util/networks';
@@ -711,6 +712,7 @@ const PaymentRequestView = () => (
 );
 
 /* eslint-disable react/prop-types */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const NotificationsModeView = (props) => (
   <Stack.Navigator>
     <Stack.Screen
@@ -879,6 +881,7 @@ const MainNavigator = () => (
       headerTitle={() => (
         <Image
           style={styles.headerLogo}
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={require('../../../images/branding/metamask-name.png')}
           resizeMode={'contain'}
         />

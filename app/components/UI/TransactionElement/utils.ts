@@ -22,6 +22,7 @@ import { sumHexWEIs } from '../../../util/conversions';
 import {
   decodeTransferData,
   isCollectibleAddress,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getTicker,
   getActionKey,
   TRANSACTION_TYPES,
@@ -219,6 +220,7 @@ function getCollectibleTransfer(args) {
   let actionKey;
   const [, tokenId] = decodeTransferData('transfer', data);
   const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const collectible = collectibleContracts.find((collectible) =>
     toLowerCaseEquals(collectible.address, to),
   );
@@ -448,6 +450,7 @@ function decodeTransferFromTx(args) {
     'transferFrom',
     data,
   );
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const collectible = collectibleContracts.find((collectible) =>
     toLowerCaseEquals(collectible.address, to),
   );
@@ -936,6 +939,7 @@ export default async function decodeTransaction(args) {
     tx.txParams.to?.toLowerCase() === getSwapsContractAddress(chainIdToUse) ||
     swapsTransactions[tx.id]
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const [transactionElement, transactionDetails] = decodeSwapsTx({
       ...args,
       actionKey,

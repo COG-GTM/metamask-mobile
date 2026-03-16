@@ -109,6 +109,7 @@ export function parseWaitTime(min) {
 
 export async function getGasLimit(
   transaction,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
   resetGas = false,
   networkClientId,
 ) {

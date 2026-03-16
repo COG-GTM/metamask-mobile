@@ -182,6 +182,7 @@ const MAX_TOP_ASSETS = 20;
 
 function SwapsAmountView({
   swapsTokens,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   swapsControllerTokens,
   accountsByChainId,
   selectedAddress,

@@ -4,6 +4,7 @@ import {
   isSwapsAllowed,
 } from './index';
 import { swapsUtils } from '@metamask/swaps-controller';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { SolScope } from '@metamask/keyring-api';
 
 // Mock AppConstants

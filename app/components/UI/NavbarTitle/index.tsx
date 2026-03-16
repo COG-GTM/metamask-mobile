@@ -19,6 +19,7 @@ import Text, {
 } from '../../../component-library/components/Texts/Text';
 import { selectNetworkName } from '../../../selectors/networkInfos';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -135,7 +136,7 @@ class NavbarTitle extends PureComponent {
       name = providerConfig.nickname;
     } else {
       name =
-        (Networks[providerConfig.type] && Networks[providerConfig.type].name) ||
+        (Networks[providerConfig.type]?.name) ||
         { ...Networks.rpc, color: null }.name;
     }
 

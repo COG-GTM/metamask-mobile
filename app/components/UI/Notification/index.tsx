@@ -27,7 +27,9 @@ const BROWSER_ROUTE = 'BrowserView';
 function Notification({
   currentNotification,
   currentNotificationIsVisible,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   hideCurrentNotification,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   removeCurrentNotification,
 }) {
   const notificationAnimated = useSharedValue(200);

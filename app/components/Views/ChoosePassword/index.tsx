@@ -303,6 +303,7 @@ class ChoosePassword extends PureComponent {
     this.termsOfUse();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentDidUpdate(prevProps, prevState) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
@@ -441,6 +442,7 @@ class ChoosePassword extends PureComponent {
       const simpleKeyrings = KeyringController.state.keyrings.filter(
         (keyring) => keyring.type === 'Simple Key Pair',
       );
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < simpleKeyrings.length; i++) {
         const simpleKeyring = simpleKeyrings[i];
         const simpleKeyringAccounts = await Promise.all(
@@ -478,6 +480,7 @@ class ChoosePassword extends PureComponent {
 
     try {
       // Import imported accounts again
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < importedAccounts.length; i++) {
         await KeyringController.importAccountWithStrategy('privateKey', [
           importedAccounts[i],
@@ -505,7 +508,7 @@ class ChoosePassword extends PureComponent {
 
   jumpToConfirmPassword = () => {
     const { current } = this.confirmPasswordInput;
-    current && current.focus();
+    current?.focus();
   };
 
   updateBiometryChoice = async (biometryChoice) => {
@@ -575,6 +578,7 @@ class ChoosePassword extends PureComponent {
           <View style={styles.loadingWrapper}>
             <View style={styles.foxWrapper}>
               <Image
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
                 source={require('../../../images/branding/fox.png')}
                 style={styles.image}
                 resizeMethod={'auto'}

@@ -109,6 +109,7 @@ const TransactionReviewEIP1559 = ({
   const [isVisibleLegacyLearnMore, , showLegacyLearnMore, hideLegacyLearnMore] =
     useModalHandler(false);
   const toggleLearnMoreModal = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     setShowLearnMoreModal((showLearnMoreModal) => !showLearnMoreModal);
   }, []);
   const { colors } = useTheme();

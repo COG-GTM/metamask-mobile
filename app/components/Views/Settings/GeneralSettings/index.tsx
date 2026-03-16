@@ -327,6 +327,7 @@ class Settings extends PureComponent {
       currentCurrency,
       primaryCurrency,
       useBlockieIcon,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setUseBlockieIcon,
       selectedAddress,
       hideZeroBalanceTokens,

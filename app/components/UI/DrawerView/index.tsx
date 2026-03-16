@@ -41,6 +41,7 @@ import Logger from '../../../util/Logger';
 import Device from '../../../util/device';
 import AppConstants from '../../../core/AppConstants';
 import { MetaMetricsEvents } from '../../../core/Analytics';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import EthereumAddress from '../EthereumAddress';
 import { getEther } from '../../../util/transactions';
@@ -431,7 +432,7 @@ class DrawerView extends PureComponent {
      */
     networkSwitched: PropTypes.func,
     /**
-     *  Boolean that determines the state of network info modal
+     * Boolean that determines the state of network info modal
      */
     infoNetworkModalVisible: PropTypes.bool,
     /**
@@ -475,7 +476,7 @@ class DrawerView extends PureComponent {
     let ret = false;
     const { keyrings } = this.props;
     const allKeyrings =
-      keyrings && keyrings.length
+      keyrings?.length
         ? keyrings
         : Engine.context.KeyringController.state.keyrings;
     for (const keyring of allKeyrings) {
@@ -579,6 +580,7 @@ class DrawerView extends PureComponent {
   }
 
   updateAccountInfo = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { providerConfig, selectedInternalAccount, chainId } = this.props;
     const { currentChainId, address, name } = this.state.account;
     const accountName = selectedInternalAccount.metadata.name;
@@ -591,6 +593,7 @@ class DrawerView extends PureComponent {
         this.selectedChecksummedAddress,
         chainId,
       );
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       this.setState((state) => ({
         account: {
           ens,
@@ -978,8 +981,11 @@ class DrawerView extends PureComponent {
   onInfoNetworksModalClose = () => {
     const {
       chainId,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       onboardNetworkAction,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       networkSwitched,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       toggleInfoNetworkModal,
     } = this.props;
 
@@ -1176,6 +1182,7 @@ class DrawerView extends PureComponent {
                     {section
                       .filter((item) => {
                         if (!item) return undefined;
+                        // eslint-disable-next-line @typescript-eslint/no-shadow
                         const { name = undefined } = item;
                         if (
                           name &&
@@ -1193,8 +1200,7 @@ class DrawerView extends PureComponent {
                           key={`item_${i}_${j}`}
                           style={[
                             styles.menuItem,
-                            item.routeNames &&
-                            item.routeNames.includes(currentRoute)
+                            item.routeNames?.includes(currentRoute)
                               ? styles.selectedRoute
                               : null,
                           ]}
@@ -1205,8 +1211,7 @@ class DrawerView extends PureComponent {
                           onPress={() => item.action()} // eslint-disable-line
                         >
                           {item.icon
-                            ? item.routeNames &&
-                              item.routeNames.includes(currentRoute)
+                            ? item.routeNames?.includes(currentRoute)
                               ? item.selectedIcon
                               : item.icon
                             : null}
@@ -1214,8 +1219,7 @@ class DrawerView extends PureComponent {
                             style={[
                               styles.menuItemName,
                               !item.icon ? styles.noIcon : null,
-                              item.routeNames &&
-                              item.routeNames.includes(currentRoute)
+                              item.routeNames?.includes(currentRoute)
                                 ? styles.selectedName
                                 : null,
                             ]}

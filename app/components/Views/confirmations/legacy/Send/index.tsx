@@ -237,11 +237,11 @@ class Send extends PureComponent {
       transaction: { assetType, selectedAsset },
       contractBalances,
       dappTransactionModalVisible,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       toggleDappTransactionModal,
     } = this.props;
     this.updateNavBar();
-    navigation &&
-      navigation.setParams({
+    navigation?.setParams({
         mode: REVIEW,
         dispatch: this.onModeChange,
         disableModeChange:
@@ -280,8 +280,7 @@ class Send extends PureComponent {
       const prevTxMeta = prevRoute.params?.txMeta;
       const currentTxMeta = route.params?.txMeta;
       if (
-        currentTxMeta &&
-        currentTxMeta.source &&
+        currentTxMeta?.source &&
         (!prevTxMeta.source || prevTxMeta.source !== currentTxMeta.source)
       ) {
         this.handleNewTxMeta(currentTxMeta);
@@ -295,8 +294,7 @@ class Send extends PureComponent {
     const assetTypeDefined =
       prevProps.transaction.assetType === undefined && assetType === 'ERC20';
     if (assetTypeDefined || erc20ContractBalanceChanged) {
-      navigation &&
-        navigation.setParams({
+      navigation?.setParams({
           disableModeChange: contractBalance === undefined,
         });
     }
@@ -341,7 +339,7 @@ class Send extends PureComponent {
           ...txRecipient,
         };
 
-        if (parameters && parameters.value) {
+        if (parameters?.value) {
           newTxMeta.value = BNToHex(toBN(parameters.value));
           newTxMeta.transactionValue = newTxMeta.value;
           newTxMeta.readableValue = fromWei(newTxMeta.value);
@@ -408,6 +406,7 @@ class Send extends PureComponent {
 
       // if gas and gasPrice is not defined in the deeplink, we should define them
       if (!gas && !gasPrice) {
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         const { gas, gasPrice } = await estimateGas(
           this.props.transaction,
           this.props.globalNetworkClientId,
@@ -611,8 +610,7 @@ class Send extends PureComponent {
         }
       }
       const existingContact =
-        addressBook[globalChainId] &&
-        addressBook[globalChainId][checksummedAddress];
+        addressBook[globalChainId]?.[checksummedAddress];
       if (!existingContact) {
         AddressBookController.set(checksummedAddress, '', globalChainId);
       }
@@ -641,7 +639,7 @@ class Send extends PureComponent {
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: strings('navigation.ok') }],
         );
         Logger.error(error, 'error while trying to send transaction (Send)');
@@ -751,7 +749,7 @@ class Send extends PureComponent {
    */
   onModeChange = (mode) => {
     const { navigation } = this.props;
-    navigation && navigation.setParams({ mode });
+    navigation?.setParams({ mode });
     this.mounted && this.setState({ mode });
     InteractionManager.runAfterInteractions(() => {
       mode === REVIEW && this.trackConfirmScreen();

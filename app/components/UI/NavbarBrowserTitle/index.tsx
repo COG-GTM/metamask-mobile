@@ -105,7 +105,7 @@ class NavbarBrowserTitle extends PureComponent {
         name = providerConfig.nickname;
       } else if (providerConfig.type) {
         const currentNetwork = Networks[providerConfig.type];
-        if (currentNetwork && currentNetwork.name) {
+        if (currentNetwork?.name) {
           name = currentNetwork.name;
         }
       }
@@ -119,7 +119,7 @@ class NavbarBrowserTitle extends PureComponent {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const color =
-      (Networks[providerConfig.type] && Networks[providerConfig.type].color) ||
+      (Networks[providerConfig.type]?.color) ||
       null;
     const name = this.getNetworkName(providerConfig);
 

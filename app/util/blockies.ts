@@ -1,9 +1,11 @@
+// eslint-disable-next-line @typescript-eslint/no-shadow
 (function (global, factory) {
   exports && typeof exports === 'object' && typeof module !== 'undefined'
     ? factory(exports)
     : typeof define === 'function' && define.amd
     ? define(['exports'], factory)
     : factory((global.blockies = {}));
+// eslint-disable-next-line @typescript-eslint/no-shadow
 })(this, (exports) => {
   'use strict';
 
@@ -21,7 +23,9 @@
   // helper functions for that ctx
   function write(buffer, offs) {
     for (let i = 2; i < arguments.length; i++) {
+      // eslint-disable-next-line prefer-rest-params
       for (let j = 0; j < arguments[i].length; j++) {
+        // eslint-disable-next-line prefer-rest-params
         buffer[offs++] = arguments[i].charAt(j);
       }
     }
@@ -69,13 +73,14 @@
     this.iend_size = 4 + 4 + 4;
     this.buffer_size = this.iend_offs + this.iend_size; // total PNG size
 
-    this.buffer = new Array();
+    this.buffer = [];
     this.palette = new Object();
     this.pindex = 0;
 
-    const _crc32 = new Array();
+    const _crc32 = [];
 
     // initialize buffer with zero bytes
+    // eslint-disable-next-line no-var
     for (var i = 0; i < this.buffer_size; i++) {
       this.buffer[i] = '\x00';
     }
@@ -102,7 +107,9 @@
     write(this.buffer, this.idat_offs + 8, byte2(header));
 
     // initialize deflate block headers
+    // eslint-disable-next-line no-var
     for (var i = 0; (i << 16) - 1 < this.pix_size; i++) {
+      // eslint-disable-next-line no-var
       var size, bits;
       if (i + 0xffff < this.pix_size) {
         size = 0xffff;
@@ -121,6 +128,7 @@
     }
 
     /* Create crc32 lookup table */
+    // eslint-disable-next-line no-var
     for (var i = 0; i < 256; i++) {
       let c = i;
       for (let j = 0; j < 8; j++) {
@@ -135,6 +143,7 @@
 
     // compute the index into a png for a given pixel
     this.index = function (x, y) {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const i = y * (this.width + 1) + x + 1;
       const j = this.idat_offs + 8 + 2 + 5 * Math.floor(i / 0xffff + 1) + i;
       return j;
@@ -146,6 +155,7 @@
       const color = (((((alpha << 8) | red) << 8) | green) << 8) | blue;
 
       if (typeof this.palette[color] === 'undefined') {
+        // eslint-disable-next-line eqeqeq
         if (this.pindex == this.depth) return '\x00';
 
         const ndx = this.plte_offs + 8 + 3 * this.pindex;
@@ -169,6 +179,7 @@
         'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
       let c1, c2, c3, e1, e2, e3, e4;
       const l = s.length;
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       let i = 0;
       let r = '';
 
@@ -206,6 +217,7 @@
         for (let x = -1; x < this.width; x++) {
           s1 += this.buffer[this.index(x, y)].charCodeAt(0);
           s2 += s1;
+          // eslint-disable-next-line eqeqeq
           if ((n -= 1) == 0) {
             s1 %= BASE;
             s2 %= BASE;
@@ -222,8 +234,10 @@
       );
 
       // compute crc32 of the PNG chunks
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       function crc32(png, offs, size) {
         let crc = -1;
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         for (let i = 4; i < size - 4; i += 1) {
           crc =
             _crc32[(crc ^ png[offs + i].charCodeAt(0)) & 0xff] ^
@@ -243,6 +257,7 @@
     };
 
     this.fillRect = function (x, y, w, h, color) {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       for (let i = 0; i < w; i++) {
         for (let j = 0; j < h; j++) {
           this.buffer[this.index(x + i, y + j)] = color;
@@ -276,6 +291,7 @@
   function hsl2rgb(h, s, l) {
     let r, g, b;
 
+    // eslint-disable-next-line eqeqeq
     if (s == 0) {
       r = g = b = l; // achromatic
     } else {
@@ -293,9 +309,11 @@
   const randseed = new Array(4); // Xorshift: [x, y, z, w] 32 bit values
 
   function seedrand(seed) {
+    // eslint-disable-next-line no-var
     for (var i = 0; i < randseed.length; i++) {
       randseed[i] = 0;
     }
+    // eslint-disable-next-line no-var
     for (var i = 0; i < seed.length; i++) {
       randseed[i % 4] =
         (randseed[i % 4] << 5) - randseed[i % 4] + seed.charCodeAt(i);
@@ -344,6 +362,7 @@
       r.reverse();
       row = row.concat(r);
 
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < row.length; i++) {
         data.push(row[i]);
       }
@@ -372,6 +391,7 @@
   }
 
   function toDataUrl(address) {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const cache = Blockies.cache[address];
     if (address && cache) {
       return cache;
@@ -383,6 +403,7 @@
     const width = Math.sqrt(imageData.length);
 
     const p = new PNG(opts.size * opts.scale, opts.size * opts.scale, 3);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const bgcolor = p.color(...hsl2rgb(...opts.bgcolor));
     const color = p.color(...hsl2rgb(...opts.color));
     const spotcolor = p.color(...hsl2rgb(...opts.spotcolor));
@@ -393,6 +414,7 @@
       // if data is 0, leave the background
       if (imageData[i]) {
         // if data is 2, choose spot color, if 1 choose foreground
+        // eslint-disable-next-line eqeqeq
         const pngColor = imageData[i] == 1 ? color : spotcolor;
         p.fillRect(
           col * opts.scale,
@@ -404,6 +426,7 @@
       }
     }
     const ret = `data:image/png;base64,${p.getBase64()}`;
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     Blockies.cache[address] = ret;
     return ret;
   }

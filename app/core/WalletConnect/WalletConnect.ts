@@ -23,6 +23,7 @@ import { strings } from '../../../locales/i18n';
 import NotificationManager from '../NotificationManager';
 import { msBetweenDates, msToHours } from '../../util/date';
 import { addTransaction } from '../../util/transaction-controller';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import { parseWalletConnectUri } from './wc-utils';
 import { store } from '../../store';
@@ -111,7 +112,7 @@ class WalletConnect {
       ...CLIENT_OPTIONS,
     });
     /**
-     *  Subscribe to session requests
+     * Subscribe to session requests
      */
     this.walletConnector.on('session_request', async (error, payload) => {
       Logger.log('WC session_request:', payload);
@@ -144,7 +145,7 @@ class WalletConnect {
     });
 
     /**
-     *  Subscribe to call requests
+     * Subscribe to call requests
      */
     this.walletConnector.on('call_request', async (error, payload) => {
       if (tempCallIds.includes(payload.id)) return;
@@ -220,6 +221,7 @@ class WalletConnect {
                 id: payload.id,
                 result: hash,
               });
+            // eslint-disable-next-line @typescript-eslint/no-shadow
             } catch (error) {
               this.rejectRequest({
                 id: payload.id,
@@ -343,6 +345,7 @@ class WalletConnect {
         rejectRequest: this.rejectRequest,
         updateSession: this.updateSession,
       },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       getRpcMethodMiddleware: ({ hostname, getProviderState }) =>
         getRpcMethodMiddleware({
           hostname: WALLET_CONNECT_ORIGIN + this.hostname,
@@ -368,7 +371,7 @@ class WalletConnect {
 
   killSession = () => {
     this.backgroundBridge?.onDisconnect();
-    this.walletConnector && this.walletConnector.killSession();
+    this.walletConnector?.killSession();
     this.walletConnector = null;
   };
 
@@ -461,8 +464,7 @@ const instance = {
     // 1) First kill the session
     const connectorToKill = connectors.find(
       (connector) =>
-        connector &&
-        connector.walletConnector &&
+        connector?.walletConnector &&
         connector.walletConnector.session.peerId === id,
     );
     if (connectorToKill) {
@@ -471,9 +473,7 @@ const instance = {
     // 2) Remove from the list of connectors
     connectors = connectors.filter(
       (connector) =>
-        connector &&
-        connector.walletConnector &&
-        connector.walletConnector.connected &&
+        connector?.walletConnector?.connected &&
         connector.walletConnector.session.peerId !== id,
     );
     // 3) Persist the list

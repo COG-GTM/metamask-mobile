@@ -17,15 +17,14 @@ jest.mock('react-native-quick-crypto', () => ({
     return array;
   }),
   subtle: {
-    importKey: jest.fn((format, keyData, algorithm, extractable, keyUsages) => {
-      return Promise.resolve({
+    importKey: jest.fn((format, keyData, algorithm, extractable, keyUsages) => Promise.resolve({
         format,
         keyData,
         algorithm,
         extractable,
         keyUsages,
-      });
-    }),
+      })),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     deriveBits: jest.fn((algorithm, baseKey, length) => {
       const derivedBits = new Uint8Array(length);
       for (let i = 0; i < length; i++) {
@@ -33,23 +32,20 @@ jest.mock('react-native-quick-crypto', () => ({
       }
       return Promise.resolve(derivedBits);
     }),
-    exportKey: jest.fn((format, key) => {
-      return Promise.resolve(new Uint8Array([1, 2, 3, 4]));
-    }),
-    encrypt: jest.fn((algorithm, key, data) => {
-      return Promise.resolve(new Uint8Array([
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    exportKey: jest.fn((format, key) => Promise.resolve(new Uint8Array([1, 2, 3, 4]))),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    encrypt: jest.fn((algorithm, key, data) => Promise.resolve(new Uint8Array([
         123,  34, 116, 101, 115,
         116,  34,  58,  34, 100,
          97, 116,  97,  34, 125
-      ]));
-    }),
-    decrypt: jest.fn((algorithm, key, data) => {
-      return Promise.resolve(new Uint8Array([
+      ]))),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    decrypt: jest.fn((algorithm, key, data) => Promise.resolve(new Uint8Array([
         123,  34, 116, 101, 115,
         116,  34,  58,  34, 100,
          97, 116,  97,  34, 125
-      ]));
-    }),
+      ]))),
   },
 }));
 
@@ -71,6 +67,7 @@ jest.mock('react-native', () => {
 jest.mock('@metamask/react-native-webview', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
   const { View } = require('react-native');
+  // eslint-disable-next-line react/react-in-jsx-scope
   const WebView = (props) => <View {...props} />;
 
   return {
@@ -365,21 +362,18 @@ jest.mock('@segment/analytics-react-native', () => {
 });
 
 jest.mock('@notifee/react-native', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('@notifee/react-native/jest-mock'),
 );
 
 jest.mock('react-native/Libraries/Image/resolveAssetSource', () => ({
   __esModule: true,
-  default: (source) => {
-    return { uri: source.uri };
-  },
+  default: (source) => ({ uri: source.uri }),
 }));
 
 jest.mock('redux-persist', () => ({
   persistStore: jest.fn(),
-  persistReducer: (_, reducer) => {
-    return reducer || ((state) => state);
-  },
+  persistReducer: (_, reducer) => reducer || ((state) => state),
   createTransform: jest.fn(),
   createMigrate: jest.fn(),
 }));
@@ -389,12 +383,13 @@ jest.mock('../../store/storage-wrapper', () => ({
   setItem: jest.fn(),
 }));
 
-// eslint-disable-next-line import/no-commonjs
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-commonjs
 require('react-native-reanimated').setUpTests();
 global.__reanimatedWorkletInit = jest.fn();
 global.__DEV__ = false;
 
 jest.mock('../../core/Engine', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('../../core/__mocks__/MockedEngine'),
 );
 
@@ -419,8 +414,8 @@ global.crypto = {
 };
 
 jest.mock('@react-native-firebase/messaging', () => {
-  const module = () => {
-    return {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  const module = () => ({
       getToken: jest.fn(() => Promise.resolve('fcmToken')),
       deleteToken: jest.fn(() => Promise.resolve()),
       subscribeToTopic: jest.fn(),
@@ -443,8 +438,7 @@ jest.mock('@react-native-firebase/messaging', () => {
       ),
       onMessage: jest.fn(),
       onTokenRefresh: jest.fn(),
-    };
-  };
+    });
 
   module.AuthorizationStatus = {
     NOT_DETERMINED: -1,
@@ -456,12 +450,10 @@ jest.mock('@react-native-firebase/messaging', () => {
   return module;
 });
 
-jest.mock('../../core/Analytics/MetaMetricsTestUtils', () => {
-  return {
+jest.mock('../../core/Analytics/MetaMetricsTestUtils', () => ({
     default: {
       getInstance: jest.fn().mockReturnValue({
         trackEvent: jest.fn(),
       }),
     },
-  };
-});
+  }));

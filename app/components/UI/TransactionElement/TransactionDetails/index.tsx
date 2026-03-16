@@ -295,7 +295,7 @@ class TransactionDetails extends PureComponent {
         screen: 'SimpleWebview',
         params: { url, title },
       });
-      close && close();
+      close?.();
     } catch (e) {
       // eslint-disable-next-line no-console
       Logger.error(e, {
