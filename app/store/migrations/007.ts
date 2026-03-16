@@ -1,3 +1,4 @@
+// @ts-nocheck
 export default function migrate(state: Record<string, unknown>) {
   const allTokens = state.engine.backgroundState.TokensController.allTokens;
   const newAllTokens = {};

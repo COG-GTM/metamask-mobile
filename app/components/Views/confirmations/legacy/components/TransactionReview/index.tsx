@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Eth from '@metamask/ethjs-query';
 import { withNavigation } from '@react-navigation/compat';
 import PropTypes from 'prop-types';

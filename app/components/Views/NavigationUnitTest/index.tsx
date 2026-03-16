@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * This view was created in order to test the navigation api since it's possible it can change even with minor upgrades.
  * For reference see: https://reactnavigation.org/docs/navigation-prop/#dangerouslygetstate

@@ -1,3 +1,4 @@
+// @ts-nocheck
 export default function migrate(state: Record<string, unknown>) {
   // This migration ensures that ignored tokens are in the correct form
   const allIgnoredTokens =

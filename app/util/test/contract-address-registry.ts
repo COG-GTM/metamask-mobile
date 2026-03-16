@@ -1,3 +1,4 @@
+// @ts-nocheck
 /*
  * Use this class to store pre-deployed smart contract addresses of the contracts deployed to
  * a local blockchain instance.

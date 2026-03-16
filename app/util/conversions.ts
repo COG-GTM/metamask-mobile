@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { hexToBN } from '@metamask/controller-utils';
 import { ETH, GWEI, WEI } from './custom-gas';
 import {

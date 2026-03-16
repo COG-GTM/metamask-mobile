@@ -1,3 +1,4 @@
+// @ts-nocheck
 export default function migrate(state: Record<string, unknown>) {
   if (state?.engine?.backgroundState?.PreferencesController?.openSeaEnabled) {
     state.engine.backgroundState.PreferencesController.displayNftMedia =

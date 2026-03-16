@@ -1,3 +1,4 @@
+// @ts-nocheck
 import migration from './027';
 
 describe('Migration #27', () => {

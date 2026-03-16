@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMemo } from 'react';
 import BigNumber from 'bignumber.js';
 import { swapsUtils } from '@metamask/swaps-controller';

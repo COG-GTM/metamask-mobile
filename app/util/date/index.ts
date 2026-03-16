@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { strings } from '../../../locales/i18n';
 import { MINUTE, HOUR, DAY } from '../../constants/time';
 

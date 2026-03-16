@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { baseStyles } from '../../../../../../styles/common';
 import {

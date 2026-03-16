@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
 

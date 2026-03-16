@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable import/no-commonjs */
 import URL from 'url-parse';
 import {

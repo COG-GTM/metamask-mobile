@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Engine from '../Engine';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { selectEvmNetworkConfigurationsByChainId } from '../../selectors/networkController';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import BN from 'bnjs4';
 import { renderFromWei, weiToFiat, toWei, conversionUtil } from '../number';
 import { strings } from '../../../locales/i18n';

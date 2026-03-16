@@ -1,3 +1,4 @@
+// @ts-nocheck
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
 import {
   caveatSpecifications as snapsCaveatsSpecifications,

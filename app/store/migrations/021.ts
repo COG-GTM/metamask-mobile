@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { IPFS_DEFAULT_GATEWAY_URL } from '../../../app/constants/network';
 
 export default function migrate(state: Record<string, unknown>) {

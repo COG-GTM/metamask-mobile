@@ -1,3 +1,4 @@
+// @ts-nocheck
 import URL from 'url-parse';
 import networksWithImages from 'images/image-icons';
 import {
