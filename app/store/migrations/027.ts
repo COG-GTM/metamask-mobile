@@ -6,7 +6,7 @@ import { NetworkType } from '@metamask/controller-utils';
  * @param {any} state - Redux state
  * @returns
  */
-export default function migrate(state) {
+export default function migrate(state: Record<string, unknown>) {
   const backgroundState = state.engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;

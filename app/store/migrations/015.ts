@@ -1,7 +1,7 @@
 import { NetworksChainId } from '@metamask/controller-utils';
 import { GOERLI } from '../../../app/constants/network';
 
-export default function migrate(state) {
+export default function migrate(state: Record<string, unknown>) {
   const chainId =
     state.engine.backgroundState.NetworkController.providerConfig.chainId;
   // Deprecate rinkeby, ropsten and Kovan, any user that is on those we fallback to goerli

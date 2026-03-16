@@ -1,4 +1,4 @@
-export default function migrate(state) {
+export default function migrate(state: Record<string, unknown>) {
   if (state?.engine?.backgroundState?.PreferencesController?.openSeaEnabled) {
     state.engine.backgroundState.PreferencesController.displayNftMedia =
       state.engine.backgroundState.PreferencesController.openSeaEnabled ?? true;

@@ -1,6 +1,6 @@
 import { v1 as random } from 'uuid';
 
-export default function migrate(state) {
+export default function migrate(state: Record<string, unknown>) {
   // If for some reason we already have PermissionController state, bail out.
   const hasPermissionControllerState = Boolean(
     state.engine.backgroundState.PermissionController?.subjects,

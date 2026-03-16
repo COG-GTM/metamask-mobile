@@ -6,7 +6,7 @@ import { isObject } from '@metamask/utils';
  * regarding the phishing list property listState, that is no longer used
  *
  **/
-export default function migrate(state) {
+export default function migrate(state: Record<string, unknown>) {
   const keyringControllerState = state.engine.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
     captureException(

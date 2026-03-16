@@ -3,7 +3,7 @@ import { isSafeChainId } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
 import { regex } from '../../../app/util/regex';
 
-export default function migrate(state) {
+export default function migrate(state: Record<string, unknown>) {
   const provider = state.engine.backgroundState.NetworkController.provider;
   const chainId = NetworksChainId[provider.type];
   // if chainId === '' is a rpc
