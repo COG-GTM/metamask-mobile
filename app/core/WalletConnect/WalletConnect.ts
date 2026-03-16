@@ -1,4 +1,3 @@
-// @ts-nocheck
 import RNWalletConnect from '@walletconnect/client';
 import { v1 as random } from 'uuid';
 import Engine from '../Engine';

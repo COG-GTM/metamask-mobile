@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useEffect, useState } from 'react';
 import etherscanLink from '@metamask/etherscan-link';
 import { RPC } from '../../../../constants/network';

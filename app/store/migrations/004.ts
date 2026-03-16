@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NetworksChainId } from '@metamask/controller-utils';
 
 export default function migrate(state: Record<string, unknown>) {

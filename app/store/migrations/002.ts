@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { getAllNetworks, isSafeChainId } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
 

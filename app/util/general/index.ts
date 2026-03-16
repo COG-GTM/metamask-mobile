@@ -1,4 +1,3 @@
-// @ts-nocheck
 import URL from 'url-parse';
 
 export const tlc = (str) => str?.toLowerCase?.();

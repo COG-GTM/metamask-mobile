@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { equal } from 'uri-js';
 import { InteractionManager } from 'react-native';
 import { ChainId } from '@metamask/controller-utils';

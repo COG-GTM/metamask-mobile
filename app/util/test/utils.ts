@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const flushPromises = () => new Promise(setImmediate);
 
 export const FIXTURE_SERVER_PORT = 12345;

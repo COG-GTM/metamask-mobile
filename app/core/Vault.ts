@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Engine from './Engine';
 import Logger from '../util/Logger';
 import { KeyringTypes } from '@metamask/keyring-controller';

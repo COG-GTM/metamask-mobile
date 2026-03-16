@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ETHERSCAN_SUPPORTED_CHAIN_IDS } from '@metamask/preferences-controller';
 
 export default function migrate(state: Record<string, unknown>) {

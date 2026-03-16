@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { fireEvent } from '@testing-library/react-native';
 import { shallow } from 'enzyme';
 import React from 'react';

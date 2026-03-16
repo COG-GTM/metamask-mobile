@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable react/display-name */
 import React from 'react';
 import NavbarTitle from '../NavbarTitle';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
 import { fontStyles, baseStyles } from '../../../styles/common';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable react/no-unstable-nested-components */
 import BigNumber from 'bignumber.js';
 import React, { useCallback, useMemo, useState } from 'react';

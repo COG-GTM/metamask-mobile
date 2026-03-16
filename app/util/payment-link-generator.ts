@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { build } from 'eth-url-parser';
 import AppConstants from '../core/AppConstants';
 import { getDecimalChainId } from './networks';

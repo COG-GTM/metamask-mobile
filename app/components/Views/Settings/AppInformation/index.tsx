@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable dot-notation */
 import React, { PureComponent } from 'react';
 import {

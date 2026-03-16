@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';

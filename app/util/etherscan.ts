@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   LINEA_GOERLI_BLOCK_EXPLORER,
   LINEA_MAINNET_BLOCK_EXPLORER,

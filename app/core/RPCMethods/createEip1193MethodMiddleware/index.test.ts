@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { JsonRpcEngine } from '@metamask/json-rpc-engine';
 import {
   assertIsJsonRpcFailure,

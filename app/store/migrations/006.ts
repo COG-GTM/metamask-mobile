@@ -1,4 +1,3 @@
-// @ts-nocheck
 import DefaultPreference from 'react-native-default-preference';
 import {
   ONBOARDING_WIZARD,

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Animated, StyleSheet, Text, View } from 'react-native';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable react/prop-types */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import eth_sendTransaction from './eth_sendTransaction';
 import { wallet_addEthereumChain } from './wallet_addEthereumChain';
 import { wallet_switchEthereumChain } from './wallet_switchEthereumChain';

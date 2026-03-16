@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { InteractionManager } from 'react-native';
 import { wallet_addEthereumChain } from './wallet_addEthereumChain';
 import Engine from '../Engine';

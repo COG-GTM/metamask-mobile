@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Engine from '../../core/Engine';
 import { MetaMetrics, MetaMetricsEvents } from '../../core/Analytics';
 import { getAddressAccountType } from '../address';

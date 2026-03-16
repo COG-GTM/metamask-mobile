@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { swapsUtils } from '@metamask/swaps-controller';

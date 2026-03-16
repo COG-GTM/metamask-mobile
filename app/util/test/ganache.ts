@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { getGanachePort } from '../../../e2e/fixtures/utils';
 import ganache from 'ganache';
 

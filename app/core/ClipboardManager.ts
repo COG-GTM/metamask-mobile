@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Clipboard from '@react-native-clipboard/clipboard';
 import Device from '../util/device';
 

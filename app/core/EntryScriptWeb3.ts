@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Device from '../util/device';
 import RNFS from 'react-native-fs';
 

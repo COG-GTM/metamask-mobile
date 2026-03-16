@@ -1,4 +1,3 @@
-// @ts-nocheck
 import namehash from 'eth-ens-namehash';
 import Eth from '@metamask/ethjs-query';
 import EthContract from '@metamask/ethjs-contract';

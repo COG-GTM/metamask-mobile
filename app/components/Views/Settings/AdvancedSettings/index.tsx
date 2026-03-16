@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Third party dependencies.
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';

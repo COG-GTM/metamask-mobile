@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import StyledButton from '../StyledButton';
 import PropTypes from 'prop-types';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Third party dependencies.
 import React from 'react';
 

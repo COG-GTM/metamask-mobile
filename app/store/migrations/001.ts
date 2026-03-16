@@ -1,4 +1,3 @@
-// @ts-nocheck
 import AppConstants from '../../core/AppConstants';
 import { toLowerCaseEquals } from '../../util/general';
 

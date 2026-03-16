@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable react/prop-types */
 import React, { PureComponent } from 'react';
 import { View, Animated, Easing, StyleSheet } from 'react-native';

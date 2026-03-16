@@ -1,4 +1,3 @@
-// @ts-nocheck
 import BigNumber from 'bignumber.js';
 import { addHexPrefix } from './number';
 

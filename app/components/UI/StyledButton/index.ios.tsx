@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@metamask/react-native-button';

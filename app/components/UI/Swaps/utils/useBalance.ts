@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useMemo } from 'react';
 import { isSwapsNativeAsset } from '.';
 import {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NetworksChainId } from '@metamask/controller-utils';
 import { isSafeChainId } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';

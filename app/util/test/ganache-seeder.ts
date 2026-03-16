@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Web3Provider } from '@ethersproject/providers';
 import { ContractFactory } from '@ethersproject/contracts';
 import { SMART_CONTRACTS, contractConfiguration } from './smart-contracts';

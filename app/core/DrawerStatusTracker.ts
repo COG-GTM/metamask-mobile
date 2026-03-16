@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use strict';
 
 // eslint-disable-next-line import/no-nodejs-modules

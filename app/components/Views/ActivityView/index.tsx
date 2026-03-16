@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useCallback, useRef } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';

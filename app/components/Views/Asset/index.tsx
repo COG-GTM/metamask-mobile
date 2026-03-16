@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { swapsUtils } from '@metamask/swaps-controller/';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';

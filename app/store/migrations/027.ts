@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NetworkType } from '@metamask/controller-utils';
 
 /**

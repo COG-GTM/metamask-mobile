@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { StyleSheet } from 'react-native';
 
 const createStyles = (colors) =>

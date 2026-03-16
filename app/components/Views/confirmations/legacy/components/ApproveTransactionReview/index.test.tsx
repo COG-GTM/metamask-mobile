@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { cloneDeep } from 'lodash';
 import ApproveTransactionModal from '.';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import migrate from './024';
 import { merge } from 'lodash';
 import initialRootState from '../../util/test/initial-root-state';

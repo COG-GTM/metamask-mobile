@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import { TransactionType } from '@metamask/transaction-controller';
 import { swapsUtils } from '@metamask/swaps-controller/';

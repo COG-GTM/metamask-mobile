@@ -1,4 +1,3 @@
-// @ts-nocheck
 (function (global, factory) {
   exports && typeof exports === 'object' && typeof module !== 'undefined'
     ? factory(exports)
