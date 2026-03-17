@@ -38,15 +38,20 @@ const locks = new Set();
  * @returns A promise that resolves to nothing
  */
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: any,
+  res: any,
+  _next: any,
+  end: any,
   {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
+  }: {
+    getAccounts: (opts?: any) => string[];
+    getUnlockPromise: (shouldShowUnlockRequest: boolean) => Promise<void>;
+    getCaip25PermissionFromLegacyPermissionsForOrigin: () => any;
+    requestPermissionsForOrigin: (permissions: any) => Promise<any>;
   },
 ) {
   const { origin } = req;
@@ -87,7 +92,7 @@ async function requestEthereumAccountsHandler(
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent(origin, ethAccounts.length);
+  trackDappViewedEvent({ hostname: origin, numberOfConnectedAccounts: ethAccounts.length });
 
   res.result = ethAccounts;
   return end();

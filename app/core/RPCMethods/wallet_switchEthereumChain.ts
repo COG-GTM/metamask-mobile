@@ -25,6 +25,12 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
+}: {
+  req: any;
+  res: any;
+  requestUserApproval: (opts: any) => Promise<any>;
+  analytics: any;
+  hooks: any;
 }) => {
   const {
     CurrencyRateController,
@@ -46,7 +52,7 @@ export const wallet_switchEthereumChain = async ({
     chainId: true,
   };
 
-  const extraKeys = Object.keys(params).filter((key) => !allowedKeys[key]);
+  const extraKeys = Object.keys(params).filter((key) => !(allowedKeys as any)[key]);
   if (extraKeys.length) {
     throw rpcErrors.invalidParams(
       `Received unexpected keys on object parameter. Unsupported keys:\n${extraKeys}`,
@@ -57,7 +63,7 @@ export const wallet_switchEthereumChain = async ({
   const networkConfigurations = selectEvmNetworkConfigurationsByChainId(
     store.getState(),
   );
-  const existingNetwork = findExistingNetwork(_chainId, networkConfigurations);
+  const existingNetwork = findExistingNetwork(_chainId as string, networkConfigurations);
   if (existingNetwork) {
     const currentDomainSelectedNetworkClientId =
       SelectedNetworkController.getNetworkClientIdForDomain(origin);
@@ -67,7 +73,7 @@ export const wallet_switchEthereumChain = async ({
       currentDomainSelectedNetworkClientId,
     ) || { configuration: {} };
 
-    if (currentDomainSelectedChainId === _chainId) {
+    if (currentDomainSelectedChainId === (_chainId as string)) {
       res.result = null;
       return;
     }
@@ -83,7 +89,7 @@ export const wallet_switchEthereumChain = async ({
 
     await switchToNetwork({
       network: existingNetwork,
-      chainId: _chainId,
+      chainId: _chainId as string,
       controllers: {
         CurrencyRateController,
         MultichainNetworkController,

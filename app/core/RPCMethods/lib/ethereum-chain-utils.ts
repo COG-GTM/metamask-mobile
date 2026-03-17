@@ -23,7 +23,7 @@ import Engine from '../../Engine';
 
 const EVM_NATIVE_TOKEN_DECIMALS = 18;
 
-export function validateChainId(chainId) {
+export function validateChainId(chainId: string) {
   const _chainId = typeof chainId === 'string' && chainId.toLowerCase();
 
   if (!isPrefixedFormattedHexString(_chainId)) {
@@ -32,7 +32,7 @@ export function validateChainId(chainId) {
     );
   }
 
-  if (!isSafeChainId(_chainId)) {
+  if (!isSafeChainId(_chainId as `0x${string}`)) {
     throw rpcErrors.invalidParams(
       `Invalid chain ID "${_chainId}": numerical value greater than max safe value. Received:\n${chainId}`,
     );
@@ -41,7 +41,7 @@ export function validateChainId(chainId) {
   return _chainId;
 }
 
-export function validateAddEthereumChainParams(params) {
+export function validateAddEthereumChainParams(params: any) {
   if (!params || !params?.[0] || typeof params[0] !== 'object') {
     throw rpcErrors.invalidParams({
       message: `Expected single, object parameter. Received:\n${JSON.stringify(
@@ -69,7 +69,7 @@ export function validateAddEthereumChainParams(params) {
     iconUrls: true,
   };
 
-  const extraKeys = Object.keys(params[0]).filter((key) => !allowedKeys[key]);
+  const extraKeys = Object.keys(params[0]).filter((key) => !(allowedKeys as any)[key]);
   if (extraKeys.length) {
     throw rpcErrors.invalidParams(
       `Received unexpected keys on object parameter. Unsupported keys:\n${extraKeys}`,
@@ -95,7 +95,7 @@ export function validateAddEthereumChainParams(params) {
   };
 }
 
-function validateRpcUrls(rpcUrls) {
+function validateRpcUrls(rpcUrls: string[] | null) {
   const dirtyFirstValidRPCUrl = Array.isArray(rpcUrls)
     ? rpcUrls.find((rpcUrl) => validUrl.isHttpsUri(rpcUrl))
     : null;
@@ -113,7 +113,7 @@ function validateRpcUrls(rpcUrls) {
   return firstValidRPCUrl;
 }
 
-function validateBlockExplorerUrls(blockExplorerUrls) {
+function validateBlockExplorerUrls(blockExplorerUrls: string[] | null) {
   const firstValidBlockExplorerUrl =
     blockExplorerUrls !== null && Array.isArray(blockExplorerUrls)
       ? blockExplorerUrls.find((blockExplorerUrl) =>
@@ -130,7 +130,7 @@ function validateBlockExplorerUrls(blockExplorerUrls) {
   return firstValidBlockExplorerUrl;
 }
 
-function validateChainName(rawChainName) {
+function validateChainName(rawChainName: string | null) {
   if (typeof rawChainName !== 'string' || !rawChainName) {
     throw rpcErrors.invalidParams({
       message: `Expected non-empty string 'chainName'. Received:\n${rawChainName}`,
@@ -141,7 +141,7 @@ function validateChainName(rawChainName) {
     : rawChainName;
 }
 
-function validateNativeCurrency(nativeCurrency) {
+function validateNativeCurrency(nativeCurrency: any) {
   if (nativeCurrency !== null) {
     if (typeof nativeCurrency !== 'object' || Array.isArray(nativeCurrency)) {
       throw rpcErrors.invalidParams({
@@ -171,7 +171,7 @@ function validateNativeCurrency(nativeCurrency) {
   return ticker;
 }
 
-export async function validateRpcEndpoint(rpcUrl, chainId) {
+export async function validateRpcEndpoint(rpcUrl: string, chainId: string) {
   let endpointChainId;
   try {
     endpointChainId = await jsonRpcRequest(rpcUrl, 'eth_chainId');
@@ -189,12 +189,12 @@ export async function validateRpcEndpoint(rpcUrl, chainId) {
   }
 }
 
-export function findExistingNetwork(chainId, networkConfigurations) {
+export function findExistingNetwork(chainId: string, networkConfigurations: any) {
   const existingEntry = Object.entries(networkConfigurations).find(
-    ([, networkConfiguration]) => networkConfiguration.chainId === chainId,
+    ([, networkConfiguration]) => (networkConfiguration as any).chainId === chainId,
   );
   if (existingEntry) {
-    const [, networkConfiguration] = existingEntry;
+    const [, networkConfiguration] = existingEntry as [string, any];
     const networkConfigurationId =
       networkConfiguration.rpcEndpoints[
         networkConfiguration.defaultRpcEndpointIndex
@@ -227,6 +227,16 @@ export async function switchToNetwork({
   origin,
   isAddNetworkFlow = false,
   hooks,
+  ...rest
+}: {
+  network: any;
+  chainId: string;
+  requestUserApproval: (opts: any) => Promise<any>;
+  analytics: any;
+  origin: string;
+  isAddNetworkFlow?: boolean;
+  hooks: any;
+  [key: string]: any;
 }) {
   const {
     getCaveat,
@@ -269,7 +279,7 @@ export async function switchToNetwork({
 
   const shouldGrantPermissions =
     chainPermissionsFeatureEnabled &&
-    (!ethChainIds || !ethChainIds.includes(chainId));
+    (!ethChainIds || !ethChainIds.includes(chainId as `0x${string}`));
 
   const requestModalType = isAddNetworkFlow ? 'new' : 'switch';
 
@@ -309,7 +319,7 @@ export async function switchToNetwork({
             caveats: [
               {
                 type: Caip25CaveatType,
-                value: setPermittedEthChainIds(caip25Caveat.value, [chainId]),
+                value: setPermittedEthChainIds(caip25Caveat.value, [chainId as `0x${string}`]),
               },
             ],
           },
@@ -318,7 +328,7 @@ export async function switchToNetwork({
     }
   }
 
-  if (!shouldShowRequestModal && !ethChainIds.includes(chainId)) {
+  if (!shouldShowRequestModal && !ethChainIds!.includes(chainId as `0x${string}`)) {
     await requestPermittedChainsPermissionIncrementalForOrigin({
       origin,
       chainId,

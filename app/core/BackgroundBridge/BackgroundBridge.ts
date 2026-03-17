@@ -70,6 +70,19 @@ export class BackgroundBridge extends EventEmitter {
     remoteConnHost,
     isMMSDK,
     channelId,
+  }: {
+    webview: any;
+    url: any;
+    getRpcMethodMiddleware: any;
+    isMainFrame: any;
+    isRemoteConn: any;
+    sendMessage: any;
+    isWalletConnect: any;
+    wcRequestActions: any;
+    getApprovedHosts: any;
+    remoteConnHost: any;
+    isMMSDK: any;
+    channelId: any;
   }) {
     super();
     this.url = url;
@@ -264,7 +277,7 @@ export class BackgroundBridge extends EventEmitter {
     };
   }
 
-  async notifyChainChanged(params) {
+  async notifyChainChanged(params?: any) {
     DevLogger.log(`notifyChainChanged: `, params);
     this.sendNotification({
       method: NOTIFICATION_NAMES.chainChanged,
@@ -272,7 +285,7 @@ export class BackgroundBridge extends EventEmitter {
     });
   }
 
-  async notifySelectedAddressChanged(selectedAddress) {
+  async notifySelectedAddressChanged(selectedAddress: string) {
     try {
       let approvedAccounts = [];
       DevLogger.log(
@@ -318,7 +331,7 @@ export class BackgroundBridge extends EventEmitter {
     }
   }
 
-  async onStateUpdate(memState) {
+  async onStateUpdate(memState?: any) {
     if (!memState) {
       memState = this.getState();
     }
@@ -350,10 +363,10 @@ export class BackgroundBridge extends EventEmitter {
     return Engine.context.KeyringController.isUnlocked();
   }
 
-  async getProviderState(origin) {
+  async getProviderState(origin: string) {
     return {
       isUnlocked: this.isUnlocked(),
-      ...(await this.getProviderNetworkState(origin)),
+      ...(await this.getProviderNetworkState(origin as any)),
     };
   }
 
@@ -361,7 +374,7 @@ export class BackgroundBridge extends EventEmitter {
     this.emit('update');
   };
 
-  onMessage = (msg) => {
+  onMessage = (msg: any) => {
     this.port.emit('message', { name: msg.name, data: msg.data });
   };
 
@@ -383,13 +396,13 @@ export class BackgroundBridge extends EventEmitter {
    * A method for serving our ethereum provider over a given stream.
    * @param {*} outStream - The stream to provide over.
    */
-  setupProviderConnection(outStream) {
+  setupProviderConnection(outStream: any) {
     this.engine = this.setupProviderEngine();
 
     // setup connection
     const providerStream = createEngineStream({ engine: this.engine });
 
-    pump(outStream, providerStream, outStream, (err) => {
+    pump(outStream, providerStream, outStream, (err: any) => {
       // handle any middleware cleanup
       this.engine.destroy();
       if (err) Logger.log('Error with provider stream conn', err);
@@ -421,14 +434,14 @@ export class BackgroundBridge extends EventEmitter {
 
     // create subscription polyfill middleware
     const subscriptionManager = createSubscriptionManager(proxyClient);
-    subscriptionManager.events.on('notification', (message) =>
+    subscriptionManager.events.on('notification', (message: any) =>
       engine.emit('notification', message),
     );
 
     // metadata
-    engine.push(createOriginMiddleware({ origin }));
-    engine.push(createSelectedNetworkMiddleware(Engine.controllerMessenger));
-    engine.push(createLoggerMiddleware({ origin }));
+    engine.push(createOriginMiddleware({ origin }) as any);
+    engine.push(createSelectedNetworkMiddleware(Engine.controllerMessenger as any));
+    engine.push(createLoggerMiddleware({ origin }) as any);
     // filter and subscription polyfills
     engine.push(filterMiddleware);
     engine.push(subscriptionManager.middleware);
@@ -438,12 +451,12 @@ export class BackgroundBridge extends EventEmitter {
 
     // Unrestricted/permissionless RPC method implementations.
     engine.push(
-      createEip1193MethodMiddleware({
+      (createEip1193MethodMiddleware as any)({
         // Permission-related
-        getAccounts: (...args) =>
+        getAccounts: (...args: any[]) =>
           getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
         getCaip25PermissionFromLegacyPermissionsForOrigin: (
-          requestedPermissions,
+          requestedPermissions: any,
         ) =>
           getCaip25PermissionFromLegacyPermissions(
             origin,
@@ -453,12 +466,12 @@ export class BackgroundBridge extends EventEmitter {
           PermissionController,
           origin,
         ),
-        requestPermissionsForOrigin: (requestedPermissions) =>
+        requestPermissionsForOrigin: (requestedPermissions: any) =>
           PermissionController.requestPermissions(
             { origin },
             requestedPermissions,
           ),
-        revokePermissionsForOrigin: (permissionKeys) => {
+        revokePermissionsForOrigin: (permissionKeys: any) => {
           try {
             PermissionController.revokePermissions({
               [origin]: permissionKeys,
@@ -483,18 +496,18 @@ export class BackgroundBridge extends EventEmitter {
           return new Promise((resolve) => {
             Engine.controllerMessenger.subscribeOnceIf(
               'KeyringController:unlock',
-              resolve,
+              resolve as () => void,
               () => true,
             );
           });
         },
-      }),
+      }) as any,
     );
 
     // Legacy RPC methods that need to be implemented ahead of the permission middleware
     engine.push(
       createEthAccountsMethodMiddleware({
-        getAccounts: (...args) =>
+        getAccounts: (...args: any[]) =>
           getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
       }),
     );
@@ -555,7 +568,7 @@ export class BackgroundBridge extends EventEmitter {
     return engine;
   }
 
-  sendNotification(payload) {
+  sendNotification(payload: any) {
     DevLogger.log(`BackgroundBridge::sendNotification: `, payload);
     this.engine && this.engine.emit('notification', payload);
   }

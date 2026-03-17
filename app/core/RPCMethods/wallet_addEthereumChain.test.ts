@@ -7,7 +7,7 @@ import { flushPromises } from '../../util/test/utils';
 
 const mockEngine = Engine;
 
-const existingNetworkConfiguration = {
+const existingNetworkConfiguration: any = {
   id: 'test-network-configuration-id',
   chainId: '0x2',
   name: 'Test Chain',
@@ -94,7 +94,7 @@ const correctParams = {
   rpcUrls: ['https://rpc.gnosischain.com'],
 };
 
-const networkConfigurationResult = {
+const networkConfigurationResult: any = {
   id: '1',
   chainId: '0x64',
   rpcEndpoints: [correctParams.rpcUrls[0]],
@@ -102,8 +102,8 @@ const networkConfigurationResult = {
 };
 
 describe('RPC Method - wallet_addEthereumChain', () => {
-  let mockFetch;
-  let otherOptions;
+  let mockFetch: jest.Mock;
+  let otherOptions: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -123,9 +123,9 @@ describe('RPC Method - wallet_addEthereumChain', () => {
 
     jest
       .spyOn(InteractionManager, 'runAfterInteractions')
-      .mockImplementation((callback) => callback());
+      .mockImplementation((callback: any) => callback());
 
-    mockFetch = jest.fn().mockImplementation(async (url) => {
+    mockFetch = jest.fn().mockImplementation(async (url: string) => {
       if (url === 'https://rpc.gnosischain.com') {
         return { json: () => Promise.resolve({ result: '0x64' }) };
       } else if (url === 'https://different-rpc-url.com') {
@@ -146,8 +146,8 @@ describe('RPC Method - wallet_addEthereumChain', () => {
   });
 
   afterEach(() => {
-    InteractionManager.runAfterInteractions.mockClear();
-    global.fetch.mockClear();
+    (InteractionManager.runAfterInteractions as jest.Mock).mockClear();
+    (global.fetch as jest.Mock).mockClear();
   });
 
   it('should report missing params', async () => {
@@ -158,7 +158,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain('Expected single, object parameter.');
     }
   });
@@ -171,7 +171,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(
         'Received unexpected keys on object parameter. Unsupported keys',
       );
@@ -186,7 +186,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(
         `Expected an array with at least one valid string HTTPS url 'rpcUrls'`,
       );
@@ -201,7 +201,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(
         `Expected null or array with at least one valid string HTTPS URL 'blockExplorerUrl'.`,
       );
@@ -216,7 +216,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(
         `Expected 0x-prefixed, unpadded, non-zero hexadecimal string 'chainId'.`,
       );
@@ -231,7 +231,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(
         'numerical value greater than max safe value.',
       );
@@ -246,7 +246,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain('does not match');
     }
   });
@@ -259,7 +259,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(`Expected non-empty string 'chainName'.`);
     }
   });
@@ -272,7 +272,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(
         `Expected null or object 'nativeCurrency'.`,
       );
@@ -292,7 +292,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(
         `Expected the number 18 for 'nativeCurrency.decimals' when 'nativeCurrency' is provided.`,
       );
@@ -312,7 +312,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(
         `Expected a string 'nativeCurrency.symbol'.`,
       );
@@ -359,7 +359,7 @@ describe('RPC Method - wallet_addEthereumChain', () => {
 
   describe('Approval Flow', () => {
     it('clears existing approval requests', async () => {
-      Engine.context.ApprovalController.clear.mockClear();
+      (Engine.context.ApprovalController.clear as jest.Mock).mockClear();
 
       await wallet_addEthereumChain({
         req: {

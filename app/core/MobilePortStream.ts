@@ -1,12 +1,21 @@
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
-import { Duplex } from 'readable-stream';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { Duplex } = require('readable-stream');
 
 // eslint-disable-next-line no-empty-function
 const noop = () => {};
 
+interface Port {
+  addListener(event: string, listener: (...args: any[]) => void): void;
+  postMessage(msg: any, url: string): void;
+}
+
 export default class PortDuplexStream extends Duplex {
-  constructor(port, url) {
+  _port: Port;
+  _url: string;
+
+  constructor(port: Port, url: string) {
     super({
       objectMode: true,
     });
@@ -23,15 +32,15 @@ export default class PortDuplexStream extends Duplex {
    * @private
    * @param {Object} msg - Payload from the onMessage listener of Port
    */
-  _onMessage = function (msg) {
+  _onMessage(msg: any) {
     if (Buffer.isBuffer(msg)) {
-      delete msg._isBuffer;
-      const data = new Buffer(msg);
+      delete (msg as any)._isBuffer;
+      const data = Buffer.from(msg);
       this.push(data);
     } else {
       this.push(msg);
     }
-  };
+  }
 
   /**
    * Callback triggered when the remote Port
@@ -39,9 +48,9 @@ export default class PortDuplexStream extends Duplex {
    *
    * @private
    */
-  _onDisconnect = function () {
+  _onDisconnect() {
     this.destroy && this.destroy();
-  };
+  }
 
   /**
    * Explicitly sets read operations to a no-op
@@ -57,10 +66,10 @@ export default class PortDuplexStream extends Duplex {
    * @param {string} encoding Encoding to use when writing payload
    * @param {Function} cb Called when writing is complete or an error occurs
    */
-  _write = function (msg, encoding, cb) {
+  _write(msg: any, encoding: string, cb: (error?: Error | null) => void) {
     try {
       if (Buffer.isBuffer(msg)) {
-        const data = msg.toJSON();
+        const data: any = msg.toJSON();
         data._isBuffer = true;
         this._port.postMessage(data, this._url);
       } else {
@@ -70,5 +79,5 @@ export default class PortDuplexStream extends Duplex {
       return cb(new Error('PortDuplexStream - disconnected'));
     }
     cb();
-  };
+  }
 }
