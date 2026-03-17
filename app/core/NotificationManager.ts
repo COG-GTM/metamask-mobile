@@ -233,7 +233,7 @@ class NotificationManager {
         // Detect assets for ERC721 txs
         // right after a transaction was confirmed
         const pollPromises = [
-          AccountTrackerController.refresh({} as any),
+          (AccountTrackerController as any).refresh(),
           TokenBalancesController.updateBalancesByChainId({
             chainId: transactionMeta.chainId,
           }),
@@ -405,7 +405,9 @@ class NotificationManager {
         // If the smart transaction is not cancelled, notifications are already handled.
         return;
       }
-      const transactions = TransactionController.getTransactions({});
+      const transactions = TransactionController.getTransactions({
+        filterToCurrentNetwork: false,
+      } as any);
       const foundTransaction = transactions.find(
         (tx) => tx.id === smartTransaction.transactionId,
       );
@@ -476,7 +478,7 @@ class NotificationManager {
       });
 
       // Update balance upon detecting a new incoming transaction
-      AccountTrackerController.refresh({} as any);
+      (AccountTrackerController as any).refresh();
     } catch (error) {
       Logger.log(
         'Notifications',
