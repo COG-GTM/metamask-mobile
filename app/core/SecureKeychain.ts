@@ -117,7 +117,7 @@ export default {
     return null;
   },
 
-  async setGenericPassword(password: string, type: string) {
+  async setGenericPassword(password: string, type?: string) {
     const authOptions: any = {
       accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     };

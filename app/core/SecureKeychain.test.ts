@@ -135,7 +135,7 @@ describe('SecureKeychain - setGenericPassword', () => {
 
   it('should reset password when no type is provided', async () => {
     const resetSpy = jest.spyOn(SecureKeychain, 'resetGenericPassword');
-    await SecureKeychain.setGenericPassword(mockPassword, '');
+    await SecureKeychain.setGenericPassword(mockPassword);
 
     expect(resetSpy).toHaveBeenCalled();
     expect(Keychain.setGenericPassword).not.toHaveBeenCalled();
