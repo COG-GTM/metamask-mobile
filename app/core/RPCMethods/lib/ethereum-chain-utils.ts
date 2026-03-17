@@ -328,7 +328,7 @@ export async function switchToNetwork({
     }
   }
 
-  if (!shouldShowRequestModal && !ethChainIds!.includes(chainId as `0x${string}`)) {
+  if (!shouldShowRequestModal && ethChainIds && !ethChainIds.includes(chainId as `0x${string}`)) {
     await requestPermittedChainsPermissionIncrementalForOrigin({
       origin,
       chainId,
