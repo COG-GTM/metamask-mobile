@@ -92,7 +92,7 @@ async function requestEthereumAccountsHandler(
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent({ hostname: origin, numberOfConnectedAccounts: ethAccounts.length });
+  (trackDappViewedEvent as any)(origin, ethAccounts.length);
 
   res.result = ethAccounts;
   return end();
