@@ -34,3 +34,7 @@ jobs:
           git diff "$(git merge-base "origin/$BASE_REF" HEAD)" HEAD -- . > ./diff
           yarn run fitness-functions -- "ci" "./diff"
         working-directory: '.github/scripts'
+
+      - name: Check TypeScript enforcement in app/ directory
+        run: yarn run check-ts-app-gate
+        working-directory: '.github/scripts'

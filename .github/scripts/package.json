@@ -4,6 +4,7 @@
   "scripts": {
     "add-release-label-to-pr-and-linked-issues": "ts-node ./add-release-label-to-pr-and-linked-issues.ts",
     "fitness-functions": "ts-node ./fitness-functions/index.ts",
+    "check-ts-app-gate": "ts-node ./fitness-functions/check-typescript-app-gate.ts",
     "check-pr-has-required-labels": "ts-node ./check-pr-has-required-labels.ts",
     "close-release-bug-report-issue": "ts-node ./close-release-bug-report-issue.ts",
     "check-template-and-add-labels": "ts-node ./check-template-and-add-labels.ts",
