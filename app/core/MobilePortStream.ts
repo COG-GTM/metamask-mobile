@@ -32,7 +32,7 @@ export default class PortDuplexStream extends Duplex {
    * @private
    * @param {Object} msg - Payload from the onMessage listener of Port
    */
-  _onMessage(msg: any) {
+  _onMessage = (msg: any) => {
     if (Buffer.isBuffer(msg)) {
       delete (msg as any)._isBuffer;
       const data = Buffer.from(msg);
@@ -40,7 +40,7 @@ export default class PortDuplexStream extends Duplex {
     } else {
       this.push(msg);
     }
-  }
+  };
 
   /**
    * Callback triggered when the remote Port
@@ -48,9 +48,9 @@ export default class PortDuplexStream extends Duplex {
    *
    * @private
    */
-  _onDisconnect() {
+  _onDisconnect = () => {
     this.destroy && this.destroy();
-  }
+  };
 
   /**
    * Explicitly sets read operations to a no-op
@@ -66,7 +66,7 @@ export default class PortDuplexStream extends Duplex {
    * @param {string} encoding Encoding to use when writing payload
    * @param {Function} cb Called when writing is complete or an error occurs
    */
-  _write(msg: any, encoding: string, cb: (error?: Error | null) => void) {
+  _write = (msg: any, encoding: string, cb: (error?: Error | null) => void) => {
     try {
       if (Buffer.isBuffer(msg)) {
         const data: any = msg.toJSON();
@@ -79,5 +79,5 @@ export default class PortDuplexStream extends Duplex {
       return cb(new Error('PortDuplexStream - disconnected'));
     }
     cb();
-  }
+  };
 }
