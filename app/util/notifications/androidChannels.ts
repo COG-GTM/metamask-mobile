@@ -64,7 +64,7 @@ export const notificationChannels: MetaMaskAndroidChannel[] = [
     description: 'Critical security notifications such as suspicious activity and approvals',
     lights: true,
     vibration: true,
-    importance: AndroidImportance.MAX,
+    importance: AndroidImportance.HIGH,
     title: 'Security',
     subtitle: 'Security alert notifications',
   },

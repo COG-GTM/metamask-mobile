@@ -55,12 +55,12 @@ describe('notificationChannels', () => {
     expect(channel?.vibration).toBe(true);
   });
 
-  it('SECURITY_CHANNEL_ID uses MAX importance', () => {
+  it('SECURITY_CHANNEL_ID uses HIGH importance', () => {
     const channel = notificationChannels.find(
       (c) => c.id === ChannelId.SECURITY_CHANNEL_ID,
     );
     expect(channel).toBeDefined();
-    expect(channel?.importance).toBe(AndroidImportance.MAX);
+    expect(channel?.importance).toBe(AndroidImportance.HIGH);
     expect(channel?.lights).toBe(true);
     expect(channel?.vibration).toBe(true);
   });
