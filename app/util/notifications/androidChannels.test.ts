@@ -6,13 +6,15 @@ import {
 } from './androidChannels';
 
 describe('notificationChannels', () => {
-  it('contains two channels', () => {
-    expect(notificationChannels).toHaveLength(2);
+  it('contains eight channels', () => {
+    expect(notificationChannels).toHaveLength(8);
   });
 
-  it('first channel has DEFAULT_NOTIFICATION_CHANNEL_ID', () => {
-    const firstChannel: MetaMaskAndroidChannel = notificationChannels[0];
-    expect(firstChannel).toEqual({
+  it('DEFAULT_NOTIFICATION_CHANNEL_ID channel is kept as fallback', () => {
+    const channel = notificationChannels.find(
+      (c) => c.id === ChannelId.DEFAULT_NOTIFICATION_CHANNEL_ID,
+    );
+    expect(channel).toEqual({
       id: ChannelId.DEFAULT_NOTIFICATION_CHANNEL_ID,
       name: 'Transaction Complete',
       lights: true,
@@ -23,17 +25,74 @@ describe('notificationChannels', () => {
     });
   });
 
-  it('second channel should have the correct properties for DEFAULT_NOTIFICATION_CHANNEL_ID', () => {
-    const secondChannel: MetaMaskAndroidChannel = notificationChannels[1];
-    expect(secondChannel).toEqual({
-      id: ChannelId.ANNOUNCEMENT_NOTIFICATION_CHANNEL_ID,
-      name: 'MetaMask Announcement',
-      lights: true,
-      vibration: true,
-      importance: AndroidImportance.HIGH,
-      title: 'Announcement',
-      subtitle: 'MetaMask Announcement',
-    });
+  it('TRANSACTION_CHANNEL_ID uses HIGH importance', () => {
+    const channel = notificationChannels.find(
+      (c) => c.id === ChannelId.TRANSACTION_CHANNEL_ID,
+    );
+    expect(channel).toBeDefined();
+    expect(channel?.importance).toBe(AndroidImportance.HIGH);
+    expect(channel?.lights).toBe(true);
+    expect(channel?.vibration).toBe(true);
+  });
+
+  it('DEFI_CHANNEL_ID uses HIGH importance', () => {
+    const channel = notificationChannels.find(
+      (c) => c.id === ChannelId.DEFI_CHANNEL_ID,
+    );
+    expect(channel).toBeDefined();
+    expect(channel?.importance).toBe(AndroidImportance.HIGH);
+    expect(channel?.lights).toBe(true);
+    expect(channel?.vibration).toBe(true);
+  });
+
+  it('STAKING_CHANNEL_ID uses HIGH importance', () => {
+    const channel = notificationChannels.find(
+      (c) => c.id === ChannelId.STAKING_CHANNEL_ID,
+    );
+    expect(channel).toBeDefined();
+    expect(channel?.importance).toBe(AndroidImportance.HIGH);
+    expect(channel?.lights).toBe(true);
+    expect(channel?.vibration).toBe(true);
+  });
+
+  it('SECURITY_CHANNEL_ID uses MAX importance', () => {
+    const channel = notificationChannels.find(
+      (c) => c.id === ChannelId.SECURITY_CHANNEL_ID,
+    );
+    expect(channel).toBeDefined();
+    expect(channel?.importance).toBe(AndroidImportance.MAX);
+    expect(channel?.lights).toBe(true);
+    expect(channel?.vibration).toBe(true);
+  });
+
+  it('PRICE_ALERT_CHANNEL_ID uses DEFAULT importance', () => {
+    const channel = notificationChannels.find(
+      (c) => c.id === ChannelId.PRICE_ALERT_CHANNEL_ID,
+    );
+    expect(channel).toBeDefined();
+    expect(channel?.importance).toBe(AndroidImportance.DEFAULT);
+    expect(channel?.lights).toBe(true);
+    expect(channel?.vibration).toBe(true);
+  });
+
+  it('GOVERNANCE_CHANNEL_ID uses DEFAULT importance', () => {
+    const channel = notificationChannels.find(
+      (c) => c.id === ChannelId.GOVERNANCE_CHANNEL_ID,
+    );
+    expect(channel).toBeDefined();
+    expect(channel?.importance).toBe(AndroidImportance.DEFAULT);
+    expect(channel?.lights).toBe(true);
+    expect(channel?.vibration).toBe(true);
+  });
+
+  it('ANNOUNCEMENT_NOTIFICATION_CHANNEL_ID uses DEFAULT importance', () => {
+    const channel = notificationChannels.find(
+      (c) => c.id === ChannelId.ANNOUNCEMENT_NOTIFICATION_CHANNEL_ID,
+    );
+    expect(channel).toBeDefined();
+    expect(channel?.importance).toBe(AndroidImportance.DEFAULT);
+    expect(channel?.lights).toBe(true);
+    expect(channel?.vibration).toBe(true);
   });
 
   it('channels have unique titles', () => {
@@ -42,9 +101,20 @@ describe('notificationChannels', () => {
     expect(uniqueTitles.size).toBe(titles.length);
   });
 
-  it('channels have unique subtitles ', () => {
+  it('channels have unique subtitles', () => {
     const subtitles = notificationChannels.map((channel) => channel.subtitle);
     const uniqueSubtitles = new Set(subtitles);
     expect(uniqueSubtitles.size).toBe(subtitles.length);
+  });
+
+  it('all channels have description, lights, and vibration configured', () => {
+    notificationChannels.forEach((channel) => {
+      expect(channel.name).toBeDefined();
+      expect(channel.lights).toBe(true);
+      expect(channel.vibration).toBe(true);
+      expect(channel.importance).toBeDefined();
+      expect(channel.title).toBeDefined();
+      expect(channel.subtitle).toBeDefined();
+    });
   });
 });
