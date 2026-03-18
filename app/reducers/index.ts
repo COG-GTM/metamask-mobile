@@ -16,6 +16,18 @@ import signatureRequestReducer from './signatureRequest';
 import notificationReducer from './notification';
 import infuraAvailabilityReducer from './infuraAvailability';
 import collectiblesReducer from './collectibles';
+import { AlertState } from './alert';
+import { BookmarksState } from './bookmarks';
+import { BrowserState } from './browser';
+import { CollectiblesState } from './collectibles';
+import { InfuraAvailabilityState } from './infuraAvailability';
+import { ModalsState } from './modals';
+import { NotificationState } from './notification';
+import { PrivacyState } from './privacy';
+import { SettingsState } from './settings';
+import { SwapsState } from './swaps';
+import { TransactionState } from './transaction';
+import { WizardState } from './wizard';
 import navigationReducer, { NavigationState } from './navigation';
 import networkOnboardReducer from './networkSelector';
 import securityReducer, { SecurityState } from './security';
@@ -57,46 +69,22 @@ export interface RootState {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   legalNotices: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  collectibles: any;
+  collectibles: CollectiblesState;
   engine: { backgroundState: EngineState };
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  privacy: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bookmarks: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  browser: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modals: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  settings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  alert: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  transaction: any;
+  privacy: PrivacyState;
+  bookmarks: BookmarksState;
+  browser: BrowserState;
+  modals: ModalsState;
+  settings: SettingsState;
+  alert: AlertState;
+  transaction: TransactionState;
   user: UserState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wizard: any;
+  wizard: WizardState;
   onboarding: OnboardingState;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  notification: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  swaps: any;
+  notification: NotificationState;
+  swaps: SwapsState;
   fiatOrders: StateFromReducer<typeof fiatOrders>;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  infuraAvailability: any;
+  infuraAvailability: InfuraAvailabilityState;
   navigation: NavigationState;
   // The networkOnboarded reducer is TypeScript but not yet a valid reducer
   // TODO: Replace "any" with type

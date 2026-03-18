@@ -5,7 +5,8 @@ import reducer, {
 } from './index';
 import mockedEngine from '../../core/__mocks__/MockedEngine';
 
-const emptyAction = { type: null };
+// Cast to any to test default case of reducer with unknown action type
+const emptyAction = { type: null } as any;
 
 const collectibleA1 = { tokenId: '101', address: '0xA' };
 const collectibleA2 = { tokenId: '102', address: '0xA' };
