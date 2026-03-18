@@ -15,7 +15,8 @@ import * as tokensControllerSelectors from '../../selectors/tokensController';
 
 jest.mock('../../selectors/tokensController');
 
-const emptyAction = { type: null };
+// Cast to any to test default case of reducer with unknown action type
+const emptyAction = { type: null } as any;
 
 const DEFAULT_FEATURE_FLAGS = {
   ethereum: {
@@ -212,6 +213,7 @@ describe('swaps reducer', () => {
         swaps: cloneDeep(initialState),
       };
 
+      // @ts-ignore - test uses partial state
       rootState.swaps = {
         // @ts-ignore
         featureFlags: {
@@ -267,6 +269,7 @@ describe('swaps reducer', () => {
         swaps: cloneDeep(initialState),
       };
 
+      // @ts-ignore - test uses partial state
       rootState.swaps = {
         // @ts-ignore
         featureFlags: {
@@ -384,6 +387,7 @@ describe('swaps reducer', () => {
         chainFeatureFlags: chainFlags,
       });
       
+      // @ts-ignore - selector uses fallback for missing second arg
       const result = selectSwapsChainFeatureFlags(rootState);
       expect(result).toEqual({
         fallbackToV1: false,
@@ -439,6 +443,7 @@ describe('swaps reducer', () => {
         },
       });
 
+      // @ts-ignore - selector uses fallback for missing second arg
       const chainFlags = selectSwapsChainFeatureFlags(rootState);
       expect(chainFlags).toEqual({
         smartTransactions: {
@@ -458,6 +463,7 @@ describe('swaps reducer', () => {
         // No chain feature flags for 0x89
       });
 
+      // @ts-ignore - selector uses fallback for missing second arg
       expect(() => selectSwapsChainFeatureFlags(rootState)).toThrow();
     });
   });
