@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import React, {
   useCallback,
   useContext,
@@ -151,6 +152,7 @@ export const Browser = (props: BrowserProps) => {
   const linkType = props.route?.params?.linkType;
   const prevSiteHostname = useRef<string | undefined>(browserUrl);
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_tabIdleTimes, setTabIdleTimes] = useState<Record<number, number>>(
     {},
   );
