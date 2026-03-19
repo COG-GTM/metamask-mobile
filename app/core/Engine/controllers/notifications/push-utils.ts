@@ -25,7 +25,7 @@ export function resolveNotificationCategory(
   if (lower.includes('security') || lower.includes('phishing')) {
     return NotificationCategory.SECURITY;
   }
-  if (lower.includes('price') || lower.includes('alert')) {
+  if (lower.includes('price') || lower.includes('price_alert')) {
     return NotificationCategory.PRICE_ALERT;
   }
   if (lower.includes('dapp') || lower.includes('snap')) {

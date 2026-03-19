@@ -47,7 +47,7 @@ describe('resolveNotificationCategory', () => {
     expect(resolveNotificationCategory('price_change')).toBe(
       NotificationCategory.PRICE_ALERT,
     );
-    expect(resolveNotificationCategory('TOKEN_ALERT')).toBe(
+    expect(resolveNotificationCategory('price_alert_eth')).toBe(
       NotificationCategory.PRICE_ALERT,
     );
   });
