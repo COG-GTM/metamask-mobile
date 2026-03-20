@@ -30,7 +30,7 @@ import Logger from '../../../util/Logger';
 import getAccountNameWithENS from '../../../util/accounts';
 import Tabs from '../../UI/Tabs';
 import BrowserTab from '../BrowserTab/BrowserTab';
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import { useMetrics } from '../../hooks/useMetrics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appendURLParams } from '../../../util/browser';
@@ -133,11 +133,11 @@ export const Browser: React.FC<BrowserProps> = (props) => {
   const {
     route,
     navigation,
-    createNewTab,
+    createNewTab: triggerCreateNewTab,
     closeAllTabs: triggerCloseAllTabs,
     closeTab: triggerCloseTab,
-    setActiveTab,
-    updateTab,
+    setActiveTab: triggerSetActiveTab,
+    updateTab: triggerUpdateTab,
     activeTab: activeTabId,
     tabs,
   } = props;
@@ -150,7 +150,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
   const linkType: string | undefined = props.route?.params?.linkType;
   const prevSiteHostname = useRef<string | undefined>(browserUrl);
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
-  const [_tabIdleTimes, setTabIdleTimes] = useState<Record<number, number>>(
+  const [, setTabIdleTimes] = useState<Record<number, number>>(
     {},
   );
   const accountAvatarType = useSelector((state: RootState) =>
@@ -209,17 +209,17 @@ export const Browser: React.FC<BrowserProps> = (props) => {
         navigation.navigate(Routes.MODAL.MAX_BROWSER_TABS_MODAL);
       } else {
         // When a new tab is created, a new tab is rendered, which automatically sets the url source on the webview
-        createNewTab(url || homePageUrl(), newTabLinkType);
+        triggerCreateNewTab(url || homePageUrl(), newTabLinkType);
       }
     },
-    [tabs, navigation, homePageUrl, createNewTab],
+    [tabs, navigation, homePageUrl, triggerCreateNewTab],
   );
 
   const updateTabInfo = useCallback(
     (tabID: number, info: TabUpdateInfo) => {
-      updateTab(tabID, info);
+      triggerUpdateTab(tabID, info);
     },
-    [updateTab],
+    [triggerUpdateTab],
   );
 
   const hideTabsAndUpdateUrl = (url: string) => {
@@ -234,7 +234,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
     trackEvent(
       createEventBuilder(MetaMetricsEvents.BROWSER_SWITCH_TAB).build(),
     );
-    setActiveTab(tab.id);
+    triggerSetActiveTab(tab.id);
     hideTabsAndUpdateUrl(tab.url);
     updateTabInfo(tab.id, {
       url: tab.url,
@@ -259,7 +259,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
             // if the tab has surpassed the maximum
             if (newIdleTimes[tab.id] > IDLE_TIME_MAX) {
               // then "archive" it
-              updateTab(tab.id, {
+              triggerUpdateTab(tab.id, {
                 isArchived: true,
               });
             }
@@ -267,7 +267,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
             // set any active tab as NOT "archived"
             // this can mean "unarchiving" a tab so that, for example,
             // the actual browser tab window is mounted again
-            updateTab(tab.id, {
+            triggerUpdateTab(tab.id, {
               isArchived: false,
             });
             // also set new tab idle time back to zero
@@ -279,11 +279,11 @@ export const Browser: React.FC<BrowserProps> = (props) => {
     }, IDLE_TIME_CALC_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [tabs, activeTabId, updateTab]);
+  }, [tabs, activeTabId, triggerUpdateTab]);
 
   useEffect(() => {
     const checkIfActiveAccountChanged = () => {
-      const hostname = new URL(browserUrl).hostname;
+      const hostname = new URLParse(browserUrl).hostname;
       const permittedAccounts = getPermittedAccounts(hostname);
       const activeAccountAddress = permittedAccounts?.[0];
 
@@ -311,7 +311,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
 
     // Handle when the Browser initially mounts and when url changes.
     if (accounts.length && browserUrl) {
-      const hostname = new URL(browserUrl).hostname;
+      const hostname = new URLParse(browserUrl).hostname;
       if (prevSiteHostname.current !== hostname || !hasAccounts.current) {
         checkIfActiveAccountChanged();
       }
@@ -397,7 +397,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
           THUMB_HEIGHT,
         }).then(
           (uri) => {
-            updateTab(tabID, {
+            triggerUpdateTab(tabID, {
               url,
               image: uri,
             });
@@ -409,10 +409,10 @@ export const Browser: React.FC<BrowserProps> = (props) => {
           },
         );
       }),
-    [updateTab],
+    [triggerUpdateTab],
   );
 
-  const showTabs = useCallback(async () => {
+  const triggerShowTabs = useCallback(async () => {
     try {
       const activeTab = tabs.find((tab) => tab.id === activeTabId);
       if (activeTab) {
@@ -428,7 +428,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
     });
   }, [tabs, activeTabId, route.params, navigation, takeScreenshot]);
 
-  const closeAllTabs = () => {
+  const handleCloseAllTabs = () => {
     if (tabs.length) {
       triggerCloseAllTabs();
       navigation.setParams({
@@ -438,7 +438,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
     }
   };
 
-  const closeTab = (tab: BrowserTabInfo) => {
+  const handleCloseTab = (tab: BrowserTabInfo) => {
     // If the tab was selected we have to select
     // the next one, and if there's no next one,
     // we select the previous one.
@@ -450,7 +450,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
             if (tabs[i + 1]) {
               nextTab = tabs[i + 1];
             }
-            setActiveTab(nextTab.id);
+            triggerSetActiveTab(nextTab.id);
             navigation.setParams({
               ...route.params,
               url: nextTab.url,
@@ -478,17 +478,17 @@ export const Browser: React.FC<BrowserProps> = (props) => {
   };
 
   const renderTabList = () => {
-    const showTabs = route.params?.showTabs;
-    if (showTabs) {
+    const isShowingTabs = route.params?.showTabs;
+    if (isShowingTabs) {
       return (
         <Tabs
           tabs={tabs}
           activeTab={activeTabId}
           switchToTab={switchToTab}
           newTab={newTab}
-          closeTab={closeTab}
+          closeTab={handleCloseTab}
           closeTabsView={closeTabsView}
-          closeAllTabs={closeAllTabs}
+          closeAllTabs={handleCloseAllTabs}
         />
       );
     }
@@ -506,7 +506,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
             initialUrl={tab.url}
             linkType={tab.linkType}
             updateTabInfo={updateTabInfo}
-            showTabs={showTabs}
+            showTabs={triggerShowTabs}
             newTab={newTab}
             isInTabsView={route.params?.showTabs}
             homePageUrl={homePageUrl()}
@@ -518,7 +518,7 @@ export const Browser: React.FC<BrowserProps> = (props) => {
       newTab,
       homePageUrl,
       updateTabInfo,
-      showTabs,
+      triggerShowTabs,
     ],
   );
 
