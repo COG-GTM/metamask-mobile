@@ -15,6 +15,12 @@ module.exports = {
   plugins: ['@typescript-eslint', '@metamask/design-tokens'],
   overrides: [
     {
+      files: ['index.ts'],
+      parserOptions: {
+        project: './tsconfig.lint.json',
+      },
+    },
+    {
       files: ['*.{ts,tsx}'],
       extends: ['@metamask/eslint-config-typescript'],
       rules: {
