@@ -92,7 +92,11 @@ getUserPreferableLocale();
 // }
 
 // Is it a RTL language?
-export const isRTL = false; // currentLocale.indexOf('jaJp') === 0;
+// TODO: Currently hardcoded to false because the app does not yet support
+// RTL languages (e.g. Arabic, Hebrew). When RTL locale translations are
+// added, this should dynamically detect the active locale instead.
+export const isRTL =
+  I18n.locale?.startsWith('ar') || I18n.locale?.startsWith('he') || false;
 
 // Set locale
 export async function setLocale(locale) {
