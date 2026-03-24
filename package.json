@@ -77,6 +77,7 @@
     "test:wdio:android:browserstack": "yarn wdio ./wdio/config/android.config.browserstack.js",
     "test:wdio:android:browserstack:local": "yarn wdio ./wdio/config/android.config.browserstack.local.js",
     "test:depcheck": "yarn depcheck",
+    "test:i18n": "node scripts/check-i18n.js",
     "test:tgz-check": "./scripts/tgz-check.sh",
     "test:attribution-check": "./scripts/attributions-check.sh",
     "test:merge-coverage": "nyc report --temp-dir ./tests/coverage --report-dir ./tests/merged-coverage/ --reporter json --reporter text --reporter lcovonly",
