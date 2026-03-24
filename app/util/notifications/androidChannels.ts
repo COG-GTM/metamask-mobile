@@ -3,6 +3,7 @@ import { AndroidChannel, AndroidImportance } from '@notifee/react-native';
 export enum ChannelId {
   DEFAULT_NOTIFICATION_CHANNEL_ID = 'DEFAULT_NOTIFICATION_CHANNEL_ID',
   ANNOUNCEMENT_NOTIFICATION_CHANNEL_ID = 'ANNOUNCEMENT_NOTIFICATION_CHANNEL_ID',
+  SECURITY_NOTIFICATION_CHANNEL_ID = 'SECURITY_NOTIFICATION_CHANNEL_ID',
 }
 
 export interface MetaMaskAndroidChannel extends AndroidChannel {
@@ -29,5 +30,14 @@ export const notificationChannels = [
     importance: AndroidImportance.HIGH,
     title: 'Announcement',
     subtitle: 'MetaMask Announcement',
+  } as MetaMaskAndroidChannel,
+  {
+    id: ChannelId.SECURITY_NOTIFICATION_CHANNEL_ID,
+    name: 'Security Alert',
+    lights: true,
+    vibration: true,
+    importance: AndroidImportance.HIGH,
+    title: 'Security',
+    subtitle: 'Security Alert',
   } as MetaMaskAndroidChannel,
 ];
