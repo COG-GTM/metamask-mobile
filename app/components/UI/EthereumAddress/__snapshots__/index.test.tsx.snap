@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EthereumAddress handles undefined address gracefully 1`] = `
+<Text
+  numberOfLines={1}
+  testID="wallet-account-address"
+/>
+`;
+
+exports[`EthereumAddress matches snapshot with address 1`] = `
+<Text
+  numberOfLines={1}
+  testID="wallet-account-address"
+>
+  0x1234567890abcdef1234567890abcdef12345678
+</Text>
+`;
+
+exports[`EthereumAddress matches snapshot with short type 1`] = `
+<Text
+  numberOfLines={1}
+  testID="wallet-account-address"
+>
+  0x123...5678
+</Text>
+`;
