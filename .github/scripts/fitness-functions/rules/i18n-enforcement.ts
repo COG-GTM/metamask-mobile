@@ -1,14 +1,44 @@
-import { filterDiffByFilePath, filterDiffLineAdditions } from '../common/shared';
+import { filterDiffLineAdditions } from '../common/shared';
 
 // Matches files in app/ directory with .ts, .tsx, .js, .jsx extensions
 const APP_FOLDER_REGEX = /^app\/.*\.(ts|tsx|js|jsx)$/;
 
 // Matches <Text> elements with string literal children that are not using
 // strings() or I18n.t() for internationalization.
-// Captures patterns like: <Text>Some hardcoded string</Text>
-// but allows: <Text>{strings('key')}</Text> or <Text>{I18n.t('key')}</Text>
-const TEXT_WITH_LITERAL_REGEX =
-  /<Text[^>]*>\s*(?!\s*\{)[A-Za-z][\s\S]*?<\/Text>/;
+// eslint-disable-next-line no-useless-escape
+const TEXT_WITH_LITERAL_REGEX = /<Text[^>]*>\s*[A-Za-z]/;
+
+/**
+ * Filters diff to only include blocks for files matching the given regex.
+ * Unlike filterDiffByFilePath which excludes matching files, this function
+ * includes only files whose paths match the regex.
+ */
+function filterDiffIncludeByFilePath(diff: string, regex: RegExp): string {
+  const diffBlocks = diff.split(`diff --git`).slice(1);
+
+  const filteredDiff = diffBlocks
+    .map((block) => block.trim())
+    .filter((block) => {
+      let shouldIncludeBlock = false;
+
+      block
+        .split('\n')[0]
+        .trim()
+        .split(' ')
+        .map((path) => path.substring(2))
+        .forEach((path) => {
+          if (regex.test(path)) {
+            shouldIncludeBlock = true;
+          }
+        });
+
+      return shouldIncludeBlock;
+    })
+    .map((block) => `diff --git ${block}`)
+    .join('\n');
+
+  return filteredDiff;
+}
 
 /**
  * Prevents untranslated strings in new code additions.
@@ -20,7 +50,7 @@ const TEXT_WITH_LITERAL_REGEX =
  */
 function preventUntranslatedStrings(diff: string): boolean {
   // Filter diff to only include files in the app/ directory
-  const appDiff = filterDiffByFilePath(diff, APP_FOLDER_REGEX);
+  const appDiff = filterDiffIncludeByFilePath(diff, APP_FOLDER_REGEX);
   if (!appDiff) {
     return true;
   }
@@ -36,8 +66,8 @@ function preventUntranslatedStrings(diff: string): boolean {
   for (const line of lines) {
     const trimmedLine = line.replace(/^\+/, '').trim();
 
-    // Skip empty lines and non-JSX lines
-    if (!trimmedLine || !trimmedLine.includes('<Text')) {
+    // Skip empty lines
+    if (!trimmedLine) {
       continue;
     }
 
