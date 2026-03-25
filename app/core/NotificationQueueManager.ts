@@ -1,3 +1,10 @@
+import {
+  EnhancedNotification,
+  NotificationCategory,
+  NotificationPriority,
+  PRIORITY_WEIGHTS,
+} from '../util/notifications/types/notification-types';
+
 // Simple event emitter implementation to avoid importing Node.js builtin 'events'
 type Listener = (...args: unknown[]) => void;
 
@@ -29,12 +36,6 @@ class SimpleEventEmitter {
     return this;
   }
 }
-import {
-  EnhancedNotification,
-  NotificationCategory,
-  NotificationPriority,
-  PRIORITY_WEIGHTS,
-} from '../util/notifications/types/notification-types';
 
 /**
  * Rate-limit configuration for a single notification category.

@@ -178,6 +178,9 @@ describe('NotificationFilterService', () => {
     });
 
     it('suppresses non-critical notifications during quiet hours', () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2025-01-15T12:00:00'));
+
       const preferences = createPreferences({
         quietHours: {
           enabled: true,
@@ -191,6 +194,8 @@ describe('NotificationFilterService', () => {
       });
 
       expect(service.shouldDisplay(notification, preferences)).toBe(false);
+
+      jest.useRealTimers();
     });
   });
 
