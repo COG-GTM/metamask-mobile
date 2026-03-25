@@ -95,7 +95,8 @@ Ensure you are using the correct yarn version (yarn v1) as noted in the `package
 
 Install [Android Studio](https://developer.android.com/studio)
 
-- Set environment variable `JAVA_HOME=/Applications/Android Studio.app/Contents/jbr/Contents/Home` to use the Java version shipped with Android Studio
+- Set environment variable `JAVA_HOME=/Applications/Android Studio.app/Contents/jbr/Contents/Home` to use Java 17 shipped with Android Studio (Hedgehog or later required)
+- **Note:** JDK 17 is the minimum required version for building the Android app.
 - Go to Settings > Languages & Frameworks > Android SDK
 - Shortcut: Selecting `More Actions` > `SDK Manager` from the "Welcome to Android Studio" page will also bring you here.
   - Select `SDK Tools` tab
