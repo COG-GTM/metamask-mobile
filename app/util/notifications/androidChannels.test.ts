@@ -6,8 +6,8 @@ import {
 } from './androidChannels';
 
 describe('notificationChannels', () => {
-  it('contains two channels', () => {
-    expect(notificationChannels).toHaveLength(2);
+  it('contains three channels', () => {
+    expect(notificationChannels).toHaveLength(3);
   });
 
   it('first channel has DEFAULT_NOTIFICATION_CHANNEL_ID', () => {
@@ -46,5 +46,18 @@ describe('notificationChannels', () => {
     const subtitles = notificationChannels.map((channel) => channel.subtitle);
     const uniqueSubtitles = new Set(subtitles);
     expect(uniqueSubtitles.size).toBe(subtitles.length);
+  });
+
+  it('third channel has SECURITY_NOTIFICATION_CHANNEL_ID', () => {
+    const thirdChannel: MetaMaskAndroidChannel = notificationChannels[2];
+    expect(thirdChannel).toEqual({
+      id: ChannelId.SECURITY_NOTIFICATION_CHANNEL_ID,
+      name: 'Security Alert',
+      lights: true,
+      vibration: true,
+      importance: AndroidImportance.HIGH,
+      title: 'Security',
+      subtitle: 'Security Alert',
+    });
   });
 });
