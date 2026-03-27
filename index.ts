@@ -7,14 +7,14 @@ import '@walletconnect/react-native-compat';
 import 'react-native-gesture-handler';
 import 'react-native-url-polyfill/auto';
 
-import crypto from 'crypto'; // eslint-disable-line import/no-nodejs-modules, no-unused-vars
-require('react-native-browser-polyfill'); // eslint-disable-line import/no-commonjs
+import 'crypto'; // eslint-disable-line import/no-nodejs-modules
+require('react-native-browser-polyfill'); // eslint-disable-line import/no-commonjs, @typescript-eslint/no-require-imports
 
 import * as Sentry from '@sentry/react-native'; // eslint-disable-line import/no-namespace
 import { setupSentry } from './app/util/sentry/utils';
 setupSentry();
 
-import { AppRegistry, LogBox, ErrorUtils } from 'react-native';
+import { AppRegistry, LogBox } from 'react-native';
 import Root from './app/components/Views/Root';
 import { name } from './app.config.js';
 import { isE2E } from './app/util/test/utils.js';
@@ -75,7 +75,7 @@ LogBox.ignoreLogs([
   'Warning: componentWillReceiveProps has been renamed',
 ]);
 
-const IGNORE_BOXLOGS_DEVELOPMENT = process.env.IGNORE_BOXLOGS_DEVELOPMENT;
+const IGNORE_BOXLOGS_DEVELOPMENT: string | undefined = process.env.IGNORE_BOXLOGS_DEVELOPMENT;
 // Ignore box logs, useful for QA testing in development builds
 if (IGNORE_BOXLOGS_DEVELOPMENT === 'true') {
   LogBox.ignoreAllLogs();
@@ -93,7 +93,7 @@ AppRegistry.registerComponent(name, () =>
   isE2E ? Root : Sentry.wrap(Root),
 );
 
-function setupGlobalErrorHandler() {
+function setupGlobalErrorHandler(): void {
   const reactNativeDefaultHandler = global.ErrorUtils.getGlobalHandler();
   // set the base handler to the react native ExceptionsManager.handleException(), please refer to setupErrorHandling.js under react-native/Libraries/Core/ for details.
   setReactNativeDefaultHandler(reactNativeDefaultHandler);
