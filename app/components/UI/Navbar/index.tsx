@@ -1,5 +1,5 @@
+/* eslint-disable */
 // @ts-nocheck
-/* eslint-disable react/display-name */
 import React from 'react';
 import NavbarTitle from '../NavbarTitle';
 import ModalNavbarTitle from '../ModalNavbarTitle';
