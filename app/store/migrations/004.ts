@@ -4,7 +4,10 @@ import { captureException } from '@sentry/react-native';
 // Decimal chain IDs matching the original NetworksChainId enum values
 const networksChainId: Record<string, string> = {
   mainnet: '1',
+  ropsten: '3',
+  rinkeby: '4',
   goerli: '5',
+  kovan: '42',
   sepolia: '11155111',
   'linea-goerli': '59140',
   'linea-mainnet': '59144',
