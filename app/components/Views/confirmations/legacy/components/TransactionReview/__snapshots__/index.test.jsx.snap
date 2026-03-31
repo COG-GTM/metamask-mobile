@@ -1106,7 +1106,6 @@ exports[`TransactionReview should match snapshot 1`] = `
                     null,
                   ]
                 }
-                testID=""
               >
                 <Text
                   style={
@@ -1168,7 +1167,6 @@ exports[`TransactionReview should match snapshot 1`] = `
                     null,
                   ]
                 }
-                testID=""
               >
                 <Text
                   style={

@@ -315,7 +315,6 @@ exports[`AddAsset component renders collectible view correctly 1`] = `
                   null,
                 ]
               }
-              testID=""
             >
               <Text
                 style={
@@ -380,7 +379,6 @@ exports[`AddAsset component renders collectible view correctly 1`] = `
                   },
                 ]
               }
-              testID=""
             >
               <Text
                 style={

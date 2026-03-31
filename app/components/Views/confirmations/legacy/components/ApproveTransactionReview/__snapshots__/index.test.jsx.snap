@@ -646,7 +646,6 @@ exports[`ApproveTransactionModal render matches snapshot 1`] = `
                                         null,
                                       ]
                                     }
-                                    testID=""
                                   >
                                     <Text
                                       style={

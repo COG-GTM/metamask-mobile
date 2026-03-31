@@ -1049,7 +1049,6 @@ exports[`Approval render matches snapshot 1`] = `
                                                   null,
                                                 ]
                                               }
-                                              testID=""
                                             >
                                               <Text
                                                 style={
@@ -1113,7 +1112,6 @@ exports[`Approval render matches snapshot 1`] = `
                                                   },
                                                 ]
                                               }
-                                              testID=""
                                             >
                                               <Text
                                                 style={
