@@ -1,4 +1,3 @@
-import { isSafeChainId } from '@metamask/controller-utils';
 import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
 import { getAllNetworks } from '../../util/networks';
@@ -22,8 +21,10 @@ export default function migrate(state: unknown) {
 
   // Check if the current network has a valid chainId
   const chainIdNumber = parseInt(provider.chainId, 10);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const isCustomRpcWithInvalidChainId = !isSafeChainId(chainIdNumber as any);
+  // Original isSafeChainId from ../../util/networks accepted a number;
+  // inline the range check to preserve original behavior
+  const MAX_SAFE_CHAIN_ID = 4503599627370476;
+  const isCustomRpcWithInvalidChainId = !(chainIdNumber > 0 && chainIdNumber <= MAX_SAFE_CHAIN_ID);
 
   if (!isInitialNetwork && isCustomRpcWithInvalidChainId) {
     // If the current network does not have a chainId, switch to testnet.

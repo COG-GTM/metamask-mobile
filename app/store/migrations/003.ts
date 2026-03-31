@@ -1,4 +1,3 @@
-import { isSafeChainId } from '@metamask/controller-utils';
 import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
 import { GOERLI } from '../../../app/constants/network';
@@ -41,9 +40,12 @@ export default function migrate(state: unknown) {
   const storedChainId =
     typeof provider.chainId === 'string' ? provider.chainId : '';
   const isDecimalString = regex.decimalStringMigrations.test(storedChainId);
+  // Original isSafeChainId from ../../util/networks accepted a number;
+  // inline the range check to preserve original behavior
+  const MAX_SAFE_CHAIN_ID = 4503599627370476;
+  const chainIdNumber = parseInt(storedChainId, 10);
   const hasInvalidChainId =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    !isDecimalString || !isSafeChainId(parseInt(storedChainId, 10) as any);
+    !isDecimalString || !(chainIdNumber > 0 && chainIdNumber <= MAX_SAFE_CHAIN_ID);
 
   if (hasInvalidChainId) {
     // If the current network does not have a chainId, switch to testnet.
