@@ -117,7 +117,6 @@ exports[`ActionView should render correctly 1`] = `
               null,
             ]
           }
-          testID=""
         >
           <Text
             style={
@@ -180,7 +179,6 @@ exports[`ActionView should render correctly 1`] = `
               null,
             ]
           }
-          testID=""
         >
           <Text
             style={
