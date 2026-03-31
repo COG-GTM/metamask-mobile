@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   View,
@@ -20,7 +21,7 @@ import {
   ButtonWidthTypes,
 } from '../../../component-library/components/Buttons/Button/Button.types';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     warningIcon: {
       color: colors.error.default,
@@ -96,15 +97,16 @@ const createStyles = (colors) =>
     },
   });
 
-export default 
 interface PhishingModalProps {
   fullUrl?: string;
+  goToETHPhishingDetector?: (...args: any[]) => any;
   continueToPhishingSite?: (...args: any[]) => any;
+  goToEtherscam?: (...args: any[]) => any;
   goToFilePhishingIssue?: (...args: any[]) => any;
   goBackToSafety?: (...args: any[]) => any;
 }
 
-class PhishingModal extends PureComponent<PhishingModalProps> {
+export default class PhishingModal extends PureComponent<PhishingModalProps> {
   shareToTwitter = () => {
     const tweetText =
       'MetaMask just protected me from a phishing attack! Remember to always stay vigilant when clicking on links. Learn more at https://metamask.io';

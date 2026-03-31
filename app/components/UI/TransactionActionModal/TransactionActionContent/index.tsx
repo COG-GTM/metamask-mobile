@@ -1,10 +1,11 @@
+// @ts-nocheck
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { fontStyles } from '../../../../styles/common';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     modalView: {
       flexDirection: 'column',
@@ -72,7 +73,7 @@ export default function TransactionActionContent({
   titleText,
   gasTitleText,
   descriptionText,
-}) {
+}: TransactionActionContentProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

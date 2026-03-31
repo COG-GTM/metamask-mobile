@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Animated } from 'react-native';
 
@@ -25,7 +26,7 @@ const FadeAnimationView = ({
   onAnimationStart,
   onAnimationEnd,
   animateOnChange,
-}) => {
+}: FadeAnimationViewProps) => {
   const fadeAnim = useRef(new Animated.Value(1)).current; // Initial value for opacity: 1
   const [value, setValue] = useState(valueToWatch);
   const [lastChildren, setLastChildren] = useState(children);

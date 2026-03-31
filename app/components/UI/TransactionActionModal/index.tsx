@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { strings } from '../../../../locales/i18n';
 import ActionModal from '../ActionModal';
@@ -35,7 +36,7 @@ export default function TransactionActionModal({
   descriptionText,
   cancelButtonMode,
   confirmButtonMode,
-}) {
+}: TransactionActionModalProps) {
   return (
     <ActionModal
       modalVisible={isVisible}

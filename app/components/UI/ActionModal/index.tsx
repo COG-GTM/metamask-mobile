@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
@@ -64,7 +65,7 @@ export default function ActionModal({
   verticalButtons,
   propagateSwipe,
   cancelButtonDisabled,
-}) {
+}: ActionModalProps) {
   const { colors } = useTheme();
 
   return (

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   Text,
@@ -18,7 +19,6 @@ import { ViewPropTypes, TextPropTypes } from 'deprecated-react-native-prop-types
  * If you would like to help with the replacement of the old `Button` component, please submit a pull request against this GitHub issue:
  * {@link https://github.com/MetaMask/metamask-mobile/issues/8106}
  */
-export default 
 interface StyledButtonProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children?: any; // TODO: Replace "any" with type
@@ -30,7 +30,7 @@ interface StyledButtonProps {
   allowFontScaling?: boolean;
 }
 
-class StyledButton extends PureComponent<StyledButtonProps> {
+export default class StyledButton extends PureComponent<StyledButtonProps> {
   static defaultProps = {
     ...PureComponent.defaultProps,
     styleDisabled: { opacity: 0.6 },

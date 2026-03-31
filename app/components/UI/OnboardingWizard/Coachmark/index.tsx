@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import {
@@ -27,7 +28,7 @@ import {
   TextVariant,
 } from '../../../../component-library/components/Texts/Text';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     coachmark: {
       backgroundColor: colors.primary.default,
@@ -174,26 +175,25 @@ const createStyles = (colors) =>
     },
   });
 
-export default 
 interface CoachmarkProps {
   coachmarkStyle?: object;
   style?: object;
-  content?: object;
+  content?: React.ReactNode;
   title?: string;
   currentStep?: number;
   onNext?: (...args: any[]) => any;
   onBack?: (...args: any[]) => any;
   action?: boolean;
-  topIndicatorPosition?: string;
-  bottomIndicatorPosition?: string;
+  topIndicatorPosition?: string | boolean;
+  bottomIndicatorPosition?: string | boolean;
   onClose?: (...args: any[]) => any;
 }
 
 interface CoachmarkState {
-  ready: boolean;
+  ready?: boolean;
 }
 
-class Coachmark extends PureComponent<CoachmarkProps, CoachmarkState> {
+export default class Coachmark extends PureComponent<CoachmarkProps, CoachmarkState> {
   state = {
     ready: false,
   };

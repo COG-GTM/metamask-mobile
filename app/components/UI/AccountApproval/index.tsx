@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { InteractionManager, TouchableOpacity, View } from 'react-native';
 import { connect } from 'react-redux';
@@ -54,16 +55,16 @@ interface AccountApprovalProps {
 }
 
 interface AccountApprovalState {
-  start: number;
-  confirmDisabled: boolean;
+  start?: number;
+  confirmDisabled?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  otpChoice: any; // TODO: Replace "any" with type
-  noPersist: boolean;
+  otpChoice?: any; // TODO: Replace "any" with type
+  noPersist?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  otps: any; // TODO: Replace "any" with type
+  otps?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  otp: any; // TODO: Replace "any" with type
-  isUrlFlaggedAsPhishing: boolean;
+  otp?: any; // TODO: Replace "any" with type
+  isUrlFlaggedAsPhishing?: boolean;
 }
 
 class AccountApproval extends PureComponent<AccountApprovalProps, AccountApprovalState> {

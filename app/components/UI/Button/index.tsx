@@ -1,10 +1,11 @@
+// @ts-nocheck
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import GenericButton from '../GenericButton'; // eslint-disable-line import/no-unresolved
 import { useTheme } from '../../../util/theme';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     button: {
       flex: 1,

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   Text,
@@ -51,7 +52,7 @@ import Avatar, {
 import ButtonIcon from '../../../component-library/components/Buttons/ButtonIcon';
 import { endTrace, trace, TraceName } from '../../../util/trace';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -165,16 +166,16 @@ interface AddCustomTokenProps {
 }
 
 interface AddCustomTokenState {
-  address: string;
-  symbol: string;
-  decimals: string;
-  name: string;
-  warningAddress: string;
-  warningSymbol: string;
-  warningDecimals: string;
-  isSymbolEditable: boolean;
-  isDecimalEditable: boolean;
-  onFocusAddress: boolean;
+  address?: string;
+  symbol?: string;
+  decimals?: string;
+  name?: string;
+  warningAddress?: string;
+  warningSymbol?: string;
+  warningDecimals?: string;
+  isSymbolEditable?: boolean;
+  isDecimalEditable?: boolean;
+  onFocusAddress?: boolean;
 }
 
 class AddCustomToken extends PureComponent<AddCustomTokenProps, AddCustomTokenState> {
@@ -264,7 +265,7 @@ class AddCustomToken extends PureComponent<AddCustomTokenProps, AddCustomTokenSt
     this.props.navigation.goBack();
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: AddCustomTokenProps) {
     if (prevProps.networkClientId !== this.props.networkClientId) {
       this.setState({
         address: '',

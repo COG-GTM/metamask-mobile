@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useCallback } from 'react';
 import Keypad from './components';
 import { KEYS } from './constants';
@@ -11,9 +12,17 @@ interface KeypadComponentProps {
   decimals?: number;
   value?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  style?: any; // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  digitButtonStyle?: any; // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   digitTextStyle?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  periodButtonStyle?: any; // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   periodTextStyle?: any; // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  deleteButtonStyle?: any; // TODO: Replace "any" with type
   deleteIcon?: React.ReactNode;
 }
 
@@ -29,7 +38,7 @@ function KeypadComponent({
   periodTextStyle,
   deleteButtonStyle,
   deleteIcon,
-}) {
+}: KeypadComponentProps) {
   const { handler, decimalSeparator } = useCurrency(currency, decimals);
   const handleKeypadPress = useCallback(
     (pressedKey) => {

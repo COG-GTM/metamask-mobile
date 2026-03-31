@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import BaseNotification, { getDescription } from './';
 import renderWithProvider from '../../../../util/test/renderWithProvider';

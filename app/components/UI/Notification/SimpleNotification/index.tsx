@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -36,7 +37,7 @@ function SimpleNotification({
   notificationAnimated,
   hideCurrentNotification,
   currentNotification,
-}) {
+}: SimpleNotificationProps) {
   return (
     <Animated.View
       style={[

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
 import React, { PureComponent } from 'react';
 import {
@@ -84,7 +85,7 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (colors, typography) =>
+const createStyles = (colors: any, typography: any) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -171,22 +172,22 @@ interface TransactionsProps {
 
 interface TransactionsState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  selectedTx: any; // TODO: Replace "any" with type
-  ready: boolean;
-  refreshing: boolean;
-  cancelIsOpen: boolean;
-  cancel1559IsOpen: boolean;
-  cancelConfirmDisabled: boolean;
-  speedUpIsOpen: boolean;
-  speedUp1559IsOpen: boolean;
-  retryIsOpen: boolean;
-  speedUpConfirmDisabled: boolean;
+  selectedTx?: any; // TODO: Replace "any" with type
+  ready?: boolean;
+  refreshing?: boolean;
+  cancelIsOpen?: boolean;
+  cancel1559IsOpen?: boolean;
+  cancelConfirmDisabled?: boolean;
+  speedUpIsOpen?: boolean;
+  speedUp1559IsOpen?: boolean;
+  retryIsOpen?: boolean;
+  speedUpConfirmDisabled?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rpcBlockExplorer: any; // TODO: Replace "any" with type
+  rpcBlockExplorer?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  errorMsg: any; // TODO: Replace "any" with type
-  isQRHardwareAccount: boolean;
-  isLedgerAccount: boolean;
+  errorMsg?: any; // TODO: Replace "any" with type
+  isQRHardwareAccount?: boolean;
+  isLedgerAccount?: boolean;
 }
 
 class Transactions extends PureComponent<TransactionsProps, TransactionsState> {

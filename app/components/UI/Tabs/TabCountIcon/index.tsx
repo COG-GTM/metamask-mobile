@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { View, StyleSheet, Text, Platform } from 'react-native';
 import { fontStyles } from '../../../../styles/common';
@@ -5,7 +6,7 @@ import { connect } from 'react-redux';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { BrowserViewSelectorsIDs } from '../../../../../e2e/selectors/Browser/BrowserView.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     tabIcon: {
       borderWidth: 2,

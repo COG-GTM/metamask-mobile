@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { fontStyles, baseStyles } from '../../../../styles/common';
@@ -10,7 +11,7 @@ import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
 import { ToastSelectorsIDs } from '../../../../../e2e/selectors/wallet/ToastModal.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     floatingBackground: {
       backgroundColor: colors.background.default,

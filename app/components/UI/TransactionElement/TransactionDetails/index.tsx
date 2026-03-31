@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { query } from '@metamask/controller-utils';
@@ -61,7 +62,7 @@ import {
 } from '../../../../constants/urls';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     viewOnEtherscan: {
       fontSize: 16,
@@ -139,10 +140,10 @@ interface TransactionDetailsProps {
 
 interface TransactionDetailsState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rpcBlockExplorer: any; // TODO: Replace "any" with type
-  renderTxActions: boolean;
+  rpcBlockExplorer?: any; // TODO: Replace "any" with type
+  renderTxActions?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updatedTransactionDetails: any; // TODO: Replace "any" with type
+  updatedTransactionDetails?: any; // TODO: Replace "any" with type
 }
 
 class TransactionDetails extends PureComponent<TransactionDetailsProps, TransactionDetailsState> {

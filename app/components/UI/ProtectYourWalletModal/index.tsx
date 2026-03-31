@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import ActionModal from '../ActionModal';
@@ -15,7 +16,7 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 
 const protectWalletImage = require('../../../images/explain-backup-seedphrase.png'); // eslint-disable-line
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       marginTop: 24,

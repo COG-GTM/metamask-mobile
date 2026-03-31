@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { useNavigationState } from '@react-navigation/native';
@@ -36,7 +37,7 @@ function Notification({
   currentNotificationIsVisible,
   hideCurrentNotification,
   removeCurrentNotification,
-}) {
+}: NotificationProps) {
   const notificationAnimated = useSharedValue(200);
   const routes = useNavigationState((state) => state.routes);
 

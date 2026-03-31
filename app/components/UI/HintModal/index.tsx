@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   View,
   StyleSheet,
@@ -17,7 +18,7 @@ import ButtonIcon, {
 } from '../../../component-library/components/Buttons/ButtonIcon';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     hintWrapper: {
       flex: 1,

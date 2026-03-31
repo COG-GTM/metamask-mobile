@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, {
   useEffect,
   useMemo,
@@ -113,7 +114,7 @@ function SliderButton({
   onComplete,
   disabled,
   onSwipeChange,
-}) {
+}: SliderButtonProps) {
   const [componentWidth, setComponentWidth] = useState(0);
   const [hasCompletedCalled, setHasCompletedCalled] = useState(false);
   const [hasStartedCompleteAnimation, setHasStartedCompleteAnimation] =

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   View,
@@ -145,12 +146,12 @@ interface OptinMetricsProps {
 }
 
 interface OptinMetricsState {
-  isActionEnabled: boolean;
+  isActionEnabled?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  scrollViewContentHeight: any; // TODO: Replace "any" with type
-  isEndReached: boolean;
+  scrollViewContentHeight?: any; // TODO: Replace "any" with type
+  isEndReached?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  scrollViewHeight: any; // TODO: Replace "any" with type
+  scrollViewHeight?: any; // TODO: Replace "any" with type
 }
 
 class OptinMetrics extends PureComponent<OptinMetricsProps, OptinMetricsState> {

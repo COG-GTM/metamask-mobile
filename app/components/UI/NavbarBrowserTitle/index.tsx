@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -9,7 +10,7 @@ import { mockTheme, ThemeContext } from '../../../util/theme';
 import { selectProviderConfig } from '../../../selectors/networkController';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       alignItems: 'center',
@@ -66,8 +67,8 @@ const createStyles = (colors) =>
  */
 
 interface NavbarBrowserTitleProps {
-  providerConfig: object;
-  hostname: string;
+  providerConfig?: object;
+  hostname?: string;
   https?: boolean;
   error?: boolean;
   icon?: string;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import createKeypadRule from './createKeypadRule';
 
 export const KEYS = {

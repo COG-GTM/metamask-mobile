@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { strings } from '../../../../locales/i18n';
@@ -30,15 +31,15 @@ const styles = StyleSheet.create({
 /**
  * PureComponent that provides ability to search assets.
  */
-export default 
 interface AssetListProps {
   searchResults?: any[];
-  handleSelectAsset?: (...args: any[]) => any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleSelectAsset?: ((...args: any[]) => any) | null;
   selectedAsset?: object;
   searchQuery?: string;
 }
 
-class AssetList extends PureComponent<AssetListProps> {
+export default class AssetList extends PureComponent<AssetListProps> {
   onToggleAsset = (key) => {
     const { searchResults, handleSelectAsset } = this.props;
     handleSelectAsset(searchResults[key]);

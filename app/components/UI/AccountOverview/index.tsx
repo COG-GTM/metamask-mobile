@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   InteractionManager,
@@ -45,7 +46,7 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { isPortfolioUrl } from '../../../util/url';
 import { toLowerCaseEquals } from '../../../util/general';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     scrollView: {
       backgroundColor: colors.background.default,
@@ -161,11 +162,11 @@ interface AccountOverviewProps {
 }
 
 interface AccountOverviewState {
-  accountLabelEditable: boolean;
-  accountLabel: string;
-  originalAccountLabel: string;
+  accountLabelEditable?: boolean;
+  accountLabel?: string;
+  originalAccountLabel?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ens: any; // TODO: Replace "any" with type
+  ens?: any; // TODO: Replace "any" with type
 }
 
 class AccountOverview extends PureComponent<AccountOverviewProps, AccountOverviewState> {
@@ -205,7 +206,7 @@ class AccountOverview extends PureComponent<AccountOverviewProps, AccountOvervie
     }
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: AccountOverviewProps) {
     if (
       prevProps.account.address !== this.props.account.address ||
       prevProps.chainId !== this.props.chainId

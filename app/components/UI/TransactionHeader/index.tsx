@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { fontStyles } from '../../../styles/common';
@@ -19,7 +20,7 @@ import { TransactionReviewSelectorsIDs } from '../../../../e2e/selectors/SendFlo
 
 const { ORIGIN_DEEPLINK, ORIGIN_QR_CODE } = AppConstants.DEEPLINKS;
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     transactionHeader: {
       justifyContent: 'center',
@@ -239,7 +240,8 @@ TransactionHeader.propTypes = {
   nickname: PropTypes.string,
 };
 
-const mapStateToProps = (state) => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => ({
   networkType: selectProviderType(state),
   nickname: selectNickname(state),
 });

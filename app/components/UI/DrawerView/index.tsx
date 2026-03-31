@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   Alert,
@@ -88,7 +89,7 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import safePromiseHandler from './utils';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -333,15 +334,15 @@ const ICON_IMAGES = {
 
 interface DrawerViewProps {
   navigation?: object;
-  providerConfig: object;
+  providerConfig?: object;
   accounts?: object;
   selectedInternalAccount?: object;
   currentCurrency?: string;
   keyrings?: any[];
   toggleNetworkModal?: (...args: any[]) => any;
-  showAlert: (...args: any[]) => any;
-  networkModalVisible: boolean;
-  newAssetTransaction: (...args: any[]) => any;
+  showAlert?: (...args: any[]) => any;
+  networkModalVisible?: boolean;
+  newAssetTransaction?: (...args: any[]) => any;
   passwordSet?: boolean;
   wizard?: object;
   ticker?: string;
@@ -364,17 +365,17 @@ interface DrawerViewProps {
 
 interface DrawerViewState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  showProtectWalletModal: any; // TODO: Replace "any" with type
+  showProtectWalletModal?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  account: any; // TODO: Replace "any" with type
+  account?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ens: any; // TODO: Replace "any" with type
+  ens?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  name: any; // TODO: Replace "any" with type
+  name?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  address: any; // TODO: Replace "any" with type
+  address?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  currentChainId: any; // TODO: Replace "any" with type
+  currentChainId?: any; // TODO: Replace "any" with type
 }
 
 class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {

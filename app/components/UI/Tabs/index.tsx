@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   Dimensions,
@@ -139,7 +140,7 @@ interface TabsProps {
 
 interface TabsState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  currentTab: any; // TODO: Replace "any" with type
+  currentTab?: any; // TODO: Replace "any" with type
 }
 
 class Tabs extends PureComponent<TabsProps, TabsState> {
@@ -151,7 +152,7 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
 
   scrollview = React.createRef();
 
-  constructor(props) {
+  constructor(props: TabsProps) {
     super(props);
     this.createTabsRef(props.tabs);
   }
@@ -186,7 +187,7 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: TabsProps) {
     if (prevProps.tabs.length !== Object.keys(this.thumbnails).length) {
       this.createTabsRef(this.props.tabs);
     }

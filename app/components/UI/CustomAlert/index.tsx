@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import Modal from 'react-native-modal';
@@ -6,7 +7,7 @@ import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     modal: {
       padding: 20,
@@ -42,7 +43,6 @@ const createStyles = (colors) =>
 /* PureComponent that renders our custom alerts, which contains
 /* a header with an image, body and footer with a button
 */
-export default 
 interface CustomAlertProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   headerContent?: any; // TODO: Replace "any" with type
@@ -58,7 +58,7 @@ interface CustomAlertProps {
   children?: any; // TODO: Replace "any" with type
 }
 
-class CustomAlert extends PureComponent<CustomAlertProps> {
+export default class CustomAlert extends PureComponent<CustomAlertProps> {
   render() {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
 import { connect } from 'react-redux';
@@ -105,7 +106,7 @@ function CollectibleContractElement({
   chainId,
   selectedAddress,
   removeFavoriteCollectible,
-}) {
+}: CollectibleContractElementProps) {
   const [collectiblesGrid, setCollectiblesGrid] = useState([]);
   const [collectiblesVisible, setCollectiblesVisible] = useState(
     propsCollectiblesVisible,

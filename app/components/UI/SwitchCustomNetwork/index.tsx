@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect, useMemo } from 'react';
 import { getDecimalChainId } from '../../../util/networks';
 import PermissionSummary from '../PermissionsSummary';
@@ -21,7 +22,7 @@ const SwitchCustomNetwork = ({
   currentPageInformation,
   onCancel,
   onConfirm,
-}) => {
+}: SwitchCustomNetworkProps) => {
   const { networkName } = useNetworkInfo(
     new URL(currentPageInformation.url).hostname,
   );

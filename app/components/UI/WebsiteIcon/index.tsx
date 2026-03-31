@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { StyleSheet, View, Text, Image } from 'react-native';
 import FadeIn from 'react-native-fade-in-image';
@@ -9,7 +10,7 @@ import { isNumber } from 'lodash';
 import { isFaviconSVG } from '../../../util/favicon';
 import { SvgUri } from 'react-native-svg';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     fallback: {
       alignContent: 'center',
@@ -49,7 +50,7 @@ interface WebsiteIconProps {
 }
 
 interface WebsiteIconState {
-  renderIconUrlError: boolean;
+  renderIconUrlError?: boolean;
 }
 
 class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {

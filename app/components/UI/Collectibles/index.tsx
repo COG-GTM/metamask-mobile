@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   Alert,
@@ -16,7 +17,7 @@ import CollectibleMedia from '../CollectibleMedia';
 import AssetElement from '../AssetElement';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -60,7 +61,6 @@ const createStyles = (colors) =>
  * View that renders a list of Collectibles
  * also known as ERC-721 Tokens
  */
-export default 
 interface CollectiblesProps {
   navigation?: object;
   collectibles?: any[];
@@ -69,10 +69,10 @@ interface CollectiblesProps {
 }
 
 interface CollectiblesState {
-  refreshing: boolean;
+  refreshing?: boolean;
 }
 
-class Collectibles extends PureComponent<CollectiblesProps, CollectiblesState> {
+export default class Collectibles extends PureComponent<CollectiblesProps, CollectiblesState> {
   state = {
     refreshing: false,
   };

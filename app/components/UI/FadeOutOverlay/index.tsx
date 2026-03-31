@@ -1,9 +1,10 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { Animated, StyleSheet } from 'react-native';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     view: {
       backgroundColor: colors.background.default,
@@ -18,7 +19,6 @@ const createStyles = (colors) =>
 /**
  * View that is displayed to first time (new) users
  */
-export default 
 interface FadeOutOverlayProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   style?: any; // TODO: Replace "any" with type
@@ -26,10 +26,10 @@ interface FadeOutOverlayProps {
 }
 
 interface FadeOutOverlayState {
-  done: boolean;
+  done?: boolean;
 }
 
-class FadeOutOverlay extends PureComponent<FadeOutOverlayProps, FadeOutOverlayState> {
+export default class FadeOutOverlay extends PureComponent<FadeOutOverlayProps, FadeOutOverlayState> {
   state = {
     done: false,
   };

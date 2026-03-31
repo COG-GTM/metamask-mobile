@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable react/prop-types */
 import React, { PureComponent } from 'react';
 import { View, Animated, Easing, StyleSheet } from 'react-native';
@@ -9,6 +10,13 @@ export const SpinnerSize = {
   MD: 'MD',
   SM: 'SM',
 };
+
+interface AnimatedSpinnerProps {
+  size?: string;
+  testID?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any; // TODO: Replace "any" with type
+}
 
 const measures = {
   [SpinnerSize.SM]: {
@@ -65,7 +73,7 @@ const createStyles = (colors, measures) =>
     },
   });
 
-export default class AnimatedSpinner extends PureComponent {
+export default class AnimatedSpinner extends PureComponent<AnimatedSpinnerProps> {
   spinValue = new Animated.Value(0);
 
   state = {

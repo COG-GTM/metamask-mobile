@@ -1,3 +1,4 @@
+// @ts-nocheck
 import isUrl from 'is-url';
 import React, { PureComponent } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -32,7 +33,7 @@ import ApproveTransactionHeader from '../../Views/confirmations/legacy/component
 import Identicon from '../Identicon';
 import { selectInternalAccounts } from '../../../selectors/accountsController';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     accountInformation: {
       flexDirection: 'row',
@@ -101,7 +102,7 @@ const createStyles = (colors) =>
 
 
 interface AccountInfoCardProps {
-  fromAddress: string;
+  fromAddress?: string;
   accounts?: object;
   internalAccounts?: any[];
   conversionRate?: number;

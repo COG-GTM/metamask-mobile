@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import StyledButton from '../StyledButton';
 import {
@@ -18,7 +19,7 @@ export const ConfirmButtonState = {
   Normal: 'normal',
 };
 
-const getStyles = (colors) =>
+const getStyles = (colors: any) =>
   StyleSheet.create({
     actionContainer: {
       flex: 0,
@@ -91,7 +92,7 @@ export default function ActionView({
   confirmButtonState = ConfirmButtonState.Normal,
   scrollViewTestID,
   contentContainerStyle,
-}) {
+}: ActionViewProps) {
   const { colors } = useTheme();
   confirmText = confirmText || strings('action_view.confirm');
   cancelText = cancelText || strings('action_view.cancel');

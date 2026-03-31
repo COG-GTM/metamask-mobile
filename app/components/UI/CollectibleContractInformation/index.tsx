@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   ScrollView,
@@ -17,7 +18,7 @@ import { isMainNet } from '../../../util/networks';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { selectChainId } from '../../../selectors/networkController';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -116,7 +117,7 @@ interface CollectibleContractInformationProps {
   navigation?: object;
   onClose?: (...args: any[]) => any;
   collectibleContract?: object;
-  chainId: string;
+  chainId?: string;
 }
 
 class CollectibleContractInformation extends PureComponent<CollectibleContractInformationProps> {

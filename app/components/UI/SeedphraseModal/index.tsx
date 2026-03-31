@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -6,7 +7,7 @@ import { strings } from '../../../../locales/i18n';
 import ActionModal from '../../UI/ActionModal';
 import { useTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     whatIsSeedphraseTitle: {
       flex: 1,

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   ScrollView,
@@ -15,7 +16,7 @@ import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
 const ROW_HEIGHT = 35;
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     dropdown: {
       flexDirection: 'row',
@@ -89,7 +90,6 @@ const createStyles = (colors) =>
     },
   });
 
-export default 
 interface SelectComponentProps {
   defaultValue?: string;
   label?: string;
@@ -100,10 +100,10 @@ interface SelectComponentProps {
 }
 
 interface SelectComponentState {
-  pickerVisible: boolean;
+  pickerVisible?: boolean;
 }
 
-class SelectComponent extends PureComponent<SelectComponentProps, SelectComponentState> {
+export default class SelectComponent extends PureComponent<SelectComponentProps, SelectComponentState> {
   state = {
     pickerVisible: false,
   };

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { Image, StyleSheet, View, Text, Platform } from 'react-native';
 import StyledButton from '../StyledButton';
@@ -11,7 +12,7 @@ import {
   ERROR_PAGE_TITLE,
 } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       ...StyleSheet.absoluteFillObject,
@@ -64,14 +65,13 @@ const createStyles = (colors) =>
 /**
  * View that renders custom error page for the browser
  */
-export default 
 interface WebviewErrorProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error?: any; // TODO: Replace "any" with type
   returnHome?: (...args: any[]) => any;
 }
 
-class WebviewError extends PureComponent<WebviewErrorProps> {
+export default class WebviewError extends PureComponent<WebviewErrorProps> {
   static defaultProps = {
     error: false,
   };

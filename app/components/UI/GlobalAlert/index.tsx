@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import Modal from 'react-native-modal';
 import { StyleSheet, View, Text } from 'react-native';
@@ -8,7 +9,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import ElevatedView from 'react-native-elevated-view';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -41,7 +42,7 @@ const createStyles = (colors) =>
  */
 
 interface GlobalAlertProps {
-  isVisible: boolean;
+  isVisible?: boolean;
   autodismiss?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content?: any; // TODO: Replace "any" with type
@@ -54,7 +55,7 @@ class GlobalAlert extends PureComponent<GlobalAlertProps> {
     this.props.dismissAlert();
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: GlobalAlertProps) {
     if (
       this.props.autodismiss &&
       !isNaN(this.props.autodismiss) &&

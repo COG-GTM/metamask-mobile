@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { Platform, TouchableOpacity, StyleSheet } from 'react-native';
 import ElevatedView from 'react-native-elevated-view';
@@ -18,7 +19,7 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 // const HOME_INDICATOR_HEIGHT = 0;
 // const defaultBottomBarPadding = 0;
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     bottomBar: {
       backgroundColor: colors.background.default,

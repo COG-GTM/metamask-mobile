@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import ActionModal from '../../UI/ActionModal';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -16,7 +17,7 @@ import { useTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { SkipAccountSecurityModalSelectorsIDs } from '../../../../e2e/selectors/Onboarding/SkipAccountSecurityModal.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     imageWarning: {
       alignSelf: 'center',

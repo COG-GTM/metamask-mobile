@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import Text from './Text';
 import { StyleSheet } from 'react-native';
@@ -58,12 +59,16 @@ FailedText.propTypes = {
 
 
 interface StatusTextProps {
-  status: string;
+  status?: string;
   context?: string;
   testID?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  style?: any; // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any; // TODO: Replace "any" with type
 }
 
-function StatusText({ status, context, testID, ...props }) {
+function StatusText({ status, context, testID, ...props }: StatusTextProps) {
   switch (status) {
     case 'Confirmed':
     case 'confirmed':

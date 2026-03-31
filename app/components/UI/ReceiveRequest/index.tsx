@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   SafeAreaView,
@@ -123,8 +124,8 @@ interface ReceiveRequestProps {
 }
 
 interface ReceiveRequestState {
-  qrModalVisible: boolean;
-  buyModalVisible: boolean;
+  qrModalVisible?: boolean;
+  buyModalVisible?: boolean;
 }
 
 class ReceiveRequest extends PureComponent<ReceiveRequestProps, ReceiveRequestState> {

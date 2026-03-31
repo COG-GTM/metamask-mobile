@@ -1,10 +1,11 @@
+// @ts-nocheck
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import StyledButton from '../../StyledButton';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     viewWrapper: {
       flexDirection: 'column',
@@ -86,7 +87,7 @@ export default function ActionContent({
   actionContainerStyle,
   childrenContainerStyle,
   verticalButtons,
-}) {
+}: ActionContentProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

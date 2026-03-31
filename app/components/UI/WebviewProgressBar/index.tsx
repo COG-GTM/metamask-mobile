@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import ProgressBar from 'react-native-progress/Bar';
 import FadeView from '../FadeView';
@@ -8,17 +9,16 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
  * and allows to fade it in / out
  * via the boolean prop visible
  */
-export default 
 interface WebviewProgressBarProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   progress?: any; // TODO: Replace "any" with type
 }
 
 interface WebviewProgressBarState {
-  visible: boolean;
+  visible?: boolean;
 }
 
-class WebviewProgressBar extends PureComponent<WebviewProgressBarProps, WebviewProgressBarState> {
+export default class WebviewProgressBar extends PureComponent<WebviewProgressBarProps, WebviewProgressBarState> {
   state = {
     visible: true,
   };

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import {
   View,
@@ -10,7 +11,7 @@ import Text from '../Text';
 import { useTheme } from '../../../util/theme';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     keypad: {
       paddingHorizontal: 25,

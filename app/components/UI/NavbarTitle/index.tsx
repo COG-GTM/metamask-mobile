@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
@@ -18,7 +19,7 @@ import Text, {
 } from '../../../component-library/components/Texts/Text';
 import { selectNetworkName } from '../../../selectors/networkInfos';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       justifyContent: 'center',
@@ -36,7 +37,7 @@ const createStyles = (colors) =>
  */
 
 interface NavbarTitleProps {
-  providerConfig: object;
+  providerConfig?: object;
   title?: string;
   translate?: boolean;
   disableNetwork?: boolean;

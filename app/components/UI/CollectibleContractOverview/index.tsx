@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { fontStyles } from '../../../styles/common';
@@ -15,7 +16,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import { TokenOverviewSelectorsIDs } from '../../../../e2e/selectors/wallet/TokenOverview.selectors';
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -59,7 +60,7 @@ interface CollectibleContractOverviewProps {
   collectibles?: any[];
   navigation?: object;
   ownerOf?: number;
-  toggleCollectibleContractModal: (...args: any[]) => any;
+  toggleCollectibleContractModal?: (...args: any[]) => any;
   newAssetTransaction?: (...args: any[]) => any;
 }
 

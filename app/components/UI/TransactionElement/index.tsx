@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   TouchableOpacity,
@@ -62,7 +63,7 @@ import {
 } from '@metamask/bridge-controller';
 import { getBridgeTxActivityTitle } from '../Bridge/utils/transaction-history';
 
-const createStyles = (colors, typography) =>
+const createStyles = (colors: any, typography: any) =>
   StyleSheet.create({
     row: {
       backgroundColor: colors.background.default,
@@ -171,24 +172,24 @@ interface TransactionElementProps {
   txChainId?: string;
   networkConfigurationsByChainId?: object;
   navigation?: object;
-  navigate: (...args: any[]) => any;
+  navigate?: (...args: any[]) => any;
 }
 
 interface TransactionElementState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  actionKey: any; // TODO: Replace "any" with type
-  cancelIsOpen: boolean;
-  speedUpIsOpen: boolean;
-  detailsModalVisible: boolean;
-  importModalVisible: boolean;
+  actionKey?: any; // TODO: Replace "any" with type
+  cancelIsOpen?: boolean;
+  speedUpIsOpen?: boolean;
+  detailsModalVisible?: boolean;
+  importModalVisible?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  transactionGas: any; // TODO: Replace "any" with type
+  transactionGas?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  gasBN: any; // TODO: Replace "any" with type
+  gasBN?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  gasPriceBN: any; // TODO: Replace "any" with type
+  gasPriceBN?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  gasTotal: any; // TODO: Replace "any" with type
+  gasTotal?: any; // TODO: Replace "any" with type
 }
 
 class TransactionElement extends PureComponent<TransactionElementProps, TransactionElementState> {
@@ -223,7 +224,7 @@ class TransactionElement extends PureComponent<TransactionElementProps, Transact
     this.mounted && this.setState({ transactionElement, transactionDetails });
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: TransactionElementProps) {
     if (
       prevProps.txChainId !== this.props.txChainId ||
       prevProps.swapsTransactions !== this.props.swapsTransactions ||

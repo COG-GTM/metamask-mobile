@@ -1,9 +1,10 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,

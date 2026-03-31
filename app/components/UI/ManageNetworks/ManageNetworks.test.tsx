@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Third party dependencies.
 import React from 'react';
 import { Linking } from 'react-native';

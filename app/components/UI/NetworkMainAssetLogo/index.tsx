@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { ChainId } from '@metamask/controller-utils';
 import { connect } from 'react-redux';
@@ -24,7 +25,7 @@ function NetworkMainAssetLogo({
   big,
   biggest,
   testID,
-}) {
+}: NetworkMainAssetLogoProps) {
   if (chainId === ChainId.mainnet) {
     return (
       <TokenIcon

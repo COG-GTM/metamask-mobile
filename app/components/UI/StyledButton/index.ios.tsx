@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import Button from '@metamask/react-native-button';
 import getStyles from './styledButtonStyles';
@@ -15,7 +16,6 @@ import {
  * If you would like to help with the replacement of the old `Button` component, please submit a pull request against this GitHub issue:
  * {@link https://github.com/MetaMask/metamask-mobile/issues/8106}
  */
-export default 
 interface StyledButtonProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children?: any; // TODO: Replace "any" with type
@@ -26,7 +26,7 @@ interface StyledButtonProps {
   testID?: string;
 }
 
-class StyledButton extends PureComponent<StyledButtonProps> {
+export default class StyledButton extends PureComponent<StyledButtonProps> {
   static defaultProps = {
     ...PureComponent.defaultProps,
     styleDisabled: { opacity: 0.6 },

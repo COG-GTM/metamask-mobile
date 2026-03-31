@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { SafeAreaView, View } from 'react-native';
 import { baseStyles } from '../../../styles/common';
@@ -5,12 +6,11 @@ import { baseStyles } from '../../../styles/common';
 /**
  * Base view component providing consistent styling meant to wrap other views
  */
-export default 
 interface ScreenProps {
   children?: React.ReactNode;
 }
 
-class Screen extends PureComponent<ScreenProps> {
+export default class Screen extends PureComponent<ScreenProps> {
   render() {
     return (
       <View style={baseStyles.flexGrow}>

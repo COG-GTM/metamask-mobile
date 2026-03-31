@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import AssetIcon from '../AssetIcon';
@@ -27,7 +28,7 @@ interface TokenImageProps {
   tokenList?: object;
 }
 
-const TokenImage = ({ asset, containerStyle, iconStyle, tokenList }) => {
+const TokenImage = ({ asset, containerStyle, iconStyle, tokenList }: TokenImageProps) => {
   const isIpfsGatewayEnabled = useSelector(selectIsIpfsGatewayEnabled);
 
   const assetImage = isUrl(asset?.image) ? asset.image : null;

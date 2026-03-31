@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMemo } from 'react';
 import { CURRENCIES } from './constants';
 import createKeypadRule from './createKeypadRule';

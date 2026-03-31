@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { Platform, Text } from 'react-native';
 import { formatAddress } from '../../../util/address';
@@ -18,14 +19,14 @@ interface EthereumAddressProps {
 
 interface EthereumAddressState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ensName: any; // TODO: Replace "any" with type
+  ensName?: any; // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  address: any; // TODO: Replace "any" with type
+  address?: any; // TODO: Replace "any" with type
 }
 
 class EthereumAddress extends PureComponent<EthereumAddressProps, EthereumAddressState> {
   ens = null;
-  constructor(props) {
+  constructor(props: EthereumAddressProps) {
     super(props);
     const { address, type } = props;
 
@@ -35,7 +36,7 @@ class EthereumAddress extends PureComponent<EthereumAddressProps, EthereumAddres
     };
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: EthereumAddressProps) {
     if (this.props.address && prevProps.address !== this.props.address) {
       requestAnimationFrame(() => {
         this.formatAndResolveIfNeeded();

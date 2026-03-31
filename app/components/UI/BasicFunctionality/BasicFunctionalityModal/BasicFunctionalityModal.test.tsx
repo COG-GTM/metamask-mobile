@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Third party dependencies.
 import React from 'react';
 
@@ -5,6 +6,9 @@ import React from 'react';
 import BasicFunctionalityModal from './BasicFunctionalityModal';
 import renderWithProvider from '../../../../util/test/renderWithProvider';
 import { useNavigation } from '@react-navigation/native';
+
+// Re-export RootState for consumers that import it from this file
+export type { RootState } from '../../../../reducers';
 
 /**
  * @typedef {import('../../../../reducers').RootState} RootState

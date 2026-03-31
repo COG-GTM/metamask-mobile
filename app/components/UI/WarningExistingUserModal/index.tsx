@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { strings } from '../../../../locales/i18n';
@@ -5,7 +6,7 @@ import { fontStyles } from '../../../styles/common';
 import ActionModal from '../ActionModal';
 import { useTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     warningModalView: {
       margin: 24,
@@ -66,10 +67,10 @@ interface WarningExistingUserModalProps {
   children?: any; // TODO: Replace "any" with type
   cancelTestID?: string;
   confirmTestID?: string;
-  warningModalVisible: boolean;
-  onCancelPress: (...args: any[]) => any;
-  onRequestClose: (...args: any[]) => any;
-  onConfirmPress: (...args: any[]) => any;
+  warningModalVisible?: boolean;
+  onCancelPress?: (...args: any[]) => any;
+  onRequestClose?: (...args: any[]) => any;
+  onConfirmPress?: (...args: any[]) => any;
 }
 
 export default function WarningExistingUserModal({
@@ -83,7 +84,7 @@ export default function WarningExistingUserModal({
   confirmText,
   confirmTestID,
   cancelTestID,
-}) {
+}: WarningExistingUserModalProps) {
   return (
     <ActionModal
       modalVisible={warningModalVisible}

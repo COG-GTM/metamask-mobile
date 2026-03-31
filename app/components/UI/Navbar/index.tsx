@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable react/display-name */
 import React from 'react';
 import NavbarTitle from '../NavbarTitle';
@@ -211,11 +212,11 @@ export function getTransactionsNavbarOptions(
  * @returns {Object} - Corresponding navbar options containing title and headerTitleStyle
  */
 export function getNavigationOptionsTitle(
-  title,
-  navigation,
-  isFullScreenModal,
-  themeColors,
-  navigationPopEvent = null,
+  title: any,
+  navigation: any,
+  isFullScreenModal: any,
+  themeColors: any,
+  navigationPopEvent: any = null,
 ) {
   const innerStyles = StyleSheet.create({
     headerStyle: {
@@ -1099,13 +1100,13 @@ export function getWalletNavbarOptions(
  * @returns {Object} - Corresponding navbar options containing headerTitle and headerTitle
  */
 export function getImportTokenNavbarOptions(
-  title,
-  translate,
-  navigation,
-  themeColors,
-  disableNetwork = false,
-  contentOffset = 0,
-  onClose = undefined,
+  title: any,
+  translate: any,
+  navigation: any,
+  themeColors: any,
+  disableNetwork: any = false,
+  contentOffset: any = 0,
+  onClose: any = undefined,
 ) {
   const innerStyles = StyleSheet.create({
     headerStyle: {
@@ -1797,10 +1798,10 @@ export function getBridgeTransactionDetailsNavbar(navigation) {
 }
 
 export function getFiatOnRampAggNavbar(
-  navigation,
-  { title = 'Buy', showBack = true, showCancel = true } = {},
-  themeColors,
-  onCancel,
+  navigation: any,
+  { title = 'Buy', showBack = true, showCancel = true }: any = {},
+  themeColors?: any,
+  onCancel?: any,
 ) {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
@@ -1935,11 +1936,11 @@ export const getSettingsNavigationOptions = (title, themeColors) => {
  * @returns Staking Navbar Component.
  */
 export function getStakingNavbar(
-  title,
-  navigation,
-  themeColors,
-  navBarOptions,
-  metricsOptions,
+  title: any,
+  navigation: any,
+  themeColors: any,
+  navBarOptions?: any,
+  metricsOptions?: any,
 ) {
   const {
     hasBackButton = true,

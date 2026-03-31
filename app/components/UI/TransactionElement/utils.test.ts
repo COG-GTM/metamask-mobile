@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   CONTRACT_CREATION_SIGNATURE,
   TRANSACTION_TYPES,

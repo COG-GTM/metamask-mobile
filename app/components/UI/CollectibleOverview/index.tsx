@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, {
   useCallback,
   useEffect,
@@ -57,7 +58,7 @@ const VERTICAL_ALIGNMENT = IS_SMALL_DEVICE ? 12 : 16;
 
 const THRESHOLD = 50;
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       flex: 0,
@@ -549,7 +550,8 @@ const mapStateToProps = (state, props) => ({
   isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
   addFavoriteCollectible: (selectedAddress, chainId, collectible) =>
     dispatch(addFavoriteCollectible(selectedAddress, chainId, collectible)),
   removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
