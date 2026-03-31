@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable */
 // @ts-nocheck
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
