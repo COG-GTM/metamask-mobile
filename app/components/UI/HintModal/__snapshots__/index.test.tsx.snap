@@ -2,7 +2,6 @@
 
 exports[`HintModal should render correctly 1`] = `
 <ActionModal
-  cancelButtonDisabled={false}
   cancelButtonMode="neutral"
   cancelTestID=""
   cancelText="Cancel"
@@ -11,7 +10,6 @@ exports[`HintModal should render correctly 1`] = `
   confirmTestID=""
   confirmText="Save"
   displayCancelButton={true}
-  displayConfirmButton={true}
   modalVisible={false}
   onCancelPress={[Function]}
   onConfirmPress={[Function]}
