@@ -1,4 +1,5 @@
 import browserReducer from './index';
+import { BrowserActionType, type BrowserAction } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 
 describe('browserReducer STORE_FAVICON_URL', () => {
@@ -9,10 +10,11 @@ describe('browserReducer STORE_FAVICON_URL', () => {
       tabs: [],
       favicons: [],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const action = {
-      type: 'STORE_FAVICON_URL',
+      type: BrowserActionType.STORE_FAVICON_URL,
       origin: 'testOrigin',
       url: 'testUrl',
     };
@@ -23,9 +25,10 @@ describe('browserReducer STORE_FAVICON_URL', () => {
       tabs: [],
       favicons: [{ origin: 'testOrigin', url: 'testUrl' }],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
-    const newState = browserReducer(initialState, action);
+    const newState = browserReducer(initialState, action as BrowserAction);
 
     expect(newState).toEqual(expectedState);
   });
@@ -40,10 +43,11 @@ describe('browserReducer STORE_FAVICON_URL', () => {
         url: 'oldUrl',
       }),
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const action = {
-      type: 'STORE_FAVICON_URL',
+      type: BrowserActionType.STORE_FAVICON_URL,
       origin: 'newOrigin',
       url: 'newUrl',
     };
@@ -60,9 +64,10 @@ describe('browserReducer STORE_FAVICON_URL', () => {
         }),
       ],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
-    const newState = browserReducer(initialState, action);
+    const newState = browserReducer(initialState, action as BrowserAction);
 
     expect(newState).toEqual(expectedState);
   });
