@@ -30,6 +30,11 @@ interface FadeOutOverlayState {
 }
 
 export default class FadeOutOverlay extends PureComponent<FadeOutOverlayProps, FadeOutOverlayState> {
+  static defaultProps = {
+    style: null,
+    duration: 300,
+  };
+
   state = {
     done: false,
   };

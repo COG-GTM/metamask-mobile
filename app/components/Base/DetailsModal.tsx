@@ -151,39 +151,15 @@ DetailsModal.Column = DetailsModalColumn;
 /**
  * Any other external style defined in props will be applied
  */
-const stylePropType = PropTypes.oneOfType([PropTypes.object, PropTypes.array]);
 
-DetailsModal.propTypes = {
-  children: PropTypes.node,
-};
 
-DetailsModalHeader.propTypes = {
-  style: stylePropType,
-};
 DetailsModalTitle.propTypes = {
-  style: stylePropType,
-};
-DetailsModalCloseIcon.propTypes = {
   style: stylePropType,
 };
 DetailsModalBody.propTypes = {
   style: stylePropType,
 };
-DetailsModalSection.propTypes = {
-  style: stylePropType,
-  /**
-   * Adds a border to the bottom of the section
-   */
-  borderBottom: PropTypes.bool,
-};
 DetailsModalSectionTitle.propTypes = {
   style: stylePropType,
-};
-DetailsModalColumn.propTypes = {
-  style: stylePropType,
-  /**
-   * Aligns column content to flex-end
-   */
-  end: PropTypes.bool,
 };
 export default DetailsModal;

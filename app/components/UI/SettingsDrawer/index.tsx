@@ -47,41 +47,18 @@ const createStyles = (colors, titleColor) =>
     },
   });
 
-const propTypes = {
-  title: PropTypes.string,
-  /**
-   * Additional descriptive text about this option
-   */
-  description: PropTypes.string,
-  /**
-   * Disable bottom border
-   */
-  noBorder: PropTypes.bool,
-  /**
-   * Handler called when this drawer is pressed
-   */
-  onPress: PropTypes.func,
-  /**
-   * Display SettingsNotification
-   */
-  warning: PropTypes.string,
-  /**
-   * Display arrow right
-   */
-  renderArrowRight: PropTypes.bool,
-  /**
-   * Test id for testing purposes
-   */
-  testID: PropTypes.string,
-  /**
-   * Title color
-   */
-  titleColor: PropTypes.string,
-};
 
-const defaultProps = {
-  onPress: undefined,
-};
+
+interface SettingsDrawerProps {
+  title?: string;
+  description?: string;
+  noBorder?: boolean;
+  onPress?: (...args: any[]) => any;
+  warning?: string;
+  renderArrowRight?: boolean;
+  testID?: string;
+  titleColor?: TextColor;
+}
 
 const SettingsDrawer = ({
   title,
@@ -91,7 +68,7 @@ const SettingsDrawer = ({
   renderArrowRight = true,
   testID,
   titleColor = TextColor.Default,
-}) => {
+}: SettingsDrawerProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors, titleColor);
   return (
@@ -137,7 +114,5 @@ const SettingsDrawer = ({
   );
 };
 
-SettingsDrawer.propTypes = propTypes;
-SettingsDrawer.defaultProps = defaultProps;
 
 export default SettingsDrawer;

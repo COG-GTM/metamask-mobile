@@ -23,9 +23,6 @@ export const ConfirmedText = ({testID, ...props}) => (
     {...props}
   />
 );
-ConfirmedText.propTypes = {
-  testID: PropTypes.string,
-};
 
 export const PendingText = ({testID, ...props}) => {
   const { colors } = useTheme();
@@ -37,9 +34,6 @@ export const PendingText = ({testID, ...props}) => {
       {...props}
     />
   );
-};
-PendingText.propTypes = {
-  testID: PropTypes.string,
 };
 
 export const FailedText = ({testID, ...props} ) => {
@@ -53,9 +47,6 @@ export const FailedText = ({testID, ...props} ) => {
     />
   );
 };
-FailedText.propTypes = {
-  testID: PropTypes.string,
-};
 
 
 interface StatusTextProps {
@@ -68,7 +59,7 @@ interface StatusTextProps {
   [key: string]: any; // TODO: Replace "any" with type
 }
 
-function StatusText({ status, context, testID, ...props }: StatusTextProps) {
+function StatusText({ status, context = 'transaction', testID, ...props }: StatusTextProps) {
   switch (status) {
     case 'Confirmed':
     case 'confirmed':

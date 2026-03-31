@@ -66,14 +66,23 @@ const createStyles = (colors: any) =>
     },
   });
 
+interface SkipAccountSecurityModalProps {
+  modalVisible?: boolean;
+  onConfirm?: (...args: any[]) => any;
+  onCancel?: (...args: any[]) => any;
+  onPress?: (...args: any[]) => any;
+  toggleSkipCheckbox?: (...args: any[]) => any;
+  skipCheckbox?: boolean;
+}
+
 const SkipAccountSecurityModal = ({
-  modalVisible,
+  modalVisible = false,
   onConfirm,
   onCancel,
   onPress,
   toggleSkipCheckbox,
-  skipCheckbox,
-}) => {
+  skipCheckbox = false,
+}: SkipAccountSecurityModalProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -143,21 +152,7 @@ const SkipAccountSecurityModal = ({
   );
 };
 
-const propTypes = {
-  modalVisible: PropTypes.bool.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  onPress: PropTypes.func,
-  toggleSkipCheckbox: PropTypes.func.isRequired,
-  skipCheckbox: PropTypes.bool.isRequired,
-};
 
-const defaultProps = {
-  modalVisible: false,
-  skipCheckbox: false,
-};
 
-SkipAccountSecurityModal.propTypes = propTypes;
-SkipAccountSecurityModal.defaultProps = defaultProps;
 
 export default SkipAccountSecurityModal;

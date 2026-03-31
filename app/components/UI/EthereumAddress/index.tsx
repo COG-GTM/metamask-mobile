@@ -25,6 +25,11 @@ interface EthereumAddressState {
 }
 
 class EthereumAddress extends PureComponent<EthereumAddressProps, EthereumAddressState> {
+  static defaultProps = {
+    style: null,
+    type: 'full',
+  };
+
   ens = null;
   constructor(props: EthereumAddressProps) {
     super(props);

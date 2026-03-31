@@ -55,14 +55,23 @@ const createStyles = (colors: any) =>
     },
   });
 
+interface HintModalProps {
+  onCancel?: (...args: any[]) => any;
+  onConfirm?: (...args: any[]) => any;
+  modalVisible?: boolean;
+  onRequestClose?: (...args: any[]) => any;
+  value?: string;
+  onChangeText?: (...args: any[]) => any;
+}
+
 const HintModal = ({
   onCancel,
   onConfirm,
-  modalVisible,
+  modalVisible = false,
   onRequestClose,
   value,
   onChangeText,
-}) => {
+}: HintModalProps) => {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
@@ -114,19 +123,6 @@ const HintModal = ({
   );
 };
 
-const propTypes = {
-  onCancel: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  onRequestClose: PropTypes.func.isRequired,
-  value: PropTypes.string,
-  onChangeText: PropTypes.func.isRequired,
-};
-const defaultProps = {
-  modalVisible: false,
-};
 
-HintModal.propTypes = propTypes;
-HintModal.defaultProps = defaultProps;
 
 export default HintModal;

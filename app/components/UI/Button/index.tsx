@@ -3,7 +3,6 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import GenericButton from '../GenericButton'; // eslint-disable-line import/no-unresolved
 import { useTheme } from '../../../util/theme';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
 const createStyles = (colors: any) =>
   StyleSheet.create({
@@ -38,21 +37,5 @@ const Button = (props) => {
   );
 };
 
-Button.propTypes = {
-  /**
-   * Children components of the Button
-   * it can be a text node, an image, or an icon
-   * or an Array with a combination of them
-   */
-  children: PropTypes.any,
-  /**
-   * Styles to be applied to the Button
-   */
-  style: ViewPropTypes.style,
-  /**
-   * Function to be called on press
-   */
-  onPress: PropTypes.func,
-};
 
 export default Button;

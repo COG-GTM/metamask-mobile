@@ -708,8 +708,5 @@ const TransactionElementWithBridge = (props) => {
   );
 };
 
-TransactionElementWithBridge.propTypes = {
-  tx: PropTypes.object.isRequired,
-};
 
 export default connect(mapStateToProps)(TransactionElementWithBridge);

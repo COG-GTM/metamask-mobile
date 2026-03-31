@@ -91,8 +91,5 @@ const Loader = ({
   );
 };
 
-Loader.propTypes = {
-  loadingText: PropTypes.string,
-};
 
 export default Loader;

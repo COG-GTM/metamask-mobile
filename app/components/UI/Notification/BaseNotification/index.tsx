@@ -167,7 +167,7 @@ const BaseNotification = ({
   data: { description = null, title = null },
   onPress,
   onHide,
-  autoDismiss,
+  autoDismiss = false,
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -207,16 +207,6 @@ const BaseNotification = ({
   );
 };
 
-BaseNotification.propTypes = {
-  status: PropTypes.string,
-  data: PropTypes.object,
-  onPress: PropTypes.func,
-  onHide: PropTypes.func,
-  autoDismiss: PropTypes.bool,
-};
 
-BaseNotification.defaultProps = {
-  autoDismiss: false,
-};
 
 export default BaseNotification;

@@ -93,7 +93,7 @@ const RangeInput = ({
   rightLabelComponent,
   value,
   unit,
-  increment,
+  increment = new BigNumber(1),
   onChangeValue,
   inputInsideLabel,
   error,
@@ -231,55 +231,6 @@ const RangeInput = ({
   );
 };
 
-RangeInput.defaultProps = {
-  increment: new BigNumber(1),
-};
 
-RangeInput.propTypes = {
-  /**
-   * Component or text to render on the right side of the label
-   */
-  rightLabelComponent: PropTypes.node,
-  /**
-   * Component or text to render on the left side of the label
-   */
-  leftLabelComponent: PropTypes.node,
-  /**
-   * The value to be on the input
-   */
-  value: PropTypes.string,
-  /**
-   * The unit to show inside the input
-   */
-  unit: PropTypes.string,
-  /**
-   * Function that is called when the input is changed
-   */
-  onChangeValue: PropTypes.func,
-  /**
-   * A BigNumber value per which the input is incremented when clicking on the plus and minus button
-   */
-  increment: PropTypes.object,
-  /**
-   * The label to show inside the input
-   */
-  inputInsideLabel: PropTypes.string,
-  /**
-   * The error to show bellow the input. Also when the error exists the input text will turn red
-   */
-  error: PropTypes.string,
-  /**
-   * A BigNumber minimum value the input is allowed to have when clicking on the minus button
-   */
-  min: PropTypes.object,
-  /**
-   * A BigNumber maximum value the input is allowed to have when clicking on the plus button
-   */
-  max: PropTypes.object,
-  /**
-   * The name of the input
-   */
-  name: PropTypes.string,
-};
 
 export default RangeInput;

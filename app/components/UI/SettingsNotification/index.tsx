@@ -64,28 +64,21 @@ const CheckIcon = () => {
   );
 };
 
-const propTypes = {
-  style: PropTypes.object,
-  isWarning: PropTypes.bool,
-  isNotification: PropTypes.bool,
-  children: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.node),
-    PropTypes.node,
-  ]),
-};
 
-const defaultProps = {
-  style: {},
-  isWarning: false,
-  isHighlighted: false,
-};
+interface SettingsNotificationProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  style?: any; // TODO: Replace "any" with type
+  isWarning?: boolean;
+  isNotification?: boolean;
+  children?: React.ReactNode;
+}
 
 const SettingsNotification = ({
-  style,
-  isWarning,
+  style = {},
+  isWarning = false,
   isNotification,
   children,
-}) => {
+}: SettingsNotificationProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -104,7 +97,5 @@ const SettingsNotification = ({
   );
 };
 
-SettingsNotification.propTypes = propTypes;
-SettingsNotification.defaultProps = defaultProps;
 
 export default SettingsNotification;

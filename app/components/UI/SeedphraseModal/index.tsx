@@ -51,10 +51,15 @@ const createStyles = (colors: any) =>
     },
   });
 
+interface SeedphraseModalProps {
+  showWhatIsSeedphraseModal?: boolean;
+  hideWhatIsSeedphrase?: (...args: any[]) => any;
+}
+
 const SeedphraseModal = ({
   showWhatIsSeedphraseModal,
   hideWhatIsSeedphrase,
-}) => {
+}: SeedphraseModalProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -96,15 +101,5 @@ const SeedphraseModal = ({
   );
 };
 
-SeedphraseModal.propTypes = {
-  /**
-  /* Show or hide modal
-  */
-  showWhatIsSeedphraseModal: PropTypes.bool,
-  /**
-  /* Function to hide modal
-  */
-  hideWhatIsSeedphrase: PropTypes.func,
-};
 
 export default SeedphraseModal;

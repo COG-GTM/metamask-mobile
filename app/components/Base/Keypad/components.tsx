@@ -9,7 +9,6 @@ import IonicIcon from 'react-native-vector-icons/Ionicons';
 import Device from '../../../util/device';
 import Text from '../Text';
 import { useTheme } from '../../../util/theme';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
 const createStyles = (colors: any) =>
   StyleSheet.create({
@@ -49,12 +48,6 @@ const KeypadContainer = ({ style, ...props }) => {
   return <View style={[styles.keypad, style]} {...props} />;
 };
 
-KeypadContainer.propTypes = {
-  /**
-   * Custom style for digit buttons
-   */
-  style: ViewPropTypes.style,
-};
 
 const KeypadRow = (props) => {
   const { colors } = useTheme();
@@ -73,17 +66,6 @@ const KeypadButton = ({ style, textStyle, children, ...props }) => {
   );
 };
 
-KeypadButton.propTypes = {
-  children: PropTypes.node,
-  /**
-   * Custom style for digit buttons
-   */
-  style: ViewPropTypes.style,
-  /**
-   * Custom style for digit text
-   */
-  textStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-};
 
 const KeypadDeleteButton = ({ style, icon, ...props }) => {
   const { colors } = useTheme();
@@ -101,13 +83,6 @@ const KeypadDeleteButton = ({ style, icon, ...props }) => {
   );
 };
 
-KeypadDeleteButton.propTypes = {
-  /**
-   * Custom style for digit buttons
-   */
-  style: ViewPropTypes.style,
-  icon: PropTypes.node,
-};
 
 const Keypad = KeypadContainer;
 Keypad.Row = KeypadRow;
