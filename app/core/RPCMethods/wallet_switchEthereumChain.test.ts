@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { wallet_switchEthereumChain } from './wallet_switchEthereumChain';
 import Engine from '../Engine';
 import { mockNetworkState } from '../../util/test/network';

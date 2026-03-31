@@ -37,17 +37,19 @@ const locks = new Set();
  * @param options.requestPermissionsForOrigin - A hook that requests CAIP-25 permissions for the origin.
  * @returns A promise that resolves to nothing
  */
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: any,
+  res: any,
+  _next: any,
+  end: any,
   {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
-  },
+  }: any,
 ) {
   const { origin } = req;
   if (locks.has(origin)) {
@@ -57,7 +59,9 @@ async function requestEthereumAccountsHandler(
     return end();
   }
 
-  let ethAccounts = getAccounts({ ignoreLock: true });
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let ethAccounts: any = getAccounts({ ignoreLock: true });
   if (ethAccounts.length > 0) {
     // We wait for the extension to unlock in this case only, because permission
     // requests are handled when the extension is unlocked, regardless of the
@@ -87,7 +91,9 @@ async function requestEthereumAccountsHandler(
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent(origin, ethAccounts.length);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (trackDappViewedEvent as any)(origin, ethAccounts.length);
 
   res.result = ethAccounts;
   return end();

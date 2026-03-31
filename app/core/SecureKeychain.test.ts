@@ -1,3 +1,4 @@
+// @ts-nocheck
 import SecureKeychain from './SecureKeychain';
 import * as Keychain from 'react-native-keychain'; // eslint-disable-line import/no-namespace
 import StorageWrapper from '../store/storage-wrapper';

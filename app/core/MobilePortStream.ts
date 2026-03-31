@@ -1,12 +1,26 @@
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
-import { Duplex } from 'readable-stream';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, import/no-commonjs
+const { Duplex } = require('readable-stream');
 
 // eslint-disable-next-line no-empty-function
-const noop = () => {};
+const noop = (): void => {};
 
-export default class PortDuplexStream extends Duplex {
-  constructor(port, url) {
+interface Port {
+  addListener(event: string, callback: (...args: unknown[]) => void): void;
+  postMessage(msg: unknown, url: string): void;
+  emit(event: string, data: unknown): void;
+  name?: string;
+}
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default class PortDuplexStream extends (Duplex as any) {
+  _port: Port;
+  _url: string;
+
+  constructor(port: Port, url: string) {
     super({
       objectMode: true,
     });
@@ -23,10 +37,16 @@ export default class PortDuplexStream extends Duplex {
    * @private
    * @param {Object} msg - Payload from the onMessage listener of Port
    */
-  _onMessage = function (msg) {
+  _onMessage = function (
+    this: PortDuplexStream,
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    msg: any,
+  ) {
     if (Buffer.isBuffer(msg)) {
-      delete msg._isBuffer;
-      const data = new Buffer(msg);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (msg as any)._isBuffer;
+      const data = Buffer.from(msg);
       this.push(data);
     } else {
       this.push(msg);
@@ -39,7 +59,7 @@ export default class PortDuplexStream extends Duplex {
    *
    * @private
    */
-  _onDisconnect = function () {
+  _onDisconnect = function (this: PortDuplexStream) {
     this.destroy && this.destroy();
   };
 
@@ -57,11 +77,20 @@ export default class PortDuplexStream extends Duplex {
    * @param {string} encoding Encoding to use when writing payload
    * @param {Function} cb Called when writing is complete or an error occurs
    */
-  _write = function (msg, encoding, cb) {
+  _write = function (
+    this: PortDuplexStream,
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    msg: any,
+    _encoding: string,
+    cb: (error?: Error | null) => void,
+  ) {
     try {
       if (Buffer.isBuffer(msg)) {
         const data = msg.toJSON();
-        data._isBuffer = true;
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (data as any)._isBuffer = true;
         this._port.postMessage(data, this._url);
       } else {
         this._port.postMessage(msg, this._url);

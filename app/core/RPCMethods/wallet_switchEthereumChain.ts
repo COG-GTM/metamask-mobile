@@ -19,13 +19,15 @@ import { MESSAGE_TYPE } from '../createTracingMiddleware';
  * @param params.hooks - Method hooks passed to the method implementation.
  * @returns {void}.
  */
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const wallet_switchEthereumChain = async ({
   req,
   res,
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: any) => {
   const {
     CurrencyRateController,
     NetworkController,
@@ -46,13 +48,15 @@ export const wallet_switchEthereumChain = async ({
     chainId: true,
   };
 
-  const extraKeys = Object.keys(params).filter((key) => !allowedKeys[key]);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const extraKeys = Object.keys(params).filter((key) => !(allowedKeys as any)[key]);
   if (extraKeys.length) {
     throw rpcErrors.invalidParams(
       `Received unexpected keys on object parameter. Unsupported keys:\n${extraKeys}`,
     );
   }
-  const _chainId = validateChainId(chainId);
+  const _chainId = validateChainId(chainId) as string;
   // TODO: [SOLANA] - This do not support non evm networks
   const networkConfigurations = selectEvmNetworkConfigurationsByChainId(
     store.getState(),
@@ -63,9 +67,11 @@ export const wallet_switchEthereumChain = async ({
       SelectedNetworkController.getNetworkClientIdForDomain(origin);
     const {
       configuration: { chainId: currentDomainSelectedChainId },
-    } = NetworkController.getNetworkClientById(
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } = (NetworkController.getNetworkClientById(
       currentDomainSelectedNetworkClientId,
-    ) || { configuration: {} };
+    ) || { configuration: {} }) as any;
 
     if (currentDomainSelectedChainId === _chainId) {
       res.result = null;
