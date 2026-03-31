@@ -43,6 +43,30 @@ if (__DEV__) {
   allowedChainIds.push(...allowedTestnetChainIds);
 }
 
+interface SwapToken {
+  address?: string;
+  symbol?: string | null;
+  occurrences?: number;
+  aggregators?: string[];
+  decimals?: number;
+}
+
+interface FetchParamsOptions {
+  slippage?: number;
+  sourceToken: SwapToken;
+  destinationToken: SwapToken;
+  sourceAmount: string;
+  walletAddress: string;
+  networkClientId: string;
+  enableGasIncludedQuotes: boolean;
+}
+
+interface MaxBalanceLinkOptions {
+  sourceToken: SwapToken;
+  shouldUseSmartTransaction: boolean;
+  hasBalance: boolean;
+}
+
 export function isSwapsAllowed(chainId: string): boolean {
   if (!AppConstants.SWAPS.ACTIVE) {
     return false;
@@ -61,22 +85,18 @@ export function isSwapsAllowed(chainId: string): boolean {
   return allowedChainIds.includes(chainId);
 }
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function isSwapsNativeAsset(token: any): boolean {
+export function isSwapsNativeAsset(token: SwapToken | null | undefined): boolean {
   return (
     Boolean(token) && token?.address === swapsUtils.NATIVE_SWAPS_TOKEN_ADDRESS
   );
 }
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function isDynamicToken(token: any): boolean {
+export function isDynamicToken(token: SwapToken | null | undefined): boolean {
   return (
     Boolean(token) &&
-    token.occurrences === 1 &&
-    token?.aggregators.length === 1 &&
-    token.aggregators[0] === 'dynamic'
+    token?.occurrences === 1 &&
+    token?.aggregators?.length === 1 &&
+    token?.aggregators[0] === 'dynamic'
   );
 }
 
@@ -89,14 +109,12 @@ export function isDynamicToken(token: any): boolean {
  * @param {array} tokens Tokens selected for trade
  * @return {object} Object containing sourceTokenAddress, destinationTokenAddress, sourceAmount and slippage
  */
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function setQuotesNavigationsParams(
   sourceTokenAddress: string,
   destinationTokenAddress: string,
   sourceAmount: string,
   slippage: string | number,
-  tokens: any[] = [],
+  tokens: SwapToken[] = [],
 ) {
   return {
     sourceTokenAddress,
@@ -111,9 +129,7 @@ export function setQuotesNavigationsParams(
  * Gets required parameters for Swaps Quotes View
  * @return {object} Object containing sourceTokenAddress, destinationTokenAddress, sourceAmount and slippage
  */
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getQuotesNavigationsParams(route: any) {
+export function getQuotesNavigationsParams(route: { params?: { slippage?: number; sourceTokenAddress?: string; destinationTokenAddress?: string; sourceAmount?: string; tokens?: SwapToken[] } }) {
   const slippage = route.params?.slippage ?? 1;
   const sourceTokenAddress = route.params?.sourceTokenAddress ?? '';
   const destinationTokenAddress = route.params?.destinationTokenAddress ?? '';
@@ -140,8 +156,6 @@ export function getQuotesNavigationsParams(route: any) {
  * @param {string} networkClientId Current network client ID
  * @param {boolean} enableGasIncludedQuotes Enable quotes with gas included
  */
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getFetchParams({
   slippage = 1,
   sourceToken,
@@ -150,7 +164,7 @@ export function getFetchParams({
   walletAddress,
   networkClientId,
   enableGasIncludedQuotes,
-}: any) {
+}: FetchParamsOptions) {
   return {
     slippage,
     sourceToken: sourceToken.address,
@@ -266,13 +280,11 @@ export function getQuotesSourceMessage(type: string): string[] {
  * @param {boolean} params.hasBalance - Whether the user has a balance of the source token
  * @return {boolean} Whether to show the max balance link
  */
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldShowMaxBalanceLink({
   sourceToken,
   shouldUseSmartTransaction,
   hasBalance,
-}: any): boolean {
+}: MaxBalanceLinkOptions): boolean {
   if (!sourceToken?.symbol || !hasBalance) {
     return false;
   }
