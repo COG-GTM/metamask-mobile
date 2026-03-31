@@ -382,7 +382,11 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
           !transaction.gas.eq(prevProps?.transaction?.gas) ||
           !this.state.ready)
       ) {
-        this.computeGasEstimates(null, gasEstimateTypeChanged);
+        // NOTE: Original JS passed 3 args but function only accepts 2.
+        // Preserving original behavior where gasEstimateTypeChanged was
+        // silently dropped (always null inside function).
+        // @ts-expect-error - preserving original 3-arg call for behavioral compatibility
+        this.computeGasEstimates(null, null, gasEstimateTypeChanged);
       }
     }
   };
