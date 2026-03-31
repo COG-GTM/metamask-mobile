@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   StyleSheet,
@@ -23,7 +22,9 @@ const swapsAggregatorsLight = require('../../../../images/swaps_aggs-light.png')
 const swapsAggregatorsDark = require('../../../../images/swaps_aggs-dark.png');
 /* eslint-enable import/no-commonjs */
 
-const createStyles = (colors, bottomInset) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any, bottomInset: any) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -72,7 +73,11 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-function Onboarding({ setHasOnboarded }) {
+interface OnboardingProps {
+  setHasOnboarded?: (value: boolean) => void;
+}
+
+function Onboarding({ setHasOnboarded }: OnboardingProps) {
   const navigation = useNavigation();
   const { colors } = useTheme();
   const { bottom: bottomInset } = useSafeAreaInsets();
@@ -84,6 +89,7 @@ function Onboarding({ setHasOnboarded }) {
 
   const handleStartSwapping = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    // @ts-expect-error Legacy JS code needs type refinement
     setHasOnboarded(true);
   }, [setHasOnboarded]);
 
@@ -145,8 +151,5 @@ function Onboarding({ setHasOnboarded }) {
   );
 }
 
-Onboarding.propTypes = {
-  setHasOnboarded: PropTypes.func,
-};
 
 export default Onboarding;

@@ -7,11 +7,15 @@ import {
 } from '../../../../util/number';
 import { safeToChecksumAddress } from '../../../../util/address';
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function useBalance(
-  accounts,
-  balances,
-  selectedAddress,
-  sourceToken,
+  accounts: any,
+  balances: any,
+  selectedAddress: string,
+  sourceToken: any,
   { asUnits = false } = {},
 ) {
   // TODO: This doesn't always return type BN. Objects down the line may attempt to call functions on the BN object.
@@ -32,11 +36,14 @@ function useBalance(
     }
     const tokenAddress = safeToChecksumAddress(sourceToken.address);
 
+    // @ts-expect-error Legacy JS code needs type refinement
     if (tokenAddress in balances) {
       if (asUnits) {
+        // @ts-expect-error Legacy JS code needs type refinement
         return balances[tokenAddress];
       }
       return renderFromTokenMinimalUnit(
+        // @ts-expect-error Legacy JS code needs type refinement
         balances[tokenAddress],
         sourceToken.decimals,
       );

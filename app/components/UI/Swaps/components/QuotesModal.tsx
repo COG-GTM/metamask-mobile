@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -34,7 +33,7 @@ import {
 } from '../../../../selectors/currencyRateController';
 import { selectSwapsQuoteValues } from '../../../../reducers/swaps';
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: any, shadows: any) =>
   StyleSheet.create({
     modalView: {
       backgroundColor: colors.background.default,
@@ -127,6 +126,23 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface QuotesModalProps {
+  isVisible?: boolean;
+  toggleModal?: () => void;
+  quotes: any[];
+  selectedQuote?: string;
+  destinationToken: { symbol?: string; decimals?: number };
+  sourceToken: { symbol?: string; decimals?: number };
+  conversionRate?: number;
+  currentCurrency?: string;
+  ticker?: string;
+  quoteValues?: Record<string, any>;
+  showOverallValue?: boolean;
+  multiLayerL1ApprovalFeeTotal?: string;
+}
+
 function QuotesModal({
   isVisible,
   toggleModal,
@@ -140,7 +156,7 @@ function QuotesModal({
   showOverallValue,
   ticker,
   multiLayerL1ApprovalFeeTotal,
-}) {
+}: QuotesModalProps) {
   const bestOverallValue =
     quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
   const [displayDetails, setDisplayDetails] = useState(false);
@@ -181,7 +197,7 @@ function QuotesModal({
 
   // Toggle to the details in case the quote exist
   const handleQuoteDetailsPress = useCallback(
-    (index) => {
+    (index: any) => {
       if (quotes?.[index]) {
         setSelectedDetailsQuoteIndex(index);
         toggleDetails();
@@ -195,6 +211,7 @@ function QuotesModal({
     if (displayDetails) {
       return toggleDetails();
     }
+    // @ts-expect-error Legacy JS code needs type refinement
     toggleModal();
   }, [toggleDetails, displayDetails, toggleModal]);
 
@@ -273,8 +290,10 @@ function QuotesModal({
                     <Text small>{strings('swaps.rate')}</Text>
                     <Ratio
                       sourceAmount={selectedDetailsQuote.sourceAmount}
+                      // @ts-expect-error Legacy JS code needs type refinement
                       sourceToken={sourceToken}
                       destinationAmount={selectedDetailsQuote.destinationAmount}
+                      // @ts-expect-error Legacy JS code needs type refinement
                       destinationToken={destinationToken}
                       boldSymbol
                     />
@@ -290,6 +309,7 @@ function QuotesModal({
                     <Text primary>
                       {fromTokenMinimalUnitString(
                         selectedDetailsQuote.destinationAmount,
+                        // @ts-expect-error Legacy JS code needs type refinement
                         destinationToken.decimals,
                       )}{' '}
                       <Text reset bold>
@@ -308,6 +328,7 @@ function QuotesModal({
                                   .destinationAmountInETH,
                               ),
                               conversionRate,
+                              // @ts-expect-error Legacy JS code needs type refinement
                               currentCurrency,
                             )}
                             )
@@ -327,6 +348,7 @@ function QuotesModal({
                         {weiToFiat(
                           toWei(selectedDetailsQuoteValuesEthFee),
                           conversionRate,
+                          // @ts-expect-error Legacy JS code needs type refinement
                           currentCurrency,
                         )}
                         )
@@ -388,6 +410,7 @@ function QuotesModal({
                     quotes.map((quote, index) => {
                       const { aggregator } = quote;
                       const isSelected = aggregator === selectedQuote;
+                      // @ts-expect-error Legacy JS code needs type refinement
                       const quoteValue = quoteValues[aggregator];
                       let quoteEthFee = quoteValue?.ethFee;
                       if (multiLayerL1ApprovalFeeTotal) {
@@ -411,6 +434,7 @@ function QuotesModal({
                               ~
                               {renderFromTokenMinimalUnit(
                                 quote.destinationAmount,
+                                // @ts-expect-error Legacy JS code needs type refinement
                                 destinationToken.decimals,
                               )}
                             </Text>
@@ -420,6 +444,7 @@ function QuotesModal({
                               {weiToFiat(
                                 toWei(quoteEthFee),
                                 conversionRate,
+                                // @ts-expect-error Legacy JS code needs type refinement
                                 currentCurrency,
                               )}
                             </Text>
@@ -436,6 +461,7 @@ function QuotesModal({
                                     ).toFixed(18),
                                   ),
                                   conversionRate,
+                                  // @ts-expect-error Legacy JS code needs type refinement
                                   currentCurrency,
                                 )}
                               </Text>
@@ -446,6 +472,7 @@ function QuotesModal({
                                   new BigNumber(quotes[0].destinationAmount)
                                     .minus(quote.destinationAmount)
                                     .toString(10),
+                                  // @ts-expect-error Legacy JS code needs type refinement
                                   destinationToken.decimals,
                                 )}
                               </Text>
@@ -471,40 +498,13 @@ function QuotesModal({
   );
 }
 
-QuotesModal.propTypes = {
-  isVisible: PropTypes.bool,
-  toggleModal: PropTypes.func,
-  quotes: PropTypes.array,
-  selectedQuote: PropTypes.string,
-  destinationToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  sourceToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  quoteValues: PropTypes.object,
-  showOverallValue: PropTypes.bool,
-  multiLayerL1ApprovalFeeTotal: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   quoteValues: selectSwapsQuoteValues(state),
 });
 
+// @ts-expect-error Legacy JS code needs type refinement
 export default connect(mapStateToProps)(QuotesModal);

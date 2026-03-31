@@ -1,10 +1,11 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, Animated, Easing } from 'react-native';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -30,29 +31,30 @@ const customGasHeightPlaceHolder = 400;
 /**
  * PureComponent that handles most of the animation/transition logic
  */
-class AnimatedTransactionModal extends PureComponent {
-  static propTypes = {
-    /**
-     * Changes the mode to 'review'
-     */
-    review: PropTypes.func,
-    /**
-     * Called when a user changes modes
-     */
-    onModeChange: PropTypes.func,
-    /**
-     * Whether or not basic gas estimates have been fetched
-     */
-    ready: PropTypes.bool,
-    /**
-     * Children components
-     */
-    children: PropTypes.oneOfType([
-      PropTypes.arrayOf(PropTypes.node),
-      PropTypes.node,
-    ]).isRequired,
-  };
+interface AnimatedTransactionModalProps {
+  review?: () => void;
+  onModeChange?: (mode: string) => void;
+  ready?: boolean;
+  children: React.ReactNode;
+}
 
+interface AnimatedTransactionModalState {
+  originComponent: string;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  modalValue: any;
+  width: number;
+  rootHeight: number | null;
+  customGasHeight: number;
+  transactionReviewDataHeight: number | null;
+  hideGasSelectors: boolean;
+  hideData: boolean;
+  advancedCustomGas: boolean;
+  toAdvancedFrom: string;
+  mode: string;
+}
+
+class AnimatedTransactionModal extends PureComponent<AnimatedTransactionModalProps, AnimatedTransactionModalState> {
   state = {
     originComponent:
       React.Children.toArray(this.props?.children).length > 1
@@ -84,11 +86,14 @@ class AnimatedTransactionModal extends PureComponent {
   };
 
   review = () => {
+    // @ts-expect-error Legacy JS code needs type refinement
     this.props.review();
     this.onModeChange('review');
   };
 
-  onModeChange = (mode) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onModeChange = (mode: any) => {
     if (mode === 'edit') {
       this.setState({ toAdvancedFrom: 'review' });
       this.animate({
@@ -105,10 +110,13 @@ class AnimatedTransactionModal extends PureComponent {
         xTranslationEndValue: 0,
       });
     }
+    // @ts-expect-error Legacy JS code needs type refinement
     this.props.onModeChange(mode);
   };
 
-  animate = ({ modalEndValue, xTranslationName, xTranslationEndValue }) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  animate = ({ modalEndValue, xTranslationName, xTranslationEndValue }: any) => {
     const { modalValue } = this.state;
     this.hideComponents(xTranslationName, xTranslationEndValue, 'start');
     Animated.parallel([
@@ -118,6 +126,7 @@ class AnimatedTransactionModal extends PureComponent {
         easing: Easing.ease,
         useNativeDriver: true,
       }),
+      // @ts-expect-error Legacy JS code needs type refinement
       Animated.timing(this.xTranslationMappings[xTranslationName], {
         toValue: xTranslationEndValue,
         duration: 250,
@@ -137,7 +146,9 @@ class AnimatedTransactionModal extends PureComponent {
     });
   };
 
-  hideComponents = (xTranslationName, xTranslationEndValue, animationTime) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  hideComponents = (xTranslationName: any, xTranslationEndValue: any, animationTime: any) => {
     //data view is hidden by default because when we switch from review to edit, since view is nested in review, it also gets transformed. It's shown if it's the animation's destination.
     if (xTranslationName === 'editToAdvanced') {
       this.setState({
@@ -151,7 +162,9 @@ class AnimatedTransactionModal extends PureComponent {
     }
   };
 
-  generateTransform = (valueType, outRange) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  generateTransform = (valueType: any, outRange: any) => {
     const { modalValue } = this.state;
     if (valueType === 'modal' || valueType === 'saveButton') {
       return {
@@ -177,6 +190,7 @@ class AnimatedTransactionModal extends PureComponent {
     return {
       transform: [
         {
+          // @ts-expect-error Legacy JS code needs type refinement
           translateX: value.interpolate({
             inputRange: [0, 1],
             outputRange: outRange,
@@ -190,16 +204,23 @@ class AnimatedTransactionModal extends PureComponent {
     const { rootHeight, customGasHeight, originComponent } = this.state;
     if (originComponent === 'wallet') return 1;
     //70 is the fixed height + margin of the error message in advanced custom gas. It expands 70 units vertically to accomodate it
+    // @ts-expect-error Legacy JS code needs type refinement
     return 70 / (rootHeight - customGasHeight);
   };
 
-  saveRootHeight = (event) =>
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  saveRootHeight = (event: any) =>
     this.setState({ rootHeight: event.nativeEvent.layout.height });
 
-  saveCustomGasHeight = (event) =>
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  saveCustomGasHeight = (event: any) =>
     this.setState({ customGasHeight: event.nativeEvent.layout.height });
 
-  saveTransactionReviewDataHeight = (event) =>
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  saveTransactionReviewDataHeight = (event: any) =>
     !this.state.transactionReviewDataHeight &&
     this.setState({
       transactionReviewDataHeight: event.nativeEvent.layout.height,
@@ -207,6 +228,7 @@ class AnimatedTransactionModal extends PureComponent {
 
   getTransformValue = () => {
     const { rootHeight, customGasHeight } = this.state;
+    // @ts-expect-error Legacy JS code needs type refinement
     return rootHeight - customGasHeight;
   };
 
@@ -221,9 +243,13 @@ class AnimatedTransactionModal extends PureComponent {
       toAdvancedFrom,
     } = this.state;
     const { ready, children } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const components = React.Children.toArray(children);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const components = React.Children.toArray(children) as any[];
     let gasTransformStyle;
     let modalTransformStyle;
     let gasComponent;

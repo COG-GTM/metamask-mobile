@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import Modal from 'react-native-modal';
@@ -27,6 +26,19 @@ const styles = StyleSheet.create({
   },
 });
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface ApprovalTransactionEditionModalProps {
+  originalApprovalTransaction?: Record<string, any>;
+  approvalTransaction?: Record<string, any>;
+  editQuoteTransactionsVisible?: boolean;
+  onCancelEditQuoteTransactions?: () => void;
+  setApprovalTransaction?: (tx: any) => void;
+  sourceToken: { symbol?: string; decimals?: number };
+  minimumSpendLimit: string;
+  chainId?: string;
+}
+
 function ApprovalTransactionEditionModal({
   originalApprovalTransaction,
   approvalTransaction,
@@ -36,7 +48,7 @@ function ApprovalTransactionEditionModal({
   sourceToken,
   minimumSpendLimit,
   chainId,
-}) {
+}: ApprovalTransactionEditionModalProps) {
   /* Approval transaction if any */
   const [customApprovalTransaction, setCustomApprovalTransaction] =
     useState(approvalTransaction);
@@ -49,7 +61,7 @@ function ApprovalTransactionEditionModal({
   const { colors } = useTheme();
 
   const onSpendLimitCustomValueChange = useCallback(
-    (approvalCustomValue) => setApprovalCustomValue(approvalCustomValue),
+    (approvalCustomValue: any) => setApprovalCustomValue(approvalCustomValue),
     [],
   );
 
@@ -69,12 +81,16 @@ function ApprovalTransactionEditionModal({
         spendLimitUnlimitedSelected
           ? approvalTransactionAmount
           : approvalCustomValue,
+        // @ts-expect-error Legacy JS code needs type refinement
         sourceToken.decimals,
+        // @ts-expect-error Legacy JS code needs type refinement
         swapsUtils.getSwapsContractAddress(chainId),
         customApprovalTransaction,
       );
       setCustomApprovalTransaction(newApprovalTransaction);
+      // @ts-expect-error Legacy JS code needs type refinement
       setApprovalTransaction(newApprovalTransaction);
+      // @ts-expect-error Legacy JS code needs type refinement
       onCancelEditQuoteTransactions();
     } catch (err) {
       Logger.log('Failed to setTransactionObject', err);
@@ -94,6 +110,7 @@ function ApprovalTransactionEditionModal({
     const newApprovalTx = spendLimitUnlimitedSelected
       ? originalApprovalTransaction
       : customApprovalTransaction;
+    // @ts-expect-error Legacy JS code needs type refinement
     setApprovalTransaction(newApprovalTx);
     if (newApprovalTx) {
       const approvalTransactionAmount = decodeApproveData(
@@ -101,6 +118,7 @@ function ApprovalTransactionEditionModal({
       ).encodedAmount;
       const amountDec = hexToBN(approvalTransactionAmount).toString(10);
       setApprovalTransactionAmount(
+        // @ts-expect-error Legacy JS code needs type refinement
         fromTokenMinimalUnitString(amountDec, sourceToken.decimals),
       );
     }
@@ -136,6 +154,7 @@ function ApprovalTransactionEditionModal({
             host={'Swaps'}
             minimumSpendLimit={minimumSpendLimit}
             spendLimitUnlimitedSelected={spendLimitUnlimitedSelected}
+            // @ts-expect-error Legacy JS code needs type refinement
             tokenSymbol={sourceToken.symbol}
             spendLimitCustomValue={approvalCustomValue}
             originalApproveAmount={approvalTransactionAmount}
@@ -145,6 +164,7 @@ function ApprovalTransactionEditionModal({
               onPressSpendLimitUnlimitedSelected
             }
             onPressSpendLimitCustomSelected={onPressSpendLimitCustomSelected}
+            // @ts-expect-error Legacy JS code needs type refinement
             toggleEditPermission={onCancelEditQuoteTransactions}
           />
         )}
@@ -153,18 +173,9 @@ function ApprovalTransactionEditionModal({
   );
 }
 
-ApprovalTransactionEditionModal.propTypes = {
-  approvalTransaction: PropTypes.object,
-  originalApprovalTransaction: PropTypes.object,
-  editQuoteTransactionsVisible: PropTypes.bool,
-  minimumSpendLimit: PropTypes.string.isRequired,
-  onCancelEditQuoteTransactions: PropTypes.func,
-  setApprovalTransaction: PropTypes.func,
-  sourceToken: PropTypes.object,
-  chainId: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => ({
   originalApprovalTransaction: selectSwapsApprovalTransaction(state),
 });
 

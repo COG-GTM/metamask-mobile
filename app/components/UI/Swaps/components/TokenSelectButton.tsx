@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { View, StyleSheet } from 'react-native';
 
 import SelectorButton from '../../../Base/SelectorButton';
@@ -12,8 +11,17 @@ const styles = StyleSheet.create({
   },
 });
 
-function TokenSelectButton({ icon, symbol, onPress, disabled, label }) {
+interface TokenSelectButtonProps {
+  icon?: string;
+  symbol?: string;
+  label?: string;
+  onPress?: () => void;
+  disabled?: boolean;
+}
+
+function TokenSelectButton({ icon, symbol, onPress, disabled, label }: TokenSelectButtonProps) {
   return (
+    // @ts-expect-error Legacy JS code needs type refinement
     <SelectorButton onPress={onPress} disabled={disabled}>
       <View style={styles.icon}>
         <TokenIcon icon={icon} symbol={symbol} />
@@ -23,12 +31,5 @@ function TokenSelectButton({ icon, symbol, onPress, disabled, label }) {
   );
 }
 
-TokenSelectButton.propTypes = {
-  icon: PropTypes.string,
-  symbol: PropTypes.string,
-  label: PropTypes.string,
-  onPress: PropTypes.func,
-  disabled: PropTypes.bool,
-};
 
 export default TokenSelectButton;

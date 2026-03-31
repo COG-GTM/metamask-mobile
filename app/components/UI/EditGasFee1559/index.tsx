@@ -18,7 +18,6 @@ import Alert, { AlertType } from '../../Base/Alert';
 import HorizontalSelector from '../../Base/HorizontalSelector';
 import Device from '../../../util/device';
 import { getDecimalChainId, isMainnetByChainId } from '../../../util/networks';
-import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import FadeAnimationView from '../FadeAnimationView';
 import { MetaMetricsEvents } from '../../../core/Analytics';
@@ -35,7 +34,9 @@ import {
 } from '../../../util/gasUtils';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -148,6 +149,45 @@ const createStyles = (colors) =>
  * The EditGasFee1559 component will be deprecated in favor of EditGasFee1559Update as part of the gas polling refactor code that moves gas fee modifications to `app/core/GasPolling`. When the refactoring is completed, the EditGasFee1559Update will be renamed EditGasFee1559 and this component will be removed. The EditGasFee1559Update is currently being used in the Update Transaction(Speed Up/Cancel) flow.
  */
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface EditGasFee1559Props {
+  selected?: string;
+  gasFee?: Record<string, any>;
+  gasOptions?: Record<string, any>;
+  onChange?: (gas: any, selected: string | null) => void;
+  onCancel?: () => void;
+  onSave?: (selected: string | null) => void;
+  gasFeeNative?: string;
+  gasFeeConversion?: string;
+  gasFeeMaxNative?: string;
+  gasFeeMaxConversion?: string;
+  maxPriorityFeeNative?: string;
+  maxPriorityFeeConversion?: string;
+  maxFeePerGasNative?: string;
+  maxFeePerGasConversion?: string;
+  primaryCurrency?: string;
+  chainId?: string;
+  timeEstimate?: string;
+  timeEstimateColor?: string;
+  timeEstimateId?: string;
+  error?: string | boolean | React.ReactNode;
+  warning?: string | boolean | React.ReactNode;
+  dappSuggestedGas?: boolean;
+  ignoreOptions?: string[];
+  updateOption?: Record<string, any>;
+  extendOptions?: Record<string, any>;
+  recommended?: Record<string, any>;
+  warningMinimumEstimateOption?: string;
+  suggestedEstimateOption?: string;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  analyticsParams?: Record<string, any>;
+  view: string;
+}
+
 const EditGasFee1559 = ({
   selected,
   gasFee,
@@ -183,12 +223,12 @@ const EditGasFee1559 = ({
   onUpdatingValuesEnd,
   analyticsParams,
   view,
-}) => {
-  const [showInfoModal, setShowInfoModal] = useState(false);
+}: EditGasFee1559Props) => {
+  const [showInfoModal, setShowInfoModal] = useState<string | boolean>(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(!selected);
-  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState(null);
-  const [maxFeeError, setMaxFeeError] = useState(null);
-  const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
+  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<string | null>(null);
+  const [maxFeeError, setMaxFeeError] = useState<string | null>(null);
+  const [showLearnMoreModal, setShowLearnMoreModal] = useState<string | boolean>(false);
   const [selectedOption, setSelectedOption] = useState(selected);
   const [showInputs, setShowInputs] = useState(!dappSuggestedGas);
   const [
@@ -238,16 +278,23 @@ const EditGasFee1559 = ({
         .build(),
     );
 
+    // @ts-expect-error Legacy JS code needs type refinement
     onSave(selectedOption);
   };
 
-  const changeGas = (gas, selectedOption) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const changeGas = (gas: any, selectedOption: any) => {
     setSelectedOption(selectedOption);
+    // @ts-expect-error Legacy JS code needs type refinement
     onChange(gas, selectedOption);
   };
 
-  const changedMaxPriorityFee = (value) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const changedMaxPriorityFee = (value: any) => {
     const lowerValue = new BigNumber(
+      // @ts-expect-error Legacy JS code needs type refinement
       gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxPriorityFeePerGas,
     );
     const higherValue = new BigNumber(
@@ -284,8 +331,11 @@ const EditGasFee1559 = ({
     changeGas(newGas, null);
   };
 
-  const changedMaxFeePerGas = (value) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const changedMaxFeePerGas = (value: any) => {
     const lowerValue = new BigNumber(
+      // @ts-expect-error Legacy JS code needs type refinement
       gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxFeePerGas,
     );
     const higherValue = new BigNumber(
@@ -317,22 +367,32 @@ const EditGasFee1559 = ({
     changeGas(newGas, null);
   };
 
-  const changedGasLimit = (value) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const changedGasLimit = (value: any) => {
     const newGas = { ...gasFee, suggestedGasLimit: value };
     changeGas(newGas, null);
   };
 
-  const selectOption = (option) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const selectOption = (option: any) => {
     setSelectedOption(option);
     setMaxFeeError('');
     setMaxPriorityFeeError('');
+    // @ts-expect-error Legacy JS code needs type refinement
     changeGas({ ...gasOptions[option] }, option);
   };
 
-  const shouldIgnore = (option) =>
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const shouldIgnore = (option: any) =>
+    // @ts-expect-error Legacy JS code needs type refinement
     ignoreOptions.find((item) => item === option);
 
-  const renderLabel = (selected, disabled, label) => (
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderLabel = (selected: any, disabled: any, label: any) => (
     <Text bold primary={selected && !disabled}>
       {label}
     </Text>
@@ -399,10 +459,12 @@ const EditGasFee1559 = ({
             selected={selectedOption}
             onPress={selectOption}
             options={renderOptions()}
+            disabled={false}
           />
         </View>
         <View style={styles.advancedOptionsContainer}>
           <TouchableOpacity
+            // @ts-expect-error Legacy JS code needs type refinement
             disable={updateOption?.showAdvanced}
             onPress={toggleAdvancedOptions}
             style={styles.advancedOptionsButton}
@@ -437,6 +499,7 @@ const EditGasFee1559 = ({
                     </View>
                   }
                   min={GAS_LIMIT_MIN}
+                  // @ts-expect-error Legacy JS code needs type refinement
                   value={gasFee.suggestedGasLimit}
                   onChangeValue={changedGasLimit}
                   name={strings('edit_gas_fee_eip1559.gas_limit')}
@@ -469,12 +532,14 @@ const EditGasFee1559 = ({
                         {strings('edit_gas_fee_eip1559.estimate')}:
                       </Text>{' '}
                       {
+                        // @ts-expect-error Legacy JS code needs type refinement
                         gasOptions?.[suggestedEstimateOption]
                           ?.suggestedMaxPriorityFeePerGas
                       }{' '}
                       GWEI
                     </Text>
                   }
+                  // @ts-expect-error Legacy JS code needs type refinement
                   value={gasFee.suggestedMaxPriorityFeePerGas}
                   name={strings('edit_gas_fee_eip1559.max_priority_fee')}
                   unit={'GWEI'}
@@ -519,12 +584,14 @@ const EditGasFee1559 = ({
                         {strings('edit_gas_fee_eip1559.estimate')}:
                       </Text>{' '}
                       {
+                        // @ts-expect-error Legacy JS code needs type refinement
                         gasOptions?.[suggestedEstimateOption]
                           ?.suggestedMaxFeePerGas
                       }{' '}
                       GWEI
                     </Text>
                   }
+                  // @ts-expect-error Legacy JS code needs type refinement
                   value={gasFee.suggestedMaxFeePerGas}
                   name={strings('edit_gas_fee_eip1559.max_fee')}
                   unit={'GWEI'}
@@ -644,7 +711,7 @@ const EditGasFee1559 = ({
                   />
                 </TouchableOpacity>
                 <Text bold black>
-                  {renderDisplayTitle}
+                  {renderDisplayTitle()}
                 </Text>
                 <Icon
                   name={'arrow-back'}
@@ -671,8 +738,8 @@ const EditGasFee1559 = ({
                 </View>
               )}
             </View>
-            {renderWarning}
-            {renderError}
+            {renderWarning()}
+            {renderError()}
             <FadeAnimationView
               style={styles.headerContainer}
               valueToWatch={valueToWatch}
@@ -746,6 +813,7 @@ const EditGasFee1559 = ({
                   ? strings('edit_gas_fee_eip1559.new_gas_fee')
                   : null
               }
+              // @ts-expect-error Legacy JS code needs type refinement
               toggleModal={() => setShowInfoModal(null)}
               body={
                 <View>
@@ -770,6 +838,7 @@ const EditGasFee1559 = ({
               }
             />
             <InfoModal
+              // @ts-expect-error Legacy JS code needs type refinement
               isVisible={showLearnMoreModal}
               title={strings('edit_gas_fee_eip1559.learn_more.title')}
               toggleModal={toggleLearnMoreModal}
@@ -848,159 +917,6 @@ const EditGasFee1559 = ({
       </ScrollView>
     </View>
   );
-};
-
-EditGasFee1559.defaultProps = {
-  ignoreOptions: [],
-  warningMinimumEstimateOption: AppConstants.GAS_OPTIONS.LOW,
-  suggestedEstimateOption: AppConstants.GAS_OPTIONS.MEDIUM,
-};
-
-EditGasFee1559.propTypes = {
-  /**
-   * Gas option selected (low, medium, high)
-   */
-  selected: PropTypes.string,
-  /**
-   * Gas fee currently active
-   */
-  gasFee: PropTypes.object,
-  /**
-   * Gas fee options to select from
-   */
-  gasOptions: PropTypes.object,
-  /**
-   * Function called when user selected or changed the gas
-   */
-  onChange: PropTypes.func,
-  /**
-   * Function called when user cancels
-   */
-  onCancel: PropTypes.func,
-  /**
-   * Function called when user saves the new gas
-   */
-  onSave: PropTypes.func,
-  /**
-   * Gas fee in native currency
-   */
-  gasFeeNative: PropTypes.string,
-  /**
-   * Gas fee converted to chosen currency
-   */
-  gasFeeConversion: PropTypes.string,
-  /**
-   * Maximum gas fee in native currency
-   */
-  gasFeeMaxNative: PropTypes.string,
-  /**
-   * Maximum gas fee converted to chosen currency
-   */
-  gasFeeMaxConversion: PropTypes.string,
-  /**
-   * Maximum priority gas fee in native currency
-   */
-  maxPriorityFeeNative: PropTypes.string,
-  /**
-   * Maximum priority gas fee converted to chosen currency
-   */
-  maxPriorityFeeConversion: PropTypes.string,
-  /**
-   * Maximum fee per gas fee in native currency
-   */
-  maxFeePerGasNative: PropTypes.string,
-  /**
-   * Maximum fee per gas fee converted to chosen currency
-   */
-  maxFeePerGasConversion: PropTypes.string,
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-  /**
-   * A string representing the network chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * String that represents the time estimates
-   */
-  timeEstimate: PropTypes.string,
-  /**
-   * String that represents the color of the time estimate
-   */
-  timeEstimateColor: PropTypes.string,
-  /**
-   * Time estimate name (unknown, low, medium, high, less_than, range)
-   */
-  timeEstimateId: PropTypes.string,
-  /**
-   * Error message to show
-   */
-  error: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.bool,
-    PropTypes.node,
-  ]),
-  /**
-   * Warning message to show
-   */
-  warning: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.bool,
-    PropTypes.node,
-  ]),
-  /**
-   * Boolean that specifies if the gas price was suggested by the dapp
-   */
-  dappSuggestedGas: PropTypes.bool,
-  /**
-   * Ignore option array
-   */
-  ignoreOptions: PropTypes.array,
-  /**
-   * Option to display speed up/cancel view
-   */
-  updateOption: PropTypes.object,
-  /**
-   * Extend options object. Object has option keys and properties will be spread
-   */
-  extendOptions: PropTypes.object,
-  /**
-   * Recommended object with type and render function
-   */
-  recommended: PropTypes.object,
-  /**
-   * Estimate option to compare with for too low warning
-   */
-  warningMinimumEstimateOption: PropTypes.string,
-  /**
-   * Suggested estimate option to show recommended values
-   */
-  suggestedEstimateOption: PropTypes.string,
-  /**
-   * Function to call when update animation starts
-   */
-  onUpdatingValuesStart: PropTypes.func,
-  /**
-   * Function to call when update animation ends
-   */
-  onUpdatingValuesEnd: PropTypes.func,
-  /**
-   * If the values should animate upon update or not
-   */
-  animateOnChange: PropTypes.bool,
-  /**
-   * Boolean to determine if the animation is happening
-   */
-  isAnimating: PropTypes.bool,
-  /**
-   * Extra analytics params to be send with the gas analytics
-   */
-  analyticsParams: PropTypes.object,
-  /**
-   * (For analytics purposes) View (Approve, Transfer, Confirm) where this component is being used
-   */
-  view: PropTypes.string.isRequired,
 };
 
 export default EditGasFee1559;

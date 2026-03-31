@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View } from 'react-native';
 
 import RemoteImage from '../../../Base/RemoteImage';
@@ -20,7 +19,9 @@ const BIG_RADIUS = 25;
 const BIGGEST_SIZE = 70;
 const BIGGEST_RADIUS = 35;
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     icon: {
       width: REGULAR_SIZE,
@@ -63,7 +64,18 @@ const createStyles = (colors) =>
     },
   });
 
-const EmptyIcon = ({ medium, big, biggest, style, ...props }) => {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface EmptyIconProps {
+  medium?: boolean;
+  big?: boolean;
+  biggest?: boolean;
+  style?: any;
+  testID?: string;
+  children?: React.ReactNode;
+}
+
+const EmptyIcon: React.FC<EmptyIconProps> = ({ medium, big, biggest, style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -82,15 +94,20 @@ const EmptyIcon = ({ medium, big, biggest, style, ...props }) => {
   );
 };
 
-EmptyIcon.propTypes = {
-  medium: PropTypes.bool,
-  big: PropTypes.bool,
-  biggest: PropTypes.bool,
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  testID: PropTypes.string,
-};
 
-function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface TokenIconProps {
+  symbol?: string;
+  icon?: string;
+  medium?: boolean;
+  big?: boolean;
+  biggest?: boolean;
+  style?: any;
+  testID?: string;
+}
+
+function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }: TokenIconProps) {
   const [showFallback, setShowFallback] = useState(false);
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -104,7 +121,9 @@ function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
       return imageIcons.SOLANA;
     }
 
+    // @ts-expect-error Legacy JS code needs type refinement
     if (Object.keys(imageIcons).includes(symbol)) {
+      // @ts-expect-error Legacy JS code needs type refinement
       return imageIcons[symbol];
     }
 
@@ -148,6 +167,7 @@ function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
             styles.tokenSymbol,
             medium && styles.tokenSymbolMedium,
             (big || biggest) && styles.tokenSymbolBig,
+            // @ts-expect-error Legacy JS code needs type refinement
             biggest && styles.tokenSymbolBiggest,
           ]}
         >
@@ -160,14 +180,5 @@ function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
   return <EmptyIcon medium={medium} style={style} />;
 }
 
-TokenIcon.propTypes = {
-  symbol: PropTypes.string,
-  icon: PropTypes.string,
-  medium: PropTypes.bool,
-  big: PropTypes.bool,
-  biggest: PropTypes.bool,
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  testID: PropTypes.string,
-};
 
 export default TokenIcon;

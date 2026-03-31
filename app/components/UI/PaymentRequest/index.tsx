@@ -15,7 +15,6 @@ import { getPaymentRequestOptionsTitle } from '../../UI/Navbar';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import Fuse from 'fuse.js';
 import AssetList from './AssetList';
-import PropTypes from 'prop-types';
 import {
   weiToFiat,
   toWei,
@@ -63,7 +62,9 @@ import { selectSelectedInternalAccountFormattedAddress } from '../../../selector
 import { RequestPaymentViewSelectors } from '../../../../e2e/selectors/Receive/RequestPaymentView.selectors';
 
 const KEYBOARD_OFFSET = 120;
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -256,62 +257,53 @@ const MODE_AMOUNT = 'amount';
 /**
  * View to generate a payment request link
  */
-class PaymentRequest extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * ETH-to-current currency conversion rate from CurrencyRateController
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code for currently-selected currency from CurrencyRateController
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Primary currency, either ETH or Fiat
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * A string representing the chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * List of tokens from TokenListController (Formatted into array)
-     */
-    tokenList: PropTypes.array,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface PaymentRequestProps {
+  navigation?: any;
+  conversionRate?: number;
+  currentCurrency?: string;
+  contractExchangeRates?: Record<string, any>;
+  primaryCurrency?: string;
+  selectedAddress?: string;
+  tokens?: any[];
+  chainId?: string;
+  ticker?: string;
+  tokenList?: any[];
+  route?: any;
+}
 
-  amountInput = React.createRef();
-  searchInput = React.createRef();
+interface PaymentRequestState {
+  searchInputValue: string;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  results: any[];
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectedAsset: any;
+  mode: typeof MODE_SELECT | typeof MODE_AMOUNT;
+  internalPrimaryCurrency: string;
+  cryptoAmount: string | undefined;
+  amount: string | undefined;
+  secondaryAmount: string | undefined;
+  symbol: string | undefined;
+  showError: boolean;
+  inputWidth: { width: string };
+}
+
+class PaymentRequest extends PureComponent<PaymentRequestProps, PaymentRequestState> {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  amountInput = React.createRef<any>();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  searchInput = React.createRef<any>();
 
   state = {
     searchInputValue: '',
     results: [],
-    selectedAsset: undefined,
-    mode: MODE_SELECT,
+    selectedAsset: undefined as any,
+    mode: MODE_SELECT as typeof MODE_SELECT | typeof MODE_AMOUNT,
     internalPrimaryCurrency: '',
     cryptoAmount: undefined,
     amount: undefined,
@@ -323,6 +315,7 @@ class PaymentRequest extends PureComponent {
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
+    // @ts-expect-error Legacy JS code needs type refinement
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getPaymentRequestOptionsTitle(
@@ -342,6 +335,7 @@ class PaymentRequest extends PureComponent {
     this.updateNavBar();
     const receiveAsset = route?.params?.receiveAsset;
     this.setState({
+      // @ts-expect-error Legacy JS code needs type refinement
       internalPrimaryCurrency: primaryCurrency,
       inputWidth: { width: '100%' },
     });
@@ -350,6 +344,7 @@ class PaymentRequest extends PureComponent {
     }
     // TODO: Fuse will only be updated once on mount. When we convert this component to hooks, we can utilize useEffect to update fuse.
     // Update fuse collection with token list
+    // @ts-expect-error Legacy JS code needs type refinement
     fuse.setCollection(tokenList);
   };
 
@@ -381,7 +376,9 @@ class PaymentRequest extends PureComponent {
    *
    * @param {object} selectedAsset - Asset selected to build the payment request
    */
-  goToAmountInput = async (selectedAsset) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  goToAmountInput = async (selectedAsset: any) => {
     const { navigation } = this.props;
     navigation &&
       navigation.setParams({
@@ -397,13 +394,16 @@ class PaymentRequest extends PureComponent {
    *
    * @param {string} searchInputValue - String containing assets query
    */
-  handleSearch = (searchInputValue) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleSearch = (searchInputValue: any) => {
     const { tokenList } = this.props;
     if (typeof searchInputValue !== 'string') {
       searchInputValue = this.state.searchInputValue;
     }
 
     const fuseSearchResult = fuse.search(searchInputValue);
+    // @ts-expect-error Legacy JS code needs type refinement
     const addressSearchResult = tokenList.filter((token) =>
       toLowerCaseEquals(token.address, searchInputValue),
     );
@@ -425,10 +425,15 @@ class PaymentRequest extends PureComponent {
     const { tokens, chainId, ticker, tokenList } = this.props;
     const { inputWidth } = this.state;
     let results;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const colors = (this.context as any).colors || mockTheme.colors;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const themeAppearance = (this.context as any).themeAppearance || 'light';
     const styles = createStyles(colors);
     const isTDSupportedForNetwork =
+      // @ts-expect-error Legacy JS code needs type refinement
       isTokenDetectionSupportedForNetwork(chainId);
 
     if (isTDSupportedForNetwork) {
@@ -440,6 +445,7 @@ class PaymentRequest extends PureComponent {
     } else if (
       //Check to see if it is not a test net ticker symbol
       Object.values(ChainId).find((value) => value === chainId) &&
+      // @ts-expect-error Legacy JS code needs type refinement
       !(parseInt(chainId, 10) > 1 && parseInt(chainId, 10) < 6)
     ) {
       results = [defaultEth];
@@ -447,7 +453,9 @@ class PaymentRequest extends PureComponent {
       results = [{ ...defaultEth, symbol: getTicker(ticker), name: '' }];
     }
 
+    // @ts-expect-error Legacy JS code needs type refinement
     const userTokens = tokens.map((token) => {
+      // @ts-expect-error Legacy JS code needs type refinement
       const contract = tokenList.find(
         (contractToken) => contractToken.address === token.address,
       );
@@ -474,6 +482,7 @@ class PaymentRequest extends PureComponent {
             />
             <TextInput
               ref={this.searchInput}
+              // @ts-expect-error Legacy JS code needs type refinement
               style={[styles.searchInput, inputWidth]}
               autoCapitalize="none"
               autoCorrect={false}
@@ -513,6 +522,7 @@ class PaymentRequest extends PureComponent {
           <AssetList
             searchResults={results}
             handleSelectAsset={this.goToAmountInput}
+            // @ts-expect-error Legacy JS code needs type refinement
             selectedAsset={this.state.selectedAsset}
             searchQuery={this.state.searchInputValue}
             emptyMessage={strings('payment_request.search_no_tokens_found')}
@@ -526,6 +536,7 @@ class PaymentRequest extends PureComponent {
             <AssetList
               searchResults={userTokens}
               handleSelectAsset={this.goToAmountInput}
+              // @ts-expect-error Legacy JS code needs type refinement
               selectedAsset={this.state.selectedAsset}
               searchQuery={this.state.searchInputValue}
             />
@@ -541,7 +552,9 @@ class PaymentRequest extends PureComponent {
    * @param {string} amount - String containing amount number from input, as token value
    * @returns {object} - Object containing respective symbol, secondaryAmount and cryptoAmount according to amount and selectedAsset
    */
-  handleETHPrimaryCurrency = (amount) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleETHPrimaryCurrency = (amount: any) => {
     const { conversionRate, currentCurrency, contractExchangeRates } =
       this.props;
     const { selectedAsset } = this.state;
@@ -560,6 +573,7 @@ class PaymentRequest extends PureComponent {
             undefAmount,
             conversionRate,
             exchangeRate,
+            // @ts-expect-error Legacy JS code needs type refinement
             currentCurrency,
           )
         : undefined;
@@ -567,6 +581,7 @@ class PaymentRequest extends PureComponent {
       secondaryAmount = weiToFiat(
         toWei(undefAmount),
         conversionRate,
+        // @ts-expect-error Legacy JS code needs type refinement
         currentCurrency,
       );
     }
@@ -579,7 +594,9 @@ class PaymentRequest extends PureComponent {
    * @param {string} amount - String containing amount number from input, as fiat value
    * @returns {object} - Object containing respective symbol, secondaryAmount and cryptoAmount according to amount and selectedAsset
    */
-  handleFiatPrimaryCurrency = (amount) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleFiatPrimaryCurrency = (amount: any) => {
     const { conversionRate, currentCurrency, contractExchangeRates } =
       this.props;
     const { selectedAsset } = this.state;
@@ -594,12 +611,14 @@ class PaymentRequest extends PureComponent {
     if (selectedAsset.symbol !== 'ETH' && exchangeRate && exchangeRate !== 0) {
       const secondaryMinimalUnit = fiatNumberToTokenMinimalUnit(
         undefAmount,
+        // @ts-expect-error Legacy JS code needs type refinement
         conversionRate,
         exchangeRate,
         selectedAsset.decimals,
       );
       secondaryAmount =
         renderFromTokenMinimalUnit(
+          // @ts-expect-error Legacy JS code needs type refinement
           secondaryMinimalUnit,
           selectedAsset.decimals,
         ) +
@@ -611,9 +630,11 @@ class PaymentRequest extends PureComponent {
       );
     } else {
       secondaryAmount =
+        // @ts-expect-error Legacy JS code needs type refinement
         renderFromWei(fiatNumberToWei(undefAmount, conversionRate)) +
         ' ' +
         strings('unit.eth');
+      // @ts-expect-error Legacy JS code needs type refinement
       cryptoAmount = fromWei(fiatNumberToWei(undefAmount, conversionRate));
     }
     return { symbol, secondaryAmount, cryptoAmount };
@@ -624,10 +645,13 @@ class PaymentRequest extends PureComponent {
    *
    * @param {string} amount - String containing amount number from input
    */
-  updateAmount = (amount) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateAmount = (amount?: any) => {
     const { internalPrimaryCurrency, selectedAsset } = this.state;
     const { conversionRate, contractExchangeRates, currentCurrency } =
       this.props;
+    // @ts-expect-error Legacy JS code needs type refinement
     const currencySymbol = currencySymbols[currentCurrency];
     const exchangeRate =
       selectedAsset &&
@@ -670,8 +694,10 @@ class PaymentRequest extends PureComponent {
       Fiat: 'ETH',
     };
     await this.setState({
+      // @ts-expect-error Legacy JS code needs type refinement
       internalPrimaryCurrency: primarycurrencies[internalPrimaryCurrency],
     });
+    // @ts-expect-error Legacy JS code needs type refinement
     this.updateAmount(secondaryAmount.split(' ')[0]);
   };
 
@@ -691,10 +717,12 @@ class PaymentRequest extends PureComponent {
     const { cryptoAmount, selectedAsset } = this.state;
 
     try {
+      // @ts-expect-error Legacy JS code needs type refinement
       if (cryptoAmount && cryptoAmount > '0') {
         let eth_link;
         if (selectedAsset.isETH) {
           const amount = toWei(cryptoAmount).toString();
+          // @ts-expect-error Legacy JS code needs type refinement
           eth_link = generateETHLink(selectedAddress, amount, chainId);
         } else {
           const amount = toTokenMinimalUnit(
@@ -702,6 +730,7 @@ class PaymentRequest extends PureComponent {
             selectedAsset.decimals,
           ).toString();
           eth_link = generateERC20Link(
+            // @ts-expect-error Legacy JS code needs type refinement
             selectedAddress,
             selectedAsset.address,
             amount,
@@ -741,8 +770,10 @@ class PaymentRequest extends PureComponent {
       showError,
       selectedAsset,
       internalPrimaryCurrency,
+      // @ts-expect-error Legacy JS code needs type refinement
       chainId,
     } = this.state;
+    // @ts-expect-error Legacy JS code needs type refinement
     const currencySymbol = currencySymbols[currentCurrency];
     const exchangeRate =
       selectedAsset &&
@@ -750,8 +781,12 @@ class PaymentRequest extends PureComponent {
       contractExchangeRates &&
       contractExchangeRates[selectedAsset.address]?.price;
     let switchable = true;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const colors = (this.context as any).colors || mockTheme.colors;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const themeAppearance = (this.context as any).themeAppearance || 'light';
     const styles = createStyles(colors);
 
     if (!conversionRate) {
@@ -870,6 +905,7 @@ class PaymentRequest extends PureComponent {
 
   render() {
     const { mode } = this.state;
+    // @ts-expect-error Legacy JS code needs type refinement
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -890,7 +926,9 @@ class PaymentRequest extends PureComponent {
 
 PaymentRequest.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   contractExchangeRates: selectContractExchangeRates(state),
@@ -903,4 +941,5 @@ const mapStateToProps = (state) => ({
   tokenList: selectTokenListArray(state),
 });
 
+// @ts-expect-error Legacy JS code needs type refinement
 export default connect(mapStateToProps)(PaymentRequest);

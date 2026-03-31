@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import { useSelector } from 'react-redux';
 import { Animated, View, StyleSheet, Image } from 'react-native';
-import PropTypes from 'prop-types';
 import { selectSelectedNetworkClientId } from '../../../../../selectors/networkController';
 import Engine from '../../../../../core/Engine';
 import Logger from '../../../../../util/Logger';
@@ -36,7 +35,9 @@ const PAN_RADIO = STAGE_SIZE * 0.6;
 // "finalizing" animationg
 const FINALIZING_PERCENTAGE = 80;
 
-const createStyles = (colors, shadows) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any, shadows: any) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -108,8 +109,18 @@ const createStyles = (colors, shadows) =>
     },
   });
 
-function round(value, decimals) {
+function round(value: number, decimals: number): number {
+  // @ts-expect-error Legacy JS code needs type refinement
   return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+}
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface LoadingAnimationProps {
+  finish?: boolean;
+  onAnimationEnd?: () => void;
+  aggregatorMetadata?: Record<string, any>;
+  headPan?: boolean;
 }
 
 function LoadingAnimation({
@@ -117,7 +128,7 @@ function LoadingAnimation({
   onAnimationEnd,
   aggregatorMetadata,
   headPan = true,
-}) {
+}: LoadingAnimationProps) {
   const [metadata, setMetadata] = useState([]);
   const [shouldStart, setShouldStart] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
@@ -130,6 +141,7 @@ function LoadingAnimation({
 
   /* References */
   const foxRef = useRef();
+  // @ts-expect-error Legacy JS code needs type refinement
   const foxHeadPan = useRef(new Animated.ValueXY(0, 0)).current;
   const currentQuoteIndexValue = useRef(new Animated.Value(0)).current;
   const progressValue = useRef(new Animated.Value(0)).current;
@@ -180,6 +192,7 @@ function LoadingAnimation({
 
             return {
               ...acc,
+              // @ts-expect-error Legacy JS code needs type refinement
               [curr.key]: [panRadioX, panRadioY, radioX, radioY],
             };
             // eslint-disable-next-line no-mixed-spaces-and-tabs
@@ -195,6 +208,7 @@ function LoadingAnimation({
         ? metadata.reduce(
             (acc, curr) => ({
               ...acc,
+              // @ts-expect-error Legacy JS code needs type refinement
               [curr.key]: new Animated.Value(0),
             }),
             {},
@@ -211,6 +225,7 @@ function LoadingAnimation({
         ? [
             // Animated.delay(INITIAL_DELAY),
             ...metadata.reduce(
+              // @ts-expect-error Legacy JS code needs type refinement
               (acc, cur, index, array) => [
                 ...acc,
                 // Time to delay next iteration, this is the amount of time the head looks at the icon
@@ -223,13 +238,16 @@ function LoadingAnimation({
                 }),
                 Animated.parallel([
                   // If is not the first aggregator, reduce previous aggregator opacity to 1
+                  // @ts-expect-error Legacy JS code needs type refinement
                   index > 0 &&
+                    // @ts-expect-error Legacy JS code needs type refinement
                     Animated.timing(opacities[array[index - 1].key], {
                       toValue: 0,
                       duration: PAN_DURATION,
                       useNativeDriver: true,
                     }),
                   // Set current aggregator opacity to 1
+                  // @ts-expect-error Legacy JS code needs type refinement
                   Animated.timing(opacities[cur.key], {
                     toValue: 1,
                     duration: PAN_DURATION,
@@ -243,10 +261,13 @@ function LoadingAnimation({
                     useNativeDriver: false,
                   }),
                   // Make the fox head pan to the aggregator position
+                  // @ts-expect-error Legacy JS code needs type refinement
                   !Device.isAndroid() &&
                     Animated.timing(foxHeadPan, {
                       toValue: {
+                        // @ts-expect-error Legacy JS code needs type refinement
                         x: positions[cur.key][0],
+                        // @ts-expect-error Legacy JS code needs type refinement
                         y: positions[cur.key][1],
                       },
                       duration: PAN_DURATION,
@@ -260,12 +281,14 @@ function LoadingAnimation({
             Animated.delay(DELAY),
             Animated.parallel([
               // Set last aggregator icon opacity to 0
+              // @ts-expect-error Legacy JS code needs type refinement
               Animated.timing(opacities[[...metadata].pop()?.key], {
                 toValue: 0,
                 duration: PAN_DURATION,
                 useNativeDriver: true,
               }),
               // Reset to fox head to origing
+              // @ts-expect-error Legacy JS code needs type refinement
               !Device.isAndroid() &&
                 Animated.timing(foxHeadPan, {
                   toValue: { x: 0, y: 0 },
@@ -323,6 +346,7 @@ function LoadingAnimation({
           });
         } catch (error) {
           Logger.error(
+            // @ts-expect-error Legacy JS code needs type refinement
             error,
             'Swaps: Error fetching agg metadata in animation',
           );
@@ -334,6 +358,7 @@ function LoadingAnimation({
             ...value,
           }),
         );
+        // @ts-expect-error Legacy JS code needs type refinement
         setMetadata(metadata);
         setShouldStart(true);
       }
@@ -382,6 +407,7 @@ function LoadingAnimation({
   useEffect(() => {
     const listener = foxHeadPan.addListener(({ x, y }) => {
       requestAnimationFrame(() => {
+        // @ts-expect-error Legacy JS code needs type refinement
         if (foxRef?.current?.injectJavaScript) {
           const JS = `window.dispatchEvent(new CustomEvent('nativedeviceorientation', {
                   detail: {
@@ -391,12 +417,15 @@ function LoadingAnimation({
                   }
                 }));
                 `;
+          // @ts-expect-error Legacy JS code needs type refinement
           foxRef.current.injectJavaScript(JS);
         }
       });
     });
 
+    // @ts-expect-error Legacy JS code needs type refinement
     if (foxRef?.current?.reload && Device.isAndroid()) {
+      // @ts-expect-error Legacy JS code needs type refinement
       foxRef.current.reload();
     }
 
@@ -430,7 +459,7 @@ function LoadingAnimation({
             )}
             {hasStarted && !hasFinished && (
               <Title style={styles.text} centered>
-                {strings('swaps.checking')} {metadata[currentQuoteIndex]?.title}
+                {strings('swaps.checking')} {(metadata as any)?.[currentQuoteIndex]?.title}
                 ...
               </Title>
             )}
@@ -473,15 +502,21 @@ function LoadingAnimation({
           metadata &&
           metadata.map((agg) => (
             <Animated.View
+              // @ts-expect-error Legacy JS code needs type refinement
               key={agg.key}
               style={[
                 styles.aggContainer,
                 {
+                  // @ts-expect-error Legacy JS code needs type refinement
                   backgroundColor: agg.color,
+                  // @ts-expect-error Legacy JS code needs type refinement
                   shadowColor: agg.color,
+                  // @ts-expect-error Legacy JS code needs type refinement
                   opacity: opacities[agg.key],
                   transform: [
+                    // @ts-expect-error Legacy JS code needs type refinement
                     { translateX: positions[agg.key][2] },
+                    // @ts-expect-error Legacy JS code needs type refinement
                     { translateY: positions[agg.key][3] },
                   ],
                 },
@@ -490,6 +525,7 @@ function LoadingAnimation({
               <Image
                 style={styles.aggImage}
                 resizeMode="contain"
+                // @ts-expect-error Legacy JS code needs type refinement
                 source={{ uri: agg.iconPng }}
               />
             </Animated.View>
@@ -499,23 +535,5 @@ function LoadingAnimation({
   );
 }
 
-LoadingAnimation.propTypes = {
-  /**
-   * Wether to execute the "Finalizing" animation after the main sequence
-   */
-  finish: PropTypes.bool,
-  /**
-   * Function callback executed once both the main sequence and the finalizing animation ends
-   */
-  onAnimationEnd: PropTypes.func,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  /**
-   * Wether to show head panning animation with aggregators logos
-   */
-  headPan: PropTypes.bool,
-};
 
 export default LoadingAnimation;

@@ -227,6 +227,7 @@ describe('isSwapsAllowed', () => {
 
   describe('testnet chain IDs', () => {
     it('should return true for testnet chain IDs in development when ONLY_MAINNET is true', () => {
+      // @ts-expect-error Legacy JS code needs type refinement
       global.__DEV__ = true;
       mockSwapsConstantsGetter.mockReturnValue({
         ...mockSwapsConstantsGetter(),
@@ -236,6 +237,7 @@ describe('isSwapsAllowed', () => {
     });
 
     it('should return true for testnet chain IDs when ONLY_MAINNET is false', () => {
+      // @ts-expect-error Legacy JS code needs type refinement
       global.__DEV__ = false;
       mockSwapsConstantsGetter.mockReturnValue({
         ...mockSwapsConstantsGetter(),

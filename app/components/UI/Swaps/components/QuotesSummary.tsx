@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { View, StyleSheet, Image } from 'react-native';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
@@ -7,7 +6,9 @@ import { useTheme } from '../../../../util/theme';
 // eslint-disable-next-line import/no-commonjs
 const piggyBank = require('../../../../images/piggybank.png');
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     header: {
       paddingVertical: 10,
@@ -58,9 +59,24 @@ const createStyles = (colors) =>
     },
   });
 
-const QuotesSummary = (props) => <View {...props} />;
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const QuotesSummary: React.FC<any> & {
+  Body: typeof Body;
+  Header: typeof Header;
+  HeaderText: typeof HeaderText;
+  Separator: typeof Separator;
+} = (props) => <View {...props} />;
 
-const Header = ({ style, savings, children, ...props }) => {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface HeaderProps {
+  style?: any;
+  savings?: boolean;
+  children?: React.ReactNode;
+}
+
+const Header: React.FC<HeaderProps> = ({ style, savings, children, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   return (
@@ -79,17 +95,23 @@ const Header = ({ style, savings, children, ...props }) => {
   );
 };
 
-const Body = ({ style, ...props }) => {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Body: React.FC<{ style?: any; [key: string]: any }> = ({ style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   return <View style={[styles.body, style]} {...props} />;
 };
-const HeaderText = ({ style, ...props }) => {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const HeaderText: React.FC<{ style?: any; [key: string]: any }> = ({ style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   return <Text style={[styles.headerText, style]} {...props} />;
 };
-const Separator = ({ style }) => {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Separator: React.FC<{ style?: any }> = ({ style }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   return <View style={[styles.separator, style]} />;
@@ -100,23 +122,8 @@ QuotesSummary.Header = Header;
 QuotesSummary.HeaderText = HeaderText;
 QuotesSummary.Separator = Separator;
 
-Header.propTypes = {
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  /** Wether the piggybank is shown or not */
-  savings: PropTypes.bool,
-  children: PropTypes.node,
-};
 
-Body.propTypes = {
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-};
 
-HeaderText.propTypes = {
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-};
 
-Separator.propTypes = {
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-};
 
 export default QuotesSummary;

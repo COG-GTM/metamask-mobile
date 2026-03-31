@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   TextInput,
@@ -53,7 +52,9 @@ import { QuoteViewSelectorIDs } from '../../../../../e2e/selectors/swaps/QuoteVi
 import { getDecimalChainId } from '../../../../util/networks';
 import { getSortedTokensByFiatValue } from '../utils/token-list-utils';
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -130,6 +131,26 @@ const createStyles = (colors) =>
 
 const MAX_TOKENS_RESULTS = 20;
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface TokenSelectModalProps {
+  isVisible?: boolean;
+  dismiss?: () => void;
+  title?: string;
+  tokens?: any[];
+  initialTokens?: any[];
+  onItemPress?: (item: any) => void;
+  excludeAddresses?: string[];
+  accounts?: Record<string, any>;
+  selectedAddress?: string;
+  currentCurrency?: string;
+  conversionRate?: number;
+  tokenExchangeRates?: Record<string, any>;
+  chainId?: string;
+  networkConfigurations?: Record<string, any>;
+  balances?: Record<string, any>;
+}
+
 function TokenSelectModal({
   isVisible,
   dismiss,
@@ -146,7 +167,7 @@ function TokenSelectModal({
   chainId,
   networkConfigurations,
   balances,
-}) {
+}: TokenSelectModalProps) {
   const navigation = useNavigation();
   const { trackEvent, createEventBuilder } = useMetrics();
 
@@ -176,11 +197,17 @@ function TokenSelectModal({
   const sortedInitialTokensWithFiatValue = useMemo(
     () =>
       getSortedTokensByFiatValue({
+        // @ts-expect-error Legacy JS code needs type refinement
         tokens: initialTokens,
+        // @ts-expect-error Legacy JS code needs type refinement
         account: accounts[selectedAddress],
+        // @ts-expect-error Legacy JS code needs type refinement
         tokenExchangeRates,
+        // @ts-expect-error Legacy JS code needs type refinement
         balances,
+        // @ts-expect-error Legacy JS code needs type refinement
         conversionRate,
+        // @ts-expect-error Legacy JS code needs type refinement
         currencyCode: currentCurrency,
       }),
     [
@@ -208,6 +235,7 @@ function TokenSelectModal({
 
   const tokenFuse = useMemo(
     () =>
+      // @ts-expect-error Legacy JS code needs type refinement
       new Fuse(filteredTokens, {
         shouldSort: true,
         threshold: 0.45,
@@ -229,27 +257,34 @@ function TokenSelectModal({
 
   const shouldFetchToken = useMemo(
     () =>
+      // @ts-expect-error Legacy JS code needs type refinement
       tokenSearchResults.length === 0 &&
       isValidAddress(searchString) &&
       !excludedAddresses.includes(searchString?.toLowerCase()),
+    // @ts-expect-error Legacy JS code needs type refinement
     [excludedAddresses, searchString, tokenSearchResults.length],
   );
 
   const [loadingTokenMetadata, tokenMetadata] = useFetchTokenMetadata(
     shouldFetchToken ? searchString : null,
+    // @ts-expect-error Legacy JS code needs type refinement
     chainId,
   );
 
   const renderItem = useCallback(
-    ({ item }) => {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({ item }: any) => {
       const { balance, balanceFiat } = item;
       const balanceFiatWithCurrencySymbol = balanceFiat
+        // @ts-expect-error Legacy JS code needs type refinement
         ? addCurrencySymbol(balanceFiat, currentCurrency)
         : undefined;
 
       return (
         <TouchableOpacity
           style={styles.resultRow}
+          // @ts-expect-error Legacy JS code needs type refinement
           onPress={() => onItemPress(item)}
         >
           <ListItem>
@@ -277,15 +312,19 @@ function TokenSelectModal({
     [currentCurrency, onItemPress, styles],
   );
 
+  // @ts-expect-error Legacy JS code needs type refinement
   const handleSearchPress = () => searchInput?.current?.focus();
 
   const handleShowImportToken = useCallback(() => {
+    // @ts-expect-error Legacy JS code needs type refinement
     searchInput?.current?.blur();
     showTokenImportModal();
   }, [showTokenImportModal]);
 
   const handlePressImportToken = useCallback(
-    (item) => {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (item: any) => {
       const { address, symbol } = item;
       trackEvent(
         createEventBuilder(MetaMetricsEvents.CUSTOM_TOKEN_IMPORTED)
@@ -297,6 +336,7 @@ function TokenSelectModal({
           .build(),
       );
       hideTokenImportModal();
+      // @ts-expect-error Legacy JS code needs type refinement
       onItemPress(item);
     },
     [
@@ -320,12 +360,14 @@ function TokenSelectModal({
         ),
       },
     });
+    // @ts-expect-error Legacy JS code needs type refinement
     dismiss();
   }, [dismiss, explorer, navigation, searchString, shouldFetchToken]);
 
   const renderFooter = useMemo(
     () => (
       <TouchableWithoutFeedback>
+        {/* @ts-expect-error Legacy JS code needs type refinement */}
         <Alert
           renderIcon={() => (
             <FAIcon
@@ -368,13 +410,15 @@ function TokenSelectModal({
     [searchString, styles],
   );
 
-  const handleSearchTextChange = useCallback((text) => {
+  const handleSearchTextChange = useCallback((text: string) => {
     setSearchString(text);
+    // @ts-expect-error Legacy JS code needs type refinement
     if (list.current) list.current.scrollToOffset({ animated: false, y: 0 });
   }, []);
 
   const handleClearSearch = useCallback(() => {
     setSearchString('');
+    // @ts-expect-error Legacy JS code needs type refinement
     searchInput?.current?.focus();
   }, [setSearchString]);
 
@@ -428,27 +472,27 @@ function TokenSelectModal({
                 <ActivityIndicator style={styles.loadingIndicator} />
                 <Text>{strings('swaps.gathering_token_details')}</Text>
               </View>
-            ) : tokenMetadata.error ? (
+            ) : (tokenMetadata as any).error ? (
               <View style={styles.emptyList}>
                 <Text>{strings('swaps.error_gathering_token_details')}</Text>
               </View>
-            ) : tokenMetadata.valid ? (
+            ) : (tokenMetadata as any).valid ? (
               <View style={styles.resultRow}>
                 <ListItem>
                   <ListItem.Content>
                     <ListItem.Icon>
                       <TokenIcon
                         medium
-                        icon={tokenMetadata.metadata.iconUrl}
-                        symbol={tokenMetadata.metadata.symbol}
+                        icon={(tokenMetadata as any).metadata?.iconUrl}
+                        symbol={(tokenMetadata as any).metadata?.symbol}
                       />
                     </ListItem.Icon>
                     <ListItem.Body>
                       <ListItem.Title>
-                        {tokenMetadata.metadata.symbol}
+                        {(tokenMetadata as any).metadata?.symbol}
                       </ListItem.Title>
-                      {tokenMetadata.metadata.name && (
-                        <Text>{tokenMetadata.metadata.name}</Text>
+                      {(tokenMetadata as any).metadata?.name && (
+                        <Text>{(tokenMetadata as any).metadata.name}</Text>
                       )}
                     </ListItem.Body>
                     <ListItem.Amounts>
@@ -466,9 +510,9 @@ function TokenSelectModal({
                 <TokenImportModal
                   isVisible={isTokenImportVisible}
                   dismiss={hideTokenImportModal}
-                  token={tokenMetadata.metadata}
+                  token={(tokenMetadata as any).metadata}
                   onPressImport={() =>
-                    handlePressImportToken(tokenMetadata.metadata)
+                    handlePressImportToken((tokenMetadata as any).metadata)
                   }
                 />
               </View>
@@ -496,6 +540,7 @@ function TokenSelectModal({
           </View>
         ) : (
           <FlatList
+            // @ts-expect-error Legacy JS code needs type refinement
             ref={list}
             style={styles.resultsView}
             keyboardDismissMode="none"
@@ -513,49 +558,9 @@ function TokenSelectModal({
   );
 }
 
-TokenSelectModal.propTypes = {
-  isVisible: PropTypes.bool,
-  dismiss: PropTypes.func,
-  title: PropTypes.string,
-  tokens: PropTypes.arrayOf(PropTypes.object),
-  initialTokens: PropTypes.arrayOf(PropTypes.object),
-  onItemPress: PropTypes.func,
-  excludeAddresses: PropTypes.arrayOf(PropTypes.string),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * A string that represents the selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * An object containing token balances for current account and network in the format address => balance
-   */
-  balances: PropTypes.object,
-  /**
-   * An object containing token exchange rates in the format address => exchangeRate
-   */
-  tokenExchangeRates: PropTypes.object,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Network configurations
-   */
-  networkConfigurations: PropTypes.object,
-};
-
-const mapStateToProps = (state) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => ({
   accounts: selectAccounts(state),
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
@@ -566,4 +571,5 @@ const mapStateToProps = (state) => ({
   networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
 });
 
+// @ts-expect-error Legacy JS code needs type refinement
 export default connect(mapStateToProps)(TokenSelectModal);

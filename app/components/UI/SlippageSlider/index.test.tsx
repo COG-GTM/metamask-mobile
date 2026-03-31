@@ -5,6 +5,7 @@ import SlippageSlider from './index';
 describe('SlippageSlider', () => {
   it('should render correctly', () => {
     render(
+      // @ts-expect-error Legacy JS code needs type refinement
       <SlippageSlider
         range={[1, 5]}
         increment={1}

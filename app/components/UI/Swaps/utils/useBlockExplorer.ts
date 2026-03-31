@@ -14,7 +14,11 @@ import {
 } from '../../../../selectors/networkController';
 import { selectNetworkName } from '../../../../selectors/networkInfos';
 
-function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function useBlockExplorer(networkConfigurations: any, providerConfigTokenExplorer?: any) {
   const [explorer, setExplorer] = useState({
     name: '',
     value: null,
@@ -65,6 +69,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     } else {
       setExplorer({
         name: 'Etherscan',
+        // @ts-expect-error Legacy JS code needs type refinement
         value: chainId,
         isValid: true,
         isRPC: false,
@@ -80,7 +85,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
   ]);
 
   const tx = useCallback(
-    (hash) => {
+    (hash: any) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -88,12 +93,13 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
       const create = explorer.isRPC
         ? etherscanLink.createCustomExplorerLink
         : etherscanLink.createExplorerLink;
+      // @ts-expect-error Legacy JS code needs type refinement
       return create(hash, explorer.value);
     },
     [explorer],
   );
   const account = useCallback(
-    (address) => {
+    (address: any) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -101,12 +107,13 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
       const create = explorer.isRPC
         ? etherscanLink.createCustomAccountLink
         : etherscanLink.createAccountLink;
+      // @ts-expect-error Legacy JS code needs type refinement
       return create(address, explorer.value);
     },
     [explorer],
   );
   const token = useCallback(
-    (address) => {
+    (address: any) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -114,6 +121,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
       const create = explorer.isRPC
         ? etherscanLink.createCustomTokenTrackerLink
         : etherscanLink.createTokenTrackerLink;
+      // @ts-expect-error Legacy JS code needs type refinement
       return create(address, explorer.value);
     },
     [explorer],

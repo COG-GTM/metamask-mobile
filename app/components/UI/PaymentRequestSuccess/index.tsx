@@ -13,7 +13,6 @@ import {
 import { connect } from 'react-redux';
 import { fontStyles } from '../../../styles/common';
 import { getPaymentRequestSuccessOptionsTitle } from '../../UI/Navbar';
-import PropTypes from 'prop-types';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import StyledButton from '../StyledButton';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -34,7 +33,9 @@ import { SendLinkViewSelectorsIDs } from '../../../../e2e/selectors/Receive/Send
 
 const isIos = Device.isIos();
 
-const createStyles = (theme) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (theme: any) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: theme.colors.background.default,
@@ -161,26 +162,21 @@ const createStyles = (theme) =>
 /**
  * View to interact with a previously generated payment request link
  */
-class PaymentRequestSuccess extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-    /* Triggers global alert
-    */
-    showAlert: PropTypes.func,
-    /**
-    /* Prompts protect wallet modal
-    */
-    protectWalletModalVisible: PropTypes.func,
-  };
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface PaymentRequestSuccessProps {
+  navigation?: any;
+  chainId?: string;
+  route?: any;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protectWalletModalVisible?: any;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showAlert?: any;
+}
 
+class PaymentRequestSuccess extends PureComponent<PaymentRequestSuccessProps> {
   state = {
     link: '',
     qrLink: '',
@@ -191,6 +187,7 @@ class PaymentRequestSuccess extends PureComponent {
 
   updateNavBar = () => {
     const { navigation } = this.props;
+    // @ts-expect-error Legacy JS code needs type refinement
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getPaymentRequestSuccessOptionsTitle(navigation, colors),
@@ -263,6 +260,7 @@ class PaymentRequestSuccess extends PureComponent {
   render() {
     const { link, amount, symbol, qrModalVisible } = this.state;
     const theme = this.context || mockTheme;
+    // @ts-expect-error Legacy JS code needs type refinement
     const colors = theme.colors;
     const styles = createStyles(theme);
 
@@ -413,8 +411,12 @@ class PaymentRequestSuccess extends PureComponent {
 
 PaymentRequestSuccess.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showAlert: (config: any) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 

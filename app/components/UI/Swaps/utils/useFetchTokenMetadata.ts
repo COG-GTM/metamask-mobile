@@ -8,7 +8,7 @@ const defaultTokenMetadata = {
   metadata: null,
 };
 
-function useFetchTokenMetadata(address, chainId) {
+function useFetchTokenMetadata(address: string | null, chainId: string) {
   const [isLoading, setIsLoading] = useState(false);
   const [tokenMetadata, setTokenMetadata] = useState(defaultTokenMetadata);
 
@@ -17,6 +17,7 @@ function useFetchTokenMetadata(address, chainId) {
       return;
     }
 
+    // @ts-expect-error Legacy JS code needs type refinement
     let cancelTokenSource;
     async function fetchTokenMetadata() {
       try {
@@ -24,16 +25,21 @@ function useFetchTokenMetadata(address, chainId) {
         setTokenMetadata(defaultTokenMetadata);
         setIsLoading(true);
         const { data } = await axios.request({
+          // @ts-expect-error Legacy JS code needs type refinement
           url: swapsUtils.getTokenMetadataURL(chainId),
           params: {
             address,
           },
           cancelToken: cancelTokenSource.token,
         });
+        // @ts-expect-error Legacy JS code needs type refinement
         setTokenMetadata({ error: false, valid: true, metadata: data });
       } catch (error) {
         // Address is not an ERC20
-        if (error?.response?.status === 422) {
+        // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any)?.response?.status === 422) {
+          // @ts-expect-error Legacy JS code needs type refinement
           setTokenMetadata({ error: false, valid: false, metadata: null });
         } else {
           setTokenMetadata({ ...defaultTokenMetadata, error: true });
@@ -45,6 +51,7 @@ function useFetchTokenMetadata(address, chainId) {
     fetchTokenMetadata();
 
     return () => {
+      // @ts-expect-error Legacy JS code needs type refinement
       cancelTokenSource?.cancel();
       setIsLoading(false);
       setTokenMetadata(defaultTokenMetadata);

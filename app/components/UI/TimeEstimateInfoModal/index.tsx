@@ -2,13 +2,22 @@ import React from 'react';
 import { View } from 'react-native';
 import Text from '../../Base/Text';
 import InfoModal from '../Swaps/components/InfoModal';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 
-const TimeEstimateInfoModal = ({ timeEstimateId, isVisible, onHideModal }) => (
+interface TimeEstimateInfoModalProps {
+  /** Time estimate name (unknown, low, medium, high, less_than, range) */
+  timeEstimateId?: string;
+  /** If the modal is visible */
+  isVisible?: boolean;
+  /** Function to hide the modal */
+  onHideModal?: () => void;
+}
+
+const TimeEstimateInfoModal: React.FC<TimeEstimateInfoModalProps> = ({ timeEstimateId, isVisible, onHideModal }) => (
   <InfoModal
     isVisible={isVisible}
+    // @ts-expect-error Legacy JS code needs type refinement
     toggleModal={onHideModal}
     title={
       timeEstimateId === AppConstants.GAS_TIMES.MAYBE
@@ -33,20 +42,5 @@ const TimeEstimateInfoModal = ({ timeEstimateId, isVisible, onHideModal }) => (
     }
   />
 );
-
-TimeEstimateInfoModal.propTypes = {
-  /**
-   * Time estimate name (unknown, low, medium, high, less_than, range)
-   */
-  timeEstimateId: PropTypes.string,
-  /**
-   * If the modal is visible
-   */
-  isVisible: PropTypes.bool,
-  /**
-   * Function to hide the modal
-   */
-  onHideModal: PropTypes.func,
-};
 
 export default TimeEstimateInfoModal;

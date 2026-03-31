@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
+// @ts-expect-error Legacy JS code needs type refinement
 import Eth from '@metamask/ethjs-query';
 import {
   View,
@@ -138,7 +138,9 @@ const SLIPPAGE_BUCKETS = {
   HIGH: AppConstants.GAS_OPTIONS.HIGH,
 };
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     screen: {
       flexGrow: 1,
@@ -314,15 +316,18 @@ const createStyles = (colors) =>
     },
   });
 
-async function resetAndStartPolling({
-  slippage,
-  sourceToken,
-  destinationToken,
-  sourceAmount,
-  walletAddress,
-  networkClientId,
-  enableGasIncludedQuotes,
-}) {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function resetAndStartPolling(params: any) {
+  const {
+    slippage,
+    sourceToken,
+    destinationToken,
+    sourceAmount,
+    walletAddress,
+    networkClientId,
+    enableGasIncludedQuotes,
+  } = params;
   if (!sourceToken || !destinationToken) {
     return;
   }
@@ -349,12 +354,12 @@ async function resetAndStartPolling({
  * @param {string} gasLimit
  * @param {number} multiplier
  */
-const gasLimitWithMultiplier = (gasLimit, multiplier) => {
+const gasLimitWithMultiplier = (gasLimit: any, multiplier: any) => {
   if (!gasLimit || !multiplier) return;
   return new BigNumber(gasLimit).times(multiplier).integerValue();
 };
 
-async function addTokenToAssetsController(newToken, chainId, networkClientId) {
+async function addTokenToAssetsController(newToken: any, chainId: any, networkClientId: any) {
   const { TokensController } = Engine.context;
 
   const allTokens = TokensController.state.allTokens?.[chainId]
@@ -362,7 +367,8 @@ async function addTokenToAssetsController(newToken, chainId, networkClientId) {
     : [];
   if (
     !isSwapsNativeAsset(newToken) &&
-    !allTokens.includes((token) =>
+    // @ts-expect-error Legacy JS code needs type refinement
+    !allTokens.includes((token: any) =>
       toLowerCaseEquals(token.address, newToken.address),
     )
   ) {
@@ -406,7 +412,8 @@ function SwapsQuotesView({
   resetTransaction,
   shouldUseSmartTransaction,
   isEIP1559Network,
-}) {
+// @ts-expect-error Legacy JS code needs type refinement
+}: QuotesViewProps) {
   const navigation = useNavigation();
   /* Get params from navigation */
   const route = useRoute();
@@ -475,6 +482,7 @@ function SwapsQuotesView({
       Boolean(destinationToken) &&
       (isSwapsNativeAsset(destinationToken) ||
         (Object.keys(quotes).length > 0 &&
+          // @ts-expect-error Legacy JS code needs type refinement
           (Object.values(quotes)[0]?.destinationTokenRate ?? null) !== null)),
     [destinationToken, quotes],
   );
@@ -493,16 +501,21 @@ function SwapsQuotesView({
     const orderedAggregators = hasConversionRate
       ? Object.values(quoteValues).sort(
           (a, b) =>
+            // @ts-expect-error Legacy JS code needs type refinement
             Number(b.overallValueOfQuote) - Number(a.overallValueOfQuote),
         )
       : Object.values(quotes).sort((a, b) => {
+          // @ts-expect-error Legacy JS code needs type refinement
           const comparison = new BigNumber(b.destinationAmount).comparedTo(
+            // @ts-expect-error Legacy JS code needs type refinement
             a.destinationAmount,
           );
           if (comparison === 0) {
             // If the  destination amount is the same, we sort by fees ascending
             return (
+              // @ts-expect-error Legacy JS code needs type refinement
               Number(quoteValues[a.aggregator]?.ethFee) -
+                // @ts-expect-error Legacy JS code needs type refinement
                 Number(quoteValues[b.aggregator]?.ethFee) || 0
             );
           }
@@ -511,6 +524,7 @@ function SwapsQuotesView({
         });
 
     return orderedAggregators.map(
+      // @ts-expect-error Legacy JS code needs type refinement
       (quoteValue) => quotes[quoteValue.aggregator],
     );
   }, [hasConversionRate, quoteValues, quotes]);
@@ -587,7 +601,7 @@ function SwapsQuotesView({
   );
   /* Balance */
   const checkEnoughEthBalance = useCallback(
-    (gasAmountHex) => {
+    (gasAmountHex: any) => {
       const gasBN = new BigNumber(gasAmountHex || '0', 16);
       const ethAmountBN = isSwapsNativeAsset(sourceToken)
         ? new BigNumber(sourceAmount)
@@ -633,9 +647,11 @@ function SwapsQuotesView({
     const gasBN = toWei(selectedQuoteValue?.maxEthFee || '0');
     const hasEnoughEthBalance = canUseGasIncludedSwap
       ? true
+      // @ts-expect-error Legacy JS code needs type refinement
       : ethBalanceBN.gte(ethAmountBN.plus(gasBN));
     const missingEthBalance = hasEnoughEthBalance
       ? null
+      // @ts-expect-error Legacy JS code needs type refinement
       : ethAmountBN.plus(gasBN).minus(ethBalanceBN);
 
     return [
@@ -672,6 +688,7 @@ function SwapsQuotesView({
           .minus(1, 10)
           .times(100, 10)
           .toFixed(2),
+        // @ts-expect-error Legacy JS code needs type refinement
         10,
       ),
     [selectedQuote],
@@ -744,7 +761,7 @@ function SwapsQuotesView({
   ] = useModalHandler(false);
 
   const handleGasFeeUpdate = useCallback(
-    (changedGasEstimate, changedGasLimit) => {
+    (changedGasEstimate: any, changedGasLimit: any) => {
       const { SwapsController } = Engine.context;
       setCustomGasEstimate(changedGasEstimate);
       SwapsController.updateQuotesWithGasPrice(changedGasEstimate);
@@ -765,6 +782,7 @@ function SwapsQuotesView({
         ].includes(gasEstimateType)
           ? weiToFiat(
               toWei(
+                // @ts-expect-error Legacy JS code needs type refinement
                 swapsUtils.calcTokenAmount(
                   new BigNumber(changedGasLimit, 10).times(
                     decGWEIToHexWEI(changedGasEstimate.gasPrice),
@@ -826,6 +844,7 @@ function SwapsQuotesView({
         enableGasIncludedQuotes: shouldUseSmartTransaction,
       });
     } else {
+      // @ts-expect-error Legacy JS code needs type refinement
       navigation.pop();
     }
   }, [
@@ -841,7 +860,7 @@ function SwapsQuotesView({
   ]);
 
   const updateSwapsTransactions = useCallback(
-    async (transactionMetaId, approvalTransactionMetaId) => {
+    async (transactionMetaId: any, approvalTransactionMetaId: any) => {
       const ethQuery = getGlobalEthQuery();
       const blockNumber = await query(ethQuery, 'blockNumber', []);
       const currentBlock = await query(ethQuery, 'getBlockByNumber', [
@@ -887,6 +906,7 @@ function SwapsQuotesView({
             currentCurrency,
           ),
           network_fees_ETH: renderFromWei(toWei(selectedQuoteValue?.ethFee)),
+          // @ts-expect-error Legacy JS code needs type refinement
           other_quote_selected: allQuotes[selectedQuoteId] === selectedQuote,
           chain_id: getDecimalChainId(chainId),
           is_smart_transaction: shouldUseSmartTransaction,
@@ -921,7 +941,7 @@ function SwapsQuotesView({
   );
 
   const startSwapAnalytics = useCallback(
-    (selectedQuote, selectedAddress) => {
+    (selectedQuote: any, selectedAddress: any) => {
       const parameters = {
         account_type: getAddressAccountType(selectedAddress),
         token_from: sourceToken.symbol,
@@ -931,6 +951,7 @@ function SwapsQuotesView({
         custom_slippage: slippage !== AppConstants.SWAPS.DEFAULT_SLIPPAGE,
         best_quote_source: selectedQuote.aggregator,
         available_quotes: allQuotes.length,
+        // @ts-expect-error Legacy JS code needs type refinement
         other_quote_selected: allQuotes[selectedQuoteId] === selectedQuote,
         network_fees_USD: weiToFiat(
           toWei(selectedQuoteValue?.ethFee),
@@ -975,7 +996,7 @@ function SwapsQuotesView({
   );
 
   const handleSwapTransaction = useCallback(
-    async (approvalTransactionMetaId) => {
+    async (approvalTransactionMetaId: any) => {
       if (!selectedQuote) {
         return;
       }
@@ -1042,7 +1063,7 @@ function SwapsQuotesView({
   );
 
   const handleApprovalTransaction = useCallback(
-    async (isHardwareAddress) => {
+    async (isHardwareAddress: any) => {
       try {
         resetTransaction();
 
@@ -1195,6 +1216,7 @@ function SwapsQuotesView({
           // requestState gets passed to app/components/Views/confirmations/components/Approval/TemplateConfirmation/Templates/SmartTransactionStatus.ts
           // can also be read from approvalController.state.pendingApprovals[approvalId].requestState
           requestState: {
+            // @ts-expect-error Legacy JS code needs type refinement
             smartTransaction: {
               status: SmartTransactionStatuses.PENDING,
               creationTime: Date.now(),
@@ -1215,6 +1237,7 @@ function SwapsQuotesView({
 
         if (isHardwareAddress) {
           setIsHandlingSwap(false);
+          // @ts-expect-error Legacy JS code needs type refinement
           navigation.dangerouslyGetParent()?.pop();
           return;
         }
@@ -1223,6 +1246,7 @@ function SwapsQuotesView({
       await handleSwapTransaction(approvalTransactionMetaId);
 
       setIsHandlingSwap(false);
+      // @ts-expect-error Legacy JS code needs type refinement
       navigation.dangerouslyGetParent()?.pop();
     }
   }, [
@@ -1273,6 +1297,7 @@ function SwapsQuotesView({
       custom_slippage: slippage !== AppConstants.SWAPS.DEFAULT_SLIPPAGE,
       available_quotes: allQuotes.length,
       best_quote_source: selectedQuote.aggregator,
+      // @ts-expect-error Legacy JS code needs type refinement
       other_quote_selected: allQuotes[selectedQuoteId] === selectedQuote,
       gas_fees: weiToFiat(
         toWei(selectedQuoteValue?.ethFee),
@@ -1428,7 +1453,7 @@ function SwapsQuotesView({
   ]);
 
   const handleQuotesErrorMetric = useCallback(
-    (error) => {
+    (error: any) => {
       const data = {
         token_from: sourceToken.symbol,
         token_to: destinationToken.symbol,
@@ -1492,6 +1517,7 @@ function SwapsQuotesView({
     try {
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
+      // @ts-expect-error Legacy JS code needs type refinement
       Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
     }
 
@@ -1579,6 +1605,7 @@ function SwapsQuotesView({
     allQuotes.forEach((quote) => {
       maxFetchTime = Math.max(maxFetchTime, quote?.fetchTime);
     });
+    // @ts-expect-error Legacy JS code needs type refinement
     setAllQuotesFetchTime(maxFetchTime);
   }, [allQuotes]);
 
@@ -1655,12 +1682,15 @@ function SwapsQuotesView({
     const { GasFeeController } = Engine.context;
     async function polling() {
       const newPollToken =
+        // @ts-expect-error Legacy JS code needs type refinement
         await GasFeeController.getGasFeeEstimatesAndStartPolling(pollToken);
+      // @ts-expect-error Legacy JS code needs type refinement
       setPollToken(newPollToken);
     }
     if (isInPolling) {
       polling();
       return () => {
+        // @ts-expect-error Legacy JS code needs type refinement
         GasFeeController.stopPolling(pollToken);
         setPollToken(null);
       };
@@ -1679,6 +1709,7 @@ function SwapsQuotesView({
           // to stop updating the estimates, unless there is an option selected.
           customGasAreIncompatible =
             Boolean(customGasEstimate) &&
+            // @ts-expect-error Legacy JS code needs type refinement
             'estimatedBaseFee' in customGasEstimate;
           gasEstimate = {
             gasPrice: gasFeeEstimates.gasPrice,
@@ -1687,14 +1718,19 @@ function SwapsQuotesView({
         } else if (gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
           customGasAreIncompatible =
             Boolean(customGasEstimate) &&
+            // @ts-expect-error Legacy JS code needs type refinement
             'estimatedBaseFee' in customGasEstimate;
           const selected =
+            // @ts-expect-error Legacy JS code needs type refinement
             customGasEstimate?.selected || DEFAULT_GAS_FEE_OPTION_LEGACY;
+          // @ts-expect-error Legacy JS code needs type refinement
           gasEstimate = { gasPrice: gasFeeEstimates[selected], selected };
         } else if (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
           customGasAreIncompatible =
+            // @ts-expect-error Legacy JS code needs type refinement
             Boolean(customGasEstimate) && 'gasPrice' in customGasEstimate;
           const selected =
+            // @ts-expect-error Legacy JS code needs type refinement
             customGasEstimate?.selected || DEFAULT_GAS_FEE_OPTION_FEE_MARKET;
           gasEstimate = {
             maxFeePerGas: gasFeeEstimates[selected].suggestedMaxFeePerGas,
@@ -1707,6 +1743,7 @@ function SwapsQuotesView({
         if (
           gasEstimate &&
           (!customGasEstimate ||
+            // @ts-expect-error Legacy JS code needs type refinement
             customGasEstimate?.selected ||
             customGasAreIncompatible)
         ) {
@@ -1807,6 +1844,7 @@ function SwapsQuotesView({
         );
         let l1ApprovalFeeTotal = '0x0';
         if (approvalTransaction) {
+          // @ts-expect-error Legacy JS code needs type refinement
           l1ApprovalFeeTotal = await fetchEstimatedMultiLayerL1Fee(eth, {
             txParams: {
               ...approvalTransaction,
@@ -1814,9 +1852,11 @@ function SwapsQuotesView({
             },
             chainId,
           });
+          // @ts-expect-error Legacy JS code needs type refinement
           setMultiLayerL1ApprovalFeeTotal(l1ApprovalFeeTotal);
         }
       } catch (e) {
+        // @ts-expect-error Legacy JS code needs type refinement
         Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
         setMultiLayerL1ApprovalFeeTotal(null);
       }
@@ -1853,6 +1893,7 @@ function SwapsQuotesView({
   /* Rendering */
   if (isFirstLoad || (!error?.key && !selectedQuote)) {
     return (
+      // @ts-expect-error Legacy JS code needs type refinement
       <ScreenView contentContainerStyle={styles.screen} scrollEnabled={false}>
         <LoadingAnimation
           finish={shouldFinishFirstLoad}
@@ -1880,6 +1921,7 @@ function SwapsQuotesView({
       );
 
     return (
+      // @ts-expect-error Legacy JS code needs type refinement
       <ScreenView contentContainerStyle={styles.screen}>
         <View style={[styles.content, styles.errorViewContent]}>
           {errorIcon}
@@ -1911,6 +1953,7 @@ function SwapsQuotesView({
 
   return (
     <ScreenView
+      // @ts-expect-error Legacy JS code needs type refinement
       contentContainerStyle={styles.screen}
       style={styles.container}
       keyboardShouldPersistTaps="handled"
@@ -1927,9 +1970,11 @@ function SwapsQuotesView({
               <Text reset bold>
                 {!hasEnoughTokenBalance && !isSwapsNativeAsset(sourceToken)
                   ? `${renderFromTokenMinimalUnit(
+                      // @ts-expect-error Legacy JS code needs type refinement
                       missingTokenBalance,
                       sourceToken.decimals,
                     )} ${sourceToken.symbol} `
+                  // @ts-expect-error Legacy JS code needs type refinement
                   : `${renderFromWei(missingEthBalance)} ${getTicker(ticker)} `}
               </Text>
               {!hasEnoughTokenBalance
@@ -2536,9 +2581,11 @@ function SwapsQuotesView({
         quotes={allQuotes}
         sourceToken={sourceToken}
         destinationToken={destinationToken}
+        // @ts-expect-error Legacy JS code needs type refinement
         selectedQuote={selectedQuoteId}
         showOverallValue={hasConversionRate}
         ticker={getTicker(ticker)}
+        // @ts-expect-error Legacy JS code needs type refinement
         multiLayerL1ApprovalFeeTotal={multiLayerL1ApprovalFeeTotal}
       />
 
@@ -2557,6 +2604,7 @@ function SwapsQuotesView({
         gasEstimateType={gasEstimateType}
         gasFeeEstimates={gasFeeEstimates}
         defaultGasFeeOptionFeeMarket={DEFAULT_GAS_FEE_OPTION_FEE_MARKET}
+        // @ts-expect-error Legacy JS code needs type refinement
         defaultGasFeeOptionFeeLegacy={DEFAULT_GAS_FEE_OPTION_LEGACY}
         onGasUpdate={handleGasFeeUpdate}
         dismiss={hideEditingGas}
@@ -2575,68 +2623,11 @@ function SwapsQuotesView({
   );
 }
 
-SwapsQuotesView.propTypes = {
-  swapsTokens: PropTypes.arrayOf(PropTypes.object),
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * An object containing token balances for current account and network in the format address => balance
-   */
-  balances: PropTypes.object,
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * A string that represents the selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * ID of the global network client
-   */
-  networkClientId: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-  isInPolling: PropTypes.bool,
-  quotesLastFetched: PropTypes.number,
-  topAggId: PropTypes.string,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  pollingCyclesLeft: PropTypes.number,
-  quotes: PropTypes.object,
-  quoteValues: PropTypes.object,
-  approvalTransaction: PropTypes.object,
-  error: PropTypes.object,
-  quoteRefreshSeconds: PropTypes.number,
-  gasEstimateType: PropTypes.string,
-  gasFeeEstimates: PropTypes.object,
-  usedGasEstimate: PropTypes.object,
-  usedCustomGas: PropTypes.object,
-  setRecipient: PropTypes.func,
-  resetTransaction: PropTypes.func,
-  shouldUseSmartTransaction: PropTypes.bool,
-  isEIP1559Network: PropTypes.bool,
-};
-
-const mapStateToProps = (state) => ({
+// @ts-expect-error Legacy JS code needs type refinement
+Swaps
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => ({
   accounts: selectAccounts(state),
   chainId: selectEvmChainId(state),
   networkClientId: selectSelectedNetworkClientId(state),
@@ -2668,8 +2659,8 @@ const mapStateToProps = (state) => ({
   isEIP1559Network: selectIsEIP1559Network(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setRecipient: (from) => dispatch(setRecipient(from, '', '', '', '')),
+const mapDispatchToProps = (dispatch: any) => ({
+  setRecipient: (from: any) => dispatch(setRecipient(from, '', '', '', '')),
   resetTransaction: () => dispatch(resetTransaction()),
 });
 

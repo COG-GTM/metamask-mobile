@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Modal from 'react-native-modal';
@@ -46,6 +45,31 @@ const styles = StyleSheet.create({
 
 const RECOMMENDED = GAS_OPTIONS.HIGH;
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface GasEditModalProps {
+  dismiss?: () => void;
+  gasEstimateType?: string;
+  gasFeeEstimates?: Record<string, any>;
+  defaultGasFeeOptionFeeMarket?: string;
+  defaultGasFeeOptionLegacy?: string;
+  isVisible?: boolean;
+  onGasUpdate?: (gas: any, gasLimit?: string) => void;
+  customGasFee?: Record<string, any>;
+  initialGasLimit?: string;
+  tradeGasLimit?: string;
+  isNativeAsset?: boolean;
+  tradeValue?: string;
+  sourceAmount?: string;
+  checkEnoughEthBalance?: (hex: string) => boolean;
+  currentCurrency?: string;
+  conversionRate?: number;
+  primaryCurrency?: string;
+  chainId?: string;
+  ticker?: string;
+  animateOnChange?: boolean;
+}
+
 function GasEditModal({
   dismiss,
   gasEstimateType,
@@ -67,7 +91,7 @@ function GasEditModal({
   chainId,
   ticker,
   animateOnChange,
-}) {
+}: GasEditModalProps) {
   const [gasSelected, setGasSelected] = useState(
     customGasFee
       ? customGasFee.selected ?? null
@@ -102,7 +126,9 @@ function GasEditModal({
       Object.keys(EIP1559TransactionDataTemp).length > 0
     ) {
       setHasEnoughEthBalance(
+        // @ts-expect-error Legacy JS code needs type refinement
         checkEnoughEthBalance(
+          // @ts-expect-error Legacy JS code needs type refinement
           EIP1559TransactionDataTemp?.totalMaxHex?.toString(16),
         ),
       );
@@ -111,7 +137,9 @@ function GasEditModal({
       Object.keys(LegacyTransactionDataTemp).length > 0
     ) {
       setHasEnoughEthBalance(
+        // @ts-expect-error Legacy JS code needs type refinement
         checkEnoughEthBalance(
+          // @ts-expect-error Legacy JS code needs type refinement
           LegacyTransactionDataTemp?.totalHex?.toString(16),
         ),
       );
@@ -129,17 +157,21 @@ function GasEditModal({
     if (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
       setEIP1559TransactionDataTemp(
         parseTransactionEIP1559(
+          // @ts-expect-error Legacy JS code needs type refinement
           {
             currentCurrency,
             conversionRate,
             nativeCurrency: ticker,
             selectedGasFee: {
               suggestedMaxFeePerGas:
+                // @ts-expect-error Legacy JS code needs type refinement
                 gasFeeEstimates[gasSelected].suggestedMaxFeePerGas,
               suggestedMaxPriorityFeePerGas:
+                // @ts-expect-error Legacy JS code needs type refinement
                 gasFeeEstimates[gasSelected].suggestedMaxPriorityFeePerGas,
               suggestedGasLimit: initialGasLimit,
               suggestedEstimatedGasLimit: tradeGasLimit,
+              // @ts-expect-error Legacy JS code needs type refinement
               estimatedBaseFee: gasFeeEstimates.estimatedBaseFee,
               selectedOption: gasSelected,
               recommended: RECOMMENDED,
@@ -157,6 +189,7 @@ function GasEditModal({
     } else {
       setLegacyTransactionDataTemp(
         parseTransactionLegacy(
+          // @ts-expect-error Legacy JS code needs type refinement
           {
             currentCurrency,
             conversionRate,
@@ -165,7 +198,9 @@ function GasEditModal({
               suggestedGasLimit: initialGasLimit,
               suggestedGasPrice:
                 gasEstimateType === GAS_ESTIMATE_TYPES.ETH_GASPRICE
+                  // @ts-expect-error Legacy JS code needs type refinement
                   ? gasFeeEstimates.gasPrice
+                  // @ts-expect-error Legacy JS code needs type refinement
                   : gasFeeEstimates[gasSelected],
             },
           },
@@ -196,8 +231,8 @@ function GasEditModal({
         suggestedGasLimit,
         estimatedBaseFee,
         suggestedEstimatedGasLimit,
-      },
-      selected,
+      }: any,
+      selected: any,
     ) => {
       if (!selected) {
         setStopUpdateGas(true);
@@ -205,6 +240,7 @@ function GasEditModal({
       setGasSelected(selected);
       setEIP1559TransactionDataTemp(
         parseTransactionEIP1559(
+          // @ts-expect-error Legacy JS code needs type refinement
           {
             currentCurrency,
             conversionRate,
@@ -245,11 +281,12 @@ function GasEditModal({
   );
 
   const calculateTempGasFeeLegacy = useCallback(
-    ({ suggestedGasLimit, suggestedGasPrice }, selected) => {
+    ({ suggestedGasLimit, suggestedGasPrice }: any, selected: any) => {
       setStopUpdateGas(!selected);
       setGasSelected(selected);
       setLegacyTransactionDataTemp(
         parseTransactionLegacy(
+          // @ts-expect-error Legacy JS code needs type refinement
           {
             currentCurrency,
             conversionRate,
@@ -267,14 +304,19 @@ function GasEditModal({
   );
 
   const saveGasEdition = useCallback(
-    (selected) => {
+    (selected: any) => {
       if (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
         const {
+          // @ts-expect-error Legacy JS code needs type refinement
           suggestedMaxFeePerGas: maxFeePerGas,
+          // @ts-expect-error Legacy JS code needs type refinement
           suggestedMaxPriorityFeePerGas: maxPriorityFeePerGas,
+          // @ts-expect-error Legacy JS code needs type refinement
           estimatedBaseFee,
+          // @ts-expect-error Legacy JS code needs type refinement
           suggestedGasLimit,
         } = EIP1559TransactionDataTemp;
+        // @ts-expect-error Legacy JS code needs type refinement
         onGasUpdate(
           {
             maxFeePerGas,
@@ -285,8 +327,10 @@ function GasEditModal({
           suggestedGasLimit,
         );
       } else {
+        // @ts-expect-error Legacy JS code needs type refinement
         const { suggestedGasPrice: gasPrice, suggestedGasLimit } =
           LegacyTransactionDataTemp;
+        // @ts-expect-error Legacy JS code needs type refinement
         onGasUpdate(
           {
             gasPrice,
@@ -295,6 +339,7 @@ function GasEditModal({
           suggestedGasLimit,
         );
       }
+      // @ts-expect-error Legacy JS code needs type refinement
       dismiss();
     },
     [
@@ -314,6 +359,7 @@ function GasEditModal({
         ? GAS_OPTIONS.HIGH
         : GAS_OPTIONS.MEDIUM,
     );
+    // @ts-expect-error Legacy JS code needs type refinement
     dismiss();
   }, [customGasFee, dismiss, gasEstimateType]);
 
@@ -354,6 +400,7 @@ function GasEditModal({
               error={
                 !hasEnoughEthBalance
                   ? strings('transaction.insufficient')
+                  // @ts-expect-error Legacy JS code needs type refinement
                   : EIP1559TransactionDataTemp.error
               }
               suggestedEstimateOption={defaultGasFeeOptionFeeMarket}
@@ -361,33 +408,44 @@ function GasEditModal({
               gasOptions={gasFeeEstimates}
               onChange={calculateTempGasFee}
               gasFeeNative={
+                // @ts-expect-error Legacy JS code needs type refinement
                 EIP1559TransactionDataTemp.renderableGasFeeMinNative
               }
               gasFeeConversion={
+                // @ts-expect-error Legacy JS code needs type refinement
                 EIP1559TransactionDataTemp.renderableGasFeeMinConversion
               }
               gasFeeMaxNative={
+                // @ts-expect-error Legacy JS code needs type refinement
                 EIP1559TransactionDataTemp.renderableGasFeeMaxNative
               }
               gasFeeMaxConversion={
+                // @ts-expect-error Legacy JS code needs type refinement
                 EIP1559TransactionDataTemp.renderableGasFeeMaxConversion
               }
               maxPriorityFeeNative={
+                // @ts-expect-error Legacy JS code needs type refinement
                 EIP1559TransactionDataTemp.renderableMaxPriorityFeeNative
               }
               maxPriorityFeeConversion={
+                // @ts-expect-error Legacy JS code needs type refinement
                 EIP1559TransactionDataTemp.renderableMaxPriorityFeeConversion
               }
               maxFeePerGasNative={
+                // @ts-expect-error Legacy JS code needs type refinement
                 EIP1559TransactionDataTemp.renderableMaxFeePerGasNative
               }
               maxFeePerGasConversion={
+                // @ts-expect-error Legacy JS code needs type refinement
                 EIP1559TransactionDataTemp.renderableMaxFeePerGasConversion
               }
               primaryCurrency={primaryCurrency}
               chainId={chainId}
+              // @ts-expect-error Legacy JS code needs type refinement
               timeEstimate={EIP1559TransactionDataTemp.timeEstimate}
+              // @ts-expect-error Legacy JS code needs type refinement
               timeEstimateColor={EIP1559TransactionDataTemp.timeEstimateColor}
+              // @ts-expect-error Legacy JS code needs type refinement
               timeEstimateId={EIP1559TransactionDataTemp.timeEstimateId}
               onCancel={cancelGasEdition}
               onSave={saveGasEdition}
@@ -401,6 +459,7 @@ function GasEditModal({
                       <MaterialCommunityIcon
                         name="information"
                         size={14}
+                        // @ts-expect-error Legacy JS code needs type refinement
                         style={styles.labelInfo}
                       />
                     </Text>
@@ -433,12 +492,16 @@ function GasEditModal({
             gasEstimateType={gasEstimateType}
             gasOptions={gasFeeEstimates}
             onChange={calculateTempGasFeeLegacy}
+            // @ts-expect-error Legacy JS code needs type refinement
             gasFeeNative={LegacyTransactionDataTemp.transactionFee}
+            // @ts-expect-error Legacy JS code needs type refinement
             gasFeeConversion={LegacyTransactionDataTemp.transactionFeeFiat}
+            // @ts-expect-error Legacy JS code needs type refinement
             gasPriceConversion={LegacyTransactionDataTemp.transactionFeeFiat}
             error={
               !hasEnoughEthBalance
                 ? strings('transaction.insufficient')
+                // @ts-expect-error Legacy JS code needs type refinement
                 : LegacyTransactionDataTemp.error
             }
             primaryCurrency={primaryCurrency}
@@ -457,92 +520,9 @@ function GasEditModal({
   );
 }
 
-GasEditModal.propTypes = {
-  /**
-   * Function to dismiss modal
-   */
-  dismiss: PropTypes.func,
-  /**
-   * Estimate type returned by the gas fee controller, can be fee-market, legacy, eth_gasPrice or none
-   */
-  gasEstimateType: PropTypes.string,
-  /**
-   * Gas fee estimates returned by the gas fee controller
-   */
-  gasFeeEstimates: PropTypes.object,
-  /**
-   * Default gas option ('low', 'medium' or 'high') to for fee-market estimate type
-   * This is used to show a warning below this option
-   */
-  defaultGasFeeOptionFeeMarket: PropTypes.string,
-  /**
-   * Default gas option ('low', 'medium' or 'high') to for legacy estimate types
-   * This is used to show a warning below this option
-   */
-  defaultGasFeeOptionLegacy: PropTypes.string,
-  /**
-   * Wether this modal is visible
-   */
-  isVisible: PropTypes.bool,
-  /**
-   * Function that handles user saving the gas editors
-   * It is called with arguments (customGas, )
-   */
-  onGasUpdate: PropTypes.func,
-  /**
-   * usedCustomGas from Swaps Controller
-   */
-  customGasFee: PropTypes.object,
-  /**
-   * Initial gas limit of the selected quote trade
-   */
-  initialGasLimit: PropTypes.string,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Gas limit of trade estimation
-   */
-  tradeGasLimit: PropTypes.string,
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Current network ticker
-   */
-  ticker: PropTypes.string,
-  /**
-   * Function to check if user has enough balance
-   */
-  checkEnoughEthBalance: PropTypes.func,
-  /**
-   * Wether the swap is from native asset
-   */
-  isNativeAsset: PropTypes.bool,
-  /**
-   * Value of the trade
-   */
-  tradeValue: PropTypes.string,
-  /**
-   * Amount of the swap
-   */
-  sourceAmount: PropTypes.string,
-  /**
-   * If the values should animate upon update or not
-   */
-  animateOnChange: PropTypes.bool,
-};
-const mapStateToProps = (state) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),
@@ -550,4 +530,5 @@ const mapStateToProps = (state) => ({
   primaryCurrency: state.settings.primaryCurrency,
 });
 
+// @ts-expect-error Legacy JS code needs type refinement
 export default connect(mapStateToProps)(GasEditModal);

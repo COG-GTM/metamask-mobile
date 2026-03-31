@@ -7,7 +7,6 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import BigNumber from 'bignumber.js';
 import Text from '../../Base/Text';
@@ -34,7 +33,9 @@ import {
 } from '../../../util/gasUtils';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -115,6 +116,34 @@ const createStyles = (colors) =>
  * The EditGasFeeLegacy component will be deprecated in favor of EditGasFeeLegacyUpdate as part of the gas polling refactor code that moves gas fee modifications to `app/core/GasPolling`. When the refactoring is completed, the EditGasFeeLegacyUpdate will be renamed EditGasFeeLegacy and this component will be removed. The EditGasFeeLegacyUpdate is currently being used in the Update Transaction(Speed Up/Cancel) flow.
  */
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface EditGasFeeLegacyProps {
+  selected?: string;
+  gasFee?: Record<string, any>;
+  gasOptions?: Record<string, any>;
+  onChange?: (gas: any, selected: string | null) => void;
+  onCancel?: () => void;
+  onSave?: (selected: string | null) => void;
+  gasFeeNative?: string;
+  gasFeeConversion?: string;
+  primaryCurrency?: string;
+  chainId?: string;
+  gasEstimateType?: string;
+  error?: string | boolean | React.ReactNode;
+  warning?: string | boolean | React.ReactNode;
+  ignoreOptions?: string[];
+  extendOptions?: Record<string, any>;
+  recommended?: Record<string, any>;
+  warningMinimumEstimateOption?: string;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  analyticsParams?: Record<string, any>;
+  view: string;
+}
+
 const EditGasFeeLegacy = ({
   selected,
   gasFee,
@@ -139,14 +168,14 @@ const EditGasFeeLegacy = ({
   isAnimating,
   analyticsParams,
   view,
-}) => {
+}: EditGasFeeLegacyProps) => {
   const onlyAdvanced = gasEstimateType !== GAS_ESTIMATE_TYPES.LEGACY;
-  const [showRangeInfoModal, setShowRangeInfoModal] = useState(false);
+  const [showRangeInfoModal, setShowRangeInfoModal] = useState<string | boolean>(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(
     !selected || onlyAdvanced,
   );
   const [selectedOption, setSelectedOption] = useState(selected);
-  const [gasPriceError, setGasPriceError] = useState();
+  const [gasPriceError, setGasPriceError] = useState<string | undefined>();
   const { colors } = useTheme();
   const { trackEvent, createEventBuilder } = useMetrics();
   const styles = createStyles(colors);
@@ -176,24 +205,31 @@ const EditGasFeeLegacy = ({
     setShowAdvancedOptions((showAdvancedOptions) => !showAdvancedOptions);
   };
 
-  const save = () => {
+  const save = (): void => {
     trackEvent(
       createEventBuilder(MetaMetricsEvents.GAS_FEE_CHANGED)
         .addProperties(getAnalyticsParams())
         .build(),
     );
 
+    // @ts-expect-error Legacy JS code needs type refinement
     onSave(selectedOption);
   };
 
-  const changeGas = (gas, selectedOption) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const changeGas = (gas: any, selectedOption: any) => {
     setSelectedOption(selectedOption);
+    // @ts-expect-error Legacy JS code needs type refinement
     onChange(gas, selectedOption);
   };
 
-  const changedGasPrice = (value) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const changedGasPrice = (value: any) => {
     const lowerValue = new BigNumber(
       gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
+        // @ts-expect-error Legacy JS code needs type refinement
         ? gasOptions?.[warningMinimumEstimateOption]
         : gasOptions?.gasPrice,
     );
@@ -218,22 +254,32 @@ const EditGasFeeLegacy = ({
     changeGas(newGas, null);
   };
 
-  const changedGasLimit = (value) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const changedGasLimit = (value: any) => {
     const newGas = { ...gasFee, suggestedGasLimit: value };
 
     changeGas(newGas, null);
   };
 
-  const selectOption = (option) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const selectOption = (option: any) => {
     setGasPriceError('');
     setSelectedOption(option);
+    // @ts-expect-error Legacy JS code needs type refinement
     changeGas({ ...gasFee, suggestedGasPrice: gasOptions[option] }, option);
   };
 
-  const shouldIgnore = (option) =>
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const shouldIgnore = (option: any) =>
+    // @ts-expect-error Legacy JS code needs type refinement
     ignoreOptions.find((item) => item === option);
 
-  const renderLabel = (selected, disabled, label) => (
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderLabel = (selected: any, disabled: any, label: any) => (
     <Text bold primary={selected && !disabled}>
       {label}
     </Text>
@@ -277,6 +323,7 @@ const EditGasFeeLegacy = ({
               color={colors.warning.default}
             />
           )}
+          // @ts-expect-error Legacy JS code needs type refinement
           style={styles.warningContainer}
         >
           {() => (
@@ -306,6 +353,7 @@ const EditGasFeeLegacy = ({
               color={colors.error.default}
             />
           )}
+          // @ts-expect-error Legacy JS code needs type refinement
           style={styles.warningContainer}
         >
           {() => (
@@ -358,8 +406,8 @@ const EditGasFeeLegacy = ({
                 />
               </View>
             </View>
-            {renderWarning}
-            {renderError}
+            {renderWarning()}
+            {renderError()}
             <FadeAnimationView
               valueToWatch={valueToWatch}
               animateOnChange={animateOnChange}
@@ -389,6 +437,7 @@ const EditGasFeeLegacy = ({
                   <HorizontalSelector
                     selected={selectedOption}
                     onPress={selectOption}
+                    // @ts-expect-error Legacy JS code needs type refinement
                     options={renderOptions}
                   />
                 </View>
@@ -433,6 +482,7 @@ const EditGasFeeLegacy = ({
                             </TouchableOpacity>
                           </View>
                         }
+                        // @ts-expect-error Legacy JS code needs type refinement
                         value={gasFee.suggestedGasLimit}
                         onChangeValue={changedGasLimit}
                         min={GAS_LIMIT_MIN}
@@ -460,6 +510,7 @@ const EditGasFeeLegacy = ({
                             </TouchableOpacity>
                           </View>
                         }
+                        // @ts-expect-error Legacy JS code needs type refinement
                         value={gasFee.suggestedGasPrice}
                         name={strings('edit_gas_fee_eip1559.gas_price')}
                         unit={'GWEI'}
@@ -494,6 +545,7 @@ const EditGasFeeLegacy = ({
                   ? strings('edit_gas_fee_eip1559.gas_price')
                   : null
               }
+              // @ts-expect-error Legacy JS code needs type refinement
               toggleModal={() => setShowRangeInfoModal(null)}
               body={
                 <View>
@@ -513,114 +565,6 @@ const EditGasFeeLegacy = ({
       </ScrollView>
     </View>
   );
-};
-
-EditGasFeeLegacy.defaultProps = {
-  ignoreOptions: [],
-  warningMinimumEstimateOption: AppConstants.GAS_OPTIONS.LOW,
-};
-
-EditGasFeeLegacy.propTypes = {
-  /**
-   * Gas option selected (low, medium, high)
-   */
-  selected: PropTypes.string,
-  /**
-   * Gas fee currently active
-   */
-  gasFee: PropTypes.object,
-  /**
-   * Gas fee options to select from
-   */
-  gasOptions: PropTypes.object,
-  /**
-   * Function called when user selected or changed the gas
-   */
-  onChange: PropTypes.func,
-  /**
-   * Function called when user cancels
-   */
-  onCancel: PropTypes.func,
-  /**
-   * Function called when user saves the new gas
-   */
-  onSave: PropTypes.func,
-  /**
-   * Gas fee in native currency
-   */
-  gasFeeNative: PropTypes.string,
-  /**
-   * Gas fee converted to chosen currency
-   */
-  gasFeeConversion: PropTypes.string,
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-  /**
-   * A string representing the network chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * Estimate type returned by the gas fee controller, can be market-fee, legacy or eth_gasPrice
-   */
-  gasEstimateType: PropTypes.string,
-  /**
-   * Error message to show
-   */
-  error: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.bool,
-    PropTypes.node,
-  ]),
-  /**
-   * Warning message to show
-   */
-  warning: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.bool,
-    PropTypes.node,
-  ]),
-  /**
-   * Ignore option array
-   */
-  ignoreOptions: PropTypes.array,
-  /**
-   * Extend options object. Object has option keys and properties will be spread
-   */
-  extendOptions: PropTypes.object,
-  /**
-   * Recommended object with type and render function
-   */
-  recommended: PropTypes.object,
-  /**
-   * Estimate option to compare with for too low warning
-   */
-  warningMinimumEstimateOption: PropTypes.string,
-  /**
-   * Function to call when update animation starts
-   */
-  onUpdatingValuesStart: PropTypes.func,
-  /**
-   * Function to call when update animation ends
-   */
-  onUpdatingValuesEnd: PropTypes.func,
-  /**
-   * If the values should animate upon update or not
-   */
-  animateOnChange: PropTypes.bool,
-  /**
-   * Boolean to determine if the animation is happening
-   */
-  isAnimating: PropTypes.bool,
-  /**
-   * Extra analytics params to be send with the gas analytics
-   */
-  analyticsParams: PropTypes.object,
-  /**
-   * (For analytics purposes) View (Approve, Transfer, Confirm) where this component is being used
-   */
-  view: PropTypes.string.isRequired,
 };
 
 export default EditGasFeeLegacy;
