@@ -34,8 +34,8 @@ export default function TransactionActionModal({
   titleText,
   gasTitleText,
   descriptionText,
-  cancelButtonMode,
-  confirmButtonMode,
+  cancelButtonMode = 'neutral',
+  confirmButtonMode = 'warning',
 }: TransactionActionModalProps) {
   return (
     <ActionModal

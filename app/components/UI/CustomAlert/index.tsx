@@ -5,7 +5,6 @@ import Modal from 'react-native-modal';
 import StyledButton from '../StyledButton';
 import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
 const createStyles = (colors: any) =>
   StyleSheet.create({
@@ -66,7 +65,7 @@ export default class CustomAlert extends PureComponent<CustomAlertProps> {
     return (
       <Modal
         style={styles.modal}
-        isVisible={this.propTypes}
+        isVisible={this.props.isVisible}
         onBackButtonPress={this.props.onPress}
         {...this.props}
         backdropColor={colors.overlay.default}

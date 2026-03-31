@@ -78,7 +78,7 @@ export default function ActionView({
   cancelText,
   children,
   confirmText,
-  confirmButtonMode,
+  confirmButtonMode = 'normal',
   onCancelPress,
   onConfirmPress,
   onTouchablePress,

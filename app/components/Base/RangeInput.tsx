@@ -6,6 +6,8 @@ import Text from './Text';
 import BigNumber from 'bignumber.js';
 import { useTheme } from '../../util/theme';
 
+const DEFAULT_INCREMENT = new BigNumber(1);
+
 const createStyles = (colors: any) =>
   StyleSheet.create({
     labelContainer: {
@@ -93,7 +95,7 @@ const RangeInput = ({
   rightLabelComponent,
   value,
   unit,
-  increment = new BigNumber(1),
+  increment = DEFAULT_INCREMENT,
   onChangeValue,
   inputInsideLabel,
   error,

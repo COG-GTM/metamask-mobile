@@ -148,18 +148,4 @@ DetailsModal.Section = DetailsModalSection;
 DetailsModal.SectionTitle = DetailsModalSectionTitle;
 DetailsModal.Column = DetailsModalColumn;
 
-/**
- * Any other external style defined in props will be applied
- */
-
-
-DetailsModalTitle.propTypes = {
-  style: stylePropType,
-};
-DetailsModalBody.propTypes = {
-  style: stylePropType,
-};
-DetailsModalSectionTitle.propTypes = {
-  style: stylePropType,
-};
 export default DetailsModal;
