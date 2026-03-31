@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import Keypad from './components';
 import { KEYS } from './constants';
 import useCurrency from './useCurrency';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+
 
 
 interface KeypadComponentProps {
