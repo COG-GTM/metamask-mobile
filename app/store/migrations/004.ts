@@ -1,6 +1,14 @@
-import { ChainId } from '@metamask/controller-utils';
 import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
+
+// Decimal chain IDs matching the original NetworksChainId enum values
+const networksChainId: Record<string, string> = {
+  mainnet: '1',
+  goerli: '5',
+  sepolia: '11155111',
+  'linea-goerli': '59140',
+  'linea-mainnet': '59144',
+};
 
 export default function migrate(state: unknown) {
   if (!isObject(state)) {
@@ -28,9 +36,9 @@ export default function migrate(state: unknown) {
   Object.keys(allTokens).forEach((address: string) => {
     newAllTokens[address] = {};
     Object.keys(allTokens[address]).forEach((networkType: string) => {
-      if (ChainId[networkType as keyof typeof ChainId]) {
+      if (networksChainId[networkType]) {
         newAllTokens[address][
-          ChainId[networkType as keyof typeof ChainId]
+          networksChainId[networkType]
         ] = allTokens[address][networkType];
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,9 +52,9 @@ export default function migrate(state: unknown) {
   Object.keys(allCollectibles).forEach((address: string) => {
     newAllCollectibles[address] = {};
     Object.keys(allCollectibles[address]).forEach((networkType: string) => {
-      if (ChainId[networkType as keyof typeof ChainId]) {
+      if (networksChainId[networkType]) {
         newAllCollectibles[address][
-          ChainId[networkType as keyof typeof ChainId]
+          networksChainId[networkType]
         ] = allCollectibles[address][networkType];
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,9 +70,9 @@ export default function migrate(state: unknown) {
     newAllCollectibleContracts[address] = {};
     Object.keys(allCollectibleContracts[address]).forEach(
       (networkType: string) => {
-        if (ChainId[networkType as keyof typeof ChainId]) {
+        if (networksChainId[networkType]) {
           newAllCollectibleContracts[address][
-            ChainId[networkType as keyof typeof ChainId]
+            networksChainId[networkType]
           ] = allCollectibleContracts[address][networkType];
         } else {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

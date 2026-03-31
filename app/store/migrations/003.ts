@@ -1,4 +1,4 @@
-import { ChainId, isSafeChainId } from '@metamask/controller-utils';
+import { isSafeChainId } from '@metamask/controller-utils';
 import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
 import { GOERLI } from '../../../app/constants/network';
@@ -15,8 +15,16 @@ export default function migrate(state: unknown) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const typedState = state as Record<string, any>;
   const provider = typedState.engine.backgroundState.NetworkController.provider;
+  // Decimal chain IDs matching the original NetworksChainId enum values
+  const networksChainId: Record<string, string> = {
+    mainnet: '1',
+    goerli: '5',
+    sepolia: '11155111',
+    'linea-goerli': '59140',
+    'linea-mainnet': '59144',
+  };
   const chainId =
-    ChainId[provider.type as keyof typeof ChainId];
+    networksChainId[provider.type as string];
   // if chainId === '' is a rpc
   if (chainId) {
     typedState.engine.backgroundState.NetworkController.provider = {
@@ -39,7 +47,7 @@ export default function migrate(state: unknown) {
     typedState.engine.backgroundState.NetworkController.provider = {
       ticker: 'ETH',
       type: GOERLI,
-      chainId: ChainId.goerli,
+      chainId: '5',
     };
   }
   return typedState;
