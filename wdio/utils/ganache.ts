@@ -6,15 +6,15 @@ import GanacheSeeder from '../../app/util/test/ganache-seeder';
 const ganacheServer = new Ganache();
 const validAccount = Accounts.getValidAccount();
 
-export const startGanache = async () => {
+export const startGanache = async (): Promise<void> => {
   await ganacheServer.start({ mnemonic: validAccount.seedPhrase });
 };
 
-export const stopGanache = async () => {
+export const stopGanache = async (): Promise<void> => {
   await ganacheServer.quit();
 };
 
-export const deployMultisig = async () => {
+export const deployMultisig = async (): Promise<string> => {
   const ganacheSeeder = await new GanacheSeeder(ganacheServer.getProvider());
   await ganacheSeeder.deploySmartContract(SMART_CONTRACTS.MULTISIG);
   const contractRegistry = ganacheSeeder.getContractRegistry();
@@ -24,7 +24,7 @@ export const deployMultisig = async () => {
   return multisigAddress;
 };
 
-export const deployErc20 = async () => {
+export const deployErc20 = async (): Promise<string> => {
   const ganacheSeeder = await new GanacheSeeder(ganacheServer.getProvider());
   await ganacheSeeder.deploySmartContract(SMART_CONTRACTS.HST);
   const contractRegistry = ganacheSeeder.getContractRegistry();
@@ -34,7 +34,7 @@ export const deployErc20 = async () => {
   return erc20Address;
 };
 
-export const deployErc721 = async () => {
+export const deployErc721 = async (): Promise<string> => {
   const ganacheSeeder = await new GanacheSeeder(ganacheServer.getProvider());
   await ganacheSeeder.deploySmartContract(SMART_CONTRACTS.NFTS);
   const contractRegistry = ganacheSeeder.getContractRegistry();
