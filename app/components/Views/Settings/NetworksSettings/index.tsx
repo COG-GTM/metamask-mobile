@@ -685,4 +685,6 @@ const mapStateToProps = (state: RootState) => ({
   ///: END:ONLY_INCLUDE_IF
 });
 
-export default connect(mapStateToProps)(NetworksSettings);
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default connect(mapStateToProps)(NetworksSettings) as any;
