@@ -137,7 +137,7 @@ export function getValueFromWeiHex({
   conversionRate,
   numberOfDecimals,
   toDenomination,
-}: { value?: any; fromCurrency?: any; toCurrency?: any; conversionRate?: any; numberOfDecimals?: any; toDenomination?: any } = {}) {
+}: { value?: any; fromCurrency?: any; toCurrency?: any; conversionRate?: any; numberOfDecimals?: any; toDenomination?: any }) {
   return conversionUtil(value, {
     fromNumericBase: 'hex',
     toNumericBase: 'dec',

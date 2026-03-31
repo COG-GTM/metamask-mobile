@@ -587,7 +587,7 @@ export function getTransactionToName({
   toAddress,
   internalAccounts,
   ensRecipient,
-}: { addressBook?: any; chainId?: any; toAddress?: any; internalAccounts?: any; ensRecipient?: any } = {}) {
+}: { addressBook?: any; chainId?: any; toAddress?: any; internalAccounts?: any; ensRecipient?: any }) {
   if (ensRecipient) {
     return ensRecipient;
   }

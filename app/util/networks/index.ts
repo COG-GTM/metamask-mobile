@@ -498,7 +498,7 @@ export const getNetworkNameFromProviderConfig = (providerConfig) => {
  * @param {string} params.chainId - ChainID of the network.
  * @returns {Object} - Image source of the network.
  */
-export const getNetworkImageSource = ({ networkType, chainId }: { networkType?: any; chainId?: any } = {}) => {
+export const getNetworkImageSource = ({ networkType, chainId }: { networkType?: any; chainId?: any }) => {
   const defaultNetwork = getDefaultNetworkByChainId(chainId);
 
   if (defaultNetwork) {
