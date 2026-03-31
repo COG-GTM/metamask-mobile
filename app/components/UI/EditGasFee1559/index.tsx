@@ -211,12 +211,12 @@ const EditGasFee1559 = ({
   error,
   warning,
   dappSuggestedGas,
-  ignoreOptions,
+  ignoreOptions = [],
   updateOption,
   extendOptions = {},
   recommended,
-  warningMinimumEstimateOption,
-  suggestedEstimateOption,
+  warningMinimumEstimateOption = AppConstants.GAS_OPTIONS.LOW,
+  suggestedEstimateOption = AppConstants.GAS_OPTIONS.MEDIUM,
   animateOnChange,
   isAnimating,
   onUpdatingValuesStart,
@@ -294,7 +294,6 @@ const EditGasFee1559 = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const changedMaxPriorityFee = (value: any) => {
     const lowerValue = new BigNumber(
-      // @ts-expect-error Legacy JS code needs type refinement
       gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxPriorityFeePerGas,
     );
     const higherValue = new BigNumber(
@@ -335,7 +334,6 @@ const EditGasFee1559 = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const changedMaxFeePerGas = (value: any) => {
     const lowerValue = new BigNumber(
-      // @ts-expect-error Legacy JS code needs type refinement
       gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxFeePerGas,
     );
     const higherValue = new BigNumber(
@@ -387,8 +385,7 @@ const EditGasFee1559 = ({
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const shouldIgnore = (option: any) =>
-    // @ts-expect-error Legacy JS code needs type refinement
-    ignoreOptions.find((item) => item === option);
+    ignoreOptions.find((item: any) => item === option);
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -532,15 +529,13 @@ const EditGasFee1559 = ({
                         {strings('edit_gas_fee_eip1559.estimate')}:
                       </Text>{' '}
                       {
-                        // @ts-expect-error Legacy JS code needs type refinement
                         gasOptions?.[suggestedEstimateOption]
                           ?.suggestedMaxPriorityFeePerGas
                       }{' '}
                       GWEI
                     </Text>
                   }
-                  // @ts-expect-error Legacy JS code needs type refinement
-                  value={gasFee.suggestedMaxPriorityFeePerGas}
+                  value={gasFee?.suggestedMaxPriorityFeePerGas}
                   name={strings('edit_gas_fee_eip1559.max_priority_fee')}
                   unit={'GWEI'}
                   min={GAS_MIN}
@@ -584,15 +579,13 @@ const EditGasFee1559 = ({
                         {strings('edit_gas_fee_eip1559.estimate')}:
                       </Text>{' '}
                       {
-                        // @ts-expect-error Legacy JS code needs type refinement
                         gasOptions?.[suggestedEstimateOption]
                           ?.suggestedMaxFeePerGas
                       }{' '}
                       GWEI
                     </Text>
                   }
-                  // @ts-expect-error Legacy JS code needs type refinement
-                  value={gasFee.suggestedMaxFeePerGas}
+                  value={gasFee?.suggestedMaxFeePerGas}
                   name={strings('edit_gas_fee_eip1559.max_fee')}
                   unit={'GWEI'}
                   min={GAS_MIN}

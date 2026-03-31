@@ -367,8 +367,7 @@ async function addTokenToAssetsController(newToken: any, chainId: any, networkCl
     : [];
   if (
     !isSwapsNativeAsset(newToken) &&
-    // @ts-expect-error Legacy JS code needs type refinement
-    !allTokens.includes((token: any) =>
+    !allTokens.some((token: any) =>
       toLowerCaseEquals(token.address, newToken.address),
     )
   ) {
@@ -2623,8 +2622,6 @@ function SwapsQuotesView({
   );
 }
 
-// @ts-expect-error Legacy JS code needs type refinement
-Swaps
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapStateToProps = (state: any) => ({

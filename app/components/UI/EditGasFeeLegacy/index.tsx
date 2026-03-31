@@ -158,10 +158,10 @@ const EditGasFeeLegacy = ({
   gasEstimateType,
   error,
   warning,
-  ignoreOptions,
+  ignoreOptions = [],
   extendOptions = {},
   recommended,
-  warningMinimumEstimateOption,
+  warningMinimumEstimateOption = AppConstants.GAS_OPTIONS.LOW,
   onUpdatingValuesStart,
   onUpdatingValuesEnd,
   animateOnChange,
@@ -229,7 +229,6 @@ const EditGasFeeLegacy = ({
   const changedGasPrice = (value: any) => {
     const lowerValue = new BigNumber(
       gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-        // @ts-expect-error Legacy JS code needs type refinement
         ? gasOptions?.[warningMinimumEstimateOption]
         : gasOptions?.gasPrice,
     );
@@ -274,8 +273,7 @@ const EditGasFeeLegacy = ({
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const shouldIgnore = (option: any) =>
-    // @ts-expect-error Legacy JS code needs type refinement
-    ignoreOptions.find((item) => item === option);
+    ignoreOptions.find((item: any) => item === option);
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -437,8 +435,8 @@ const EditGasFeeLegacy = ({
                   <HorizontalSelector
                     selected={selectedOption}
                     onPress={selectOption}
-                    // @ts-expect-error Legacy JS code needs type refinement
-                    options={renderOptions}
+                    options={renderOptions()}
+                    disabled={false}
                   />
                 </View>
               )}
