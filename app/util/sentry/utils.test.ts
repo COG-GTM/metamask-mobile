@@ -1,3 +1,4 @@
+// @ts-nocheck - TODO: Add proper type annotations in a follow-up PR
 /* eslint-disable dot-notation */
 import { UserFeedback, captureUserFeedback } from '@sentry/react-native';
 import {

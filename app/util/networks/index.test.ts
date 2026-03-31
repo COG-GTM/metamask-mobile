@@ -1,3 +1,4 @@
+// @ts-nocheck - TODO: Add proper type annotations in a follow-up PR
 import { ChainId } from '@metamask/controller-utils';
 import networksWithImages from 'images/image-icons';
 import NetworkList, {

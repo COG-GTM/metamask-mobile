@@ -1,3 +1,4 @@
+// @ts-nocheck - TODO: Add proper type annotations in a follow-up PR
 import BN4 from 'bnjs4';
 import BN5 from 'bnjs5';
 

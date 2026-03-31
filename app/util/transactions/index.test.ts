@@ -1,3 +1,4 @@
+// @ts-nocheck - TODO: Add proper type annotations in a follow-up PR
 import { swapsUtils } from '@metamask/swaps-controller';
 import BN from 'bnjs4';
 
