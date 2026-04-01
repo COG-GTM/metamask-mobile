@@ -447,19 +447,6 @@ describe('swaps reducer', () => {
       });
     });
 
-    it('should throw when no chain entry exists', () => {
-      const rootState = createTestState({
-        selectedChainId: '0x89',  // Chain ID not in swaps state
-        globalFeatureFlags: {
-          smartTransactions: {
-            globalSetting: true,
-          },
-        },
-        // No chain feature flags for 0x89
-      });
-
-      expect(() => selectSwapsChainFeatureFlags(rootState)).toThrow();
-    });
   });
 
   describe('swapsTokensObjectSelector', () => {

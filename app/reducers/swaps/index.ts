@@ -345,8 +345,9 @@ export const swapsTokensWithBalanceSelector = createSelector(
     }
     const baseTokens = tokens;
     const tokensAddressesWithBalance = Object.entries(balances)
-      .filter(([, balance]) => balance !== '0x0')
-      .sort(([, balanceA], [, balanceB]) => (lte(Number(balanceB), Number(balanceA)) ? -1 : 1))
+      // eslint-disable-next-line eqeqeq
+      .filter(([, balance]) => balance !== 0 as unknown)
+      .sort(([, balanceA], [, balanceB]) => (lte(balanceB as unknown as number, balanceA as unknown as number) ? -1 : 1))
       .map(([address]) => address.toLowerCase());
     const tokensWithBalance: TokenWithMetadata[] = [];
     const originalTokens: TokenWithMetadata[] = [];
