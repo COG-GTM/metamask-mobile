@@ -48,7 +48,11 @@ export default class Ganache {
   }
 
   async getAccounts(): Promise<string[]> {
-    return await this.getProvider()?.request({
+    const provider = this.getProvider();
+    if (!provider) {
+      throw new Error('Server not running yet');
+    }
+    return await provider.request({
       method: 'eth_accounts',
       params: [],
     }) as string[];
@@ -56,7 +60,11 @@ export default class Ganache {
 
   async getBalance(): Promise<string | number> {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider()?.request({
+    const provider = this.getProvider();
+    if (!provider) {
+      throw new Error('Server not running yet');
+    }
+    const balanceHex = await provider.request({
       method: 'eth_getBalance',
       params: [accounts[0], 'latest'],
     }) as string;
