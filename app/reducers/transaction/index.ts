@@ -1,7 +1,76 @@
 import { REHYDRATE } from 'redux-persist';
+import { SecurityAlertResponse } from '@metamask/transaction-controller';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import type BN from 'bnjs4';
 
-const initialState = {
+export interface TransactionData {
+  data?: string;
+  from?: string;
+  gas?: BN;
+  gasPrice?: BN;
+  to?: string;
+  value?: BN;
+  maxFeePerGas?: BN;
+  maxPriorityFeePerGas?: BN;
+}
+
+export interface SelectedAsset {
+  tokenId?: string;
+  isETH?: boolean;
+  symbol?: string;
+  address?: string;
+  decimals?: number;
+  image?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface TransactionState {
+  ensRecipient?: string;
+  assetType?: string;
+  selectedAsset: SelectedAsset;
+  transaction: TransactionData;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  symbol?: string;
+  paymentRequest?: unknown;
+  readableValue?: string;
+  id?: string;
+  type?: string;
+  proposedNonce?: string;
+  nonce?: string;
+  securityAlertResponses: Record<string, SecurityAlertResponse>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+}
+
+interface TransactionAction {
+  type: string;
+  selectedAsset: SelectedAsset & { assetType?: string };
+  assetType?: string;
+  nonce: string;
+  proposedNonce: string;
+  from: string;
+  ensRecipient: string;
+  to: string;
+  transactionToName: string;
+  transactionFromName: string;
+  transaction: TransactionData & {
+    selectedAsset?: SelectedAsset;
+    assetType?: string;
+    [key: string]: unknown;
+  };
+  asset: SelectedAsset;
+  transactionId: string;
+  securityAlertResponse: SecurityAlertResponse;
+  maxValueMode: boolean;
+  value: BN;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,7 +101,7 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+const getAssetType = (selectedAsset: SelectedAsset): string | undefined => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,7 +115,11 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+/* eslint-disable @typescript-eslint/default-param-last */
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {

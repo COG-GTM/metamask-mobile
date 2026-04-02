@@ -14,10 +14,29 @@ import { getChainFeatureFlags, getSwapsLiveness } from './utils';
 import { allowedTestnetChainIds } from '../../components/UI/Swaps/utils';
 import { NETWORKS_CHAIN_ID } from '../../constants/network';
 import { selectSelectedInternalAccountAddress } from '../../selectors/accountsController';
+import { RootState } from '..';
+
+export interface SwapsChainState {
+  isLive: boolean;
+  featureFlags: Record<string, unknown> | undefined;
+}
+
+export interface SwapsFeatureFlags {
+  smart_transactions?: Record<string, unknown>;
+  smartTransactions?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface SwapsState {
+  isLive: boolean;
+  hasOnboarded: boolean;
+  featureFlags: SwapsFeatureFlags | undefined;
+  [chainId: string]: SwapsChainState | boolean | SwapsFeatureFlags | undefined;
+}
 
 // If we are in dev and on a testnet, just use mainnet feature flags,
 // since we don't have feature flags for testnets in the API
-export const getFeatureFlagChainId = (chainId) =>
+export const getFeatureFlagChainId = (chainId: string): string =>
   __DEV__ && allowedTestnetChainIds.includes(chainId)
     ? NETWORKS_CHAIN_ID.MAINNET
     : chainId;
@@ -28,18 +47,27 @@ export const SWAPS_SET_HAS_ONBOARDED = 'SWAPS_SET_HAS_ONBOARDED';
 const MAX_TOKENS_WITH_BALANCE = 5;
 
 // * Action Creator
-export const setSwapsLiveness = (chainId, featureFlags) => ({
+export const setSwapsLiveness = (chainId: string, featureFlags: SwapsFeatureFlags) => ({
   type: SWAPS_SET_LIVENESS,
   payload: { chainId, featureFlags },
 });
-export const setSwapsHasOnboarded = (hasOnboarded) => ({
+export const setSwapsHasOnboarded = (hasOnboarded: boolean) => ({
   type: SWAPS_SET_HAS_ONBOARDED,
   payload: hasOnboarded,
 });
 
 // * Functions
 
-function addMetadata(chainId, tokens, tokenList) {
+interface SwapsToken {
+  address: string;
+  decimals: number;
+  name?: string;
+  symbol?: string;
+  occurrences?: number;
+  [key: string]: unknown;
+}
+
+function addMetadata(chainId: string, tokens: SwapsToken[], tokenList: Record<string, { name: string }>): SwapsToken[] {
   if (!isMainnetByChainId(chainId)) {
     return tokens;
   }
@@ -55,7 +83,7 @@ function addMetadata(chainId, tokens, tokenList) {
 
 // * Selectors
 const chainIdSelector = selectEvmChainId;
-const swapsStateSelector = (state) => state.swaps;
+const swapsStateSelector = (state: RootState) => state.swaps;
 /**
  * Returns the swaps liveness state
  */
@@ -108,13 +136,13 @@ export const swapsHasOnboardedSelector = createSelector(
   (swapsState) => swapsState.hasOnboarded,
 );
 
-const selectSwapsControllerState = (state) =>
+const selectSwapsControllerState = (state: RootState) =>
   state.engine.backgroundState.SwapsController;
 
 /**
  * Returns the swaps tokens from the state
  */
-export const swapsControllerTokens = (state) =>
+export const swapsControllerTokens = (state: RootState) =>
   state.engine.backgroundState.SwapsController.tokens;
 
 export const selectSwapsApprovalTransaction = createSelector(
@@ -353,7 +381,7 @@ export const swapsTopAssetsSelector = createSelector(
 );
 
 // * Reducer
-export const initialState = {
+export const initialState: SwapsState = {
   isLive: true, // TODO: should we remove it?
   hasOnboarded: true, // TODO: Once we have updated UI / content for the modal, we should enable it again.
 
@@ -364,7 +392,16 @@ export const initialState = {
   },
 };
 
-function swapsReducer(state = initialState, action) {
+interface SwapsAction {
+  type: string;
+  payload: {
+    chainId: string;
+    featureFlags: SwapsFeatureFlags;
+  } | boolean;
+}
+
+/* eslint-disable @typescript-eslint/default-param-last */
+function swapsReducer(state: SwapsState = initialState, action: SwapsAction): SwapsState {
   switch (action.type) {
     case SWAPS_SET_LIVENESS: {
       const { chainId: rawChainId, featureFlags } = action.payload;
