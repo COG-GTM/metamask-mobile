@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
 import { StyleSheet, ViewProps } from 'react-native';
-import { BigNumber } from 'bignumber';
+import { BigNumber } from 'bignumber.js';
 import { useStyles } from '../../../hooks/useStyles';
 import Text, {
   TextColor,

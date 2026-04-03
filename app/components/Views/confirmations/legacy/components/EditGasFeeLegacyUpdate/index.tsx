@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
-import BigNumber from 'bignumber';
+import BigNumber from 'bignumber.js';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   ScrollView,

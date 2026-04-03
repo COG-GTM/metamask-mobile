@@ -44,7 +44,7 @@ import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
 import { TransactionType } from '@metamask/transaction-controller';
 import { Provider } from '@metamask/network-controller';
-import BigNumber from 'bignumber';
+import BigNumber from 'bignumber.js';
 
 jest.mock('@metamask/controller-utils', () => ({
   ...jest.requireActual('@metamask/controller-utils'),

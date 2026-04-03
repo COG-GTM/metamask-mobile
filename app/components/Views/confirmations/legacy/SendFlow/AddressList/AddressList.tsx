@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
-import Fuse from 'fuse';
+import Fuse from 'fuse.js';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { isSmartContractAddress } from '../../../../../../util/transactions';
 import { strings } from '../../../../../../../locales/i18n';

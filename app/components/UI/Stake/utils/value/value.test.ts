@@ -1,4 +1,4 @@
-import bn from 'bignumber';
+import bn from 'bignumber.js';
 import {
   CommonPercentageInputUnits,
   PercentageOutputFormat,

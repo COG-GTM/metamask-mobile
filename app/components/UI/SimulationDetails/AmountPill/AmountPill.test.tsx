@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { BigNumber } from 'bignumber';
+import { BigNumber } from 'bignumber.js';
 import AmountPill from './AmountPill';
 import {
   AssetIdentifier,

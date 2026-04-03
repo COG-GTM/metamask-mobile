@@ -16,7 +16,7 @@ import {
   SectionListRenderItem,
 } from 'react-native';
 import dappUrlList from '../../../util/dapp-url-list';
-import Fuse from 'fuse';
+import Fuse from 'fuse.js';
 import { useSelector } from 'react-redux';
 import styleSheet from './styles';
 import { useStyles } from '../../../component-library/hooks';

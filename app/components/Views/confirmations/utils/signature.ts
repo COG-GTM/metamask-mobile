@@ -19,7 +19,7 @@ import {
   stripOneLayerofNesting,
  } from '../../../../util/string';
 import { TOKEN_ADDRESS } from '../constants/tokens';
-import BigNumber from 'bignumber';
+import BigNumber from 'bignumber.js';
 
 type FieldValue = string | string[] | Record<string, unknown>;
 

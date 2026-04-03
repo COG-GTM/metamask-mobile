@@ -1,4 +1,4 @@
-import { BigNumber } from 'bignumber';
+import { BigNumber } from 'bignumber.js';
 
 const MIN_AMOUNT = new BigNumber('0.000001');
 

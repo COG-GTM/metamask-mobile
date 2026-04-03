@@ -7,7 +7,7 @@ import { utils as ethersUtils } from 'ethers';
 import convert from '@metamask/ethjs-unit';
 import { add0x, remove0x } from '@metamask/utils';
 import numberToBN from 'number-to-bn';
-import BigNumber from 'bignumber';
+import BigNumber from 'bignumber.js';
 
 import currencySymbols from '../currency-symbols.json';
 import { isZero } from '../lodash';

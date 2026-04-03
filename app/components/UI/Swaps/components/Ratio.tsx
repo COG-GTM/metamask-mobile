@@ -4,7 +4,7 @@ import FA5Icon from 'react-native-vector-icons/FontAwesome5';
 import { useRatio } from '../utils';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
-import BigNumber from 'bignumber';
+import BigNumber from 'bignumber.js';
 import { Theme } from '@metamask/design-tokens';
 
 const createStyles = (colors: Theme['colors']) =>

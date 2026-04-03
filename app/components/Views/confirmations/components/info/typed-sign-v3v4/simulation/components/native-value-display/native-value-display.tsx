@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { Hex } from '@metamask/utils';
-import { BigNumber } from 'bignumber';
+import { BigNumber } from 'bignumber.js';
 
 import { RootState } from '../../../../../../../../../reducers';
 import { selectConversionRateByChainId } from '../../../../../../../../../selectors/currencyRateController';

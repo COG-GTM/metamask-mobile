@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Hex, add0x } from '@metamask/utils';
-import { BigNumber } from 'bignumber';
+import { BigNumber } from 'bignumber.js';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import {

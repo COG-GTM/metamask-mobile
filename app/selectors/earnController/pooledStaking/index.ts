@@ -3,7 +3,7 @@ import { RootState } from '../../../reducers';
 import { EarnControllerState } from '@metamask/earn-controller';
 import { createDeepEqualSelector } from '../../util';
 import { VaultApyAverages } from '@metamask/stake-sdk';
-import BigNumber from 'bignumber';
+import BigNumber from 'bignumber.js';
 import {
   CommonPercentageInputUnits,
   formatPercent,

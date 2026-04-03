@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Modal from 'react-native-modal';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Fuse from 'fuse';
+import Fuse from 'fuse.js';
 import { strings } from '../../../../../../locales/i18n';
 import ScreenLayout from '../ScreenLayout';
 import ModalDragger from '../../../../Base/ModalDragger';

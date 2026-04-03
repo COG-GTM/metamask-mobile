@@ -2,7 +2,7 @@ import { BNToHex } from '@metamask/controller-utils';
 import type { InternalAccount } from '@metamask/keyring-internal-api';
 import { ChainId, PooledStakingContract } from '@metamask/stake-sdk';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
-import BigNumber from 'bignumber';
+import BigNumber from 'bignumber.js';
 import { act, fireEvent } from '@testing-library/react-native';
 import BN4 from 'bnjs4';
 import { Contract } from 'ethers';

@@ -9,7 +9,7 @@ import {
 import { Hex } from '@metamask/utils';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
-import Fuse from 'fuse';
+import Fuse from 'fuse.js';
 import { toLowerCaseEquals } from '../../../util/general';
 import { useSelector } from 'react-redux';
 import { TokenListToken } from '@metamask/assets-controllers';

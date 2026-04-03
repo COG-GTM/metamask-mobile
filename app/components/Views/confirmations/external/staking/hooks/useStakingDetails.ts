@@ -1,5 +1,5 @@
 import { TransactionMeta } from '@metamask/transaction-controller';
-import { BigNumber } from 'bignumber';
+import { BigNumber } from 'bignumber.js';
 import { useSelector } from 'react-redux';
 import I18n from '../../../../../../../locales/i18n';
 import { formatAmount } from '../../../../../UI/SimulationDetails/formatAmount';

@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber';
+import BigNumber from 'bignumber.js';
 
 const formatNumber = (value: number | string) =>
   new BigNumber(value).toFormat();

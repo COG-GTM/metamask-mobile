@@ -3,7 +3,7 @@ import { TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { NetworkClientId } from '@metamask/network-controller';
 import { Hex } from '@metamask/utils';
-import { BigNumber } from 'bignumber';
+import { BigNumber } from 'bignumber.js';
 
 import ButtonPill from '../../../../../../../../../component-library/components-temp/Buttons/ButtonPill/ButtonPill';
 import { ButtonIconSizes } from '../../../../../../../../../component-library/components/Buttons/ButtonIcon/ButtonIcon.types';

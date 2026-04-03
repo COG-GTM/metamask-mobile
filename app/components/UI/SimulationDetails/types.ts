@@ -1,5 +1,5 @@
 import { Hex } from '@metamask/utils';
-import { BigNumber } from 'bignumber';
+import { BigNumber } from 'bignumber.js';
 
 export enum AssetType {
   Native = 'NATIVE',

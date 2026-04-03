@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber';
+import BigNumber from 'bignumber.js';
 import { addCurrencies, conversionUtil } from '.';
 
 describe('conversion utils', () => {
