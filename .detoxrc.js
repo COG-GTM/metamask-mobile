@@ -21,7 +21,7 @@ module.exports = {
   testRunner: {
     args: {
       $0: 'jest',
-      config: 'e2e/jest.e2e.config.js',
+      config: 'e2e/jest.e2e.config.ts',
     },
     jest: {
       setupTimeout: 220000,
@@ -34,7 +34,7 @@ module.exports = {
       app: process.env.CI ? 'ios.qa' :'ios.debug',
       testRunner: {
         args: {
-          "$0": "node e2e/api-specs/run-api-spec-tests.js",
+          "$0": "node e2e/api-specs/run-api-spec-tests.ts",
         },
       },
     },
