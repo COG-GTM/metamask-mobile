@@ -19,7 +19,7 @@ import HorizontalSelector from '../../Base/HorizontalSelector';
 import Device from '../../../util/device';
 import { getDecimalChainId, isMainnetByChainId } from '../../../util/networks';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import FadeAnimationView from '../FadeAnimationView';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 

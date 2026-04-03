@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 
 export interface UpdateEIP1559Props {
   /**

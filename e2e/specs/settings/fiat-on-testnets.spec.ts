@@ -10,9 +10,9 @@ import NetworkListModal from '../../pages/Network/NetworkListModal';
 import WalletView from '../../pages/wallet/WalletView';
 import NetworkEducationModal from '../../pages/Network/NetworkEducationModal';
 import AdvancedSettingsView from '../../pages/Settings/AdvancedView';
-import FiatOnTestnetsBottomSheet from '../../pages/Settings/Advanced/FiatOnTestnetsBottomSheet.js';
-import Assertions from '../../utils/Assertions.js';
-import TestHelpers from '../../helpers.js';
+import FiatOnTestnetsBottomSheet from '../../pages/Settings/Advanced/FiatOnTestnetsBottomSheet';
+import Assertions from '../../utils/Assertions';
+import TestHelpers from '../../helpers';
 
 const SEPOLIA = CustomNetworks.Sepolia.providerConfig.nickname;
 

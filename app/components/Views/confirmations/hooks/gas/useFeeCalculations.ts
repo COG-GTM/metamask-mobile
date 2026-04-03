@@ -2,7 +2,7 @@ import { hexToBN } from '@metamask/controller-utils';
 import { GasFeeEstimates } from '@metamask/gas-fee-controller';
 import type { TransactionMeta } from '@metamask/transaction-controller';
 import { Hex, add0x } from '@metamask/utils';
-import { BigNumber } from 'bignumber.js';
+import { BigNumber } from 'bignumber';
 import { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import I18n from '../../../../../../locales/i18n';

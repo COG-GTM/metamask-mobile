@@ -1,7 +1,7 @@
 'use strict';
 
-import { Regression } from '../../tags.js';
-import TestHelpers from '../../helpers.js';
+import { Regression } from '../../tags';
+import TestHelpers from '../../helpers';
 import FixtureBuilder from '../../fixtures/fixture-builder';
 import {
   loadFixture,
@@ -10,16 +10,16 @@ import {
 } from '../../fixtures/fixture-helper';
 import FixtureServer from '../../fixtures/fixture-server';
 import { getFixturesServerPort } from '../../fixtures/utils';
-import { loginToApp } from '../../viewHelper.js';
-import TabBarComponent from '../../pages/wallet/TabBarComponent.js';
-import SettingsView from '../../pages/Settings/SettingsView.js';
-import SecurityAndPrivacy from '../../pages/Settings/SecurityAndPrivacy/SecurityAndPrivacyView.js';
-import Assertions from '../../utils/Assertions.js';
-import RevealPrivateKey from '../../pages/Settings/SecurityAndPrivacy/RevealPrivateKeyView.js';
-import { RevealSeedViewSelectorsText } from '../../selectors/Settings/SecurityAndPrivacy/RevealSeedView.selectors.js';
-import WalletView from '../../pages/wallet/WalletView.js';
-import AccountActionsBottomSheet from '../../pages/wallet/AccountActionsBottomSheet.js';
-import AccountListBottomSheet from '../../pages/wallet/AccountListBottomSheet.js';
+import { loginToApp } from '../../viewHelper';
+import TabBarComponent from '../../pages/wallet/TabBarComponent';
+import SettingsView from '../../pages/Settings/SettingsView';
+import SecurityAndPrivacy from '../../pages/Settings/SecurityAndPrivacy/SecurityAndPrivacyView';
+import Assertions from '../../utils/Assertions';
+import RevealPrivateKey from '../../pages/Settings/SecurityAndPrivacy/RevealPrivateKeyView';
+import { RevealSeedViewSelectorsText } from '../../selectors/Settings/SecurityAndPrivacy/RevealSeedView.selectors';
+import WalletView from '../../pages/wallet/WalletView';
+import AccountActionsBottomSheet from '../../pages/wallet/AccountActionsBottomSheet';
+import AccountListBottomSheet from '../../pages/wallet/AccountListBottomSheet';
 
 const fixtureServer = new FixtureServer();
 // These keys are from the fixture and are used to test the reveal private key functionality

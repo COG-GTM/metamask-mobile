@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { BigNumber } from 'bignumber.js';
+import { BigNumber } from 'bignumber';
 
 import BalanceChangeRow from './BalanceChangeRow';
 import { AssetType, BalanceChange } from '../types';

@@ -13,7 +13,7 @@ import {
 import Modal from 'react-native-modal';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import { connect } from 'react-redux';
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import { strings } from '../../../../../locales/i18n';
 import {
   fromTokenMinimalUnitString,

@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   ScrollView,
@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { EditGasViewSelectorsIDs } from '../../../../../../../e2e/selectors/SendFlow/EditGasView.selectors.js';
+import { EditGasViewSelectorsIDs } from '../../../../../../../e2e/selectors/SendFlow/EditGasView.selectors';
 import { strings } from '../../../../../../../locales/i18n';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
 import AppConstants from '../../../../../../core/AppConstants';

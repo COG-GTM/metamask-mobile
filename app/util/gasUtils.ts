@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 
 export const GAS_LIMIT_INCREMENT = new BigNumber(1000);
 export const GAS_PRICE_INCREMENT = new BigNumber(1);

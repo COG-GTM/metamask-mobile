@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
-import { BigNumber } from 'bignumber.js';
+import { BigNumber } from 'bignumber';
 import { AssetIdentifier, AssetType } from '../types';
 import { formatAmount, formatAmountMaxPrecision } from '../formatAmount';
 import I18n from '../../../../../locales/i18n';

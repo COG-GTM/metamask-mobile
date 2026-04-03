@@ -21,7 +21,7 @@
  * on the accompanying options.
  */
 
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import BN from 'bnjs4';
 
 import { stripHexPrefix } from 'ethereumjs-util';

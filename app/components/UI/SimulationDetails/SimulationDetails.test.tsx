@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Hex } from '@metamask/utils';
-import { BigNumber } from 'bignumber.js';
+import { BigNumber } from 'bignumber';
 import {
   SimulationData,
   SimulationErrorCode,

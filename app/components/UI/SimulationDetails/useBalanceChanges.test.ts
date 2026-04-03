@@ -1,6 +1,6 @@
 import { Hex } from '@metamask/utils';
 import { renderHook } from '@testing-library/react-hooks';
-import { BigNumber } from 'bignumber.js';
+import { BigNumber } from 'bignumber';
 import {
   SimulationData,
   SimulationTokenStandard,

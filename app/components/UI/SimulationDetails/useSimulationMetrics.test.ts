@@ -3,7 +3,7 @@ import {
   SimulationData,
   SimulationErrorCode,
 } from '@metamask/transaction-controller';
-import { BigNumber } from 'bignumber.js';
+import { BigNumber } from 'bignumber';
 import { renderHook } from '@testing-library/react-hooks';
 import { useDispatch } from 'react-redux';
 

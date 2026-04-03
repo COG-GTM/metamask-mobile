@@ -1,7 +1,7 @@
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
 import { isHexString } from '@metamask/utils';
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { strings } from '../../../../../../../locales/i18n';

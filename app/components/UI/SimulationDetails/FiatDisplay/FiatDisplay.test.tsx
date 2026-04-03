@@ -1,5 +1,5 @@
 import React from 'react';
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import { merge } from 'lodash';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import renderWithProvider from '../../../../util/test/renderWithProvider';

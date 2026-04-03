@@ -27,7 +27,7 @@ import {
   CaipAssetType,
   parseCaipAssetType,
 } from '@metamask/utils';
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import {
   MultichainAssetsControllerState,

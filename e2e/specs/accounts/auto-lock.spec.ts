@@ -1,7 +1,7 @@
 'use strict';
 
-import { Regression } from '../../tags.js';
-import TestHelpers from '../../helpers.js';
+import { Regression } from '../../tags';
+import TestHelpers from '../../helpers';
 import FixtureBuilder from '../../fixtures/fixture-builder';
 import {
   loadFixture,
@@ -10,14 +10,14 @@ import {
 } from '../../fixtures/fixture-helper';
 import FixtureServer from '../../fixtures/fixture-server';
 import { getFixturesServerPort } from '../../fixtures/utils';
-import { loginToApp } from '../../viewHelper.js';
+import { loginToApp } from '../../viewHelper';
 import TabBarComponent from '../../pages/wallet/TabBarComponent';
 import SettingsView from '../../pages/Settings/SettingsView';
 import SecurityAndPrivacy from '../../pages/Settings/SecurityAndPrivacy/SecurityAndPrivacyView';
 import AutoLockModal from '../../pages/Settings/SecurityAndPrivacy/AutoLockModal';
-import Assertions from '../../utils/Assertions.js';
-import WalletView from '../../pages/wallet/WalletView.js';
-import LoginView from '../../pages/wallet/LoginView.js';
+import Assertions from '../../utils/Assertions';
+import WalletView from '../../pages/wallet/WalletView';
+import LoginView from '../../pages/wallet/LoginView';
 
 const fixtureServer = new FixtureServer();
 const isIOS = device.getPlatform() === 'ios';

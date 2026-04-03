@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import BN4 from 'bnjs4';
 import { useCallback, useMemo, useState } from 'react';
 import {

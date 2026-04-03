@@ -1,6 +1,6 @@
 import { Hex } from '@metamask/utils';
 import { useSelector } from 'react-redux';
-import { BigNumber } from 'bignumber.js';
+import { BigNumber } from 'bignumber';
 import {
   SimulationBalanceChange,
   SimulationData,

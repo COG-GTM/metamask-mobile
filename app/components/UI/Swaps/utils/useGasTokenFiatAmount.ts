@@ -5,7 +5,7 @@ import { toWei, weiToFiat } from '../../../../util/number';
 import { hexToDecimal } from '../../../../util/conversions';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { Quote } from '@metamask/swaps-controller/dist/types';
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 
 interface TokenFee {
   token?: {

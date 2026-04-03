@@ -38,7 +38,7 @@ import {
 import Logger from '../../../../../util/Logger';
 import { getAddress } from '../../../../../util/address';
 import { MAINNET } from '../../../../../constants/network';
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import { WalletDevice } from '@metamask/transaction-controller';
 import {
   addTransaction,

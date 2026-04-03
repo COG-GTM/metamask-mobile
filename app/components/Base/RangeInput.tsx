@@ -3,7 +3,7 @@ import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Text from './Text';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import { useTheme } from '../../util/theme';
 
 const createStyles = (colors) =>

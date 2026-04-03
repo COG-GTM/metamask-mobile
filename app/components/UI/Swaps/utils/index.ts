@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import { swapsUtils } from '@metamask/swaps-controller';
 import { strings } from '../../../../../locales/i18n';
 import AppConstants from '../../../../core/AppConstants';

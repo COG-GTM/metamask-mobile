@@ -5,7 +5,7 @@ import notifee from '@notifee/react-native';
 import localeData from 'dayjs/plugin/localeData';
 import { Web3Provider } from '@ethersproject/providers';
 import { toHex } from '@metamask/controller-utils';
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import {
   OnChainRawNotification,
   OnChainRawNotificationsWithNetworkFields,

@@ -6,7 +6,7 @@ import { hexToDecimal } from '../../../../util/conversions';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { Quote } from '@metamask/swaps-controller/dist/types';
 import { ContractExchangeRates } from '@metamask/assets-controllers';
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 
 // Mocking dependencies
 jest.mock('@metamask/swaps-controller', () => ({

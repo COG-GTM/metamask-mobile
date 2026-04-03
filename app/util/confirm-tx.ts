@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber';
 import { addHexPrefix } from './number';
 
 import {
