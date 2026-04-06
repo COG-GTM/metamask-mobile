@@ -6,8 +6,34 @@ import { isObject } from '@metamask/utils';
  * regarding the phishing list property listState, that is no longer used
  *
  **/
-export default function migrate(state) {
-  const keyringControllerState = state.engine.backgroundState.KeyringController;
+export default function migrate(state: unknown) {
+  if (!isObject(state)) {
+    captureException(
+      new Error(`Migration 26: Invalid root state: '${typeof state}'`),
+    );
+    return state;
+  }
+
+  if (!isObject(state.engine)) {
+    captureException(
+      new Error(
+        `Migration 26: Invalid root engine state: '${typeof state.engine}'`,
+      ),
+    );
+    return state;
+  }
+
+  if (!isObject(state.engine.backgroundState)) {
+    captureException(
+      new Error(
+        `Migration 26: Invalid root engine backgroundState: '${typeof state.engine.backgroundState}'`,
+      ),
+    );
+    return state;
+  }
+
+  const keyringControllerState =
+    state.engine.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
     captureException(
       // @ts-expect-error We are not returning state not to stop the flow of Vault recovery
@@ -16,10 +42,10 @@ export default function migrate(state) {
       ),
     );
   }
-  const phishingControllerState =
-    state.engine.backgroundState.PhishingController;
+  const phishingControllerState = state.engine.backgroundState
+    .PhishingController as Record<string, unknown> | undefined;
   if (phishingControllerState?.listState) {
-    delete state.engine.backgroundState.PhishingController.listState;
+    delete phishingControllerState.listState;
   } else {
     captureException(
       new Error(
@@ -35,8 +61,8 @@ export default function migrate(state) {
     phishingControllerState?.stalelistLastFetched
   ) {
     // This will make the list be fetched again when the user updates the app
-    state.engine.backgroundState.PhishingController.hotlistLastFetched = 0;
-    state.engine.backgroundState.PhishingController.stalelistLastFetched = 0;
+    phishingControllerState.hotlistLastFetched = 0;
+    phishingControllerState.stalelistLastFetched = 0;
   } else {
     captureException(
       new Error(

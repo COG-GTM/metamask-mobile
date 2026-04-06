@@ -16,8 +16,34 @@ import { NetworkStatus } from '@metamask/network-controller';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
-  const networkControllerState = state.engine.backgroundState.NetworkController;
+export default function migrate(state: unknown) {
+  if (!isObject(state)) {
+    captureException(
+      new Error(`Migration 24: Invalid root state: '${typeof state}'`),
+    );
+    return state;
+  }
+
+  if (!isObject(state.engine)) {
+    captureException(
+      new Error(
+        `Migration 24: Invalid root engine state: '${typeof state.engine}'`,
+      ),
+    );
+    return state;
+  }
+
+  if (!isObject(state.engine.backgroundState)) {
+    captureException(
+      new Error(
+        `Migration 24: Invalid root engine backgroundState: '${typeof state.engine.backgroundState}'`,
+      ),
+    );
+    return state;
+  }
+
+  const networkControllerState =
+    state.engine.backgroundState.NetworkController;
 
   if (!isObject(networkControllerState)) {
     captureException(
