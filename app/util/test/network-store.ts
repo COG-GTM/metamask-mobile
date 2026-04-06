@@ -58,16 +58,18 @@ class ReadOnlyNetworkStore {
 
   async set(key: string, value: string): Promise<void> {
     await this._initIfRequired();
-    if (this._asyncState) {
-      this._asyncState[key] = value;
+    if (!this._asyncState) {
+      throw new Error('asyncState is not initialized');
     }
+    this._asyncState[key] = value;
   }
 
   async delete(key: string): Promise<void> {
     await this._initIfRequired();
-    if (this._asyncState) {
-      delete this._asyncState[key];
+    if (!this._asyncState) {
+      throw new Error('asyncState is not initialized');
     }
+    delete this._asyncState[key];
   }
 
   async clearAll(): Promise<void> {
