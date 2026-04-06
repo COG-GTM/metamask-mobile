@@ -1,11 +1,11 @@
 import Eth from '@metamask/ethjs-query';
 import { withNavigation } from '@react-navigation/compat';
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { Animated, ScrollView, StyleSheet, View } from 'react-native';
 import { connect } from 'react-redux';
 import { strings } from '../../../../../../../locales/i18n';
 import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
+import type { IUseMetricsHook } from '../../../../../../components/hooks/useMetrics/useMetrics.types';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
 import Engine from '../../../../../../core/Engine';
 import { SDKConnect } from '../../../../../../core/SDKConnect/SDKConnect';
@@ -52,6 +52,7 @@ import withQRHardwareAwareness from '../../../../../UI/QRHardware/withQRHardware
 import SimulationDetails from '../../../../../UI/SimulationDetails/SimulationDetails';
 import TransactionHeader from '../../../../../UI/TransactionHeader';
 import { ResultType } from '../BlockaidBanner/BlockaidBanner.types';
+import type { SecurityAlertResponse } from '../BlockaidBanner/BlockaidBanner.types';
 import TransactionBlockaidBanner from '../TransactionBlockaidBanner/TransactionBlockaidBanner';
 import TransactionReviewData from './TransactionReviewData';
 import TransactionReviewInformation from './TransactionReviewInformation';
@@ -60,11 +61,169 @@ import DevLogger from '../../../../../../core/SDKConnect/utils/DevLogger';
 import { selectNativeCurrencyByChainId } from '../../../../../../selectors/networkController';
 import { selectContractExchangeRatesByChainId } from '../../../../../../selectors/tokenRatesController';
 import SmartTransactionsMigrationBanner from '../SmartTransactionsMigrationBanner/SmartTransactionsMigrationBanner';
+import type { IQRState } from '../../../../../UI/QRHardware/types';
+import type { Theme } from '../../../../../../util/theme';
+
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
-let intervalIdForEstimatedL1Fee;
+let intervalIdForEstimatedL1Fee: ReturnType<typeof setInterval> | undefined;
 
-const createStyles = (colors) =>
+interface BrowserTab {
+  id: string;
+  url: string;
+}
+
+interface Browser {
+  tabs: BrowserTab[];
+  activeTab: string;
+}
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface Transaction extends Record<string, any> {
+  data?: string;
+  to?: string;
+  from?: string;
+  value?: string;
+  origin?: string;
+  ensRecipient?: string;
+  id?: string;
+  selectedAsset?: {
+    decimals: number;
+    symbol: string;
+    address: string;
+    tokenId?: string;
+    name?: string;
+  };
+  assetType?: string;
+  chainId?: string;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction?: Record<string, any>;
+}
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface TransactionMetadata extends Record<string, any> {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  simulationData?: any;
+  networkClientId?: string;
+}
+
+interface AnimateParams {
+  modalEndValue: number;
+  xTranslationName: string;
+  xTranslationEndValue: number;
+}
+
+interface TransactionReviewProps {
+  /** Callback triggered when this transaction is cancelled */
+  onCancel?: () => void;
+  /** Called when a user changes modes */
+  onModeChange?: (mode: string) => void;
+  /** Callback triggered when this transaction is confirmed */
+  onConfirm?: () => void;
+  /** Indicates whether hex data should be shown in transaction editor */
+  showHexData?: boolean;
+  /** Whether the transaction was confirmed or not */
+  transactionConfirmed?: boolean;
+  /** Transaction object associated with this transaction */
+  transaction: Transaction;
+  /** Browser/tab information */
+  browser: Browser;
+  /** ETH to current currency conversion rate */
+  conversionRate?: number;
+  /** Currency code of the currently-active currency */
+  currentCurrency?: string;
+  /** Object containing token exchange rates in the format address => exchangeRate */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contractExchangeRates?: Record<string, any>;
+  /** Array of ERC20 assets */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokens: any[];
+  /** Current provider ticker */
+  ticker?: string;
+  /** Chain id */
+  chainId?: string;
+  /** ETH or fiat, depending on user setting */
+  primaryCurrency?: string;
+  /** Error blockaid transaction execution, undefined value signifies no error */
+  error?: string | boolean;
+  /** Whether or not basic gas estimates have been fetched */
+  ready?: boolean;
+  /** Height of custom gas and data modal */
+  customGasHeight?: number;
+  /** Drives animated values */
+  animate?: (params: AnimateParams) => void;
+  /** Generates a transform style unique to the component */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  generateTransform: (name: string, range: number[]) => any;
+  /** Saves the height of TransactionReviewData */
+  saveTransactionReviewDataHeight?: (height: number) => void;
+  /** Hides or shows TransactionReviewData */
+  hideData?: boolean;
+  /** True if transaction is over the available funds */
+  over?: boolean;
+  gasEstimateType?: string;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  EIP1559GasData?: Record<string, any>;
+  /** Function to call when update animation starts */
+  onUpdatingValuesStart?: () => void;
+  /** Function to call when update animation ends */
+  onUpdatingValuesEnd?: () => void;
+  /** If the values should animate upon update or not */
+  animateOnChange?: boolean;
+  /** Boolean to determine if the animation is happening */
+  isAnimating?: boolean;
+  dappSuggestedGas?: boolean;
+  /** List of tokens from TokenListController */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokenList: Record<string, any>;
+  /** Object that represents the navigator */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation?: any;
+  /** If it's a eip1559 network and dapp suggest legacy gas then it should show a warning */
+  dappSuggestedGasWarning?: boolean;
+  isSigningQRObject?: boolean;
+  QRState?: IQRState;
+  /** Returns the selected gas type */
+  gasSelected?: string;
+  /** Metrics injected by withMetricsAwareness HOC */
+  metrics: IUseMetricsHook;
+  /** Boolean that indicates if smart transaction should be used */
+  shouldUseSmartTransaction?: boolean;
+  /** Boolean that indicates if transaction simulations should be enabled */
+  useTransactionSimulations?: boolean;
+  /** Object containing blockaid validation response for confirmation */
+  securityAlertResponse?: SecurityAlertResponse;
+  /** Object containing the current transaction metadata */
+  transactionMetadata?: TransactionMetadata;
+  /** Network client id */
+  networkClientId?: string;
+}
+
+interface TransactionReviewState {
+  toFocused: boolean;
+  actionKey: string;
+  showHexData: boolean | string | undefined;
+  dataVisible: boolean;
+  assetAmount?: string;
+  conversionRate?: number | boolean;
+  fiatValue?: string;
+  multiLayerL1FeeTotal: string;
+  approveTransaction?: boolean;
+}
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     tabUnderlineStyle: {
       height: 2,
@@ -95,9 +254,9 @@ const createStyles = (colors) =>
       paddingBottom: 12,
     },
     transactionData: {
-      position: 'absolute',
-      width: '100%',
-      height: '100%',
+      position: 'absolute' as const,
+      width: '100%' as const,
+      height: '100%' as const,
     },
     hidden: {
       opacity: 0,
@@ -125,161 +284,13 @@ const createStyles = (colors) =>
 /**
  * PureComponent that supports reviewing a transaction
  */
-class TransactionReview extends PureComponent {
-  static propTypes = {
-    /**
-     * Callback triggered when this transaction is cancelled
-     */
-    onCancel: PropTypes.func,
-    /**
-     * Called when a user changes modes
-     */
-    onModeChange: PropTypes.func,
-    /**
-     * Callback triggered when this transaction is cancelled
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Indicates whether hex data should be shown in transaction editor
-     */
-    showHexData: PropTypes.bool,
-    /**
-     * Whether the transaction was confirmed or not
-     */
-    transactionConfirmed: PropTypes.bool,
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Browser/tab information
-     */
-    browser: PropTypes.object,
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Chain id
-     */
-    chainId: PropTypes.string,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Error blockaid transaction execution, undefined value signifies no error.
-     */
-    error: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-    /**
-     * Whether or not basic gas estimates have been fetched
-     */
-    ready: PropTypes.bool,
-    /**
-     * Height of custom gas and data modal
-     */
-    customGasHeight: PropTypes.number,
-    /**
-     * Drives animated values
-     */
-    animate: PropTypes.func,
-    /**
-     * Generates a transform style unique to the component
-     */
-    generateTransform: PropTypes.func,
-    /**
-     * Saves the height of TransactionReviewData
-     */
-    saveTransactionReviewDataHeight: PropTypes.func,
-    /**
-     * Hides or shows TransactionReviewData
-     */
-    hideData: PropTypes.bool,
-    /**
-     * True if transaction is over the available funds
-     */
-    over: PropTypes.bool,
-    gasEstimateType: PropTypes.string,
-    EIP1559GasData: PropTypes.object,
-    /**
-     * Function to call when update animation starts
-     */
-    onUpdatingValuesStart: PropTypes.func,
-    /**
-     * Function to call when update animation ends
-     */
-    onUpdatingValuesEnd: PropTypes.func,
-    /**
-     * If the values should animate upon update or not
-     */
-    animateOnChange: PropTypes.bool,
-    /**
-     * Boolean to determine if the animation is happening
-     */
-    isAnimating: PropTypes.bool,
-    dappSuggestedGas: PropTypes.bool,
-    /**
-     * List of tokens from TokenListController
-     */
-    tokenList: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
-     */
-    dappSuggestedGasWarning: PropTypes.bool,
-    isSigningQRObject: PropTypes.bool,
-    QRState: PropTypes.object,
-    /**
-     * Returns the selected gas type
-     * @returns {string}
-     */
-    gasSelected: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-    /**
-     * Boolean that indicates if transaction simulations should be enabled
-     */
-    useTransactionSimulations: PropTypes.bool,
-    /**
-     * Object containing blockaid validation response for confirmation
-     */
-    securityAlertResponse: PropTypes.object,
-    /**
-     * Object containing the current transaction metadata
-     */
-    transactionMetadata: PropTypes.object,
-    /**
-     * Network client id
-     */
-    networkClientId: PropTypes.string,
-  };
+class TransactionReview extends PureComponent<
+  TransactionReviewProps,
+  TransactionReviewState
+> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: TransactionReviewState = {
     toFocused: false,
     actionKey: strings('transactions.tx_review_confirm'),
     showHexData: false,
@@ -308,7 +319,7 @@ class TransactionReview extends PureComponent {
         multiLayerL1FeeTotal: result,
       });
     } catch (e) {
-      Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
+      Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
         multiLayerL1FeeTotal: '0x0',
       });
@@ -327,7 +338,9 @@ class TransactionReview extends PureComponent {
       shouldUseSmartTransaction,
     } = this.props;
     let { showHexData } = this.props;
-    let assetAmount, conversionRate, fiatValue;
+    let assetAmount: string | undefined,
+      conversionRate: number | boolean | undefined,
+      fiatValue: string | undefined;
     showHexData = showHexData || data;
     const approveTransaction =
       isApprovalTransaction(data) && (!value || isZeroValue(value));
@@ -342,10 +355,11 @@ class TransactionReview extends PureComponent {
     );
 
     if (approveTransaction) {
-      let contract = tokenList[safeToChecksumAddress(to)];
+      let contract = tokenList[safeToChecksumAddress(to) as string];
       if (!contract) {
         contract = tokens.find(
-          ({ address }) => address === safeToChecksumAddress(to),
+          ({ address }: { address: string }) =>
+            address === safeToChecksumAddress(to),
         );
       }
       const symbol = (contract && contract.symbol) || 'ERC20';
@@ -407,7 +421,14 @@ class TransactionReview extends PureComponent {
       contractExchangeRates,
       ticker,
     } = this.props;
-    const values = {
+    const values: Record<
+      string,
+      () => [
+        string | undefined,
+        number | boolean | undefined,
+        string | undefined,
+      ]
+    > = {
       ETH: () => {
         const assetAmount = `${renderFromWei(value)} ${getTicker(ticker)}`;
         const conversionRate = this.props.conversionRate;
@@ -417,13 +438,13 @@ class TransactionReview extends PureComponent {
       ERC20: () => {
         const assetAmount = `${renderFromTokenMinimalUnit(
           value,
-          selectedAsset.decimals,
-        )} ${selectedAsset.symbol}`;
+          selectedAsset!.decimals,
+        )} ${selectedAsset!.symbol}`;
         const conversionRate = contractExchangeRates
-          ? contractExchangeRates[selectedAsset.address]?.price
+          ? contractExchangeRates[selectedAsset!.address]?.price
           : undefined;
         const fiatValue = balanceToFiat(
-          (value && fromTokenMinimalUnit(value, selectedAsset.decimals)) || 0,
+          (value && fromTokenMinimalUnit(value, selectedAsset!.decimals)) || 0,
           this.props.conversionRate,
           conversionRate,
           currentCurrency,
@@ -431,14 +452,14 @@ class TransactionReview extends PureComponent {
         return [assetAmount, conversionRate, fiatValue];
       },
       ERC721: () => {
-        const assetAmount = strings('unit.token_id') + selectedAsset.tokenId;
+        const assetAmount = strings('unit.token_id') + selectedAsset!.tokenId;
         const conversionRate = true;
-        const fiatValue = selectedAsset.name;
+        const fiatValue = selectedAsset!.name;
         return [assetAmount, conversionRate, fiatValue];
       },
       default: () => [undefined, undefined, undefined],
     };
-    return values[assetType] || values.default;
+    return values[assetType as string] || values.default;
   };
 
   edit = () => {
@@ -452,14 +473,14 @@ class TransactionReview extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
   toggleDataView = () => {
     const { animate } = this.props;
     if (this.state.dataVisible) {
-      animate({
+      animate?.({
         modalEndValue: 1,
         xTranslationName: 'reviewToData',
         xTranslationEndValue: 0,
@@ -467,7 +488,7 @@ class TransactionReview extends PureComponent {
       this.setState({ dataVisible: false });
       return;
     }
-    animate({
+    animate?.({
       modalEndValue: 0,
       xTranslationName: 'reviewToData',
       xTranslationEndValue: 1,
@@ -475,10 +496,10 @@ class TransactionReview extends PureComponent {
     this.setState({ dataVisible: true });
   };
 
-  getUrlFromBrowser() {
+  getUrlFromBrowser(): string {
     const { browser } = this.props;
-    let url;
-    browser.tabs.forEach((tab) => {
+    let url = '';
+    browser.tabs.forEach((tab: BrowserTab) => {
       if (tab.id === browser.activeTab) {
         url = tab.url;
       }
@@ -486,7 +507,7 @@ class TransactionReview extends PureComponent {
     return url;
   }
 
-  getConfirmButtonState() {
+  getConfirmButtonState(): string {
     const { securityAlertResponse } = this.props;
     let confirmButtonState = ConfirmButtonState.Normal;
 
@@ -716,7 +737,9 @@ class TransactionReview extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
   const transactionMetadata = selectCurrentTransactionMetadata(state);
