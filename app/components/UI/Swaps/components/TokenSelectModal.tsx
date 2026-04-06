@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   TextInput,
@@ -53,7 +52,16 @@ import { QuoteViewSelectorIDs } from '../../../../../e2e/selectors/swaps/QuoteVi
 import { getDecimalChainId } from '../../../../util/networks';
 import { getSortedTokensByFiatValue } from '../utils/token-list-utils';
 
-const createStyles = (colors) =>
+interface TokenSelectModalColors {
+  background: { default: string };
+  border: { default: string; muted: string };
+  icon: { alternative: string };
+  text: { default: string; muted: string };
+  primary: { default: string; inverse: string };
+  overlay: { default: string };
+}
+
+const createStyles = (colors: TokenSelectModalColors) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -130,6 +138,34 @@ const createStyles = (colors) =>
 
 const MAX_TOKENS_RESULTS = 20;
 
+interface TokenListItem {
+  address: string;
+  symbol: string;
+  name?: string;
+  decimals?: number;
+  iconUrl?: string;
+  balance?: string;
+  balanceFiat?: string;
+}
+
+interface TokenSelectModalProps {
+  isVisible: boolean;
+  dismiss: () => void;
+  title: string;
+  tokens: TokenListItem[];
+  initialTokens: TokenListItem[];
+  onItemPress: (item: TokenListItem) => void;
+  excludeAddresses?: string[];
+  accounts: Record<string, { balance: string }>;
+  selectedAddress: string;
+  currentCurrency: string;
+  conversionRate: number;
+  tokenExchangeRates: Record<string, number>;
+  chainId: string;
+  networkConfigurations: Record<string, Record<string, unknown>>;
+  balances: Record<string, string>;
+}
+
 function TokenSelectModal({
   isVisible,
   dismiss,
@@ -146,12 +182,12 @@ function TokenSelectModal({
   chainId,
   networkConfigurations,
   balances,
-}) {
+}: TokenSelectModalProps) {
   const navigation = useNavigation();
   const { trackEvent, createEventBuilder } = useMetrics();
 
-  const searchInput = useRef(null);
-  const list = useRef();
+  const searchInput = useRef<TextInput>(null);
+  const list = useRef<FlatList>(null);
   const [searchString, setSearchString] = useState('');
   const explorer = useBlockExplorer(networkConfigurations);
   const [isTokenImportVisible, , showTokenImportModal, hideTokenImportModal] =
@@ -241,7 +277,7 @@ function TokenSelectModal({
   );
 
   const renderItem = useCallback(
-    ({ item }) => {
+    ({ item }: { item: TokenListItem }) => {
       const { balance, balanceFiat } = item;
       const balanceFiatWithCurrencySymbol = balanceFiat
         ? addCurrencySymbol(balanceFiat, currentCurrency)
@@ -285,7 +321,7 @@ function TokenSelectModal({
   }, [showTokenImportModal]);
 
   const handlePressImportToken = useCallback(
-    (item) => {
+    (item: TokenListItem) => {
       const { address, symbol } = item;
       trackEvent(
         createEventBuilder(MetaMetricsEvents.CUSTOM_TOKEN_IMPORTED)
@@ -368,7 +404,7 @@ function TokenSelectModal({
     [searchString, styles],
   );
 
-  const handleSearchTextChange = useCallback((text) => {
+  const handleSearchTextChange = useCallback((text: string) => {
     setSearchString(text);
     if (list.current) list.current.scrollToOffset({ animated: false, y: 0 });
   }, []);
@@ -513,49 +549,11 @@ function TokenSelectModal({
   );
 }
 
-TokenSelectModal.propTypes = {
-  isVisible: PropTypes.bool,
-  dismiss: PropTypes.func,
-  title: PropTypes.string,
-  tokens: PropTypes.arrayOf(PropTypes.object),
-  initialTokens: PropTypes.arrayOf(PropTypes.object),
-  onItemPress: PropTypes.func,
-  excludeAddresses: PropTypes.arrayOf(PropTypes.string),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * A string that represents the selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * An object containing token balances for current account and network in the format address => balance
-   */
-  balances: PropTypes.object,
-  /**
-   * An object containing token exchange rates in the format address => exchangeRate
-   */
-  tokenExchangeRates: PropTypes.object,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Network configurations
-   */
-  networkConfigurations: PropTypes.object,
-};
+interface TokenSelectModalRootState {
+  engine: { backgroundState: Record<string, unknown> };
+}
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: TokenSelectModalRootState) => ({
   accounts: selectAccounts(state),
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),

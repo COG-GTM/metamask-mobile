@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import Animated, { useSharedValue } from 'react-native-reanimated';
 import { strings } from '../../../../../locales/i18n';
 import Engine from '../../../../core/Engine';
@@ -41,7 +40,15 @@ const WINDOW_WIDTH = Dimensions.get('window').width;
 const ACTION_CANCEL = 'cancel';
 const ACTION_SPEEDUP = 'speedup';
 
-const createStyles = (colors) =>
+interface TransactionNotificationColors {
+  border: { default: string };
+  text: { default: string };
+  icon: { default: string };
+  overlay: { default: string };
+  background: { default: string };
+}
+
+const createStyles = (colors: TransactionNotificationColors) =>
   StyleSheet.create({
     absoluteFill: {
       ...StyleSheet.absoluteFillObject,
@@ -101,7 +108,53 @@ const createStyles = (colors) =>
     },
   });
 
-function TransactionNotification(props) {
+interface TransactionRecord {
+  id: string;
+  hash?: string;
+  status?: string;
+  txParams?: {
+    gasPrice?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+interface SmartTransaction {
+  txHash?: string;
+  [key: string]: unknown;
+}
+
+interface CurrentNotificationInfo {
+  status: string;
+  transaction: { id: string; [key: string]: unknown };
+  autodismiss?: number;
+  [key: string]: unknown;
+}
+
+interface TransactionNotificationProps {
+  isInBrowserView?: boolean;
+  notificationAnimated: { value: number };
+  onClose: () => void;
+  animatedTimingStart: (animatedRef: { value: number }, toValue: number) => void;
+  currentNotification: CurrentNotificationInfo;
+  swapsTransactions?: Record<string, unknown>;
+  swapsTokens?: unknown[];
+  accounts: Record<string, { balance: string }>;
+  transactions: TransactionRecord[];
+  smartTransactions: SmartTransaction[];
+  selectedAddress: string;
+  ticker: string;
+  chainId: string;
+  conversionRate: number;
+  currentCurrency: string;
+  exchangeRate?: number;
+  contractExchangeRates: Record<string, unknown>;
+  collectibleContracts: unknown[];
+  tokens: Record<string, unknown>;
+  primaryCurrency: string;
+}
+
+function TransactionNotification(props: TransactionNotificationProps) {
   const {
     accounts,
     currentNotification,
@@ -113,9 +166,9 @@ function TransactionNotification(props) {
     smartTransactions,
   } = props;
 
-  const [transactionDetails, setTransactionDetails] = useState(undefined);
-  const [transactionElement, setTransactionElement] = useState(undefined);
-  const [tx, setTx] = useState({});
+  const [transactionDetails, setTransactionDetails] = useState<unknown>(undefined);
+  const [transactionElement, setTransactionElement] = useState<{ notificationKey?: string; actionKey?: string } | undefined>(undefined);
+  const [tx, setTx] = useState<TransactionRecord>({} as TransactionRecord);
   const [transactionDetailsIsVisible, setTransactionDetailsIsVisible] =
     useState(false);
   const [transactionAction, setTransactionAction] = useState(undefined);
@@ -136,7 +189,7 @@ function TransactionNotification(props) {
   }, [setTransactionDetailsIsVisible, animatedTimingStart, detailsAnimated]);
 
   const animateActionTo = useCallback(
-    (position) => {
+    (position: number) => {
       animatedTimingStart(detailsYAnimated, position);
       animatedTimingStart(actionXAnimated, position);
     },
@@ -193,7 +246,7 @@ function TransactionNotification(props) {
   );
 
   const safelyExecute = useCallback(
-    (callback) => {
+    (callback: () => void) => {
       try {
         callback();
       } catch (e) {
@@ -367,71 +420,12 @@ function TransactionNotification(props) {
   );
 }
 
-TransactionNotification.propTypes = {
-  isInBrowserView: PropTypes.bool,
-  notificationAnimated: PropTypes.object,
-  onClose: PropTypes.func,
-  animatedTimingStart: PropTypes.func,
-  currentNotification: PropTypes.object,
-  swapsTransactions: PropTypes.object,
-  swapsTokens: PropTypes.array,
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * An array that represents the user transactions on chain
-   */
-  transactions: PropTypes.array,
-  /**
-   * An array that represents the user smart transactions on chain
-   */
-  smartTransactions: PropTypes.array,
+interface TransactionNotificationState {
+  engine: { backgroundState: Record<string, Record<string, unknown>> };
+  settings: { primaryCurrency: string };
+}
 
-  /**
-   * String of selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-  /**
-   * Current provider chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Current exchange rate
-   */
-  exchangeRate: PropTypes.number,
-  /**
-   * Object containing token exchange rates in the format address => exchangeRate
-   */
-  contractExchangeRates: PropTypes.object,
-  /**
-   * An array that represents the user collectible contracts
-   */
-  collectibleContracts: PropTypes.array,
-  /**
-   * An array that represents the user tokens
-   */
-  tokens: PropTypes.object,
-
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-};
-
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: TransactionNotificationState) => {
   const chainId = selectChainId(state);
 
   const {

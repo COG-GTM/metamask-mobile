@@ -14,8 +14,41 @@ import {
 } from '../../../../selectors/networkController';
 import { selectNetworkName } from '../../../../selectors/networkInfos';
 
-function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
-  const [explorer, setExplorer] = useState({
+interface NetworkConfiguration {
+  rpcUrl: string;
+  chainId: string;
+  nickname?: string;
+  rpcPrefs?: {
+    blockExplorerUrl?: string;
+  };
+}
+
+interface ProviderConfig {
+  type: string;
+  rpcUrl?: string;
+  chainId?: string;
+  nickname?: string;
+}
+
+interface ExplorerState {
+  name: string;
+  value: string | null;
+  isValid: boolean;
+  isRPC: boolean;
+  baseUrl: string;
+}
+
+interface BlockExplorerResult extends ExplorerState {
+  tx: (hash: string) => string;
+  account: (address: string) => string;
+  token: (address: string) => string;
+}
+
+function useBlockExplorer(
+  networkConfigurations: Record<string, NetworkConfiguration>,
+  providerConfigTokenExplorer?: ProviderConfig,
+): BlockExplorerResult {
+  const [explorer, setExplorer] = useState<ExplorerState>({
     name: '',
     value: null,
     isValid: false,
@@ -80,7 +113,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
   ]);
 
   const tx = useCallback(
-    (hash) => {
+    (hash: string) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -93,7 +126,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const account = useCallback(
-    (address) => {
+    (address: string) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -106,7 +139,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const token = useCallback(
-    (address) => {
+    (address: string) => {
       if (!explorer.isValid) {
         return '';
       }

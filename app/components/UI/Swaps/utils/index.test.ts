@@ -169,7 +169,7 @@ describe('shouldShowMaxBalanceLink', () => {
   });
 
   it('should not show max balance link when source token is missing symbol', () => {
-    const sourceToken = { ...erc20Token, symbol: null };
+    const sourceToken = { ...erc20Token, symbol: undefined };
     const result = shouldShowMaxBalanceLink({
       sourceToken,
       shouldUseSmartTransaction: true,

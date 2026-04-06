@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ViewStyle, StyleProp, ImageSourcePropType } from 'react-native';
 
 import RemoteImage from '../../../Base/RemoteImage';
 import Text from '../../../Base/Text';
@@ -20,7 +19,12 @@ const BIG_RADIUS = 25;
 const BIGGEST_SIZE = 70;
 const BIGGEST_RADIUS = 35;
 
-const createStyles = (colors) =>
+interface Colors {
+  background: { alternative: string };
+  text: { default: string };
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     icon: {
       width: REGULAR_SIZE,
@@ -63,7 +67,16 @@ const createStyles = (colors) =>
     },
   });
 
-const EmptyIcon = ({ medium, big, biggest, style, ...props }) => {
+interface EmptyIconProps {
+  medium?: boolean;
+  big?: boolean;
+  biggest?: boolean;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+  children?: React.ReactNode;
+}
+
+const EmptyIcon: React.FC<EmptyIconProps> = ({ medium, big, biggest, style, children, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -78,24 +91,28 @@ const EmptyIcon = ({ medium, big, biggest, style, ...props }) => {
         style,
       ]}
       {...props}
-    />
+    >
+      {children}
+    </View>
   );
 };
 
-EmptyIcon.propTypes = {
-  medium: PropTypes.bool,
-  big: PropTypes.bool,
-  biggest: PropTypes.bool,
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  testID: PropTypes.string,
-};
+interface TokenIconProps {
+  symbol?: string;
+  icon?: string;
+  medium?: boolean;
+  big?: boolean;
+  biggest?: boolean;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
 
-function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
+function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }: TokenIconProps) {
   const [showFallback, setShowFallback] = useState(false);
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const getSource = useCallback(() => {
+  const getSource = useCallback((): ImageSourcePropType | null => {
     if (symbol === 'ETH') {
       return ethLogo;
     }
@@ -159,15 +176,5 @@ function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
 
   return <EmptyIcon medium={medium} style={style} />;
 }
-
-TokenIcon.propTypes = {
-  symbol: PropTypes.string,
-  icon: PropTypes.string,
-  medium: PropTypes.bool,
-  big: PropTypes.bool,
-  biggest: PropTypes.bool,
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  testID: PropTypes.string,
-};
 
 export default TokenIcon;

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import Eth from '@metamask/ethjs-query';
 import {
   View,
@@ -138,7 +137,16 @@ const SLIPPAGE_BUCKETS = {
   HIGH: AppConstants.GAS_OPTIONS.HIGH,
 };
 
-const createStyles = (colors) =>
+interface QuotesViewColors {
+  background: { default: string; alternative: string };
+  text: { default: string; alternative: string };
+  error: { default: string };
+  primary: { default: string; inverse: string; muted: string };
+  icon: { default: string; alternative: string };
+  border: { muted: string };
+}
+
+const createStyles = (colors: QuotesViewColors) =>
   StyleSheet.create({
     screen: {
       flexGrow: 1,
@@ -314,6 +322,16 @@ const createStyles = (colors) =>
     },
   });
 
+interface PollingParams {
+  slippage: number;
+  sourceToken: SwapToken | null;
+  destinationToken: SwapToken | null;
+  sourceAmount: string;
+  walletAddress: string;
+  networkClientId: string;
+  enableGasIncludedQuotes?: boolean;
+}
+
 async function resetAndStartPolling({
   slippage,
   sourceToken,
@@ -322,7 +340,7 @@ async function resetAndStartPolling({
   walletAddress,
   networkClientId,
   enableGasIncludedQuotes,
-}) {
+}: PollingParams) {
   if (!sourceToken || !destinationToken) {
     return;
   }
@@ -349,12 +367,22 @@ async function resetAndStartPolling({
  * @param {string} gasLimit
  * @param {number} multiplier
  */
-const gasLimitWithMultiplier = (gasLimit, multiplier) => {
+const gasLimitWithMultiplier = (gasLimit: string | undefined, multiplier: number | undefined) => {
   if (!gasLimit || !multiplier) return;
   return new BigNumber(gasLimit).times(multiplier).integerValue();
 };
 
-async function addTokenToAssetsController(newToken, chainId, networkClientId) {
+interface SwapToken {
+  address: string;
+  symbol: string;
+  decimals: number;
+  name?: string;
+  iconUrl?: string;
+  occurrences?: number;
+  [key: string]: unknown;
+}
+
+async function addTokenToAssetsController(newToken: SwapToken, chainId: string, networkClientId: string) {
   const { TokensController } = Engine.context;
 
   const allTokens = TokensController.state.allTokens?.[chainId]
@@ -375,6 +403,37 @@ async function addTokenToAssetsController(newToken, chainId, networkClientId) {
       networkClientId,
     });
   }
+}
+
+interface SwapsQuotesViewProps {
+  swapsTokens: SwapToken[];
+  accounts: Record<string, { balance: string }>;
+  balances: Record<string, string>;
+  selectedAddress: string;
+  currentCurrency: string;
+  conversionRate: number;
+  chainId: string;
+  networkClientId: string;
+  ticker: string;
+  primaryCurrency: string;
+  isInPolling: boolean;
+  quotesLastFetched: number;
+  pollingCyclesLeft: number;
+  approvalTransaction: Record<string, unknown> | null;
+  topAggId: string;
+  aggregatorMetadata: Record<string, unknown>;
+  quotes: Record<string, Record<string, unknown>>;
+  quoteValues: Record<string, Record<string, unknown>>;
+  error: Record<string, unknown> | null;
+  quoteRefreshSeconds: number;
+  gasEstimateType: string;
+  gasFeeEstimates: Record<string, unknown>;
+  usedGasEstimate: Record<string, unknown>;
+  usedCustomGas: Record<string, unknown>;
+  setRecipient: (from: string) => void;
+  resetTransaction: () => void;
+  shouldUseSmartTransaction: boolean;
+  isEIP1559Network: boolean;
 }
 
 function SwapsQuotesView({
@@ -406,7 +465,7 @@ function SwapsQuotesView({
   resetTransaction,
   shouldUseSmartTransaction,
   isEIP1559Network,
-}) {
+}: SwapsQuotesViewProps) {
   const navigation = useNavigation();
   /* Get params from navigation */
   const route = useRoute();
@@ -2575,68 +2634,12 @@ function SwapsQuotesView({
   );
 }
 
-SwapsQuotesView.propTypes = {
-  swapsTokens: PropTypes.arrayOf(PropTypes.object),
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * An object containing token balances for current account and network in the format address => balance
-   */
-  balances: PropTypes.object,
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * A string that represents the selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * ID of the global network client
-   */
-  networkClientId: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-  isInPolling: PropTypes.bool,
-  quotesLastFetched: PropTypes.number,
-  topAggId: PropTypes.string,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  pollingCyclesLeft: PropTypes.number,
-  quotes: PropTypes.object,
-  quoteValues: PropTypes.object,
-  approvalTransaction: PropTypes.object,
-  error: PropTypes.object,
-  quoteRefreshSeconds: PropTypes.number,
-  gasEstimateType: PropTypes.string,
-  gasFeeEstimates: PropTypes.object,
-  usedGasEstimate: PropTypes.object,
-  usedCustomGas: PropTypes.object,
-  setRecipient: PropTypes.func,
-  resetTransaction: PropTypes.func,
-  shouldUseSmartTransaction: PropTypes.bool,
-  isEIP1559Network: PropTypes.bool,
-};
+interface QuotesViewRootState {
+  engine: { backgroundState: Record<string, unknown> };
+  settings: { primaryCurrency: string };
+}
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: QuotesViewRootState) => ({
   accounts: selectAccounts(state),
   chainId: selectEvmChainId(state),
   networkClientId: selectSelectedNetworkClientId(state),
@@ -2668,8 +2671,8 @@ const mapStateToProps = (state) => ({
   isEIP1559Network: selectIsEIP1559Network(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setRecipient: (from) => dispatch(setRecipient(from, '', '', '', '')),
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+  setRecipient: (from: string) => dispatch(setRecipient(from, '', '', '', '')),
   resetTransaction: () => dispatch(resetTransaction()),
 });
 

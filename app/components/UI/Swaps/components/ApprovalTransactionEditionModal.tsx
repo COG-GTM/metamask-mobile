@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import Modal from 'react-native-modal';
@@ -27,6 +26,32 @@ const styles = StyleSheet.create({
   },
 });
 
+interface ApprovalTransaction {
+  data: string;
+  from: string;
+  to: string;
+  value?: string;
+  gas?: string;
+  gasPrice?: string;
+}
+
+interface SourceTokenInfo {
+  address: string;
+  symbol: string;
+  decimals: number;
+}
+
+interface ApprovalTransactionEditionModalProps {
+  originalApprovalTransaction: ApprovalTransaction | null;
+  approvalTransaction: ApprovalTransaction | null;
+  editQuoteTransactionsVisible: boolean;
+  onCancelEditQuoteTransactions: () => void;
+  setApprovalTransaction: (tx: ApprovalTransaction | null) => void;
+  sourceToken: SourceTokenInfo;
+  minimumSpendLimit: string;
+  chainId: string;
+}
+
 function ApprovalTransactionEditionModal({
   originalApprovalTransaction,
   approvalTransaction,
@@ -36,7 +61,7 @@ function ApprovalTransactionEditionModal({
   sourceToken,
   minimumSpendLimit,
   chainId,
-}) {
+}: ApprovalTransactionEditionModalProps) {
   /* Approval transaction if any */
   const [customApprovalTransaction, setCustomApprovalTransaction] =
     useState(approvalTransaction);
@@ -49,7 +74,7 @@ function ApprovalTransactionEditionModal({
   const { colors } = useTheme();
 
   const onSpendLimitCustomValueChange = useCallback(
-    (approvalCustomValue) => setApprovalCustomValue(approvalCustomValue),
+    (value: string) => setApprovalCustomValue(value),
     [],
   );
 
@@ -153,18 +178,11 @@ function ApprovalTransactionEditionModal({
   );
 }
 
-ApprovalTransactionEditionModal.propTypes = {
-  approvalTransaction: PropTypes.object,
-  originalApprovalTransaction: PropTypes.object,
-  editQuoteTransactionsVisible: PropTypes.bool,
-  minimumSpendLimit: PropTypes.string.isRequired,
-  onCancelEditQuoteTransactions: PropTypes.func,
-  setApprovalTransaction: PropTypes.func,
-  sourceToken: PropTypes.object,
-  chainId: PropTypes.string,
-};
+interface RootState {
+  engine: { backgroundState: Record<string, unknown> };
+}
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   originalApprovalTransaction: selectSwapsApprovalTransaction(state),
 });
 

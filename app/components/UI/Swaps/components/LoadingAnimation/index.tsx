@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import { useSelector } from 'react-redux';
 import { Animated, View, StyleSheet, Image } from 'react-native';
-import PropTypes from 'prop-types';
 import { selectSelectedNetworkClientId } from '../../../../../selectors/networkController';
 import Engine from '../../../../../core/Engine';
 import Logger from '../../../../../util/Logger';
@@ -36,7 +35,17 @@ const PAN_RADIO = STAGE_SIZE * 0.6;
 // "finalizing" animationg
 const FINALIZING_PERCENTAGE = 80;
 
-const createStyles = (colors, shadows) =>
+interface LoadingAnimationColors {
+  background: { default: string };
+  primary: { default: string; muted: string };
+  text: { default: string };
+}
+
+interface LoadingAnimationShadows {
+  size: { sm: Record<string, unknown> };
+}
+
+const createStyles = (colors: LoadingAnimationColors, shadows: LoadingAnimationShadows) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -108,8 +117,23 @@ const createStyles = (colors, shadows) =>
     },
   });
 
-function round(value, decimals) {
-  return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+function round(value: number, decimals: number): number {
+  return Number(Math.round(Number(String(value) + 'e' + String(decimals))) + 'e-' + String(decimals));
+}
+
+interface AggregatorMetadataEntry {
+  key: string;
+  title?: string;
+  color?: string;
+  iconPng?: string;
+  [prop: string]: unknown;
+}
+
+interface LoadingAnimationProps {
+  finish: boolean;
+  onAnimationEnd?: () => void;
+  aggregatorMetadata?: Record<string, Omit<AggregatorMetadataEntry, 'key'>> | null;
+  headPan?: boolean;
 }
 
 function LoadingAnimation({
@@ -117,8 +141,8 @@ function LoadingAnimation({
   onAnimationEnd,
   aggregatorMetadata,
   headPan = true,
-}) {
-  const [metadata, setMetadata] = useState([]);
+}: LoadingAnimationProps) {
+  const [metadata, setMetadata] = useState<AggregatorMetadataEntry[]>([]);
   const [shouldStart, setShouldStart] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [hasFinished, setHasFinished] = useState(false);
@@ -129,8 +153,8 @@ function LoadingAnimation({
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
   /* References */
-  const foxRef = useRef();
-  const foxHeadPan = useRef(new Animated.ValueXY(0, 0)).current;
+  const foxRef = useRef<{ injectJavaScript?: (js: string) => void; reload?: () => void }>(null);
+  const foxHeadPan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const currentQuoteIndexValue = useRef(new Animated.Value(0)).current;
   const progressValue = useRef(new Animated.Value(0)).current;
   const progressWidth = progressValue.interpolate({
@@ -152,7 +176,7 @@ function LoadingAnimation({
   const positions = useMemo(
     () =>
       headPan
-        ? metadata.reduce((acc, curr, index) => {
+        ? metadata.reduce((acc: Record<string, number[]>, curr, index) => {
             // Vertical position is random and is in range [-0.6, 0.6]
             // making the head not look so steep up/down
             const y = Math.random() * 0.6 * (Math.random() < 0.5 ? -1 : 1);
@@ -498,24 +522,5 @@ function LoadingAnimation({
     </View>
   );
 }
-
-LoadingAnimation.propTypes = {
-  /**
-   * Wether to execute the "Finalizing" animation after the main sequence
-   */
-  finish: PropTypes.bool,
-  /**
-   * Function callback executed once both the main sequence and the finalizing animation ends
-   */
-  onAnimationEnd: PropTypes.func,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  /**
-   * Wether to show head panning animation with aggregators logos
-   */
-  headPan: PropTypes.bool,
-};
 
 export default LoadingAnimation;

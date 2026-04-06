@@ -1,6 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
+import { TouchableOpacity, StyleSheet, View, ViewStyle } from 'react-native';
 import { fontStyles, baseStyles } from '../../../../styles/common';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AnimatedSpinner from '../../AnimatedSpinner';
@@ -11,7 +10,14 @@ import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
 import { ToastSelectorsIDs } from '../../../../../e2e/selectors/wallet/ToastModal.selectors';
 
-const createStyles = (colors) =>
+interface BaseNotificationColors {
+  background: { default: string };
+  overlay: { alternative: string; inverse: string };
+  success: { default: string };
+  error: { default: string };
+}
+
+const createStyles = (colors: BaseNotificationColors) =>
   StyleSheet.create({
     floatingBackground: {
       backgroundColor: colors.background.default,
@@ -60,7 +66,11 @@ const createStyles = (colors) =>
     },
   });
 
-export const getIcon = (status, colors, styles) => {
+interface IconStyles {
+  checkIcon?: ViewStyle;
+}
+
+export const getIcon = (status: string, colors: BaseNotificationColors, styles: IconStyles) => {
   switch (status) {
     case 'pending':
     case 'pending_withdrawal':
@@ -121,7 +131,13 @@ export const getIcon = (status, colors, styles) => {
   }
 };
 
-const getTitle = (status, { nonce, amount, assetType }) => {
+interface TitleData {
+  nonce?: string;
+  amount?: string;
+  assetType?: string;
+}
+
+const getTitle = (status: string, { nonce, amount, assetType }: TitleData) => {
   switch (status) {
     case 'pending':
       return strings('notifications.pending_title');
@@ -151,7 +167,12 @@ const getTitle = (status, { nonce, amount, assetType }) => {
   }
 };
 
-export const getDescription = (status, { amount = null, type = null }) => {
+interface DescriptionData {
+  amount?: string | null;
+  type?: string | null;
+}
+
+export const getDescription = (status: string, { amount = null, type = null }: DescriptionData) => {
   if (amount && typeof amount !== 'object' && type) {
     return strings(`notifications.${type}_${status}_message`, { amount });
   }
@@ -161,13 +182,31 @@ export const getDescription = (status, { amount = null, type = null }) => {
 /**
  * BaseNotification component used to render in-app notifications
  */
-const BaseNotification = ({
+interface NotificationData {
+  description?: string | null;
+  title?: string | null;
+  nonce?: string;
+  amount?: string;
+  assetType?: string;
+  type?: string;
+  [key: string]: unknown;
+}
+
+interface BaseNotificationProps {
+  status: string;
+  data: NotificationData;
+  onPress?: () => void;
+  onHide?: () => void;
+  autoDismiss?: boolean;
+}
+
+const BaseNotification: React.FC<BaseNotificationProps> = ({
   status,
-  data = null,
+  data = {},
   data: { description = null, title = null },
   onPress,
   onHide,
-  autoDismiss,
+  autoDismiss = false,
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -205,18 +244,6 @@ const BaseNotification = ({
       </View>
     </View>
   );
-};
-
-BaseNotification.propTypes = {
-  status: PropTypes.string,
-  data: PropTypes.object,
-  onPress: PropTypes.func,
-  onHide: PropTypes.func,
-  autoDismiss: PropTypes.bool,
-};
-
-BaseNotification.defaultProps = {
-  autoDismiss: false,
 };
 
 export default BaseNotification;
