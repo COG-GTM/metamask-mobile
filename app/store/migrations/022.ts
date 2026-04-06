@@ -9,6 +9,13 @@ export default function migrate(state: unknown) {
     return state;
   }
 
+  // Clean up nftDetectionDismissed independently of engine state,
+  // matching the original JS behavior where this block used optional chaining
+  // and was not guarded by engine/backgroundState validity.
+  if (isObject(state.user) && state.user.nftDetectionDismissed) {
+    delete state.user.nftDetectionDismissed;
+  }
+
   if (!isObject(state.engine)) {
     captureException(
       new Error(
@@ -34,10 +41,6 @@ export default function migrate(state: unknown) {
     preferencesController.displayNftMedia =
       (preferencesController.openSeaEnabled as boolean) ?? true;
     delete preferencesController.openSeaEnabled;
-  }
-
-  if (isObject(state.user) && state.user.nftDetectionDismissed) {
-    delete state.user.nftDetectionDismissed;
   }
 
   return state;
