@@ -3,7 +3,7 @@ import { NotificationTypes } from '../../util/notifications';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
 export interface NotificationItem {
-  id: string;
+  id: string | undefined;
   isVisible: boolean;
   autodismiss?: number;
   title?: string;
@@ -218,7 +218,7 @@ const notificationReducer = (
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.id ?? '',
+          id: action.id,
           isVisible: true,
           autodismiss: action.autodismiss,
           title: action.title,

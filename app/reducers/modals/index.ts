@@ -2,7 +2,7 @@ export interface ModalsState {
   networkModalVisible: boolean;
   shouldNetworkSwitchPopToWallet: boolean;
   collectibleContractModalVisible: boolean;
-  dappTransactionModalVisible: boolean;
+  dappTransactionModalVisible: boolean | undefined;
   signMessageModalVisible: boolean;
   infoNetworkModalVisible?: boolean;
 }
@@ -74,7 +74,7 @@ const modalsReducer = (
         dappTransactionModalVisible:
           action.show === null
             ? !state.dappTransactionModalVisible
-            : action.show ?? !state.dappTransactionModalVisible,
+            : action.show,
       };
     case 'TOGGLE_INFO_NETWORK_MODAL':
       if (action.show === false) {
