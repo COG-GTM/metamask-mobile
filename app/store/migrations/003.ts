@@ -21,7 +21,10 @@ function isSafeChainId(chainId: number): boolean {
  */
 const NetworksChainId: Record<string, string> = {
   mainnet: '1',
+  ropsten: '3',
+  rinkeby: '4',
   goerli: '5',
+  kovan: '42',
   sepolia: '11155111',
   'linea-goerli': '59140',
   'linea-sepolia': '59141',
