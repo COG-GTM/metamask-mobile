@@ -12,15 +12,18 @@ import {
   useSelector,
   useDispatch,
 } from 'react-redux';
-import type { AnyAction, Dispatch } from 'redux';
+import type { AnyAction } from 'redux';
+import type { ThunkDispatch } from 'redux-thunk';
 import type { RootState } from '../reducers';
 
 /**
  * App-wide dispatch type.
+ * Includes ThunkDispatch so that useAppDispatch() can dispatch both plain
+ * actions and thunks.
  * TODO: Replace AnyAction with a union of all action types once reducers are
  * fully typed.
  */
-export type AppDispatch = Dispatch<AnyAction>;
+export type AppDispatch = ThunkDispatch<RootState, unknown, AnyAction>;
 
 /**
  * Pre-typed `useSelector` hook — eliminates the need to type
