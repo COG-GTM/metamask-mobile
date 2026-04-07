@@ -20,6 +20,15 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useStyles } from '../../../component-library/hooks';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import { StyleProp, ViewStyle } from 'react-native';
+
+interface MediaPlayerProps {
+  uri: string | number;
+  style?: StyleProp<ViewStyle>;
+  onClose?: () => void;
+  textTracks?: Array<Record<string, unknown>>;
+  selectedTextTrack?: Record<string, unknown>;
+}
 
 const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
   StyleSheet.create({
@@ -56,7 +65,7 @@ const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
     },
   });
 
-function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
+function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }: MediaPlayerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const videoRef = useRef();

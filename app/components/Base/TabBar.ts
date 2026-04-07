@@ -22,7 +22,7 @@ const createStyles = (colors) =>
     },
   });
 
-function TabBar({ ...props }) {
+function TabBar({ ...props }: Record<string, unknown>) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

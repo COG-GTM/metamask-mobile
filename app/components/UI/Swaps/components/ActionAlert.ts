@@ -5,7 +5,24 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Alert, { AlertType } from '../../../Base/Alert';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
+import { StyleProp, ViewStyle } from 'react-native';
+
 const AlertTypeKeys = Object.keys(AlertType);
+
+interface ActionAlertButtonProps {
+  type?: string;
+  onPress?: () => void;
+  children?: React.ReactNode;
+}
+
+interface ActionAlertProps {
+  type?: string;
+  style?: StyleProp<ViewStyle>;
+  action?: string;
+  onInfoPress?: () => void;
+  onPress?: () => void;
+  children?: ((textStyle: Record<string, unknown>) => React.ReactNode) | React.ReactNode;
+}
 
 const VERTICAL_DISPLACEMENT = 12;
 const createStyles = (colors) =>
@@ -78,7 +95,7 @@ const getInfoIconStyle = (type, styles) => {
   }
 };
 
-function Button({ type, onPress, children }) {
+function Button({ type, onPress, children }: ActionAlertButtonProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -105,7 +122,7 @@ Button.propTypes = {
   children: PropTypes.string,
 };
 
-function ActionAlert({ type, style, action, onInfoPress, onPress, children }) {
+function ActionAlert({ type, style, action, onInfoPress, onPress, children }: ActionAlertProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

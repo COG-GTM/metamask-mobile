@@ -54,7 +54,7 @@ export function getHexGasTotal({ gasLimit, gasPrice }: { gasLimit: string; gasPr
   );
 }
 
-export function addEth(...args) {
+export function addEth(...args: (string | number)[]) {
   return args.reduce((acc, ethAmount) =>
     addCurrencies(acc, ethAmount, {
       toNumericBase: 'dec',
@@ -65,7 +65,7 @@ export function addEth(...args) {
   );
 }
 
-export function addFiat(...args) {
+export function addFiat(...args: (string | number)[]) {
   return args.reduce((acc, fiatAmount) =>
     addCurrencies(acc, fiatAmount, {
       toNumericBase: 'dec',

@@ -14,7 +14,20 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ConfirmedText = ({testID, ...props}) => (
+interface StatusTextItemProps {
+  testID?: string;
+  children?: React.ReactNode;
+  [key: string]: unknown;
+}
+
+interface StatusTextProps {
+  status: string;
+  context?: string;
+  testID?: string;
+  [key: string]: unknown;
+}
+
+export const ConfirmedText = ({testID, ...props}: StatusTextItemProps) => (
   <Text
     testID={testID}
     bold
@@ -27,7 +40,7 @@ ConfirmedText.propTypes = {
   testID: PropTypes.string,
 };
 
-export const PendingText = ({testID, ...props}) => {
+export const PendingText = ({testID, ...props}: StatusTextItemProps) => {
   const { colors } = useTheme();
   return (
     <Text
@@ -42,7 +55,7 @@ PendingText.propTypes = {
   testID: PropTypes.string,
 };
 
-export const FailedText = ({testID, ...props} ) => {
+export const FailedText = ({testID, ...props}: StatusTextItemProps) => {
   const { colors } = useTheme();
   return (
     <Text
@@ -57,7 +70,7 @@ FailedText.propTypes = {
   testID: PropTypes.string,
 };
 
-function StatusText({ status, context, testID, ...props }) {
+function StatusText({ status, context, testID, ...props }: StatusTextProps) {
   switch (status) {
     case 'Confirmed':
     case 'confirmed':

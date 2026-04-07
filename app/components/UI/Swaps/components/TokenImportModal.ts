@@ -56,7 +56,22 @@ const createStyles = (colors) =>
     },
   });
 
-function TokenImportModal({ isVisible, dismiss, token, onPressImport }) {
+interface TokenImportToken {
+  address?: string;
+  name?: string;
+  symbol?: string;
+  decimals?: number;
+  iconUrl?: string;
+}
+
+interface TokenImportModalProps {
+  isVisible?: boolean;
+  dismiss?: () => void;
+  token: TokenImportToken;
+  onPressImport?: () => void;
+}
+
+function TokenImportModal({ isVisible, dismiss, token, onPressImport }: TokenImportModalProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

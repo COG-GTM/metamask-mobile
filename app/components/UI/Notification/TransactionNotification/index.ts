@@ -37,6 +37,32 @@ import { selectAccounts } from '../../../../selectors/accountTrackerController';
 import { speedUpTransaction } from '../../../../util/transaction-controller';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../../selectors/accountsController';
 
+interface TransactionNotificationProps {
+  isInBrowserView?: boolean;
+  notificationAnimated?: unknown;
+  onClose: () => void;
+  animatedTimingStart: (animated: unknown, toValue: number) => void;
+  currentNotification: {
+    status: string;
+    transaction: { id: string; [key: string]: unknown };
+  };
+  swapsTransactions?: Record<string, Record<string, unknown>>;
+  swapsTokens?: Array<Record<string, unknown>>;
+  accounts?: Record<string, unknown>;
+  transactions: Array<Record<string, unknown>>;
+  smartTransactions: Array<Record<string, unknown>>;
+  selectedAddress?: string;
+  ticker?: string;
+  chainId?: string;
+  conversionRate?: number;
+  currentCurrency?: string;
+  exchangeRate?: number;
+  contractExchangeRates?: Record<string, unknown>;
+  collectibleContracts?: Array<Record<string, unknown>>;
+  tokens?: Record<string, unknown>;
+  primaryCurrency?: string;
+}
+
 const WINDOW_WIDTH = Dimensions.get('window').width;
 const ACTION_CANCEL = 'cancel';
 const ACTION_SPEEDUP = 'speedup';
@@ -101,7 +127,7 @@ const createStyles = (colors) =>
     },
   });
 
-function TransactionNotification(props) {
+function TransactionNotification(props: TransactionNotificationProps) {
   const {
     accounts,
     currentNotification,
@@ -431,7 +457,7 @@ TransactionNotification.propTypes = {
   primaryCurrency: PropTypes.string,
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: Record<string, unknown>) => {
   const chainId = selectChainId(state);
 
   const {

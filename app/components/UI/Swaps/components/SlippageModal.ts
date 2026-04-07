@@ -38,7 +38,14 @@ const createStyles = (colors) =>
     },
   });
 
-function SlippageModal({ isVisible, dismiss, onChange, slippage }) {
+interface SlippageModalProps {
+  isVisible?: boolean;
+  dismiss?: () => void;
+  onChange?: (value: number) => void;
+  slippage?: number;
+}
+
+function SlippageModal({ isVisible, dismiss, onChange, slippage }: SlippageModalProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

@@ -6,6 +6,26 @@ import RemoteImage from '../../../Base/RemoteImage';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
 import imageIcons from '../../../../images/image-icons';
+import { StyleProp, ViewStyle } from 'react-native';
+
+interface EmptyIconProps {
+  medium?: boolean;
+  big?: boolean;
+  biggest?: boolean;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+  children?: React.ReactNode;
+}
+
+interface TokenIconProps {
+  symbol?: string;
+  icon?: string;
+  medium?: boolean;
+  big?: boolean;
+  biggest?: boolean;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
 
 /* eslint-disable import/no-commonjs */
 const ethLogo = require('../../../../images/eth-logo-new.png');
@@ -63,7 +83,7 @@ const createStyles = (colors) =>
     },
   });
 
-const EmptyIcon = ({ medium, big, biggest, style, ...props }) => {
+const EmptyIcon = ({ medium, big, biggest, style, ...props }: EmptyIconProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -90,7 +110,7 @@ EmptyIcon.propTypes = {
   testID: PropTypes.string,
 };
 
-function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
+function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }: TokenIconProps) {
   const [showFallback, setShowFallback] = useState(false);
   const { colors } = useTheme();
   const styles = createStyles(colors);

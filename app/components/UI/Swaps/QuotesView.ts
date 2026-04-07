@@ -349,12 +349,12 @@ async function resetAndStartPolling({
  * @param {string} gasLimit
  * @param {number} multiplier
  */
-const gasLimitWithMultiplier = (gasLimit, multiplier) => {
+const gasLimitWithMultiplier = (gasLimit: string | undefined, multiplier: number | undefined) => {
   if (!gasLimit || !multiplier) return;
   return new BigNumber(gasLimit).times(multiplier).integerValue();
 };
 
-async function addTokenToAssetsController(newToken, chainId, networkClientId) {
+async function addTokenToAssetsController(newToken: { address: string; symbol: string; decimals: number; name?: string }, chainId: string, networkClientId: string) {
   const { TokensController } = Engine.context;
 
   const allTokens = TokensController.state.allTokens?.[chainId]

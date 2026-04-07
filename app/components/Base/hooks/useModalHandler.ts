@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
  * @param initialState Initial state of the modal, if true modal will be visible
  * @return Handlers `[isVisible, toggleModal, showModal, hideModal]`
  */
-function useModalHandler(initialState = false) {
+function useModalHandler(initialState = false): readonly [boolean, () => void, () => void, () => void] {
   const [isVisible, setVisible] = useState(initialState);
 
   const showModal = useCallback(() => setVisible(true), []);

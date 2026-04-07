@@ -72,7 +72,11 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-function Onboarding({ setHasOnboarded }) {
+interface OnboardingProps {
+  setHasOnboarded: (value: boolean) => void;
+}
+
+function Onboarding({ setHasOnboarded }: OnboardingProps) {
   const navigation = useNavigation();
   const { colors } = useTheme();
   const { bottom: bottomInset } = useSafeAreaInsets();
