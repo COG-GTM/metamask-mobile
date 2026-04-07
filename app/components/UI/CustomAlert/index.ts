@@ -1,13 +1,28 @@
-import React, { PureComponent } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { PureComponent, ReactNode } from 'react';
+import { StyleSheet, View, Text, StyleProp, ViewStyle } from 'react-native';
 import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
 import StyledButton from '../StyledButton';
 import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import { ThemeColors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface CustomAlertProps {
+  headerStyle?: StyleProp<ViewStyle>;
+  headerContent?: ReactNode;
+  titleText?: string;
+  bodyContent?: React.ReactElement;
+  buttonText?: string;
+  onPress?: () => void;
+  isVisible?: boolean;
+  onBackdropPress?: () => void;
+  onSwipeComplete?: () => void;
+  swipeDirection?: string;
+  children?: ReactNode;
+}
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     modal: {
       padding: 20,
@@ -43,7 +58,7 @@ const createStyles = (colors) =>
 /* PureComponent that renders our custom alerts, which contains
 /* a header with an image, body and footer with a button
 */
-export default class CustomAlert extends PureComponent {
+export default class CustomAlert extends PureComponent<CustomAlertProps> {
   static propTypes = {
     /**
     /* Style of the header view

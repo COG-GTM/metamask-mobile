@@ -18,7 +18,18 @@ import ButtonIcon, {
 } from '../../../component-library/components/Buttons/ButtonIcon';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 
-const createStyles = (colors) =>
+import { ThemeColors } from '../../../util/theme/models';
+
+interface HintModalProps {
+  onCancel: () => void;
+  onConfirm: () => void;
+  modalVisible: boolean;
+  onRequestClose: () => void;
+  value?: string;
+  onChangeText: (text: string) => void;
+}
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     hintWrapper: {
       flex: 1,
@@ -62,7 +73,7 @@ const HintModal = ({
   onRequestClose,
   value,
   onChangeText,
-}) => {
+}: HintModalProps) => {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 

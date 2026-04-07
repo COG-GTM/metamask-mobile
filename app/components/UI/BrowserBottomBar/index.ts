@@ -13,13 +13,26 @@ import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/BrowserView.selectors';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import { ThemeColors } from '../../../util/theme/models';
+
+interface BrowserBottomBarProps {
+  canGoBack?: boolean;
+  canGoForward?: boolean;
+  goBack?: () => void;
+  goForward?: () => void;
+  showTabs?: () => void;
+  showUrlModal?: () => void;
+  goHome?: () => void;
+  toggleOptions?: () => void;
+  metrics?: Record<string, unknown>;
+}
 
 // NOTE: not needed anymore. The use of BottomTabBar already accomodates the home indicator height
 // TODO: test on an android device
 // const HOME_INDICATOR_HEIGHT = 0;
 // const defaultBottomBarPadding = 0;
 
-const createStyles = (colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     bottomBar: {
       backgroundColor: colors.background.default,
@@ -109,7 +122,7 @@ class BrowserBottomBar extends PureComponent {
     );
   };
 
-  trackNavigationEvent = (navigationOption) => {
+  trackNavigationEvent = (navigationOption: string) => {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.BROWSER_NAVIGATION)

@@ -9,8 +9,24 @@ import Device from '../../../util/device';
 import { mockTheme, ThemeContext } from '../../../util/theme';
 import { selectProviderConfig } from '../../../selectors/networkController';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
+import { ThemeColors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface ProviderConfig {
+  nickname?: string;
+  type?: string;
+  [key: string]: unknown;
+}
+
+interface NavbarBrowserTitleProps {
+  providerConfig: ProviderConfig;
+  hostname: string;
+  https?: boolean;
+  error?: boolean;
+  icon?: string;
+  route?: Record<string, unknown>;
+}
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       alignItems: 'center',
@@ -97,7 +113,7 @@ class NavbarBrowserTitle extends PureComponent {
     this.props.route.params?.showUrlModal?.();
   };
 
-  getNetworkName(providerConfig) {
+  getNetworkName(providerConfig: ProviderConfig): string {
     let name = { ...Networks.rpc, color: null }.name;
 
     if (providerConfig) {
@@ -163,7 +179,7 @@ class NavbarBrowserTitle extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   providerConfig: selectProviderConfig(state),
 });
 

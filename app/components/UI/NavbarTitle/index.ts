@@ -18,8 +18,23 @@ import Text, {
   TextColor,
 } from '../../../component-library/components/Texts/Text';
 import { selectNetworkName } from '../../../selectors/networkInfos';
+import { ThemeColors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface NavbarTitleProps {
+  providerConfig: Record<string, unknown>;
+  title?: string;
+  translate?: boolean;
+  disableNetwork?: boolean;
+  navigation?: Record<string, unknown>;
+  metrics?: Record<string, unknown>;
+  showSelectedNetwork?: boolean;
+  networkName?: string;
+  children?: React.ReactNode;
+  chainId?: string;
+  selectedNetworkName?: string;
+}
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       justifyContent: 'center',
@@ -174,7 +189,7 @@ class NavbarTitle extends PureComponent {
 
 NavbarTitle.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   providerConfig: selectProviderConfig(state),
   chainId: selectChainId(state),
   selectedNetworkName: selectNetworkName(state),
