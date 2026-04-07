@@ -36,7 +36,7 @@ const PAN_RADIO = STAGE_SIZE * 0.6;
 // "finalizing" animationg
 const FINALIZING_PERCENTAGE = 80;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Record<string, Record<string, string>>, shadows: Record<string, Record<string, unknown>>) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -108,8 +108,15 @@ const createStyles = (colors, shadows) =>
     },
   });
 
-function round(value, decimals) {
+function round(value: number, decimals: number): number {
   return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+}
+
+interface LoadingAnimationProps {
+  finish?: boolean;
+  onAnimationEnd?: () => void;
+  aggregatorMetadata?: Record<string, unknown> | null;
+  headPan?: boolean;
 }
 
 function LoadingAnimation({
@@ -117,7 +124,7 @@ function LoadingAnimation({
   onAnimationEnd,
   aggregatorMetadata,
   headPan = true,
-}) {
+}: LoadingAnimationProps) {
   const [metadata, setMetadata] = useState([]);
   const [shouldStart, setShouldStart] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);

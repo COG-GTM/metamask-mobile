@@ -14,7 +14,7 @@ import {
 } from '../../../../selectors/networkController';
 import { selectNetworkName } from '../../../../selectors/networkInfos';
 
-function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
+function useBlockExplorer(networkConfigurations: Record<string, unknown>, providerConfigTokenExplorer?: Record<string, unknown> | null) {
   const [explorer, setExplorer] = useState({
     name: '',
     value: null,
@@ -80,7 +80,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
   ]);
 
   const tx = useCallback(
-    (hash) => {
+    (hash: string) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -93,7 +93,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const account = useCallback(
-    (address) => {
+    (address: string) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -106,7 +106,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const token = useCallback(
-    (address) => {
+    (address: string) => {
       if (!explorer.isValid) {
         return '';
       }

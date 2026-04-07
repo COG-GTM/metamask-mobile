@@ -31,7 +31,7 @@ function jsonStringifyStream() {
  * @param {any} connectionStream - the stream to mux
  * @return {stream.Stream} the multiplexed stream
  */
-function setupMultiplex(connectionStream) {
+function setupMultiplex(connectionStream: unknown) {
   const mux = new ObjectMultiplex();
   pump(connectionStream, mux, connectionStream, (err) => {
     if (err) {

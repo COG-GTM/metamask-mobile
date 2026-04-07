@@ -8,7 +8,7 @@ const defaultTokenMetadata = {
   metadata: null,
 };
 
-function useFetchTokenMetadata(address, chainId) {
+function useFetchTokenMetadata(address: string | null | undefined, chainId: string) {
   const [isLoading, setIsLoading] = useState(false);
   const [tokenMetadata, setTokenMetadata] = useState(defaultTokenMetadata);
 
