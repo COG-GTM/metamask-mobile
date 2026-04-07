@@ -6,7 +6,7 @@ const hub = new EventEmitter();
 
 class DrawerStatusTracker {
   open = false;
-  setStatus(status) {
+  setStatus(status: string): void {
     if (status === 'open') {
       this.open = true;
     } else {
@@ -17,16 +17,16 @@ class DrawerStatusTracker {
   }
 }
 
-let instance = null;
+let instance: DrawerStatusTracker | null = null;
 
 const SharedDrawerStatusTracker = {
-  init: () => {
+  init: (): void => {
     instance = new DrawerStatusTracker();
   },
-  setStatus: (status) => {
+  setStatus: (status: string): void => {
     instance.setStatus(status);
   },
-  getStatus: () => (instance.open ? 'open' : 'closed'),
+  getStatus: (): string => (instance!.open ? 'open' : 'closed'),
   hub,
 };
 

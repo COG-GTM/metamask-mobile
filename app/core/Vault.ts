@@ -8,7 +8,7 @@ import { withLedgerKeyring } from './Ledger/Ledger';
  *
  * @param {unknown} serializedQrKeyring - A serialized QR keyring.
  */
-export const restoreQRKeyring = async (serializedQrKeyring) => {
+export const restoreQRKeyring = async (serializedQrKeyring: unknown): Promise<void> => {
   const { KeyringController } = Engine.context;
 
   try {
@@ -23,7 +23,7 @@ export const restoreQRKeyring = async (serializedQrKeyring) => {
  *
  * @param {unknown} serializedLedgerKeyring - A serialized Ledger keyring.
  */
-export const restoreLedgerKeyring = async (serializedLedgerKeyring) => {
+export const restoreLedgerKeyring = async (serializedLedgerKeyring: unknown): Promise<void> => {
   try {
     await withLedgerKeyring(async (keyring) => {
       await keyring.deserialize(serializedLedgerKeyring);
@@ -54,10 +54,10 @@ export const getSeedPhrase = async (password = '') => {
  * @param selectedAddress
  */
 export const recreateVaultWithNewPassword = async (
-  password,
-  newPassword,
-  selectedAddress,
-) => {
+  password: string,
+  newPassword: string,
+  selectedAddress: string,
+): Promise<void> => {
   const { KeyringController } = Engine.context;
   const seedPhrase = await getSeedPhrase(password);
 
@@ -142,8 +142,8 @@ export const recreateVaultWithNewPassword = async (
  */
 export const recreateVaultWithSamePassword = async (
   password = '',
-  selectedAddress,
-) => recreateVaultWithNewPassword(password, password, selectedAddress);
+  selectedAddress: string,
+): Promise<void> => recreateVaultWithNewPassword(password, password, selectedAddress);
 
 /**
  * Checks whether the given keyring type exists in the given state.
@@ -152,7 +152,7 @@ export const recreateVaultWithSamePassword = async (
  * @param {KeyringTypes} type - The keyring type to check for.
  * @returns Whether the type was found in state.
  */
-function hasKeyringType(state, type) {
+function hasKeyringType(state: { keyrings?: Array<{ type: string }> }, type: string): boolean {
   return state?.keyrings?.some((keyring) => keyring.type === type);
 }
 
@@ -162,7 +162,7 @@ function hasKeyringType(state, type) {
  * @param {KeyringTypes} type - The type of keyring to serialize.
  * @returns The serialized state for the first keyring found of the given type.
  */
-async function getSerializedKeyring(type) {
+async function getSerializedKeyring(type: string): Promise<unknown> {
   const { KeyringController } = Engine.context;
   return await KeyringController.withKeyring({ type }, ({ keyring }) =>
     keyring.serialize(),
