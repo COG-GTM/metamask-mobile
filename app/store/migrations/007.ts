@@ -1,4 +1,4 @@
-export default function migrate(state) {
+export default function migrate(state: unknown) {
   const allTokens = state.engine.backgroundState.TokensController.allTokens;
   const newAllTokens = {};
   if (allTokens) {

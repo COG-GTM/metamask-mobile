@@ -1,4 +1,4 @@
-export default function migrate(state) {
+export default function migrate(state: unknown) {
   if (state.recents) {
     delete state.recents;
   }
