@@ -274,7 +274,7 @@ const ERROR_URL_ALLOWLIST = [
  * @param options.sentryId - ID of captured exception
  * @param options.comments - User's feedback/comments
  */
-export const captureSentryFeedback = ({ sentryId, comments }) => {
+export const captureSentryFeedback = ({ sentryId, comments }: { sentryId: string; comments: string }) => {
   const userFeedback = {
     event_id: sentryId,
     name: '',
@@ -284,11 +284,11 @@ export const captureSentryFeedback = ({ sentryId, comments }) => {
   Sentry.captureUserFeedback(userFeedback);
 };
 
-function getProtocolFromURL(url) {
+function getProtocolFromURL(url: string): string {
   return new URL(url).protocol;
 }
 
-function rewriteBreadcrumb(breadcrumb) {
+function rewriteBreadcrumb(breadcrumb: Record<string, unknown>) {
   if (breadcrumb.data?.url) {
     breadcrumb.data.url = getProtocolFromURL(breadcrumb.data.url);
   }
@@ -302,7 +302,7 @@ function rewriteBreadcrumb(breadcrumb) {
   return breadcrumb;
 }
 
-function rewriteErrorMessages(report, rewriteFn) {
+function rewriteErrorMessages(report: Record<string, unknown>, rewriteFn: (msg: string) => string) {
   // rewrite top level message
   if (typeof report.message === 'string') {
     /** @todo parse and remove/replace URL(s) found in report.message  */
@@ -318,7 +318,7 @@ function rewriteErrorMessages(report, rewriteFn) {
   }
 }
 
-function simplifyErrorMessages(report) {
+function simplifyErrorMessages(report: Record<string, unknown>) {
   rewriteErrorMessages(report, (errorMessage) => {
     // simplify ethjs error messages
     let simplifiedErrorMessage = extractEthJsErrorMessage(errorMessage);
@@ -335,12 +335,12 @@ function simplifyErrorMessages(report) {
   });
 }
 
-function removeDeviceTimezone(report) {
+function removeDeviceTimezone(report: Record<string, unknown>) {
   if (report.contexts && report.contexts.device)
     report.contexts.device.timezone = null;
 }
 
-function removeDeviceName(report) {
+function removeDeviceName(report: Record<string, unknown>) {
   if (report.contexts && report.contexts.device)
     report.contexts.device.name = null;
 }
@@ -352,7 +352,7 @@ function removeDeviceName(report) {
  * since the 'context_line' is rather verbose.
  * @param {*} report - the error event
  */
-function removeSES(report) {
+function removeSES(report: Record<string, unknown>) {
   const stacktraceFrames = report?.exception?.values[0]?.stacktrace?.frames;
   if (stacktraceFrames) {
     const filteredFrames = stacktraceFrames.filter(
@@ -380,7 +380,7 @@ function removeSES(report) {
  * @param {{[key: string]: object | boolean}} mask - The mask to apply to the object
  * @returns {object} - The masked object
  */
-export function maskObject(objectToMask, mask = {}) {
+export function maskObject(objectToMask: Record<string, unknown>, mask: Record<string | symbol, unknown> = {}) {
   if (!objectToMask) return {};
 
   // Include both string and symbol keys.
@@ -419,7 +419,7 @@ export function maskObject(objectToMask, mask = {}) {
   }, {});
 }
 
-function rewriteReport(report) {
+function rewriteReport(report: Record<string, unknown>) {
   try {
     // filter out SES from error stack trace
     removeSES(report);
@@ -453,7 +453,7 @@ function rewriteReport(report) {
  * @param {*} event - to be logged
  * @returns {(event|null)}
  */
-export function excludeEvents(event) {
+export function excludeEvents(event: Record<string, unknown>) {
   // This is needed because store starts to initialise before performance observers completes to measure app start time
   if (event?.transaction === TraceName.UIStartup) {
     event.tags = getTraceTags(store.getState());
@@ -480,7 +480,7 @@ export function excludeEvents(event) {
   return event;
 }
 
-function sanitizeUrlsFromErrorMessages(report) {
+function sanitizeUrlsFromErrorMessages(report: Record<string, unknown>) {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
 
@@ -493,7 +493,7 @@ function sanitizeUrlsFromErrorMessages(report) {
   });
 }
 
-function sanitizeAddressesFromErrorMessages(report) {
+function sanitizeAddressesFromErrorMessages(report: Record<string, unknown>) {
   rewriteErrorMessages(report, (errorMessage) => {
     const newErrorMessage = errorMessage.replace(
       regex.replaceNetworkErrorSentry,
@@ -519,10 +519,10 @@ function sanitizeAddressesFromErrorMessages(report) {
  * @returns {string} - "metamaskEnvironment-metamaskBuildType" or just "metamaskEnvironment" if the build type is "main".
  */
 export function deriveSentryEnvironment(
-  isDev,
-  metamaskEnvironment = 'local',
-  metamaskBuildType = 'main',
-) {
+  isDev: boolean,
+  metamaskEnvironment: string = 'local',
+  metamaskBuildType: string = 'main',
+): string {
   if (isDev || !metamaskEnvironment) {
     return 'development';
   }

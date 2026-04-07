@@ -177,7 +177,7 @@ const actionKeys = {
  * @param {Object} opts - Optional asset parameters
  * @returns {String} - String containing the generated transfer data
  */
-export function generateTransferData(type = undefined, opts = {}) {
+export function generateTransferData(type: string | undefined = undefined, opts: Record<string, string> = {}): string | undefined {
   if (!type) {
     throw new TypeError('[transactions] type must be defined');
   }
@@ -221,7 +221,7 @@ export function generateTransferData(type = undefined, opts = {}) {
  * @param {string | undefined} data The transaction data.
  * @returns {string | undefined} The four-byte signature if data is provided, otherwise undefined.
  */
-export function getFourByteSignature(data) {
+export function getFourByteSignature(data: string | undefined): string | undefined {
   return data?.substring(0, 10);
 }
 
@@ -230,7 +230,7 @@ export function getFourByteSignature(data) {
  * @param {string} data The transaction data.
  * @returns {boolean} True if the transaction is an "approve" or "increase allowance" call, false otherwise.
  */
-export function isApprovalTransaction(data) {
+export function isApprovalTransaction(data: string): boolean {
   const fourByteSignature = getFourByteSignature(data);
   return [
     APPROVE_FUNCTION_SIGNATURE,
@@ -248,7 +248,7 @@ export function isApprovalTransaction(data) {
  * @param {string} [opts.data] - The data of the transaction
  * @returns {String} - String containing the generated data, by default for approve method
  */
-export function generateApprovalData(opts) {
+export function generateApprovalData(opts: { spender: string; value: string; data?: string }): string {
   const { spender, value, data } = opts;
 
   if (!spender || !value) {
@@ -271,7 +271,7 @@ export function generateApprovalData(opts) {
   );
 }
 
-export function decodeApproveData(data) {
+export function decodeApproveData(data: string): { spenderAddress: string; encodedAmount: string } {
   return {
     spenderAddress: addHexPrefix(data.substr(34, 40)),
     encodedAmount: data.substr(74, 138),
@@ -287,7 +287,7 @@ const BASE = 4 * 16;
  * @param {String} data - Data to decode
  * @returns {Array} - Object containing the decoded transfer data
  */
-export function decodeTransferData(type, data) {
+export function decodeTransferData(type: string, data: string): string[] | undefined {
   switch (type) {
     case 'transfer': {
       const encodedAddress = data.substring(10, BASE + 10);
@@ -334,7 +334,7 @@ export function decodeTransferData(type, data) {
  * @param {string} data - Transaction data
  * @returns {MethodData} - Method data object containing the name if is valid
  */
-export async function getMethodData(data, networkClientId) {
+export async function getMethodData(data: string, networkClientId: string): Promise<Record<string, unknown>> {
   if (data.length < 10) return {};
   const fourByteSignature = getFourByteSignature(data);
   if (fourByteSignature === TRANSFER_FUNCTION_SIGNATURE) {
@@ -374,10 +374,10 @@ export async function getMethodData(data, networkClientId) {
  * @returns {Promise<boolean>} - Whether the given address is a contract
  */
 export async function isSmartContractAddress(
-  address,
-  chainId,
-  networkClientId = undefined,
-) {
+  address: string,
+  chainId: string,
+  networkClientId: string | undefined = undefined,
+): Promise<boolean> {
   if (!address) return false;
 
   address = toChecksumAddress(address);
@@ -412,7 +412,7 @@ export async function isSmartContractAddress(
  * @param {string} tokenId - A possible collectible id
  * @returns {boolean} - Wether the given address is an ERC721 contract
  */
-export async function isCollectibleAddress(address, tokenId) {
+export async function isCollectibleAddress(address: string, tokenId: string): Promise<boolean> {
   const cache = CollectibleAddresses.cache[address];
   if (cache) {
     return Promise.resolve(cache);
@@ -436,7 +436,7 @@ export async function isCollectibleAddress(address, tokenId) {
  * @param {string} chainId - Current chainId
  * @returns {string} - Corresponding transaction action key
  */
-export async function getTransactionActionKey(transaction, chainId) {
+export async function getTransactionActionKey(transaction: Record<string, unknown>, chainId: string): Promise<string> {
   const { networkClientId, type } = transaction ?? {};
   const txParams = transaction.txParams ?? transaction.transaction ?? {};
   const { data, to } = txParams;
@@ -488,7 +488,7 @@ export async function getTransactionActionKey(transaction, chainId) {
  * @param {string} selectedAddress - Current account public address
  * @returns {string} - Transaction type message
  */
-export async function getActionKey(tx, selectedAddress, ticker, chainId) {
+export async function getActionKey(tx: Record<string, unknown>, selectedAddress: string, ticker: string, chainId: string): Promise<string> {
   const actionKey = await getTransactionActionKey(tx, chainId);
   if (actionKey === SEND_ETHER_ACTION_KEY) {
     let currencySymbol = ticker;
@@ -534,7 +534,7 @@ export async function getActionKey(tx, selectedAddress, ticker, chainId) {
  * @param {string} chainId - Current chainId
  * @returns {string} - Transaction function type
  */
-export async function getTransactionReviewActionKey(transaction, chainId) {
+export async function getTransactionReviewActionKey(transaction: Record<string, unknown>, chainId: string): Promise<string> {
   const actionKey = await getTransactionActionKey(transaction, chainId);
   const transactionReviewActionKey = reviewActionKeys[actionKey];
   if (transactionReviewActionKey) {
@@ -549,7 +549,7 @@ export async function getTransactionReviewActionKey(transaction, chainId) {
  * @param {string} - Ticker
  * @returns {string} - Corresponding ticker or ETH
  */
-export function getTicker(ticker) {
+export function getTicker(ticker: string | undefined): string {
   return ticker || strings('unit.eth');
 }
 
@@ -559,7 +559,7 @@ export function getTicker(ticker) {
  * @param {string} ticker - Ticker
  * @returns {object} - ETH object
  */
-export function getEther(ticker) {
+export function getEther(ticker: string | undefined) {
   return {
     name: 'Ether',
     address: '',
@@ -586,7 +586,7 @@ export function getTransactionToName({
   toAddress,
   internalAccounts,
   ensRecipient,
-}) {
+}: { addressBook: Record<string, Record<string, { name: string }>>; chainId: string; toAddress: string; internalAccounts: { address: string; metadata: { name: string } }[]; ensRecipient?: string }): string | undefined {
   if (ensRecipient) {
     return ensRecipient;
   }
@@ -619,17 +619,17 @@ export function getTransactionToName({
  * @param {object} accountAddedTimeInsertPointFound - Flag to see if the import time was already found
  */
 export function addAccountTimeFlagFilter(
-  transaction,
-  addedAccountTime,
-  accountAddedTimeInsertPointFound,
-) {
+  transaction: { time: number },
+  addedAccountTime: number,
+  accountAddedTimeInsertPointFound: boolean,
+): boolean {
   return (
     transaction.time <= addedAccountTime && !accountAddedTimeInsertPointFound
   );
 }
 
 //Leaving here a comment to re-visit this function since it's probably be possible to deprecate
-export function getNormalizedTxState(state) {
+export function getNormalizedTxState(state: Record<string, unknown>) {
   return state.transaction
     ? { ...state.transaction, ...state.transaction.transaction }
     : undefined;
