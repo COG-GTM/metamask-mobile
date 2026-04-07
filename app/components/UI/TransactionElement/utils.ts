@@ -39,7 +39,82 @@ import {
 
 const { getSwapsContractAddress } = swapsUtils;
 
-function calculateTotalGas(transaction) {
+interface TransactionParams {
+  gas?: string;
+  gasPrice?: string;
+  gasUsed?: string;
+  estimatedBaseFee?: string;
+  maxPriorityFeePerGas?: string;
+  maxFeePerGas?: string;
+  multiLayerL1FeeTotal?: string;
+  value?: string;
+  from?: string;
+  to?: string;
+  data?: string;
+  nonce?: string;
+}
+
+interface TransactionArgs {
+  tx: {
+    txParams: TransactionParams;
+    transferInformation?: {
+      symbol: string;
+      decimals: number;
+      contractAddress: string;
+    };
+    hash?: string;
+    id?: string;
+    isTransfer?: boolean;
+    chainId?: string;
+    status?: string;
+  };
+  txChainId: string;
+  networkConfigurationsByChainId: Record<string, { nativeCurrency: string }>;
+  conversionRate: number;
+  currentCurrency: string;
+  tokens?: Record<string, { symbol: string; decimals: number; address: string }>;
+  contractExchangeRates?: Record<string, { price: number }>;
+  collectibleContracts?: Array<{ address: string; name: string; symbol: string }>;
+  totalGas?: object;
+  actionKey?: string;
+  primaryCurrency?: string;
+  selectedAddress?: string;
+  swapsTransactions?: Record<string, Record<string, unknown>>;
+  swapsTokens?: Array<{ address: string; symbol: string; decimals: number }>;
+  assetSymbol?: string;
+  chainId?: string;
+}
+
+interface TransactionElement {
+  actionKey?: string;
+  renderTo?: string;
+  renderFrom?: string;
+  value?: string;
+  fiatValue?: string | false;
+  transactionType?: string;
+  nonce?: string;
+  contractDeployment?: boolean;
+  isIncomingTransfer?: boolean;
+  notificationKey?: string;
+}
+
+interface TransactionDetails {
+  renderTotalGas?: string;
+  renderValue?: string;
+  renderFrom?: string;
+  renderTo?: string;
+  hash?: string;
+  renderGas?: string;
+  renderGasPrice?: string;
+  summaryAmount?: string;
+  summaryFee?: string;
+  summaryTotalAmount?: string;
+  summarySecondaryTotalAmount?: string;
+  transactionType?: string;
+  txChainId?: string;
+}
+
+function calculateTotalGas(transaction: TransactionParams): object {
   const {
     gas,
     gasPrice,
@@ -74,7 +149,7 @@ function calculateTotalGas(transaction) {
   return totalGas;
 }
 
-function renderGwei(transaction) {
+function renderGwei(transaction: TransactionParams): string {
   const {
     gasPrice,
     estimatedBaseFee,
@@ -98,7 +173,7 @@ function renderGwei(transaction) {
   return renderToGwei(gasPrice);
 }
 
-function getTokenTransfer(args) {
+function getTokenTransfer(args: TransactionArgs & { totalGas: object }): [TransactionElement, TransactionDetails] {
   const {
     tx: {
       txParams: { from, to, data, nonce },
@@ -202,7 +277,7 @@ function getTokenTransfer(args) {
   return [transactionElement, transactionDetails];
 }
 
-function getCollectibleTransfer(args) {
+function getCollectibleTransfer(args: TransactionArgs & { totalGas: object }): [TransactionElement, TransactionDetails] {
   const {
     tx: {
       txParams: { from, to, data },
@@ -277,7 +352,7 @@ function getCollectibleTransfer(args) {
   return [transactionElement, transactionDetails];
 }
 
-export function decodeIncomingTransfer(args) {
+export function decodeIncomingTransfer(args: TransactionArgs): [TransactionElement, TransactionDetails] {
   const {
     tx: {
       txParams: { to, from, value },
@@ -389,7 +464,7 @@ export function decodeIncomingTransfer(args) {
   return [transactionElement, transactionDetails];
 }
 
-async function decodeTransferTx(args) {
+async function decodeTransferTx(args: TransactionArgs): Promise<[TransactionElement, TransactionDetails]> {
   const {
     tx: {
       txParams,
@@ -429,7 +504,7 @@ async function decodeTransferTx(args) {
   return [transactionElement, transactionDetails];
 }
 
-function decodeTransferFromTx(args) {
+function decodeTransferFromTx(args: TransactionArgs): [TransactionElement, TransactionDetails] {
   const {
     tx: {
       txParams,
@@ -520,7 +595,7 @@ function decodeTransferFromTx(args) {
   return [transactionElement, transactionDetails];
 }
 
-function decodeDeploymentTx(args) {
+function decodeDeploymentTx(args: TransactionArgs): [TransactionElement, TransactionDetails] {
   const {
     tx: {
       txParams,
@@ -593,7 +668,7 @@ function decodeDeploymentTx(args) {
   return [transactionElement, transactionDetails];
 }
 
-function decodeConfirmTx(args) {
+function decodeConfirmTx(args: TransactionArgs): [TransactionElement, TransactionDetails] {
   const {
     tx: {
       txParams,
@@ -701,7 +776,7 @@ function decodeConfirmTx(args) {
   return [transactionElement, transactionDetails];
 }
 
-function decodeSwapsTx(args) {
+function decodeSwapsTx(args: TransactionArgs): [TransactionElement | undefined, TransactionDetails | undefined] {
   const {
     swapsTransactions,
     swapsTokens,
@@ -911,7 +986,7 @@ function decodeSwapsTx(args) {
  * @param {*} args - Should contain tx, selectedAddress, ticker, conversionRate,
  * currentCurrency, exchangeRate, contractExchangeRates, collectibleContracts, tokens
  */
-export default async function decodeTransaction(args) {
+export default async function decodeTransaction(args: TransactionArgs): Promise<[TransactionElement, TransactionDetails]> {
   const {
     tx,
     selectedAddress,
