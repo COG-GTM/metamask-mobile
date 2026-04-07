@@ -8,9 +8,25 @@ import { selectSelectedInternalAccountAddress } from '../../selectors/accountsCo
 import { compareTokenIds } from '../../util/tokens';
 import { createDeepEqualSelector } from '../../selectors/util';
 
-const favoritesSelector = (state) => state.collectibles.favorites;
+interface CollectibleItem {
+  tokenId: string;
+  address: string;
+  [key: string]: unknown;
+}
 
-export const isNftFetchingProgressSelector = (state) =>
+interface CollectiblesState {
+  favorites: Record<string, Record<string, CollectibleItem[]>>;
+  isNftFetchingProgress: boolean;
+}
+
+interface RootState {
+  collectibles: CollectiblesState;
+  [key: string]: unknown;
+}
+
+const favoritesSelector = (state: RootState) => state.collectibles.favorites;
+
+export const isNftFetchingProgressSelector = (state: RootState) =>
   state.collectibles.isNftFetchingProgress;
 
 export const collectibleContractsSelector = createSelector(
@@ -62,22 +78,22 @@ export const isCollectibleInFavoritesSelector = createSelector(
 );
 
 const getFavoritesCollectibles = (
-  favoriteCollectibles,
-  selectedAddress,
-  chainId,
-) => favoriteCollectibles[selectedAddress]?.[chainId] || [];
+  favoriteCollectibles: Record<string, Record<string, CollectibleItem[]>>,
+  selectedAddress: string,
+  chainId: string,
+): CollectibleItem[] => favoriteCollectibles[selectedAddress]?.[chainId] || [];
 
 export const ADD_FAVORITE_COLLECTIBLE = 'ADD_FAVORITE_COLLECTIBLE';
 export const REMOVE_FAVORITE_COLLECTIBLE = 'REMOVE_FAVORITE_COLLECTIBLE';
 export const SHOW_NFT_FETCHING_LOADER = 'SHOW_NFT_FETCHING_LOADER';
 export const HIDE_NFT_FETCHING_LOADER = 'HIDE_NFT_FETCHING_LOADER';
 
-const initialState = {
+const initialState: CollectiblesState = {
   favorites: {},
   isNftFetchingProgress: false,
 };
 
-const collectiblesFavoritesReducer = (state = initialState, action) => {
+const collectiblesFavoritesReducer = (state: CollectiblesState = initialState, action: Record<string, unknown>): CollectiblesState => {
   switch (action.type) {
     case ADD_FAVORITE_COLLECTIBLE: {
       const { selectedAddress, chainId, collectible } = action;
