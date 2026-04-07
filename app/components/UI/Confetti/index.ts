@@ -7,7 +7,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 const isAndroid = Platform.OS === 'android';
 const ORIGIN = { x: Device.getDeviceWidth() / 2, y: 0 };
 
-const Confetti = (props) => {
+const Confetti = (props: Record<string, unknown>) => {
   let confettiView = false;
 
   useEffect(() => {

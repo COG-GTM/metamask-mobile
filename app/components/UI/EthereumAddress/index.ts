@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Platform, Text } from 'react-native';
+import { Platform, Text, StyleProp, TextStyle } from 'react-native';
 import { formatAddress } from '../../../util/address';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { WALLET_ACCOUNT_ADDRESS_LABEL } from '../../../../wdio/screen-objects/testIDs/Screens/WalletView.testIds';
@@ -9,7 +9,18 @@ import { WALLET_ACCOUNT_ADDRESS_LABEL } from '../../../../wdio/screen-objects/te
  * View that renders an ethereum address
  * or its ENS name when supports reverse lookup
  */
-class EthereumAddress extends PureComponent {
+interface EthereumAddressProps {
+  style?: StyleProp<TextStyle>;
+  address?: string;
+  type?: string;
+}
+
+interface EthereumAddressState {
+  ensName: string | null;
+  address: string;
+}
+
+class EthereumAddress extends PureComponent<EthereumAddressProps, EthereumAddressState> {
   static propTypes = {
     /**
      * Styles to be applied to the text component
@@ -26,8 +37,8 @@ class EthereumAddress extends PureComponent {
     type: PropTypes.string,
   };
 
-  ens = null;
-  constructor(props) {
+  ens: string | null = null;
+  constructor(props: EthereumAddressProps) {
     super(props);
     const { address, type } = props;
 
@@ -37,7 +48,7 @@ class EthereumAddress extends PureComponent {
     };
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: EthereumAddressProps): void {
     if (this.props.address && prevProps.address !== this.props.address) {
       requestAnimationFrame(() => {
         this.formatAndResolveIfNeeded();

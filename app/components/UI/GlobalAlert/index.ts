@@ -9,7 +9,26 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import ElevatedView from 'react-native-elevated-view';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+import { ThemeColors } from '../../../util/theme/models';
+
+interface GlobalAlertProps {
+  isVisible: boolean;
+  autodismiss?: number;
+  content?: string;
+  data?: Record<string, unknown>;
+  dismissAlert: () => void;
+}
+
+interface RootState {
+  alert: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: Record<string, unknown>;
+  };
+}
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -68,7 +87,7 @@ class GlobalAlert extends PureComponent {
     this.props.dismissAlert();
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: GlobalAlertProps): void {
     if (
       this.props.autodismiss &&
       !isNaN(this.props.autodismiss) &&
@@ -81,7 +100,7 @@ class GlobalAlert extends PureComponent {
     }
   }
 
-  getComponent(content) {
+  getComponent(content: string | undefined): React.ReactNode {
     switch (content) {
       case 'clipboard-alert':
         return this.renderClipboardAlert();
@@ -140,14 +159,14 @@ class GlobalAlert extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   isVisible: state.alert.isVisible,
   autodismiss: state.alert.autodismiss,
   content: state.alert.content,
   data: state.alert.data,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
   dismissAlert: () => dispatch(dismissAlert()),
 });
 

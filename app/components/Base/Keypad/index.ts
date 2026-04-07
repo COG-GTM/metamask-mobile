@@ -1,9 +1,30 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, ReactNode } from 'react';
 import PropTypes from 'prop-types';
+import { StyleProp, ViewStyle, TextStyle } from 'react-native';
 import Keypad from './components';
 import { KEYS } from './constants';
 import useCurrency from './useCurrency';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+
+interface KeypadChangeEvent {
+  value: string;
+  valueAsNumber: number;
+  pressedKey: string;
+}
+
+interface KeypadComponentProps {
+  onChange?: (event: KeypadChangeEvent) => void;
+  value?: string;
+  currency?: string;
+  decimals?: number;
+  style?: StyleProp<ViewStyle>;
+  digitButtonStyle?: StyleProp<ViewStyle>;
+  digitTextStyle?: StyleProp<TextStyle>;
+  periodButtonStyle?: StyleProp<ViewStyle>;
+  periodTextStyle?: StyleProp<TextStyle>;
+  deleteButtonStyle?: StyleProp<ViewStyle>;
+  deleteIcon?: ReactNode;
+}
 
 function KeypadComponent({
   onChange,
@@ -17,10 +38,10 @@ function KeypadComponent({
   periodTextStyle,
   deleteButtonStyle,
   deleteIcon,
-}) {
+}: KeypadComponentProps) {
   const { handler, decimalSeparator } = useCurrency(currency, decimals);
   const handleKeypadPress = useCallback(
-    (pressedKey) => {
+    (pressedKey: string) => {
       const newValue = handler(value, pressedKey);
       let valueAsNumber = 0;
       try {

@@ -1,8 +1,18 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Animated } from 'react-native';
+import React, { useRef, useEffect, useState, useCallback, ReactNode } from 'react';
+import { Animated, StyleProp, ViewStyle } from 'react-native';
 import PropTypes from 'prop-types';
 
 const TIME = 3900; // 3900/6 = 650 for each
+
+interface FadeAnimationViewProps {
+  children?: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  animationTime?: number;
+  valueToWatch?: string | number;
+  onAnimationStart?: () => void;
+  onAnimationEnd?: () => void;
+  animateOnChange?: boolean;
+}
 
 const FadeAnimationView = ({
   children,
@@ -12,7 +22,7 @@ const FadeAnimationView = ({
   onAnimationStart,
   onAnimationEnd,
   animateOnChange,
-}) => {
+}: FadeAnimationViewProps) => {
   const fadeAnim = useRef(new Animated.Value(1)).current; // Initial value for opacity: 1
   const [value, setValue] = useState(valueToWatch);
   const [lastChildren, setLastChildren] = useState(children);

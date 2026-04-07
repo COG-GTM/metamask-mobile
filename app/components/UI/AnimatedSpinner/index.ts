@@ -4,6 +4,7 @@ import { View, Animated, Easing, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { ThemeColors } from '../../../util/theme/models';
 
 export const SpinnerSize = {
   MD: 'MD',
@@ -45,7 +46,21 @@ const measures = {
   },
 };
 
-const createStyles = (colors, measures) =>
+interface SpinnerMeasures {
+  Android: { height: number; width: number };
+  iOS: { height: number; width: number };
+  static: { borderRadius: number; width: number; height: number; iconSize: number };
+}
+
+interface AnimatedSpinnerProps {
+  size?: string;
+}
+
+interface AnimatedSpinnerState {
+  spinning: boolean;
+}
+
+const createStyles = (colors: ThemeColors, measures: SpinnerMeasures) =>
   StyleSheet.create({
     view: {
       position: 'relative',
@@ -65,10 +80,11 @@ const createStyles = (colors, measures) =>
     },
   });
 
-export default class AnimatedSpinner extends PureComponent {
-  spinValue = new Animated.Value(0);
+export default class AnimatedSpinner extends PureComponent<AnimatedSpinnerProps, AnimatedSpinnerState> {
+  spinValue: Animated.Value = new Animated.Value(0);
+  mounted: boolean = false;
 
-  state = {
+  state: AnimatedSpinnerState = {
     spinning: false,
   };
 

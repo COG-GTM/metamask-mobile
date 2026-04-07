@@ -1,10 +1,20 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Animated, StyleSheet } from 'react-native';
+import { Animated, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { ThemeColors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface FadeOutOverlayProps {
+  style?: StyleProp<ViewStyle>;
+  duration?: number;
+}
+
+interface FadeOutOverlayState {
+  done: boolean;
+}
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     view: {
       backgroundColor: colors.background.default,
@@ -19,7 +29,7 @@ const createStyles = (colors) =>
 /**
  * View that is displayed to first time (new) users
  */
-export default class FadeOutOverlay extends PureComponent {
+export default class FadeOutOverlay extends PureComponent<FadeOutOverlayProps, FadeOutOverlayState> {
   static propTypes = {
     style: PropTypes.any,
     duration: PropTypes.number,

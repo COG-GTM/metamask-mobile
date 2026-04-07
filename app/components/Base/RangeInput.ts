@@ -1,12 +1,13 @@
-import React, { useCallback, useRef, useEffect, useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useCallback, useRef, useEffect, useState, ReactNode } from 'react';
+import { View, TextInput, StyleSheet, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Text from './Text';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import { useTheme } from '../../util/theme';
+import { ThemeColors } from '../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     labelContainer: {
       flexDirection: 'row',
@@ -88,6 +89,20 @@ const createStyles = (colors) =>
     },
   });
 
+interface RangeInputProps {
+  leftLabelComponent?: ReactNode;
+  rightLabelComponent?: ReactNode;
+  value?: string;
+  unit?: string;
+  increment?: BigNumber;
+  onChangeValue?: (value: string) => void;
+  inputInsideLabel?: string;
+  error?: string;
+  min?: BigNumber;
+  max?: BigNumber;
+  name?: string;
+}
+
 const RangeInput = ({
   leftLabelComponent,
   rightLabelComponent,
@@ -100,7 +115,7 @@ const RangeInput = ({
   min,
   max,
   name,
-}) => {
+}: RangeInputProps) => {
   const textInput = useRef(null);
   const [errorState, setErrorState] = useState();
   const { colors, themeAppearance } = useTheme();
@@ -111,7 +126,7 @@ const RangeInput = ({
   }, []);
 
   const changeValue = useCallback(
-    (newValue, dontEmptyError) => {
+    (newValue: string, dontEmptyError?: boolean) => {
       if (!dontEmptyError) setErrorState('');
       const cleanValue = newValue?.replace?.(',', '.');
       if (cleanValue && new BigNumber(cleanValue).isNaN()) {
@@ -136,7 +151,7 @@ const RangeInput = ({
     changeValue(newValue.toString());
   }, [changeValue, increment, min, value]);
 
-  const renderLabelComponent = useCallback((component) => {
+  const renderLabelComponent = useCallback((component: ReactNode) => {
     if (!component) return null;
     if (typeof component === 'string')
       return (
