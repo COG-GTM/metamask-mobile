@@ -16,7 +16,6 @@ import {
   getBuildNumber,
 } from 'react-native-device-info';
 import { fontStyles } from '../../../../styles/common';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import AppConstants from '../../../../core/AppConstants';
@@ -25,7 +24,7 @@ import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -90,15 +89,17 @@ const foxImage = require('../../../../images/branding/fox.png'); // eslint-disab
 /**
  * View that contains app information
  */
-export default class AppInformation extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-  };
+interface AppInformationProps {
+  navigation: any;
+}
 
-  state = {
+interface AppInformationState {
+  appInfo: string;
+  appVersion: string;
+}
+
+export default class AppInformation extends PureComponent<AppInformationProps, AppInformationState> {
+  state: AppInformationState = {
     appInfo: '',
     appVersion: '',
   };
@@ -131,7 +132,7 @@ export default class AppInformation extends PureComponent {
     this.updateNavBar();
   };
 
-  goTo = (url, title) => {
+  goTo = (url: string, title: string) => {
     InteractionManager.runAfterInteractions(() => {
       this.props.navigation.navigate('Webview', {
         screen: 'SimpleWebview',

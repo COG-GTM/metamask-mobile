@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -13,7 +12,7 @@ import Text from '../../Base/Text';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { isTestNet } from '../../../util/networks';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     loader: {
       backgroundColor: colors.background.default,
@@ -21,19 +20,20 @@ const createStyles = (colors) =>
     },
   });
 
-export default class TransactionSummary extends PureComponent {
-  static propTypes = {
-    amount: PropTypes.string,
-    fee: PropTypes.string,
-    totalAmount: PropTypes.string,
-    secondaryTotalAmount: PropTypes.string,
-    gasEstimationReady: PropTypes.bool,
-    onEditPress: PropTypes.func,
-    transactionType: PropTypes.string,
-    chainId: PropTypes.string,
-  };
+interface TransactionSummaryProps {
+  amount: string;
+  fee: string;
+  totalAmount: string;
+  secondaryTotalAmount: string;
+  gasEstimationReady: boolean;
+  onEditPress: () => void;
+  transactionType: string;
+  chainId: string;
+}
 
-  renderIfGastEstimationReady = (children) => {
+export default class TransactionSummary extends PureComponent<TransactionSummaryProps> {
+
+  renderIfGastEstimationReady = (children: React.ReactNode) => {
     const { gasEstimationReady } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
