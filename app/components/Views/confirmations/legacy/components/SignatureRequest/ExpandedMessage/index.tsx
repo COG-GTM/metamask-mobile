@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -73,21 +72,6 @@ const createStyles = (colors) =>
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
 export default class ExpandedMessage extends PureComponent {
-  static propTypes = {
-    /**
-     * Object containing current page title and url
-     */
-    currentPageInformation: PropTypes.object,
-    /**
-     * Renders the message based on its type (parent)
-     */
-    renderMessage: PropTypes.func,
-    /**
-     * Expands the message box on press.
-     */
-    toggleExpandedMessage: PropTypes.func,
-  };
-
   render() {
     const { currentPageInformation, renderMessage, toggleExpandedMessage } =
       this.props;
