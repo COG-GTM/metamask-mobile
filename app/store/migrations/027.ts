@@ -49,37 +49,44 @@ export default function migrate(state: unknown) {
     networkControllerState.networkConfigurations || {};
 
   const submitHistory = transactions
-    .filter(
-      (tx: { rawTransaction?: string }) => tx.rawTransaction?.length,
-    )
-    .map((tx: { rawTransaction?: string; chainId?: string; transactionHash?: string; origin?: string; time?: number; transaction?: unknown }) => {
-      const matchingProviderConfig =
-        providerConfig.chainId === tx.chainId ? providerConfig : undefined;
+    .filter((tx: { rawTransaction?: string }) => tx.rawTransaction?.length)
+    .map(
+      (tx: {
+        rawTransaction?: string;
+        chainId?: string;
+        transactionHash?: string;
+        origin?: string;
+        time?: number;
+        transaction?: unknown;
+      }) => {
+        const matchingProviderConfig =
+          providerConfig.chainId === tx.chainId ? providerConfig : undefined;
 
-      const matchingNetworkConfigurations = Object.values(
-        networkConfigurations,
-      ).filter((c) => c.chainId === tx.chainId);
+        const matchingNetworkConfigurations = Object.values(
+          networkConfigurations,
+        ).filter((c) => c.chainId === tx.chainId);
 
-      const networkUrl = matchingNetworkConfigurations.map((c) => c.rpcUrl);
+        const networkUrl = matchingNetworkConfigurations.map((c) => c.rpcUrl);
 
-      const networkType = matchingProviderConfig
-        ? matchingProviderConfig.type
-        : matchingNetworkConfigurations?.length
-          ? NetworkType.rpc
-          : undefined;
+        const networkType = matchingProviderConfig
+          ? matchingProviderConfig.type
+          : matchingNetworkConfigurations?.length
+            ? NetworkType.rpc
+            : undefined;
 
-      return {
-        chainId: tx.chainId,
-        hash: tx.transactionHash,
-        migration: true,
-        networkType,
-        networkUrl,
-        origin: tx.origin,
-        time: tx.time,
-        transaction: tx.transaction,
-        rawTransaction: tx.rawTransaction,
-      };
-    });
+        return {
+          chainId: tx.chainId,
+          hash: tx.transactionHash,
+          migration: true,
+          networkType,
+          networkUrl,
+          origin: tx.origin,
+          time: tx.time,
+          transaction: tx.transaction,
+          rawTransaction: tx.rawTransaction,
+        };
+      },
+    );
 
   if (typedState.engine.backgroundState.TransactionController) {
     typedState.engine.backgroundState.TransactionController.submitHistory =

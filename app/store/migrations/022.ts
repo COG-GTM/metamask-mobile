@@ -12,11 +12,15 @@ export default function migrate(state: unknown) {
       nftDetectionDismissed?: boolean;
     };
   };
-  if (typedState?.engine?.backgroundState?.PreferencesController?.openSeaEnabled) {
+  if (
+    typedState?.engine?.backgroundState?.PreferencesController?.openSeaEnabled
+  ) {
     typedState.engine.backgroundState.PreferencesController.displayNftMedia =
-      typedState.engine.backgroundState.PreferencesController.openSeaEnabled ?? true;
+      typedState.engine.backgroundState.PreferencesController.openSeaEnabled ??
+      true;
 
-    delete typedState.engine.backgroundState.PreferencesController.openSeaEnabled;
+    delete typedState.engine.backgroundState.PreferencesController
+      .openSeaEnabled;
   }
   if (typedState?.user?.nftDetectionDismissed) {
     delete typedState.user.nftDetectionDismissed;

@@ -3,10 +3,7 @@ export default function migrate(state: unknown) {
     engine: {
       backgroundState: {
         TokensController: {
-          allIgnoredTokens?: Record<
-            string,
-            Record<string, unknown[]>
-          >;
+          allIgnoredTokens?: Record<string, Record<string, unknown[]>>;
           ignoredTokens?: unknown[];
           [key: string]: unknown;
         };

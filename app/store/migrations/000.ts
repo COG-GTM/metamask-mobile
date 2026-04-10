@@ -5,8 +5,14 @@
 export default function migrate(state: unknown) {
   const typedState = state as Record<string, unknown>;
   const engineState = typedState.engine as Record<string, unknown>;
-  const backgroundState = engineState.backgroundState as Record<string, unknown>;
-  const addressBookController = backgroundState.AddressBookController as Record<string, unknown>;
+  const backgroundState = engineState.backgroundState as Record<
+    string,
+    unknown
+  >;
+  const addressBookController = backgroundState.AddressBookController as Record<
+    string,
+    unknown
+  >;
   const addressBook = addressBookController.addressBook as Record<
     string,
     { chainId: number | string; [key: string]: unknown }

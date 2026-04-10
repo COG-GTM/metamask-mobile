@@ -45,8 +45,7 @@ export default function migrate(state: unknown) {
   ) {
     // This will make the list be fetched again when the user updates the app
     typedState.engine.backgroundState.PhishingController.hotlistLastFetched = 0;
-    typedState.engine.backgroundState.PhishingController.stalelistLastFetched =
-      0;
+    typedState.engine.backgroundState.PhishingController.stalelistLastFetched = 0;
   } else {
     captureException(
       new Error(

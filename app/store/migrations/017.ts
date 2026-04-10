@@ -4,7 +4,10 @@ export default function migrate(state: unknown) {
       networkOnboardedState?: Record<string, unknown>;
     };
   };
-  if (typedState.networkOnboarded && typedState.networkOnboarded.networkOnboardedState) {
+  if (
+    typedState.networkOnboarded &&
+    typedState.networkOnboarded.networkOnboardedState
+  ) {
     typedState.networkOnboarded.networkOnboardedState = {};
   }
   return state;

@@ -10,7 +10,8 @@ export default function migrate(state: unknown) {
       };
     };
   };
-  const allTokens = typedState.engine.backgroundState.TokensController.allTokens;
+  const allTokens =
+    typedState.engine.backgroundState.TokensController.allTokens;
   const newAllTokens: Record<string, Record<string, unknown[]>> = {};
   if (allTokens) {
     Object.keys(allTokens).forEach((accountAddress) => {

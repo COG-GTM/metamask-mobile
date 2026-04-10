@@ -25,7 +25,10 @@ export default function migrate(state: unknown) {
   const { frequentRpcList } =
     typedState.engine.backgroundState.PreferencesController;
 
-  const newAllCollectibleContracts: Record<string, Record<string, unknown>> = {};
+  const newAllCollectibleContracts: Record<
+    string,
+    Record<string, unknown>
+  > = {};
   const newAllCollectibles: Record<string, Record<string, unknown>> = {};
   const newAllTokens: Record<string, Record<string, unknown>> = {};
 

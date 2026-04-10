@@ -16,7 +16,10 @@ export default function migrate(state: unknown) {
     engine: {
       backgroundState: {
         PreferencesController?: {
-          frequentRpcList?: { chainId: string | number; [key: string]: unknown }[];
+          frequentRpcList?: {
+            chainId: string | number;
+            [key: string]: unknown;
+          }[];
           [key: string]: unknown;
         };
         NetworkController?: Record<string, unknown>;
@@ -31,26 +34,22 @@ export default function migrate(state: unknown) {
   if (networkControllerState && frequentRpcList) {
     const networkConfigurations = frequentRpcList.reduce<
       Record<string, Record<string, unknown>>
-    >(
-      (networkConfigs, networkConfig) => {
-        const networkConfigurationId = v4();
-        return {
-          ...networkConfigs,
-          [networkConfigurationId]: {
-            ...networkConfig,
-            // Explicitly convert number chain IDs to decimal strings
-            // Likely we've only ever used string chain IDs here, but this
-            // is a precaution because the type describes it as a number.
-            chainId: String(networkConfig.chainId),
-          },
-        };
-      },
-      {},
-    );
+    >((networkConfigs, networkConfig) => {
+      const networkConfigurationId = v4();
+      return {
+        ...networkConfigs,
+        [networkConfigurationId]: {
+          ...networkConfig,
+          // Explicitly convert number chain IDs to decimal strings
+          // Likely we've only ever used string chain IDs here, but this
+          // is a precaution because the type describes it as a number.
+          chainId: String(networkConfig.chainId),
+        },
+      };
+    }, {});
     delete preferencesControllerState.frequentRpcList;
 
-    networkControllerState.networkConfigurations =
-      networkConfigurations ?? {};
+    networkControllerState.networkConfigurations = networkConfigurations ?? {};
   }
   return state;
 }

@@ -101,9 +101,10 @@ export default function migrate(state: unknown) {
   ) {
     const [networkId, invalidEntries] = Object.entries(
       addressBookControllerState.addressBook,
-    ).find(
-      ([_networkId, addressEntries]) => !isObject(addressEntries),
-    ) as [string, unknown];
+    ).find(([_networkId, addressEntries]) => !isObject(addressEntries)) as [
+      string,
+      unknown,
+    ];
     captureException(
       new Error(
         `Migration 23: Address book configuration invalid, network id '${networkId}', type '${typeof invalidEntries}'`,

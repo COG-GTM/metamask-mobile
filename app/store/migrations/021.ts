@@ -18,10 +18,14 @@ export default function migrate(state: unknown) {
   ];
 
   const isUsingOutdatedGateway = outdatedIpfsGateways.includes(
-    typedState.engine.backgroundState?.PreferencesController?.ipfsGateway as string,
+    typedState.engine.backgroundState?.PreferencesController
+      ?.ipfsGateway as string,
   );
 
-  if (isUsingOutdatedGateway && typedState.engine.backgroundState.PreferencesController) {
+  if (
+    isUsingOutdatedGateway &&
+    typedState.engine.backgroundState.PreferencesController
+  ) {
     typedState.engine.backgroundState.PreferencesController.ipfsGateway =
       IPFS_DEFAULT_GATEWAY_URL;
   }

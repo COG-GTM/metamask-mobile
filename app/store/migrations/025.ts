@@ -39,8 +39,7 @@ export default function migrate(state: unknown) {
   };
   try {
     Object.values(ETHERSCAN_SUPPORTED_CHAIN_IDS).forEach((hexChainId) => {
-      const thirdPartyApiMode =
-        typedState?.privacy?.thirdPartyApiMode ?? true;
+      const thirdPartyApiMode = typedState?.privacy?.thirdPartyApiMode ?? true;
       if (
         typedState?.engine?.backgroundState?.PreferencesController
           ?.showIncomingTransactions

@@ -72,9 +72,11 @@ describe('Migration #27', () => {
 
     expect(
       (
-        (newState as Record<string, Record<string, Record<string, { submitHistory: unknown[] }>>>)
-          .engine.backgroundState.TransactionController
-      ).submitHistory,
+        newState as Record<
+          string,
+          Record<string, Record<string, { submitHistory: unknown[] }>>
+        >
+      ).engine.backgroundState.TransactionController.submitHistory,
     ).toStrictEqual([
       {
         chainId: '5',
@@ -143,9 +145,11 @@ describe('Migration #27', () => {
 
     expect(
       (
-        (newState as Record<string, Record<string, Record<string, { submitHistory: unknown[] }>>>)
-          .engine.backgroundState.TransactionController
-      ).submitHistory,
+        newState as Record<
+          string,
+          Record<string, Record<string, { submitHistory: unknown[] }>>
+        >
+      ).engine.backgroundState.TransactionController.submitHistory,
     ).toStrictEqual([
       {
         chainId: '5',
@@ -236,9 +240,11 @@ describe('Migration #27', () => {
 
     expect(
       (
-        (newState as Record<string, Record<string, Record<string, { submitHistory: unknown[] }>>>)
-          .engine.backgroundState.TransactionController
-      ).submitHistory,
+        newState as Record<
+          string,
+          Record<string, Record<string, { submitHistory: unknown[] }>>
+        >
+      ).engine.backgroundState.TransactionController.submitHistory,
     ).toStrictEqual([
       {
         chainId: '5',

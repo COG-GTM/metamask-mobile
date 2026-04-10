@@ -25,14 +25,14 @@ export default function migrate(state: unknown) {
     allCollectibles:
       typedState.engine.backgroundState.AssetsController.allCollectibles,
     allCollectibleContracts:
-      typedState.engine.backgroundState.AssetsController.allCollectibleContracts,
+      typedState.engine.backgroundState.AssetsController
+        .allCollectibleContracts,
     ignoredCollectibles:
       typedState.engine.backgroundState.AssetsController.ignoredCollectibles,
   };
 
-  delete (
-    typedState.engine.backgroundState as Record<string, unknown>
-  ).AssetsController;
+  delete (typedState.engine.backgroundState as Record<string, unknown>)
+    .AssetsController;
 
   return state;
 }

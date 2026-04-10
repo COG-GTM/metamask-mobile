@@ -235,9 +235,8 @@ describe('Migration #23', () => {
       userInitialState,
     );
     expect(
-      (
-        (newState as Record<string, unknown>).engine as Record<string, unknown>
-      ).backgroundState,
+      ((newState as Record<string, unknown>).engine as Record<string, unknown>)
+        .backgroundState,
     ).toStrictEqual(
       merge({}, backgroundState, {
         AddressBookController: {
@@ -266,7 +265,9 @@ describe('Migration #23', () => {
             },
           },
         },
-        NetworkController: (state as Record<string, Record<string, Record<string, unknown>>>).engine.backgroundState.NetworkController,
+        NetworkController: (
+          state as Record<string, Record<string, Record<string, unknown>>>
+        ).engine.backgroundState.NetworkController,
       }),
     );
   });
@@ -332,9 +333,8 @@ describe('Migration #23', () => {
       }),
     );
     expect(
-      (
-        (newState as Record<string, unknown>).engine as Record<string, unknown>
-      ).backgroundState,
+      ((newState as Record<string, unknown>).engine as Record<string, unknown>)
+        .backgroundState,
     ).toStrictEqual(
       merge({}, backgroundState, {
         AddressBookController: {
@@ -372,7 +372,9 @@ describe('Migration #23', () => {
             },
           },
         },
-        NetworkController: (state as Record<string, Record<string, Record<string, unknown>>>).engine.backgroundState.NetworkController,
+        NetworkController: (
+          state as Record<string, Record<string, Record<string, unknown>>>
+        ).engine.backgroundState.NetworkController,
       }),
     );
   });
@@ -418,9 +420,8 @@ describe('Migration #23', () => {
       userInitialState,
     );
     expect(
-      (
-        (newState as Record<string, unknown>).engine as Record<string, unknown>
-      ).backgroundState,
+      ((newState as Record<string, unknown>).engine as Record<string, unknown>)
+        .backgroundState,
     ).toStrictEqual(
       merge({}, backgroundState, {
         AddressBookController: {

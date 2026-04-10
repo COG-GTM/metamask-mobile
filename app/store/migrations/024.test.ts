@@ -64,10 +64,8 @@ describe('Migration #24', () => {
     const newState = migrate(state);
 
     expect(
-      (
-        (newState as Record<string, Record<string, Record<string, unknown>>>)
-          .engine.backgroundState.NetworkController
-      ),
+      (newState as Record<string, Record<string, Record<string, unknown>>>)
+        .engine.backgroundState.NetworkController,
     ).toStrictEqual({
       networkId: null,
       networkStatus: 'unknown',
@@ -88,10 +86,8 @@ describe('Migration #24', () => {
     const newState = migrate(state);
 
     expect(
-      (
-        (newState as Record<string, Record<string, Record<string, unknown>>>)
-          .engine.backgroundState.NetworkController
-      ),
+      (newState as Record<string, Record<string, Record<string, unknown>>>)
+        .engine.backgroundState.NetworkController,
     ).toStrictEqual({
       networkId: '1',
       networkStatus: 'available',
