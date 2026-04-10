@@ -2,15 +2,33 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { swapsUtils } from '@metamask/swaps-controller';
 
-const defaultTokenMetadata = {
+interface TokenMetadataInfo {
+  address?: string;
+  symbol?: string;
+  name?: string;
+  decimals?: number;
+  iconUrl?: string;
+}
+
+interface TokenMetadataState {
+  valid: boolean | null;
+  error: boolean;
+  metadata: TokenMetadataInfo | null;
+}
+
+const defaultTokenMetadata: TokenMetadataState = {
   valid: null,
   error: false,
   metadata: null,
 };
 
-function useFetchTokenMetadata(address, chainId) {
+function useFetchTokenMetadata(
+  address: string | null,
+  chainId: string,
+): [boolean, TokenMetadataState] {
   const [isLoading, setIsLoading] = useState(false);
-  const [tokenMetadata, setTokenMetadata] = useState(defaultTokenMetadata);
+  const [tokenMetadata, setTokenMetadata] =
+    useState<TokenMetadataState>(defaultTokenMetadata);
 
   useEffect(() => {
     if (!address) {
@@ -51,7 +69,7 @@ function useFetchTokenMetadata(address, chainId) {
     };
   }, [address, chainId]);
 
-  return [isLoading, tokenMetadata];
+  return [isLoading, tokenMetadata] as [boolean, TokenMetadataState];
 }
 
 export default useFetchTokenMetadata;

@@ -1,18 +1,23 @@
 import { useMemo } from 'react';
-import { isSwapsNativeAsset } from '.';
+import { isSwapsNativeAsset, SwapsToken } from '.';
 import {
   renderFromTokenMinimalUnit,
   renderFromWei,
   safeNumberToBN,
 } from '../../../../util/number';
 import { safeToChecksumAddress } from '../../../../util/address';
+import type BN from 'bn.js';
+
+interface AccountInfo {
+  balance: string;
+}
 
 function useBalance(
-  accounts,
-  balances,
-  selectedAddress,
-  sourceToken,
-  { asUnits = false } = {},
+  accounts: Record<string, AccountInfo>,
+  balances: Record<string, string | BN>,
+  selectedAddress: string,
+  sourceToken: SwapsToken | null | undefined,
+  { asUnits = false }: { asUnits?: boolean } = {},
 ) {
   // TODO: This doesn't always return type BN. Objects down the line may attempt to call functions on the BN object.
   const balance = useMemo(() => {
