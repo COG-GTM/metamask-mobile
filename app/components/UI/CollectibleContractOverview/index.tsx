@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import CollectibleMedia from '../CollectibleMedia';
@@ -16,7 +15,16 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import { TokenOverviewSelectorsIDs } from '../../../../e2e/selectors/wallet/TokenOverview.selectors';
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 
-const createStyles = (colors) =>
+interface CollectibleContractOverviewProps {
+  collectibleContract?: any;
+  collectibles?: any[];
+  navigation?: any;
+  ownerOf?: number;
+  toggleCollectibleContractModal: () => void;
+  newAssetTransaction?: (asset: any) => void;
+}
+
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -54,34 +62,7 @@ const createStyles = (colors) =>
  * View that displays a specific collectible contract
  * including the overview (name, address, symbol, logo, description, total supply)
  */
-class CollectibleContractOverview extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the asset to be displayed
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * Array of ERC721 assets
-     */
-    collectibles: PropTypes.array,
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * How many collectibles are owned by the user
-     */
-    ownerOf: PropTypes.number,
-    /**
-     * Action that sets a collectible contract type transaction
-     */
-    toggleCollectibleContractModal: PropTypes.func.isRequired,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func,
-  };
+class CollectibleContractOverview extends PureComponent<CollectibleContractOverviewProps> {
 
   onAdd = () => {
     const { navigation, collectibleContract } = this.props;
@@ -93,7 +74,7 @@ class CollectibleContractOverview extends PureComponent {
 
   onSend = () => {
     const { collectibleContract, collectibles } = this.props;
-    const collectible = collectibles.find((collectible) =>
+    const collectible = collectibles.find((collectible: any) =>
       toLowerCaseEquals(collectible.address, collectibleContract.address),
     );
     this.props.newAssetTransaction(collectible);
@@ -159,11 +140,11 @@ class CollectibleContractOverview extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: any) => ({
   collectibles: collectiblesSelector(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: any) => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),
   newAssetTransaction: (selectedAsset) =>

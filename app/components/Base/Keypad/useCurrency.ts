@@ -2,14 +2,20 @@ import { useMemo } from 'react';
 import { CURRENCIES } from './constants';
 import createKeypadRule from './createKeypadRule';
 
-function useCurrency(currency, decimals) {
+interface CurrencyData {
+  decimalSeparator: string | null;
+  handler: (currentAmount: string | undefined, inputKey: string) => string;
+  symbol: string | null;
+}
+
+function useCurrency(currency?: string, decimals?: number): CurrencyData {
   const currencyData = useMemo(() => {
     if (!currency) {
       return CURRENCIES.default;
     }
 
     const existingCurrency =
-      CURRENCIES[currency] || CURRENCIES[currency.toUpperCase()];
+      (CURRENCIES as Record<string, CurrencyData>)[currency] || (CURRENCIES as Record<string, CurrencyData>)[currency.toUpperCase()];
 
     if (existingCurrency) {
       return existingCurrency;

@@ -1,10 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Image,
   View,
   StyleSheet,
   Dimensions,
+  ImageSourcePropType,
+  StyleProp,
+  ViewStyle,
+  ImageStyle,
+  NativeSyntheticEvent,
+  ImageErrorEventData,
 } from 'react-native';
 import FadeIn from 'react-native-fade-in-image';
 // eslint-disable-next-line import/default
@@ -42,7 +47,20 @@ import {
   UnpopularNetworkList,
 } from '../../../util/networks/customNetworks';
 
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+
+interface RemoteImageProps {
+  fadeIn?: boolean;
+  source: any;
+  style?: StyleProp<ViewStyle | ImageStyle>;
+  placeholderStyle?: StyleProp<ViewStyle>;
+  onError?: (error: any) => void;
+  isUrl?: boolean;
+  address?: string;
+  isTokenImage?: boolean;
+  isFullRatio?: boolean;
+  chainId?: string;
+  [key: string]: any;
+}
 
 const createStyles = () =>
   StyleSheet.create({
@@ -62,7 +80,7 @@ const createStyles = () =>
     },
   });
 
-const RemoteImage = (props) => {
+const RemoteImage: React.FC<RemoteImageProps> = (props) => {
   const [error, setError] = useState(undefined);
   // Avoid using this component with animated SVG
   const source = resolveAssetSource(props.source);
@@ -74,7 +92,7 @@ const RemoteImage = (props) => {
   //TODO remove once migrated to TS and chainID is properly typed to hex
   const chainId = props.chainId ? toHex(props.chainId) : currentChainId;
   const networkName = useSelector(selectNetworkName);
-  const [resolvedIpfsUrl, setResolvedIpfsUrl] = useState(false);
+  const [resolvedIpfsUrl, setResolvedIpfsUrl] = useState<string | false>(false);
 
   const uri =
     resolvedIpfsUrl ||
@@ -82,9 +100,9 @@ const RemoteImage = (props) => {
       ? ''
       : source.uri);
 
-  const onError = ({ nativeEvent: { error } }) => setError(error);
+  const onError = ({ nativeEvent: { error: err } }: NativeSyntheticEvent<ImageErrorEventData>) => setError(err);
 
-  const [dimensions, setDimensions] = useState(null);
+  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
 
   useEffect(() => {
     resolveIpfsUrl();
@@ -277,42 +295,6 @@ const RemoteImage = (props) => {
   }
 
   return <Image {...props} source={{ uri }} onError={onError} />;
-};
-
-RemoteImage.propTypes = {
-  /**
-   * Flag that determines the fade in behavior
-   */
-  fadeIn: PropTypes.bool,
-  /**
-   * Source of the image
-   */
-  source: PropTypes.any,
-  /**
-   * Style for the image
-   */
-  style: ViewPropTypes.style,
-  /**
-   * Style for the placeholder (used for fadeIn)
-   */
-  placeholderStyle: ViewPropTypes.style,
-  /**
-   * Called when there is an error
-   */
-  onError: PropTypes.func,
-  /**
-   * This is set if we know that an image is remote
-   */
-  isUrl: PropTypes.bool,
-  /**
-   * Token address
-   */
-  address: PropTypes.string,
-
-  isTokenImage: PropTypes.bool,
-
-  isFullRatio: PropTypes.bool,
-  chainId: PropTypes.string,
 };
 
 export default RemoteImage;

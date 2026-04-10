@@ -14,7 +14,6 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import RemoteImage from '../../Base/RemoteImage';
-import PropTypes from 'prop-types';
 import { connect, useSelector } from 'react-redux';
 import { baseStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
@@ -58,7 +57,20 @@ const VERTICAL_ALIGNMENT = IS_SMALL_DEVICE ? 12 : 16;
 
 const THRESHOLD = 50;
 
-const createStyles = (colors) =>
+interface CollectibleOverviewProps {
+  chainId?: string;
+  collectible?: any;
+  selectedAddress?: string;
+  tradable?: boolean;
+  onSend?: () => void;
+  addFavoriteCollectible?: (selectedAddress: string, chainId: string, collectible: any) => void;
+  removeFavoriteCollectible?: (selectedAddress: string, chainId: string, collectible: any) => void;
+  isInFavorites?: boolean;
+  openLink: (url: string) => void;
+  onTranslation?: (value: boolean) => void;
+}
+
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       flex: 0,
@@ -148,7 +160,7 @@ const FieldType = {
 /**
  * View that displays the information of a specific ERC-721 Token
  */
-const CollectibleOverview = ({
+const CollectibleOverview: React.FC<CollectibleOverviewProps> = ({
   chainId,
   collectible,
   selectedAddress,
@@ -184,7 +196,7 @@ const CollectibleOverview = ({
   }, [collectible.description]);
 
   const renderCollectibleInfoRow = useCallback(
-    ({ key, value, onPress, type }) => {
+    ({ key, value, onPress, type }: { key: string; value?: string; onPress?: () => void; type?: string }) => {
       if (!value) return null;
       if (type === FieldType.Link) {
         if (!isLinkSafe(value)) return null;
@@ -316,7 +328,7 @@ const CollectibleOverview = ({
   );
 
   const animateViewPosition = useCallback(
-    (toValue, duration) => {
+    (toValue: number, duration: number) => {
       animating.current = true;
       Animated.timing(positionAnimated, {
         toValue,
@@ -332,7 +344,7 @@ const CollectibleOverview = ({
   );
 
   const handleGesture = useCallback(
-    (evt) => {
+    (evt: any) => {
       // we don't want to trigger the animation again when the view is being animated
       if (evt.nativeEvent.velocityY === 0 || animating.current) return;
       const toValue = evt.nativeEvent.velocityY > 0 ? translationHeight : 0;
@@ -345,7 +357,7 @@ const CollectibleOverview = ({
   );
 
   const gestureHandlerWrapper = useCallback(
-    (child) => (
+    (child: React.ReactElement) => (
       <PanGestureHandler
         waitFor={scrollViewRef}
         activeOffsetY={[0, 0]}
@@ -501,56 +513,13 @@ const CollectibleOverview = ({
   );
 };
 
-CollectibleOverview.propTypes = {
-  /**
-   * Chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Object that represents the collectible to be displayed
-   */
-  collectible: PropTypes.object,
-  /**
-   * Represents if the collectible is tradable (can be sent)
-   */
-  tradable: PropTypes.bool,
-  /**
-   * Function called when user presses the Send button
-   */
-  onSend: PropTypes.func,
-  /**
-   * Selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Dispatch add collectible to favorites action
-   */
-  addFavoriteCollectible: PropTypes.func,
-  /**
-   * Dispatch remove collectible from favorites action
-   */
-  removeFavoriteCollectible: PropTypes.func,
-  /**
-   * Whether the current collectible is favorited
-   */
-  isInFavorites: PropTypes.bool,
-  /**
-   * Function to open a link on a webview
-   */
-  openLink: PropTypes.func.isRequired,
-  /**
-   * callback to trigger when modal is being animated
-   */
-  onTranslation: PropTypes.func,
-};
-
-const mapStateToProps = (state, props) => ({
+const mapStateToProps = (state: any, props: any) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: any) => ({
   addFavoriteCollectible: (selectedAddress, chainId, collectible) =>
     dispatch(addFavoriteCollectible(selectedAddress, chainId, collectible)),
   removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>

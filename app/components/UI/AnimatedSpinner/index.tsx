@@ -45,7 +45,7 @@ const measures = {
   },
 };
 
-const createStyles = (colors, measures) =>
+const createStyles = (colors: any, measures: any) =>
   StyleSheet.create({
     view: {
       position: 'relative',
@@ -65,7 +65,15 @@ const createStyles = (colors, measures) =>
     },
   });
 
-export default class AnimatedSpinner extends PureComponent {
+interface AnimatedSpinnerProps {
+  size?: string;
+}
+
+interface AnimatedSpinnerState {
+  spinning: boolean;
+}
+
+export default class AnimatedSpinner extends PureComponent<AnimatedSpinnerProps, AnimatedSpinnerState> {
   spinValue = new Animated.Value(0);
 
   state = {
