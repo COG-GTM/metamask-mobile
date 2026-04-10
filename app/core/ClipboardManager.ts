@@ -4,14 +4,14 @@ import Device from '../util/device';
 const EXPIRE_TIME_MS = 60000;
 
 const ClipboardManager = {
-  async getString() {
+  async getString(): Promise<string> {
     return await Clipboard.getString();
   },
-  async setString(string) {
+  async setString(string: string): Promise<void> {
     await Clipboard.setString(string);
   },
-  expireTime: null,
-  async setStringExpire(string) {
+  expireTime: null as ReturnType<typeof setTimeout> | null,
+  async setStringExpire(string: string): Promise<void> {
     if (Device.isIos()) {
       await Clipboard.setStringExpire(string);
     } else {

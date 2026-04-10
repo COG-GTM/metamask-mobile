@@ -2,11 +2,21 @@
 import { Buffer } from 'buffer';
 import { Duplex } from 'readable-stream';
 
+import type { EventEmitter } from 'events';
+
+interface Port extends EventEmitter {
+  postMessage(message: unknown, url: string): void;
+  name?: string;
+}
+
 // eslint-disable-next-line no-empty-function
 const noop = () => {};
 
 export default class PortDuplexStream extends Duplex {
-  constructor(port, url) {
+  _port: Port;
+  _url: string;
+
+  constructor(port: Port, url: string) {
     super({
       objectMode: true,
     });
@@ -23,7 +33,8 @@ export default class PortDuplexStream extends Duplex {
    * @private
    * @param {Object} msg - Payload from the onMessage listener of Port
    */
-  _onMessage = function (msg) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _onMessage = function (this: PortDuplexStream, msg: any) {
     if (Buffer.isBuffer(msg)) {
       delete msg._isBuffer;
       const data = new Buffer(msg);
@@ -39,7 +50,7 @@ export default class PortDuplexStream extends Duplex {
    *
    * @private
    */
-  _onDisconnect = function () {
+  _onDisconnect = function (this: PortDuplexStream) {
     this.destroy && this.destroy();
   };
 
@@ -57,7 +68,8 @@ export default class PortDuplexStream extends Duplex {
    * @param {string} encoding Encoding to use when writing payload
    * @param {Function} cb Called when writing is complete or an error occurs
    */
-  _write = function (msg, encoding, cb) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _write = function (this: PortDuplexStream, msg: any, encoding: string, cb: (error?: Error | null) => void) {
     try {
       if (Buffer.isBuffer(msg)) {
         const data = msg.toJSON();

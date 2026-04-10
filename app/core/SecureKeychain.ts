@@ -38,8 +38,9 @@ import { MetricsEventBuilder } from './Analytics/MetricsEventBuilder';
  */
 class SecureKeychain {
   isAuthenticating = false;
+  static instance: SecureKeychain | null;
 
-  constructor(code) {
+  constructor(code: string) {
     if (!SecureKeychain.instance) {
       privates.set(this, { code });
       SecureKeychain.instance = this;
@@ -48,18 +49,19 @@ class SecureKeychain {
     return SecureKeychain.instance;
   }
 
-  encryptPassword(password) {
+  encryptPassword(password: string): Promise<string> {
     return encryptor.encrypt(privates.get(this).code, { password });
   }
 
-  decryptPassword(str) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  decryptPassword(str: string): Promise<any> {
     return encryptor.decrypt(privates.get(this).code, str);
   }
 }
-let instance;
+let instance: SecureKeychain | undefined;
 
 export default {
-  init(salt) {
+  init(salt: string): SecureKeychain {
     instance = new SecureKeychain(salt);
 
     if (Device.isAndroid && Keychain.SECURITY_LEVEL?.SECURE_HARDWARE)
@@ -73,15 +75,15 @@ export default {
     return instance;
   },
 
-  getInstance() {
+  getInstance(): SecureKeychain | undefined {
     return instance;
   },
 
-  getSupportedBiometryType() {
+  getSupportedBiometryType(): Promise<Keychain.BIOMETRY_TYPE | null> {
     return Keychain.getSupportedBiometryType();
   },
 
-  async resetGenericPassword() {
+  async resetGenericPassword(): Promise<boolean> {
     const options = { service: defaultOptions.service };
     await StorageWrapper.removeItem(BIOMETRY_CHOICE);
     await StorageWrapper.removeItem(PASSCODE_CHOICE);
@@ -92,7 +94,8 @@ export default {
     return Keychain.resetGenericPassword(options);
   },
 
-  async getGenericPassword() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getGenericPassword(): Promise<any> {
     if (instance) {
       try {
         instance.isAuthenticating = true;
@@ -109,13 +112,13 @@ export default {
         instance.isAuthenticating = false;
       } catch (error) {
         instance.isAuthenticating = false;
-        throw new Error(error.message);
+        throw new Error((error as Error).message);
       }
     }
     return null;
   },
 
-  async setGenericPassword(password, type) {
+  async setGenericPassword(password: string, type: string): Promise<void | boolean> {
     const authOptions = {
       accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     };
@@ -163,7 +166,7 @@ export default {
           await this.getGenericPassword();
         } catch (error) {
           // Specifically check for user cancellation
-          if (error.message === 'User canceled the operation.') {
+          if ((error as Error).message === 'User canceled the operation.') {
             // Store password without biometrics
             const encryptedPassword = await instance.encryptPassword(password);
             await Keychain.setGenericPassword(

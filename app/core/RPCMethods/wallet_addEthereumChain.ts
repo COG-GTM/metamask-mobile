@@ -20,7 +20,7 @@ import { getDecimalChainId } from '../../util/networks';
 import { RpcEndpointType } from '@metamask/network-controller';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 
-const waitForInteraction = async () =>
+const waitForInteraction = async (): Promise<void> =>
   new Promise((resolve) => {
     InteractionManager.runAfterInteractions(() => {
       resolve();
@@ -28,7 +28,8 @@ const waitForInteraction = async () =>
   });
 
 // Utility function to find or add an item in an array and return the updated array and index
-const addOrUpdateIndex = (array, value, comparator) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const addOrUpdateIndex = <T>(array: T[], value: T, comparator: (item: T) => boolean): { updatedArray: T[]; index: number } => {
   const index = array.findIndex(comparator);
   if (index === -1) {
     return {
@@ -49,13 +50,20 @@ const addOrUpdateIndex = (array, value, comparator) => {
  * @param params.hooks - Method hooks passed to the method implementation.
  * @returns {Nothing}.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const wallet_addEthereumChain = async ({
   req,
   res,
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: {
+  req: any;
+  res: any;
+  requestUserApproval: (params: any) => Promise<void>;
+  analytics?: Record<string, unknown>;
+  hooks: any;
+}): Promise<void> => {
   const {
     NetworkController,
     MultichainNetworkController,
@@ -75,7 +83,8 @@ export const wallet_addEthereumChain = async ({
     ticker,
   } = params;
 
-  const switchToNetworkAndMetrics = async (network, isAddNetworkFlow) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const switchToNetworkAndMetrics = async (network: any, isAddNetworkFlow: boolean) => {
     const { networkClientId } =
       network.rpcEndpoints[network.defaultRpcEndpointIndex];
 
@@ -160,7 +169,8 @@ export const wallet_addEthereumChain = async ({
   }
 
   await validateRpcEndpoint(firstValidRPCUrl, chainId);
-  const requestData = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const requestData: any = {
     chainId,
     blockExplorerUrl: firstValidBlockExplorerUrl,
     chainName,

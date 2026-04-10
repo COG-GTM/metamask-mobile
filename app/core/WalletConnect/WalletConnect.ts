@@ -30,11 +30,11 @@ import { selectEvmChainId } from '../../selectors/networkController';
 import ppomUtil from '../../../app/lib/ppom/ppom-util';
 
 const hub = new EventEmitter();
-let connectors = [];
+let connectors: WalletConnect[] = [];
 let initialized = false;
-const tempCallIds = [];
+const tempCallIds: number[] = [];
 
-const METHODS_TO_REDIRECT = {
+const METHODS_TO_REDIRECT: Record<string, boolean> = {
   eth_requestAccounts: true,
   eth_sendTransaction: true,
   eth_signTransaction: true,
@@ -47,7 +47,7 @@ const METHODS_TO_REDIRECT = {
   wallet_switchEthereumChain: true,
 };
 
-const persistSessions = async () => {
+const persistSessions = async (): Promise<void> => {
   const sessions = connectors
     .filter((connector) => connector?.walletConnector?.connected)
     .map((connector) => ({
@@ -64,36 +64,39 @@ const persistSessions = async () => {
   );
 };
 
-const waitForInitialization = async () => {
+const waitForInitialization = async (): Promise<void> => {
   let i = 0;
   while (!initialized) {
-    await new Promise((res) => setTimeout(() => res(), 1000));
+    await new Promise<void>((res) => setTimeout(() => res(), 1000));
     if (i++ > 5) initialized = true;
   }
 };
 
-const waitForKeychainUnlocked = async () => {
+const waitForKeychainUnlocked = async (): Promise<void> => {
   let i = 0;
   const { KeyringController } = Engine.context;
   while (!KeyringController.isUnlocked()) {
-    await new Promise((res) => setTimeout(() => res(), 1000));
+    await new Promise<void>((res) => setTimeout(() => res(), 1000));
     if (i++ > 60) break;
   }
 };
 
 class WalletConnect {
-  redirectUrl = null;
-  autosign = false;
-  backgroundBridge = null;
-  url = { current: null };
-  title = { current: null };
-  icon = { current: null };
-  dappScheme = { current: null };
-  requestsToRedirect = {};
-  hostname = null;
-  requestOriginatedFrom = null;
+  redirectUrl: string | null = null;
+  autosign: boolean = false;
+  backgroundBridge: BackgroundBridge | null = null;
+  url: { current: string | null } = { current: null };
+  title: { current: string | null } = { current: null };
+  icon: { current: string | null } = { current: null };
+  dappScheme: { current: string | null } = { current: null };
+  requestsToRedirect: Record<string, boolean> = {};
+  hostname: string | null = null;
+  requestOriginatedFrom: string | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  walletConnector: any;
 
-  constructor(options, existing) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(options: any, existing?: boolean) {
     if (options.session.redirectUrl) {
       this.redirectUrl = options.session.redirectUrl;
     }
@@ -264,7 +267,7 @@ class WalletConnect {
     }
   }
 
-  redirect = () => {
+  redirect = (): void => {
     if (this.requestOriginatedFrom === AppConstants.DEEPLINKS.ORIGIN_QR_CODE)
       return;
 
@@ -281,14 +284,15 @@ class WalletConnect {
     }, 300);
   };
 
-  needsRedirect = (id) => {
+  needsRedirect = (id: number): void => {
     if (this.requestsToRedirect[id]) {
       delete this.requestsToRedirect[id];
       this.redirect();
     }
   };
 
-  approveRequest = ({ id, result }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  approveRequest = ({ id, result }: { id: number; result: any }): void => {
     this.walletConnector.approveRequest({
       id,
       result,
@@ -296,7 +300,8 @@ class WalletConnect {
     this.needsRedirect(id);
   };
 
-  rejectRequest = ({ id, error }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rejectRequest = ({ id, error }: { id: number; error: any }): void => {
     this.walletConnector.rejectRequest({
       id,
       error,
@@ -304,14 +309,15 @@ class WalletConnect {
     this.needsRedirect(id);
   };
 
-  updateSession = ({ chainId, accounts }) => {
+  updateSession = ({ chainId, accounts }: { chainId: number; accounts: string[] }): void => {
     this.walletConnector.updateSession({
       chainId,
       accounts,
     });
   };
 
-  startSession = async (sessionData, existing) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  startSession = async (sessionData: any, existing?: boolean): Promise<void> => {
     const chainId = selectEvmChainId(store.getState());
     const selectedAddress =
       Engine.context.AccountsController.getSelectedAccount().address?.toLowerCase();
@@ -366,13 +372,14 @@ class WalletConnect {
     });
   };
 
-  killSession = () => {
+  killSession = (): void => {
     this.backgroundBridge?.onDisconnect();
     this.walletConnector && this.walletConnector.killSession();
     this.walletConnector = null;
   };
 
-  sessionRequest = async (peerInfo) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sessionRequest = async (peerInfo: any): Promise<any> => {
     const { ApprovalController } = Engine.context;
     try {
       const { host } = new URL(peerInfo.peerMeta.url);
@@ -389,7 +396,7 @@ class WalletConnect {
 }
 
 const instance = {
-  async init() {
+  async init(): Promise<void> {
     const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
     if (sessionData) {
       const sessions = JSON.parse(sessionData);
@@ -413,10 +420,10 @@ const instance = {
     }
     initialized = true;
   },
-  connectors() {
+  connectors(): WalletConnect[] {
     return connectors;
   },
-  async newSession(uri, redirectUrl, autosign, requestOriginatedFrom) {
+  async newSession(uri: string, redirectUrl?: string, autosign?: boolean, requestOriginatedFrom?: string): Promise<void> {
     const alreadyConnected = this.isSessionConnected(uri);
     if (alreadyConnected) {
       NotificationManager.showSimpleNotification({
@@ -449,7 +456,8 @@ const instance = {
     }
     connectors.push(new WalletConnect(data));
   },
-  getSessions: async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getSessions: async (): Promise<any[]> => {
     let sessions = [];
     const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
     if (sessionData) {
@@ -457,7 +465,7 @@ const instance = {
     }
     return sessions;
   },
-  killSession: async (id) => {
+  killSession: async (id: string): Promise<void> => {
     // 1) First kill the session
     const connectorToKill = connectors.find(
       (connector) =>
@@ -480,18 +488,18 @@ const instance = {
     await persistSessions();
   },
   hub,
-  isValidUri(uri) {
+  isValidUri(uri: string): boolean {
     const result = parseWalletConnectUri(uri);
     if (!result.handshakeTopic || !result.bridge || !result.key) {
       return false;
     }
     return true;
   },
-  getValidUriFromDeeplink(uri) {
+  getValidUriFromDeeplink(uri: string): string {
     const prefix = 'wc://wc?uri=';
     return uri.replace(prefix, '');
   },
-  isSessionConnected(uri) {
+  isSessionConnected(uri: string): boolean {
     const wcUri = parseWalletConnectUri(uri);
     return connectors.some(({ walletConnector }) => {
       if (!walletConnector) {

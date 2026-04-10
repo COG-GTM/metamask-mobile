@@ -17,7 +17,7 @@ const requestEthereumAccounts = {
 export default requestEthereumAccounts;
 
 // Used to rate-limit pending requests to one per origin
-const locks = new Set();
+const locks = new Set<string>();
 
 /**
  * This method attempts to retrieve the Ethereum accounts available to the
@@ -37,16 +37,22 @@ const locks = new Set();
  * @param options.requestPermissionsForOrigin - A hook that requests CAIP-25 permissions for the origin.
  * @returns A promise that resolves to nothing
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: any,
+  res: any,
+  _next: any,
+  end: any,
   {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
+  }: {
+    getAccounts: (options: { ignoreLock: boolean }) => string[];
+    getUnlockPromise: (shouldShowUnlockRequest: boolean) => Promise<void>;
+    getCaip25PermissionFromLegacyPermissionsForOrigin: () => unknown;
+    requestPermissionsForOrigin: (permission: unknown) => Promise<unknown>;
   },
 ) {
   const { origin } = req;

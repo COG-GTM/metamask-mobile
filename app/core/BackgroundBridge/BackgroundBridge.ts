@@ -56,7 +56,53 @@ const legacyNetworkId = () => {
     : networkId;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface BackgroundBridgeOptions {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  webview: any;
+  url: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getRpcMethodMiddleware: (params: any) => any;
+  isMainFrame: boolean;
+  isRemoteConn?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sendMessage?: any;
+  isWalletConnect?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  wcRequestActions?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getApprovedHosts?: any;
+  remoteConnHost?: string;
+  isMMSDK?: boolean;
+  channelId?: string;
+}
+
 export class BackgroundBridge extends EventEmitter {
+  url: string;
+  hostname: string;
+  remoteConnHost?: string;
+  isMainFrame: boolean;
+  isWalletConnect?: boolean;
+  isMMSDK?: boolean;
+  isRemoteConn?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _webviewRef: any;
+  disconnected: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getApprovedHosts: any;
+  channelId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  deprecatedNetworkVersions: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createMiddleware: (params: any) => any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  port: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  engine: any;
+  lastChainIdSent: string;
+  networkVersionSent: string;
+  addressSent: string;
+
   constructor({
     webview,
     url,
@@ -70,7 +116,7 @@ export class BackgroundBridge extends EventEmitter {
     remoteConnHost,
     isMMSDK,
     channelId,
-  }) {
+  }: BackgroundBridgeOptions) {
     super();
     this.url = url;
     // TODO - When WalletConnect and MMSDK uses the Permission System, URL does not apply in all conditions anymore since hosts may not originate from web. This will need to change!
@@ -181,7 +227,7 @@ export class BackgroundBridge extends EventEmitter {
     }
   }
 
-  onUnlock() {
+  onUnlock(): void {
     // TODO UNSUBSCRIBE EVENT INSTEAD
     if (this.disconnected) return;
 
@@ -207,7 +253,7 @@ export class BackgroundBridge extends EventEmitter {
     });
   }
 
-  onLock() {
+  onLock(): void {
     // TODO UNSUBSCRIBE EVENT INSTEAD
     if (this.disconnected) return;
 
@@ -229,7 +275,8 @@ export class BackgroundBridge extends EventEmitter {
     });
   }
 
-  async getProviderNetworkState(origin = METAMASK_DOMAIN) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getProviderNetworkState(origin = METAMASK_DOMAIN): Promise<{ chainId: string; networkVersion: any }> {
     const networkClientId = Engine.controllerMessenger.call(
       'SelectedNetworkController:getNetworkClientIdForDomain',
       origin,
@@ -264,7 +311,8 @@ export class BackgroundBridge extends EventEmitter {
     };
   }
 
-  async notifyChainChanged(params) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async notifyChainChanged(params?: any): Promise<void> {
     DevLogger.log(`notifyChainChanged: `, params);
     this.sendNotification({
       method: NOTIFICATION_NAMES.chainChanged,
@@ -272,7 +320,7 @@ export class BackgroundBridge extends EventEmitter {
     });
   }
 
-  async notifySelectedAddressChanged(selectedAddress) {
+  async notifySelectedAddressChanged(selectedAddress: string): Promise<void> {
     try {
       let approvedAccounts = [];
       DevLogger.log(
@@ -318,7 +366,8 @@ export class BackgroundBridge extends EventEmitter {
     }
   }
 
-  async onStateUpdate(memState) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async onStateUpdate(memState?: any): Promise<void> {
     if (!memState) {
       memState = this.getState();
     }
@@ -346,26 +395,28 @@ export class BackgroundBridge extends EventEmitter {
     }
   }
 
-  isUnlocked() {
+  isUnlocked(): boolean {
     return Engine.context.KeyringController.isUnlocked();
   }
 
-  async getProviderState(origin) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getProviderState(origin: string): Promise<any> {
     return {
       isUnlocked: this.isUnlocked(),
       ...(await this.getProviderNetworkState(origin)),
     };
   }
 
-  sendStateUpdate = () => {
+  sendStateUpdate = (): void => {
     this.emit('update');
   };
 
-  onMessage = (msg) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onMessage = (msg: any): void => {
     this.port.emit('message', { name: msg.name, data: msg.data });
   };
 
-  onDisconnect = () => {
+  onDisconnect = (): void => {
     this.disconnected = true;
     Engine.controllerMessenger.unsubscribe(
       AppConstants.NETWORK_STATE_CHANGE_EVENT,
@@ -383,7 +434,8 @@ export class BackgroundBridge extends EventEmitter {
    * A method for serving our ethereum provider over a given stream.
    * @param {*} outStream - The stream to provide over.
    */
-  setupProviderConnection(outStream) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setupProviderConnection(outStream: any): void {
     this.engine = this.setupProviderEngine();
 
     // setup connection
@@ -399,7 +451,7 @@ export class BackgroundBridge extends EventEmitter {
   /**
    * A method for creating a provider that is safely restricted for the requesting domain.
    **/
-  setupProviderEngine() {
+  setupProviderEngine(): JsonRpcEngine {
     const origin = this.isMMSDK ? this.channelId : this.hostname;
     // setup json rpc engine stack
     const engine = new JsonRpcEngine();
@@ -555,7 +607,8 @@ export class BackgroundBridge extends EventEmitter {
     return engine;
   }
 
-  sendNotification(payload) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sendNotification(payload: any): void {
     DevLogger.log(`BackgroundBridge::sendNotification: `, payload);
     this.engine && this.engine.emit('notification', payload);
   }
@@ -567,7 +620,8 @@ export class BackgroundBridge extends EventEmitter {
    *
    * @returns {Object} status
    */
-  getState() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getState(): any {
     const vault = Engine.context.KeyringController.state.vault;
     const {
       PreferencesController: { selectedAddress },

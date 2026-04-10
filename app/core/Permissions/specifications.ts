@@ -52,6 +52,9 @@ export const CaveatFactories = Object.freeze({
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
+}: {
+  listAccounts: () => import('@metamask/keyring-api').InternalAccount[];
+  findNetworkClientIdByChainId: (chainId: `0x${string}`) => string;
 }) => ({
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,

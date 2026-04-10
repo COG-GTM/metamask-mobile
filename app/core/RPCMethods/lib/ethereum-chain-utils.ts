@@ -23,7 +23,8 @@ import Engine from '../../Engine';
 
 const EVM_NATIVE_TOKEN_DECIMALS = 18;
 
-export function validateChainId(chainId) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function validateChainId(chainId: any): string {
   const _chainId = typeof chainId === 'string' && chainId.toLowerCase();
 
   if (!isPrefixedFormattedHexString(_chainId)) {
@@ -41,7 +42,14 @@ export function validateChainId(chainId) {
   return _chainId;
 }
 
-export function validateAddEthereumChainParams(params) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function validateAddEthereumChainParams(params: any): {
+  chainId: string;
+  chainName: string;
+  firstValidRPCUrl: string;
+  firstValidBlockExplorerUrl: string | null | undefined;
+  ticker: string;
+} {
   if (!params || !params?.[0] || typeof params[0] !== 'object') {
     throw rpcErrors.invalidParams({
       message: `Expected single, object parameter. Received:\n${JSON.stringify(
@@ -69,7 +77,7 @@ export function validateAddEthereumChainParams(params) {
     iconUrls: true,
   };
 
-  const extraKeys = Object.keys(params[0]).filter((key) => !allowedKeys[key]);
+  const extraKeys = Object.keys(params[0]).filter((key) => !allowedKeys[key as keyof typeof allowedKeys]);
   if (extraKeys.length) {
     throw rpcErrors.invalidParams(
       `Received unexpected keys on object parameter. Unsupported keys:\n${extraKeys}`,
@@ -95,7 +103,7 @@ export function validateAddEthereumChainParams(params) {
   };
 }
 
-function validateRpcUrls(rpcUrls) {
+function validateRpcUrls(rpcUrls: string[] | null): string {
   const dirtyFirstValidRPCUrl = Array.isArray(rpcUrls)
     ? rpcUrls.find((rpcUrl) => validUrl.isHttpsUri(rpcUrl))
     : null;
@@ -113,7 +121,7 @@ function validateRpcUrls(rpcUrls) {
   return firstValidRPCUrl;
 }
 
-function validateBlockExplorerUrls(blockExplorerUrls) {
+function validateBlockExplorerUrls(blockExplorerUrls: string[] | null): string | null | undefined {
   const firstValidBlockExplorerUrl =
     blockExplorerUrls !== null && Array.isArray(blockExplorerUrls)
       ? blockExplorerUrls.find((blockExplorerUrl) =>
@@ -130,7 +138,8 @@ function validateBlockExplorerUrls(blockExplorerUrls) {
   return firstValidBlockExplorerUrl;
 }
 
-function validateChainName(rawChainName) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function validateChainName(rawChainName: any): string {
   if (typeof rawChainName !== 'string' || !rawChainName) {
     throw rpcErrors.invalidParams({
       message: `Expected non-empty string 'chainName'. Received:\n${rawChainName}`,
@@ -141,7 +150,8 @@ function validateChainName(rawChainName) {
     : rawChainName;
 }
 
-function validateNativeCurrency(nativeCurrency) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function validateNativeCurrency(nativeCurrency: any): string {
   if (nativeCurrency !== null) {
     if (typeof nativeCurrency !== 'object' || Array.isArray(nativeCurrency)) {
       throw rpcErrors.invalidParams({
@@ -171,7 +181,7 @@ function validateNativeCurrency(nativeCurrency) {
   return ticker;
 }
 
-export async function validateRpcEndpoint(rpcUrl, chainId) {
+export async function validateRpcEndpoint(rpcUrl: string, chainId: string): Promise<void> {
   let endpointChainId;
   try {
     endpointChainId = await jsonRpcRequest(rpcUrl, 'eth_chainId');
@@ -189,7 +199,8 @@ export async function validateRpcEndpoint(rpcUrl, chainId) {
   }
 }
 
-export function findExistingNetwork(chainId, networkConfigurations) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function findExistingNetwork(chainId: string, networkConfigurations: Record<string, any>): [string, any] | undefined {
   const existingEntry = Object.entries(networkConfigurations).find(
     ([, networkConfiguration]) => networkConfiguration.chainId === chainId,
   );
@@ -219,6 +230,7 @@ export function findExistingNetwork(chainId, networkConfigurations) {
  * @param {object} params.hooks - Method hooks passed to the method implementation.
  * @returns a null response on success or an error if user rejects an approval when autoApprove is false or on unexpected errors.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function switchToNetwork({
   network,
   chainId,
@@ -227,7 +239,15 @@ export async function switchToNetwork({
   origin,
   isAddNetworkFlow = false,
   hooks,
-}) {
+}: {
+  network: any;
+  chainId: string;
+  requestUserApproval: (params: any) => Promise<void>;
+  analytics?: Record<string, unknown>;
+  origin: string;
+  isAddNetworkFlow?: boolean;
+  hooks: any;
+}): Promise<void> {
   const {
     getCaveat,
     requestPermittedChainsPermissionIncrementalForOrigin,
