@@ -4,7 +4,7 @@ const { TRANSACTION, SIMPLE } = NotificationTypes;
 
 const emptyAction = { type: null };
 
-const simpleNotification = (number) => ({
+const simpleNotification = (number: number) => ({
   id: `simple${number}`,
   status: `simple${number} status`,
   duration: 5000,
@@ -12,7 +12,7 @@ const simpleNotification = (number) => ({
   description: `Simple Notification ${number} description}`,
 });
 
-const txNotification = (number) => ({
+const txNotification = (number: number) => ({
   transaction: { id: `tx${number}` },
   status: `tx${number} status`,
   duration: 5000,
@@ -105,41 +105,48 @@ describe('notifications reducer', () => {
   });
 
   describe('actions', () => {
-    let stateWithNotifications;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let stateWithNotifications: any;
 
     beforeEach(() => {
       stateWithNotifications = [
-        (state) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (state: any) =>
           reducer(state, {
             type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
             ...simpleNotification(0),
           }),
-        (state) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (state: any) =>
           reducer(state, {
             type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
             ...txNotification(1),
           }),
-        (state) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (state: any) =>
           reducer(state, {
             type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
             ...simpleNotification(1),
           }),
-        (state) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (state: any) =>
           reducer(state, {
             type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
             ...txNotification(2),
           }),
-        (state) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (state: any) =>
           reducer(state, {
             type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
             ...simpleNotification(2),
           }),
-        (state) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (state: any) =>
           reducer(state, {
             type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
             ...simpleNotification(3),
           }),
-      ].reduce((acc, current) => current(acc), undefined);
+      ].reduce((acc: unknown, current) => current(acc), undefined);
     });
 
     it('should hide current notification', () => {
@@ -158,7 +165,7 @@ describe('notifications reducer', () => {
       const notification = state.notifications.find(
         (notification) => notification.id === id,
       );
-      expect(notification.isVisible).toBe(false);
+      expect(notification?.isVisible).toBe(false);
     });
 
     it('should modify or show transaction notification', () => {
@@ -239,7 +246,7 @@ describe('notifications reducer', () => {
         (notification) => notification.id === notificationId,
       );
       expect(state.notifications.length).toBe(currentCount);
-      expect(replacedNotification.description).toEqual('Replaced notification');
+      expect(replacedNotification?.description).toEqual('Replaced notification');
     });
 
     it('should remove notification by id', () => {

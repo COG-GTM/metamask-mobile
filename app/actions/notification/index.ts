@@ -1,0 +1,209 @@
+/**
+ * This file contains all the actions related to the in app (old/v1) notification system.
+ */
+import { Action } from 'redux';
+import { ACTIONS } from '../../reducers/notification';
+
+export interface TransactionObject {
+  id: string;
+  [key: string]: unknown;
+}
+
+export interface NotificationObject {
+  id: string;
+  [key: string]: unknown;
+}
+
+export interface HideCurrentNotificationAction extends Action {
+  type: typeof ACTIONS.HIDE_CURRENT_NOTIFICATION;
+}
+
+export interface HideNotificationByIdAction extends Action {
+  type: typeof ACTIONS.HIDE_NOTIFICATION_BY_ID;
+  id: string;
+}
+
+export interface ModifyOrShowTransactionNotificationAction extends Action {
+  type: typeof ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION;
+  autodismiss: number;
+  transaction: TransactionObject;
+  status: string;
+}
+
+export interface ModifyOrShowSimpleNotificationAction extends Action {
+  type: typeof ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION;
+  autodismiss: number;
+  title: string;
+  description: string;
+  status: string;
+}
+
+export interface ReplaceNotificationByIdAction extends Action {
+  type: typeof ACTIONS.REPLACE_NOTIFICATION_BY_ID;
+  notification: NotificationObject;
+  id: string;
+}
+
+export interface RemoveNotificationByIdAction extends Action {
+  type: typeof ACTIONS.REMOVE_NOTIFICATION_BY_ID;
+  id: string;
+}
+
+export interface RemoveCurrentNotificationAction extends Action {
+  type: typeof ACTIONS.REMOVE_CURRENT_NOTIFICATION;
+}
+
+export interface ShowSimpleNotificationAction extends Action {
+  type: typeof ACTIONS.SHOW_SIMPLE_NOTIFICATION;
+  id: string;
+  autodismiss: number;
+  title: string;
+  description: string;
+  status: string;
+}
+
+export interface ShowTransactionNotificationAction extends Action {
+  type: typeof ACTIONS.SHOW_TRANSACTION_NOTIFICATION;
+  autodismiss: number;
+  transaction: TransactionObject;
+  status: string;
+}
+
+export interface RemoveNotVisibleNotificationsAction extends Action {
+  type: typeof ACTIONS.REMOVE_NOT_VISIBLE_NOTIFICATIONS;
+}
+
+export type NotificationAction =
+  | HideCurrentNotificationAction
+  | HideNotificationByIdAction
+  | ModifyOrShowTransactionNotificationAction
+  | ModifyOrShowSimpleNotificationAction
+  | ReplaceNotificationByIdAction
+  | RemoveNotificationByIdAction
+  | RemoveCurrentNotificationAction
+  | ShowSimpleNotificationAction
+  | ShowTransactionNotificationAction
+  | RemoveNotVisibleNotificationsAction;
+
+export function hideCurrentNotification(): HideCurrentNotificationAction {
+  return {
+    type: ACTIONS.HIDE_CURRENT_NOTIFICATION,
+  };
+}
+
+export function hideNotificationById(
+  id: string,
+): HideNotificationByIdAction {
+  return {
+    type: ACTIONS.HIDE_NOTIFICATION_BY_ID,
+    id,
+  };
+}
+
+export function modifyOrShowTransactionNotificationById({
+  autodismiss,
+  transaction,
+  status,
+}: {
+  autodismiss: number;
+  transaction: TransactionObject;
+  status: string;
+}): ModifyOrShowTransactionNotificationAction {
+  return {
+    type: ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION,
+    autodismiss,
+    transaction,
+    status,
+  };
+}
+
+export function modifyOrShowSimpleNotificationById({
+  autodismiss,
+  title,
+  description,
+  status,
+}: {
+  autodismiss: number;
+  title: string;
+  description: string;
+  status: string;
+}): ModifyOrShowSimpleNotificationAction {
+  return {
+    type: ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION,
+    autodismiss,
+    title,
+    description,
+    status,
+  };
+}
+
+export function replaceNotificationById(
+  notification: NotificationObject,
+): ReplaceNotificationByIdAction {
+  return {
+    type: ACTIONS.REPLACE_NOTIFICATION_BY_ID,
+    notification,
+    id: notification.id,
+  };
+}
+
+export function removeNotificationById(
+  id: string,
+): RemoveNotificationByIdAction {
+  return {
+    type: ACTIONS.REMOVE_NOTIFICATION_BY_ID,
+    id,
+  };
+}
+
+export function removeCurrentNotification(): RemoveCurrentNotificationAction {
+  return {
+    type: ACTIONS.REMOVE_CURRENT_NOTIFICATION,
+  };
+}
+
+export function showSimpleNotification({
+  autodismiss,
+  title,
+  description,
+  status,
+  id,
+}: {
+  autodismiss: number;
+  title: string;
+  description: string;
+  status: string;
+  id: string;
+}): ShowSimpleNotificationAction {
+  return {
+    id,
+    type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
+    autodismiss,
+    title,
+    description,
+    status,
+  };
+}
+
+export function showTransactionNotification({
+  autodismiss,
+  transaction,
+  status,
+}: {
+  autodismiss: number;
+  transaction: TransactionObject;
+  status: string;
+}): ShowTransactionNotificationAction {
+  return {
+    type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
+    autodismiss,
+    transaction,
+    status,
+  };
+}
+
+export function removeNotVisibleNotifications(): RemoveNotVisibleNotificationsAction {
+  return {
+    type: ACTIONS.REMOVE_NOT_VISIBLE_NOTIFICATIONS,
+  };
+}
