@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   Alert,
@@ -63,7 +62,7 @@ import navigateTermsOfUse from '../../../util/termsOfUse/termsOfUse';
 import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ChoosePassword.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -205,38 +204,31 @@ const PASSCODE_NOT_SET_ERROR = 'Error: Passcode not set.';
 /**
  * View where users can set their password for the first time
  */
-class ChoosePassword extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * The action to update the password set flag
-     * in the redux store
-     */
-    passwordSet: PropTypes.func,
-    /**
-     * The action to update the password set flag
-     * in the redux store to false
-     */
-    passwordUnset: PropTypes.func,
-    /**
-     * The action to update the lock time
-     * in the redux store
-     */
-    setLockTime: PropTypes.func,
-    /**
-     * Action to reset the flag seedphraseBackedUp in redux
-     */
-    seedphraseNotBackedUp: PropTypes.func,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+interface ChoosePasswordProps {
+  navigation: any;
+  passwordSet: () => void;
+  passwordUnset: () => void;
+  setLockTime: (time: number) => void;
+  seedphraseNotBackedUp: () => void;
+  route: any;
+}
 
-  state = {
+interface ChoosePasswordState {
+  isSelected: boolean;
+  password: string;
+  confirmPassword: string;
+  secureTextEntry: boolean;
+  biometryType: string | null;
+  biometryChoice: boolean;
+  rememberMe: boolean;
+  loading: boolean;
+  error: string | null;
+  inputWidth: { width: string };
+  passwordStrength?: number;
+}
+
+class ChoosePassword extends PureComponent<ChoosePasswordProps, ChoosePasswordState> {
+  state: ChoosePasswordState = {
     isSelected: false,
     password: '',
     confirmPassword: '',
@@ -255,7 +247,7 @@ class ChoosePassword extends PureComponent {
   // Flag to know if password in keyring was set or not
   keyringControllerPasswordSet = false;
 
-  track = (event, properties) => {
+  track = (event: any, properties?: any) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
     trackOnboarding(eventBuilder.build());
@@ -303,7 +295,7 @@ class ChoosePassword extends PureComponent {
     this.termsOfUse();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps: ChoosePasswordProps, prevState: ChoosePasswordState) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
     const { loading } = this.state;
@@ -508,7 +500,7 @@ class ChoosePassword extends PureComponent {
     current && current.focus();
   };
 
-  updateBiometryChoice = async (biometryChoice) => {
+  updateBiometryChoice = async (biometryChoice: boolean) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     this.setState({ biometryChoice });
   };
@@ -528,7 +520,7 @@ class ChoosePassword extends PureComponent {
     );
   };
 
-  onPasswordChange = (val) => {
+  onPasswordChange = (val: string) => {
     const passInfo = zxcvbn(val);
 
     this.setState({ password: val, passwordStrength: passInfo.score });
@@ -548,7 +540,7 @@ class ChoosePassword extends PureComponent {
     });
   };
 
-  setConfirmPassword = (val) => this.setState({ confirmPassword: val });
+  setConfirmPassword = (val: string) => this.setState({ confirmPassword: val });
 
   render() {
     const {
@@ -768,7 +760,7 @@ class ChoosePassword extends PureComponent {
 
 ChoosePassword.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: any) => ({
   passwordSet: () => dispatch(passwordSet()),
   passwordUnset: () => dispatch(passwordUnset()),
   setLockTime: (time) => dispatch(setLockTime(time)),

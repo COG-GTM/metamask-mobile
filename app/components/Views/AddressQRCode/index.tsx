@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   TouchableOpacity,
   Dimensions,
@@ -22,7 +21,7 @@ import { selectSelectedInternalAccountFormattedAddress } from '../../../selector
 
 const WIDTH = Dimensions.get('window').width - 88;
 
-const createStyles = (theme) =>
+const createStyles = (theme: any) =>
   StyleSheet.create({
     root: {
       flex: 1,
@@ -79,30 +78,15 @@ const createStyles = (theme) =>
 /**
  * PureComponent that renders a public address view
  */
-class AddressQRCode extends PureComponent {
-  static propTypes = {
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-    /* Triggers global alert
-    */
-    showAlert: PropTypes.func,
-    /**
-    /* Callback to close the modal
-    */
-    closeQrModal: PropTypes.func,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-  };
+interface AddressQRCodeProps {
+  selectedAddress: string;
+  showAlert: (config: any) => void;
+  closeQrModal: () => void;
+  protectWalletModalVisible: () => void;
+  seedphraseBackedUp: boolean;
+}
+
+class AddressQRCode extends PureComponent<AddressQRCodeProps> {
 
   /**
    * Closes QR code modal
@@ -174,12 +158,12 @@ class AddressQRCode extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: any) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   seedphraseBackedUp: state.user.seedphraseBackedUp,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: any) => ({
   showAlert: (config) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });

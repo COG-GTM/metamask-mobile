@@ -6,7 +6,6 @@ import React, {
   useState,
 } from 'react';
 import Video from 'react-native-video';
-import PropTypes from 'prop-types';
 import {
   PanResponder,
   StyleSheet,
@@ -23,9 +22,8 @@ import FA5Icon from 'react-native-vector-icons/FontAwesome5';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import { baseStyles, colors as importedColors } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
-const createStyles = (theme) =>
+const createStyles = (theme: any) =>
   StyleSheet.create({
     playerContainer: {
       flex: 0,
@@ -154,19 +152,33 @@ const createStyles = (theme) =>
     },
   });
 
+interface VideoPlayerProps {
+  controlsAnimationTiming?: number;
+  controlsToggleTiming?: number;
+  source: any;
+  displayTopControls?: boolean;
+  displayBottomControls?: boolean;
+  onClose?: () => void;
+  onError?: (error: any) => void;
+  textTracks?: any[];
+  selectedTextTrack?: any;
+  onLoad?: () => void;
+  style?: any;
+}
+
 export default function VideoPlayer({
-  controlsAnimationTiming,
-  controlsToggleTiming,
+  controlsAnimationTiming = 500,
+  controlsToggleTiming = 5000,
   source,
-  displayTopControls,
-  displayBottomControls,
+  displayTopControls = true,
+  displayBottomControls = true,
   onClose,
   onError,
   textTracks,
   selectedTextTrack,
   onLoad: propsOnLoad,
   style,
-}) {
+}: VideoPlayerProps) {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
   const [seekerFillWidth, setSeekerFillWidth] = useState(0);
@@ -281,7 +293,7 @@ export default function VideoPlayer({
   );
 
   const updateSeekerPosition = useCallback(
-    (position) => {
+    (position: number) => {
       if (!position) return;
       position = constrainToSeekerMinMax(position);
       setSeekerFillWidth(position);
@@ -317,20 +329,20 @@ export default function VideoPlayer({
     setLoading(true);
   };
 
-  const onLoad = (data = {}) => {
-    propsOnLoad();
+  const onLoad = (data: any = {}) => {
+    propsOnLoad?.();
     setDuration(data.duration);
     setLoading(false);
   };
 
-  const onProgress = (data = {}) => {
+  const onProgress = (data: any = {}) => {
     if (!scrubbing && !seeking && data?.seekableDuration > 0) {
       const position = data.currentTime / data.seekableDuration;
       updateSeekerPosition(position * seekerWidth);
     }
   };
 
-  const onSeek = (data = {}) => {
+  const onSeek = (data: any = {}) => {
     if (scrubbing) {
       if (!seeking) {
         setPaused(originallyPaused);
@@ -425,7 +437,7 @@ export default function VideoPlayer({
   );
 
   const renderControl = useCallback(
-    (children, callback, style = {}) => (
+    (children: React.ReactNode, callback: (() => void) | undefined, style: any = {}) => (
       <TouchableHighlight
         underlayColor="transparent"
         onPress={callback}
@@ -452,7 +464,7 @@ export default function VideoPlayer({
   );
 
   const onLayoutSeekerWidth = useCallback(
-    (event) => setSeekerWidth(event.nativeEvent.layout.width),
+    (event: any) => setSeekerWidth(event.nativeEvent.layout.width),
     [],
   );
 
@@ -628,27 +640,3 @@ export default function VideoPlayer({
     </TouchableNativeFeedback>
   );
 }
-
-VideoPlayer.propTypes = {
-  controlsAnimationTiming: PropTypes.number,
-  controlsToggleTiming: PropTypes.number,
-  // source can be a uri object for remote files
-  // or a number returned by import for bundled files
-  source: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
-  displayTopControls: PropTypes.bool,
-  displayBottomControls: PropTypes.bool,
-  onClose: PropTypes.func,
-  onLoad: PropTypes.func,
-  onError: PropTypes.func,
-  selectedTextTrack: PropTypes.object,
-  textTracks: PropTypes.arrayOf(PropTypes.object),
-  style: ViewPropTypes.style,
-};
-
-VideoPlayer.defaultProps = {
-  doubleTapTime: 100,
-  controlsAnimationTiming: 500,
-  controlsToggleTiming: 5000,
-  displayTopControls: true,
-  displayBottomControls: true,
-};

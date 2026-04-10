@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import { ScrollView, View, StyleSheet, Text, SafeAreaView } from 'react-native';
-import PropTypes from 'prop-types';
 import CollectibleOverview from '../../UI/CollectibleOverview';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import StyledButton from '../../UI/StyledButton';
@@ -11,7 +10,7 @@ import collectiblesTransferInformation from '../../../util/collectibles-transfer
 import { newAssetTransaction } from '../../../actions/transaction';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     root: {
       flex: 1,
@@ -40,22 +39,13 @@ const createStyles = (colors) =>
 /**
  * View that displays a specific collectible asset
  */
-class CollectibleView extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+interface CollectibleViewProps {
+  navigation: any;
+  newAssetTransaction: (selectedAsset: any) => void;
+  route: any;
+}
+
+class CollectibleView extends PureComponent<CollectibleViewProps> {
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
@@ -131,7 +121,7 @@ class CollectibleView extends PureComponent {
 
 CollectibleView.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: any) => ({
   newAssetTransaction: (selectedAsset) =>
     dispatch(newAssetTransaction(selectedAsset)),
 });

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   ScrollView,
@@ -44,7 +43,7 @@ const DEVICE_WIDTH = Dimensions.get('window').width;
 
 const IMG_PADDING = Device.isIphone5() ? 220 : 200;
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     scroll: {
       flexGrow: 1,
@@ -141,13 +140,21 @@ const carousel_images = [
 /**
  * View that is displayed to first time (new) users
  */
+interface GasEducationCarouselProps {
+  navigation: any;
+  route: any;
+  conversionRate: any;
+  currentCurrency: string;
+  ticker: string;
+}
+
 const GasEducationCarousel = ({
   navigation,
   route,
   conversionRate,
   currentCurrency,
   ticker,
-}) => {
+}: GasEducationCarouselProps) => {
   const [currentTab, setCurrentTab] = useState(1);
   const [gasFiat, setGasFiat] = useState(null);
   const { colors } = useTheme();
@@ -227,7 +234,7 @@ const GasEducationCarousel = ({
 
   const renderTabBar = () => <View />;
 
-  const onChangeTab = (obj) => {
+  const onChangeTab = (obj: any) => {
     setCurrentTab(obj.i + 1);
   };
 
@@ -239,7 +246,7 @@ const GasEducationCarousel = ({
       },
     });
 
-  const renderText = (key) => {
+  const renderText = (key: number) => {
     if (key === 1) {
       return (
         <View style={styles.tab}>
@@ -387,30 +394,7 @@ const GasEducationCarousel = ({
   );
 };
 
-GasEducationCarousel.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-    /* conversion rate of ETH - FIAT
-    */
-  conversionRate: PropTypes.any,
-  /**
-    /* Selected currency
-    */
-  currentCurrency: PropTypes.string,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: any) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),

@@ -9,7 +9,6 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import StyledButton from '../../UI/StyledButton';
@@ -34,7 +33,7 @@ const IMAGE_1_RATIO = 162.8 / 138;
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const IMG_PADDING = Device.isIphoneX() ? 100 : Device.isIphone5S() ? 180 : 220;
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -200,7 +199,12 @@ const createStyles = (colors) =>
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1B = (props) => {
+interface AccountBackupStep1BProps {
+  navigation: any;
+  route: any;
+}
+
+const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
   const { navigation, route } = props;
   const [showWhySecureWalletModal, setWhySecureWalletModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -383,17 +387,6 @@ const AccountBackupStep1B = (props) => {
       />
     </SafeAreaView>
   );
-};
-
-AccountBackupStep1B.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
 };
 
 export default AccountBackupStep1B;

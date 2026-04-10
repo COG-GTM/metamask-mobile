@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   Alert,
@@ -76,6 +75,15 @@ const IOS_REJECTED_BIOMETRICS_ERROR =
  * using a secret recovery phrase (SRP)
  * The SRP was formally called the seed phrase
  */
+interface ImportFromSecretRecoveryPhraseProps {
+  navigation: any;
+  passwordSet: () => void;
+  setLockTime: (time: number) => void;
+  seedphraseBackedUp: () => void;
+  setOnboardingWizardStep: (step: number) => void;
+  route: any;
+}
+
 const ImportFromSecretRecoveryPhrase = ({
   navigation,
   passwordSet,
@@ -83,7 +91,7 @@ const ImportFromSecretRecoveryPhrase = ({
   seedphraseBackedUp,
   setOnboardingWizardStep,
   route,
-}) => {
+}: ImportFromSecretRecoveryPhraseProps) => {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
@@ -104,7 +112,7 @@ const ImportFromSecretRecoveryPhrase = ({
   const passwordInput = React.createRef();
   const confirmPasswordInput = React.createRef();
 
-  const track = (event, properties) => {
+  const track = (event: any, properties?: any) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
     trackOnboarding(eventBuilder.build());
@@ -154,7 +162,7 @@ const ImportFromSecretRecoveryPhrase = ({
     termsOfUse();
   }, [termsOfUse]);
 
-  const updateBiometryChoice = async (biometryChoice) => {
+  const updateBiometryChoice = async (biometryChoice: boolean) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     setBiometryChoice(biometryChoice);
   };
@@ -163,7 +171,7 @@ const ImportFromSecretRecoveryPhrase = ({
    * This function handles the case when the user rejects the OS prompt for allowing use of biometrics.
    * If this occurs we will create the wallet automatically with password as the login method
    */
-  const handleRejectedOsBiometricPrompt = async (parsedSeed) => {
+  const handleRejectedOsBiometricPrompt = async (parsedSeed: string) => {
     const newAuthData = await Authentication.componentAuthenticationType(
       false,
       false,
@@ -270,7 +278,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   };
 
-  const clearSecretRecoveryPhrase = async (seed) => {
+  const clearSecretRecoveryPhrase = async (seed: string) => {
     // get clipboard contents
     const clipboardContents = await Clipboard.getString();
     const parsedClipboardContents = parseSeedPhrase(clipboardContents);
@@ -285,7 +293,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   };
 
-  const onSeedWordsChange = useCallback(async (seed) => {
+  const onSeedWordsChange = useCallback(async (seed: string) => {
     setSeed(seed);
     // Only clear on android since iOS will notify users when we getString()
     if (Device.isAndroid()) {
@@ -297,14 +305,14 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   }, []);
 
-  const onPasswordChange = (value) => {
+  const onPasswordChange = (value: string) => {
     const passInfo = zxcvbn(value);
 
     setPassword(value);
     setPasswordStrength(passInfo.score);
   };
 
-  const onPasswordConfirmChange = (value) => {
+  const onPasswordConfirmChange = (value: string) => {
     setConfirmPassword(value);
   };
 
@@ -607,34 +615,7 @@ const ImportFromSecretRecoveryPhrase = ({
   );
 };
 
-ImportFromSecretRecoveryPhrase.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-   * The action to update the password set flag
-   * in the redux store
-   */
-  passwordSet: PropTypes.func,
-  /**
-   * The action to set the locktime
-   * in the redux store
-   */
-  setLockTime: PropTypes.func,
-  /**
-   * The action to update the seedphrase backed up flag
-   * in the redux store
-   */
-  seedphraseBackedUp: PropTypes.func,
-  /**
-   * Action to set onboarding wizard step
-   */
-  setOnboardingWizardStep: PropTypes.func,
-  route: PropTypes.object,
-};
-
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: any) => ({
   setLockTime: (time) => dispatch(setLockTime(time)),
   setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
   passwordSet: () => dispatch(passwordSet()),

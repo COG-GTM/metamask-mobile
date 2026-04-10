@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, {
   useCallback,
   useContext,
@@ -56,7 +55,19 @@ const MAX_BROWSER_TABS = 5;
  * Component that wraps all the browser
  * individual tabs and the tabs view
  */
-export const Browser = (props) => {
+interface BrowserProps {
+  navigation: any;
+  createNewTab: (url: string, linkType?: string) => void;
+  closeAllTabs: () => void;
+  closeTab: (id: number) => void;
+  setActiveTab: (id: number) => void;
+  updateTab: (id: number, data: any) => void;
+  tabs: any[];
+  activeTab: number;
+  route: any;
+}
+
+export const Browser = (props: BrowserProps) => {
   const {
     route,
     navigation,
@@ -128,7 +139,7 @@ export const Browser = (props) => {
   ///: END:ONLY_INCLUDE_IF
 
   const newTab = useCallback(
-    (url, linkType) => {
+    (url?: string, linkType?: string) => {
       // if tabs.length > MAX_BROWSER_TABS, show the max browser tabs modal
       if (tabs.length >= MAX_BROWSER_TABS) {
         navigation.navigate(Routes.MODAL.MAX_BROWSER_TABS_MODAL);
@@ -141,13 +152,13 @@ export const Browser = (props) => {
   );
 
   const updateTabInfo = useCallback(
-    (tabID, info) => {
+    (tabID: number, info: any) => {
       updateTab(tabID, info);
     },
     [updateTab],
   );
 
-  const hideTabsAndUpdateUrl = (url) => {
+  const hideTabsAndUpdateUrl = (url: string) => {
     navigation.setParams({
       ...route.params,
       showTabs: false,
@@ -155,7 +166,7 @@ export const Browser = (props) => {
     });
   };
 
-  const switchToTab = (tab) => {
+  const switchToTab = (tab: any) => {
     trackEvent(
       createEventBuilder(MetaMetricsEvents.BROWSER_SWITCH_TAB).build(),
     );
@@ -313,7 +324,7 @@ export const Browser = (props) => {
   );
 
   const takeScreenshot = useCallback(
-    (url, tabID) =>
+    (url: string, tabID: number) =>
       new Promise((resolve, reject) => {
         captureScreen({
           format: 'jpg',
@@ -361,7 +372,7 @@ export const Browser = (props) => {
     }
   };
 
-  const closeTab = (tab) => {
+  const closeTab = (tab: any) => {
     // If the tab was selected we have to select
     // the next one, and if there's no next one,
     // we select the previous one.
@@ -456,57 +467,18 @@ export const Browser = (props) => {
   );
 };
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: any) => ({
   tabs: state.browser.tabs,
   activeTab: state.browser.activeTab,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: any) => ({
   createNewTab: (url, linkType) => dispatch(createNewTab(url, linkType)),
   closeAllTabs: () => dispatch(closeAllTabs()),
   closeTab: (id) => dispatch(closeTab(id)),
   setActiveTab: (id) => dispatch(setActiveTab(id)),
   updateTab: (id, url) => dispatch(updateTab(id, url)),
 });
-
-Browser.propTypes = {
-  /**
-   * react-navigation object used to switch between screens
-   */
-  navigation: PropTypes.object,
-  /**
-   * Function to create a new tab
-   */
-  createNewTab: PropTypes.func,
-  /**
-   * Function to close all the existing tabs
-   */
-  closeAllTabs: PropTypes.func,
-  /**
-   * Function to close a specific tab
-   */
-  closeTab: PropTypes.func,
-  /**
-   * Function to set the active tab
-   */
-  setActiveTab: PropTypes.func,
-  /**
-   * Function to set the update the url of a tab
-   */
-  updateTab: PropTypes.func,
-  /**
-   * Array of tabs
-   */
-  tabs: PropTypes.array,
-  /**
-   * ID of the active tab
-   */
-  activeTab: PropTypes.number,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-};
 
 export { default as createBrowserNavDetails } from './Browser.types';
 
