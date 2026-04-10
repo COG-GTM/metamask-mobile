@@ -202,7 +202,8 @@ export class BackgroundBridge extends EventEmitter {
       const controllerMessenger = Engine.controllerMessenger;
       controllerMessenger.subscribe(
         `${pc.name}:stateChange`,
-        (subjectWithPermission) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (subjectWithPermission: any) => {
           DevLogger.log(
             `PermissionController:stateChange event`,
             subjectWithPermission,
@@ -211,7 +212,8 @@ export class BackgroundBridge extends EventEmitter {
           const selectedAddress = this.getState().selectedAddress;
           this.notifySelectedAddressChanged(selectedAddress);
         },
-        (state) => state.subjects[this.channelId],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (state: any) => state.subjects[this.channelId],
       );
     } catch (err) {
       DevLogger.log(`Error in BackgroundBridge: ${err}`);
@@ -441,7 +443,8 @@ export class BackgroundBridge extends EventEmitter {
     // setup connection
     const providerStream = createEngineStream({ engine: this.engine });
 
-    pump(outStream, providerStream, outStream, (err) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pump(outStream, providerStream, outStream, (err: any) => {
       // handle any middleware cleanup
       this.engine.destroy();
       if (err) Logger.log('Error with provider stream conn', err);
@@ -473,7 +476,8 @@ export class BackgroundBridge extends EventEmitter {
 
     // create subscription polyfill middleware
     const subscriptionManager = createSubscriptionManager(proxyClient);
-    subscriptionManager.events.on('notification', (message) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    subscriptionManager.events.on('notification', (message: any) =>
       engine.emit('notification', message),
     );
 
@@ -492,10 +496,12 @@ export class BackgroundBridge extends EventEmitter {
     engine.push(
       createEip1193MethodMiddleware({
         // Permission-related
-        getAccounts: (...args) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getAccounts: (...args: any[]) =>
           getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
         getCaip25PermissionFromLegacyPermissionsForOrigin: (
-          requestedPermissions,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          requestedPermissions: any,
         ) =>
           getCaip25PermissionFromLegacyPermissions(
             origin,
@@ -505,12 +511,14 @@ export class BackgroundBridge extends EventEmitter {
           PermissionController,
           origin,
         ),
-        requestPermissionsForOrigin: (requestedPermissions) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        requestPermissionsForOrigin: (requestedPermissions: any) =>
           PermissionController.requestPermissions(
             { origin },
             requestedPermissions,
           ),
-        revokePermissionsForOrigin: (permissionKeys) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        revokePermissionsForOrigin: (permissionKeys: any) => {
           try {
             PermissionController.revokePermissions({
               [origin]: permissionKeys,
@@ -546,7 +554,8 @@ export class BackgroundBridge extends EventEmitter {
     // Legacy RPC methods that need to be implemented ahead of the permission middleware
     engine.push(
       createEthAccountsMethodMiddleware({
-        getAccounts: (...args) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getAccounts: (...args: any[]) =>
           getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
       }),
     );
@@ -557,7 +566,8 @@ export class BackgroundBridge extends EventEmitter {
     ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
     // These Snaps RPC methods are disabled in WalletConnect and SDK for now
     if (this.isMMSDK || this.isWalletConnect) {
-      engine.push((req, _res, next, end) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      engine.push((req: any, _res: any, next: any, end: any) => {
         if (['wallet_snap'].includes(req.method)) {
           return end(
             rpcErrors.methodNotFound({ data: { method: req.method } }),
