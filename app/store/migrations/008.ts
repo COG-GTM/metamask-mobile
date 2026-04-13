@@ -1,4 +1,4 @@
-export default function migrate(state) {
+export default function migrate(state: unknown) {
   // This migration ensures that ignored tokens are in the correct form
   const allIgnoredTokens =
     state.engine.backgroundState.TokensController.allIgnoredTokens || {};
