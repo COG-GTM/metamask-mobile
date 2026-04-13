@@ -10,7 +10,7 @@ interface ShowAlertAction {
   isVisible: boolean;
   autodismiss: number | null;
   content: string | null;
-  data: { msg: string } | null;
+  data: { msg: string; width?: string } | null;
 }
 
 export type AlertActionTypes = HideAlertAction | ShowAlertAction;
@@ -30,7 +30,7 @@ export function showAlert({
   isVisible: boolean;
   autodismiss: number | null;
   content: string | null;
-  data: { msg: string } | null;
+  data: { msg: string; width?: string } | null;
 }): ShowAlertAction {
   return {
     type: SHOW_ALERT,
