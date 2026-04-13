@@ -1,6 +1,61 @@
 import migration from './027';
+import { captureException } from '@sentry/react-native';
+
+jest.mock('@sentry/react-native', () => ({
+  captureException: jest.fn(),
+}));
+const mockedCaptureException = jest.mocked(captureException);
+
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      [key: string]: Record<string, unknown>;
+    };
+  };
+}
 
 describe('Migration #27', () => {
+  beforeEach(() => {
+    jest.restoreAllMocks();
+    jest.resetAllMocks();
+  });
+
+  it('captures exception and returns state if root state is not an object', () => {
+    const oldState = 'not an object';
+
+    const newState = migration(oldState);
+
+    expect(newState).toStrictEqual(oldState);
+    expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
+    expect(mockedCaptureException.mock.calls[0][0].message).toBe(
+      "Migration 27: Invalid root state: 'string'",
+    );
+  });
+
+  it('captures exception and returns state if engine state is invalid', () => {
+    const oldState = { engine: 'not an object' };
+
+    const newState = migration(oldState);
+
+    expect(newState).toStrictEqual(oldState);
+    expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
+    expect(mockedCaptureException.mock.calls[0][0].message).toBe(
+      "Migration 27: Invalid engine state: 'string'",
+    );
+  });
+
+  it('captures exception and returns state if backgroundState is invalid', () => {
+    const oldState = { engine: { backgroundState: 'not an object' } };
+
+    const newState = migration(oldState);
+
+    expect(newState).toStrictEqual(oldState);
+    expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
+    expect(mockedCaptureException.mock.calls[0][0].message).toBe(
+      "Migration 27: Invalid engine backgroundState: 'string'",
+    );
+  });
+
   it('does nothing if no transaction controller state', () => {
     const oldState = {
       engine: {
@@ -68,7 +123,7 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as MigrationState;
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
@@ -136,7 +191,7 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as MigrationState;
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
@@ -226,7 +281,7 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as MigrationState;
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
