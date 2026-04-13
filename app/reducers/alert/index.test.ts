@@ -1,4 +1,5 @@
 import alertReducer, { initialState, AlertState } from './index';
+import { SHOW_ALERT, HIDE_ALERT } from '../../actions/alert';
 
 describe('alertReducer', () => {
   it('returns initial state', () => {
@@ -9,7 +10,7 @@ describe('alertReducer', () => {
 
   it('handles SHOW_ALERT', () => {
     const action = {
-      type: 'SHOW_ALERT' as const,
+      type: SHOW_ALERT,
       autodismiss: 5000,
       content: 'Test alert',
       data: { key: 'value' },
@@ -33,7 +34,7 @@ describe('alertReducer', () => {
       data: { key: 'value' },
     };
 
-    const action = { type: 'HIDE_ALERT' as const };
+    const action = { type: HIDE_ALERT };
 
     const result = alertReducer(visibleState, action);
 

@@ -1,22 +1,10 @@
 /* eslint-disable @typescript-eslint/default-param-last */
 
-// Action type constants
-// TODO: Import these from '../../actions/alert' once actions are migrated to TS (Playbook 1)
-const SHOW_ALERT = 'SHOW_ALERT' as const;
-const HIDE_ALERT = 'HIDE_ALERT' as const;
-
-interface ShowAlertAction {
-  type: typeof SHOW_ALERT;
-  autodismiss: number | null;
-  content: string | null;
-  data: unknown;
-}
-
-interface HideAlertAction {
-  type: typeof HIDE_ALERT;
-}
-
-type AlertAction = ShowAlertAction | HideAlertAction;
+import {
+  SHOW_ALERT,
+  HIDE_ALERT,
+  AlertActionTypes,
+} from '../../actions/alert';
 
 export interface AlertState {
   isVisible: boolean;
@@ -34,7 +22,7 @@ export const initialState: Readonly<AlertState> = {
 
 const alertReducer = (
   state: AlertState = initialState,
-  action: AlertAction,
+  action: AlertActionTypes,
 ): AlertState => {
   switch (action.type) {
     case SHOW_ALERT:
