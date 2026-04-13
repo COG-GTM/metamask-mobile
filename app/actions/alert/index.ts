@@ -1,5 +1,5 @@
-export const HIDE_ALERT = 'HIDE_ALERT';
-export const SHOW_ALERT = 'SHOW_ALERT';
+export const HIDE_ALERT = 'HIDE_ALERT' as const;
+export const SHOW_ALERT = 'SHOW_ALERT' as const;
 
 interface HideAlertAction {
   type: typeof HIDE_ALERT;
