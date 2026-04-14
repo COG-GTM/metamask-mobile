@@ -138,6 +138,8 @@ import { selectContractExchangeRatesByChainId } from '../../../../../../selector
 import { updateTransactionToMaxValue } from './utils';
 import SmartTransactionsMigrationBanner from '../../components/SmartTransactionsMigrationBanner/SmartTransactionsMigrationBanner';
 import { isNativeToken } from '../../../utils/generic';
+import { type RootState } from '../../../../../../reducers';
+import { type Dispatch } from 'redux';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ConfirmProps {
@@ -1515,8 +1517,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
 Confirm.contextType = ThemeContext;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapStateToProps = (state: any) => {
+const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId || selectEvmChainId(state);
 
@@ -1555,8 +1556,7 @@ const mapStateToProps = (state: any) => {
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapDispatchToProps = (dispatch: any) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   prepareTransaction: (transaction) =>
     dispatch(prepareTransaction(transaction)),
   resetTransaction: () => dispatch(resetTransaction()),

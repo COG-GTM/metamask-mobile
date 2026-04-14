@@ -9,6 +9,7 @@ import { useAppThemeFromContext } from '../../../../../../../../util/theme';
 import EditGasFee1559 from '../../../../components/EditGasFee1559Update';
 import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
 import createStyles from './CustomGasModal.styles';
+import { type RootState } from '../../../../../../../../reducers';
 
 interface GasTransaction {
   totalHex?: string;
@@ -65,14 +66,12 @@ const CustomGasModal = ({
   const { colors } = useAppThemeFromContext();
   const styles = createStyles();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const transaction = useSelector((state: any) => state.transaction);
+  const transaction = useSelector((state: RootState) => state.transaction);
   const gasFeeEstimate = useSelector(selectGasFeeEstimates);
   const primaryCurrency = useSelector(selectPrimaryCurrency);
   const chainId = transaction?.chainId;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const selectedAsset = useSelector(
-    (state: any) => state.transaction.selectedAsset,
+    (state: RootState) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 

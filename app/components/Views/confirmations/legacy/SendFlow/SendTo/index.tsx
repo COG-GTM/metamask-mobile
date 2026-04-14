@@ -62,6 +62,8 @@ import { SendViewSelectorsIDs } from '../../../../../../../e2e/selectors/SendFlo
 import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
 import { toLowerCaseEquals } from '../../../../../../util/general';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { type RootState } from '../../../../../../reducers';
+import { type Dispatch } from 'redux';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface SendFlowProps {
@@ -664,8 +666,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
 
 SendFlow.contextType = ThemeContext;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapStateToProps = (state: any) => {
+const mapStateToProps = (state: RootState) => {
   const globalChainId = selectEvmChainId(state);
 
   return {
@@ -685,8 +686,7 @@ const mapStateToProps = (state: any) => {
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapDispatchToProps = (dispatch: any) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   setRecipient: (
     from,
     to,

@@ -15,6 +15,7 @@ import { selectInternalAccounts } from '../../../../../../selectors/accountsCont
 import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { type RootState } from '../../../../../../reducers';
 
 interface AddressListProps {
   chainId: string;
@@ -49,9 +50,8 @@ const AddressList = ({
   const [fuse, setFuse] = useState<Fuse<Record<string, unknown>> | undefined>(undefined);
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ambiguousAddressEntries = useSelector(
-    (state: any) => state.user.ambiguousAddressEntries,
+    (state: RootState) => state.user.ambiguousAddressEntries,
   );
 
   const networkAddressBook = useMemo(

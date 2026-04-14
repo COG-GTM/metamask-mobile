@@ -110,6 +110,8 @@ import { isNativeToken } from '../../../utils/generic';
 import { selectConfirmationRedesignFlags } from '../../../../../../selectors/featureFlagController/confirmations';
 import { MMM_ORIGIN } from '../../../constants/confirmations';
 import { Colors } from '../../../../../../util/theme/models';
+import { type RootState } from '../../../../../../reducers';
+import { type Dispatch } from 'redux';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface AmountProps {
@@ -1478,7 +1480,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
 Amount.contextType = ThemeContext;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapStateToProps = (state: any, ownProps: any) => {
+const mapStateToProps = (state: RootState, ownProps: any) => {
   const transaction = ownProps.transaction || state.transaction;
   const globalChainId = selectEvmChainId(state);
   const globalNetworkClientId = selectNetworkClientId(state);
@@ -1516,8 +1518,7 @@ const mapStateToProps = (state: any, ownProps: any) => {
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapDispatchToProps = (dispatch: any) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   prepareTransaction: (transaction) =>
     dispatch(prepareTransaction(transaction)),
   setSelectedAsset: (selectedAsset) =>
