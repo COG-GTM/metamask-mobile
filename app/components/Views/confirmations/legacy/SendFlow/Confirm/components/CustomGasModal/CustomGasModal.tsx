@@ -10,6 +10,44 @@ import EditGasFee1559 from '../../../../components/EditGasFee1559Update';
 import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
 import createStyles from './CustomGasModal.styles';
 
+interface GasTransaction {
+  totalHex?: string;
+  totalMaxHex?: string;
+  suggestedGasLimit?: string;
+  error?: string;
+}
+
+interface GasObject {
+  legacyGasLimit?: string;
+  suggestedGasPrice?: string;
+  suggestedMaxFeePerGas?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedGasLimit?: string;
+  [key: string]: unknown;
+}
+
+interface UpdateGasStateParams {
+  gasTxn: GasTransaction;
+  gasObj: GasObject;
+  gasSelect?: string;
+  txnType?: boolean;
+}
+
+interface CustomGasModalProps {
+  gasSelected: string;
+  animateOnChange: boolean;
+  isAnimating: boolean;
+  onlyGas: boolean;
+  validateAmount: (params: { transaction: Record<string, unknown>; total: string | undefined }) => string | undefined;
+  legacy: boolean;
+  legacyGasData: GasObject;
+  EIP1559GasData: GasObject;
+  EIP1559GasTxn: GasTransaction;
+  onGasChanged: (gasValue: string) => void;
+  onGasCanceled: (gasValue: string) => void;
+  updateGasState: (params: UpdateGasStateParams) => void;
+}
+
 const CustomGasModal = ({
   gasSelected,
   animateOnChange,
@@ -23,16 +61,18 @@ const CustomGasModal = ({
   onGasChanged,
   onGasCanceled,
   updateGasState,
-}) => {
+}: CustomGasModalProps) => {
   const { colors } = useAppThemeFromContext();
   const styles = createStyles();
 
-  const transaction = useSelector((state) => state.transaction);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const transaction = useSelector((state: any) => state.transaction);
   const gasFeeEstimate = useSelector(selectGasFeeEstimates);
   const primaryCurrency = useSelector(selectPrimaryCurrency);
   const chainId = transaction?.chainId;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const selectedAsset = useSelector(
-    (state) => state.transaction.selectedAsset,
+    (state: any) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
@@ -55,7 +95,7 @@ const CustomGasModal = ({
     gas_estimate_type: gasEstimateType,
   });
 
-  const onChangeGas = (gasValue) => {
+  const onChangeGas = (gasValue: string) => {
     setSelectedGas(gasValue);
     onGasChanged(selectedGas);
   };

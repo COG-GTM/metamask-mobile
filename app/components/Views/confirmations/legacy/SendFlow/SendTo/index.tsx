@@ -1,6 +1,5 @@
 import React, { Fragment, PureComponent } from 'react';
 import { View, ScrollView, Alert, Platform, BackHandler } from 'react-native';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { toChecksumAddress } from 'ethereumjs-util';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -64,91 +63,69 @@ import { withMetricsAwareness } from '../../../../../../components/hooks/useMetr
 import { toLowerCaseEquals } from '../../../../../../util/general';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+interface SendFlowProps {
+  addressBook: Record<string, any>;
+  globalChainId: string;
+  navigation: any;
+  newAssetTransaction: (asset: any) => void;
+  selectedAddress: string;
+  internalAccounts: any[];
+  ticker: string;
+  setRecipient: (
+    from: string,
+    to: string,
+    ensRecipient?: string,
+    transactionToName?: string,
+    transactionFromName?: string,
+  ) => void;
+  setSelectedAsset: (asset: any) => void;
+  showAlert: (config: any) => void;
+  providerType: string;
+  route: any;
+  isPaymentRequest: boolean;
+  isNativeTokenBuySupported: boolean;
+  updateParentState?: (state: any) => void;
+  resetTransaction: () => void;
+  showAmbiguousAcountWarning?: boolean;
+  ambiguousAddressEntries?: Record<string, string[]>;
+  metrics: any;
+}
+
+interface SendFlowState {
+  addressError: string | undefined;
+  balanceIsZero: boolean;
+  fromSelectedAddress: string;
+  toAccount: string | undefined;
+  toSelectedAddressName: string | undefined;
+  toSelectedAddressReady: boolean;
+  toEnsName: string | undefined;
+  toEnsAddressResolved: string | undefined;
+  confusableCollection: any[];
+  inputWidth: { width: string };
+  showAmbiguousAcountWarning: boolean;
+  toInputHighlighted?: boolean;
+  isFromAddressBook?: boolean;
+  addToAddressToAddressBook?: boolean;
+  errorContinue?: boolean;
+  isOnlyWarning?: boolean;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 const dummy = () => true;
 
 /**
  * View that wraps the wraps the "Send" screen
  */
-class SendFlow extends PureComponent {
-  static propTypes = {
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     * Network provider chain id
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func.isRequired,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Action that sets transaction to and ensRecipient in case is available
-     */
-    setRecipient: PropTypes.func,
-    /**
-     * Set selected in transaction state
-     */
-    setSelectedAsset: PropTypes.func,
-    /**
-     * Show alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Network provider type as mainnet
-     */
-    providerType: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Indicates whether the current transaction is a deep link transaction
-     */
-    isPaymentRequest: PropTypes.bool,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNativeTokenBuySupported: PropTypes.bool,
-    updateParentState: PropTypes.func,
-    /**
-     * Resets transaction state
-     */
-    resetTransaction: PropTypes.func,
-    /**
-     * Boolean to show warning if send to address is on multiple networks
-     */
-    showAmbiguousAcountWarning: PropTypes.bool,
-    /**
-     * Object of addresses associated with multiple chains {'id': [address: string]}
-     */
-    ambiguousAddressEntries: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  addressToInputRef = React.createRef();
+  addressToInputRef = React.createRef<any>(); // eslint-disable-line @typescript-eslint/no-explicit-any
 
-  state = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  hardwareBackPress: any;
+
+  state: SendFlowState = {
     addressError: undefined,
     balanceIsZero: false,
     fromSelectedAddress: this.props.selectedAddress,
@@ -687,7 +664,8 @@ class SendFlow extends PureComponent {
 
 SendFlow.contextType = ThemeContext;
 
-const mapStateToProps = (state) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => {
   const globalChainId = selectEvmChainId(state);
 
   return {
@@ -707,7 +685,8 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
   setRecipient: (
     from,
     to,
