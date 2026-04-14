@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Image, StyleSheet, Keyboard, Platform } from 'react-native';
+import { RouteProp } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSelector } from 'react-redux';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -70,10 +71,14 @@ import Routes from '../../../constants/navigation/Routes';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { getActiveTabUrl } from '../../../util/transactions';
 import { getPermittedAccountsByHostname } from '../../../core/Permissions';
-import { TabBarIconKey } from '../../../component-library/components/Navigation/TabBar/TabBar.types';
+import {
+  TabBarIconKey,
+  TabBarProps,
+} from '../../../component-library/components/Navigation/TabBar/TabBar.types';
 import { isEqual } from 'lodash';
 import { selectProviderConfig } from '../../../selectors/networkController';
 import { selectAccountsLength } from '../../../selectors/accountTrackerController';
+import { RootState } from '../../../reducers';
 import isUrl from 'is-url';
 import SDKSessionsManager from '../../Views/SDK/SDKSessionsManager/SDKSessionsManager';
 import PermissionsManager from '../../Views/Settings/PermissionsSettings/PermissionsManager';
@@ -129,8 +134,11 @@ const WalletModalFlow = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const AssetStackFlow = (props) => (
+interface RoutePropsWithParams {
+  route: RouteProp<Record<string, Record<string, unknown> | undefined>, string>;
+}
+
+const AssetStackFlow = (props: RoutePropsWithParams) => (
   <Stack.Navigator>
     <Stack.Screen
       name={'Asset'}
@@ -145,7 +153,7 @@ const AssetStackFlow = (props) => (
   </Stack.Navigator>
 );
 
-const AssetModalFlow = (props) => (
+const AssetModalFlow = (props: RoutePropsWithParams) => (
   <Stack.Navigator
     mode={'modal'}
     initialRouteName={'AssetStackFlow'}
@@ -158,8 +166,6 @@ const AssetModalFlow = (props) => (
     />
   </Stack.Navigator>
 );
-/* eslint-enable react/prop-types */
-
 const WalletTabStackFlow = () => (
   <Stack.Navigator initialRouteName={'WalletView'}>
     <Stack.Screen
@@ -217,8 +223,7 @@ const TransactionsHome = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const BrowserFlow = (props) => (
+const BrowserFlow = (props: RoutePropsWithParams) => (
   <Stack.Navigator
     initialRouteName={Routes.BROWSER.VIEW}
     mode={'modal'}
@@ -254,7 +259,9 @@ const BrowserFlow = (props) => (
   </Stack.Navigator>
 );
 
-export const DrawerContext = React.createContext({ drawerRef: null });
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const DrawerContext = React.createContext<{ drawerRef: React.RefObject<any> | null }>({ drawerRef: null });
 
 ///: BEGIN:ONLY_INCLUDE_IF(external-snaps)
 const SnapsSettingsStack = () => (
@@ -444,18 +451,18 @@ const HomeTabs = () => {
 
   const accountsLength = useSelector(selectAccountsLength);
 
-  const chainId = useSelector((state) => {
+  const chainId = useSelector((state: RootState) => {
     const providerConfig = selectProviderConfig(state);
-    return ChainId[providerConfig.type];
+    return ChainId[providerConfig.type as keyof typeof ChainId];
   });
 
   const amountOfBrowserOpenTabs = useSelector(
-    (state) => state.browser.tabs.length,
+    (state: RootState) => state.browser.tabs.length,
   );
 
   /* tabs: state.browser.tabs, */
   /* activeTab: state.browser.activeTab, */
-  const activeConnectedDapp = useSelector((state) => {
+  const activeConnectedDapp = useSelector((state: RootState) => {
     const activeTabUrl = getActiveTabUrl(state);
     if (!isUrl(activeTabUrl)) return [];
     try {
@@ -552,7 +559,7 @@ const HomeTabs = () => {
     }
   }, []);
 
-  const renderTabBar = ({ state, descriptors, navigation }) => {
+  const renderTabBar = ({ state, descriptors, navigation }: TabBarProps) => {
     if (isKeyboardHidden) {
       return (
         <TabBar
@@ -625,8 +632,7 @@ const SendView = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const NftDetailsModeView = (props) => (
+const NftDetailsModeView = (props: RoutePropsWithParams) => (
   <Stack.Navigator>
     <Stack.Screen
       name=" " // No name here because this title will be displayed in the header of the page
@@ -638,8 +644,7 @@ const NftDetailsModeView = (props) => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const NftDetailsFullImageModeView = (props) => (
+const NftDetailsFullImageModeView = (props: RoutePropsWithParams) => (
   <Stack.Navigator>
     <Stack.Screen
       name=" " // No name here because this title will be displayed in the header of the page
@@ -710,8 +715,7 @@ const PaymentRequestView = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const NotificationsModeView = (props) => (
+const NotificationsModeView = (_props: RoutePropsWithParams) => (
   <Stack.Navigator>
     <Stack.Screen
       name={Routes.NOTIFICATIONS.VIEW}
