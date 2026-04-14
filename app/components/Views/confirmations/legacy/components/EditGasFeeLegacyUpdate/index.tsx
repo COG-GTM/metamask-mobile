@@ -40,6 +40,7 @@ import FadeAnimationView from '../../../../../UI/FadeAnimationView';
 import StyledButton from '../../../../../UI/StyledButton';
 import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import createStyles from './styles';
+import { EditGasFeeLegacyUpdateProps } from './types';
 
 const EditGasFeeLegacy = ({
   onCancel,
@@ -56,7 +57,7 @@ const EditGasFeeLegacy = ({
   selectedGasObject,
   hasDappSuggestedGas,
   chainId,
-}) => {
+}: EditGasFeeLegacyUpdateProps) => {
   const { trackEvent, createEventBuilder } = useMetrics();
   const [showRangeInfoModal, setShowRangeInfoModal] = useState(false);
   const [infoText, setInfoText] = useState('');
@@ -111,7 +112,7 @@ const EditGasFeeLegacy = ({
     createEventBuilder,
   ]);
 
-  const changeGas = useCallback((gas) => {
+  const changeGas = useCallback((gas: { suggestedGasLimit?: string; suggestedGasPrice?: string }) => {
     updateGasObjectLegacy({
       legacyGasLimit: gas.suggestedGasLimit,
       suggestedGasPrice: gas.suggestedGasPrice,
@@ -119,7 +120,7 @@ const EditGasFeeLegacy = ({
   }, []);
 
   const changedGasPrice = useCallback(
-    (value) => {
+    (value: string) => {
       let newGas;
 
       const lowerValue = new BigNumber(
@@ -155,7 +156,7 @@ const EditGasFeeLegacy = ({
   );
 
   const changedGasLimit = useCallback(
-    (value) => {
+    (value: string) => {
       const newGas =
         typeof gasTransaction === 'object'
           ? { ...gasTransaction, suggestedGasLimit: value }
@@ -243,7 +244,7 @@ const EditGasFeeLegacy = ({
 
   const valueToWatch = transactionFee;
 
-  const handleInfoModalPress = (text) => {
+  const handleInfoModalPress = (text: string) => {
     setShowRangeInfoModal(true);
     setInfoText(text);
   };
