@@ -1,11 +1,11 @@
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { ComponentClass, useCallback, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { connect } from 'react-redux';
 import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selectors/Browser/SigningBottomSheet.selectors';
 import { strings } from '../../../../../../../locales/i18n';
 import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
+import { IUseMetricsHook } from '../../../../../../components/hooks/useMetrics/useMetrics.types';
 import ExtendedKeyringTypes from '../../../../../../constants/keyringTypes';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../../../../selectors/accountsController';
@@ -13,16 +13,22 @@ import { fontStyles } from '../../../../../../styles/common';
 import { isHardwareAccount } from '../../../../../../util/address';
 import { getAnalyticsParams } from '../../../../../../util/confirmation/signatureUtils';
 import Device from '../../../../../../util/device';
-import { ThemeContext, mockTheme } from '../../../../../../util/theme';
+import { useTheme } from '../../../../../../util/theme';
+import { Colors } from '../../../../../../util/theme/models';
 import AccountInfoCard from '../../../../../UI/AccountInfoCard';
 import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
 import QRSigningDetails from '../../../../../UI/QRHardware/QRSigningDetails';
+import { IQRState } from '../../../../../UI/QRHardware/types';
 import withQRHardwareAwareness from '../../../../../UI/QRHardware/withQRHardwareAwareness';
 import WebsiteIcon from '../../../../../UI/WebsiteIcon';
 import BlockaidBanner from '../BlockaidBanner/BlockaidBanner';
-import { ResultType } from '../BlockaidBanner/BlockaidBanner.types';
+import {
+  ResultType,
+  SecurityAlertResponse,
+} from '../BlockaidBanner/BlockaidBanner.types';
+import { RootState } from '../../../../../../reducers';
 
-const getCleanUrl = (url) => {
+const getCleanUrl = (url: string): string => {
   try {
     const urlObject = new URL(url);
 
@@ -32,7 +38,7 @@ const getCleanUrl = (url) => {
   }
 };
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -122,106 +128,110 @@ const createStyles = (colors) =>
     },
   });
 
+interface OwnProps {
+  onReject?: () => void;
+  onConfirm?: () => void;
+  children?: React.ReactNode;
+  currentPageInformation?: {
+    url: string;
+    icon?: string;
+    title?: string;
+  };
+  type?: string;
+  networkType?: string;
+  truncateMessage?: boolean;
+  toggleExpandedMessage?: () => void;
+  fromAddress?: string;
+  testID?: string;
+}
+
+interface StateProps {
+  selectedAddress?: string;
+  securityAlertResponse?: SecurityAlertResponse;
+}
+
+interface QRHardwareProps {
+  isSigningQRObject?: boolean;
+  QRState?: IQRState;
+}
+
+interface MetricsProps {
+  metrics: IUseMetricsHook;
+}
+
+type Props = OwnProps & StateProps & QRHardwareProps & MetricsProps;
+
 /**
- * PureComponent that renders scrollable content inside signature request user interface
+ * Functional component that renders scrollable content inside signature request user interface
  */
-class SignatureRequest extends PureComponent {
-  static propTypes = {
-    /**
-     * Callback triggered when this message signature is rejected
-     */
-    onReject: PropTypes.func,
-    /**
-     * Callback triggered when this message signature is approved
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Content to display above the action buttons
-     */
-    children: PropTypes.node,
-    /**
-     * Object containing current page title and url
-     */
-    currentPageInformation: PropTypes.object,
-    /**
-     * String representing signature type
-     */
-    type: PropTypes.string,
-    /**
-     * String representing the associated network
-     */
-    networkType: PropTypes.string,
-    /**
-     * Whether it should render the expand arrow icon
-     */
-    truncateMessage: PropTypes.bool,
-    /**
-     * Expands the message box on press.
-     */
-    toggleExpandedMessage: PropTypes.func,
-    /**
-     * Active address of account that triggered signing.
-     */
-    fromAddress: PropTypes.string,
-    isSigningQRObject: PropTypes.bool,
-    QRState: PropTypes.object,
-    testID: PropTypes.string,
-    securityAlertResponse: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+const SignatureRequest = ({
+  onReject,
+  onConfirm,
+  children,
+  currentPageInformation,
+  type,
+  networkType,
+  truncateMessage,
+  toggleExpandedMessage,
+  fromAddress,
+  isSigningQRObject,
+  QRState,
+  testID,
+  securityAlertResponse,
+  metrics,
+}: Props) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
 
-  /**
-   * Calls trackCancelSignature and onReject callback
-   */
-  onReject = () => {
-    this.props.onReject();
-    this.props.metrics.trackEvent(
-      this.props.metrics
-        .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CANCEL_SIGNATURE)
-        .addProperties(this.getTrackingParams())
-        .build(),
-    );
-  };
-
-  /**
-   * Calls trackConfirmSignature and onConfirm callback
-   */
-  onConfirm = () => {
-    this.props.onConfirm();
-    this.props.metrics.trackEvent(
-      this.props.metrics
-        .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_SIGNATURE)
-        .addProperties(this.getTrackingParams())
-        .build(),
-    );
-  };
-
-  /**
-   * Returns corresponding tracking params to send
-   *
-   * @return {object} - Object containing network and functionType
-   */
-  getTrackingParams = () => {
-    const { type, networkType } = this.props;
-    return {
+  const getTrackingParams = useCallback(
+    () => ({
       network: networkType,
       functionType: type,
+    }),
+    [networkType, type],
+  );
+
+  const handleReject = useCallback(() => {
+    onReject?.();
+    metrics.trackEvent(
+      metrics
+        .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CANCEL_SIGNATURE)
+        .addProperties(getTrackingParams())
+        .build(),
+    );
+  }, [onReject, metrics, getTrackingParams]);
+
+  const handleConfirm = useCallback(() => {
+    onConfirm?.();
+    metrics.trackEvent(
+      metrics
+        .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_SIGNATURE)
+        .addProperties(getTrackingParams())
+        .build(),
+    );
+  }, [onConfirm, metrics, getTrackingParams]);
+
+  const onContactUsClicked = useCallback(() => {
+    const analyticsParams = {
+      ...getAnalyticsParams(
+        {
+          from: fromAddress,
+        },
+        type,
+      ),
+      external_link_clicked: 'security_alert_support_link',
     };
-  };
+    metrics.trackEvent(
+      metrics
+        .createEventBuilder(MetaMetricsEvents.SIGNATURE_REQUESTED)
+        .addProperties(analyticsParams)
+        .build(),
+    );
+  }, [fromAddress, type, metrics]);
 
-  getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    return createStyles(colors);
-  };
-
-  componentDidMount = () => {
-    const { currentPageInformation, type, fromAddress } = this.props;
-
-    this.props.metrics.trackEvent(
-      this.props.metrics
+  useEffect(() => {
+    metrics.trackEvent(
+      metrics
         .createEventBuilder(MetaMetricsEvents.SIGNATURE_REQUESTED)
         .addProperties(
           getAnalyticsParams(
@@ -234,35 +244,38 @@ class SignatureRequest extends PureComponent {
         )
         .build(),
     );
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  renderActionViewChildren = () => {
-    const {
-      children,
-      currentPageInformation,
-      truncateMessage,
-      toggleExpandedMessage,
-      fromAddress,
-    } = this.props;
-    const styles = this.getStyles();
-    const url = currentPageInformation.url;
-    const icon = currentPageInformation.icon;
+  const renderArrowIcon = () => (
+    <View style={styles.arrowIconWrapper}>
+      <Ionicons
+        name={'arrow-forward'}
+        size={20}
+        style={styles.arrowIcon}
+      />
+    </View>
+  );
+
+  const renderActionViewChildren = () => {
+    const url = currentPageInformation?.url ?? '';
+    const icon = currentPageInformation?.icon;
 
     const title = getCleanUrl(url);
-    const arrowIcon = truncateMessage ? this.renderArrowIcon() : null;
+    const arrowIcon = truncateMessage ? renderArrowIcon() : null;
 
     return (
       <View style={styles.actionViewChild}>
         <View style={styles.accountInfoCardWrapper}>
           <AccountInfoCard
             operation="signing"
-            fromAddress={fromAddress}
+            fromAddress={fromAddress ?? ''}
             origin={title}
           />
         </View>
         <TouchableOpacity
           style={styles.children}
-          onPress={truncateMessage ? toggleExpandedMessage : null}
+          onPress={truncateMessage ? toggleExpandedMessage : undefined}
         >
           <WebsiteIcon
             style={styles.domainLogo}
@@ -287,44 +300,9 @@ class SignatureRequest extends PureComponent {
     );
   };
 
-  renderArrowIcon = () => {
-    const styles = this.getStyles();
-
-    return (
-      <View style={styles.arrowIconWrapper}>
-        <Ionicons
-          name={'arrow-forward'}
-          size={20}
-          style={styles.arrowIcon}
-        />
-      </View>
-    );
-  };
-
-  onContactUsClicked = () => {
-    const { fromAddress, type } = this.props;
-    const analyticsParams = {
-      ...getAnalyticsParams(
-        {
-          from: fromAddress,
-        },
-        type,
-      ),
-      external_link_clicked: 'security_alert_support_link',
-    };
-    this.props.metrics.trackEvent(
-      this.props.metrics
-        .createEventBuilder(MetaMetricsEvents.SIGNATURE_REQUESTED)
-        .addProperties(analyticsParams)
-        .build(),
-    );
-  };
-
-  renderSignatureRequest() {
-    const { securityAlertResponse, fromAddress } = this.props;
+  const renderSignatureRequest = () => {
     let expandedHeight;
-    const styles = this.getStyles();
-    const isLedgerAccount = isHardwareAccount(fromAddress, [
+    const isLedgerAccount = isHardwareAccount(fromAddress ?? '', [
       ExtendedKeyringTypes.ledger,
     ]);
 
@@ -340,7 +318,7 @@ class SignatureRequest extends PureComponent {
     }
 
     return (
-      <View testID={this.props.testID} style={[styles.root, expandedHeight]}>
+      <View testID={testID} style={[styles.root, expandedHeight]}>
         <ActionView
           cancelTestID={SigningBottomSheetSelectorsIDs.CANCEL_BUTTON}
           confirmTestID={SigningBottomSheetSelectorsIDs.SIGN_BUTTON}
@@ -350,8 +328,8 @@ class SignatureRequest extends PureComponent {
               ? strings('ledger.sign_with_ledger')
               : strings('signature_request.sign')
           }
-          onCancelPress={this.onReject}
-          onConfirmPress={this.onConfirm}
+          onCancelPress={handleReject}
+          onConfirmPress={handleConfirm}
           confirmButtonMode="sign"
           confirmButtonState={confirmButtonState}
         >
@@ -364,48 +342,42 @@ class SignatureRequest extends PureComponent {
             <View style={styles.blockaidBannerContainer}>
               <BlockaidBanner
                 securityAlertResponse={securityAlertResponse}
-                onContactUsClicked={this.onContactUsClicked}
+                onContactUsClicked={onContactUsClicked}
               />
             </View>
-            {this.renderActionViewChildren()}
+            {renderActionViewChildren()}
           </View>
         </ActionView>
       </View>
     );
-  }
+  };
 
-  renderQRDetails() {
-    const { QRState, fromAddress } = this.props;
-    const styles = this.getStyles();
+  const renderQRDetails = () => (
+    <View style={[styles.root]}>
+      <QRSigningDetails
+        QRState={QRState as IQRState}
+        showCancelButton
+        showHint={false}
+        bypassAndroidCameraAccessCheck={false}
+        fromAddress={fromAddress ?? ''}
+      />
+    </View>
+  );
 
-    return (
-      <View style={[styles.root]}>
-        <QRSigningDetails
-          QRState={QRState}
-          showCancelButton
-          showHint={false}
-          bypassAndroidCameraAccessCheck={false}
-          fromAddress={fromAddress}
-        />
-      </View>
-    );
-  }
+  return isSigningQRObject ? renderQRDetails() : renderSignatureRequest();
+};
 
-  render() {
-    const { isSigningQRObject } = this.props;
-    return isSigningQRObject
-      ? this.renderQRDetails()
-      : this.renderSignatureRequest();
-  }
-}
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   securityAlertResponse: state.signatureRequest.securityAlertResponse,
 });
 
-SignatureRequest.contextType = ThemeContext;
-
 export default connect(mapStateToProps)(
-  withQRHardwareAwareness(withMetricsAwareness(SignatureRequest)),
+  withQRHardwareAwareness(
+    withMetricsAwareness(SignatureRequest) as unknown as ComponentClass<{
+      QRState?: IQRState;
+      isSigningQRObject?: boolean;
+      isSyncingQRHardware?: boolean;
+    }>,
+  ),
 );
