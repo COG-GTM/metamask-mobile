@@ -1,0 +1,156 @@
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { fontStyles } from '../../../../../../../styles/common';
+import { strings } from '../../../../../../../../locales/i18n';
+import WarningMessage from '../../../SendFlow/WarningMessage';
+import { useTheme } from '../../../../../../../util/theme';
+import { isTestNet } from '../../../../../../../util/networks';
+import { Colors } from '../../../../../../../util/theme/models';
+
+interface TransactionReviewSummaryProps {
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate?: number;
+  /**
+   * Transaction corresponding action key
+   */
+  actionKey?: string;
+  /**
+   * Transaction amount in ETH before gas
+   */
+  assetAmount?: string;
+  /**
+   * Transaction amount in fiat before gas
+   */
+  fiatValue?: string;
+  /**
+   * Approve type transaction or not
+   */
+  approveTransaction?: boolean;
+  /**
+   * ETH or fiat, depending on user setting
+   */
+  primaryCurrency?: string;
+  /**
+   * Network provider chain id
+   */
+  chainId?: string;
+}
+
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    confirmBadge: {
+      ...fontStyles.normal,
+      alignItems: 'center',
+      borderColor: colors.border.default,
+      borderRadius: 12,
+      borderWidth: 1,
+      color: colors.text.default,
+      fontSize: 10,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      textAlign: 'center',
+    },
+    summary: {
+      backgroundColor: colors.background.default,
+      padding: 24,
+      paddingTop: 12,
+      paddingBottom: 16,
+      alignItems: 'center',
+    },
+    summaryPrimary: {
+      ...fontStyles.normal,
+      color: colors.text.default,
+      fontSize: 44,
+      paddingTop: 16,
+      paddingBottom: 4,
+      textTransform: 'uppercase',
+      textAlign: 'center',
+    },
+    testNestSummaryPrimary: {
+      ...fontStyles.normal,
+      color: colors.text.default,
+      fontSize: 44,
+      paddingTop: 16,
+      paddingBottom: 4,
+      textAlign: 'center',
+    },
+    summarySecondary: {
+      ...fontStyles.normal,
+      color: colors.text.alternative,
+      fontSize: 24,
+      textTransform: 'uppercase',
+      textAlign: 'center',
+    },
+    warning: {
+      width: '100%',
+      paddingHorizontal: 24,
+      paddingTop: 12,
+    },
+  });
+
+/**
+ * Functional component that supports reviewing transaction summary
+ */
+const TransactionReviewSummary = ({
+  conversionRate,
+  actionKey,
+  assetAmount,
+  fiatValue,
+  approveTransaction,
+  primaryCurrency,
+  chainId,
+}: TransactionReviewSummaryProps) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+  const isTestNetResult = isTestNet(chainId);
+
+  const renderWarning = () => (
+    <Text>{`${strings('transaction.approve_warning')} ${assetAmount}`}</Text>
+  );
+
+  return (
+    <View>
+      {!!approveTransaction && (
+        <View style={styles.warning}>
+          <WarningMessage warningMessage={renderWarning()} />
+        </View>
+      )}
+      <View style={styles.summary}>
+        <Text style={styles.confirmBadge} numberOfLines={1}>
+          {actionKey}
+        </Text>
+
+        {!conversionRate ? (
+          <Text
+            style={
+              isTestNetResult
+                ? styles.testNestSummaryPrimary
+                : styles.summaryPrimary
+            }
+          >
+            {assetAmount}
+          </Text>
+        ) : (
+          <View>
+            <Text
+              style={
+                isTestNetResult
+                  ? styles.testNestSummaryPrimary
+                  : styles.summaryPrimary
+              }
+            >
+              {primaryCurrency === 'ETH' ? assetAmount : fiatValue}
+            </Text>
+            <Text style={styles.summarySecondary}>
+              {primaryCurrency === 'ETH' ? fiatValue : assetAmount}
+            </Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+};
+
+export default TransactionReviewSummary;

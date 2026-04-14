@@ -7,10 +7,7 @@ import AppConstants from '../../../../../../../core/AppConstants';
 import { useGasTransaction } from '../../../../../../../core/GasPolling/GasPolling';
 import Device from '../../../../../../../util/device';
 import { isMainnetByChainId } from '../../../../../../../util/networks';
-import {
-  mockTheme,
-  useAppThemeFromContext,
-} from '../../../../../../../util/theme';
+import { useTheme } from '../../../../../../../util/theme';
 import useModalHandler from '../../../../../../Base/hooks/useModalHandler';
 import Summary from '../../../../../../Base/Summary';
 import Text from '../../../../../../Base/Text';
@@ -19,6 +16,7 @@ import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
+import { TransactionEIP1559UpdateProps } from './types';
 
 const TransactionReviewEIP1559Update = ({
   primaryCurrency,
@@ -39,7 +37,7 @@ const TransactionReviewEIP1559Update = ({
   onlyGas,
   updateTransactionState,
   multiLayerL1FeeTotal,
-}) => {
+}: TransactionEIP1559UpdateProps) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -53,7 +51,7 @@ const TransactionReviewEIP1559Update = ({
   const toggleLearnMoreModal = useCallback(() => {
     setShowLearnMoreModal(!showLearnMoreModal);
   }, [showLearnMoreModal]);
-  const { colors } = useAppThemeFromContext() || mockTheme;
+  const { colors } = useTheme();
   const styles = createStyles(colors);
 
   const gasTransaction = useGasTransaction({
@@ -102,7 +100,7 @@ const TransactionReviewEIP1559Update = ({
   );
 
   const edit = useCallback(() => {
-    if (!isAnimating) onEdit();
+    if (!isAnimating) onEdit?.();
   }, [isAnimating, onEdit]);
 
   const isMainnet = isMainnetByChainId(chainId);
