@@ -250,7 +250,7 @@
     "@react-native-firebase/messaging": "^24.0.0",
     "@react-native-masked-view/masked-view": "^0.3.1",
     "@react-native/babel-preset": "0.85.1",
-    "@react-native/eslint-config": "0.85.1",
+    "@react-native/eslint-config": "0.76.9",
     "@react-native/typescript-config": "0.85.1",
     "@react-navigation/bottom-tabs": "^7.15.9",
     "@react-navigation/compat": "^5.3.20",
