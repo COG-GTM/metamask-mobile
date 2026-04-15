@@ -25,6 +25,7 @@ const instance = {
     );
   },
   getSessions: async () => [],
+  // eslint-disable-next-line no-empty-function
   killSession: async () => {},
   hub,
   isValidUri() {
