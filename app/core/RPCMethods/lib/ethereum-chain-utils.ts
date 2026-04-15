@@ -1,6 +1,7 @@
 import { rpcErrors } from '@metamask/rpc-errors';
 import validUrl from 'valid-url';
 import { ApprovalType, isSafeChainId } from '@metamask/controller-utils';
+import { Hex } from '@metamask/utils';
 import { jsonRpcRequest } from '../../../util/jsonRpcRequest';
 import {
   getDecimalChainId,
@@ -21,9 +22,81 @@ import {
 } from '../../Permissions';
 import Engine from '../../Engine';
 
+interface RpcEndpoint {
+  url: string;
+  networkClientId: string;
+  type?: string;
+  name?: string;
+}
+
+interface NetworkConfigurationLike {
+  chainId: Hex;
+  rpcEndpoints: RpcEndpoint[];
+  defaultRpcEndpointIndex: number;
+  blockExplorerUrls: string[];
+  defaultBlockExplorerUrlIndex: number;
+  name?: string;
+  chainName?: string;
+  nickname?: string;
+  shortName?: string;
+  ticker?: string;
+  nativeCurrency?: string;
+  color?: string;
+  networkType?: string;
+}
+
+interface AddEthereumChainParam {
+  chainId: string;
+  chainName?: string | null;
+  blockExplorerUrls?: string[] | null;
+  nativeCurrency?: {
+    symbol: string;
+    decimals: number;
+  } | null;
+  rpcUrls?: string[];
+  iconUrls?: string[];
+}
+
+interface NativeCurrency {
+  symbol: string;
+  decimals: number;
+}
+
+interface SwitchToNetworkParams {
+  network: [string, NetworkConfigurationLike];
+  chainId: Hex;
+  requestUserApproval: (request: {
+    type?: string;
+    origin?: string;
+    requestData: Record<string, unknown>;
+  }) => Promise<void>;
+  analytics: Record<string, string>;
+  origin: string;
+  isAddNetworkFlow?: boolean;
+  autoApprove?: boolean;
+  hooks: SwitchToNetworkHooks;
+}
+
+interface SwitchToNetworkHooks {
+  getCaveat: (params: {
+    target: string;
+    caveatType: string;
+  }) => { value: Record<string, unknown> } | undefined;
+  requestPermittedChainsPermissionIncrementalForOrigin: (params: {
+    origin: string;
+    chainId: Hex;
+    autoApprove: boolean;
+  }) => Promise<void>;
+  hasApprovalRequestsForOrigin?: () => boolean;
+  toNetworkConfiguration?: NetworkConfigurationLike;
+  fromNetworkConfiguration?: NetworkConfigurationLike;
+  rejectApprovalRequestsForOrigin?: () => void;
+  [key: string]: unknown;
+}
+
 const EVM_NATIVE_TOKEN_DECIMALS = 18;
 
-export function validateChainId(chainId) {
+export function validateChainId(chainId: string): Hex {
   const _chainId = typeof chainId === 'string' && chainId.toLowerCase();
 
   if (!isPrefixedFormattedHexString(_chainId)) {
@@ -41,7 +114,7 @@ export function validateChainId(chainId) {
   return _chainId;
 }
 
-export function validateAddEthereumChainParams(params) {
+export function validateAddEthereumChainParams(params: AddEthereumChainParam[]) {
   if (!params || !params?.[0] || typeof params[0] !== 'object') {
     throw rpcErrors.invalidParams({
       message: `Expected single, object parameter. Received:\n${JSON.stringify(
@@ -60,7 +133,7 @@ export function validateAddEthereumChainParams(params) {
     },
   ] = params;
 
-  const allowedKeys = {
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
     chainName: true,
     blockExplorerUrls: true,
@@ -95,7 +168,7 @@ export function validateAddEthereumChainParams(params) {
   };
 }
 
-function validateRpcUrls(rpcUrls) {
+function validateRpcUrls(rpcUrls: string[] | undefined): string {
   const dirtyFirstValidRPCUrl = Array.isArray(rpcUrls)
     ? rpcUrls.find((rpcUrl) => validUrl.isHttpsUri(rpcUrl))
     : null;
@@ -113,7 +186,7 @@ function validateRpcUrls(rpcUrls) {
   return firstValidRPCUrl;
 }
 
-function validateBlockExplorerUrls(blockExplorerUrls) {
+function validateBlockExplorerUrls(blockExplorerUrls: string[] | null): string | null | undefined {
   const firstValidBlockExplorerUrl =
     blockExplorerUrls !== null && Array.isArray(blockExplorerUrls)
       ? blockExplorerUrls.find((blockExplorerUrl) =>
@@ -130,7 +203,7 @@ function validateBlockExplorerUrls(blockExplorerUrls) {
   return firstValidBlockExplorerUrl;
 }
 
-function validateChainName(rawChainName) {
+function validateChainName(rawChainName: string | null): string {
   if (typeof rawChainName !== 'string' || !rawChainName) {
     throw rpcErrors.invalidParams({
       message: `Expected non-empty string 'chainName'. Received:\n${rawChainName}`,
@@ -141,7 +214,7 @@ function validateChainName(rawChainName) {
     : rawChainName;
 }
 
-function validateNativeCurrency(nativeCurrency) {
+function validateNativeCurrency(nativeCurrency: NativeCurrency | null): string {
   if (nativeCurrency !== null) {
     if (typeof nativeCurrency !== 'object' || Array.isArray(nativeCurrency)) {
       throw rpcErrors.invalidParams({
@@ -171,7 +244,7 @@ function validateNativeCurrency(nativeCurrency) {
   return ticker;
 }
 
-export async function validateRpcEndpoint(rpcUrl, chainId) {
+export async function validateRpcEndpoint(rpcUrl: string, chainId: string): Promise<void> {
   let endpointChainId;
   try {
     endpointChainId = await jsonRpcRequest(rpcUrl, 'eth_chainId');
@@ -189,7 +262,10 @@ export async function validateRpcEndpoint(rpcUrl, chainId) {
   }
 }
 
-export function findExistingNetwork(chainId, networkConfigurations) {
+export function findExistingNetwork(
+  chainId: Hex,
+  networkConfigurations: Record<string, NetworkConfigurationLike>,
+): [string, NetworkConfigurationLike] | undefined {
   const existingEntry = Object.entries(networkConfigurations).find(
     ([, networkConfiguration]) => networkConfiguration.chainId === chainId,
   );
@@ -227,7 +303,7 @@ export async function switchToNetwork({
   origin,
   isAddNetworkFlow = false,
   hooks,
-}) {
+}: SwitchToNetworkParams): Promise<void> {
   const {
     getCaveat,
     requestPermittedChainsPermissionIncrementalForOrigin,

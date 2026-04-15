@@ -1,10 +1,28 @@
 import { rpcErrors } from '@metamask/rpc-errors';
+import {
+  HandlerMiddlewareFunction,
+  PermittedHandlerExport,
+} from '@metamask/permission-controller';
+import { Json, JsonRpcParams } from '@metamask/utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 import {
   trackDappViewedEvent,
 } from '../../util/metrics';
 
-const requestEthereumAccounts = {
+interface RequestEthereumAccountsHooks {
+  getAccounts: (options: { ignoreLock: boolean }) => string[];
+  getUnlockPromise: (shouldShowUnlockRequest: boolean) => Promise<void>;
+  getCaip25PermissionFromLegacyPermissionsForOrigin: () => Record<string, unknown>;
+  requestPermissionsForOrigin: (
+    permissions: Record<string, unknown>,
+  ) => Promise<unknown>;
+}
+
+const requestEthereumAccounts: PermittedHandlerExport<
+  RequestEthereumAccountsHooks,
+  JsonRpcParams,
+  Json
+> = {
   methodNames: [MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS],
   implementation: requestEthereumAccountsHandler,
   hookNames: {
@@ -17,7 +35,7 @@ const requestEthereumAccounts = {
 export default requestEthereumAccounts;
 
 // Used to rate-limit pending requests to one per origin
-const locks = new Set();
+const locks = new Set<string>();
 
 /**
  * This method attempts to retrieve the Ethereum accounts available to the
@@ -37,7 +55,11 @@ const locks = new Set();
  * @param options.requestPermissionsForOrigin - A hook that requests CAIP-25 permissions for the origin.
  * @returns A promise that resolves to nothing
  */
-async function requestEthereumAccountsHandler(
+const requestEthereumAccountsHandler: HandlerMiddlewareFunction<
+  RequestEthereumAccountsHooks,
+  JsonRpcParams,
+  Json
+> = async (
   req,
   res,
   _next,
@@ -48,7 +70,7 @@ async function requestEthereumAccountsHandler(
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
   },
-) {
+) => {
   const { origin } = req;
   if (locks.has(origin)) {
     res.error = rpcErrors.resourceUnavailable(
@@ -91,4 +113,4 @@ async function requestEthereumAccountsHandler(
 
   res.result = ethAccounts;
   return end();
-}
+};

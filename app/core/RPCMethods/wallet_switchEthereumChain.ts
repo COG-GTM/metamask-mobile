@@ -1,5 +1,6 @@
 import Engine from '../Engine';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
+import { Hex } from '@metamask/utils';
 import { selectEvmNetworkConfigurationsByChainId } from '../../selectors/networkController';
 import { store } from '../../store';
 import {
@@ -8,6 +9,24 @@ import {
   switchToNetwork,
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
+
+interface SwitchEthereumChainParams {
+  req: {
+    origin: string;
+    params?: { chainId: string; [key: string]: unknown }[];
+  };
+  res: { result: unknown };
+  requestUserApproval: (request: {
+    type: string;
+    requestData: Record<string, unknown>;
+  }) => Promise<void>;
+  analytics: Record<string, string>;
+  hooks: {
+    getCurrentChainIdForDomain: (origin: string) => Hex;
+    getNetworkConfigurationByChainId: (chainId: string) => Record<string, unknown> | undefined;
+    [key: string]: unknown;
+  };
+}
 
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
@@ -25,7 +44,7 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: SwitchEthereumChainParams) => {
   const {
     CurrencyRateController,
     NetworkController,
@@ -42,7 +61,7 @@ export const wallet_switchEthereumChain = async ({
     });
   }
   const { chainId } = params;
-  const allowedKeys = {
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 

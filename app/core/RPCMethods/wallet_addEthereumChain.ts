@@ -1,6 +1,7 @@
 import { equal } from 'uri-js';
 import { InteractionManager } from 'react-native';
 import { ChainId } from '@metamask/controller-utils';
+import { Hex } from '@metamask/utils';
 import Engine from '../Engine';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { MetaMetricsEvents, MetaMetrics } from '../../core/Analytics';
@@ -20,7 +21,42 @@ import { getDecimalChainId } from '../../util/networks';
 import { RpcEndpointType } from '@metamask/network-controller';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 
-const waitForInteraction = async () =>
+interface RpcEndpoint {
+  url: string;
+  type?: string;
+  name?: string;
+  networkClientId?: string;
+}
+
+interface NetworkConfig {
+  chainId: Hex;
+  rpcEndpoints: RpcEndpoint[];
+  defaultRpcEndpointIndex: number;
+  blockExplorerUrls: string[];
+  defaultBlockExplorerUrlIndex: number;
+  name?: string;
+  nativeCurrency?: string;
+  ticker?: string;
+}
+
+interface AddEthereumChainParams {
+  req: {
+    origin: string;
+    params: { chainId: string; chainName?: string; rpcUrls?: string[]; blockExplorerUrls?: string[]; nativeCurrency?: { symbol: string; decimals: number } }[];
+  };
+  res: { result: unknown };
+  requestUserApproval: (request: {
+    type: string;
+    requestData: Record<string, unknown>;
+  }) => Promise<void>;
+  analytics: Record<string, string>;
+  hooks: {
+    getNetworkConfigurationByChainId: (chainId: Hex) => NetworkConfig | undefined;
+    [key: string]: unknown;
+  };
+}
+
+const waitForInteraction = async (): Promise<void> =>
   new Promise((resolve) => {
     InteractionManager.runAfterInteractions(() => {
       resolve();
@@ -28,7 +64,7 @@ const waitForInteraction = async () =>
   });
 
 // Utility function to find or add an item in an array and return the updated array and index
-const addOrUpdateIndex = (array, value, comparator) => {
+const addOrUpdateIndex = <T>(array: T[], value: T, comparator: (item: T) => boolean) => {
   const index = array.findIndex(comparator);
   if (index === -1) {
     return {
@@ -55,7 +91,7 @@ export const wallet_addEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: AddEthereumChainParams) => {
   const {
     NetworkController,
     MultichainNetworkController,
@@ -75,7 +111,7 @@ export const wallet_addEthereumChain = async ({
     ticker,
   } = params;
 
-  const switchToNetworkAndMetrics = async (network, isAddNetworkFlow) => {
+  const switchToNetworkAndMetrics = async (network: NetworkConfig, isAddNetworkFlow: boolean) => {
     const { networkClientId } =
       network.rpcEndpoints[network.defaultRpcEndpointIndex];
 
@@ -160,7 +196,7 @@ export const wallet_addEthereumChain = async ({
   }
 
   await validateRpcEndpoint(firstValidRPCUrl, chainId);
-  const requestData = {
+  const requestData: Record<string, unknown> = {
     chainId,
     blockExplorerUrl: firstValidBlockExplorerUrl,
     chainName,
@@ -171,9 +207,9 @@ export const wallet_addEthereumChain = async ({
 
   const alerts = await checkSafeNetwork(
     getDecimalChainId(chainId),
-    requestData.rpcUrl,
-    requestData.chainName,
-    requestData.ticker,
+    requestData.rpcUrl as string,
+    requestData.chainName as string,
+    requestData.ticker as string,
   );
   requestData.alerts = alerts;
 
