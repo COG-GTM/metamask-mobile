@@ -1,14 +1,19 @@
 import Engine from './Engine';
 import Logger from '../util/Logger';
-import { KeyringTypes } from '@metamask/keyring-controller';
+import {
+  KeyringTypes,
+  KeyringControllerState,
+} from '@metamask/keyring-controller';
 import { withLedgerKeyring } from './Ledger/Ledger';
 
 /**
  * Restore the given serialized QR keyring.
  *
- * @param {unknown} serializedQrKeyring - A serialized QR keyring.
+ * @param serializedQrKeyring - A serialized QR keyring.
  */
-export const restoreQRKeyring = async (serializedQrKeyring) => {
+export const restoreQRKeyring = async (
+  serializedQrKeyring: unknown,
+): Promise<void> => {
   const { KeyringController } = Engine.context;
 
   try {
@@ -21,9 +26,11 @@ export const restoreQRKeyring = async (serializedQrKeyring) => {
 /**
  * Restore the given serialized Ledger keyring.
  *
- * @param {unknown} serializedLedgerKeyring - A serialized Ledger keyring.
+ * @param serializedLedgerKeyring - A serialized Ledger keyring.
  */
-export const restoreLedgerKeyring = async (serializedLedgerKeyring) => {
+export const restoreLedgerKeyring = async (
+  serializedLedgerKeyring: unknown,
+): Promise<void> => {
   try {
     await withLedgerKeyring(async (keyring) => {
       await keyring.deserialize(serializedLedgerKeyring);
@@ -41,7 +48,9 @@ export const restoreLedgerKeyring = async (serializedLedgerKeyring) => {
  * It does it using an empty password or a password set by the user
  * depending on the state the app is currently in
  */
-export const getSeedPhrase = async (password = '') => {
+export const getSeedPhrase = async (
+  password = '',
+): Promise<Uint8Array> => {
   const { KeyringController } = Engine.context;
   return await KeyringController.exportSeedPhrase(password);
 };
@@ -51,17 +60,17 @@ export const getSeedPhrase = async (password = '') => {
  *
  * @param password - current password
  * @param newPassword - new password
- * @param selectedAddress
+ * @param selectedAddress - the currently selected address
  */
 export const recreateVaultWithNewPassword = async (
-  password,
-  newPassword,
-  selectedAddress,
-) => {
+  password: string,
+  newPassword: string,
+  selectedAddress: string,
+): Promise<void> => {
   const { KeyringController } = Engine.context;
   const seedPhrase = await getSeedPhrase(password);
 
-  let importedAccounts = [];
+  let importedAccounts: string[] = [];
   try {
     // Get imported accounts
     const simpleKeyrings = KeyringController.state.keyrings.filter(
@@ -139,30 +148,35 @@ export const recreateVaultWithNewPassword = async (
  * Recreates a vault with the same password for the purpose of using the newest encryption methods
  *
  * @param password - Password to recreate and set the vault with
+ * @param selectedAddress - the currently selected address
  */
 export const recreateVaultWithSamePassword = async (
   password = '',
-  selectedAddress,
-) => recreateVaultWithNewPassword(password, password, selectedAddress);
+  selectedAddress: string,
+): Promise<void> =>
+  recreateVaultWithNewPassword(password, password, selectedAddress);
 
 /**
  * Checks whether the given keyring type exists in the given state.
  *
- * @param {KeyringControllerState} state - The KeyringController state.
- * @param {KeyringTypes} type - The keyring type to check for.
+ * @param state - The KeyringController state.
+ * @param type - The keyring type to check for.
  * @returns Whether the type was found in state.
  */
-function hasKeyringType(state, type) {
+function hasKeyringType(
+  state: KeyringControllerState,
+  type: KeyringTypes,
+): boolean {
   return state?.keyrings?.some((keyring) => keyring.type === type);
 }
 
 /**
  * Get the serialized state from the first keyring found of the given type.
  *
- * @param {KeyringTypes} type - The type of keyring to serialize.
+ * @param type - The type of keyring to serialize.
  * @returns The serialized state for the first keyring found of the given type.
  */
-async function getSerializedKeyring(type) {
+async function getSerializedKeyring(type: KeyringTypes): Promise<unknown> {
   const { KeyringController } = Engine.context;
   return await KeyringController.withKeyring({ type }, ({ keyring }) =>
     keyring.serialize(),

@@ -12,8 +12,17 @@ import {
   TRUE,
 } from '../constants/storage';
 import Device from '../util/device';
+import AUTHENTICATION_TYPE from '../constants/userProperties';
+import { UserProfileProperty } from '../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
+import { MetricsEventBuilder } from './Analytics/MetricsEventBuilder';
 
-const privates = new WeakMap();
+interface SecureKeychainPrivates {
+  code: string;
+}
+
+type SecureKeychainAuthType = 'BIOMETRICS' | 'PASSCODE' | 'REMEMBER_ME';
+
+const privates = new WeakMap<SecureKeychainInner, SecureKeychainPrivates>();
 const encryptor = new Encryptor({
   keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
 });
@@ -26,9 +35,6 @@ const defaultOptions = {
   fingerprintPromptDesc: strings('authentication.fingerprint_prompt_desc'),
   fingerprintPromptCancel: strings('authentication.fingerprint_prompt_cancel'),
 };
-import AUTHENTICATION_TYPE from '../constants/userProperties';
-import { UserProfileProperty } from '../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
-import { MetricsEventBuilder } from './Analytics/MetricsEventBuilder';
 
 /**
  * Class that wraps Keychain from react-native-keychain
@@ -36,31 +42,32 @@ import { MetricsEventBuilder } from './Analytics/MetricsEventBuilder';
  * and also adding an extra layer of encryption before writing into
  * the phone's keychain
  */
-class SecureKeychain {
+class SecureKeychainInner {
+  static instance: SecureKeychainInner | undefined;
   isAuthenticating = false;
 
-  constructor(code) {
-    if (!SecureKeychain.instance) {
+  constructor(code: string) {
+    if (!SecureKeychainInner.instance) {
       privates.set(this, { code });
-      SecureKeychain.instance = this;
+      SecureKeychainInner.instance = this;
     }
 
-    return SecureKeychain.instance;
+    return SecureKeychainInner.instance;
   }
 
-  encryptPassword(password) {
-    return encryptor.encrypt(privates.get(this).code, { password });
+  encryptPassword(password: string): Promise<string> {
+    return encryptor.encrypt(privates.get(this)!.code, { password });
   }
 
-  decryptPassword(str) {
-    return encryptor.decrypt(privates.get(this).code, str);
+  decryptPassword(str: string): Promise<unknown> {
+    return encryptor.decrypt(privates.get(this)!.code, str);
   }
 }
-let instance;
+let instance: SecureKeychainInner | undefined;
 
-export default {
-  init(salt) {
-    instance = new SecureKeychain(salt);
+const SecureKeychainManager = {
+  init(salt: string): SecureKeychainInner {
+    instance = new SecureKeychainInner(salt);
 
     if (Device.isAndroid && Keychain.SECURITY_LEVEL?.SECURE_HARDWARE)
       MetaMetrics.getInstance().trackEvent(
@@ -73,15 +80,15 @@ export default {
     return instance;
   },
 
-  getInstance() {
+  getInstance(): SecureKeychainInner | undefined {
     return instance;
   },
 
-  getSupportedBiometryType() {
+  getSupportedBiometryType(): Promise<Keychain.BIOMETRY_TYPE | null> {
     return Keychain.getSupportedBiometryType();
   },
 
-  async resetGenericPassword() {
+  async resetGenericPassword(): Promise<boolean> {
     const options = { service: defaultOptions.service };
     await StorageWrapper.removeItem(BIOMETRY_CHOICE);
     await StorageWrapper.removeItem(PASSCODE_CHOICE);
@@ -92,16 +99,18 @@ export default {
     return Keychain.resetGenericPassword(options);
   },
 
-  async getGenericPassword() {
+  async getGenericPassword(): Promise<Keychain.UserCredentials | null> {
     if (instance) {
       try {
         instance.isAuthenticating = true;
         const keychainObject = await Keychain.getGenericPassword(
           defaultOptions,
         );
-        if (keychainObject.password) {
+        if (keychainObject && keychainObject.password) {
           const encryptedPassword = keychainObject.password;
-          const decrypted = await instance.decryptPassword(encryptedPassword);
+          const decrypted = (await instance.decryptPassword(
+            encryptedPassword,
+          )) as { password: string };
           keychainObject.password = decrypted.password;
           instance.isAuthenticating = false;
           return keychainObject;
@@ -109,14 +118,20 @@ export default {
         instance.isAuthenticating = false;
       } catch (error) {
         instance.isAuthenticating = false;
-        throw new Error(error.message);
+        throw new Error((error as Error).message);
       }
     }
     return null;
   },
 
-  async setGenericPassword(password, type) {
-    const authOptions = {
+  async setGenericPassword(
+    password: string,
+    type?: SecureKeychainAuthType,
+  ): Promise<void> {
+    const authOptions: {
+      accessible: Keychain.ACCESSIBLE;
+      accessControl?: Keychain.ACCESS_CONTROL;
+    } = {
       accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     };
 
@@ -141,10 +156,11 @@ export default {
       //Don't need to add any parameter
     } else {
       // Setting a password without a type does not save it
-      return await this.resetGenericPassword();
+      await this.resetGenericPassword();
+      return;
     }
 
-    const encryptedPassword = await instance.encryptPassword(password);
+    const encryptedPassword = await instance!.encryptPassword(password);
     await Keychain.setGenericPassword('metamask-user', encryptedPassword, {
       ...defaultOptions,
       ...authOptions,
@@ -163,12 +179,13 @@ export default {
           await this.getGenericPassword();
         } catch (error) {
           // Specifically check for user cancellation
-          if (error.message === 'User canceled the operation.') {
+          if ((error as Error).message === 'User canceled the operation.') {
             // Store password without biometrics
-            const encryptedPassword = await instance.encryptPassword(password);
+            const reEncryptedPassword =
+              await instance!.encryptPassword(password);
             await Keychain.setGenericPassword(
               'metamask-user',
-              encryptedPassword,
+              reEncryptedPassword,
               {
                 ...defaultOptions,
               },
@@ -205,8 +222,10 @@ export default {
   ACCESSIBLE: Keychain.ACCESSIBLE,
   AUTHENTICATION_TYPE: Keychain.AUTHENTICATION_TYPE,
   TYPES: {
-    BIOMETRICS: 'BIOMETRICS',
-    PASSCODE: 'PASSCODE',
-    REMEMBER_ME: 'REMEMBER_ME',
+    BIOMETRICS: 'BIOMETRICS' as const,
+    PASSCODE: 'PASSCODE' as const,
+    REMEMBER_ME: 'REMEMBER_ME' as const,
   },
 };
+
+export default SecureKeychainManager;
