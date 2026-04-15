@@ -6,6 +6,7 @@ import { mockTheme } from '../theme';
 import Adapter from 'enzyme-adapter-react-16';
 import Enzyme from 'enzyme';
 import '@shopify/flash-list/jestSetup';
+import 'react-native-gesture-handler/jestSetup';
 
 Enzyme.configure({ adapter: new Adapter() });
 
