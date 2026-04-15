@@ -1,9 +1,8 @@
-import CryptoJS from 'crypto-js';
+import 'react-native-get-random-values';
 
 function generateRandomNumber() {
   const range = 1000;
-  const randomBytes = CryptoJS.lib.WordArray.random(range);
-  const randomNumber = randomBytes.words[0] % range;
+  const randomNumber = crypto.getRandomValues(new Uint32Array(1))[0] % range;
   return randomNumber;
 }
 
