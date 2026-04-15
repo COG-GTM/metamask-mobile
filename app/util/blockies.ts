@@ -1,3 +1,4 @@
+// @ts-nocheck - This file uses a UMD constructor pattern that doesn't translate cleanly to TypeScript classes
 (function (global, factory) {
   exports && typeof exports === 'object' && typeof module !== 'undefined'
     ? factory(exports)
