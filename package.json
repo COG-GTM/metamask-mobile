@@ -149,7 +149,9 @@
     "metro/image-size": "^1.2.1",
     "content-hash/**/base-x": "3.0.11",
     "multihashes/**/base-x": "3.0.11",
-    "@keystonehq/ur-decoder/**/base-x": "3.0.11"
+    "@keystonehq/ur-decoder/**/base-x": "3.0.11",
+    "cheerio": "1.0.0-rc.12",
+    "metro-cache-key": "0.81.5"
   },
   "dependencies": {
     "@config-plugins/detox": "^9.0.0",
@@ -249,9 +251,9 @@
     "@react-native-firebase/app": "^20.5.0",
     "@react-native-firebase/messaging": "^20.5.0",
     "@react-native-masked-view/masked-view": "^0.3.1",
-    "@react-native/babel-preset": "0.85.1",
+    "@react-native/babel-preset": "0.76.9",
     "@react-native/eslint-config": "0.76.9",
-    "@react-native/typescript-config": "0.85.1",
+    "@react-native/typescript-config": "0.76.9",
     "@react-navigation/bottom-tabs": "^5.11.11",
     "@react-navigation/compat": "^5.3.20",
     "@react-navigation/native": "^5.9.4",
@@ -436,7 +438,7 @@
     "@open-rpc/mock-server": "^1.7.8",
     "@open-rpc/schema-utils-js": "^2.2.1",
     "@open-rpc/test-coverage": "^2.2.5",
-    "@react-native/metro-config": "0.85.1",
+    "@react-native/metro-config": "0.76.9",
     "@rpii/wdio-html-reporter": "^7.7.1",
     "@storybook/addon-controls": "^9.0.8",
     "@storybook/addon-ondevice-controls": "^10.3.1",
