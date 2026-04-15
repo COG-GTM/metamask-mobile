@@ -9,7 +9,6 @@ import {
   InteractionManager,
   Platform,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Share from 'react-native-share';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -88,6 +87,66 @@ import NetworkInfo from '../NetworkInfo';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import safePromiseHandler from './utils';
+import { Theme } from '../../../util/theme/models';
+
+interface Keyring {
+  type: string;
+  accounts: string[];
+}
+
+interface ProviderConfig {
+  type: string;
+  rpcUrl: string;
+}
+
+interface InternalAccount {
+  address: string;
+  metadata: { name: string };
+}
+
+interface DrawerViewProps {
+  navigation: Record<string, (...args: unknown[]) => unknown>;
+  providerConfig: ProviderConfig;
+  accounts: Record<string, { balance: string }>;
+  selectedInternalAccount: InternalAccount;
+  currentCurrency: string;
+  keyrings: Keyring[];
+  toggleNetworkModal: () => void;
+  showAlert: (config: { isVisible: boolean; autodismiss: number; content: string; data: { msg: string } }) => void;
+  networkModalVisible: boolean;
+  newAssetTransaction: (selectedAsset: unknown) => void;
+  passwordSet: boolean;
+  wizard: Record<string, unknown>;
+  ticker: string;
+  networkConfigurations: Record<string, unknown>;
+  tokens: Array<{ address: string }>;
+  collectibles: unknown[];
+  seedphraseBackedUp: boolean;
+  tokenBalances: Record<string, string>;
+  protectWalletModalVisible: () => void;
+  onCloseDrawer: () => void;
+  currentRoute: string;
+  onboardNetworkAction: (chainId: string) => void;
+  switchedNetwork: Record<string, unknown>;
+  networkSwitched: (params: { networkUrl: string; networkStatus: boolean }) => void;
+  infoNetworkModalVisible: boolean;
+  toggleInfoNetworkModal: () => void;
+  metrics: { trackEvent: (event: unknown) => void; createEventBuilder: (event: unknown) => { addProperties: (props: Record<string, unknown>) => { build: () => unknown }; build: () => unknown } };
+  chainId: string;
+}
+
+interface DrawerViewState {
+  showProtectWalletModal: boolean | undefined;
+  account: {
+    ens: string | undefined;
+    name: string | undefined;
+    address: string | undefined;
+    currentChainId: string | undefined;
+  };
+  networkType: string | undefined;
+  showModal: boolean;
+  networkUrl: string | undefined;
+}
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -331,124 +390,10 @@ const ICON_IMAGES = {
  * View component that displays the MetaMask fox
  * in the middle of the screen
  */
-class DrawerView extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object representing the configuration of the current selected network
-     */
-    providerConfig: PropTypes.object.isRequired,
-    /**
-     * List of accounts from the AccountTrackerController
-     */
-    accounts: PropTypes.object,
-    /**
-     * Currently selected account
-     */
-    selectedInternalAccount: PropTypes.object,
-    /**
-    /* Selected currency
-    */
-    currentCurrency: PropTypes.string,
-    /**
-     * List of keyrings
-     */
-    keyrings: PropTypes.array,
-    /**
-     * Action that toggles the network modal
-     */
-    toggleNetworkModal: PropTypes.func,
-    /**
-     * Action that shows the global alert
-     */
-    showAlert: PropTypes.func.isRequired,
-    /**
-     * Boolean that determines the status of the networks modal
-     */
-    networkModalVisible: PropTypes.bool.isRequired,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func.isRequired,
-    /**
-     * Boolean that determines if the user has set a password before
-     */
-    passwordSet: PropTypes.bool,
-    /**
-     * Wizard onboarding state
-     */
-    wizard: PropTypes.object,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * Array of ERC721 assets
-     */
-    collectibles: PropTypes.array,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-    /**
-     * An object containing token balances for current account and network in the format address => balance
-     */
-    tokenBalances: PropTypes.object,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * Callback to close drawer
-     */
-    onCloseDrawer: PropTypes.func,
-    /**
-     * Latest navigation route
-     */
-    currentRoute: PropTypes.string,
-    /**
-     * handles action for onboarding to a network
-     */
-    onboardNetworkAction: PropTypes.func,
-    /**
-     * returns switched network state
-     */
-    switchedNetwork: PropTypes.object,
-    /**
-     * updates when network is switched
-     */
-    networkSwitched: PropTypes.func,
-    /**
-     *  Boolean that determines the state of network info modal
-     */
-    infoNetworkModalVisible: PropTypes.bool,
-    /**
-     * Redux action to close info network modal
-     */
-    toggleInfoNetworkModal: PropTypes.func,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Selected multichain chainId
-     */
-    chainId: PropTypes.string,
-  };
+class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
+  declare context: Theme;
 
-  state = {
+  state: DrawerViewState = {
     showProtectWalletModal: undefined,
     account: {
       ens: undefined,
@@ -461,10 +406,10 @@ class DrawerView extends PureComponent {
     networkUrl: undefined,
   };
 
-  browserSectionRef = React.createRef();
+  browserSectionRef = React.createRef<View>();
 
-  currentBalance = null;
-  previousBalance = null;
+  currentBalance: number | null = null;
+  previousBalance: number | null = null;
   processedNewBalance = false;
   animatingNetworksModal = false;
   selectedChecksummedAddress = toChecksumHexAddress(
@@ -1258,7 +1203,7 @@ class DrawerView extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   providerConfig: selectProviderConfig(state),
   chainId: selectChainId(state),
   accounts: selectAccounts(state),
@@ -1279,7 +1224,7 @@ const mapStateToProps = (state) => ({
   switchedNetwork: state.networkOnboarded.switchedNetwork,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
   toggleNetworkModal: () => dispatch(toggleNetworkModal()),
   showAlert: (config) => dispatch(showAlert(config)),
   newAssetTransaction: (selectedAsset) =>

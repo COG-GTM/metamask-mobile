@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import {
   colors as importedColors,
   fontStyles,
@@ -8,6 +7,28 @@ import {
 import StyledButton from '../../StyledButton';
 import { strings } from '../../../../../locales/i18n';
 import { mockTheme, ThemeContext } from '../../../../util/theme';
+import { Theme } from '../../../../util/theme/models';
+
+type TopIndicatorPosition = false | 'topCenter' | 'topLeft' | 'topLeftCorner' | 'topRight' | 'topRightCorner';
+type BottomIndicatorPosition = false | 'bottomCenter' | 'bottomLeft' | 'bottomLeftCorner' | 'bottomRight';
+
+interface CoachmarkProps {
+  coachmarkStyle?: ViewStyle;
+  style?: ViewStyle;
+  content: React.ReactNode;
+  title: string;
+  currentStep: number;
+  onNext?: () => void;
+  onBack?: () => void;
+  action?: boolean;
+  topIndicatorPosition?: TopIndicatorPosition;
+  bottomIndicatorPosition?: BottomIndicatorPosition;
+  onClose?: () => void;
+}
+
+interface CoachmarkState {
+  ready: boolean;
+}
 import ButtonIcon, {
   ButtonIconSizes,
 } from '../../../../component-library/components/Buttons/ButtonIcon';
@@ -175,68 +196,10 @@ const createStyles = (colors) =>
     },
   });
 
-export default class Coachmark extends PureComponent {
-  static propTypes = {
-    /**
-     * Custom coachmark style to apply
-     */
-    coachmarkStyle: PropTypes.object,
-    /**
-     * Custom animated view style to apply
-     */
-    style: PropTypes.object,
-    /**
-     * Content object
-     */
-    content: PropTypes.object,
-    /**
-     * Title text
-     */
-    title: PropTypes.string,
-    /**
-     * Current onboarding wizard step
-     */
-    currentStep: PropTypes.number,
-    /**
-     * Callback to be called when next is pressed
-     */
-    onNext: PropTypes.func,
-    /**
-     * Callback to be called when back is pressed
-     */
-    onBack: PropTypes.func,
-    /**
-     * Whether action buttons have to be rendered
-     */
-    action: PropTypes.bool,
-    /**
-     * Top indicator position
-     */
-    topIndicatorPosition: PropTypes.oneOf([
-      false,
-      'topCenter',
-      'topLeft',
-      'topLeftCorner',
-      'topRight',
-      'topRightCorner',
-    ]),
-    /**
-     * Bottom indicator position
-     */
-    bottomIndicatorPosition: PropTypes.oneOf([
-      false,
-      'bottomCenter',
-      'bottomLeft',
-      'bottomLeftCorner',
-      'bottomRight',
-    ]),
-    /**
-     * Callback called when closing on boarding wizard
-     */
-    onClose: PropTypes.func,
-  };
+export default class Coachmark extends PureComponent<CoachmarkProps, CoachmarkState> {
+  declare context: Theme;
 
-  state = {
+  state: CoachmarkState = {
     ready: false,
   };
 
@@ -287,7 +250,7 @@ export default class Coachmark extends PureComponent {
    * @param {string} topIndicatorPosition - Indicator position
    * @returns {Object} - Corresponding style object
    */
-  getIndicatorStyle = (topIndicatorPosition) => {
+  getIndicatorStyle = (topIndicatorPosition: TopIndicatorPosition) => {
     const styles = this.getStyles();
 
     const positions = {
@@ -307,7 +270,7 @@ export default class Coachmark extends PureComponent {
    * @param {string} bottomIndicatorPosition - Indicator position
    * @returns {Object} - Corresponding style object
    */
-  getBotttomIndicatorStyle = (bottomIndicatorPosition) => {
+  getBotttomIndicatorStyle = (bottomIndicatorPosition: BottomIndicatorPosition) => {
     const styles = this.getStyles();
 
     const positions = {

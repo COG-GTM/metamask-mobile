@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   Alert,
   ScrollView,
@@ -16,6 +15,30 @@ import Engine from '../../../core/Engine';
 import CollectibleMedia from '../CollectibleMedia';
 import AssetElement from '../AssetElement';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
+
+interface CollectibleItem {
+  address: string;
+  tokenId: string;
+  name?: string;
+  image?: string | null;
+}
+
+interface CollectibleContractInfo {
+  name: string;
+  address: string;
+}
+
+interface CollectiblesProps {
+  navigation: { navigate: (route: string, params?: Record<string, unknown>) => void; push: (route: string, params?: Record<string, unknown>) => void };
+  collectibles: CollectibleItem[];
+  collectibleContract: CollectibleContractInfo;
+  onPress: (collectible: CollectibleItem) => void;
+}
+
+interface CollectiblesState {
+  refreshing: boolean;
+}
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -61,34 +84,16 @@ const createStyles = (colors) =>
  * View that renders a list of Collectibles
  * also known as ERC-721 Tokens
  */
-export default class Collectibles extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * Array of assets (in this case Collectibles)
-     */
-    collectibles: PropTypes.array,
-    /**
-     * Collectible contract object
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * Callback triggered when collectible pressed from collectibles list
-     */
-    onPress: PropTypes.func,
-  };
+export default class Collectibles extends PureComponent<CollectiblesProps, CollectiblesState> {
+  declare context: Theme;
 
-  state = {
+  state: CollectiblesState = {
     refreshing: false,
   };
 
-  actionSheet = null;
+  actionSheet: ActionSheet | null = null;
 
-  longPressedCollectible = null;
+  longPressedCollectible: CollectibleItem | null = null;
 
   renderEmpty = () => {
     const colors = this.context.colors || mockTheme.colors;
@@ -111,14 +116,14 @@ export default class Collectibles extends PureComponent {
     );
   };
 
-  onItemPress = (collectible) => {
+  onItemPress = (collectible: CollectibleItem) => {
     this.props.navigation.navigate('CollectibleView', {
       ...collectible,
       contractName: this.props.collectibleContract.name,
     });
   };
 
-  handleOnPress = (collectible) => {
+  handleOnPress = (collectible: CollectibleItem) => {
     this.props.onPress(collectible);
   };
 
@@ -126,7 +131,7 @@ export default class Collectibles extends PureComponent {
     this.props.navigation.push('AddAsset', { assetType: 'collectible' });
   };
 
-  showRemoveMenu = (collectible) => {
+  showRemoveMenu = (collectible: CollectibleItem) => {
     this.longPressedCollectible = collectible;
     this.actionSheet.show();
   };
@@ -140,7 +145,7 @@ export default class Collectibles extends PureComponent {
     );
   };
 
-  handleMenuAction = (index) => {
+  handleMenuAction = (index: number) => {
     if (index === 1) {
       this.removeNft();
     } else if (index === 0) {
@@ -160,13 +165,13 @@ export default class Collectibles extends PureComponent {
     );
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: ActionSheet) => {
     this.actionSheet = ref;
   };
 
-  keyExtractor = (item) => `${item.address}_${item.tokenId}`;
+  keyExtractor = (item: CollectibleItem) => `${item.address}_${item.tokenId}`;
 
-  renderItem = ({ item }) => {
+  renderItem = ({ item }: { item: CollectibleItem }) => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 

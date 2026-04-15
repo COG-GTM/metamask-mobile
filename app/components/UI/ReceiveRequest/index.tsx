@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   SafeAreaView,
   Dimensions,
@@ -30,6 +29,25 @@ import { selectSelectedInternalAccountFormattedAddress } from '../../../selector
 import { getRampNetworks } from '../../../reducers/fiatOrders';
 import { RequestPaymentModalSelectorsIDs } from '../../../../e2e/selectors/Receive/RequestPaymentModal.selectors';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import { Theme } from '../../../util/theme/models';
+
+interface ReceiveRequestProps {
+  navigation: Record<string, (...args: unknown[]) => unknown>;
+  selectedAddress: string;
+  receiveAsset: Record<string, unknown>;
+  showAlert: (config: { isVisible: boolean; autodismiss: number; content: string; data: { msg: string } }) => void;
+  chainId: string;
+  protectWalletModalVisible: () => void;
+  hideModal: () => void;
+  seedphraseBackedUp: boolean;
+  isNetworkBuySupported: boolean;
+  metrics: { trackEvent: (event: unknown) => void; createEventBuilder: (event: unknown) => { addProperties: (props: Record<string, unknown>) => { build: () => unknown }; build: () => unknown } };
+}
+
+interface ReceiveRequestState {
+  qrModalVisible: boolean;
+  buyModalVisible: boolean;
+}
 import { getDecimalChainId } from '../../../util/networks';
 import QRAccountDisplay from '../../Views/QRAccountDisplay';
 import PNG_MM_LOGO_PATH from '../../../images/branding/fox.png';
@@ -109,52 +127,10 @@ const createStyles = (theme) =>
 /**
  * PureComponent that renders receive options
  */
-class ReceiveRequest extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Asset to receive, could be not defined
-     */
-    receiveAsset: PropTypes.object,
-    /**
-     /* Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Network provider chain id
-     */
-    chainId: PropTypes.string,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * Hides the modal that contains the component
-     */
-    hideModal: PropTypes.func,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNetworkBuySupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class ReceiveRequest extends PureComponent<ReceiveRequestProps, ReceiveRequestState> {
+  declare context: Theme;
 
-  state = {
+  state: ReceiveRequestState = {
     qrModalVisible: false,
     buyModalVisible: false,
   };
@@ -275,7 +251,7 @@ class ReceiveRequest extends PureComponent {
 
 ReceiveRequest.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   receiveAsset: state.modals.receiveAsset,
@@ -286,7 +262,7 @@ const mapStateToProps = (state) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
   showAlert: (config) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });

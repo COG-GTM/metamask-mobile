@@ -1,6 +1,5 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles, baseStyles } from '../../../../styles/common';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AnimatedSpinner from '../../AnimatedSpinner';
@@ -11,7 +10,24 @@ import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
 import { ToastSelectorsIDs } from '../../../../../e2e/selectors/wallet/ToastModal.selectors';
 
-const createStyles = (colors) =>
+interface NotificationData {
+  nonce?: string;
+  amount?: string;
+  assetType?: string;
+  description?: string | null;
+  title?: string | null;
+  type?: string | null;
+}
+
+interface BaseNotificationProps {
+  status: string;
+  data: NotificationData;
+  onPress?: () => void;
+  onHide?: () => void;
+  autoDismiss?: boolean;
+}
+
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     floatingBackground: {
       backgroundColor: colors.background.default,
@@ -60,7 +76,7 @@ const createStyles = (colors) =>
     },
   });
 
-export const getIcon = (status, colors, styles) => {
+export const getIcon = (status: string, colors: Record<string, Record<string, string>>, styles: Record<string, unknown>) => {
   switch (status) {
     case 'pending':
     case 'pending_withdrawal':
@@ -121,7 +137,7 @@ export const getIcon = (status, colors, styles) => {
   }
 };
 
-const getTitle = (status, { nonce, amount, assetType }) => {
+const getTitle = (status: string, { nonce, amount, assetType }: NotificationData) => {
   switch (status) {
     case 'pending':
       return strings('notifications.pending_title');
@@ -151,7 +167,7 @@ const getTitle = (status, { nonce, amount, assetType }) => {
   }
 };
 
-export const getDescription = (status, { amount = null, type = null }) => {
+export const getDescription = (status: string, { amount = null, type = null }: NotificationData) => {
   if (amount && typeof amount !== 'object' && type) {
     return strings(`notifications.${type}_${status}_message`, { amount });
   }
@@ -163,12 +179,12 @@ export const getDescription = (status, { amount = null, type = null }) => {
  */
 const BaseNotification = ({
   status,
-  data = null,
+  data = {} as NotificationData,
   data: { description = null, title = null },
   onPress,
   onHide,
   autoDismiss,
-}) => {
+}: BaseNotificationProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -205,14 +221,6 @@ const BaseNotification = ({
       </View>
     </View>
   );
-};
-
-BaseNotification.propTypes = {
-  status: PropTypes.string,
-  data: PropTypes.object,
-  onPress: PropTypes.func,
-  onHide: PropTypes.func,
-  autoDismiss: PropTypes.bool,
 };
 
 BaseNotification.defaultProps = {

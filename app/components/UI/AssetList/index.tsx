@@ -1,11 +1,25 @@
 import React, { PureComponent } from 'react';
 import { View, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../locales/i18n';
 import StyledButton from '../StyledButton'; // eslint-disable-line  import/no-unresolved
 import AssetIcon from '../AssetIcon';
 import { fontStyles } from '../../../styles/common';
 import Text from '../../Base/Text';
+
+interface SearchResult {
+  symbol?: string;
+  name?: string;
+  address?: string;
+  iconUrl?: string;
+}
+
+interface AssetListProps {
+  searchResults?: SearchResult[];
+  handleSelectAsset: (asset: SearchResult) => void;
+  selectedAsset?: SearchResult;
+  searchQuery: string;
+  emptyMessage?: string;
+}
 
 const styles = StyleSheet.create({
   rowWrapper: {
@@ -31,27 +45,9 @@ const styles = StyleSheet.create({
 /**
  * PureComponent that provides ability to search assets.
  */
-export default class AssetList extends PureComponent {
-  static propTypes = {
-    /**
-     * Array of assets objects returned from the search
-     */
-    searchResults: PropTypes.array,
-    /**
-     * Callback triggered when a token is selected
-     */
-    handleSelectAsset: PropTypes.func,
-    /**
-     * Object of the currently-selected token
-     */
-    selectedAsset: PropTypes.object,
-    /**
-     * Search query that generated "searchResults"
-     */
-    searchQuery: PropTypes.string,
-  };
+export default class AssetList extends PureComponent<AssetListProps> {
 
-  onToggleAsset = (key) => {
+  onToggleAsset = (key: number) => {
     const { searchResults, handleSelectAsset } = this.props;
     handleSelectAsset(searchResults[key]);
   };

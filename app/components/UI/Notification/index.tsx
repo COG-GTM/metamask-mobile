@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import { useNavigationState } from '@react-navigation/native';
 import {
   removeCurrentNotification,
@@ -24,18 +23,35 @@ const { TRANSACTION, SIMPLE } = NotificationTypes;
 
 const BROWSER_ROUTE = 'BrowserView';
 
+interface CurrentNotification {
+  type?: string;
+  status?: string;
+  title?: string;
+  description?: string;
+  autodismiss?: number;
+  isVisible?: boolean;
+  transaction?: Record<string, unknown>;
+}
+
+interface NotificationProps {
+  currentNotification: CurrentNotification;
+  currentNotificationIsVisible: boolean;
+  hideCurrentNotification: () => void;
+  removeCurrentNotification: () => void;
+}
+
 function Notification({
   currentNotification,
   currentNotificationIsVisible,
   hideCurrentNotification,
   removeCurrentNotification,
-}) {
+}: NotificationProps) {
   const notificationAnimated = useSharedValue(200);
   const routes = useNavigationState((state) => state.routes);
 
   const prevNotificationIsVisible = usePrevious(currentNotificationIsVisible);
 
-  const animatedTimingStart = useCallback((animatedRef, toValue, callback) => {
+  const animatedTimingStart = useCallback((animatedRef: { value: number }, toValue: number, callback?: () => void) => {
     animatedRef.value = withTiming(
       toValue,
       { duration: 500, easing: Easing.linear },
@@ -105,14 +121,7 @@ function Notification({
   return null;
 }
 
-Notification.propTypes = {
-  currentNotification: PropTypes.object,
-  currentNotificationIsVisible: PropTypes.bool,
-  hideCurrentNotification: PropTypes.func,
-  removeCurrentNotification: PropTypes.func,
-};
-
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: Record<string, unknown>) => {
   const currentNotification = currentNotificationSelector(state.notification);
   return {
     currentNotification,
@@ -120,7 +129,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
   removeCurrentNotification: () => dispatch(removeCurrentNotification()),
   hideCurrentNotification: () => dispatch(hideCurrentNotification()),
 });

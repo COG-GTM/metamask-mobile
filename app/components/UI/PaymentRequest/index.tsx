@@ -15,7 +15,6 @@ import { getPaymentRequestOptionsTitle } from '../../UI/Navbar';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import Fuse from 'fuse.js';
 import AssetList from './AssetList';
-import PropTypes from 'prop-types';
 import {
   weiToFiat,
   toWei,
@@ -45,6 +44,44 @@ import { getTicker } from '../../../util/transactions';
 import { toLowerCaseEquals } from '../../../util/general';
 import { utils as ethersUtils } from 'ethers';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
+
+interface SelectedAsset {
+  symbol: string;
+  name?: string;
+  address?: string;
+  decimals?: number;
+  isETH?: boolean;
+}
+
+interface PaymentRequestProps {
+  navigation: Record<string, (...args: unknown[]) => unknown>;
+  conversionRate: number;
+  currentCurrency: string;
+  contractExchangeRates: Record<string, { price: number }>;
+  primaryCurrency: string;
+  selectedAddress: string;
+  tokens: Array<{ address: string; symbol?: string; name?: string; decimals?: number }>;
+  chainId: string;
+  ticker: string;
+  tokenList: Array<{ address: string; symbol?: string; name?: string }>;
+  route: { params?: { receiveAsset?: SelectedAsset } };
+}
+
+interface PaymentRequestState {
+  searchInputValue: string;
+  results: Array<Record<string, unknown>>;
+  selectedAsset: SelectedAsset | undefined;
+  mode: string;
+  internalPrimaryCurrency: string;
+  cryptoAmount: string | undefined;
+  amount: string | undefined;
+  secondaryAmount: string | undefined;
+  symbol: string | undefined;
+  showError: boolean;
+  inputWidth: { width: string };
+  chainId?: string;
+}
 import { isTestNet } from '../../../util/networks';
 import { isTokenDetectionSupportedForNetwork } from '@metamask/assets-controllers';
 import {
@@ -256,58 +293,13 @@ const MODE_AMOUNT = 'amount';
 /**
  * View to generate a payment request link
  */
-class PaymentRequest extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * ETH-to-current currency conversion rate from CurrencyRateController
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code for currently-selected currency from CurrencyRateController
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Primary currency, either ETH or Fiat
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * A string representing the chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * List of tokens from TokenListController (Formatted into array)
-     */
-    tokenList: PropTypes.array,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+class PaymentRequest extends PureComponent<PaymentRequestProps, PaymentRequestState> {
+  declare context: Theme;
 
-  amountInput = React.createRef();
-  searchInput = React.createRef();
+  amountInput = React.createRef<TextInput>();
+  searchInput = React.createRef<TextInput>();
 
-  state = {
+  state: PaymentRequestState = {
     searchInputValue: '',
     results: [],
     selectedAsset: undefined,
@@ -381,7 +373,7 @@ class PaymentRequest extends PureComponent {
    *
    * @param {object} selectedAsset - Asset selected to build the payment request
    */
-  goToAmountInput = async (selectedAsset) => {
+  goToAmountInput = async (selectedAsset: SelectedAsset) => {
     const { navigation } = this.props;
     navigation &&
       navigation.setParams({
@@ -397,7 +389,7 @@ class PaymentRequest extends PureComponent {
    *
    * @param {string} searchInputValue - String containing assets query
    */
-  handleSearch = (searchInputValue) => {
+  handleSearch = (searchInputValue: string) => {
     const { tokenList } = this.props;
     if (typeof searchInputValue !== 'string') {
       searchInputValue = this.state.searchInputValue;
@@ -541,7 +533,7 @@ class PaymentRequest extends PureComponent {
    * @param {string} amount - String containing amount number from input, as token value
    * @returns {object} - Object containing respective symbol, secondaryAmount and cryptoAmount according to amount and selectedAsset
    */
-  handleETHPrimaryCurrency = (amount) => {
+  handleETHPrimaryCurrency = (amount: string) => {
     const { conversionRate, currentCurrency, contractExchangeRates } =
       this.props;
     const { selectedAsset } = this.state;
@@ -579,7 +571,7 @@ class PaymentRequest extends PureComponent {
    * @param {string} amount - String containing amount number from input, as fiat value
    * @returns {object} - Object containing respective symbol, secondaryAmount and cryptoAmount according to amount and selectedAsset
    */
-  handleFiatPrimaryCurrency = (amount) => {
+  handleFiatPrimaryCurrency = (amount: string) => {
     const { conversionRate, currentCurrency, contractExchangeRates } =
       this.props;
     const { selectedAsset } = this.state;
@@ -624,7 +616,7 @@ class PaymentRequest extends PureComponent {
    *
    * @param {string} amount - String containing amount number from input
    */
-  updateAmount = (amount) => {
+  updateAmount = (amount?: string) => {
     const { internalPrimaryCurrency, selectedAsset } = this.state;
     const { conversionRate, contractExchangeRates, currentCurrency } =
       this.props;
@@ -890,7 +882,7 @@ class PaymentRequest extends PureComponent {
 
 PaymentRequest.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   contractExchangeRates: selectContractExchangeRates(state),

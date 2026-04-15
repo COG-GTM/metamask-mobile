@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { InteractionManager, TouchableOpacity, View } from 'react-native';
 import { connect } from 'react-redux';
@@ -36,59 +35,51 @@ import createStyles from './styles';
 import { SourceType } from '../../hooks/useMetrics/useMetrics.types';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import { getPhishingTestResultAsync } from '../../../util/phishingDetection';
+import { Theme } from '../../../util/theme/models';
+
+interface PageInformation {
+  title?: string;
+  url?: string;
+  icon?: string;
+  origin?: string;
+  reconnect?: boolean;
+  apiVersion?: string;
+  channelId?: string;
+  otps?: number[];
+  analytics?: Record<string, unknown>;
+}
+
+interface AccountApprovalProps {
+  currentPageInformation: PageInformation;
+  onConfirm: () => void;
+  onCancel: () => void;
+  selectedAddress: string;
+  tokensLength: number;
+  navigation: Record<string, unknown> & { navigate: (...args: unknown[]) => void; setParams: (params: Record<string, unknown>) => void };
+  accountsLength: number;
+  networkType: string;
+  walletConnectRequest?: boolean;
+  chainId: string;
+  metrics: Record<string, unknown> & { trackEvent: (event: unknown) => void };
+}
+
+interface AccountApprovalState {
+  start: number;
+  confirmDisabled: boolean;
+  otpChoice: number | undefined;
+  noPersist: boolean;
+  otps: number[];
+  otp: string | boolean;
+  isUrlFlaggedAsPhishing: boolean;
+}
 /**
  * Account access approval component
  */
-class AccountApproval extends PureComponent {
-  static propTypes = {
-    /**
-     * Object containing current page title, url, and icon href
-     */
-    currentPageInformation: PropTypes.object,
-    /**
-     * Callback triggered on account access approval
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Callback triggered on account access rejection
-     */
-    onCancel: PropTypes.func,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Number of tokens
-     */
-    tokensLength: PropTypes.number,
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-     * Number of accounts
-     */
-    accountsLength: PropTypes.number,
-    /**
-     * A string representing the network name
-     */
-    networkType: PropTypes.string,
-    /**
-     * Whether it was a request coming through wallet connect
-     */
-    walletConnectRequest: PropTypes.bool,
-    /**
-     * A string representing the network chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class AccountApproval extends PureComponent<AccountApprovalProps, AccountApprovalState> {
+  declare context: Theme;
+  private _isMounted = false;
 
-  state = {
+  state: AccountApprovalState = {
     start: Date.now(),
     confirmDisabled: true,
     otpChoice: undefined,
@@ -154,7 +145,7 @@ class AccountApproval extends PureComponent {
   };
 
   componentDidMount = () => {
-    this._isMounted = true;
+    this._isMounted = true as boolean;
 
     const { currentPageInformation } = this.props;
 
@@ -283,14 +274,14 @@ class AccountApproval extends PureComponent {
     };
   };
 
-  onOTP = (value) => {
+  onOTP = (value: number) => {
     this.setState({
       otpChoice: value,
       confirmDisabled: false,
     });
   };
 
-  checkUrlFlaggedAsPhishing = async (hostname) => {
+  checkUrlFlaggedAsPhishing = async (hostname: string) => {
     const scanResult = await getPhishingTestResultAsync(hostname);
     if (this._isMounted) {
       this.setState({
@@ -412,7 +403,7 @@ class AccountApproval extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   accountsLength: selectAccountsLength(state),
   tokensLength: selectTokensLength(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),

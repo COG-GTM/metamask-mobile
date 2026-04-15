@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
 import Animated from 'react-native-reanimated';
+import { SharedValue } from 'react-native-reanimated';
 import BaseNotification from './../BaseNotification';
 import Device from '../../../../util/device';
 import ElevatedView from 'react-native-elevated-view';
@@ -24,12 +24,23 @@ const styles = StyleSheet.create({
   },
 });
 
+interface SimpleNotificationProps {
+  isInBrowserView: boolean;
+  notificationAnimated: SharedValue<number>;
+  hideCurrentNotification?: () => void;
+  currentNotification: {
+    status: string;
+    title?: string;
+    description?: string;
+  };
+}
+
 function SimpleNotification({
   isInBrowserView,
   notificationAnimated,
   hideCurrentNotification,
   currentNotification,
-}) {
+}: SimpleNotificationProps) {
   return (
     <Animated.View
       style={[
@@ -51,12 +62,5 @@ function SimpleNotification({
     </Animated.View>
   );
 }
-
-SimpleNotification.propTypes = {
-  isInBrowserView: PropTypes.bool,
-  notificationAnimated: PropTypes.object,
-  currentNotification: PropTypes.object,
-  hideCurrentNotification: PropTypes.func,
-};
 
 export default SimpleNotification;
