@@ -1,0 +1,53 @@
+import { TextClassContext } from '@/app/components/ui/text';
+import { cn } from '@/app/lib/shadcn/utils';
+import type { LucideIcon, LucideProps } from 'lucide-react-native';
+import { cssInterop } from 'nativewind';
+import * as React from 'react';
+
+type IconProps = LucideProps & {
+  as: LucideIcon;
+};
+
+function IconImpl({ as: IconComponent, ...props }: IconProps) {
+  return <IconComponent {...props} />;
+}
+
+cssInterop(IconImpl, {
+  className: {
+    target: 'style',
+    nativeStyleToProp: {
+      height: 'size',
+      width: 'size',
+    },
+  },
+});
+
+/**
+ * A wrapper component for Lucide icons with Nativewind `className` support via `cssInterop`.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * import { ArrowRight } from 'lucide-react-native';
+ * import { Icon } from '@/app/components/ui/icon';
+ *
+ * <Icon as={ArrowRight} className="text-red-500" size={16} />
+ * ```
+ *
+ * @param {LucideIcon} as - The Lucide icon component to render.
+ * @param {string} className - Utility classes to style the icon using Nativewind.
+ * @param {number} size - Icon size (defaults to 14).
+ */
+function Icon({ as: IconComponent, className, size = 14, ...props }: IconProps) {
+  const textClass = React.useContext(TextClassContext);
+  return (
+    <IconImpl
+      as={IconComponent}
+      className={cn('text-foreground', textClass, className)}
+      size={size}
+      {...props}
+    />
+  );
+}
+
+export { Icon };

@@ -8,6 +8,7 @@
 
 const { getDefaultConfig } = require('expo/metro-config');
 const { mergeConfig } = require('@react-native/metro-config');
+const { withNativeWind } = require('nativewind/metro');
 // We should replace path for react-native-fs
 // eslint-disable-next-line import/no-nodejs-modules
 const path = require('path');
@@ -21,7 +22,7 @@ module.exports = function (baseConfig) {
     resolver: { assetExts, sourceExts },
   } = defaultConfig;
 
-  return wrapWithReanimatedMetroConfig(
+  return withNativeWind(wrapWithReanimatedMetroConfig(
     mergeConfig(defaultConfig, {
       resolver: {
         assetExts: assetExts.filter((ext) => ext !== 'svg'),
@@ -56,5 +57,5 @@ module.exports = function (baseConfig) {
       },
       resetCache: true,
     }),
-  );
+  ), { input: './global.css', inlineRem: 16 });
 };

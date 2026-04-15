@@ -1,3 +1,4 @@
+import './global.css';
 import './shim.js';
 
 // Needed to polyfill random number generation.

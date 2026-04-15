@@ -1,7 +1,10 @@
 // eslint-disable-next-line import/no-commonjs
 module.exports = {
   ignore: [/\/ses\.cjs$/, /\/ses-hermes\.cjs$/],
-  presets: ['babel-preset-expo'],
+  presets: [
+    ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
+    'nativewind/babel',
+  ],
   plugins: [
     'transform-inline-environment-variables',
     'react-native-reanimated/plugin',
