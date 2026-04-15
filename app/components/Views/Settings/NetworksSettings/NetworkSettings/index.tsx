@@ -1,5 +1,4 @@
 /* eslint-disable */
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   StyleSheet,
@@ -74,6 +73,11 @@ import {
 } from '../../../../../../app/selectors/preferencesController';
 import withIsOriginalNativeToken from './withIsOriginalNativeToken';
 import { compose } from 'redux';
+import type { Dispatch } from 'redux';
+import type { Colors } from '../../../../../util/theme/models';
+import type { RouteProp } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { RootState } from '../../../../../reducers';
 import Icon, {
   IconColor,
   IconName,
@@ -96,7 +100,91 @@ import Text, {
   TextVariant,
 } from '../../../../../component-library/components/Texts/Text';
 
-const createStyles = (colors) =>
+interface RpcEndpoint {
+  url: string;
+  name?: string;
+  type?: string;
+  networkClientId: string;
+}
+
+interface NetworkConfig {
+  rpcEndpoints: RpcEndpoint[];
+  name: string;
+  chainId: string;
+  defaultRpcEndpointIndex: number;
+  nativeCurrency: string;
+  blockExplorerUrls: string[];
+  defaultBlockExplorerUrlIndex: number;
+  rpcUrl?: string;
+}
+
+interface NetworkSettingsProps {
+  networkConfigurations: Record<string, NetworkConfig>;
+  navigation: StackNavigationProp<Record<string, Record<string, unknown>>>;
+  route: RouteProp<Record<string, Record<string, unknown>>, string>;
+  showNetworkOnboardingAction: (params: {
+    networkUrl: string;
+    networkType: string;
+    nativeToken: string;
+    showNetworkOnboarding: boolean;
+  }) => void;
+  networkOnboardedState: Record<string, boolean[]>;
+  isCustomMainnet: boolean;
+  providerConfig: { rpcUrl: string; type: string; chainId: string };
+  metrics: {
+    trackEvent: (event: Record<string, unknown>) => void;
+    createEventBuilder: (event: Record<string, unknown>) => {
+      addProperties: (props: Record<string, unknown>) => { build: () => Record<string, unknown> };
+    };
+  };
+  useSafeChainsListValidation: boolean;
+  matchedChainNetwork: { safeChainsList: Array<{ chainId: number; nativeCurrency: { symbol: string; name: string }; name: string; rpc: string[] }> } | null;
+  isAllNetworks: boolean;
+  tokenNetworkFilter: Record<string, boolean>;
+}
+
+interface NetworkSettingsState {
+  rpcUrl: string | undefined;
+  rpcName: string | undefined;
+  rpcUrlFrom: string | undefined;
+  rpcNameForm: string;
+  rpcUrls: RpcEndpoint[];
+  blockExplorerUrls: string[];
+  selectedRpcEndpointIndex: number;
+  blockExplorerUrl: string | undefined;
+  blockExplorerUrlForm: string | undefined;
+  nickname: string | undefined;
+  chainId: string | undefined;
+  ticker: string | undefined;
+  editable: boolean | undefined;
+  addMode: boolean;
+  warningRpcUrl: string | undefined;
+  warningChainId: string | undefined;
+  warningSymbol: string | undefined;
+  warningName?: string | undefined;
+  validatedRpcURL: boolean;
+  validatedChainId: boolean;
+  validatedSymbol: boolean;
+  initialState: string | undefined;
+  enableAction: boolean;
+  inputWidth: { width: string };
+  showPopularNetworkModal: boolean;
+  popularNetwork: Record<string, unknown>;
+  showWarningModal: boolean;
+  showNetworkDetailsModal: boolean;
+  isNameFieldFocused: boolean;
+  isSymbolFieldFocused: boolean;
+  isRpcUrlFieldFocused: boolean;
+  isChainIdFieldFocused: boolean;
+  networkList: Record<string, unknown> | Array<Record<string, unknown>>;
+  showMultiRpcAddModal: { isVisible: boolean };
+  showMultiBlockExplorerAddModal: { isVisible: boolean };
+  showAddRpcForm: { isVisible: boolean };
+  showAddBlockExplorerForm: { isVisible: boolean };
+  rpcUrlForm?: string;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     base: {
       paddingHorizontal: 16,
@@ -400,63 +488,8 @@ const infuraProjectId = InfuraKey === 'null' ? '' : InfuraKey;
 /**
  * Main view for app configurations
  */
-export class NetworkSettings extends PureComponent {
-  static propTypes = {
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * handles action for onboarding to a network
-     */
-    showNetworkOnboardingAction: PropTypes.func,
-    /**
-     * returns an array of onboarded networks
-     */
-    networkOnboardedState: PropTypes.object,
-    /**
-     * Checks if adding custom mainnet.
-     */
-    isCustomMainnet: PropTypes.bool,
-    /**
-     * Current network provider configuration
-     */
-    providerConfig: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-
-    /**
-     * Checks if toggle verification is enabled
-     */
-    useSafeChainsListValidation: PropTypes.bool,
-
-    /**
-     * Matched object from third provider
-     */
-    matchedChainNetwork: PropTypes.object,
-
-    /**
-     * Checks if all networks are selected
-     */
-    isAllNetworks: PropTypes.bool,
-
-    /**
-     * Token network filter
-     */
-    tokenNetworkFilter: PropTypes.object,
-  };
-
-  state = {
+export class NetworkSettings extends PureComponent<NetworkSettingsProps, NetworkSettingsState> {
+  state: NetworkSettingsState = {
     rpcUrl: undefined,
     rpcName: undefined,
     rpcUrlFrom: undefined,
@@ -2564,7 +2597,7 @@ export class NetworkSettings extends PureComponent {
 }
 
 NetworkSettings.contextType = ThemeContext;
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   showNetworkOnboardingAction: ({
     networkUrl,
     networkType,
@@ -2581,7 +2614,7 @@ const mapDispatchToProps = (dispatch) => ({
     ),
 });
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   providerConfig: selectProviderConfig(state),
   networkConfigurations: selectNetworkConfigurations(state),
   networkOnboardedState: state.networkOnboarded.networkOnboardedState,
