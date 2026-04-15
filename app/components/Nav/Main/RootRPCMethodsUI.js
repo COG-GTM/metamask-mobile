@@ -504,14 +504,14 @@ const RootRPCMethodsUI = (props) => {
     };
   }, [onUnapprovedTransaction]);
 
-  useEffect(() => {
-    // WalletConnect v1 init removed - v2 is initialized in App.tsx via WC2Manager
-
-    return function cleanup() {
-      Engine.context.TokensController?.hub?.removeAllListeners();
-    };
+  useEffect(
+    () =>
+      function cleanup() {
+        Engine.context.TokensController?.hub?.removeAllListeners();
+      },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    [],
+  );
 
   return (
     <React.Fragment>
