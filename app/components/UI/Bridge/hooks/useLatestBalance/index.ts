@@ -100,7 +100,7 @@ export const useLatestBalance = (
         token.address,
         chainId,
       );
-      if (atomicBalance && token.decimals) {
+      if (atomicBalance !== undefined && token.decimals) {
         setBalance({
           displayBalance: formatUnits(atomicBalance, token.decimals),
           atomicBalance,
