@@ -1,4 +1,4 @@
-import { cn } from '@/app/lib/shadcn/utils';
+import { cn } from '../../lib/shadcn/utils';
 import * as ProgressPrimitive from '@rn-primitives/progress';
 import { Platform, View } from 'react-native';
 import Animated, {

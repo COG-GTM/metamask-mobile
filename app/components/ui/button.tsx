@@ -1,5 +1,5 @@
-import { TextClassContext } from '@/app/components/ui/text';
-import { cn } from '@/app/lib/shadcn/utils';
+import { TextClassContext } from './text';
+import { cn } from '../../lib/shadcn/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Platform, Pressable } from 'react-native';
 

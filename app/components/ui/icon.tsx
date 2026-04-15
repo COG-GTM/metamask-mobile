@@ -1,5 +1,5 @@
-import { TextClassContext } from '@/app/components/ui/text';
-import { cn } from '@/app/lib/shadcn/utils';
+import { TextClassContext } from './text';
+import { cn } from '../../lib/shadcn/utils';
 import type { LucideIcon, LucideProps } from 'lucide-react-native';
 import { cssInterop } from 'nativewind';
 import * as React from 'react';
@@ -29,7 +29,7 @@ cssInterop(IconImpl, {
  * @example
  * ```tsx
  * import { ArrowRight } from 'lucide-react-native';
- * import { Icon } from '@/app/components/ui/icon';
+ * import { Icon } from './icon';
  *
  * <Icon as={ArrowRight} className="text-red-500" size={16} />
  * ```

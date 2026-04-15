@@ -1,4 +1,4 @@
-import { cn } from '@/app/lib/shadcn/utils';
+import { cn } from '../../lib/shadcn/utils';
 import * as LabelPrimitive from '@rn-primitives/label';
 import { Platform } from 'react-native';
 

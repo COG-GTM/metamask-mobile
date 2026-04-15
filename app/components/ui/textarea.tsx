@@ -1,4 +1,4 @@
-import { cn } from '@/app/lib/shadcn/utils';
+import { cn } from '../../lib/shadcn/utils';
 import { Platform, TextInput } from 'react-native';
 
 function Textarea({

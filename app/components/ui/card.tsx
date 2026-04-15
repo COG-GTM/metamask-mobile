@@ -1,5 +1,5 @@
-import { Text, TextClassContext } from '@/app/components/ui/text';
-import { cn } from '@/app/lib/shadcn/utils';
+import { Text, TextClassContext } from './text';
+import { cn } from '../../lib/shadcn/utils';
 import { View } from 'react-native';
 
 function Card({ className, ...props }: React.ComponentProps<typeof View>) {

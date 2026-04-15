@@ -1,5 +1,5 @@
-import { Icon } from '@/app/components/ui/icon';
-import { cn } from '@/app/lib/shadcn/utils';
+import { Icon } from './icon';
+import { cn } from '../../lib/shadcn/utils';
 import * as CheckboxPrimitive from '@rn-primitives/checkbox';
 import { Check } from 'lucide-react-native';
 import { Platform } from 'react-native';

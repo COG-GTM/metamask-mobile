@@ -1,6 +1,6 @@
-import { NativeOnlyAnimatedView } from '@/app/components/ui/native-only-animated-view';
-import { TextClassContext } from '@/app/components/ui/text';
-import { cn } from '@/app/lib/shadcn/utils';
+import { NativeOnlyAnimatedView } from './native-only-animated-view';
+import { TextClassContext } from './text';
+import { cn } from '../../lib/shadcn/utils';
 import * as TooltipPrimitive from '@rn-primitives/tooltip';
 import * as React from 'react';
 import { Platform, StyleSheet } from 'react-native';

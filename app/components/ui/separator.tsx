@@ -1,4 +1,4 @@
-import { cn } from '@/app/lib/shadcn/utils';
+import { cn } from '../../lib/shadcn/utils';
 import * as SeparatorPrimitive from '@rn-primitives/separator';
 
 function Separator({
