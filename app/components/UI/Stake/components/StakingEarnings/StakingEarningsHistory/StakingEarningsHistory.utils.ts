@@ -7,7 +7,7 @@ import {
   renderFromWei,
   fromWei,
 } from '../../../../../../util/number';
-import { BN } from 'ethereumjs-util';
+import BN from 'bn.js';
 import type { TimePeriodGroupInfo } from './StakingEarningsHistory.types';
 import { DateRange } from './StakingEarningsTimePeriod/StakingEarningsTimePeriod.types';
 import BigNumber from 'bignumber.js';

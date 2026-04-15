@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent } from '@testing-library/react-native';
-import { zeroAddress } from 'ethereumjs-util';
+import { zeroAddress } from '@ethereumjs/util';
 import { NetworkController } from '@metamask/network-controller';
 import AssetOverview from './AssetOverview';
 import renderWithProvider from '../../../util/test/renderWithProvider';

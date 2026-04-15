@@ -1,4 +1,4 @@
-import { zeroAddress } from 'ethereumjs-util';
+import { zeroAddress } from '@ethereumjs/util';
 import { TokenI } from '../../Tokens/types';
 import { TokenDetails } from '../TokenDetails/TokenDetails';
 

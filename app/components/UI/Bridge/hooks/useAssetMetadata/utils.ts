@@ -14,7 +14,7 @@ import { toEvmCaipChainId } from '@metamask/multichain-network-controller';
 import { MultichainNetwork } from '@metamask/multichain-transactions-controller';
 import { handleFetch, toHex } from '@metamask/controller-utils';
 import { decimalToHex } from '../../../../../util/conversions';
-import { addHexPrefix } from 'ethereumjs-util';
+import { addHexPrefix } from '@ethereumjs/util';
 
 const TOKEN_API_V3_BASE_URL = 'https://tokens.api.cx.metamask.io/v3';
 const STATIC_METAMASK_BASE_URL = 'https://static.cx.metamask.io';

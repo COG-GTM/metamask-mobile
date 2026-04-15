@@ -5,7 +5,8 @@ import useInterval from '../../../hooks/useInterval';
 import { getGasLimit } from '../../../../util/custom-gas';
 import { safeToChecksumAddress } from '../../../../util/address';
 import { generateTransferData } from '../../../../util/transactions';
-import { addHexPrefix, BN } from 'ethereumjs-util';
+import { addHexPrefix } from '@ethereumjs/util';
+import BN from 'bn.js';
 import { toTokenMinimalUnit } from '../../../../util/number';
 
 const TRANSFER_GAS_LIMIT = 21000;

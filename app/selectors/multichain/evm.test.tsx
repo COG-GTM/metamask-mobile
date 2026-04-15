@@ -31,7 +31,7 @@ import {
   POLYGON_CHAIN_ID,
 } from '@metamask/swaps-controller/dist/constants';
 import { AccountsControllerState } from '@metamask/accounts-controller';
-import { zeroAddress } from 'ethereumjs-util';
+import { zeroAddress } from '@ethereumjs/util';
 
 describe('Multichain Selectors', () => {
   const mockState: RootState = {

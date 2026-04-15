@@ -33,7 +33,7 @@ import {
 } from '../currencyRateController';
 import { createDeepEqualSelector } from '../util';
 import { getTicker } from '../../util/transactions';
-import { zeroAddress } from 'ethereumjs-util';
+import { zeroAddress } from '@ethereumjs/util';
 import { selectHideZeroBalanceTokens } from '../settings';
 import { selectTokensBalances } from '../tokenBalancesController';
 import { isZero } from '../../util/lodash';

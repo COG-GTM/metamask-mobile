@@ -16,7 +16,7 @@ import { useSignatureRequest } from '../../../../hooks/signatures/useSignatureRe
 import useApprovalRequest from '../../../../hooks/useApprovalRequest';
 import { View } from 'react-native';
 import styleSheet from './info-section-origin-and-details.styles';
-import { isValidAddress } from 'ethereumjs-util';
+import { isValidAddress } from '@ethereumjs/util';
 
 export const InfoSectionOriginAndDetails = () => {
   const { styles } = useStyles(styleSheet, {});

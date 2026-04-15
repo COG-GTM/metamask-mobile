@@ -1,6 +1,6 @@
 import { JsonRpcMiddleware } from '@metamask/json-rpc-engine';
 import type { Json, JsonRpcParams, JsonRpcRequest } from '@metamask/utils';
-import { addHexPrefix } from 'ethereumjs-util';
+import { addHexPrefix } from '@ethereumjs/util';
 
 // We use this to clean any custom params from the txParams
 // TODO: Update this to allow `blockhash` (used by `eth_getLogs`) and EIP-1559

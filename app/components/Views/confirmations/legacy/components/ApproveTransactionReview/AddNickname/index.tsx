@@ -5,7 +5,7 @@ import EthereumAddress from '../../../../../../UI/EthereumAddress';
 import Engine from '../../../../../../../core/Engine';
 import { MetaMetricsEvents } from '../../../../../../../core/Analytics';
 
-import { toChecksumAddress } from 'ethereumjs-util';
+import { toChecksumAddress } from '@ethereumjs/util';
 import { connect, useSelector } from 'react-redux';
 import StyledButton from '../../../../../../UI/StyledButton';
 import Text from '../../../../../../../component-library/components/Texts/Text';
