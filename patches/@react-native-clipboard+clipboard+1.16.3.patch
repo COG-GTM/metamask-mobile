@@ -84,7 +84,7 @@ index ccdf309..3eb6120 100644
       * Returns whether the clipboard has content or is empty.
       * This method returns a `Promise`, so you can use following code to get clipboard content
 diff --git a/node_modules/@react-native-clipboard/clipboard/ios/RNCClipboard.mm b/node_modules/@react-native-clipboard/clipboard/ios/RNCClipboard.mm
-index 3ee5caa..f6bd6f3 100644
+index 4e38fd2..b4fcdd0 100644
 --- a/node_modules/@react-native-clipboard/clipboard/ios/RNCClipboard.mm
 +++ b/node_modules/@react-native-clipboard/clipboard/ios/RNCClipboard.mm
 @@ -6,6 +6,7 @@
@@ -95,7 +95,7 @@ index 3ee5caa..f6bd6f3 100644
  
  @implementation RNCClipboard {
      BOOL isObserving;
-@@ -51,6 +52,16 @@ - (void) listener:(NSNotification *) notification
+@@ -51,6 +52,16 @@ NSString *const CLIPBOARD_TEXT_CHANGED = @"RNCClipboard_TEXT_CHANGED";
      }
  }
  

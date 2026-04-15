@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-svg/src/utils/fetchData.ts b/node_modules/react-native-svg/src/utils/fetchData.ts
-index d141be3..4da0fba 100644
+index afbe59f..76da439 100644
 --- a/node_modules/react-native-svg/src/utils/fetchData.ts
 +++ b/node_modules/react-native-svg/src/utils/fetchData.ts
-@@ -34,6 +34,16 @@ function dataUriToXml(uri: string): string | null {
+@@ -32,6 +32,16 @@ function dataUriToXml(uri: string): string | null {
  
  async function fetchUriData(uri: string) {
    const response = await fetch(uri);
