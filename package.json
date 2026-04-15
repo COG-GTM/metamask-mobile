@@ -93,7 +93,10 @@
     "gen-bundle:ios": "npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle",
     "gen-bundle:android": "npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/main.jsbundle",
     "circular:deps": "dpdm ./app/* --circular --exit-code circular:1 --warning=false",
-    "generate-icons": "npx ts-node app/component-library/components/Icons/Icon/scripts/generate-assets.ts"
+    "generate-icons": "npx ts-node app/component-library/components/Icons/Icon/scripts/generate-assets.ts",
+    "migrate-js-to-ts": "npx ts-node scripts/migrate-js-to-ts.ts",
+    "migration-progress": "npx ts-node scripts/migration-progress.ts",
+    "generate-reducer-types": "npx ts-node scripts/generate-reducer-types.ts"
   },
   "husky": {
     "hooks": {

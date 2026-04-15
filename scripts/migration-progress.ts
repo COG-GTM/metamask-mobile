@@ -1,0 +1,327 @@
+#!/usr/bin/env ts-node
+/**
+ * Migration Progress Dashboard / Tracking Report
+ *
+ * Scans the app/ directory and generates a migration progress report:
+ * 1. Counts all .js, .jsx, .ts, and .tsx files
+ * 2. Calculates migration percentage
+ * 3. Lists remaining .js/.jsx files grouped by directory
+ * 4. Flags reducers still typed as `any` in RootState
+ * 5. Outputs to console and docs/MIGRATION_PROGRESS.md
+ *
+ * Usage:
+ *   yarn migration-progress
+ */
+
+import * as fs from 'fs';
+import * as path from 'path';
+
+interface FileCount {
+  js: number;
+  jsx: number;
+  ts: number;
+  tsx: number;
+}
+
+interface DirectoryGroup {
+  directory: string;
+  files: string[];
+}
+
+// Reducers known to be typed as `any` in app/reducers/index.ts RootState interface
+const ANY_TYPED_REDUCERS = [
+  'legalNotices',
+  'collectibles',
+  'privacy',
+  'bookmarks',
+  'browser',
+  'modals',
+  'settings',
+  'alert',
+  'transaction',
+  'wizard',
+  'notification',
+  'swaps',
+  'infuraAvailability',
+  'networkOnboarded',
+  'experimentalSettings',
+  'signatureRequest',
+  'rpcEvents',
+  'accounts',
+];
+
+/**
+ * Recursively walk a directory and collect file info
+ */
+function walkDirectory(
+  dir: string,
+  counts: FileCount,
+  jsFiles: string[],
+): void {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      // Skip non-source directories
+      if (
+        entry.name === 'node_modules' ||
+        entry.name.startsWith('.') ||
+        entry.name === '__snapshots__' ||
+        entry.name === '__mocks__'
+      ) {
+        continue;
+      }
+      walkDirectory(fullPath, counts, jsFiles);
+    } else if (entry.isFile()) {
+      const ext = path.extname(entry.name);
+      switch (ext) {
+        case '.js':
+          counts.js++;
+          jsFiles.push(fullPath);
+          break;
+        case '.jsx':
+          counts.jsx++;
+          jsFiles.push(fullPath);
+          break;
+        case '.ts':
+          if (!entry.name.endsWith('.d.ts')) {
+            counts.ts++;
+          }
+          break;
+        case '.tsx':
+          counts.tsx++;
+          break;
+      }
+    }
+  }
+}
+
+/**
+ * Group files by their parent directory (relative to repo root)
+ */
+function groupByDirectory(files: string[], baseDir: string): DirectoryGroup[] {
+  const groups = new Map<string, string[]>();
+
+  for (const file of files) {
+    const relPath = path.relative(baseDir, file);
+    const dir = path.dirname(relPath);
+    // Group by top two levels of directory (e.g., app/reducers, app/components/UI)
+    const parts = dir.split(path.sep);
+    let groupKey: string;
+    if (parts.length <= 2) {
+      groupKey = dir;
+    } else {
+      groupKey = parts.slice(0, 3).join('/');
+    }
+
+    if (!groups.has(groupKey)) {
+      groups.set(groupKey, []);
+    }
+    groups.get(groupKey)!.push(relPath);
+  }
+
+  return Array.from(groups.entries())
+    .map(([directory, files]) => ({ directory, files }))
+    .sort((a, b) => b.files.length - a.files.length);
+}
+
+/**
+ * Check which any-typed reducers have already been properly typed
+ */
+function checkReducerTypingStatus(): {
+  stillAny: string[];
+  alreadyTyped: string[];
+} {
+  const reducerIndexPath = path.resolve('app/reducers/index.ts');
+  if (!fs.existsSync(reducerIndexPath)) {
+    return { stillAny: ANY_TYPED_REDUCERS, alreadyTyped: [] };
+  }
+
+  const content = fs.readFileSync(reducerIndexPath, 'utf-8');
+  const stillAny: string[] = [];
+  const alreadyTyped: string[] = [];
+
+  for (const reducer of ANY_TYPED_REDUCERS) {
+    // Check if the reducer is still typed as `any` in RootState
+    // Pattern: reducerName: any (possibly with eslint-disable comment above)
+    const anyPattern = new RegExp(
+      `@typescript-eslint/no-explicit-any[\\s\\S]*?${reducer}:\\s*any`,
+    );
+    if (anyPattern.test(content)) {
+      stillAny.push(reducer);
+    } else {
+      alreadyTyped.push(reducer);
+    }
+  }
+
+  return { stillAny, alreadyTyped };
+}
+
+/**
+ * Generate a progress bar string
+ */
+function progressBar(percentage: number, width: number = 30): string {
+  const filled = Math.round((percentage / 100) * width);
+  const empty = width - filled;
+  return `[${'█'.repeat(filled)}${'░'.repeat(empty)}] ${percentage.toFixed(1)}%`;
+}
+
+/**
+ * Generate the markdown report content
+ */
+function generateReport(
+  counts: FileCount,
+  jsFiles: string[],
+  groups: DirectoryGroup[],
+  reducerStatus: { stillAny: string[]; alreadyTyped: string[] },
+): string {
+  const totalJS = counts.js + counts.jsx;
+  const totalTS = counts.ts + counts.tsx;
+  const total = totalJS + totalTS;
+  const percentage = total > 0 ? (totalTS / total) * 100 : 0;
+
+  const timestamp = new Date().toISOString().split('T')[0];
+
+  let report = `# TypeScript Migration Progress Report
+
+> Auto-generated by \`yarn migration-progress\` on ${timestamp}
+
+## Overview
+
+${progressBar(percentage)}
+
+| Metric | Count |
+|--------|-------|
+| Total source files | ${total} |
+| TypeScript files (.ts) | ${counts.ts} |
+| TypeScript JSX files (.tsx) | ${counts.tsx} |
+| **Total TypeScript** | **${totalTS}** |
+| JavaScript files (.js) | ${counts.js} |
+| JavaScript JSX files (.jsx) | ${counts.jsx} |
+| **Total JavaScript** | **${totalJS}** |
+| **Migration progress** | **${percentage.toFixed(1)}%** |
+
+## Reducer Typing Status
+
+The \`RootState\` interface in \`app/reducers/index.ts\` has ${reducerStatus.stillAny.length} reducers still typed as \`any\`:
+
+### Still typed as \`any\` (${reducerStatus.stillAny.length})
+
+| # | Reducer | File |
+|---|---------|------|
+`;
+
+  reducerStatus.stillAny.forEach((name, i) => {
+    report += `| ${i + 1} | \`${name}\` | \`app/reducers/${name}/\` |\n`;
+  });
+
+  if (reducerStatus.alreadyTyped.length > 0) {
+    report += `\n### Already properly typed (${reducerStatus.alreadyTyped.length})\n\n`;
+    report += reducerStatus.alreadyTyped.map((name) => `- \`${name}\``).join('\n');
+    report += '\n';
+  }
+
+  report += `\n## Remaining JS/JSX Files by Directory\n\n`;
+  report += `Total remaining: **${totalJS} files** across ${groups.length} directory groups.\n\n`;
+
+  for (const group of groups) {
+    report += `### \`${group.directory}/\` (${group.files.length} files)\n\n`;
+    if (group.files.length <= 10) {
+      for (const file of group.files) {
+        report += `- \`${file}\`\n`;
+      }
+    } else {
+      // Show first 10 and summarize
+      for (let i = 0; i < 10; i++) {
+        report += `- \`${group.files[i]}\`\n`;
+      }
+      report += `- ... and ${group.files.length - 10} more\n`;
+    }
+    report += '\n';
+  }
+
+  report += `## Next Steps
+
+1. Run \`yarn generate-reducer-types\` to auto-generate type stubs for \`any\`-typed reducers
+2. Run \`yarn migrate-js-to-ts <file>\` to migrate individual files
+3. Follow the [Migration Playbooks](https://app.devin.ai/knowledge) for phased migration approach
+4. After migrating, validate with: \`tsc --noEmit && yarn test --findRelatedTests <file> && yarn lint\`
+`;
+
+  return report;
+}
+
+// ---- Main ----
+function main(): void {
+  const appDir = path.resolve('app');
+
+  if (!fs.existsSync(appDir)) {
+    console.error('Error: app/ directory not found. Run this from the repo root.');
+    process.exit(1);
+  }
+
+  console.log('=== TypeScript Migration Progress Report ===\n');
+  console.log('Scanning app/ directory...\n');
+
+  const counts: FileCount = { js: 0, jsx: 0, ts: 0, tsx: 0 };
+  const jsFiles: string[] = [];
+
+  walkDirectory(appDir, counts, jsFiles);
+
+  const totalJS = counts.js + counts.jsx;
+  const totalTS = counts.ts + counts.tsx;
+  const total = totalJS + totalTS;
+  const percentage = total > 0 ? (totalTS / total) * 100 : 0;
+
+  // Console output
+  console.log(progressBar(percentage));
+  console.log('');
+  console.log(`  .ts files:  ${counts.ts}`);
+  console.log(`  .tsx files: ${counts.tsx}`);
+  console.log(`  .js files:  ${counts.js}`);
+  console.log(`  .jsx files: ${counts.jsx}`);
+  console.log(`  Total:      ${total}`);
+  console.log(`  Progress:   ${percentage.toFixed(1)}% TypeScript`);
+  console.log('');
+
+  // Group JS files by directory
+  const groups = groupByDirectory(jsFiles, process.cwd());
+
+  console.log(`Remaining JS/JSX files grouped by directory:`);
+  console.log('');
+  for (const group of groups.slice(0, 15)) {
+    console.log(`  ${group.directory}/ — ${group.files.length} file(s)`);
+  }
+  if (groups.length > 15) {
+    console.log(`  ... and ${groups.length - 15} more directories`);
+  }
+  console.log('');
+
+  // Check reducer typing status
+  const reducerStatus = checkReducerTypingStatus();
+
+  console.log(
+    `Reducers still typed as \`any\` in RootState: ${reducerStatus.stillAny.length}`,
+  );
+  for (const name of reducerStatus.stillAny) {
+    console.log(`  - ${name}`);
+  }
+  console.log('');
+
+  // Generate markdown report
+  const report = generateReport(counts, jsFiles, groups, reducerStatus);
+
+  // Write to docs/MIGRATION_PROGRESS.md
+  const docsDir = path.resolve('docs');
+  if (!fs.existsSync(docsDir)) {
+    fs.mkdirSync(docsDir, { recursive: true });
+  }
+
+  const outputPath = path.join(docsDir, 'MIGRATION_PROGRESS.md');
+  fs.writeFileSync(outputPath, report, 'utf-8');
+  console.log(`Report written to: ${outputPath}`);
+}
+
+main();
