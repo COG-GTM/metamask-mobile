@@ -1,7 +1,153 @@
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import type BN from 'bnjs4';
+import type { SecurityAlertResponse } from '@metamask/transaction-controller';
 
-const initialState = {
+interface TransactionData {
+  data?: string;
+  from?: string;
+  gas?: BN;
+  gasPrice?: BN;
+  to?: string;
+  value?: BN;
+  maxFeePerGas?: BN;
+  maxPriorityFeePerGas?: BN;
+  securityAlertResponse?: SecurityAlertResponse;
+}
+
+interface SelectedAsset {
+  tokenId?: string;
+  isETH?: boolean;
+  symbol?: string;
+  address?: string;
+  decimals?: number;
+  [key: string]: unknown;
+}
+
+export interface TransactionState {
+  ensRecipient: string | undefined;
+  assetType: string | undefined;
+  selectedAsset: SelectedAsset;
+  transaction: TransactionData;
+  warningGasPriceHigh: string | undefined;
+  transactionTo: string | undefined;
+  transactionToName: string | undefined;
+  transactionFromName: string | undefined;
+  transactionValue: string | undefined;
+  symbol: string | undefined;
+  paymentRequest: unknown | undefined;
+  readableValue: string | undefined;
+  id: string | undefined;
+  type: string | undefined;
+  proposedNonce: string | undefined;
+  nonce: string | undefined;
+  securityAlertResponses: Record<string, SecurityAlertResponse>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+}
+
+interface RehydrateAction {
+  type: typeof REHYDRATE;
+}
+
+interface ResetTransactionAction {
+  type: 'RESET_TRANSACTION';
+}
+
+interface NewAssetTransactionAction {
+  type: 'NEW_ASSET_TRANSACTION';
+  selectedAsset: SelectedAsset;
+  assetType: string;
+}
+
+interface SetNonceAction {
+  type: 'SET_NONCE';
+  nonce: string;
+}
+
+interface SetProposedNonceAction {
+  type: 'SET_PROPOSED_NONCE';
+  proposedNonce: string;
+}
+
+interface SetRecipientAction {
+  type: 'SET_RECIPIENT';
+  from: string;
+  ensRecipient: string;
+  to: string;
+  transactionToName: string;
+  transactionFromName: string;
+}
+
+interface SetSelectedAssetAction {
+  type: 'SET_SELECTED_ASSET';
+  selectedAsset: SelectedAsset;
+  assetType?: string;
+}
+
+interface PrepareTransactionAction {
+  type: 'PREPARE_TRANSACTION';
+  transaction: TransactionData;
+}
+
+interface SetTransactionObjectAction {
+  type: 'SET_TRANSACTION_OBJECT';
+  transaction: TransactionData & {
+    selectedAsset?: SelectedAsset;
+    assetType?: string;
+    [key: string]: unknown;
+  };
+}
+
+interface SetTokensTransactionAction {
+  type: 'SET_TOKENS_TRANSACTION';
+  asset: SelectedAsset;
+}
+
+interface SetEtherTransactionAction {
+  type: 'SET_ETHER_TRANSACTION';
+  transaction: TransactionData;
+}
+
+interface SetTransactionSecurityAlertResponseAction {
+  type: 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE';
+  transactionId: string;
+  securityAlertResponse: SecurityAlertResponse;
+}
+
+interface SetTransactionIdAction {
+  type: 'SET_TRANSACTION_ID';
+  transactionId: string;
+}
+
+interface SetMaxValueModeAction {
+  type: 'SET_MAX_VALUE_MODE';
+  maxValueMode: boolean;
+}
+
+interface SetTransactionValueAction {
+  type: 'SET_TRANSACTION_VALUE';
+  value: BN;
+}
+
+type TransactionAction =
+  | RehydrateAction
+  | ResetTransactionAction
+  | NewAssetTransactionAction
+  | SetNonceAction
+  | SetProposedNonceAction
+  | SetRecipientAction
+  | SetSelectedAssetAction
+  | PrepareTransactionAction
+  | SetTransactionObjectAction
+  | SetTokensTransactionAction
+  | SetEtherTransactionAction
+  | SetTransactionSecurityAlertResponseAction
+  | SetTransactionIdAction
+  | SetMaxValueModeAction
+  | SetTransactionValueAction;
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,8 +178,8 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
-  let assetType;
+const getAssetType = (selectedAsset: SelectedAsset): string | undefined => {
+  let assetType: string | undefined;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
       assetType = 'ERC721';
@@ -46,7 +192,10 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
