@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -28,13 +27,15 @@ import Text from '../../../Base/Text';
 import Title from '../../../Base/Title';
 import Ratio from './Ratio';
 import { useTheme } from '../../../../util/theme';
+import type { Colors, Shadows } from '../../../../util/theme/models';
 import {
   selectConversionRate,
   selectCurrentCurrency,
 } from '../../../../selectors/currencyRateController';
 import { selectSwapsQuoteValues } from '../../../../reducers/swaps';
+import type { RootState } from '../../../../reducers';
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Colors, shadows: Shadows) =>
   StyleSheet.create({
     modalView: {
       backgroundColor: colors.background.default,
@@ -127,6 +128,38 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+interface Quote {
+  aggregator: string;
+  sourceAmount: string;
+  destinationAmount: string;
+  slippage: number;
+  aggType: string;
+  priceSlippage?: {
+    calculationError?: string;
+    destinationAmountInETH?: string;
+  };
+}
+
+interface QuoteValue {
+  overallValueOfQuote?: number;
+  ethFee?: string;
+}
+
+interface QuotesModalProps {
+  isVisible?: boolean;
+  toggleModal: () => void;
+  quotes: Quote[];
+  selectedQuote?: string;
+  sourceToken: { symbol: string; decimals: number };
+  destinationToken: { symbol: string; decimals: number };
+  conversionRate?: number;
+  currentCurrency?: string;
+  quoteValues?: Record<string, QuoteValue>;
+  showOverallValue?: boolean;
+  ticker?: string;
+  multiLayerL1ApprovalFeeTotal?: string;
+}
+
 function QuotesModal({
   isVisible,
   toggleModal,
@@ -140,12 +173,12 @@ function QuotesModal({
   showOverallValue,
   ticker,
   multiLayerL1ApprovalFeeTotal,
-}) {
+}: QuotesModalProps) {
   const bestOverallValue =
     quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
   const [displayDetails, setDisplayDetails] = useState(false);
   const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] =
-    useState(null);
+    useState<number | null>(null);
   const { colors, shadows } = useTheme();
   const styles = createStyles(colors, shadows);
 
@@ -181,7 +214,7 @@ function QuotesModal({
 
   // Toggle to the details in case the quote exist
   const handleQuoteDetailsPress = useCallback(
-    (index) => {
+    (index: number) => {
       if (quotes?.[index]) {
         setSelectedDetailsQuoteIndex(index);
         toggleDetails();
@@ -471,37 +504,7 @@ function QuotesModal({
   );
 }
 
-QuotesModal.propTypes = {
-  isVisible: PropTypes.bool,
-  toggleModal: PropTypes.func,
-  quotes: PropTypes.array,
-  selectedQuote: PropTypes.string,
-  destinationToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  sourceToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  quoteValues: PropTypes.object,
-  showOverallValue: PropTypes.bool,
-  multiLayerL1ApprovalFeeTotal: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   quoteValues: selectSwapsQuoteValues(state),

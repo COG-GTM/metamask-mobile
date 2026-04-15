@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import Modal from 'react-native-modal';
@@ -27,6 +26,26 @@ const styles = StyleSheet.create({
   },
 });
 
+interface ApprovalTransaction {
+  data: string;
+  from: string;
+  to: string;
+  value: string;
+  gas?: string;
+  gasPrice?: string;
+}
+
+interface ApprovalTransactionEditionModalProps {
+  originalApprovalTransaction: ApprovalTransaction | null;
+  approvalTransaction: ApprovalTransaction | null;
+  editQuoteTransactionsVisible?: boolean;
+  onCancelEditQuoteTransactions?: () => void;
+  setApprovalTransaction: (tx: ApprovalTransaction | null) => void;
+  sourceToken: { symbol: string; decimals: number; address: string };
+  minimumSpendLimit: string;
+  chainId?: string;
+}
+
 function ApprovalTransactionEditionModal({
   originalApprovalTransaction,
   approvalTransaction,
@@ -36,7 +55,7 @@ function ApprovalTransactionEditionModal({
   sourceToken,
   minimumSpendLimit,
   chainId,
-}) {
+}: ApprovalTransactionEditionModalProps) {
   /* Approval transaction if any */
   const [customApprovalTransaction, setCustomApprovalTransaction] =
     useState(approvalTransaction);
@@ -49,7 +68,7 @@ function ApprovalTransactionEditionModal({
   const { colors } = useTheme();
 
   const onSpendLimitCustomValueChange = useCallback(
-    (approvalCustomValue) => setApprovalCustomValue(approvalCustomValue),
+    (value: string) => setApprovalCustomValue(value),
     [],
   );
 
@@ -76,8 +95,8 @@ function ApprovalTransactionEditionModal({
       setCustomApprovalTransaction(newApprovalTransaction);
       setApprovalTransaction(newApprovalTransaction);
       onCancelEditQuoteTransactions();
-    } catch (err) {
-      Logger.log('Failed to setTransactionObject', err);
+      } catch (err: unknown) {
+        Logger.log('Failed to setTransactionObject', err);
     }
   }, [
     setApprovalTransaction,
@@ -153,18 +172,7 @@ function ApprovalTransactionEditionModal({
   );
 }
 
-ApprovalTransactionEditionModal.propTypes = {
-  approvalTransaction: PropTypes.object,
-  originalApprovalTransaction: PropTypes.object,
-  editQuoteTransactionsVisible: PropTypes.bool,
-  minimumSpendLimit: PropTypes.string.isRequired,
-  onCancelEditQuoteTransactions: PropTypes.func,
-  setApprovalTransaction: PropTypes.func,
-  sourceToken: PropTypes.object,
-  chainId: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   originalApprovalTransaction: selectSwapsApprovalTransaction(state),
 });
 
