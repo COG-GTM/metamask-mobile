@@ -272,7 +272,6 @@ jobs:
 
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             SESSION_URL=$(echo "$BODY" | jq -r '.url // "unknown"')
-            SESSION_ID=$(echo "$BODY" | jq -r '.session_id // "unknown"')
             echo "devin_triggered=true" >> "$GITHUB_OUTPUT"
             echo "devin_session_url=${SESSION_URL}" >> "$GITHUB_OUTPUT"
             echo "Devin session created: ${SESSION_URL}"
