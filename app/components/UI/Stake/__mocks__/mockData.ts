@@ -1,11 +1,11 @@
 import {
   ChainId,
+  PooledStakingContract,
   StakingType,
   type PooledStakes,
   type VaultData,
 } from '@metamask/stake-sdk';
 import { TokenI } from '../../Tokens/types';
-import { Contract } from 'ethers';
 import { Stake } from '../sdk/stakeSdkProvider';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { createMockToken, getCreateMockTokenOptions } from '../testUtils';
@@ -87,7 +87,7 @@ export const MOCK_GET_VAULT_RESPONSE: VaultData = {
 const MOCK_POOLED_STAKING_CONTRACT_SERVICE = {
   chainId: ChainId.ETHEREUM,
   connectSignerOrProvider: jest.fn(),
-  contract: new Contract('0x0000000000000000000000000000000000000000', []) as any,
+  contract: { address: '0x0000000000000000000000000000000000000000', target: '0x0000000000000000000000000000000000000000' } as PooledStakingContract['contract'],
   convertToShares: jest.fn(),
   encodeClaimExitedAssetsTransactionData: jest.fn(),
   encodeDepositTransactionData: jest.fn(),

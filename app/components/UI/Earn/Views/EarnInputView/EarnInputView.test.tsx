@@ -5,7 +5,6 @@ import { CHAIN_IDS } from '@metamask/transaction-controller';
 import BigNumber from 'bignumber.js';
 import { act, fireEvent } from '@testing-library/react-native';
 import BN4 from 'bnjs4';
-import { Contract } from 'ethers';
 import React from 'react';
 import { strings } from '../../../../../../locales/i18n';
 import Routes from '../../../../../constants/navigation/Routes';
@@ -127,7 +126,7 @@ const mockGasFeeBN = new BN4('100000000000000');
 const mockPooledStakingContractService: PooledStakingContract = {
   chainId: ChainId.ETHEREUM,
   connectSignerOrProvider: jest.fn(),
-  contract: new Contract('0x0000000000000000000000000000000000000000', []) as any,
+  contract: { address: '0x0000000000000000000000000000000000000000', target: '0x0000000000000000000000000000000000000000' } as PooledStakingContract['contract'],
   convertToShares: jest.fn(),
   encodeClaimExitedAssetsTransactionData: jest.fn(),
   encodeDepositTransactionData: jest.fn(),

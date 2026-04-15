@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { type Hex, type CaipChainId, isCaipChainId } from '@metamask/utils';
 import { abiERC20 } from '@metamask/metamask-eth-abis';
 import { Web3Provider } from '@ethersproject/providers';
-import { formatUnits, getAddress, parseUnits, ZeroAddress, Contract } from 'ethers';
+import { formatUnits, getAddress, parseUnits, ZeroAddress, Contract, type ContractRunner } from 'ethers';
 import { useSelector } from 'react-redux';
 import {
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
@@ -23,8 +23,9 @@ export async function fetchAtomicTokenBalance(
   userAddress: string,
   web3Provider: Web3Provider,
 ): Promise<bigint> {
-  // Cast v5 Web3Provider to any for v6 Contract compatibility (runtime-compatible)
-  const tokenContract = new Contract(address, abiERC20, web3Provider as any);
+  // Cast v5 Web3Provider to ContractRunner for v6 Contract compatibility
+  // (v5 Web3Provider is runtime-compatible with v6 ContractRunner for call-based reads)
+  const tokenContract = new Contract(address, abiERC20, web3Provider as unknown as ContractRunner);
   const tokenBalancePromise = tokenContract
     ? tokenContract.balanceOf(userAddress)
     : Promise.resolve();

@@ -10,7 +10,6 @@ import {
   StakingType,
   ChainId,
 } from '@metamask/stake-sdk';
-import { Contract } from 'ethers';
 import { Stake } from '../../sdk/stakeSdkProvider';
 import { EVENT_PROVIDERS } from '../../constants/events';
 const MOCK_ADDRESS_1 = '0x0';
@@ -80,7 +79,7 @@ jest.mock('../../../../../core/Engine', () => {
 const mockPooledStakingContractService: PooledStakingContract = {
   chainId: ChainId.ETHEREUM,
   connectSignerOrProvider: mockConnectSignerOrProvider,
-  contract: new Contract('0x0000000000000000000000000000000000000000', []) as any,
+  contract: { address: '0x0000000000000000000000000000000000000000', target: '0x0000000000000000000000000000000000000000' } as PooledStakingContract['contract'],
   convertToShares: jest.fn(),
   encodeClaimExitedAssetsTransactionData: jest.fn(),
   encodeDepositTransactionData: mockEncodeDepositTransactionData,
