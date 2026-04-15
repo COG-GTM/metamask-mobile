@@ -14,10 +14,9 @@
     "clean:node": "rm -rf node_modules && yarn --frozen-lockfile",
     "clean": "yarn clean:ios && yarn clean:android && yarn clean:node && yarn clean:ppom",
     "clean-android": "yarn clean:android && yarn clean:node",
-    "lint": "eslint '**/*.{js,ts,tsx}'",
-    "lint:fix": "eslint '**/*.{js,ts,tsx}' --fix",
-    "lint:tsc": "tsc --project ./tsconfig.json",
-    "format": "prettier '**/*.{js,ts,tsx,json,feature}' --write",
+    "lint": "eslint '**/*.{js,jsx}'",
+    "lint:fix": "eslint '**/*.{js,jsx}' --fix",
+    "format": "prettier '**/*.{js,jsx,json,feature}' --write",
     "setup": "yarn clean && node scripts/setup.mjs",
     "setup:flask": "export METAMASK_BUILD_TYPE='flask' && yarn setup",
     "setup:expo": "yarn clean && node scripts/setup.mjs --no-build-ios --no-build-android",
@@ -93,7 +92,7 @@
     "gen-bundle:ios": "npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle",
     "gen-bundle:android": "npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/main.jsbundle",
     "circular:deps": "dpdm ./app/* --circular --exit-code circular:1 --warning=false",
-    "generate-icons": "npx ts-node app/component-library/components/Icons/Icon/scripts/generate-assets.ts"
+    "generate-icons": "node app/component-library/components/Icons/Icon/scripts/generate-assets.js"
   },
   "husky": {
     "hooks": {
@@ -101,8 +100,8 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint '**/*.{js,ts,tsx}'"
+    "*.{js,jsx}": [
+      "eslint '**/*.{js,jsx}'"
     ]
   },
   "resolutions": {

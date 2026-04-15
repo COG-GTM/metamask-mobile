@@ -1,0 +1,1 @@
+export let DateRange = /*#__PURE__*/function (DateRange) {DateRange["DAILY"] = "7D";DateRange["MONTHLY"] = "M";DateRange["YEARLY"] = "Y";return DateRange;}({});

@@ -22,14 +22,14 @@ const config = {
     'node_modules/(?!((@metamask/)?(@react-native|react-native|redux-persist-filesystem|@react-navigation|@react-native-community|@react-native-masked-view|react-navigation|react-navigation-redux-helpers|@sentry|d3-color|@notifee)))',
   ],
   transform: {
-    '^.+\\.[jt]sx?$': ['babel-jest', { configFile: './babel.config.tests.js' }],
+    '^.+\\.jsx?$': ['babel-jest', { configFile: './babel.config.tests.js' }],
     '^.+\\.(png|jpg|jpeg|gif|webp|svg|mp4)$':
       '<rootDir>/app/util/test/assetFileTransformer.js',
   },
   snapshotSerializers: ['enzyme-to-json/serializer'],
   // This is an environment variable that can be used to execute logic only in development
   collectCoverage: process.env.NODE_ENV !== 'production',
-  collectCoverageFrom: ['<rootDir>/app/**/*.{js,ts,tsx,jsx}'],
+  collectCoverageFrom: ['<rootDir>/app/**/*.{js,jsx}'],
   coveragePathIgnorePatterns: [
     '__mocks__/',
     '<rootDir>/app/util/test/',
@@ -44,7 +44,7 @@ const config = {
   moduleNameMapper: {
     '\\.(svg)$': '<rootDir>/app/__mocks__/svgMock.js',
     '\\.(png)$': '<rootDir>/app/__mocks__/pngMock.js',
-    '\\webview/index.html': '<rootDir>/app/__mocks__/htmlMock.ts',
+    '\\webview/index.html': '<rootDir>/app/__mocks__/htmlMock.js',
     '^@expo/vector-icons@expo/vector-icons$': 'react-native-vector-icons',
     '^@expo/vector-icons/(.*)': 'react-native-vector-icons/$1',
   },

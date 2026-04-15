@@ -1,0 +1,59 @@
+import React from 'react';
+import renderWithProvider from '../../../../util/test/renderWithProvider';
+import { backgroundState } from '../../../../util/test/initial-root-state';
+import NotificationsSettings from '.';
+
+import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../../util/test/accountsControllerTestUtils';
+
+const mockInitialState = {
+  settings: {
+    useBlockieIcon: false
+  },
+  notificationsSettings: {
+    isEnabled: true
+  },
+  engine: {
+    backgroundState: {
+      ...backgroundState,
+      AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE
+    }
+  }
+};
+
+jest.mock('@react-navigation/native', () => {
+  const actualNav = jest.requireActual('@react-navigation/native');
+  return {
+    ...actualNav,
+    useNavigation: () => ({
+      navigate: jest.fn()
+    })
+  };
+});
+
+jest.mock(
+  '../../../../util/notifications/services/NotificationService',
+  () => ({
+    getAllPermissions: jest.fn()
+  })
+);
+
+const setOptions = jest.fn();
+
+describe('NotificationsSettings', () => {
+  it('render matches snapshot', () => {
+    const { toJSON } = renderWithProvider(
+      <NotificationsSettings
+        navigation={
+        {
+          setOptions
+        }
+        }
+        route={{}} />,
+
+      {
+        state: mockInitialState
+      }
+    );
+    expect(toJSON()).toMatchSnapshot();
+  });
+});

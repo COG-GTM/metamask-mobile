@@ -37,15 +37,15 @@ module.exports = {
     // TODO: Remove this once we have a fix for the private methods
     // Do not apply this plugin globally since it breaks FlatList props.getItem
     {
-      test: './app/core/redux/ReduxService.ts',
+      test: './app/core/redux/ReduxService.js',
       plugins: [['@babel/plugin-transform-private-methods', { loose: true }]],
     },
     {
-      test: './app/core/Engine/Engine.ts',
+      test: './app/core/Engine/Engine.js',
       plugins: [['@babel/plugin-transform-private-methods', { loose: true }]],
     },
     {
-      test: './app/core/NavigationService/NavigationService.ts',
+      test: './app/core/NavigationService/NavigationService.js',
       plugins: [['@babel/plugin-transform-private-methods', { loose: true }]],
     },
   ],

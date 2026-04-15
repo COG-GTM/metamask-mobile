@@ -1,0 +1,1 @@
+export let FooterButtonGroupActions = /*#__PURE__*/function (FooterButtonGroupActions) {FooterButtonGroupActions["STAKE"] = "STAKE";FooterButtonGroupActions["UNSTAKE"] = "UNSTAKE";return FooterButtonGroupActions;}({});

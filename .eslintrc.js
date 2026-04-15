@@ -1,9 +1,12 @@
 // eslint-disable-next-line import/no-commonjs
 module.exports = {
   root: true,
-  parser: '@typescript-eslint/parser',
+  parser: '@babel/eslint-parser',
   parserOptions: {
-    project: './tsconfig.json',
+    requireConfigFile: false,
+    babelOptions: {
+      presets: ['@babel/preset-env'],
+    },
   },
   extends: [
     '@react-native',
@@ -12,42 +15,10 @@ module.exports = {
     'plugin:import/warnings',
     'plugin:react/recommended',
   ],
-  plugins: ['@typescript-eslint', '@metamask/design-tokens'],
+  plugins: ['@metamask/design-tokens'],
   overrides: [
     {
-      files: ['*.{ts,tsx}'],
-      extends: ['@metamask/eslint-config-typescript'],
-      rules: {
-        // TODO: re-enable
-        'jsdoc/no-types': 'off',
-        'react/display-name': 'off',
-        'react/no-unused-prop-types': 'off',
-        'react/prop-types': 'off',
-        'react/self-closing-comp': 'off',
-        // This change is included in `@metamask/eslint-config-typescript@10.0.0
-        '@typescript-eslint/no-unused-vars': [
-          'error',
-          {
-            vars: 'all',
-            args: 'all',
-            argsIgnorePattern: '[_]+',
-            ignoreRestSiblings: true, // this line is what has changed
-          },
-        ],
-        '@typescript-eslint/no-explicit-any': 'error',
-        // Under discussion
-        '@typescript-eslint/no-duplicate-enum-values': 'off',
-      },
-    },
-    {
       files: ['*.js', '*.jsx'],
-      parser: '@babel/eslint-parser',
-      parserOptions: {
-        requireConfigFile: false,
-        babelOptions: {
-          presets: ['@babel/preset-env'],
-        },
-      },
       rules: {
         // under discussion
         'no-unused-vars': 'off',
@@ -68,20 +39,20 @@ module.exports = {
       },
     },
     {
-      files: ['**/*.test.{js,ts,tsx}', '**/*.stories.{js,ts,tsx}'],
+      files: ['**/*.test.{js,jsx}', '**/*.stories.{js,jsx}'],
       rules: {
         '@metamask/design-tokens/color-no-hex': 'off',
       },
     },
     {
       files: [
-        'app/components/UI/Name/**/*.{js,ts,tsx}',
-        'app/components/UI/SimulationDetails/**/*.{js,ts,tsx}',
-        'app/components/hooks/DisplayName/**/*.{js,ts,tsx}',
-        'app/components/Views/confirmations/**/*.{js,ts,tsx}',
+        'app/components/UI/Name/**/*.{js,jsx}',
+        'app/components/UI/SimulationDetails/**/*.{js,jsx}',
+        'app/components/hooks/DisplayName/**/*.{js,jsx}',
+        'app/components/Views/confirmations/**/*.{js,jsx}',
       ],
       excludedFiles: [
-        'app/components/Views/confirmations/components/WatchAssetRequest/**/*.{js,ts,tsx}',
+        'app/components/Views/confirmations/components/WatchAssetRequest/**/*.{js,jsx}',
       ],
       rules: {
         'no-restricted-syntax': [
@@ -131,7 +102,7 @@ module.exports = {
 
   settings: {
     'import/resolver': {
-      typescript: {}, // this loads <rootdir>/tsconfig.json to eslint
+      node: {},
     },
   },
 
@@ -247,5 +218,5 @@ module.exports = {
     radix: 0,
   },
 
-  ignorePatterns: ['wdio.conf.js', 'app/util/termsOfUse/termsOfUseContent.ts'],
+  ignorePatterns: ['wdio.conf.js', 'app/util/termsOfUse/termsOfUseContent.js'],
 };

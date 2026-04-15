@@ -1,0 +1,1 @@
+export let PermissionSource = /*#__PURE__*/function (PermissionSource) {PermissionSource["WalletConnect"] = "WalletConnect";PermissionSource["SDK"] = "SDK";PermissionSource["MetaMaskBrowser"] = "MetaMaskBrowser";return PermissionSource;}({});

@@ -1,0 +1,214 @@
+import {
+  formatChainIdToCaip,
+  formatChainIdToHex,
+  isSolanaChainId } from
+'@metamask/bridge-controller';
+import {
+
+
+
+  isStrictHexString } from
+'@metamask/utils';
+
+import {
+  addCurrencySymbol,
+  balanceToFiatNumber } from
+'../../../../util/number';
+
+import { handleFetch, toChecksumHexAddress } from '@metamask/controller-utils';
+import {
+  CodefiTokenPricesServiceV2,
+
+  fetchTokenContractExchangeRates } from
+'@metamask/assets-controllers';
+import { safeToChecksumAddress } from '../../../../util/address';
+import { SolScope } from '@metamask/keyring-api';
+import { toAssetId } from '../hooks/useAssetMetadata/utils';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getDisplayCurrencyValue = ({
+  token,
+  amount,
+  evmMultiChainMarketData,
+  networkConfigurationsByChainId,
+  evmMultiChainCurrencyRates,
+  currentCurrency,
+  nonEvmMultichainAssetRates
+}) => {
+  if (!token || !amount) {
+    return addCurrencySymbol('0', currentCurrency);
+  }
+
+  let currencyValue = 0;
+
+  if (isSolanaChainId(token.chainId)) {
+    const assetId = token.address;
+    // This rate is asset to fiat. Whatever the user selected display fiat currency is.
+    // We don't need to have an additional conversion from native token to fiat.
+    const rate = nonEvmMultichainAssetRates?.[assetId]?.rate;
+    if (rate) {
+      currencyValue = Number(balanceToFiatNumber(amount, Number(rate), 1));
+    } else {
+      currencyValue =
+      token?.currencyExchangeRate && amount ?
+      Number(amount) * token?.currencyExchangeRate :
+      0;
+    }
+  } else {
+    // EVM
+    const evmChainId = token.chainId;
+    const evmMultiChainExchangeRates = evmMultiChainMarketData?.[evmChainId];
+    const evmTokenMarketData =
+    evmMultiChainExchangeRates?.[token.address];
+
+    const nativeCurrency =
+    networkConfigurationsByChainId[evmChainId]?.nativeCurrency;
+    const multiChainConversionRate =
+    evmMultiChainCurrencyRates?.[nativeCurrency]?.conversionRate;
+
+    if (multiChainConversionRate && evmTokenMarketData?.price) {
+      currencyValue = Number(
+        balanceToFiatNumber(
+          amount,
+          multiChainConversionRate,
+          evmTokenMarketData.price
+        )
+      );
+    } else {
+      currencyValue =
+      token?.currencyExchangeRate && amount ?
+      Number(amount) * token?.currencyExchangeRate :
+      0;
+    }
+  }
+
+  if (currencyValue >= 0.01 || currencyValue === 0) {
+    return addCurrencySymbol(currencyValue, currentCurrency);
+  }
+
+  return `< ${addCurrencySymbol('0.01', currentCurrency)}`;
+};
+
+/**
+ * Fetches the exchange rates for the tokens against the current currency
+ * @param chainId - The chainId of the tokens
+ * @param currency - The currency to fetch the exchange rates in
+ * @param tokenAddresses - The addresses of the tokens to fetch the exchange rates for
+ * @returns Exchange rate for the tokens against the current currency
+ */
+export const fetchTokenExchangeRates = async (
+chainId,
+currency,
+...tokenAddresses) =>
+{
+  try {
+
+
+    let exchangeRates = {};
+
+    // Solana
+    if (isSolanaChainId(chainId)) {
+      const queryParams = new URLSearchParams({
+        assetIds: tokenAddresses.
+        map((address) => toAssetId(address, SolScope.Mainnet)).
+        join(','),
+        includeMarketData: 'true',
+        vsCurrency: currency
+      });
+      const url = `https://price.api.cx.metamask.io/v3/spot-prices?${queryParams}`;
+      const tokenV3PriceResponse = await handleFetch(url);
+
+
+
+
+      exchangeRates = Object.entries(tokenV3PriceResponse).reduce(
+        (acc, [k, curr]) => {
+          acc[k] = curr.price;
+          return acc;
+        },
+        {}
+      );
+      return exchangeRates;
+    }
+
+    // EVM chains
+    const checksumAddresses = tokenAddresses.map((address) =>
+    safeToChecksumAddress(address)
+    );
+    if (checksumAddresses.some((address) => !address)) {
+      return {};
+    }
+
+    exchangeRates = await fetchTokenContractExchangeRates({
+      tokenPricesService: new CodefiTokenPricesServiceV2(),
+      nativeCurrency: currency,
+      tokenAddresses: checksumAddresses,
+      chainId: formatChainIdToHex(chainId)
+    });
+
+    return Object.keys(exchangeRates).reduce(
+      (acc, address) => {
+        acc[address] = exchangeRates[address];
+        return acc;
+      },
+      {}
+    );
+  } catch (error) {
+    return {};
+  }
+};
+
+// This fetches the exchange rate for a token in a given currency. This is only called when the exchange
+// rate is not available in the TokenRatesController, which happens when the selected token has not been
+// imported into the wallet
+export const getTokenExchangeRate = async (request) =>
+
+
+
+{
+  const { chainId, tokenAddress, currency } = request;
+  const exchangeRates = await fetchTokenExchangeRates(
+    chainId,
+    currency,
+    tokenAddress
+  );
+  const assetId = toAssetId(tokenAddress, formatChainIdToCaip(chainId));
+  if (isSolanaChainId(chainId) && assetId) {
+    return exchangeRates?.[assetId];
+  }
+  // The exchange rate can be checksummed or not, so we need to check both
+  const exchangeRate =
+  exchangeRates?.[toChecksumHexAddress(tokenAddress)] ??
+  exchangeRates?.[tokenAddress.toLowerCase()];
+  return exchangeRate;
+};
+
+/**
+ * This extracts a token's exchange rate from the marketData state object
+ * These exchange rates are against the native asset of the chain
+ * @param chainId - The chainId of the token
+ * @param tokenAddress - The address of the token
+ * @param marketData - The marketData state object
+ * @returns The exchange rate of the token against the native asset of the chain
+ */
+export const exchangeRateFromMarketData = (
+chainId,
+tokenAddress,
+marketData) =>
+
+isStrictHexString(tokenAddress) && isStrictHexString(chainId) ?
+marketData?.[chainId]?.[tokenAddress]?.price :
+undefined;
