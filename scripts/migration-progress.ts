@@ -135,11 +135,12 @@ function checkReducerTypingStatus(): {
   alreadyTyped: string[];
 } {
   const reducerIndexPath = path.resolve('app/reducers/index.ts');
-  if (!fs.existsSync(reducerIndexPath)) {
+  let content: string;
+  try {
+    content = fs.readFileSync(reducerIndexPath, 'utf-8');
+  } catch {
     return { stillAny: ANY_TYPED_REDUCERS, alreadyTyped: [] };
   }
-
-  const content = fs.readFileSync(reducerIndexPath, 'utf-8');
   const stillAny: string[] = [];
   const alreadyTyped: string[] = [];
 
@@ -257,7 +258,9 @@ The \`RootState\` interface in \`app/reducers/index.ts\` has ${reducerStatus.sti
 function main(): void {
   const appDir = path.resolve('app');
 
-  if (!fs.existsSync(appDir)) {
+  try {
+    fs.accessSync(appDir);
+  } catch {
     console.error('Error: app/ directory not found. Run this from the repo root.');
     process.exit(1);
   }
@@ -315,9 +318,7 @@ function main(): void {
 
   // Write to docs/MIGRATION_PROGRESS.md
   const docsDir = path.resolve('docs');
-  if (!fs.existsSync(docsDir)) {
-    fs.mkdirSync(docsDir, { recursive: true });
-  }
+  fs.mkdirSync(docsDir, { recursive: true });
 
   const outputPath = path.join(docsDir, 'MIGRATION_PROGRESS.md');
   fs.writeFileSync(outputPath, report, 'utf-8');

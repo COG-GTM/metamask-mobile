@@ -204,17 +204,6 @@ function runTypeCheck(filePath: string): string[] {
 function migrateFile(filePath: string): MigrationResult {
   const absolutePath = path.resolve(filePath);
 
-  if (!fs.existsSync(absolutePath)) {
-    console.error(`  File not found: ${filePath}`);
-    return {
-      originalPath: filePath,
-      newPath: filePath,
-      importsUpdated: 0,
-      typeErrors: [`File not found: ${filePath}`],
-      success: false,
-    };
-  }
-
   const ext = path.extname(absolutePath);
   if (ext !== '.js' && ext !== '.jsx') {
     console.error(`  Not a JS/JSX file: ${filePath}`);
@@ -228,7 +217,19 @@ function migrateFile(filePath: string): MigrationResult {
   }
 
   // Read original content
-  const content = fs.readFileSync(absolutePath, 'utf-8');
+  let content: string;
+  try {
+    content = fs.readFileSync(absolutePath, 'utf-8');
+  } catch {
+    console.error(`  File not found: ${filePath}`);
+    return {
+      originalPath: filePath,
+      newPath: filePath,
+      importsUpdated: 0,
+      typeErrors: [`File not found: ${filePath}`],
+      success: false,
+    };
+  }
   const newExt = getNewExtension(absolutePath, content);
   const newPath = absolutePath.replace(/\.(js|jsx)$/, newExt);
   const newRelPath = path.relative(process.cwd(), newPath);
@@ -258,7 +259,7 @@ function migrateFile(filePath: string): MigrationResult {
   const appDir = path.resolve('app');
   let importsUpdated = 0;
 
-  if (fs.existsSync(appDir)) {
+  try {
     const sourceFiles = findSourceFiles(appDir);
     const oldRelFromApp = path.relative(process.cwd(), absolutePath);
     const newRelFromApp = path.relative(process.cwd(), newPath);
@@ -275,6 +276,8 @@ function migrateFile(filePath: string): MigrationResult {
     }
 
     console.log(`    Imports updated: ${importsUpdated} file(s)`);
+  } catch {
+    // app/ directory not found; skip import updates
   }
 
   // Step 4: Run type check

@@ -222,11 +222,14 @@ function generateInterface(
 }
 
 /**
- * Check if a reducer already has a types.ts file or exports a State interface
+ * Safely read a file, returning its content or null if it doesn't exist
  */
-function hasExistingTypes(reducerDir: string): boolean {
-  const typesPath = path.join(reducerDir, 'types.ts');
-  return fs.existsSync(typesPath);
+function safeReadFile(filePath: string): string | null {
+  try {
+    return fs.readFileSync(filePath, 'utf-8');
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -238,20 +241,18 @@ function processReducer(
 ): ReducerInfo | null {
   const reducerDir = path.resolve('app/reducers', dirName);
 
-  if (!fs.existsSync(reducerDir)) {
-    console.warn(`  Warning: Directory not found for ${reducerName}: ${reducerDir}`);
-    return null;
-  }
-
-  // Find the reducer file
+  // Find the reducer file by trying each candidate
   let filePath = '';
   let fileExtension = '';
+  let content = '';
   const candidates = ['index.js', 'index.ts', 'index.jsx', 'index.tsx'];
   for (const candidate of candidates) {
     const candidatePath = path.join(reducerDir, candidate);
-    if (fs.existsSync(candidatePath)) {
+    const fileContent = safeReadFile(candidatePath);
+    if (fileContent !== null) {
       filePath = candidatePath;
       fileExtension = path.extname(candidate);
+      content = fileContent;
       break;
     }
   }
@@ -260,8 +261,6 @@ function processReducer(
     console.warn(`  Warning: No reducer file found in ${reducerDir}`);
     return null;
   }
-
-  const content = fs.readFileSync(filePath, 'utf-8');
   const stateFields = parseInitialState(content);
 
   if (!stateFields) {
@@ -274,14 +273,7 @@ function processReducer(
   const interfaceName = toStateInterfaceName(reducerName);
   const generatedInterface = generateInterface(interfaceName, stateFields);
 
-  // Determine where to write the types
-  let typesFilePath: string;
-  if (hasExistingTypes(reducerDir)) {
-    // Append to existing types.ts
-    typesFilePath = path.join(reducerDir, 'types.ts');
-  } else {
-    typesFilePath = path.join(reducerDir, 'types.ts');
-  }
+  const typesFilePath = path.join(reducerDir, 'types.ts');
 
   // Determine the RootState entry pattern to use
   // Follow existing patterns in the codebase
@@ -346,12 +338,11 @@ function main(): void {
   console.log('=== Batch Type Stub Generator for Reducers ===\n');
 
   const reducerIndexPath = path.resolve('app/reducers/index.ts');
-  if (!fs.existsSync(reducerIndexPath)) {
+  const content = safeReadFile(reducerIndexPath);
+  if (content === null) {
     console.error('Error: app/reducers/index.ts not found. Run from repo root.');
     process.exit(1);
   }
-
-  const content = fs.readFileSync(reducerIndexPath, 'utf-8');
 
   // Find all reducers typed as `any` in RootState
   const anyReducers: string[] = [];
@@ -387,9 +378,7 @@ function main(): void {
   console.log('\n--- Writing Type Stubs ---\n');
 
   for (const info of results) {
-    const existingContent = fs.existsSync(info.typesFilePath)
-      ? fs.readFileSync(info.typesFilePath, 'utf-8')
-      : '';
+    const existingContent = safeReadFile(info.typesFilePath) ?? '';
 
     // Check if interface already exists in the file
     if (existingContent.includes(`interface ${info.interfaceName}`)) {
