@@ -1,0 +1,339 @@
+name: CI Autofix
+
+on:
+  workflow_run:
+    workflows: ["ci"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+  checks: read
+
+jobs:
+  autofix:
+    name: Autofix CI failures
+    runs-on: ubuntu-latest
+    # Only run on PRs that failed (not pushes to main or merge queue)
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_branch != 'main'
+    steps:
+      - name: Get PR info from workflow run
+        id: pr-info
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Get the PR associated with this workflow run
+            const headBranch = context.payload.workflow_run.head_branch;
+            const headSha = context.payload.workflow_run.head_sha;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            core.info(`Workflow run failed on branch: ${headBranch} (sha: ${headSha})`);
+
+            // Find the PR for this branch
+            const { data: prs } = await github.rest.pulls.list({
+              owner,
+              repo,
+              head: `${owner}:${headBranch}`,
+              state: 'open',
+            });
+
+            if (prs.length === 0) {
+              core.info('No open PR found for this branch. Skipping autofix.');
+              core.setOutput('skip', 'true');
+              return;
+            }
+
+            const pr = prs[0];
+            core.setOutput('skip', 'false');
+            core.setOutput('pr_number', pr.number.toString());
+            core.setOutput('head_branch', headBranch);
+            core.setOutput('head_sha', headSha);
+            core.info(`Found PR #${pr.number}: ${pr.title}`);
+
+      - name: Check if autofix already attempted for this SHA
+        id: check-already-fixed
+        if: steps.pr-info.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = parseInt('${{ steps.pr-info.outputs.pr_number }}');
+            const headSha = '${{ steps.pr-info.outputs.head_sha }}';
+
+            // Check PR comments to see if we already attempted autofix for this SHA
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 50,
+            });
+
+            const alreadyFixed = comments.some(c =>
+              c.body.includes(`<!-- ci-autofix:${headSha} -->`)
+            );
+
+            if (alreadyFixed) {
+              core.info(`Autofix already attempted for SHA ${headSha}. Skipping to avoid loops.`);
+              core.setOutput('skip', 'true');
+            } else {
+              core.setOutput('skip', 'false');
+            }
+
+      - name: Checkout PR branch
+        if: steps.pr-info.outputs.skip != 'true' && steps.check-already-fixed.outputs.skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr-info.outputs.head_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        if: steps.pr-info.outputs.skip != 'true' && steps.check-already-fixed.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: yarn
+
+      - name: Collect failed job info
+        id: collect-failures
+        if: steps.pr-info.outputs.skip != 'true' && steps.check-already-fixed.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const runId = context.payload.workflow_run.id;
+
+            const { data: jobs } = await github.rest.actions.listJobsForWorkflowRun({
+              owner,
+              repo,
+              run_id: runId,
+              filter: 'latest',
+            });
+
+            const failedJobs = jobs.jobs
+              .filter(j => j.conclusion === 'failure')
+              .map(j => j.name);
+
+            core.info(`Failed jobs: ${JSON.stringify(failedJobs)}`);
+            core.setOutput('failed_jobs', JSON.stringify(failedJobs));
+
+            // Classify failures for targeted fixes
+            const hasLintFailure = failedJobs.some(j => j.includes('lint') && !j.includes('tsc'));
+            const hasTscFailure = failedJobs.some(j => j.includes('lint:tsc'));
+            const hasDedupeFailure = failedJobs.some(j => j.includes('dedupe'));
+            const hasTestFailure = failedJobs.some(j => j.includes('unit-test'));
+
+            core.setOutput('has_lint', hasLintFailure.toString());
+            core.setOutput('has_tsc', hasTscFailure.toString());
+            core.setOutput('has_dedupe', hasDedupeFailure.toString());
+            core.setOutput('has_tests', hasTestFailure.toString());
+
+      # ── Phase 1: Deterministic autofixes ──────────────────────────────
+
+      - name: Install dependencies
+        id: install-deps
+        if: steps.pr-info.outputs.skip != 'true' && steps.check-already-fixed.outputs.skip != 'true'
+        continue-on-error: true
+        run: yarn setup --node
+
+      - name: 'Autofix: ESLint (yarn lint:fix)'
+        id: lint-fix
+        if: >
+          steps.install-deps.outcome == 'success' &&
+          steps.collect-failures.outputs.has_lint == 'true'
+        continue-on-error: true
+        run: |
+          echo "Running ESLint autofix..."
+          yarn lint:fix 2>&1 || true
+          # Check if any files were modified
+          if git diff --quiet; then
+            echo "lint_changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "lint_changed=true" >> "$GITHUB_OUTPUT"
+            echo "ESLint autofix made changes to the following files:"
+            git diff --name-only
+          fi
+
+      - name: 'Autofix: Prettier (yarn format)'
+        id: format-fix
+        if: >
+          steps.install-deps.outcome == 'success' &&
+          steps.collect-failures.outputs.has_lint == 'true'
+        continue-on-error: true
+        run: |
+          echo "Running Prettier format..."
+          yarn format 2>&1 || true
+          if git diff --quiet; then
+            echo "format_changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "format_changed=true" >> "$GITHUB_OUTPUT"
+            echo "Prettier made changes to the following files:"
+            git diff --name-only
+          fi
+
+      - name: 'Autofix: Deduplicate dependencies'
+        id: dedupe-fix
+        if: >
+          steps.install-deps.outcome == 'success' &&
+          steps.collect-failures.outputs.has_dedupe == 'true'
+        continue-on-error: true
+        run: |
+          echo "Running yarn deduplicate..."
+          yarn deduplicate 2>&1 || true
+          if git diff --quiet; then
+            echo "dedupe_changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "dedupe_changed=true" >> "$GITHUB_OUTPUT"
+            echo "Deduplication made changes"
+          fi
+
+      - name: Commit and push deterministic fixes
+        id: push-fixes
+        if: steps.pr-info.outputs.skip != 'true' && steps.check-already-fixed.outputs.skip != 'true'
+        run: |
+          # Check if any autofix step made changes
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "deterministic_fixed=false" >> "$GITHUB_OUTPUT"
+            echo "No deterministic fixes to commit."
+            exit 0
+          fi
+
+          echo "deterministic_fixed=true" >> "$GITHUB_OUTPUT"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "ci: autofix lint, format, and dedupe issues
+
+          Automated fixes applied by CI Autofix workflow.
+          Triggered by failed CI run on ${{ steps.pr-info.outputs.head_sha }}"
+
+          git push origin HEAD:${{ steps.pr-info.outputs.head_branch }}
+
+      # ── Phase 2: AI-powered autofix via Devin API ─────────────────────
+
+      - name: 'AI Autofix: Trigger Devin session for non-trivial failures'
+        id: devin-fix
+        if: >
+          steps.pr-info.outputs.skip != 'true' &&
+          steps.check-already-fixed.outputs.skip != 'true' &&
+          (
+            steps.collect-failures.outputs.has_tsc == 'true' ||
+            steps.collect-failures.outputs.has_tests == 'true' ||
+            steps.install-deps.outcome == 'failure'
+          ) &&
+          env.DEVIN_API_KEY != ''
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
+        run: |
+          PR_NUMBER="${{ steps.pr-info.outputs.pr_number }}"
+          HEAD_SHA="${{ steps.pr-info.outputs.head_sha }}"
+          FAILED_JOBS='${{ steps.collect-failures.outputs.failed_jobs }}'
+          REPO="${{ github.repository }}"
+
+          echo "Triggering Devin session to fix CI failures..."
+          echo "PR: #${PR_NUMBER}, SHA: ${HEAD_SHA}"
+          echo "Failed jobs: ${FAILED_JOBS}"
+
+          PROMPT="Fix the CI/CD failures on PR #${PR_NUMBER} in ${REPO}.
+
+          The following CI jobs failed: ${FAILED_JOBS}
+
+          Instructions:
+          1. Check out the PR branch and look at the CI failure logs
+          2. Identify the root cause of each failure
+          3. Apply fixes and push to the PR branch
+          4. If a failure is caused by a pre-existing issue (not introduced by this PR), note it in a PR comment but do not attempt to fix it
+          5. Run the relevant checks locally before pushing to verify your fixes
+
+          Important: Only fix issues that are actually caused by code in this PR. Do not modify unrelated code."
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.devin.ai/v3/organizations/${DEVIN_ORG_ID}/sessions" \
+            -H "Authorization: Bearer ${DEVIN_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg prompt "$PROMPT" \
+              --arg repo "$REPO" \
+              '{prompt: $prompt, idempotency_key: ("ci-autofix-" + $repo + "-pr-'"${PR_NUMBER}"'-'"${HEAD_SHA}"'")}'
+            )")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            SESSION_URL=$(echo "$BODY" | jq -r '.url // "unknown"')
+            SESSION_ID=$(echo "$BODY" | jq -r '.session_id // "unknown"')
+            echo "devin_triggered=true" >> "$GITHUB_OUTPUT"
+            echo "devin_session_url=${SESSION_URL}" >> "$GITHUB_OUTPUT"
+            echo "Devin session created: ${SESSION_URL}"
+          else
+            echo "devin_triggered=false" >> "$GITHUB_OUTPUT"
+            echo "Failed to create Devin session (HTTP ${HTTP_CODE}): ${BODY}"
+            echo "This is non-fatal — deterministic fixes may still have been applied."
+          fi
+
+      # ── Report results ────────────────────────────────────────────────
+
+      - name: Post autofix summary comment on PR
+        if: steps.pr-info.outputs.skip != 'true' && steps.check-already-fixed.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = parseInt('${{ steps.pr-info.outputs.pr_number }}');
+            const headSha = '${{ steps.pr-info.outputs.head_sha }}';
+            const failedJobs = JSON.parse('${{ steps.collect-failures.outputs.failed_jobs }}');
+
+            const deterministicFixed = '${{ steps.push-fixes.outputs.deterministic_fixed }}' === 'true';
+            const devinTriggered = '${{ steps.devin-fix.outputs.devin_triggered }}' === 'true';
+            const devinUrl = '${{ steps.devin-fix.outputs.devin_session_url }}' || '';
+            const installFailed = '${{ steps.install-deps.outcome }}' === 'failure';
+
+            let body = `<!-- ci-autofix:${headSha} -->\n`;
+            body += `## CI Autofix Report\n\n`;
+            body += `**Triggered by:** CI failure on commit \`${headSha.substring(0, 7)}\`\n`;
+            body += `**Failed jobs:** ${failedJobs.map(j => `\`${j}\``).join(', ')}\n\n`;
+
+            if (installFailed) {
+              body += `> **Note:** \`yarn setup --node\` failed — deterministic fixes could not run. `;
+              body += `This usually indicates a broken dependency.\n\n`;
+            }
+
+            body += `### Actions Taken\n\n`;
+
+            if (deterministicFixed) {
+              body += `- **Deterministic fixes applied and pushed** — ESLint, Prettier, and/or dedupe changes were auto-committed.\n`;
+            } else {
+              body += `- **No deterministic fixes needed** — ESLint, Prettier, and dedupe checks didn't produce auto-fixable changes.\n`;
+            }
+
+            if (devinTriggered) {
+              body += `- **Devin AI session triggered** for non-trivial failures (TypeScript errors, test failures, or dependency issues).\n`;
+              body += `  - Session: ${devinUrl}\n`;
+            }
+
+            if (!deterministicFixed && !devinTriggered) {
+              body += `\n> No automatic fixes were possible. Manual intervention may be required.\n`;
+            }
+
+            body += `\n---\n*This comment was posted by the [CI Autofix](.github/workflows/ci-autofix.yml) workflow.*`;
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: prNumber,
+              body,
+            });
+
+            core.info(`Posted autofix summary to PR #${prNumber}`);
