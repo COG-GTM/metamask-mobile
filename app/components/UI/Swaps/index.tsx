@@ -5,7 +5,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -67,6 +66,9 @@ import { toLowerCaseEquals } from '../../../util/general';
 import { AlertType } from '../../Base/Alert';
 import { isZero, gte } from '../../../util/lodash';
 import { useTheme } from '../../../util/theme';
+import type { Colors } from '../../../util/theme/models';
+import type { RootState } from '../../../reducers';
+import type { Token } from './utils/token-list-utils';
 import {
   selectEvmChainId,
   selectEvmNetworkConfigurationsByChainId,
@@ -87,7 +89,7 @@ import { useMetrics } from '../../../components/hooks/useMetrics';
 import { getSwapsLiveness } from '../../../reducers/swaps/utils';
 import { selectShouldUseSmartTransaction } from '../../../selectors/smartTransactionsController';
 import { useStablecoinsDefaultSlippage } from './useStablecoinsDefaultSlippage';
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     container: { backgroundColor: colors.background.default },
     screen: {
@@ -180,6 +182,24 @@ const SWAPS_NATIVE_ADDRESS = swapsUtils.NATIVE_SWAPS_TOKEN_ADDRESS;
 const TOKEN_MINIMUM_SOURCES = 1;
 const MAX_TOP_ASSETS = 20;
 
+interface SwapsAmountViewProps {
+  swapsTokens: Token[];
+  swapsControllerTokens: Token[];
+  accountsByChainId: Record<string, Record<string, { balance: string }>>;
+  selectedAddress: string;
+  chainId: string;
+  selectedNetworkClientId: string;
+  networkConfigurations: Record<string, unknown>;
+  balances: Record<string, string>;
+  tokensWithBalance: Token[];
+  tokensTopAssets: Token[];
+  conversionRate: number;
+  tokenExchangeRates: Record<string, Record<string, number>>;
+  currentCurrency: string;
+  setLiveness: (chainId: string, featureFlags: Record<string, unknown> | null) => void;
+  shouldUseSmartTransaction: boolean;
+}
+
 function SwapsAmountView({
   swapsTokens,
   swapsControllerTokens,
@@ -196,7 +216,7 @@ function SwapsAmountView({
   currentCurrency,
   setLiveness,
   shouldUseSmartTransaction,
-}) {
+}: SwapsAmountViewProps) {
   const accounts = accountsByChainId[chainId];
   const navigation = useNavigation();
   const route = useRoute();
@@ -584,7 +604,7 @@ function SwapsAmountView({
 
   /* Keypad Handlers */
   const handleKeypadChange = useCallback(
-    ({ value }) => {
+    ({ value }: { value: string }) => {
       if (value === amount) {
         return;
       }
@@ -595,7 +615,7 @@ function SwapsAmountView({
   );
 
   const setSlippageAfterTokenPress = useCallback(
-    (sourceTokenAddress, destinationTokenAddress) => {
+    (sourceTokenAddress: string, destinationTokenAddress: string) => {
       const enableDirectWrapping = swapsUtils.shouldEnableDirectWrapping(
         chainId,
         sourceTokenAddress,
@@ -982,58 +1002,7 @@ function SwapsAmountView({
   );
 }
 
-SwapsAmountView.propTypes = {
-  swapsTokens: PropTypes.arrayOf(PropTypes.object),
-  swapsControllerTokens: PropTypes.arrayOf(PropTypes.object),
-  tokensWithBalance: PropTypes.arrayOf(PropTypes.object),
-  tokensTopAssets: PropTypes.arrayOf(PropTypes.object),
-  /**
-   * Map of chainId to accounts to information objects including balances
-   */
-  accountsByChainId: PropTypes.object,
-  /**
-   * A string that represents the selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * An object containing token balances for current account and network in the format address => balance
-   */
-  balances: PropTypes.object,
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * An object containing token exchange rates in the format address => exchangeRate
-   */
-  tokenExchangeRates: PropTypes.object,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Selected network client ID
-   */
-  selectedNetworkClientId: PropTypes.string,
-  /**
-   * Network configurations
-   */
-  networkConfigurations: PropTypes.object,
-  /**
-   * Function to set liveness
-   */
-  setLiveness: PropTypes.func,
-  /**
-   * Whether to use smart transactions
-   */
-  shouldUseSmartTransaction: PropTypes.bool,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   swapsTokens: swapsTokensSelector(state),
   swapsControllerTokens: swapsControllerTokens(state),
   accountsByChainId: selectAccountsByChainId(state),
@@ -1053,8 +1022,8 @@ const mapStateToProps = (state) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setLiveness: (chainId, featureFlags) =>
+const mapDispatchToProps = (dispatch: (action: Record<string, unknown>) => void) => ({
+  setLiveness: (chainId: string, featureFlags: Record<string, unknown> | null) =>
     dispatch(setSwapsLiveness(chainId, featureFlags)),
 });
 
