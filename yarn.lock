@@ -24580,6 +24580,14 @@ react-native-tcp-socket@^6.2.0:
     buffer "^5.4.3"
     eventemitter3 "^4.0.7"
 
+"react-native-tcp@npm:react-native-tcp-socket@^6.2.0":
+  version "6.4.1"
+  resolved "https://registry.yarnpkg.com/react-native-tcp-socket/-/react-native-tcp-socket-6.4.1.tgz#e33eec5648cbb226f79dda366bc294395a86d272"
+  integrity sha512-2+zya9ielB8nWfMYVULB64ZqLzQD32qIzTnDef7NM1BChaJiA1btkJTBL+8WnyBrujjlCBVxBC3gAkXtG5hmvQ==
+  dependencies:
+    buffer "^5.4.3"
+    eventemitter3 "^4.0.7"
+
 react-native-url-polyfill@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/react-native-url-polyfill/-/react-native-url-polyfill-2.0.0.tgz#db714520a2985cff1d50ab2e66279b9f91ffd589"

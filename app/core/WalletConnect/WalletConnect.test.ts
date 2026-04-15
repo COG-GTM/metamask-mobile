@@ -1,117 +1,49 @@
-import RNWalletConnect from '@walletconnect/client';
-import Engine from '../Engine';
-import { ApprovalTypes } from '../../core/RPCMethods/RPCMethodMiddleware';
-import { flushPromises } from '../../util/test/utils';
+/**
+ * @deprecated WalletConnect v1 has been removed. All WalletConnect sessions now use v2 only.
+ * These tests verify the v1 stub module behaves correctly.
+ */
 
-const mockDappHost = 'metamask.io';
-const mockDappUrl = `https://${mockDappHost}`;
-const mockAutoSign = false;
-const mockRedirectUrl = `${mockDappUrl}/redirect`;
-const mockDappOrigin = 'origin';
-const mockRandomId = '139404b0-1dd2-11b2-b040-cb962b38df0e';
-const mockSessionRequest = {
-  params: [
-    {
-      peerMeta: {
-        url: mockDappUrl,
-      },
-    },
-  ],
-};
-jest.mock('@walletconnect/client');
-jest.mock('../Engine', () => ({
-  context: {
-    KeyringController: {
-      isUnlocked: jest.fn().mockReturnValueOnce(true),
-    },
-    ApprovalController: {
-      add: jest.fn(),
-    },
-  },
-}));
-const MockEngine = jest.mocked(Engine);
-jest.mock('uuid', () => ({
-  v1: jest.fn(() => mockRandomId),
-}));
-
-describe('WalletConnect', () => {
-  const walletConnectorSessionRequestCallbackMock = jest
-    .fn()
-    .mockImplementationOnce((_, callback) => {
-      callback(null, mockSessionRequest);
-    });
-  const walletConnectorRejectSessionMock = jest.fn();
-
-  jest
-    .spyOn(RNWalletConnect.prototype, 'on')
-    .mockImplementation(walletConnectorSessionRequestCallbackMock);
-  jest
-    .spyOn(RNWalletConnect.prototype, 'rejectSession')
-    .mockImplementation(walletConnectorRejectSessionMock);
-
-  afterEach(() => {
-    // Reset WalletConnect
+describe('WalletConnect (v1 stub)', () => {
+  beforeEach(() => {
     jest.resetModules();
   });
 
-  it('should add new approval when new wallet connect session requested', async () => {
+  it('should export a stub instance with expected methods', () => {
     // eslint-disable-next-line
     const WalletConnect = require('./WalletConnect').default;
-    const expectedApprovalRequest = {
-      id: mockRandomId,
-      origin: mockDappHost,
-      requestData: {
-        autosign: mockAutoSign,
-        peerMeta: {
-          url: mockDappUrl,
-        },
-        redirectUrl: mockRedirectUrl,
-        requestOriginatedFrom: mockDappOrigin,
-      },
-      type: ApprovalTypes.WALLET_CONNECT,
-    };
 
-    const spyApprovalControllerAdd = jest.spyOn(
-      Engine.context.ApprovalController,
-      'add',
-    );
-
-    // Initialize WalletConnect
-    await WalletConnect.init();
-
-    // WalletConnect.newSession will reproduce the same behavior as the DeeplinkHandler
-    // See app/core/DeeplinkManager.js, then walletConnectorSessionRequestCallbackMock will be picked up immediately
-    await WalletConnect.newSession(
-      'URI',
-      mockRedirectUrl,
-      mockAutoSign,
-      'origin',
-    );
-
-    await flushPromises();
-
-    expect(spyApprovalControllerAdd).toHaveBeenCalled();
-    expect(spyApprovalControllerAdd).toHaveBeenCalledWith(
-      expectedApprovalRequest,
-    );
+    expect(WalletConnect).toBeDefined();
+    expect(typeof WalletConnect.init).toBe('function');
+    expect(typeof WalletConnect.connectors).toBe('function');
+    expect(typeof WalletConnect.newSession).toBe('function');
+    expect(typeof WalletConnect.getSessions).toBe('function');
+    expect(typeof WalletConnect.killSession).toBe('function');
+    expect(typeof WalletConnect.isValidUri).toBe('function');
+    expect(typeof WalletConnect.isSessionConnected).toBe('function');
   });
-  it('should call rejectSession when user rejects wallet connect session', async () => {
+
+  it('should return empty connectors', () => {
     // eslint-disable-next-line
     const WalletConnect = require('./WalletConnect').default;
-    MockEngine.context.ApprovalController.add.mockRejectedValueOnce(
-      new Error('Test error'),
-    );
+    expect(WalletConnect.connectors()).toEqual([]);
+  });
 
-    await WalletConnect.init();
-    await WalletConnect.newSession(
-      'URI',
-      mockRedirectUrl,
-      mockAutoSign,
-      'origin',
-    );
+  it('should return empty sessions', async () => {
+    // eslint-disable-next-line
+    const WalletConnect = require('./WalletConnect').default;
+    const sessions = await WalletConnect.getSessions();
+    expect(sessions).toEqual([]);
+  });
 
-    await flushPromises();
+  it('should always return false for isValidUri', () => {
+    // eslint-disable-next-line
+    const WalletConnect = require('./WalletConnect').default;
+    expect(WalletConnect.isValidUri('wc:test')).toBe(false);
+  });
 
-    expect(walletConnectorRejectSessionMock).toHaveBeenCalled();
+  it('should always return false for isSessionConnected', () => {
+    // eslint-disable-next-line
+    const WalletConnect = require('./WalletConnect').default;
+    expect(WalletConnect.isSessionConnected('test')).toBe(false);
   });
 });

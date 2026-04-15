@@ -3,7 +3,7 @@ import { BNToHex } from '../util/number';
 import Logger from '../util/Logger';
 import ExtendedKeyringTypes from '../../app/constants/keyringTypes';
 import type EthQuery from '@metamask/eth-query';
-import type { BN } from '@ethereumjs/util';
+import type BN from 'bn.js';
 import { Hex } from '@metamask/utils';
 import { getGlobalEthQuery } from './networks/global-network';
 import { setIsAccountSyncingReadyToBeDispatched } from '../actions/identity';

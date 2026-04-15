@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from 'react';
-import { formatEther } from 'ethers/lib/utils';
+import { formatEther } from 'ethers';
 import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { View } from 'react-native';

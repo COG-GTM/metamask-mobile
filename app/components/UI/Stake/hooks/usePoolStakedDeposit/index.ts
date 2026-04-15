@@ -6,7 +6,7 @@ import {
   WalletDevice,
 } from '@metamask/transaction-controller';
 import { ORIGIN_METAMASK, toHex } from '@metamask/controller-utils';
-import { formatEther } from 'ethers/lib/utils';
+import { formatEther } from 'ethers';
 import { NetworkClientId } from '@metamask/network-controller';
 import { addTransaction } from '../../../../../util/transaction-controller';
 import trackErrorAsAnalytics from '../../../../../util/metrics/TrackError/trackErrorAsAnalytics';
