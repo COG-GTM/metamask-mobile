@@ -27,7 +27,9 @@ export async function fetchAtomicTokenBalance(
   const tokenBalancePromise = tokenContract
     ? tokenContract.balanceOf(userAddress)
     : Promise.resolve();
-  return await tokenBalancePromise;
+  const balance = await tokenBalancePromise;
+  // Convert v5 BigNumber to native bigint for v6 compatibility
+  return balance?.toBigInt ? balance.toBigInt() : BigInt(balance?.toString() ?? '0');
 }
 
 export const fetchEvmAtomicBalance = async (
@@ -38,7 +40,9 @@ export const fetchEvmAtomicBalance = async (
 ): Promise<bigint | undefined> => {
   if (tokenAddress && chainId) {
     if (tokenAddress === ZeroAddress) {
-      return await web3Provider.getBalance(getAddress(selectedAddress));
+      const balance = await web3Provider.getBalance(getAddress(selectedAddress));
+      // Convert v5 BigNumber to native bigint for v6 compatibility
+      return balance?.toBigInt ? balance.toBigInt() : BigInt(balance?.toString() ?? '0');
     }
     return await fetchAtomicTokenBalance(tokenAddress, selectedAddress, web3Provider);
   }
