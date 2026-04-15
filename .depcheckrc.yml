@@ -102,5 +102,7 @@ ignores:
   - '@react-native-community/cli-server-api'
   - '@react-native/typescript-config'
   - 'react-native-pager-view'
+  - 'eslint-plugin-jest'
+  - '@storybook/addon-controls'
   # this dependency can probably be removed, needs investigation
   - '@types/react-test-renderer'
