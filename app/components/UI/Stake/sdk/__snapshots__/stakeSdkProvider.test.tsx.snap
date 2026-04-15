@@ -14,8 +14,6 @@ exports[`Stake Modals With Stake Sdk Provider renders stake screen with stake sd
         "lineHeight": 24,
       }
     }
-  >
-    0x0000000000000000000000000000000000000000
-  </Text>
+  />
 </View>
 `;

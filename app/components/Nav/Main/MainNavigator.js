@@ -277,7 +277,7 @@ const NotificationsOptInStack = () => (
     <Stack.Screen
       name={Routes.NOTIFICATIONS.OPT_IN}
       component={OptIn}
-      options={{ headerShown: false, presentation: 'modal' }}
+      options={{ headerShown: false }}
     />
     <Stack.Screen
       name={Routes.SETTINGS.NOTIFICATIONS}
@@ -607,7 +607,7 @@ const Webview = () => (
     <Stack.Screen
       name="SimpleWebview"
       component={SimpleWebview}
-      options={{...SimpleWebview.navigationOptions, presentation: 'modal'}}
+      options={SimpleWebview.navigationOptions}
     />
   </Stack.Navigator>
 );
@@ -723,7 +723,7 @@ const NotificationsModeView = (props) => (
     <Stack.Screen
       name={Routes.NOTIFICATIONS.OPT_IN}
       component={OptIn}
-      options={{...OptIn.navigationOptions, presentation: 'modal'}}
+      options={OptIn.navigationOptions}
     />
     <Stack.Screen
       name={Routes.NOTIFICATIONS.DETAILS}
