@@ -12,6 +12,8 @@ ignores:
   - '@sentry/react'
   # This is used on the patch for TokenRatesController of Assets controllers, for we to be able to use the last version of it
   - cockatiel
+  # Required by @metamask/stake-sdk at runtime (was transitive dep of ethers v5, now explicit)
+  - '@ethersproject/units'
 
   # Note: Everything below this line should be removed after investigation
   # TODO: Investigate each dependency to see whether it's used
