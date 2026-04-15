@@ -18,12 +18,11 @@ module.exports = {
       files: ['*.{ts,tsx}'],
       extends: ['@metamask/eslint-config-typescript'],
       rules: {
-        // TODO: re-enable
-        'jsdoc/no-types': 'off',
-        'react/display-name': 'off',
-        'react/no-unused-prop-types': 'off',
+        'jsdoc/no-types': 'warn',
+        'react/display-name': 'warn',
+        'react/no-unused-prop-types': 'warn',
         'react/prop-types': 'off',
-        'react/self-closing-comp': 'off',
+        'react/self-closing-comp': 'warn',
         // This change is included in `@metamask/eslint-config-typescript@10.0.0
         '@typescript-eslint/no-unused-vars': [
           'error',
@@ -35,8 +34,12 @@ module.exports = {
           },
         ],
         '@typescript-eslint/no-explicit-any': 'error',
-        // Under discussion
-        '@typescript-eslint/no-duplicate-enum-values': 'off',
+        '@typescript-eslint/no-duplicate-enum-values': 'warn',
+        '@typescript-eslint/explicit-function-return-type': 'warn',
+        '@typescript-eslint/consistent-type-imports': 'warn',
+        '@typescript-eslint/no-non-null-assertion': 'warn',
+        '@typescript-eslint/prefer-nullish-coalescing': 'warn',
+        '@typescript-eslint/prefer-optional-chain': 'warn',
       },
     },
     {
@@ -57,6 +60,13 @@ module.exports = {
             allowAsProps: true,
           },
         ],
+      },
+    },
+    {
+      files: ['app/**/*.{js,jsx}'],
+      rules: {
+        // Warn on patterns that would be caught by TypeScript
+        'no-undef': 'warn',
       },
     },
     {
