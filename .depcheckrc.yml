@@ -76,6 +76,7 @@ ignores:
   - 'react-native-randombytes'
   - 'react-native-swipe-gestures'
   - 'react-native-tcp'
+  - 'react-native-tcp-socket'
   - 'socket.io-client'
   - 'stream-browserify'
   - 'url'
@@ -102,5 +103,9 @@ ignores:
   - '@react-native-community/cli-server-api'
   - '@react-native/typescript-config'
   - 'react-native-pager-view'
+  # @ethersproject/units is needed by @metamask/stake-sdk at runtime
+  - '@ethersproject/units'
+  # bn.js is used in test files
+  - 'bn.js'
   # this dependency can probably be removed, needs investigation
   - '@types/react-test-renderer'
