@@ -240,7 +240,7 @@ const OnboardingNav = () => (
  * child OnboardingNav navigator to push modals on top of it
  */
 const SimpleWebviewScreen = () => (
-  <Stack.Navigator mode={'modal'}>
+  <Stack.Navigator screenOptions={{ presentation: 'modal' }}>
     <Stack.Screen name={Routes.WEBVIEW.SIMPLE} component={SimpleWebview} />
   </Stack.Navigator>
 );
@@ -248,8 +248,7 @@ const SimpleWebviewScreen = () => (
 const OnboardingRootNav = () => (
   <Stack.Navigator
     initialRouteName={Routes.ONBOARDING.NAV}
-    mode="modal"
-    screenOptions={{ headerShown: false }}
+    screenOptions={{ headerShown: false, presentation: 'modal' }}
   >
     <Stack.Screen name="OnboardingNav" component={OnboardingNav} />
     <Stack.Screen name={Routes.QR_TAB_SWITCHER} component={QRTabSwitcher} />
@@ -293,8 +292,7 @@ const AddNetworkFlow = () => {
 
 const DetectedTokensFlow = () => (
   <Stack.Navigator
-    mode={'modal'}
-    screenOptions={clearStackNavigatorOptions}
+    screenOptions={{...clearStackNavigatorOptions, presentation: 'modal'}}
     initialRouteName={'DetectedTokens'}
   >
     <Stack.Screen name={'DetectedTokens'} component={DetectedTokens} />
@@ -317,7 +315,7 @@ const RootModalFlow = (
   props: RootModalFlowProps,
   ///: END:ONLY_INCLUDE_IF
 ) => (
-  <Stack.Navigator mode={'modal'} screenOptions={clearStackNavigatorOptions}>
+  <Stack.Navigator screenOptions={{...clearStackNavigatorOptions, presentation: 'modal'}}>
     <Stack.Screen
       name={Routes.MODAL.WALLET_ACTIONS}
       component={WalletActions}
@@ -560,8 +558,8 @@ const ModalConfirmationRequest = () => (
     screenOptions={{
       headerShown: false,
       cardStyle: { backgroundColor: importedColors.transparent },
+      presentation: 'modal',
     }}
-    mode={'modal'}
   >
     <Stack.Screen
       name={Routes.CONFIRMATION_REQUEST_MODAL}
@@ -575,8 +573,8 @@ const ModalSwitchAccountType = () => (
     screenOptions={{
       headerShown: false,
       cardStyle: { backgroundColor: importedColors.transparent },
+      presentation: 'modal',
     }}
-    mode={'modal'}
   >
     <Stack.Screen
       name={Routes.CONFIRMATION_SWITCH_ACCOUNT_TYPE}
@@ -591,8 +589,8 @@ const AppFlow = () => {
   return (
     <Stack.Navigator
       initialRouteName={Routes.FOX_LOADER}
-      mode={'modal'}
       screenOptions={{
+        presentation: 'modal',
         headerShown: false,
         cardStyle: { backgroundColor: importedColors.transparent },
         animationEnabled: false,

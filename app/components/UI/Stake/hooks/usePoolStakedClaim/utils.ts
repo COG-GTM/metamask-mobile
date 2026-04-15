@@ -1,5 +1,5 @@
 import { ChainId, PooledStakeExitRequest } from '@metamask/stake-sdk';
-import { BigNumber } from 'ethers';
+import { toBigInt } from 'ethers';
 import { MultiCallData } from './usePoolStakedClaim.types';
 import { TransactionParams } from '@metamask/transaction-controller';
 import { toHex } from '@metamask/controller-utils';
@@ -36,10 +36,10 @@ export const transformAggregatedClaimableExitRequestToMulticallArgs = (
     const claim = {
       functionName: CLAIM_EXITED_ASSETS,
       args: [
-        BigNumber.from(positionTicket).toString(),
+        toBigInt(positionTicket).toString(),
         // Convert timestamp from milliseconds to seconds.
-        BigNumber.from(timestamp).div(1000).toString(),
-        BigNumber.from(exitQueueIndex).toString(),
+        (toBigInt(timestamp) / BigInt(1000)).toString(),
+        toBigInt(exitQueueIndex).toString(),
       ],
     };
 

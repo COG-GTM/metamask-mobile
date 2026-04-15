@@ -1,4 +1,4 @@
-import { toChecksumAddress } from 'ethereumjs-util';
+import { toChecksumAddress } from '@ethereumjs/util';
 import { useSelector } from 'react-redux';
 
 import { selectInternalAccounts } from '../../selectors/accountsController';

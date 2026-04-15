@@ -4,7 +4,7 @@ import {
   addHexPrefix,
   isValidChecksumAddress,
   isHexPrefixed,
-} from 'ethereumjs-util';
+} from '@ethereumjs/util';
 import punycode from 'punycode/punycode';
 import ExtendedKeyringTypes from '../../constants/keyringTypes';
 import Engine from '../../core/Engine';

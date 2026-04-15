@@ -120,7 +120,7 @@ const clearStackNavigatorOptions = {
 };
 
 const WalletModalFlow = () => (
-  <Stack.Navigator mode={'modal'} screenOptions={clearStackNavigatorOptions}>
+  <Stack.Navigator screenOptions={{...clearStackNavigatorOptions, presentation: 'modal'}}>
     <Stack.Screen
       name={'Wallet'}
       component={Wallet}
@@ -147,9 +147,8 @@ const AssetStackFlow = (props) => (
 
 const AssetModalFlow = (props) => (
   <Stack.Navigator
-    mode={'modal'}
     initialRouteName={'AssetStackFlow'}
-    screenOptions={clearStackNavigatorOptions}
+    screenOptions={{...clearStackNavigatorOptions, presentation: 'modal'}}
   >
     <Stack.Screen
       name={'AssetStackFlow'}
@@ -190,7 +189,7 @@ const WalletTabStackFlow = () => (
 );
 
 const WalletTabModalFlow = () => (
-  <Stack.Navigator mode={'modal'} screenOptions={clearStackNavigatorOptions}>
+  <Stack.Navigator screenOptions={{...clearStackNavigatorOptions, presentation: 'modal'}}>
     <Stack.Screen
       name={Routes.WALLET.TAB_STACK_FLOW}
       component={WalletTabStackFlow}
@@ -221,9 +220,9 @@ const TransactionsHome = () => (
 const BrowserFlow = (props) => (
   <Stack.Navigator
     initialRouteName={Routes.BROWSER.VIEW}
-    mode={'modal'}
     screenOptions={{
       cardStyle: { backgroundColor: importedColors.transparent },
+      presentation: 'modal',
     }}
   >
     <Stack.Screen
@@ -276,10 +275,9 @@ const SnapsSettingsStack = () => (
 const NotificationsOptInStack = () => (
   <Stack.Navigator initialRouteName={Routes.NOTIFICATIONS.OPT_IN}>
     <Stack.Screen
-      mode={'modal'}
       name={Routes.NOTIFICATIONS.OPT_IN}
       component={OptIn}
-      options={{ headerShown: false }}
+      options={{ headerShown: false, presentation: 'modal' }}
     />
     <Stack.Screen
       name={Routes.SETTINGS.NOTIFICATIONS}
@@ -609,8 +607,7 @@ const Webview = () => (
     <Stack.Screen
       name="SimpleWebview"
       component={SimpleWebview}
-      mode={'modal'}
-      options={SimpleWebview.navigationOptions}
+      options={{...SimpleWebview.navigationOptions, presentation: 'modal'}}
     />
   </Stack.Navigator>
 );
@@ -724,10 +721,9 @@ const NotificationsModeView = (props) => (
       options={NotificationsSettings.navigationOptions}
     />
     <Stack.Screen
-      mode={'modal'}
       name={Routes.NOTIFICATIONS.OPT_IN}
       component={OptIn}
-      options={OptIn.navigationOptions}
+      options={{...OptIn.navigationOptions, presentation: 'modal'}}
     />
     <Stack.Screen
       name={Routes.NOTIFICATIONS.DETAILS}
@@ -801,8 +797,8 @@ const MainNavigator = () => (
   <Stack.Navigator
     screenOptions={{
       headerShown: false,
+      presentation: 'modal',
     }}
-    mode={'modal'}
     initialRouteName={'Home'}
   >
     <Stack.Screen

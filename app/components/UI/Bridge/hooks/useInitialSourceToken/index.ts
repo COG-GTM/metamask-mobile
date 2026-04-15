@@ -7,7 +7,7 @@ import { useSwitchNetworks } from '../../../../Views/NetworkSelector/useSwitchNe
 import { useNetworkInfo } from '../../../../../selectors/selectedNetworkController';
 import { CaipChainId, Hex } from '@metamask/utils';
 import { getNativeAssetForChainId } from '@metamask/bridge-controller';
-import { constants } from 'ethers';
+import { ZeroAddress } from 'ethers';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { SolScope } from '@metamask/keyring-api';
 ///: END:ONLY_INCLUDE_IF
@@ -60,7 +60,7 @@ export const useInitialSourceToken = (initialSourceToken?: BridgeToken) => {
     }
 
     // Fix for the case where the initial source token is the native token of the current chain
-    if (initialSourceToken.address === constants.AddressZero) {
+    if (initialSourceToken.address === ZeroAddress) {
       // Set the source token
       dispatch(
         setSourceToken(getNativeSourceToken(initialSourceToken.chainId)),

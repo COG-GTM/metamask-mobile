@@ -10,7 +10,7 @@ import initialBackgroundState from '../../../../../util/test/initial-background-
 import { renderScreen } from '../../../../../util/test/renderWithProvider';
 import Routes from '../../../../../constants/navigation/Routes';
 import { BridgeState } from '../../../../../core/redux/slices/bridge';
-import { ethers } from 'ethers';
+import { ZeroAddress } from 'ethers';
 
 describe('BlockExplorersModal', () => {
   const mockTx = {
@@ -299,8 +299,8 @@ describe('BlockExplorersModal', () => {
         TokenRatesController: {
           marketData: {
             [mockChainId]: {
-              [ethers.constants.AddressZero as Hex]: {
-                tokenAddress: ethers.constants.AddressZero as Hex,
+              [ZeroAddress as Hex]: {
+                tokenAddress: ZeroAddress as Hex,
                 currency: 'ETH',
                 price: 1, // 1 ETH = 1 ETH
               },

@@ -7,7 +7,7 @@ import {
   StakingType,
   ChainId,
 } from '@metamask/stake-sdk';
-import { BigNumber, Contract } from 'ethers';
+import { Contract } from 'ethers';
 import { Stake } from '../../sdk/stakeSdkProvider';
 import useBalance from '../useBalance';
 
@@ -61,7 +61,7 @@ const mockConvertToShares = jest
 
 const mockGetShares = jest
   .fn()
-  .mockResolvedValue(BigNumber.from(MOCK_USER_SHARES));
+  .mockResolvedValue(BigInt(MOCK_USER_SHARES));
 
 let mockAddTransaction: jest.Mock;
 
@@ -170,7 +170,7 @@ describe('usePoolStakedUnstake', () => {
       expect(mockGetShares).toHaveBeenCalledTimes(1);
       expect(mockEstimateEnterExitQueueGas).toHaveBeenCalledTimes(1);
       expect(mockEncodeEnterExitQueueTransactionData).toHaveBeenCalledTimes(1);
-      expect(mockEncodeEnterExitQueueTransactionData).toHaveBeenCalledWith(BigNumber.from(MOCK_USER_SHARES), MOCK_RECEIVER_ADDRESS, { gasLimit: MOCK_UNSTAKE_GAS_LIMIT });
+      expect(mockEncodeEnterExitQueueTransactionData).toHaveBeenCalledWith(BigInt(MOCK_USER_SHARES), MOCK_RECEIVER_ADDRESS, { gasLimit: MOCK_UNSTAKE_GAS_LIMIT });
       expect(mockAddTransaction).toHaveBeenCalledTimes(1);
     });
   });

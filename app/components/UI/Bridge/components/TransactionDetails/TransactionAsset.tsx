@@ -26,7 +26,7 @@ import {
 import { StyleSheet } from 'react-native';
 import TokenIcon from '../../../Swaps/components/TokenIcon';
 import { BridgeToken } from '../../types';
-import { ethers } from 'ethers';
+import { ZeroAddress } from 'ethers';
 
 const styles = StyleSheet.create({
   tokenIcon: {
@@ -66,7 +66,7 @@ const TransactionAsset = ({
 
   // Solana native SOL will also be the zero address for quote data from Bridge API only!
   // Other formats might look like solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp/token:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
-  const isNative = token.address === ethers.constants.AddressZero;
+  const isNative = token.address === ZeroAddress;
 
   return (
     <Box

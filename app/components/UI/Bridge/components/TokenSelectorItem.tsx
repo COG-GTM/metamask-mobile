@@ -24,7 +24,7 @@ import { AlignItems, FlexDirection } from '../../Box/box.types';
 import { useStyles } from '../../../../component-library/hooks';
 import { Theme } from '../../../../util/theme/models';
 import { BridgeToken } from '../types';
-import { ethers } from 'ethers';
+import { ZeroAddress } from 'ethers';
 import { fontStyles } from '../../../../styles/common';
 import {
   TOKEN_BALANCE_LOADING,
@@ -109,7 +109,7 @@ export const TokenSelectorItem: React.FC<TokenSelectorItemProps> = ({
     ? `${token.balance} ${token.symbol}`
     : undefined;
 
-  const isNative = token.address === ethers.constants.AddressZero;
+  const isNative = token.address === ZeroAddress;
 
   const balance = shouldShowBalance ? fiatValue : undefined;
   const secondaryBalance = shouldShowBalance ? balanceWithSymbol : undefined;

@@ -10,7 +10,7 @@ import {
   FORMATTED_VALUE_PRICE_TEST_ID,
   FORMATTED_PERCENTAGE_TEST_ID,
 } from './AggregatedPercentage.constants';
-import { toChecksumAddress, zeroAddress } from 'ethereumjs-util';
+import { toChecksumAddress, zeroAddress } from '@ethereumjs/util';
 import { selectTokenMarketData } from '../../../../selectors/tokenRatesController';
 import {
   MarketDataMapping,

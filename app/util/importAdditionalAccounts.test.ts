@@ -1,5 +1,5 @@
 import importAdditionalAccounts from './importAdditionalAccounts';
-import { BN } from 'ethereumjs-util';
+import { BN } from '@ethereumjs/util';
 
 const mockKeyring = {
   addAccounts: jest.fn(),

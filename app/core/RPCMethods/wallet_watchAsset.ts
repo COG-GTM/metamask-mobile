@@ -13,7 +13,7 @@ import {
   selectEvmChainId,
   selectNetworkClientId,
 } from '../../selectors/networkController';
-import { isValidAddress } from 'ethereumjs-util';
+import { isValidAddress } from '@ethereumjs/util';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { JsonRpcRequest, PendingJsonRpcResponse } from '@metamask/utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';

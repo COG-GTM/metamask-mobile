@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { Mnemonic } from 'ethers';
 import { Encryptor, LEGACY_DERIVATION_OPTIONS } from '../../core/Encryptor';
 import { regex } from '../regex';
 
@@ -42,4 +42,11 @@ export const parseSeedPhrase = (seedPhrase: string): string =>
   (seedPhrase || '').trim().toLowerCase().match(regex.seedPhrase)?.join(' ') ||
   '';
 
-export const { isValidMnemonic } = ethers.utils;
+export const isValidMnemonic = (phrase: string): boolean => {
+  try {
+    Mnemonic.fromPhrase(phrase);
+    return true;
+  } catch {
+    return false;
+  }
+};

@@ -1,4 +1,4 @@
-import { BN } from 'ethereumjs-util';
+import { BN } from '@ethereumjs/util';
 import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import useStakingEarningsHistory, {
