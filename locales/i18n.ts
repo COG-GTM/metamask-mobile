@@ -95,7 +95,7 @@ getUserPreferableLocale();
 export const isRTL = false; // currentLocale.indexOf('jaJp') === 0;
 
 // Set locale
-export async function setLocale(locale) {
+export async function setLocale(locale: string): Promise<void> {
   I18n.locale = locale;
   // Platform.OS === 'ios' && getLocaleData(locale);
   await StorageWrapper.setItem(LANGUAGE, locale);
@@ -103,7 +103,7 @@ export async function setLocale(locale) {
 }
 
 // Get languages
-export function getLanguages() {
+export function getLanguages(): Record<string, string> {
   return {
     de: 'German',
     el: 'Greek',
@@ -127,12 +127,12 @@ export function getLanguages() {
 ReactNative.I18nManager.allowRTL(isRTL);
 
 // The method we'll use instead of a regular string
-export function strings(name, params = {}) {
+export function strings(name: string, params: Record<string, string> = {}): string {
   return I18n.t(name, params);
 }
 
 // Allow persist locale after app closed
-async function getUserPreferableLocale() {
+async function getUserPreferableLocale(): Promise<void> {
   const locale = await StorageWrapper.getItem(LANGUAGE);
   if (locale) {
     I18n.locale = locale;
