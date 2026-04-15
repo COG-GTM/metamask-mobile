@@ -102,12 +102,9 @@ jest.mock('../../hooks/useLatestBalance', () => ({
   useLatestBalance: jest.fn().mockImplementation(({ address, chainId }) => {
     if (!address || !chainId) return undefined;
 
-    // Need to do this due to this error: "The module factory of `jest.mock()` is not allowed to reference any out-of-scope variables.""
-    const actualEthers = jest.requireActual('ethers');
-
     return {
       displayBalance: '2.0',
-      atomicBalance: actualEthers.BigNumber.from('2000000000000000000'), // 2 ETH
+      atomicBalance: BigInt('2000000000000000000'), // 2 ETH
     };
   }),
 }));
