@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, Text, View } from 'react-native';
 import { fontStyles } from '../../../../../../../styles/common';
 import { strings } from '../../../../../../../../locales/i18n';
@@ -63,37 +62,6 @@ const createStyles = (colors) =>
  * PureComponent that supports reviewing transaction summary
  */
 class TransactionReviewSummary extends PureComponent {
-  static propTypes = {
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Transaction corresponding action key
-     */
-    actionKey: PropTypes.string,
-    /**
-     * Transaction amount in ETH before gas
-     */
-    assetAmount: PropTypes.string,
-    /**
-     * Transaction amount in fiat before gas
-     */
-    fiatValue: PropTypes.string,
-    /**
-     * Approve type transaction or not
-     */
-    approveTransaction: PropTypes.bool,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Network provider chain id
-     */
-    chainId: PropTypes.string,
-  };
-
   renderWarning = () => (
     <Text>{`${strings('transaction.approve_warning')} ${
       this.props.assetAmount
