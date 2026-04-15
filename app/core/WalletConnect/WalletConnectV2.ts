@@ -20,7 +20,7 @@ import DevLogger from '../SDKConnect/utils/DevLogger';
 import getAllUrlParams from '../SDKConnect/utils/getAllUrlParams.util';
 import { wait, waitForKeychainUnlocked } from '../SDKConnect/utils/wait.util';
 import extractApprovedAccounts from './extractApprovedAccounts';
-import WalletConnect from './WalletConnect';
+// WalletConnect v1 has been removed. All sessions use v2 only.
 import {
   getHostname,
   getScopedPermissions,
@@ -642,7 +642,8 @@ export class WC2Manager {
       }
 
       if (params.version === 1) {
-        await WalletConnect.newSession(wcUri, redirectUrl, false, origin);
+        console.warn('WalletConnect v1 is no longer supported. Please use WalletConnect v2.');
+        return;
       } else if (params.version === 2) {
         // check if already connected
         const activeSession = this.getSessions().find(

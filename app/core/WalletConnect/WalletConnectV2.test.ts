@@ -7,7 +7,7 @@ import StorageWrapper from '../../store/storage-wrapper';
 import AppConstants from '../AppConstants';
 import Engine from '../Engine';
 import { IWalletKit } from '@reown/walletkit';
-import WalletConnect from './WalletConnect';
+// WalletConnect v1 has been removed
 import WalletConnect2Session from './WalletConnect2Session';
 // eslint-disable-next-line import/no-namespace
 import * as wcUtils from './wc-utils';
@@ -153,9 +153,7 @@ jest.mock('../BackgroundBridge/BackgroundBridge', () => ({
   })),
 }));
 
-jest.mock('./WalletConnect', () => ({
-  newSession: jest.fn().mockResolvedValue({}),
-}));
+// WalletConnect v1 mock removed - all sessions use v2 only
 
 jest.mock('@walletconnect/core', () => ({
   Core: jest.fn().mockImplementation((opts) => ({
@@ -335,9 +333,9 @@ describe('WC2Manager', () => {
       expect(showLoadingSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('creates new session for WalletConnect v1 URIs', async () => {
+    it('logs a warning for WalletConnect v1 URIs', async () => {
       const mockWcUri = 'wc:00e46b69-d0cc-4b3e-b6a2-cee442f97188@1';
-      const WalletConnectSpy = jest.spyOn(WalletConnect, 'newSession');
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       await manager.connect({
         wcUri: mockWcUri,
@@ -345,12 +343,10 @@ describe('WC2Manager', () => {
         origin: 'qrcode',
       });
 
-      expect(WalletConnectSpy).toHaveBeenCalledWith(
-        mockWcUri,
-        'https://example.com',
-        false,
-        'qrcode',
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'WalletConnect v1 is no longer supported. Please use WalletConnect v2.',
       );
+      consoleSpy.mockRestore();
     });
 
     it('logs a warning to console on invalid URIs', async () => {

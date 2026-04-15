@@ -14,7 +14,7 @@ import {
   setEtherTransaction,
   setTransactionObject,
 } from '../../../actions/transaction';
-import WalletConnect from '../../../core/WalletConnect/WalletConnect';
+// WalletConnect v1 has been removed. All sessions use v2 via WC2Manager.
 import {
   getMethodData,
   TOKEN_METHOD_TRANSFER,
@@ -139,9 +139,7 @@ const RootRPCMethodsUI = (props) => {
   const setTransactionObject = props.setTransactionObject;
   const setEtherTransaction = props.setEtherTransaction;
 
-  const initializeWalletConnect = () => {
-    WalletConnect.init();
-  };
+  // WalletConnect v1 init removed - v2 is initialized in App.tsx via WC2Manager
 
   const trackSwaps = useCallback(
     async (event, transactionMeta, swapsTransactions) => {
@@ -507,11 +505,10 @@ const RootRPCMethodsUI = (props) => {
   }, [onUnapprovedTransaction]);
 
   useEffect(() => {
-    initializeWalletConnect();
+    // WalletConnect v1 init removed - v2 is initialized in App.tsx via WC2Manager
 
     return function cleanup() {
       Engine.context.TokensController?.hub?.removeAllListeners();
-      WalletConnect?.hub?.removeAllListeners();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
