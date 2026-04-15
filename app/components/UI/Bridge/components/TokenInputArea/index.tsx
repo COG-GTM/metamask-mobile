@@ -15,7 +15,7 @@ import {
 import { renderNumber } from '../../../../../util/number';
 import { selectTokenMarketData } from '../../../../../selectors/tokenRatesController';
 import { selectNetworkConfigurations } from '../../../../../selectors/networkController';
-import { ethers } from 'ethers';
+import { ZeroAddress } from 'ethers';
 import { BridgeToken } from '../../types';
 import { Skeleton } from '../../../../../component-library/components/Skeleton';
 import Button, {
@@ -169,7 +169,7 @@ export const TokenInputArea = forwardRef<
         ? `${renderNumber(tokenBalance)} ${token?.symbol}`
         : undefined;
     const formattedAddress =
-      token?.address && token.address !== ethers.constants.AddressZero
+      token?.address && token.address !== ZeroAddress
         ? formatAddress(token?.address)
         : undefined;
 

@@ -1,4 +1,4 @@
-import { isValidMnemonic } from 'ethers/lib/utils';
+import { isValidMnemonic } from '../../../util/validators';
 import { wordlist } from '@metamask/scure-bip39/dist/wordlists/english';
 import { strings } from '../../../../locales/i18n';
 

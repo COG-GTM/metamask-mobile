@@ -28,7 +28,7 @@ import {
   useMetrics,
 } from '../../../../../../hooks/useMetrics';
 import { IMetaMetricsEvent } from '../../../../../../../core/Analytics';
-import { formatEther } from 'ethers/lib/utils';
+import { formatEther } from 'ethers';
 import { EVENT_LOCATIONS, EVENT_PROVIDERS } from '../../../../constants/events';
 
 const STAKING_TX_METRIC_EVENTS: Record<

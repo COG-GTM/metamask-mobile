@@ -9,7 +9,7 @@ import { renderScreen } from '../../../../../util/test/renderWithProvider';
 import initialBackgroundState from '../../../../../util/test/initial-background-state.json';
 import { formatChainIdToCaip } from '@metamask/bridge-controller';
 import { Hex } from '@metamask/utils';
-import { ethers } from 'ethers';
+import { ZeroAddress } from 'ethers';
 import { BridgeState } from '../../../../../core/redux/slices/bridge';
 
 const mockNavigate = jest.fn();
@@ -300,8 +300,8 @@ describe('BridgeTransactionDetails', () => {
         TokenRatesController: {
           marketData: {
             [mockChainId]: {
-              [ethers.constants.AddressZero as Hex]: {
-                tokenAddress: ethers.constants.AddressZero as Hex,
+              [ZeroAddress as Hex]: {
+                tokenAddress: ZeroAddress as Hex,
                 currency: 'ETH',
                 price: 1, // 1 ETH = 1 ETH
               },

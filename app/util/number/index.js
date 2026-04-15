@@ -3,7 +3,7 @@
  */
 import { stripHexPrefix } from '@ethereumjs/util';
 import BN4 from 'bnjs4';
-import { utils as ethersUtils } from 'ethers';
+import { formatUnits } from 'ethers';
 import convert from '@metamask/ethjs-unit';
 import { add0x, remove0x } from '@metamask/utils';
 import numberToBN from 'number-to-bn';
@@ -150,7 +150,7 @@ export function fromTokenMinimalUnitString(minimalInput, decimals) {
     throw new TypeError('minimalInput must be a string');
   }
 
-  const tokenFormat = ethersUtils.formatUnits(minimalInput, decimals);
+  const tokenFormat = formatUnits(minimalInput, decimals);
   const isInteger = Boolean(regex.integer.exec(tokenFormat));
 
   const [integerPart, decimalPart] = tokenFormat.split('.');

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Alert } from 'react-native';
 import PropTypes from 'prop-types';
 import { connect, useSelector } from 'react-redux';
-import { ethers } from 'ethers';
+import { Interface } from 'ethers';
 import abi from 'human-standard-token-abi';
 
 import NotificationManager from '../../../core/NotificationManager';
@@ -80,7 +80,7 @@ import SnapDialogApproval from '../../Snaps/SnapDialogApproval/SnapDialogApprova
 import SnapAccountCustomNameApproval from '../../Approvals/SnapAccountCustomNameApproval';
 ///: END:ONLY_INCLUDE_IF
 
-const hstInterface = new ethers.utils.Interface(abi);
+const hstInterface = new Interface(abi);
 
 function useSwapsTransactions() {
   const swapTransactions = useSelector(selectSwapsTransactions, isEqual);

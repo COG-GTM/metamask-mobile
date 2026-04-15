@@ -5,7 +5,7 @@ import { selectSelectedInternalAccountFormattedAddress } from '../../../../selec
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import { decGWEIToHexWEI } from '../../../../util/conversions';
 import BN4 from 'bnjs4';
-import { formatEther } from 'ethers/lib/utils';
+import { formatEther } from 'ethers';
 import Engine from '../../../../core/Engine';
 import { hexToBN } from '../../../../util/number';
 

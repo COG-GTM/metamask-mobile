@@ -1,7 +1,7 @@
 import { defaultBridgeControllerState } from './bridgeControllerState';
 import { CaipAssetId, Hex } from '@metamask/utils';
 import { SolScope } from '@metamask/keyring-api';
-import { ethers } from 'ethers';
+import { ZeroAddress } from 'ethers';
 import { formatChainIdToCaip, StatusTypes } from '@metamask/bridge-controller';
 
 export const ethChainId = '0x1' as Hex;
@@ -299,8 +299,8 @@ export const initialState = {
       TokenRatesController: {
         marketData: {
           [ethChainId]: {
-            [ethers.constants.AddressZero as Hex]: {
-              tokenAddress: ethers.constants.AddressZero as Hex,
+            [ZeroAddress as Hex]: {
+              tokenAddress: ZeroAddress as Hex,
               currency: 'ETH',
               price: 1, // 1 ETH = 1 ETH
             },

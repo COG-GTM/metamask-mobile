@@ -1,7 +1,7 @@
 import { renderHookWithProvider } from '../../../../../util/test/renderWithProvider';
 import { useLatestBalance } from '.';
 import { getProviderByChainId } from '../../../../../util/notifications/methods/common';
-import { BigNumber, constants } from 'ethers';
+import { ZeroAddress } from 'ethers';
 import { waitFor } from '@testing-library/react-native';
 import { Hex } from '@metamask/utils';
 import { initialState, solanaNativeTokenAddress, solanaToken2Address, solanaAccountId } from '../../_mocks_/initialState';
@@ -19,14 +19,14 @@ jest.mock('ethers', () => {
   return {
     ...actual,
     Contract: jest.fn().mockImplementation(() => ({
-      balanceOf: jest.fn().mockResolvedValue(actual.BigNumber.from('1000000')),
+      balanceOf: jest.fn().mockResolvedValue(BigInt('1000000')),
     })),
   };
 });
 
 describe('useLatestBalance', () => {
   const mockProvider = {
-    getBalance: jest.fn().mockResolvedValue(BigNumber.from('1000000000000000000')),
+    getBalance: jest.fn().mockResolvedValue(BigInt('1000000000000000000')),
     getNetwork: jest.fn().mockResolvedValue({ chainId: 1 }),
   };
 
@@ -40,7 +40,7 @@ describe('useLatestBalance', () => {
       () =>
         useLatestBalance(
           {
-            address: constants.AddressZero,
+            address: ZeroAddress,
             decimals: 18,
             chainId: '0x1' as Hex,
           },
@@ -52,7 +52,7 @@ describe('useLatestBalance', () => {
       expect(mockProvider.getBalance).toHaveBeenCalledWith('0x1234567890123456789012345678901234567890');
       expect(result.current).toEqual({
         displayBalance: '1.0',
-        atomicBalance: BigNumber.from('1000000000000000000'),
+        atomicBalance: BigInt('1000000000000000000'),
       });
     });
   });
@@ -73,7 +73,7 @@ describe('useLatestBalance', () => {
     await waitFor(() => {
       expect(result.current).toEqual({
         displayBalance: '1.0',
-        atomicBalance: BigNumber.from('1000000'),
+        atomicBalance: BigInt('1000000'),
       });
     });
   });
@@ -90,7 +90,7 @@ describe('useLatestBalance', () => {
     await waitFor(() => {
       expect(result.current).toEqual({
         displayBalance: '100.123',
-        atomicBalance: BigNumber.from('100123000000'),
+        atomicBalance: BigInt('100123000000'),
       });
     });
   });
@@ -107,7 +107,7 @@ describe('useLatestBalance', () => {
     await waitFor(() => {
       expect(result.current).toEqual({
         displayBalance: '20000.456',
-        atomicBalance: BigNumber.from('20000456000'),
+        atomicBalance: BigInt('20000456000'),
       });
     });
   });
@@ -145,14 +145,14 @@ describe('useLatestBalance', () => {
     // Initially it should return the cached balance while fetching
     expect(result.current).toEqual({
       displayBalance: '5.5',
-      atomicBalance: BigNumber.from('5500000'),
+      atomicBalance: BigInt('5500000'),
     });
 
     // After fetching it should update to the fetched balance
     await waitFor(() => {
       expect(result.current).toEqual({
         displayBalance: '1.0',
-        atomicBalance: BigNumber.from('1000000'),
+        atomicBalance: BigInt('1000000'),
       });
     });
   });

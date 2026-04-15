@@ -43,7 +43,7 @@ import currencySymbols from '../../../util/currency-symbols.json';
 import { ChainId } from '@metamask/controller-utils';
 import { getTicker } from '../../../util/transactions';
 import { toLowerCaseEquals } from '../../../util/general';
-import { utils as ethersUtils } from 'ethers';
+import { isHexString } from 'ethers';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { isTestNet } from '../../../util/networks';
 import { isTokenDetectionSupportedForNetwork } from '@metamask/assets-controllers';
@@ -548,7 +548,7 @@ class PaymentRequest extends PureComponent {
     let secondaryAmount;
     const symbol = selectedAsset.symbol;
     const undefAmount =
-      isDecimal(amount) && !ethersUtils.isHexString(amount) ? amount : 0;
+      isDecimal(amount) && !isHexString(amount) ? amount : 0;
     const cryptoAmount = amount;
     const exchangeRate =
       selectedAsset &&

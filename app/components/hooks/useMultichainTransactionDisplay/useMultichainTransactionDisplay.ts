@@ -2,7 +2,7 @@ import { Transaction, TransactionType } from '@metamask/keyring-api';
 import I18n from '../../../../locales/i18n';
 import { formatWithThreshold } from '../../../util/assets';
 import { BridgeHistoryItem } from '@metamask/bridge-status-controller';
-import { formatUnits } from 'ethers/lib/utils';
+import { formatUnits } from 'ethers';
 
 type Fee = Transaction['fees'][0]['asset'];
 type Token = Transaction['from'][0]['asset'];

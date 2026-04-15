@@ -4,7 +4,7 @@ import { fetchAssetMetadata, getAssetImageUrl } from './utils';
 import { useAsyncResult } from '../../../../hooks/useAsyncResult';
 import { selectBasicFunctionalityEnabled } from '../../../../../selectors/settings';
 import { isAddress as isSolanaAddress } from '@solana/addresses';
-import { isAddress as isEvmAddress } from 'ethers/lib/utils';
+import { isAddress as isEvmAddress } from 'ethers';
 
 export enum AssetType {
   /** The native asset for the current network, such as ETH */

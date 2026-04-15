@@ -9,7 +9,7 @@ import { selectEvmNetworkConfigurationsByChainId } from '../../../../../selector
 import { useNetworkInfo } from '../../../../../selectors/selectedNetworkController';
 import { useSwitchNetworks } from '../../../../Views/NetworkSelector/useSwitchNetworks';
 import { Hex } from '@metamask/utils';
-import { constants } from 'ethers';
+import { ZeroAddress } from 'ethers';
 import { getNativeAssetForChainId } from '@metamask/bridge-controller';
 
 // Mock dependencies
@@ -80,7 +80,7 @@ describe('useInitialSourceToken', () => {
   };
 
   const mockNativeAsset = {
-    address: constants.AddressZero,
+    address: ZeroAddress,
     name: 'Ethereum',
     symbol: 'ETH',
     decimals: 18,
@@ -148,7 +148,7 @@ describe('useInitialSourceToken', () => {
 
   it('should set native token when initial token is the zero address', async () => {
     const mockToken: BridgeToken = {
-      address: constants.AddressZero,
+      address: ZeroAddress,
       symbol: 'ETH',
       name: 'Ethereum',
       decimals: 18,

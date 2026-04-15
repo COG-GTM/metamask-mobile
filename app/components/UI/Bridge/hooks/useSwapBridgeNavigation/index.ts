@@ -12,7 +12,7 @@ import { BridgeRouteParams } from '../../Views/BridgeView';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { SolScope } from '@metamask/keyring-api';
 ///: END:ONLY_INCLUDE_IF
-import { ethers } from 'ethers';
+import { ZeroAddress } from 'ethers';
 import { MetaMetricsEvents, useMetrics } from '../../../../hooks/useMetrics';
 import { getDecimalChainId } from '../../../../../util/networks';
 import { isAssetFromSearch } from '../../../../../selectors/tokenSearchDiscoveryDataController';
@@ -138,7 +138,7 @@ export const useSwapBridgeNavigation = ({
         tokenBase ?? {
           // For EVM chains, default swap token addr is zero address
           // Old Swap UI is EVM only, so we don't need to worry about Solana
-          address: ethers.constants.AddressZero,
+          address: ZeroAddress,
           chainId: selectedChainId,
         };
 
