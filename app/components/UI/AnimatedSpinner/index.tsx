@@ -4,13 +4,22 @@ import { View, Animated, Easing, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 
 export const SpinnerSize = {
   MD: 'MD',
   SM: 'SM',
-};
+} as const;
 
-const measures = {
+type SpinnerSizeKey = (typeof SpinnerSize)[keyof typeof SpinnerSize];
+
+interface Measures {
+  Android: { height: number; width: number };
+  iOS: { height: number; width: number };
+  static: { borderRadius: number; width: number; height: number; iconSize: number };
+}
+
+const measures: Record<SpinnerSizeKey, Measures> = {
   [SpinnerSize.SM]: {
     Android: {
       height: 30.5,
@@ -45,30 +54,42 @@ const measures = {
   },
 };
 
-const createStyles = (colors, measures) =>
+const createStyles = (colors: Colors, m: Measures) =>
   StyleSheet.create({
     view: {
       position: 'relative',
       height: Device.isAndroid()
-        ? measures.Android.height
-        : measures.iOS.height,
-      width: Device.isAndroid() ? measures.Android.width : measures.iOS.width,
+        ? m.Android.height
+        : m.iOS.height,
+      width: Device.isAndroid() ? m.Android.width : m.iOS.width,
       top: Device.isAndroid() ? -6 : -5.5,
       left: Device.isAndroid() ? -6 : -5.5,
     },
     static: {
       borderWidth: 3.5,
       borderColor: colors.background.alternative,
-      borderRadius: measures.static.borderRadius,
-      width: measures.static.width,
-      height: measures.static.height,
+      borderRadius: m.static.borderRadius,
+      width: m.static.width,
+      height: m.static.height,
     },
   });
 
-export default class AnimatedSpinner extends PureComponent {
+interface AnimatedSpinnerProps {
+  size?: SpinnerSizeKey;
+}
+
+interface AnimatedSpinnerState {
+  spinning: boolean;
+}
+
+export default class AnimatedSpinner extends PureComponent<AnimatedSpinnerProps, AnimatedSpinnerState> {
   spinValue = new Animated.Value(0);
 
-  state = {
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  private mounted = false;
+
+  state: AnimatedSpinnerState = {
     spinning: false,
   };
 

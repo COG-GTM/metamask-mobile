@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
@@ -17,8 +16,9 @@ import Text, {
   TextVariant,
   TextColor,
 } from '../../../component-library/components/Texts/Text';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors, titleColor) =>
+const createStyles = (colors: Colors, _titleColor: string) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -47,43 +47,18 @@ const createStyles = (colors, titleColor) =>
     },
   });
 
-const propTypes = {
-  title: PropTypes.string,
-  /**
-   * Additional descriptive text about this option
-   */
-  description: PropTypes.string,
-  /**
-   * Disable bottom border
-   */
-  noBorder: PropTypes.bool,
-  /**
-   * Handler called when this drawer is pressed
-   */
-  onPress: PropTypes.func,
-  /**
-   * Display SettingsNotification
-   */
-  warning: PropTypes.string,
-  /**
-   * Display arrow right
-   */
-  renderArrowRight: PropTypes.bool,
-  /**
-   * Test id for testing purposes
-   */
-  testID: PropTypes.string,
-  /**
-   * Title color
-   */
-  titleColor: PropTypes.string,
-};
+interface SettingsDrawerProps {
+  title?: string;
+  description?: string;
+  noBorder?: boolean;
+  onPress?: () => void;
+  warning?: string;
+  renderArrowRight?: boolean;
+  testID?: string;
+  titleColor?: string;
+}
 
-const defaultProps = {
-  onPress: undefined,
-};
-
-const SettingsDrawer = ({
+const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   title,
   description,
   onPress,
@@ -136,8 +111,5 @@ const SettingsDrawer = ({
     </TouchableOpacity>
   );
 };
-
-SettingsDrawer.propTypes = propTypes;
-SettingsDrawer.defaultProps = defaultProps;
 
 export default SettingsDrawer;
