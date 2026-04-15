@@ -1,2 +1,5 @@
 # Advisory exclusions for improved-yarn-audit
-# No advisories currently suppressed
+# GHSA-c76h-2ccp-4975: crypto-js has no fixed version. Direct dependency removed;
+# suppression kept for transitive deps (@consensys/on-ramp-sdk, @ledgerhq/evm-tools,
+# @metamask/ppom-validator). Remove once all transitive crypto-js usage is eliminated.
+GHSA-c76h-2ccp-4975
