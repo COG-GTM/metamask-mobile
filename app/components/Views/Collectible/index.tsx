@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
-import { RefreshControl, ScrollView, View, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
+import { RefreshControl, ScrollView, View, StyleSheet, ColorValue } from 'react-native';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import { connect } from 'react-redux';
 import Collectibles from '../../UI/Collectibles';
@@ -14,7 +13,14 @@ import { collectiblesSelector } from '../../../reducers/collectibles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
 
-const createStyles = (colors) =>
+interface ThemeColors {
+  background: { default: ColorValue };
+  primary: { default: string };
+  icon: { default: string };
+  overlay: { default: string };
+}
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -22,37 +28,49 @@ const createStyles = (colors) =>
     },
   });
 
+interface CollectibleItem {
+  address: string;
+  name?: string;
+  image?: string;
+  [key: string]: unknown;
+}
+
+interface CollectibleRouteParams {
+  address: string;
+  name?: string;
+  logo?: string;
+  [key: string]: unknown;
+}
+
+interface CollectibleProps {
+  /** Array of assets (in this case Collectibles) */
+  collectibles: CollectibleItem[];
+  /** navigation object required to access the props passed by the parent component */
+  navigation: Record<string, unknown>;
+  /** Called to toggle collectible contract information modal */
+  toggleCollectibleContractModal: () => void;
+  /** Whether collectible contract information is visible */
+  collectibleContractModalVisible: boolean;
+  /** Object that represents the current route info like params passed to it */
+  route: {
+    params: CollectibleRouteParams;
+  };
+}
+
+interface CollectibleState {
+  refreshing: boolean;
+  collectibles: CollectibleItem[];
+}
+
 /**
  * View that displays a specific collectible
  * including the overview (name, address, symbol, logo, description, total supply)
  * and also individual collectibles list
  */
-class Collectible extends PureComponent {
-  static propTypes = {
-    /**
-     * Array of assets (in this case Collectibles)
-     */
-    collectibles: PropTypes.array,
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-     * Called to toggle collectible contract information modal
-     */
-    toggleCollectibleContractModal: PropTypes.func,
-    /**
-     * Whether collectible contract information is visible
-     */
-    collectibleContractModalVisible: PropTypes.bool,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: CollectibleState = {
     refreshing: false,
     collectibles: [],
   };
@@ -168,12 +186,18 @@ class Collectible extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+interface CollectibleRootState {
+  modals: {
+    collectibleContractModalVisible: boolean;
+  };
+}
+
+const mapStateToProps = (state: CollectibleRootState) => ({
   collectibles: collectiblesSelector(state),
   collectibleContractModalVisible: state.modals.collectibleContractModalVisible,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),
 });

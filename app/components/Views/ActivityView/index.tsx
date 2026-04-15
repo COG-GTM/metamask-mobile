@@ -40,7 +40,17 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (params) => {
+interface StyleParams {
+  theme: {
+    colors: {
+      background: { default: string };
+      border: { muted: string };
+      text: { default: string };
+    };
+  };
+}
+
+const createStyles = (params: StyleParams) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -113,7 +123,7 @@ const ActivityView = () => {
   const networkName = useSelector(selectNetworkName);
   const hasOrders = useSelector((state) => getHasOrders(state) || false);
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
+  const tabViewRef = useRef<{ goToPage: (page: number) => void }>(null);
   const params = useParams();
 
   const isTestnetOrNotPopularNetwork =
