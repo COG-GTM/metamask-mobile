@@ -295,7 +295,6 @@
     "ethereumjs-abi": "^0.6.8",
     "@ethereumjs/util": "^9.1.0",
     "bn.js": "^5.2.1",
-    "ethereumjs-util": "^7.0.10",
     "ethers": "^6.13.0",
     "ethjs-ens": "2.0.1",
     "eventemitter2": "^6.4.9",
