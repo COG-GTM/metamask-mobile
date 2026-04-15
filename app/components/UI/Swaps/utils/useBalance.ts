@@ -6,14 +6,16 @@ import {
   safeNumberToBN,
 } from '../../../../util/number';
 import { safeToChecksumAddress } from '../../../../util/address';
+import type { Token, Account, Balances } from './token-list-utils';
+import type BN from 'bn.js';
 
 function useBalance(
-  accounts,
-  balances,
-  selectedAddress,
-  sourceToken,
-  { asUnits = false } = {},
-) {
+  accounts: Record<string, Account>,
+  balances: Balances,
+  selectedAddress: string,
+  sourceToken: Token | null | undefined,
+  { asUnits = false }: { asUnits?: boolean } = {},
+): BN | string | null {
   // TODO: This doesn't always return type BN. Objects down the line may attempt to call functions on the BN object.
   const balance = useMemo(() => {
     if (!sourceToken) {

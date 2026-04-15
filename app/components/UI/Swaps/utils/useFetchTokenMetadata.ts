@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios, { CancelTokenSource } from 'axios';
 import { swapsUtils } from '@metamask/swaps-controller';
 
-const defaultTokenMetadata = {
+interface TokenMetadataState {
+  valid: boolean | null;
+  error: boolean;
+  metadata: Record<string, unknown> | null;
+}
+
+const defaultTokenMetadata: TokenMetadataState = {
   valid: null,
   error: false,
   metadata: null,
 };
 
-function useFetchTokenMetadata(address, chainId) {
+function useFetchTokenMetadata(address: string | undefined, chainId: string): [boolean, TokenMetadataState] {
   const [isLoading, setIsLoading] = useState(false);
   const [tokenMetadata, setTokenMetadata] = useState(defaultTokenMetadata);
 
@@ -17,7 +23,7 @@ function useFetchTokenMetadata(address, chainId) {
       return;
     }
 
-    let cancelTokenSource;
+    let cancelTokenSource: CancelTokenSource;
     async function fetchTokenMetadata() {
       try {
         cancelTokenSource = axios.CancelToken.source();
