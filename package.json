@@ -151,7 +151,8 @@
     "multihashes/**/base-x": "3.0.11",
     "@keystonehq/ur-decoder/**/base-x": "3.0.11",
     "cheerio": "1.0.0-rc.12",
-    "metro-cache-key": "0.81.5"
+    "metro-cache-key": "0.81.5",
+    "@react-navigation/core": "5.15.3"
   },
   "dependencies": {
     "@config-plugins/detox": "^9.0.0",
@@ -311,7 +312,7 @@
     "human-standard-token-abi": "^2.0.0",
     "humanize-duration": "^3.33.2",
     "is-url": "^1.2.4",
-    "lodash": "^4.18.1",
+    "lodash": "^4.17.21",
     "lottie-ios": "3.4.1",
     "lottie-react-native": "5.1.6",
     "luxon": "^3.7.2",
@@ -408,7 +409,7 @@
     "uri-js": "^4.4.1",
     "url": "0.11.4",
     "url-parse": "1.5.10",
-    "uuid": "^13.0.0",
+    "uuid": "^8.3.2",
     "valid-url": "1.0.9",
     "viem": "^2.47.18",
     "vm-browserify": "1.1.2",
