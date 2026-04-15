@@ -4524,7 +4524,7 @@
     "@ledgerhq/live-env" "^2.4.1"
     axios "1.7.7"
 
-"@ledgerhq/devices@8.14.0", "@ledgerhq/devices@8.4.4":
+"@ledgerhq/devices@8.14.0", "@ledgerhq/devices@8.4.4", "@ledgerhq/devices@^8.4.2":
   version "8.4.4"
   resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-8.4.4.tgz#0d195c1650fe57da2fad7f0d9074a0190947cd6f"
   integrity sha512-sz/ryhe/R687RHtevIE9RlKaV8kkKykUV4k29e7GAVwzHX1gqG+O75cu1NCJUHLbp3eABV5FdvZejqRUlLis9A==
@@ -4547,7 +4547,7 @@
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"@ledgerhq/errors@^6.19.1", "@ledgerhq/errors@^6.33.0":
+"@ledgerhq/errors@^6.18.0", "@ledgerhq/errors@^6.19.1", "@ledgerhq/errors@^6.33.0":
   version "6.33.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-6.33.0.tgz#137aca1bc962be71d7445fd242f3fb27228a8ada"
   integrity sha512-9iMdjB0Hfxfd8HGMVM0TDPfxBXhJ4MtGKyFlm8aveSHSXjcTjGtCkcnk4OUZ6ZHopBb69BFR+HC2N/ob9xuNgA==
@@ -4593,7 +4593,7 @@
     "@ledgerhq/logs" "^6.12.0"
     rxjs "^7.8.1"
 
-"@ledgerhq/hw-transport@6.35.0", "@ledgerhq/hw-transport@^6.31.4":
+"@ledgerhq/hw-transport@^6.31.2", "@ledgerhq/hw-transport@^6.31.4":
   version "6.35.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.35.0.tgz#cf1f283c38ef1f34cb3a17362389838c8a05805b"
   integrity sha512-BFk4Zr5gfzT40RT6nj0NQTNB25bxWD3QWhdrOA6Mi/CChFTdGomjOuAhWHla2kH50ft8M5UsiiUeHoR+56J69g==
@@ -4616,17 +4616,17 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-6.17.0.tgz#370840b915a0b44fc867fc4e6afc68d26a2055dd"
   integrity sha512-yra33g5q/AU7+PwAws+GaVpQGUuxnDREjVBnviJjcaJLVKuLzI4pnj8Bd3nY3fypM5k1yZEYKEXfUuGFUjP2+w==
 
-"@ledgerhq/react-native-hw-transport-ble@^6.33.2":
-  version "6.40.0"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/react-native-hw-transport-ble/-/react-native-hw-transport-ble-6.40.0.tgz#13146cf70803efcdb01501f56946e8c08eafd1eb"
-  integrity sha512-4tl03ZdhWVUJZNmsqYKD9HScDyATfEvd9mRldecExA2vBxZNu3kFtdtkxWrA7Z+HfGDWyPloGEe3l1O2OrQl7g==
+"@ledgerhq/react-native-hw-transport-ble@6.33.2":
+  version "6.33.2"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/react-native-hw-transport-ble/-/react-native-hw-transport-ble-6.33.2.tgz#6b6097d87dc544d66d978010a136be10a7ab15df"
+  integrity sha512-fkh2fbeBDz8fv5jmENndh8EGbPxEepx6uDdmKmJjaRyKvfcvRiM1bKKQdptQ96fumGnlkPvI9zO546R+IO/xzQ==
   dependencies:
-    "@ledgerhq/devices" "8.14.0"
-    "@ledgerhq/errors" "^6.33.0"
-    "@ledgerhq/hw-transport" "6.35.0"
-    "@ledgerhq/logs" "^6.17.0"
-    react-native-ble-plx "3.4.0"
-    rxjs "7.8.2"
+    "@ledgerhq/devices" "^8.4.2"
+    "@ledgerhq/errors" "^6.18.0"
+    "@ledgerhq/hw-transport" "^6.31.2"
+    "@ledgerhq/logs" "^6.12.0"
+    react-native-ble-plx "3.1.2"
+    rxjs "^7.8.1"
     uuid "^9.0.1"
 
 "@ledgerhq/types-live@^6.56.0":
@@ -25275,7 +25275,7 @@ react-native-background-timer@2.4.1:
   resolved "https://registry.yarnpkg.com/react-native-background-timer/-/react-native-background-timer-2.4.1.tgz#a3bc1cafa8c1e3aeefd0611de120298b67978a0f"
   integrity sha512-TE4Kiy7jUyv+hugxDxitzu38sW1NqjCk4uE5IgU2WevLv7sZacaBc6PZKOShNRPGirLl1NWkaG3LDEkdb9Um5g==
 
-react-native-ble-plx@3.4.0, react-native-ble-plx@3.5.1:
+react-native-ble-plx@3.1.2, react-native-ble-plx@3.5.1:
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/react-native-ble-plx/-/react-native-ble-plx-3.5.1.tgz#344ce0d8803cf63d35b4f0588f18f795a05afea7"
   integrity sha512-SxksmrUt9jG6DOarrrdkb5c/HBLSfZOKauo/9VQSSi3WJA4bmF78GkrtXrgSoGNk0m1ksacFTjB5DuL39xZq/g==
@@ -26683,7 +26683,7 @@ run-parallel@^1.1.2, run-parallel@^1.1.9:
   dependencies:
     queue-microtask "^1.2.2"
 
-rxjs@7.8.2, "rxjs@>= 6", rxjs@^7.2.0, rxjs@^7.5.1, rxjs@^7.5.5, rxjs@^7.8.1, rxjs@^7.8.2:
+"rxjs@>= 6", rxjs@^7.2.0, rxjs@^7.5.1, rxjs@^7.5.5, rxjs@^7.8.1, rxjs@^7.8.2:
   version "7.8.2"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.8.2.tgz#955bc473ed8af11a002a2be52071bf475638607b"
   integrity sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA==
