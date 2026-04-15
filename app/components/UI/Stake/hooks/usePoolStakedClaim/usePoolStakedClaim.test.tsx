@@ -51,7 +51,7 @@ const mockEncodeClaimExitedAssetsTransactionData = jest.fn().mockResolvedValue({
 const mockPooledStakingContractService: PooledStakingContract = {
   chainId: ChainId.ETHEREUM,
   connectSignerOrProvider: jest.fn(),
-  contract: new Contract('0x0000000000000000000000000000000000000000', []),
+  contract: new Contract('0x0000000000000000000000000000000000000000', []) as any,
   convertToShares: jest.fn(),
   encodeClaimExitedAssetsTransactionData:
     mockEncodeClaimExitedAssetsTransactionData,

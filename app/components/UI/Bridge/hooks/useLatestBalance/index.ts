@@ -23,7 +23,8 @@ export async function fetchAtomicTokenBalance(
   userAddress: string,
   web3Provider: Web3Provider,
 ): Promise<bigint> {
-  const tokenContract = new Contract(address, abiERC20, web3Provider);
+  // Cast v5 Web3Provider to any for v6 Contract compatibility (runtime-compatible)
+  const tokenContract = new Contract(address, abiERC20, web3Provider as any);
   const tokenBalancePromise = tokenContract
     ? tokenContract.balanceOf(userAddress)
     : Promise.resolve();

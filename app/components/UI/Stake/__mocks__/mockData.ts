@@ -87,7 +87,7 @@ export const MOCK_GET_VAULT_RESPONSE: VaultData = {
 const MOCK_POOLED_STAKING_CONTRACT_SERVICE = {
   chainId: ChainId.ETHEREUM,
   connectSignerOrProvider: jest.fn(),
-  contract: new Contract('0x0000000000000000000000000000000000000000', []),
+  contract: new Contract('0x0000000000000000000000000000000000000000', []) as any,
   convertToShares: jest.fn(),
   encodeClaimExitedAssetsTransactionData: jest.fn(),
   encodeDepositTransactionData: jest.fn(),

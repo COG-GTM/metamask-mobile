@@ -96,7 +96,7 @@ const mockPooledStakingContractService: PooledStakingContract = {
     provider: {
       call: jest.fn(),
     },
-  } as unknown as Contract,
+  } as any,
   convertToShares: mockConvertToShares,
   getShares: mockGetShares,
   encodeClaimExitedAssetsTransactionData: jest.fn(),

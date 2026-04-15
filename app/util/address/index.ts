@@ -3,7 +3,6 @@ import {
   isValidAddress,
   addHexPrefix,
   isValidChecksumAddress,
-  isHexPrefixed,
 } from '@ethereumjs/util';
 import punycode from 'punycode/punycode';
 import ExtendedKeyringTypes from '../../constants/keyringTypes';
@@ -685,7 +684,7 @@ export const stripHexPrefix = (str: string) => {
   if (typeof str !== 'string') {
     return str;
   }
-  return isHexPrefixed(str) ? str.slice(2) : str;
+  return str.startsWith('0x') || str.startsWith('0X') ? str.slice(2) : str;
 };
 
 /**

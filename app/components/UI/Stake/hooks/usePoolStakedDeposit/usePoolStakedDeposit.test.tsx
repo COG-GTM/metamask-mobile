@@ -80,7 +80,7 @@ jest.mock('../../../../../core/Engine', () => {
 const mockPooledStakingContractService: PooledStakingContract = {
   chainId: ChainId.ETHEREUM,
   connectSignerOrProvider: mockConnectSignerOrProvider,
-  contract: new Contract('0x0000000000000000000000000000000000000000', []),
+  contract: new Contract('0x0000000000000000000000000000000000000000', []) as any,
   convertToShares: jest.fn(),
   encodeClaimExitedAssetsTransactionData: jest.fn(),
   encodeDepositTransactionData: mockEncodeDepositTransactionData,
