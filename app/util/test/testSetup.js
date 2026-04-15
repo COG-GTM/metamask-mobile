@@ -254,6 +254,8 @@ NativeModules.RNGestureHandlerModule = {
   dropGestureHandler: jest.fn(),
   updateGestureHandler: jest.fn(),
   forceTouchAvailable: jest.fn(),
+  install: jest.fn(),
+  flushOperations: jest.fn(),
   State: {},
   Directions: {},
 };

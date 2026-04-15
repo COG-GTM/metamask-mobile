@@ -19,7 +19,7 @@ jest.mock('ethers', () => {
   return {
     ...actual,
     Contract: jest.fn().mockImplementation(() => ({
-      balanceOf: jest.fn().mockResolvedValue(actual.BigInt('1000000')),
+      balanceOf: jest.fn().mockResolvedValue(BigInt('1000000')),
     })),
   };
 });

@@ -150,7 +150,9 @@
   "dependencies": {
     "@config-plugins/detox": "^9.0.0",
     "@consensys/on-ramp-sdk": "2.1.8",
+    "@ethereumjs/util": "^8.1.0",
     "@ethersproject/abi": "^5.7.0",
+    "@ethersproject/units": "^5.8.0",
     "@keystonehq/bc-ur-registry-eth": "^0.21.0",
     "@keystonehq/metamask-airgapped-keyring": "^0.15.2",
     "@keystonehq/ur-decoder": "^0.12.2",
@@ -290,7 +292,6 @@
     "eth-ens-namehash": "2.0.8",
     "eth-url-parser": "1.0.4",
     "ethereumjs-abi": "^0.6.8",
-    "@ethereumjs/util": "^8.1.0",
     "ethers": "^6.13.0",
     "ethjs-ens": "2.0.1",
     "eventemitter2": "^6.4.9",

@@ -1,8 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { type Hex, type CaipChainId, isCaipChainId } from '@metamask/utils';
 import { abiERC20 } from '@metamask/metamask-eth-abis';
-import { BrowserProvider } from 'ethers';
-import { formatUnits, getAddress, parseUnits } from 'ethers';
+import { BrowserProvider, formatUnits, getAddress, parseUnits, ZeroAddress, Contract } from 'ethers';
 import { useSelector } from 'react-redux';
 import {
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
@@ -11,7 +10,6 @@ import {
   selectSelectedInternalAccountFormattedAddress,
 } from '../../../../../selectors/accountsController';
 import { getProviderByChainId } from '../../../../../util/notifications/methods/common';
-import { ZeroAddress, Contract } from 'ethers';
 import usePrevious from '../../../../hooks/usePrevious';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { isSolanaChainId } from '@metamask/bridge-controller';
