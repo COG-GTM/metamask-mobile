@@ -1501,26 +1501,35 @@ export function getTokenAddressParam(tokenData = {}) {
 }
 
 /**
- * Gets the '_hex' parameter of the given token transaction data
- * (i.e function call) per the Human Standard Token ABI, if present.
+ * Gets the hex representation of the token value parameter from the given
+ * token transaction data (i.e function call) per the Human Standard Token ABI.
+ *
+ * Supports both ethers v5 BigNumber (has _hex) and ethers v6 bigint.
  *
  * @param {Object} tokenData - ethers Interface token data.
  * @returns {string | undefined} A hex string value.
  */
 export function getTokenValueParamAsHex(tokenData = {}) {
-  const value = tokenData?.args?._value?._hex || tokenData?.args?.[1]._hex;
-  return value?.toLowerCase();
+  const value = tokenData?.args?._value ?? tokenData?.args?.[1];
+  if (value === undefined || value === null) return undefined;
+  // ethers v5 BigNumber has _hex property
+  if (value._hex) return value._hex.toLowerCase();
+  // ethers v6 returns native bigint
+  return '0x' + BigInt(value).toString(16);
 }
 
 /**
  * Gets the '_value' parameter of the given token transaction data
  * (i.e function call) per the Human Standard Token ABI, if present.
  *
+ * Supports both ethers v5 BigNumber and ethers v6 bigint.
+ *
  * @param {Object} tokenData - ethers Interface token data.
  * @returns {string | undefined} A decimal string value.
  */
 export function getTokenValueParam(tokenData = {}) {
-  return tokenData?.args?._value?.toString();
+  const value = tokenData?.args?._value ?? tokenData?.args?.[1];
+  return value?.toString();
 }
 
 export function getTokenValue(tokenParams = []) {
