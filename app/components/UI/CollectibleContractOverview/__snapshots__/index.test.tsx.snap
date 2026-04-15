@@ -27,7 +27,7 @@ exports[`CollectibleContractOverview should render correctly 1`] = `
     }
   }
 >
-  <Component
+  <Connect(CollectibleContractOverview)
     collectibleContract={
       {
         "address": "",

@@ -153,7 +153,8 @@
     "cheerio": "1.0.0-rc.12",
     "metro-cache-key": "0.81.5",
     "@react-navigation/core": "5.15.3",
-    "lodash": "4.17.21"
+    "lodash": "4.17.21",
+    "@ledgerhq/devices": "8.4.4"
   },
   "dependencies": {
     "@config-plugins/detox": "^9.0.0",
