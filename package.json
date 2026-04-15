@@ -658,7 +658,8 @@
       "@wdio/cli>tsx>esbuild": false,
       "eslint-import-resolver-typescript>unrs-resolver": false,
       "ethereumjs-util>ethereum-cryptography>secp256k1": false,
-      "@storybook/react-native>@storybook/addons>core-js": false
+      "@storybook/react-native>@storybook/addons>core-js": false,
+      "@storybook/builder-webpack5>@storybook/core-common>esbuild": false
     }
   },
   "packageManager": "yarn@1.22.22"
