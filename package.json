@@ -150,7 +150,8 @@
     "content-hash/**/base-x": "3.0.11",
     "multihashes/**/base-x": "3.0.11",
     "@keystonehq/ur-decoder/**/base-x": "3.0.11",
-    "chokidar": "3.6.0"
+    "chokidar": "3.6.0",
+    "react-native": "0.76.9"
   },
   "dependencies": {
     "@config-plugins/detox": "^9.0.0",
