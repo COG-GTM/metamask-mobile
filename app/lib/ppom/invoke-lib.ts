@@ -2,8 +2,12 @@ import 'react-native-get-random-values';
 
 function generateRandomNumber() {
   const range = 1000;
-  const randomNumber = crypto.getRandomValues(new Uint32Array(1))[0] % range;
-  return randomNumber;
+  const maxUnbiased = Math.floor(0xffffffff / range) * range;
+  let randomNumber;
+  do {
+    randomNumber = crypto.getRandomValues(new Uint32Array(1))[0];
+  } while (randomNumber >= maxUnbiased);
+  return randomNumber % range;
 }
 
 // TODO: Replace "any" with type
