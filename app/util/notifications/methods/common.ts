@@ -3,7 +3,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 import notifee from '@notifee/react-native';
 import localeData from 'dayjs/plugin/localeData';
-import { Web3Provider } from '@ethersproject/providers';
+import { BrowserProvider, toBeHex } from 'ethers';
 import { toHex } from '@metamask/controller-utils';
 import BigNumber from 'bignumber.js';
 import {
@@ -193,7 +193,7 @@ export function getProviderByChainId(chainId: HexChainId) {
       networkClientId,
     )?.provider;
 
-  return provider && new Web3Provider(provider);
+  return provider && new BrowserProvider(provider);
 }
 
 export const getNetworkFees = async (notification: OnChainRawNotification) => {
@@ -225,22 +225,22 @@ export const getNetworkFees = async (notification: OnChainRawNotification) => {
       );
 
     const transactionFeeInEth = hexWEIToDecETH(
-      receipt.gasUsed.mul(receipt.effectiveGasPrice)._hex,
+      toBeHex(receipt.gasUsed * receipt.effectiveGasPrice),
     )?.toString();
     const transactionFeeInUsd = calculateUsdAmount(transactionFeeInEth);
 
-    const gasLimit = transaction.gasLimit.toNumber();
-    const gasUsed = receipt.gasUsed.toNumber();
+    const gasLimit = Number(transaction.gasLimit);
+    const gasUsed = Number(receipt.gasUsed);
 
     const baseFee = block.baseFeePerGas
-      ? hexWEIToDecGWEI(block.baseFeePerGas._hex)
+      ? hexWEIToDecGWEI(toBeHex(block.baseFeePerGas))
       : null;
     const priorityFee = block.baseFeePerGas
-      ? hexWEIToDecGWEI(receipt.effectiveGasPrice.sub(block.baseFeePerGas)._hex)
+      ? hexWEIToDecGWEI(toBeHex(receipt.effectiveGasPrice - block.baseFeePerGas))
       : null;
 
     const maxFeePerGas = transaction.maxFeePerGas
-      ? hexWEIToDecGWEI(transaction.maxFeePerGas._hex)
+      ? hexWEIToDecGWEI(toBeHex(transaction.maxFeePerGas))
       : null;
 
     return {
