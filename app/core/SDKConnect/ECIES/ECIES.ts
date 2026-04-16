@@ -114,7 +114,7 @@ export class ECIES {
         DevLogger.log(`[ECIES: decrypt()] decrypt`);
 
         DevLogger.log(`[ECIES: decrypt()] decrypted.toString();`);
-        decryptedString = decrypted.toString();
+        decryptedString = Buffer.from(decrypted).toString();
       } catch (error) {
         DevLogger.log(`[ECIES: decrypt()] error decrypt`, error);
         DevLogger.log(`[ECIES: decrypt()] private: `, this.ecies.toHex());
