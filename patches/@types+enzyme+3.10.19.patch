@@ -1,0 +1,25 @@
+diff --git a/node_modules/@types/enzyme/index.d.ts b/node_modules/@types/enzyme/index.d.ts
+index 7c30025..1836fec 100644
+--- a/node_modules/@types/enzyme/index.d.ts
++++ b/node_modules/@types/enzyme/index.d.ts
+@@ -7,8 +7,20 @@ import {
+     SVGAttributes as ReactSVGAttributes,
+ } from "react";
+ 
++/**
++ * @deprecated Enzyme is being deprecated for this project.
++ * Please update your code to use React Testing Library instead.
++ * You can find documentation for migrating to RTL at
++ * {@link https://testing-library.com/docs/react-testing-library/migrate-from-enzyme/}.
++ */
+ export type HTMLAttributes = ReactHTMLAttributes<{}> & ReactSVGAttributes<{}>;
+ 
++/**
++ * @deprecated Enzyme is being deprecated for this project.
++ * Please update your code to use React Testing Library instead.
++ * You can find documentation for migrating to RTL at
++ * {@link https://testing-library.com/docs/react-testing-library/migrate-from-enzyme/}.
++ */
+ export class ElementClass extends Component<any, any> {}
+ 
+ /* These are purposefully stripped down versions of React.ComponentClass and React.FunctionComponent.

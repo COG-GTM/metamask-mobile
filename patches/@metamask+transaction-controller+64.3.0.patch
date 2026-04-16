@@ -1,15 +1,17 @@
 diff --git a/node_modules/@metamask/transaction-controller/dist/TransactionController.cjs b/node_modules/@metamask/transaction-controller/dist/TransactionController.cjs
-index fef52f6..579c155 100644
+index 206d773..1eb8cf8 100644
 --- a/node_modules/@metamask/transaction-controller/dist/TransactionController.cjs
 +++ b/node_modules/@metamask/transaction-controller/dist/TransactionController.cjs
-@@ -82,6 +82,10 @@ const metadata = {
-         persist: true,
-         anonymous: false,
+@@ -95,6 +95,12 @@ const metadata = {
+         includeInDebugSnapshot: false,
+         usedInUi: false,
      },
 +    swapsTransactions: {
++        includeInStateLogs: true,
 +        persist: true,
-+        anonymous: false,
++        includeInDebugSnapshot: false,
++        usedInUi: false,
 +    },
  };
- const SUBMIT_HISTORY_LIMIT = 100;
  /**
+  * Multiplier used to determine a transaction's increased gas fee during cancellation
