@@ -120,7 +120,7 @@
     "axios": "^1.15.0",
     "react-native-ble-plx": "3.5.1",
     "react-native": "0.76.9",
-    "cheerio": "1.0.0",
+    "cheerio": "1.0.0-rc.12",
     "**/babel-runtime/regenerator-runtime": "^0.13.8",
     "redux-persist-filesystem-storage/react-native-blob-util": "^0.19.9",
     "xmldom": "npm:@xmldom/xmldom@0.7.13",
