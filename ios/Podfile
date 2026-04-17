@@ -7,7 +7,7 @@ podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties
 ENV['RCT_NEW_ARCH_ENABLED'] = podfile_properties['newArchEnabled'] == 'true' ? '1' : '0'
 ENV['EX_DEV_CLIENT_NETWORK_INSPECTOR'] = podfile_properties['EX_DEV_CLIENT_NETWORK_INSPECTOR']
 
-platform :ios, '15.1'
+platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
 prepare_react_native_project!
 # Ensures that versions from Gemfile is respected
 ensure_bundler!
@@ -15,57 +15,15 @@ ensure_bundler!
 install! 'cocoapods',
   :deterministic_uuids => false
 
-linkage = ENV['USE_FRAMEWORKS']
-if linkage != nil
-  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-  use_frameworks! :linkage => linkage.to_sym
-  $RNFirebaseAsStaticFramework = true
-end
+# Firebase must be built as a static framework when use_frameworks! is enabled
+$RNFirebaseAsStaticFramework = true if ENV['USE_FRAMEWORKS']
 
-# react_native_post_install:
-# Disabled to fix SentryPrivate Xcode 15 build error
-# - https://github.com/getsentry/sentry-react-native/issues/3322
-
-# def react_native_post_install(installer)
-# 	installer.pods_project.targets.each do |target|
-#   		target.build_configurations.each do |config|
-# 			if Gem::Version.new('9.0') > Gem::Version.new(config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'])
-# 				config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = "12.0"
-# 			end
-# 			config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
-#   		end
-#  	end
-
-# 	projects = installer.aggregate_targets
-# 	  .map{ |t| t.user_project }
-# 	  .uniq{ |p| p.path }
-# 	  .push(installer.pods_project)
-
-# 	arm_value = `/usr/sbin/sysctl -n hw.optional.arm64 2>&1`.to_i
-
-# 	projects.each do |project|
-# 	  project.build_configurations.each do |config|
-# 		  if arm_value == 1 then
-# 		    config.build_settings.delete("EXCLUDED_ARCHS[sdk=iphonesimulator*]")
-# 		  else
-# 		    config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
-# 		  end
-# 	  end
-
-# 	  project.save()
-# 	end
-# end
-
-def common_target_logic
-  podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json'))) rescue {}
-
-  use_expo_modules!
-	# config = use_native_modules!
-
+# Helper to build the autolinking config command, used by both target setup and post_install.
+def resolve_config_command
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
-    config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
+    ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"]
   else
-    config_command = [
+    [
       'node',
       '--no-warnings',
       '--eval',
@@ -76,8 +34,14 @@ def common_target_logic
       'ios'
     ]
   end
-  
-  config = use_native_modules!(config_command)
+end
+
+def common_target_logic
+  podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json'))) rescue {}
+
+  use_expo_modules!
+
+  config = use_native_modules!(resolve_config_command)
 
   use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym if ENV['USE_FRAMEWORKS']
 
@@ -88,13 +52,11 @@ def common_target_logic
   pod 'FirebaseCore', :modular_headers => true
   pod 'GoogleUtilities/NSData+zlib', :modular_headers => true
 
-   # Comment the next line if you don't want to use dynamic frameworks
-  # use_frameworks!
-	pod 'Permission-BluetoothPeripheral', :path => '../node_modules/react-native-permissions/ios/BluetoothPeripheral'
+  pod 'Permission-BluetoothPeripheral', :path => '../node_modules/react-native-permissions/ios/BluetoothPeripheral'
   pod 'GzipSwift'
 
-  # Pod for fixing react-native-quick-crypto issue: https://github.com/margelo/react-native-quick-crypto/issues/244
-  pod 'OpenSSL-Universal', :modular_headers => true  
+  # Fix react-native-quick-crypto build issue: https://github.com/margelo/react-native-quick-crypto/issues/244
+  pod 'OpenSSL-Universal', :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -114,25 +76,10 @@ target 'MetaMask-QA' do
 end
 
 target 'MetaMask-Flask' do
-	common_target_logic
+  common_target_logic
 end
 
-if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
-  config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
-else
-  config_command = [
-    'node',
-    '--no-warnings',
-    '--eval',
-    'require(require.resolve(\'expo-modules-autolinking\', { paths: [require.resolve(\'expo/package.json\')] }))(process.argv.slice(1))',
-    'react-native-config',
-    '--json',
-    '--platform',
-    'ios'
-  ]
-end
-
-config = use_native_modules!(config_command)
+config = use_native_modules!(resolve_config_command)
 
 post_install do |installer|
   react_native_post_install(
@@ -142,36 +89,41 @@ post_install do |installer|
     :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
   )
 
-  # Modify RCT-Folly Portability.h to disable coroutines
+  # Workaround: Disable Folly coroutines to prevent build errors with certain Xcode/clang versions.
+  # Can be removed once RCT-Folly ships with coroutines disabled by default for iOS.
   Dir.glob(installer.sandbox.root + "RCT-Folly/folly/Portability.h") do |file|
     begin
-      # First try to make the file writable
       system "chmod +w #{file}"
-      
       contents = File.read(file)
       modified_contents = contents.gsub(/#define FOLLY_HAS_COROUTINES 1/, '#define FOLLY_HAS_COROUTINES 0')
-      
-      # Try writing with elevated privileges if needed
       if !File.writable?(file)
         system "sudo chmod +w #{file}"
       end
-      
       File.write(file, modified_contents)
-      
-      # Optionally restore original permissions
       system "chmod -w #{file}"
     rescue => e
       Pod::UI.warn "Failed to modify Portability.h: #{e.message}"
     end
   end
 
-  # This is necessary for Xcode 14, because it signs resource bundles by default
-  # when building for devices.
+  # Disable code signing for resource bundles to prevent signing conflicts on device builds.
   installer.target_installation_results.pod_target_installation_results
     .each do |pod_name, target_installation_result|
     target_installation_result.resource_bundle_targets.each do |resource_bundle_target|
       resource_bundle_target.build_configurations.each do |config|
         config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+      end
+    end
+  end
+
+  # Enforce minimum iOS deployment target across all pods to silence Xcode warnings
+  # about pods targeting older iOS versions than the project.
+  min_ios_version = podfile_properties['ios.deploymentTarget'] || '15.1'
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |bc|
+      current = bc.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+      if current && Gem::Version.new(current) < Gem::Version.new(min_ios_version)
+        bc.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = min_ios_version
       end
     end
   end
