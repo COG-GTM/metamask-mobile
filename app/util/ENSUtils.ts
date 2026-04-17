@@ -73,8 +73,6 @@ export function getCachedENSName(address: string, chainId: string): string | und
   return cacheEntry?.name;
 }
 
-let ensInstance: { reverse: (address: string) => Promise<string>; lookup: (name: string) => Promise<string> } | null = null;
-
 export async function doENSReverseLookup(address: string, chainId: string): Promise<string | undefined> {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
@@ -89,10 +87,10 @@ export async function doENSReverseLookup(address: string, chainId: string): Prom
 
   if (networkHasEnsSupport) {
     const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
-    ensInstance = new ENS({ provider, network: networkId });
+    const ens = new ENS({ provider, network: networkId });
     try {
-      const name: string = await ensInstance.reverse(address);
-      const resolvedAddress: string = await ensInstance.lookup(name);
+      const name: string = await ens.reverse(address);
+      const resolvedAddress: string = await ens.lookup(name);
       if (toLowerCaseEquals(address, resolvedAddress)) {
         ENSCache.cache[networkId + address] = { name, timestamp: Date.now() };
         return name;
@@ -117,9 +115,9 @@ export async function doENSLookup(ensName: string, chainId: string): Promise<str
 
   if (networkHasEnsSupport) {
     const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
-    ensInstance = new ENS({ provider, network: networkId });
+    const ens = new ENS({ provider, network: networkId });
     try {
-      const resolvedAddress: string = await ensInstance.lookup(ensName);
+      const resolvedAddress: string = await ens.lookup(ensName);
       if (resolvedAddress === EMPTY_ADDRESS) return undefined;
       return resolvedAddress;
       // eslint-disable-next-line no-empty
