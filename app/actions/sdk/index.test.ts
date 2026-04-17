@@ -125,6 +125,8 @@ describe('ActionType enum', () => {
     expect(ActionType.REMOVE_CONNECTION).toBe('REMOVE_CONNECTION');
     expect(ActionType.ADD_CONNECTION).toBe('ADD_CONNECTION');
     expect(ActionType.DISCONNECT_ALL).toBe('DISCONNECT_ALL');
+    // NOTE: The source has a known typo 'REMOVE_APPROVWED_HOST' (extra W).
+    // This test matches the current source value intentionally.
     expect(ActionType.REMOVE_APPROVED_HOST).toBe('REMOVE_APPROVWED_HOST');
     expect(ActionType.SET_APPROVED_HOST).toBe('SET_APPROVED_HOST');
     expect(ActionType.RESET_APPROVED_HOSTS).toBe('RESET_APPROVED_HOSTS');
