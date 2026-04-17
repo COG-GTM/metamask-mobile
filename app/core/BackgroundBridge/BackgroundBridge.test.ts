@@ -54,14 +54,15 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+function setupBackgroundBridge(url: string) {
   // Arrange
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const {
     AccountsController,
     PermissionController,
     SelectedNetworkController,
     NetworkController,
-  } = Engine.context;
+  } = Engine.context as any;
 
   AccountsController.getSelectedAccount.mockReturnValue({
     address: '0x0',
@@ -110,14 +111,15 @@ function setupBackgroundBridge(url) {
 describe('BackgroundBridge', () => {
   beforeEach(() => jest.clearAllMocks());
   describe('constructor', () => {
-    const { KeyringController, PermissionController } = Engine.context;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { KeyringController, PermissionController } = Engine.context as any;
 
     it('creates Eip1193MethodMiddleware with expected hooks', async () => {
       const url = 'https:www.mock.io';
       const origin = new URL(url).hostname;
       const bridge = setupBackgroundBridge(url);
       const eip1193MethodMiddlewareHooks =
-        createEip1193MethodMiddleware.mock.calls[0][0];
+        jest.mocked(createEip1193MethodMiddleware).mock.calls[0][0];
 
       // Assert getAccounts
       eip1193MethodMiddlewareHooks.getAccounts();
@@ -184,7 +186,7 @@ describe('BackgroundBridge', () => {
       const url = 'https:www.mock.io';
       const bridge = setupBackgroundBridge(url);
       const ethAccountsMethodMiddlewareHooks =
-        createEthAccountsMethodMiddleware.mock.calls[0][0];
+        jest.mocked(createEthAccountsMethodMiddleware).mock.calls[0][0];
 
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
