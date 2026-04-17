@@ -1,9 +1,9 @@
 import React from 'react';
 import TabCountIcon from './';
 import configureMockStore from 'redux-mock-store';
-import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 
+import { render } from '@testing-library/react-native';
 const mockStore = configureMockStore();
 const initialState = {
   browser: {
@@ -15,11 +15,11 @@ const store = mockStore(initialState);
 describe('TabCountIcon', () => {
   it('should render correctly', () => {
     // eslint-disable-next-line react/jsx-no-bind
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Provider store={store}>
         <TabCountIcon />
       </Provider>,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });

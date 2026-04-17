@@ -1,5 +1,4 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import ContractBoxBase from './ContractBoxBase';
 import TEST_ADDRESS from '../../../../constants/address';
 import {
@@ -11,6 +10,7 @@ import {
 import { CONTRACT_BOX_NO_PET_NAME_TEST_ID } from './ContractBoxBase.constants';
 import { ContractBoxBaseProps } from './ContractBoxBase.types';
 
+import { render } from '@testing-library/react-native';
 describe('Component ContractBoxBase', () => {
   let props: ContractBoxBaseProps;
 

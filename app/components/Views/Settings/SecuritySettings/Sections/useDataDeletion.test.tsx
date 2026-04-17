@@ -1,7 +1,6 @@
-import { renderHook } from '@testing-library/react-hooks';
 import { DataDeleteStatus } from '../../../../../core/Analytics';
 import useDataDeletion from './useDataDeletion';
-import { act } from '@testing-library/react-native';
+import { act, renderHook } from '@testing-library/react-native';
 
 /**
  * This test suite checks that all the possible cases of the deletion process are covered.

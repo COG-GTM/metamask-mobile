@@ -1,5 +1,4 @@
 import { fireEvent } from '@testing-library/react-native';
-import { shallow } from 'enzyme';
 import React from 'react';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import CustomSpendCap from './CustomSpendCap';

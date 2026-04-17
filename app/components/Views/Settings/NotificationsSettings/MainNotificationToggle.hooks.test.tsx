@@ -1,5 +1,4 @@
-import { act } from '@testing-library/react-hooks';
-import { waitFor } from '@testing-library/react-native';
+import { waitFor, act } from '@testing-library/react-native';
 import { AvatarAccountType } from '../../../../component-library/components/Avatars/Avatar';
 // eslint-disable-next-line import/no-namespace
 import * as UseSwitchNotificationsModule from '../../../../util/notifications/hooks/useSwitchNotifications';

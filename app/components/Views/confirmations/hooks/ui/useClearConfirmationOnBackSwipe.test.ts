@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 import Device from '../../../../../util/device';

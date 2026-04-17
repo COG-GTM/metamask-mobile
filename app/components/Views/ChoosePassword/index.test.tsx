@@ -1,5 +1,4 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import ChoosePassword from './';
 import configureMockStore from 'redux-mock-store';
 import { ONBOARDING, PROTECT } from '../../../constants/navigation';
@@ -7,6 +6,7 @@ import { Provider } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
 
+import { render } from '@testing-library/react-native';
 const mockStore = configureMockStore();
 const initialState = {
   user: {
@@ -24,11 +24,11 @@ const store = mockStore(initialState);
 
 describe('ChoosePassword', () => {
   it('should render correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Provider store={store}>
         <ChoosePassword route={{ params: [ONBOARDING, PROTECT] }} />
       </Provider>,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });

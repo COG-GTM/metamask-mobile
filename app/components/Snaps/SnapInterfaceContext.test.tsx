@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import React from 'react';
 import { UserInputEventType } from '@metamask/snaps-sdk';
 import { HandlerType } from '@metamask/snaps-utils';

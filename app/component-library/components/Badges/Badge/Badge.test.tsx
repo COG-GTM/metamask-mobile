@@ -1,6 +1,5 @@
 // Third party dependencies.
 import React from 'react';
-import { shallow } from 'enzyme';
 
 // External dependencies.
 import { BadgeVariant } from './Badge.types';
@@ -10,6 +9,7 @@ import { SAMPLE_BADGENOTIFICATIONS_PROPS } from './variants/BadgeNotifications/B
 
 // Internal dependencies.
 import Badge from './Badge';
+import { render } from '@testing-library/react-native';
 import {
   BADGE_BADGENETWORK_TEST_ID,
   BADGE_BADGESTATUS_TEST_ID,
@@ -18,10 +18,10 @@ import {
 
 describe('Badge', () => {
   it('should render badge network given the badge network variant', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Badge {...SAMPLE_BADGENETWORK_PROPS} variant={BadgeVariant.Network} />,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
     const contentElement = wrapper.findWhere(
       (node) => node.prop('testID') === BADGE_BADGENETWORK_TEST_ID,
     );
@@ -29,10 +29,10 @@ describe('Badge', () => {
   });
 
   it('should render badge status given the badge status variant', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Badge {...SAMPLE_BADGESTATUS_PROPS} variant={BadgeVariant.Status} />,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
     const contentElement = wrapper.findWhere(
       (node) => node.prop('testID') === BADGE_BADGESTATUS_TEST_ID,
     );
@@ -40,13 +40,13 @@ describe('Badge', () => {
   });
 
   it('should render badge notifications given the badge notification variant', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Badge
         {...SAMPLE_BADGENOTIFICATIONS_PROPS}
         variant={BadgeVariant.NotificationsKinds}
       />,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
     const contentElement = wrapper.findWhere(
       (node) => node.prop('testID') === BADGE_BADGENOTIFICATIONS_TEST_ID,
     );

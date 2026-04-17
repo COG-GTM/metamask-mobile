@@ -1,5 +1,4 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import RemoteImage from './';
 import { getFormattedIpfsUrl } from '@metamask/assets-controllers';
 import { act, render } from '@testing-library/react-native';
@@ -26,25 +25,25 @@ const mockGetFormattedIpfsUrl = getFormattedIpfsUrl as jest.Mock;
 
 describe('RemoteImage', () => {
   it('should render svg correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <RemoteImage
         source={{
           uri: 'https://raw.githubusercontent.com/MetaMask/contract-metadata/master/images/dai.svg',
         }}
       />,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('should render static sources', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <RemoteImage
         source={{
           uri: 'https://s3.amazonaws.com/airswap-token-images/OXT.png',
         }}
       />,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('should render ipfs sources', async () => {
@@ -59,7 +58,7 @@ describe('RemoteImage', () => {
     );
     // eslint-disable-next-line no-empty-function
     await act(async () => {});
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('should render with Solana network badge when on Solana network', async () => {
@@ -91,6 +90,6 @@ describe('RemoteImage', () => {
 
     // eslint-disable-next-line no-empty-function
     await act(async () => {});
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });

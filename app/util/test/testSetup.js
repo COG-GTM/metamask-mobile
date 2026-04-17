@@ -3,11 +3,7 @@ import mockRNAsyncStorage from '@react-native-async-storage/async-storage/jest/a
 import mockClipboard from '@react-native-clipboard/clipboard/jest/clipboard-mock.js';
 /* eslint-disable import/no-namespace */
 import { mockTheme } from '../theme';
-import Adapter from 'enzyme-adapter-react-16';
-import Enzyme from 'enzyme';
 import '@shopify/flash-list/jestSetup';
-
-Enzyme.configure({ adapter: new Adapter() });
 
 jest.mock('react-native-quick-crypto', () => ({
   getRandomValues: jest.fn((array) => {

@@ -10,7 +10,6 @@ import {
 } from './Steps/Steps.constants';
 import useBluetoothPermissions from '../../hooks/useBluetoothPermissions';
 import useBluetooth from '../../hooks/Ledger/useBluetooth';
-import { act } from '@testing-library/react-hooks';
 import {
   BluetoothPermissionErrors,
   LedgerCommunicationErrors,
@@ -18,7 +17,7 @@ import {
 import { strings } from '../../../../locales/i18n';
 import { useMetrics } from '../../hooks/useMetrics';
 import { MetaMetricsEvents } from '../../../core/Analytics';
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, act } from '@testing-library/react-native';
 import { HardwareDeviceTypes } from '../../../constants/keyringTypes';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 

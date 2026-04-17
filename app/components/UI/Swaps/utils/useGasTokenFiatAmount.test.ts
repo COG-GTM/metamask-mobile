@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import { useGasTokenFiatAmount } from './useGasTokenFiatAmount';
 import { swapsUtils } from '@metamask/swaps-controller';
 import { toWei, weiToFiat } from '../../../../util/number';

@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import { useAlertsConfirmed } from './useAlertsConfirmed';
 import { Alert, Severity } from '../Views/confirmations/types/alerts';
 

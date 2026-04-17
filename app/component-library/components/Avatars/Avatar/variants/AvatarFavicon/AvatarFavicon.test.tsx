@@ -1,6 +1,5 @@
 // Third party dependencies.
 import React from 'react';
-import { shallow } from 'enzyme';
 import { render, waitFor } from '@testing-library/react-native';
 
 // Internal dependencies.
@@ -19,12 +18,12 @@ describe('AvatarFavicon', () => {
   });
 
   it('should match the snapshot', () => {
-    const wrapper = shallow(<AvatarFavicon {...SAMPLE_AVATARFAVICON_PROPS} />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<AvatarFavicon {...SAMPLE_AVATARFAVICON_PROPS} />);
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('should render favicon with remote image', () => {
-    const wrapper = shallow(<AvatarFavicon {...SAMPLE_AVATARFAVICON_PROPS} />);
+    const { toJSON } = render(<AvatarFavicon {...SAMPLE_AVATARFAVICON_PROPS} />);
     const imageComponent = wrapper.findWhere(
       (node) => node.prop('testID') === AVATARFAVICON_IMAGE_TESTID,
     );
@@ -32,7 +31,7 @@ describe('AvatarFavicon', () => {
   });
 
   it('should render favicon with local image', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <AvatarFavicon
         {...SAMPLE_AVATARFAVICON_PROPS}
         imageSource={SAMPLE_AVATARFAVICON_IMAGESOURCE_LOCAL}
@@ -60,7 +59,7 @@ describe('AvatarFavicon', () => {
   });
 
   it('should render fallback', () => {
-    const wrapper = shallow(<AvatarFavicon {...SAMPLE_AVATARFAVICON_PROPS} />);
+    const { toJSON } = render(<AvatarFavicon {...SAMPLE_AVATARFAVICON_PROPS} />);
     const prevImageComponent = wrapper.findWhere(
       (node) => node.prop('testID') === AVATARFAVICON_IMAGE_TESTID,
     );
@@ -73,7 +72,7 @@ describe('AvatarFavicon', () => {
   });
 
   it('should render fallback when svg has error', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <AvatarFavicon
         {...SAMPLE_AVATARFAVICON_PROPS}
         imageSource={SAMPLE_AVATARFAVICON_SVGIMAGESOURCE_REMOTE}
@@ -88,6 +87,6 @@ describe('AvatarFavicon', () => {
       (node) => node.prop('testID') === AVATARFAVICON_IMAGE_TESTID,
     );
     expect(currentImageComponent.exists()).toBe(true);
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });

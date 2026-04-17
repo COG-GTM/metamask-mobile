@@ -1,12 +1,12 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import SkipAccountSecurityModal from './';
 
+import { render } from '@testing-library/react-native';
 const noop = () => ({});
 
 describe('HintModal', () => {
   it('should render correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <SkipAccountSecurityModal
         onCancel={noop}
         onConfirm={noop}
@@ -16,6 +16,6 @@ describe('HintModal', () => {
         skipCheckbox={false}
       />,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });

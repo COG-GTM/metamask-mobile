@@ -1,5 +1,4 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import GeneralSettings, {
   updateUserTraitsWithCurrentCurrency,
   updateUserTraitsWithCurrencyType,
@@ -12,6 +11,7 @@ import { MetaMetricsEvents } from '../../../../core/Analytics';
 import { UserProfileProperty } from '../../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
 import { MetricsEventBuilder } from '../../../../core/Analytics/MetricsEventBuilder';
 
+import { render } from '@testing-library/react-native';
 jest.mock('../../../../core/Analytics');
 
 const mockStore = configureMockStore();
@@ -32,12 +32,12 @@ const store = mockStore(initialState);
 
 describe('GeneralSettings', () => {
   it('should render correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Provider store={store}>
         <GeneralSettings />
       </Provider>,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });
 

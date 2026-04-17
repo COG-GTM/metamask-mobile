@@ -1,9 +1,9 @@
 // Third party dependencies.
 import React from 'react';
-import { shallow } from 'enzyme';
 
 // Internal dependencies.
 import BadgeStatus from './BadgeStatus';
+import { render } from '@testing-library/react-native';
 import {
   BADGE_STATUS_TEST_ID,
   SAMPLE_BADGESTATUS_PROPS,
@@ -11,11 +11,11 @@ import {
 
 describe('BadgeStatus', () => {
   it('should render badge status correctly', () => {
-    const wrapper = shallow(<BadgeStatus {...SAMPLE_BADGESTATUS_PROPS} />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<BadgeStatus {...SAMPLE_BADGESTATUS_PROPS} />);
+    expect(toJSON()).toMatchSnapshot();
   });
   it('should render badge status', () => {
-    const wrapper = shallow(<BadgeStatus {...SAMPLE_BADGESTATUS_PROPS} />);
+    const { toJSON } = render(<BadgeStatus {...SAMPLE_BADGESTATUS_PROPS} />);
 
     const contentElement = wrapper.findWhere(
       (node) => node.prop('testID') === BADGE_STATUS_TEST_ID,

@@ -1,4 +1,3 @@
-import { shallow } from 'enzyme';
 // Third party dependencies.
 import React from 'react';
 
@@ -12,6 +11,7 @@ import {
 } from './CustomInput.constants';
 import { CustomInputProps } from './CustomInput.types';
 
+import { render } from '@testing-library/react-native';
 describe('CustomInput', () => {
   let props: CustomInputProps;
 

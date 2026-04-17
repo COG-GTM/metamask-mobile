@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import { KeyringTypes } from '@metamask/keyring-controller';
 import { toChecksumAddress } from 'ethereumjs-util';
 import useAccounts from './useAccounts';

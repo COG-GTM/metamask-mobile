@@ -1,5 +1,4 @@
-import { waitFor } from '@testing-library/react-native';
-import { renderHook } from '@testing-library/react-hooks';
+import { waitFor, renderHook } from '@testing-library/react-native';
 import useStakingEarnings from './useStakingEarnings';
 import usePooledStakes from './usePooledStakes';
 import useBalance from './useBalance';

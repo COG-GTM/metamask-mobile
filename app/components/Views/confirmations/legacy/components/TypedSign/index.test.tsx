@@ -1,5 +1,4 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import TypedSign from '.';
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
@@ -11,7 +10,7 @@ import { strings } from '../../../../../../../locales/i18n';
 import AppConstants from '../../../../../../core/AppConstants';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
 import renderWithProvider from '../../../../../../util/test/renderWithProvider';
-import { fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { MetaMetrics } from '../../../../../../core/Analytics';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../../../../util/test/accountsControllerTestUtils';
 import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selectors/Browser/SigningBottomSheet.selectors';
@@ -122,7 +121,7 @@ describe('TypedSign', () => {
 
   it('should render correctly', () => {
     const wrapper = createWrapper();
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   describe('onConfirm', () => {

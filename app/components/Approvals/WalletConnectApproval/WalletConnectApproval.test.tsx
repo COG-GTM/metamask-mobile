@@ -1,10 +1,10 @@
 import React from 'react';
 import useApprovalRequest from '../../Views/confirmations/hooks/useApprovalRequest';
-import { shallow } from 'enzyme';
 import { ApprovalTypes } from '../../../core/RPCMethods/RPCMethodMiddleware';
 import { ApprovalRequest } from '@metamask/approval-controller';
 import WalletConnectApproval from './WalletConnectApproval';
 
+import { render } from '@testing-library/react-native';
 jest.mock('../../Views/confirmations/hooks/useApprovalRequest');
 
 // TODO: Replace "any" with type
@@ -32,9 +32,9 @@ describe('WalletConnectApproval', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const wrapper = shallow(<WalletConnectApproval />);
+    const { toJSON } = render(<WalletConnectApproval />);
 
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('populates page information using request data', () => {
@@ -47,16 +47,16 @@ describe('WalletConnectApproval', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const wrapper = shallow(<WalletConnectApproval />);
+    const { toJSON } = render(<WalletConnectApproval />);
 
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('sets isVisible to false if no approval request', () => {
     mockApprovalRequest(undefined);
 
-    const wrapper = shallow(<WalletConnectApproval />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<WalletConnectApproval />);
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('sets isVisible to false if incorrect approval request type', () => {
@@ -67,7 +67,7 @@ describe('WalletConnectApproval', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const wrapper = shallow(<WalletConnectApproval />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<WalletConnectApproval />);
+    expect(toJSON()).toMatchSnapshot();
   });
 });

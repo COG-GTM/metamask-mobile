@@ -1,4 +1,4 @@
-import { act } from '@testing-library/react-hooks';
+import { act } from '@testing-library/react-native';
 import useEarnInputHandlers, { EarnInputProps } from './useEarnInput';
 import useBalance from '../../Stake/hooks/useBalance';
 import useStakingGasFee from '../../Stake/hooks/useStakingGasFee';

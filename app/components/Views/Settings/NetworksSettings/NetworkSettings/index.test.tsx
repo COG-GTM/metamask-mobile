@@ -1,5 +1,4 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import { RpcEndpointType } from '@metamask/network-controller';
 import { NetworkSettings } from './'; // Import the undecorated component
 import configureMockStore from 'redux-mock-store';
@@ -14,6 +13,7 @@ import Logger from '../../../../../util/Logger';
 import Engine from '../../../../../core/Engine';
 // eslint-disable-next-line import/no-namespace
 import * as networks from '../../../../../util/networks';
+import { render } from '@testing-library/react-native';
 const { PreferencesController } = Engine.context;
 
 // Mock the entire module

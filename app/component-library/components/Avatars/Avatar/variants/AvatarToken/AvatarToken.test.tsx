@@ -1,9 +1,9 @@
 // Third party dependencies.
 import React from 'react';
-import { shallow } from 'enzyme';
 
 // Internal dependencies.
 import AvatarToken from './AvatarToken';
+import { render } from '@testing-library/react-native';
 import {
   AVATARTOKEN_IMAGE_TESTID,
   SAMPLE_AVATARTOKEN_PROPS,
@@ -17,12 +17,12 @@ jest.mock('react-redux', () => ({
 
 describe('AvatarToken', () => {
   it('should render correctly', () => {
-    const wrapper = shallow(<AvatarToken {...SAMPLE_AVATARTOKEN_PROPS} />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<AvatarToken {...SAMPLE_AVATARTOKEN_PROPS} />);
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('should render remote network image', () => {
-    const wrapper = shallow(<AvatarToken {...SAMPLE_AVATARTOKEN_PROPS} />);
+    const { toJSON } = render(<AvatarToken {...SAMPLE_AVATARTOKEN_PROPS} />);
 
     const imageComponent = wrapper.findWhere(
       (node) => node.prop('testID') === AVATARTOKEN_IMAGE_TESTID,
@@ -31,7 +31,7 @@ describe('AvatarToken', () => {
   });
 
   it('should render local network image', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <AvatarToken
         {...SAMPLE_AVATARTOKEN_PROPS}
         imageSource={SAMPLE_AVATARTOKEN_IMAGESOURCE_LOCAL}
@@ -45,7 +45,7 @@ describe('AvatarToken', () => {
   });
 
   it('should render fallback when image fails to load', () => {
-    const wrapper = shallow(<AvatarToken {...SAMPLE_AVATARTOKEN_PROPS} />);
+    const { toJSON } = render(<AvatarToken {...SAMPLE_AVATARTOKEN_PROPS} />);
     const prevImageComponent = wrapper.findWhere(
       (node) => node.prop('testID') === AVATARTOKEN_IMAGE_TESTID,
     );
@@ -58,7 +58,7 @@ describe('AvatarToken', () => {
   });
 
   it('should render fallback when tokenImageUrl is not provided', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <AvatarToken name={SAMPLE_AVATARTOKEN_PROPS.name} />,
     );
     const imageComponent = wrapper.findWhere(

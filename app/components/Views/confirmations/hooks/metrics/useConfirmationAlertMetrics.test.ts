@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import { useSelector } from 'react-redux';
 import { useAlerts } from '../../context/alert-system-context';
 import { useConfirmationMetricEvents } from './useConfirmationMetricEvents';

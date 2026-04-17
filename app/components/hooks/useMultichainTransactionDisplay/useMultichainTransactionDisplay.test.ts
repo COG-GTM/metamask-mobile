@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import { Transaction, TransactionType } from '@metamask/keyring-api';
 import { useMultichainTransactionDisplay } from '../useMultichainTransactionDisplay';
 

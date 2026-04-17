@@ -1,4 +1,4 @@
-import { act } from '@testing-library/react-hooks';
+import { act } from '@testing-library/react-native';
 import Engine from '../../../core/Engine';
 import useTokenSearchDiscovery, { MAX_RESULTS } from './useTokenSearchDiscovery';
 import { renderHookWithProvider } from '../../../util/test/renderWithProvider';

@@ -1,7 +1,7 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import TokenIcon from './TokenIcon';
 
+import { render } from '@testing-library/react-native';
 describe('TokenIcon component', () => {
   it('should Render correctly', () => {
     const empty = shallow(<TokenIcon />);

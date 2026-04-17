@@ -1,5 +1,4 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import CollectibleContracts from './';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
@@ -7,14 +6,13 @@ import { backgroundState } from '../../../util/test/initial-root-state';
 import renderWithProvider, {
   DeepPartial,
 } from '../../../util/test/renderWithProvider';
-import { act } from '@testing-library/react-hooks';
 import { PreferencesState } from '@metamask/preferences-controller';
 
 // eslint-disable-next-line import/no-namespace
 import * as allSelectors from '../../../../app/reducers/collectibles/index.js';
 // eslint-disable-next-line import/no-namespace
 import * as networkSelectors from '../../../selectors/networkController';
-import { cleanup, waitFor } from '@testing-library/react-native';
+import { render, cleanup, waitFor, act } from '@testing-library/react-native';
 import Engine from '../../../core/Engine';
 
 import TestHelpers from '../../../../e2e/helpers';
@@ -111,12 +109,12 @@ describe('CollectibleContracts', () => {
   });
   afterEach(cleanup);
   it('should render correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Provider store={store}>
         <CollectibleContracts />
       </Provider>,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('UI refresh changes NFT image when metadata image changes - detection disabled', async () => {

@@ -1,10 +1,10 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import ChoosePassword from './';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';
 
+import { render } from '@testing-library/react-native';
 const mockStore = configureMockStore();
 const initialState = {
   user: {
@@ -19,11 +19,11 @@ const store = mockStore(initialState);
 
 describe('ChoosePassword', () => {
   it('should render correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Provider store={store}>
         <ChoosePassword />
       </Provider>,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });

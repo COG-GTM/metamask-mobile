@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import I18n from '../../../../../locales/i18n';
 import { selectCurrentCurrency } from '../../../../selectors/currencyRateController';
 import useFiatFormatter from './useFiatFormatter';

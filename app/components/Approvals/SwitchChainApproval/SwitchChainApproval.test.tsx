@@ -1,6 +1,5 @@
 import React from 'react';
 import useApprovalRequest from '../../Views/confirmations/hooks/useApprovalRequest';
-import { shallow } from 'enzyme';
 import { ApprovalTypes } from '../../../core/RPCMethods/RPCMethodMiddleware';
 import { ApprovalRequest } from '@metamask/approval-controller';
 import SwitchChainApproval from './SwitchChainApproval';
@@ -8,6 +7,7 @@ import { networkSwitched } from '../../../actions/onboardNetwork';
 // eslint-disable-next-line import/no-namespace
 import * as networks from '../../../util/networks';
 import Engine from '../../../core/Engine';
+import { render } from '@testing-library/react-native';
 const { PreferencesController } = Engine.context;
 
 jest.mock('../../Views/confirmations/hooks/useApprovalRequest');
@@ -55,16 +55,16 @@ describe('SwitchChainApproval', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const wrapper = shallow(<SwitchChainApproval />);
+    const { toJSON } = render(<SwitchChainApproval />);
 
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('returns null if no approval request', () => {
     mockApprovalRequest(undefined);
 
-    const wrapper = shallow(<SwitchChainApproval />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<SwitchChainApproval />);
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('returns null if incorrect approval request type', () => {
@@ -72,8 +72,8 @@ describe('SwitchChainApproval', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockApprovalRequest({ type: ApprovalTypes.ADD_ETHEREUM_CHAIN } as any);
 
-    const wrapper = shallow(<SwitchChainApproval />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<SwitchChainApproval />);
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('invokes network switched on confirm', () => {
@@ -86,7 +86,7 @@ describe('SwitchChainApproval', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const wrapper = shallow(<SwitchChainApproval />);
+    const { toJSON } = render(<SwitchChainApproval />);
     wrapper.find('SwitchCustomNetwork').simulate('confirm');
 
     expect(networkSwitched).toHaveBeenCalledTimes(1);
@@ -111,7 +111,7 @@ describe('SwitchChainApproval', () => {
       rpcUrl: string;
     }>);
 
-    const wrapper = shallow(<SwitchChainApproval />);
+    const { toJSON } = render(<SwitchChainApproval />);
     wrapper.find('SwitchCustomNetwork').simulate('confirm');
     expect(tokenNetworkFilterSpy).toHaveBeenCalledTimes(1);
     expect(networkSwitched).toHaveBeenCalledTimes(1);

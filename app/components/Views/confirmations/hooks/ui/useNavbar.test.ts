@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Theme } from '../../../../../util/theme/models';
 import { getNavbar } from '../../components/UI/navbar/navbar';

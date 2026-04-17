@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import { selectEvmChainId } from '../../../selectors/networkController';
 import { TEST_NETWORK_IDS } from '../../../constants/network';
 import { selectShowFiatInTestnets } from '../../../selectors/settings';

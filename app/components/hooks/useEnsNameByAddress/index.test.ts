@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import useEnsNameByAddress from '.';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { mockNetworkState } from '../../../util/test/network';

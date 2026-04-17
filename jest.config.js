@@ -26,7 +26,7 @@ const config = {
     '^.+\\.(png|jpg|jpeg|gif|webp|svg|mp4)$':
       '<rootDir>/app/util/test/assetFileTransformer.js',
   },
-  snapshotSerializers: ['enzyme-to-json/serializer'],
+  snapshotSerializers: [],
   // This is an environment variable that can be used to execute logic only in development
   collectCoverage: process.env.NODE_ENV !== 'production',
   collectCoverageFrom: ['<rootDir>/app/**/*.{js,ts,tsx,jsx}'],

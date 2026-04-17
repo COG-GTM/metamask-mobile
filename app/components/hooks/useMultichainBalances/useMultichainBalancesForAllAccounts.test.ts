@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import useMultichainBalances from './useMultichainBalancesForAllAccounts';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import {

@@ -1,5 +1,5 @@
 import { Hex } from '@metamask/utils';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import { BigNumber } from 'bignumber.js';
 import {
   SimulationData,

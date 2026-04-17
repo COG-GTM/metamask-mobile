@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import { processNotification } from '@metamask/notification-services-controller/notification-services';
 import { createMockNotificationEthSent } from '@metamask/notification-services-controller/notification-services/mocks';
 import NotificationsList, {

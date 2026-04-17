@@ -1,10 +1,10 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import AssetList from './';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../../util/test/initial-root-state';
 
+import { render } from '@testing-library/react-native';
 const mockStore = configureMockStore();
 const initialState = {
   engine: {
@@ -15,7 +15,7 @@ const store = mockStore(initialState);
 
 describe('AssetList', () => {
   it('should render correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Provider store={store}>
         <AssetList
           handleSelectAsset={() => null}
@@ -24,6 +24,6 @@ describe('AssetList', () => {
         />
       </Provider>,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });

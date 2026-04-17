@@ -1,6 +1,5 @@
 import React from 'react';
 import useApprovalRequest from '../../Views/confirmations/hooks/useApprovalRequest';
-import { shallow } from 'enzyme';
 import { ApprovalTypes } from '../../../core/RPCMethods/RPCMethodMiddleware';
 import {
   ApprovalFlowState,
@@ -9,6 +8,7 @@ import {
 import FlowLoaderModal from './FlowLoaderModal';
 import useApprovalFlow from '../../Views/confirmations/hooks/useApprovalFlow';
 
+import { render } from '@testing-library/react-native';
 jest.mock('../../Views/confirmations/hooks/useApprovalRequest');
 jest.mock('../../Views/confirmations/hooks/useApprovalFlow');
 
@@ -46,17 +46,17 @@ describe('FlowLoaderModal', () => {
     mockApprovalFlow(APPROVAL_FLOW_MOCK);
     mockApprovalRequest(undefined);
 
-    const wrapper = shallow(<FlowLoaderModal />);
+    const { toJSON } = render(<FlowLoaderModal />);
 
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('returns null if no approval flow', () => {
     mockApprovalFlow(undefined);
     mockApprovalRequest(undefined);
 
-    const wrapper = shallow(<FlowLoaderModal />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<FlowLoaderModal />);
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('returns null if approval request', () => {
@@ -65,7 +65,7 @@ describe('FlowLoaderModal', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockApprovalRequest({ type: ApprovalTypes.CONNECT_ACCOUNTS } as any);
 
-    const wrapper = shallow(<FlowLoaderModal />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<FlowLoaderModal />);
+    expect(toJSON()).toMatchSnapshot();
   });
 });

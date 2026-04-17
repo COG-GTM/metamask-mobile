@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 
 import { typedSignV4SignatureRequest } from '../../../../../util/test/confirm-data-helpers';
 import { DataTreeInput } from '../../components/data-tree/data-tree';

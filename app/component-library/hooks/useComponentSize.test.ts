@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import { useComponentSize } from './useComponentSize';
 import type { LayoutChangeEvent } from 'react-native';
 

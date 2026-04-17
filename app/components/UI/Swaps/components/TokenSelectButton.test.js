@@ -1,7 +1,7 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import TokenSelectButton from './TokenSelectButton';
 
+import { render } from '@testing-library/react-native';
 describe('TokenSelectButton component', () => {
   it('should Render correctly', () => {
     const dummyHandler = jest.fn();

@@ -1,12 +1,12 @@
 // Third party dependencies.
 import React from 'react';
-import { shallow } from 'enzyme';
 
 // External dependencies.
 import { IconName } from '../../../../Icons/Icon';
 
 // Internal dependencies.
 import AccordionHeader from './AccordionHeader';
+import { render } from '@testing-library/react-native';
 import {
   TESTID_ACCORDIONHEADER,
   TESTID_ACCORDIONHEADER_TITLE,
@@ -16,22 +16,22 @@ import {
 
 describe('AccordionHeader - Snapshot', () => {
   it('should render default settings correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <AccordionHeader title={SAMPLE_ACCORDIONHEADER_TITLE} />,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
   it('should render a rotated down Arrow if isExpanded is true', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <AccordionHeader title={SAMPLE_ACCORDIONHEADER_TITLE} isExpanded />,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });
 
 describe('AccordionHeader', () => {
   it('should render AccordionHeader', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <AccordionHeader title={SAMPLE_ACCORDIONHEADER_TITLE} />,
     );
     const accordionHeaderComponent = wrapper.findWhere(
@@ -40,7 +40,7 @@ describe('AccordionHeader', () => {
     expect(accordionHeaderComponent.exists()).toBe(true);
   });
   it('should render the given title', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <AccordionHeader title={SAMPLE_ACCORDIONHEADER_TITLE} />,
     );
     const titleElement = wrapper.findWhere(
@@ -49,7 +49,7 @@ describe('AccordionHeader', () => {
     expect(titleElement.props().children).toBe(SAMPLE_ACCORDIONHEADER_TITLE);
   });
   it('should render the proper arrow down icon', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <AccordionHeader title={SAMPLE_ACCORDIONHEADER_TITLE} />,
     );
     const iconElement = wrapper.findWhere(

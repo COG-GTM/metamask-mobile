@@ -1,15 +1,14 @@
 /* eslint-disable import/no-nodejs-modules */
 import React from 'react';
-import { shallow } from 'enzyme';
 // eslint-disable-next-line import/named
 import { NavigationContainer } from '@react-navigation/native';
 import Main from './';
 import { useSwapConfirmedEvent } from './RootRPCMethodsUI';
-import { act } from '@testing-library/react-hooks';
 import { MetaMetricsEvents } from '../../hooks/useMetrics';
 import { renderHookWithProvider } from '../../../util/test/renderWithProvider';
 import Engine from '../../../core/Engine';
 
+import { render, act } from '@testing-library/react-native';
 jest.mock('../../../core/Engine', () => ({
   controllerMessenger: {
     subscribeOnceIf: jest.fn(),
@@ -99,8 +98,8 @@ describe('Main', () => {
         <Main />
       </NavigationContainer>
     );
-    const wrapper = shallow(<MainAppContainer />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<MainAppContainer />);
+    expect(toJSON()).toMatchSnapshot();
   });
 
   describe('useSwapConfirmedEvent', () => {

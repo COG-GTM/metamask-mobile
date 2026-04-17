@@ -1,10 +1,10 @@
 import React from 'react';
 import useApprovalRequest from '../../Views/confirmations/hooks/useApprovalRequest';
-import { shallow } from 'enzyme';
 import { ApprovalTypes } from '../../../core/RPCMethods/RPCMethodMiddleware';
 import { ApprovalRequest } from '@metamask/approval-controller';
 import SignatureApproval from './SignatureApproval';
 
+import { render } from '@testing-library/react-native';
 jest.mock('../../Views/confirmations/hooks/useApprovalRequest');
 
 // TODO: Replace "any" with type
@@ -35,17 +35,17 @@ describe('SignatureApproval', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
-      const wrapper = shallow(<SignatureApproval />);
+      const { toJSON } = render(<SignatureApproval />);
 
-      expect(wrapper).toMatchSnapshot();
+      expect(toJSON()).toMatchSnapshot();
     },
   );
 
   it('provides no message params if no approval request', () => {
     mockApprovalRequest(undefined);
 
-    const wrapper = shallow(<SignatureApproval />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<SignatureApproval />);
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('provides no message params if incorrect approval request type', () => {
@@ -53,7 +53,7 @@ describe('SignatureApproval', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockApprovalRequest({ type: ApprovalTypes.ADD_ETHEREUM_CHAIN } as any);
 
-    const wrapper = shallow(<SignatureApproval />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<SignatureApproval />);
+    expect(toJSON()).toMatchSnapshot();
   });
 });

@@ -1,7 +1,7 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import CustomNonceModal from '.';
 
+import { render } from '@testing-library/react-native';
 const PROPOSED_NONCE = 26;
 const saveMock = jest.fn();
 const closeMock = jest.fn();
@@ -17,7 +17,7 @@ const createWrapper = () =>
 describe('CustomNonceModal', () => {
   it('renders correctly', () => {
     const wrapper = createWrapper();
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('handles only numeric inputs', () => {
@@ -42,7 +42,7 @@ describe('CustomNonceModal', () => {
   });
 
   it('decrements nonce correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <CustomNonceModal
         save={saveMock}
         close={closeMock}

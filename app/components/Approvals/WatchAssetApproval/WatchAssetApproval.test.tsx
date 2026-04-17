@@ -1,10 +1,10 @@
 import React from 'react';
 import useApprovalRequest from '../../Views/confirmations/hooks/useApprovalRequest';
-import { shallow } from 'enzyme';
 import { ApprovalTypes } from '../../../core/RPCMethods/RPCMethodMiddleware';
 import { ApprovalRequest } from '@metamask/approval-controller';
 import WatchAssetApproval from './WatchAssetApproval';
 
+import { render } from '@testing-library/react-native';
 jest.mock('../../Views/confirmations/hooks/useApprovalRequest');
 
 // TODO: Replace "any" with type
@@ -32,9 +32,9 @@ describe('WatchAssetApproval', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const wrapper = shallow(<WatchAssetApproval />);
+    const { toJSON } = render(<WatchAssetApproval />);
 
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('returns null if no request data', () => {
@@ -44,16 +44,16 @@ describe('WatchAssetApproval', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const wrapper = shallow(<WatchAssetApproval />);
+    const { toJSON } = render(<WatchAssetApproval />);
 
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('returns null if no approval request', () => {
     mockApprovalRequest(undefined);
 
-    const wrapper = shallow(<WatchAssetApproval />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<WatchAssetApproval />);
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('sets isVisible to false if incorrect approval request type', () => {
@@ -64,7 +64,7 @@ describe('WatchAssetApproval', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const wrapper = shallow(<WatchAssetApproval />);
-    expect(wrapper).toMatchSnapshot();
+    const { toJSON } = render(<WatchAssetApproval />);
+    expect(toJSON()).toMatchSnapshot();
   });
 });

@@ -3,7 +3,7 @@ import Share from 'react-native-share';
 
 import { Alert, AlertButton } from 'react-native';
 
-import { fireEvent, waitFor } from '@testing-library/react-native';
+import { fireEvent, waitFor, act } from '@testing-library/react-native';
 
 import renderWithProvider from '../../../util/test/renderWithProvider';
 
@@ -21,7 +21,6 @@ import { SOLANA_WALLET_SNAP_ID } from '../../../core/SnapKeyring/SolanaWalletSna
 import { KeyringTypes } from '@metamask/keyring-controller';
 
 import { strings } from '../../../../locales/i18n';
-import { act } from '@testing-library/react-hooks';
 import { RPC } from '../../../constants/network';
 
 // Mock the selectors

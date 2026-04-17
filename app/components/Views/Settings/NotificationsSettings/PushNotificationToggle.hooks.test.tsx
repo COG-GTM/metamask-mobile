@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 // eslint-disable-next-line import/no-namespace
 import * as PushNotificationsHooks from '../../../../util/notifications/hooks/usePushNotifications';
 import { usePushNotificationSettingsToggle } from './PushNotificationToggle.hooks';

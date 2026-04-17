@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import { useSelector } from 'react-redux';
 import { useAccountName } from './useAccountName';
 import useEnsNameByAddress from '../../components/hooks/useEnsNameByAddress';

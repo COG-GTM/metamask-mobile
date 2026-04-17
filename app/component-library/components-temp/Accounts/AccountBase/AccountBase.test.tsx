@@ -1,5 +1,4 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import { AccountBaseProps } from './AccountBase.types';
 import AccountBase from './AccountBase';
 import {

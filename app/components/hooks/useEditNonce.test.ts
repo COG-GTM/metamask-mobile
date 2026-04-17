@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import { useEditNonce } from './useEditNonce';
 import { getNetworkNonce, updateTransaction } from '../../util/transaction-controller';
 import { useTransactionMetadataRequest } from '../Views/confirmations/hooks/transactions/useTransactionMetadataRequest';

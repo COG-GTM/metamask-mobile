@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import { useSelector } from 'react-redux';
 import { AssetType, useAssetMetadata } from './index';
 

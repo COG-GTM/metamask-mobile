@@ -1,9 +1,9 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import ManualBackupStep2 from './';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 
+import { render } from '@testing-library/react-native';
 const mockStore = configureMockStore();
 const initialState = {
   user: {
@@ -15,7 +15,7 @@ const store = mockStore(initialState);
 
 describe('ManualBackupStep2', () => {
   it('should render correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Provider store={store}>
         <ManualBackupStep2
           route={{
@@ -40,6 +40,6 @@ describe('ManualBackupStep2', () => {
         />
       </Provider>,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });

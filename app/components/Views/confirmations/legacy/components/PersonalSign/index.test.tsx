@@ -1,5 +1,4 @@
 import React from 'react';
-import { shallow } from 'enzyme';
 import PersonalSign from '.';
 import configureMockStore from 'redux-mock-store';
 import { Provider, useSelector } from 'react-redux';
@@ -14,6 +13,7 @@ import { backgroundState } from '../../../../../../util/test/initial-root-state'
 import { useMetrics } from '../../../../../../components/hooks/useMetrics';
 import initialBackgroundState from '../../../../../../util/test/initial-background-state.json';
 
+import { render } from '@testing-library/react-native';
 jest.mock('../../../../../../components/hooks/useMetrics');
 jest.mock('../../../../../../core/Engine', () => ({
   acceptPendingApproval: jest.fn(),
@@ -152,7 +152,7 @@ describe('PersonalSign', () => {
 
   it('should render correctly', () => {
     const wrapper = createWrapper();
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   describe('onConfirm', () => {

@@ -1,6 +1,6 @@
 import { TransactionMeta } from '@metamask/transaction-controller';
 import { SignatureRequest } from '@metamask/signature-controller';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import {
   CONFIRMATION_EVENTS,
   CONFIRMATION_EVENT_LOCATIONS,

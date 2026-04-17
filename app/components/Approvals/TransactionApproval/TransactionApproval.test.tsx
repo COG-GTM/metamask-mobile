@@ -1,6 +1,5 @@
 import React from 'react';
 import useApprovalRequest from '../../Views/confirmations/hooks/useApprovalRequest';
-import { shallow } from 'enzyme';
 import { ApprovalTypes } from '../../../core/RPCMethods/RPCMethodMiddleware';
 import { ApprovalRequest } from '@metamask/approval-controller';
 import {
@@ -10,6 +9,7 @@ import {
 import { useConfirmationRedesignEnabled } from '../../Views/confirmations/hooks/useConfirmationRedesignEnabled';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 
+import { render } from '@testing-library/react-native';
 jest.mock(
   '../../Views/confirmations/hooks/useConfirmationRedesignEnabled',
   () => ({
@@ -54,11 +54,11 @@ describe('TransactionApproval', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const wrapper = shallow(
+    const { toJSON } = render(
       <TransactionApproval transactionType={TransactionModalType.Dapp} />,
     );
 
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('renders approve component if transaction type is transaction', () => {
@@ -68,13 +68,13 @@ describe('TransactionApproval', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const wrapper = shallow(
+    const { toJSON } = render(
       <TransactionApproval
         transactionType={TransactionModalType.Transaction}
       />,
     );
 
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('renders QR signing modal if signing QR object', () => {
@@ -84,11 +84,11 @@ describe('TransactionApproval', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    const wrapper = shallow(
+    const { toJSON } = render(
       <TransactionApproval isSigningQRObject QRState={{ test: 'value' }} />,
     );
 
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('returns null if no approval request', () => {

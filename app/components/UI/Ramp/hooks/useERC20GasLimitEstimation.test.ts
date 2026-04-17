@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import useERC20GasLimitEstimation from './useERC20GasLimitEstimation';
 import { getGasLimit } from '../../../../util/custom-gas';
 import { generateTransferData } from '../../../../util/transactions';

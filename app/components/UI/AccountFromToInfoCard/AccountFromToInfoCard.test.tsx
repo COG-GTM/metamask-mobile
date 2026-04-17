@@ -1,6 +1,5 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import { shallow } from 'enzyme';
 import configureMockStore from 'redux-mock-store';
 
 import renderWithProvider, {
@@ -16,6 +15,7 @@ import { AssetsContractController } from '@metamask/assets-controllers';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { MOCK_KEYRING_CONTROLLER_STATE } from '../../../util/test/keyringControllerTestUtils';
 
+import { render } from '@testing-library/react-native';
 const MOCK_ADDRESS_1 = '0xe64dD0AB5ad7e8C5F2bf6Ce75C34e187af8b920A';
 const MOCK_ADDRESS_2 = '0x519d2CE57898513F676a5C3b66496c3C394c9CC7';
 
@@ -147,13 +147,13 @@ const transactionState: Transaction = {
 
 describe('AccountFromToInfoCard', () => {
   it('should render correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Provider store={store}>
         {/* @ts-expect-error: Rest props are ignored for testing purposes */}
         <AccountFromToInfoCard transactionState={transactionState} />
       </Provider>,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('should match snapshot', async () => {

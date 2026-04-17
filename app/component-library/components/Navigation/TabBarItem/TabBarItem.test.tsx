@@ -1,6 +1,5 @@
 // Third party dependencies.
 import React from 'react';
-import { shallow } from 'enzyme';
 
 // External dependencies.
 import { IconName } from '../../Icons/Icon';
@@ -10,9 +9,10 @@ import { AvatarSize } from '../../Avatars/Avatar';
 // Internal dependencies
 import TabBarItem from './TabBarItem';
 
+import { render } from '@testing-library/react-native';
 describe('TabBarItem', () => {
   it('should render correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <TabBarItem
         label={'Tab'}
         icon={IconName.Bank}
@@ -22,6 +22,6 @@ describe('TabBarItem', () => {
         iconBackgroundColor={mockTheme.colors.background.default}
       />,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });

@@ -1,7 +1,6 @@
 import React from 'react';
 import CollectibleContractOverview from './';
 import configureMockStore from 'redux-mock-store';
-import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { backgroundState } from '../../../util/test/initial-root-state';
@@ -76,7 +75,7 @@ const store = mockStore(initialState);
 
 describe('CollectibleContractOverview', () => {
   it('should render correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <Provider store={store}>
         <CollectibleContractOverview
           collectibleContract={{
@@ -89,7 +88,7 @@ describe('CollectibleContractOverview', () => {
         />
       </Provider>,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('calls onSend and navigates when send button is pressed', () => {

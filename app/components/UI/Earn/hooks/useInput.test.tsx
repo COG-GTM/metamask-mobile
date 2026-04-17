@@ -1,5 +1,5 @@
 import { CHAIN_IDS } from '@metamask/transaction-controller';
-import { act } from '@testing-library/react-hooks';
+import { act } from '@testing-library/react-native';
 import BN4 from 'bnjs4';
 import { RootState } from '../../../../reducers';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../../util/test/accountsControllerTestUtils';

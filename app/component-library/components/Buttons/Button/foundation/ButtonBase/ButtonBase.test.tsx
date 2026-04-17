@@ -1,6 +1,5 @@
 // Third party dependencies.
 import React from 'react';
-import { shallow } from 'enzyme';
 
 // External dependencies.
 import { IconName } from '../../../../Icons/Icon';
@@ -9,9 +8,10 @@ import { IconName } from '../../../../Icons/Icon';
 import ButtonBase from './ButtonBase';
 import { ButtonSize } from '../../Button.types';
 
+import { render } from '@testing-library/react-native';
 describe('ButtonBase', () => {
   it('should render correctly', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <ButtonBase
         startIconName={IconName.Bank}
         size={ButtonSize.Md}
@@ -19,11 +19,11 @@ describe('ButtonBase', () => {
         onPress={() => null}
       />,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 
   it('should render correctly when disabled', () => {
-    const wrapper = shallow(
+    const { toJSON } = render(
       <ButtonBase
         isDisabled
         startIconName={IconName.Bank}
@@ -32,6 +32,6 @@ describe('ButtonBase', () => {
         onPress={() => null}
       />,
     );
-    expect(wrapper).toMatchSnapshot();
+    expect(toJSON()).toMatchSnapshot();
   });
 });
