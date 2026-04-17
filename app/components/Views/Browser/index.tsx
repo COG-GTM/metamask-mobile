@@ -112,7 +112,7 @@ interface BrowserProps {
   /** Array of tabs */
   tabs: BrowserTabInfo[];
   /** ID of the active tab */
-  activeTab: number;
+  activeTab: number | null;
   /** Object that represents the current route info like params passed to it */
   route: BrowserRoute;
 }
