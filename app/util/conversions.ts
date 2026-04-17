@@ -166,7 +166,7 @@ export function hexGWEIToHexWEI(hexGWEI: string): string {
 }
 
 export function hexWEIToDecGWEI(hexWEI: string): string {
-  return conversionUtil(decGWEI, {
+  return conversionUtil(hexWEI, {
     fromNumericBase: 'hex',
     toNumericBase: 'dec',
     fromDenomination: 'WEI',
