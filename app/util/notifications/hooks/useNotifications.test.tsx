@@ -1,5 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
-import { waitFor } from '@testing-library/react-native';
+import { waitFor, act, renderHook } from '@testing-library/react-native';
 
 // eslint-disable-next-line import/no-namespace
 import * as Actions from '../../../actions/notification/helpers';

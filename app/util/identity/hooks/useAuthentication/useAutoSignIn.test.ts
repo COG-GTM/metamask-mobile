@@ -1,4 +1,4 @@
-import { act } from '@testing-library/react-hooks';
+import { act } from '@testing-library/react-native';
 import { renderHookWithProvider } from '../../../test/renderWithProvider';
 // eslint-disable-next-line import/no-namespace
 import * as actions from '../../../../actions/identity';

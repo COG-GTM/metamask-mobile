@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-native';
 import { useConnectionHandler } from './useConnectionHandler';
 import { MetaMetricsEvents } from '../../core/Analytics';
 import { MetricsEventBuilder } from '../../core/Analytics/MetricsEventBuilder';

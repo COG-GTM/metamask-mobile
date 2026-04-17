@@ -1,5 +1,5 @@
 import { NavigationContainerRef } from '@react-navigation/native';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import useNotificationHandler from './index';
 // eslint-disable-next-line import/no-namespace
 import * as UseRegisterPushNotificationsEffect from './useRegisterPushNotificationsEffect';

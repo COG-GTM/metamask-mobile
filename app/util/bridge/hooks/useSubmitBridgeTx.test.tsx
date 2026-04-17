@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import useSubmitBridgeTx from './useSubmitBridgeTx';
