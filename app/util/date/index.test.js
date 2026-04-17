@@ -72,7 +72,7 @@ describe('date utils', () => {
     });
 
     it('returns positive values for future timestamp', () => {
-      const future = Date.now() + 1000 * 60 * 60 * 25; // 25 hours from now
+      const future = Date.now() + 1000 * 60 * 60 * 25 + 1000; // 25 hours + 1s buffer from now
       const result = getTimeDifferenceFromNow(future);
       expect(result.days).toBe(1);
       expect(result.hours).toBe(1);
