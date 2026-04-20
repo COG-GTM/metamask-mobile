@@ -57,7 +57,7 @@ const enqueue = (notifications: Notification[], notification: Notification): Not
 const dequeue = (notifications: Notification[]): Notification[] => notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
-  (state: { notification: NotificationState }) => state?.notification?.notifications,
+  (state: NotificationState) => state?.notifications,
   (notifications: Notification[]) => notifications[0] || {},
 );
 
