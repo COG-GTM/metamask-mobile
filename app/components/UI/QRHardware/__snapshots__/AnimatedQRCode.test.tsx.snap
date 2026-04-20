@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AnimatedQRCode matches snapshot 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#ffffff",
+      "height": 300,
+      "justifyContent": "center",
+      "width": 300,
+    }
+  }
+>
+  <QRCode
+    size={250}
+    value="UR:TEST-PART"
+  />
+</View>
+`;

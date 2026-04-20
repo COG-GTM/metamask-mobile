@@ -1,0 +1,113 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AddressQRCode matches snapshot 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "flex": 1,
+      "flexDirection": "row",
+      "marginTop": -50,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flex": 1,
+      }
+    }
+  >
+    <TouchableOpacity
+      onPress={[Function]}
+      style={
+        {
+          "flexDirection": "row-reverse",
+          "paddingBottom": 50,
+          "width": 702,
+        }
+      }
+    >
+      <IonicIcon
+        color="#ffffff"
+        name="close"
+        size={38}
+      />
+    </TouchableOpacity>
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "backgroundColor": "#ffffff",
+          "borderRadius": 8,
+          "justifyContent": "center",
+          "marginBottom": 16,
+          "padding": 28,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#ffffff",
+            "padding": 8,
+          }
+        }
+      >
+        <QRCode
+          size={590}
+          value="ethereum:0x1234567890AbcdEF1234567890aBcdef12345678"
+        />
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "backgroundColor": "#ffffff",
+          "borderRadius": 8,
+          "justifyContent": "center",
+          "paddingVertical": 12,
+          "width": 662,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#121314",
+            "fontFamily": "CentraNo1-Book",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "paddingHorizontal": 28,
+            "paddingVertical": 4,
+          }
+        }
+      >
+        Public Address
+      </Text>
+      <TouchableOpacity
+        onPress={[Function]}
+      >
+        <Text
+          style={
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "paddingHorizontal": 28,
+              "paddingVertical": 4,
+              "textAlign": "center",
+            }
+          }
+        >
+          0x 1234 5678 90Ab cdEF 1234 5678 90aB cdef 1234 5678
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+  <GlobalAlert />
+</View>
+`;

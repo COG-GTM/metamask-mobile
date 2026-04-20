@@ -1,0 +1,77 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RestoreWallet matches snapshot 1`] = `
+[
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flex": 1,
+        "justifyContent": "center",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "padding": 16,
+        }
+      }
+    >
+      <Image
+        source={1}
+      />
+    </View>
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Bold",
+          "fontSize": 24,
+          "fontWeight": "700",
+          "letterSpacing": 0,
+          "lineHeight": 32,
+          "paddingBottom": 16,
+          "textAlign": "center",
+        }
+      }
+    >
+      Restore needed
+    </Text>
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+          "padding": 8,
+          "textAlign": "center",
+        }
+      }
+    >
+      Something has gone wrong but don’t worry! Let’s try to restore your wallet.
+    </Text>
+  </View>,
+  <View
+    style={
+      {
+        "width": "100%",
+      }
+    }
+  >
+    <TouchableOpacity
+      onPress={[Function]}
+    >
+      <Text>
+        Restore wallet
+      </Text>
+    </TouchableOpacity>
+  </View>,
+]
+`;

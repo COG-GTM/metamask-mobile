@@ -1,0 +1,130 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WalletResetNeeded matches snapshot 1`] = `
+[
+  <RCTScrollView
+    contentContainerStyle={
+      {
+        "alignItems": "center",
+        "flex": 1,
+        "justifyContent": "center",
+      }
+    }
+  >
+    <View>
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "padding": 16,
+          }
+        }
+      >
+        <SvgMock
+          color="#ca3542"
+          fill="currentColor"
+          height={72}
+          name="Danger"
+          style={
+            {
+              "height": 72,
+              "width": 72,
+            }
+          }
+          width={72}
+        />
+      </View>
+      <Text
+        accessibilityRole="text"
+        style={
+          {
+            "color": "#121314",
+            "fontFamily": "CentraNo1-Bold",
+            "fontSize": 24,
+            "fontWeight": "700",
+            "letterSpacing": 0,
+            "lineHeight": 32,
+            "paddingBottom": 16,
+            "textAlign": "center",
+          }
+        }
+      >
+        New wallet needed
+      </Text>
+      <Text
+        accessibilityRole="text"
+        style={
+          {
+            "color": "#121314",
+            "fontFamily": "CentraNo1-Book",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "letterSpacing": 0,
+            "lineHeight": 24,
+            "padding": 8,
+            "textAlign": "center",
+          }
+        }
+      >
+        Something's wrong with your wallet, and you'll need to create a new one. Because your accounts are on the blockchain, they're still safe. Only the preferences, saved networks, account names, and related data saved on your device are gone.
+      </Text>
+      <Text
+        accessibilityRole="text"
+        style={
+          {
+            "color": "#121314",
+            "fontFamily": "CentraNo1-Book",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "letterSpacing": 0,
+            "lineHeight": 24,
+            "padding": 8,
+            "textAlign": "center",
+          }
+        }
+      >
+        To import your accounts to a new wallet, you'll need your Secret Recovery Phrase. If you don't have your Secret Recovery Phrase, you won't be able to import your accounts.
+      </Text>
+      <Text
+        accessibilityRole="text"
+        style={
+          {
+            "color": "#121314",
+            "fontFamily": "CentraNo1-Book",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "letterSpacing": 0,
+            "lineHeight": 24,
+            "padding": 8,
+            "textAlign": "center",
+          }
+        }
+      >
+        To keep this from happening again, be sure to always keep your MetaMask app and OS updated to the latest version.
+      </Text>
+    </View>
+  </RCTScrollView>,
+  <View
+    style={
+      {
+        "width": "100%",
+      }
+    }
+  >
+    <TouchableOpacity
+      onPress={[Function]}
+    >
+      <Text>
+        Try recovering wallet
+      </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      onPress={[Function]}
+    >
+      <Text>
+        Create a new wallet
+      </Text>
+    </TouchableOpacity>
+  </View>,
+]
+`;

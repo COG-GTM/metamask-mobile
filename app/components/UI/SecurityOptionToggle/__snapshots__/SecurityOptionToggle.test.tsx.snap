@@ -1,0 +1,66 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SecurityOptionToggle matches snapshot 1`] = `
+<View>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flexDirection": "row",
+      }
+    }
+  >
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#121314",
+          "flex": 1,
+          "fontFamily": "CentraNo1-Medium",
+          "fontSize": 18,
+          "fontWeight": "500",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      Privacy Mode
+    </Text>
+    <View
+      style={
+        {
+          "marginLeft": 16,
+        }
+      }
+    >
+      <RCTSwitch
+        accessibilityRole="switch"
+        onChange={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        onTintColor="#4459ff"
+        style={
+          [
+            {
+              "height": 31,
+              "width": 51,
+            },
+            [
+              {
+                "alignSelf": "flex-start",
+              },
+              {
+                "backgroundColor": "#b7bbc866",
+                "borderRadius": 16,
+              },
+            ],
+          ]
+        }
+        thumbTintColor="#ffffff"
+        tintColor="#b7bbc866"
+        value={false}
+      />
+    </View>
+  </View>
+</View>
+`;

@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AccountAction matches snapshot 1`] = `
+<TouchableOpacity
+  disabled={false}
+  style={{}}
+>
+  <SvgMock
+    color="#121314"
+    fill="currentColor"
+    height={20}
+    name="Send"
+    style={
+      {
+        "height": 20,
+        "width": 20,
+      }
+    }
+    width={20}
+  />
+  <Text
+    accessibilityRole="text"
+    style={{}}
+  >
+    Send
+  </Text>
+</TouchableOpacity>
+`;

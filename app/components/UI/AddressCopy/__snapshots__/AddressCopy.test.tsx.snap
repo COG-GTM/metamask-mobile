@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AddressCopy matches snapshot 1`] = `
+<View
+  style={{}}
+>
+  <TouchableOpacity
+    onPress={[Function]}
+    style={{}}
+    testID="wallet-account-copy-button"
+  >
+    <SvgMock
+      color="#121314"
+      fill="currentColor"
+      height={24}
+      name="Copy"
+      style={
+        {
+          "height": 24,
+          "width": 24,
+        }
+      }
+      width={24}
+    />
+  </TouchableOpacity>
+</View>
+`;

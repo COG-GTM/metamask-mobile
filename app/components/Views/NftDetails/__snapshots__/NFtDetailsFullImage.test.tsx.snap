@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NftDetailsFullImage matches snapshot 1`] = `
+<RCTSafeAreaView
+  style={
+    [
+      {},
+    ]
+  }
+>
+  <View
+    style={
+      [
+        {},
+      ]
+    }
+  >
+    <CollectibleMedia
+      collectible={
+        {
+          "address": "0x123",
+          "image": "https://example.com/nft.png",
+          "name": "Test NFT",
+          "tokenId": "1",
+        }
+      }
+      cover={true}
+      renderAnimation={true}
+    />
+  </View>
+</RCTSafeAreaView>
+`;

@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Avatar matches snapshot 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#4459ff1a",
+      "borderRadius": 16,
+      "height": 32,
+      "justifyContent": "center",
+      "overflow": "hidden",
+      "width": 32,
+    }
+  }
+>
+  <SvgMock
+    color="#4459ff"
+    fill="currentColor"
+    height={20}
+    name="Send"
+    style={
+      {
+        "height": 20,
+        "width": 20,
+      }
+    }
+    width={20}
+  />
+</View>
+`;

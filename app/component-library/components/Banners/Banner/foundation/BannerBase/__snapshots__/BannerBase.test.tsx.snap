@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BannerBase matches snapshot 1`] = `
+<View
+  style={
+    {
+      "backgroundColor": "#ffffff",
+      "borderRadius": 4,
+      "flexDirection": "row",
+      "padding": 12,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "marginRight": 8,
+      }
+    }
+  />
+  <View
+    style={
+      {
+        "flex": 1,
+      }
+    }
+  >
+    <Text>
+      Banner content
+    </Text>
+  </View>
+</View>
+`;

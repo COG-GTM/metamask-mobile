@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WalletAction matches snapshot 1`] = `
+<TouchableOpacity
+  onPress={[MockFunction]}
+  style={
+    [
+      {},
+      undefined,
+      undefined,
+    ]
+  }
+>
+  <View
+    style={
+      {
+        "backgroundColor": "#ffffff",
+        "borderRadius": 16,
+        "height": 32,
+        "overflow": "hidden",
+        "width": 32,
+      }
+    }
+  >
+    <SvgMock
+      color="#ffffff"
+      fill="currentColor"
+      height={20}
+      name="Send"
+      style={
+        {
+          "height": 20,
+          "width": 20,
+        }
+      }
+      width={20}
+    />
+  </View>
+  <View>
+    <Text
+      accessibilityRole="text"
+      style={{}}
+    >
+      Send
+    </Text>
+    <Text
+      accessibilityRole="text"
+      style={{}}
+    >
+      Send crypto to any account
+    </Text>
+  </View>
+</TouchableOpacity>
+`;

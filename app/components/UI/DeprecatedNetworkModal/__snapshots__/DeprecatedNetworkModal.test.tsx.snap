@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DeprecatedNetworkModal matches snapshot 1`] = `
+<View>
+  <Text
+    accessibilityRole="text"
+  >
+    This network is deprecated
+  </Text>
+  <Text
+    accessibilityRole="text"
+  >
+    The network you're trying to connect to is no longer supported on Metamask.
+     
+    <Text
+      accessibilityRole="text"
+      onPress={[Function]}
+    >
+      Learn more
+    </Text>
+  </Text>
+  <View
+    style={{}}
+  >
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      activeOpacity={1}
+      onPress={[Function]}
+      onPressIn={[Function]}
+      onPressOut={[Function]}
+    >
+      <Text
+        accessibilityRole="text"
+      >
+        Got it
+      </Text>
+    </TouchableOpacity>
+  </View>
+</View>
+`;

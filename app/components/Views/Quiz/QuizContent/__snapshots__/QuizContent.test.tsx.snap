@@ -1,0 +1,76 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`QuizContent matches snapshot 1`] = `
+<View
+  style={{}}
+>
+  <View
+    style={{}}
+  >
+    <View
+      style={{}}
+    />
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Bold",
+          "fontSize": 16,
+          "fontWeight": "700",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      Quiz Header
+    </Text>
+    <TouchableOpacity
+      onPress={[MockFunction]}
+    >
+      <SvgMock
+        color="#000"
+        fill="currentColor"
+        height={12}
+        name="Close"
+        style={
+          {
+            "height": 12,
+            "width": 12,
+          }
+        }
+        width={12}
+      />
+    </TouchableOpacity>
+  </View>
+  <Text
+    accessibilityRole="text"
+    style={
+      {
+        "color": "#121314",
+        "fontFamily": "CentraNo1-Bold",
+        "fontSize": 24,
+        "fontWeight": "700",
+        "letterSpacing": 0,
+        "lineHeight": 32,
+      }
+    }
+  />
+  <Text
+    accessibilityRole="text"
+    style={
+      {
+        "color": "#121314",
+        "fontFamily": "CentraNo1-Book",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "letterSpacing": 0,
+        "lineHeight": 24,
+      }
+    }
+  >
+    Quiz content text
+  </Text>
+  <View />
+</View>
+`;

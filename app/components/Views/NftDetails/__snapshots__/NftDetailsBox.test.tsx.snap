@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NftDetailsBox matches snapshot 1`] = `
+<View
+  style={
+    [
+      {
+        "borderColor": "#b7bbc8",
+        "borderRadius": 8,
+        "borderWidth": 1,
+        "flexGrow": 1,
+        "paddingBottom": 12,
+        "paddingLeft": 16,
+        "paddingRight": 16,
+        "paddingTop": 12,
+        "width": "33%",
+      },
+    ]
+  }
+>
+  <View>
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      Token ID
+    </Text>
+  </View>
+  <View>
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      1234
+    </Text>
+  </View>
+</View>
+`;
