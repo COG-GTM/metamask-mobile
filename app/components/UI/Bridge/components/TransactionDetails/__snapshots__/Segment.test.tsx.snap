@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Segment matches snapshot with a pending status 1`] = `
+<View
+  backgroundColor="#f3f5f9"
+  style={
+    [
+      {
+        "backgroundColor": "#f3f5f9",
+      },
+      {
+        "height": 4,
+        "width": "35%",
+      },
+    ]
+  }
+>
+  <View
+    backgroundColor="#4459ff"
+    style={
+      [
+        {
+          "backgroundColor": "#4459ff",
+        },
+        {
+          "borderRadius": 9999,
+          "height": 4,
+          "transition": "width 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55)",
+          "width": "50%",
+        },
+      ]
+    }
+  />
+</View>
+`;

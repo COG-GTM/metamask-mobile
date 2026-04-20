@@ -1,0 +1,196 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BridgeSourceNetworksBar matches snapshot for the "all networks" case 1`] = `
+<TouchableOpacity
+  accessibilityRole="button"
+  accessible={true}
+  activeOpacity={1}
+  onPress={[Function]}
+  onPressIn={[Function]}
+  onPressOut={[Function]}
+  style={
+    {
+      "alignItems": "center",
+      "alignSelf": "flex-start",
+      "backgroundColor": "transparent",
+      "borderColor": "#b7bbc866",
+      "borderRadius": 12,
+      "borderWidth": 1,
+      "flexDirection": "row",
+      "height": 40,
+      "justifyContent": "center",
+      "paddingHorizontal": 16,
+    }
+  }
+>
+  <View
+    alignItems="center"
+    flexDirection="row"
+    gap={4}
+    style={
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "gap": 4,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      alignItems="center"
+      flexDirection="row"
+      gap={-8}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "gap": -8,
+          },
+          undefined,
+        ]
+      }
+    >
+      <View
+        style={
+          [
+            {},
+            {},
+          ]
+        }
+      >
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "backgroundColor": "#ffffff",
+              "borderRadius": 8,
+              "height": 16,
+              "justifyContent": "center",
+              "marginRight": 0,
+              "overflow": "hidden",
+              "width": 16,
+            }
+          }
+        >
+          <Image
+            onError={[Function]}
+            resizeMode="contain"
+            source={1}
+            style={
+              {
+                "height": 16,
+                "width": 16,
+              }
+            }
+            testID="network-avatar-image"
+          />
+        </View>
+      </View>
+      <View
+        style={
+          [
+            {},
+            {},
+          ]
+        }
+      >
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "backgroundColor": "#ffffff",
+              "borderRadius": 8,
+              "height": 16,
+              "justifyContent": "center",
+              "marginRight": 0,
+              "overflow": "hidden",
+              "width": 16,
+            }
+          }
+        >
+          <Image
+            onError={[Function]}
+            resizeMode="contain"
+            source={1}
+            style={
+              {
+                "height": 16,
+                "width": 16,
+              }
+            }
+            testID="network-avatar-image"
+          />
+        </View>
+      </View>
+      <View
+        alignItems="center"
+        justifyContent="center"
+        style={
+          [
+            {
+              "alignItems": "center",
+              "justifyContent": "center",
+            },
+            {
+              "backgroundColor": "#00000066",
+              "borderRadius": 8,
+              "height": 16,
+              "marginLeft": -8,
+              "width": 16,
+            },
+          ]
+        }
+      >
+        <Text
+          accessibilityRole="text"
+          style={
+            {
+              "color": "#ffffff",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 12,
+              "fontWeight": "400",
+              "letterSpacing": 0.25,
+              "lineHeight": 20,
+            }
+          }
+        >
+          +
+          1
+        </Text>
+      </View>
+    </View>
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      All networks
+    </Text>
+  </View>
+  <SvgMock
+    color="#4459ff"
+    fill="currentColor"
+    height={16}
+    name="ArrowDown"
+    style={
+      {
+        "height": 16,
+        "marginLeft": 8,
+        "width": 16,
+      }
+    }
+    width={16}
+  />
+</TouchableOpacity>
+`;

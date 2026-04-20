@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ApprovalTransactionEditionModal matches the snapshot when visible 1`] = `
+<View
+  testID="modal"
+>
+  <View>
+    <View
+      testID="edit-permission"
+    >
+      <Text>
+        TKN
+      </Text>
+    </View>
+  </View>
+</View>
+`;

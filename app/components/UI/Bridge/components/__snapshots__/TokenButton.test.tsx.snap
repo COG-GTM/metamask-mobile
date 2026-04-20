@@ -1,0 +1,205 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TokenButton matches snapshot with symbol and network info 1`] = `
+<TouchableOpacity>
+  <View
+    alignItems="center"
+    flexDirection="row"
+    gap={4}
+    justifyContent="flex-end"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "gap": 4,
+          "justifyContent": "flex-end",
+        },
+        {
+          "backgroundColor": "#ffffff",
+          "borderRadius": 100,
+          "paddingHorizontal": 12,
+          "paddingVertical": 8,
+          "shadowColor": "#0000001a",
+          "shadowOffset": {
+            "height": 2,
+            "width": 0,
+          },
+          "shadowOpacity": 1,
+          "shadowRadius": 4,
+        },
+      ]
+    }
+  >
+    <View
+      onLayout={[Function]}
+      style={
+        {
+          "alignSelf": "flex-start",
+          "position": "relative",
+        }
+      }
+      testID="badge-wrapper-badge"
+    >
+      <View>
+        <View
+          useNativeDriver={true}
+        >
+          <Image
+            fadeIn={true}
+            onError={[Function]}
+            onLoadEnd={[Function]}
+            source={
+              {
+                "uri": "",
+              }
+            }
+            style={
+              [
+                {
+                  "borderRadius": 12,
+                  "height": 24,
+                  "width": 24,
+                },
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "borderRadius": 16,
+                  "height": 32,
+                  "width": 32,
+                },
+              ]
+            }
+          />
+          <View
+            collapsable={false}
+            style={
+              {
+                "bottom": 0,
+                "left": 0,
+                "opacity": 1,
+                "position": "absolute",
+                "right": 0,
+                "top": 0,
+              }
+            }
+          >
+            <View
+              style={
+                [
+                  {
+                    "borderRadius": 16,
+                    "height": 32,
+                    "width": 32,
+                  },
+                  {
+                    "backgroundColor": "#eee",
+                  },
+                  undefined,
+                ]
+              }
+            />
+          </View>
+        </View>
+      </View>
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "aspectRatio": 1,
+            "bottom": 0,
+            "height": 0,
+            "justifyContent": "center",
+            "position": "absolute",
+            "right": 0,
+            "transform": [
+              {
+                "translateX": 0,
+              },
+              {
+                "translateY": 0,
+              },
+            ],
+          }
+        }
+      >
+        <View
+          onLayout={[Function]}
+          style={
+            {
+              "alignItems": "center",
+              "aspectRatio": 1,
+              "height": "50%",
+              "justifyContent": "center",
+              "maxHeight": 24,
+              "minHeight": 8,
+              "opacity": 0,
+            }
+          }
+          testID="badgenetwork"
+        >
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "backgroundColor": "#f3f5f9",
+                "borderColor": "#ffffff",
+                "borderRadius": 16,
+                "borderWidth": 2,
+                "height": 32,
+                "justifyContent": "center",
+                "overflow": "hidden",
+                "shadowColor": "#0000001a",
+                "shadowOffset": {
+                  "height": 2,
+                  "width": 0,
+                },
+                "shadowOpacity": 1,
+                "shadowRadius": 4,
+                "transform": [
+                  {
+                    "scale": 1,
+                  },
+                ],
+                "width": 32,
+              }
+            }
+          >
+            <Text
+              accessibilityRole="text"
+              style={
+                {
+                  "color": "#121314",
+                  "fontFamily": "CentraNo1-Book",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "letterSpacing": 0,
+                  "lineHeight": 24,
+                }
+              }
+            >
+              E
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 24,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 28,
+        }
+      }
+    >
+      ETH
+    </Text>
+  </View>
+</TouchableOpacity>
+`;

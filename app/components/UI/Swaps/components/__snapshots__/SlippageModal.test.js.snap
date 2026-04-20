@@ -1,0 +1,162 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SlippageModal matches snapshot when visible 1`] = `
+<View>
+  <RCTSafeAreaView
+    style={
+      {
+        "backgroundColor": "#ffffff",
+        "borderTopLeftRadius": 10,
+        "borderTopRightRadius": 10,
+      }
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "borderBottomWidth": 0.5,
+            "borderColor": "#b7bbc866",
+            "height": 33,
+            "justifyContent": "center",
+            "width": "100%",
+          },
+          undefined,
+        ]
+      }
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#b7bbc8",
+            "borderRadius": 4,
+            "height": 5,
+            "width": 48,
+          }
+        }
+      />
+    </View>
+    <View
+      style={
+        {
+          "marginVertical": 14,
+          "paddingHorizontal": 30,
+        }
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            {
+              "textAlign": "center",
+            },
+            undefined,
+            {
+              "fontFamily": "CentraNo1-Bold",
+              "fontWeight": "600",
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+              "color": "#121314",
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+          ]
+        }
+      >
+        Max Slippage
+      </Text>
+      <View
+        style={
+          {
+            "marginVertical": 10,
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "bottom": 30,
+              "left": 10,
+              "position": "absolute",
+              "width": "85%",
+            }
+          }
+        />
+        <View
+          onTouchStart={[Function]}
+          testID="slippage-slider"
+        />
+      </View>
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            {
+              "textAlign": "center",
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+              "fontSize": 12,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+          ]
+        }
+      >
+        If the rate changes between the time your order is placed and confirmed it’s called “slippage”. Your Swap will automatically cancel if slippage exceeds your “max slippage” setting.
+      </Text>
+    </View>
+  </RCTSafeAreaView>
+</View>
+`;

@@ -1,0 +1,898 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TokenSelectModal matches the snapshot when visible 1`] = `
+<View
+  testID="modal"
+>
+  <RCTSafeAreaView
+    style={
+      {
+        "backgroundColor": "#ffffff",
+        "borderTopLeftRadius": 10,
+        "borderTopRightRadius": 10,
+      }
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "borderBottomWidth": 0.5,
+            "borderColor": "#b7bbc866",
+            "height": 33,
+            "justifyContent": "center",
+            "width": "100%",
+          },
+          undefined,
+        ]
+      }
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#b7bbc8",
+            "borderRadius": 4,
+            "height": 5,
+            "width": 48,
+          }
+        }
+      />
+    </View>
+    <Text
+      style={
+        [
+          {
+            "color": "#121314",
+            "fontFamily": "CentraNo1-Book",
+            "fontSize": 30,
+            "fontWeight": "400",
+            "marginVertical": 2,
+          },
+          {
+            "textAlign": "center",
+          },
+          undefined,
+          {
+            "fontFamily": "CentraNo1-Bold",
+            "fontWeight": "600",
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          {
+            "color": "#121314",
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          {
+            "marginBottom": 5,
+            "marginTop": 15,
+          },
+        ]
+      }
+    >
+      Select a token
+    </Text>
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessible={true}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "alignItems": "center",
+          "borderColor": "#b7bbc8",
+          "borderRadius": 5,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "marginHorizontal": 30,
+          "marginVertical": 10,
+          "paddingHorizontal": 5,
+          "paddingVertical": 10,
+        }
+      }
+    >
+      <Text
+        allowFontScaling={false}
+        selectable={false}
+        style={
+          [
+            {
+              "color": undefined,
+              "fontSize": 20,
+            },
+            {
+              "color": "#686e7d",
+              "marginHorizontal": 8,
+            },
+            {
+              "fontFamily": "Ionicons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            {},
+          ]
+        }
+      >
+        
+      </Text>
+      <TextInput
+        keyboardAppearance="light"
+        onChangeText={[Function]}
+        placeholder="Enter token name or paste address"
+        placeholderTextColor="#9ca1af"
+        style={
+          {
+            "color": "#121314",
+            "flex": 1,
+            "fontFamily": "CentraNo1-Book",
+            "fontWeight": "400",
+          }
+        }
+        testID="swaps-search-token"
+        value=""
+      />
+    </View>
+    <RCTScrollView
+      ListEmptyComponent={
+        <View
+          style={
+            {
+              "marginHorizontal": 30,
+              "marginVertical": 10,
+            }
+          }
+        >
+          <Text>
+            No tokens match “”
+          </Text>
+        </View>
+      }
+      ListFooterComponent={
+        <TouchableWithoutFeedback>
+          <Alert
+            renderIcon={[Function]}
+          >
+            [Function]
+          </Alert>
+        </TouchableWithoutFeedback>
+      }
+      ListFooterComponentStyle={
+        [
+          {
+            "borderColor": "#b7bbc866",
+            "borderTopWidth": 0.5,
+          },
+          {
+            "padding": 30,
+          },
+        ]
+      }
+      collapsable={false}
+      data={
+        [
+          {
+            "address": "0xaaa",
+            "decimals": 18,
+            "name": "Alpha",
+            "symbol": "AAA",
+          },
+          {
+            "address": "0xbbb",
+            "decimals": 18,
+            "name": "Beta",
+            "symbol": "BBB",
+          },
+        ]
+      }
+      getItem={[Function]}
+      getItemCount={[Function]}
+      keyExtractor={[Function]}
+      keyboardDismissMode="none"
+      keyboardShouldPersistTaps="always"
+      onContentSizeChange={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onLayout={[Function]}
+      onMomentumScrollBegin={[Function]}
+      onMomentumScrollEnd={[Function]}
+      onScroll={[Function]}
+      onScrollBeginDrag={[Function]}
+      onScrollEndDrag={[Function]}
+      removeClippedSubviews={false}
+      renderItem={[Function]}
+      renderScrollComponent={[Function]}
+      scrollEventThrottle={0.0001}
+      stickyHeaderIndices={[]}
+      style={
+        {
+          "height": 280,
+          "marginTop": 10,
+        }
+      }
+      viewabilityConfigCallbackPairs={[]}
+    >
+      <View>
+        <View
+          onFocusCapture={[Function]}
+          onLayout={[Function]}
+          style={null}
+        >
+          <TouchableOpacity
+            onPress={[Function]}
+            style={
+              {
+                "borderColor": "#b7bbc866",
+                "borderTopWidth": 0.5,
+              }
+            }
+          >
+            <View
+              style={
+                [
+                  {
+                    "padding": 15,
+                  },
+                  undefined,
+                ]
+              }
+            >
+              <View
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "flexDirection": "row",
+                    },
+                    undefined,
+                  ]
+                }
+              >
+                <View
+                  style={
+                    [
+                      {
+                        "alignItems": "center",
+                        "flexDirection": "row",
+                        "marginRight": 15,
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  <View
+                    testID="token-icon"
+                  />
+                </View>
+                <View
+                  style={
+                    [
+                      {
+                        "flex": 1,
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  <Text
+                    style={
+                      [
+                        {
+                          "color": "#121314",
+                          "fontFamily": "CentraNo1-Book",
+                          "fontSize": 30,
+                          "fontWeight": "400",
+                          "marginVertical": 2,
+                        },
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        [
+                          {
+                            "color": "#121314",
+                            "fontSize": 15,
+                          },
+                          undefined,
+                        ],
+                      ]
+                    }
+                  >
+                    AAA
+                  </Text>
+                  <Text
+                    style={
+                      [
+                        {
+                          "color": "#121314",
+                          "fontFamily": "CentraNo1-Book",
+                          "fontSize": 30,
+                          "fontWeight": "400",
+                          "marginVertical": 2,
+                        },
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                      ]
+                    }
+                  >
+                    Alpha
+                  </Text>
+                </View>
+                <View
+                  style={
+                    [
+                      {
+                        "alignItems": "flex-end",
+                        "flex": 0.6,
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  <Text
+                    style={
+                      [
+                        {
+                          "color": "#121314",
+                          "fontFamily": "CentraNo1-Book",
+                          "fontSize": 30,
+                          "fontWeight": "400",
+                          "marginVertical": 2,
+                        },
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        [
+                          {
+                            "color": "#121314",
+                            "fontSize": 15,
+                          },
+                          undefined,
+                        ],
+                      ]
+                    }
+                  />
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View
+          onFocusCapture={[Function]}
+          onLayout={[Function]}
+          style={null}
+        >
+          <TouchableOpacity
+            onPress={[Function]}
+            style={
+              {
+                "borderColor": "#b7bbc866",
+                "borderTopWidth": 0.5,
+              }
+            }
+          >
+            <View
+              style={
+                [
+                  {
+                    "padding": 15,
+                  },
+                  undefined,
+                ]
+              }
+            >
+              <View
+                style={
+                  [
+                    {
+                      "alignItems": "center",
+                      "flexDirection": "row",
+                    },
+                    undefined,
+                  ]
+                }
+              >
+                <View
+                  style={
+                    [
+                      {
+                        "alignItems": "center",
+                        "flexDirection": "row",
+                        "marginRight": 15,
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  <View
+                    testID="token-icon"
+                  />
+                </View>
+                <View
+                  style={
+                    [
+                      {
+                        "flex": 1,
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  <Text
+                    style={
+                      [
+                        {
+                          "color": "#121314",
+                          "fontFamily": "CentraNo1-Book",
+                          "fontSize": 30,
+                          "fontWeight": "400",
+                          "marginVertical": 2,
+                        },
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        [
+                          {
+                            "color": "#121314",
+                            "fontSize": 15,
+                          },
+                          undefined,
+                        ],
+                      ]
+                    }
+                  >
+                    BBB
+                  </Text>
+                  <Text
+                    style={
+                      [
+                        {
+                          "color": "#121314",
+                          "fontFamily": "CentraNo1-Book",
+                          "fontSize": 30,
+                          "fontWeight": "400",
+                          "marginVertical": 2,
+                        },
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                      ]
+                    }
+                  >
+                    Beta
+                  </Text>
+                </View>
+                <View
+                  style={
+                    [
+                      {
+                        "alignItems": "flex-end",
+                        "flex": 0.6,
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  <Text
+                    style={
+                      [
+                        {
+                          "color": "#121314",
+                          "fontFamily": "CentraNo1-Book",
+                          "fontSize": 30,
+                          "fontWeight": "400",
+                          "marginVertical": 2,
+                        },
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        [
+                          {
+                            "color": "#121314",
+                            "fontSize": 15,
+                          },
+                          undefined,
+                        ],
+                      ]
+                    }
+                  />
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View
+          onLayout={[Function]}
+          style={
+            [
+              {
+                "borderColor": "#b7bbc866",
+                "borderTopWidth": 0.5,
+              },
+              {
+                "padding": 30,
+              },
+            ]
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessible={true}
+            focusable={false}
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              [
+                {
+                  "borderRadius": 8,
+                  "borderWidth": 1,
+                  "flexDirection": "row",
+                  "paddingHorizontal": 12,
+                  "paddingVertical": 8,
+                },
+                undefined,
+                {
+                  "backgroundColor": "#4459ff1a",
+                  "borderColor": "#4459ff",
+                },
+                undefined,
+              ]
+            }
+          >
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                }
+              }
+            >
+              <Text
+                allowFontScaling={false}
+                selectable={false}
+                style={
+                  [
+                    {
+                      "color": "#4459ff",
+                      "fontSize": 15,
+                    },
+                    {
+                      "paddingRight": 8,
+                      "paddingTop": 4,
+                    },
+                    {
+                      "fontFamily": "FontAwesome5Free-Solid",
+                      "fontStyle": "normal",
+                      "fontWeight": "normal",
+                    },
+                    {
+                      "fontWeight": "900",
+                    },
+                  ]
+                }
+              >
+                
+              </Text>
+            </View>
+            <Text
+              style={
+                [
+                  {
+                    "color": "#121314",
+                    "fontFamily": "CentraNo1-Book",
+                    "fontSize": 30,
+                    "fontWeight": "400",
+                    "marginVertical": 2,
+                  },
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  {
+                    "color": "#121314",
+                    "flex": 1,
+                    "fontSize": 14,
+                    "lineHeight": 17,
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  [
+                    false,
+                    undefined,
+                    undefined,
+                    {
+                      "fontFamily": "CentraNo1-Bold",
+                      "fontWeight": "600",
+                    },
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                  ]
+                }
+              >
+                Can’t find a token?
+              </Text>
+               Manually add a token by pasting its address.
+              <Text
+                style={
+                  [
+                    false,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                  ]
+                }
+              >
+                 Token contract addresses can be found on 
+                <Text
+                  onPress={[Function]}
+                  style={
+                    [
+                      false,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "color": "#4459ff",
+                      },
+                      undefined,
+                      {
+                        "textDecorationLine": "underline",
+                      },
+                      undefined,
+                      undefined,
+                    ]
+                  }
+                >
+                  Etherscan
+                </Text>
+                .
+              </Text>
+            </Text>
+          </View>
+        </View>
+      </View>
+    </RCTScrollView>
+  </RCTSafeAreaView>
+</View>
+`;

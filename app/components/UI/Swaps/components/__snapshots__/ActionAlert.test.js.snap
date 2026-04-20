@@ -1,0 +1,173 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ActionAlert matches snapshot with action and info button 1`] = `
+<View
+  style={
+    [
+      {
+        "borderRadius": 8,
+        "borderWidth": 1,
+        "flexDirection": "row",
+        "paddingHorizontal": 12,
+        "paddingVertical": 8,
+      },
+      {
+        "paddingVertical": 8,
+      },
+      {
+        "backgroundColor": "#9a63001a",
+        "borderColor": "#9a6300",
+      },
+      [
+        undefined,
+        {
+          "marginBottom": 10,
+        },
+      ],
+    ]
+  }
+>
+  <View
+    style={
+      {
+        "flex": 1,
+        "flexDirection": "column",
+      }
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+          },
+        ]
+      }
+    >
+      <Text>
+        Something happened
+      </Text>
+    </View>
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "bottom": -12,
+            "marginBottom": -12,
+            "marginTop": -5,
+          },
+        ]
+      }
+    >
+      <TouchableOpacity
+        onPress={[MockFunction]}
+        style={
+          [
+            {
+              "borderRadius": 100,
+              "paddingHorizontal": 12,
+              "paddingVertical": 6,
+            },
+            {
+              "backgroundColor": "#9a6300",
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            [
+              {
+                "color": "#121314",
+                "fontFamily": "CentraNo1-Book",
+                "fontSize": 30,
+                "fontWeight": "400",
+                "marginVertical": 2,
+              },
+              undefined,
+              undefined,
+              {
+                "fontFamily": "CentraNo1-Bold",
+                "fontWeight": "600",
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              {
+                "color": "#121314",
+              },
+              undefined,
+              undefined,
+              {
+                "fontSize": 12,
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              [
+                false,
+              ],
+            ]
+          }
+        >
+          Retry
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+  <TouchableOpacity
+    hitSlop={
+      {
+        "bottom": 15,
+        "left": 15,
+        "right": 15,
+        "top": 15,
+      }
+    }
+    onPress={[MockFunction]}
+    style={
+      {
+        "position": "absolute",
+        "right": 3,
+        "top": 3,
+      }
+    }
+  >
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": undefined,
+            "fontSize": 16,
+          },
+          {
+            "color": "#9a6300",
+          },
+          {
+            "fontFamily": "Material Icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          {},
+        ]
+      }
+    >
+      
+    </Text>
+  </TouchableOpacity>
+</View>
+`;

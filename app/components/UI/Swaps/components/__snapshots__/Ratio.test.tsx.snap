@@ -1,0 +1,146 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Ratio matches snapshot 1`] = `
+<TouchableOpacity
+  onPress={[Function]}
+>
+  <Text
+    style={
+      [
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 30,
+          "fontWeight": "400",
+          "marginVertical": 2,
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        false,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    1
+     
+    <Text
+      style={
+        [
+          false,
+          undefined,
+          undefined,
+          false,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+        ]
+      }
+    >
+      ETH
+    </Text>
+     
+    = 
+    2.0000000000
+     
+    <Text
+      style={
+        [
+          false,
+          undefined,
+          undefined,
+          false,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+        ]
+      }
+    >
+      USDC
+    </Text>
+     
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": undefined,
+            "fontSize": 12,
+          },
+          {
+            "color": "#4459ff",
+            "fontSize": 12,
+            "margin": 3,
+          },
+          {
+            "fontFamily": "FontAwesome5Free-Solid",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          {
+            "fontWeight": "900",
+          },
+        ]
+      }
+    >
+      
+    </Text>
+  </Text>
+</TouchableOpacity>
+`;

@@ -1,0 +1,325 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Onboarding matches the snapshot 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "flex": 1,
+      "justifyContent": "space-between",
+      "paddingHorizontal": 25,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "flex": 1,
+        "justifyContent": "center",
+        "marginVertical": 14,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+        }
+      }
+    >
+      <Image
+        source={1}
+      />
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            {
+              "textAlign": "center",
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+              "color": "#121314",
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+              "color": "#121314",
+              "fontSize": 24,
+              "marginBottom": 24,
+              "marginHorizontal": 15,
+            },
+          ]
+        }
+      >
+        Get the 
+        <Text
+          style={
+            [
+              false,
+              undefined,
+              undefined,
+              {
+                "fontFamily": "CentraNo1-Bold",
+                "fontWeight": "600",
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+            ]
+          }
+        >
+          best price
+        </Text>
+         from the 
+        <Text
+          style={
+            [
+              false,
+              undefined,
+              undefined,
+              {
+                "fontFamily": "CentraNo1-Bold",
+                "fontWeight": "600",
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+            ]
+          }
+        >
+          top liquidity
+        </Text>
+         sources.
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            {
+              "textAlign": "center",
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+              "color": "#121314",
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+          ]
+        }
+      >
+        Find the 
+        <Text
+          style={
+            [
+              false,
+              undefined,
+              undefined,
+              {
+                "fontFamily": "CentraNo1-Bold",
+                "fontWeight": "600",
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+            ]
+          }
+        >
+          best swap
+        </Text>
+         
+        across...
+      </Text>
+      <Image
+        source={1}
+        style={
+          {
+            "height": 110,
+            "marginVertical": 14,
+            "width": 300,
+          }
+        }
+      />
+    </View>
+    <View
+      style={
+        {
+          "marginVertical": 14,
+        }
+      }
+    >
+      <TouchableOpacity
+        onPress={[Function]}
+        style={
+          {
+            "paddingVertical": 8,
+          }
+        }
+      >
+        <Text
+          style={
+            [
+              {
+                "color": "#121314",
+                "fontFamily": "CentraNo1-Book",
+                "fontSize": 30,
+                "fontWeight": "400",
+                "marginVertical": 2,
+              },
+              {
+                "textAlign": "center",
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              {
+                "color": "#4459ff",
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+            ]
+          }
+        >
+          Review our official contracts audit
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "paddingBottom": 0,
+        "width": "100%",
+      }
+    }
+  >
+    <TouchableOpacity
+      onPress={[Function]}
+    >
+      <Text>
+        Start swapping
+      </Text>
+    </TouchableOpacity>
+  </View>
+</View>
+`;
