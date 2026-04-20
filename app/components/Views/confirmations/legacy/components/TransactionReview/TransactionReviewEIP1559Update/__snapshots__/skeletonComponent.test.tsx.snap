@@ -1,0 +1,81 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SkeletonComponent matches snapshot when noStyle is true 1`] = `
+<View
+  style={
+    [
+      false,
+    ]
+  }
+>
+  <View
+    onLayout={[Function]}
+  >
+    <View
+      style={
+        {
+          "position": "relative",
+        }
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "borderRadius": 4,
+              "height": 10,
+              "width": 60,
+            },
+            {
+              "backgroundColor": "#E1E9EE",
+              "overflow": "hidden",
+            },
+          ]
+        }
+      />
+    </View>
+  </View>
+</View>
+`;
+
+exports[`SkeletonComponent matches snapshot with default styling 1`] = `
+<View
+  style={
+    [
+      {
+        "flex": 1,
+        "flexDirection": "row",
+        "justifyContent": "flex-end",
+      },
+    ]
+  }
+>
+  <View
+    onLayout={[Function]}
+  >
+    <View
+      style={
+        {
+          "position": "relative",
+        }
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "borderRadius": 4,
+              "height": 10,
+              "width": 120,
+            },
+            {
+              "backgroundColor": "#E1E9EE",
+              "overflow": "hidden",
+            },
+          ]
+        }
+      />
+    </View>
+  </View>
+</View>
+`;
