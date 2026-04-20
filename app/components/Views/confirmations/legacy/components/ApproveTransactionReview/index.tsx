@@ -577,10 +577,44 @@ const ApproveTransactionReview = (props: Props) => {
       setSpendLimitCustomValue(minTokenAllowance);
       setUnroundedAccountBalance(unroundedBalance);
 
+      // Build analytics params inline using local variables to avoid stale closure
+      // (getAnalyticsParams() would read from initial state since useEffect has [] deps)
+      const isDapp = !Object.values(AppConstants.DEEPLINKS).includes(
+        transaction?.origin,
+      );
+      const initAnalyticsParams = {
+        account_type: from
+          ? getAddressAccountType(from)
+          : 'unknown',
+        dapp_host_name: origin || 'unknown',
+        chain_id: chainId ? getDecimalChainId(chainId) : 'unknown',
+        active_currency: {
+          value: tokenSymbol || 'N/A',
+          anonymous: true,
+        },
+        number_tokens_requested: {
+          value: approveAmount || '0',
+          anonymous: true,
+        },
+        unlimited_permission_requested:
+          decodedEncodedHexAmount === UINT256_HEX_MAX_VALUE,
+        referral_type: isDapp ? 'dapp' : origin,
+        request_source: originIsMMSDKRemoteConn
+          ? AppConstants.REQUEST_SOURCES.SDK_REMOTE_CONN
+          : originIsWalletConnectRef.current
+            ? AppConstants.REQUEST_SOURCES.WC
+            : AppConstants.REQUEST_SOURCES.IN_APP_BROWSER,
+        is_smart_transaction: shouldUseSmartTransaction || false,
+      };
+
+      if (onSetAnalyticsParams) {
+        onSetAnalyticsParams(initAnalyticsParams);
+      }
+
       metrics.trackEvent(
         metrics
           .createEventBuilder(MetaMetricsEvents.APPROVAL_STARTED)
-          .addProperties(getAnalyticsParams())
+          .addProperties(initAnalyticsParams)
           .build(),
       );
 
