@@ -343,6 +343,8 @@ const ApproveTransactionReview = (props: Props) => {
 
   const getStyles = useCallback(() => createStyles(colors), [colors]);
 
+  const fetchEstimatedL1FeeRef = useRef<() => Promise<void>>();
+
   const fetchEstimatedL1Fee = useCallback(async () => {
     if (!transaction?.transaction) {
       return;
@@ -361,6 +363,11 @@ const ApproveTransactionReview = (props: Props) => {
       setMultiLayerL1FeeTotal('0x0');
     }
   }, [transaction, chainId]);
+
+  // Keep the ref updated so setInterval always calls the latest closure
+  useEffect(() => {
+    fetchEstimatedL1FeeRef.current = fetchEstimatedL1Fee;
+  }, [fetchEstimatedL1Fee]);
 
   const getAnalyticsParams = useCallback(() => {
     const baseParams = {
@@ -621,7 +628,7 @@ const ApproveTransactionReview = (props: Props) => {
       if (isMultiLayerFeeNetwork(chainId)) {
         fetchEstimatedL1Fee();
         intervalIdForEstimatedL1Fee = setInterval(
-          fetchEstimatedL1Fee,
+          () => fetchEstimatedL1FeeRef.current?.(),
           POLLING_INTERVAL_ESTIMATED_L1_FEE,
         );
       }
