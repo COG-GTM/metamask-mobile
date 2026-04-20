@@ -1,0 +1,360 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SkeletonQuote renders a reduced layout when \`collapsed\` is set 1`] = `
+<TouchableOpacity
+  accessible={false}
+  disabled={true}
+>
+  <View
+    style={
+      [
+        {
+          "borderColor": "#b7bbc8",
+          "borderRadius": 8,
+          "borderWidth": 1.5,
+          "padding": 16,
+        },
+        undefined,
+        undefined,
+        {
+          "padding": 0,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 16,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": -1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "paddingRight": 100,
+                },
+                undefined,
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "alignItems": "flex-end",
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "width": "30%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+      </View>
+    </View>
+  </View>
+</TouchableOpacity>
+`;
+
+exports[`SkeletonQuote renders the expanded layout by default 1`] = `
+<TouchableOpacity
+  accessible={false}
+  disabled={true}
+>
+  <View
+    style={
+      [
+        {
+          "borderColor": "#b7bbc8",
+          "borderRadius": 8,
+          "borderWidth": 1.5,
+          "padding": 16,
+        },
+        undefined,
+        undefined,
+        {
+          "padding": 0,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 16,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": -1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "paddingRight": 100,
+                },
+                undefined,
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "alignItems": "flex-end",
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "width": "30%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+      </View>
+    </View>
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 16,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                {
+                  "padding": 8,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "alignItems": "flex-end",
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                {
+                  "padding": 8,
+                },
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "width": "30%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+      </View>
+    </View>
+  </View>
+</TouchableOpacity>
+`;

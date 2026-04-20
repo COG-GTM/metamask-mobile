@@ -1,0 +1,806 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LoadingNetworksSkeleton renders a column of skeleton rows 1`] = `
+[
+  <View
+    style={
+      [
+        {
+          "marginVertical": 8,
+        },
+        {
+          "marginTop": 0,
+        },
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 0,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                {
+                  "width": "75%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "alignItems": "flex-end",
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "width": "30%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+      </View>
+    </View>
+  </View>,
+  <View
+    style={
+      [
+        {
+          "marginVertical": 8,
+        },
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 0,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                {
+                  "width": "75%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "alignItems": "flex-end",
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "width": "30%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+      </View>
+    </View>
+  </View>,
+  <View
+    style={
+      [
+        {
+          "marginVertical": 8,
+        },
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 0,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                {
+                  "width": "75%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "alignItems": "flex-end",
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "width": "30%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+      </View>
+    </View>
+  </View>,
+  <View
+    style={
+      [
+        {
+          "marginVertical": 8,
+        },
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 0,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                {
+                  "width": "75%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "alignItems": "flex-end",
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "width": "30%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+      </View>
+    </View>
+  </View>,
+  <View
+    style={
+      [
+        {
+          "marginVertical": 8,
+        },
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 0,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                {
+                  "width": "75%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "alignItems": "flex-end",
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "width": "30%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+      </View>
+    </View>
+  </View>,
+  <View
+    style={
+      [
+        {
+          "marginVertical": 8,
+        },
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 0,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                {
+                  "width": "75%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "alignItems": "flex-end",
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "width": "30%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+      </View>
+    </View>
+  </View>,
+  <View
+    style={
+      [
+        {
+          "marginVertical": 8,
+        },
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 0,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                {
+                  "width": "75%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "alignItems": "flex-end",
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 30,
+                  "padding": 14,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "width": "30%",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          />
+        </View>
+      </View>
+    </View>
+  </View>,
+]
+`;

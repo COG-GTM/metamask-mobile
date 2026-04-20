@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Row renders children inside a View 1`] = `
+<View
+  style={
+    [
+      {
+        "marginVertical": 8,
+      },
+      undefined,
+      undefined,
+      undefined,
+    ]
+  }
+>
+  <Text>
+    row-child
+  </Text>
+</View>
+`;
+
+exports[`Row renders with the \`first\` and \`last\` modifiers without crashing 1`] = `
+<View
+  style={
+    [
+      {
+        "marginVertical": 8,
+      },
+      {
+        "marginTop": 0,
+      },
+      {
+        "marginBottom": 0,
+      },
+      undefined,
+    ]
+  }
+>
+  <Text>
+    modifier-child
+  </Text>
+</View>
+`;

@@ -1,0 +1,472 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PaymentMethod renders a logo container when the payment has a logo bucket 1`] = `
+<TouchableOpacity
+  accessible={false}
+  disabled={true}
+>
+  <View
+    style={
+      [
+        {
+          "borderColor": "#b7bbc8",
+          "borderRadius": 8,
+          "borderWidth": 1.5,
+          "padding": 16,
+        },
+        undefined,
+        undefined,
+        {
+          "padding": 0,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 16,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": -1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 6,
+                  "height": 38,
+                  "justifyContent": "center",
+                  "width": 38,
+                },
+                {
+                  "borderRadius": 4.8,
+                  "height": 32,
+                  "width": 32,
+                },
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <Text
+            accessibilityRole="text"
+            style={
+              {
+                "color": "#121314",
+                "fontFamily": "CentraNo1-Medium",
+                "fontSize": 18,
+                "fontWeight": "500",
+                "letterSpacing": 0,
+                "lineHeight": 24,
+                "marginBottom": 4,
+              }
+            }
+          >
+            Debit / Credit card
+          </Text>
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "flex": -1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              {
+                "flexDirection": "row",
+              }
+            }
+          />
+        </View>
+      </View>
+      <View
+        style={
+          {
+            "marginTop": 0,
+          }
+        }
+      >
+        <View
+          style={
+            [
+              {
+                "backgroundColor": "#b7bbc866",
+                "height": 1,
+                "marginVertical": 12,
+              },
+              {
+                "height": 0,
+                "marginVertical": 6,
+              },
+            ]
+          }
+        />
+        <Text
+          accessibilityRole="text"
+          style={
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 14,
+              "fontWeight": "400",
+              "letterSpacing": 0,
+              "lineHeight": 22,
+            }
+          }
+        >
+          <Text
+            allowFontScaling={false}
+            selectable={false}
+            style={
+              [
+                {
+                  "color": undefined,
+                  "fontSize": 12,
+                },
+                undefined,
+                {
+                  "fontFamily": "Feather",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                {},
+              ]
+            }
+          >
+            
+          </Text>
+           
+          Less than 5 mins
+           •
+           
+          <Text
+            accessibilityRole="text"
+            style={
+              {
+                "color": "#121314",
+                "fontFamily": "CentraNo1-Book",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "letterSpacing": 0,
+                "lineHeight": 24,
+              }
+            }
+          >
+            $
+          </Text>
+          <Text
+            accessibilityRole="text"
+            style={
+              {
+                "color": "#9ca1af",
+                "fontFamily": "CentraNo1-Book",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "letterSpacing": 0,
+                "lineHeight": 24,
+              }
+            }
+          >
+            $
+          </Text>
+          <Text
+            accessibilityRole="text"
+            style={
+              {
+                "color": "#9ca1af",
+                "fontFamily": "CentraNo1-Book",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "letterSpacing": 0,
+                "lineHeight": 24,
+              }
+            }
+          >
+            $
+          </Text>
+           
+          lowest buy limit
+        </Text>
+      </View>
+    </View>
+  </View>
+</TouchableOpacity>
+`;
+
+exports[`PaymentMethod renders the payment method name and matches the snapshot 1`] = `
+<TouchableOpacity
+  accessibilityRole="button"
+  accessible={true}
+  disabled={false}
+  onPress={[MockFunction]}
+>
+  <View
+    style={
+      [
+        {
+          "borderColor": "#b7bbc8",
+          "borderRadius": 8,
+          "borderWidth": 1.5,
+          "padding": 16,
+        },
+        undefined,
+        undefined,
+        {
+          "padding": 0,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityRole="none"
+      accessible={true}
+      style={
+        {
+          "padding": 16,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flex": -1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "backgroundColor": "#f3f5f9",
+                  "borderRadius": 6,
+                  "height": 38,
+                  "justifyContent": "center",
+                  "width": 38,
+                },
+                undefined,
+              ]
+            }
+          />
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+          testID="listitemcolumn"
+        >
+          <Text
+            accessibilityRole="text"
+            style={
+              {
+                "color": "#121314",
+                "fontFamily": "CentraNo1-Medium",
+                "fontSize": 18,
+                "fontWeight": "500",
+                "letterSpacing": 0,
+                "lineHeight": 24,
+                "marginBottom": 4,
+              }
+            }
+          >
+            Debit / Credit card
+          </Text>
+        </View>
+        <View
+          accessible={false}
+          style={
+            {
+              "width": 16,
+            }
+          }
+          testID="listitem-gap"
+        />
+        <View
+          style={
+            {
+              "flex": -1,
+            }
+          }
+          testID="listitemcolumn"
+        />
+      </View>
+      <View
+        style={
+          {
+            "marginTop": 0,
+          }
+        }
+      >
+        <View
+          style={
+            [
+              {
+                "backgroundColor": "#b7bbc866",
+                "height": 1,
+                "marginVertical": 12,
+              },
+              undefined,
+            ]
+          }
+        />
+        <Text
+          accessibilityRole="text"
+          style={
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 14,
+              "fontWeight": "400",
+              "letterSpacing": 0,
+              "lineHeight": 22,
+            }
+          }
+        >
+          <Text
+            allowFontScaling={false}
+            selectable={false}
+            style={
+              [
+                {
+                  "color": undefined,
+                  "fontSize": 12,
+                },
+                undefined,
+                {
+                  "fontFamily": "Feather",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                {},
+              ]
+            }
+          >
+            
+          </Text>
+           
+          Less than 5 mins
+           •
+           
+          <Text
+            accessibilityRole="text"
+            style={
+              {
+                "color": "#121314",
+                "fontFamily": "CentraNo1-Book",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "letterSpacing": 0,
+                "lineHeight": 24,
+              }
+            }
+          >
+            $
+          </Text>
+          <Text
+            accessibilityRole="text"
+            style={
+              {
+                "color": "#9ca1af",
+                "fontFamily": "CentraNo1-Book",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "letterSpacing": 0,
+                "lineHeight": 24,
+              }
+            }
+          >
+            $
+          </Text>
+          <Text
+            accessibilityRole="text"
+            style={
+              {
+                "color": "#9ca1af",
+                "fontFamily": "CentraNo1-Book",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "letterSpacing": 0,
+                "lineHeight": 24,
+              }
+            }
+          >
+            $
+          </Text>
+           
+          lowest buy limit
+        </Text>
+      </View>
+    </View>
+  </View>
+</TouchableOpacity>
+`;

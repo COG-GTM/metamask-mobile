@@ -1,0 +1,235 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DownChevronText renders the provided text 1`] = `
+<View>
+  <Text
+    style={
+      [
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 30,
+          "fontWeight": "400",
+          "marginVertical": 2,
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {
+          "color": "#121314",
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {
+          "color": "#121314",
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    <Text
+      style={
+        [
+          {
+            "color": "#121314",
+            "fontFamily": "CentraNo1-Book",
+            "fontSize": 30,
+            "fontWeight": "400",
+            "marginVertical": 2,
+          },
+          undefined,
+          undefined,
+          {
+            "fontFamily": "CentraNo1-Bold",
+            "fontWeight": "600",
+          },
+          undefined,
+          {
+            "color": "#121314",
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          {
+            "color": "#121314",
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+        ]
+      }
+    >
+      USD
+    </Text>
+      
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": undefined,
+            "fontSize": 16,
+          },
+          {
+            "color": "#121314",
+            "marginLeft": 10,
+          },
+          {
+            "fontFamily": "Entypo",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          {},
+        ]
+      }
+    >
+      
+    </Text>
+  </Text>
+</View>
+`;
+
+exports[`DownChevronText renders without text 1`] = `
+<View>
+  <Text
+    style={
+      [
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 30,
+          "fontWeight": "400",
+          "marginVertical": 2,
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {
+          "color": "#121314",
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {
+          "color": "#121314",
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    <Text
+      style={
+        [
+          {
+            "color": "#121314",
+            "fontFamily": "CentraNo1-Book",
+            "fontSize": 30,
+            "fontWeight": "400",
+            "marginVertical": 2,
+          },
+          undefined,
+          undefined,
+          {
+            "fontFamily": "CentraNo1-Bold",
+            "fontWeight": "600",
+          },
+          undefined,
+          {
+            "color": "#121314",
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          {
+            "color": "#121314",
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+        ]
+      }
+    />
+      
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": undefined,
+            "fontSize": 16,
+          },
+          {
+            "color": "#121314",
+            "marginLeft": 10,
+          },
+          {
+            "fontFamily": "Entypo",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          {},
+        ]
+      }
+    >
+      
+    </Text>
+  </Text>
+</View>
+`;

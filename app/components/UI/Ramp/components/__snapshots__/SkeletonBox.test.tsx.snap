@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SkeletonBox merges additional style prop 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "#f3f5f9",
+        "borderRadius": 6,
+        "padding": 18,
+      },
+      {
+        "marginTop": 12,
+      },
+    ]
+  }
+/>
+`;
+
+exports[`SkeletonBox renders with default styles 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "#f3f5f9",
+        "borderRadius": 6,
+        "padding": 18,
+      },
+      undefined,
+    ]
+  }
+/>
+`;

@@ -1,0 +1,257 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AmountInput renders with label, currency symbol and amount 1`] = `
+[
+  <Text
+    accessibilityRole="text"
+    style={
+      {
+        "color": "#121314",
+        "fontFamily": "CentraNo1-Book",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "letterSpacing": 0,
+        "lineHeight": 24,
+        "marginVertical": 8,
+      }
+    }
+    testID="label"
+  >
+    You pay
+  </Text>,
+  <TouchableOpacity
+    accessible={false}
+    disabled={true}
+  >
+    <View
+      style={
+        [
+          {
+            "borderColor": "#b7bbc8",
+            "borderRadius": 8,
+            "borderWidth": 1.5,
+            "padding": 16,
+          },
+          undefined,
+          undefined,
+          {
+            "padding": 0,
+          },
+          undefined,
+        ]
+      }
+    >
+      <View
+        accessibilityRole="none"
+        accessible={true}
+        style={
+          {
+            "padding": 16,
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "flex": 1,
+              }
+            }
+            testID="listitemcolumn"
+          >
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessible={true}
+              hitSlop={
+                {
+                  "bottom": 20,
+                  "left": 20,
+                  "right": 20,
+                  "top": 20,
+                }
+              }
+              testID="amount-input"
+            >
+              <Text
+                accessibilityRole="text"
+                adjustsFontSizeToFit={true}
+                numberOfLines={1}
+                style={
+                  {
+                    "color": "#121314",
+                    "fontFamily": "CentraNo1-Medium",
+                    "fontSize": 24,
+                    "fontWeight": "500",
+                    "letterSpacing": 0,
+                    "lineHeight": 32,
+                  }
+                }
+              >
+                $
+                100
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View
+            accessible={false}
+            style={
+              {
+                "width": 16,
+              }
+            }
+            testID="listitem-gap"
+          />
+          <View
+            style={
+              {
+                "flex": 0,
+                "marginLeft": 8,
+              }
+            }
+            testID="listitemcolumn"
+          >
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessible={true}
+              disabled={false}
+              hitSlop={
+                {
+                  "bottom": 20,
+                  "left": 20,
+                  "right": 20,
+                  "top": 20,
+                }
+              }
+              onPress={[MockFunction]}
+              testID="select-currency"
+            >
+              <View>
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#121314",
+                        "fontFamily": "CentraNo1-Book",
+                        "fontSize": 30,
+                        "fontWeight": "400",
+                        "marginVertical": 2,
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "color": "#121314",
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      {
+                        "color": "#121314",
+                      },
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                      undefined,
+                    ]
+                  }
+                >
+                  <Text
+                    style={
+                      [
+                        {
+                          "color": "#121314",
+                          "fontFamily": "CentraNo1-Book",
+                          "fontSize": 30,
+                          "fontWeight": "400",
+                          "marginVertical": 2,
+                        },
+                        undefined,
+                        undefined,
+                        {
+                          "fontFamily": "CentraNo1-Bold",
+                          "fontWeight": "600",
+                        },
+                        undefined,
+                        {
+                          "color": "#121314",
+                        },
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        {
+                          "color": "#121314",
+                        },
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                      ]
+                    }
+                  >
+                    USD
+                  </Text>
+                    
+                  <Text
+                    allowFontScaling={false}
+                    selectable={false}
+                    style={
+                      [
+                        {
+                          "color": undefined,
+                          "fontSize": 16,
+                        },
+                        {
+                          "color": "#121314",
+                          "marginLeft": 10,
+                        },
+                        {
+                          "fontFamily": "Entypo",
+                          "fontStyle": "normal",
+                          "fontWeight": "normal",
+                        },
+                        {},
+                      ]
+                    }
+                  >
+                    
+                  </Text>
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </View>
+  </TouchableOpacity>,
+]
+`;

@@ -1,0 +1,259 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RegionAlert renders the title, subtitle, body, and link 1`] = `
+<View>
+  <TouchableOpacity
+    accessible={false}
+    disabled={true}
+  >
+    <View
+      style={
+        [
+          {
+            "borderColor": "#b7bbc8",
+            "borderRadius": 8,
+            "borderWidth": 1.5,
+            "padding": 16,
+          },
+          undefined,
+          undefined,
+          undefined,
+          {
+            "backgroundColor": "#ffffff",
+            "borderWidth": 0,
+            "paddingBottom": 20,
+            "paddingHorizontal": 20,
+          },
+        ]
+      }
+    >
+      <TouchableOpacity
+        style={
+          {
+            "alignSelf": "flex-end",
+          }
+        }
+      >
+        <Text
+          allowFontScaling={false}
+          selectable={false}
+          style={
+            [
+              {
+                "color": "#121314",
+                "fontSize": 17,
+              },
+              undefined,
+              {
+                "fontFamily": "EvilIcons",
+                "fontStyle": "normal",
+                "fontWeight": "normal",
+              },
+              {},
+            ]
+          }
+        >
+          
+        </Text>
+      </TouchableOpacity>
+      <View
+        style={
+          {
+            "paddingVertical": 10,
+          }
+        }
+      >
+        <Text
+          style={
+            [
+              {
+                "color": "#121314",
+                "fontFamily": "CentraNo1-Book",
+                "fontSize": 30,
+                "fontWeight": "400",
+                "marginVertical": 2,
+              },
+              undefined,
+              undefined,
+              {
+                "fontFamily": "CentraNo1-Bold",
+                "fontWeight": "600",
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              {
+                "color": "#121314",
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              {
+                "fontSize": 18,
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+            ]
+          }
+        >
+          Unsupported
+        </Text>
+        <Text
+          style={
+            [
+              {
+                "color": "#121314",
+                "fontFamily": "CentraNo1-Book",
+                "fontSize": 30,
+                "fontWeight": "400",
+                "marginVertical": 2,
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              {
+                "color": "#121314",
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              {
+                "color": "#121314",
+              },
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+            ]
+          }
+        >
+          Sorry
+        </Text>
+        <View
+          style={
+            {
+              "paddingVertical": 10,
+            }
+          }
+        >
+          <Text
+            style={
+              [
+                {
+                  "color": "#121314",
+                  "fontFamily": "CentraNo1-Book",
+                  "fontSize": 30,
+                  "fontWeight": "400",
+                  "marginVertical": 2,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "fontSize": 12,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          >
+            Your region is not supported
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={[Function]}
+        >
+          <Text
+            style={
+              [
+                {
+                  "color": "#121314",
+                  "fontFamily": "CentraNo1-Book",
+                  "fontSize": 30,
+                  "fontWeight": "400",
+                  "marginVertical": 2,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "color": "#4459ff",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "fontSize": 12,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "textDecorationLine": "underline",
+                },
+                undefined,
+                {
+                  "paddingBottom": 20,
+                },
+              ]
+            }
+          >
+            Learn more
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </TouchableOpacity>
+</View>
+`;

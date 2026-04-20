@@ -1,0 +1,62 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Checkout renders the SDK error view when sdkError is present 1`] = `
+<RCTSafeAreaView
+  style={
+    {
+      "flex": 1,
+    }
+  }
+>
+  <View
+    style={
+      [
+        {
+          "backgroundColor": "#ffffff",
+          "flex": 1,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          undefined,
+        ]
+      }
+    >
+      <ErrorViewWithReporting
+        error={[Error: SDK down]}
+        location="Provider Webview"
+      />
+    </View>
+  </View>
+</RCTSafeAreaView>
+`;
+
+exports[`Checkout renders the webview when a uri is supplied 1`] = `
+<View
+  style={
+    {
+      "flex": 1,
+    }
+  }
+>
+  <View
+    allowsInlineMediaPlayback={true}
+    enableApplePay={true}
+    mediaPlaybackRequiresUserAction={false}
+    onHttpError={[Function]}
+    onNavigationStateChange={[Function]}
+    source={
+      {
+        "uri": "https://provider.example/pay",
+      }
+    }
+  />
+</View>
+`;

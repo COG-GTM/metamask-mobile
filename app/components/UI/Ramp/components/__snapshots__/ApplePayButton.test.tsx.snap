@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ApplePayButton renders the provided label 1`] = `
+<TouchableOpacity
+  onPress={[MockFunction]}
+>
+  <Text>
+    <Text
+      style={
+        [
+          {
+            "color": "#121314",
+            "fontFamily": "CentraNo1-Book",
+            "fontSize": 30,
+            "fontWeight": "400",
+            "marginVertical": 2,
+          },
+          {
+            "textAlign": "center",
+          },
+          undefined,
+          {
+            "fontFamily": "CentraNo1-Bold",
+            "fontWeight": "600",
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [
+            {
+              "color": "#FFFFFF",
+            },
+          ],
+        ]
+      }
+    >
+      Pay
+    </Text>
+     
+    <Image
+      source={1}
+      style={
+        [
+          {
+            "marginLeft": 4,
+          },
+          undefined,
+        ]
+      }
+    />
+  </Text>
+</TouchableOpacity>
+`;

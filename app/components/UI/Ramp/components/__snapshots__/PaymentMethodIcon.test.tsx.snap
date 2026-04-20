@@ -1,0 +1,145 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PaymentMethodIcon falls back to payment type when the provided icon name is unknown 1`] = `
+<Text
+  allowFontScaling={false}
+  selectable={false}
+  style={
+    [
+      {
+        "color": undefined,
+        "fontSize": 24,
+      },
+      undefined,
+      {
+        "fontFamily": "FontAwesome",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      {},
+    ]
+  }
+>
+  
+</Text>
+`;
+
+exports[`PaymentMethodIcon renders an icon from the provided paymentMethodIcons when it exists in the glyph map 1`] = `
+<Text
+  allowFontScaling={false}
+  selectable={false}
+  style={
+    [
+      {
+        "color": undefined,
+        "fontSize": 24,
+      },
+      undefined,
+      {
+        "fontFamily": "simple-line-icons",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      {},
+    ]
+  }
+>
+  
+</Text>
+`;
+
+exports[`PaymentMethodIcon renders the apple icon for ApplePay payment type 1`] = `
+<Text
+  allowFontScaling={false}
+  selectable={false}
+  style={
+    [
+      {
+        "color": undefined,
+        "fontSize": 24,
+      },
+      undefined,
+      {
+        "fontFamily": "FontAwesome",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      {},
+    ]
+  }
+>
+  
+</Text>
+`;
+
+exports[`PaymentMethodIcon renders the bank icon for BankTransfer payment type 1`] = `
+<Text
+  allowFontScaling={false}
+  selectable={false}
+  style={
+    [
+      {
+        "color": undefined,
+        "fontSize": 24,
+      },
+      undefined,
+      {
+        "fontFamily": "Material Design Icons",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      {},
+    ]
+  }
+>
+  󰁰
+</Text>
+`;
+
+exports[`PaymentMethodIcon renders the card icon for DebitCreditCard payment type 1`] = `
+<Text
+  allowFontScaling={false}
+  selectable={false}
+  style={
+    [
+      {
+        "color": undefined,
+        "fontSize": 24,
+      },
+      undefined,
+      {
+        "fontFamily": "Material Icons",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      {},
+    ]
+  }
+>
+  
+</Text>
+`;
+
+exports[`PaymentMethodIcon renders the default wallet icon when no data is provided 1`] = `
+<Text
+  allowFontScaling={false}
+  selectable={false}
+  style={
+    [
+      {
+        "color": undefined,
+        "fontSize": 24,
+      },
+      undefined,
+      {
+        "fontFamily": "simple-line-icons",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      {},
+    ]
+  }
+>
+  
+</Text>
+`;

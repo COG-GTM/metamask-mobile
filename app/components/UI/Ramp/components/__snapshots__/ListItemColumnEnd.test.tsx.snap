@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ListItemColumnEnd merges an object style prop with the alignEnd style 1`] = `
+<View
+  style={
+    {
+      "alignItems": "flex-end",
+      "flex": -1,
+      "padding": 4,
+    }
+  }
+  testID="listitemcolumn"
+>
+  <Text>
+    styled
+  </Text>
+</View>
+`;
+
+exports[`ListItemColumnEnd renders children end-aligned 1`] = `
+<View
+  style={
+    {
+      "alignItems": "flex-end",
+      "flex": -1,
+    }
+  }
+  testID="listitemcolumn"
+>
+  <Text>
+    end-child
+  </Text>
+</View>
+`;

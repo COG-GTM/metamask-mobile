@@ -1,0 +1,154 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ErrorViewWithReporting renders the error message and a return-home cta 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#ffffff",
+      "flex": 1,
+      "justifyContent": "center",
+    }
+  }
+>
+  <View
+    style={
+      {
+        "marginVertical": 60,
+        "paddingHorizontal": 60,
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "marginVertical": 1,
+        }
+      }
+    >
+      <Text
+        allowFontScaling={false}
+        selectable={false}
+        style={
+          [
+            {
+              "color": undefined,
+              "fontSize": 12,
+            },
+            [
+              {
+                "fontSize": 38,
+                "marginVertical": 4,
+                "textAlign": "center",
+              },
+              {
+                "color": "#ca3542",
+              },
+            ],
+            {
+              "fontFamily": "Material Design Icons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            {},
+          ]
+        }
+      >
+        󰅚
+      </Text>
+    </View>
+    <View
+      style={
+        {
+          "marginVertical": 1,
+        }
+      }
+    >
+      <Text
+        accessibilityRole="text"
+        style={
+          {
+            "color": "#121314",
+            "fontFamily": "CentraNo1-Bold",
+            "fontSize": 18,
+            "fontWeight": "600",
+            "letterSpacing": 0,
+            "lineHeight": 24,
+            "marginVertical": 3,
+            "textAlign": "center",
+          }
+        }
+      >
+        Oops, something went wrong
+      </Text>
+    </View>
+    <View
+      style={
+        {
+          "marginVertical": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            {
+              "textAlign": "center",
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+              "color": "#686e7d",
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+          ]
+        }
+      >
+        boom
+      </Text>
+    </View>
+    <View
+      style={
+        {
+          "marginTop": 30,
+        }
+      }
+    >
+      <TouchableOpacity
+        onPress={[Function]}
+      >
+        <Text>
+          Return to Home Screen
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</View>
+`;

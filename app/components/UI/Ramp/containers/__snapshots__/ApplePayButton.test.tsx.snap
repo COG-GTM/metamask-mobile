@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ApplePayButton container renders the underlying ApplePayButton component with the provided label 1`] = `
+<TouchableOpacity
+  onPress={[Function]}
+>
+  <Text>
+    Pay
+  </Text>
+</TouchableOpacity>
+`;

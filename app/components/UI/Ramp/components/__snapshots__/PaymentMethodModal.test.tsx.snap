@@ -1,0 +1,142 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PaymentMethodModal renders the payment methods and forwards selection events 1`] = `
+<View>
+  <RCTSafeAreaView
+    style={
+      {
+        "backgroundColor": "#ffffff",
+        "borderTopLeftRadius": 10,
+        "borderTopRightRadius": 10,
+        "flex": 0.75,
+      }
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "borderBottomWidth": 0.5,
+            "borderColor": "#b7bbc866",
+            "height": 33,
+            "justifyContent": "center",
+            "width": "100%",
+          },
+          undefined,
+        ]
+      }
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#b7bbc8",
+            "borderRadius": 4,
+            "height": 5,
+            "width": 48,
+          }
+        }
+      />
+    </View>
+    <RCTSafeAreaView
+      style={
+        {
+          "flex": 1,
+        }
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "backgroundColor": "#ffffff",
+              "flex": 1,
+            },
+            undefined,
+          ]
+        }
+      >
+        <View
+          style={
+            [
+              {
+                "alignItems": "center",
+                "marginVertical": 16,
+              },
+              undefined,
+            ]
+          }
+        />
+        <View
+          style={
+            [
+              {
+                "flex": 1,
+              },
+              undefined,
+            ]
+          }
+        >
+          <RCTScrollView>
+            <View>
+              <View
+                style={
+                  {
+                    "flex": 1,
+                    "marginTop": 0,
+                  }
+                }
+              >
+                <View
+                  style={
+                    [
+                      {
+                        "padding": 15,
+                      },
+                      undefined,
+                      {
+                        "paddingTop": 0,
+                      },
+                    ]
+                  }
+                >
+                  <View
+                    style={
+                      {
+                        "marginVertical": 8,
+                      }
+                    }
+                  >
+                    <TouchableOpacity
+                      onPress={[Function]}
+                    >
+                      <Text>
+                        Payment A
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View
+                    style={
+                      {
+                        "marginVertical": 8,
+                      }
+                    }
+                  >
+                    <TouchableOpacity
+                      onPress={[Function]}
+                    >
+                      <Text>
+                        Payment B
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </RCTScrollView>
+        </View>
+      </View>
+    </RCTSafeAreaView>
+  </RCTSafeAreaView>
+</View>
+`;

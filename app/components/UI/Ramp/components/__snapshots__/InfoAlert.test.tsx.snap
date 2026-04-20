@@ -1,0 +1,197 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`InfoAlert renders the provider name when no logos are provided 1`] = `
+<View>
+  <TouchableOpacity
+    accessible={false}
+    disabled={true}
+  >
+    <View
+      style={
+        [
+          {
+            "borderColor": "#b7bbc8",
+            "borderRadius": 8,
+            "borderWidth": 1.5,
+            "padding": 16,
+          },
+          undefined,
+          undefined,
+          undefined,
+          {
+            "backgroundColor": "#ffffff",
+            "borderWidth": 0,
+            "paddingBottom": 20,
+            "paddingHorizontal": 20,
+          },
+        ]
+      }
+    >
+      <TouchableOpacity
+        hitSlop={
+          {
+            "bottom": 10,
+            "left": 20,
+            "right": 10,
+            "top": 10,
+          }
+        }
+        style={
+          {
+            "alignSelf": "flex-end",
+            "marginBottom": -15,
+            "zIndex": 1,
+          }
+        }
+      >
+        <Text
+          allowFontScaling={false}
+          selectable={false}
+          style={
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+              },
+              undefined,
+              {
+                "fontFamily": "Ionicons",
+                "fontStyle": "normal",
+                "fontWeight": "normal",
+              },
+              {},
+            ]
+          }
+        >
+          
+        </Text>
+      </TouchableOpacity>
+      <View
+        style={
+          {
+            "alignItems": "center",
+          }
+        }
+      >
+        <Text
+          accessibilityRole="text"
+          style={
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Bold",
+              "fontSize": 18,
+              "fontWeight": "600",
+              "letterSpacing": 0,
+              "lineHeight": 24,
+              "marginVertical": 3,
+              "textAlign": "center",
+            }
+          }
+        >
+          Test Provider
+        </Text>
+        <View
+          style={
+            {
+              "paddingVertical": 8,
+            }
+          }
+        >
+          <Text
+            style={
+              [
+                {
+                  "color": "#121314",
+                  "fontFamily": "CentraNo1-Book",
+                  "fontSize": 30,
+                  "fontWeight": "400",
+                  "marginVertical": 2,
+                },
+                {
+                  "textAlign": "center",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "color": "#686e7d",
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                  "fontSize": 12,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          >
+            subtitle
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "paddingVertical": 8,
+            }
+          }
+        >
+          <Text
+            style={
+              [
+                {
+                  "color": "#121314",
+                  "fontFamily": "CentraNo1-Book",
+                  "fontSize": 30,
+                  "fontWeight": "400",
+                  "marginVertical": 2,
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          >
+            some body text
+          </Text>
+        </View>
+      </View>
+    </View>
+  </TouchableOpacity>
+</View>
+`;

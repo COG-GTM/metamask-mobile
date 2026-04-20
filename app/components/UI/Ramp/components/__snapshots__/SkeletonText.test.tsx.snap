@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SkeletonText applies every supported size and spacing variant without crashing 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "#f3f5f9",
+        "borderRadius": 30,
+        "padding": 14,
+      },
+      {
+        "padding": 8,
+      },
+      {
+        "padding": 20,
+      },
+      {
+        "width": "75%",
+      },
+      {
+        "width": "50%",
+      },
+      {
+        "width": "30%",
+      },
+      {
+        "width": "20%",
+      },
+      {
+        "alignSelf": "center",
+      },
+      {
+        "marginVertical": 10,
+      },
+      {
+        "marginHorizontal": 15,
+      },
+      {
+        "marginBottom": 25,
+      },
+      {
+        "marginTop": 35,
+      },
+      {
+        "marginTop": 10,
+      },
+      {
+        "paddingRight": 100,
+      },
+      undefined,
+    ]
+  }
+/>
+`;
+
+exports[`SkeletonText renders with default styles 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "#f3f5f9",
+        "borderRadius": 30,
+        "padding": 14,
+      },
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]
+  }
+/>
+`;

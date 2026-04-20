@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Box renders children without label or press handler 1`] = `
+<TouchableOpacity
+  accessible={false}
+  disabled={true}
+>
+  <View
+    style={
+      [
+        {
+          "borderColor": "#b7bbc8",
+          "borderRadius": 8,
+          "borderWidth": 1.5,
+          "padding": 16,
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    <Text>
+      box-child
+    </Text>
+  </View>
+</TouchableOpacity>
+`;

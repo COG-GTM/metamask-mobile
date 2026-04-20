@@ -1,0 +1,983 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Keypad renders with default styles 1`] = `
+<View
+  style={
+    [
+      {
+        "paddingHorizontal": 25,
+      },
+      [
+        {
+          "backgroundColor": "#f3f5f9",
+          "paddingHorizontal": 24,
+        },
+        undefined,
+      ],
+    ]
+  }
+>
+  <View
+    style={
+      {
+        "flexDirection": "row",
+        "justifyContent": "space-around",
+      }
+    }
+  >
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "#ffffff",
+            "borderRadius": 8,
+            "elevation": 1,
+            "margin": 3.5,
+            "paddingVertical": 5,
+            "shadowColor": "#0000001a",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 4,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+                "textAlign": "center",
+              },
+              {
+                "color": "#121314",
+                "fontSize": 20,
+                "padding": 0,
+              },
+            ],
+          ]
+        }
+      >
+        1
+      </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "#ffffff",
+            "borderRadius": 8,
+            "elevation": 1,
+            "margin": 3.5,
+            "paddingVertical": 5,
+            "shadowColor": "#0000001a",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 4,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+                "textAlign": "center",
+              },
+              {
+                "color": "#121314",
+                "fontSize": 20,
+                "padding": 0,
+              },
+            ],
+          ]
+        }
+      >
+        2
+      </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "#ffffff",
+            "borderRadius": 8,
+            "elevation": 1,
+            "margin": 3.5,
+            "paddingVertical": 5,
+            "shadowColor": "#0000001a",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 4,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+                "textAlign": "center",
+              },
+              {
+                "color": "#121314",
+                "fontSize": 20,
+                "padding": 0,
+              },
+            ],
+          ]
+        }
+      >
+        3
+      </Text>
+    </TouchableOpacity>
+  </View>
+  <View
+    style={
+      {
+        "flexDirection": "row",
+        "justifyContent": "space-around",
+      }
+    }
+  >
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "#ffffff",
+            "borderRadius": 8,
+            "elevation": 1,
+            "margin": 3.5,
+            "paddingVertical": 5,
+            "shadowColor": "#0000001a",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 4,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+                "textAlign": "center",
+              },
+              {
+                "color": "#121314",
+                "fontSize": 20,
+                "padding": 0,
+              },
+            ],
+          ]
+        }
+      >
+        4
+      </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "#ffffff",
+            "borderRadius": 8,
+            "elevation": 1,
+            "margin": 3.5,
+            "paddingVertical": 5,
+            "shadowColor": "#0000001a",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 4,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+                "textAlign": "center",
+              },
+              {
+                "color": "#121314",
+                "fontSize": 20,
+                "padding": 0,
+              },
+            ],
+          ]
+        }
+      >
+        5
+      </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "#ffffff",
+            "borderRadius": 8,
+            "elevation": 1,
+            "margin": 3.5,
+            "paddingVertical": 5,
+            "shadowColor": "#0000001a",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 4,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+                "textAlign": "center",
+              },
+              {
+                "color": "#121314",
+                "fontSize": 20,
+                "padding": 0,
+              },
+            ],
+          ]
+        }
+      >
+        6
+      </Text>
+    </TouchableOpacity>
+  </View>
+  <View
+    style={
+      {
+        "flexDirection": "row",
+        "justifyContent": "space-around",
+      }
+    }
+  >
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "#ffffff",
+            "borderRadius": 8,
+            "elevation": 1,
+            "margin": 3.5,
+            "paddingVertical": 5,
+            "shadowColor": "#0000001a",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 4,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+                "textAlign": "center",
+              },
+              {
+                "color": "#121314",
+                "fontSize": 20,
+                "padding": 0,
+              },
+            ],
+          ]
+        }
+      >
+        7
+      </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "#ffffff",
+            "borderRadius": 8,
+            "elevation": 1,
+            "margin": 3.5,
+            "paddingVertical": 5,
+            "shadowColor": "#0000001a",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 4,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+                "textAlign": "center",
+              },
+              {
+                "color": "#121314",
+                "fontSize": 20,
+                "padding": 0,
+              },
+            ],
+          ]
+        }
+      >
+        8
+      </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "#ffffff",
+            "borderRadius": 8,
+            "elevation": 1,
+            "margin": 3.5,
+            "paddingVertical": 5,
+            "shadowColor": "#0000001a",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 4,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+                "textAlign": "center",
+              },
+              {
+                "color": "#121314",
+                "fontSize": 20,
+                "padding": 0,
+              },
+            ],
+          ]
+        }
+      >
+        9
+      </Text>
+    </TouchableOpacity>
+  </View>
+  <View
+    style={
+      {
+        "flexDirection": "row",
+        "justifyContent": "space-around",
+      }
+    }
+  >
+    <TouchableOpacity
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "transparent",
+            "borderRadius": 8,
+            "margin": 3.5,
+            "paddingVertical": 0,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+                "textAlign": "center",
+              },
+              {
+                "color": "#121314",
+                "fontSize": 20,
+                "padding": 0,
+              },
+            ],
+          ]
+        }
+      >
+        .
+      </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "#ffffff",
+            "borderRadius": 8,
+            "elevation": 1,
+            "margin": 3.5,
+            "paddingVertical": 5,
+            "shadowColor": "#0000001a",
+            "shadowOffset": {
+              "height": 2,
+              "width": 0,
+            },
+            "shadowOpacity": 1,
+            "shadowRadius": 4,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 30,
+                "textAlign": "center",
+              },
+              {
+                "color": "#121314",
+                "fontSize": 20,
+                "padding": 0,
+              },
+            ],
+          ]
+        }
+      >
+        0
+      </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      delayLongPress={500}
+      onLongPress={[Function]}
+      onPress={[Function]}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingHorizontal": 20,
+            "paddingVertical": 12,
+          },
+          {
+            "backgroundColor": "transparent",
+            "borderRadius": 8,
+            "margin": 3.5,
+            "paddingVertical": 0,
+          },
+        ]
+      }
+      testID="keypad-delete-button"
+    >
+      <Text
+        allowFontScaling={false}
+        selectable={false}
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontSize": 24,
+            },
+            undefined,
+            {
+              "fontFamily": "Feather",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            {},
+          ]
+        }
+      >
+        
+      </Text>
+    </TouchableOpacity>
+  </View>
+</View>
+`;

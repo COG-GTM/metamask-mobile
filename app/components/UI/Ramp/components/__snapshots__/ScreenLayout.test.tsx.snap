@@ -1,0 +1,75 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ScreenLayout renders a scrollable container when \`scrollable\` is true 1`] = `
+<RCTSafeAreaView
+  style={
+    {
+      "flex": 1,
+    }
+  }
+>
+  <RCTScrollView
+    style={
+      [
+        {
+          "backgroundColor": "#ffffff",
+          "flex": 1,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View>
+      <Text>
+        scrollable-child
+      </Text>
+    </View>
+  </RCTScrollView>
+</RCTSafeAreaView>
+`;
+
+exports[`ScreenLayout renders children inside a non-scrolling container by default 1`] = `
+<RCTSafeAreaView
+  style={
+    {
+      "flex": 1,
+    }
+  }
+>
+  <View
+    style={
+      [
+        {
+          "backgroundColor": "#ffffff",
+          "flex": 1,
+        },
+        undefined,
+      ]
+    }
+  >
+    <Text>
+      layout-child
+    </Text>
+  </View>
+</RCTSafeAreaView>
+`;
+
+exports[`ScreenLayout.Content renders children and respects the grow prop 1`] = `
+<View
+  style={
+    [
+      {
+        "padding": 15,
+      },
+      {
+        "flex": 1,
+      },
+      undefined,
+    ]
+  }
+>
+  <Text>
+    content-child
+  </Text>
+</View>
+`;

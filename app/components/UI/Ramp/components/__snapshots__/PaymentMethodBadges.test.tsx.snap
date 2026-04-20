@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PaymentMethodBadges renders a remote image for every URL in the active theme bucket 1`] = `
+[
+  <Image
+    source={
+      {
+        "uri": "light-1.png",
+      }
+    }
+  />,
+  <Image
+    source={
+      {
+        "uri": "light-2.png",
+      }
+    }
+  />,
+]
+`;
+
+exports[`PaymentMethodBadges renders nothing when the active theme bucket is empty 1`] = `null`;

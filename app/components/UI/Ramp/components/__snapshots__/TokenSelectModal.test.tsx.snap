@@ -1,0 +1,363 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TokenSelectModal renders the token list excluding blacklisted addresses 1`] = `
+<View>
+  <RCTSafeAreaView
+    style={
+      {
+        "backgroundColor": "#ffffff",
+        "borderTopLeftRadius": 10,
+        "borderTopRightRadius": 10,
+        "flex": 0.75,
+      }
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "borderBottomWidth": 0.5,
+            "borderColor": "#b7bbc866",
+            "height": 33,
+            "justifyContent": "center",
+            "width": "100%",
+          },
+          undefined,
+        ]
+      }
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#b7bbc8",
+            "borderRadius": 4,
+            "height": 5,
+            "width": 48,
+          }
+        }
+      />
+    </View>
+    <RCTSafeAreaView
+      style={
+        {
+          "flex": 1,
+        }
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "backgroundColor": "#ffffff",
+              "flex": 1,
+            },
+            undefined,
+          ]
+        }
+      >
+        <View
+          style={
+            [
+              {
+                "alignItems": "center",
+                "marginVertical": 16,
+              },
+              undefined,
+            ]
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessible={true}
+            focusable={true}
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "alignItems": "center",
+                "borderColor": "#b7bbc8",
+                "borderRadius": 5,
+                "borderWidth": 1,
+                "flexDirection": "row",
+                "marginHorizontal": 24,
+                "marginTop": 10,
+                "paddingHorizontal": 5,
+                "paddingVertical": 10,
+              }
+            }
+          >
+            <Text
+              allowFontScaling={false}
+              selectable={false}
+              style={
+                [
+                  {
+                    "color": undefined,
+                    "fontSize": 20,
+                  },
+                  {
+                    "color": "#686e7d",
+                    "marginHorizontal": 8,
+                  },
+                  {
+                    "fontFamily": "Ionicons",
+                    "fontStyle": "normal",
+                    "fontWeight": "normal",
+                  },
+                  {},
+                ]
+              }
+            >
+              
+            </Text>
+            <TextInput
+              onChangeText={[Function]}
+              placeholder="Search by cryptocurrency"
+              placeholderTextColor="#9ca1af"
+              style={
+                {
+                  "color": "#121314",
+                  "flex": 1,
+                  "fontFamily": "CentraNo1-Book",
+                  "fontWeight": "400",
+                }
+              }
+              testID="token-select-modal-search-input"
+              value=""
+            />
+          </View>
+        </View>
+        <View
+          style={
+            [
+              {
+                "flex": 1,
+              },
+              undefined,
+            ]
+          }
+        >
+          <View
+            style={
+              {
+                "flex": 1,
+                "marginTop": 0,
+              }
+            }
+          >
+            <RCTScrollView
+              ListEmptyComponent={
+                <View
+                  style={
+                    {
+                      "marginHorizontal": 30,
+                      "marginVertical": 10,
+                    }
+                  }
+                >
+                  <Text
+                    variant="sBodyLGMedium"
+                  >
+                    No tokens match “”
+                  </Text>
+                </View>
+              }
+              data={
+                [
+                  {
+                    "address": "0x0000000000000000000000000000000000000000",
+                    "id": "t-1",
+                    "logo": "eth.png",
+                    "name": "Ethereum",
+                    "network": {
+                      "shortName": "Ethereum",
+                    },
+                    "symbol": "ETH",
+                  },
+                ]
+              }
+              getItem={[Function]}
+              getItemCount={[Function]}
+              keyExtractor={[Function]}
+              keyboardDismissMode="none"
+              keyboardShouldPersistTaps="always"
+              onContentSizeChange={[Function]}
+              onLayout={[Function]}
+              onMomentumScrollBegin={[Function]}
+              onMomentumScrollEnd={[Function]}
+              onScroll={[Function]}
+              onScrollBeginDrag={[Function]}
+              onScrollEndDrag={[Function]}
+              removeClippedSubviews={false}
+              renderItem={[Function]}
+              scrollEventThrottle={0.0001}
+              stickyHeaderIndices={[]}
+              style={
+                {
+                  "flex": 1,
+                  "marginTop": 0,
+                }
+              }
+              viewabilityConfigCallbackPairs={[]}
+            >
+              <View>
+                <View
+                  onFocusCapture={[Function]}
+                  onLayout={[Function]}
+                  style={null}
+                >
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessible={true}
+                    onPress={[Function]}
+                  >
+                    <View
+                      accessibilityRole="none"
+                      accessible={true}
+                      style={
+                        {
+                          "padding": 16,
+                          "paddingHorizontal": 24,
+                        }
+                      }
+                    >
+                      <View
+                        style={
+                          {
+                            "alignItems": "center",
+                            "flexDirection": "row",
+                          }
+                        }
+                      >
+                        <View
+                          style={
+                            {
+                              "flex": -1,
+                            }
+                          }
+                          testID="listitemcolumn"
+                        />
+                        <View
+                          accessible={false}
+                          style={
+                            {
+                              "width": 16,
+                            }
+                          }
+                          testID="listitem-gap"
+                        />
+                        <View
+                          style={
+                            {
+                              "flex": 1,
+                            }
+                          }
+                          testID="listitemcolumn"
+                        >
+                          <Text
+                            accessibilityRole="text"
+                            style={
+                              {
+                                "color": "#121314",
+                                "fontFamily": "CentraNo1-Medium",
+                                "fontSize": 18,
+                                "fontWeight": "500",
+                                "letterSpacing": 0,
+                                "lineHeight": 24,
+                              }
+                            }
+                          >
+                            ETH
+                          </Text>
+                          <Text
+                            accessibilityRole="text"
+                            style={
+                              {
+                                "color": "#686e7d",
+                                "fontFamily": "CentraNo1-Medium",
+                                "fontSize": 18,
+                                "fontWeight": "500",
+                                "letterSpacing": 0,
+                                "lineHeight": 24,
+                              }
+                            }
+                          >
+                            Ethereum
+                          </Text>
+                        </View>
+                        <View
+                          accessible={false}
+                          style={
+                            {
+                              "width": 16,
+                            }
+                          }
+                          testID="listitem-gap"
+                        />
+                        <View
+                          style={
+                            {
+                              "flex": -1,
+                            }
+                          }
+                          testID="listitemcolumn"
+                        >
+                          <View
+                            style={
+                              {
+                                "alignItems": "center",
+                                "backgroundColor": "#ffffff",
+                                "borderColor": "#b7bbc8",
+                                "borderRadius": 8,
+                                "borderWidth": 1,
+                                "flexDirection": "row",
+                                "justifyContent": "center",
+                                "paddingHorizontal": 8,
+                                "paddingVertical": 2,
+                              }
+                            }
+                          >
+                            <Text
+                              accessibilityRole="text"
+                              style={
+                                {
+                                  "color": "#686e7d",
+                                  "fontFamily": "CentraNo1-Book",
+                                  "fontSize": 14,
+                                  "fontWeight": "400",
+                                  "letterSpacing": 0,
+                                  "lineHeight": 22,
+                                }
+                              }
+                            >
+                              Ethereum
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </RCTScrollView>
+          </View>
+        </View>
+      </View>
+    </RCTSafeAreaView>
+  </RCTSafeAreaView>
+</View>
+`;
