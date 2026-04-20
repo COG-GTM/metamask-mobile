@@ -1,0 +1,253 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AddressField renders correctly with JazzIcon by default 1`] = `
+<View
+  style={
+    {
+      "flexDirection": "row",
+      "gap": 16,
+      "minWidth": "100%",
+      "paddingVertical": 5,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignSelf": "center",
+        "backgroundColor": "#ffffff",
+        "borderRadius": 16,
+        "height": 32,
+        "overflow": "hidden",
+        "width": 32,
+      }
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "overflow": "hidden",
+          },
+          {
+            "backgroundColor": "#F3E300",
+            "borderRadius": 16,
+            "height": 32,
+            "width": 32,
+          },
+          undefined,
+        ]
+      }
+    >
+      <RNSVGSvgView
+        bbHeight={32}
+        bbWidth={32}
+        focusable={false}
+        height={32}
+        style={
+          [
+            {
+              "backgroundColor": "transparent",
+              "borderWidth": 0,
+            },
+            {
+              "flex": 0,
+              "height": 32,
+              "width": 32,
+            },
+          ]
+        }
+        width={32}
+      >
+        <RNSVGGroup
+          fill={
+            {
+              "payload": 4278190080,
+              "type": 0,
+            }
+          }
+        >
+          <RNSVGRect
+            fill={
+              {
+                "payload": 4294033154,
+                "type": 0,
+              }
+            }
+            height={32}
+            matrix={
+              [
+                0.8902128046111263,
+                0.455544907233516,
+                -0.455544907233516,
+                0.8902128046111263,
+                14.528038776231607,
+                -10.727483724821674,
+              ]
+            }
+            propList={
+              [
+                "fill",
+              ]
+            }
+            width={32}
+            x={0}
+            y={0}
+          />
+          <RNSVGRect
+            fill={
+              {
+                "payload": 4278285708,
+                "type": 0,
+              }
+            }
+            height={32}
+            matrix={
+              [
+                -0.6768759696826608,
+                -0.7360970871197343,
+                0.7360970871197343,
+                -0.6768759696826608,
+                12.447006179185877,
+                55.31217516436145,
+              ]
+            }
+            propList={
+              [
+                "fill",
+              ]
+            }
+            width={32}
+            x={0}
+            y={0}
+          />
+          <RNSVGRect
+            fill={
+              {
+                "payload": 4291236915,
+                "type": 0,
+              }
+            }
+            height={32}
+            matrix={
+              [
+                0.46484204572461923,
+                0.885393625754416,
+                -0.885393625754416,
+                0.46484204572461923,
+                40.698516121381054,
+                -18.19641979556168,
+              ]
+            }
+            propList={
+              [
+                "fill",
+              ]
+            }
+            width={32}
+            x={0}
+            y={0}
+          />
+        </RNSVGGroup>
+      </RNSVGSvgView>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "flex": 1,
+        "flexDirection": "column",
+      }
+    }
+  >
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Medium",
+          "fontSize": 18,
+          "fontWeight": "500",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      From
+    </Text>
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      hitSlop={
+        {
+          "bottom": 24,
+          "left": 24,
+          "right": 24,
+          "top": 24,
+        }
+      }
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "gap": 2,
+        }
+      }
+    >
+      <Text
+        numberOfLines={1}
+        style={
+          {
+            "color": "#686e7d",
+            "fontFamily": "CentraNo1-Book",
+            "fontWeight": "400",
+          }
+        }
+      >
+        0x12345...45678
+      </Text>
+      <SvgMock
+        color="#121314"
+        fill="currentColor"
+        height={20}
+        name="Copy"
+        style={
+          {
+            "color": "#686e7d",
+            "height": 20,
+            "width": 20,
+          }
+        }
+        width={20}
+      />
+    </View>
+  </View>
+</View>
+`;

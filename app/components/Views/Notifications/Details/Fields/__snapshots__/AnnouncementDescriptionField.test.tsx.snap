@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AnnouncementDescriptionField renders correctly 1`] = `
+<View
+  onLayout={[Function]}
+  style={
+    {
+      "flexDirection": "row",
+      "gap": 16,
+      "minWidth": "100%",
+      "paddingVertical": 5,
+    }
+  }
+>
+  <View
+    testID="html-render"
+  >
+    &lt;p&gt;Hello &lt;b&gt;World&lt;/b&gt;&lt;/p&gt;
+  </View>
+</View>
+`;

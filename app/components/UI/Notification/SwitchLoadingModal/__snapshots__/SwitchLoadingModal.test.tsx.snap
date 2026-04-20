@@ -1,0 +1,100 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SwitchLoadingModal renders correctly when loading is true 1`] = `
+<View
+  testID="react-native-modal"
+>
+  <View
+    style={
+      {
+        "backgroundColor": "#ffffff",
+        "borderColor": "#b7bbc8",
+        "borderRadius": 16,
+        "borderWidth": 2,
+        "margin": 16,
+        "minHeight": 120,
+        "paddingBottom": 24,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "marginVertical": 12,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "borderColor": "#f3f5f9",
+            "borderRadius": 64,
+            "borderWidth": 3.5,
+            "height": 36,
+            "width": 36,
+          }
+        }
+      >
+        <View
+          collapsable={false}
+          style={
+            {
+              "height": 40,
+              "left": -5.5,
+              "position": "relative",
+              "top": -5.5,
+              "transform": [
+                {
+                  "rotate": "0deg",
+                },
+              ],
+              "width": 40,
+            }
+          }
+        >
+          <Text
+            allowFontScaling={false}
+            selectable={false}
+            style={
+              [
+                {
+                  "color": "#4459ff",
+                  "fontSize": 36,
+                },
+                undefined,
+                {
+                  "fontFamily": "Material Design Icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                {},
+              ]
+            }
+          >
+            󰝲
+          </Text>
+        </View>
+      </View>
+    </View>
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "alignSelf": "center",
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 20,
+          "marginVertical": 12,
+          "paddingHorizontal": 24,
+        }
+      }
+    >
+      Loading
+    </Text>
+  </View>
+</View>
+`;

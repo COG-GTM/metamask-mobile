@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AnnouncementImageHeader renders correctly 1`] = `
+<View
+  style={
+    {
+      "alignSelf": "center",
+      "paddingBottom": 16,
+    }
+  }
+>
+  <Image
+    onError={[Function]}
+    placeholderStyle={
+      {
+        "backgroundColor": "#f3f5f9",
+        "width": "100%",
+      }
+    }
+    source={
+      {
+        "uri": "https://example.com/announcement.png",
+      }
+    }
+    style={
+      {
+        "aspectRatio": "4/3",
+        "borderRadius": 8,
+        "width": "100%",
+      }
+    }
+  />
+</View>
+`;

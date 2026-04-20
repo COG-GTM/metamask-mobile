@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LoaderModal renders correctly when visible 1`] = `
+<View
+  testID="react-native-modal"
+>
+  <View
+    testID="child"
+  >
+    <Text>
+      Inner
+    </Text>
+  </View>
+</View>
+`;
