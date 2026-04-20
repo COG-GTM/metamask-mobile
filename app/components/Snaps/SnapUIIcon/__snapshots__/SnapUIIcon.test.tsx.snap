@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SnapUIIcon matches snapshot for a large warning icon 1`] = `
+<SvgMock
+  color="#121314"
+  fill="currentColor"
+  height={24}
+  name="Warning"
+  style={
+    {
+      "height": 24,
+      "width": 24,
+    }
+  }
+  width={24}
+/>
+`;

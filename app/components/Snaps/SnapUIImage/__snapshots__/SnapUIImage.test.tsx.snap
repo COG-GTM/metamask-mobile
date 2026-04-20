@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SnapUIImage uses explicit width/height props when passed 1`] = `
+<View
+  style={
+    [
+      {
+        "aspectRatio": 1,
+        "borderRadius": 8,
+        "height": 48,
+        "maxHeight": "100%",
+        "maxWidth": "100%",
+        "overflow": "hidden",
+        "width": 48,
+      },
+      undefined,
+    ]
+  }
+>
+  <RNSVGSvgView
+    align="xMidYMid"
+    bbHeight="100%"
+    bbWidth="100%"
+    focusable={false}
+    height="100%"
+    meetOrSlice={0}
+    minX={0}
+    minY={0}
+    style={
+      [
+        {
+          "backgroundColor": "transparent",
+          "borderWidth": 0,
+        },
+        {
+          "flex": 1,
+        },
+        {
+          "flex": 0,
+          "height": "100%",
+          "width": "100%",
+        },
+      ]
+    }
+    testID="snaps-ui-image"
+    vbHeight={10}
+    vbWidth={10}
+    width="100%"
+    xml="<svg viewBox="0 0 10 10"></svg>"
+  >
+    <RNSVGGroup
+      fill={
+        {
+          "payload": 4278190080,
+          "type": 0,
+        }
+      }
+    />
+  </RNSVGSvgView>
+</View>
+`;

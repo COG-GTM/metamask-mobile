@@ -1,0 +1,132 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SnapUIAvatar matches the snapshot for the default size and blockie off 1`] = `
+<View
+  style={
+    [
+      {
+        "overflow": "hidden",
+      },
+      {
+        "backgroundColor": "#F1C802",
+        "borderRadius": 16,
+        "height": 32,
+        "width": 32,
+      },
+      undefined,
+    ]
+  }
+>
+  <RNSVGSvgView
+    bbHeight={32}
+    bbWidth={32}
+    focusable={false}
+    height={32}
+    style={
+      [
+        {
+          "backgroundColor": "transparent",
+          "borderWidth": 0,
+        },
+        {
+          "flex": 0,
+          "height": 32,
+          "width": 32,
+        },
+      ]
+    }
+    width={32}
+  >
+    <RNSVGGroup
+      fill={
+        {
+          "payload": 4278190080,
+          "type": 0,
+        }
+      }
+    >
+      <RNSVGRect
+        fill={
+          {
+            "payload": 4278402909,
+            "type": 0,
+          }
+        }
+        height={32}
+        matrix={
+          [
+            0.9862856015372314,
+            0.16504760586067774,
+            -0.16504760586067774,
+            0.9862856015372314,
+            -3.9441111998779688,
+            -7.761941790110441,
+          ]
+        }
+        propList={
+          [
+            "fill",
+          ]
+        }
+        width={32}
+        x={0}
+        y={0}
+      />
+      <RNSVGRect
+        fill={
+          {
+            "payload": 4294746368,
+            "type": 0,
+          }
+        }
+        height={32}
+        matrix={
+          [
+            0.8870108331782216,
+            0.461748613235034,
+            -0.461748613235034,
+            0.8870108331782216,
+            15.40116069348787,
+            -19.47704700304611,
+          ]
+        }
+        propList={
+          [
+            "fill",
+          ]
+        }
+        width={32}
+        x={0}
+        y={0}
+      />
+      <RNSVGRect
+        fill={
+          {
+            "payload": 4278284172,
+            "type": 0,
+          }
+        }
+        height={32}
+        matrix={
+          [
+            -0.4771587602596087,
+            -0.8788171126619653,
+            0.8788171126619653,
+            -0.4771587602596087,
+            -12.266956119808418,
+            25.80439410142983,
+          ]
+        }
+        propList={
+          [
+            "fill",
+          ]
+        }
+        width={32}
+        x={0}
+        y={0}
+      />
+    </RNSVGGroup>
+  </RNSVGSvgView>
+</View>
+`;
