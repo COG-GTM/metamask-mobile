@@ -1,0 +1,91 @@
+name: ci-coverage-delta
+on:
+  pull_request:
+
+jobs:
+  coverage-delta:
+    name: Per-PR coverage delta
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn setup --node
+
+      - name: Ensure base ref is available
+        run: git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1 || true
+
+      - name: Compute changed source paths
+        id: changed
+        shell: bash
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+
+          git diff --name-only "origin/${BASE_REF}"...HEAD -- \
+            'app/**/*.ts' 'app/**/*.tsx' 'app/**/*.js' 'app/**/*.jsx' \
+            | grep -Ev '\.(test|spec|stories|d|styles|types|constants)\.[^/]+$' \
+            | grep -Ev '(^|/)index\.[^/]+$' \
+            > changed-paths.txt || true
+
+          if [[ ! -s changed-paths.txt ]]; then
+            echo "No source files changed."
+            echo "empty=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "empty=false" >> "$GITHUB_OUTPUT"
+            echo "Changed source files:"
+            cat changed-paths.txt
+          fi
+
+      - name: Run related tests with coverage
+        if: steps.changed.outputs.empty == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t paths < changed-paths.txt
+          ./scripts/run-tests-for-paths.sh "${paths[@]}"
+
+      - name: Summarize per-file coverage
+        if: steps.changed.outputs.empty == 'false'
+        id: summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/summarize-coverage-delta.js \
+            changed-paths.txt \
+            coverage/coverage-final.json \
+            coverage-delta-comment.md \
+            coverage-delta-failed.txt
+          echo "failed=$(cat coverage-delta-failed.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Post sticky PR comment
+        if: steps.changed.outputs.empty == 'false'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: coverage-delta-comment.md
+          edit-mode: replace
+
+      - name: Skip gracefully when diff is empty
+        if: steps.changed.outputs.empty == 'true'
+        run: echo "No app/ source files changed; skipping coverage delta."
+
+      - name: Enforce coverage threshold
+        if: steps.changed.outputs.empty == 'false' && steps.summary.outputs.failed == '1'
+        run: |
+          echo "One or more changed source files fell below 70% line coverage." >&2
+          exit 1

@@ -372,3 +372,17 @@ Our CI/CD process is automated through various Bitrise pipelines, each designed 
 ### Best Practices
 
 For more guidelines and best practices, refer to our [Best Practices Document](https://github.com/MetaMask/contributor-docs/blob/main/docs/testing/e2e-testing.md).
+
+## Coverage Tooling
+
+`yarn jest --findRelatedTests <paths>` runs only the Jest test files that
+transitively import the given source files, which is much faster than a full
+test run when you're iterating on a small change. The `ci-coverage-delta`
+workflow uses this (via `scripts/run-tests-for-paths.sh`) to run related
+tests with coverage for every source file changed in a pull request and
+posts a sticky comment summarizing per-file line coverage. To map out which
+files under `app/` still lack an adjacent test, run
+`python3 scripts/coverage-gap-report.py` locally — it prints a human-readable
+summary and writes a machine-readable JSON report to
+`tests/coverage-gap-report.json`. Pass `--strict` to fail the script when
+coverage drops versus the baseline stored in `tests/coverage-baseline.json`.
