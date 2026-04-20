@@ -18,17 +18,17 @@ interface ToggleCollectibleContractModalAction {
 
 interface ToggleDappTransactionModalAction {
   type: typeof TOGGLE_DAPP_TRANSACTION_MODAL;
-  show: boolean;
+  show?: boolean | null;
 }
 
 interface ToggleInfoNetworkModalAction {
   type: typeof TOGGLE_INFO_NETWORK_MODAL;
-  show: boolean;
+  show?: boolean | null;
 }
 
 interface ToggleSignModalAction {
   type: typeof TOGGLE_SIGN_MODAL;
-  show: boolean;
+  show?: boolean | null;
 }
 
 export type ModalAction =
@@ -54,7 +54,7 @@ export function toggleCollectibleContractModal(): ToggleCollectibleContractModal
 }
 
 export function toggleDappTransactionModal(
-  show: boolean,
+  show?: boolean | null,
 ): ToggleDappTransactionModalAction {
   return {
     type: TOGGLE_DAPP_TRANSACTION_MODAL,
@@ -63,7 +63,7 @@ export function toggleDappTransactionModal(
 }
 
 export function toggleInfoNetworkModal(
-  show: boolean,
+  show?: boolean | null,
 ): ToggleInfoNetworkModalAction {
   return {
     type: TOGGLE_INFO_NETWORK_MODAL,
@@ -71,7 +71,7 @@ export function toggleInfoNetworkModal(
   };
 }
 
-export function toggleSignModal(show: boolean): ToggleSignModalAction {
+export function toggleSignModal(show?: boolean | null): ToggleSignModalAction {
   return {
     type: TOGGLE_SIGN_MODAL,
     show,
