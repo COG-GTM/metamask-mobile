@@ -1,0 +1,164 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TokenListControlBar renders the control bar and matches snapshot 1`] = `
+<View
+  style={
+    {
+      "flexDirection": "row",
+      "justifyContent": "space-between",
+      "paddingBottom": 16,
+      "paddingLeft": 8,
+      "paddingRight": 8,
+      "paddingTop": 8,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+        "width": "100%",
+      }
+    }
+  >
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      activeOpacity={1}
+      disabled={false}
+      onPress={[Function]}
+      style={
+        {
+          "alignItems": "center",
+          "alignSelf": "flex-start",
+          "backgroundColor": "#ffffff",
+          "borderColor": "#b7bbc8",
+          "borderRadius": 20,
+          "borderStyle": "solid",
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "height": 40,
+          "justifyContent": "center",
+          "marginLeft": 5,
+          "marginRight": 5,
+          "maxWidth": "60%",
+          "paddingHorizontal": 16,
+        }
+      }
+      testID="token-network-filter"
+    >
+      <Text
+        numberOfLines={1}
+        style={
+          {
+            "color": "#121314",
+          }
+        }
+      >
+        Popular networks
+      </Text>
+      <SvgMock
+        color="#121314"
+        fill="currentColor"
+        height={16}
+        name="ArrowDown"
+        style={
+          {
+            "height": 16,
+            "marginLeft": 8,
+            "width": 16,
+          }
+        }
+        width={16}
+      />
+    </TouchableOpacity>
+    <View
+      style={
+        {
+          "flexDirection": "row",
+        }
+      }
+    >
+      <TouchableOpacity
+        accessible={true}
+        activeOpacity={1}
+        disabled={false}
+        onPress={[Function]}
+        onPressIn={[Function]}
+        onPressOut={[Function]}
+        style={
+          {
+            "alignItems": "center",
+            "backgroundColor": "#ffffff",
+            "borderColor": "#b7bbc8",
+            "borderRadius": 50,
+            "borderStyle": "solid",
+            "borderWidth": 1,
+            "height": 40,
+            "justifyContent": "center",
+            "marginLeft": 5,
+            "marginRight": 5,
+            "opacity": 1,
+            "width": 50,
+          }
+        }
+        testID="sort-by"
+      >
+        <SvgMock
+          color="#121314"
+          fill="currentColor"
+          height={16}
+          name="SwapVertical"
+          style={
+            {
+              "height": 16,
+              "width": 16,
+            }
+          }
+          width={16}
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
+        accessible={true}
+        activeOpacity={1}
+        disabled={false}
+        onPress={[MockFunction]}
+        onPressIn={[Function]}
+        onPressOut={[Function]}
+        style={
+          {
+            "alignItems": "center",
+            "backgroundColor": "#ffffff",
+            "borderColor": "#b7bbc8",
+            "borderRadius": 50,
+            "borderStyle": "solid",
+            "borderWidth": 1,
+            "height": 40,
+            "justifyContent": "center",
+            "marginLeft": 5,
+            "marginRight": 5,
+            "opacity": 1,
+            "width": 50,
+          }
+        }
+        testID="import-token-button"
+      >
+        <SvgMock
+          color="#121314"
+          fill="currentColor"
+          height={16}
+          name="Add"
+          style={
+            {
+              "height": 16,
+              "width": 16,
+            }
+          }
+          width={16}
+        />
+      </TouchableOpacity>
+    </View>
+  </View>
+</View>
+`;

@@ -1,0 +1,142 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`QuickAmounts renders every provided amount and matches snapshot 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#ffffff",
+      "flexDirection": "row",
+      "gap": 8,
+      "justifyContent": "center",
+      "padding": 16,
+    }
+  }
+>
+  <TouchableOpacity
+    accessibilityRole="button"
+    accessible={true}
+    activeOpacity={1}
+    onPress={[Function]}
+    style={
+      {
+        "alignItems": "center",
+        "alignSelf": "stretch",
+        "backgroundColor": "#ffffff",
+        "borderColor": "#b7bbc8",
+        "borderRadius": 20,
+        "borderWidth": 1,
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 40,
+        "justifyContent": "center",
+        "paddingHorizontal": 16,
+      }
+    }
+  >
+    <Text
+      accessibilityRole="none"
+      style={
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Medium",
+          "fontSize": 16,
+          "fontWeight": "500",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      25%
+    </Text>
+  </TouchableOpacity>
+  <TouchableOpacity
+    accessibilityRole="button"
+    accessible={true}
+    activeOpacity={1}
+    onPress={[Function]}
+    style={
+      {
+        "alignItems": "center",
+        "alignSelf": "stretch",
+        "backgroundColor": "#ffffff",
+        "borderColor": "#b7bbc8",
+        "borderRadius": 20,
+        "borderWidth": 1,
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 40,
+        "justifyContent": "center",
+        "paddingHorizontal": 16,
+      }
+    }
+  >
+    <Text
+      accessibilityRole="none"
+      style={
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Medium",
+          "fontSize": 16,
+          "fontWeight": "500",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      50%
+    </Text>
+  </TouchableOpacity>
+  <TouchableOpacity
+    accessibilityRole="button"
+    accessible={true}
+    activeOpacity={1}
+    onPress={[Function]}
+    style={
+      {
+        "alignItems": "center",
+        "alignSelf": "stretch",
+        "backgroundColor": "#ffffff",
+        "borderColor": "#b7bbc8",
+        "borderRadius": 20,
+        "borderWidth": 1,
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 40,
+        "justifyContent": "center",
+        "paddingHorizontal": 16,
+      }
+    }
+  >
+    <SvgMock
+      color="#121314"
+      fill="currentColor"
+      height={16}
+      name="Sparkle"
+      style={
+        {
+          "height": 16,
+          "marginRight": 8,
+          "width": 16,
+        }
+      }
+      width={16}
+    />
+    <Text
+      accessibilityRole="none"
+      style={
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Medium",
+          "fontSize": 16,
+          "fontWeight": "500",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      MAX
+    </Text>
+  </TouchableOpacity>
+</View>
+`;

@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ActivityHeader renders the activity heading using asset.name and matches snapshot 1`] = `
+<View
+  style={
+    {
+      "paddingHorizontal": 16,
+    }
+  }
+>
+  <Text
+    accessibilityRole="text"
+    style={
+      {
+        "color": "#121314",
+        "fontFamily": "CentraNo1-Bold",
+        "fontSize": 18,
+        "fontWeight": "700",
+        "letterSpacing": 0,
+        "lineHeight": 24,
+        "paddingVertical": 8,
+      }
+    }
+  >
+    DAI activity
+  </Text>
+</View>
+`;

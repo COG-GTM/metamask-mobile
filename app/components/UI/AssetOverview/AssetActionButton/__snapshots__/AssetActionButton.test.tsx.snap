@@ -1,0 +1,109 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AssetActionButton renders the label and matches snapshot 1`] = `
+<TouchableOpacity
+  onPress={[MockFunction]}
+  style={
+    [
+      {
+        "alignItems": "center",
+        "flexShrink": 1,
+        "justifyContent": "center",
+        "marginHorizontal": 0,
+        "minWidth": 60,
+      },
+      undefined,
+    ]
+  }
+>
+  <View
+    style={
+      {
+        "alignContent": "center",
+        "alignItems": "center",
+        "backgroundColor": "#4459ff",
+        "borderRadius": 18,
+        "height": 36,
+        "justifyContent": "center",
+        "paddingLeft": 1,
+        "paddingTop": 4,
+        "width": 36,
+      }
+    }
+  >
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": undefined,
+            "fontSize": 20,
+          },
+          {
+            "alignContent": "center",
+            "color": "#ffffff",
+            "justifyContent": "center",
+            "textAlign": "center",
+          },
+          {
+            "fontFamily": "Material Design Icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          {},
+        ]
+      }
+    >
+      󰁜
+    </Text>
+  </View>
+  <Text
+    numberOfLines={1}
+    style={
+      [
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 30,
+          "fontWeight": "400",
+          "marginVertical": 2,
+        },
+        {
+          "textAlign": "center",
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {
+          "color": "#4459ff",
+          "fontSize": 14,
+          "marginHorizontal": 3,
+          "marginTop": 8,
+        },
+      ]
+    }
+  >
+    Send
+  </Text>
+</TouchableOpacity>
+`;

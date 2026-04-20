@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AboutAsset renders the english description when loading is complete 1`] = `
+<View
+  style={
+    {
+      "marginTop": 20,
+    }
+  }
+>
+  <Text
+    accessibilityRole="text"
+    style={
+      {
+        "color": "#121314",
+        "fontFamily": "CentraNo1-Bold",
+        "fontSize": 16,
+        "fontWeight": "700",
+        "letterSpacing": 0,
+        "lineHeight": 24,
+        "marginBottom": 4,
+        "marginVertical": 0,
+      }
+    }
+  >
+    About
+  </Text>
+  <View>
+    <Text
+      accessibilityRole="text"
+      numberOfLines={3}
+      style={
+        {
+          "0": undefined,
+          "color": "#686e7d",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      A stablecoin pegged to USD.
+    </Text>
+    <Text
+      accessibilityRole="link"
+      accessible={true}
+      onPress={[Function]}
+      onPressIn={[Function]}
+      onPressOut={[Function]}
+      style={
+        {
+          "backgroundColor": "transparent",
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+      suppressHighlighting={true}
+    >
+      <Text
+        accessibilityRole="text"
+        style={
+          {
+            "color": "#4459ff",
+            "fontFamily": "CentraNo1-Medium",
+            "fontSize": 16,
+            "fontWeight": "500",
+            "letterSpacing": 0,
+            "lineHeight": 24,
+          }
+        }
+      >
+        Show more
+      </Text>
+    </Text>
+  </View>
+</View>
+`;

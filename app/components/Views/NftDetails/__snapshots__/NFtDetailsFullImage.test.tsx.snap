@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NftDetailsFullImage renders the collectible media component and matches snapshot 1`] = `
+<RCTSafeAreaView
+  style={
+    [
+      {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "position": "relative",
+      },
+    ]
+  }
+>
+  <View
+    style={
+      [
+        {
+          "left": 0,
+          "padding": 16,
+          "position": "absolute",
+          "right": 0,
+        },
+      ]
+    }
+  >
+    <View
+      testID="media-MockNft"
+    />
+  </View>
+</RCTSafeAreaView>
+`;
