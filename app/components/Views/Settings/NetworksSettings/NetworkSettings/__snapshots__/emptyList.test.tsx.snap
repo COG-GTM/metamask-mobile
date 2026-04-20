@@ -1,0 +1,113 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EmptyPopularList renders correctly 1`] = `
+<View
+  style={
+    [
+      {
+        "borderRadius": 8,
+        "borderWidth": 1,
+        "flexDirection": "row",
+        "paddingHorizontal": 12,
+        "paddingVertical": 8,
+      },
+      undefined,
+      {
+        "backgroundColor": "#4459ff1a",
+        "borderColor": "#4459ff",
+      },
+      {
+        "marginHorizontal": 10,
+        "marginTop": 20,
+        "paddingRight": 0,
+      },
+    ]
+  }
+>
+  <Text
+    style={
+      [
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 30,
+          "fontWeight": "400",
+          "marginVertical": 2,
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        [
+          {
+            "color": "#121314",
+            "flex": 1,
+            "fontSize": 14,
+            "lineHeight": 17,
+          },
+          false,
+        ],
+      ]
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#121314",
+        }
+      }
+    >
+      You’ve added all the popular networks. You can discover more networks 
+    </Text>
+    <Text
+      onPress={[Function]}
+      style={
+        {
+          "color": "#4459ff",
+        }
+      }
+    >
+      here. 
+    </Text>
+    <Text
+      style={
+        {
+          "color": "#121314",
+        }
+      }
+    >
+      Or you can 
+    </Text>
+    <Text
+      onPress={[MockFunction]}
+      style={
+        {
+          "color": "#4459ff",
+        }
+      }
+      suppressHighlighting={true}
+    >
+      add more networks manually.
+    </Text>
+  </Text>
+</View>
+`;

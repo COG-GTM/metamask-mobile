@@ -1,0 +1,141 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DeleteMetaMetricsData renders correctly when data deletion is available 1`] = `
+<View
+  testID="delete-metrics-button-section"
+>
+  <Text>
+    Delete MetaMetrics data
+  </Text>
+  <View>
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#686e7d",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      This will delete historical
+    </Text>
+     
+    <Text
+      accessibilityRole="link"
+      accessible={true}
+      onPress={[Function]}
+      onPressIn={[Function]}
+      onPressOut={[Function]}
+      style={
+        {
+          "backgroundColor": "transparent",
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+      suppressHighlighting={true}
+    >
+      <Text
+        accessibilityRole="text"
+        style={
+          {
+            "color": "#4459ff",
+            "fontFamily": "CentraNo1-Medium",
+            "fontSize": 16,
+            "fontWeight": "500",
+            "letterSpacing": 0,
+            "lineHeight": 24,
+          }
+        }
+      >
+        MetaMetrics
+      </Text>
+    </Text>
+     
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#686e7d",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      data associated with your wallet.
+    </Text>
+     
+    <Text
+      accessibilityRole="text"
+      style={
+        {
+          "color": "#686e7d",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+    >
+      Your wallet and accounts will remain exactly as they are now after this data has been deleted. This process may take up to 30 days. View our
+    </Text>
+     
+    <Text
+      accessibilityRole="link"
+      accessible={true}
+      onPress={[Function]}
+      onPressIn={[Function]}
+      onPressOut={[Function]}
+      style={
+        {
+          "backgroundColor": "transparent",
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "letterSpacing": 0,
+          "lineHeight": 24,
+        }
+      }
+      suppressHighlighting={true}
+    >
+      <Text
+        accessibilityRole="text"
+        style={
+          {
+            "color": "#4459ff",
+            "fontFamily": "CentraNo1-Medium",
+            "fontSize": 16,
+            "fontWeight": "500",
+            "letterSpacing": 0,
+            "lineHeight": 24,
+          }
+        }
+      >
+        Privacy Policy.
+      </Text>
+    </Text>
+  </View>
+  <TouchableOpacity
+    disabled={false}
+    onPress={[Function]}
+    testID="delete-metrics-button"
+  >
+    <Text>
+      Delete MetaMetrics data
+    </Text>
+  </TouchableOpacity>
+</View>
+`;

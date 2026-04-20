@@ -1,0 +1,92 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DeleteWalletData renders correctly 1`] = `
+<View
+  style={
+    {
+      "marginTop": 32,
+    }
+  }
+>
+  <Text
+    accessibilityRole="text"
+    style={
+      {
+        "color": "#121314",
+        "fontFamily": "CentraNo1-Medium",
+        "fontSize": 18,
+        "fontWeight": "500",
+        "letterSpacing": 0,
+        "lineHeight": 24,
+      }
+    }
+  >
+    Delete wallet
+  </Text>
+  <Text
+    accessibilityRole="text"
+    style={
+      {
+        "color": "#686e7d",
+        "fontFamily": "CentraNo1-Book",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "letterSpacing": 0,
+        "lineHeight": 24,
+        "marginTop": 8,
+      }
+    }
+  >
+    <Text>
+      This will remove all wallet related data from your device. Your accounts exist on the blockchain and are not related to MetaMask. You can always recover your accounts using your Secret Recovery Phrase.
+    </Text>
+  </Text>
+  <View
+    style={
+      {
+        "marginTop": 16,
+      }
+    }
+  >
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessible={true}
+      activeOpacity={1}
+      onPress={[Function]}
+      onPressIn={[Function]}
+      onPressOut={[Function]}
+      style={
+        {
+          "alignItems": "center",
+          "alignSelf": "stretch",
+          "backgroundColor": "transparent",
+          "borderColor": "#4459ff",
+          "borderRadius": 12,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "height": 48,
+          "justifyContent": "center",
+          "paddingHorizontal": 16,
+        }
+      }
+      testID="security-settings-delete-wallet-buttons"
+    >
+      <Text
+        accessibilityRole="text"
+        style={
+          {
+            "color": "#4459ff",
+            "fontFamily": "CentraNo1-Medium",
+            "fontSize": 16,
+            "fontWeight": "500",
+            "letterSpacing": 0,
+            "lineHeight": 24,
+          }
+        }
+      >
+        Delete wallet
+      </Text>
+    </TouchableOpacity>
+  </View>
+</View>
+`;
