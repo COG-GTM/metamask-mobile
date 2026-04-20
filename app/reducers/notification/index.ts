@@ -2,7 +2,22 @@ import { createSelector } from 'reselect';
 import { NotificationTypes } from '../../util/notifications';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-export const initialState = {
+interface Notification {
+  id: string;
+  isVisible: boolean;
+  autodismiss?: number;
+  type: string;
+  title?: string;
+  description?: string;
+  transaction?: { id: string; [key: string]: unknown };
+  status?: string;
+}
+
+export interface NotificationState {
+  notifications: Notification[];
+}
+
+export const initialState: NotificationState = {
   notifications: [],
 };
 
@@ -19,23 +34,40 @@ export const ACTIONS = {
   SHOW_SIMPLE_NOTIFICATION: 'SHOW_SIMPLE_NOTIFICATION',
   SHOW_TRANSACTION_NOTIFICATION: 'SHOW_TRANSACTION_NOTIFICATION',
   UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
-};
+} as const;
 
-const enqueue = (notifications, notification) => [
+const enqueue = (notifications: Notification[], notification: Notification): Notification[] => [
   ...notifications,
   notification,
 ];
-const dequeue = (notifications) => notifications.slice(1);
+const dequeue = (notifications: Notification[]): Notification[] => notifications.slice(1);
+
+// TODO: type this properly when RootState is fully typed
+type RootState = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export const currentNotificationSelector = createSelector(
   (
     /** @type {import('..').RootState} */
-    state,
+    state: RootState,
   ) => state?.notifications,
-  (notifications) => notifications[0] || {},
+  (notifications: Notification[]) => notifications[0] || {},
 );
 
-const notificationReducer = (state = initialState, action) => {
+interface NotificationReducerAction {
+  type: string;
+  id?: string;
+  autodismiss?: number;
+  transaction?: { id: string; [key: string]: unknown };
+  status?: string;
+  title?: string;
+  description?: string;
+  notification?: Notification;
+}
+
+const notificationReducer = (
+  state: NotificationState = initialState,
+  action: NotificationReducerAction,
+): NotificationState => {
   const { notifications } = state;
   switch (action.type) {
     // make current notification isVisible props false
@@ -75,7 +107,7 @@ const notificationReducer = (state = initialState, action) => {
             {
               ...notifications[index],
               ...{
-                id: action.transaction.id,
+                id: action.transaction!.id,
                 isVisible: true,
                 autodismiss: action.autodismiss,
                 transaction: action.transaction,
@@ -90,7 +122,7 @@ const notificationReducer = (state = initialState, action) => {
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.transaction.id,
+          id: action.transaction!.id,
           isVisible: true,
           autodismiss: action.autodismiss,
           transaction: action.transaction,
@@ -109,7 +141,7 @@ const notificationReducer = (state = initialState, action) => {
             {
               ...notifications[index],
               ...{
-                id: action.id,
+                id: action.id!,
                 isVisible: true,
                 autodismiss: action.autodismiss,
                 title: action.title,
@@ -125,7 +157,7 @@ const notificationReducer = (state = initialState, action) => {
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.id,
+          id: action.id!,
           isVisible: true,
           autodismiss: action.autodismiss,
           title: action.title,
@@ -144,7 +176,7 @@ const notificationReducer = (state = initialState, action) => {
         ...state,
         notifications: [
           ...notifications.slice(0, index),
-          action.notification,
+          action.notification!,
           ...notifications.slice(index + 1),
         ],
       };
@@ -165,7 +197,7 @@ const notificationReducer = (state = initialState, action) => {
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.id,
+          id: action.id!,
           isVisible: true,
           autodismiss: action.autodismiss || 5000,
           title: action.title,
@@ -179,7 +211,7 @@ const notificationReducer = (state = initialState, action) => {
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.transaction.id,
+          id: action.transaction!.id,
           isVisible: true,
           autodismiss: action.autodismiss || 5000,
           transaction: action.transaction,

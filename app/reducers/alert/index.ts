@@ -1,13 +1,29 @@
-const initialState = {
+import {
+  SHOW_ALERT,
+  HIDE_ALERT,
+  AlertAction,
+} from '../../actions/alert';
+
+export interface AlertState {
+  isVisible: boolean;
+  autodismiss: number | null;
+  content: string | null;
+  data: unknown;
+}
+
+export const initialState: AlertState = {
   isVisible: false,
   autodismiss: null,
   content: null,
   data: null,
 };
 
-const alertReducer = (state = initialState, action) => {
+const alertReducer = (
+  state: AlertState = initialState,
+  action: AlertAction,
+): AlertState => {
   switch (action.type) {
-    case 'SHOW_ALERT':
+    case SHOW_ALERT:
       return {
         ...state,
         isVisible: true,
@@ -15,7 +31,7 @@ const alertReducer = (state = initialState, action) => {
         content: action.content,
         data: action.data,
       };
-    case 'HIDE_ALERT':
+    case HIDE_ALERT:
       return {
         ...state,
         isVisible: false,
