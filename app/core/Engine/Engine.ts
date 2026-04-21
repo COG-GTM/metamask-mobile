@@ -199,6 +199,7 @@ import { earnControllerInit } from './controllers/earn-controller';
 import { smartTransactionsControllerInit } from './controllers/smart-transactions-controller';
 import { swapsControllerInit } from './controllers/swaps-controller';
 import { bridgeControllerInit } from './controllers/bridge-controller';
+import { bridgeStatusControllerInit } from './controllers/bridge-status-controller';
 import { TransactionControllerInit } from './controllers/transaction-controller';
 import { SignatureControllerInit } from './controllers/signature-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
@@ -877,42 +878,6 @@ export class Engine {
         }),
       });
 
-    const bridgeStatusController = new BridgeStatusController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'BridgeStatusController',
-        allowedActions: [
-          'AccountsController:getSelectedMultichainAccount',
-          'NetworkController:getNetworkClientById',
-          'NetworkController:findNetworkClientIdByChainId',
-          'NetworkController:getState',
-          'BridgeController:getBridgeERC20Allowance',
-          'BridgeController:trackUnifiedSwapBridgeEvent',
-          'GasFeeController:getState',
-          'AccountsController:getAccountByAddress',
-          'SnapController:handleRequest',
-          'TransactionController:getState',
-        ],
-        allowedEvents: [],
-      }),
-      state: initialState.BridgeStatusController,
-      clientId: BridgeClientId.MOBILE,
-      fetchFn: handleFetch,
-      addTransactionFn: (
-        ...args: Parameters<typeof this.transactionController.addTransaction>
-      ) => this.transactionController.addTransaction(...args),
-      estimateGasFeeFn: (
-        ...args: Parameters<typeof this.transactionController.estimateGasFee>
-      ) => this.transactionController.estimateGasFee(...args),
-      addUserOperationFromTransactionFn: (...args: unknown[]) =>
-        // @ts-expect-error - userOperationController will be made optional, it's only relevant for extension
-        this.userOperationController?.addUserOperationFromTransaction?.(
-          ...args,
-        ),
-      config: {
-        customBridgeApiBaseUrl: BRIDGE_DEV_API_BASE_URL,
-      },
-    });
-
     const existingControllersByName = {
       ApprovalController: approvalController,
       KeyringController: this.keyringController,
@@ -933,6 +898,7 @@ export class Engine {
         SmartTransactionsController: smartTransactionsControllerInit,
         SwapsController: swapsControllerInit,
         BridgeController: bridgeControllerInit,
+        BridgeStatusController: bridgeStatusControllerInit,
         TransactionController: TransactionControllerInit,
         SignatureController: SignatureControllerInit,
         CurrencyRateController: currencyRateControllerInit,
@@ -1267,7 +1233,7 @@ export class Engine {
       TokenSearchDiscoveryDataController: tokenSearchDiscoveryDataController,
       MultichainNetworkController: multichainNetworkController,
       BridgeController: controllersByName.BridgeController,
-      BridgeStatusController: bridgeStatusController,
+      BridgeStatusController: controllersByName.BridgeStatusController,
       EarnController: controllersByName.EarnController,
     };
 

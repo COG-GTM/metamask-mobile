@@ -31,6 +31,7 @@ import { getEarnControllerMessenger } from './earn-controller-messenger';
 import { getSmartTransactionsControllerMessenger } from './smart-transactions-controller-messenger';
 import { getSwapsControllerMessenger } from './swaps-controller-messenger';
 import { getBridgeControllerMessenger } from './bridge-controller-messenger';
+import { getBridgeStatusControllerMessenger } from './bridge-status-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -77,6 +78,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   BridgeController: {
     getMessenger: getBridgeControllerMessenger,
+    getInitMessenger: noop,
+  },
+  BridgeStatusController: {
+    getMessenger: getBridgeStatusControllerMessenger,
     getInitMessenger: noop,
   },
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)

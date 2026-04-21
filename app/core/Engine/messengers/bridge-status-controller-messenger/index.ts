@@ -1,22 +1,26 @@
-import { BridgeStatusControllerMessenger } from '@metamask/bridge-status-controller';
 import { BaseControllerMessenger } from '../../types';
 
 /**
- * Get the BridgeControllerMessenger for the BridgeController.
+ * Get the BridgeStatusControllerMessenger for the BridgeStatusController.
  *
  * @param baseControllerMessenger - The base controller messenger.
- * @returns The BridgeControllerMessenger.
+ * @returns The BridgeStatusControllerMessenger.
  */
 export function getBridgeStatusControllerMessenger(
   baseControllerMessenger: BaseControllerMessenger,
-): BridgeStatusControllerMessenger {
+) {
   return baseControllerMessenger.getRestricted({
     name: 'BridgeStatusController',
     allowedActions: [
-      'AccountsController:getSelectedAccount',
+      'AccountsController:getSelectedMultichainAccount',
       'NetworkController:getNetworkClientById',
       'NetworkController:findNetworkClientIdByChainId',
       'NetworkController:getState',
+      'BridgeController:getBridgeERC20Allowance',
+      'BridgeController:trackUnifiedSwapBridgeEvent',
+      'GasFeeController:getState',
+      'AccountsController:getAccountByAddress',
+      'SnapController:handleRequest',
       'TransactionController:getState',
     ],
     allowedEvents: [],

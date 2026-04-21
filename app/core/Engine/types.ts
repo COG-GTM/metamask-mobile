@@ -597,7 +597,8 @@ export type ControllersToInitialize =
   | 'EarnController'
   | 'SmartTransactionsController'
   | 'SwapsController'
-  | 'BridgeController';
+  | 'BridgeController'
+  | 'BridgeStatusController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.
