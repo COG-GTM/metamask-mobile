@@ -186,6 +186,7 @@ import {
 import { logEngineCreation } from './utils/logger';
 import { initModularizedControllers } from './utils';
 import { accountsControllerInit } from './controllers/accounts-controller';
+import { accountTrackerControllerInit } from './controllers/account-tracker-controller';
 import { createTokenSearchDiscoveryController } from './controllers/TokenSearchDiscoveryController';
 import {
   BRIDGE_DEV_API_BASE_URL,
@@ -706,30 +707,6 @@ export class Engine {
       ),
     });
 
-    const accountTrackerController = new AccountTrackerController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'AccountTrackerController',
-        allowedActions: [
-          'AccountsController:getSelectedAccount',
-          'AccountsController:listAccounts',
-          'PreferencesController:getState',
-          'NetworkController:getState',
-          'NetworkController:getNetworkClientById',
-        ],
-        allowedEvents: [
-          'AccountsController:selectedEvmAccountChange',
-          'AccountsController:selectedAccountChange',
-        ],
-      }),
-      state: initialState.AccountTrackerController ?? {
-        accountsByChainId: {},
-      },
-      getStakedBalanceForChain:
-        assetsContractController.getStakedBalanceForChain.bind(
-          assetsContractController,
-        ),
-      includeStakedAssets: true,
-    });
     const permissionController = new PermissionController({
       messenger: this.controllerMessenger.getRestricted({
         name: 'PermissionController',
@@ -1013,6 +990,7 @@ export class Engine {
 
     const existingControllersByName = {
       ApprovalController: approvalController,
+      AssetsContractController: assetsContractController,
       KeyringController: this.keyringController,
       NetworkController: networkController,
       PreferencesController: preferencesController,
@@ -1027,6 +1005,7 @@ export class Engine {
     const { controllersByName } = initModularizedControllers({
       controllerInitFunctions: {
         AccountsController: accountsControllerInit,
+        AccountTrackerController: accountTrackerControllerInit,
         AppMetadataController: appMetadataControllerInit,
         GasFeeController: GasFeeControllerInit,
         TransactionController: TransactionControllerInit,
@@ -1185,7 +1164,7 @@ export class Engine {
 
     this.context = {
       KeyringController: this.keyringController,
-      AccountTrackerController: accountTrackerController,
+      AccountTrackerController: controllersByName.AccountTrackerController,
       AddressBookController: new AddressBookController({
         messenger: this.controllerMessenger.getRestricted({
           name: 'AddressBookController',
