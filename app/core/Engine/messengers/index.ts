@@ -1,6 +1,7 @@
 import { noop } from 'lodash';
 import { getAccountsControllerMessenger } from './accounts-controller-messenger';
 import { getAccountTrackerControllerMessenger } from './account-tracker-controller-messenger';
+import { getSelectedNetworkControllerMessenger } from './selected-network-controller-messenger';
 import { getMultichainNetworkControllerMessenger } from './multichain-network-controller-messenger/multichain-network-controller-messenger';
 import { getCurrencyRateControllerMessenger } from './currency-rate-controller-messenger/currency-rate-controller-messenger';
 import { getAppMetadataControllerMessenger } from './app-metadata-controller-messenger';
@@ -38,6 +39,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   AccountTrackerController: {
     getMessenger: getAccountTrackerControllerMessenger,
+    getInitMessenger: noop,
+  },
+  SelectedNetworkController: {
+    getMessenger: getSelectedNetworkControllerMessenger,
     getInitMessenger: noop,
   },
   TransactionController: {

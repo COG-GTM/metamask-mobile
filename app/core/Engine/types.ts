@@ -591,6 +591,7 @@ export type ControllersToInitialize =
   | 'CurrencyRateController'
   | 'AccountsController'
   | 'AccountTrackerController'
+  | 'SelectedNetworkController'
   | 'MultichainNetworkController'
   | 'TransactionController'
   | 'GasFeeController'
