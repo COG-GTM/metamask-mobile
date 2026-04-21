@@ -33,6 +33,7 @@ import { getNftDetectionControllerMessenger } from './nft-detection-controller-m
 import { getTokenDetectionControllerMessenger } from './token-detection-controller-messenger';
 import { getTokenBalancesControllerMessenger } from './token-balances-controller-messenger';
 import { getTokenRatesControllerMessenger } from './token-rates-controller-messenger';
+import { getTokenSearchDiscoveryDataControllerMessenger } from './token-search-discovery-data-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -87,6 +88,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   TokenRatesController: {
     getMessenger: getTokenRatesControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenSearchDiscoveryDataController: {
+    getMessenger: getTokenSearchDiscoveryDataControllerMessenger,
     getInitMessenger: noop,
   },
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
