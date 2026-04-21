@@ -578,6 +578,7 @@ export type ControllersToInitialize =
   | 'SnapController'
   | 'SnapInterfaceController'
   | 'SnapsRegistry'
+  | 'SubjectMetadataController'
   | 'NotificationServicesController'
   | 'NotificationServicesPushController'
   | 'AppMetadataController'
@@ -590,6 +591,8 @@ export type ControllersToInitialize =
   ///: END:ONLY_INCLUDE_IF
   | 'CurrencyRateController'
   | 'AccountsController'
+  | 'NetworkController'
+  | 'PreferencesController'
   | 'MultichainNetworkController'
   | 'TransactionController'
   | 'GasFeeController'

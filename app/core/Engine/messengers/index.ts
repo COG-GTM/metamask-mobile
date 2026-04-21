@@ -27,12 +27,25 @@ import { getNotificationServicesControllerMessenger } from './notifications/noti
 import { getNotificationServicesPushControllerMessenger } from './notifications/notification-services-push-controller-messenger';
 import { getGasFeeControllerMessenger } from './gas-fee-controller-messenger/gas-fee-controller-messenger';
 import { getSignatureControllerMessenger } from './signature-controller-messenger';
+import { getPreferencesControllerMessenger } from './preferences-controller-messenger';
+import { getNetworkControllerMessenger } from './network-controller-messenger';
+///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
+import { getSubjectMetadataControllerMessenger } from './subject-metadata-controller-messenger';
+///: END:ONLY_INCLUDE_IF
 /**
  * The messengers for the controllers that have been.
  */
 export const CONTROLLER_MESSENGERS = {
   AccountsController: {
     getMessenger: getAccountsControllerMessenger,
+    getInitMessenger: noop,
+  },
+  NetworkController: {
+    getMessenger: getNetworkControllerMessenger,
+    getInitMessenger: noop,
+  },
+  PreferencesController: {
+    getMessenger: getPreferencesControllerMessenger,
     getInitMessenger: noop,
   },
   TransactionController: {
@@ -66,6 +79,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   ExecutionService: {
     getMessenger: getExecutionServiceMessenger,
+    getInitMessenger: noop,
+  },
+  SubjectMetadataController: {
+    getMessenger: getSubjectMetadataControllerMessenger,
     getInitMessenger: noop,
   },
   SnapController: {

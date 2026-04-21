@@ -25,13 +25,10 @@ import {
   ///: END:ONLY_INCLUDE_IF
 } from '@metamask/keyring-controller';
 import {
-  NetworkController,
-  NetworkControllerMessenger,
   NetworkState,
   NetworkStatus,
 } from '@metamask/network-controller';
 import { PhishingController } from '@metamask/phishing-controller';
-import { PreferencesController } from '@metamask/preferences-controller';
 import {
   TransactionController,
   TransactionMeta,
@@ -199,14 +196,17 @@ import { EarnController } from '@metamask/earn-controller';
 import { TransactionControllerInit } from './controllers/transaction-controller';
 import { SignatureControllerInit } from './controllers/signature-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
+import { preferencesControllerInit } from './controllers/preferences-controller';
+import { networkControllerInit } from './controllers/network-controller';
+///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
+import { subjectMetadataControllerInit } from './controllers/subject-metadata-controller';
+///: END:ONLY_INCLUDE_IF
 import I18n from '../../../locales/i18n';
 import { Platform } from '@metamask/profile-sync-controller/sdk';
 import { isProductSafetyDappScanningEnabled } from '../../util/phishingDetection';
 import { appMetadataControllerInit } from './controllers/app-metadata-controller';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { toFormattedAddress } from '../../util/address';
-
-const NON_EMPTY = 'NON_EMPTY';
 
 const encryptor = new Encryptor({
   keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
@@ -284,46 +284,24 @@ export class Engine {
       ],
     });
 
-    const preferencesController = new PreferencesController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'PreferencesController',
-        allowedActions: [],
-        allowedEvents: ['KeyringController:stateChange'],
-      }),
-      state: {
-        ipfsGateway: AppConstants.IPFS_DEFAULT_GATEWAY_URL,
-        useTokenDetection:
-          initialState?.PreferencesController?.useTokenDetection ?? true,
-        useNftDetection: true, // set this to true to enable nft detection by default to new users
-        displayNftMedia: true,
-        securityAlertsEnabled: true,
-        smartTransactionsOptInStatus: true,
-        tokenSortConfig: {
-          key: 'tokenFiatAmount',
-          order: 'dsc',
-          sortCallback: 'stringNumeric',
+    const { controllersByName: earlyControllersByName } =
+      initModularizedControllers({
+        controllerInitFunctions: {
+          NetworkController: networkControllerInit,
+          PreferencesController: preferencesControllerInit,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        persistedState: initialState as EngineState,
+        existingControllersByName: {
+          ApprovalController: approvalController,
         },
-        ...initialState.PreferencesController,
-      },
-    });
+        baseControllerMessenger: this.controllerMessenger,
+        getState: () => store.getState(),
+        getGlobalChainId: () => currentChainId,
+      });
 
-    const networkControllerOpts = {
-      infuraProjectId: process.env.MM_INFURA_PROJECT_ID || NON_EMPTY,
-      state: initialState.NetworkController,
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'NetworkController',
-        allowedEvents: [],
-        allowedActions: [],
-      }) as unknown as NetworkControllerMessenger,
-      getRpcServiceOptions: () => ({
-        fetch,
-        btoa,
-      }),
-      additionalDefaultNetworks: [ChainId['megaeth-testnet']],
-    };
-    const networkController = new NetworkController(networkControllerOpts);
-
-    networkController.initializeProvider();
+    const preferencesController = earlyControllersByName.PreferencesController;
+    const networkController = earlyControllersByName.NetworkController;
 
     const assetsContractController = new AssetsContractController({
       messenger: this.controllerMessenger.getRestricted({
@@ -789,16 +767,6 @@ export class Engine {
     });
 
     ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-    this.subjectMetadataController = new SubjectMetadataController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'SubjectMetadataController',
-        allowedActions: [`${permissionController.name}:hasPermissions`],
-        allowedEvents: [],
-      }),
-      state: initialState.SubjectMetadataController || {},
-      subjectCacheLimit: 100,
-    });
-
     const authenticationControllerMessenger =
       getAuthenticationControllerMessenger(this.controllerMessenger);
     const authenticationController = createAuthenticationController({
@@ -1039,6 +1007,7 @@ export class Engine {
         CronjobController: cronjobControllerInit,
         SnapInterfaceController: snapInterfaceControllerInit,
         SnapsRegistry: snapsRegistryInit,
+        SubjectMetadataController: subjectMetadataControllerInit,
         NotificationServicesController: notificationServicesControllerInit,
         NotificationServicesPushController:
           notificationServicesPushControllerInit,
@@ -1076,6 +1045,7 @@ export class Engine {
     const snapController = controllersByName.SnapController;
     const snapInterfaceController = controllersByName.SnapInterfaceController;
     const snapsRegistry = controllersByName.SnapsRegistry;
+    this.subjectMetadataController = controllersByName.SubjectMetadataController;
     const notificationServicesController =
       controllersByName.NotificationServicesController;
     const notificationServicesPushController =
