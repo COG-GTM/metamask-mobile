@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { LayoutChangeEvent, StyleSheet, View, Text, ViewStyle } from 'react-native';
 import { fontStyles } from '../../../../../../styles/common';
@@ -153,6 +153,12 @@ const TypedSign = ({
     [metrics, messageParams],
   );
 
+  // Use a ref so the event listener always invokes the latest callback,
+  // matching the class component behavior where this.onSignatureError
+  // always accessed this.props at call time.
+  const onSignatureErrorRef = useRef(onSignatureError);
+  onSignatureErrorRef.current = onSignatureError;
+
   useEffect(() => {
     const { metamaskId } = messageParams;
 
@@ -163,10 +169,13 @@ const TypedSign = ({
         .addProperties(getAnalyticsParams(messageParams, 'typed_sign'))
         .build(),
     );
-    addSignatureErrorListener(metamaskId, onSignatureError);
+
+    const handler = ({ error }: { error: Error }) =>
+      onSignatureErrorRef.current({ error });
+    addSignatureErrorListener(metamaskId, handler);
 
     return () => {
-      removeSignatureErrorListener(metamaskId, onSignatureError);
+      removeSignatureErrorListener(metamaskId, handler);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
