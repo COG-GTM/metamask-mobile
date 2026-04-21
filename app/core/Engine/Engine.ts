@@ -186,6 +186,7 @@ import {
 import { logEngineCreation } from './utils/logger';
 import { initModularizedControllers } from './utils';
 import { accountsControllerInit } from './controllers/accounts-controller';
+import { approvalControllerInit } from './controllers/approval-controller';
 import { createTokenSearchDiscoveryController } from './controllers/TokenSearchDiscoveryController';
 import {
   BRIDGE_DEV_API_BASE_URL,
@@ -270,19 +271,6 @@ export class Engine {
 
     const isBasicFunctionalityToggleEnabled = () =>
       selectBasicFunctionalityEnabled(store.getState());
-
-    const approvalController = new ApprovalController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'ApprovalController',
-        allowedEvents: [],
-        allowedActions: [],
-      }),
-      showApprovalRequest: () => undefined,
-      typesExcludedFromRateLimiting: [
-        ApprovalType.Transaction,
-        ApprovalType.WatchAsset,
-      ],
-    });
 
     const preferencesController = new PreferencesController({
       messenger: this.controllerMessenger.getRestricted({
@@ -519,6 +507,8 @@ export class Engine {
       });
     };
 
+    let approvalController: ApprovalController;
+
     const snapRestrictedMethods = {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -647,8 +637,9 @@ export class Engine {
         this.controllerMessenger,
         'SnapInterfaceController:updateInterface',
       ),
-      requestUserApproval:
-        approvalController.addAndShowApprovalRequest.bind(approvalController),
+      requestUserApproval: (opts: Parameters<
+        ApprovalController['addAndShowApprovalRequest']
+      >[0]) => approvalController.addAndShowApprovalRequest(opts),
       hasPermission: (origin: string, target: string) =>
         this.controllerMessenger.call<'PermissionController:hasPermission'>(
           'PermissionController:hasPermission',
@@ -734,10 +725,10 @@ export class Engine {
       messenger: this.controllerMessenger.getRestricted({
         name: 'PermissionController',
         allowedActions: [
-          `${approvalController.name}:addRequest`,
-          `${approvalController.name}:hasRequest`,
-          `${approvalController.name}:acceptRequest`,
-          `${approvalController.name}:rejectRequest`,
+          `ApprovalController:addRequest`,
+          `ApprovalController:hasRequest`,
+          `ApprovalController:acceptRequest`,
+          `ApprovalController:rejectRequest`,
           ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
           `SnapController:getPermitted`,
           `SnapController:install`,
@@ -1012,7 +1003,6 @@ export class Engine {
     });
 
     const existingControllersByName = {
-      ApprovalController: approvalController,
       KeyringController: this.keyringController,
       NetworkController: networkController,
       PreferencesController: preferencesController,
@@ -1026,6 +1016,7 @@ export class Engine {
 
     const { controllersByName } = initModularizedControllers({
       controllerInitFunctions: {
+        ApprovalController: approvalControllerInit,
         AccountsController: accountsControllerInit,
         AppMetadataController: appMetadataControllerInit,
         GasFeeController: GasFeeControllerInit,
@@ -1055,6 +1046,8 @@ export class Engine {
       baseControllerMessenger: this.controllerMessenger,
       ...initRequest,
     });
+
+    approvalController = controllersByName.ApprovalController;
 
     const accountsController = controllersByName.AccountsController;
     const gasFeeController = controllersByName.GasFeeController;
@@ -1336,7 +1329,7 @@ export class Engine {
         fetchEstimatedMultiLayerL1Fee,
       }),
       GasFeeController: this.gasFeeController,
-      ApprovalController: approvalController,
+      ApprovalController: controllersByName.ApprovalController,
       PermissionController: permissionController,
       RemoteFeatureFlagController: remoteFeatureFlagController,
       SelectedNetworkController: selectedNetworkController,

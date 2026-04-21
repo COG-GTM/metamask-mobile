@@ -1,5 +1,6 @@
 import { noop } from 'lodash';
 import { getAccountsControllerMessenger } from './accounts-controller-messenger';
+import { getApprovalControllerMessenger } from './approval-controller-messenger';
 import { getMultichainNetworkControllerMessenger } from './multichain-network-controller-messenger/multichain-network-controller-messenger';
 import { getCurrencyRateControllerMessenger } from './currency-rate-controller-messenger/currency-rate-controller-messenger';
 import { getAppMetadataControllerMessenger } from './app-metadata-controller-messenger';
@@ -33,6 +34,10 @@ import { getSignatureControllerMessenger } from './signature-controller-messenge
 export const CONTROLLER_MESSENGERS = {
   AccountsController: {
     getMessenger: getAccountsControllerMessenger,
+    getInitMessenger: noop,
+  },
+  ApprovalController: {
+    getMessenger: getApprovalControllerMessenger,
     getInitMessenger: noop,
   },
   TransactionController: {

@@ -590,6 +590,7 @@ export type ControllersToInitialize =
   ///: END:ONLY_INCLUDE_IF
   | 'CurrencyRateController'
   | 'AccountsController'
+  | 'ApprovalController'
   | 'MultichainNetworkController'
   | 'TransactionController'
   | 'GasFeeController'
