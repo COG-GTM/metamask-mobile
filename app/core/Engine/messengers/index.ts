@@ -32,6 +32,7 @@ import { getSmartTransactionsControllerMessenger } from './smart-transactions-co
 import { getSwapsControllerMessenger } from './swaps-controller-messenger';
 import { getBridgeControllerMessenger } from './bridge-controller-messenger';
 import { getBridgeStatusControllerMessenger } from './bridge-status-controller-messenger';
+import { getPPOMControllerMessenger } from './ppom-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -82,6 +83,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   BridgeStatusController: {
     getMessenger: getBridgeStatusControllerMessenger,
+    getInitMessenger: noop,
+  },
+  PPOMController: {
+    getMessenger: getPPOMControllerMessenger,
     getInitMessenger: noop,
   },
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)

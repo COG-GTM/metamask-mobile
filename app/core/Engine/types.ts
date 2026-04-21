@@ -598,7 +598,8 @@ export type ControllersToInitialize =
   | 'SmartTransactionsController'
   | 'SwapsController'
   | 'BridgeController'
-  | 'BridgeStatusController';
+  | 'BridgeStatusController'
+  | 'PPOMController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.
