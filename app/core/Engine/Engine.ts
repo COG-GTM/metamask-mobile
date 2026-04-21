@@ -191,6 +191,7 @@ import { phishingControllerInit } from './controllers/phishing-controller';
 import { addressBookControllerInit } from './controllers/address-book-controller';
 import { tokenListControllerInit } from './controllers/token-list-controller';
 import { assetsContractControllerInit } from './controllers/assets-contract-controller';
+import { remoteFeatureFlagControllerInit } from './controllers/remote-feature-flag-controller/remote-feature-flag-controller-init';
 import { createTokenSearchDiscoveryController } from './controllers/TokenSearchDiscoveryController';
 import {
   BRIDGE_DEV_API_BASE_URL,
@@ -316,16 +317,6 @@ export class Engine {
     const networkController = new NetworkController(networkControllerOpts);
 
     networkController.initializeProvider();
-
-    const remoteFeatureFlagController = createRemoteFeatureFlagController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'RemoteFeatureFlagController',
-        allowedActions: [],
-        allowedEvents: [],
-      }),
-      disabled: !isBasicFunctionalityToggleEnabled(),
-      getMetaMetricsId: () => metaMetricsId ?? '',
-    });
 
     const tokenSearchDiscoveryController = createTokenSearchDiscoveryController(
       {
@@ -963,6 +954,7 @@ export class Engine {
     const initRequest = {
       getState: () => store.getState(),
       getGlobalChainId: () => currentChainId,
+      getMetaMetricsId: () => metaMetricsId,
     };
 
     const { controllersByName } = initModularizedControllers({
@@ -973,6 +965,7 @@ export class Engine {
         AddressBookController: addressBookControllerInit,
         TokenListController: tokenListControllerInit,
         AssetsContractController: assetsContractControllerInit,
+        RemoteFeatureFlagController: remoteFeatureFlagControllerInit,
         AccountsController: accountsControllerInit,
         AppMetadataController: appMetadataControllerInit,
         GasFeeController: GasFeeControllerInit,
@@ -1280,7 +1273,7 @@ export class Engine {
       GasFeeController: this.gasFeeController,
       ApprovalController: controllersByName.ApprovalController,
       PermissionController: permissionController,
-      RemoteFeatureFlagController: remoteFeatureFlagController,
+      RemoteFeatureFlagController: controllersByName.RemoteFeatureFlagController,
       SelectedNetworkController: selectedNetworkController,
       SignatureController: signatureController,
       TokenSearchDiscoveryController: tokenSearchDiscoveryController,

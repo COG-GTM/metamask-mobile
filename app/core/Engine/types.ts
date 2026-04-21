@@ -596,6 +596,7 @@ export type ControllersToInitialize =
   | 'AddressBookController'
   | 'TokenListController'
   | 'AssetsContractController'
+  | 'RemoteFeatureFlagController'
   | 'MultichainNetworkController'
   | 'TransactionController'
   | 'GasFeeController'
@@ -657,6 +658,11 @@ export type ControllerInitRequest<
   getGlobalChainId: () => Hex;
 
   /**
+   * Retrieve the MetaMetrics ID.
+   */
+  getMetaMetricsId: () => string | undefined;
+
+  /**
    * Get the UI state of the app, returning the current Redux state including transient UI data,
    * whereas `persistedState` contains only the subset of state persisted across sessions.
    * For example: `{ settings, user, engine: { backgroundState: EngineState } }`.
@@ -709,6 +715,7 @@ export type InitModularizedControllersFunction = (request: {
   controllerInitFunctions: ControllerInitFunctionByControllerName;
   existingControllersByName?: Partial<ControllerByName>;
   getGlobalChainId: () => Hex;
+  getMetaMetricsId: () => string | undefined;
   getState: () => RootState;
   persistedState: ControllerPersistedState;
 }) => {
