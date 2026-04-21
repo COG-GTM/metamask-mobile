@@ -189,6 +189,7 @@ import { approvalControllerInit } from './controllers/approval-controller';
 import { loggingControllerInit } from './controllers/logging-controller';
 import { phishingControllerInit } from './controllers/phishing-controller';
 import { addressBookControllerInit } from './controllers/address-book-controller';
+import { tokenListControllerInit } from './controllers/token-list-controller';
 import { createTokenSearchDiscoveryController } from './controllers/TokenSearchDiscoveryController';
 import {
   BRIDGE_DEV_API_BASE_URL,
@@ -332,19 +333,6 @@ export class Engine {
       chainId: getGlobalChainId(networkController),
     });
 
-    const tokenListController = new TokenListController({
-      chainId: getGlobalChainId(networkController),
-      onNetworkStateChange: (listener) =>
-        this.controllerMessenger.subscribe(
-          AppConstants.NETWORK_STATE_CHANGE_EVENT,
-          listener,
-        ),
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'TokenListController',
-        allowedActions: [`${networkController.name}:getNetworkClientById`],
-        allowedEvents: [`${networkController.name}:stateChange`],
-      }),
-    });
     const remoteFeatureFlagController = createRemoteFeatureFlagController({
       messenger: this.controllerMessenger.getRestricted({
         name: 'RemoteFeatureFlagController',
@@ -999,6 +987,7 @@ export class Engine {
         LoggingController: loggingControllerInit,
         PhishingController: phishingControllerInit,
         AddressBookController: addressBookControllerInit,
+        TokenListController: tokenListControllerInit,
         AccountsController: accountsControllerInit,
         AppMetadataController: appMetadataControllerInit,
         GasFeeController: GasFeeControllerInit,
