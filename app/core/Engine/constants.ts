@@ -3,7 +3,7 @@ import { SnapControllerStateChangeEvent } from './controllers/snaps';
 ///: END:ONLY_INCLUDE_IF
 
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-import { RatesControllerStateChangeEvent } from './controllers/RatesController/constants';
+import { RatesControllerStateChangeEvent } from './controllers/rates-controller/constants';
 ///: END:ONLY_INCLUDE_IF
 
 import { swapsUtils } from '@metamask/swaps-controller';

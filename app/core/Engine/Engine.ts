@@ -145,8 +145,9 @@ import { snapKeyringBuilder } from '../SnapKeyring';
 import { removeAccountsFromPermissions } from '../Permissions';
 import { keyringSnapPermissionsBuilder } from '../SnapKeyring/keyringSnapsPermissions';
 import { multichainBalancesControllerInit } from './controllers/multichain-balances-controller/multichain-balances-controller-init';
-import { createMultichainRatesController } from './controllers/RatesController/utils';
-import { setupCurrencyRateSync } from './controllers/RatesController/subscriptions';
+///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+import { ratesControllerInit } from './controllers/rates-controller';
+///: END:ONLY_INCLUDE_IF
 import { multichainAssetsControllerInit } from './controllers/multichain-assets-controller/multichain-assets-controller-init';
 import { multichainAssetsRatesControllerInit } from './controllers/multichain-assets-rates-controller/multichain-assets-rates-controller-init';
 import { multichainTransactionsControllerInit } from './controllers/multichain-transactions-controller/multichain-transactions-controller-init';
@@ -921,6 +922,7 @@ export class Engine {
         MultichainAssetsRatesController: multichainAssetsRatesControllerInit,
         MultichainBalancesController: multichainBalancesControllerInit,
         MultichainTransactionsController: multichainTransactionsControllerInit,
+        RatesController: ratesControllerInit,
         ///: END:ONLY_INCLUDE_IF
       },
       persistedState: initialState as EngineState,
@@ -969,23 +971,7 @@ export class Engine {
     ///: END:ONLY_INCLUDE_IF
 
     ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-    const multichainRatesControllerMessenger =
-      this.controllerMessenger.getRestricted({
-        name: 'RatesController',
-        allowedActions: [],
-        allowedEvents: ['CurrencyRateController:stateChange'],
-      });
-
-    const multichainRatesController = createMultichainRatesController({
-      messenger: multichainRatesControllerMessenger,
-      initialState: initialState.RatesController,
-    });
-
-    // Set up currency rate sync
-    setupCurrencyRateSync(
-      multichainRatesControllerMessenger,
-      multichainRatesController,
-    );
+    const multichainRatesController = controllersByName.RatesController;
     ///: END:ONLY_INCLUDE_IF
 
     ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)

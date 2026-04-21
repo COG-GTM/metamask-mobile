@@ -33,6 +33,9 @@ import { getSwapsControllerMessenger } from './swaps-controller-messenger';
 import { getBridgeControllerMessenger } from './bridge-controller-messenger';
 import { getBridgeStatusControllerMessenger } from './bridge-status-controller-messenger';
 import { getPPOMControllerMessenger } from './ppom-controller-messenger';
+///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+import { getRatesControllerMessenger } from './rates-controller-messenger';
+///: END:ONLY_INCLUDE_IF
 /**
  * The messengers for the controllers that have been.
  */
@@ -89,6 +92,12 @@ export const CONTROLLER_MESSENGERS = {
     getMessenger: getPPOMControllerMessenger,
     getInitMessenger: noop,
   },
+  ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+  RatesController: {
+    getMessenger: getRatesControllerMessenger,
+    getInitMessenger: noop,
+  },
+  ///: END:ONLY_INCLUDE_IF
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   CronjobController: {
     getMessenger: getCronjobControllerMessenger,
