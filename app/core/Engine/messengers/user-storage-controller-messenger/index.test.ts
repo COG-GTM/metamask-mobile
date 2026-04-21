@@ -1,5 +1,5 @@
 import { BaseControllerMessenger } from '../../types';
-import { getUserStorageControllerMessenger } from './user-storage-controller-messenger';
+import { getUserStorageControllerMessenger } from './index';
 import { ExtendedControllerMessenger } from '../../../ExtendedControllerMessenger';
 
 describe('getUserStorageControllerMessenger', () => {

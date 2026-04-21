@@ -582,6 +582,7 @@ export type ControllersToInitialize =
   | 'NotificationServicesPushController'
   | 'AppMetadataController'
   | 'AuthenticationController'
+  | 'UserStorageController'
   ///: END:ONLY_INCLUDE_IF
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   | 'MultichainAssetsController'

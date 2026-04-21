@@ -95,8 +95,7 @@ import { notificationServicesControllerInit } from './controllers/notifications/
 import { notificationServicesPushControllerInit } from './controllers/notifications/notification-services-push-controller-init';
 
 import { authenticationControllerInit } from './controllers/authentication-controller';
-import { getUserStorageControllerMessenger } from './messengers/identity/user-storage-controller-messenger';
-import { createUserStorageController } from './controllers/identity/create-user-storage-controller';
+import { userStorageControllerInit } from './controllers/user-storage-controller';
 ///: END:ONLY_INCLUDE_IF
 import {
   getCaveatSpecifications,
@@ -750,52 +749,6 @@ export class Engine {
       subjectCacheLimit: 100,
     });
 
-    const userStorageControllerMessenger = getUserStorageControllerMessenger(
-      this.controllerMessenger,
-    );
-    const userStorageController = createUserStorageController({
-      messenger: userStorageControllerMessenger,
-      initialState: initialState.UserStorageController,
-      nativeScryptCrypto: calculateScryptKey,
-      config: {
-        accountSyncing: {
-          onAccountAdded: (profileId) => {
-            MetaMetrics.getInstance().trackEvent(
-              MetricsEventBuilder.createEventBuilder(
-                MetaMetricsEvents.ACCOUNTS_SYNC_ADDED,
-              )
-                .addProperties({
-                  profile_id: profileId,
-                })
-                .build(),
-            );
-          },
-          onAccountNameUpdated: (profileId) => {
-            MetaMetrics.getInstance().trackEvent(
-              MetricsEventBuilder.createEventBuilder(
-                MetaMetricsEvents.ACCOUNTS_SYNC_NAME_UPDATED,
-              )
-                .addProperties({
-                  profile_id: profileId,
-                })
-                .build(),
-            );
-          },
-          onAccountSyncErroneousSituation(profileId, situationMessage) {
-            MetaMetrics.getInstance().trackEvent(
-              MetricsEventBuilder.createEventBuilder(
-                MetaMetricsEvents.ACCOUNTS_SYNC_ERRONEOUS_SITUATION,
-              )
-                .addProperties({
-                  profile_id: profileId,
-                  situation_message: situationMessage,
-                })
-                .build(),
-            );
-          },
-        },
-      },
-    });
     ///: END:ONLY_INCLUDE_IF
 
     const codefiTokenApiV2 = new CodefiTokenPricesServiceV2();
@@ -985,6 +938,7 @@ export class Engine {
         NotificationServicesPushController:
           notificationServicesPushControllerInit,
         AuthenticationController: authenticationControllerInit,
+        UserStorageController: userStorageControllerInit,
         ///: END:ONLY_INCLUDE_IF
         ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
         MultichainAssetsController: multichainAssetsControllerInit,
@@ -1294,7 +1248,7 @@ export class Engine {
       SnapsRegistry: snapsRegistry,
       SubjectMetadataController: this.subjectMetadataController,
       AuthenticationController: controllersByName.AuthenticationController,
-      UserStorageController: userStorageController,
+      UserStorageController: controllersByName.UserStorageController,
       NotificationServicesController: notificationServicesController,
       NotificationServicesPushController: notificationServicesPushController,
       ///: END:ONLY_INCLUDE_IF
