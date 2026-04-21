@@ -1,8 +1,18 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { createSelector } from 'reselect';
 import { NotificationTypes } from '../../util/notifications';
+import type {
+  NotificationAction,
+  NotificationRecord,
+} from '../../actions/notification';
+
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-export const initialState = {
+export interface NotificationState {
+  notifications: NotificationRecord[];
+}
+
+export const initialState: NotificationState = {
   notifications: [],
 };
 
@@ -19,23 +29,31 @@ export const ACTIONS = {
   SHOW_SIMPLE_NOTIFICATION: 'SHOW_SIMPLE_NOTIFICATION',
   SHOW_TRANSACTION_NOTIFICATION: 'SHOW_TRANSACTION_NOTIFICATION',
   UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
-};
+} as const;
 
-const enqueue = (notifications, notification) => [
-  ...notifications,
-  notification,
-];
-const dequeue = (notifications) => notifications.slice(1);
+const enqueue = (
+  notifications: NotificationRecord[],
+  notification: NotificationRecord,
+): NotificationRecord[] => [...notifications, notification];
+const dequeue = (notifications: NotificationRecord[]): NotificationRecord[] =>
+  notifications.slice(1);
+
+interface RootStateSlice {
+  notifications?: NotificationRecord[];
+}
 
 export const currentNotificationSelector = createSelector(
-  (
-    /** @type {import('..').RootState} */
-    state,
-  ) => state?.notifications,
-  (notifications) => notifications[0] || {},
+  (state: RootStateSlice) => state?.notifications,
+  (notifications): NotificationRecord | Record<string, never> =>
+    notifications?.[0] ?? {},
 );
 
-const notificationReducer = (state = initialState, action) => {
+const notificationReducer = (
+  state: NotificationState = initialState,
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: NotificationAction | any,
+): NotificationState => {
   const { notifications } = state;
   switch (action.type) {
     // make current notification isVisible props false
@@ -52,7 +70,9 @@ const notificationReducer = (state = initialState, action) => {
       return state;
     }
     case ACTIONS.HIDE_NOTIFICATION_BY_ID: {
-      const index = notifications.findIndex(({ id }) => id === action.id);
+      const index = notifications.findIndex(
+        ({ id }) => id === action.id,
+      );
       if (index === -1) {
         return state;
       }
@@ -66,7 +86,9 @@ const notificationReducer = (state = initialState, action) => {
       };
     }
     case ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION: {
-      const index = notifications.findIndex(({ id }) => id === action.id);
+      const index = notifications.findIndex(
+        ({ id }) => id === action.id,
+      );
       if (index >= 0) {
         return {
           ...state,
@@ -100,7 +122,9 @@ const notificationReducer = (state = initialState, action) => {
       };
     }
     case ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION: {
-      const index = notifications.findIndex(({ id }) => id === action.id);
+      const index = notifications.findIndex(
+        ({ id }) => id === action.id,
+      );
       if (index >= 0) {
         return {
           ...state,
@@ -136,7 +160,9 @@ const notificationReducer = (state = initialState, action) => {
       };
     }
     case ACTIONS.REPLACE_NOTIFICATION_BY_ID: {
-      const index = notifications.findIndex(({ id }) => id === action.id);
+      const index = notifications.findIndex(
+        ({ id }) => id === action.id,
+      );
       if (index === -1) {
         return state;
       }
@@ -152,7 +178,9 @@ const notificationReducer = (state = initialState, action) => {
     case ACTIONS.REMOVE_NOTIFICATION_BY_ID: {
       return {
         ...state,
-        notifications: notifications.filter(({ id }) => id !== action.id),
+        notifications: notifications.filter(
+          ({ id }) => id !== action.id,
+        ),
       };
     }
     case ACTIONS.REMOVE_CURRENT_NOTIFICATION: {
@@ -190,7 +218,9 @@ const notificationReducer = (state = initialState, action) => {
     }
     case ACTIONS.REMOVE_NOT_VISIBLE_NOTIFICATIONS: {
       const visibleNotifications =
-        notifications?.filter((notification) => notification.isVisible) || [];
+        notifications?.filter(
+          (notification) => notification.isVisible,
+        ) || [];
       return {
         ...state,
         notifications: visibleNotifications,
