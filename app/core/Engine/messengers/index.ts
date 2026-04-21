@@ -1,5 +1,6 @@
 import { noop } from 'lodash';
 import { getAccountsControllerMessenger } from './accounts-controller-messenger';
+import { getAddressBookControllerMessenger } from './address-book-controller-messenger';
 import { getApprovalControllerMessenger } from './approval-controller-messenger';
 import { getLoggingControllerMessenger } from './logging-controller-messenger';
 import { getPhishingControllerMessenger } from './phishing-controller-messenger';
@@ -48,6 +49,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   PhishingController: {
     getMessenger: getPhishingControllerMessenger,
+    getInitMessenger: noop,
+  },
+  AddressBookController: {
+    getMessenger: getAddressBookControllerMessenger,
     getInitMessenger: noop,
   },
   TransactionController: {

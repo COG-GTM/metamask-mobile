@@ -15,7 +15,6 @@ import {
   TokenSearchDiscoveryDataController,
 } from '@metamask/assets-controllers';
 import { AccountsController } from '@metamask/accounts-controller';
-import { AddressBookController } from '@metamask/address-book-controller';
 import { ComposableController } from '@metamask/composable-controller';
 import {
   KeyringController,
@@ -189,6 +188,7 @@ import { accountsControllerInit } from './controllers/accounts-controller';
 import { approvalControllerInit } from './controllers/approval-controller';
 import { loggingControllerInit } from './controllers/logging-controller';
 import { phishingControllerInit } from './controllers/phishing-controller';
+import { addressBookControllerInit } from './controllers/address-book-controller';
 import { createTokenSearchDiscoveryController } from './controllers/TokenSearchDiscoveryController';
 import {
   BRIDGE_DEV_API_BASE_URL,
@@ -998,6 +998,7 @@ export class Engine {
         ApprovalController: approvalControllerInit,
         LoggingController: loggingControllerInit,
         PhishingController: phishingControllerInit,
+        AddressBookController: addressBookControllerInit,
         AccountsController: accountsControllerInit,
         AppMetadataController: appMetadataControllerInit,
         GasFeeController: GasFeeControllerInit,
@@ -1160,14 +1161,7 @@ export class Engine {
     this.context = {
       KeyringController: this.keyringController,
       AccountTrackerController: accountTrackerController,
-      AddressBookController: new AddressBookController({
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'AddressBookController',
-          allowedActions: [],
-          allowedEvents: [],
-        }),
-        state: initialState.AddressBookController,
-      }),
+      AddressBookController: controllersByName.AddressBookController,
       AppMetadataController: controllersByName.AppMetadataController,
       AssetsContractController: assetsContractController,
       NftController: nftController,
