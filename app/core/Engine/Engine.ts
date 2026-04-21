@@ -61,7 +61,6 @@ import type { EnumToUnion, DialogType } from '@metamask/snaps-sdk';
 ///: END:ONLY_INCLUDE_IF
 import { MetaMaskKeyring as QRHardwareKeyring } from '@keystonehq/metamask-airgapped-keyring';
 import { LoggingController } from '@metamask/logging-controller';
-import { TokenSearchDiscoveryControllerMessenger } from '@metamask/token-search-discovery-controller';
 import {
   LedgerKeyring,
   LedgerMobileBridge,
@@ -110,7 +109,6 @@ import { providerErrors } from '@metamask/rpc-errors';
 
 import { PPOM, ppomInit } from '../../lib/ppom/PPOMView';
 import RNFSStorageBackend from '../../lib/ppom/ppom-storage-backend';
-import { createRemoteFeatureFlagController } from './controllers/remote-feature-flag-controller';
 import {
   networkIdUpdated,
   networkIdWillUpdate,
@@ -192,7 +190,7 @@ import { addressBookControllerInit } from './controllers/address-book-controller
 import { tokenListControllerInit } from './controllers/token-list-controller';
 import { assetsContractControllerInit } from './controllers/assets-contract-controller';
 import { remoteFeatureFlagControllerInit } from './controllers/remote-feature-flag-controller/remote-feature-flag-controller-init';
-import { createTokenSearchDiscoveryController } from './controllers/TokenSearchDiscoveryController';
+import { tokenSearchDiscoveryControllerInit } from './controllers/TokenSearchDiscoveryController/token-search-discovery-controller-init';
 import {
   BRIDGE_DEV_API_BASE_URL,
   BridgeClientId,
@@ -317,17 +315,6 @@ export class Engine {
     const networkController = new NetworkController(networkControllerOpts);
 
     networkController.initializeProvider();
-
-    const tokenSearchDiscoveryController = createTokenSearchDiscoveryController(
-      {
-        state: initialState.TokenSearchDiscoveryController,
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'TokenSearchDiscoveryController',
-          allowedActions: [],
-          allowedEvents: [],
-        }) as TokenSearchDiscoveryControllerMessenger,
-      },
-    );
 
     const additionalKeyrings = [];
 
@@ -966,6 +953,7 @@ export class Engine {
         TokenListController: tokenListControllerInit,
         AssetsContractController: assetsContractControllerInit,
         RemoteFeatureFlagController: remoteFeatureFlagControllerInit,
+        TokenSearchDiscoveryController: tokenSearchDiscoveryControllerInit,
         AccountsController: accountsControllerInit,
         AppMetadataController: appMetadataControllerInit,
         GasFeeController: GasFeeControllerInit,
@@ -1276,7 +1264,7 @@ export class Engine {
       RemoteFeatureFlagController: controllersByName.RemoteFeatureFlagController,
       SelectedNetworkController: selectedNetworkController,
       SignatureController: signatureController,
-      TokenSearchDiscoveryController: tokenSearchDiscoveryController,
+      TokenSearchDiscoveryController: controllersByName.TokenSearchDiscoveryController,
       LoggingController: controllersByName.LoggingController,
       ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
       CronjobController: cronjobController,

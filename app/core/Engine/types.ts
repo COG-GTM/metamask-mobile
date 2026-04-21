@@ -597,6 +597,7 @@ export type ControllersToInitialize =
   | 'TokenListController'
   | 'AssetsContractController'
   | 'RemoteFeatureFlagController'
+  | 'TokenSearchDiscoveryController'
   | 'MultichainNetworkController'
   | 'TransactionController'
   | 'GasFeeController'

@@ -7,6 +7,7 @@ import { getLoggingControllerMessenger } from './logging-controller-messenger';
 import { getPhishingControllerMessenger } from './phishing-controller-messenger';
 import { getTokenListControllerMessenger } from './token-list-controller-messenger';
 import { getRemoteFeatureFlagControllerMessenger } from './remote-feature-flag-controller-messenger';
+import { getTokenSearchDiscoveryControllerMessenger } from './token-search-discovery-controller-messenger';
 import { getMultichainNetworkControllerMessenger } from './multichain-network-controller-messenger/multichain-network-controller-messenger';
 import { getCurrencyRateControllerMessenger } from './currency-rate-controller-messenger/currency-rate-controller-messenger';
 import { getAppMetadataControllerMessenger } from './app-metadata-controller-messenger';
@@ -68,6 +69,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   RemoteFeatureFlagController: {
     getMessenger: getRemoteFeatureFlagControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenSearchDiscoveryController: {
+    getMessenger: getTokenSearchDiscoveryControllerMessenger,
     getInitMessenger: noop,
   },
   TransactionController: {
