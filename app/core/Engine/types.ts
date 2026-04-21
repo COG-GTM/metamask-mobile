@@ -595,6 +595,7 @@ export type ControllersToInitialize =
   | 'AccountTrackerController'
   | 'SelectedNetworkController'
   | 'MultichainNetworkController'
+  | 'PermissionController'
   | 'TransactionController'
   | 'GasFeeController'
   | 'SignatureController';
