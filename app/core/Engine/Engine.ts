@@ -115,7 +115,6 @@ import {
 } from '../../core/redux/slices/inpageProvider';
 import SmartTransactionsController from '@metamask/smart-transactions-controller';
 import { getAllowedSmartTransactionsChainIds } from '../../../app/constants/smartTransactions';
-import { selectBasicFunctionalityEnabled } from '../../selectors/settings';
 import { selectSwapsChainFeatureFlags } from '../../reducers/swaps';
 import { ClientId } from '@metamask/smart-transactions-controller/dist/types';
 import { zeroAddress } from 'ethereumjs-util';
@@ -271,9 +270,6 @@ export class Engine {
     logEngineCreation(initialState, initialKeyringState);
 
     this.controllerMessenger = new ExtendedControllerMessenger();
-
-    const isBasicFunctionalityToggleEnabled = () =>
-      selectBasicFunctionalityEnabled(store.getState());
 
     const preferencesController = new PreferencesController({
       messenger: this.controllerMessenger.getRestricted({
