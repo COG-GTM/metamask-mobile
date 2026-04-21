@@ -200,6 +200,7 @@ import { TransactionControllerInit } from './controllers/transaction-controller'
 import { SignatureControllerInit } from './controllers/signature-controller';
 import { nftControllerInit } from './controllers/nft-controller';
 import { tokensControllerInit } from './controllers/tokens-controller';
+import { nftDetectionControllerInit } from './controllers/nft-detection-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
 import I18n from '../../../locales/i18n';
 import { Platform } from '@metamask/profile-sync-controller/sdk';
@@ -1035,6 +1036,7 @@ export class Engine {
         SignatureController: SignatureControllerInit,
         NftController: nftControllerInit,
         TokensController: tokensControllerInit,
+        NftDetectionController: nftDetectionControllerInit,
         CurrencyRateController: currencyRateControllerInit,
         MultichainNetworkController: multichainNetworkControllerInit,
         ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
@@ -1204,25 +1206,7 @@ export class Engine {
         useAccountsAPI: true,
         disabled: false,
       }),
-      NftDetectionController: new NftDetectionController({
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'NftDetectionController',
-          allowedEvents: [
-            'NetworkController:stateChange',
-            'PreferencesController:stateChange',
-          ],
-          allowedActions: [
-            'ApprovalController:addRequest',
-            'NetworkController:getState',
-            'NetworkController:getNetworkClientById',
-            'PreferencesController:getState',
-            'AccountsController:getSelectedAccount',
-          ],
-        }),
-        disabled: false,
-        addNft: nftController.addNft.bind(nftController),
-        getNftState: () => nftController.state,
-      }),
+      NftDetectionController: controllersByName.NftDetectionController,
       CurrencyRateController: currencyRateController,
       NetworkController: networkController,
       PhishingController: phishingController,

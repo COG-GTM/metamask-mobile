@@ -595,7 +595,8 @@ export type ControllersToInitialize =
   | 'GasFeeController'
   | 'SignatureController'
   | 'NftController'
-  | 'TokensController';
+  | 'TokensController'
+  | 'NftDetectionController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.
