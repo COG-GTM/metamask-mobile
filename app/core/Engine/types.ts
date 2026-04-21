@@ -592,6 +592,7 @@ export type ControllersToInitialize =
   | 'AccountsController'
   | 'ApprovalController'
   | 'LoggingController'
+  | 'PhishingController'
   | 'MultichainNetworkController'
   | 'TransactionController'
   | 'GasFeeController'

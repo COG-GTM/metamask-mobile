@@ -188,6 +188,7 @@ import { initModularizedControllers } from './utils';
 import { accountsControllerInit } from './controllers/accounts-controller';
 import { approvalControllerInit } from './controllers/approval-controller';
 import { loggingControllerInit } from './controllers/logging-controller';
+import { phishingControllerInit } from './controllers/phishing-controller';
 import { createTokenSearchDiscoveryController } from './controllers/TokenSearchDiscoveryController';
 import {
   BRIDGE_DEV_API_BASE_URL,
@@ -364,17 +365,6 @@ export class Engine {
         }) as TokenSearchDiscoveryControllerMessenger,
       },
     );
-
-    const phishingController = new PhishingController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'PhishingController',
-        allowedActions: [],
-        allowedEvents: [],
-      }),
-    });
-    if (!isProductSafetyDappScanningEnabled()) {
-      phishingController.maybeUpdateState();
-    }
 
     const additionalKeyrings = [];
 
@@ -1007,6 +997,7 @@ export class Engine {
       controllerInitFunctions: {
         ApprovalController: approvalControllerInit,
         LoggingController: loggingControllerInit,
+        PhishingController: phishingControllerInit,
         AccountsController: accountsControllerInit,
         AppMetadataController: appMetadataControllerInit,
         GasFeeController: GasFeeControllerInit,
@@ -1250,7 +1241,7 @@ export class Engine {
       }),
       CurrencyRateController: currencyRateController,
       NetworkController: networkController,
-      PhishingController: phishingController,
+      PhishingController: controllersByName.PhishingController,
       PreferencesController: preferencesController,
       TokenBalancesController: new TokenBalancesController({
         messenger: this.controllerMessenger.getRestricted({
