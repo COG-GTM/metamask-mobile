@@ -2,6 +2,7 @@ import { noop } from 'lodash';
 import { getAccountsControllerMessenger } from './accounts-controller-messenger';
 import { getAddressBookControllerMessenger } from './address-book-controller-messenger';
 import { getApprovalControllerMessenger } from './approval-controller-messenger';
+import { getAssetsContractControllerMessenger } from './assets-contract-controller-messenger';
 import { getLoggingControllerMessenger } from './logging-controller-messenger';
 import { getPhishingControllerMessenger } from './phishing-controller-messenger';
 import { getTokenListControllerMessenger } from './token-list-controller-messenger';
@@ -58,6 +59,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   TokenListController: {
     getMessenger: getTokenListControllerMessenger,
+    getInitMessenger: noop,
+  },
+  AssetsContractController: {
+    getMessenger: getAssetsContractControllerMessenger,
     getInitMessenger: noop,
   },
   TransactionController: {

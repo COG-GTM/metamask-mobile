@@ -190,6 +190,7 @@ import { loggingControllerInit } from './controllers/logging-controller';
 import { phishingControllerInit } from './controllers/phishing-controller';
 import { addressBookControllerInit } from './controllers/address-book-controller';
 import { tokenListControllerInit } from './controllers/token-list-controller';
+import { assetsContractControllerInit } from './controllers/assets-contract-controller';
 import { createTokenSearchDiscoveryController } from './controllers/TokenSearchDiscoveryController';
 import {
   BRIDGE_DEV_API_BASE_URL,
@@ -315,23 +316,6 @@ export class Engine {
     const networkController = new NetworkController(networkControllerOpts);
 
     networkController.initializeProvider();
-
-    const assetsContractController = new AssetsContractController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'AssetsContractController',
-        allowedActions: [
-          'NetworkController:getNetworkClientById',
-          'NetworkController:getNetworkConfigurationByNetworkClientId',
-          'NetworkController:getSelectedNetworkClient',
-          'NetworkController:getState',
-        ],
-        allowedEvents: [
-          'PreferencesController:stateChange',
-          'NetworkController:networkDidChange',
-        ],
-      }),
-      chainId: getGlobalChainId(networkController),
-    });
 
     const remoteFeatureFlagController = createRemoteFeatureFlagController({
       messenger: this.controllerMessenger.getRestricted({
@@ -988,6 +972,7 @@ export class Engine {
         PhishingController: phishingControllerInit,
         AddressBookController: addressBookControllerInit,
         TokenListController: tokenListControllerInit,
+        AssetsContractController: assetsContractControllerInit,
         AccountsController: accountsControllerInit,
         AppMetadataController: appMetadataControllerInit,
         GasFeeController: GasFeeControllerInit,

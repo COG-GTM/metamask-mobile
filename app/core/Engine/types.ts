@@ -595,6 +595,7 @@ export type ControllersToInitialize =
   | 'PhishingController'
   | 'AddressBookController'
   | 'TokenListController'
+  | 'AssetsContractController'
   | 'MultichainNetworkController'
   | 'TransactionController'
   | 'GasFeeController'
