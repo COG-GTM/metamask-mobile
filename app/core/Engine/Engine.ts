@@ -196,6 +196,7 @@ import { BridgeStatusController } from '@metamask/bridge-status-controller';
 import { multichainNetworkControllerInit } from './controllers/multichain-network-controller/multichain-network-controller-init';
 import { currencyRateControllerInit } from './controllers/currency-rate-controller/currency-rate-controller-init';
 import { earnControllerInit } from './controllers/earn-controller';
+import { smartTransactionsControllerInit } from './controllers/smart-transactions-controller';
 import { TransactionControllerInit } from './controllers/transaction-controller';
 import { SignatureControllerInit } from './controllers/signature-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
@@ -861,59 +862,6 @@ export class Engine {
 
     const codefiTokenApiV2 = new CodefiTokenPricesServiceV2();
 
-    const smartTransactionsControllerTrackMetaMetricsEvent = (
-      params: {
-        event: MetaMetricsEventName;
-        category: MetaMetricsEventCategory;
-        properties?: ReturnType<
-          typeof getSmartTransactionMetricsPropertiesType
-        >;
-        sensitiveProperties?: ReturnType<
-          typeof getSmartTransactionMetricsSensitivePropertiesType
-        >;
-      },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      options?: {
-        metaMetricsId?: string;
-      },
-    ) => {
-      MetaMetrics.getInstance().trackEvent(
-        MetricsEventBuilder.createEventBuilder({
-          category: params.event,
-        })
-          .addProperties(params.properties || {})
-          .addSensitiveProperties(params.sensitiveProperties || {})
-          .build(),
-      );
-    };
-
-    this.smartTransactionsController = new SmartTransactionsController({
-      // @ts-expect-error TODO: resolve types
-      supportedChainIds: getAllowedSmartTransactionsChainIds(),
-      clientId: ClientId.Mobile,
-      getNonceLock: (...args) =>
-        this.transactionController.getNonceLock(...args),
-      confirmExternalTransaction: (...args) =>
-        this.transactionController.confirmExternalTransaction(...args),
-      trackMetaMetricsEvent: smartTransactionsControllerTrackMetaMetricsEvent,
-      state: initialState.SmartTransactionsController,
-      // @ts-expect-error TODO: Resolve mismatch between base-controller versions.
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'SmartTransactionsController',
-        allowedActions: [
-          'NetworkController:getNetworkClientById',
-          'NetworkController:getState',
-        ],
-        allowedEvents: ['NetworkController:stateChange'],
-      }),
-      getTransactions: (...args) =>
-        this.transactionController.getTransactions(...args),
-      updateTransaction: (...args) =>
-        this.transactionController.updateTransaction(...args),
-      getFeatureFlags: () => selectSwapsChainFeatureFlags(store.getState()),
-      getMetaMetricsProps: () => Promise.resolve({}), // Return MetaMetrics props once we enable HW wallets for smart transactions.
-    });
-
     const tokenSearchDiscoveryDataController =
       new TokenSearchDiscoveryDataController({
         tokenPricesService: codefiTokenApiV2,
@@ -1016,7 +964,6 @@ export class Engine {
       KeyringController: this.keyringController,
       NetworkController: networkController,
       PreferencesController: preferencesController,
-      SmartTransactionsController: this.smartTransactionsController,
     };
 
     const initRequest = {
@@ -1029,6 +976,7 @@ export class Engine {
         AccountsController: accountsControllerInit,
         AppMetadataController: appMetadataControllerInit,
         GasFeeController: GasFeeControllerInit,
+        SmartTransactionsController: smartTransactionsControllerInit,
         TransactionController: TransactionControllerInit,
         SignatureController: SignatureControllerInit,
         CurrencyRateController: currencyRateControllerInit,
@@ -1066,6 +1014,8 @@ export class Engine {
     this.accountsController = accountsController;
     this.gasFeeController = gasFeeController;
     this.transactionController = transactionController;
+    this.smartTransactionsController =
+      controllersByName.SmartTransactionsController;
 
     const multichainNetworkController =
       controllersByName.MultichainNetworkController;
@@ -1295,7 +1245,7 @@ export class Engine {
         state: initialState.TokenRatesController || { marketData: {} },
       }),
       TransactionController: this.transactionController,
-      SmartTransactionsController: this.smartTransactionsController,
+      SmartTransactionsController: controllersByName.SmartTransactionsController,
       SwapsController: new SwapsController({
         clientId: AppConstants.SWAPS.CLIENT_ID,
         fetchAggregatorMetadataThreshold:

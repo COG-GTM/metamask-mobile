@@ -594,7 +594,8 @@ export type ControllersToInitialize =
   | 'TransactionController'
   | 'GasFeeController'
   | 'SignatureController'
-  | 'EarnController';
+  | 'EarnController'
+  | 'SmartTransactionsController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.

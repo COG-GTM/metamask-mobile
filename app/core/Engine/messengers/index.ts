@@ -28,6 +28,7 @@ import { getNotificationServicesPushControllerMessenger } from './notifications/
 import { getGasFeeControllerMessenger } from './gas-fee-controller-messenger/gas-fee-controller-messenger';
 import { getSignatureControllerMessenger } from './signature-controller-messenger';
 import { getEarnControllerMessenger } from './earn-controller-messenger';
+import { getSmartTransactionsControllerMessenger } from './smart-transactions-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -62,6 +63,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   EarnController: {
     getMessenger: getEarnControllerMessenger,
+    getInitMessenger: noop,
+  },
+  SmartTransactionsController: {
+    getMessenger: getSmartTransactionsControllerMessenger,
     getInitMessenger: noop,
   },
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
