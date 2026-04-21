@@ -195,7 +195,7 @@ import {
 import { BridgeStatusController } from '@metamask/bridge-status-controller';
 import { multichainNetworkControllerInit } from './controllers/multichain-network-controller/multichain-network-controller-init';
 import { currencyRateControllerInit } from './controllers/currency-rate-controller/currency-rate-controller-init';
-import { EarnController } from '@metamask/earn-controller';
+import { earnControllerInit } from './controllers/earn-controller';
 import { TransactionControllerInit } from './controllers/transaction-controller';
 import { SignatureControllerInit } from './controllers/signature-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
@@ -1033,6 +1033,7 @@ export class Engine {
         SignatureController: SignatureControllerInit,
         CurrencyRateController: currencyRateControllerInit,
         MultichainNetworkController: multichainNetworkControllerInit,
+        EarnController: earnControllerInit,
         ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
         ExecutionService: executionServiceInit,
         SnapController: snapControllerInit,
@@ -1163,22 +1164,6 @@ export class Engine {
           'NetworkController:stateChange',
           'TokenListController:stateChange',
           'AccountsController:selectedEvmAccountChange',
-        ],
-      }),
-    });
-
-    const earnController = new EarnController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'EarnController',
-        allowedEvents: [
-          'AccountsController:selectedAccountChange',
-          'NetworkController:stateChange',
-          'TransactionController:transactionConfirmed',
-        ],
-        allowedActions: [
-          'AccountsController:getSelectedAccount',
-          'NetworkController:getNetworkClientById',
-          'NetworkController:getState',
         ],
       }),
     });
@@ -1400,7 +1385,7 @@ export class Engine {
       MultichainNetworkController: multichainNetworkController,
       BridgeController: bridgeController,
       BridgeStatusController: bridgeStatusController,
-      EarnController: earnController,
+      EarnController: controllersByName.EarnController,
     };
 
     const childControllers = Object.assign({}, this.context);
