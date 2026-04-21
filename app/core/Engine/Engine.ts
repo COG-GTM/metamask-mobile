@@ -198,6 +198,7 @@ import { currencyRateControllerInit } from './controllers/currency-rate-controll
 import { EarnController } from '@metamask/earn-controller';
 import { TransactionControllerInit } from './controllers/transaction-controller';
 import { SignatureControllerInit } from './controllers/signature-controller';
+import { nftControllerInit } from './controllers/nft-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
 import I18n from '../../../locales/i18n';
 import { Platform } from '@metamask/profile-sync-controller/sdk';
@@ -1031,6 +1032,7 @@ export class Engine {
         GasFeeController: GasFeeControllerInit,
         TransactionController: TransactionControllerInit,
         SignatureController: SignatureControllerInit,
+        NftController: nftControllerInit,
         CurrencyRateController: currencyRateControllerInit,
         MultichainNetworkController: multichainNetworkControllerInit,
         ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
@@ -1118,31 +1120,7 @@ export class Engine {
     notificationServicesController.init();
     ///: END:ONLY_INCLUDE_IF
 
-    const nftController = new NftController({
-      chainId: getGlobalChainId(networkController),
-      useIpfsSubdomains: false,
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'NftController',
-        allowedActions: [
-          'AccountsController:getAccount',
-          'AccountsController:getSelectedAccount',
-          'ApprovalController:addRequest',
-          'AssetsContractController:getERC721AssetName',
-          'AssetsContractController:getERC721AssetSymbol',
-          'AssetsContractController:getERC721TokenURI',
-          'AssetsContractController:getERC721OwnerOf',
-          'AssetsContractController:getERC1155BalanceOf',
-          'AssetsContractController:getERC1155TokenURI',
-          'NetworkController:getNetworkClientById',
-        ],
-        allowedEvents: [
-          'PreferencesController:stateChange',
-          'NetworkController:networkDidChange',
-          'AccountsController:selectedEvmAccountChange',
-        ],
-      }),
-      state: initialState.NftController,
-    });
+    const nftController = controllersByName.NftController;
 
     const tokensController = new TokensController({
       chainId: getGlobalChainId(networkController),
@@ -1419,12 +1397,6 @@ export class Engine {
         }),
       },
     );
-
-    const { NftController: nfts } = this.context;
-
-    if (process.env.MM_OPENSEA_KEY) {
-      nfts.setApiKey(process.env.MM_OPENSEA_KEY);
-    }
 
     this.controllerMessenger.subscribe(
       'TransactionController:incomingTransactionsReceived',
