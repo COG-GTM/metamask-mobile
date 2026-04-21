@@ -94,8 +94,7 @@ import { calculateScryptKey } from './controllers/identity/calculate-scrypt-key'
 import { notificationServicesControllerInit } from './controllers/notifications/notification-services-controller-init';
 import { notificationServicesPushControllerInit } from './controllers/notifications/notification-services-push-controller-init';
 
-import { getAuthenticationControllerMessenger } from './messengers/identity/authentication-controller-messenger';
-import { createAuthenticationController } from './controllers/identity/create-authentication-controller';
+import { authenticationControllerInit } from './controllers/authentication-controller';
 import { getUserStorageControllerMessenger } from './messengers/identity/user-storage-controller-messenger';
 import { createUserStorageController } from './controllers/identity/create-user-storage-controller';
 ///: END:ONLY_INCLUDE_IF
@@ -751,18 +750,6 @@ export class Engine {
       subjectCacheLimit: 100,
     });
 
-    const authenticationControllerMessenger =
-      getAuthenticationControllerMessenger(this.controllerMessenger);
-    const authenticationController = createAuthenticationController({
-      messenger: authenticationControllerMessenger,
-      initialState: initialState.AuthenticationController,
-      metametrics: {
-        agent: Platform.MOBILE,
-        getMetaMetricsId: async () =>
-          (await MetaMetrics.getInstance().getMetaMetricsId()) || '',
-      },
-    });
-
     const userStorageControllerMessenger = getUserStorageControllerMessenger(
       this.controllerMessenger,
     );
@@ -997,6 +984,7 @@ export class Engine {
         NotificationServicesController: notificationServicesControllerInit,
         NotificationServicesPushController:
           notificationServicesPushControllerInit,
+        AuthenticationController: authenticationControllerInit,
         ///: END:ONLY_INCLUDE_IF
         ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
         MultichainAssetsController: multichainAssetsControllerInit,
@@ -1305,7 +1293,7 @@ export class Engine {
       SnapInterfaceController: snapInterfaceController,
       SnapsRegistry: snapsRegistry,
       SubjectMetadataController: this.subjectMetadataController,
-      AuthenticationController: authenticationController,
+      AuthenticationController: controllersByName.AuthenticationController,
       UserStorageController: userStorageController,
       NotificationServicesController: notificationServicesController,
       NotificationServicesPushController: notificationServicesPushController,

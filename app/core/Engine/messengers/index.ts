@@ -14,6 +14,7 @@ import {
   getSnapInterfaceControllerMessenger,
   getSnapsRegistryMessenger,
 } from './snaps';
+import { getAuthenticationControllerMessenger } from './authentication-controller-messenger';
 ///: END:ONLY_INCLUDE_IF
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { getMultichainAssetsRatesControllerMessenger } from './multichain-assets-rates-controller-messenger/multichain-assets-rates-controller-messenger';
@@ -96,6 +97,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   NotificationServicesPushController: {
     getMessenger: getNotificationServicesPushControllerMessenger,
+    getInitMessenger: noop,
+  },
+  AuthenticationController: {
+    getMessenger: getAuthenticationControllerMessenger,
     getInitMessenger: noop,
   },
   ///: END:ONLY_INCLUDE_IF

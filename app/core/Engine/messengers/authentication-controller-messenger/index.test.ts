@@ -1,5 +1,5 @@
 import { BaseControllerMessenger } from '../../types';
-import { getAuthenticationControllerMessenger } from './authentication-controller-messenger';
+import { getAuthenticationControllerMessenger } from './index';
 import { ExtendedControllerMessenger } from '../../../ExtendedControllerMessenger';
 
 describe('getAuthenticationControllerMessenger', () => {
