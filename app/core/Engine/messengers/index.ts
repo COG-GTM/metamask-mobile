@@ -30,6 +30,7 @@ import { getSignatureControllerMessenger } from './signature-controller-messenge
 import { getNftControllerMessenger } from './nft-controller-messenger';
 import { getTokensControllerMessenger } from './tokens-controller-messenger';
 import { getNftDetectionControllerMessenger } from './nft-detection-controller-messenger';
+import { getTokenDetectionControllerMessenger } from './token-detection-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -72,6 +73,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   NftDetectionController: {
     getMessenger: getNftDetectionControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenDetectionController: {
+    getMessenger: getTokenDetectionControllerMessenger,
     getInitMessenger: noop,
   },
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
