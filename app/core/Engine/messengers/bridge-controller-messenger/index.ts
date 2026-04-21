@@ -1,4 +1,3 @@
-import { BridgeControllerMessenger } from '@metamask/bridge-controller';
 import { BaseControllerMessenger } from '../../types';
 
 /**
@@ -9,14 +8,19 @@ import { BaseControllerMessenger } from '../../types';
  */
 export function getBridgeControllerMessenger(
   baseControllerMessenger: BaseControllerMessenger,
-): BridgeControllerMessenger {
+) {
   return baseControllerMessenger.getRestricted({
     name: 'BridgeController',
     allowedActions: [
-      'AccountsController:getSelectedAccount',
-      'NetworkController:findNetworkClientIdByChainId',
+      'AccountsController:getSelectedMultichainAccount',
+      'SnapController:handleRequest',
       'NetworkController:getState',
       'NetworkController:getNetworkClientById',
+      'NetworkController:findNetworkClientIdByChainId',
+      'TokenRatesController:getState',
+      'MultichainAssetsRatesController:getState',
+      'CurrencyRateController:getState',
+      'RemoteFeatureFlagController:getState',
     ],
     allowedEvents: [],
   });

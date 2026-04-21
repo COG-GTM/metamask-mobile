@@ -30,6 +30,7 @@ import { getSignatureControllerMessenger } from './signature-controller-messenge
 import { getEarnControllerMessenger } from './earn-controller-messenger';
 import { getSmartTransactionsControllerMessenger } from './smart-transactions-controller-messenger';
 import { getSwapsControllerMessenger } from './swaps-controller-messenger';
+import { getBridgeControllerMessenger } from './bridge-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -72,6 +73,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   SwapsController: {
     getMessenger: getSwapsControllerMessenger,
+    getInitMessenger: noop,
+  },
+  BridgeController: {
+    getMessenger: getBridgeControllerMessenger,
     getInitMessenger: noop,
   },
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
