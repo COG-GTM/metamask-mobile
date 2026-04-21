@@ -203,6 +203,7 @@ import { tokensControllerInit } from './controllers/tokens-controller';
 import { nftDetectionControllerInit } from './controllers/nft-detection-controller';
 import { tokenDetectionControllerInit } from './controllers/token-detection-controller';
 import { tokenBalancesControllerInit } from './controllers/token-balances-controller';
+import { tokenRatesControllerInit } from './controllers/token-rates-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
 import I18n from '../../../locales/i18n';
 import { Platform } from '@metamask/profile-sync-controller/sdk';
@@ -1042,6 +1043,7 @@ export class Engine {
         NftDetectionController: nftDetectionControllerInit,
         TokenDetectionController: tokenDetectionControllerInit,
         TokenBalancesController: tokenBalancesControllerInit,
+        TokenRatesController: tokenRatesControllerInit,
         CurrencyRateController: currencyRateControllerInit,
         MultichainNetworkController: multichainNetworkControllerInit,
         ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
@@ -1171,26 +1173,7 @@ export class Engine {
       PhishingController: phishingController,
       PreferencesController: preferencesController,
       TokenBalancesController: controllersByName.TokenBalancesController,
-      TokenRatesController: new TokenRatesController({
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'TokenRatesController',
-          allowedActions: [
-            'TokensController:getState',
-            'NetworkController:getNetworkClientById',
-            'NetworkController:getState',
-            'AccountsController:getAccount',
-            'AccountsController:getSelectedAccount',
-          ],
-          allowedEvents: [
-            'TokensController:stateChange',
-            'NetworkController:stateChange',
-            'AccountsController:selectedEvmAccountChange',
-          ],
-        }),
-        tokenPricesService: codefiTokenApiV2,
-        interval: 30 * 60 * 1000,
-        state: initialState.TokenRatesController || { marketData: {} },
-      }),
+      TokenRatesController: controllersByName.TokenRatesController,
       TransactionController: this.transactionController,
       SmartTransactionsController: this.smartTransactionsController,
       SwapsController: new SwapsController({

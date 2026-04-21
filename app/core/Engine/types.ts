@@ -598,7 +598,8 @@ export type ControllersToInitialize =
   | 'TokensController'
   | 'NftDetectionController'
   | 'TokenDetectionController'
-  | 'TokenBalancesController';
+  | 'TokenBalancesController'
+  | 'TokenRatesController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.
