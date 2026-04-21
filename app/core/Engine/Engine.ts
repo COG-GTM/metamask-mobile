@@ -197,6 +197,7 @@ import { multichainNetworkControllerInit } from './controllers/multichain-networ
 import { currencyRateControllerInit } from './controllers/currency-rate-controller/currency-rate-controller-init';
 import { earnControllerInit } from './controllers/earn-controller';
 import { smartTransactionsControllerInit } from './controllers/smart-transactions-controller';
+import { swapsControllerInit } from './controllers/swaps-controller';
 import { TransactionControllerInit } from './controllers/transaction-controller';
 import { SignatureControllerInit } from './controllers/signature-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
@@ -977,6 +978,7 @@ export class Engine {
         AppMetadataController: appMetadataControllerInit,
         GasFeeController: GasFeeControllerInit,
         SmartTransactionsController: smartTransactionsControllerInit,
+        SwapsController: swapsControllerInit,
         TransactionController: TransactionControllerInit,
         SignatureController: SignatureControllerInit,
         CurrencyRateController: currencyRateControllerInit,
@@ -1246,30 +1248,7 @@ export class Engine {
       }),
       TransactionController: this.transactionController,
       SmartTransactionsController: controllersByName.SmartTransactionsController,
-      SwapsController: new SwapsController({
-        clientId: AppConstants.SWAPS.CLIENT_ID,
-        fetchAggregatorMetadataThreshold:
-          AppConstants.SWAPS.CACHE_AGGREGATOR_METADATA_THRESHOLD,
-        fetchTokensThreshold: AppConstants.SWAPS.CACHE_TOKENS_THRESHOLD,
-        fetchTopAssetsThreshold: AppConstants.SWAPS.CACHE_TOP_ASSETS_THRESHOLD,
-        supportedChainIds: swapsSupportedChainIds,
-        // @ts-expect-error TODO: Resolve mismatch between base-controller versions.
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'SwapsController',
-          // TODO: allow these internal calls once GasFeeController
-          // export these action types and register its action handlers
-          // allowedActions: [
-          //   'GasFeeController:getEIP1559GasFeeEstimates',
-          // ],
-          allowedActions: ['NetworkController:getNetworkClientById'],
-          allowedEvents: ['NetworkController:networkDidChange'],
-        }),
-        pollCountLimit: AppConstants.SWAPS.POLL_COUNT_LIMIT,
-        // TODO: Remove once GasFeeController exports this action type
-        fetchGasFeeEstimates: () =>
-          this.gasFeeController.fetchGasFeeEstimates(),
-        fetchEstimatedMultiLayerL1Fee,
-      }),
+      SwapsController: controllersByName.SwapsController,
       GasFeeController: this.gasFeeController,
       ApprovalController: approvalController,
       PermissionController: permissionController,

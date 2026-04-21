@@ -29,6 +29,7 @@ import { getGasFeeControllerMessenger } from './gas-fee-controller-messenger/gas
 import { getSignatureControllerMessenger } from './signature-controller-messenger';
 import { getEarnControllerMessenger } from './earn-controller-messenger';
 import { getSmartTransactionsControllerMessenger } from './smart-transactions-controller-messenger';
+import { getSwapsControllerMessenger } from './swaps-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -67,6 +68,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   SmartTransactionsController: {
     getMessenger: getSmartTransactionsControllerMessenger,
+    getInitMessenger: noop,
+  },
+  SwapsController: {
+    getMessenger: getSwapsControllerMessenger,
     getInitMessenger: noop,
   },
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
