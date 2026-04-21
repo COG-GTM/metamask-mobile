@@ -187,6 +187,7 @@ import { logEngineCreation } from './utils/logger';
 import { initModularizedControllers } from './utils';
 import { accountsControllerInit } from './controllers/accounts-controller';
 import { approvalControllerInit } from './controllers/approval-controller';
+import { loggingControllerInit } from './controllers/logging-controller';
 import { createTokenSearchDiscoveryController } from './controllers/TokenSearchDiscoveryController';
 import {
   BRIDGE_DEV_API_BASE_URL,
@@ -330,18 +331,6 @@ export class Engine {
       chainId: getGlobalChainId(networkController),
     });
 
-    const loggingController = new LoggingController({
-      messenger: this.controllerMessenger.getRestricted<
-        'LoggingController',
-        never,
-        never
-      >({
-        name: 'LoggingController',
-        allowedActions: [],
-        allowedEvents: [],
-      }),
-      state: initialState.LoggingController,
-    });
     const tokenListController = new TokenListController({
       chainId: getGlobalChainId(networkController),
       onNetworkStateChange: (listener) =>
@@ -1017,6 +1006,7 @@ export class Engine {
     const { controllersByName } = initModularizedControllers({
       controllerInitFunctions: {
         ApprovalController: approvalControllerInit,
+        LoggingController: loggingControllerInit,
         AccountsController: accountsControllerInit,
         AppMetadataController: appMetadataControllerInit,
         GasFeeController: GasFeeControllerInit,
@@ -1335,7 +1325,7 @@ export class Engine {
       SelectedNetworkController: selectedNetworkController,
       SignatureController: signatureController,
       TokenSearchDiscoveryController: tokenSearchDiscoveryController,
-      LoggingController: loggingController,
+      LoggingController: controllersByName.LoggingController,
       ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
       CronjobController: cronjobController,
       ExecutionService: executionService,
