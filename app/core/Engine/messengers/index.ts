@@ -31,6 +31,7 @@ import { getNftControllerMessenger } from './nft-controller-messenger';
 import { getTokensControllerMessenger } from './tokens-controller-messenger';
 import { getNftDetectionControllerMessenger } from './nft-detection-controller-messenger';
 import { getTokenDetectionControllerMessenger } from './token-detection-controller-messenger';
+import { getTokenBalancesControllerMessenger } from './token-balances-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -77,6 +78,10 @@ export const CONTROLLER_MESSENGERS = {
   },
   TokenDetectionController: {
     getMessenger: getTokenDetectionControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenBalancesController: {
+    getMessenger: getTokenBalancesControllerMessenger,
     getInitMessenger: noop,
   },
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)

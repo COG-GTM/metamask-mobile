@@ -202,6 +202,7 @@ import { nftControllerInit } from './controllers/nft-controller';
 import { tokensControllerInit } from './controllers/tokens-controller';
 import { nftDetectionControllerInit } from './controllers/nft-detection-controller';
 import { tokenDetectionControllerInit } from './controllers/token-detection-controller';
+import { tokenBalancesControllerInit } from './controllers/token-balances-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
 import I18n from '../../../locales/i18n';
 import { Platform } from '@metamask/profile-sync-controller/sdk';
@@ -1040,6 +1041,7 @@ export class Engine {
         TokensController: tokensControllerInit,
         NftDetectionController: nftDetectionControllerInit,
         TokenDetectionController: tokenDetectionControllerInit,
+        TokenBalancesController: tokenBalancesControllerInit,
         CurrencyRateController: currencyRateControllerInit,
         MultichainNetworkController: multichainNetworkControllerInit,
         ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
@@ -1168,26 +1170,7 @@ export class Engine {
       NetworkController: networkController,
       PhishingController: phishingController,
       PreferencesController: preferencesController,
-      TokenBalancesController: new TokenBalancesController({
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'TokenBalancesController',
-          allowedActions: [
-            'NetworkController:getNetworkClientById',
-            'NetworkController:getState',
-            'TokensController:getState',
-            'PreferencesController:getState',
-            'AccountsController:getSelectedAccount',
-          ],
-          allowedEvents: [
-            'TokensController:stateChange',
-            'PreferencesController:stateChange',
-            'NetworkController:stateChange',
-          ],
-        }),
-        // TODO: This is long, can we decrease it?
-        interval: 180000,
-        state: initialState.TokenBalancesController,
-      }),
+      TokenBalancesController: controllersByName.TokenBalancesController,
       TokenRatesController: new TokenRatesController({
         messenger: this.controllerMessenger.getRestricted({
           name: 'TokenRatesController',
