@@ -2,6 +2,14 @@
 	xmlns:tools="http://schemas.android.com/tools"
 >
 
+	<!-- Signature-level permission protecting MessageService from arbitrary apps.
+	     Only apps signed with the same certificate (MetaMask and its native SDK)
+	     can bind to the service. -->
+	<permission
+		android:name="io.metamask.permission.MESSAGE_SERVICE"
+		android:protectionLevel="signature" />
+	<uses-permission android:name="io.metamask.permission.MESSAGE_SERVICE" />
+
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
@@ -168,10 +176,14 @@
 				android:resource="@xml/filepaths"
 			/>
 		</provider>
+    <!-- Exported so the MetaMask SDK can bind from other processes; protected by a
+         signature-level permission so only apps signed with the same certificate
+         can interact with it. -->
     <service
       android:name="io.metamask.nativesdk.MessageService"
       android:enabled="true"
-      android:exported="true">
+      android:exported="true"
+      android:permission="io.metamask.permission.MESSAGE_SERVICE">
 
     </service>
 	</application>
