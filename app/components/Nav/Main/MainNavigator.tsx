@@ -86,7 +86,7 @@ import { selectAccountsLength } from '../../../selectors/accountTrackerControlle
 import isUrl from 'is-url';
 import SDKSessionsManager from '../../Views/SDK/SDKSessionsManager/SDKSessionsManager';
 import PermissionsManager from '../../Views/Settings/PermissionsSettings/PermissionsManager';
-import URL from 'url-parse';
+import UrlParse from 'url-parse';
 import Logger from '../../../util/Logger';
 import { getDecimalChainId } from '../../../util/networks';
 import { useMetrics } from '../../../components/hooks/useMetrics';
@@ -555,7 +555,7 @@ const HomeTabs = () => {
       const permissionsControllerState =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         selectPermissionControllerState(state as any);
-      const hostname = new URL(activeTabUrl).hostname;
+      const hostname = new UrlParse(activeTabUrl).hostname;
       const permittedAcc = getPermittedAccountsByHostname(
         permissionsControllerState,
         hostname,
@@ -990,6 +990,7 @@ const MainNavigator = () => (
         headerTitle: () => (
           <Image
             style={styles.headerLogo}
+            // eslint-disable-next-line @typescript-eslint/no-require-imports, import/no-commonjs
             source={require('../../../images/branding/metamask-name.png')}
             resizeMode={'contain'}
           />
