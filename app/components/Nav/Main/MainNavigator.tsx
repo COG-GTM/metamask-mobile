@@ -1,8 +1,15 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Image, StyleSheet, Keyboard, Platform } from 'react-native';
-import { createStackNavigator } from '@react-navigation/stack';
+import {
+  createStackNavigator,
+  StackScreenProps,
+} from '@react-navigation/stack';
+import {
+  BottomTabBarProps,
+  createBottomTabNavigator,
+} from '@react-navigation/bottom-tabs';
+import { ParamListBase } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Browser from '../../Views/Browser';
 import { ChainId } from '@metamask/controller-utils';
 import AddBookmark from '../../Views/AddBookmark';
@@ -96,6 +103,74 @@ import { BridgeTransactionDetails } from '../../UI/Bridge/components/Transaction
 import { BridgeModalStack, BridgeScreenStack } from '../../UI/Bridge/routes';
 import TurnOnBackupAndSync from '../../Views/Identity/TurnOnBackupAndSync/TurnOnBackupAndSync';
 
+/**
+ * Params accepted by the Asset / AssetView / AssetStackFlow routes.
+ */
+export interface AssetParams {
+  address?: string;
+  symbol?: string;
+  chainId?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Params accepted by the NFT details routes.
+ */
+export interface NftDetailsParams {
+  // TODO: Replace `unknown` with the typed collectible shape once
+  // NftDetails is migrated to TypeScript.
+  collectible?: unknown;
+}
+
+/**
+ * Param list for the root stack navigator exposed by this file.
+ *
+ * Routes that don't require params are typed as `undefined`. Routes that may
+ * receive navigation params use flexible shapes so other files can start
+ * adopting typed navigation (e.g. via
+ * `useNavigation<StackNavigationProp<RootStackParamList>>()` or
+ * `useRoute<RouteProp<RootStackParamList, 'ScreenName'>>()`) without
+ * forcing a full migration of every screen in one pass.
+ */
+export interface RootStackParamList extends ParamListBase {
+  Home: undefined;
+  Asset: AssetParams | undefined;
+  Webview: undefined;
+  SendView: undefined;
+  SendFlowView: undefined;
+  AddBookmarkView: undefined;
+  OfflineModeView: undefined;
+  CollectiblesDetails: undefined;
+  Swaps: undefined;
+  StakeScreens: undefined;
+  StakeModals: undefined;
+  SetPasswordFlow: undefined;
+  GeneralSettings: undefined;
+  PaymentRequestView: undefined;
+  NftDetails: NftDetailsParams | undefined;
+  NftDetailsFullImage: NftDetailsParams | undefined;
+  [Routes.QR_TAB_SWITCHER]: undefined;
+  [Routes.RAMP.BUY]: undefined;
+  [Routes.RAMP.SELL]: undefined;
+  [Routes.BRIDGE.ROOT]: undefined;
+  [Routes.BRIDGE.MODALS.ROOT]: undefined;
+  [Routes.DEPRECATED_NETWORK_DETAILS]: undefined;
+  [Routes.NOTIFICATIONS.VIEW]: undefined;
+  [Routes.NOTIFICATIONS.OPT_IN_STACK]: undefined;
+  [Routes.IDENTITY.TURN_ON_BACKUP_AND_SYNC]: undefined;
+}
+
+type AssetScreenProps = StackScreenProps<RootStackParamList, 'Asset'>;
+type NftDetailsScreenProps = StackScreenProps<
+  RootStackParamList,
+  'NftDetails'
+>;
+type NftDetailsFullImageScreenProps = StackScreenProps<
+  RootStackParamList,
+  'NftDetailsFullImage'
+>;
+type BrowserScreenProps = StackScreenProps<RootStackParamList>;
+
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -129,8 +204,7 @@ const WalletModalFlow = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const AssetStackFlow = (props) => (
+const AssetStackFlow = (props: AssetScreenProps) => (
   <Stack.Navigator>
     <Stack.Screen
       name={'Asset'}
@@ -145,7 +219,7 @@ const AssetStackFlow = (props) => (
   </Stack.Navigator>
 );
 
-const AssetModalFlow = (props) => (
+const AssetModalFlow = (props: AssetScreenProps) => (
   <Stack.Navigator
     mode={'modal'}
     initialRouteName={'AssetStackFlow'}
@@ -158,7 +232,6 @@ const AssetModalFlow = (props) => (
     />
   </Stack.Navigator>
 );
-/* eslint-enable react/prop-types */
 
 const WalletTabStackFlow = () => (
   <Stack.Navigator initialRouteName={'WalletView'}>
@@ -217,8 +290,7 @@ const TransactionsHome = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const BrowserFlow = (props) => (
+const BrowserFlow = (props: BrowserScreenProps) => (
   <Stack.Navigator
     initialRouteName={Routes.BROWSER.VIEW}
     mode={'modal'}
@@ -254,7 +326,13 @@ const BrowserFlow = (props) => (
   </Stack.Navigator>
 );
 
-export const DrawerContext = React.createContext({ drawerRef: null });
+interface DrawerContextValue {
+  drawerRef: React.RefObject<unknown> | null;
+}
+
+export const DrawerContext = React.createContext<DrawerContextValue>({
+  drawerRef: null,
+});
 
 ///: BEGIN:ONLY_INCLUDE_IF(external-snaps)
 const SnapsSettingsStack = () => (
@@ -439,27 +517,34 @@ const SettingsFlow = () => (
 
 const HomeTabs = () => {
   const { trackEvent, createEventBuilder } = useMetrics();
-  const drawerRef = useRef(null);
-  const [isKeyboardHidden, setIsKeyboardHidden] = useState(true);
+  const drawerRef = useRef<unknown>(null);
+  const [isKeyboardHidden, setIsKeyboardHidden] = useState<boolean>(true);
 
   const accountsLength = useSelector(selectAccountsLength);
 
-  const chainId = useSelector((state) => {
-    const providerConfig = selectProviderConfig(state);
-    return ChainId[providerConfig.type];
+  const chainId = useSelector((state: unknown) => {
+    // TODO: Replace `any` with RootState once selectors are fully typed.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const providerConfig = selectProviderConfig(state as any);
+    return ChainId[providerConfig.type as keyof typeof ChainId];
   });
 
   const amountOfBrowserOpenTabs = useSelector(
-    (state) => state.browser.tabs.length,
+    // TODO: Replace `any` with RootState once the root reducer is typed.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (state: any) => state.browser.tabs.length,
   );
 
   /* tabs: state.browser.tabs, */
   /* activeTab: state.browser.activeTab, */
-  const activeConnectedDapp = useSelector((state) => {
-    const activeTabUrl = getActiveTabUrl(state);
+  const activeConnectedDapp = useSelector((state: unknown) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const activeTabUrl = getActiveTabUrl(state as any);
     if (!isUrl(activeTabUrl)) return [];
     try {
-      const permissionsControllerState = selectPermissionControllerState(state);
+      const permissionsControllerState =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        selectPermissionControllerState(state as any);
       const hostname = new URL(activeTabUrl).hostname;
       const permittedAcc = getPermittedAccountsByHostname(
         permissionsControllerState,
@@ -467,7 +552,7 @@ const HomeTabs = () => {
       );
       return permittedAcc;
     } catch (error) {
-      Logger.error(error, {
+      Logger.error(error as Error, {
         message: 'ParseUrl::MainNavigator error while parsing URL',
       });
     }
@@ -552,7 +637,11 @@ const HomeTabs = () => {
     }
   }, []);
 
-  const renderTabBar = ({ state, descriptors, navigation }) => {
+  const renderTabBar = ({
+    state,
+    descriptors,
+    navigation,
+  }: BottomTabBarProps): React.ReactElement | null => {
     if (isKeyboardHidden) {
       return (
         <TabBar
@@ -625,8 +714,7 @@ const SendView = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const NftDetailsModeView = (props) => (
+const NftDetailsModeView = (props: NftDetailsScreenProps) => (
   <Stack.Navigator>
     <Stack.Screen
       name=" " // No name here because this title will be displayed in the header of the page
@@ -638,8 +726,7 @@ const NftDetailsModeView = (props) => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const NftDetailsFullImageModeView = (props) => (
+const NftDetailsFullImageModeView = (props: NftDetailsFullImageScreenProps) => (
   <Stack.Navigator>
     <Stack.Screen
       name=" " // No name here because this title will be displayed in the header of the page
@@ -710,8 +797,7 @@ const PaymentRequestView = () => (
   </Stack.Navigator>
 );
 
-/* eslint-disable react/prop-types */
-const NotificationsModeView = (props) => (
+const NotificationsModeView = () => (
   <Stack.Navigator>
     <Stack.Screen
       name={Routes.NOTIFICATIONS.VIEW}
