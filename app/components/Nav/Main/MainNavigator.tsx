@@ -978,9 +978,11 @@ const MainNavigator = () => (
     />
     {/* `headerTitle` / `headerStyle` live under `options` on Stack.Screen in
         react-navigation v5+. The legacy JS set them directly on Stack.Screen,
-        where they were silently ignored, so they have been folded into
-        `options` here to both type-check and make the intended header behavior
-        actually apply. */}
+        where they were silently ignored; they have been folded into `options`
+        here for type correctness. The parent navigator's
+        `screenOptions={{ headerShown: false }}` still hides the header, so
+        this preserves the existing runtime behavior — fixing that would be
+        an intentional UI change out of scope for this JS→TS migration. */}
     <Stack.Screen
       name="SetPasswordFlow"
       component={SetPasswordFlow}
