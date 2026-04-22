@@ -22,24 +22,11 @@ export const SET_TRANSACTION_VALUE = 'SET_TRANSACTION_VALUE' as const;
 
 export type AssetType = typeof ETH | typeof ERC20 | typeof ERC721;
 
-export interface SelectedAsset {
-  isETH?: boolean;
-  tokenId?: string;
-  address?: string;
-  symbol?: string;
-  decimals?: number;
-  [key: string]: unknown;
-}
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type SelectedAsset = object;
 
-export interface TransactionObject {
-  from?: string;
-  to?: string;
-  data?: string;
-  gas?: string;
-  gasPrice?: string;
-  value?: string;
-  [key: string]: unknown;
-}
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type TransactionObject = object;
 
 export interface ResetTransactionAction {
   type: typeof RESET_TRANSACTION;
@@ -73,7 +60,7 @@ export interface PrepareTransactionAction {
 
 export interface SetTransactionSecurityAlertResponseAction {
   type: typeof SET_TRANSACTION_SECURITY_ALERT_RESPONSE;
-  transactionId: string;
+  transactionId: string | undefined;
   securityAlertResponse: unknown;
 }
 
@@ -151,9 +138,9 @@ export function newAssetTransaction(
   return {
     type: NEW_ASSET_TRANSACTION,
     selectedAsset,
-    assetType: selectedAsset.isETH
+    assetType: (selectedAsset as { isETH?: unknown }).isETH
       ? ETH
-      : selectedAsset.tokenId
+      : (selectedAsset as { tokenId?: unknown }).tokenId
       ? ERC721
       : ERC20,
   };
@@ -188,9 +175,9 @@ export function setSelectedAsset(
   return {
     type: SET_SELECTED_ASSET,
     selectedAsset,
-    assetType: selectedAsset.isETH
+    assetType: (selectedAsset as { isETH?: unknown }).isETH
       ? ETH
-      : selectedAsset.tokenId
+      : (selectedAsset as { tokenId?: unknown }).tokenId
       ? ERC721
       : ERC20,
   };
@@ -209,7 +196,7 @@ export function prepareTransaction(
 }
 
 export function setTransactionSecurityAlertResponse(
-  transactionId: string,
+  transactionId: string | undefined,
   securityAlertResponse: unknown,
 ): SetTransactionSecurityAlertResponseAction {
   return {

@@ -29,8 +29,8 @@ export interface AddToHistoryAction {
 export interface ClearHistoryAction {
   type: typeof CLEAR_BROWSER_HISTORY;
   id: number;
-  metricsEnabled: boolean;
-  marketingEnabled: boolean;
+  metricsEnabled: boolean | null;
+  marketingEnabled: boolean | null;
 }
 
 export interface AddToWhitelistAction {
@@ -122,8 +122,8 @@ export function addToHistory({
  * Clears the entire browser history
  */
 export function clearHistory(
-  metricsEnabled: boolean,
-  marketingEnabled: boolean,
+  metricsEnabled: boolean | null,
+  marketingEnabled: boolean | null,
 ): ClearHistoryAction {
   return {
     type: CLEAR_BROWSER_HISTORY,

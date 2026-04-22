@@ -3,23 +3,20 @@ import {
   REMOVE_FAVORITE_COLLECTIBLE,
 } from '../../reducers/collectibles';
 
-export interface Collectible {
-  address: string;
-  tokenId: string;
-  [key: string]: unknown;
-}
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type Collectible = object;
 
 export interface AddFavoriteCollectibleAction {
   type: typeof ADD_FAVORITE_COLLECTIBLE;
-  selectedAddress: string;
-  chainId: string;
+  selectedAddress: string | undefined;
+  chainId: string | undefined;
   collectible: Collectible;
 }
 
 export interface RemoveFavoriteCollectibleAction {
   type: typeof REMOVE_FAVORITE_COLLECTIBLE;
-  selectedAddress: string;
-  chainId: string;
+  selectedAddress: string | undefined;
+  chainId: string | undefined;
   collectible: Collectible;
 }
 
@@ -28,8 +25,8 @@ export type CollectiblesAction =
   | RemoveFavoriteCollectibleAction;
 
 export const addFavoriteCollectible = (
-  selectedAddress: string,
-  chainId: string,
+  selectedAddress: string | undefined,
+  chainId: string | undefined,
   collectible: Collectible,
 ): AddFavoriteCollectibleAction => ({
   type: ADD_FAVORITE_COLLECTIBLE,
@@ -39,8 +36,8 @@ export const addFavoriteCollectible = (
 });
 
 export const removeFavoriteCollectible = (
-  selectedAddress: string,
-  chainId: string,
+  selectedAddress: string | undefined,
+  chainId: string | undefined,
   collectible: Collectible,
 ): RemoveFavoriteCollectibleAction => ({
   type: REMOVE_FAVORITE_COLLECTIBLE,

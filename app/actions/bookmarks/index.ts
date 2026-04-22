@@ -3,7 +3,7 @@ export const REMOVE_BOOKMARK = 'REMOVE_BOOKMARK' as const;
 
 export interface Bookmark {
   url: string;
-  name: string;
+  name?: string;
 }
 
 export interface AddBookmarkAction {
@@ -13,7 +13,7 @@ export interface AddBookmarkAction {
 
 export interface RemoveBookmarkAction {
   type: typeof REMOVE_BOOKMARK;
-  bookmark: Bookmark;
+  bookmark: object;
 }
 
 export type BookmarksAction = AddBookmarkAction | RemoveBookmarkAction;
@@ -25,7 +25,7 @@ export function addBookmark(bookmark: Bookmark): AddBookmarkAction {
   };
 }
 
-export function removeBookmark(bookmark: Bookmark): RemoveBookmarkAction {
+export function removeBookmark(bookmark: object): RemoveBookmarkAction {
   return {
     type: REMOVE_BOOKMARK,
     bookmark,

@@ -4,13 +4,13 @@
 import { ACTIONS } from '../../reducers/notification';
 
 export interface TransactionNotificationPayload {
-  autodismiss?: number;
+  autodismiss?: number | boolean | null;
   transaction: { id: string; [key: string]: unknown };
   status: string;
 }
 
 export interface SimpleNotificationPayload {
-  autodismiss?: number;
+  autodismiss?: number | boolean | null;
   title: string;
   description?: string;
   status: string;
@@ -20,7 +20,7 @@ export interface SimpleNotificationPayload {
 export interface NotificationRecord {
   id: string | number;
   type?: string;
-  autodismiss?: number;
+  autodismiss?: number | boolean | null;
   title?: string;
   description?: string;
   status?: string;
