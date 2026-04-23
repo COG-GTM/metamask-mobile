@@ -1,8 +1,7 @@
-export default function migrate(state) {
+export default function migrate(state: Record<string, any>) {
   state.engine.backgroundState.PreferencesController = {
     ...state.engine.backgroundState.PreferencesController,
-    useCollectibleDetection: false,
-    openSeaEnabled: false,
+    useTokenDetection: true,
   };
   return state;
 }

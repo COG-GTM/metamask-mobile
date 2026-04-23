@@ -1,4 +1,4 @@
-export default function migrate(state) {
+export default function migrate(state: Record<string, any>) {
   const {
     allCollectibles,
     allCollectibleContracts,
