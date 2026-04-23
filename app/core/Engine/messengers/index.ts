@@ -43,6 +43,12 @@ import { getBridgeControllerMessenger } from './bridge-controller-messenger';
 import { getBridgeStatusControllerMessenger } from './bridge-status-controller-messenger';
 import { getTokenSearchDiscoveryDataControllerMessenger } from './token-search-discovery-data-controller-messenger';
 import { getRatesControllerMessenger } from './rates-controller-messenger';
+import { getSelectedNetworkControllerMessenger } from './selected-network-controller-messenger';
+import { getAccountTrackerControllerMessenger } from './account-tracker-controller-messenger';
+import { getTokenBalancesControllerMessenger } from './token-balances-controller-messenger';
+import { getTokenRatesControllerMessenger } from './token-rates-controller-messenger';
+import { getNftControllerMessenger } from './nft-controller-messenger';
+import { getTokensControllerMessenger } from './tokens-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -185,6 +191,30 @@ export const CONTROLLER_MESSENGERS = {
   },
   TokenSearchDiscoveryDataController: {
     getMessenger: getTokenSearchDiscoveryDataControllerMessenger,
+    getInitMessenger: noop,
+  },
+  SelectedNetworkController: {
+    getMessenger: getSelectedNetworkControllerMessenger,
+    getInitMessenger: noop,
+  },
+  AccountTrackerController: {
+    getMessenger: getAccountTrackerControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenBalancesController: {
+    getMessenger: getTokenBalancesControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenRatesController: {
+    getMessenger: getTokenRatesControllerMessenger,
+    getInitMessenger: noop,
+  },
+  NftController: {
+    getMessenger: getNftControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokensController: {
+    getMessenger: getTokensControllerMessenger,
     getInitMessenger: noop,
   },
 } as const;
