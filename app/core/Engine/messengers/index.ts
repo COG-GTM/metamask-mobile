@@ -29,6 +29,9 @@ import {
   getSnapInterfaceControllerMessenger,
   getSnapsRegistryMessenger,
 } from './snaps';
+import { getSubjectMetadataControllerMessenger } from './subject-metadata-controller-messenger';
+import { getAuthenticationControllerMessenger } from './identity/authentication-controller-messenger';
+import { getUserStorageControllerMessenger } from './identity/user-storage-controller-messenger';
 ///: END:ONLY_INCLUDE_IF
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { getMultichainAssetsRatesControllerMessenger } from './multichain-assets-rates-controller-messenger/multichain-assets-rates-controller-messenger';
@@ -52,6 +55,8 @@ import { getPPOMControllerMessenger } from './ppom-controller-messenger';
 import { getBridgeControllerMessenger } from './bridge-controller-messenger';
 import { getBridgeStatusControllerMessenger } from './bridge-status-controller-messenger';
 import { getTokenSearchDiscoveryDataControllerMessenger } from './token-search-discovery-data-controller-messenger';
+import { getTokenDetectionControllerMessenger } from './token-detection-controller-messenger';
+import { getNftDetectionControllerMessenger } from './nft-detection-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -181,6 +186,18 @@ export const CONTROLLER_MESSENGERS = {
     getMessenger: getNotificationServicesPushControllerMessenger,
     getInitMessenger: noop,
   },
+  SubjectMetadataController: {
+    getMessenger: getSubjectMetadataControllerMessenger,
+    getInitMessenger: noop,
+  },
+  AuthenticationController: {
+    getMessenger: getAuthenticationControllerMessenger,
+    getInitMessenger: noop,
+  },
+  UserStorageController: {
+    getMessenger: getUserStorageControllerMessenger,
+    getInitMessenger: noop,
+  },
   ///: END:ONLY_INCLUDE_IF
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   MultichainAssetsController: {
@@ -230,6 +247,14 @@ export const CONTROLLER_MESSENGERS = {
   },
   TokenSearchDiscoveryDataController: {
     getMessenger: getTokenSearchDiscoveryDataControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenDetectionController: {
+    getMessenger: getTokenDetectionControllerMessenger,
+    getInitMessenger: noop,
+  },
+  NftDetectionController: {
+    getMessenger: getNftDetectionControllerMessenger,
     getInitMessenger: noop,
   },
 } as const;

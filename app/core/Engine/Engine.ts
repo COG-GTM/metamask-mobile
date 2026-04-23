@@ -60,11 +60,9 @@ import { MetaMetricsEvents, MetaMetrics } from '../Analytics';
 import { calculateScryptKey } from './controllers/identity/calculate-scrypt-key';
 import { notificationServicesControllerInit } from './controllers/notifications/notification-services-controller-init';
 import { notificationServicesPushControllerInit } from './controllers/notifications/notification-services-push-controller-init';
-
-import { getAuthenticationControllerMessenger } from './messengers/identity/authentication-controller-messenger';
-import { createAuthenticationController } from './controllers/identity/create-authentication-controller';
-import { getUserStorageControllerMessenger } from './messengers/identity/user-storage-controller-messenger';
-import { createUserStorageController } from './controllers/identity/create-user-storage-controller';
+import { subjectMetadataControllerInit } from './controllers/subject-metadata-controller';
+import { authenticationControllerInit } from './controllers/identity/authentication-controller-init';
+import { userStorageControllerInit } from './controllers/identity/user-storage-controller-init';
 ///: END:ONLY_INCLUDE_IF
 import {
   getCaveatSpecifications,
@@ -109,6 +107,8 @@ import {
 } from './controllers/snaps';
 ///: END:ONLY_INCLUDE_IF
 import { MetricsEventBuilder } from '../Analytics/MetricsEventBuilder';
+import { tokenDetectionControllerInit } from './controllers/token-detection-controller';
+import { nftDetectionControllerInit } from './controllers/nft-detection-controller';
 import {
   BaseControllerMessenger,
   EngineState,
@@ -218,10 +218,6 @@ export class Engine {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lastIncomingTxBlockInfo: any;
-
-  ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-  subjectMetadataController: SubjectMetadataController;
-  ///: END:ONLY_INCLUDE_IF
 
   accountsController: AccountsController;
   gasFeeController: GasFeeController;
@@ -426,6 +422,9 @@ export class Engine {
         NotificationServicesController: notificationServicesControllerInit,
         NotificationServicesPushController:
           notificationServicesPushControllerInit,
+        SubjectMetadataController: subjectMetadataControllerInit,
+        AuthenticationController: authenticationControllerInit,
+        UserStorageController: userStorageControllerInit,
         ///: END:ONLY_INCLUDE_IF
         ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
         MultichainAssetsController: multichainAssetsControllerInit,
@@ -434,6 +433,8 @@ export class Engine {
         MultichainTransactionsController: multichainTransactionsControllerInit,
         RatesController: ratesControllerInit,
         ///: END:ONLY_INCLUDE_IF
+        TokenDetectionController: tokenDetectionControllerInit,
+        NftDetectionController: nftDetectionControllerInit,
       },
       persistedState: initialState as EngineState,
       existingControllersByName,
@@ -488,6 +489,11 @@ export class Engine {
       controllersByName.NotificationServicesController;
     const notificationServicesPushController =
       controllersByName.NotificationServicesPushController;
+    const subjectMetadataController =
+      controllersByName.SubjectMetadataController;
+    const authenticationController =
+      controllersByName.AuthenticationController;
+    const userStorageController = controllersByName.UserStorageController;
     ///: END:ONLY_INCLUDE_IF
 
     ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
@@ -658,7 +664,7 @@ export class Engine {
       SnapController: snapController,
       SnapInterfaceController: snapInterfaceController,
       SnapsRegistry: snapsRegistry,
-      SubjectMetadataController: this.subjectMetadataController,
+      SubjectMetadataController: subjectMetadataController,
       AuthenticationController: authenticationController,
       UserStorageController: userStorageController,
       NotificationServicesController: notificationServicesController,
