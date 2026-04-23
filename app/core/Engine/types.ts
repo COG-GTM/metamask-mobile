@@ -587,6 +587,7 @@ export type ControllersToInitialize =
   | 'MultichainAssetsRatesController'
   | 'MultichainBalancesController'
   | 'MultichainTransactionsController'
+  | 'RatesController'
   ///: END:ONLY_INCLUDE_IF
   | 'CurrencyRateController'
   | 'AccountsController'
@@ -610,7 +611,14 @@ export type ControllersToInitialize =
   | 'TokenBalancesController'
   | 'TokenRatesController'
   | 'NftController'
-  | 'TokensController';
+  | 'TokensController'
+  | 'KeyringController'
+  | 'SmartTransactionsController'
+  | 'SwapsController'
+  | 'PPOMController'
+  | 'BridgeController'
+  | 'BridgeStatusController'
+  | 'TokenSearchDiscoveryDataController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.
