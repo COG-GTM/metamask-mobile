@@ -27,6 +27,15 @@ import { getNotificationServicesControllerMessenger } from './notifications/noti
 import { getNotificationServicesPushControllerMessenger } from './notifications/notification-services-push-controller-messenger';
 import { getGasFeeControllerMessenger } from './gas-fee-controller-messenger/gas-fee-controller-messenger';
 import { getSignatureControllerMessenger } from './signature-controller-messenger';
+import { getKeyringControllerMessenger } from './keyring-controller-messenger';
+import { getPermissionControllerMessenger } from './permission-controller-messenger';
+import { getSmartTransactionsControllerMessenger } from './smart-transactions-controller-messenger';
+import { getSwapsControllerMessenger } from './swaps-controller-messenger';
+import { getPPOMControllerMessenger } from './ppom-controller-messenger';
+import { getBridgeControllerMessenger } from './bridge-controller-messenger';
+import { getBridgeStatusControllerMessenger } from './bridge-status-controller-messenger';
+import { getTokenSearchDiscoveryDataControllerMessenger } from './token-search-discovery-data-controller-messenger';
+import { getRatesControllerMessenger } from './rates-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -106,5 +115,41 @@ export const CONTROLLER_MESSENGERS = {
     getMessenger: getMultichainTransactionsControllerMessenger,
     getInitMessenger: noop,
   },
+  RatesController: {
+    getMessenger: getRatesControllerMessenger,
+    getInitMessenger: noop,
+  },
   ///: END:ONLY_INCLUDE_IF
+  KeyringController: {
+    getMessenger: getKeyringControllerMessenger,
+    getInitMessenger: noop,
+  },
+  PermissionController: {
+    getMessenger: getPermissionControllerMessenger,
+    getInitMessenger: noop,
+  },
+  SmartTransactionsController: {
+    getMessenger: getSmartTransactionsControllerMessenger,
+    getInitMessenger: noop,
+  },
+  SwapsController: {
+    getMessenger: getSwapsControllerMessenger,
+    getInitMessenger: noop,
+  },
+  PPOMController: {
+    getMessenger: getPPOMControllerMessenger,
+    getInitMessenger: noop,
+  },
+  BridgeController: {
+    getMessenger: getBridgeControllerMessenger,
+    getInitMessenger: noop,
+  },
+  BridgeStatusController: {
+    getMessenger: getBridgeStatusControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenSearchDiscoveryDataController: {
+    getMessenger: getTokenSearchDiscoveryDataControllerMessenger,
+    getInitMessenger: noop,
+  },
 } as const;

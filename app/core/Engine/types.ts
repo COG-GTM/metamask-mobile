@@ -587,13 +587,22 @@ export type ControllersToInitialize =
   | 'MultichainAssetsRatesController'
   | 'MultichainBalancesController'
   | 'MultichainTransactionsController'
+  | 'RatesController'
   ///: END:ONLY_INCLUDE_IF
   | 'CurrencyRateController'
   | 'AccountsController'
   | 'MultichainNetworkController'
   | 'TransactionController'
   | 'GasFeeController'
-  | 'SignatureController';
+  | 'SignatureController'
+  | 'KeyringController'
+  | 'PermissionController'
+  | 'SmartTransactionsController'
+  | 'SwapsController'
+  | 'PPOMController'
+  | 'BridgeController'
+  | 'BridgeStatusController'
+  | 'TokenSearchDiscoveryDataController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.
@@ -627,6 +636,13 @@ export type ControllerInitRequest<
   ControllerMessengerType extends BaseRestrictedControllerMessenger,
   InitMessengerType extends void | BaseRestrictedControllerMessenger = void,
 > = {
+  /**
+   * Unrestricted base controller messenger.
+   * Use this when a sub-messenger needs cross-controller actions
+   * that the controller's own restricted messenger cannot provide.
+   */
+  baseControllerMessenger: BaseControllerMessenger;
+
   /**
    * Controller messenger for the client.
    * Used to generate controller for each controller.
