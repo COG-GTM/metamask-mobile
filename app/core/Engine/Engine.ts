@@ -1254,7 +1254,10 @@ export class Engine {
       nfts.setApiKey(process.env.MM_OPENSEA_KEY);
     }
 
-    const currentChainIdRef = { value: currentChainId };
+    const currentChainIdRef = {
+      get value() { return currentChainId; },
+      set value(v) { currentChainId = v; },
+    };
     setupEngineSubscriptions({
       controllerMessenger: this.controllerMessenger,
       networkController,
