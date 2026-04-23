@@ -172,8 +172,8 @@ import { isProductSafetyDappScanningEnabled } from '../../util/phishingDetection
 import { appMetadataControllerInit } from './controllers/app-metadata-controller';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { toFormattedAddress } from '../../util/address';
-import { keyringControllerInit } from './controllers/keyring-controller';
-import { permissionControllerInit } from './controllers/permission-controller';
+import { keyringControllerInit, setRemoveAccountHelper } from './controllers/keyring-controller';
+import { permissionControllerInit, setSnapPermissionSpecificationsProvider } from './controllers/permission-controller';
 import { smartTransactionsControllerInit } from './controllers/smart-transactions-controller';
 import { swapsControllerInit } from './controllers/swaps-controller';
 import { ppomControllerInit } from './controllers/ppom-controller';
@@ -607,6 +607,9 @@ export class Engine {
       ),
     });
 
+    // Provide snap permission specs to the PermissionController init function
+    setSnapPermissionSpecificationsProvider(getSnapPermissionSpecifications);
+
     const accountTrackerController = new AccountTrackerController({
       messenger: this.controllerMessenger.getRestricted({
         name: 'AccountTrackerController',
@@ -784,7 +787,13 @@ export class Engine {
         BridgeStatusController: bridgeStatusControllerInit,
         TokenSearchDiscoveryDataController: tokenSearchDiscoveryDataControllerInit,
       },
-      persistedState: initialState as EngineState,
+      persistedState: {
+        ...initialState,
+        // Preserve initialKeyringState precedence for vault recovery flow (EngineService.ts)
+        ...(initialKeyringState
+          ? { KeyringController: initialKeyringState }
+          : {}),
+      } as EngineState,
       existingControllersByName,
       baseControllerMessenger: this.controllerMessenger,
       ...initRequest,
@@ -801,6 +810,11 @@ export class Engine {
     this.transactionController = transactionController;
     this.keyringController = controllersByName.KeyringController;
     this.smartTransactionsController = controllersByName.SmartTransactionsController;
+
+    ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+    // Wire up the deferred removeAccountHelper for the snap keyring builder
+    setRemoveAccountHelper((address: string) => this.removeAccount(address));
+    ///: END:ONLY_INCLUDE_IF
 
     const permissionController = controllersByName.PermissionController;
     const swapsController = controllersByName.SwapsController;

@@ -4,14 +4,29 @@ import {
   getPermissionSpecifications,
   unrestrictedMethods,
 } from '../../../Permissions/specifications.js';
-///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-import {
-  buildSnapEndowmentSpecifications,
-  buildSnapRestrictedMethodSpecifications,
-} from '@metamask/snaps-rpc-methods';
-import { ExcludedSnapEndowments, ExcludedSnapPermissions } from '../../../Snaps';
-///: END:ONLY_INCLUDE_IF
 import type { ControllerInitFunction } from '../../types';
+
+/**
+ * Snap permission specifications provider.
+ * Set by Engine.ts before controller initialization since building snap specs
+ * requires access to the Engine's controllerMessenger and instance methods.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let snapPermissionSpecificationsProvider: (() => Record<string, any>) | null =
+  null;
+
+/**
+ * Set the snap permission specifications provider function.
+ * Must be called before permissionControllerInit.
+ *
+ * @param provider - Function that returns snap permission specifications.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function setSnapPermissionSpecificationsProvider(
+  provider: () => Record<string, any>,
+) {
+  snapPermissionSpecificationsProvider = provider;
+}
 
 /**
  * Initialize the PermissionController.
@@ -42,24 +57,12 @@ export const permissionControllerInit: ControllerInitFunction<
     }),
     permissionSpecifications: {
       ...getPermissionSpecifications(),
-      ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-      ...getSnapPermissionSpecifications(),
-      ///: END:ONLY_INCLUDE_IF
+      ...(snapPermissionSpecificationsProvider
+        ? snapPermissionSpecificationsProvider()
+        : {}),
     },
     unrestrictedMethods,
   });
 
   return { controller };
 };
-
-///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-function getSnapPermissionSpecifications() {
-  return {
-    ...buildSnapEndowmentSpecifications(Object.keys(ExcludedSnapEndowments)),
-    ...buildSnapRestrictedMethodSpecifications(
-      Object.keys(ExcludedSnapPermissions),
-      {},
-    ),
-  };
-}
-///: END:ONLY_INCLUDE_IF

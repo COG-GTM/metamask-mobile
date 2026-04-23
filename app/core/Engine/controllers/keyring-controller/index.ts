@@ -21,6 +21,16 @@ const encryptor = new Encryptor({
 });
 
 /**
+ * Deferred callback holder for removeAccountHelper.
+ * Engine.ts wires this up after controller creation since it needs
+ * access to the Engine instance's removeAccount method.
+ */
+// eslint-disable-next-line import/no-mutable-exports
+export let setRemoveAccountHelper: (
+  helper: (address: string) => Promise<void>,
+) => void;
+
+/**
  * Initialize the KeyringController.
  *
  * @param request - The request object.
@@ -85,14 +95,22 @@ export const keyringControllerInit: ControllerInitFunction<
   // The controller variable will be assigned after construction below.
   let keyringControllerRef: KeyringController;
 
+  // Deferred removeAccountHelper - Engine.ts wires this up after controller creation
+  // since it needs access to Engine.removeAccount which handles both permissions and keyring removal.
+  let removeAccountHelperRef: (address: string) => Promise<void> = async () => {
+    throw new Error('removeAccountHelper not yet initialized');
+  };
+  setRemoveAccountHelper = (helper: (address: string) => Promise<void>) => {
+    removeAccountHelperRef = helper;
+  };
+
   additionalKeyrings.push(
     snapKeyringBuilder(snapKeyringBuildMessenger, {
       persistKeyringHelper: async () => {
         await keyringControllerRef.persistAllKeyrings();
       },
-      removeAccountHelper: async (_address: string) => {
-        // This will be handled by Engine after controller is created
-        // The removeAccount method on Engine is used here
+      removeAccountHelper: async (address: string) => {
+        await removeAccountHelperRef(address);
       },
     }),
   );
