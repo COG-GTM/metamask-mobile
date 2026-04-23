@@ -1,7 +1,51 @@
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import { TransactionAction } from '../../actions/transaction';
 
-const initialState = {
+interface TransactionData {
+  data: string | undefined;
+  from: string | undefined;
+  gas: string | undefined;
+  gasPrice: string | undefined;
+  to: string | undefined;
+  value: string | undefined;
+  maxFeePerGas: string | undefined;
+  maxPriorityFeePerGas: string | undefined;
+  [key: string]: unknown;
+}
+
+interface SelectedAsset {
+  tokenId?: string;
+  isETH?: boolean;
+  symbol?: string;
+  address?: string;
+  [key: string]: unknown;
+}
+
+export interface TransactionState {
+  ensRecipient: string | undefined;
+  assetType: string | undefined;
+  selectedAsset: SelectedAsset;
+  transaction: TransactionData;
+  warningGasPriceHigh: string | undefined;
+  transactionTo: string | undefined;
+  transactionToName: string | undefined;
+  transactionFromName: string | undefined;
+  transactionValue: string | undefined;
+  symbol: string | undefined;
+  paymentRequest: unknown | undefined;
+  readableValue: string | undefined;
+  id: string | undefined;
+  type: string | undefined;
+  proposedNonce: string | undefined;
+  nonce: string | undefined;
+  securityAlertResponses: Record<string, unknown>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+  [key: string]: unknown;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -12,7 +56,6 @@ const initialState = {
     gasPrice: undefined,
     to: undefined,
     value: undefined,
-    // eip1559
     maxFeePerGas: undefined,
     maxPriorityFeePerGas: undefined,
   },
@@ -32,7 +75,7 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+const getAssetType = (selectedAsset: SelectedAsset): string | undefined => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,7 +89,9 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+type RehydrateAction = { type: typeof REHYDRATE };
+
+const transactionReducer = (state: TransactionState = initialState, action: TransactionAction | RehydrateAction): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {

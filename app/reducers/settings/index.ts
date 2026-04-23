@@ -1,6 +1,20 @@
 import AppConstants from '../../core/AppConstants';
+import { SettingsAction } from '../../actions/settings';
 
-const initialState = {
+export interface SettingsState {
+  searchEngine: string;
+  primaryCurrency: string;
+  lockTime: number;
+  useBlockieIcon: boolean;
+  hideZeroBalanceTokens: boolean;
+  basicFunctionalityEnabled: boolean;
+  showHexData?: boolean;
+  showCustomNonce?: boolean;
+  showFiatOnTestnets?: boolean;
+  deviceNotificationEnabled?: boolean;
+}
+
+const initialState: SettingsState = {
   searchEngine: AppConstants.DEFAULT_SEARCH_ENGINE,
   primaryCurrency: 'ETH',
   lockTime: -1, // Disabled by default
@@ -9,7 +23,7 @@ const initialState = {
   basicFunctionalityEnabled: true,
 };
 
-const settingsReducer = (state = initialState, action) => {
+const settingsReducer = (state: SettingsState = initialState, action: SettingsAction): SettingsState => {
   switch (action.type) {
     case 'SET_SEARCH_ENGINE':
       return {

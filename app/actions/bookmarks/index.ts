@@ -1,7 +1,7 @@
 export const ADD_BOOKMARK = 'ADD_BOOKMARK' as const;
 export const REMOVE_BOOKMARK = 'REMOVE_BOOKMARK' as const;
 
-interface Bookmark {
+export interface Bookmark {
   url: string;
   name: string;
 }
