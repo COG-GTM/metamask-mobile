@@ -241,7 +241,7 @@ export function hasFunds(
     }
 
     const fiatBalance = getTotalEvmFiatAccountBalance(context, storeGetState) || 0;
-    const totalFiatBalance = fiatBalance.ethFiat + fiatBalance.ethFiat;
+    const totalFiatBalance = fiatBalance.ethFiat + fiatBalance.tokenFiat;
 
     return totalFiatBalance > 0 || tokenFound || nfts.length > 0;
   } catch (e) {
