@@ -581,6 +581,9 @@ export type ControllersToInitialize =
   | 'NotificationServicesController'
   | 'NotificationServicesPushController'
   | 'AppMetadataController'
+  | 'SubjectMetadataController'
+  | 'AuthenticationController'
+  | 'UserStorageController'
   ///: END:ONLY_INCLUDE_IF
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   | 'MultichainAssetsController'
@@ -615,7 +618,9 @@ export type ControllersToInitialize =
   | 'TokenBalancesController'
   | 'TokenRatesController'
   | 'NftController'
-  | 'TokensController';
+  | 'TokensController'
+  | 'TokenDetectionController'
+  | 'NftDetectionController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.

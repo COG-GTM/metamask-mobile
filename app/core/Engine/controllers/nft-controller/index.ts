@@ -1,6 +1,9 @@
-import { NftController } from '@metamask/assets-controllers';
-import type { NetworkController } from '@metamask/network-controller';
-import type { ControllerInitFunction, BaseRestrictedControllerMessenger } from '../../types';
+import {
+  NftController,
+  type NftControllerMessenger,
+  type NftControllerState,
+} from '@metamask/assets-controllers';
+import type { ControllerInitFunction } from '../../types';
 import { getGlobalChainId } from '../../../../util/networks/global-network';
 
 /**
@@ -11,17 +14,17 @@ import { getGlobalChainId } from '../../../../util/networks/global-network';
  */
 export const nftControllerInit: ControllerInitFunction<
   NftController,
-  BaseRestrictedControllerMessenger
+  NftControllerMessenger
 > = (request) => {
-  const { controllerMessenger, persistedState } = request;
+  const { controllerMessenger, persistedState, getController } = request;
 
-  const networkController = request.getController('NetworkController') as NetworkController;
+  const networkController = getController('NetworkController');
 
   const controller = new NftController({
     chainId: getGlobalChainId(networkController),
     useIpfsSubdomains: false,
     messenger: controllerMessenger,
-    state: persistedState.NftController,
+    state: persistedState.NftController as NftControllerState,
   });
 
   return { controller };

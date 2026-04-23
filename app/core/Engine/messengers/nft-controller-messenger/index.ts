@@ -1,4 +1,5 @@
-import { BaseControllerMessenger } from '../../types';
+import type { NftControllerMessenger } from '@metamask/assets-controllers';
+import type { BaseControllerMessenger } from '../../types';
 
 /**
  * Get the NftControllerMessenger for the NftController.
@@ -8,7 +9,7 @@ import { BaseControllerMessenger } from '../../types';
  */
 export function getNftControllerMessenger(
   baseControllerMessenger: BaseControllerMessenger,
-) {
+): NftControllerMessenger {
   return baseControllerMessenger.getRestricted({
     name: 'NftController',
     allowedActions: [

@@ -65,14 +65,11 @@ import { MetaMetricsEvents, MetaMetrics } from '../Analytics';
 
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
 import { ExcludedSnapEndowments, ExcludedSnapPermissions } from '../Snaps';
-import { calculateScryptKey } from './controllers/identity/calculate-scrypt-key';
 import { notificationServicesControllerInit } from './controllers/notifications/notification-services-controller-init';
 import { notificationServicesPushControllerInit } from './controllers/notifications/notification-services-push-controller-init';
-
-import { getAuthenticationControllerMessenger } from './messengers/identity/authentication-controller-messenger';
-import { createAuthenticationController } from './controllers/identity/create-authentication-controller';
-import { getUserStorageControllerMessenger } from './messengers/identity/user-storage-controller-messenger';
-import { createUserStorageController } from './controllers/identity/create-user-storage-controller';
+import { subjectMetadataControllerInit } from './controllers/subject-metadata-controller';
+import { authenticationControllerInit } from './controllers/identity/authentication-controller-init';
+import { userStorageControllerInit } from './controllers/identity/user-storage-controller-init';
 ///: END:ONLY_INCLUDE_IF
 import {
   getCaveatSpecifications,
@@ -143,7 +140,6 @@ import { TransactionControllerInit } from './controllers/transaction-controller'
 import { SignatureControllerInit } from './controllers/signature-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
 import I18n from '../../../locales/i18n';
-import { Platform } from '@metamask/profile-sync-controller/sdk';
 import { appMetadataControllerInit } from './controllers/app-metadata-controller';
 import { addressBookControllerInit } from './controllers/address-book-controller';
 import { loggingControllerInit } from './controllers/logging-controller';
@@ -158,6 +154,8 @@ import { tokenBalancesControllerInit } from './controllers/token-balances-contro
 import { tokenRatesControllerInit } from './controllers/token-rates-controller';
 import { nftControllerInit } from './controllers/nft-controller';
 import { tokensControllerInit } from './controllers/tokens-controller';
+import { tokenDetectionControllerInit } from './controllers/token-detection-controller';
+import { nftDetectionControllerInit } from './controllers/nft-detection-controller';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import {
   getTotalEvmFiatAccountBalance as getTotalEvmFiatAccountBalanceUtil,
@@ -382,76 +380,8 @@ export class Engine {
 
     // AccountTrackerController and PermissionController are now initialized via controllerInitFunctions
 
-    ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-    this.subjectMetadataController = new SubjectMetadataController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'SubjectMetadataController',
-        allowedActions: ['PermissionController:hasPermissions'],
-        allowedEvents: [],
-      }),
-      state: initialState.SubjectMetadataController || {},
-      subjectCacheLimit: 100,
-    });
-
-    const authenticationControllerMessenger =
-      getAuthenticationControllerMessenger(this.controllerMessenger);
-    const authenticationController = createAuthenticationController({
-      messenger: authenticationControllerMessenger,
-      initialState: initialState.AuthenticationController,
-      metametrics: {
-        agent: Platform.MOBILE,
-        getMetaMetricsId: async () =>
-          (await MetaMetrics.getInstance().getMetaMetricsId()) || '',
-      },
-    });
-
-    const userStorageControllerMessenger = getUserStorageControllerMessenger(
-      this.controllerMessenger,
-    );
-    const userStorageController = createUserStorageController({
-      messenger: userStorageControllerMessenger,
-      initialState: initialState.UserStorageController,
-      nativeScryptCrypto: calculateScryptKey,
-      config: {
-        accountSyncing: {
-          onAccountAdded: (profileId) => {
-            MetaMetrics.getInstance().trackEvent(
-              MetricsEventBuilder.createEventBuilder(
-                MetaMetricsEvents.ACCOUNTS_SYNC_ADDED,
-              )
-                .addProperties({
-                  profile_id: profileId,
-                })
-                .build(),
-            );
-          },
-          onAccountNameUpdated: (profileId) => {
-            MetaMetrics.getInstance().trackEvent(
-              MetricsEventBuilder.createEventBuilder(
-                MetaMetricsEvents.ACCOUNTS_SYNC_NAME_UPDATED,
-              )
-                .addProperties({
-                  profile_id: profileId,
-                })
-                .build(),
-            );
-          },
-          onAccountSyncErroneousSituation(profileId, situationMessage) {
-            MetaMetrics.getInstance().trackEvent(
-              MetricsEventBuilder.createEventBuilder(
-                MetaMetricsEvents.ACCOUNTS_SYNC_ERRONEOUS_SITUATION,
-              )
-                .addProperties({
-                  profile_id: profileId,
-                  situation_message: situationMessage,
-                })
-                .build(),
-            );
-          },
-        },
-      },
-    });
-    ///: END:ONLY_INCLUDE_IF
+    // SubjectMetadataController, AuthenticationController, and UserStorageController
+    // are now initialized via controllerInitFunctions
 
     const codefiTokenApiV2 = new CodefiTokenPricesServiceV2();
 
@@ -485,6 +415,9 @@ export class Engine {
         CurrencyRateController: currencyRateControllerInit,
         MultichainNetworkController: multichainNetworkControllerInit,
         ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
+        SubjectMetadataController: subjectMetadataControllerInit,
+        AuthenticationController: authenticationControllerInit,
+        UserStorageController: userStorageControllerInit,
         ExecutionService: executionServiceInit,
         SnapController: snapControllerInit,
         CronjobController: cronjobControllerInit,
@@ -522,6 +455,8 @@ export class Engine {
         TokenRatesController: tokenRatesControllerInit,
         NftController: nftControllerInit,
         TokensController: tokensControllerInit,
+        TokenDetectionController: tokenDetectionControllerInit,
+        NftDetectionController: nftDetectionControllerInit,
       },
       persistedState: {
         ...initialState,
@@ -539,6 +474,7 @@ export class Engine {
     const gasFeeController = controllersByName.GasFeeController;
     const signatureController = controllersByName.SignatureController;
     const transactionController = controllersByName.TransactionController;
+    const nftController = controllersByName.NftController;
 
     // Backwards compatibility for existing references
     this.accountsController = accountsController;
@@ -573,6 +509,11 @@ export class Engine {
       controllersByName.NotificationServicesController;
     const notificationServicesPushController =
       controllersByName.NotificationServicesPushController;
+    this.subjectMetadataController =
+      controllersByName.SubjectMetadataController;
+    const authenticationController =
+      controllersByName.AuthenticationController;
+    const userStorageController = controllersByName.UserStorageController;
     ///: END:ONLY_INCLUDE_IF
 
     ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
@@ -611,72 +552,8 @@ export class Engine {
       NftController: controllersByName.NftController,
       TokensController: controllersByName.TokensController,
       TokenListController: controllersByName.TokenListController,
-      TokenDetectionController: new TokenDetectionController({
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'TokenDetectionController',
-          allowedActions: [
-            'AccountsController:getSelectedAccount',
-            'NetworkController:getNetworkClientById',
-            'NetworkController:getNetworkConfigurationByNetworkClientId',
-            'NetworkController:getState',
-            'KeyringController:getState',
-            'PreferencesController:getState',
-            'TokenListController:getState',
-            'TokensController:getState',
-            'TokensController:addDetectedTokens',
-            'AccountsController:getAccount',
-          ],
-          allowedEvents: [
-            'KeyringController:lock',
-            'KeyringController:unlock',
-            'PreferencesController:stateChange',
-            'NetworkController:networkDidChange',
-            'TokenListController:stateChange',
-            'TokensController:stateChange',
-            'AccountsController:selectedEvmAccountChange',
-          ],
-        }),
-        trackMetaMetricsEvent: () =>
-          MetaMetrics.getInstance().trackEvent(
-            MetricsEventBuilder.createEventBuilder(
-              MetaMetricsEvents.TOKEN_DETECTED,
-            )
-              .addProperties({
-                token_standard: 'ERC20',
-                asset_type: 'token',
-                chain_id: getDecimalChainId(
-                  getGlobalChainId(networkController),
-                ),
-              })
-              .build(),
-          ),
-        getBalancesInSingleCall:
-          assetsContractController.getBalancesInSingleCall.bind(
-            assetsContractController,
-          ),
-        platform: 'mobile',
-        useAccountsAPI: true,
-        disabled: false,
-      }),
-      NftDetectionController: new NftDetectionController({
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'NftDetectionController',
-          allowedEvents: [
-            'NetworkController:stateChange',
-            'PreferencesController:stateChange',
-          ],
-          allowedActions: [
-            'ApprovalController:addRequest',
-            'NetworkController:getState',
-            'NetworkController:getNetworkClientById',
-            'PreferencesController:getState',
-            'AccountsController:getSelectedAccount',
-          ],
-        }),
-        disabled: false,
-        addNft: nftController.addNft.bind(nftController),
-        getNftState: () => nftController.state,
-      }),
+      TokenDetectionController: controllersByName.TokenDetectionController,
+      NftDetectionController: controllersByName.NftDetectionController,
       CurrencyRateController: currencyRateController,
       NetworkController: networkController,
       PhishingController: controllersByName.PhishingController,
