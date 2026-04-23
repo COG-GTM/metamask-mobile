@@ -1,5 +1,8 @@
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-import type { UserStorageControllerMessenger } from '@metamask/profile-sync-controller/user-storage';
+import type {
+  UserStorageControllerMessenger,
+  UserStorageControllerState,
+} from '@metamask/profile-sync-controller/user-storage';
 import { Controller as UserStorageController } from '@metamask/profile-sync-controller/user-storage';
 import type { ControllerInitFunction } from '../../types';
 import { MetaMetrics } from '../../../Analytics';
@@ -21,7 +24,8 @@ export const userStorageControllerInit: ControllerInitFunction<
 
   const controller = new UserStorageController({
     messenger: controllerMessenger,
-    state: persistedState.UserStorageController,
+    state:
+      persistedState.UserStorageController as UserStorageControllerState,
     nativeScryptCrypto: calculateScryptKey,
     config: {
       accountSyncing: {
