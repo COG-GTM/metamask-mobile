@@ -637,6 +637,13 @@ export type ControllerInitRequest<
   InitMessengerType extends void | BaseRestrictedControllerMessenger = void,
 > = {
   /**
+   * Unrestricted base controller messenger.
+   * Use this when a sub-messenger needs cross-controller actions
+   * that the controller's own restricted messenger cannot provide.
+   */
+  baseControllerMessenger: BaseControllerMessenger;
+
+  /**
    * Controller messenger for the client.
    * Used to generate controller for each controller.
    */

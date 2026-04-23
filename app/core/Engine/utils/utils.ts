@@ -79,6 +79,7 @@ export const initModularizedControllers: InitModularizedControllersFunction = ({
     const initMessenger = initMessengerCallback?.(baseControllerMessenger);
 
     const finalInitRequest: BaseControllerInitRequest = {
+      baseControllerMessenger,
       controllerMessenger,
       getController,
       initMessenger,
