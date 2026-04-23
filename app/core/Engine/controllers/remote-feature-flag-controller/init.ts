@@ -4,21 +4,23 @@ import { selectBasicFunctionalityEnabled } from '../../../../selectors/settings'
 import { createRemoteFeatureFlagController } from './utils';
 
 /**
- * Initialize the RemoteFeatureFlagController.
+ * Creates the RemoteFeatureFlagController init function with the given metaMetricsId.
  *
- * @param request - The request object.
- * @returns The RemoteFeatureFlagController.
+ * @param metaMetricsId - Optional MetaMetrics ID for feature flag user targeting.
+ * @returns The controller init function.
  */
-export const remoteFeatureFlagControllerInit: ControllerInitFunction<
+export const createRemoteFeatureFlagControllerInit = (
+  metaMetricsId?: string,
+): ControllerInitFunction<
   RemoteFeatureFlagController,
   RemoteFeatureFlagControllerMessenger
-> = (request) => {
+> => (request) => {
   const { controllerMessenger, getState } = request;
 
   const controller = createRemoteFeatureFlagController({
     messenger: controllerMessenger,
     disabled: !selectBasicFunctionalityEnabled(getState()),
-    getMetaMetricsId: () => '',
+    getMetaMetricsId: () => metaMetricsId ?? '',
   });
 
   return { controller };

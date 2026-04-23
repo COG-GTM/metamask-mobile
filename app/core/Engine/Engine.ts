@@ -131,7 +131,7 @@ import { addressBookControllerInit } from './controllers/address-book-controller
 import { loggingControllerInit } from './controllers/logging-controller';
 import { phishingControllerInit } from './controllers/phishing-controller';
 import { tokenListControllerInit } from './controllers/token-list-controller';
-import { remoteFeatureFlagControllerInit } from './controllers/remote-feature-flag-controller/init';
+import { createRemoteFeatureFlagControllerInit } from './controllers/remote-feature-flag-controller/init';
 import { tokenSearchDiscoveryControllerInit } from './controllers/TokenSearchDiscoveryController/init';
 import { earnControllerInit } from './controllers/earn-controller';
 import {
@@ -393,7 +393,7 @@ export class Engine {
         LoggingController: loggingControllerInit,
         PhishingController: phishingControllerInit,
         TokenListController: tokenListControllerInit,
-        RemoteFeatureFlagController: remoteFeatureFlagControllerInit,
+        RemoteFeatureFlagController: createRemoteFeatureFlagControllerInit(metaMetricsId),
         TokenSearchDiscoveryController: tokenSearchDiscoveryControllerInit,
         EarnController: earnControllerInit,
         SelectedNetworkController: selectedNetworkControllerInit,
@@ -512,20 +512,6 @@ export class Engine {
     notificationServicesController.init();
     ///: END:ONLY_INCLUDE_IF
 
-    const tokenListController = new TokenListController({
-      chainId: getGlobalChainId(networkController),
-      onNetworkStateChange: (listener) =>
-        this.controllerMessenger.subscribe(
-          AppConstants.NETWORK_STATE_CHANGE_EVENT,
-          listener,
-        ),
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'TokenListController',
-        allowedActions: ['NetworkController:getNetworkClientById'],
-        allowedEvents: ['NetworkController:stateChange'],
-      }),
-    });
-
     const permissionController = new PermissionController({
       messenger: this.controllerMessenger.getRestricted({
         name: 'PermissionController',
@@ -571,72 +557,8 @@ export class Engine {
       NftController: nftController,
       TokensController: tokensController,
       TokenListController: controllersByName.TokenListController,
-      TokenDetectionController: new TokenDetectionController({
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'TokenDetectionController',
-          allowedActions: [
-            'AccountsController:getSelectedAccount',
-            'NetworkController:getNetworkClientById',
-            'NetworkController:getNetworkConfigurationByNetworkClientId',
-            'NetworkController:getState',
-            'KeyringController:getState',
-            'PreferencesController:getState',
-            'TokenListController:getState',
-            'TokensController:getState',
-            'TokensController:addDetectedTokens',
-            'AccountsController:getAccount',
-          ],
-          allowedEvents: [
-            'KeyringController:lock',
-            'KeyringController:unlock',
-            'PreferencesController:stateChange',
-            'NetworkController:networkDidChange',
-            'TokenListController:stateChange',
-            'TokensController:stateChange',
-            'AccountsController:selectedEvmAccountChange',
-          ],
-        }),
-        trackMetaMetricsEvent: () =>
-          MetaMetrics.getInstance().trackEvent(
-            MetricsEventBuilder.createEventBuilder(
-              MetaMetricsEvents.TOKEN_DETECTED,
-            )
-              .addProperties({
-                token_standard: 'ERC20',
-                asset_type: 'token',
-                chain_id: getDecimalChainId(
-                  getGlobalChainId(networkController),
-                ),
-              })
-              .build(),
-          ),
-        getBalancesInSingleCall:
-          assetsContractController.getBalancesInSingleCall.bind(
-            assetsContractController,
-          ),
-        platform: 'mobile',
-        useAccountsAPI: true,
-        disabled: false,
-      }),
-      NftDetectionController: new NftDetectionController({
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'NftDetectionController',
-          allowedEvents: [
-            'NetworkController:stateChange',
-            'PreferencesController:stateChange',
-          ],
-          allowedActions: [
-            'ApprovalController:addRequest',
-            'NetworkController:getState',
-            'NetworkController:getNetworkClientById',
-            'PreferencesController:getState',
-            'AccountsController:getSelectedAccount',
-          ],
-        }),
-        disabled: false,
-        addNft: nftController.addNft.bind(nftController),
-        getNftState: () => nftController.state,
-      }),
+      TokenDetectionController: controllersByName.TokenDetectionController,
+      NftDetectionController: controllersByName.NftDetectionController,
       CurrencyRateController: currencyRateController,
       NetworkController: networkController,
       PhishingController: controllersByName.PhishingController,
