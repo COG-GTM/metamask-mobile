@@ -201,6 +201,7 @@ import { isProductSafetyDappScanningEnabled } from '../../util/phishingDetection
 import { appMetadataControllerInit } from './controllers/app-metadata-controller';
 import { tokenDetectionControllerInit } from './controllers/token-detection-controller';
 import { nftDetectionControllerInit } from './controllers/nft-detection-controller';
+import { nftControllerInit } from './controllers/nft-controller';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { toFormattedAddress } from '../../util/address';
 
@@ -938,38 +939,11 @@ export class Engine {
       },
     });
 
-    const nftController = new NftController({
-      chainId: getGlobalChainId(networkController),
-      useIpfsSubdomains: false,
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'NftController',
-        allowedActions: [
-          'AccountsController:getAccount',
-          'AccountsController:getSelectedAccount',
-          'ApprovalController:addRequest',
-          'AssetsContractController:getERC721AssetName',
-          'AssetsContractController:getERC721AssetSymbol',
-          'AssetsContractController:getERC721TokenURI',
-          'AssetsContractController:getERC721OwnerOf',
-          'AssetsContractController:getERC1155BalanceOf',
-          'AssetsContractController:getERC1155TokenURI',
-          'NetworkController:getNetworkClientById',
-        ],
-        allowedEvents: [
-          'PreferencesController:stateChange',
-          'NetworkController:networkDidChange',
-          'AccountsController:selectedEvmAccountChange',
-        ],
-      }),
-      state: initialState.NftController,
-    });
-
     const existingControllersByName = {
       ApprovalController: approvalController,
       AssetsContractController: assetsContractController,
       KeyringController: this.keyringController,
       NetworkController: networkController,
-      NftController: nftController,
       PreferencesController: preferencesController,
       SmartTransactionsController: this.smartTransactionsController,
     };
@@ -989,6 +963,9 @@ export class Engine {
         CurrencyRateController: currencyRateControllerInit,
         MultichainNetworkController: multichainNetworkControllerInit,
         ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
+        SubjectMetadataController: subjectMetadataControllerInit,
+        AuthenticationController: authenticationControllerInit,
+        UserStorageController: userStorageControllerInit,
         ExecutionService: executionServiceInit,
         SnapController: snapControllerInit,
         CronjobController: cronjobControllerInit,
@@ -997,9 +974,6 @@ export class Engine {
         NotificationServicesController: notificationServicesControllerInit,
         NotificationServicesPushController:
           notificationServicesPushControllerInit,
-        SubjectMetadataController: subjectMetadataControllerInit,
-        AuthenticationController: authenticationControllerInit,
-        UserStorageController: userStorageControllerInit,
         ///: END:ONLY_INCLUDE_IF
         ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
         MultichainAssetsController: multichainAssetsControllerInit,
@@ -1007,6 +981,7 @@ export class Engine {
         MultichainBalancesController: multichainBalancesControllerInit,
         MultichainTransactionsController: multichainTransactionsControllerInit,
         ///: END:ONLY_INCLUDE_IF
+        NftController: nftControllerInit,
         TokenDetectionController: tokenDetectionControllerInit,
         NftDetectionController: nftDetectionControllerInit,
       },
@@ -1020,6 +995,7 @@ export class Engine {
     const gasFeeController = controllersByName.GasFeeController;
     const signatureController = controllersByName.SignatureController;
     const transactionController = controllersByName.TransactionController;
+    const nftController = controllersByName.NftController;
 
     // Backwards compatibility for existing references
     this.accountsController = accountsController;
@@ -1135,7 +1111,7 @@ export class Engine {
       }),
       AppMetadataController: controllersByName.AppMetadataController,
       AssetsContractController: assetsContractController,
-      NftController: nftController,
+      NftController: controllersByName.NftController,
       TokensController: tokensController,
       TokenListController: tokenListController,
       TokenDetectionController: controllersByName.TokenDetectionController,

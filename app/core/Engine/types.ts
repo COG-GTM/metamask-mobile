@@ -597,6 +597,7 @@ export type ControllersToInitialize =
   | 'TransactionController'
   | 'GasFeeController'
   | 'SignatureController'
+  | 'NftController'
   | 'TokenDetectionController'
   | 'NftDetectionController';
 

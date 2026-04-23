@@ -32,6 +32,7 @@ import { getGasFeeControllerMessenger } from './gas-fee-controller-messenger/gas
 import { getSignatureControllerMessenger } from './signature-controller-messenger';
 import { getTokenDetectionControllerMessenger } from './token-detection-controller-messenger';
 import { getNftDetectionControllerMessenger } from './nft-detection-controller-messenger';
+import { getNftControllerMessenger } from './nft-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -124,6 +125,10 @@ export const CONTROLLER_MESSENGERS = {
     getInitMessenger: noop,
   },
   ///: END:ONLY_INCLUDE_IF
+  NftController: {
+    getMessenger: getNftControllerMessenger,
+    getInitMessenger: noop,
+  },
   TokenDetectionController: {
     getMessenger: getTokenDetectionControllerMessenger,
     getInitMessenger: noop,
