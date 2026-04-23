@@ -3,6 +3,13 @@ import { getAccountsControllerMessenger } from './accounts-controller-messenger'
 import { getMultichainNetworkControllerMessenger } from './multichain-network-controller-messenger/multichain-network-controller-messenger';
 import { getCurrencyRateControllerMessenger } from './currency-rate-controller-messenger/currency-rate-controller-messenger';
 import { getAppMetadataControllerMessenger } from './app-metadata-controller-messenger';
+import { getAddressBookControllerMessenger } from './address-book-controller-messenger';
+import { getLoggingControllerMessenger } from './logging-controller-messenger';
+import { getPhishingControllerMessenger } from './phishing-controller-messenger';
+import { getTokenListControllerMessenger } from './token-list-controller-messenger';
+import { getRemoteFeatureFlagControllerMessenger } from './remote-feature-flag-controller-messenger';
+import { getTokenSearchDiscoveryControllerMessenger } from './token-search-discovery-controller-messenger';
+import { getEarnControllerMessenger } from './earn-controller-messenger';
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
 import {
   getCronjobControllerMessenger,
@@ -66,6 +73,34 @@ export const CONTROLLER_MESSENGERS = {
   },
   SignatureController: {
     getMessenger: getSignatureControllerMessenger,
+    getInitMessenger: noop,
+  },
+  AddressBookController: {
+    getMessenger: getAddressBookControllerMessenger,
+    getInitMessenger: noop,
+  },
+  LoggingController: {
+    getMessenger: getLoggingControllerMessenger,
+    getInitMessenger: noop,
+  },
+  PhishingController: {
+    getMessenger: getPhishingControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenListController: {
+    getMessenger: getTokenListControllerMessenger,
+    getInitMessenger: noop,
+  },
+  RemoteFeatureFlagController: {
+    getMessenger: getRemoteFeatureFlagControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenSearchDiscoveryController: {
+    getMessenger: getTokenSearchDiscoveryControllerMessenger,
+    getInitMessenger: noop,
+  },
+  EarnController: {
+    getMessenger: getEarnControllerMessenger,
     getInitMessenger: noop,
   },
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)

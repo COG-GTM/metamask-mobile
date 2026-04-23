@@ -602,7 +602,14 @@ export type ControllersToInitialize =
   | 'PPOMController'
   | 'BridgeController'
   | 'BridgeStatusController'
-  | 'TokenSearchDiscoveryDataController';
+  | 'TokenSearchDiscoveryDataController'
+  | 'AddressBookController'
+  | 'LoggingController'
+  | 'PhishingController'
+  | 'TokenListController'
+  | 'RemoteFeatureFlagController'
+  | 'TokenSearchDiscoveryController'
+  | 'EarnController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.

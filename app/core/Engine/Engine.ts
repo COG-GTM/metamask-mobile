@@ -7,14 +7,12 @@ import {
   NftDetectionController,
   TokenBalancesController,
   TokenDetectionController,
-  TokenListController,
   TokenRatesController,
   TokensController,
   CodefiTokenPricesServiceV2,
   TokenSearchDiscoveryDataController,
 } from '@metamask/assets-controllers';
 import { AccountsController } from '@metamask/accounts-controller';
-import { AddressBookController } from '@metamask/address-book-controller';
 import { ComposableController } from '@metamask/composable-controller';
 import {
   KeyringController,
@@ -28,7 +26,6 @@ import {
   NetworkControllerMessenger,
   NetworkState,
 } from '@metamask/network-controller';
-import { PhishingController } from '@metamask/phishing-controller';
 import { PreferencesController } from '@metamask/preferences-controller';
 import {
   TransactionController,
@@ -141,14 +138,19 @@ import { accountsControllerInit } from './controllers/accounts-controller';
 import { createTokenSearchDiscoveryController } from './controllers/TokenSearchDiscoveryController';
 import { multichainNetworkControllerInit } from './controllers/multichain-network-controller/multichain-network-controller-init';
 import { currencyRateControllerInit } from './controllers/currency-rate-controller/currency-rate-controller-init';
-import { EarnController } from '@metamask/earn-controller';
 import { TransactionControllerInit } from './controllers/transaction-controller';
 import { SignatureControllerInit } from './controllers/signature-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
 import I18n from '../../../locales/i18n';
 import { Platform } from '@metamask/profile-sync-controller/sdk';
-import { isProductSafetyDappScanningEnabled } from '../../util/phishingDetection';
 import { appMetadataControllerInit } from './controllers/app-metadata-controller';
+import { addressBookControllerInit } from './controllers/address-book-controller';
+import { loggingControllerInit } from './controllers/logging-controller';
+import { phishingControllerInit } from './controllers/phishing-controller';
+import { tokenListControllerInit } from './controllers/token-list-controller';
+import { remoteFeatureFlagControllerInit } from './controllers/remote-feature-flag-controller/init';
+import { tokenSearchDiscoveryControllerInit } from './controllers/TokenSearchDiscoveryController/init';
+import { earnControllerInit } from './controllers/earn-controller';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import {
   getTotalEvmFiatAccountBalance as getTotalEvmFiatAccountBalanceUtil,
@@ -232,9 +234,6 @@ export class Engine {
 
     this.controllerMessenger = new ExtendedControllerMessenger();
 
-    const isBasicFunctionalityToggleEnabled = () =>
-      selectBasicFunctionalityEnabled(store.getState());
-
     const approvalController = new ApprovalController({
       messenger: this.controllerMessenger.getRestricted({
         name: 'ApprovalController',
@@ -306,64 +305,9 @@ export class Engine {
       chainId: getGlobalChainId(networkController),
     });
 
-    const loggingController = new LoggingController({
-      messenger: this.controllerMessenger.getRestricted<
-        'LoggingController',
-        never,
-        never
-      >({
-        name: 'LoggingController',
-        allowedActions: [],
-        allowedEvents: [],
-      }),
-      state: initialState.LoggingController,
-    });
-    const tokenListController = new TokenListController({
-      chainId: getGlobalChainId(networkController),
-      onNetworkStateChange: (listener) =>
-        this.controllerMessenger.subscribe(
-          AppConstants.NETWORK_STATE_CHANGE_EVENT,
-          listener,
-        ),
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'TokenListController',
-        allowedActions: [`${networkController.name}:getNetworkClientById`],
-        allowedEvents: [`${networkController.name}:stateChange`],
-      }),
-    });
-    const remoteFeatureFlagController = createRemoteFeatureFlagController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'RemoteFeatureFlagController',
-        allowedActions: [],
-        allowedEvents: [],
-      }),
-      disabled: !isBasicFunctionalityToggleEnabled(),
-      getMetaMetricsId: () => metaMetricsId ?? '',
-    });
-
-    const tokenSearchDiscoveryController = createTokenSearchDiscoveryController(
-      {
-        state: initialState.TokenSearchDiscoveryController,
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'TokenSearchDiscoveryController',
-          allowedActions: [],
-          allowedEvents: [],
-        }) as TokenSearchDiscoveryControllerMessenger,
-      },
-    );
-
-    const phishingController = new PhishingController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'PhishingController',
-        allowedActions: [],
-        allowedEvents: [],
-      }),
-    });
-    if (!isProductSafetyDappScanningEnabled()) {
-      phishingController.maybeUpdateState();
-    }
-
-    // KeyringController is now initialized via controllerInitFunctions
+    // Simple controllers (LoggingController, TokenListController, RemoteFeatureFlagController,
+    // TokenSearchDiscoveryController, PhishingController) and complex controllers (KeyringController)
+    // are now initialized via controllerInitFunctions
 
     ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
     /**
@@ -605,6 +549,13 @@ export class Engine {
         BridgeController: bridgeControllerInit,
         BridgeStatusController: bridgeStatusControllerInit,
         TokenSearchDiscoveryDataController: tokenSearchDiscoveryDataControllerInit,
+        AddressBookController: addressBookControllerInit,
+        LoggingController: loggingControllerInit,
+        PhishingController: phishingControllerInit,
+        TokenListController: tokenListControllerInit,
+        RemoteFeatureFlagController: remoteFeatureFlagControllerInit,
+        TokenSearchDiscoveryController: tokenSearchDiscoveryControllerInit,
+        EarnController: earnControllerInit,
       },
       persistedState: {
         ...initialState,
@@ -727,38 +678,15 @@ export class Engine {
       }),
     });
 
-    const earnController = new EarnController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'EarnController',
-        allowedEvents: [
-          'AccountsController:selectedAccountChange',
-          'NetworkController:stateChange',
-          'TransactionController:transactionConfirmed',
-        ],
-        allowedActions: [
-          'AccountsController:getSelectedAccount',
-          'NetworkController:getNetworkClientById',
-          'NetworkController:getState',
-        ],
-      }),
-    });
-
     this.context = {
       KeyringController: this.keyringController,
       AccountTrackerController: accountTrackerController,
-      AddressBookController: new AddressBookController({
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'AddressBookController',
-          allowedActions: [],
-          allowedEvents: [],
-        }),
-        state: initialState.AddressBookController,
-      }),
+      AddressBookController: controllersByName.AddressBookController,
       AppMetadataController: controllersByName.AppMetadataController,
       AssetsContractController: assetsContractController,
       NftController: nftController,
       TokensController: tokensController,
-      TokenListController: tokenListController,
+      TokenListController: controllersByName.TokenListController,
       TokenDetectionController: new TokenDetectionController({
         messenger: this.controllerMessenger.getRestricted({
           name: 'TokenDetectionController',
@@ -827,7 +755,7 @@ export class Engine {
       }),
       CurrencyRateController: currencyRateController,
       NetworkController: networkController,
-      PhishingController: phishingController,
+      PhishingController: controllersByName.PhishingController,
       PreferencesController: preferencesController,
       TokenBalancesController: new TokenBalancesController({
         messenger: this.controllerMessenger.getRestricted({
@@ -875,11 +803,11 @@ export class Engine {
       GasFeeController: this.gasFeeController,
       ApprovalController: approvalController,
       PermissionController: permissionController,
-      RemoteFeatureFlagController: remoteFeatureFlagController,
+      RemoteFeatureFlagController: controllersByName.RemoteFeatureFlagController,
       SelectedNetworkController: selectedNetworkController,
       SignatureController: signatureController,
-      TokenSearchDiscoveryController: tokenSearchDiscoveryController,
-      LoggingController: loggingController,
+      TokenSearchDiscoveryController: controllersByName.TokenSearchDiscoveryController,
+      LoggingController: controllersByName.LoggingController,
       ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
       CronjobController: cronjobController,
       ExecutionService: executionService,
@@ -905,7 +833,7 @@ export class Engine {
       MultichainNetworkController: multichainNetworkController,
       BridgeController: bridgeController,
       BridgeStatusController: bridgeStatusController,
-      EarnController: earnController,
+      EarnController: controllersByName.EarnController,
     };
 
     const childControllers = Object.assign({}, this.context);
