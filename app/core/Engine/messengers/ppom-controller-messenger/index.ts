@@ -13,6 +13,9 @@ export function getPPOMControllerMessenger(
   return baseControllerMessenger.getRestricted({
     name: 'PPOMController',
     allowedActions: ['NetworkController:getNetworkClientById'],
-    allowedEvents: ['NetworkController:networkDidChange'],
+    allowedEvents: [
+      'NetworkController:networkDidChange',
+      'PreferencesController:stateChange',
+    ],
   });
 }
