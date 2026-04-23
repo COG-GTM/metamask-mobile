@@ -27,7 +27,7 @@ import type { CurrencyRateController } from '@metamask/assets-controllers';
 export interface SnapRestrictedMethodsDeps {
   controllerMessenger: BaseControllerMessenger;
   approvalController: ApprovalController;
-  keyringController: {
+  getKeyringController: () => {
     isUnlocked: () => boolean;
     getKeyringsByType: (type: string) => unknown[];
   };
@@ -50,7 +50,7 @@ export function buildSnapRestrictedMethods(deps: SnapRestrictedMethodsDeps): Rec
   const {
     controllerMessenger,
     approvalController,
-    keyringController,
+    getKeyringController,
     getPreferences,
     getCurrencyRateControllerState,
     getPrimaryKeyringMnemonic,
@@ -58,7 +58,7 @@ export function buildSnapRestrictedMethods(deps: SnapRestrictedMethodsDeps): Rec
   } = deps;
 
   const getUnlockPromise = () => {
-    if (keyringController.isUnlocked()) {
+    if (getKeyringController().isUnlocked()) {
       return Promise.resolve();
     }
     return new Promise<void>((resolve) => {

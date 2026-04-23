@@ -343,7 +343,7 @@ export class Engine {
     const snapRestrictedMethods = buildSnapRestrictedMethods({
       controllerMessenger: this.controllerMessenger,
       approvalController,
-      keyringController: this.keyringController,
+      getKeyringController: () => this.keyringController,
       getPreferences: () => this.getPreferences(),
       getCurrencyRateControllerState: () =>
         this.context.CurrencyRateController.state,
