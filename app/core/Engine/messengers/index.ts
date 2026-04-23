@@ -10,6 +10,16 @@ import { getTokenListControllerMessenger } from './token-list-controller-messeng
 import { getRemoteFeatureFlagControllerMessenger } from './remote-feature-flag-controller-messenger';
 import { getTokenSearchDiscoveryControllerMessenger } from './token-search-discovery-controller-messenger';
 import { getEarnControllerMessenger } from './earn-controller-messenger';
+import { getApprovalControllerMessenger } from './approval-controller-messenger';
+import { getNetworkControllerMessenger } from './network-controller-messenger';
+import { getPreferencesControllerMessenger } from './preferences-controller-messenger';
+import { getAssetsContractControllerMessenger } from './assets-contract-controller-messenger';
+import { getSelectedNetworkControllerMessenger } from './selected-network-controller-messenger';
+import { getAccountTrackerControllerMessenger } from './account-tracker-controller-messenger';
+import { getTokenBalancesControllerMessenger } from './token-balances-controller-messenger';
+import { getTokenRatesControllerMessenger } from './token-rates-controller-messenger';
+import { getNftControllerMessenger } from './nft-controller-messenger';
+import { getTokensControllerMessenger } from './tokens-controller-messenger';
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
 import {
   getCronjobControllerMessenger,
@@ -92,6 +102,46 @@ export const CONTROLLER_MESSENGERS = {
   },
   EarnController: {
     getMessenger: getEarnControllerMessenger,
+    getInitMessenger: noop,
+  },
+  ApprovalController: {
+    getMessenger: getApprovalControllerMessenger,
+    getInitMessenger: noop,
+  },
+  NetworkController: {
+    getMessenger: getNetworkControllerMessenger,
+    getInitMessenger: noop,
+  },
+  PreferencesController: {
+    getMessenger: getPreferencesControllerMessenger,
+    getInitMessenger: noop,
+  },
+  AssetsContractController: {
+    getMessenger: getAssetsContractControllerMessenger,
+    getInitMessenger: noop,
+  },
+  SelectedNetworkController: {
+    getMessenger: getSelectedNetworkControllerMessenger,
+    getInitMessenger: noop,
+  },
+  AccountTrackerController: {
+    getMessenger: getAccountTrackerControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenBalancesController: {
+    getMessenger: getTokenBalancesControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenRatesController: {
+    getMessenger: getTokenRatesControllerMessenger,
+    getInitMessenger: noop,
+  },
+  NftController: {
+    getMessenger: getNftControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokensController: {
+    getMessenger: getTokensControllerMessenger,
     getInitMessenger: noop,
   },
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)

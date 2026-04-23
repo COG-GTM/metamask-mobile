@@ -600,7 +600,17 @@ export type ControllersToInitialize =
   | 'TokenListController'
   | 'RemoteFeatureFlagController'
   | 'TokenSearchDiscoveryController'
-  | 'EarnController';
+  | 'EarnController'
+  | 'ApprovalController'
+  | 'NetworkController'
+  | 'PreferencesController'
+  | 'AssetsContractController'
+  | 'SelectedNetworkController'
+  | 'AccountTrackerController'
+  | 'TokenBalancesController'
+  | 'TokenRatesController'
+  | 'NftController'
+  | 'TokensController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.
