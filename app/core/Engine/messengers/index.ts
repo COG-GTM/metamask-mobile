@@ -12,6 +12,9 @@ import {
   getSnapInterfaceControllerMessenger,
   getSnapsRegistryMessenger,
 } from './snaps';
+import { getSubjectMetadataControllerMessenger } from './subject-metadata-controller-messenger';
+import { getAuthenticationControllerMessenger } from './identity/authentication-controller-messenger';
+import { getUserStorageControllerMessenger } from './identity/user-storage-controller-messenger';
 ///: END:ONLY_INCLUDE_IF
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { getMultichainAssetsRatesControllerMessenger } from './multichain-assets-rates-controller-messenger/multichain-assets-rates-controller-messenger';
@@ -27,6 +30,8 @@ import { getNotificationServicesControllerMessenger } from './notifications/noti
 import { getNotificationServicesPushControllerMessenger } from './notifications/notification-services-push-controller-messenger';
 import { getGasFeeControllerMessenger } from './gas-fee-controller-messenger/gas-fee-controller-messenger';
 import { getSignatureControllerMessenger } from './signature-controller-messenger';
+import { getTokenDetectionControllerMessenger } from './token-detection-controller-messenger';
+import { getNftDetectionControllerMessenger } from './nft-detection-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -88,6 +93,18 @@ export const CONTROLLER_MESSENGERS = {
     getMessenger: getNotificationServicesPushControllerMessenger,
     getInitMessenger: noop,
   },
+  SubjectMetadataController: {
+    getMessenger: getSubjectMetadataControllerMessenger,
+    getInitMessenger: noop,
+  },
+  AuthenticationController: {
+    getMessenger: getAuthenticationControllerMessenger,
+    getInitMessenger: noop,
+  },
+  UserStorageController: {
+    getMessenger: getUserStorageControllerMessenger,
+    getInitMessenger: noop,
+  },
   ///: END:ONLY_INCLUDE_IF
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   MultichainAssetsController: {
@@ -107,4 +124,12 @@ export const CONTROLLER_MESSENGERS = {
     getInitMessenger: noop,
   },
   ///: END:ONLY_INCLUDE_IF
+  TokenDetectionController: {
+    getMessenger: getTokenDetectionControllerMessenger,
+    getInitMessenger: noop,
+  },
+  NftDetectionController: {
+    getMessenger: getNftDetectionControllerMessenger,
+    getInitMessenger: noop,
+  },
 } as const;
