@@ -211,9 +211,7 @@ const NON_EMPTY = 'NON_EMPTY';
 const encryptor = new Encryptor({
   keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
 });
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let currentChainId: any;
+let currentChainId: Hex | undefined;
 
 /**
  * Core controller responsible for composing other metamask controllers together
@@ -241,9 +239,7 @@ export class Engine {
    * Object containing the info for the latest incoming tx block
    * for each address and network
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  lastIncomingTxBlockInfo: any;
+  lastIncomingTxBlockInfo: Record<string, Record<string, number>> | undefined;
 
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   subjectMetadataController: SubjectMetadataController;
@@ -1865,10 +1861,8 @@ export class Engine {
   }
 
   async destroyEngineInstance() {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Object.values(this.context).forEach((controller: any) => {
-      if (controller.destroy) {
+    Object.values(this.context).forEach((controller) => {
+      if ('destroy' in controller && typeof controller.destroy === 'function') {
         controller.destroy();
       }
     });
@@ -1890,12 +1884,10 @@ export class Engine {
 
     try {
       ApprovalController.reject(id, reason);
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error) {
       if (opts.logErrors !== false) {
         Logger.error(
-          error,
+          error as Error,
           'Reject while rejecting pending connection request',
         );
       }

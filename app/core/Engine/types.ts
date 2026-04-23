@@ -580,7 +580,6 @@ export type ControllersToInitialize =
   | 'SnapsRegistry'
   | 'NotificationServicesController'
   | 'NotificationServicesPushController'
-  | 'AppMetadataController'
   ///: END:ONLY_INCLUDE_IF
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   | 'MultichainAssetsController'
@@ -588,6 +587,7 @@ export type ControllersToInitialize =
   | 'MultichainBalancesController'
   | 'MultichainTransactionsController'
   ///: END:ONLY_INCLUDE_IF
+  | 'AppMetadataController'
   | 'CurrencyRateController'
   | 'AccountsController'
   | 'MultichainNetworkController'
