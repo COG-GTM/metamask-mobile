@@ -28,13 +28,11 @@ import {
   NetworkController,
   NetworkControllerMessenger,
   NetworkState,
-  NetworkStatus,
 } from '@metamask/network-controller';
 import { PhishingController } from '@metamask/phishing-controller';
 import { PreferencesController } from '@metamask/preferences-controller';
 import {
   TransactionController,
-  TransactionMeta,
   type TransactionParams,
 } from '@metamask/transaction-controller';
 import { GasFeeController } from '@metamask/gas-fee-controller';
@@ -53,12 +51,10 @@ import {
 import SwapsController, { swapsUtils } from '@metamask/swaps-controller';
 import { PPOMController } from '@metamask/ppom-validator';
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-import type { NotificationArgs } from '@metamask/snaps-rpc-methods/dist/restricted/notify.cjs';
 import {
   buildSnapEndowmentSpecifications,
   buildSnapRestrictedMethodSpecifications,
 } from '@metamask/snaps-rpc-methods';
-import type { EnumToUnion, DialogType } from '@metamask/snaps-sdk';
 ///: END:ONLY_INCLUDE_IF
 import { MetaMaskKeyring as QRHardwareKeyring } from '@keystonehq/metamask-airgapped-keyring';
 import { LoggingController } from '@metamask/logging-controller';
@@ -72,21 +68,10 @@ import { Encryptor, LEGACY_DERIVATION_OPTIONS, pbkdf2 } from '../Encryptor';
 import { getDecimalChainId, isTestNet } from '../../util/networks';
 import {
   fetchEstimatedMultiLayerL1Fee,
-  deprecatedGetNetworkId,
 } from '../../util/networks/engineNetworkUtils';
 import AppConstants from '../AppConstants';
 import { store } from '../../store';
-import {
-  renderFromTokenMinimalUnit,
-  balanceToFiatNumber,
-  weiToFiatNumber,
-  toHexadecimal,
-  hexToBN,
-  renderFromWei,
-} from '../../util/number';
-import NotificationManager from '../NotificationManager';
 import Logger from '../../util/Logger';
-import { isZero } from '../../util/lodash';
 import { MetaMetricsEvents, MetaMetrics } from '../Analytics';
 
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
@@ -112,16 +97,11 @@ import { providerErrors } from '@metamask/rpc-errors';
 import { PPOM, ppomInit } from '../../lib/ppom/PPOMView';
 import RNFSStorageBackend from '../../lib/ppom/ppom-storage-backend';
 import { createRemoteFeatureFlagController } from './controllers/remote-feature-flag-controller';
-import {
-  networkIdUpdated,
-  networkIdWillUpdate,
-} from '../../core/redux/slices/inpageProvider';
 import SmartTransactionsController from '@metamask/smart-transactions-controller';
 import { getAllowedSmartTransactionsChainIds } from '../../../app/constants/smartTransactions';
 import { selectBasicFunctionalityEnabled } from '../../selectors/settings';
 import { selectSwapsChainFeatureFlags } from '../../reducers/swaps';
 import { ClientId } from '@metamask/smart-transactions-controller/dist/types';
-import { zeroAddress } from 'ethereumjs-util';
 import {
   ApprovalType,
   ChainId,
@@ -152,20 +132,14 @@ import { multichainAssetsRatesControllerInit } from './controllers/multichain-as
 import { multichainTransactionsControllerInit } from './controllers/multichain-transactions-controller/multichain-transactions-controller-init';
 ///: END:ONLY_INCLUDE_IF
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-import { HandleSnapRequestArgs } from '../Snaps/types';
-import { handleSnapRequest } from '../Snaps/utils';
 import {
   cronjobControllerInit,
   executionServiceInit,
   snapControllerInit,
   snapInterfaceControllerInit,
   snapsRegistryInit,
-  SnapControllerClearSnapStateAction,
   SnapControllerGetSnapAction,
-  SnapControllerGetSnapStateAction,
-  SnapControllerUpdateSnapStateAction,
 } from './controllers/snaps';
-import { RestrictedMethods } from '../Permissions/constants';
 ///: END:ONLY_INCLUDE_IF
 import { MetricsEventBuilder } from '../Analytics/MetricsEventBuilder';
 import {
@@ -204,16 +178,23 @@ import { Platform } from '@metamask/profile-sync-controller/sdk';
 import { isProductSafetyDappScanningEnabled } from '../../util/phishingDetection';
 import { appMetadataControllerInit } from './controllers/app-metadata-controller';
 import { InternalAccount } from '@metamask/keyring-internal-api';
-import { toFormattedAddress } from '../../util/address';
+import {
+  getTotalEvmFiatAccountBalance as getTotalEvmFiatAccountBalanceUtil,
+  hasFunds as hasFundsUtil,
+} from './utils/fiat-balance';
+///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
+import { buildSnapRestrictedMethods } from './utils/snap-restricted-methods';
+///: END:ONLY_INCLUDE_IF
+///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+import { buildKeyringSnapMethods } from './utils/snap-restricted-methods';
+///: END:ONLY_INCLUDE_IF
+import { setupEngineSubscriptions } from './utils/subscriptions';
 
 const NON_EMPTY = 'NON_EMPTY';
 
 const encryptor = new Encryptor({
   keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
 });
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let currentChainId: any;
 
 /**
  * Core controller responsible for composing other metamask controllers together
@@ -506,189 +487,22 @@ export class Engine {
       return keyring.seed;
     };
 
-    const getUnlockPromise = () => {
-      if (this.keyringController.isUnlocked()) {
-        return Promise.resolve();
-      }
-      return new Promise<void>((resolve) => {
-        this.controllerMessenger.subscribeOnceIf(
-          'KeyringController:unlock',
-          resolve,
-          () => true,
-        );
-      });
-    };
-
-    const snapRestrictedMethods = {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      clearSnapState: this.controllerMessenger.call.bind(
-        this.controllerMessenger,
-        SnapControllerClearSnapStateAction,
-      ),
-      getMnemonic: async (source?: string) => {
-        if (!source) {
-          return getPrimaryKeyringMnemonic();
-        }
-
-        try {
-          const { type, mnemonic } = (await this.controllerMessenger.call(
-            'KeyringController:withKeyring',
-            {
-              id: source,
-            },
-            async ({ keyring }) => ({
-              type: keyring.type,
-              mnemonic: (keyring as unknown as HdKeyring).mnemonic,
-            }),
-          )) as { type: string; mnemonic?: Uint8Array };
-
-          if (type !== KeyringTypes.hd || !mnemonic) {
-            // The keyring isn't guaranteed to have a mnemonic (e.g.,
-            // hardware wallets, which can't be used as entropy sources),
-            // so we throw an error if it doesn't.
-            throw new Error(`Entropy source with ID "${source}" not found.`);
-          }
-
-          return mnemonic;
-        } catch {
-          throw new Error(`Entropy source with ID "${source}" not found.`);
-        }
-      },
-      getMnemonicSeed: async (source?: string) => {
-        if (!source) {
-          return getPrimaryKeyringMnemonicSeed();
-        }
-
-        try {
-          const { type, seed } = (await this.controllerMessenger.call(
-            'KeyringController:withKeyring',
-            {
-              id: source,
-            },
-            async ({ keyring }) => ({
-              type: keyring.type,
-              seed: (keyring as unknown as HdKeyring).seed,
-            }),
-          )) as { type: string; seed?: Uint8Array };
-
-          if (type !== KeyringTypes.hd || !seed) {
-            // The keyring isn't guaranteed to have a seed (e.g.,
-            // hardware wallets, which can't be used as entropy sources),
-            // so we throw an error if it doesn't.
-            throw new Error(`Entropy source with ID "${source}" not found.`);
-          }
-
-          return seed;
-        } catch {
-          throw new Error(`Entropy source with ID "${source}" not found.`);
-        }
-      },
-      getUnlockPromise: getUnlockPromise.bind(this),
-      getSnap: this.controllerMessenger.call.bind(
-        this.controllerMessenger,
-        SnapControllerGetSnapAction,
-      ),
-      handleSnapRpcRequest: async (args: HandleSnapRequestArgs) =>
-        await handleSnapRequest(this.controllerMessenger, args),
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      getSnapState: this.controllerMessenger.call.bind(
-        this.controllerMessenger,
-        SnapControllerGetSnapStateAction,
-      ),
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      updateSnapState: this.controllerMessenger.call.bind(
-        this.controllerMessenger,
-        SnapControllerUpdateSnapStateAction,
-      ),
-      maybeUpdatePhishingList: this.controllerMessenger.call.bind(
-        this.controllerMessenger,
-        'PhishingController:maybeUpdateState',
-      ),
-      isOnPhishingList: (origin: string) =>
-        this.controllerMessenger.call<'PhishingController:testOrigin'>(
-          'PhishingController:testOrigin',
-          origin,
-        ).result,
-      showDialog: (
-        origin: string,
-        type: EnumToUnion<DialogType>,
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        content: any, // should be Component from '@metamask/snaps-ui';
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        placeholder?: any,
-      ) =>
-        approvalController.addAndShowApprovalRequest({
-          origin,
-          type,
-          requestData: { content, placeholder },
-        }),
-      showInAppNotification: (origin: string, args: NotificationArgs) => {
-        Logger.log(
-          'Snaps/ showInAppNotification called with args: ',
-          args,
-          ' and origin: ',
-          origin,
-        );
-      },
-      createInterface: this.controllerMessenger.call.bind(
-        this.controllerMessenger,
-        'SnapInterfaceController:createInterface',
-      ),
-      getInterface: this.controllerMessenger.call.bind(
-        this.controllerMessenger,
-        'SnapInterfaceController:getInterface',
-      ),
-      updateInterface: this.controllerMessenger.call.bind(
-        this.controllerMessenger,
-        'SnapInterfaceController:updateInterface',
-      ),
-      requestUserApproval:
-        approvalController.addAndShowApprovalRequest.bind(approvalController),
-      hasPermission: (origin: string, target: string) =>
-        this.controllerMessenger.call<'PermissionController:hasPermission'>(
-          'PermissionController:hasPermission',
-          origin,
-          target,
-        ),
-      getClientCryptography: () => ({ pbkdf2Sha512: pbkdf2 }),
-      getPreferences: () => {
-        const {
-          securityAlertsEnabled,
-          useTransactionSimulations,
-          useTokenDetection,
-          privacyMode,
-          useNftDetection,
-          displayNftMedia,
-          isMultiAccountBalancesEnabled,
-        } = this.getPreferences();
-        const locale = I18n.locale;
-        return {
-          locale,
-          currency: this.context.CurrencyRateController.state.currentCurrency,
-          hideBalances: privacyMode,
-          useSecurityAlerts: securityAlertsEnabled,
-          simulateOnChainActions: useTransactionSimulations,
-          useTokenDetection,
-          batchCheckBalances: isMultiAccountBalancesEnabled,
-          displayNftMedia,
-          useNftDetection,
-          useExternalPricingData: true,
-        };
-      },
-    };
+    const snapRestrictedMethods = buildSnapRestrictedMethods({
+      controllerMessenger: this.controllerMessenger,
+      approvalController,
+      keyringController: this.keyringController,
+      getPreferences: () => this.getPreferences(),
+      getCurrencyRateControllerState: () =>
+        this.context.CurrencyRateController.state,
+      getPrimaryKeyringMnemonic,
+      getPrimaryKeyringMnemonicSeed,
+    });
     ///: END:ONLY_INCLUDE_IF
 
     ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-    const keyringSnapMethods = {
-      getAllowedKeyringMethods: (origin: string) =>
-        keyringSnapPermissionsBuilder(origin),
+    const keyringSnapMethods = buildKeyringSnapMethods({
       getSnapKeyring: this.getSnapKeyring.bind(this),
-    };
+    });
     ///: END:ONLY_INCLUDE_IF
 
     const getSnapPermissionSpecifications = () => ({
@@ -1426,74 +1240,16 @@ export class Engine {
       nfts.setApiKey(process.env.MM_OPENSEA_KEY);
     }
 
-    this.controllerMessenger.subscribe(
-      'TransactionController:incomingTransactionsReceived',
-      (incomingTransactions: TransactionMeta[]) => {
-        NotificationManager.gotIncomingTransaction(incomingTransactions);
-      },
-    );
-
-    this.controllerMessenger.subscribe(
-      AppConstants.NETWORK_STATE_CHANGE_EVENT,
-      (state: NetworkState) => {
-        if (
-          state.networksMetadata[state.selectedNetworkClientId].status ===
-          NetworkStatus.Available &&
-          getGlobalChainId(networkController) !== currentChainId
-        ) {
-          // We should add a state or event emitter saying the provider changed
-          setTimeout(() => {
-            this.configureControllersOnNetworkChange();
-            currentChainId = getGlobalChainId(networkController);
-          }, 500);
-        }
-      },
-    );
-
-    this.controllerMessenger.subscribe(
-      AppConstants.NETWORK_STATE_CHANGE_EVENT,
-      async () => {
-        try {
-          const networkId = await deprecatedGetNetworkId();
-          store.dispatch(networkIdUpdated(networkId));
-        } catch (error) {
-          console.error(
-            error,
-            `Network ID not changed, current chainId: ${getGlobalChainId(
-              networkController,
-            )}`,
-          );
-        }
-      },
-    );
-
-    this.controllerMessenger.subscribe(
-      `${networkController.name}:networkWillChange`,
-      () => {
-        store.dispatch(networkIdWillUpdate());
-      },
-    );
-
-    ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-    this.controllerMessenger.subscribe(
-      `${snapController.name}:snapTerminated`,
-      (truncatedSnap) => {
-        const approvals = Object.values(
-          approvalController.state.pendingApprovals,
-        ).filter(
-          (approval) =>
-            approval.origin === truncatedSnap.id &&
-            approval.type.startsWith(RestrictedMethods.snap_dialog),
-        );
-        for (const approval of approvals) {
-          approvalController.reject(
-            approval.id,
-            new Error('Snap was terminated.'),
-          );
-        }
-      },
-    );
-    ///: END:ONLY_INCLUDE_IF
+    setupEngineSubscriptions({
+      controllerMessenger: this.controllerMessenger,
+      networkController,
+      approvalController,
+      configureControllersOnNetworkChange:
+        this.configureControllersOnNetworkChange.bind(this),
+      ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
+      snapController,
+      ///: END:ONLY_INCLUDE_IF
+    });
 
     this.configureControllersOnNetworkChange();
     this.startPolling();
@@ -1556,171 +1312,12 @@ export class Engine {
     ]);
   }
 
-  getTotalEvmFiatAccountBalance = (
-    account?: InternalAccount,
-  ): {
-    ethFiat: number;
-    tokenFiat: number;
-    tokenFiat1dAgo: number;
-    ethFiat1dAgo: number;
-    totalNativeTokenBalance: string;
-    ticker: string;
-  } => {
-    const {
-      CurrencyRateController,
-      AccountsController,
-      AccountTrackerController,
-      TokenBalancesController,
-      TokenRatesController,
-      TokensController,
-      NetworkController,
-    } = this.context;
-
-    const selectedInternalAccount =
-      account ??
-      AccountsController.getAccount(
-        AccountsController.state.internalAccounts.selectedAccount,
-      );
-
-    if (selectedInternalAccount) {
-      const selectedInternalAccountFormattedAddress = toFormattedAddress(
-        selectedInternalAccount.address,
-      );
-      const { currentCurrency } = CurrencyRateController.state;
-      const { chainId, ticker } = NetworkController.getNetworkClientById(
-        getGlobalNetworkClientId(NetworkController),
-      ).configuration;
-      const { settings: { showFiatOnTestnets } = {} } = store.getState();
-
-      if (isTestNet(chainId) && !showFiatOnTestnets) {
-        return {
-          ethFiat: 0,
-          tokenFiat: 0,
-          ethFiat1dAgo: 0,
-          tokenFiat1dAgo: 0,
-          totalNativeTokenBalance: '0',
-          ticker: '',
-        };
-      }
-
-      const conversionRate =
-        CurrencyRateController.state?.currencyRates?.[ticker]?.conversionRate ??
-        0;
-
-      const { accountsByChainId } = AccountTrackerController.state;
-      const chainIdHex = toHexadecimal(chainId);
-      const tokens =
-        TokensController.state.allTokens?.[chainIdHex]?.[
-        selectedInternalAccount.address
-        ] || [];
-      const { marketData } = TokenRatesController.state;
-      const tokenExchangeRates = marketData?.[toHexadecimal(chainId)];
-
-      let ethFiat = 0;
-      let ethFiat1dAgo = 0;
-      let tokenFiat = 0;
-      let tokenFiat1dAgo = 0;
-      let totalNativeTokenBalance = '0';
-      const decimalsToShow = (currentCurrency === 'usd' && 2) || undefined;
-      if (
-        accountsByChainId?.[toHexadecimal(chainId)]?.[
-        selectedInternalAccountFormattedAddress
-        ]
-      ) {
-        const balanceHex =
-          accountsByChainId[toHexadecimal(chainId)][
-            selectedInternalAccountFormattedAddress
-          ].balance;
-
-        const balanceBN = hexToBN(balanceHex);
-        totalNativeTokenBalance = renderFromWei(balanceHex);
-
-        // TODO - Non EVM accounts like BTC do not use hex formatted balances. We will need to modify this to use CAIP-2 identifiers in the future.
-        const stakedBalanceBN = hexToBN(
-          accountsByChainId[toHexadecimal(chainId)][
-            selectedInternalAccountFormattedAddress
-          ].stakedBalance || '0x00',
-        );
-        const totalAccountBalance = balanceBN
-          .add(stakedBalanceBN)
-          .toString('hex');
-        ethFiat = weiToFiatNumber(
-          totalAccountBalance,
-          conversionRate,
-          decimalsToShow,
-        );
-      }
-
-      const ethPricePercentChange1d =
-        tokenExchangeRates?.[zeroAddress() as Hex]?.pricePercentChange1d;
-
-      ethFiat1dAgo =
-        ethPricePercentChange1d !== undefined
-          ? ethFiat / (1 + ethPricePercentChange1d / 100)
-          : ethFiat;
-
-      if (tokens.length > 0) {
-        const { tokenBalances: allTokenBalances } =
-          TokenBalancesController.state;
-
-        const tokenBalances =
-          allTokenBalances?.[selectedInternalAccount.address as Hex]?.[
-          chainId
-          ] ?? {};
-        tokens.forEach(
-          (item: { address: string; balance?: string; decimals: number }) => {
-            const exchangeRate =
-              tokenExchangeRates?.[item.address as Hex]?.price;
-
-            const tokenBalance =
-              item.balance ||
-              (item.address in tokenBalances
-                ? renderFromTokenMinimalUnit(
-                  tokenBalances[item.address as Hex],
-                  item.decimals,
-                )
-                : undefined);
-            const tokenBalanceFiat = balanceToFiatNumber(
-              // TODO: Fix this by handling or eliminating the undefined case
-              // @ts-expect-error This variable can be `undefined`, which would break here.
-              tokenBalance,
-              conversionRate,
-              exchangeRate,
-              decimalsToShow,
-            );
-
-            const tokenPricePercentChange1d =
-              tokenExchangeRates?.[item.address as Hex]?.pricePercentChange1d;
-
-            const tokenBalance1dAgo =
-              tokenPricePercentChange1d !== undefined
-                ? tokenBalanceFiat / (1 + tokenPricePercentChange1d / 100)
-                : tokenBalanceFiat;
-
-            tokenFiat += tokenBalanceFiat;
-            tokenFiat1dAgo += tokenBalance1dAgo;
-          },
-        );
-      }
-
-      return {
-        ethFiat: ethFiat ?? 0,
-        ethFiat1dAgo: ethFiat1dAgo ?? 0,
-        tokenFiat: tokenFiat ?? 0,
-        tokenFiat1dAgo: tokenFiat1dAgo ?? 0,
-        totalNativeTokenBalance: totalNativeTokenBalance ?? '0',
-        ticker,
-      };
-    }
-    // if selectedInternalAccount is undefined, return default 0 value.
-    return {
-      ethFiat: 0,
-      tokenFiat: 0,
-      ethFiat1dAgo: 0,
-      tokenFiat1dAgo: 0,
-      totalNativeTokenBalance: '0',
-      ticker: '',
-    };
+  getTotalEvmFiatAccountBalance = (account?: InternalAccount) => {
+    return getTotalEvmFiatAccountBalanceUtil(
+      this.context,
+      () => store.getState(),
+      account,
+    );
   };
 
   /**
@@ -1778,39 +1375,8 @@ export class Engine {
   };
   ///: END:ONLY_INCLUDE_IF
 
-  /**
-   * Returns true or false whether the user has funds or not
-   */
   hasFunds = () => {
-    try {
-      const {
-        engine: { backgroundState },
-      } = store.getState();
-      // TODO: Check `allNfts[currentChainId]` property instead
-      // @ts-expect-error This property does not exist
-      const nfts = backgroundState.NftController.nfts;
-
-      const { tokenBalances } = backgroundState.TokenBalancesController;
-
-      let tokenFound = false;
-      tokenLoop: for (const chains of Object.values(tokenBalances)) {
-        for (const tokens of Object.values(chains)) {
-          for (const balance of Object.values(tokens)) {
-            if (!isZero(balance)) {
-              tokenFound = true;
-              break tokenLoop;
-            }
-          }
-        }
-      }
-
-      const fiatBalance = this.getTotalEvmFiatAccountBalance() || 0;
-      const totalFiatBalance = fiatBalance.ethFiat + fiatBalance.ethFiat;
-
-      return totalFiatBalance > 0 || tokenFound || nfts.length > 0;
-    } catch (e) {
-      Logger.log('Error while getting user funds', e);
-    }
+    return hasFundsUtil(this.context, () => store.getState());
   };
 
   resetState = async () => {
@@ -1981,105 +1547,7 @@ export default {
 
   get state() {
     assertEngineExists(instance);
-    const {
-      AccountTrackerController,
-      AddressBookController,
-      AppMetadataController,
-      SnapInterfaceController,
-      NftController,
-      TokenListController,
-      CurrencyRateController,
-      KeyringController,
-      NetworkController,
-      PreferencesController,
-      PhishingController,
-      RemoteFeatureFlagController,
-      PPOMController,
-      TokenBalancesController,
-      TokenRatesController,
-      TokenSearchDiscoveryController,
-      TransactionController,
-      SmartTransactionsController,
-      SwapsController,
-      GasFeeController,
-      TokensController,
-      ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-      SnapController,
-      SubjectMetadataController,
-      AuthenticationController,
-      UserStorageController,
-      NotificationServicesController,
-      NotificationServicesPushController,
-      ///: END:ONLY_INCLUDE_IF
-      PermissionController,
-      SelectedNetworkController,
-      ApprovalController,
-      LoggingController,
-      AccountsController,
-      SignatureController,
-      ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-      MultichainBalancesController,
-      RatesController,
-      MultichainAssetsController,
-      MultichainAssetsRatesController,
-      MultichainTransactionsController,
-      ///: END:ONLY_INCLUDE_IF
-      TokenSearchDiscoveryDataController,
-      MultichainNetworkController,
-      BridgeController,
-      BridgeStatusController,
-      EarnController,
-    } = instance.datamodel.state;
-
-    return {
-      AccountTrackerController,
-      AddressBookController,
-      AppMetadataController,
-      SnapInterfaceController,
-      NftController,
-      TokenListController,
-      CurrencyRateController,
-      KeyringController,
-      NetworkController,
-      PhishingController,
-      RemoteFeatureFlagController,
-      PPOMController,
-      PreferencesController,
-      TokenBalancesController,
-      TokenRatesController,
-      TokenSearchDiscoveryController,
-      TokensController,
-      TransactionController,
-      SmartTransactionsController,
-      SwapsController,
-      GasFeeController,
-      ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-      SnapController,
-      SubjectMetadataController,
-      AuthenticationController,
-      UserStorageController,
-      NotificationServicesController,
-      NotificationServicesPushController,
-      ///: END:ONLY_INCLUDE_IF
-      PermissionController,
-      SelectedNetworkController,
-      ApprovalController,
-      LoggingController,
-      AccountsController,
-      SignatureController,
-      ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-      MultichainBalancesController,
-      RatesController,
-      MultichainAssetsController,
-      MultichainAssetsRatesController,
-      MultichainTransactionsController,
-      ///: END:ONLY_INCLUDE_IF
-      TokenSearchDiscoveryDataController,
-      MultichainNetworkController,
-      BridgeController,
-      BridgeStatusController,
-      EarnController,
-    };
+    return instance.datamodel.state;
   },
 
   get datamodel() {
