@@ -40,7 +40,7 @@ export const keyringControllerInit: ControllerInitFunction<
   KeyringController,
   KeyringControllerMessenger
 > = (request) => {
-  const { controllerMessenger, persistedState } = request;
+  const { controllerMessenger, persistedState, baseControllerMessenger } = request;
 
   const preferencesController = request.getController('PreferencesController');
 
@@ -67,7 +67,7 @@ export const keyringControllerInit: ControllerInitFunction<
   additionalKeyrings.push(hdKeyringBuilder);
 
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-  const snapKeyringBuildMessenger = controllerMessenger.getRestricted({
+  const snapKeyringBuildMessenger = baseControllerMessenger.getRestricted({
     name: 'SnapKeyring',
     allowedActions: [
       'ApprovalController:addRequest',
