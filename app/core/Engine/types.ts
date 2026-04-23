@@ -587,13 +587,21 @@ export type ControllersToInitialize =
   | 'MultichainAssetsRatesController'
   | 'MultichainBalancesController'
   | 'MultichainTransactionsController'
+  | 'RatesController'
   ///: END:ONLY_INCLUDE_IF
   | 'CurrencyRateController'
   | 'AccountsController'
   | 'MultichainNetworkController'
   | 'TransactionController'
   | 'GasFeeController'
-  | 'SignatureController';
+  | 'SignatureController'
+  | 'KeyringController'
+  | 'SmartTransactionsController'
+  | 'SwapsController'
+  | 'PPOMController'
+  | 'BridgeController'
+  | 'BridgeStatusController'
+  | 'TokenSearchDiscoveryDataController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.

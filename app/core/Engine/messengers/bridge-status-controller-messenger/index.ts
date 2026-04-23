@@ -13,10 +13,15 @@ export function getBridgeStatusControllerMessenger(
   return baseControllerMessenger.getRestricted({
     name: 'BridgeStatusController',
     allowedActions: [
-      'AccountsController:getSelectedAccount',
+      'AccountsController:getSelectedMultichainAccount',
       'NetworkController:getNetworkClientById',
       'NetworkController:findNetworkClientIdByChainId',
       'NetworkController:getState',
+      'BridgeController:getBridgeERC20Allowance',
+      'BridgeController:trackUnifiedSwapBridgeEvent',
+      'GasFeeController:getState',
+      'AccountsController:getAccountByAddress',
+      'SnapController:handleRequest',
       'TransactionController:getState',
     ],
     allowedEvents: [],
