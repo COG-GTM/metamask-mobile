@@ -28,14 +28,14 @@ export interface FiatAccountBalance {
   ticker: string;
 }
 
-const ZERO_BALANCE: FiatAccountBalance = {
+const ZERO_BALANCE: Readonly<FiatAccountBalance> = Object.freeze({
   ethFiat: 0,
   tokenFiat: 0,
   ethFiat1dAgo: 0,
   tokenFiat1dAgo: 0,
   totalNativeTokenBalance: '0',
   ticker: '',
-};
+});
 
 /**
  * Calculates the total EVM fiat balance for a given account.
@@ -218,7 +218,7 @@ export function hasFunds(context: EngineContext): boolean | undefined {
       }
     }
 
-    const fiatBalance = getTotalEvmFiatAccountBalance(context) || 0;
+    const fiatBalance = getTotalEvmFiatAccountBalance(context);
     const totalFiatBalance = fiatBalance.ethFiat + fiatBalance.tokenFiat;
 
     return totalFiatBalance > 0 || tokenFound || nfts.length > 0;

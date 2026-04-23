@@ -507,7 +507,7 @@ export class Engine {
       approvalController,
       getPrimaryKeyringMnemonic,
       getPrimaryKeyringMnemonicSeed,
-      getUnlockPromise: getUnlockPromise.bind(this),
+      getUnlockPromise,
       getPreferences: this.getPreferences.bind(this),
       getContext: () => this.context,
     });
