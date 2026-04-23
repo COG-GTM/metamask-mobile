@@ -664,7 +664,7 @@ export class Engine {
     this.subjectMetadataController = new SubjectMetadataController({
       messenger: this.controllerMessenger.getRestricted({
         name: 'SubjectMetadataController',
-        allowedActions: [`${permissionController.name}:hasPermissions`],
+        allowedActions: ['PermissionController:hasPermissions'],
         allowedEvents: [],
       }),
       state: initialState.SubjectMetadataController || {},
