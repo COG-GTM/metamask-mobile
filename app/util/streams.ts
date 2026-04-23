@@ -1,7 +1,6 @@
-/* eslint-disable import/no-commonjs */
-const Through = require('through2');
-const ObjectMultiplex = require('@metamask/object-multiplex');
-const pump = require('pump');
+import Through from 'through2';
+import ObjectMultiplex from '@metamask/object-multiplex';
+import pump from 'pump';
 
 /**
  * Returns a stream transform that parses JSON strings passing through
