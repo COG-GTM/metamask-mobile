@@ -211,9 +211,7 @@ const NON_EMPTY = 'NON_EMPTY';
 const encryptor = new Encryptor({
   keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
 });
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let currentChainId: any;
+let currentChainId: Hex | undefined;
 
 /**
  * Core controller responsible for composing other metamask controllers together
@@ -241,9 +239,7 @@ export class Engine {
    * Object containing the info for the latest incoming tx block
    * for each address and network
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  lastIncomingTxBlockInfo: any;
+  lastIncomingTxBlockInfo: Record<string, Record<string, number>> | undefined;
 
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   subjectMetadataController: SubjectMetadataController;
@@ -473,7 +469,6 @@ export class Engine {
         allowedEvents: [],
       }),
       state: initialKeyringState || initialState.KeyringController,
-      // @ts-expect-error To Do: Update the type of QRHardwareKeyring to Keyring<Json>
       keyringBuilders: additionalKeyrings,
       cacheEncryptionKey: true,
     });
@@ -888,7 +883,6 @@ export class Engine {
     };
 
     this.smartTransactionsController = new SmartTransactionsController({
-      // @ts-expect-error TODO: resolve types
       supportedChainIds: getAllowedSmartTransactionsChainIds(),
       clientId: ClientId.Mobile,
       getNonceLock: (...args) =>
@@ -1146,7 +1140,6 @@ export class Engine {
 
     const tokensController = new TokensController({
       chainId: getGlobalChainId(networkController),
-      // @ts-expect-error at this point in time the provider will be defined by the `networkController.initializeProvider`
       provider: networkController.getProviderAndBlockTracker().provider,
       state: initialState.TokensController,
       messenger: this.controllerMessenger.getRestricted({
@@ -1787,8 +1780,7 @@ export class Engine {
         engine: { backgroundState },
       } = store.getState();
       // TODO: Check `allNfts[currentChainId]` property instead
-      // @ts-expect-error This property does not exist
-      const nfts = backgroundState.NftController.nfts;
+      const nfts = (backgroundState.NftController as Record<string, unknown>).nfts as unknown[];
 
       const { tokenBalances } = backgroundState.TokenBalancesController;
 
@@ -1865,10 +1857,8 @@ export class Engine {
   }
 
   async destroyEngineInstance() {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Object.values(this.context).forEach((controller: any) => {
-      if (controller.destroy) {
+    Object.values(this.context).forEach((controller) => {
+      if ('destroy' in controller && typeof controller.destroy === 'function') {
         controller.destroy();
       }
     });
@@ -1890,12 +1880,10 @@ export class Engine {
 
     try {
       ApprovalController.reject(id, reason);
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (opts.logErrors !== false) {
         Logger.error(
-          error,
+          error instanceof Error ? error : new Error(String(error)),
           'Reject while rejecting pending connection request',
         );
       }
