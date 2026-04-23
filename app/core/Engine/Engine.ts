@@ -756,7 +756,9 @@ export class Engine {
       controllerInitFunctions: {
         AccountsController: accountsControllerInit,
         AppMetadataController: appMetadataControllerInit,
+        KeyringController: keyringControllerInit,
         GasFeeController: GasFeeControllerInit,
+        SmartTransactionsController: smartTransactionsControllerInit,
         TransactionController: TransactionControllerInit,
         SignatureController: SignatureControllerInit,
         CurrencyRateController: currencyRateControllerInit,
@@ -778,9 +780,7 @@ export class Engine {
         MultichainTransactionsController: multichainTransactionsControllerInit,
         RatesController: ratesControllerInit,
         ///: END:ONLY_INCLUDE_IF
-        KeyringController: keyringControllerInit,
         PermissionController: permissionControllerInit,
-        SmartTransactionsController: smartTransactionsControllerInit,
         SwapsController: swapsControllerInit,
         PPOMController: ppomControllerInit,
         BridgeController: bridgeControllerInit,

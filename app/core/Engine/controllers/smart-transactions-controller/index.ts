@@ -28,7 +28,11 @@ export const smartTransactionsControllerInit: ControllerInitFunction<
 > = (request) => {
   const { controllerMessenger, persistedState } = request;
 
-  const transactionController = request.getController('TransactionController');
+  // Use a deferred getter to break the circular dependency:
+  // SmartTransactionsController is initialized before TransactionController,
+  // but all usages are in callbacks invoked at runtime (after all controllers are initialized).
+  const getTransactionController = () =>
+    request.getController('TransactionController');
 
   const smartTransactionsControllerTrackMetaMetricsEvent = (
     params: {
@@ -61,16 +65,16 @@ export const smartTransactionsControllerInit: ControllerInitFunction<
     supportedChainIds: getAllowedSmartTransactionsChainIds(),
     clientId: ClientId.Mobile,
     getNonceLock: (...args) =>
-      transactionController.getNonceLock(...args),
+      getTransactionController().getNonceLock(...args),
     confirmExternalTransaction: (...args) =>
-      transactionController.confirmExternalTransaction(...args),
+      getTransactionController().confirmExternalTransaction(...args),
     trackMetaMetricsEvent: smartTransactionsControllerTrackMetaMetricsEvent,
     state: persistedState.SmartTransactionsController,
     messenger: controllerMessenger,
     getTransactions: (...args) =>
-      transactionController.getTransactions(...args),
+      getTransactionController().getTransactions(...args),
     updateTransaction: (...args) =>
-      transactionController.updateTransaction(...args),
+      getTransactionController().updateTransaction(...args),
     getFeatureFlags: () => selectSwapsChainFeatureFlags(store.getState()),
     getMetaMetricsProps: () => Promise.resolve({}),
   });
