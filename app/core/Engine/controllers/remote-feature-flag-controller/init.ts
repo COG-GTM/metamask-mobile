@@ -15,17 +15,17 @@ import { selectBasicFunctionalityEnabled } from '../../../../selectors/settings'
 export const remoteFeatureFlagControllerInit: ControllerInitFunction<
   RemoteFeatureFlagController,
   RemoteFeatureFlagControllerMessenger
-> = (request) => {
-  const { controllerMessenger, getState } = request;
+>= (request) => {
+ const { controllerMessenger, getState, metaMetricsId } = request;
 
-  const isBasicFunctionalityToggleEnabled = () =>
-    selectBasicFunctionalityEnabled(getState());
+ const isBasicFunctionalityToggleEnabled = () =>
+   selectBasicFunctionalityEnabled(getState());
 
-  const controller = createRemoteFeatureFlagController({
-    messenger: controllerMessenger,
-    disabled: !isBasicFunctionalityToggleEnabled(),
-    getMetaMetricsId: () => '',
-  });
+ const controller = createRemoteFeatureFlagController({
+   messenger: controllerMessenger,
+   disabled: !isBasicFunctionalityToggleEnabled(),
+   getMetaMetricsId: () => metaMetricsId ?? '',
+ });
 
   return { controller };
 };

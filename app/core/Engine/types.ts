@@ -692,6 +692,11 @@ export type ControllerInitRequest<
   getState: () => RootState;
 
   /**
+   * The MetaMetrics ID of the user, if available.
+   */
+  metaMetricsId?: string;
+
+  /**
    * Required initialization messenger instance.
    * Generated using the callback specified in `getInitMessenger`.
    */
@@ -738,6 +743,7 @@ export type InitModularizedControllersFunction = (request: {
   existingControllersByName?: Partial<ControllerByName>;
   getGlobalChainId: () => Hex;
   getState: () => RootState;
+  metaMetricsId?: string;
   persistedState: ControllerPersistedState;
 }) => {
   controllersByName: ControllerByName;

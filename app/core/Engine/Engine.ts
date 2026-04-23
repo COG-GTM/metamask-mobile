@@ -401,6 +401,7 @@ export class Engine {
     const initRequest = {
       getState: () => store.getState(),
       getGlobalChainId: () => currentChainId,
+      metaMetricsId,
     };
 
     const { controllersByName } = initModularizedControllers({
