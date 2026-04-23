@@ -209,7 +209,6 @@ import { approvalControllerInit } from './controllers/approval-controller';
 import { networkControllerInit } from './controllers/network-controller';
 import { preferencesControllerInit } from './controllers/preferences-controller';
 import { assetsContractControllerInit } from './controllers/assets-contract-controller';
-import { selectedNetworkControllerInit } from './controllers/selected-network-controller';
 import { accountTrackerControllerInit } from './controllers/account-tracker-controller';
 import { tokenBalancesControllerInit } from './controllers/token-balances-controller';
 import { tokenRatesControllerInit } from './controllers/token-rates-controller';
@@ -697,6 +696,128 @@ export class Engine {
 
     const codefiTokenApiV2 = new CodefiTokenPricesServiceV2();
 
+    const existingControllersByName = {
+      KeyringController: this.keyringController,
+    };
+
+    const initRequest = {
+      getState: () => store.getState(),
+      getGlobalChainId: () => currentChainId,
+    };
+
+    const { controllersByName } = initModularizedControllers({
+      controllerInitFunctions: {
+        ApprovalController: approvalControllerInit,
+        NetworkController: networkControllerInit,
+        PreferencesController: preferencesControllerInit,
+        AssetsContractController: assetsContractControllerInit,
+        AccountsController: accountsControllerInit,
+        AppMetadataController: appMetadataControllerInit,
+        GasFeeController: GasFeeControllerInit,
+        TransactionController: TransactionControllerInit,
+        SignatureController: SignatureControllerInit,
+        CurrencyRateController: currencyRateControllerInit,
+        MultichainNetworkController: multichainNetworkControllerInit,
+        AccountTrackerController: accountTrackerControllerInit,
+        TokensController: tokensControllerInit,
+        TokenBalancesController: tokenBalancesControllerInit,
+        TokenRatesController: tokenRatesControllerInit,
+        NftController: nftControllerInit,
+        ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
+        ExecutionService: executionServiceInit,
+        SnapController: snapControllerInit,
+        CronjobController: cronjobControllerInit,
+        SnapInterfaceController: snapInterfaceControllerInit,
+        SnapsRegistry: snapsRegistryInit,
+        NotificationServicesController: notificationServicesControllerInit,
+        NotificationServicesPushController:
+          notificationServicesPushControllerInit,
+        ///: END:ONLY_INCLUDE_IF
+        ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+        MultichainAssetsController: multichainAssetsControllerInit,
+        MultichainAssetsRatesController: multichainAssetsRatesControllerInit,
+        MultichainBalancesController: multichainBalancesControllerInit,
+        MultichainTransactionsController: multichainTransactionsControllerInit,
+        ///: END:ONLY_INCLUDE_IF
+      },
+      persistedState: initialState as EngineState,
+      existingControllersByName,
+      baseControllerMessenger: this.controllerMessenger,
+      ...initRequest,
+    });
+
+    const approvalController = controllersByName.ApprovalController;
+    const networkController = controllersByName.NetworkController;
+    const preferencesController = controllersByName.PreferencesController;
+    const assetsContractController = controllersByName.AssetsContractController;
+    const accountTrackerController = controllersByName.AccountTrackerController;
+    const tokensController = controllersByName.TokensController;
+    const tokenBalancesController = controllersByName.TokenBalancesController;
+    const tokenRatesController = controllersByName.TokenRatesController;
+    const nftController = controllersByName.NftController;
+
+    const accountsController = controllersByName.AccountsController;
+    const gasFeeController = controllersByName.GasFeeController;
+    const signatureController = controllersByName.SignatureController;
+    const transactionController = controllersByName.TransactionController;
+
+    // Backwards compatibility for existing references
+    this.accountsController = accountsController;
+    this.gasFeeController = gasFeeController;
+    this.transactionController = transactionController;
+
+    const multichainNetworkController =
+      controllersByName.MultichainNetworkController;
+    const currencyRateController = controllersByName.CurrencyRateController;
+
+    ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
+    const cronjobController = controllersByName.CronjobController;
+    const executionService = controllersByName.ExecutionService;
+    const snapController = controllersByName.SnapController;
+    const snapInterfaceController = controllersByName.SnapInterfaceController;
+    const snapsRegistry = controllersByName.SnapsRegistry;
+    const notificationServicesController =
+      controllersByName.NotificationServicesController;
+    const notificationServicesPushController =
+      controllersByName.NotificationServicesPushController;
+    ///: END:ONLY_INCLUDE_IF
+
+    ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+    const multichainAssetsController =
+      controllersByName.MultichainAssetsController;
+    const multichainAssetsRatesController =
+      controllersByName.MultichainAssetsRatesController;
+    const multichainBalancesController =
+      controllersByName.MultichainBalancesController;
+    const multichainTransactionsController =
+      controllersByName.MultichainTransactionsController;
+    ///: END:ONLY_INCLUDE_IF
+
+    ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+    const multichainRatesControllerMessenger =
+      this.controllerMessenger.getRestricted({
+        name: 'RatesController',
+        allowedActions: [],
+        allowedEvents: ['CurrencyRateController:stateChange'],
+      });
+
+    const multichainRatesController = createMultichainRatesController({
+      messenger: multichainRatesControllerMessenger,
+      initialState: initialState.RatesController,
+    });
+
+    // Set up currency rate sync
+    setupCurrencyRateSync(
+      multichainRatesControllerMessenger,
+      multichainRatesController,
+    );
+    ///: END:ONLY_INCLUDE_IF
+
+    ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
+    // Notification Setup
+    notificationServicesController.init();
+    ///: END:ONLY_INCLUDE_IF
+
     const smartTransactionsControllerTrackMetaMetricsEvent = (
       params: {
         event: MetaMetricsEventName;
@@ -847,131 +968,6 @@ export class Engine {
       },
     });
 
-    const existingControllersByName = {
-      KeyringController: this.keyringController,
-      SmartTransactionsController: this.smartTransactionsController,
-    };
-
-    const initRequest = {
-      getState: () => store.getState(),
-      getGlobalChainId: () => currentChainId,
-    };
-
-    const { controllersByName } = initModularizedControllers({
-      controllerInitFunctions: {
-        ApprovalController: approvalControllerInit,
-        NetworkController: networkControllerInit,
-        PreferencesController: preferencesControllerInit,
-        AssetsContractController: assetsContractControllerInit,
-        AccountsController: accountsControllerInit,
-        AppMetadataController: appMetadataControllerInit,
-        GasFeeController: GasFeeControllerInit,
-        TransactionController: TransactionControllerInit,
-        SignatureController: SignatureControllerInit,
-        CurrencyRateController: currencyRateControllerInit,
-        MultichainNetworkController: multichainNetworkControllerInit,
-        SelectedNetworkController: selectedNetworkControllerInit,
-        AccountTrackerController: accountTrackerControllerInit,
-        TokensController: tokensControllerInit,
-        TokenBalancesController: tokenBalancesControllerInit,
-        TokenRatesController: tokenRatesControllerInit,
-        NftController: nftControllerInit,
-        ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-        ExecutionService: executionServiceInit,
-        SnapController: snapControllerInit,
-        CronjobController: cronjobControllerInit,
-        SnapInterfaceController: snapInterfaceControllerInit,
-        SnapsRegistry: snapsRegistryInit,
-        NotificationServicesController: notificationServicesControllerInit,
-        NotificationServicesPushController:
-          notificationServicesPushControllerInit,
-        ///: END:ONLY_INCLUDE_IF
-        ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-        MultichainAssetsController: multichainAssetsControllerInit,
-        MultichainAssetsRatesController: multichainAssetsRatesControllerInit,
-        MultichainBalancesController: multichainBalancesControllerInit,
-        MultichainTransactionsController: multichainTransactionsControllerInit,
-        ///: END:ONLY_INCLUDE_IF
-      },
-      persistedState: initialState as EngineState,
-      existingControllersByName,
-      baseControllerMessenger: this.controllerMessenger,
-      ...initRequest,
-    });
-
-    const approvalController = controllersByName.ApprovalController;
-    const networkController = controllersByName.NetworkController;
-    const preferencesController = controllersByName.PreferencesController;
-    const assetsContractController = controllersByName.AssetsContractController;
-    const selectedNetworkController = controllersByName.SelectedNetworkController;
-    const accountTrackerController = controllersByName.AccountTrackerController;
-    const tokensController = controllersByName.TokensController;
-    const tokenBalancesController = controllersByName.TokenBalancesController;
-    const tokenRatesController = controllersByName.TokenRatesController;
-    const nftController = controllersByName.NftController;
-
-    const accountsController = controllersByName.AccountsController;
-    const gasFeeController = controllersByName.GasFeeController;
-    const signatureController = controllersByName.SignatureController;
-    const transactionController = controllersByName.TransactionController;
-
-    // Backwards compatibility for existing references
-    this.accountsController = accountsController;
-    this.gasFeeController = gasFeeController;
-    this.transactionController = transactionController;
-
-    const multichainNetworkController =
-      controllersByName.MultichainNetworkController;
-    const currencyRateController = controllersByName.CurrencyRateController;
-
-    ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-    const cronjobController = controllersByName.CronjobController;
-    const executionService = controllersByName.ExecutionService;
-    const snapController = controllersByName.SnapController;
-    const snapInterfaceController = controllersByName.SnapInterfaceController;
-    const snapsRegistry = controllersByName.SnapsRegistry;
-    const notificationServicesController =
-      controllersByName.NotificationServicesController;
-    const notificationServicesPushController =
-      controllersByName.NotificationServicesPushController;
-    ///: END:ONLY_INCLUDE_IF
-
-    ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-    const multichainAssetsController =
-      controllersByName.MultichainAssetsController;
-    const multichainAssetsRatesController =
-      controllersByName.MultichainAssetsRatesController;
-    const multichainBalancesController =
-      controllersByName.MultichainBalancesController;
-    const multichainTransactionsController =
-      controllersByName.MultichainTransactionsController;
-    ///: END:ONLY_INCLUDE_IF
-
-    ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-    const multichainRatesControllerMessenger =
-      this.controllerMessenger.getRestricted({
-        name: 'RatesController',
-        allowedActions: [],
-        allowedEvents: ['CurrencyRateController:stateChange'],
-      });
-
-    const multichainRatesController = createMultichainRatesController({
-      messenger: multichainRatesControllerMessenger,
-      initialState: initialState.RatesController,
-    });
-
-    // Set up currency rate sync
-    setupCurrencyRateSync(
-      multichainRatesControllerMessenger,
-      multichainRatesController,
-    );
-    ///: END:ONLY_INCLUDE_IF
-
-    ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-    // Notification Setup
-    notificationServicesController.init();
-    ///: END:ONLY_INCLUDE_IF
-
     const tokenListController = new TokenListController({
       chainId: getGlobalChainId(networkController),
       onNetworkStateChange: (listener) =>
@@ -1018,6 +1014,30 @@ export class Engine {
         ///: END:ONLY_INCLUDE_IF
       },
       unrestrictedMethods,
+    });
+
+    const selectedNetworkController = new SelectedNetworkController({
+      messenger: this.controllerMessenger.getRestricted({
+        name: 'SelectedNetworkController',
+        allowedActions: [
+          'NetworkController:getNetworkClientById',
+          'NetworkController:getState',
+          'NetworkController:getSelectedNetworkClient',
+          'PermissionController:hasPermissions',
+          'PermissionController:getSubjectNames',
+        ],
+        allowedEvents: [
+          'NetworkController:stateChange',
+          'PermissionController:stateChange',
+        ],
+      }),
+      state: initialState.SelectedNetworkController || { domains: {} },
+      useRequestQueuePreference: !!process.env.MULTICHAIN_V1,
+      // TODO we need to modify core PreferencesController for better cross client support
+      onPreferencesStateChange: (
+        listener: ({ useRequestQueue }: { useRequestQueue: boolean }) => void,
+      ) => listener({ useRequestQueue: !!process.env.MULTICHAIN_V1 }),
+      domainProxyMap: new DomainProxyMap(),
     });
 
     ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)

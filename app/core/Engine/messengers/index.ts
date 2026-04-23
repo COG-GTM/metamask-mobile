@@ -7,7 +7,6 @@ import { getApprovalControllerMessenger } from './approval-controller-messenger'
 import { getNetworkControllerMessenger } from './network-controller-messenger';
 import { getPreferencesControllerMessenger } from './preferences-controller-messenger';
 import { getAssetsContractControllerMessenger } from './assets-contract-controller-messenger';
-import { getSelectedNetworkControllerMessenger } from './selected-network-controller-messenger';
 import { getAccountTrackerControllerMessenger } from './account-tracker-controller-messenger';
 import { getTokenBalancesControllerMessenger } from './token-balances-controller-messenger';
 import { getTokenRatesControllerMessenger } from './token-rates-controller-messenger';
@@ -83,10 +82,6 @@ export const CONTROLLER_MESSENGERS = {
   },
   AssetsContractController: {
     getMessenger: getAssetsContractControllerMessenger,
-    getInitMessenger: noop,
-  },
-  SelectedNetworkController: {
-    getMessenger: getSelectedNetworkControllerMessenger,
     getInitMessenger: noop,
   },
   AccountTrackerController: {

@@ -598,7 +598,6 @@ export type ControllersToInitialize =
   | 'NetworkController'
   | 'PreferencesController'
   | 'AssetsContractController'
-  | 'SelectedNetworkController'
   | 'AccountTrackerController'
   | 'TokenBalancesController'
   | 'TokenRatesController'
