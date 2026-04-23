@@ -12,14 +12,11 @@ import {
 import { Encryptor, LEGACY_DERIVATION_OPTIONS, pbkdf2 } from '../../../Encryptor';
 import type { ControllerInitFunction } from '../../types';
 import type { KeyringControllerMessenger } from '../../messengers/keyring-controller-messenger';
+import type { KeyringControllerInitMessenger } from '../../messengers/keyring-controller-messenger';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { snapKeyringBuilder } from '../../../SnapKeyring';
 import { removeAccountsFromPermissions } from '../../../Permissions';
 import { toHex } from '@metamask/controller-utils';
-import { BaseControllerMessenger } from '../../types';
-import {
-  SnapControllerGetSnapAction,
-} from '../snaps';
 ///: END:ONLY_INCLUDE_IF
 
 const encryptor = new Encryptor({
@@ -34,7 +31,8 @@ const encryptor = new Encryptor({
  */
 export const keyringControllerInit: ControllerInitFunction<
   KeyringController,
-  KeyringControllerMessenger
+  KeyringControllerMessenger,
+  KeyringControllerInitMessenger
 > = (request) => {
   const { controllerMessenger, persistedState } = request;
 
@@ -63,31 +61,7 @@ export const keyringControllerInit: ControllerInitFunction<
   additionalKeyrings.push(hdKeyringBuilder);
 
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-  const baseControllerMessenger =
-    controllerMessenger as unknown as BaseControllerMessenger;
-  const snapKeyringBuildMessenger = baseControllerMessenger.getRestricted({
-    name: 'SnapKeyring',
-    allowedActions: [
-      'ApprovalController:addRequest',
-      'ApprovalController:acceptRequest',
-      'ApprovalController:rejectRequest',
-      'ApprovalController:startFlow',
-      'ApprovalController:endFlow',
-      'ApprovalController:showSuccess',
-      'ApprovalController:showError',
-      'PhishingController:testOrigin',
-      'PhishingController:maybeUpdateState',
-      'KeyringController:getAccounts',
-      'AccountsController:setSelectedAccount',
-      'AccountsController:getAccountByAddress',
-      'AccountsController:setAccountName',
-      'AccountsController:setAccountNameAndSelectAccount',
-      'AccountsController:listMultichainAccounts',
-      'SnapController:handleRequest',
-      SnapControllerGetSnapAction,
-    ],
-    allowedEvents: [],
-  });
+  const snapKeyringBuildMessenger = request.initMessenger;
 
   // We need access to the keyringController instance for the snap keyring builder callbacks.
   // This variable will be set after the controller is created.

@@ -30,3 +30,43 @@ export function getKeyringControllerMessenger(
     allowedEvents: [],
   });
 }
+
+export type KeyringControllerInitMessenger = ReturnType<
+  typeof getKeyringControllerInitMessenger
+>;
+
+/**
+ * Get an init messenger for the KeyringController.
+ * Creates the SnapKeyring restricted messenger from the base messenger,
+ * needed by the snap keyring builder during controller initialization.
+ *
+ * @param baseControllerMessenger - The base controller messenger.
+ * @returns The SnapKeyring restricted messenger.
+ */
+export function getKeyringControllerInitMessenger(
+  baseControllerMessenger: BaseControllerMessenger,
+) {
+  return baseControllerMessenger.getRestricted({
+    name: 'SnapKeyring',
+    allowedActions: [
+      'ApprovalController:addRequest',
+      'ApprovalController:acceptRequest',
+      'ApprovalController:rejectRequest',
+      'ApprovalController:startFlow',
+      'ApprovalController:endFlow',
+      'ApprovalController:showSuccess',
+      'ApprovalController:showError',
+      'PhishingController:testOrigin',
+      'PhishingController:maybeUpdateState',
+      'KeyringController:getAccounts',
+      'AccountsController:setSelectedAccount',
+      'AccountsController:getAccountByAddress',
+      'AccountsController:setAccountName',
+      'AccountsController:setAccountNameAndSelectAccount',
+      'AccountsController:listMultichainAccounts',
+      'SnapController:handleRequest',
+      'SnapController:get',
+    ],
+    allowedEvents: [],
+  });
+}

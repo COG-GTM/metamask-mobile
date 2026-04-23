@@ -28,7 +28,7 @@ import { getNotificationServicesControllerMessenger } from './notifications/noti
 import { getNotificationServicesPushControllerMessenger } from './notifications/notification-services-push-controller-messenger';
 import { getGasFeeControllerMessenger } from './gas-fee-controller-messenger/gas-fee-controller-messenger';
 import { getSignatureControllerMessenger } from './signature-controller-messenger';
-import { getKeyringControllerMessenger } from './keyring-controller-messenger';
+import { getKeyringControllerMessenger, getKeyringControllerInitMessenger } from './keyring-controller-messenger';
 import { getSmartTransactionsControllerMessenger } from './smart-transactions-controller-messenger';
 import { getSwapsControllerMessenger } from './swaps-controller-messenger';
 import { getPPOMControllerMessenger } from './ppom-controller-messenger';
@@ -121,7 +121,7 @@ export const CONTROLLER_MESSENGERS = {
   ///: END:ONLY_INCLUDE_IF
   KeyringController: {
     getMessenger: getKeyringControllerMessenger,
-    getInitMessenger: noop,
+    getInitMessenger: getKeyringControllerInitMessenger,
   },
   SmartTransactionsController: {
     getMessenger: getSmartTransactionsControllerMessenger,
