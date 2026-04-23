@@ -131,7 +131,7 @@ import {
   ///: END:ONLY_INCLUDE_IF
 } from '@metamask/controller-utils';
 import { ExtendedControllerMessenger } from '../ExtendedControllerMessenger';
-import DomainProxyMap from '../../lib/DomainProxyMap/DomainProxyMap';
+// DomainProxyMap moved to selected-network-controller init
 import {
   MetaMetricsEventCategory,
   MetaMetricsEventName,
@@ -203,6 +203,12 @@ import I18n from '../../../locales/i18n';
 import { Platform } from '@metamask/profile-sync-controller/sdk';
 import { isProductSafetyDappScanningEnabled } from '../../util/phishingDetection';
 import { appMetadataControllerInit } from './controllers/app-metadata-controller';
+import { selectedNetworkControllerInit } from './controllers/selected-network-controller';
+import { accountTrackerControllerInit } from './controllers/account-tracker-controller';
+import { tokenBalancesControllerInit } from './controllers/token-balances-controller';
+import { tokenRatesControllerInit } from './controllers/token-rates-controller';
+import { nftControllerInit } from './controllers/nft-controller';
+import { tokensControllerInit } from './controllers/tokens-controller';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { toFormattedAddress } from '../../util/address';
 
@@ -706,30 +712,6 @@ export class Engine {
       ),
     });
 
-    const accountTrackerController = new AccountTrackerController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'AccountTrackerController',
-        allowedActions: [
-          'AccountsController:getSelectedAccount',
-          'AccountsController:listAccounts',
-          'PreferencesController:getState',
-          'NetworkController:getState',
-          'NetworkController:getNetworkClientById',
-        ],
-        allowedEvents: [
-          'AccountsController:selectedEvmAccountChange',
-          'AccountsController:selectedAccountChange',
-        ],
-      }),
-      state: initialState.AccountTrackerController ?? {
-        accountsByChainId: {},
-      },
-      getStakedBalanceForChain:
-        assetsContractController.getStakedBalanceForChain.bind(
-          assetsContractController,
-        ),
-      includeStakedAssets: true,
-    });
     const permissionController = new PermissionController({
       messenger: this.controllerMessenger.getRestricted({
         name: 'PermissionController',
@@ -762,30 +744,6 @@ export class Engine {
         ///: END:ONLY_INCLUDE_IF
       },
       unrestrictedMethods,
-    });
-
-    const selectedNetworkController = new SelectedNetworkController({
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'SelectedNetworkController',
-        allowedActions: [
-          'NetworkController:getNetworkClientById',
-          'NetworkController:getState',
-          'NetworkController:getSelectedNetworkClient',
-          'PermissionController:hasPermissions',
-          'PermissionController:getSubjectNames',
-        ],
-        allowedEvents: [
-          'NetworkController:stateChange',
-          'PermissionController:stateChange',
-        ],
-      }),
-      state: initialState.SelectedNetworkController || { domains: {} },
-      useRequestQueuePreference: !!process.env.MULTICHAIN_V1,
-      // TODO we need to modify core PreferencesController for better cross client support
-      onPreferencesStateChange: (
-        listener: ({ useRequestQueue }: { useRequestQueue: boolean }) => void,
-      ) => listener({ useRequestQueue: !!process.env.MULTICHAIN_V1 }),
-      domainProxyMap: new DomainProxyMap(),
     });
 
     ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
@@ -1016,6 +974,7 @@ export class Engine {
       KeyringController: this.keyringController,
       NetworkController: networkController,
       PreferencesController: preferencesController,
+      AssetsContractController: assetsContractController,
       SmartTransactionsController: this.smartTransactionsController,
     };
 
@@ -1049,6 +1008,12 @@ export class Engine {
         MultichainBalancesController: multichainBalancesControllerInit,
         MultichainTransactionsController: multichainTransactionsControllerInit,
         ///: END:ONLY_INCLUDE_IF
+        SelectedNetworkController: selectedNetworkControllerInit,
+        AccountTrackerController: accountTrackerControllerInit,
+        TokenBalancesController: tokenBalancesControllerInit,
+        TokenRatesController: tokenRatesControllerInit,
+        NftController: nftControllerInit,
+        TokensController: tokensControllerInit,
       },
       persistedState: initialState as EngineState,
       existingControllersByName,
@@ -1118,54 +1083,12 @@ export class Engine {
     notificationServicesController.init();
     ///: END:ONLY_INCLUDE_IF
 
-    const nftController = new NftController({
-      chainId: getGlobalChainId(networkController),
-      useIpfsSubdomains: false,
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'NftController',
-        allowedActions: [
-          'AccountsController:getAccount',
-          'AccountsController:getSelectedAccount',
-          'ApprovalController:addRequest',
-          'AssetsContractController:getERC721AssetName',
-          'AssetsContractController:getERC721AssetSymbol',
-          'AssetsContractController:getERC721TokenURI',
-          'AssetsContractController:getERC721OwnerOf',
-          'AssetsContractController:getERC1155BalanceOf',
-          'AssetsContractController:getERC1155TokenURI',
-          'NetworkController:getNetworkClientById',
-        ],
-        allowedEvents: [
-          'PreferencesController:stateChange',
-          'NetworkController:networkDidChange',
-          'AccountsController:selectedEvmAccountChange',
-        ],
-      }),
-      state: initialState.NftController,
-    });
-
-    const tokensController = new TokensController({
-      chainId: getGlobalChainId(networkController),
-      // @ts-expect-error at this point in time the provider will be defined by the `networkController.initializeProvider`
-      provider: networkController.getProviderAndBlockTracker().provider,
-      state: initialState.TokensController,
-      messenger: this.controllerMessenger.getRestricted({
-        name: 'TokensController',
-        allowedActions: [
-          'ApprovalController:addRequest',
-          'NetworkController:getNetworkClientById',
-          'AccountsController:getAccount',
-          'AccountsController:getSelectedAccount',
-        ],
-        allowedEvents: [
-          'PreferencesController:stateChange',
-          'NetworkController:networkDidChange',
-          'NetworkController:stateChange',
-          'TokenListController:stateChange',
-          'AccountsController:selectedEvmAccountChange',
-        ],
-      }),
-    });
+    const accountTrackerController = controllersByName.AccountTrackerController;
+    const selectedNetworkController = controllersByName.SelectedNetworkController;
+    const nftController = controllersByName.NftController;
+    const tokensController = controllersByName.TokensController;
+    const tokenBalancesController = controllersByName.TokenBalancesController;
+    const tokenRatesController = controllersByName.TokenRatesController;
 
     const earnController = new EarnController({
       messenger: this.controllerMessenger.getRestricted({
@@ -1185,7 +1108,7 @@ export class Engine {
 
     this.context = {
       KeyringController: this.keyringController,
-      AccountTrackerController: accountTrackerController,
+      AccountTrackerController: accountTrackerController as AccountTrackerController,
       AddressBookController: new AddressBookController({
         messenger: this.controllerMessenger.getRestricted({
           name: 'AddressBookController',
@@ -1196,8 +1119,8 @@ export class Engine {
       }),
       AppMetadataController: controllersByName.AppMetadataController,
       AssetsContractController: assetsContractController,
-      NftController: nftController,
-      TokensController: tokensController,
+      NftController: nftController as NftController,
+      TokensController: tokensController as TokensController,
       TokenListController: tokenListController,
       TokenDetectionController: new TokenDetectionController({
         messenger: this.controllerMessenger.getRestricted({
@@ -1269,46 +1192,8 @@ export class Engine {
       NetworkController: networkController,
       PhishingController: phishingController,
       PreferencesController: preferencesController,
-      TokenBalancesController: new TokenBalancesController({
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'TokenBalancesController',
-          allowedActions: [
-            'NetworkController:getNetworkClientById',
-            'NetworkController:getState',
-            'TokensController:getState',
-            'PreferencesController:getState',
-            'AccountsController:getSelectedAccount',
-          ],
-          allowedEvents: [
-            'TokensController:stateChange',
-            'PreferencesController:stateChange',
-            'NetworkController:stateChange',
-          ],
-        }),
-        // TODO: This is long, can we decrease it?
-        interval: 180000,
-        state: initialState.TokenBalancesController,
-      }),
-      TokenRatesController: new TokenRatesController({
-        messenger: this.controllerMessenger.getRestricted({
-          name: 'TokenRatesController',
-          allowedActions: [
-            'TokensController:getState',
-            'NetworkController:getNetworkClientById',
-            'NetworkController:getState',
-            'AccountsController:getAccount',
-            'AccountsController:getSelectedAccount',
-          ],
-          allowedEvents: [
-            'TokensController:stateChange',
-            'NetworkController:stateChange',
-            'AccountsController:selectedEvmAccountChange',
-          ],
-        }),
-        tokenPricesService: codefiTokenApiV2,
-        interval: 30 * 60 * 1000,
-        state: initialState.TokenRatesController || { marketData: {} },
-      }),
+      TokenBalancesController: tokenBalancesController as TokenBalancesController,
+      TokenRatesController: tokenRatesController as TokenRatesController,
       TransactionController: this.transactionController,
       SmartTransactionsController: this.smartTransactionsController,
       SwapsController: new SwapsController({

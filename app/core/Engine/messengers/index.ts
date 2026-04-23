@@ -27,6 +27,12 @@ import { getNotificationServicesControllerMessenger } from './notifications/noti
 import { getNotificationServicesPushControllerMessenger } from './notifications/notification-services-push-controller-messenger';
 import { getGasFeeControllerMessenger } from './gas-fee-controller-messenger/gas-fee-controller-messenger';
 import { getSignatureControllerMessenger } from './signature-controller-messenger';
+import { getSelectedNetworkControllerMessenger } from './selected-network-controller-messenger';
+import { getAccountTrackerControllerMessenger } from './account-tracker-controller-messenger';
+import { getTokenBalancesControllerMessenger } from './token-balances-controller-messenger';
+import { getTokenRatesControllerMessenger } from './token-rates-controller-messenger';
+import { getNftControllerMessenger } from './nft-controller-messenger';
+import { getTokensControllerMessenger } from './tokens-controller-messenger';
 /**
  * The messengers for the controllers that have been.
  */
@@ -107,4 +113,28 @@ export const CONTROLLER_MESSENGERS = {
     getInitMessenger: noop,
   },
   ///: END:ONLY_INCLUDE_IF
+  SelectedNetworkController: {
+    getMessenger: getSelectedNetworkControllerMessenger,
+    getInitMessenger: noop,
+  },
+  AccountTrackerController: {
+    getMessenger: getAccountTrackerControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenBalancesController: {
+    getMessenger: getTokenBalancesControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokenRatesController: {
+    getMessenger: getTokenRatesControllerMessenger,
+    getInitMessenger: noop,
+  },
+  NftController: {
+    getMessenger: getNftControllerMessenger,
+    getInitMessenger: noop,
+  },
+  TokensController: {
+    getMessenger: getTokensControllerMessenger,
+    getInitMessenger: noop,
+  },
 } as const;
