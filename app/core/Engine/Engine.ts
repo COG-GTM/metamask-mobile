@@ -776,6 +776,12 @@ export class Engine {
       PreferencesController: preferencesController,
     };
 
+    // Merge initialKeyringState into initialState for vault recovery support.
+    // When restoring from backup, initialKeyringState takes priority.
+    if (initialKeyringState) {
+      initialState = { ...initialState, KeyringController: initialKeyringState };
+    }
+
     const initRequest = {
       getState: () => store.getState(),
       getGlobalChainId: () => currentChainId,
