@@ -139,7 +139,7 @@ Generated: 2026-04-24
 | 23 | `app/util/confirmation/signatureUtils.js` | Medium |
 | T1 | `app/util/conversions.test.js` | Simple |
 
-**Reference**: `app/util/string/index.ts`, `app/util/date/index.ts`
+**Reference**: `app/util/string/index.ts`, `app/util/mnemonic/index.ts`
 
 ---
 
