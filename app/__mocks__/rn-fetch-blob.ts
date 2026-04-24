@@ -1,4 +1,4 @@
-const noop = () => ({});
+const noop = (): Record<string, unknown> => ({});
 
 export default {
   DocumentDir: noop,
@@ -9,9 +9,9 @@ export default {
   config: noop,
   session: noop,
   fs: {
-    writeFile: () => Promise.resolve(),
-    exists: () => Promise.resolve(),
-    mkdir: () => Promise.resolve(),
+    writeFile: (): Promise<void> => Promise.resolve(),
+    exists: (): Promise<void> => Promise.resolve(),
+    mkdir: (): Promise<void> => Promise.resolve(),
     dirs: {
       CacheDir: noop,
       DocumentDir: noop,
