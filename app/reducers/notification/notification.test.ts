@@ -1,10 +1,10 @@
-import reducer, { ACTIONS, initialState } from './index';
+import reducer, { ACTIONS, initialState, NotificationState } from './index';
 import { NotificationTypes } from '../../util/notifications';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-const emptyAction = { type: null };
+const emptyAction = { type: '' };
 
-const simpleNotification = (number) => ({
+const simpleNotification = (number: number) => ({
   id: `simple${number}`,
   status: `simple${number} status`,
   duration: 5000,
@@ -12,7 +12,7 @@ const simpleNotification = (number) => ({
   description: `Simple Notification ${number} description}`,
 });
 
-const txNotification = (number) => ({
+const txNotification = (number: number) => ({
   transaction: { id: `tx${number}` },
   status: `tx${number} status`,
   duration: 5000,
@@ -105,7 +105,7 @@ describe('notifications reducer', () => {
   });
 
   describe('actions', () => {
-    let stateWithNotifications;
+    let stateWithNotifications: NotificationState;
 
     beforeEach(() => {
       stateWithNotifications = [

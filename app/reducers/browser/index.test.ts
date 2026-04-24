@@ -1,14 +1,16 @@
 import browserReducer from './index';
+import { BrowserState } from './index';
 import AppConstants from '../../core/AppConstants';
 
 describe('browserReducer STORE_FAVICON_URL', () => {
   it('adds favicon in the state', () => {
-    const initialState = {
+    const initialState: BrowserState = {
       history: [],
       whitelist: [],
       tabs: [],
       favicons: [],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const action = {
@@ -17,12 +19,13 @@ describe('browserReducer STORE_FAVICON_URL', () => {
       url: 'testUrl',
     };
 
-    const expectedState = {
+    const expectedState: BrowserState = {
       history: [],
       whitelist: [],
       tabs: [],
       favicons: [{ origin: 'testOrigin', url: 'testUrl' }],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const newState = browserReducer(initialState, action);
@@ -31,7 +34,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
   });
 
   it('limits the number of stored favicons in state to FAVICON_CACHE_MAX_SIZE', () => {
-    const initialState = {
+    const initialState: BrowserState = {
       history: [],
       whitelist: [],
       tabs: [],
@@ -40,6 +43,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
         url: 'oldUrl',
       }),
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const action = {
@@ -48,7 +52,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
       url: 'newUrl',
     };
 
-    const expectedState = {
+    const expectedState: BrowserState = {
       history: [],
       whitelist: [],
       tabs: [],
@@ -60,6 +64,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
         }),
       ],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const newState = browserReducer(initialState, action);
