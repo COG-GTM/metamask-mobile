@@ -43,7 +43,10 @@ export default class Ganache {
   }
 
   getProvider(): GanacheServer['provider'] {
-    return this._server?.provider as GanacheServer['provider'];
+    if (!this._server) {
+      throw new Error('Server not running yet');
+    }
+    return this._server.provider;
   }
 
   async getAccounts(): Promise<string[]> {
