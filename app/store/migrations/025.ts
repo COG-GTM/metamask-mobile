@@ -1,6 +1,9 @@
 import { ETHERSCAN_SUPPORTED_CHAIN_IDS } from '@metamask/preferences-controller';
 
-export default function migrate(state) {
+export default function migrate(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  state: any,
+) {
   try {
     Object.values(ETHERSCAN_SUPPORTED_CHAIN_IDS).forEach((hexChainId) => {
       const thirdPartyApiMode = state?.privacy?.thirdPartyApiMode ?? true;

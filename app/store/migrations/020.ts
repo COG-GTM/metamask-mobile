@@ -11,7 +11,10 @@ import { v4 } from 'uuid';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
+export default function migrate(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  state: any,
+) {
   const preferencesControllerState =
     state.engine.backgroundState.PreferencesController;
   const networkControllerState = state.engine.backgroundState.NetworkController;

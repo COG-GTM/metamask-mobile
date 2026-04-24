@@ -1,6 +1,9 @@
 import { v1 as random } from 'uuid';
 
-export default function migrate(state) {
+export default function migrate(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  state: any,
+) {
   // If for some reason we already have PermissionController state, bail out.
   const hasPermissionControllerState = Boolean(
     state.engine.backgroundState.PermissionController?.subjects,

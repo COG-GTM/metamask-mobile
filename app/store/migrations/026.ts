@@ -6,7 +6,10 @@ import { isObject } from '@metamask/utils';
  * regarding the phishing list property listState, that is no longer used
  *
  **/
-export default function migrate(state) {
+export default function migrate(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  state: any,
+) {
   const keyringControllerState = state.engine.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
     captureException(

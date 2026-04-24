@@ -1,6 +1,9 @@
 import { IPFS_DEFAULT_GATEWAY_URL } from '../../../app/constants/network';
 
-export default function migrate(state) {
+export default function migrate(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  state: any,
+) {
   const outdatedIpfsGateways = [
     'https://hardbin.com/ipfs/',
     'https://ipfs.greyh.at/ipfs/',

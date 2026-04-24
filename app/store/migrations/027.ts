@@ -6,7 +6,10 @@ import { NetworkType } from '@metamask/controller-utils';
  * @param {any} state - Redux state
  * @returns
  */
-export default function migrate(state) {
+export default function migrate(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  state: any,
+) {
   const backgroundState = state.engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;

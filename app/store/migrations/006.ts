@@ -7,7 +7,10 @@ import {
   EXPLORED,
 } from '../../constants/storage';
 
-export default function migrate(state) {
+export default function migrate(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  state: any,
+) {
   state.analytics?.enabled
     ? DefaultPreference.set(METRICS_OPT_IN, AGREED)
     : DefaultPreference.set(METRICS_OPT_IN, DENIED);
