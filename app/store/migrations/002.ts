@@ -1,4 +1,4 @@
-import { getAllNetworks, isSafeChainId } from '../../util/networks';
+import { getAllNetworks } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
 import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
@@ -53,7 +53,8 @@ export default function migrate(state: unknown): unknown {
 
   // Check if the current network has a valid chainId
   const chainIdNumber = parseInt(provider.chainId as string, 10);
-  const isCustomRpcWithInvalidChainId = !isSafeChainId(chainIdNumber);
+  const isCustomRpcWithInvalidChainId =
+    !Number.isSafeInteger(chainIdNumber) || chainIdNumber <= 0;
 
   if (!isInitialNetwork && isCustomRpcWithInvalidChainId) {
     // If the current network does not have a chainId, switch to testnet.

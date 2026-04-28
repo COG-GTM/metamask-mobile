@@ -1,4 +1,15 @@
-import { NetworksChainId } from '@metamask/controller-utils';
+/**
+ * Mapping of built-in network type names to their decimal chain IDs.
+ * Inlined because `NetworksChainId` was removed from `@metamask/controller-utils`.
+ */
+const NetworksChainId: Record<string, string> = {
+  mainnet: '1',
+  goerli: '5',
+  sepolia: '11155111',
+  'linea-goerli': '59140',
+  'linea-mainnet': '59144',
+  'linea-sepolia': '59141',
+};
 import { GOERLI } from '../../../app/constants/network';
 import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
