@@ -1,0 +1,27 @@
+{
+  "testnet": {
+    "bech32": [
+      "tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx",
+      "tb1qrp33g0q5b5698ahp5jnf5yzjmgces69hsx4rcp",
+      "tb1q0ht9tyks4vh7p5p904t340cr9nvahy7um9zdem"
+    ],
+    "nestedSegwit": [
+      "2N3oefVeg6stiTb5Kh3ozCRPPqnMgraPNKT",
+      "2MzQwSSnBHWHqSAqtTVQ6v47XtaisrJa1Vc"
+    ],
+    "legacy": [
+      "mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn",
+      "mrCDrCybB6J1vRfbwM5hemdJz73FwDBC8r"
+    ]
+  },
+  "signet": {
+    "bech32": [
+      "tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx"
+    ]
+  },
+  "regtest": {
+    "bech32": [
+      "bcrt1qs758ursh4q9z627kt3pp5yysm78ddny6txaqgw"
+    ]
+  }
+}

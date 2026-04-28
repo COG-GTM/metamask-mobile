@@ -1,0 +1,72 @@
+{
+  "singleUtxo": [
+    {
+      "txid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+      "vout": 0,
+      "status": {
+        "confirmed": true,
+        "block_height": 2500000,
+        "block_hash": "000000000000000eaa9e43748768cd8bf34f43adb47e7f27ccabc8a80e3e8888",
+        "block_time": 1700000000
+      },
+      "value": 100000
+    }
+  ],
+  "multipleUtxos": [
+    {
+      "txid": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+      "vout": 0,
+      "status": {
+        "confirmed": true,
+        "block_height": 2500000,
+        "block_hash": "000000000000000eaa9e43748768cd8bf34f43adb47e7f27ccabc8a80e3e8888",
+        "block_time": 1700000000
+      },
+      "value": 50000
+    },
+    {
+      "txid": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
+      "vout": 1,
+      "status": {
+        "confirmed": true,
+        "block_height": 2499999,
+        "block_hash": "000000000000000fbb0e43748768cd8bf34f43adb47e7f27ccabc8a80e3e9999",
+        "block_time": 1699999400
+      },
+      "value": 75000
+    },
+    {
+      "txid": "c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+      "vout": 0,
+      "status": {
+        "confirmed": false
+      },
+      "value": 25000
+    }
+  ],
+  "emptyUtxoSet": [],
+  "dustUtxos": [
+    {
+      "txid": "d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+      "vout": 0,
+      "status": {
+        "confirmed": true,
+        "block_height": 2500000,
+        "block_hash": "000000000000000eaa9e43748768cd8bf34f43adb47e7f27ccabc8a80e3e8888",
+        "block_time": 1700000000
+      },
+      "value": 546
+    },
+    {
+      "txid": "e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6",
+      "vout": 0,
+      "status": {
+        "confirmed": true,
+        "block_height": 2499998,
+        "block_hash": "000000000000000ccc0e43748768cd8bf34f43adb47e7f27ccabc8a80e3eaaaa",
+        "block_time": 1699998800
+      },
+      "value": 300
+    }
+  ]
+}

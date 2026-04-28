@@ -1,0 +1,68 @@
+{
+  "blockstreamApi": {
+    "tipHeight": 2500000,
+    "tipHash": "000000000000000eaa9e43748768cd8bf34f43adb47e7f27ccabc8a80e3e8888",
+    "feeEstimates": {
+      "1": 25.5,
+      "2": 20.0,
+      "3": 15.0,
+      "6": 10.0,
+      "25": 5.0,
+      "144": 2.0,
+      "504": 1.0,
+      "1008": 1.0
+    },
+    "addressInfo": {
+      "address": "tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx",
+      "chain_stats": {
+        "funded_txo_count": 5,
+        "funded_txo_sum": 500000,
+        "spent_txo_count": 3,
+        "spent_txo_sum": 300000,
+        "tx_count": 8
+      },
+      "mempool_stats": {
+        "funded_txo_count": 1,
+        "funded_txo_sum": 25000,
+        "spent_txo_count": 0,
+        "spent_txo_sum": 0,
+        "tx_count": 1
+      }
+    }
+  },
+  "mempoolSpaceApi": {
+    "recommendedFees": {
+      "fastestFee": 25,
+      "halfHourFee": 20,
+      "hourFee": 15,
+      "economyFee": 5,
+      "minimumFee": 1
+    },
+    "mempoolInfo": {
+      "count": 5000,
+      "vsize": 5000000,
+      "total_fee": 1.5,
+      "fee_histogram": [
+        [25, 100000],
+        [20, 200000],
+        [15, 300000],
+        [10, 500000],
+        [5, 1000000]
+      ]
+    }
+  },
+  "errorResponses": {
+    "notFound": {
+      "status": 404,
+      "message": "Address not found"
+    },
+    "serverError": {
+      "status": 500,
+      "message": "Internal Server Error"
+    },
+    "rateLimited": {
+      "status": 429,
+      "message": "Too Many Requests"
+    }
+  }
+}
