@@ -186,9 +186,12 @@ export function isValidAddressFormat(
   network: keyof typeof BITCOIN_ADDRESS_PREFIXES,
 ): boolean {
   const prefixes = BITCOIN_ADDRESS_PREFIXES[network];
+  const p2pkhPrefixes = Array.isArray(prefixes.p2pkh)
+    ? prefixes.p2pkh
+    : [prefixes.p2pkh];
   return (
     address.startsWith(prefixes.bech32) ||
-    address.startsWith(prefixes.p2pkh) ||
+    p2pkhPrefixes.some((p: string) => address.startsWith(p)) ||
     address.startsWith(prefixes.p2sh)
   );
 }

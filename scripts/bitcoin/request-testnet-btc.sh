@@ -106,7 +106,11 @@ echo " Monitor balance"
 echo "============================================="
 echo ""
 echo "After receiving testnet BTC, verify with:"
-echo "  curl -s https://blockstream.info/${NETWORK}/api/address/${ADDRESS} | jq '.chain_stats'"
+if [ "$NETWORK" = "testnet" ]; then
+  echo "  curl -s https://blockstream.info/testnet/api/address/${ADDRESS} | jq '.chain_stats'"
+else
+  echo "  curl -s https://mempool.space/signet/api/address/${ADDRESS} | jq '.chain_stats'"
+fi
 echo ""
 echo "Or check in a browser:"
 if [ "$NETWORK" = "testnet" ]; then

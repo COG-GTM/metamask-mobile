@@ -114,17 +114,17 @@ export const BITCOIN_ADDRESS_PREFIXES = {
     bech32: 'bc1',
   },
   testnet: {
-    p2pkh: 'm', // or 'n'
+    p2pkh: ['m', 'n'],
     p2sh: '2',
     bech32: 'tb1',
   },
   signet: {
-    p2pkh: 'm',
+    p2pkh: ['m', 'n'],
     p2sh: '2',
     bech32: 'tb1',
   },
   regtest: {
-    p2pkh: 'm',
+    p2pkh: ['m', 'n'],
     p2sh: '2',
     bech32: 'bcrt1',
   },
