@@ -9,7 +9,6 @@ export const mockedState = {
         remoteFeatureFlags: {
           ...mockedMinimumAppVersion,
           ...mockedEarnFeatureFlagsEnabledState,
-          productSafetyDappScanning: true,
         },
         cacheTimestamp: 0,
       },

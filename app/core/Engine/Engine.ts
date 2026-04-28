@@ -201,7 +201,6 @@ import { SignatureControllerInit } from './controllers/signature-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
 import I18n from '../../../locales/i18n';
 import { Platform } from '@metamask/profile-sync-controller/sdk';
-import { isProductSafetyDappScanningEnabled } from '../../util/phishingDetection';
 import { appMetadataControllerInit } from './controllers/app-metadata-controller';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { toFormattedAddress } from '../../util/address';
@@ -395,9 +394,6 @@ export class Engine {
         allowedEvents: [],
       }),
     });
-    if (!isProductSafetyDappScanningEnabled()) {
-      phishingController.maybeUpdateState();
-    }
 
     const additionalKeyrings = [];
 

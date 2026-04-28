@@ -8,7 +8,6 @@ import Engine from '../core/Engine';
 import {
   getPhishingTestResult,
   getPhishingTestResultAsync,
-  isProductSafetyDappScanningEnabled,
 } from './phishingDetection';
 
 jest.mock('../core/Engine', () => ({
@@ -20,32 +19,11 @@ jest.mock('../core/Engine', () => ({
   },
 }));
 
-jest.mock('../store', () => ({
-  store: {
-    getState: jest.fn(),
-  },
-}));
-
-jest.mock('../selectors/featureFlagController/productSafetyDappScanning', () => ({
-  selectProductSafetyDappScanningEnabled: jest.fn(),
-}));
-
 describe('Phishing Detection', () => {
   const mockPhishingController = Engine.context.PhishingController as jest.Mocked<PhishingController>;
-  const mockSelectProductSafetyDappScanningEnabled = jest.requireMock('../selectors/featureFlagController/productSafetyDappScanning').selectProductSafetyDappScanningEnabled;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockSelectProductSafetyDappScanningEnabled.mockReturnValue(false);
-  });
-
-  describe('isProductSafetyDappScanningEnabled', () => {
-    it('should return the value from selector', () => {
-      mockSelectProductSafetyDappScanningEnabled.mockReturnValue(true);
-      expect(isProductSafetyDappScanningEnabled()).toBe(true);
-      mockSelectProductSafetyDappScanningEnabled.mockReturnValue(false);
-      expect(isProductSafetyDappScanningEnabled()).toBe(false);
-    });
   });
 
   describe('getPhishingTestResult', () => {
@@ -77,26 +55,7 @@ describe('Phishing Detection', () => {
       mockPhishingController.scanUrl = jest.fn();
     });
 
-    it('should call maybeUpdateState and test with the provided origin when dapp scanning is disabled', async () => {
-      mockSelectProductSafetyDappScanningEnabled.mockReturnValue(false);
-      const testOrigin = 'https://example.com';
-      const mockResult = {
-        result: true,
-        name: 'Test',
-        type: PhishingDetectorResultType.All,
-      };
-
-      mockPhishingController.test.mockReturnValue(mockResult);
-
-      const result = await getPhishingTestResultAsync(testOrigin);
-
-      expect(mockPhishingController.maybeUpdateState).toHaveBeenCalledTimes(1);
-      expect(mockPhishingController.test).toHaveBeenCalledWith(testOrigin);
-      expect(result).toEqual(mockResult);
-    });
-
-    it('should call scanUrl when product safety dapp scanning is enabled', async () => {
-      mockSelectProductSafetyDappScanningEnabled.mockReturnValue(true);
+    it('should call scanUrl with the provided origin', async () => {
       const testOrigin = 'https://example.com';
 
       mockPhishingController.scanUrl.mockResolvedValue({
@@ -115,7 +74,6 @@ describe('Phishing Detection', () => {
     });
 
     it('returns result=false when recommendedAction is None', async () => {
-      mockSelectProductSafetyDappScanningEnabled.mockReturnValue(true);
       mockPhishingController.scanUrl.mockResolvedValue({
         recommendedAction: RecommendedAction.None,
         domainName: 'example.com',
@@ -126,7 +84,6 @@ describe('Phishing Detection', () => {
     });
 
     it('returns result=false when recommendedAction is Warn', async () => {
-      mockSelectProductSafetyDappScanningEnabled.mockReturnValue(true);
       mockPhishingController.scanUrl.mockResolvedValue({
         recommendedAction: RecommendedAction.Warn,
         domainName: 'example.com',
@@ -137,7 +94,6 @@ describe('Phishing Detection', () => {
     });
 
     it('returns result=true when recommendedAction is Block', async () => {
-      mockSelectProductSafetyDappScanningEnabled.mockReturnValue(true);
       mockPhishingController.scanUrl.mockResolvedValue({
         recommendedAction: RecommendedAction.Block,
         domainName: 'example.com',

@@ -88,7 +88,6 @@ import {
 import { getFormattedAddressFromInternalAccount } from '../../../core/Multichain/utils';
 import {
   getPhishingTestResultAsync,
-  isProductSafetyDappScanningEnabled,
 } from '../../../util/phishingDetection';
 import { toHex } from '@metamask/controller-utils';
 
@@ -249,9 +248,7 @@ const AccountConnect = (props: AccountConnectProps) => {
     let url = dappUrl || channelIdOrHostname || '';
 
     const checkOrigin = async () => {
-      if (isProductSafetyDappScanningEnabled()) {
-        url = prefixUrlWithProtocol(url);
-      }
+      url = prefixUrlWithProtocol(url);
       const scanResult = await getPhishingTestResultAsync(url);
       if (scanResult.result && isMountedRef.current) {
         setBlockedUrl(dappUrl);

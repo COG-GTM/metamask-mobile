@@ -18,11 +18,7 @@ const mockInitialState = {
         recentSearches: [],
         lastSearchTimestamp: 0,
       },
-      RemoteFeatureFlagController: {
-        remoteFeatureFlags: {
-          tokenSearchDiscoveryEnabled: true,
-        },
-      },
+
     },
   },
 };

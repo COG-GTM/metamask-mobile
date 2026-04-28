@@ -4,7 +4,6 @@ import { debounce } from 'lodash';
 import Engine from '../../../core/Engine';
 import { selectRecentTokenSearches } from '../../../selectors/tokenSearchDiscoveryController';
 import { TokenSearchResponseItem } from '@metamask/token-search-discovery-controller';
-import { tokenSearchDiscoveryEnabled } from '../../../selectors/featureFlagController/tokenSearchDiscovery';
 
 const SEARCH_DEBOUNCE_DELAY = 150;
 const MINIMUM_QUERY_LENGTH = 2;
@@ -16,7 +15,6 @@ export const useTokenSearchDiscovery = () => {
   const [error, setError] = useState<Error | null>(null);
   const [results, setResults] = useState<TokenSearchResponseItem[]>([]);
   const latestRequestId = useRef<number>(0);
-  const tokenSearchEnabled = useSelector(tokenSearchDiscoveryEnabled);
 
 
   const searchTokens = useMemo(
@@ -25,7 +23,7 @@ export const useTokenSearchDiscovery = () => {
         setIsLoading(true);
         setError(null);
 
-        if (query.length < MINIMUM_QUERY_LENGTH || !tokenSearchEnabled) {
+        if (query.length < MINIMUM_QUERY_LENGTH) {
           setResults([]);
           setIsLoading(false);
           return;
@@ -52,7 +50,7 @@ export const useTokenSearchDiscovery = () => {
           }
         }
       }, SEARCH_DEBOUNCE_DELAY),
-    [tokenSearchEnabled],
+    [],
   );
 
   const reset = useCallback(() => {

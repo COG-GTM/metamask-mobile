@@ -115,9 +115,7 @@ import UrlAutocomplete, {
 import { selectSearchEngine } from '../../../reducers/browser/selectors';
 import { getPermittedEthChainIds } from '@metamask/chain-agnostic-permission';
 import {
-  getPhishingTestResult,
   getPhishingTestResultAsync,
-  isProductSafetyDappScanningEnabled,
 } from '../../../util/phishingDetection';
 import { toHex } from '@metamask/controller-utils';
 
@@ -331,9 +329,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    */
   const shouldShowPhishingModal = useCallback(
     (phishingUrlOrigin: string): boolean => {
-      if (!isProductSafetyDappScanningEnabled()) {
-        return true;
-      }
       const resolvedUrlOrigin = new URLParse(resolvedUrlRef.current).origin;
       const loadingUrlOrigin = new URLParse(loadingUrlRef.current).origin;
       const shouldNotShow =
@@ -754,17 +749,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     if (!isIpfsGatewayEnabled && isResolvedIpfsUrl) {
       setIpfsBannerVisible(true);
       return false;
-    }
-
-    // TODO: Make sure to replace with cache hits once EPD has been deprecated.
-    if (!isProductSafetyDappScanningEnabled()) {
-      const scanResult = getPhishingTestResult(urlToLoad);
-      let whitelistUrlInput = prefixUrlWithProtocol(urlToLoad);
-      whitelistUrlInput = whitelistUrlInput.replace(/\/$/, ''); // removes trailing slash
-      if (scanResult.result && !whitelist.includes(whitelistUrlInput)) {
-        handleNotAllowedUrl(urlToLoad);
-        return false;
-      }
     }
 
     // Continue request loading it the protocol is whitelisted

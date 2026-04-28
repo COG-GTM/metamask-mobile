@@ -7,7 +7,7 @@ jest.mock('./phishingDetection', () => ({
     if (origin === 'http://phishing.com') return { result: true };
     return { result: false };
   }),
-  isProductSafetyDappScanningEnabled: jest.fn().mockReturnValue(false),
+
 }));
 
 jest.mock('../store', () => ({
