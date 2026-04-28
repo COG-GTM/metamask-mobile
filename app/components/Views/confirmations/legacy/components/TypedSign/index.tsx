@@ -314,7 +314,14 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
         fromAddress={from}
         testID={SigningBottomSheetSelectorsIDs.TYPED_REQUEST}
         networkType={networkType}
-      />
+      >
+        <View
+          style={messageWrapperStyles}
+          onLayout={truncateMessage ? undefined : this.updateShouldTruncateMessage}
+        >
+          {this.renderTypedMessage()}
+        </View>
+      </SignatureRequest>
     );
     return rootView;
   }
