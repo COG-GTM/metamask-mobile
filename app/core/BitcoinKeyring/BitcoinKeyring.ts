@@ -72,6 +72,8 @@ export class BitcoinKeyring {
 
   #accounts: BitcoinKeyringAccount[] = [];
 
+  #nextDeriveIndex = 0;
+
   constructor() {
     this.#hdPath = defaultHdPath(BitcoinNetwork.Mainnet);
     this.#network = BitcoinNetwork.Mainnet;
@@ -86,6 +88,7 @@ export class BitcoinKeyring {
     return {
       mnemonic: this.#mnemonic ? Array.from(this.#mnemonic) : undefined,
       numberOfAccounts: this.#accounts.length,
+      nextDeriveIndex: this.#nextDeriveIndex,
       hdPath: this.#hdPath,
       network: this.#network,
     };
@@ -111,6 +114,7 @@ export class BitcoinKeyring {
     }
 
     this.#accounts = [];
+    this.#nextDeriveIndex = state.nextDeriveIndex ?? state.numberOfAccounts;
     if (state.numberOfAccounts > 0 && this.#mnemonic) {
       await this.#deriveAccounts(state.numberOfAccounts);
     }
@@ -126,9 +130,11 @@ export class BitcoinKeyring {
     if (!this.#mnemonic) {
       throw new Error('BitcoinKeyring: mnemonic not set');
     }
-    const startIndex = this.#accounts.length;
+    const startIndex = this.#nextDeriveIndex;
+    const prevLength = this.#accounts.length;
     await this.#deriveAccounts(n, startIndex);
-    return this.#accounts.slice(startIndex).map((a) => a.address);
+    this.#nextDeriveIndex = startIndex + n;
+    return this.#accounts.slice(prevLength).map((a) => a.address);
   }
 
   /**

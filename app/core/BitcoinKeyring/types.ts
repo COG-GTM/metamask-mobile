@@ -12,6 +12,7 @@ export enum BitcoinNetwork {
 export interface BitcoinKeyringState {
   mnemonic?: number[];
   numberOfAccounts: number;
+  nextDeriveIndex?: number;
   hdPath: string;
   network: BitcoinNetwork;
 }

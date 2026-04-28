@@ -31,6 +31,7 @@ describe('BitcoinKeyring', () => {
       expect(state).toStrictEqual({
         mnemonic: undefined,
         numberOfAccounts: 0,
+        nextDeriveIndex: 0,
         hdPath: "m/84'/0'/0'",
         network: BitcoinNetwork.Mainnet,
       });
@@ -156,6 +157,25 @@ describe('BitcoinKeyring', () => {
       expect(() => keyring.removeAccount('bc1qunknown')).toThrow(
         'account not found',
       );
+    });
+
+    it('addAccounts after removeAccount derives a new unique address', async () => {
+      await keyring.deserialize({
+        mnemonic: mnemonicToBytes(TEST_MNEMONIC),
+        numberOfAccounts: 0,
+        hdPath: "m/84'/0'/0'",
+        network: BitcoinNetwork.Mainnet,
+      });
+      const initial = await keyring.addAccounts(3);
+      keyring.removeAccount(initial[0]);
+      const added = await keyring.addAccounts(1);
+      const remaining = await keyring.getAccounts();
+      // The new address should not duplicate any existing address
+      expect(added[0]).not.toBe(initial[0]);
+      expect(added[0]).not.toBe(initial[1]);
+      expect(added[0]).not.toBe(initial[2]);
+      expect(remaining).toHaveLength(3);
+      expect(new Set(remaining).size).toBe(3);
     });
   });
 
