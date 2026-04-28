@@ -284,6 +284,106 @@ describe('handleDeeplink', () => {
     expect(mockHandleConnectionMessage).toHaveBeenCalled();
   });
 
+  it('should log error for invalid base64 rpc on new connection', async () => {
+    mockHasInitialized.mockReturnValue(true);
+    mockGetConnections.mockReturnValue({});
+    mockConnectToChannel.mockReturnValue({});
+    mockGetConnected.mockReturnValue({
+      [channelId]: {
+        remote: {
+          decrypt: mockDecrypt,
+        },
+      },
+    });
+
+    // '!!invalid!!' is not valid base64 — Buffer.from will still decode it
+    // but the resulting string won't be valid JSON, so JSON.parse will throw
+    const invalidBase64Rpc = '!!invalid!!';
+
+    await handleDeeplink({
+      sdkConnect,
+      channelId,
+      origin,
+      url,
+      otherPublicKey,
+      protocolVersion,
+      context,
+      rpc: invalidBase64Rpc,
+    });
+
+    expect(Logger.error).toHaveBeenCalledWith(
+      expect.any(Error),
+      'Failed to connect to channel',
+    );
+    expect(handleConnectionMessage).not.toHaveBeenCalled();
+  });
+
+  it('should log error for valid base64 but invalid JSON rpc on new connection', async () => {
+    mockHasInitialized.mockReturnValue(true);
+    mockGetConnections.mockReturnValue({});
+    mockConnectToChannel.mockReturnValue({});
+    mockGetConnected.mockReturnValue({
+      [channelId]: {
+        remote: {
+          decrypt: mockDecrypt,
+        },
+      },
+    });
+
+    const invalidJsonRpc = Buffer.from('not valid json').toString('base64');
+
+    await handleDeeplink({
+      sdkConnect,
+      channelId,
+      origin,
+      url,
+      otherPublicKey,
+      protocolVersion,
+      context,
+      rpc: invalidJsonRpc,
+    });
+
+    expect(Logger.error).toHaveBeenCalledWith(
+      expect.any(Error),
+      'Failed to connect to channel',
+    );
+    expect(handleConnectionMessage).not.toHaveBeenCalled();
+  });
+
+  it('should log error for malformed JSON in decrypted RPC on existing connection', async () => {
+    mockHasInitialized.mockReturnValue(true);
+    mockGetConnections.mockReturnValue({ [channelId]: {} });
+
+    sdkConnect.state = { connecting: {} } as unknown as SDKConnectState;
+
+    mockGetConnected.mockReturnValue({
+      [channelId]: {
+        remote: {
+          isConnected: jest.fn().mockReturnValue(true),
+          decrypt: jest.fn().mockReturnValue('not valid json'),
+          getRPCMethodTracker: jest.fn().mockReturnValue({}),
+        },
+      },
+    });
+
+    await handleDeeplink({
+      sdkConnect,
+      channelId,
+      origin,
+      url,
+      otherPublicKey,
+      protocolVersion,
+      context,
+      rpc,
+    });
+
+    expect(Logger.error).toHaveBeenCalledWith(
+      expect.any(Error),
+      'handleDeeplink: malformed JSON in decrypted RPC',
+    );
+    expect(handleConnectionMessage).not.toHaveBeenCalled();
+  });
+
   it('should not handle rpc calls when connection is not found', async () => {
     mockHasInitialized.mockReturnValue(true);
     mockGetConnections.mockReturnValue({});

@@ -436,7 +436,16 @@ export default class DeeplinkProtocolService {
       'base64',
     ).toString('utf-8');
 
-    const originatorInfoJson = JSON.parse(decodedOriginatorInfo);
+    let originatorInfoJson;
+    try {
+      originatorInfoJson = JSON.parse(decodedOriginatorInfo);
+    } catch (e) {
+      Logger.error(
+        e as Error,
+        'DeeplinkProtocolService::handleConnection malformed JSON in originatorInfo',
+      );
+      return;
+    }
 
     const originatorInfo = originatorInfoJson.originatorInfo;
 

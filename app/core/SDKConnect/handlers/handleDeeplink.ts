@@ -14,6 +14,24 @@ import handleConnectionMessage from './handleConnectionMessage';
 
 const QRCODE_PARAM_PATTERN = '&t=q';
 
+const safeDecodeRpc = (rpc: string): CommunicationLayerMessage => {
+  let decoded: string;
+  try {
+    decoded = Buffer.from(rpc, 'base64').toString('utf-8');
+  } catch (e) {
+    throw new Error(
+      `handleDeeplink: failed to decode base64 RPC: ${(e as Error).message}`,
+    );
+  }
+  try {
+    return JSON.parse(decoded) as CommunicationLayerMessage;
+  } catch (e) {
+    throw new Error(
+      `handleDeeplink: failed to parse decoded RPC as JSON: ${(e as Error).message}`,
+    );
+  }
+};
+
 const handleDeeplink = async ({
   sdkConnect,
   channelId,
@@ -135,7 +153,16 @@ const handleDeeplink = async ({
         const clearRPC = connection.remote.decrypt(decodedRPC);
         DevLogger.log(`handleDeeplink:: clearRPC rpc`, clearRPC);
 
-        const message = JSON.parse(clearRPC) as CommunicationLayerMessage;
+        let message: CommunicationLayerMessage;
+        try {
+          message = JSON.parse(clearRPC) as CommunicationLayerMessage;
+        } catch (e) {
+          Logger.error(
+            e as Error,
+            'handleDeeplink: malformed JSON in decrypted RPC',
+          );
+          return;
+        }
         DevLogger.log(`handleDeeplink:: message`, message);
 
         // Check if already received via websocket
@@ -184,12 +211,7 @@ const handleDeeplink = async ({
           connection.trigger = 'deeplink';
         }
 
-        // Decode rpc and directly process it - simulate network reception
-        const decodedRPC = Buffer.from(rpc, 'base64').toString('utf-8');
-
-        DevLogger.log(`decoded rpc`, decodedRPC);
-
-        const message = JSON.parse(decodedRPC) as CommunicationLayerMessage;
+        const message = safeDecodeRpc(rpc);
         DevLogger.log(`handleDeeplink:: message`, message);
 
         await handleConnectionMessage({
