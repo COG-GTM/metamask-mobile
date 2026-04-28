@@ -1,9 +1,8 @@
-import { AnyAction } from 'redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer, Persistor } from 'redux-persist';
 import createSagaMiddleware from 'redux-saga';
 import { rootSaga } from './sagas';
-import rootReducer, { RootState } from '../reducers';
+import rootReducer, { RootAction, RootState } from '../reducers';
 import ReadOnlyNetworkStore from '../util/test/network-store';
 import { isE2E } from '../util/test/utils';
 import { trace, endTrace, TraceName, TraceOperation } from '../util/trace';
@@ -16,8 +15,7 @@ import ReduxService, { ReduxStore } from '../core/redux';
 import { onPersistedDataLoaded } from '../actions/user';
 import { toggleBasicFunctionality } from '../actions/settings';
 
-// TODO: Improve type safety by using real Action types instead of `AnyAction`
-const pReducer = persistReducer<RootState, AnyAction>(
+const pReducer = persistReducer<RootState, RootAction>(
   persistConfig,
   rootReducer,
 );

@@ -19,7 +19,15 @@ import collectiblesReducer from './collectibles';
 import navigationReducer, { NavigationState } from './navigation';
 import networkOnboardReducer from './networkSelector';
 import securityReducer, { SecurityState } from './security';
-import { combineReducers, Reducer } from 'redux';
+import { Action, combineReducers, Reducer } from 'redux';
+import { UserAction } from '../actions/user/types';
+import { NavigationAction } from '../actions/navigation/types';
+import { OnboardingActionTypes } from '../actions/onboarding';
+import { Action as SecurityAction } from '../actions/security';
+import { Action as SdkAction } from '../actions/sdk';
+import { Action as FiatOrdersAction } from './fiatOrders/types';
+import { iAccountActions } from '../actions/accounts';
+import { iEventAction } from '../actions/rpcEvents';
 import experimentalSettingsReducer from './experimentalSettings';
 import { EngineState } from '../core/Engine';
 import rpcEventReducer from './rpcEvents';
@@ -125,6 +133,23 @@ export interface RootState {
   banners: BannersState;
   performance?: PerformanceState;
 }
+
+/**
+ * Union of all typed Redux actions in the app.
+ * As more action modules are migrated to TypeScript with proper types,
+ * add them to this union. {@link Action Action<string>} serves as a base
+ * for untyped JS actions and RTK slice actions.
+ */
+export type RootAction =
+  | UserAction
+  | NavigationAction
+  | OnboardingActionTypes
+  | SecurityAction
+  | SdkAction
+  | FiatOrdersAction
+  | iAccountActions
+  | iEventAction
+  | Action<string>;
 
 const baseReducers = {
   legalNotices: legalNoticesReducer,
