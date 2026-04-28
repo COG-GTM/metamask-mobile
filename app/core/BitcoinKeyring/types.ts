@@ -12,6 +12,7 @@ export enum BitcoinNetwork {
 export interface BitcoinKeyringState {
   mnemonic?: number[];
   numberOfAccounts: number;
+  activeIndices?: number[];
   nextDeriveIndex?: number;
   hdPath: string;
   network: BitcoinNetwork;
@@ -24,4 +25,5 @@ export interface BitcoinKeyringAccount {
   address: string;
   publicKey: Uint8Array;
   privateKey: Uint8Array;
+  derivationIndex: number;
 }

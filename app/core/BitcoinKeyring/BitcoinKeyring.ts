@@ -88,6 +88,7 @@ export class BitcoinKeyring {
     return {
       mnemonic: this.#mnemonic ? Array.from(this.#mnemonic) : undefined,
       numberOfAccounts: this.#accounts.length,
+      activeIndices: this.#accounts.map((a) => a.derivationIndex),
       nextDeriveIndex: this.#nextDeriveIndex,
       hdPath: this.#hdPath,
       network: this.#network,
@@ -115,8 +116,12 @@ export class BitcoinKeyring {
 
     this.#accounts = [];
     this.#nextDeriveIndex = state.nextDeriveIndex ?? state.numberOfAccounts;
-    if (state.numberOfAccounts > 0 && this.#mnemonic) {
-      await this.#deriveAccounts(state.numberOfAccounts);
+    if (this.#mnemonic) {
+      if (state.activeIndices && state.activeIndices.length > 0) {
+        await this.#deriveAccountsByIndices(state.activeIndices);
+      } else if (state.numberOfAccounts > 0) {
+        await this.#deriveAccounts(state.numberOfAccounts);
+      }
     }
   }
 
@@ -262,7 +267,14 @@ export class BitcoinKeyring {
         address,
         publicKey: node.compressedPublicKeyBytes,
         privateKey: node.privateKeyBytes,
+        derivationIndex: i,
       });
+    }
+  }
+
+  async #deriveAccountsByIndices(indices: number[]): Promise<void> {
+    for (const index of indices) {
+      await this.#deriveAccounts(1, index);
     }
   }
 }

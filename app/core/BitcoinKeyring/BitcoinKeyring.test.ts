@@ -31,6 +31,7 @@ describe('BitcoinKeyring', () => {
       expect(state).toStrictEqual({
         mnemonic: undefined,
         numberOfAccounts: 0,
+        activeIndices: [],
         nextDeriveIndex: 0,
         hdPath: "m/84'/0'/0'",
         network: BitcoinNetwork.Mainnet,
@@ -176,6 +177,28 @@ describe('BitcoinKeyring', () => {
       expect(added[0]).not.toBe(initial[2]);
       expect(remaining).toHaveLength(3);
       expect(new Set(remaining).size).toBe(3);
+    });
+
+    it('serialize/deserialize preserves correct accounts after removeAccount', async () => {
+      await keyring.deserialize({
+        mnemonic: mnemonicToBytes(TEST_MNEMONIC),
+        numberOfAccounts: 0,
+        hdPath: "m/84'/0'/0'",
+        network: BitcoinNetwork.Mainnet,
+      });
+      const initial = await keyring.addAccounts(3);
+      keyring.removeAccount(initial[0]);
+      const accountsBefore = await keyring.getAccounts();
+
+      const state = await keyring.serialize();
+      const keyring2 = new BitcoinKeyring();
+      await keyring2.deserialize(state);
+      const accountsAfter = await keyring2.getAccounts();
+
+      expect(accountsAfter).toStrictEqual(accountsBefore);
+      expect(accountsAfter).not.toContain(initial[0]);
+      expect(accountsAfter).toContain(initial[1]);
+      expect(accountsAfter).toContain(initial[2]);
     });
   });
 
