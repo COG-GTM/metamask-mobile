@@ -2,7 +2,9 @@
 
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { ParseOutput } from 'eth-url-parser';
-import { AnyAction, Dispatch, Store } from 'redux';
+import { Dispatch, Store } from 'redux';
+import { RootState } from '../../reducers';
+import { RootAction } from '../../store/actionTypes';
 import handleBrowserUrl from './Handlers/handleBrowserUrl';
 import handleEthereumUrl from './Handlers/handleEthereumUrl';
 import handleRampUrl from './Handlers/handleRampUrl';
@@ -14,18 +16,14 @@ import { RampType } from '../../reducers/fiatOrders/types';
 class DeeplinkManager {
   public navigation: NavigationProp<ParamListBase>;
   public pendingDeeplink: string | null;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public dispatch: Dispatch<any>;
+  public dispatch: Dispatch<RootAction>;
 
   constructor({
     navigation,
     dispatch,
   }: {
     navigation: NavigationProp<ParamListBase>;
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    dispatch: Store<any, AnyAction>['dispatch'];
+    dispatch: Store<RootState, RootAction>['dispatch'];
   }) {
     this.navigation = navigation;
     this.pendingDeeplink = null;

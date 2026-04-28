@@ -20,6 +20,7 @@ import navigationReducer, { NavigationState } from './navigation';
 import networkOnboardReducer from './networkSelector';
 import securityReducer, { SecurityState } from './security';
 import { combineReducers, Reducer } from 'redux';
+import type { RootAction } from '../store/actionTypes';
 import experimentalSettingsReducer from './experimentalSettings';
 import { EngineState } from '../core/Engine';
 import rpcEventReducer from './rpcEvents';
@@ -167,10 +168,12 @@ if (isTest) {
   baseReducers.performance = performanceReducer;
 }
 
-// TODO: Fix the Action type. It's set to `any` now because some of the
-// TypeScript reducers have invalid actions
-// TODO: Replace "any" with type
+// Individual TypeScript reducers have narrow action types (e.g. UserAction,
+// SecurityAction) that are not directly assignable to the full RootAction
+// union in combineReducers' generic constraint. We use `any` internally and
+// cast the result to Reducer<RootState, RootAction> so that consumers
+// (persistReducer, ReduxStore) benefit from the typed action union.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rootReducer = combineReducers<RootState, any>(baseReducers);
+const rootReducer: Reducer<RootState, RootAction> = combineReducers<RootState, any>(baseReducers) as Reducer<RootState, RootAction>;
 
 export default rootReducer;
