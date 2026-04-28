@@ -41,7 +41,10 @@ export default class Ganache {
 
   async getAccounts(): Promise<string[]> {
     const provider = this.getProvider();
-    return (await provider?.request({
+    if (!provider) {
+      throw new Error('Provider not available. Has the server been started?');
+    }
+    return (await provider.request({
       method: 'eth_accounts',
       params: [],
     })) as string[];
@@ -49,7 +52,11 @@ export default class Ganache {
 
   async getBalance(): Promise<number | string> {
     const accounts = await this.getAccounts();
-    const balanceHex = (await this.getProvider()?.request({
+    const provider = this.getProvider();
+    if (!provider) {
+      throw new Error('Provider not available. Has the server been started?');
+    }
+    const balanceHex = (await provider.request({
       method: 'eth_getBalance',
       params: [accounts[0], 'latest'],
     })) as string;
