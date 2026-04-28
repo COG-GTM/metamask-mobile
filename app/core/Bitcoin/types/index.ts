@@ -47,6 +47,7 @@ export {
   formatDerivationPath,
   formatAddressDerivationPath,
   type BitcoinDerivationPath,
+  type SingleKeyAddressType,
 } from './keyring';
 
 export {

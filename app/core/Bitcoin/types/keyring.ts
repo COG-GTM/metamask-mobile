@@ -46,16 +46,19 @@ export enum BitcoinDerivationPurpose {
 }
 
 /**
- * Maps address types to their BIP43 purpose.
+ * Maps single-key address types to their BIP43 purpose.
+ *
+ * P2WSH is excluded because it is a script-hash type used for multisig
+ * (typically BIP48, purpose 48) and does not have a standard single-key
+ * derivation purpose. MetaMask's single-key wallet should not derive
+ * P2WSH addresses.
  */
-export const ADDRESS_TYPE_TO_PURPOSE: Record<
-  BitcoinAddressType,
-  BitcoinDerivationPurpose
+export const ADDRESS_TYPE_TO_PURPOSE: Partial<
+  Record<BitcoinAddressType, BitcoinDerivationPurpose>
 > = {
   [BitcoinAddressType.P2PKH]: BitcoinDerivationPurpose.BIP44,
   [BitcoinAddressType.P2SH]: BitcoinDerivationPurpose.BIP49,
   [BitcoinAddressType.P2WPKH]: BitcoinDerivationPurpose.BIP84,
-  [BitcoinAddressType.P2WSH]: BitcoinDerivationPurpose.BIP84,
   [BitcoinAddressType.P2TR]: BitcoinDerivationPurpose.BIP86,
 };
 
@@ -94,14 +97,23 @@ export const NETWORK_TO_COIN_TYPE: Record<BitcoinNetworkType, BitcoinCoinType> =
   };
 
 /**
- * Default derivation paths for each address type on mainnet.
+ * Single-key address types that have a standard BIP43 derivation purpose.
+ * P2WSH is excluded (see ADDRESS_TYPE_TO_PURPOSE).
+ */
+export type SingleKeyAddressType = Exclude<
+  BitcoinAddressType,
+  BitcoinAddressType.P2WSH
+>;
+
+/**
+ * Default derivation paths for each single-key address type on mainnet.
  *
  * These are the standard paths used by most Bitcoin wallets.
  * The current MetaMask Bitcoin Snap uses BIP84 (Native SegWit) by default,
  * matching `BtcAccountType.P2wpkh` from `@metamask/keyring-api`.
  */
 export const DEFAULT_DERIVATION_PATHS: Record<
-  BitcoinAddressType,
+  SingleKeyAddressType,
   BitcoinDerivationPath
 > = {
   [BitcoinAddressType.P2PKH]: {
@@ -121,12 +133,6 @@ export const DEFAULT_DERIVATION_PATHS: Record<
     coinType: BitcoinCoinType.Mainnet,
     account: 0,
     addressType: BitcoinAddressType.P2WPKH,
-  },
-  [BitcoinAddressType.P2WSH]: {
-    purpose: BitcoinDerivationPurpose.BIP84,
-    coinType: BitcoinCoinType.Mainnet,
-    account: 0,
-    addressType: BitcoinAddressType.P2WSH,
   },
   [BitcoinAddressType.P2TR]: {
     purpose: BitcoinDerivationPurpose.BIP86,

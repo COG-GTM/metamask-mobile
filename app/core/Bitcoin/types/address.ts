@@ -68,7 +68,7 @@ export const BITCOIN_ADDRESS_TYPES: Record<
     description: 'Original Bitcoin address format (Pay-to-Public-Key-Hash)',
     bip: 'BIP44',
     mainnetPrefix: '1',
-    testnetPrefix: 'm',
+    testnetPrefix: 'm/n',
     isSegWit: false,
   },
   [BitcoinAddressType.P2SH]: {
