@@ -18,7 +18,7 @@ describe('Bitcoin Config: networks', () => {
   describe('BitcoinNetworkType', () => {
     it('defines all expected network types', () => {
       expect(BitcoinNetworkType.Mainnet).toBe('mainnet');
-      expect(BitcoinNetworkType.Testnet).toBe('testnet3');
+      expect(BitcoinNetworkType.Testnet).toBe('testnet');
       expect(BitcoinNetworkType.Signet).toBe('signet');
       expect(BitcoinNetworkType.Regtest).toBe('regtest');
     });

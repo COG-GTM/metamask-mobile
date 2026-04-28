@@ -5,7 +5,7 @@ import { BtcScope } from '@metamask/keyring-api';
  */
 export enum BitcoinNetworkType {
   Mainnet = 'mainnet',
-  Testnet = 'testnet3',
+  Testnet = 'testnet',
   Signet = 'signet',
   Regtest = 'regtest',
 }
