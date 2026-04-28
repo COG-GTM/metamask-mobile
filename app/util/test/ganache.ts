@@ -1,9 +1,14 @@
 import { getGanachePort } from '../../../e2e/fixtures/utils';
-import ganache from 'ganache';
+import ganache, { EthereumProvider, ServerOptions } from 'ganache';
 
 export const DEFAULT_GANACHE_PORT = 8545;
 
-const defaultOptions = {
+type GanacheOptions = ServerOptions<'ethereum'> & {
+  mnemonic: string;
+  port?: number;
+};
+
+const defaultOptions: ServerOptions<'ethereum'> = {
   blockTime: 2,
   network_id: 1337,
   port: DEFAULT_GANACHE_PORT,
@@ -13,7 +18,9 @@ const defaultOptions = {
 };
 
 export default class Ganache {
-  async start(opts) {
+  private _server: ReturnType<typeof ganache.server> | undefined;
+
+  async start(opts: GanacheOptions): Promise<void> {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
@@ -21,30 +28,31 @@ export default class Ganache {
     const { port } = options;
     try {
       this._server = ganache.server(options);
-      await this._server.listen(port);
+      await this._server.listen(port as number);
     } catch (error) {
       console.error(error);
       throw error;
     }
   }
 
-  getProvider() {
+  getProvider(): EthereumProvider | undefined {
     return this._server?.provider;
   }
 
-  async getAccounts() {
-    return await this.getProvider().request({
+  async getAccounts(): Promise<string[]> {
+    const provider = this.getProvider();
+    return (await provider?.request({
       method: 'eth_accounts',
       params: [],
-    });
+    })) as string[];
   }
 
-  async getBalance() {
+  async getBalance(): Promise<number | string> {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider().request({
+    const balanceHex = (await this.getProvider()?.request({
       method: 'eth_getBalance',
       params: [accounts[0], 'latest'],
-    });
+    })) as string;
     const balanceInt = parseInt(balanceHex, 16) / 10 ** 18;
 
     const balanceFormatted =
@@ -53,7 +61,7 @@ export default class Ganache {
     return balanceFormatted;
   }
 
-  async quit() {
+  async quit(): Promise<void> {
     if (!this._server) {
       throw new Error('Server not running yet');
     }
