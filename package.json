@@ -655,7 +655,8 @@
       "viem>ws>bufferutil": false,
       "viem>ws>utf-8-validate": false,
       "detox>@wix-pilot/core>canvas": true,
-      "ts-node>@swc/core": false
+      "ts-node>@swc/core": false,
+      "ethereumjs-util>ethereum-cryptography>secp256k1": false
     }
   },
   "packageManager": "yarn@1.22.22"
