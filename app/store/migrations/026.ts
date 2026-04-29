@@ -6,8 +6,9 @@ import { isObject } from '@metamask/utils';
  * regarding the phishing list property listState, that is no longer used
  *
  **/
-export default function migrate(state) {
-  const keyringControllerState = state.engine.backgroundState.KeyringController;
+export default function migrate(state: Record<string, unknown>) {
+  const engineState = state.engine as Record<string, Record<string, Record<string, unknown>>>;
+  const keyringControllerState = engineState.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
     captureException(
       // @ts-expect-error We are not returning state not to stop the flow of Vault recovery
@@ -17,14 +18,14 @@ export default function migrate(state) {
     );
   }
   const phishingControllerState =
-    state.engine.backgroundState.PhishingController;
+    engineState.backgroundState.PhishingController as Record<string, unknown> | undefined;
   if (phishingControllerState?.listState) {
-    delete state.engine.backgroundState.PhishingController.listState;
+    delete (engineState.backgroundState.PhishingController as Record<string, unknown>).listState;
   } else {
     captureException(
       new Error(
         `Migration 26: Invalid PhishingControllerState controller state: '${JSON.stringify(
-          state.engine.backgroundState.PhishingController,
+          engineState.backgroundState.PhishingController,
         )}'`,
       ),
     );
@@ -35,13 +36,13 @@ export default function migrate(state) {
     phishingControllerState?.stalelistLastFetched
   ) {
     // This will make the list be fetched again when the user updates the app
-    state.engine.backgroundState.PhishingController.hotlistLastFetched = 0;
-    state.engine.backgroundState.PhishingController.stalelistLastFetched = 0;
+    (engineState.backgroundState.PhishingController as Record<string, unknown>).hotlistLastFetched = 0;
+    (engineState.backgroundState.PhishingController as Record<string, unknown>).stalelistLastFetched = 0;
   } else {
     captureException(
       new Error(
         `Migration 26: Invalid PhishingControllerState hotlist and stale list fetched: '${JSON.stringify(
-          state.engine.backgroundState.PhishingController,
+          engineState.backgroundState.PhishingController,
         )}'`,
       ),
     );
