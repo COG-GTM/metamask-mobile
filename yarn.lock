@@ -6966,12 +6966,12 @@
     serve-static "^1.13.1"
     ws "^6.2.3"
 
-"@react-native-community/cli-server-api@^17.0.0":
-  version "17.0.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-server-api/-/cli-server-api-17.0.0.tgz#a1f8fa5281c22d436cdf24fddc4b591186ca59c4"
-  integrity sha512-D4LILojRwbtsSAoV6Db6Fp7/FJ+mIeaKHlGmr5AZrelge/0u5quj2JQo2VS+TM5+9rvJOezVsd8k2VYX/ByccQ==
+"@react-native-community/cli-server-api@^17.0.1":
+  version "17.0.1"
+  resolved "https://registry.yarnpkg.com/@react-native-community/cli-server-api/-/cli-server-api-17.0.1.tgz#5c64d518bc3c3cad168a23d55e33fff5198f06e8"
+  integrity sha512-29sRkTItEA7eTVkkxZgMbO3iBGH39O+WCHY9E6futDSlDgP5PxQDxjZ/degcB05e3PRM2kyZcimqeiTs+T84pA==
   dependencies:
-    "@react-native-community/cli-tools" "17.0.0"
+    "@react-native-community/cli-tools" "17.0.1"
     body-parser "^1.20.3"
     compression "^1.7.1"
     connect "^3.6.5"
@@ -6999,10 +6999,10 @@
     shell-quote "^1.7.3"
     sudo-prompt "^9.0.0"
 
-"@react-native-community/cli-tools@17.0.0":
-  version "17.0.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/cli-tools/-/cli-tools-17.0.0.tgz#c46bae5e5ffeee7067d0e55d2ee1de128e310ac3"
-  integrity sha512-mVXH7U/uXd7yizqm2iE+W4SSVc4FGYYEafAu29HihA+FHttonqdg35zVAnIX2FKbyla+TotR1ACNSgo7KFDq+w==
+"@react-native-community/cli-tools@17.0.1":
+  version "17.0.1"
+  resolved "https://registry.yarnpkg.com/@react-native-community/cli-tools/-/cli-tools-17.0.1.tgz#5eb7170e79a49fcf7a0a0a730fd713eb8b631ee9"
+  integrity sha512-q2tjUMQadbikAttPPOkKV69dQz/Ju5xkJIPIU6TaF47jft5s8D9v1jc3R04LMKp+FvIlh4g/+pLvEzcv2b7OFA==
   dependencies:
     "@vscode/sudo-prompt" "^9.0.0"
     appdirsjs "^1.2.4"
