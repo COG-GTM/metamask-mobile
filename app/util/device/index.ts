@@ -90,7 +90,7 @@ export default class Device {
     return hasNotch();
   }
 
-  static async getDeviceAPILevel() {
+  static async getDeviceAPILevel(): Promise<number> {
     const apiLevel = await getApiLevel();
     return apiLevel;
   }
