@@ -21,7 +21,7 @@ import {
 } from '../../../../../../actions/transaction';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
 import StyledButton from '../../../../../UI/StyledButton';
-import PropTypes from 'prop-types';
+
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Modal from 'react-native-modal';
@@ -110,10 +110,13 @@ import { selectContractExchangeRatesByChainId } from '../../../../../../selector
 import { isNativeToken } from '../../../utils/generic';
 import { selectConfirmationRedesignFlags } from '../../../../../../selectors/featureFlagController/confirmations';
 import { MMM_ORIGIN } from '../../../constants/confirmations';
+import { RootState } from '../../../../../../reducers';
 
 const KEYBOARD_OFFSET = Device.isSmallDevice() ? 80 : 120;
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -378,131 +381,88 @@ const createStyles = (colors) =>
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Amount extends PureComponent {
-  static propTypes = {
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * Array of collectible objects
-     */
-    collectibles: PropTypes.array,
-    /**
-     * An array that represents the user collectible contracts
-     */
-    collectibleContracts: PropTypes.array,
-    /**
-     * Object containing token balances in the format address => balance
-     */
-    contractBalances: PropTypes.object,
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that contains navigation props
-     */
-    route: PropTypes.object,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * An array that represents the user tokens
-     */
-    tokens: PropTypes.array,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Set selected in transaction state
-     */
-    setSelectedAsset: PropTypes.func,
-    /**
-     * Set transaction object to be sent
-     */
-    prepareTransaction: PropTypes.func,
-    /**
-     * Primary currency, either ETH or Fiat
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Selected asset from current transaction state
-     */
-    selectedAsset: PropTypes.object,
-    /**
-     * Current transaction state
-     */
-    transactionState: PropTypes.object,
-    /**
-     * Network provider type as mainnet
-     */
-    providerType: PropTypes.string,
-    /**
-     * function to call when the 'Next' button is clicked
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Indicates whether the current transaction is a deep link transaction
-     */
-    isPaymentRequest: PropTypes.bool,
-    /**
-     * Resets transaction state
-     */
-    resetTransaction: PropTypes.func,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNetworkBuyNativeTokenSupported: PropTypes.bool,
-    /**
-     * Boolean that indicates if the swap is live
-     */
-    swapsIsLive: PropTypes.bool,
-    /**
-     * String that indicates the current chain id
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Gas fee estimates for the transaction.
-     */
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * Type of gas fee estimate provided by the gas fee controller.
-     */
-    gasEstimateType: PropTypes.string,
-    /**
-     * Function that sets the max value mode
-     */
-    setMaxValueMode: PropTypes.func,
-    /**
-     * Network client id
-     */
-    globalNetworkClientId: PropTypes.string,
-    /**
-     * Boolean that indicates if the redesigned transfer confirmation is enabled
-     */
-    isRedesignedTransferConfirmationEnabled: PropTypes.bool,
-  };
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface AmountStateProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  accounts: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  collectibles: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  collectibleContracts: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contractBalances: Record<string, any>;
+  conversionRate: number;
+  currentCurrency: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contractExchangeRates: Record<string, any>;
+  selectedAddress: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokens: any[];
+  ticker: string;
+  primaryCurrency: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectedAsset: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transactionState: any;
+  providerType: string;
+  isPaymentRequest: boolean;
+  isNetworkBuyNativeTokenSupported: boolean;
+  swapsIsLive: boolean;
+  globalChainId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gasFeeEstimates: any;
+  gasEstimateType: string;
+  globalNetworkClientId: string;
+  isRedesignedTransferConfirmationEnabled: boolean;
+}
 
-  state = {
+interface AmountDispatchProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prepareTransaction: (transaction: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setSelectedAsset: (selectedAsset: any) => void;
+  resetTransaction: () => void;
+  setMaxValueMode: (maxValueMode: boolean) => void;
+}
+
+interface AmountOwnProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction?: any;
+  onConfirm: () => void;
+  metrics: {
+    trackEvent: (event: unknown) => void;
+    createEventBuilder: (event: unknown) => {
+      addProperties: (props: Record<string, unknown>) => {
+        build: () => unknown;
+      };
+      build: () => unknown;
+    };
+  };
+}
+
+type AmountProps = AmountStateProps & AmountDispatchProps & AmountOwnProps;
+
+interface AmountComponentState {
+  amountError: string | undefined;
+  inputValue: string | undefined;
+  inputValueConversion: string | undefined;
+  renderableInputValueConversion: string | undefined;
+  assetsModalVisible: boolean;
+  internalPrimaryCurrencyIsCrypto: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  estimatedTotalGas: any;
+  hasExchangeRate: boolean;
+  isRedesignedTransferTransactionLoading: boolean;
+}
+
+class Amount extends PureComponent<AmountProps, AmountComponentState> {
+
+  state: AmountComponentState = {
     amountError: undefined,
     inputValue: undefined,
     inputValueConversion: undefined,
@@ -1549,7 +1509,7 @@ class Amount extends PureComponent {
 
 Amount.contextType = ThemeContext;
 
-const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = (state: RootState, ownProps: AmountOwnProps): AmountStateProps => {
   const transaction = ownProps.transaction || state.transaction;
   const globalChainId = selectEvmChainId(state);
   const globalNetworkClientId = selectNetworkClientId(state);
@@ -1587,13 +1547,17 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  prepareTransaction: (transaction) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: (action: any) => void): AmountDispatchProps => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prepareTransaction: (transaction: any) =>
     dispatch(prepareTransaction(transaction)),
-  setSelectedAsset: (selectedAsset) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setSelectedAsset: (selectedAsset: any) =>
     dispatch(setSelectedAsset(selectedAsset)),
   resetTransaction: () => dispatch(resetTransaction()),
-  setMaxValueMode: (maxValueMode) => dispatch(setMaxValueMode(maxValueMode)),
+  setMaxValueMode: (maxValueMode: boolean) => dispatch(setMaxValueMode(maxValueMode)),
 });
 
 export default connect(

@@ -1,6 +1,5 @@
-import React, { Fragment, PureComponent } from 'react';
-import { View, ScrollView, Alert, Platform, BackHandler } from 'react-native';
-import PropTypes from 'prop-types';
+import React, { Fragment, PureComponent, createRef } from 'react';
+import { View, ScrollView, Alert, Platform, BackHandler, TextInput } from 'react-native';
 import { connect } from 'react-redux';
 import { toChecksumAddress } from 'ethereumjs-util';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -63,92 +62,94 @@ import { SendViewSelectorsIDs } from '../../../../../../../e2e/selectors/SendFlo
 import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
 import { toLowerCaseEquals } from '../../../../../../util/general';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { RootState } from '../../../../../../reducers';
 
 const dummy = () => true;
+
+interface SendFlowOwnProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+  };
+  route: {
+    params?: {
+      txMeta?: {
+        target_address?: string;
+      };
+    };
+  };
+}
+
+interface SendFlowStateProps {
+  addressBook: Record<string, Record<string, { name: string; address: string }>>;
+  globalChainId: string;
+  selectedAddress: string;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectedAsset: any;
+  internalAccounts: { address: string; id: string; metadata: { name: string } }[];
+  ticker: string;
+  providerType: string;
+  isPaymentRequest: boolean;
+  isNativeTokenBuySupported: boolean;
+  ambiguousAddressEntries: Record<string, string[]>;
+}
+
+interface SendFlowDispatchProps {
+  setRecipient: (
+    from: string,
+    to: string,
+    ensRecipient?: string,
+    transactionToName?: string,
+    transactionFromName?: string,
+  ) => void;
+  newAssetTransaction: (selectedAsset: unknown) => void;
+  setSelectedAsset: (selectedAsset: unknown) => void;
+  showAlert: (config: Record<string, unknown>) => void;
+  resetTransaction: () => void;
+}
+
+interface MetricsProps {
+  metrics: {
+    trackEvent: (event: unknown) => void;
+    createEventBuilder: (event: unknown) => {
+      addProperties: (props: Record<string, unknown>) => {
+        build: () => unknown;
+      };
+    };
+  };
+}
+
+type SendFlowProps = SendFlowOwnProps & SendFlowStateProps & SendFlowDispatchProps & MetricsProps;
+
+interface SendFlowState {
+  addressError?: string;
+  balanceIsZero: boolean;
+  fromSelectedAddress: string;
+  toAccount?: string;
+  toSelectedAddressName?: string;
+  toSelectedAddressReady: boolean;
+  toEnsName?: string;
+  toEnsAddressResolved?: string;
+  confusableCollection: string[];
+  inputWidth: { width: string };
+  showAmbiguousAcountWarning: boolean;
+  toInputHighlighted?: boolean;
+  addToAddressToAddressBook?: boolean;
+  isFromAddressBook?: boolean;
+  errorContinue?: boolean;
+  isOnlyWarning?: boolean;
+}
 
 /**
  * View that wraps the wraps the "Send" screen
  */
-class SendFlow extends PureComponent {
-  static propTypes = {
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     * Network provider chain id
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func.isRequired,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Action that sets transaction to and ensRecipient in case is available
-     */
-    setRecipient: PropTypes.func,
-    /**
-     * Set selected in transaction state
-     */
-    setSelectedAsset: PropTypes.func,
-    /**
-     * Show alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Network provider type as mainnet
-     */
-    providerType: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Indicates whether the current transaction is a deep link transaction
-     */
-    isPaymentRequest: PropTypes.bool,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNativeTokenBuySupported: PropTypes.bool,
-    updateParentState: PropTypes.func,
-    /**
-     * Resets transaction state
-     */
-    resetTransaction: PropTypes.func,
-    /**
-     * Boolean to show warning if send to address is on multiple networks
-     */
-    showAmbiguousAcountWarning: PropTypes.bool,
-    /**
-     * Object of addresses associated with multiple chains {'id': [address: string]}
-     */
-    ambiguousAddressEntries: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
+  addressToInputRef = createRef<TextInput>();
+  hardwareBackPress: () => boolean = () => true;
 
-  addressToInputRef = React.createRef();
-
-  state = {
+  state: SendFlowState = {
     addressError: undefined,
     balanceIsZero: false,
     fromSelectedAddress: this.props.selectedAddress,
@@ -687,7 +688,7 @@ class SendFlow extends PureComponent {
 
 SendFlow.contextType = ThemeContext;
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState): SendFlowStateProps => {
   const globalChainId = selectEvmChainId(state);
 
   return {
@@ -707,7 +708,9 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: (action: any) => void): SendFlowDispatchProps => ({
   setRecipient: (
     from,
     to,

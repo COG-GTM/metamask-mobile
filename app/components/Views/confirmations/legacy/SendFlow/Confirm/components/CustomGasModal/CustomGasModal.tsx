@@ -9,6 +9,8 @@ import { useAppThemeFromContext } from '../../../../../../../../util/theme';
 import EditGasFee1559 from '../../../../components/EditGasFee1559Update';
 import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
 import createStyles from './CustomGasModal.styles';
+import { RootState } from '../../../../../../../../reducers';
+import { CustomGasModalProps } from './CustomGasModal.types';
 
 const CustomGasModal = ({
   gasSelected,
@@ -23,16 +25,16 @@ const CustomGasModal = ({
   onGasChanged,
   onGasCanceled,
   updateGasState,
-}) => {
+}: CustomGasModalProps) => {
   const { colors } = useAppThemeFromContext();
   const styles = createStyles();
 
-  const transaction = useSelector((state) => state.transaction);
+  const transaction = useSelector((state: RootState) => state.transaction);
   const gasFeeEstimate = useSelector(selectGasFeeEstimates);
   const primaryCurrency = useSelector(selectPrimaryCurrency);
   const chainId = transaction?.chainId;
   const selectedAsset = useSelector(
-    (state) => state.transaction.selectedAsset,
+    (state: RootState) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
@@ -55,7 +57,7 @@ const CustomGasModal = ({
     gas_estimate_type: gasEstimateType,
   });
 
-  const onChangeGas = (gasValue) => {
+  const onChangeGas = (gasValue: string) => {
     setSelectedGas(gasValue);
     onGasChanged(selectedGas);
   };
@@ -74,7 +76,9 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
-    (gasTxn, gasObj) => {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (gasTxn: any, gasObj: any) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalHex,
@@ -87,7 +91,9 @@ const CustomGasModal = ({
   );
 
   const onSaveEIP1559GasOption = useCallback(
-    (gasTxn, gasObj) => {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (gasTxn: any, gasObj: any) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalMaxHex,

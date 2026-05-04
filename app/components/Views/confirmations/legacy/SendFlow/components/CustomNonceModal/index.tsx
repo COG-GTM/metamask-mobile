@@ -13,13 +13,22 @@ import ModalDragger from '../../../../../../Base/ModalDragger';
 import Text from '../../../../../../Base/Text';
 import StyledButton from '../../../../../../UI/StyledButton';
 import Modal from 'react-native-modal';
-import PropTypes from 'prop-types';
+
 import Icon from 'react-native-vector-icons/FontAwesome';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import { useTheme } from '../../../../../../../util/theme';
 import { isNumber } from '../../../../../../../util/number';
 
-const createStyles = (colors) =>
+import { Colors } from '../../../../../../../util/theme/models';
+
+interface CustomModalNonceProps {
+  proposedNonce: number;
+  nonceValue: number;
+  close: () => void;
+  save: (nonce: number) => void;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     bottomModal: {
       justifyContent: 'flex-end',
@@ -116,12 +125,12 @@ const createStyles = (colors) =>
     },
   });
 
-const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }) => {
-  const [nonce, onChangeText] = React.useState(nonceValue);
+const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }: CustomModalNonceProps) => {
+  const [nonce, onChangeText] = React.useState<number | string>(nonceValue);
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
-  const incrementDecrementNonce = (isDecrement) => {
+  const incrementDecrementNonce = (isDecrement: boolean) => {
     const currentNonce = Number(nonce);
     const updatedValue = isDecrement ? currentNonce - 1 : currentNonce + 1;
     const clampedValue = Math.max(updatedValue, 0);
@@ -256,13 +265,6 @@ const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }) => {
       </KeyboardAwareScrollView>
     </Modal>
   );
-};
-
-CustomModalNonce.propTypes = {
-  proposedNonce: PropTypes.number.isRequired,
-  nonceValue: PropTypes.number.isRequired,
-  save: PropTypes.func.isRequired,
-  close: PropTypes.func.isRequired,
 };
 
 export default CustomModalNonce;

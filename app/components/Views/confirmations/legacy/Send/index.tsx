@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   InteractionManager,
   ActivityIndicator,
@@ -63,6 +62,8 @@ import { STX_NO_HASH_ERROR } from '../../../../../util/smart-transactions/smart-
 import { toLowerCaseEquals } from '../../../../../util/general';
 import { selectAddressBook } from '../../../../../selectors/addressBookController';
 import TransactionTypes from '../../../../../core/TransactionTypes';
+import { RootState } from '../../../../../reducers';
+import { Colors } from '../../../../../util/theme/models';
 import {
   // Pending updated multichain UX to specify the send chain.
   /* eslint-disable no-restricted-syntax */
@@ -76,7 +77,7 @@ const REVIEW = 'review';
 const EDIT = 'edit';
 const SEND = 'Send';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -93,87 +94,73 @@ const createStyles = (colors) =>
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Send extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Action that cleans transaction state
-     */
-    resetTransaction: PropTypes.func.isRequired,
-    /**
-     * A string representing the network name
-     */
-    networkType: PropTypes.string,
-    /**
-     * Action that sets transaction attributes from object to a transaction
-     */
-    setTransactionObject: PropTypes.func.isRequired,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * Transaction state
-     */
-    transaction: PropTypes.object.isRequired,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     * ID of the global network client
-     */
-    globalNetworkClientId: PropTypes.string,
-    /**
-     * ID of the global chain
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Object containing token balances in the format address => balance
-     */
-    contractBalances: PropTypes.object,
-    /**
-     * Hides or shows dApp transaction modal
-     */
-    toggleDappTransactionModal: PropTypes.func,
-    /**
-     * dApp transaction modal visible or not
-     */
-    dappTransactionModalVisible: PropTypes.bool,
-    /**
-     * List of tokens from TokenListController
-     */
-    tokenList: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
+interface SendStateProps {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction: any;
+  networkType: string;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokens: any[];
+  addressBook: Record<string, Record<string, { name: string; address: string }>>;
+  globalNetworkClientId: string;
+  globalChainId: string;
+  internalAccounts: { address: string; id: string; metadata: { name: string } }[];
+  selectedAddress: string;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contractBalances: Record<string, any>;
+  dappTransactionModalVisible: boolean;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokenList: Record<string, any>;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  accounts: Record<string, any>;
+  shouldUseSmartTransaction: boolean;
+}
 
-  state = {
+interface SendDispatchProps {
+  resetTransaction: () => void;
+  setTransactionObject: (transaction: Record<string, unknown>) => void;
+  showAlert: (config: Record<string, unknown>) => void;
+  toggleDappTransactionModal: () => void;
+}
+
+interface SendOwnProps {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+  metrics: {
+    trackEvent: (event: unknown) => void;
+    createEventBuilder: (event: unknown) => {
+      addProperties: (props: Record<string, unknown>) => {
+        build: () => unknown;
+      };
+      build: () => unknown;
+    };
+  };
+}
+
+type SendProps = SendStateProps & SendDispatchProps & SendOwnProps;
+
+interface SendState {
+  mode: string;
+  transactionKey: number | undefined;
+  ready: boolean;
+  transactionConfirmed: boolean;
+  transactionSubmitted: boolean;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction?: any;
+}
+
+class Send extends PureComponent<SendProps, SendState> {
+
+  state: SendState = {
     mode: REVIEW,
     transactionKey: undefined,
     ready: false,
@@ -487,7 +474,9 @@ class Send extends PureComponent {
    *
    * @param {object} transaction - Transaction object
    */
-  prepareTransaction = (transaction) => ({
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prepareTransaction = (transaction: any) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -501,7 +490,9 @@ class Send extends PureComponent {
    * @param {object} transaction - Transaction object
    * @param {object} selectedAsset - Asset object
    */
-  prepareAssetTransaction = (transaction, selectedAsset) => ({
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prepareAssetTransaction = (transaction: any, selectedAsset: any) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -514,7 +505,9 @@ class Send extends PureComponent {
    *
    * @param transaction - Transaction object
    */
-  sanitizeTransaction = (transaction) => ({
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sanitizeTransaction = (transaction: any) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -536,7 +529,7 @@ class Send extends PureComponent {
    *
    * @param if - Transaction id
    */
-  onCancel = (id) => {
+  onCancel = (id: string) => {
     Engine.context.ApprovalController.reject(
       id,
       providerErrors.userRejectedRequest(),
@@ -749,7 +742,7 @@ class Send extends PureComponent {
    *
    * @param mode - Transaction mode, review or edit
    */
-  onModeChange = (mode) => {
+  onModeChange = (mode: string) => {
     const { navigation } = this.props;
     navigation && navigation.setParams({ mode });
     this.mounted && this.setState({ mode });
@@ -804,7 +797,7 @@ class Send extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState): SendStateProps => {
   const globalChainId = selectEvmChainId(state);
 
   return {
@@ -827,11 +820,13 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: (action: any) => void): SendDispatchProps => ({
   resetTransaction: () => dispatch(resetTransaction()),
-  setTransactionObject: (transaction) =>
+  setTransactionObject: (transaction: Record<string, unknown>) =>
     dispatch(setTransactionObject(transaction)),
-  showAlert: (config) => dispatch(showAlert(config)),
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
   toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal()),
 });
 
