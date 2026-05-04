@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/default-param-last */
 import { createSelector } from 'reselect';
 import { NotificationTypes } from '../../util/notifications';
-import { RootState } from '../../reducers';
 
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
@@ -48,7 +47,7 @@ const dequeue = (notifications: NotificationItem[]): NotificationItem[] =>
   notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
-  (state: RootState) => state?.notification?.notifications,
+  (state: NotificationState) => state?.notifications,
   (notifications: NotificationItem[]) => notifications[0] || {},
 );
 
