@@ -14,6 +14,10 @@ interface RejectHostAction {
   hostname: string;
 }
 
+interface ClearHostsAction {
+  type: typeof CLEAR_HOSTS;
+}
+
 interface RecordSRPRevealTimestampAction {
   type: typeof RECORD_SRP_REVEAL_TIMESTAMP;
   timestamp: number;
@@ -22,6 +26,7 @@ interface RecordSRPRevealTimestampAction {
 export type PrivacyAction =
   | ApproveHostAction
   | RejectHostAction
+  | ClearHostsAction
   | RecordSRPRevealTimestampAction;
 
 export function approveHost(hostname: string): ApproveHostAction {
