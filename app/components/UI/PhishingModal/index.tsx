@@ -7,7 +7,6 @@ import {
   Linking,
   TouchableOpacity,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
@@ -20,8 +19,9 @@ import {
   ButtonVariants,
   ButtonWidthTypes,
 } from '../../../component-library/components/Buttons/Button/Button.types';
+import { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     warningIcon: {
       color: colors.error.default,
@@ -89,7 +89,7 @@ const createStyles = (colors) =>
       color: colors.primary.default,
     },
     warningContainer: {
-      alignItems: 'left',
+      alignItems: 'flex-start',
     },
     buttonWrapper: {
       marginTop: 32,
@@ -97,29 +97,14 @@ const createStyles = (colors) =>
     },
   });
 
-export default class PhishingModal extends PureComponent {
-  static propTypes = {
-    /**
-     * name of the blacklisted url
-     */
-    fullUrl: PropTypes.string,
-    /**
-     * Called to the user decides to proceed to the phishing site
-     */
-    continueToPhishingSite: PropTypes.func,
-    /**
-     * Called to the user decides to report an issue
-     */
-    goToFilePhishingIssue: PropTypes.func,
-    /**
-     * Called when the user takes the recommended action
-     */
-    goBackToSafety: PropTypes.func,
-    /**
-     * Called to the user decides to share on Twitter
-     */
-  };
+interface PhishingModalProps {
+  fullUrl?: string;
+  continueToPhishingSite?: () => void;
+  goToFilePhishingIssue?: () => void;
+  goBackToSafety?: () => void;
+}
 
+export default class PhishingModal extends PureComponent<PhishingModalProps> {
   shareToTwitter = () => {
     const tweetText =
       'MetaMask just protected me from a phishing attack! Remember to always stay vigilant when clicking on links. Learn more at https://metamask.io';
@@ -134,9 +119,9 @@ export default class PhishingModal extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as { colors: Theme['colors'] }).colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const urlObj = new URL(this.props.fullUrl);
+    const urlObj = new URL(this.props.fullUrl ?? '');
     const host = urlObj.hostname;
 
     return (
