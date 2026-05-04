@@ -4,7 +4,7 @@ import Engine from './Engine';
 import { hexToBN, renderFromWei } from '../util/number';
 import Device from '../util/device';
 import { strings } from '../../locales/i18n';
-import { AppState } from 'react-native';
+import { AppState, AppStateStatus } from 'react-native';
 import NotificationsService from '../util/notifications/services/NotificationService';
 import { NotificationTransactionTypes, ChannelId } from '../util/notifications';
 import { safeToChecksumAddress } from '../util/address';
@@ -12,12 +12,51 @@ import ReviewManager from './ReviewManager';
 import { selectEvmTicker } from '../selectors/networkController';
 import { store } from '../store';
 import { getTicker } from '../../app/util/transactions';
-import { updateTransaction } from '../../app/util/transaction-controller';
 import { SmartTransactionStatuses } from '@metamask/smart-transactions-controller/dist/types';
 
 import Logger from '../util/Logger';
-import { TransactionStatus } from '@metamask/transaction-controller';
-export const constructTitleAndMessage = (notification) => {
+import { TransactionStatus, TransactionMeta } from '@metamask/transaction-controller';
+
+interface NotificationData {
+  type?: string;
+  autoHide?: boolean;
+  duration?: number;
+  transaction?: {
+    id?: string;
+    nonce?: string;
+    amount?: string;
+    assetType?: string;
+  };
+  data?: {
+    title?: string;
+    shortDescription?: string;
+  };
+}
+
+interface TransactionNotificationData {
+  autodismiss?: number;
+  transaction?: { id?: string; nonce?: string };
+  status?: string;
+}
+
+interface SimpleNotificationData {
+  duration?: number;
+  title?: string;
+  description?: string;
+  status?: string;
+}
+
+interface NavigationLike {
+  navigate(view: string): void;
+}
+
+interface WatchedTransaction {
+  id: string;
+  silent?: boolean;
+  assetType?: string;
+}
+
+export const constructTitleAndMessage = (notification: NotificationData): { title: string; message: string } => {
   let title, message;
   switch (notification.type) {
     case NotificationTransactionTypes.pending:
@@ -62,15 +101,15 @@ export const constructTitleAndMessage = (notification) => {
       break;
     case NotificationTransactionTypes.received:
       title = strings('notifications.received_title', {
-        amount: notification.transaction.amount,
-        assetType: notification.transaction.assetType,
+        amount: notification.transaction?.amount,
+        assetType: notification.transaction?.assetType,
       });
       message = strings('notifications.received_message');
       break;
     case NotificationTransactionTypes.received_payment:
       title = strings('notifications.received_payment_title');
       message = strings('notifications.received_payment_message', {
-        amount: notification.transaction.amount,
+        amount: notification.transaction?.amount,
       });
       break;
     default:
@@ -91,41 +130,33 @@ export const constructTitleAndMessage = (notification) => {
  * depending on the state of the app
  */
 class NotificationManager {
-  /**
-   * Navigation object from react-navigation
-   */
-  _navigation;
-  /**
-   * Array containing the id of the transaction that should be
-   * displayed while interacting with a notification
-   */
-  _transactionToView;
-  /**
-   * Boolean based on the current state of the app
-   */
-  _backgroundMode;
+  _navigation!: NavigationLike;
+  _transactionToView!: string[];
+  _backgroundMode!: boolean;
+  _transactionsWatchTable: Record<string, string[]> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _transactionFailedListener: ((...args: any[]) => void) | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _transactionConfirmedListener: ((...args: any[]) => void) | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _transactionSpeedupListener: ((...args: any[]) => void) | undefined;
+  _showTransactionNotification!: (data: TransactionNotificationData) => void;
+  _hideTransactionNotification!: () => void;
+  _showSimpleNotification!: (data: { id: number; autodismiss?: number; title?: string; description?: string; status?: string }) => void;
+  _removeNotificationById!: (id: string) => void;
 
-  /**
-   * Object containing watched transaction ids list by transaction nonce
-   */
-  _transactionsWatchTable = {};
+  static instance: NotificationManager;
 
-  _transactionFailedListener;
-
-  _transactionConfirmedListener;
-
-  _transactionSpeedupListener;
-
-  _handleAppStateChange = (appState) => {
+  _handleAppStateChange = (appState: AppStateStatus): void => {
     this._backgroundMode = appState === 'background';
   };
 
-  _viewTransaction = (id) => {
+  _viewTransaction = (id: string): void => {
     this._transactionToView.push(id);
     this.goTo('TransactionsHome');
   };
 
-  _removeListeners = () => {
+  _removeListeners = (): void => {
     Engine.controllerMessenger.tryUnsubscribe(
       'TransactionController:transactionConfirmed',
       this._transactionConfirmedListener,
@@ -142,7 +173,7 @@ class NotificationManager {
     );
   };
 
-  _showNotification = async (data) => {
+  _showNotification = async (data: NotificationData): Promise<void> => {
     if (this._backgroundMode) {
       const { title, message } = constructTitleAndMessage(data);
       const id = data?.transaction?.id || '';
@@ -150,7 +181,7 @@ class NotificationManager {
         this._transactionToView.push(id);
       }
 
-      const pushData = {
+      const pushData: Record<string, unknown> = {
         channelId: ChannelId.DEFAULT_NOTIFICATION_CHANNEL_ID,
         title,
         body: message,
@@ -168,7 +199,8 @@ class NotificationManager {
       } else {
         pushData.userInfo = extraData;
       }
-      await NotificationsService.displayNotification(pushData);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await NotificationsService.displayNotification(pushData as any);
     } else {
       this._showTransactionNotification({
         autodismiss: data.duration,
@@ -178,13 +210,12 @@ class NotificationManager {
     }
   };
 
-  _failedCallback = (transactionMeta) => {
+  _failedCallback = (transactionMeta: TransactionMeta): void => {
     // If it fails we hide the pending tx notification
     this._removeNotificationById(transactionMeta.id);
     const transaction =
-      this._transactionsWatchTable[transactionMeta.txParams.nonce];
-    transaction &&
-      transaction.length &&
+      this._transactionsWatchTable[transactionMeta.txParams.nonce as string];
+    if (transaction?.length) {
       setTimeout(() => {
         // Then we show the error notification
         this._showNotification({
@@ -194,15 +225,16 @@ class NotificationManager {
           duration: 5000,
         });
         // Clean up
-        this._removeListeners(transactionMeta.id);
-        delete this._transactionsWatchTable[transactionMeta.txParams.nonce];
+        this._removeListeners();
+        delete this._transactionsWatchTable[transactionMeta.txParams.nonce as string];
       }, 2000);
+    }
   };
 
-  _confirmedCallback = (transactionMeta, originalTransaction) => {
+  _confirmedCallback = (transactionMeta: TransactionMeta, originalTransaction: WatchedTransaction): void => {
     // Once it's confirmed we hide the pending tx notification
     this._removeNotificationById(transactionMeta.id);
-    this._transactionsWatchTable[transactionMeta.txParams.nonce].length &&
+    this._transactionsWatchTable[transactionMeta.txParams.nonce as string].length &&
       setTimeout(() => {
         // Then we show the success notification
         this._showNotification({
@@ -210,12 +242,12 @@ class NotificationManager {
           autoHide: true,
           transaction: {
             id: transactionMeta.id,
-            nonce: `${hexToBN(transactionMeta.txParams.nonce).toString()}`,
+            nonce: `${hexToBN(transactionMeta.txParams.nonce as string).toString()}`,
           },
           duration: 5000,
         });
         // Clean up
-        this._removeListeners(transactionMeta.id);
+        this._removeListeners();
 
         const {
           TokenBalancesController,
@@ -226,8 +258,9 @@ class NotificationManager {
         // Detect assets and tokens for ERC20 txs
         // Detect assets for ERC721 txs
         // right after a transaction was confirmed
-        const pollPromises = [
-          AccountTrackerController.refresh(),
+        const pollPromises: Promise<unknown>[] = [
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (AccountTrackerController as any).refresh(),
           TokenBalancesController.updateBalancesByChainId({
             chainId: transactionMeta.chainId,
           }),
@@ -249,12 +282,12 @@ class NotificationManager {
         // Prompt review
         ReviewManager.promptReview();
 
-        this._removeListeners(transactionMeta.id);
-        delete this._transactionsWatchTable[transactionMeta.txParams.nonce];
+        this._removeListeners();
+        delete this._transactionsWatchTable[transactionMeta.txParams.nonce as string];
       }, 2000);
   };
 
-  _speedupCallback = (transactionMeta) => {
+  _speedupCallback = (transactionMeta: TransactionMeta): void => {
     this.watchSubmittedTransaction(transactionMeta, true);
     setTimeout(() => {
       this._showNotification({
@@ -262,7 +295,7 @@ class NotificationManager {
         type: 'speedup',
         transaction: {
           id: transactionMeta.id,
-          nonce: `${hexToBN(transactionMeta.txParams.nonce).toString()}`,
+          nonce: `${hexToBN(transactionMeta.txParams.nonce as string).toString()}`,
         },
       });
     }, 2000);
@@ -272,11 +305,11 @@ class NotificationManager {
    * Creates a NotificationManager instance
    */
   constructor(
-    _navigation,
-    _showTransactionNotification,
-    _hideTransactionNotification,
-    _showSimpleNotification,
-    _removeNotificationById,
+    _navigation: NavigationLike,
+    _showTransactionNotification: (data: TransactionNotificationData) => void,
+    _hideTransactionNotification: () => void,
+    _showSimpleNotification: (data: { id: number; autodismiss?: number; title?: string; description?: string; status?: string }) => void,
+    _removeNotificationById: (id: string) => void,
   ) {
     if (!NotificationManager.instance) {
       this._navigation = _navigation;
@@ -296,11 +329,11 @@ class NotificationManager {
   /**
    * Navigates to a specific view
    */
-  goTo(view) {
+  goTo(view: string): void {
     this._navigation.navigate(view);
   }
 
-  onMessageReceived(data) {
+  onMessageReceived(data: NotificationData): void {
     this._showNotification(data);
   }
 
@@ -308,20 +341,20 @@ class NotificationManager {
    * Returns the id of the transaction that should
    * be displayed and removes it from memory
    */
-  getTransactionToView = () => this._transactionToView.pop();
+  getTransactionToView = (): string | undefined => this._transactionToView.pop();
 
   /**
    * Sets the id of the transaction that should
    * be displayed in memory
    */
-  setTransactionToView = (id) => {
+  setTransactionToView = (id: string): void => {
     this._transactionToView.push(id);
   };
 
   /**
    * Shows a notification with title and description
    */
-  showSimpleNotification = (data) => {
+  showSimpleNotification = (data: SimpleNotificationData): number => {
     const id = Date.now();
     this._showSimpleNotification({
       id,
@@ -338,60 +371,67 @@ class NotificationManager {
    * and generates the corresponding notification
    * based on the status of the transaction (failed or confirmed)
    */
-  watchSubmittedTransaction(transaction, speedUp = false) {
+  watchSubmittedTransaction(transaction: WatchedTransaction, speedUp = false): false | void {
     if (transaction.silent) return false;
     const { TransactionController } = Engine.context;
-    const transactionMeta = TransactionController.state.transactions.find(
+    const txMeta = TransactionController.state.transactions.find(
       ({ id }) => id === transaction.id,
     );
+    if (!txMeta) return;
 
-    const nonce = transactionMeta.txParams.nonce;
+    const nonce = txMeta.txParams.nonce as string;
     // First we show the pending tx notification if is not an speed up tx
-    !speedUp &&
+    if (!speedUp) {
       this._showNotification({
         type: 'pending',
         autoHide: false,
         transaction: {
-          id: transactionMeta.id,
+          id: txMeta.id,
         },
       });
+    }
 
     this._transactionsWatchTable[nonce]
-      ? this._transactionsWatchTable[nonce].push(transactionMeta.id)
-      : (this._transactionsWatchTable[nonce] = [transactionMeta.id]);
+      ? this._transactionsWatchTable[nonce].push(txMeta.id)
+      : (this._transactionsWatchTable[nonce] = [txMeta.id]);
 
     this._transactionConfirmedListener =
-      Engine.controllerMessenger.subscribeOnceIf(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (Engine.controllerMessenger as any).subscribeOnceIf(
         'TransactionController:transactionConfirmed',
-        (transactionMeta) => {
-          this._confirmedCallback(transactionMeta, transaction);
+        (txn: TransactionMeta) => {
+          this._confirmedCallback(txn, transaction);
         },
-        (transactionMeta) => transactionMeta.id === transaction.id,
+        (txn: TransactionMeta) => txn.id === transaction.id,
       );
 
     this._transactionFailedListener =
-      Engine.controllerMessenger.subscribeOnceIf(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (Engine.controllerMessenger as any).subscribeOnceIf(
         'TransactionController:transactionFailed',
-        (transactionMeta) => {
-          this._failedCallback(transactionMeta);
+        (txn: TransactionMeta) => {
+          this._failedCallback(txn);
         },
-        (transactionMeta) => transactionMeta.id === transaction.id,
+        (txn: TransactionMeta) => txn.id === transaction.id,
       );
 
     this._transactionSpeedupListener =
-      Engine.controllerMessenger.subscribeOnceIf(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (Engine.controllerMessenger as any).subscribeOnceIf(
         'TransactionController:speedupTransactionAdded',
-        (transactionMeta) => {
-          this._speedupCallback(transactionMeta);
+        (txn: TransactionMeta) => {
+          this._speedupCallback(txn);
         },
-        (transactionMeta) => transactionMeta.id === transaction.id,
+        (txn: TransactionMeta) => txn.id === transaction.id,
       );
 
-    const smartTransactionListener = async (smartTransaction) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const smartTransactionListener = async (smartTransaction: any): Promise<void> => {
       if (smartTransaction.status === SmartTransactionStatuses.PENDING) {
         return;
       }
-      Engine.controllerMessenger.unsubscribe(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (Engine.controllerMessenger as any).unsubscribe(
         'SmartTransactionsController:smartTransaction',
         smartTransactionListener,
       );
@@ -399,11 +439,9 @@ class NotificationManager {
         // If the smart transaction is not cancelled, notifications are already handled.
         return;
       }
-      const transactions = TransactionController.getTransactions({
-        filterToCurrentNetwork: false,
-      });
+      const transactions = TransactionController.getTransactions();
       const foundTransaction = transactions.find(
-        (tx) => tx.id === smartTransaction.transactionId,
+        (tx: TransactionMeta) => tx.id === smartTransaction.transactionId,
       );
       this._showNotification({
         type: 'cancelled',
@@ -413,7 +451,8 @@ class NotificationManager {
       });
     };
 
-    Engine.controllerMessenger.subscribe(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (Engine.controllerMessenger as any).subscribe(
       'SmartTransactionsController:smartTransaction',
       smartTransactionListener,
     );
@@ -422,7 +461,7 @@ class NotificationManager {
   /**
    * Generates a notification for an incoming transaction
    */
-  gotIncomingTransaction = async (incomingTransactions) => {
+  gotIncomingTransaction = async (incomingTransactions: TransactionMeta[]): Promise<void> => {
     try {
       const { AccountTrackerController, AccountsController } = Engine.context;
 
@@ -441,9 +480,9 @@ class NotificationManager {
         .reverse()
         .filter(
           (tx) =>
-            safeToChecksumAddress(tx.txParams?.to) ===
+            safeToChecksumAddress(tx.txParams?.to as string) ===
               selectedInternalAccountChecksummedAddress &&
-            safeToChecksumAddress(tx.txParams?.from) !==
+            safeToChecksumAddress(tx.txParams?.from as string) !==
               selectedInternalAccountChecksummedAddress &&
             tx.status === TransactionStatus.confirmed &&
             tx.time > oldestTimeAllowed,
@@ -453,9 +492,9 @@ class NotificationManager {
         return;
       }
 
-      const nonce = hexToBN(filteredTransactions[0].txParams.nonce).toString();
+      const nonce = hexToBN(filteredTransactions[0].txParams.nonce as string).toString();
       const amount = renderFromWei(
-        hexToBN(filteredTransactions[0].txParams.value),
+        hexToBN(filteredTransactions[0].txParams.value as string),
       );
       const id = filteredTransactions[0]?.id;
 
@@ -465,14 +504,15 @@ class NotificationManager {
           nonce,
           amount,
           id,
-          assetType: getTicker(ticker),
+          assetType: getTicker(ticker) ?? '',
         },
         autoHide: true,
         duration: 7000,
       });
 
       // Update balance upon detecting a new incoming transaction
-      AccountTrackerController.refresh();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (AccountTrackerController as any).refresh();
     } catch (error) {
       Logger.log(
         'Notifications',
@@ -483,7 +523,15 @@ class NotificationManager {
   };
 }
 
-let instance;
+let instance: NotificationManager | undefined;
+
+interface NotificationManagerInit {
+  navigation: NavigationLike;
+  showTransactionNotification: (data: TransactionNotificationData) => void;
+  hideCurrentNotification: () => void;
+  showSimpleNotification: (data: { id: number; autodismiss?: number; title?: string; description?: string; status?: string }) => void;
+  removeNotificationById: (id: string) => void;
+}
 
 export default {
   init({
@@ -492,7 +540,7 @@ export default {
     hideCurrentNotification,
     showSimpleNotification,
     removeNotificationById,
-  }) {
+  }: NotificationManagerInit): NotificationManager {
     instance = new NotificationManager(
       navigation,
       showTransactionNotification,
@@ -502,22 +550,22 @@ export default {
     );
     return instance;
   },
-  watchSubmittedTransaction(transaction) {
+  watchSubmittedTransaction(transaction: WatchedTransaction): false | void {
     return instance?.watchSubmittedTransaction(transaction);
   },
-  getTransactionToView() {
+  getTransactionToView(): string | undefined {
     return instance?.getTransactionToView();
   },
-  setTransactionToView(id) {
+  setTransactionToView(id: string): void {
     return instance?.setTransactionToView(id);
   },
-  gotIncomingTransaction(incomingTransactions) {
+  gotIncomingTransaction(incomingTransactions: TransactionMeta[]): Promise<void> | undefined {
     return instance?.gotIncomingTransaction(incomingTransactions);
   },
-  showSimpleNotification(data) {
+  showSimpleNotification(data: SimpleNotificationData): number | undefined {
     return instance?.showSimpleNotification(data);
   },
-  onMessageReceived(data) {
+  onMessageReceived(data: NotificationData): void {
     return instance?.onMessageReceived(data);
   },
 };

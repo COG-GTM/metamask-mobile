@@ -1,30 +1,33 @@
 import Clipboard from '@react-native-clipboard/clipboard';
 import Device from '../util/device';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ClipboardWithExtras = Clipboard as any;
+
 const EXPIRE_TIME_MS = 60000;
 
 const ClipboardManager = {
-  async getString() {
+  async getString(): Promise<string> {
     return await Clipboard.getString();
   },
-  async setString(string) {
+  async setString(string: string): Promise<void> {
     await Clipboard.setString(string);
   },
-  expireTime: null,
-  async setStringExpire(string) {
+  expireTime: null as ReturnType<typeof setTimeout> | null,
+  async setStringExpire(string: string): Promise<void> {
     if (Device.isIos()) {
-      await Clipboard.setStringExpire(string);
+      await ClipboardWithExtras.setStringExpire(string);
     } else {
       await this.setString(string);
       if (this.expireTime) {
         clearTimeout(this.expireTime);
       }
       this.expireTime = setTimeout(async () => {
-        const string = await this.getString();
+        const clipboardContent = await this.getString();
 
-        if (!string) return;
+        if (!clipboardContent) return;
 
-        await Clipboard.clearString();
+        await ClipboardWithExtras.clearString();
       }, EXPIRE_TIME_MS);
     }
   },

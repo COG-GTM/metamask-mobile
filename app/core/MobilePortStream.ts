@@ -1,12 +1,21 @@
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
+// @ts-expect-error readable-stream has no type declarations
 import { Duplex } from 'readable-stream';
 
 // eslint-disable-next-line no-empty-function
-const noop = () => {};
+const noop = (): void => {};
+
+interface Port {
+  addListener(event: string, callback: (...args: unknown[]) => void): void;
+  postMessage(msg: unknown, url: string): void;
+}
 
 export default class PortDuplexStream extends Duplex {
-  constructor(port, url) {
+  _port: Port;
+  _url: string;
+
+  constructor(port: Port, url: string) {
     super({
       objectMode: true,
     });
@@ -21,15 +30,15 @@ export default class PortDuplexStream extends Duplex {
    * the remote Port associated with this Stream.
    *
    * @private
-   * @param {Object} msg - Payload from the onMessage listener of Port
+   * @param msg - Payload from the onMessage listener of Port
    */
-  _onMessage = function (msg) {
+  _onMessage = function (this: PortDuplexStream, msg: unknown): void {
     if (Buffer.isBuffer(msg)) {
-      delete msg._isBuffer;
-      const data = new Buffer(msg);
-      this.push(data);
+      delete (msg as unknown as Record<string, unknown>)._isBuffer;
+      const data = Buffer.from(msg);
+      (this as unknown as Duplex).push(data);
     } else {
-      this.push(msg);
+      (this as unknown as Duplex).push(msg);
     }
   };
 
@@ -39,8 +48,9 @@ export default class PortDuplexStream extends Duplex {
    *
    * @private
    */
-  _onDisconnect = function () {
-    this.destroy && this.destroy();
+  _onDisconnect = function (this: PortDuplexStream): void {
+    const self = this as unknown as Duplex;
+    self.destroy?.();
   };
 
   /**
@@ -53,14 +63,19 @@ export default class PortDuplexStream extends Duplex {
    * this writable stream.
    *
    * @private
-   * @param {*} msg Arbitrary object to write
-   * @param {string} encoding Encoding to use when writing payload
-   * @param {Function} cb Called when writing is complete or an error occurs
+   * @param msg Arbitrary object to write
+   * @param _encoding Encoding to use when writing payload
+   * @param cb Called when writing is complete or an error occurs
    */
-  _write = function (msg, encoding, cb) {
+  _write = function (
+    this: PortDuplexStream,
+    msg: unknown,
+    _encoding: string,
+    cb: (error?: Error | null) => void,
+  ): void {
     try {
       if (Buffer.isBuffer(msg)) {
-        const data = msg.toJSON();
+        const data = msg.toJSON() as Record<string, unknown>;
         data._isBuffer = true;
         this._port.postMessage(data, this._url);
       } else {
