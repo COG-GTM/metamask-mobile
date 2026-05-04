@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+
 import {
   SafeAreaView,
   Dimensions,
@@ -109,52 +109,35 @@ const createStyles = (theme) =>
 /**
  * PureComponent that renders receive options
  */
-class ReceiveRequest extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Asset to receive, could be not defined
-     */
-    receiveAsset: PropTypes.object,
-    /**
-     /* Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Network provider chain id
-     */
-    chainId: PropTypes.string,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * Hides the modal that contains the component
-     */
-    hideModal: PropTypes.func,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNetworkBuySupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+interface OwnProps {
+  navigation: Record<string, unknown>;
+  metrics: Record<string, unknown>;
+}
 
-  state = {
+interface StateProps {
+  selectedAddress: string;
+  receiveAsset: Record<string, unknown>;
+  chainId: string;
+  seedphraseBackedUp: boolean;
+  isNetworkBuySupported: boolean;
+}
+
+interface DispatchProps {
+  showAlert: (config: Record<string, unknown>) => void;
+  protectWalletModalVisible: () => void;
+  hideModal: () => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+interface ReceiveRequestState {
+  qrModalVisible: boolean;
+  buyModalVisible: boolean;
+}
+
+class ReceiveRequest extends PureComponent<Props, ReceiveRequestState> {
+
+  state: ReceiveRequestState = {
     qrModalVisible: false,
     buyModalVisible: false,
   };
@@ -275,7 +258,7 @@ class ReceiveRequest extends PureComponent {
 
 ReceiveRequest.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>): StateProps => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   receiveAsset: state.modals.receiveAsset,
@@ -286,8 +269,8 @@ const mapStateToProps = (state) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 

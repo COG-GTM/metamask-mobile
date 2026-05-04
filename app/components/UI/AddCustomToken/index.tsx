@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import Engine from '../../../core/Engine';
-import PropTypes from 'prop-types';
+
 import { strings } from '../../../../locales/i18n';
 import { isValidAddress } from 'ethereumjs-util';
 import { isSmartContractAddress } from '../../../util/transactions';
@@ -151,8 +151,34 @@ const createStyles = (colors) =>
 /**
  * Copmonent that provides ability to add custom tokens.
  */
-class AddCustomToken extends PureComponent {
-  state = {
+interface AddCustomTokenProps {
+  chainId: string;
+  networkName: string;
+  ticker: string;
+  type: string;
+  navigation: Record<string, unknown>;
+  isTokenDetectionSupported: boolean;
+  metrics: Record<string, unknown>;
+  setOpenNetworkSelector?: (value: boolean) => void;
+  selectedNetwork: string;
+  networkClientId: string;
+}
+
+interface AddCustomTokenState {
+  address: string;
+  symbol: string;
+  decimals: string;
+  name: string;
+  warningAddress: string;
+  warningSymbol: string;
+  warningDecimals: string;
+  isSymbolEditable: boolean;
+  isDecimalEditable: boolean;
+  onFocusAddress: boolean;
+}
+
+class AddCustomToken extends PureComponent<AddCustomTokenProps, AddCustomTokenState> {
+  state: AddCustomTokenState = {
     address: '',
     symbol: '',
     decimals: '',
@@ -163,52 +189,6 @@ class AddCustomToken extends PureComponent {
     isSymbolEditable: true,
     isDecimalEditable: true,
     onFocusAddress: false,
-  };
-
-  static propTypes = {
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string,
-    /**
-     * The network name
-     */
-    networkName: PropTypes.string,
-    /**
-     * The network ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * The network type
-     */
-    type: PropTypes.string,
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Checks if token detection is supported
-     */
-    isTokenDetectionSupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-
-    /**
-     * Function to set the open network selector
-     */
-    setOpenNetworkSelector: PropTypes.func,
-
-    /**
-     * The selected network
-     */
-    selectedNetwork: PropTypes.string,
-
-    /**
-     * The network client ID
-     */
-    networkClientId: PropTypes.string,
   };
 
   getTokenAddedAnalyticsParams = () => {

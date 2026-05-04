@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { InteractionManager, TouchableOpacity, View } from 'react-native';
 import { connect } from 'react-redux';
@@ -39,56 +38,34 @@ import { getPhishingTestResultAsync } from '../../../util/phishingDetection';
 /**
  * Account access approval component
  */
-class AccountApproval extends PureComponent {
-  static propTypes = {
-    /**
-     * Object containing current page title, url, and icon href
-     */
-    currentPageInformation: PropTypes.object,
-    /**
-     * Callback triggered on account access approval
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Callback triggered on account access rejection
-     */
-    onCancel: PropTypes.func,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Number of tokens
-     */
-    tokensLength: PropTypes.number,
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-     * Number of accounts
-     */
-    accountsLength: PropTypes.number,
-    /**
-     * A string representing the network name
-     */
-    networkType: PropTypes.string,
-    /**
-     * Whether it was a request coming through wallet connect
-     */
-    walletConnectRequest: PropTypes.bool,
-    /**
-     * A string representing the network chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+interface OwnProps {
+  currentPageInformation: Record<string, unknown>;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  navigation: Record<string, unknown>;
+  walletConnectRequest?: boolean;
+  metrics: Record<string, unknown>;
+}
 
-  state = {
+interface StateProps {
+  selectedAddress: string;
+  tokensLength: number;
+  accountsLength: number;
+  networkType: string;
+  chainId: string;
+}
+
+type Props = OwnProps & StateProps;
+
+interface AccountApprovalState {
+  start: number;
+  confirmDisabled: boolean;
+  otpChoice: string | undefined;
+}
+
+class AccountApproval extends PureComponent<Props, AccountApprovalState> {
+
+  state: AccountApprovalState = {
     start: Date.now(),
     confirmDisabled: true,
     otpChoice: undefined,
@@ -412,7 +389,7 @@ class AccountApproval extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>): StateProps => ({
   accountsLength: selectAccountsLength(state),
   tokensLength: selectTokensLength(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),

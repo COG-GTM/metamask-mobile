@@ -14,7 +14,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import RemoteImage from '../../Base/RemoteImage';
-import PropTypes from 'prop-types';
+
 import { connect, useSelector } from 'react-redux';
 import { baseStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
@@ -148,6 +148,27 @@ const FieldType = {
 /**
  * View that displays the information of a specific ERC-721 Token
  */
+interface OwnProps {
+  collectible: Record<string, unknown>;
+  tradable?: boolean;
+  onSend?: () => void;
+  openLink: (url: string) => void;
+  onTranslation?: (value: number) => void;
+}
+
+interface StateProps {
+  chainId: string;
+  selectedAddress: string;
+  isInFavorites: boolean;
+}
+
+interface DispatchProps {
+  addFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Record<string, unknown>) => void;
+  removeFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Record<string, unknown>) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
 const CollectibleOverview = ({
   chainId,
   collectible,
@@ -159,7 +180,7 @@ const CollectibleOverview = ({
   isInFavorites,
   openLink,
   onTranslation,
-}) => {
+}: Props) => {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [prevWrapperHeight, setPrevWrapperHeight] = useState(0);
   const [wrapperHeight, setWrapperHeight] = useState(0);
@@ -501,59 +522,18 @@ const CollectibleOverview = ({
   );
 };
 
-CollectibleOverview.propTypes = {
-  /**
-   * Chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Object that represents the collectible to be displayed
-   */
-  collectible: PropTypes.object,
-  /**
-   * Represents if the collectible is tradable (can be sent)
-   */
-  tradable: PropTypes.bool,
-  /**
-   * Function called when user presses the Send button
-   */
-  onSend: PropTypes.func,
-  /**
-   * Selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Dispatch add collectible to favorites action
-   */
-  addFavoriteCollectible: PropTypes.func,
-  /**
-   * Dispatch remove collectible from favorites action
-   */
-  removeFavoriteCollectible: PropTypes.func,
-  /**
-   * Whether the current collectible is favorited
-   */
-  isInFavorites: PropTypes.bool,
-  /**
-   * Function to open a link on a webview
-   */
-  openLink: PropTypes.func.isRequired,
-  /**
-   * callback to trigger when modal is being animated
-   */
-  onTranslation: PropTypes.func,
-};
 
-const mapStateToProps = (state, props) => ({
+
+const mapStateToProps = (state: Record<string, unknown>, props: OwnProps): StateProps => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  addFavoriteCollectible: (selectedAddress, chainId, collectible) =>
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
+  addFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Record<string, unknown>) =>
     dispatch(addFavoriteCollectible(selectedAddress, chainId, collectible)),
-  removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
+  removeFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Record<string, unknown>) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
 });
 

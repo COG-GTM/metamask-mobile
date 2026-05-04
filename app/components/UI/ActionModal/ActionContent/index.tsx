@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import StyledButton from '../../StyledButton';
 import { strings } from '../../../../../locales/i18n';
@@ -46,26 +45,47 @@ const createStyles = (colors) =>
  * The objective of this component is to reuse it in other places and not
  * only on ActionModal component
  */
+interface ActionContentProps {
+  cancelTestID?: string;
+  confirmTestID?: string;
+  cancelText?: string;
+  children?: ReactNode;
+  confirmText?: string;
+  confirmDisabled?: boolean;
+  cancelButtonMode?: string;
+  cancelButtonDisabled?: boolean;
+  confirmButtonMode?: string;
+  displayCancelButton?: boolean;
+  displayConfirmButton?: boolean;
+  onCancelPress?: () => void;
+  onConfirmPress?: () => void;
+  viewWrapperStyle?: Record<string, unknown> | null;
+  viewContainerStyle?: Record<string, unknown> | null;
+  actionContainerStyle?: Record<string, unknown>;
+  childrenContainerStyle?: Record<string, unknown> | null;
+  verticalButtons?: boolean;
+}
+
 export default function ActionContent({
-  cancelTestID,
-  confirmTestID,
-  cancelText,
+  cancelTestID = '',
+  confirmTestID = '',
+  cancelText = strings('action_view.cancel'),
   children,
-  confirmText,
-  confirmDisabled,
-  cancelButtonMode,
-  cancelButtonDisabled,
-  confirmButtonMode,
-  displayCancelButton,
-  displayConfirmButton,
+  confirmText = strings('action_view.confirm'),
+  confirmDisabled = false,
+  cancelButtonMode = 'neutral',
+  cancelButtonDisabled = false,
+  confirmButtonMode = 'warning',
+  displayCancelButton = true,
+  displayConfirmButton = true,
   onCancelPress,
   onConfirmPress,
-  viewWrapperStyle,
-  viewContainerStyle,
+  viewWrapperStyle = null,
+  viewContainerStyle = null,
   actionContainerStyle,
-  childrenContainerStyle,
+  childrenContainerStyle = null,
   verticalButtons,
-}) {
+}: ActionContentProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -117,90 +137,4 @@ export default function ActionContent({
   );
 }
 
-ActionContent.defaultProps = {
-  cancelButtonMode: 'neutral',
-  cancelButtonDisabled: false,
-  confirmButtonMode: 'warning',
-  confirmTestID: '',
-  cancelTestID: '',
-  cancelText: strings('action_view.cancel'),
-  confirmText: strings('action_view.confirm'),
-  confirmDisabled: false,
-  displayCancelButton: true,
-  displayConfirmButton: true,
-  viewWrapperStyle: null,
-  viewContainerStyle: null,
-  childrenContainerStyle: null,
-};
 
-ActionContent.propTypes = {
-  cancelButtonDisabled: PropTypes.bool,
-  /**
-   * TestID for the cancel button
-   */
-  cancelTestID: PropTypes.string,
-  /**
-   * TestID for the confirm button
-   */
-  confirmTestID: PropTypes.string,
-  /**
-   * Text to show in the cancel button
-   */
-  cancelText: PropTypes.string,
-  /**
-   * Content to display above the action buttons
-   */
-  children: PropTypes.node,
-  /**
-   * Type of button to show as the cancel button
-   */
-  cancelButtonMode: PropTypes.string,
-  /**
-   * Type of button to show as the confirm button
-   */
-  confirmButtonMode: PropTypes.string,
-  /**
-   * Whether confirm button is disabled
-   */
-  confirmDisabled: PropTypes.bool,
-  /**
-   * Text to show in the confirm button
-   */
-  confirmText: PropTypes.string,
-  /**
-   * Whether cancel button should be displayed
-   */
-  displayCancelButton: PropTypes.bool,
-  /**
-   * Whether confirm button should be displayed
-   */
-  displayConfirmButton: PropTypes.bool,
-  /**
-   * Called when the cancel button is clicked
-   */
-  onCancelPress: PropTypes.func,
-  /**
-   * Called when the confirm button is clicked
-   */
-  onConfirmPress: PropTypes.func,
-  /**
-   * View wrapper style
-   */
-  viewWrapperStyle: PropTypes.object,
-  /**
-   * View container style
-   */
-  viewContainerStyle: PropTypes.object,
-  /**
-   * Action container style
-   */
-  actionContainerStyle: PropTypes.object,
-  /**
-   * Whether buttons are rendered vertically
-   */
-  verticalButtons: PropTypes.bool,
-  /**
-   * Children container style
-   */
-  childrenContainerStyle: PropTypes.object,
-};

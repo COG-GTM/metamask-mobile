@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+
 import {
   ScrollView,
   TouchableOpacity,
@@ -112,26 +112,19 @@ const openSeaLogo = require('../../../images/opensea-logo-flat-colored-blue.png'
 /**
  * View that contains a collectible contract information as description, total supply and address
  */
-class CollectibleContractInformation extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * An function to handle the close event
-     */
-    onClose: PropTypes.func,
-    /**
-     * Collectible contract object
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string.isRequired,
-  };
+interface OwnProps {
+  navigation: Record<string, unknown>;
+  onClose: (value: boolean) => void;
+  collectibleContract: Record<string, unknown>;
+}
+
+interface StateProps {
+  chainId: string;
+}
+
+type Props = OwnProps & StateProps;
+
+class CollectibleContractInformation extends PureComponent<Props> {
 
   closeModal = () => {
     this.props.onClose(true);
@@ -227,7 +220,7 @@ class CollectibleContractInformation extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>): StateProps => ({
   chainId: selectChainId(state),
 });
 

@@ -10,7 +10,7 @@ import {
   Linking,
   TouchableOpacity,
 } from 'react-native';
-import PropTypes from 'prop-types';
+
 import { baseStyles, fontStyles } from '../../../styles/common';
 import Entypo from 'react-native-vector-icons/Entypo';
 import { getOptinMetricsNavbarOptions } from '../Navbar';
@@ -133,37 +133,35 @@ const createStyles = ({ colors }) =>
 /**
  * View that is displayed in the flow to agree to metrics
  */
-class OptinMetrics extends PureComponent {
-  static propTypes = {
-    isDataCollectionForMarketingEnabled: PropTypes.bool,
-    setDataCollectionForMarketing: PropTypes.func,
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Action to set onboarding wizard step
-     */
-    setOnboardingWizardStep: PropTypes.func,
-    /**
-     * Onboarding events array created in previous onboarding views
-     */
-    events: PropTypes.array,
-    /**
-     * Action to erase any event stored in onboarding state
-     */
-    clearOnboardingEvents: PropTypes.func,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+interface OwnProps {
+  navigation: Record<string, unknown>;
+  route: Record<string, unknown>;
+  metrics: Record<string, unknown>;
+}
 
-  state = {
+interface StateProps {
+  events: Record<string, unknown>[];
+  isDataCollectionForMarketingEnabled: boolean;
+}
+
+interface DispatchProps {
+  setOnboardingWizardStep: (step: number) => void;
+  clearOnboardingEvents: () => void;
+  setDataCollectionForMarketing: (value: boolean) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+interface OptinMetricsState {
+  isActionEnabled: boolean;
+  scrollViewContentHeight: number | undefined;
+  isEndReached: boolean;
+  scrollViewHeight: number | undefined;
+}
+
+class OptinMetrics extends PureComponent<Props, OptinMetricsState> {
+
+  state: OptinMetricsState = {
     /**
      * Used to control the action buttons state.
      */
@@ -679,16 +677,16 @@ class OptinMetrics extends PureComponent {
 
 OptinMetrics.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>): StateProps => ({
   events: state.onboarding.events,
   isDataCollectionForMarketingEnabled:
     state.security.dataCollectionForMarketing,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
+  setOnboardingWizardStep: (step: number) => dispatch(setOnboardingWizardStep(step)),
   clearOnboardingEvents: () => dispatch(clearOnboardingEvents()),
-  setDataCollectionForMarketing: (value) =>
+  setDataCollectionForMarketing: (value: boolean) =>
     dispatch(setDataCollectionForMarketing(value)),
 });
 

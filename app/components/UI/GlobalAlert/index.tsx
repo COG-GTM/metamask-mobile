@@ -1,5 +1,4 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactNode } from 'react';
 import Modal from 'react-native-modal';
 import { StyleSheet, View, Text } from 'react-native';
 import { dismissAlert } from '../../../actions/alert';
@@ -40,35 +39,26 @@ const createStyles = (colors) =>
  * Wrapper component for a global alert
  * connected to redux
  */
-class GlobalAlert extends PureComponent {
-  static propTypes = {
-    /**
-     * Boolean that determines if the modal should be shown
-     */
-    isVisible: PropTypes.bool.isRequired,
-    /**
-     * Number that determines when it should be autodismissed (in miliseconds)
-     */
-    autodismiss: PropTypes.number,
-    /**
-     * Children component(s)
-     */
-    content: PropTypes.any,
-    /**
-     * Object with data required to render the content
-     */
-    data: PropTypes.object,
-    /**
-     * function that dismisses de modal
-     */
-    dismissAlert: PropTypes.func,
-  };
+interface StateProps {
+  isVisible: boolean;
+  autodismiss?: number;
+  content?: string;
+  data?: Record<string, unknown>;
+}
+
+interface DispatchProps {
+  dismissAlert: () => void;
+}
+
+type Props = StateProps & DispatchProps;
+
+class GlobalAlert extends PureComponent<Props> {
 
   onClose = () => {
     this.props.dismissAlert();
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Props) {
     if (
       this.props.autodismiss &&
       !isNaN(this.props.autodismiss) &&
@@ -81,7 +71,7 @@ class GlobalAlert extends PureComponent {
     }
   }
 
-  getComponent(content) {
+  getComponent(content: string | undefined) {
     switch (content) {
       case 'clipboard-alert':
         return this.renderClipboardAlert();
@@ -140,14 +130,14 @@ class GlobalAlert extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>): StateProps => ({
   isVisible: state.alert.isVisible,
   autodismiss: state.alert.autodismiss,
   content: state.alert.content,
   data: state.alert.data,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   dismissAlert: () => dispatch(dismissAlert()),
 });
 

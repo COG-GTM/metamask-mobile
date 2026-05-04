@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
+
 import Animated, { useSharedValue } from 'react-native-reanimated';
 import { strings } from '../../../../../locales/i18n';
 import Engine from '../../../../core/Engine';
@@ -101,7 +101,35 @@ const createStyles = (colors) =>
     },
   });
 
-function TransactionNotification(props) {
+interface OwnProps {
+  isInBrowserView?: boolean;
+  notificationAnimated?: Animated.SharedValue<number>;
+  onClose?: () => void;
+  animatedTimingStart?: (animatedRef: { value: number }, toValue: number, callback?: () => void) => void;
+  currentNotification?: Record<string, unknown>;
+}
+
+interface StateProps {
+  swapsTransactions: Record<string, unknown>;
+  swapsTokens: Record<string, unknown>[];
+  accounts: Record<string, unknown>;
+  transactions: Record<string, unknown>[];
+  smartTransactions: Record<string, unknown>[];
+  selectedAddress: string;
+  ticker: string;
+  chainId: string;
+  conversionRate: number;
+  currentCurrency: string;
+  exchangeRate: number;
+  contractExchangeRates: Record<string, unknown>;
+  collectibleContracts: Record<string, unknown>[];
+  tokens: Record<string, unknown>;
+  primaryCurrency: string;
+}
+
+type Props = OwnProps & StateProps;
+
+function TransactionNotification(props: Props) {
   const {
     accounts,
     currentNotification,
@@ -367,71 +395,9 @@ function TransactionNotification(props) {
   );
 }
 
-TransactionNotification.propTypes = {
-  isInBrowserView: PropTypes.bool,
-  notificationAnimated: PropTypes.object,
-  onClose: PropTypes.func,
-  animatedTimingStart: PropTypes.func,
-  currentNotification: PropTypes.object,
-  swapsTransactions: PropTypes.object,
-  swapsTokens: PropTypes.array,
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * An array that represents the user transactions on chain
-   */
-  transactions: PropTypes.array,
-  /**
-   * An array that represents the user smart transactions on chain
-   */
-  smartTransactions: PropTypes.array,
 
-  /**
-   * String of selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-  /**
-   * Current provider chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Current exchange rate
-   */
-  exchangeRate: PropTypes.number,
-  /**
-   * Object containing token exchange rates in the format address => exchangeRate
-   */
-  contractExchangeRates: PropTypes.object,
-  /**
-   * An array that represents the user collectible contracts
-   */
-  collectibleContracts: PropTypes.array,
-  /**
-   * An array that represents the user tokens
-   */
-  tokens: PropTypes.object,
 
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-};
-
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: Record<string, unknown>): StateProps => {
   const chainId = selectChainId(state);
 
   const {

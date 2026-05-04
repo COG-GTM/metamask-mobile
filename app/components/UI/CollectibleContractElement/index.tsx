@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
 import { connect } from 'react-redux';
 import { fontStyles } from '../../../styles/common';
@@ -87,6 +86,24 @@ const splitIntoSubArrays = (array, count) => {
 /**
  * Customizable view to render assets in lists
  */
+interface OwnProps {
+  asset: Record<string, unknown>;
+  contractCollectibles: Record<string, unknown>[];
+  collectiblesVisible?: boolean;
+  onPress?: (asset: Record<string, unknown>, collectible: Record<string, unknown>) => void;
+}
+
+interface StateProps {
+  chainId: string;
+  selectedAddress: string;
+}
+
+interface DispatchProps {
+  removeFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Record<string, unknown>) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
 function CollectibleContractElement({
   asset,
   contractCollectibles,
@@ -95,7 +112,7 @@ function CollectibleContractElement({
   chainId,
   selectedAddress,
   removeFavoriteCollectible,
-}) {
+}: Props) {
   const [collectiblesGrid, setCollectiblesGrid] = useState([]);
   const [collectiblesVisible, setCollectiblesVisible] = useState(
     propsCollectiblesVisible,
@@ -272,44 +289,15 @@ function CollectibleContractElement({
   );
 }
 
-CollectibleContractElement.propTypes = {
-  /**
-   * Object being rendered
-   */
-  asset: PropTypes.object,
-  /**
-   * Array of collectibles
-   */
-  contractCollectibles: PropTypes.array,
-  /**
-   * Whether the collectibles are visible or not
-   */
-  collectiblesVisible: PropTypes.bool,
-  /**
-   * Called when the collectible is pressed
-   */
-  onPress: PropTypes.func,
-  /**
-   * Selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Dispatch remove collectible from favorites action
-   */
-  removeFavoriteCollectible: PropTypes.func,
-};
 
-const mapStateToProps = (state) => ({
+
+const mapStateToProps = (state: Record<string, unknown>): StateProps => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
+  removeFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Record<string, unknown>) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
 });
 

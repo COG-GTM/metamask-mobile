@@ -13,7 +13,7 @@ import {
 import { connect } from 'react-redux';
 import { fontStyles } from '../../../styles/common';
 import { getPaymentRequestSuccessOptionsTitle } from '../../UI/Navbar';
-import PropTypes from 'prop-types';
+
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import StyledButton from '../StyledButton';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -161,27 +161,29 @@ const createStyles = (theme) =>
 /**
  * View to interact with a previously generated payment request link
  */
-class PaymentRequestSuccess extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-    /* Triggers global alert
-    */
-    showAlert: PropTypes.func,
-    /**
-    /* Prompts protect wallet modal
-    */
-    protectWalletModalVisible: PropTypes.func,
-  };
+interface OwnProps {
+  navigation: Record<string, unknown>;
+  route: Record<string, unknown>;
+}
 
-  state = {
+interface DispatchProps {
+  showAlert: (config: Record<string, unknown>) => void;
+  protectWalletModalVisible: () => void;
+}
+
+type Props = OwnProps & DispatchProps;
+
+interface PaymentRequestSuccessState {
+  link: string;
+  qrLink: string;
+  amount: string;
+  symbol: string;
+  qrModalVisible: boolean;
+}
+
+class PaymentRequestSuccess extends PureComponent<Props, PaymentRequestSuccessState> {
+
+  state: PaymentRequestSuccessState = {
     link: '',
     qrLink: '',
     amount: '',
@@ -413,8 +415,8 @@ class PaymentRequestSuccess extends PureComponent {
 
 PaymentRequestSuccess.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 

@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import CollectibleMedia from '../CollectibleMedia';
@@ -54,34 +53,24 @@ const createStyles = (colors) =>
  * View that displays a specific collectible contract
  * including the overview (name, address, symbol, logo, description, total supply)
  */
-class CollectibleContractOverview extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the asset to be displayed
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * Array of ERC721 assets
-     */
-    collectibles: PropTypes.array,
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * How many collectibles are owned by the user
-     */
-    ownerOf: PropTypes.number,
-    /**
-     * Action that sets a collectible contract type transaction
-     */
-    toggleCollectibleContractModal: PropTypes.func.isRequired,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func,
-  };
+interface OwnProps {
+  collectibleContract: Record<string, unknown>;
+  navigation: Record<string, unknown>;
+  ownerOf?: number;
+}
+
+interface StateProps {
+  collectibles: Record<string, unknown>[];
+}
+
+interface DispatchProps {
+  toggleCollectibleContractModal: () => void;
+  newAssetTransaction: (selectedAsset: Record<string, unknown>) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+class CollectibleContractOverview extends PureComponent<Props> {
 
   onAdd = () => {
     const { navigation, collectibleContract } = this.props;
@@ -159,14 +148,14 @@ class CollectibleContractOverview extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>): StateProps => ({
   collectibles: collectiblesSelector(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),
-  newAssetTransaction: (selectedAsset) =>
+  newAssetTransaction: (selectedAsset: Record<string, unknown>) =>
     dispatch(newAssetTransaction(selectedAsset)),
 });
 

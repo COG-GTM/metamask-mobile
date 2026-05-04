@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+
 import {
   Alert,
   ScrollView,
@@ -61,28 +61,20 @@ const createStyles = (colors) =>
  * View that renders a list of Collectibles
  * also known as ERC-721 Tokens
  */
-export default class Collectibles extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * Array of assets (in this case Collectibles)
-     */
-    collectibles: PropTypes.array,
-    /**
-     * Collectible contract object
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * Callback triggered when collectible pressed from collectibles list
-     */
-    onPress: PropTypes.func,
-  };
+interface CollectiblesProps {
+  navigation: Record<string, unknown>;
+  collectibles: Record<string, unknown>[];
+  collectibleContract: Record<string, unknown>;
+  onPress?: (collectible: Record<string, unknown>) => void;
+}
 
-  state = {
+interface CollectiblesState {
+  refreshing: boolean;
+}
+
+export default class Collectibles extends PureComponent<CollectiblesProps, CollectiblesState> {
+
+  state: CollectiblesState = {
     refreshing: false,
   };
 
