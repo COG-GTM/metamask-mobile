@@ -14,7 +14,7 @@ import {
   Linking,
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
-import PropTypes from 'prop-types';
+
 import { connect, useSelector } from 'react-redux';
 import GlobalAlert from '../../UI/GlobalAlert';
 import BackgroundTimer from 'react-native-background-timer';
@@ -94,7 +94,33 @@ import { useIdentityEffects } from '../../../util/identity/hooks/useIdentityEffe
 
 const Stack = createStackNavigator();
 
-const createStyles = (colors) =>
+interface OwnProps {
+  navigation: Record<string, (...args: unknown[]) => unknown> & { navigate: (route: string, params?: Record<string, unknown>) => void };
+  route: { params?: Record<string, unknown> };
+}
+
+interface StateProps {
+  showIncomingTransactionsNetworks: Record<string, boolean>;
+  providerType: string;
+  chainId: string;
+  networkClientId: string;
+  backUpSeedphraseVisible: boolean;
+  networkConfigurations: Record<string, unknown>;
+}
+
+interface DispatchProps {
+  showTransactionNotification: (args: Record<string, unknown>) => void;
+  showSimpleNotification: (args: Record<string, unknown>) => void;
+  hideCurrentNotification: () => void;
+  removeNotificationById: (id: string) => void;
+  setInfuraAvailabilityBlocked: () => void;
+  setInfuraAvailabilityNotBlocked: () => void;
+  removeNotVisibleNotifications: () => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+const createStyles = (colors: { background: { default: string } }) =>
   StyleSheet.create({
     flex: {
       flex: 1,
@@ -107,7 +133,7 @@ const createStyles = (colors) =>
     },
   });
 
-const Main = (props) => {
+const Main = (props: Props) => {
   const [forceReload, setForceReload] = useState(false);
   const [showRemindLaterModal, setShowRemindLaterModal] = useState(false);
   const [skipCheckbox, setSkipCheckbox] = useState(false);
@@ -457,69 +483,9 @@ const Main = (props) => {
   );
 };
 
-Main.router = MainNavigator.router;
+Main.router = (MainNavigator as Record<string, unknown>).router;
 
-Main.propTypes = {
-  /**
-   * Object that represents the navigator
-   */
-  navigation: PropTypes.object,
-  /**
-   * Dispatch showing a transaction notification
-   */
-  showTransactionNotification: PropTypes.func,
-  /**
-   * Dispatch showing a simple notification
-   */
-  showSimpleNotification: PropTypes.func,
-  /**
-   * Dispatch hiding a transaction notification
-   */
-  hideCurrentNotification: PropTypes.func,
-  removeNotificationById: PropTypes.func,
-  /**
-   * Indicates whether networks allows incoming transactions
-   */
-  showIncomingTransactionsNetworks: PropTypes.object,
-  /**
-   * Network provider type
-   */
-  providerType: PropTypes.string,
-  /**
-   * Dispatch infura availability blocked
-   */
-  setInfuraAvailabilityBlocked: PropTypes.func,
-  /**
-   * Dispatch infura availability not blocked
-   */
-  setInfuraAvailabilityNotBlocked: PropTypes.func,
-  /**
-   * Remove not visible notifications from state
-   */
-  removeNotVisibleNotifications: PropTypes.func,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Current chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * backup seed phrase modal visible
-   */
-  backUpSeedphraseVisible: PropTypes.bool,
-  /**
-   * ID of the global network client
-   */
-  networkClientId: PropTypes.string,
-  /**
-   * Network configurations
-   */
-  networkConfigurations: PropTypes.object,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, Record<string, unknown>>): StateProps => ({
   showIncomingTransactionsNetworks:
     selectShowIncomingTransactionNetworks(state),
   providerType: selectProviderType(state),
@@ -529,7 +495,7 @@ const mapStateToProps = (state) => ({
   networkConfigurations: selectNetworkConfigurations(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   showTransactionNotification: (args) =>
     dispatch(showTransactionNotification(args)),
   showSimpleNotification: (args) => dispatch(showSimpleNotification(args)),
