@@ -296,7 +296,7 @@ export const wallet_addEthereumChain = async ({
       chainId,
       blockExplorerUrls: firstValidBlockExplorerUrl ? [firstValidBlockExplorerUrl] : [],
       defaultRpcEndpointIndex: 0,
-      defaultBlockExplorerUrlIndex: 0,
+      defaultBlockExplorerUrlIndex: firstValidBlockExplorerUrl ? 0 : undefined,
       name: chainName,
       nativeCurrency: ticker,
       rpcEndpoints: [
