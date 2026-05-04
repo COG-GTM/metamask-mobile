@@ -1,6 +1,5 @@
 import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { PureComponent, ReactNode } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -141,95 +140,68 @@ const ROW_HEIGHT = (Device.isIos() ? 95 : 100) + StyleSheet.hairlineWidth;
 /**
  * View that renders a list of transactions for a specific asset
  */
-class Transactions extends PureComponent {
-  static propTypes = {
-    assetSymbol: PropTypes.string,
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * Callback to close the view
-     */
-    close: PropTypes.func,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object representing the configuration of the current selected network
-     */
-    providerConfig: PropTypes.object,
-    /**
-     * An array that represents the user collectible contracts
-     */
-    collectibleContracts: PropTypes.array,
-    /**
-     * An array that represents the user tokens
-     */
-    tokens: PropTypes.object,
-    /**
-     * An array of transactions objects
-     */
-    transactions: PropTypes.array,
-    /**
-     * An array of transactions objects that have been submitted
-     */
-    submittedTransactions: PropTypes.array,
-    /**
-     * An array of transactions objects that have been confirmed
-     */
-    confirmedTransactions: PropTypes.array,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Loading flag from an external call
-     */
-    loading: PropTypes.bool,
-    /**
-     * Pass the flatlist ref to the parent
-     */
-    onRefSet: PropTypes.func,
-    /**
-     * Optional header component
-     */
-    header: PropTypes.object,
-    /**
-     * Optional header height
-     */
-    headerHeight: PropTypes.number,
-    exchangeRate: PropTypes.number,
-    isSigningQRObject: PropTypes.bool,
-    chainId: PropTypes.string,
-    /**
-     * On scroll past navbar callback
-     */
-    onScrollThroughContent: PropTypes.func,
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * Chain ID of the token
-     */
-    tokenChainId: PropTypes.string,
-  };
+interface OwnProps {
+  assetSymbol?: string;
+  close?: () => void;
+  navigation?: Record<string, unknown>;
+  transactions?: Record<string, unknown>[];
+  submittedTransactions?: Record<string, unknown>[];
+  confirmedTransactions?: Record<string, unknown>[];
+  loading?: boolean;
+  onRefSet?: (ref: React.RefObject<unknown>) => void;
+  header?: ReactNode;
+  headerHeight?: number;
+  exchangeRate?: number;
+  isSigningQRObject?: boolean;
+  onScrollThroughContent?: () => void;
+  tokenChainId?: string;
+  signQRTransaction?: (tx: Record<string, unknown>) => void;
+  cancelUnsignedQRTransaction?: (tx: Record<string, unknown>) => void;
+  signLedgerTransaction?: (tx: Record<string, unknown>) => void;
+}
 
+interface StateProps {
+  accounts: Record<string, unknown>;
+  chainId: string;
+  networkClientId: string;
+  collectibleContracts: Record<string, unknown>[];
+  contractExchangeRates: Record<string, unknown>;
+  conversionRate: number;
+  currentCurrency: string;
+  selectedAddress: string;
+  networkConfigurations: Record<string, unknown>;
+  providerConfig: Record<string, unknown>;
+  gasFeeEstimates: Record<string, unknown>;
+  primaryCurrency: string;
+  tokens: Record<string, unknown>;
+  gasEstimateType: string;
+  networkType: string;
+}
+
+interface DispatchProps {
+  showAlert: (config: Record<string, unknown>) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+interface TransactionsState {
+  selectedTx: Map<string, boolean>;
+  ready: boolean;
+  refreshing: boolean;
+  cancelIsOpen: boolean;
+  cancel1559IsOpen: boolean;
+  cancelConfirmDisabled: boolean;
+  speedUpIsOpen: boolean;
+  speedUp1559IsOpen: boolean;
+  retryIsOpen: boolean;
+  speedUpConfirmDisabled: boolean;
+  rpcBlockExplorer: string | undefined;
+  errorMsg: string | undefined;
+  isQRHardwareAccount: boolean;
+  isLedgerAccount: boolean;
+}
+
+class Transactions extends PureComponent<Props, TransactionsState> {
   static defaultProps = {
     headerHeight: 0,
   };
@@ -932,7 +904,7 @@ class Transactions extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>): StateProps => ({
   accounts: selectAccounts(state),
   chainId: selectChainId(state),
   networkClientId: selectNetworkClientId(state),
@@ -952,7 +924,7 @@ const mapStateToProps = (state) => ({
 
 Transactions.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
 });
 

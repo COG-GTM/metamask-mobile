@@ -1,8 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, Text } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
+import { RootState } from '../../../reducers';
 import WebsiteIcon from '../WebsiteIcon';
 import { getHost, getUrlObj } from '../../../util/browser';
 import networkList from '../../../util/networks';
@@ -83,10 +83,29 @@ const createStyles = (colors) =>
     },
   });
 
+interface CurrentPageInformation {
+  url?: string;
+  origin?: string;
+  icon?: string | { uri: string };
+  currentEnsName?: string;
+  spenderAddress?: string;
+}
+
+interface OwnProps {
+  currentPageInformation: CurrentPageInformation;
+}
+
+interface StateProps {
+  networkType: string;
+  nickname: string;
+}
+
+type Props = OwnProps & StateProps;
+
 /**
  * PureComponent that renders the transaction header used for signing, granting permissions and sending
  */
-const TransactionHeader = (props) => {
+const TransactionHeader = (props: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -225,22 +244,7 @@ const TransactionHeader = (props) => {
   );
 };
 
-TransactionHeader.propTypes = {
-  /**
-   * Object containing current page title and url
-   */
-  currentPageInformation: PropTypes.object,
-  /**
-   * String representing the selected network
-   */
-  networkType: PropTypes.string,
-  /**
-   * Provider name
-   */
-  nickname: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   networkType: selectProviderType(state),
   nickname: selectNickname(state),
 });

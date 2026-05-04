@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { query } from '@metamask/controller-utils';
 import { connect } from 'react-redux';
@@ -112,56 +111,43 @@ const createStyles = (colors) =>
     },
   });
 
+interface OwnProps {
+  navigation?: Record<string, unknown>;
+  transactionObject: Record<string, unknown>;
+  transactionDetails?: Record<string, unknown>;
+  close?: () => void;
+  showSpeedUpModal?: (tx: Record<string, unknown>) => void;
+  showCancelModal?: (tx: Record<string, unknown>) => void;
+}
+
+interface StateProps {
+  chainId: string;
+  networkConfigurations: Record<string, unknown>;
+  selectedAddress: string;
+  transactions: Record<string, unknown>[];
+  ticker: string;
+  tokens: Record<string, unknown>;
+  contractExchangeRates: Record<string, unknown>;
+  conversionRate: number;
+  currentCurrency: string;
+  swapsTransactions: Record<string, unknown>;
+  swapsTokens: Record<string, unknown>[];
+  primaryCurrency: string;
+  shouldUseSmartTransaction: boolean;
+}
+
+type Props = OwnProps & StateProps;
+
+interface TransactionDetailsState {
+  rpcBlockExplorer: string | undefined;
+  renderTxActions: boolean;
+  updatedTransactionDetails: Record<string, unknown> | undefined;
+}
+
 /**
  * View that renders a transaction details as part of transactions list
  */
-class TransactionDetails extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Chain Id
-     */
-    chainId: PropTypes.string,
-    /**
-     * Object corresponding to a transaction, containing transaction object, networkId and transaction hash string
-     */
-    transactionObject: PropTypes.object,
-    /**
-     * Object with information to render
-     */
-    transactionDetails: PropTypes.object,
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Callback to close the view
-     */
-    close: PropTypes.func,
-    /**
-     * A string representing the network name
-     */
-    showSpeedUpModal: PropTypes.func,
-    showCancelModal: PropTypes.func,
-    selectedAddress: PropTypes.string,
-    transactions: PropTypes.array,
-    ticker: PropTypes.string,
-    tokens: PropTypes.object,
-    contractExchangeRates: PropTypes.object,
-    conversionRate: PropTypes.number,
-    currentCurrency: PropTypes.string,
-    swapsTransactions: PropTypes.object,
-    swapsTokens: PropTypes.array,
-    primaryCurrency: PropTypes.string,
-
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
+class TransactionDetails extends PureComponent<Props, TransactionDetailsState> {
 
   state = {
     rpcBlockExplorer: undefined,
@@ -169,7 +155,7 @@ class TransactionDetails extends PureComponent {
     updatedTransactionDetails: undefined,
   };
 
-  fetchTxReceipt = async (transactionHash) => {
+  fetchTxReceipt = async (transactionHash: string) => {
     const ethQuery = getGlobalEthQuery();
     return await query(ethQuery, 'getTransactionReceipt', [transactionHash]);
   };
@@ -509,7 +495,7 @@ class TransactionDetails extends PureComponent {
   };
 }
 
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (state: Record<string, unknown>, ownProps: OwnProps) => ({
   chainId: selectChainId(state),
   networkConfigurations: selectNetworkConfigurations(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),

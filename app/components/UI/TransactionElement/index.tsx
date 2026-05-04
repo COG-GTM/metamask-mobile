@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   TouchableOpacity,
   TouchableHighlight,
@@ -149,59 +148,54 @@ const transactionIconReceivedFailed = require('../../../images/transaction-icons
 const transactionIconSwapFailed = require('../../../images/transaction-icons/swap-failed.png');
 /* eslint-enable import/no-commonjs */
 
+interface OwnProps {
+  assetSymbol?: string;
+  tx: Record<string, unknown>;
+  i?: number;
+  onPressItem?: (id: string, index: number) => void;
+  onSpeedUpAction?: (tx: Record<string, unknown>) => void;
+  onCancelAction?: (tx: Record<string, unknown>) => void;
+  signQRTransaction?: () => void;
+  cancelUnsignedQRTransaction?: () => void;
+  isQRHardwareAccount?: boolean;
+  isLedgerAccount?: boolean;
+  signLedgerTransaction?: () => void;
+  bridgeTxHistoryData?: Record<string, unknown>;
+  txChainId?: string;
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+  };
+}
+
+interface StateProps {
+  networkConfigurationsByChainId: Record<string, unknown>;
+  selectedInternalAccount: Record<string, unknown>;
+  primaryCurrency: string;
+  swapsTransactions: Record<string, unknown>;
+  swapsTokens: Record<string, unknown>[];
+}
+
+type Props = OwnProps & StateProps;
+
+interface TransactionElementState {
+  actionKey: string | undefined;
+  cancelIsOpen: boolean;
+  speedUpIsOpen: boolean;
+  detailsModalVisible: boolean;
+  importModalVisible: boolean;
+  transactionGas: {
+    gasBN: unknown;
+    gasPriceBN: unknown;
+    gasTotal: unknown;
+  };
+  transactionElement: unknown;
+  transactionDetails: unknown;
+}
+
 /**
  * View that renders a transaction item part of transactions list
  */
-class TransactionElement extends PureComponent {
-  static propTypes = {
-    assetSymbol: PropTypes.string,
-    /**
-     * Asset object (in this case ERC721 token)
-     */
-    tx: PropTypes.object,
-    /**
-    /* InternalAccount object required to get import time name
-    */
-    selectedInternalAccount: PropTypes.object,
-    /**
-     * Current element of the list index
-     */
-    i: PropTypes.number,
-    /**
-     * Callback to render transaction details view
-     */
-    onPressItem: PropTypes.func,
-    /**
-     * Callback to speed up tx
-     */
-    onSpeedUpAction: PropTypes.func,
-    /**
-     * Callback to cancel tx
-     */
-    onCancelAction: PropTypes.func,
-    swapsTransactions: PropTypes.object,
-    swapsTokens: PropTypes.arrayOf(PropTypes.object),
-    signQRTransaction: PropTypes.func,
-    cancelUnsignedQRTransaction: PropTypes.func,
-    isQRHardwareAccount: PropTypes.bool,
-    isLedgerAccount: PropTypes.bool,
-    signLedgerTransaction: PropTypes.func,
-    bridgeTxHistoryData: PropTypes.object,
-    /**
-     * Chain Id
-     */
-    txChainId: PropTypes.string,
-    /**
-     * Network configurations by chain id
-     */
-    networkConfigurationsByChainId: PropTypes.object,
-    /**
-     * Navigation object for routing
-     */
-    navigation: PropTypes.shape({
-      navigate: PropTypes.func.isRequired,
-    }).isRequired,
-  };
+class TransactionElement extends PureComponent<Props, TransactionElementState> {
 
   state = {
     actionKey: undefined,
@@ -234,7 +228,7 @@ class TransactionElement extends PureComponent {
     this.mounted && this.setState({ transactionElement, transactionDetails });
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Props) {
     if (
       prevProps.txChainId !== this.props.txChainId ||
       prevProps.swapsTransactions !== this.props.swapsTransactions ||
@@ -321,7 +315,7 @@ class TransactionElement extends PureComponent {
     return null;
   };
 
-  renderTxElementIcon = (transactionElement, status, chainId) => {
+  renderTxElementIcon = (transactionElement: Record<string, unknown>, status: string, chainId: string) => {
     const { transactionType } = transactionElement;
     const { colors, typography } = this.context || mockTheme;
     const styles = createStyles(colors, typography);
@@ -697,7 +691,7 @@ class TransactionElement extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   networkConfigurationsByChainId:
     selectEvmNetworkConfigurationsByChainId(state),
   selectedInternalAccount: selectSelectedInternalAccount(state),
@@ -709,16 +703,12 @@ const mapStateToProps = (state) => ({
 TransactionElement.contextType = ThemeContext;
 
 // Create a wrapper functional component
-const TransactionElementWithBridge = (props) => {
+const TransactionElementWithBridge = (props: Omit<OwnProps, 'bridgeTxHistoryData'>) => {
   const bridgeTxHistoryData = useBridgeTxHistoryData({ evmTxMeta: props.tx });
 
   return (
     <TransactionElement {...props} bridgeTxHistoryData={bridgeTxHistoryData} />
   );
-};
-
-TransactionElementWithBridge.propTypes = {
-  tx: PropTypes.object.isRequired,
 };
 
 export default connect(mapStateToProps)(TransactionElementWithBridge);
