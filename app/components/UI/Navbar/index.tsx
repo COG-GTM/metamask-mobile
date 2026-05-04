@@ -67,7 +67,7 @@ import { getFormattedAddressFromInternalAccount } from '../../../core/Multichain
 import { withMetaMetrics } from '../Stake/utils/metaMetrics/withMetaMetrics';
 import { BridgeViewMode } from '../Bridge/types';
 
-const trackEvent = (event, params = {}) => {
+const trackEvent = (event: Record<string, unknown>, params: Record<string, unknown> = {}) => {
   MetaMetrics.getInstance().trackEvent(event);
 };
 

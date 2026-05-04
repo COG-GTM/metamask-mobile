@@ -9,7 +9,7 @@ import {
   InteractionManager,
   Platform,
 } from 'react-native';
-import PropTypes from 'prop-types';
+
 import { connect } from 'react-redux';
 import Share from 'react-native-share';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -331,124 +331,60 @@ const ICON_IMAGES = {
  * View component that displays the MetaMask fox
  * in the middle of the screen
  */
-class DrawerView extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object representing the configuration of the current selected network
-     */
-    providerConfig: PropTypes.object.isRequired,
-    /**
-     * List of accounts from the AccountTrackerController
-     */
-    accounts: PropTypes.object,
-    /**
-     * Currently selected account
-     */
-    selectedInternalAccount: PropTypes.object,
-    /**
-    /* Selected currency
-    */
-    currentCurrency: PropTypes.string,
-    /**
-     * List of keyrings
-     */
-    keyrings: PropTypes.array,
-    /**
-     * Action that toggles the network modal
-     */
-    toggleNetworkModal: PropTypes.func,
-    /**
-     * Action that shows the global alert
-     */
-    showAlert: PropTypes.func.isRequired,
-    /**
-     * Boolean that determines the status of the networks modal
-     */
-    networkModalVisible: PropTypes.bool.isRequired,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func.isRequired,
-    /**
-     * Boolean that determines if the user has set a password before
-     */
-    passwordSet: PropTypes.bool,
-    /**
-     * Wizard onboarding state
-     */
-    wizard: PropTypes.object,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * Array of ERC721 assets
-     */
-    collectibles: PropTypes.array,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-    /**
-     * An object containing token balances for current account and network in the format address => balance
-     */
-    tokenBalances: PropTypes.object,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * Callback to close drawer
-     */
-    onCloseDrawer: PropTypes.func,
-    /**
-     * Latest navigation route
-     */
-    currentRoute: PropTypes.string,
-    /**
-     * handles action for onboarding to a network
-     */
-    onboardNetworkAction: PropTypes.func,
-    /**
-     * returns switched network state
-     */
-    switchedNetwork: PropTypes.object,
-    /**
-     * updates when network is switched
-     */
-    networkSwitched: PropTypes.func,
-    /**
-     *  Boolean that determines the state of network info modal
-     */
-    infoNetworkModalVisible: PropTypes.bool,
-    /**
-     * Redux action to close info network modal
-     */
-    toggleInfoNetworkModal: PropTypes.func,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Selected multichain chainId
-     */
-    chainId: PropTypes.string,
-  };
+interface OwnProps {
+  navigation: Record<string, unknown>;
+  onCloseDrawer?: () => void;
+}
 
-  state = {
+interface StateProps {
+  providerConfig: Record<string, unknown>;
+  accounts: Record<string, unknown>;
+  selectedInternalAccount: Record<string, unknown>;
+  currentCurrency: string;
+  keyrings: Record<string, unknown>[];
+  toggleNetworkModal: () => void;
+  networkModalVisible: boolean;
+  passwordSet: boolean;
+  wizard: Record<string, unknown>;
+  ticker: string;
+  networkConfigurations: Record<string, unknown>;
+  tokens: Record<string, unknown>[];
+  collectibles: Record<string, unknown>[];
+  seedphraseBackedUp: boolean;
+  tokenBalances: Record<string, unknown>;
+  currentRoute: string;
+  switchedNetwork: Record<string, unknown>;
+  infoNetworkModalVisible: boolean;
+  chainId: string;
+}
+
+interface DispatchProps {
+  showAlert: (config: Record<string, unknown>) => void;
+  newAssetTransaction: (selectedAsset: Record<string, unknown>) => void;
+  protectWalletModalVisible: () => void;
+  onboardNetworkAction: (chainId: string) => void;
+  networkSwitched: (params: { networkUrl: string; networkStatus: string }) => void;
+  toggleInfoNetworkModal: () => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps & { metrics?: Record<string, unknown> };
+
+interface DrawerViewState {
+  showProtectWalletModal: boolean | undefined;
+  account: {
+    ens: string | undefined;
+    name: string | undefined;
+    address: string | undefined;
+    currentChainId: string | undefined;
+  };
+  networkType: string | undefined;
+  showModal: boolean;
+  networkUrl: string | undefined;
+}
+
+class DrawerView extends PureComponent<Props, DrawerViewState> {
+
+  state: DrawerViewState = {
     showProtectWalletModal: undefined,
     account: {
       ens: undefined,
@@ -1258,7 +1194,7 @@ class DrawerView extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>): StateProps => ({
   providerConfig: selectProviderConfig(state),
   chainId: selectChainId(state),
   accounts: selectAccounts(state),
@@ -1279,14 +1215,14 @@ const mapStateToProps = (state) => ({
   switchedNetwork: state.networkOnboarded.switchedNetwork,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   toggleNetworkModal: () => dispatch(toggleNetworkModal()),
-  showAlert: (config) => dispatch(showAlert(config)),
-  newAssetTransaction: (selectedAsset) =>
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
+  newAssetTransaction: (selectedAsset: Record<string, unknown>) =>
     dispatch(newAssetTransaction(selectedAsset)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
-  onboardNetworkAction: (chainId) => dispatch(onboardNetworkAction(chainId)),
-  networkSwitched: ({ networkUrl, networkStatus }) =>
+  onboardNetworkAction: (chainId: string) => dispatch(onboardNetworkAction(chainId)),
+  networkSwitched: ({ networkUrl, networkStatus }: { networkUrl: string; networkStatus: string }) =>
     dispatch(networkSwitched({ networkUrl, networkStatus })),
   toggleInfoNetworkModal: () => dispatch(toggleInfoNetworkModal(false)),
 });
