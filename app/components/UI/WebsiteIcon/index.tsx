@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, View, Text, Image } from 'react-native';
+import { StyleSheet, View, Text, Image, ImageStyle, StyleProp, TextStyle, ViewStyle } from 'react-native';
 import FadeIn from 'react-native-fade-in-image';
 import { fontStyles } from '../../../styles/common';
 import { getHost } from '../../../util/browser';
@@ -9,8 +8,9 @@ import withFaviconAwareness from '../../hooks/useFavicon/withFaviconAwareness';
 import { isNumber } from 'lodash';
 import { isFaviconSVG } from '../../../util/favicon';
 import { SvgUri } from 'react-native-svg';
+import { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     fallback: {
       alignContent: 'center',
@@ -29,6 +29,21 @@ const createStyles = (colors) =>
     },
   });
 
+interface WebsiteIconProps {
+  style?: ImageStyle;
+  viewStyle?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
+  title?: string;
+  url?: string;
+  transparent?: boolean;
+  icon?: string | { uri?: string };
+  faviconSource?: string;
+}
+
+interface WebsiteIconState {
+  renderIconUrlError: boolean;
+}
+
 /**
  * View that renders a website logo depending of the context
  */
@@ -36,52 +51,11 @@ const createStyles = (colors) =>
  * @deprecated This `<WebsiteIcon>` component has been deprecated, any new usage of it should use Avatar with the favicon variant instead:
  * https://github.com/MetaMask/metamask-mobile/blob/34f9da127435053a32e5f4e9c69ce8aa1e37c394/app/component-library/components/Avatars/Avatar/README.md#L1
  */
-class WebsiteIcon extends PureComponent {
-  static propTypes = {
-    /**
-     * Style object for image
-     */
-    style: PropTypes.object,
-    /**
-     * Style object for main view
-     */
-    viewStyle: PropTypes.object,
-    /**
-     * Style object for text in case url not found
-     */
-    textStyle: PropTypes.object,
-    /**
-     * String corresponding to website title
-     */
-    title: PropTypes.string,
-    /**
-     * String corresponding to website url
-     */
-    url: PropTypes.string,
-    /**
-     * Flag that determines if the background
-     * should be transaparent or not
-     */
-    transparent: PropTypes.bool,
-    /**
-     * Icon image to use, this substitutes getting the icon from the url
-     */
-    icon: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-
-    /**
-     * Favicon source to use, this substitutes getting the icon from the url
-     * This is populated by the withFaviconAwareness HOC
-     */
-    faviconSource: PropTypes.string,
-  };
-
-  state = {
+class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
+  state: WebsiteIconState = {
     renderIconUrlError: false,
   };
 
-  /**
-   * Sets component state to renderIconUrlError to render placeholder image
-   */
   onRenderIconUrlError = async () => {
     await this.setState({ renderIconUrlError: true });
   };
@@ -97,11 +71,8 @@ class WebsiteIcon extends PureComponent {
       icon,
       faviconSource,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as { colors: Theme['colors'] }).colors || mockTheme.colors;
     const styles = createStyles(colors);
-    // apiLogoUrl is the url of the icon to be rendered, but it's populated
-    // from the icon prop, if it exists, or from the faviconSource prop
-    // that is provided by the withFaviconAwareness HOC for useFavicon hook.
 
     const apiLogoUrl = {
       uri: (typeof icon === 'string' ? icon : icon?.uri) || faviconSource,
@@ -126,7 +97,7 @@ class WebsiteIcon extends PureComponent {
       );
     }
 
-    let imageSVG;
+    let imageSVG: string | undefined;
 
     if (apiLogoUrl && !isNumber(apiLogoUrl) && 'uri' in apiLogoUrl) {
       imageSVG = isFaviconSVG(apiLogoUrl);
@@ -137,9 +108,9 @@ class WebsiteIcon extends PureComponent {
         {imageSVG ? (
           <SvgUri
             uri={imageSVG}
-            width={style.width}
-            height={style.height}
-            style={style}
+            width={style?.width}
+            height={style?.height}
+            style={style as StyleProp<ViewStyle>}
             onError={this.onRenderIconUrlError}
           />
         ) : (

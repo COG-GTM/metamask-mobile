@@ -13,11 +13,11 @@ import {
   Image,
   Text,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import Device from '../../../util/device';
 import { useTheme } from '../../../util/theme';
 import { SwapsViewSelectors } from '../../../../e2e/selectors/swaps/SwapsView.selectors';
+import { Theme } from '@metamask/design-tokens';
 
 /* eslint-disable import/no-commonjs */
 const SliderBgImg = require('./assets/slider_button_gradient.png');
@@ -29,7 +29,7 @@ const MARGIN = DIAMETER * 0.16;
 const COMPLETE_VERTICAL_THRESHOLD = DIAMETER * 2;
 const COMPLETE_THRESHOLD = 0.85;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']) =>
   StyleSheet.create({
     container: {
       ...shadows.size.sm,
@@ -97,13 +97,21 @@ const createStyles = (colors, shadows) =>
     },
   });
 
+interface SliderButtonProps {
+  incompleteText?: React.ReactElement | string;
+  completeText?: React.ReactElement | string;
+  onComplete?: () => void;
+  disabled?: boolean;
+  onSwipeChange?: (isPressed: boolean) => void;
+}
+
 function SliderButton({
   incompleteText,
   completeText,
   onComplete,
   disabled,
   onSwipeChange,
-}) {
+}: SliderButtonProps) {
   const [componentWidth, setComponentWidth] = useState(0);
   const [hasCompletedCalled, setHasCompletedCalled] = useState(false);
   const [hasStartedCompleteAnimation, setHasStartedCompleteAnimation] =
@@ -111,7 +119,7 @@ function SliderButton({
   const [isPressed, setIsPressed] = useState(false);
 
   const shineOffset = useRef(new Animated.Value(0)).current;
-  const pan = useRef(new Animated.ValueXY(0, 0)).current;
+  const pan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const completion = useRef(new Animated.Value(0)).current;
 
   const onCompleteCallback = useRef(onComplete);
@@ -120,9 +128,9 @@ function SliderButton({
   const styles = createStyles(colors, shadows);
 
   const handleIsPressed = useCallback(
-    (isPressed) => {
-      onSwipeChange?.(isPressed);
-      setIsPressed(isPressed);
+    (pressed: boolean) => {
+      onSwipeChange?.(pressed);
+      setIsPressed(pressed);
     },
     [onSwipeChange],
   );
@@ -327,28 +335,5 @@ function SliderButton({
     </View>
   );
 }
-
-SliderButton.propTypes = {
-  /**
-   * Text that prompts the user to interact with the slider
-   */
-  incompleteText: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  /**
-   * Text during ineraction stating the action being taken
-   */
-  completeText: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  /**
-   * Action to execute once button completes sliding
-   */
-  onComplete: PropTypes.func,
-  /**
-   * Callback that gets called when the button is being swiped
-   */
-  onSwipeChange: PropTypes.func,
-  /**
-   * Value that decides whether or not the slider is disabled
-   */
-  disabled: PropTypes.bool,
-};
 
 export default SliderButton;

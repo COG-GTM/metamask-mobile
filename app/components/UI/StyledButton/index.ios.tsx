@@ -1,12 +1,22 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import Button from '@metamask/react-native-button';
 import getStyles from './styledButtonStyles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import {
-  ViewPropTypes,
-  TextPropTypes,
-} from 'deprecated-react-native-prop-types';
+import { Theme } from '@metamask/design-tokens';
+
+interface StyledButtonProps {
+  children?: React.ReactNode;
+  disabled?: boolean;
+  style?: StyleProp<TextStyle>;
+  styleDisabled?: StyleProp<TextStyle>;
+  disabledContainerStyle?: StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
+  onPress?: () => void;
+  onPressOut?: () => void;
+  type?: string;
+  testID?: string;
+}
 
 /**
  * @deprecated The `<StyledButton>` component has been deprecated in favor of the new `<Button>` component from the component-library.
@@ -16,52 +26,7 @@ import {
  * If you would like to help with the replacement of the old `Button` component, please submit a pull request against this GitHub issue:
  * {@link https://github.com/MetaMask/metamask-mobile/issues/8106}
  */
-export default class StyledButton extends PureComponent {
-  static propTypes = {
-    /**
-     * Children components of the Button
-     * it can be a text node, an image, or an icon
-     * or an Array with a combination of them
-     */
-    children: PropTypes.any,
-    /**
-     * Type of the button
-     */
-    disabled: PropTypes.bool,
-    /**
-     * Styles to be applied to the Button Text
-     */
-    style: TextPropTypes.style,
-    /**
-     * Styles to be applied to the Button disabled state text
-     */
-    styleDisabled: TextPropTypes.style,
-    /**
-     * Styles to be applied to the Button disabled container
-     */
-    disabledContainerStyle: ViewPropTypes.style,
-    /**
-     * Styles to be applied to the Button Container
-     */
-    containerStyle: ViewPropTypes.style,
-    /**
-     * Function to be called on press
-     */
-    onPress: PropTypes.func,
-    /**
-     * Function to be called on press out
-     */
-    onPressOut: PropTypes.func,
-    /**
-     * Type of the button
-     */
-    type: PropTypes.string,
-    /**
-     * ID of the element to be used on e2e tests
-     */
-    testID: PropTypes.string,
-  };
-
+export default class StyledButton extends PureComponent<StyledButtonProps> {
   static defaultProps = {
     ...PureComponent.defaultProps,
     styleDisabled: { opacity: 0.6 },
@@ -80,7 +45,7 @@ export default class StyledButton extends PureComponent {
       testID,
       disabledContainerStyle,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as { colors: Theme['colors'] }).colors || mockTheme.colors;
     const { fontStyle, containerStyle } = getStyles(type, colors);
 
     return (
