@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   Alert,
@@ -64,6 +63,8 @@ import { ImportFromSeedSelectorsIDs } from '../../../../e2e/selectors/Onboarding
 import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ChoosePassword.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
 
 const MINIMUM_SUPPORTED_CLIPBOARD_VERSION = 9;
 
@@ -76,7 +77,16 @@ const IOS_REJECTED_BIOMETRICS_ERROR =
  * using a secret recovery phrase (SRP)
  * The SRP was formally called the seed phrase
  */
-const ImportFromSecretRecoveryPhrase = ({
+interface ImportFromSecretRecoveryPhraseProps {
+  navigation: StackNavigationProp<Record<string, Record<string, string> | undefined>>;
+  passwordSet: () => void;
+  setLockTime: (time: number) => void;
+  seedphraseBackedUp: () => void;
+  setOnboardingWizardStep: (step: number) => void;
+  route: RouteProp<Record<string, Record<string, string> | undefined>, string>;
+}
+
+const ImportFromSecretRecoveryPhrase: React.FC<ImportFromSecretRecoveryPhraseProps> = ({
   navigation,
   passwordSet,
   setLockTime,
@@ -607,36 +617,9 @@ const ImportFromSecretRecoveryPhrase = ({
   );
 };
 
-ImportFromSecretRecoveryPhrase.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-   * The action to update the password set flag
-   * in the redux store
-   */
-  passwordSet: PropTypes.func,
-  /**
-   * The action to set the locktime
-   * in the redux store
-   */
-  setLockTime: PropTypes.func,
-  /**
-   * The action to update the seedphrase backed up flag
-   * in the redux store
-   */
-  seedphraseBackedUp: PropTypes.func,
-  /**
-   * Action to set onboarding wizard step
-   */
-  setOnboardingWizardStep: PropTypes.func,
-  route: PropTypes.object,
-};
-
-const mapDispatchToProps = (dispatch) => ({
-  setLockTime: (time) => dispatch(setLockTime(time)),
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+const mapDispatchToProps = (dispatch: (action: ReturnType<typeof setLockTime | typeof setOnboardingWizardStep | typeof passwordSet | typeof seedphraseBackedUp>) => void) => ({
+  setLockTime: (time: number) => dispatch(setLockTime(time)),
+  setOnboardingWizardStep: (step: number) => dispatch(setOnboardingWizardStep(step)),
   passwordSet: () => dispatch(passwordSet()),
   seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
 });

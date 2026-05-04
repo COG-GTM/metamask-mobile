@@ -7,7 +7,6 @@ import {
   View,
   SafeAreaView,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import OnboardingProgress from '../../UI/OnboardingProgress';
 import ActionView from '../../UI/ActionView';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
@@ -23,8 +22,16 @@ import createStyles from './styles';
 import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ManualBackUpSteps.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
 
-const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
+interface ManualBackupStep2Props {
+  navigation: StackNavigationProp<Record<string, Record<string, string | string[]> | undefined>>;
+  seedphraseBackedUp: () => void;
+  route: RouteProp<Record<string, Record<string, string | string[] | number> | undefined>, string>;
+}
+
+const ManualBackupStep2: React.FC<ManualBackupStep2Props> = ({ navigation, seedphraseBackedUp, route }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -278,23 +285,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   );
 };
 
-ManualBackupStep2.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * The action to update the seedphrase backed up flag
-   * in the redux store
-   */
-  seedphraseBackedUp: PropTypes.func,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-};
-
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: ReturnType<typeof seedphraseBackedUp>) => void) => ({
   seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
 });
 

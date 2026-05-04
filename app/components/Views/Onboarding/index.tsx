@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   BackHandler,
@@ -47,10 +46,14 @@ import { OnboardingSelectorIDs } from '../../../../e2e/selectors/Onboarding/Onbo
 import Routes from '../../../constants/navigation/Routes';
 import { selectAccounts } from '../../../selectors/accountTrackerController';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
-import { trace, TraceName, TraceOperation } from '../../../util/trace';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
+import { RootState } from '../../../reducers';
+import type { Theme } from '@metamask/design-tokens';
+import { IUseMetricsHook } from '../../hooks/useMetrics/useMetrics.types';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     scroll: {
       flex: 1,
@@ -134,52 +137,49 @@ const createStyles = (colors) =>
     },
   });
 
+interface OnboardingOwnProps {
+  navigation: StackNavigationProp<Record<string, Record<string, string> | undefined>>;
+  route: RouteProp<Record<string, Record<string, string> | undefined>, string>;
+}
+
+interface OnboardingStateProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  accounts: Record<string, any>;
+  passwordSet: boolean;
+  loading: boolean;
+  loadingMsg: string;
+}
+
+interface OnboardingDispatchProps {
+  setLoading: (msg: string) => void;
+  unsetLoading: () => void;
+  disableNewPrivacyPolicyToast: () => void;
+}
+
+interface OnboardingMetricsProps {
+  metrics: IUseMetricsHook;
+}
+
+type OnboardingProps = OnboardingOwnProps & OnboardingStateProps & OnboardingDispatchProps & OnboardingMetricsProps;
+
+interface OnboardingComponentState {
+  warningModalVisible: boolean;
+  loading: boolean;
+  existingUser: boolean;
+}
+
 /**
  * View that is displayed to first time (new) users
  */
-class Onboarding extends PureComponent {
-  static propTypes = {
-    disableNewPrivacyPolicyToast: PropTypes.func,
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * redux flag that indicates if the user set a password
-     */
-    passwordSet: PropTypes.bool,
-    /**
-     * loading status
-     */
-    loading: PropTypes.bool,
-    /**
-     * set loading status
-     */
-    setLoading: PropTypes.func,
-    /**
-     * unset loading status
-     */
-    unsetLoading: PropTypes.func,
-    /**
-     * loadings msg
-     */
-    loadingMsg: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class Onboarding extends PureComponent<OnboardingProps, OnboardingComponentState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   notificationAnimated = new Animated.Value(100);
   detailsYAnimated = new Animated.Value(0);
   actionXAnimated = new Animated.Value(0);
   detailsAnimated = new Animated.Value(0);
 
-  animatedTimingStart = (animatedRef, toValue) => {
+  animatedTimingStart = (animatedRef: Animated.Value, toValue: number) => {
     Animated.timing(animatedRef, {
       toValue,
       duration: 500,
@@ -188,20 +188,20 @@ class Onboarding extends PureComponent {
     }).start();
   };
 
-  state = {
+  state: OnboardingComponentState = {
     warningModalVisible: false,
     loading: false,
     existingUser: false,
   };
 
-  seedwords = null;
-  importedAccounts = null;
-  channelName = null;
+  seedwords: string | null = null;
+  importedAccounts: string[] | null = null;
+  channelName: string | null = null;
   incomingDataStr = '';
-  dataToSync = null;
+  dataToSync: string | null = null;
   mounted = false;
 
-  warningCallback = () => true;
+  warningCallback: () => boolean | void = () => true;
 
   showNotification = () => {
     // show notification
@@ -275,7 +275,7 @@ class Onboarding extends PureComponent {
     }
   };
 
-  handleExistingUser = (action) => {
+  handleExistingUser = (action: () => void) => {
     if (this.state.existingUser) {
       this.alertExistingUser(action);
     } else {
@@ -328,11 +328,11 @@ class Onboarding extends PureComponent {
     this.handleExistingUser(action);
   };
 
-  track = (event) => {
+  track = (event: ReturnType<typeof MetaMetricsEvents[keyof typeof MetaMetricsEvents]>) => {
     trackOnboarding(MetricsEventBuilder.createEventBuilder(event).build());
   };
 
-  alertExistingUser = (callback) => {
+  alertExistingUser = (callback: () => void) => {
     this.warningCallback = () => {
       callback();
       this.toggleWarningModal();
@@ -490,15 +490,15 @@ class Onboarding extends PureComponent {
 
 Onboarding.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): OnboardingStateProps => ({
   accounts: selectAccounts(state),
   passwordSet: state.user.passwordSet,
   loading: state.user.loadingSet,
   loadingMsg: state.user.loadingMsg,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setLoading: (msg) => dispatch(loadingSet(msg)),
+const mapDispatchToProps = (dispatch: (action: ReturnType<typeof loadingSet | typeof loadingUnset | typeof storePrivacyPolicyClickedOrClosedAction>) => void): OnboardingDispatchProps => ({
+  setLoading: (msg: string) => dispatch(loadingSet(msg)),
   unsetLoading: () => dispatch(loadingUnset()),
   disableNewPrivacyPolicyToast: () =>
     dispatch(storePrivacyPolicyClickedOrClosedAction()),

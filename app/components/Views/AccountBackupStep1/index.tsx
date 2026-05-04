@@ -9,7 +9,6 @@ import {
   BackHandler,
   Image,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import StyledButton from '../../UI/StyledButton';
 import OnboardingProgress from '../../UI/OnboardingProgress';
@@ -34,8 +33,11 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import Routes from '../../../../app/constants/navigation/Routes';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import SRPDesign from '../../../images/srp-lock-design.png';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
+import type { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -127,7 +129,13 @@ const createStyles = (colors) =>
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1 = (props) => {
+interface AccountBackupStep1Props {
+  navigation: StackNavigationProp<Record<string, Record<string, string> | undefined>>;
+  route: RouteProp<Record<string, Record<string, string> | undefined>, string>;
+  setOnboardingWizardStep: (step: number) => void;
+}
+
+const AccountBackupStep1: React.FC<AccountBackupStep1Props> = (props) => {
   const { navigation, route } = props;
   const [showRemindLaterModal, setRemindLaterModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -298,22 +306,7 @@ const AccountBackupStep1 = (props) => {
   );
 };
 
-AccountBackupStep1.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Action to set onboarding wizard step
-   */
-  setOnboardingWizardStep: PropTypes.func,
-};
-
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: ReturnType<typeof setOnboardingWizardStep>) => void) => ({
   setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
 });
 
