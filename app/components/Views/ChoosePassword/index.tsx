@@ -160,9 +160,7 @@ const createStyles = (colors: Theme['colors']) =>
       paddingHorizontal: 10,
     },
     passwordStrengthLabel: {
-      height: 20,
       marginTop: 10,
-      fontSize: 15,
     },
     showPassword: {
       position: 'absolute',
@@ -336,7 +334,11 @@ class ChoosePassword extends PureComponent<ChoosePasswordProps, ChoosePasswordSt
         try {
           await Authentication.newWalletAndKeychain(password, authType);
         } catch (error) {
-          if (Device.isIos()) await this.handleRejectedOsBiometricPrompt();
+          if (Device.isIos()) {
+            await this.handleRejectedOsBiometricPrompt();
+          } else {
+            throw error;
+          }
         }
         this.keyringControllerPasswordSet = true;
         this.props.seedphraseNotBackedUp();
