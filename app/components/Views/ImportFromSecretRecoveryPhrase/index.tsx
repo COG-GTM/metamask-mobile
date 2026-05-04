@@ -188,6 +188,7 @@ const ImportFromSecretRecoveryPhrase: React.FC<ImportFromSecretRecoveryPhrasePro
     } catch (err) {
       setLoading(false);
       setError((err as Error).toString());
+      throw err;
     }
     setBiometryType(newAuthData.availableBiometryType);
     updateBiometryChoice(false);
