@@ -224,6 +224,7 @@ const AccountOverview = ({
   const [accountLabel, setAccountLabelState] = useState('');
   const [ens, setEns] = useState<string | undefined>(undefined);
 
+  const isInitialMount = useRef(true);
   const editableLabelRef = useRef<View>(null);
   const scrollViewContainer = useRef<View>(null);
   const mainView = useRef<View>(null);
@@ -260,6 +261,10 @@ const AccountOverview = ({
   }, []);
 
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     requestAnimationFrame(() => {
       doENSLookup();
     });
