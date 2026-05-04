@@ -57,7 +57,7 @@ interface OwnProps {
   dismiss: () => void;
   gasEstimateType?: string;
   gasFeeEstimates?: Record<string, unknown>;
-  defaultGasFeeOptionLegacy?: string;
+  defaultGasFeeOptionFeeLegacy?: string;
   defaultGasFeeOptionFeeMarket?: string;
   isVisible?: boolean;
   onGasUpdate: (gasFee: Record<string, unknown>, gasLimit: string) => void;
@@ -85,7 +85,7 @@ function GasEditModal({
   dismiss,
   gasEstimateType,
   gasFeeEstimates,
-  defaultGasFeeOptionLegacy = GAS_OPTIONS.MEDIUM,
+  defaultGasFeeOptionFeeLegacy = GAS_OPTIONS.MEDIUM,
   defaultGasFeeOptionFeeMarket = GAS_OPTIONS.HIGH,
   isVisible,
   onGasUpdate,
@@ -108,7 +108,7 @@ function GasEditModal({
       ? customGasFee.selected ?? null
       : gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET
       ? defaultGasFeeOptionFeeMarket
-      : defaultGasFeeOptionLegacy,
+      : defaultGasFeeOptionFeeLegacy,
   );
   const [stopUpdateGas, setStopUpdateGas] = useState(false);
   const [hasEnoughEthBalance, setHasEnoughEthBalance] = useState(true);
