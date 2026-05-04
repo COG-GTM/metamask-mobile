@@ -41,6 +41,29 @@ import StyledButton from '../../../../../UI/StyledButton';
 import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import createStyles from './styles';
 
+interface EditGasFeeLegacyProps {
+  onCancel: () => void;
+  onSave: (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    gasObj: Record<string, any>,
+    option?: string,
+  ) => void;
+  error?: string;
+  warning?: string;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  analyticsParams?: Record<string, any>;
+  view?: string;
+  onlyGas?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectedGasObject: Record<string, any>;
+  hasDappSuggestedGas?: boolean;
+  chainId?: string;
+}
+
 const EditGasFeeLegacy = ({
   onCancel,
   onSave,
@@ -56,7 +79,7 @@ const EditGasFeeLegacy = ({
   selectedGasObject,
   hasDappSuggestedGas,
   chainId,
-}) => {
+}: EditGasFeeLegacyProps) => {
   const { trackEvent, createEventBuilder } = useMetrics();
   const [showRangeInfoModal, setShowRangeInfoModal] = useState(false);
   const [infoText, setInfoText] = useState('');

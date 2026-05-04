@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
+import { RootState } from '../../../../../../../reducers';
 import AnimatedTransactionModal from '../../../../../../UI/AnimatedTransactionModal';
 import TransactionReview from '../../../components/TransactionReview';
 import {
@@ -62,75 +62,73 @@ const styles = StyleSheet.create({
 /**
  * PureComponent that supports editing and reviewing a transaction
  */
-class TransactionEditor extends PureComponent {
-  static propTypes = {
-    /**
-     * List of accounts from the AccountTrackerController
-     */
-    accounts: PropTypes.object,
-    /**
-     * Current mode this transaction editor is in
-     */
-    mode: PropTypes.oneOf([EDIT, REVIEW]),
-    /**
-     * Callback triggered when this transaction is cancelled
-     */
-    onCancel: PropTypes.func,
-    /**
-     * Callback triggered when this transaction is confirmed
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Called when a user changes modes
-     */
-    onModeChange: PropTypes.func,
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Whether the transaction was confirmed or not
-     */
-    transactionConfirmed: PropTypes.bool,
-    /**
-     * Object containing accounts balances
-     */
-    contractBalances: PropTypes.object,
-    /**
-     * String containing the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Action that sets transaction attributes from object to a transaction
-     */
-    setTransactionObject: PropTypes.func.isRequired,
-    /**
-     * Whether was prompted from approval
-     */
-    promptedFromApproval: PropTypes.bool,
-    /**
-     * Current selected ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Estimate type returned by the gas fee controller, can be market-fee, legacy or eth_gasPrice
-     */
-    gasEstimateType: PropTypes.string,
-    /**
-     * Gas fee estimates returned by the gas fee controller
-     */
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * ID of the associated chain
-     */
-    chainId: PropTypes.string,
-  };
+interface TransactionEditorStateProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  accounts: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contractBalances: Record<string, any>;
+  networkType: string;
+  selectedAddress: string;
+  ticker: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction: Record<string, any>;
+  activeTabUrl: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gasFeeEstimates: Record<string, any>;
+  gasEstimateType: string;
+  conversionRate: number;
+  currentCurrency: string;
+  primaryCurrency: string;
+  chainId: string;
+}
 
-  state = {
+interface TransactionEditorDispatchProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setTransactionObject: (transaction: Record<string, any>) => void;
+}
+
+interface TransactionEditorOwnProps {
+  mode?: string;
+  onCancel?: () => void;
+  onConfirm?: () => void;
+  onModeChange?: (mode: string) => void;
+  transactionConfirmed?: boolean;
+  promptedFromApproval?: boolean;
+  dappTransactionModalVisible?: boolean;
+}
+
+type TransactionEditorProps = TransactionEditorStateProps & TransactionEditorDispatchProps & TransactionEditorOwnProps;
+
+interface TransactionEditorComponentState {
+  toFocused: boolean;
+  ensRecipient: string | undefined;
+  ready: boolean;
+  error: boolean;
+  data: string | undefined;
+  amountError: string;
+  toAddressError: string;
+  over: boolean;
+  gasSelected: string;
+  gasSelectedTemp: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  EIP1559GasData: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  EIP1559GasDataTemp: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  LegacyGasData: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  LegacyGasDataTemp: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  legacyGasObject: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  legacyGasTransaction: Record<string, any>;
+  suggestedMaxFeePerGas: string | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+class TransactionEditor extends PureComponent<TransactionEditorProps, TransactionEditorComponentState> {
+  state: TransactionEditorComponentState = {
     toFocused: false,
     ensRecipient: undefined,
     ready: false,
@@ -151,7 +149,7 @@ class TransactionEditor extends PureComponent {
     suggestedMaxFeePerGas: undefined,
   };
 
-  computeGasEstimates = async (gasEstimateTypeChanged) => {
+  computeGasEstimates = async (gasEstimateTypeChanged?: boolean) => {
     const {
       transaction,
       gasEstimateType,
@@ -963,7 +961,8 @@ class TransactionEditor extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: RootState & { settings: any }): TransactionEditorStateProps => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
 
@@ -984,8 +983,10 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  setTransactionObject: (transaction) =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: (action: any) => void): TransactionEditorDispatchProps => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setTransactionObject: (transaction: Record<string, any>) =>
     dispatch(setTransactionObject(transaction)),
 });
 

@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 
-const createStyles = (colors) =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     overview: (noMargin) => ({
       marginHorizontal: noMargin ? 0 : 24,

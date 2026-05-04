@@ -20,6 +20,30 @@ import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
 
+interface TransactionReviewEIP1559UpdateProps {
+  primaryCurrency?: string;
+  chainId?: string;
+  onEdit: () => void;
+  hideTotal?: boolean;
+  noMargin?: boolean;
+  originWarning?: boolean;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  gasEstimationReady?: boolean;
+  legacy?: boolean;
+  gasSelected?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gasObject?: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gasObjectLegacy?: Record<string, any>;
+  onlyGas?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateTransactionState: (gasTransaction: Record<string, any>) => void;
+  multiLayerL1FeeTotal?: string;
+}
+
 const TransactionReviewEIP1559Update = ({
   primaryCurrency,
   chainId,
@@ -39,7 +63,7 @@ const TransactionReviewEIP1559Update = ({
   onlyGas,
   updateTransactionState,
   multiLayerL1FeeTotal,
-}) => {
+}: TransactionReviewEIP1559UpdateProps) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -108,7 +132,7 @@ const TransactionReviewEIP1559Update = ({
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
-  const switchNativeCurrencyDisplayOptions = (nativeValue, fiatValue) => {
+  const switchNativeCurrencyDisplayOptions = (nativeValue: string, fiatValue: string) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
   };

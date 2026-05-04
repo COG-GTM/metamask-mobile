@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { RootState } from '../../../../../../reducers';
 import { StyleSheet, View, Text } from 'react-native';
 import { fontStyles } from '../../../../../../styles/common';
 import SignatureRequest from '../SignatureRequest';
@@ -29,7 +29,35 @@ import { withMetricsAwareness } from '../../../../../../components/hooks/useMetr
 import { selectProviderTypeByChainId } from '../../../../../../selectors/networkController';
 import { selectSignatureRequestById } from '../../../../../../selectors/signatureController';
 
-const createStyles = (colors) =>
+interface TypedSignStateProps {
+  networkType: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  securityAlertResponse: Record<string, any>;
+}
+
+interface TypedSignOwnProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  onReject: () => Promise<void>;
+  onConfirm: () => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  messageParams: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  currentPageInformation: Record<string, any>;
+  toggleExpandedMessage: () => void;
+  showExpandedMessage: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metrics: Record<string, any>;
+}
+
+type TypedSignProps = TypedSignStateProps & TypedSignOwnProps;
+
+interface TypedSignComponentState {
+  truncateMessage: boolean;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     messageText: {
       color: colors.text.default,
@@ -57,51 +85,8 @@ const createStyles = (colors) =>
 /**
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
-class TypedSign extends PureComponent {
-  static propTypes = {
-    /**
-     * react-navigation object used for switching between screens
-     */
-    navigation: PropTypes.object,
-    /**
-     * Callback triggered when this message signature is rejected
-     */
-    onReject: PropTypes.func,
-    /**
-     * Callback triggered when this message signature is approved
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Typed message to be displayed to the user
-     */
-    messageParams: PropTypes.object,
-    /**
-     * Object containing current page title and url
-     */
-    currentPageInformation: PropTypes.object,
-    /**
-     * Hides or shows the expanded signing message
-     */
-    toggleExpandedMessage: PropTypes.func,
-    /**
-     * Indicated whether or not the expanded message is shown
-     */
-    showExpandedMessage: PropTypes.bool,
-    /**
-     * Security alert response object
-     */
-    securityAlertResponse: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * String representing the associated network
-     */
-    networkType: PropTypes.string,
-  };
-
-  state = {
+class TypedSign extends PureComponent<TypedSignProps, TypedSignComponentState> {
+  state: TypedSignComponentState = {
     truncateMessage: false,
   };
 
@@ -129,7 +114,8 @@ class TypedSign extends PureComponent {
     removeSignatureErrorListener(metamaskId, this.onSignatureError);
   };
 
-  onSignatureError = ({ error }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSignatureError = ({ error }: { error: any }) => {
     const { metrics } = this.props;
     if (error?.message.startsWith(KEYSTONE_TX_CANCELED)) {
       metrics.trackEvent(
@@ -182,7 +168,8 @@ class TypedSign extends PureComponent {
     }
   };
 
-  updateShouldTruncateMessage = (e) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateShouldTruncateMessage = (e: any) => {
     const truncateMessage = shouldTruncateMessage(e);
     this.setState({ truncateMessage });
   };
@@ -192,7 +179,8 @@ class TypedSign extends PureComponent {
     return createStyles(colors);
   };
 
-  renderTypedMessageV3 = (obj) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  renderTypedMessageV3 = (obj: Record<string, any>) => {
     const styles = this.getStyles();
     return Object.keys(obj).map((key) => (
       <View style={styles.message} key={key}>
@@ -300,7 +288,8 @@ class TypedSign extends PureComponent {
 
 TypedSign.contextType = ThemeContext;
 
-const mapStateToProps = (state, ownProps) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: RootState & { signatureRequest: any }, ownProps: TypedSignOwnProps): TypedSignStateProps => {
   const signatureRequest = selectSignatureRequestById(
     state,
     ownProps.messageParams.metamaskId,

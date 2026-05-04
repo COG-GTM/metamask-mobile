@@ -4,7 +4,7 @@ import Summary from '../../../../../../Base/Summary';
 import Text from '../../../../../../Base/Text';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { isMainnetByChainId, isTestNet } from '../../../../../../../util/networks';
-import PropTypes from 'prop-types';
+
 import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import FadeAnimationView from '../../../../../../UI/FadeAnimationView';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
@@ -15,7 +15,35 @@ import AppConstants from '../../../../../../../core/AppConstants';
 import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
 
-const createStyles = (colors) =>
+interface SkeletonProps {
+  width: number;
+  noStyle?: boolean;
+}
+
+interface TransactionReviewEIP1559Props {
+  gasFeeNative?: string;
+  gasFeeConversion?: string;
+  gasFeeMaxNative?: string;
+  gasFeeMaxConversion?: string;
+  primaryCurrency?: string;
+  chainId?: string;
+  onEdit?: () => void;
+  timeEstimate?: string;
+  timeEstimateColor?: string;
+  timeEstimateId?: string;
+  noMargin?: boolean;
+  origin?: string;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  gasEstimationReady?: boolean;
+  legacy?: boolean;
+  originWarning?: boolean;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     overview: (noMargin) => ({
       marginHorizontal: noMargin ? 0 : 24,
@@ -64,8 +92,7 @@ const createStyles = (colors) =>
     },
   });
 
-// eslint-disable-next-line react/prop-types
-const Skeleton = ({ width, noStyle }) => {
+const Skeleton = ({ width, noStyle }: SkeletonProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -98,7 +125,7 @@ const TransactionReviewEIP1559 = ({
   isAnimating,
   gasEstimationReady,
   legacy,
-}) => {
+}: TransactionReviewEIP1559Props) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -370,85 +397,6 @@ const TransactionReviewEIP1559 = ({
       />
     </Summary>
   );
-};
-
-TransactionReviewEIP1559.propTypes = {
-  /**
-   * Gas fee in native currency
-   */
-  gasFeeNative: PropTypes.string,
-  /**
-   * Gas fee converted to chosen currency
-   */
-  gasFeeConversion: PropTypes.string,
-  /**
-   * Maximum gas fee in native currency
-   */
-  gasFeeMaxNative: PropTypes.string,
-  /**
-   * Maximum gas fee onverted to chosen currency
-   */
-  gasFeeMaxConversion: PropTypes.string,
-  /**
-   * Selected primary currency
-   */
-  primaryCurrency: PropTypes.string,
-  /**
-   * A string representing the network chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * Function called when user clicks to edit the gas fee
-   */
-  onEdit: PropTypes.func,
-  /**
-   * String that represents the time estimates
-   */
-  timeEstimate: PropTypes.string,
-  /**
-   * String that represents the color of the time estimate
-   */
-  timeEstimateColor: PropTypes.string,
-  /**
-   * Time estimate name (unknown, low, medium, high, less_than, range)
-   */
-  timeEstimateId: PropTypes.string,
-  /**
-   * Boolean to determine the container should have no margin
-   */
-  noMargin: PropTypes.bool,
-  /**
-   * Origin (hostname) of the dapp that suggested the gas fee
-   */
-  origin: PropTypes.string,
-  /**
-   * Function to call when update animation starts
-   */
-  onUpdatingValuesStart: PropTypes.func,
-  /**
-   * Function to call when update animation ends
-   */
-  onUpdatingValuesEnd: PropTypes.func,
-  /**
-   * If the values should animate upon update or not
-   */
-  animateOnChange: PropTypes.bool,
-  /**
-   * Boolean to determine if the animation is happening
-   */
-  isAnimating: PropTypes.bool,
-  /**
-   * If loading should stop
-   */
-  gasEstimationReady: PropTypes.bool,
-  /**
-   * If should show legacy gas
-   */
-  legacy: PropTypes.bool,
-  /**
-   * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
-   */
-  originWarning: PropTypes.bool,
 };
 
 export default TransactionReviewEIP1559;

@@ -37,6 +37,42 @@ import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../UI/TimeEstimateInfoModal';
 import createStyles from './styles';
 
+interface EditGasFee1559UpdateProps {
+  selectedGasValue?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gasOptions: Record<string, any>;
+  primaryCurrency?: string;
+  chainId?: string;
+  onCancel: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onChange: (value: any, option?: string) => void;
+  onSave: (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    gasObj: Record<string, any>,
+    option: string | undefined,
+  ) => void;
+  error?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dappSuggestedGas?: Record<string, any>;
+  ignoreOptions?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateOption?: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  extendOptions?: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  recommended?: Record<string, any>;
+  warningMinimumEstimateOption?: string;
+  suggestedEstimateOption?: string;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  analyticsParams?: Record<string, any>;
+  warning?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectedGasObject: Record<string, any>;
+  onlyGas?: boolean;
+}
+
 const EditGasFee1559Update = ({
   selectedGasValue,
   gasOptions,
@@ -59,7 +95,7 @@ const EditGasFee1559Update = ({
   warning,
   selectedGasObject,
   onlyGas,
-}) => {
+}: EditGasFee1559UpdateProps) => {
   const [modalInfo, updateModalInfo] = useState({
     isVisible: false,
     value: '',

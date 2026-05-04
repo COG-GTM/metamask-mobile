@@ -1,11 +1,17 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
-import PropTypes from 'prop-types';
+
 import { strings } from '../../../../../../../locales/i18n';
 import Text from '../../../../../Base/Text';
 import { useTheme } from '../../../../../../util/theme';
 
-const createStyles = (colors) =>
+interface CustomNonceProps {
+  nonce?: number;
+  onNonceEdit?: () => void;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     customNonce: {
       marginTop: 10,
@@ -23,7 +29,7 @@ const createStyles = (colors) =>
     },
   });
 
-const CustomNonce = ({ nonce, onNonceEdit }) => {
+const CustomNonce = ({ nonce, onNonceEdit }: CustomNonceProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -41,17 +47,6 @@ const CustomNonce = ({ nonce, onNonceEdit }) => {
       </Text>
     </TouchableOpacity>
   );
-};
-
-CustomNonce.propTypes = {
-  /**
-   * Current nonce
-   */
-  nonce: PropTypes.number,
-  /**
-   * Function called when editing nonce
-   */
-  onNonceEdit: PropTypes.func,
 };
 
 export default CustomNonce;

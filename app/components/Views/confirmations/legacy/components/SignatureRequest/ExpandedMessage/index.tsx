@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -16,7 +15,15 @@ import Device from '../../../../../../../util/device';
 import { getHost } from '../../../../../../../util/browser';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
 
-const createStyles = (colors) =>
+interface ExpandedMessageProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  currentPageInformation: Record<string, any>;
+  renderMessage: () => React.ReactNode;
+  toggleExpandedMessage: () => void;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     expandedRoot: {
       backgroundColor: colors.background.default,
@@ -72,21 +79,7 @@ const createStyles = (colors) =>
 /**
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
-export default class ExpandedMessage extends PureComponent {
-  static propTypes = {
-    /**
-     * Object containing current page title and url
-     */
-    currentPageInformation: PropTypes.object,
-    /**
-     * Renders the message based on its type (parent)
-     */
-    renderMessage: PropTypes.func,
-    /**
-     * Expands the message box on press.
-     */
-    toggleExpandedMessage: PropTypes.func,
-  };
+export default class ExpandedMessage extends PureComponent<ExpandedMessageProps> {
 
   render() {
     const { currentPageInformation, renderMessage, toggleExpandedMessage } =

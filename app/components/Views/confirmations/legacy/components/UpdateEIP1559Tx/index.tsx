@@ -24,6 +24,31 @@ import {
 } from '../../../../../../util/number';
 import { getTicker } from '../../../../../../util/transactions';
 import EditGasFee1559Update from '../EditGasFee1559Update';
+import { RootState } from '../../../../../../reducers';
+
+interface UpdateEIP1559TxStateProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  accounts: Record<string, any>;
+  selectedAddress: string;
+  ticker: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gasFeeEstimates: Record<string, any>;
+  gasEstimateType: string;
+  primaryCurrency: string;
+}
+
+interface UpdateEIP1559TxOwnProps {
+  gas: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  existingGas: Record<string, any>;
+  isCancel?: boolean;
+  chainId: string;
+  onCancel: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSave: (gasTxn: Record<string, any>) => void;
+}
+
+type UpdateEIP1559TxProps = UpdateEIP1559TxStateProps & UpdateEIP1559TxOwnProps;
 
 const UpdateEIP1559Tx = ({
   gas,
@@ -38,7 +63,7 @@ const UpdateEIP1559Tx = ({
   chainId,
   onCancel,
   onSave,
-}) => {
+}: UpdateEIP1559TxProps) => {
   const [animateOnGasChange, setAnimateOnGasChange] = useState(false);
   const [gasSelected, setGasSelected] = useState(
     AppConstants.GAS_OPTIONS.MEDIUM,
@@ -73,7 +98,7 @@ const UpdateEIP1559Tx = ({
   }, []);
 
   const isMaxFeePerGasMoreThanLegacy = useCallback(
-    (maxFeePerGas) => {
+    (maxFeePerGas: BigNumber) => {
       const newDecMaxFeePerGas = new BigNumber(existingGas.maxFeePerGas).times(
         new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE),
       );
@@ -86,7 +111,7 @@ const UpdateEIP1559Tx = ({
   );
 
   const isMaxPriorityFeePerGasMoreThanLegacy = useCallback(
-    (maxPriorityFeePerGas) => {
+    (maxPriorityFeePerGas: BigNumber) => {
       const newDecMaxPriorityFeePerGas = new BigNumber(
         existingGas.maxPriorityFeePerGas,
       ).times(new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE));
@@ -99,7 +124,8 @@ const UpdateEIP1559Tx = ({
   );
 
   const validateAmount = useCallback(
-    (updateTx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (updateTx: Record<string, any>) => {
       let error;
       const totalMaxHexPrefixed = addHexPrefix(updateTx.totalMaxHex);
 
@@ -211,12 +237,13 @@ const UpdateEIP1559Tx = ({
     isMaxPriorityFeePerGasMoreThanLegacy,
   ]);
 
-  const update1559TempGasValue = (selected) => {
+  const update1559TempGasValue = (selected: string) => {
     stopUpdateGas.current = !selected;
     setGasSelected(selected);
   };
 
-  const onSaveTxnWithError = (gasTxn) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onSaveTxnWithError = (gasTxn: Record<string, any>) => {
     gasTxn.error = validateAmount(gasTxn);
     onSave(gasTxn);
   };
@@ -257,7 +284,8 @@ const UpdateEIP1559Tx = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: RootState & { settings: any }, ownProps: UpdateEIP1559TxOwnProps): UpdateEIP1559TxStateProps => ({
   accounts: selectAccounts(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   ticker: selectNativeCurrencyByChainId(state, ownProps.chainId),
