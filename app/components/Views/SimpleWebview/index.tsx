@@ -66,4 +66,6 @@ export default class SimpleWebview extends PureComponent<SimpleWebviewProps> {
   }
 }
 
+SimpleWebview.contextType = ThemeContext;
+
 export { default as createWebviewNavDetails } from './SimpleWebview.types';

@@ -66,4 +66,5 @@ export default class TermsAndConditions extends PureComponent<TermsAndConditions
   }
 }
 
+TermsAndConditions.contextType = ThemeContext;
 

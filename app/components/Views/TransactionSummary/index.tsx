@@ -158,4 +158,5 @@ export default class TransactionSummary extends PureComponent<TransactionSummary
   };
 }
 
+TransactionSummary.contextType = ThemeContext;
 

@@ -176,4 +176,5 @@ export default class EnterPasswordSimple extends PureComponent<EnterPasswordSimp
   }
 }
 
+EnterPasswordSimple.contextType = ThemeContext;
 
