@@ -249,7 +249,7 @@ function QuotesModal({
 
   // When quotes change go back to the first quote as selected
   useEffect(() => {
-    setSelectedDetailsQuoteIndex(quotes?.[0] || null);
+    setSelectedDetailsQuoteIndex(quotes?.length ? 0 : null);
   }, [quotes]);
 
   // If details are going to be displayed but the quotes does not exist,
