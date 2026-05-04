@@ -11,13 +11,18 @@ import { v4 } from 'uuid';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
+export default function migrate(state: unknown): unknown {
+  const s = state as {
+    engine: { backgroundState: Record<string, Record<string, unknown>> };
+  };
   const preferencesControllerState =
-    state.engine.backgroundState.PreferencesController;
-  const networkControllerState = state.engine.backgroundState.NetworkController;
-  const frequentRpcList = preferencesControllerState?.frequentRpcList;
+    s.engine.backgroundState.PreferencesController;
+  const networkControllerState = s.engine.backgroundState.NetworkController;
+  const frequentRpcList = preferencesControllerState?.frequentRpcList as
+    | { chainId: string | number; [key: string]: unknown }[]
+    | undefined;
   if (networkControllerState && frequentRpcList) {
-    const networkConfigurations = frequentRpcList.reduce(
+    const networkConfigurations = frequentRpcList.reduce<Record<string, Record<string, unknown>>>(
       (networkConfigs, networkConfig) => {
         const networkConfigurationId = v4();
         return {

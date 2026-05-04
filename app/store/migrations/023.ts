@@ -23,8 +23,12 @@ import ambiguousNetworks from './migration-data/amibiguous-networks.json';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
-  const keyringControllerState = state.engine.backgroundState.KeyringController;
+export default function migrate(state: unknown): unknown {
+  const s = state as {
+    engine: { backgroundState: Record<string, unknown> };
+    user: Record<string, unknown>;
+  };
+  const keyringControllerState = s.engine.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
     captureException(
       // @ts-expect-error We are not returning state not to stop the flow of Vault recovery
@@ -34,9 +38,9 @@ export default function migrate(state) {
     );
   }
 
-  const networkControllerState = state.engine.backgroundState.NetworkController;
+  const networkControllerState = s.engine.backgroundState.NetworkController;
   const addressBookControllerState =
-    state.engine.backgroundState.AddressBookController;
+    s.engine.backgroundState.AddressBookController;
 
   if (!isObject(networkControllerState)) {
     captureException(
@@ -131,9 +135,9 @@ export default function migrate(state) {
       ),
     );
     return state;
-  } else if (!isObject(state.user)) {
+  } else if (!isObject(s.user)) {
     captureException(
-      new Error(`Migration 23: Invalid user state: '${typeof state.user}'`),
+      new Error(`Migration 23: Invalid user state: '${typeof s.user}'`),
     );
     return state;
   }
@@ -184,7 +188,7 @@ export default function migrate(state) {
 
   // Store ambiguous entries so that we can warn about them in the UI
   if (Object.keys(ambiguousAddressEntries).length > 1) {
-    state.user.ambiguousAddressEntries = ambiguousAddressEntries;
+    s.user.ambiguousAddressEntries = ambiguousAddressEntries;
   }
 
   return state;

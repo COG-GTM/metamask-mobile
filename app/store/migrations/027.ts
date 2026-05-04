@@ -3,22 +3,32 @@ import { NetworkType } from '@metamask/controller-utils';
 /**
  * Populate the submitHistory in the TransactionController using any
  * transaction metadata entries that have a rawTransaction value.
- * @param {any} state - Redux state
+ * @param state - Redux state
  * @returns
  */
-export default function migrate(state) {
-  const backgroundState = state.engine.backgroundState;
+export default function migrate(state: unknown): unknown {
+  const s = state as {
+    engine: { backgroundState: Record<string, Record<string, unknown>> };
+  };
+  const backgroundState = s.engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;
 
   if (!transactionControllerState) return state;
 
-  const transactions = transactionControllerState.transactions || [];
-  const networkControllerState = backgroundState.NetworkController || {};
-  const providerConfig = networkControllerState.providerConfig || {};
+  const transactions = (transactionControllerState.transactions || []) as {
+    rawTransaction?: string;
+    chainId: string;
+    transactionHash: string;
+    origin: string;
+    time: number;
+    transaction: unknown;
+  }[];
+  const networkControllerState = (backgroundState.NetworkController || {}) as Record<string, unknown>;
+  const providerConfig = (networkControllerState.providerConfig || {}) as Record<string, string>;
 
   const networkConfigurations =
-    networkControllerState.networkConfigurations || {};
+    (networkControllerState.networkConfigurations || {}) as Record<string, { chainId: string; rpcUrl: string }>;
 
   const submitHistory = transactions
     .filter((tx) => tx.rawTransaction?.length)
@@ -51,7 +61,7 @@ export default function migrate(state) {
       };
     });
 
-  state.engine.backgroundState.TransactionController.submitHistory =
+  s.engine.backgroundState.TransactionController.submitHistory =
     submitHistory;
 
   return state;

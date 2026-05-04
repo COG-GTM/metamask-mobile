@@ -16,8 +16,11 @@ import { NetworkStatus } from '@metamask/network-controller';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
-  const networkControllerState = state.engine.backgroundState.NetworkController;
+export default function migrate(state: unknown): unknown {
+  const s = state as {
+    engine: { backgroundState: Record<string, unknown> };
+  };
+  const networkControllerState = s.engine.backgroundState.NetworkController;
 
   if (!isObject(networkControllerState)) {
     captureException(
