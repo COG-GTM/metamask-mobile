@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { fontStyles } from '../../../../../styles/common';
-import PropTypes from 'prop-types';
+
 import { getEditableOptions } from '../../../../UI/Navbar';
 import StyledButton from '../../../../UI/StyledButton';
 import Engine from '../../../../../core/Engine';
@@ -36,8 +36,13 @@ import { AddContactViewSelectorsIDs } from '../../../../../../e2e/selectors/Sett
 import { selectInternalAccounts } from '../../../../../selectors/accountsController';
 import { toLowerCaseEquals } from '../../../../../util/general';
 import { selectAddressBook } from '../../../../../selectors/addressBookController';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
+import { RootState } from '../../../../../reducers';
+import type { Theme } from '@metamask/design-tokens';
+import { InternalAccount } from '@metamask/keyring-internal-api';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -116,29 +121,29 @@ const EDIT = 'edit';
 /**
  * View that contains app information
  */
-class ContactForm extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * An array containing each account with metadata
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Network chainId
-     */
-    chainId: PropTypes.string,
-  };
+interface ContactFormProps {
+  navigation: StackNavigationProp<Record<string, Record<string, string | (() => void)> | undefined>>;
+  internalAccounts: InternalAccount[];
+  addressBook: Record<string, Record<string, { address: string; name: string; memo?: string }>>;
+  route: RouteProp<Record<string, Record<string, string | (() => void)> | undefined>, string>;
+  chainId: string;
+}
+
+interface ContactFormState {
+  name: string | null;
+  address: string | null;
+  addressError: string | null;
+  toEnsName: string | null;
+  toEnsAddress: string | null;
+  addressReady: boolean;
+  mode: string;
+  memo: string | null;
+  editable: boolean;
+  inputWidth: string | undefined;
+  errorContinue?: boolean;
+}
+
+class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
 
   state = {
     name: null,
@@ -153,9 +158,11 @@ class ContactForm extends PureComponent {
     inputWidth: Platform.OS === 'android' ? '99%' : undefined,
   };
 
-  actionSheet = React.createRef();
-  addressInput = React.createRef();
-  memoInput = React.createRef();
+  declare context: React.ContextType<typeof ThemeContext>;
+  actionSheet: ActionSheet | null = null;
+  contactAddressToRemove: string | null = null;
+  addressInput = React.createRef<TextInput>();
+  memoInput = React.createRef<TextInput>();
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
@@ -218,11 +225,11 @@ class ContactForm extends PureComponent {
     this.actionSheet && this.actionSheet.show();
   };
 
-  onChangeName = (name) => {
+  onChangeName = (name: string) => {
     this.setState({ name });
   };
 
-  validateAddressOrENSFromInput = async (address) => {
+  validateAddressOrENSFromInput = async (address: string) => {
     const { addressBook, internalAccounts, chainId } = this.props;
 
     const {
@@ -247,12 +254,12 @@ class ContactForm extends PureComponent {
     });
   };
 
-  onChangeAddress = (address) => {
+  onChangeAddress = (address: string) => {
     this.validateAddressOrENSFromInput(address);
     this.setState({ address });
   };
 
-  onChangeMemo = (memo) => {
+  onChangeMemo = (memo: string) => {
     this.setState({ memo });
   };
 
@@ -301,11 +308,11 @@ class ContactForm extends PureComponent {
     );
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: ActionSheet) => {
     this.actionSheet = ref;
   };
 
-  renderErrorMessage = (addressError) => {
+  renderErrorMessage = (addressError: string) => {
     let errorMessage = addressError;
 
     if (addressError === CONTACT_ALREADY_SAVED) {
@@ -504,7 +511,7 @@ class ContactForm extends PureComponent {
 
 ContactForm.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   addressBook: selectAddressBook(state),
   internalAccounts: selectInternalAccounts(state),
   chainId: selectEvmChainId(state),

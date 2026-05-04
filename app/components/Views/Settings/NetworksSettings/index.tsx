@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   ScrollView,
@@ -44,12 +43,16 @@ import { updateIncomingTransactions } from '../../../../util/transaction-control
 import NetworkSearchTextInput from '../../NetworkSelector/NetworkSearchTextInput';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { isNonEvmChainId } from '../../../../core/Multichain/utils';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootState } from '../../../../reducers';
+import type { Theme } from '@metamask/design-tokens';
+import { ImageSourcePropType } from 'react-native';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { SolScope } from '@metamask/keyring-api';
 import { selectNonEvmNetworkConfigurationsByChainId } from '../../../../selectors/multichainNetworkController';
 ///: END:ONLY_INCLUDE_IF
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -124,30 +127,39 @@ const createStyles = (colors) =>
 /**
  * Main view for app configurations
  */
-class NetworksSettings extends PureComponent {
-  static propTypes = {
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Current network provider configuration
-     */
-    providerConfig: PropTypes.object,
-    ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-    /**
-     * Non evm network configurations
-     */
-    nonEvmNetworkConfigurations: PropTypes.object,
-    ///: END:ONLY_INCLUDE_IF
-  };
+interface NetworkFilterEntry {
+  name: string;
+  color: string | null;
+  networkTypeOrRpcUrl: string;
+  isCustomRPC: boolean;
+  chainId: string;
+  i?: number;
+}
 
-  actionSheet = null;
-  networkToRemove = null;
+interface NetworksSettingsProps {
+  networkConfigurations: Record<string, {
+    rpcEndpoints: { name?: string; url: string; networkClientId: string }[];
+    name: string;
+    chainId: string;
+    defaultRpcEndpointIndex: number;
+  }>;
+  navigation: StackNavigationProp<Record<string, Record<string, string> | undefined>>;
+  providerConfig: { rpcUrl?: string; type?: string };
+  ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+  nonEvmNetworkConfigurations: Record<string, { chainId: string; name: string }>;
+  ///: END:ONLY_INCLUDE_IF
+}
+
+interface NetworksSettingsState {
+  searchString: string;
+  filteredNetworks: NetworkFilterEntry[];
+}
+
+class NetworksSettings extends PureComponent<NetworksSettingsProps, NetworksSettingsState> {
+
+  declare context: React.ContextType<typeof ThemeContext>;
+  actionSheet: ActionSheet | null = null;
+  networkToRemove: string | null = null;
 
   state = {
     searchString: '',
@@ -181,7 +193,7 @@ class NetworksSettings extends PureComponent {
 
   getOtherNetworks = () => getAllNetworks().slice(2);
 
-  onNetworkPress = (networkTypeOrRpcUrl) => {
+  onNetworkPress = (networkTypeOrRpcUrl: string) => {
     const { navigation } = this.props;
     navigation.navigate(Routes.ADD_NETWORK, {
       network: networkTypeOrRpcUrl,
@@ -193,7 +205,7 @@ class NetworksSettings extends PureComponent {
     navigation.navigate(Routes.ADD_NETWORK);
   };
 
-  showRemoveMenu = (networkTypeOrRpcUrl) => {
+  showRemoveMenu = (networkTypeOrRpcUrl: string) => {
     this.networkToRemove = networkTypeOrRpcUrl;
     this.actionSheet.show();
   };
@@ -247,13 +259,13 @@ class NetworksSettings extends PureComponent {
     this.setState({ filteredNetworks: [] });
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: ActionSheet) => {
     this.actionSheet = ref;
   };
 
-  onActionSheetPress = (index) => (index === 0 ? this.removeNetwork() : null);
+  onActionSheetPress = (index: number) => (index === 0 ? this.removeNetwork() : null);
 
-  networkElement(name, image, i, networkTypeOrRpcUrl, isCustomRPC, color) {
+  networkElement(name: string, image: ImageSourcePropType | undefined, i: number, networkTypeOrRpcUrl: string, isCustomRPC: boolean, color?: string | null) {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
@@ -483,7 +495,7 @@ class NetworksSettings extends PureComponent {
     );
   }
   ///: END:ONLY_INCLUDE_IF
-  handleSearchTextChange = (text) => {
+  handleSearchTextChange = (text: string) => {
     this.setState({ searchString: text });
     const defaultNetwork = getAllNetworks().map((networkType, i) => {
       const { color, name, chainId } = Networks[networkType];
@@ -626,7 +638,7 @@ class NetworksSettings extends PureComponent {
 
 NetworksSettings.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   providerConfig: selectProviderConfig(state),
   networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
