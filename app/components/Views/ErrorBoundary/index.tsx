@@ -13,7 +13,6 @@ import {
   Image,
   TextInput,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { lastEventId as getLatestSentryId } from '@sentry/react-native';
 import { captureSentryFeedback } from '../../../util/sentry/utils';
 import { RevealPrivateCredential } from '../RevealPrivateCredential';
@@ -41,10 +40,34 @@ import {
 import AppConstants from '../../../core/AppConstants';
 import { useSelector } from 'react-redux';
 import { isTest } from '../../../util/test/utils';
+import type { Theme } from '@metamask/design-tokens';
+import type { IUseMetricsHook } from '../../hooks/useMetrics/useMetrics.types';
+
+interface FallbackProps {
+  errorMessage?: string;
+  showExportSeedphrase?: () => void;
+  copyErrorToClipboard?: () => void;
+  sentryId?: string;
+  resetError?: () => void;
+  openTicket?: () => void;
+}
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  view: string;
+  navigation?: Record<string, unknown>;
+  metrics: IUseMetricsHook;
+}
+
+interface ErrorBoundaryState {
+  error: Error | null;
+  backupSeedphrase?: boolean;
+  sentryId?: string;
+}
 // eslint-disable-next-line import/no-commonjs
 const WarningIcon = require('./warning-icon.png');
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -224,13 +247,13 @@ const createStyles = (colors) =>
     hitSlop: { top: 50, right: 50, bottom: 50, left: 50 },
   });
 
-export const Fallback = (props) => {
+export const Fallback = (props: FallbackProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [feedback, setFeedback] = React.useState('');
   const dataCollectionForMarketing = useSelector(
-    (state) => state.security.dataCollectionForMarketing,
+    (state: { security: { dataCollectionForMarketing: boolean } }) => state.security.dataCollectionForMarketing,
   );
 
   const toggleModal = () => {
@@ -395,27 +418,12 @@ export const Fallback = (props) => {
   );
 };
 
-Fallback.propTypes = {
-  errorMessage: PropTypes.string,
-  showExportSeedphrase: PropTypes.func,
-  copyErrorToClipboard: PropTypes.func,
-  sentryId: PropTypes.string,
-};
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-class ErrorBoundary extends Component {
-  state = { error: null };
+  state: ErrorBoundaryState = { error: null };
 
-  static propTypes = {
-    children: PropTypes.oneOfType([
-      PropTypes.arrayOf(PropTypes.node),
-      PropTypes.node,
-    ]),
-    view: PropTypes.string.isRequired,
-    navigation: PropTypes.object,
-    metrics: PropTypes.object,
-  };
-
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: Error) {
     return { error };
   }
 
@@ -480,7 +488,7 @@ class ErrorBoundary extends Component {
     Linking.openURL(url);
   };
 
-  renderWithSafeArea = (children) => {
+  renderWithSafeArea = (children: React.ReactNode) => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -513,4 +521,4 @@ class ErrorBoundary extends Component {
 
 ErrorBoundary.contextType = ThemeContext;
 
-export default withMetricsAwareness(ErrorBoundary);
+export default withMetricsAwareness(ErrorBoundary) as React.ComponentType<Omit<ErrorBoundaryProps, 'metrics'>>;

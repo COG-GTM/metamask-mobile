@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { View } from 'react-native';
 import { WebView } from '@metamask/react-native-webview';
 import { getWebviewNavbar } from '../../UI/Navbar';
@@ -8,23 +7,30 @@ import Logger from '../../../util/Logger';
 import { baseStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-export default class SimpleWebview extends PureComponent {
-  static propTypes = {
-    /**
-     * react-navigation object used to switch between screens
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
+interface SimpleWebviewProps {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    pop: () => void;
   };
+  route: {
+    params?: {
+      url?: string;
+      title?: string;
+      dispatch?: () => void;
+    };
+  };
+}
+
+export default class SimpleWebview extends PureComponent<SimpleWebviewProps> {
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(getWebviewNavbar(navigation, route, colors));
   };
+
+  declare context: React.ContextType<typeof ThemeContext>;
 
   componentDidMount = () => {
     const { navigation } = this.props;
@@ -61,5 +67,3 @@ export default class SimpleWebview extends PureComponent {
 }
 
 export { default as createWebviewNavDetails } from './SimpleWebview.types';
-
-SimpleWebview.contextType = ThemeContext;

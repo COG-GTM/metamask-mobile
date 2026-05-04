@@ -6,7 +6,6 @@ import React, {
   useState,
 } from 'react';
 import Video from 'react-native-video';
-import PropTypes from 'prop-types';
 import {
   PanResponder,
   StyleSheet,
@@ -23,9 +22,35 @@ import FA5Icon from 'react-native-vector-icons/FontAwesome5';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import { baseStyles, colors as importedColors } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import type { StyleProp, ViewStyle } from 'react-native';
 
-const createStyles = (theme) =>
+interface VideoPlayerTextTrack {
+  title?: string;
+  language?: string;
+  type?: string;
+  uri?: string;
+}
+
+interface VideoPlayerSelectedTextTrack {
+  type?: string;
+  value?: string | number;
+}
+
+interface VideoPlayerProps {
+  controlsAnimationTiming?: number;
+  controlsToggleTiming?: number;
+  source: { uri: string } | number;
+  displayTopControls?: boolean;
+  displayBottomControls?: boolean;
+  onClose?: () => void;
+  onLoad?: () => void;
+  onError?: () => void;
+  selectedTextTrack?: VideoPlayerSelectedTextTrack;
+  textTracks?: VideoPlayerTextTrack[];
+  style?: StyleProp<ViewStyle>;
+}
+
+const createStyles = (theme: { colors: Record<string, Record<string, string>>; brandColors: Record<string, string> }) =>
   StyleSheet.create({
     playerContainer: {
       flex: 0,
@@ -155,18 +180,18 @@ const createStyles = (theme) =>
   });
 
 export default function VideoPlayer({
-  controlsAnimationTiming,
-  controlsToggleTiming,
+  controlsAnimationTiming = 500,
+  controlsToggleTiming = 5000,
   source,
-  displayTopControls,
-  displayBottomControls,
+  displayTopControls = true,
+  displayBottomControls = true,
   onClose,
   onError,
   textTracks,
   selectedTextTrack,
   onLoad: propsOnLoad,
   style,
-}) {
+}: VideoPlayerProps) {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
   const [seekerFillWidth, setSeekerFillWidth] = useState(0);
@@ -181,9 +206,9 @@ export default function VideoPlayer({
   const [showControls, setShowControls] = useState(true);
   const [seekerWidth, setSeekerWidth] = useState(0);
 
-  const videoRef = useRef();
+  const videoRef = useRef<Video>(null);
 
-  const controlsTimeout = useRef();
+  const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const theme = useTheme();
   const styles = createStyles(theme);
@@ -629,26 +654,4 @@ export default function VideoPlayer({
   );
 }
 
-VideoPlayer.propTypes = {
-  controlsAnimationTiming: PropTypes.number,
-  controlsToggleTiming: PropTypes.number,
-  // source can be a uri object for remote files
-  // or a number returned by import for bundled files
-  source: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
-  displayTopControls: PropTypes.bool,
-  displayBottomControls: PropTypes.bool,
-  onClose: PropTypes.func,
-  onLoad: PropTypes.func,
-  onError: PropTypes.func,
-  selectedTextTrack: PropTypes.object,
-  textTracks: PropTypes.arrayOf(PropTypes.object),
-  style: ViewPropTypes.style,
-};
 
-VideoPlayer.defaultProps = {
-  doubleTapTime: 100,
-  controlsAnimationTiming: 500,
-  controlsToggleTiming: 5000,
-  displayTopControls: true,
-  displayBottomControls: true,
-};

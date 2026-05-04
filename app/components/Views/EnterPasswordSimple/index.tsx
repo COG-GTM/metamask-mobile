@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   Alert,
@@ -17,8 +16,9 @@ import { strings } from '../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import { passwordRequirementsMet } from '../../../util/password';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -48,19 +48,28 @@ const createStyles = (colors) =>
 /**
  * View where users can re-enter their password
  */
-export default class EnterPasswordSimple extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
+interface EnterPasswordSimpleProps {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    pop: () => void;
   };
+  route: {
+    params: {
+      onPasswordSet: (password: string) => void;
+    };
+  };
+}
 
-  state = {
+interface EnterPasswordSimpleState {
+  password: string;
+  loading: boolean;
+  error: string | null;
+}
+
+export default class EnterPasswordSimple extends PureComponent<EnterPasswordSimpleProps, EnterPasswordSimpleState> {
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  state: EnterPasswordSimpleState = {
     password: '',
     loading: false,
     error: null,
@@ -107,7 +116,7 @@ export default class EnterPasswordSimple extends PureComponent {
     }
   };
 
-  onPasswordChange = (val) => {
+  onPasswordChange = (val: string) => {
     this.setState({ password: val });
   };
 
@@ -167,4 +176,4 @@ export default class EnterPasswordSimple extends PureComponent {
   }
 }
 
-EnterPasswordSimple.contextType = ThemeContext;
+
