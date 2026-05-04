@@ -186,7 +186,8 @@ const ImportFromSecretRecoveryPhrase: React.FC<ImportFromSecretRecoveryPhrasePro
         true,
       );
     } catch (err) {
-      this.setState({ loading: false, error: err.toString() });
+      setLoading(false);
+      setError((err as Error).toString());
     }
     setBiometryType(newAuthData.availableBiometryType);
     updateBiometryChoice(false);
@@ -236,7 +237,7 @@ const ImportFromSecretRecoveryPhrase: React.FC<ImportFromSecretRecoveryPhrasePro
           );
         } catch (err) {
           // retry faceID if the user cancels the
-          if (Device.isIos && err.toString() === IOS_REJECTED_BIOMETRICS_ERROR)
+          if (Device.isIos() && err.toString() === IOS_REJECTED_BIOMETRICS_ERROR)
             await handleRejectedOsBiometricPrompt(parsedSeed);
         }
         // Get onboarding wizard state

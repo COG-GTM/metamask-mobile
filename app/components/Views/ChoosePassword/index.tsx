@@ -155,7 +155,9 @@ const createStyles = (colors: Theme['colors']) =>
       color: colors.text.default,
     },
     ctaWrapper: {
+      flex: 1,
       marginTop: 20,
+      paddingHorizontal: 10,
     },
     passwordStrengthLabel: {
       height: 20,
