@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -33,6 +32,7 @@ import {
   selectCurrentCurrency,
 } from '../../../../selectors/currencyRateController';
 import { selectSwapsQuoteValues } from '../../../../reducers/swaps';
+import { RootState } from '../../../../reducers';
 
 const createStyles = (colors, shadows) =>
   StyleSheet.create({
@@ -127,6 +127,48 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+interface QuoteItem {
+  aggregator: string;
+  sourceAmount: string;
+  destinationAmount: string;
+  slippage: number;
+  aggType?: string;
+  priceSlippage?: {
+    calculationError?: string;
+    destinationAmountInETH?: string;
+  };
+}
+
+interface TokenInfo {
+  symbol: string;
+  decimals: number;
+}
+
+interface QuoteValue {
+  ethFee?: string;
+  overallValueOfQuote?: number;
+}
+
+interface OwnProps {
+  isVisible?: boolean;
+  toggleModal: () => void;
+  quotes: QuoteItem[];
+  selectedQuote?: string;
+  sourceToken: TokenInfo;
+  destinationToken: TokenInfo;
+  showOverallValue?: boolean;
+  ticker?: string;
+  multiLayerL1ApprovalFeeTotal?: string;
+}
+
+interface StateProps {
+  conversionRate: number;
+  currentCurrency: string;
+  quoteValues: Record<string, QuoteValue>;
+}
+
+type Props = OwnProps & StateProps;
+
 function QuotesModal({
   isVisible,
   toggleModal,
@@ -140,12 +182,12 @@ function QuotesModal({
   showOverallValue,
   ticker,
   multiLayerL1ApprovalFeeTotal,
-}) {
+}: Props) {
   const bestOverallValue =
     quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
   const [displayDetails, setDisplayDetails] = useState(false);
   const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] =
-    useState(null);
+    useState<number | null>(null);
   const { colors, shadows } = useTheme();
   const styles = createStyles(colors, shadows);
 
@@ -471,37 +513,7 @@ function QuotesModal({
   );
 }
 
-QuotesModal.propTypes = {
-  isVisible: PropTypes.bool,
-  toggleModal: PropTypes.func,
-  quotes: PropTypes.array,
-  selectedQuote: PropTypes.string,
-  destinationToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  sourceToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  quoteValues: PropTypes.object,
-  showOverallValue: PropTypes.bool,
-  multiLayerL1ApprovalFeeTotal: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   quoteValues: selectSwapsQuoteValues(state),
