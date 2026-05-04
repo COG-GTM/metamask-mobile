@@ -1,5 +1,11 @@
 import createKeypadRule from './createKeypadRule';
 
+export interface CurrencyData {
+  decimalSeparator: string | null;
+  handler: (currentAmount: string, inputKey: string) => string;
+  symbol: string | null;
+}
+
 export const KEYS = {
   DIGIT_1: '1',
   DIGIT_2: '2',
@@ -14,9 +20,9 @@ export const KEYS = {
   PERIOD: 'PERIOD',
   BACK: 'BACK',
   INITIAL: 'INITIAL',
-};
+} as const;
 
-export const CURRENCIES = {
+export const CURRENCIES: Record<string, CurrencyData> = {
   native: {
     decimalSeparator: '.',
     handler: createKeypadRule({ decimalSeparator: '.' }),
