@@ -439,7 +439,8 @@ class NotificationManager {
         // If the smart transaction is not cancelled, notifications are already handled.
         return;
       }
-      const transactions = TransactionController.getTransactions();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const transactions = TransactionController.getTransactions({ filterToCurrentNetwork: false } as any);
       const foundTransaction = transactions.find(
         (tx: TransactionMeta) => tx.id === smartTransaction.transactionId,
       );

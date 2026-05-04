@@ -300,7 +300,7 @@ export class BackgroundBridge extends EventEmitter {
         ethQuery.sendAsync({ method: 'net_version' }, ((error: any, result: any) => {
           if (error) {
             console.error(error);
-            resolve('');
+            resolve(null as unknown as string);
           } else {
             resolve(result as string);
           }
