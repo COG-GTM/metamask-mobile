@@ -2,11 +2,25 @@ import { JsonRpcEngine } from '@metamask/json-rpc-engine';
 import {
   assertIsJsonRpcFailure,
   assertIsJsonRpcSuccess,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+  Json,
 } from '@metamask/utils';
 import { createEip1193MethodMiddleware } from '.';
 
+interface TestHooks {
+  hook1: () => number;
+  hook2: () => number;
+}
+
 const getHandler = () => ({
-  implementation: (req, res, _next, end, hooks) => {
+  implementation: (
+    req: JsonRpcRequest,
+    res: PendingJsonRpcResponse<Json>,
+    _next: () => void,
+    end: (err?: unknown) => void,
+    hooks: TestHooks,
+  ) => {
     if (Array.isArray(req.params)) {
       switch (req.params[0]) {
         case 1:
@@ -144,7 +158,7 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect((response.error.data as Record<string, Record<string, string>>)?.cause?.message).toBe('test error');
   });
 
   it('should handle errors thrown by the implementation', async () => {
@@ -161,7 +175,7 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect((response.error.data as Record<string, Record<string, string>>)?.cause?.message).toBe('test error');
   });
 
   it('should handle non-errors thrown by the implementation', async () => {
