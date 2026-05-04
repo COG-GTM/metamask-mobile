@@ -14,17 +14,33 @@ import { getDecimalChainId } from '../networks';
 import Logger from '../Logger';
 import { MetricsEventBuilder } from '../../core/Analytics/MetricsEventBuilder';
 
-export const typedSign = {
+interface MessageParams {
+  from: string;
+  origin: string;
+  version?: string;
+  currentPageInformation?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
+}
+
+interface LayoutEvent {
+  nativeEvent: {
+    layout: {
+      height: number;
+    };
+  };
+}
+
+export const typedSign: Record<string, string> = {
   V1: 'eth_signTypedData',
   V3: 'eth_signTypedData_v3',
   V4: 'eth_signTypedData_v4',
 };
 
 export const getAnalyticsParams = (
-  messageParams,
-  signType,
-  securityAlertResponse,
-) => {
+  messageParams: MessageParams,
+  signType: string,
+  securityAlertResponse?: Record<string, unknown>,
+): Record<string, unknown> => {
   if (!messageParams || typeof messageParams !== 'object') {
     throw new Error('Invalid messageParams provided');
   }
@@ -61,7 +77,7 @@ export const getAnalyticsParams = (
   return analyticsParams;
 };
 
-export const walletConnectNotificationTitle = (confirmation, isError) => {
+export const walletConnectNotificationTitle = (confirmation: boolean, isError: boolean): string => {
   if (isError) return strings('notifications.wc_signed_failed_title');
   return confirmation
     ? strings('notifications.wc_signed_title')
@@ -69,10 +85,10 @@ export const walletConnectNotificationTitle = (confirmation, isError) => {
 };
 
 export const showWalletConnectNotification = (
-  messageParams = {},
+  messageParams: MessageParams = {} as MessageParams,
   confirmation = false,
   isError = false,
-) => {
+): void => {
   InteractionManager.runAfterInteractions(() => {
     /**
      * FIXME: need to rewrite the way BackgroundBridge sets the origin.
@@ -97,12 +113,12 @@ export const showWalletConnectNotification = (
 };
 
 export const handleSignatureAction = async (
-  onAction,
-  messageParams,
-  signType,
-  securityAlertResponse,
-  confirmation,
-) => {
+  onAction: () => Promise<void>,
+  messageParams: MessageParams,
+  signType: string,
+  securityAlertResponse: Record<string, unknown> | undefined,
+  confirmation: boolean,
+): Promise<void> => {
   await onAction();
   showWalletConnectNotification(messageParams, confirmation);
   MetaMetrics.getInstance().trackEvent(
@@ -118,21 +134,21 @@ export const handleSignatureAction = async (
   );
 };
 
-export const addSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const addSignatureErrorListener = (metamaskId: string, onSignatureError: (...args: unknown[]) => void): void => {
   Engine.context.SignatureController.hub.on(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const removeSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const removeSignatureErrorListener = (metamaskId: string, onSignatureError: (...args: unknown[]) => void): void => {
   Engine.context.SignatureController.hub.removeListener(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const shouldTruncateMessage = (e) => {
+export const shouldTruncateMessage = (e: LayoutEvent): boolean => {
   if (
     (Device.isIos() && e.nativeEvent.layout.height > 70) ||
     (Device.isAndroid() && e.nativeEvent.layout.height > 100)

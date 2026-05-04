@@ -3,7 +3,17 @@ import ganache from 'ganache';
 
 export const DEFAULT_GANACHE_PORT = 8545;
 
-const defaultOptions = {
+interface GanacheOptions {
+  blockTime?: number;
+  network_id?: number;
+  port?: number;
+  vmErrorsOnRPCResponse?: boolean;
+  hardfork?: string;
+  quiet?: boolean;
+  mnemonic?: string;
+}
+
+const defaultOptions: GanacheOptions = {
   blockTime: 2,
   network_id: 1337,
   port: DEFAULT_GANACHE_PORT,
@@ -13,7 +23,9 @@ const defaultOptions = {
 };
 
 export default class Ganache {
-  async start(opts) {
+  _server: ReturnType<typeof ganache.server> | undefined;
+
+  async start(opts: GanacheOptions): Promise<void> {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
@@ -28,18 +40,18 @@ export default class Ganache {
     }
   }
 
-  getProvider() {
+  getProvider(): ReturnType<ReturnType<typeof ganache.server>['provider']> | undefined {
     return this._server?.provider;
   }
 
-  async getAccounts() {
+  async getAccounts(): Promise<string[]> {
     return await this.getProvider().request({
       method: 'eth_accounts',
       params: [],
     });
   }
 
-  async getBalance() {
+  async getBalance(): Promise<string | number> {
     const accounts = await this.getAccounts();
     const balanceHex = await this.getProvider().request({
       method: 'eth_getBalance',
@@ -53,7 +65,7 @@ export default class Ganache {
     return balanceFormatted;
   }
 
-  async quit() {
+  async quit(): Promise<void> {
     if (!this._server) {
       throw new Error('Server not running yet');
     }

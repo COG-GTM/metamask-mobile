@@ -11,20 +11,20 @@ import trackErrorAsAnalytics from './metrics/TrackError/trackErrorAsAnalytics';
  * - MetaMask Message Signature: User denied message signature.
  * - MetaMask Personal Message Signature: User denied message signature.
  */
-const USER_REJECTED_ERRORS = ['user rejected', 'user denied', 'user cancelled'];
+const USER_REJECTED_ERRORS: string[] = ['user rejected', 'user denied', 'user cancelled'];
 
-const USER_REJECTED_ERROR_CODE = 4001;
+const USER_REJECTED_ERROR_CODE: number = 4001;
 
 /**
  * Returns a middleware that appends the DApp origin to request
  * @param {{ origin: string }} opts - The middleware options
  * @returns {Function}
  */
-export function createOriginMiddleware(opts) {
+export function createOriginMiddleware(opts: { origin: string }): (req: Record<string, unknown>, _: unknown, next: () => void) => void {
   return function originMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ _,
-    /** @type {Function} */ next,
+    req: Record<string, unknown>,
+    _: unknown,
+    next: () => void,
   ) {
     req.origin = opts.origin;
 
@@ -43,7 +43,7 @@ export function createOriginMiddleware(opts) {
  * @param {String} errorMessage
  * @returns {boolean}
  */
-export function containsUserRejectedError(errorMessage, errorCode) {
+export function containsUserRejectedError(errorMessage: string | undefined, errorCode: number | undefined): boolean {
   try {
     if (!errorMessage || !(typeof errorMessage === 'string')) return false;
 
@@ -67,13 +67,13 @@ export function containsUserRejectedError(errorMessage, errorCode) {
  * @param {{ origin: string }} opts - The middleware options
  * @returns {Function}
  */
-export function createLoggerMiddleware(opts) {
+export function createLoggerMiddleware(opts: { origin: string }): (req: Record<string, unknown>, res: Record<string, unknown>, next: (cb: (done: () => void) => void) => void) => void {
   return function loggerMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ res,
-    /** @type {Function} */ next,
+    req: Record<string, unknown>,
+    res: Record<string, unknown>,
+    next: (cb: (done: () => void) => void) => void,
   ) {
-    next((/** @type {Function} */ cb) => {
+    next((cb: () => void) => {
       if (res.error) {
         const { error, ...resWithoutError } = res;
         if (error) {

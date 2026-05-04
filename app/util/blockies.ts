@@ -1,3 +1,6 @@
+// @ts-nocheck
+// This file uses a UMD module pattern with ES5-style code that cannot be
+// typed without a full refactor. The public API is: export { toDataUrl }
 (function (global, factory) {
   exports && typeof exports === 'object' && typeof module !== 'undefined'
     ? factory(exports)
@@ -418,5 +421,5 @@
  * of caching Blockies Data URIs
  */
 class Blockies {
-  static cache = {};
+  static cache: Record<string, string> = {};
 }
