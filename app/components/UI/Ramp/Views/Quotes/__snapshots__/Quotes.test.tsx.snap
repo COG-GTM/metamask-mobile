@@ -547,9 +547,12 @@ exports[`Quotes custom action renders correctly after animation with the recomme
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -577,19 +580,27 @@ exports[`Quotes custom action renders correctly after animation with the recomme
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -597,13 +608,15 @@ exports[`Quotes custom action renders correctly after animation with the recomme
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -799,14 +812,18 @@ exports[`Quotes custom action renders correctly after animation with the recomme
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -875,9 +892,13 @@ exports[`Quotes custom action renders correctly after animation with the recomme
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -1578,9 +1599,12 @@ exports[`Quotes renders animation on first fetching 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -1608,19 +1632,27 @@ exports[`Quotes renders animation on first fetching 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -1628,13 +1660,15 @@ exports[`Quotes renders animation on first fetching 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -1830,14 +1864,18 @@ exports[`Quotes renders animation on first fetching 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -1906,9 +1944,13 @@ exports[`Quotes renders animation on first fetching 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -2677,9 +2719,12 @@ exports[`Quotes renders correctly after animation with expanded quotes 2`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -2707,19 +2752,27 @@ exports[`Quotes renders correctly after animation with expanded quotes 2`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -2727,13 +2780,15 @@ exports[`Quotes renders correctly after animation with expanded quotes 2`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -2929,14 +2984,18 @@ exports[`Quotes renders correctly after animation with expanded quotes 2`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -3005,9 +3064,13 @@ exports[`Quotes renders correctly after animation with expanded quotes 2`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -4496,9 +4559,12 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -4526,19 +4592,27 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -4546,13 +4620,15 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -4748,14 +4824,18 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -4824,9 +4904,13 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -5679,9 +5763,12 @@ exports[`Quotes renders correctly after animation without quotes 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -5709,19 +5796,27 @@ exports[`Quotes renders correctly after animation without quotes 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -5729,13 +5824,15 @@ exports[`Quotes renders correctly after animation without quotes 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -5931,14 +6028,18 @@ exports[`Quotes renders correctly after animation without quotes 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -6007,9 +6108,13 @@ exports[`Quotes renders correctly after animation without quotes 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -6429,9 +6534,12 @@ exports[`Quotes renders correctly when fetching quotes errors 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -6459,19 +6567,27 @@ exports[`Quotes renders correctly when fetching quotes errors 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -6479,13 +6595,15 @@ exports[`Quotes renders correctly when fetching quotes errors 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -6681,14 +6799,18 @@ exports[`Quotes renders correctly when fetching quotes errors 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -6757,9 +6879,13 @@ exports[`Quotes renders correctly when fetching quotes errors 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -7179,9 +7305,12 @@ exports[`Quotes renders correctly with sdkError 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -7209,19 +7338,27 @@ exports[`Quotes renders correctly with sdkError 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -7229,13 +7366,15 @@ exports[`Quotes renders correctly with sdkError 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -7431,14 +7570,18 @@ exports[`Quotes renders correctly with sdkError 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -7507,9 +7650,13 @@ exports[`Quotes renders correctly with sdkError 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -7929,9 +8076,12 @@ exports[`Quotes renders quotes expired screen 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -7959,19 +8109,27 @@ exports[`Quotes renders quotes expired screen 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -7979,13 +8137,15 @@ exports[`Quotes renders quotes expired screen 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -8181,14 +8341,18 @@ exports[`Quotes renders quotes expired screen 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -8257,9 +8421,13 @@ exports[`Quotes renders quotes expired screen 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
