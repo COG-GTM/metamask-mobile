@@ -23,9 +23,12 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -53,18 +56,23 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -72,13 +80,15 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -117,11 +127,16 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -158,14 +173,18 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -234,9 +253,13 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -719,9 +742,12 @@ exports[`Amount converts ETH to USD 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -749,18 +775,23 @@ exports[`Amount converts ETH to USD 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -768,13 +799,15 @@ exports[`Amount converts ETH to USD 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -813,11 +846,16 @@ exports[`Amount converts ETH to USD 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -854,14 +892,18 @@ exports[`Amount converts ETH to USD 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -930,9 +972,13 @@ exports[`Amount converts ETH to USD 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -1415,9 +1461,12 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -1445,18 +1494,23 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -1464,13 +1518,15 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -1509,11 +1565,16 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -1550,14 +1611,18 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -1626,9 +1691,13 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -2128,9 +2197,12 @@ exports[`Amount converts USD to ETH 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -2158,18 +2230,23 @@ exports[`Amount converts USD to ETH 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -2177,13 +2254,15 @@ exports[`Amount converts USD to ETH 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -2222,11 +2301,16 @@ exports[`Amount converts USD to ETH 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -2263,14 +2347,18 @@ exports[`Amount converts USD to ETH 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -2339,9 +2427,13 @@ exports[`Amount converts USD to ETH 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -2841,9 +2933,12 @@ exports[`Amount displays correct balance 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -2871,18 +2966,23 @@ exports[`Amount displays correct balance 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -2890,13 +2990,15 @@ exports[`Amount displays correct balance 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -2935,11 +3037,16 @@ exports[`Amount displays correct balance 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -2976,14 +3083,18 @@ exports[`Amount displays correct balance 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -3052,9 +3163,13 @@ exports[`Amount displays correct balance 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -3536,9 +3651,12 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -3566,18 +3684,23 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -3585,13 +3708,15 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -3630,11 +3755,16 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -3671,14 +3801,18 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -3747,9 +3881,13 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -4231,9 +4369,12 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -4261,18 +4402,23 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -4280,13 +4426,15 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -4325,11 +4473,16 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -4366,14 +4519,18 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -4442,9 +4599,13 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -4892,9 +5053,12 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -4922,18 +5086,23 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -4941,13 +5110,15 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -4986,11 +5157,16 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -5027,14 +5203,18 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -5103,9 +5283,13 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -5583,9 +5767,12 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -5613,18 +5800,23 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -5632,13 +5824,15 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -5677,11 +5871,16 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -5718,14 +5917,18 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -5794,9 +5997,13 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -6274,9 +6481,12 @@ exports[`Amount renders correctly 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -6304,18 +6514,23 @@ exports[`Amount renders correctly 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -6323,13 +6538,15 @@ exports[`Amount renders correctly 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -6368,11 +6585,16 @@ exports[`Amount renders correctly 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -6409,14 +6631,18 @@ exports[`Amount renders correctly 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -6485,9 +6711,13 @@ exports[`Amount renders correctly 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -6964,9 +7194,12 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -6994,18 +7227,23 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -7013,13 +7251,15 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -7058,11 +7298,16 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -7099,14 +7344,18 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -7175,9 +7424,13 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -7654,9 +7907,12 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -7684,18 +7940,23 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -7703,13 +7964,15 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -7748,11 +8011,16 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 Amount
@@ -7789,14 +8057,18 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -7865,9 +8137,13 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View

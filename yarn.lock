@@ -4577,15 +4577,15 @@
     "@ledgerhq/live-env" "^2.21.0"
     axios "1.12.2"
 
-"@ledgerhq/devices@8.14.1":
-  version "8.14.1"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-8.14.1.tgz#0f5d21925d8dfc340efa5fe1d5a155ea1cfbc1cc"
-  integrity sha512-q6tOUO963tFPrsJtdzu5juC8xIAIRe6etLSZ+ZhwgUivTHNJbmFFBxMU3p19dwn8VaKRvbw0pxJv+qmokMYpRA==
+"@ledgerhq/devices@8.14.1", "@ledgerhq/devices@8.4.4", "@ledgerhq/devices@^8.4.2":
+  version "8.4.4"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-8.4.4.tgz#0d195c1650fe57da2fad7f0d9074a0190947cd6f"
+  integrity sha512-sz/ryhe/R687RHtevIE9RlKaV8kkKykUV4k29e7GAVwzHX1gqG+O75cu1NCJUHLbp3eABV5FdvZejqRUlLis9A==
   dependencies:
-    "@ledgerhq/errors" "^6.34.0"
-    "@ledgerhq/logs" "^6.17.0"
-    rxjs "7.8.2"
-    semver "7.7.3"
+    "@ledgerhq/errors" "^6.19.1"
+    "@ledgerhq/logs" "^6.12.0"
+    rxjs "^7.8.1"
+    semver "^7.3.5"
 
 "@ledgerhq/domain-service@^1.2.15":
   version "1.8.1"
@@ -4600,7 +4600,7 @@
     react "19.0.0"
     react-dom "19.0.0"
 
-"@ledgerhq/errors@^6.19.1", "@ledgerhq/errors@^6.34.0":
+"@ledgerhq/errors@^6.18.0", "@ledgerhq/errors@^6.19.1", "@ledgerhq/errors@^6.34.0":
   version "6.34.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-6.34.0.tgz#a2cfb0e88abf902ed0c1ba42e984fcaab183ee42"
   integrity sha512-l16K56FzPoXBMT5J4EpnIBmRLTYkpSyYj3z4er+rmbwq0t9dDG/UaRvFeBpwB2gqGcYWcue14qF9Wkuos/43eA==
@@ -4646,7 +4646,7 @@
     "@ledgerhq/logs" "^6.17.0"
     rxjs "7.8.2"
 
-"@ledgerhq/hw-transport@6.35.1", "@ledgerhq/hw-transport@^6.31.4":
+"@ledgerhq/hw-transport@6.35.1", "@ledgerhq/hw-transport@^6.31.2", "@ledgerhq/hw-transport@^6.31.4":
   version "6.35.1"
   resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.35.1.tgz#61b2c4746edfa441ca4148d8db7663fe62441c9b"
   integrity sha512-YCkk9koo0FzCzHvLVpdrQ3+EQOPMpp/fSednHhk7AiaJC/c+pX6wKevUDp1MLcq7gUHbVOXyYYpqoW6A97w8OA==
@@ -4669,17 +4669,17 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-6.17.0.tgz#370840b915a0b44fc867fc4e6afc68d26a2055dd"
   integrity sha512-yra33g5q/AU7+PwAws+GaVpQGUuxnDREjVBnviJjcaJLVKuLzI4pnj8Bd3nY3fypM5k1yZEYKEXfUuGFUjP2+w==
 
-"@ledgerhq/react-native-hw-transport-ble@^6.33.2":
-  version "6.40.1"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/react-native-hw-transport-ble/-/react-native-hw-transport-ble-6.40.1.tgz#385502b84826661f81f74a7d5c0600be9ec04dd1"
-  integrity sha512-xRZzPu4atBrtpTMppC00y4JoQHyHjsgJGqWEGRQXJVaY34rwYZcf6CQKJXQQQyYWmXdhC6DLqY1FrVrXOkk1EA==
+"@ledgerhq/react-native-hw-transport-ble@6.33.2":
+  version "6.33.2"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/react-native-hw-transport-ble/-/react-native-hw-transport-ble-6.33.2.tgz#6b6097d87dc544d66d978010a136be10a7ab15df"
+  integrity sha512-fkh2fbeBDz8fv5jmENndh8EGbPxEepx6uDdmKmJjaRyKvfcvRiM1bKKQdptQ96fumGnlkPvI9zO546R+IO/xzQ==
   dependencies:
-    "@ledgerhq/devices" "8.14.1"
-    "@ledgerhq/errors" "^6.34.0"
-    "@ledgerhq/hw-transport" "6.35.1"
-    "@ledgerhq/logs" "^6.17.0"
-    react-native-ble-plx "3.4.0"
-    rxjs "7.8.2"
+    "@ledgerhq/devices" "^8.4.2"
+    "@ledgerhq/errors" "^6.18.0"
+    "@ledgerhq/hw-transport" "^6.31.2"
+    "@ledgerhq/logs" "^6.12.0"
+    react-native-ble-plx "3.1.2"
+    rxjs "^7.8.1"
     uuid "^9.0.1"
 
 "@ledgerhq/types-live@^6.106.0", "@ledgerhq/types-live@^6.56.0":
@@ -24919,7 +24919,7 @@ react-native-background-timer@2.1.1:
   resolved "https://registry.yarnpkg.com/react-native-background-timer/-/react-native-background-timer-2.1.1.tgz#9a2489681ab2f8033c213c73272e9d4c47572cd5"
   integrity sha512-cuXIIv+dcG8a8qkTD8pMzeqOEZCO+UGKglZWIe1osve+yJslmCowYQff+bI9xa7NOt2w+Vtd4L3d9JonlSqODg==
 
-react-native-ble-plx@3.1.2, react-native-ble-plx@3.4.0:
+react-native-ble-plx@3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/react-native-ble-plx/-/react-native-ble-plx-3.1.2.tgz#fa57b6e2bf2102500f70df286578d66723d7b606"
   integrity sha512-QgukxgjrZYMUxyZ9w4XEiR9QdbdKLibhggE+sPRxp6q11rZG9upU5aricnVB2CiSbn164nlYx3j+GNlJKSlaLg==
@@ -26523,11 +26523,6 @@ semver@7.7.2:
   version "7.7.2"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.7.2.tgz#67d99fdcd35cec21e6f8b87a7fd515a33f982b58"
   integrity sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==
-
-semver@7.7.3:
-  version "7.7.3"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.7.3.tgz#4b5f4143d007633a8dc671cd0a6ef9147b8bb946"
-  integrity sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==
 
 semver@^6.0.0, semver@^6.3.0, semver@^6.3.1:
   version "6.3.1"

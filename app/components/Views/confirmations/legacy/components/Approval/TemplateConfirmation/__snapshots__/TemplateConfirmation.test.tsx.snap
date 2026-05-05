@@ -4,14 +4,18 @@ exports[`TemplateConfirmation renders content and actions 1`] = `
 <View
   collapsable={false}
   style={
-    {
-      "backgroundColor": "#ffffff",
-      "borderTopLeftRadius": 20,
-      "borderTopRightRadius": 20,
-      "minHeight": 200,
-      "paddingBottom": 20,
-      "paddingTop": 24,
-    }
+    [
+      {
+        "backgroundColor": "#ffffff",
+        "borderTopLeftRadius": 20,
+        "borderTopRightRadius": 20,
+        "minHeight": 200,
+        "paddingBottom": 20,
+        "paddingTop": 24,
+      },
+      {},
+      {},
+    ]
   }
 >
   <Text
@@ -32,11 +36,15 @@ exports[`TemplateConfirmation renders content and actions 1`] = `
   <View
     collapsable={false}
     style={
-      {
-        "flex": 0,
-        "justifyContent": "center",
-        "paddingVertical": 16,
-      }
+      [
+        {
+          "flex": 0,
+          "justifyContent": "center",
+          "paddingVertical": 16,
+        },
+        {},
+        {},
+      ]
     }
   >
     <View
@@ -139,14 +147,18 @@ exports[`TemplateConfirmation renders content without actions 1`] = `
 <View
   collapsable={false}
   style={
-    {
-      "backgroundColor": "#ffffff",
-      "borderTopLeftRadius": 20,
-      "borderTopRightRadius": 20,
-      "minHeight": 200,
-      "paddingBottom": 20,
-      "paddingTop": 24,
-    }
+    [
+      {
+        "backgroundColor": "#ffffff",
+        "borderTopLeftRadius": 20,
+        "borderTopRightRadius": 20,
+        "minHeight": 200,
+        "paddingBottom": 20,
+        "paddingTop": 24,
+      },
+      {},
+      {},
+    ]
   }
 >
   <Text
