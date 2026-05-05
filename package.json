@@ -164,6 +164,8 @@
     "**/@metamask/composable-controller": "11.0.0",
     "**/@ledgerhq/devices": "8.4.4",
     "**/eciesjs": "0.3.16",
+    "**/uint8arrays/multiformats": "9.9.0",
+    "**/validate-npm-package-name": "5.0.0",
     "**/@ledgerhq/react-native-hw-transport-ble": "6.33.2",
     "**/@metamask/controller-utils": "11.7.0",
     "**/@metamask/design-tokens": "7.0.0",
