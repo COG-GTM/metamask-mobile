@@ -1,32 +1,36 @@
 diff --git a/node_modules/@metamask/react-native-button/Button.js b/node_modules/@metamask/react-native-button/Button.js
-index 46dc1e0..53b205c 100644
+index 46dc1e0..93c5052 100644
 --- a/node_modules/@metamask/react-native-button/Button.js
 +++ b/node_modules/@metamask/react-native-button/Button.js
-@@ -5,9 +5,10 @@ import {
-   Text,
-   TouchableOpacity,
-   View,
--  ViewPropTypes,
- } from 'react-native';
- 
-+import { ViewPropTypes, TextPropTypes } from 'deprecated-react-native-prop-types';
-+
- import coalesceNonElementChildren from './coalesceNonElementChildren';
+@@ -12,17 +12,24 @@ import coalesceNonElementChildren from './coalesceNonElementChildren';
  
  const systemButtonOpacity = 0.2;
-@@ -16,12 +17,12 @@ export default class Button extends Component {
+ 
++// RN 0.77 removed Text.propTypes / TouchableOpacity.propTypes / ViewPropTypes
++// (all deprecated since 0.69). Fall back to PropTypes.any so this 3rd-party
++// component keeps working.
++const _textPropTypes = (Text && Text.propTypes) || {};
++const _touchablePropTypes = (TouchableOpacity && TouchableOpacity.propTypes) || {};
++const _viewPropTypes = (ViewPropTypes && typeof ViewPropTypes === 'object') ? ViewPropTypes : {};
++
+ export default class Button extends Component {
    static propTypes = {
-     ...TouchableOpacity.propTypes,
+-    ...TouchableOpacity.propTypes,
++    ..._touchablePropTypes,
      accessibilityLabel: PropTypes.string,
 -    allowFontScaling: Text.propTypes.allowFontScaling,
-+    allowFontScaling: TextPropTypes.allowFontScaling,
-     containerStyle: ViewPropTypes.style,
-     disabledContainerStyle: ViewPropTypes.style,
+-    containerStyle: ViewPropTypes.style,
+-    disabledContainerStyle: ViewPropTypes.style,
++    allowFontScaling: _textPropTypes.allowFontScaling || PropTypes.bool,
++    containerStyle: _viewPropTypes.style || PropTypes.any,
++    disabledContainerStyle: _viewPropTypes.style || PropTypes.any,
      disabled: PropTypes.bool,
 -    style: Text.propTypes.style,
 -    styleDisabled: Text.propTypes.style,
-+    style: TextPropTypes.style,
-+    styleDisabled: TextPropTypes.style,
-     childGroupStyle: ViewPropTypes.style,
+-    childGroupStyle: ViewPropTypes.style,
++    style: _textPropTypes.style || PropTypes.any,
++    styleDisabled: _textPropTypes.style || PropTypes.any,
++    childGroupStyle: _viewPropTypes.style || PropTypes.any,
    };
  
+   render() {

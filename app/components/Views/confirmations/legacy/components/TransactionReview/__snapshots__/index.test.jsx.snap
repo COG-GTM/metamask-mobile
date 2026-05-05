@@ -4,7 +4,6 @@ exports[`TransactionReview should match snapshot 1`] = `
 [
   <View
     collapsable={false}
-    style={{}}
   >
     <View
       style={
@@ -904,7 +903,7 @@ exports[`TransactionReview should match snapshot 1`] = `
                                 <View
                                   style={
                                     {
-                                      "position": "relative",
+                                      "backgroundColor": "transparent",
                                     }
                                   }
                                 >
@@ -916,9 +915,18 @@ exports[`TransactionReview should match snapshot 1`] = `
                                           "height": 10,
                                           "width": 80,
                                         },
+                                        [
+                                          {
+                                            "overflow": "hidden",
+                                          },
+                                          {
+                                            "backgroundColor": "#E1E9EE",
+                                          },
+                                        ],
                                         {
-                                          "backgroundColor": "#E1E9EE",
-                                          "overflow": "hidden",
+                                          "borderRadius": 4,
+                                          "height": 10,
+                                          "width": 80,
                                         },
                                       ]
                                     }
@@ -965,7 +973,7 @@ exports[`TransactionReview should match snapshot 1`] = `
                                 <View
                                   style={
                                     {
-                                      "position": "relative",
+                                      "backgroundColor": "transparent",
                                     }
                                   }
                                 >
@@ -977,9 +985,18 @@ exports[`TransactionReview should match snapshot 1`] = `
                                           "height": 10,
                                           "width": 120,
                                         },
+                                        [
+                                          {
+                                            "overflow": "hidden",
+                                          },
+                                          {
+                                            "backgroundColor": "#E1E9EE",
+                                          },
+                                        ],
                                         {
-                                          "backgroundColor": "#E1E9EE",
-                                          "overflow": "hidden",
+                                          "borderRadius": 4,
+                                          "height": 10,
+                                          "width": 120,
                                         },
                                       ]
                                     }
@@ -1004,7 +1021,7 @@ exports[`TransactionReview should match snapshot 1`] = `
                                 <View
                                   style={
                                     {
-                                      "position": "relative",
+                                      "backgroundColor": "transparent",
                                     }
                                   }
                                 >
@@ -1016,9 +1033,18 @@ exports[`TransactionReview should match snapshot 1`] = `
                                           "height": 10,
                                           "width": 120,
                                         },
+                                        [
+                                          {
+                                            "overflow": "hidden",
+                                          },
+                                          {
+                                            "backgroundColor": "#E1E9EE",
+                                          },
+                                        ],
                                         {
-                                          "backgroundColor": "#E1E9EE",
-                                          "overflow": "hidden",
+                                          "borderRadius": 4,
+                                          "height": 10,
+                                          "width": 120,
                                         },
                                       ]
                                     }
@@ -1208,11 +1234,15 @@ exports[`TransactionReview should match snapshot 1`] = `
   <View
     collapsable={false}
     style={
-      {
-        "height": "100%",
-        "position": "absolute",
-        "width": "100%",
-      }
+      [
+        {
+          "height": "100%",
+          "position": "absolute",
+          "width": "100%",
+        },
+        undefined,
+        undefined,
+      ]
     }
   >
     <View
