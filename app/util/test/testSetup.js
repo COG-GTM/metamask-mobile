@@ -1,6 +1,29 @@
 import { NativeModules } from 'react-native';
 import mockRNAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 import mockClipboard from '@react-native-clipboard/clipboard/jest/clipboard-mock.js';
+
+// RN 0.77 changed the useAnimatedProps lifecycle so that animation cleanup
+// (e.g. SpringAnimation.stop -> clearTimeout) can fire during test renderer
+// unmount AFTER `jest.useRealTimers()` has been called in a test. In some
+// jest 29 + jest-environment-node configurations this leaves the global
+// `clearTimeout`/`setTimeout` bindings undefined. Pin them to the real
+// node implementations as a defensive shim so cleanup doesn't throw.
+const _origSetTimeout = global.setTimeout;
+const _origClearTimeout = global.clearTimeout;
+const _origSetInterval = global.setInterval;
+const _origClearInterval = global.clearInterval;
+beforeEach(() => {
+  if (typeof global.setTimeout === 'undefined') global.setTimeout = _origSetTimeout;
+  if (typeof global.clearTimeout === 'undefined') global.clearTimeout = _origClearTimeout;
+  if (typeof global.setInterval === 'undefined') global.setInterval = _origSetInterval;
+  if (typeof global.clearInterval === 'undefined') global.clearInterval = _origClearInterval;
+});
+afterEach(() => {
+  if (typeof global.setTimeout === 'undefined') global.setTimeout = _origSetTimeout;
+  if (typeof global.clearTimeout === 'undefined') global.clearTimeout = _origClearTimeout;
+  if (typeof global.setInterval === 'undefined') global.setInterval = _origSetInterval;
+  if (typeof global.clearInterval === 'undefined') global.clearInterval = _origClearInterval;
+});
 /* eslint-disable import/no-namespace */
 import { mockTheme } from '../theme';
 import Adapter from 'enzyme-adapter-react-16';
