@@ -156,7 +156,7 @@ exports[`TransactionReviewEIP1559 should match snapshot 1`] = `
           <View
             style={
               {
-                "position": "relative",
+                "backgroundColor": "transparent",
               }
             }
           >
@@ -168,9 +168,18 @@ exports[`TransactionReviewEIP1559 should match snapshot 1`] = `
                     "height": 10,
                     "width": 80,
                   },
+                  [
+                    {
+                      "overflow": "hidden",
+                    },
+                    {
+                      "backgroundColor": "#E1E9EE",
+                    },
+                  ],
                   {
-                    "backgroundColor": "#E1E9EE",
-                    "overflow": "hidden",
+                    "borderRadius": 4,
+                    "height": 10,
+                    "width": 80,
                   },
                 ]
               }
@@ -217,7 +226,7 @@ exports[`TransactionReviewEIP1559 should match snapshot 1`] = `
           <View
             style={
               {
-                "position": "relative",
+                "backgroundColor": "transparent",
               }
             }
           >
@@ -229,9 +238,18 @@ exports[`TransactionReviewEIP1559 should match snapshot 1`] = `
                     "height": 10,
                     "width": 120,
                   },
+                  [
+                    {
+                      "overflow": "hidden",
+                    },
+                    {
+                      "backgroundColor": "#E1E9EE",
+                    },
+                  ],
                   {
-                    "backgroundColor": "#E1E9EE",
-                    "overflow": "hidden",
+                    "borderRadius": 4,
+                    "height": 10,
+                    "width": 120,
                   },
                 ]
               }
@@ -256,7 +274,7 @@ exports[`TransactionReviewEIP1559 should match snapshot 1`] = `
           <View
             style={
               {
-                "position": "relative",
+                "backgroundColor": "transparent",
               }
             }
           >
@@ -268,9 +286,18 @@ exports[`TransactionReviewEIP1559 should match snapshot 1`] = `
                     "height": 10,
                     "width": 120,
                   },
+                  [
+                    {
+                      "overflow": "hidden",
+                    },
+                    {
+                      "backgroundColor": "#E1E9EE",
+                    },
+                  ],
                   {
-                    "backgroundColor": "#E1E9EE",
-                    "overflow": "hidden",
+                    "borderRadius": 4,
+                    "height": 10,
+                    "width": 120,
                   },
                 ]
               }

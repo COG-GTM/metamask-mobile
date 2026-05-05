@@ -23,9 +23,12 @@ exports[`Settings Activation Keys renders correctly when is loading 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -53,19 +56,27 @@ exports[`Settings Activation Keys renders correctly when is loading 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -73,13 +84,15 @@ exports[`Settings Activation Keys renders correctly when is loading 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -168,11 +181,16 @@ exports[`Settings Activation Keys renders correctly when is loading 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "#4459ff",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "#4459ff",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 <Text
@@ -223,14 +241,18 @@ exports[`Settings Activation Keys renders correctly when is loading 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -299,9 +321,13 @@ exports[`Settings Activation Keys renders correctly when is loading 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -1195,9 +1221,12 @@ exports[`Settings Activation Keys renders correctly when there are no keys 1`] =
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -1225,19 +1254,27 @@ exports[`Settings Activation Keys renders correctly when there are no keys 1`] =
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -1245,13 +1282,15 @@ exports[`Settings Activation Keys renders correctly when there are no keys 1`] =
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -1340,11 +1379,16 @@ exports[`Settings Activation Keys renders correctly when there are no keys 1`] =
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "#4459ff",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "#4459ff",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 <Text
@@ -1395,14 +1439,18 @@ exports[`Settings Activation Keys renders correctly when there are no keys 1`] =
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -1471,9 +1519,13 @@ exports[`Settings Activation Keys renders correctly when there are no keys 1`] =
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -1921,9 +1973,12 @@ exports[`Settings Region renders correctly when region is not set 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -1951,19 +2006,27 @@ exports[`Settings Region renders correctly when region is not set 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -1971,13 +2034,15 @@ exports[`Settings Region renders correctly when region is not set 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -2066,11 +2131,16 @@ exports[`Settings Region renders correctly when region is not set 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "#4459ff",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "#4459ff",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 <Text
@@ -2121,14 +2191,18 @@ exports[`Settings Region renders correctly when region is not set 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -2197,9 +2271,13 @@ exports[`Settings Region renders correctly when region is not set 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -2472,9 +2550,12 @@ exports[`Settings Region renders correctly when region is set 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -2502,19 +2583,27 @@ exports[`Settings Region renders correctly when region is set 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -2522,13 +2611,15 @@ exports[`Settings Region renders correctly when region is set 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -2617,11 +2708,16 @@ exports[`Settings Region renders correctly when region is set 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "#4459ff",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "#4459ff",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 <Text
@@ -2672,14 +2768,18 @@ exports[`Settings Region renders correctly when region is set 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -2748,9 +2848,13 @@ exports[`Settings Region renders correctly when region is set 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -3061,9 +3165,12 @@ exports[`Settings renders correctly 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -3091,19 +3198,27 @@ exports[`Settings renders correctly 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -3111,13 +3226,15 @@ exports[`Settings renders correctly 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -3206,11 +3323,16 @@ exports[`Settings renders correctly 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "#4459ff",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "#4459ff",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 <Text
@@ -3261,14 +3383,18 @@ exports[`Settings renders correctly 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -3337,9 +3463,13 @@ exports[`Settings renders correctly 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -3650,9 +3780,12 @@ exports[`Settings renders correctly for internal builds 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -3680,19 +3813,27 @@ exports[`Settings renders correctly for internal builds 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -3700,13 +3841,15 @@ exports[`Settings renders correctly for internal builds 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -3795,11 +3938,16 @@ exports[`Settings renders correctly for internal builds 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "#4459ff",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "#4459ff",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 <Text
@@ -3850,14 +3998,18 @@ exports[`Settings renders correctly for internal builds 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -3926,9 +4078,13 @@ exports[`Settings renders correctly for internal builds 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
