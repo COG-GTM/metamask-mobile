@@ -23,9 +23,12 @@ exports[`NavigationUnitTest should render correctly 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -53,18 +56,23 @@ exports[`NavigationUnitTest should render correctly 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "rgb(255, 255, 255)",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "flex": 1,
-                "shadowColor": "rgb(216, 216, 216)",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {},
+              ]
             }
           />
         </View>
@@ -72,13 +80,15 @@ exports[`NavigationUnitTest should render correctly 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -117,11 +127,16 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                 numberOfLines={1}
                 onLayout={[Function]}
                 style={
-                  {
-                    "color": "rgb(28, 28, 30)",
-                    "fontSize": 17,
-                    "fontWeight": "600",
-                  }
+                  [
+                    {
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                    },
+                    {
+                      "color": "rgb(28, 28, 30)",
+                    },
+                    undefined,
+                  ]
                 }
               >
                 TestStack
@@ -158,14 +173,18 @@ exports[`NavigationUnitTest should render correctly 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -234,9 +253,13 @@ exports[`NavigationUnitTest should render correctly 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -320,9 +343,12 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                         collapsable={false}
                         pointerEvents="box-none"
                         style={
-                          {
-                            "zIndex": 1,
-                          }
+                          [
+                            {
+                              "zIndex": 1,
+                            },
+                            false,
+                          ]
                         }
                       >
                         <View
@@ -350,18 +376,23 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                             <View
                               collapsable={false}
                               style={
-                                {
-                                  "backgroundColor": "rgb(255, 255, 255)",
-                                  "borderBottomColor": "rgb(216, 216, 216)",
-                                  "flex": 1,
-                                  "shadowColor": "rgb(216, 216, 216)",
-                                  "shadowOffset": {
-                                    "height": 0.5,
-                                    "width": 0,
+                                [
+                                  {
+                                    "flex": 1,
+                                    "shadowOffset": {
+                                      "height": 0.5,
+                                      "width": 0,
+                                    },
+                                    "shadowOpacity": 0.85,
+                                    "shadowRadius": 0,
                                   },
-                                  "shadowOpacity": 0.85,
-                                  "shadowRadius": 0,
-                                }
+                                  {
+                                    "backgroundColor": "rgb(255, 255, 255)",
+                                    "borderBottomColor": "rgb(216, 216, 216)",
+                                    "shadowColor": "rgb(216, 216, 216)",
+                                  },
+                                  {},
+                                ]
                               }
                             />
                           </View>
@@ -369,13 +400,15 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                             collapsable={false}
                             pointerEvents="box-none"
                             style={
-                              {
-                                "height": 44,
-                                "maxHeight": undefined,
-                                "minHeight": undefined,
-                                "opacity": undefined,
-                                "transform": undefined,
-                              }
+                              [
+                                {
+                                  "height": 44,
+                                  "maxHeight": undefined,
+                                  "minHeight": undefined,
+                                  "opacity": undefined,
+                                  "transform": undefined,
+                                },
+                              ]
                             }
                           >
                             <View
@@ -414,11 +447,16 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                                   numberOfLines={1}
                                   onLayout={[Function]}
                                   style={
-                                    {
-                                      "color": "rgb(28, 28, 30)",
-                                      "fontSize": 17,
-                                      "fontWeight": "600",
-                                    }
+                                    [
+                                      {
+                                        "fontSize": 17,
+                                        "fontWeight": "600",
+                                      },
+                                      {
+                                        "color": "rgb(28, 28, 30)",
+                                      },
+                                      undefined,
+                                    ]
                                   }
                                 >
                                   TestSubStack
@@ -455,14 +493,18 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                           sheetGrabberVisible={false}
                           sheetLargestUndimmedDetent="all"
                           style={
-                            {
-                              "bottom": 0,
-                              "left": 0,
-                              "position": "absolute",
-                              "right": 0,
-                              "top": 0,
-                              "zIndex": undefined,
-                            }
+                            [
+                              {
+                                "bottom": 0,
+                                "left": 0,
+                                "position": "absolute",
+                                "right": 0,
+                                "top": 0,
+                              },
+                              {
+                                "zIndex": undefined,
+                              },
+                            ]
                           }
                         >
                           <View
@@ -531,9 +573,13 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                               needsOffscreenAlphaCompositing={false}
                               pointerEvents="box-none"
                               style={
-                                {
-                                  "flex": 1,
-                                }
+                                [
+                                  {
+                                    "flex": 1,
+                                  },
+                                  undefined,
+                                  null,
+                                ]
                               }
                             >
                               <View
@@ -617,9 +663,12 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                                           collapsable={false}
                                           pointerEvents="box-none"
                                           style={
-                                            {
-                                              "zIndex": 1,
-                                            }
+                                            [
+                                              {
+                                                "zIndex": 1,
+                                              },
+                                              false,
+                                            ]
                                           }
                                         >
                                           <View
@@ -647,18 +696,23 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                                               <View
                                                 collapsable={false}
                                                 style={
-                                                  {
-                                                    "backgroundColor": "rgb(255, 255, 255)",
-                                                    "borderBottomColor": "rgb(216, 216, 216)",
-                                                    "flex": 1,
-                                                    "shadowColor": "rgb(216, 216, 216)",
-                                                    "shadowOffset": {
-                                                      "height": 0.5,
-                                                      "width": 0,
+                                                  [
+                                                    {
+                                                      "flex": 1,
+                                                      "shadowOffset": {
+                                                        "height": 0.5,
+                                                        "width": 0,
+                                                      },
+                                                      "shadowOpacity": 0.85,
+                                                      "shadowRadius": 0,
                                                     },
-                                                    "shadowOpacity": 0.85,
-                                                    "shadowRadius": 0,
-                                                  }
+                                                    {
+                                                      "backgroundColor": "rgb(255, 255, 255)",
+                                                      "borderBottomColor": "rgb(216, 216, 216)",
+                                                      "shadowColor": "rgb(216, 216, 216)",
+                                                    },
+                                                    {},
+                                                  ]
                                                 }
                                               />
                                             </View>
@@ -666,13 +720,15 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                                               collapsable={false}
                                               pointerEvents="box-none"
                                               style={
-                                                {
-                                                  "height": 44,
-                                                  "maxHeight": undefined,
-                                                  "minHeight": undefined,
-                                                  "opacity": undefined,
-                                                  "transform": undefined,
-                                                }
+                                                [
+                                                  {
+                                                    "height": 44,
+                                                    "maxHeight": undefined,
+                                                    "minHeight": undefined,
+                                                    "opacity": undefined,
+                                                    "transform": undefined,
+                                                  },
+                                                ]
                                               }
                                             >
                                               <View
@@ -711,11 +767,16 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                                                     numberOfLines={1}
                                                     onLayout={[Function]}
                                                     style={
-                                                      {
-                                                        "color": "rgb(28, 28, 30)",
-                                                        "fontSize": 17,
-                                                        "fontWeight": "600",
-                                                      }
+                                                      [
+                                                        {
+                                                          "fontSize": 17,
+                                                          "fontWeight": "600",
+                                                        },
+                                                        {
+                                                          "color": "rgb(28, 28, 30)",
+                                                        },
+                                                        undefined,
+                                                      ]
                                                     }
                                                   >
                                                     TestScreen3
@@ -752,14 +813,18 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                                             sheetGrabberVisible={false}
                                             sheetLargestUndimmedDetent="all"
                                             style={
-                                              {
-                                                "bottom": 0,
-                                                "left": 0,
-                                                "position": "absolute",
-                                                "right": 0,
-                                                "top": 0,
-                                                "zIndex": undefined,
-                                              }
+                                              [
+                                                {
+                                                  "bottom": 0,
+                                                  "left": 0,
+                                                  "position": "absolute",
+                                                  "right": 0,
+                                                  "top": 0,
+                                                },
+                                                {
+                                                  "zIndex": undefined,
+                                                },
+                                              ]
                                             }
                                           >
                                             <View
@@ -828,9 +893,13 @@ exports[`NavigationUnitTest should render correctly 1`] = `
                                                 needsOffscreenAlphaCompositing={false}
                                                 pointerEvents="box-none"
                                                 style={
-                                                  {
-                                                    "flex": 1,
-                                                  }
+                                                  [
+                                                    {
+                                                      "flex": 1,
+                                                    },
+                                                    undefined,
+                                                    null,
+                                                  ]
                                                 }
                                               >
                                                 <View
