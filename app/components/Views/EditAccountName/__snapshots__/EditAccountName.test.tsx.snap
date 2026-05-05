@@ -13,18 +13,26 @@ exports[`EditAccountName should render correctly 1`] = `
   <View
     collapsable={false}
     style={
-      {
-        "flex": 1,
-        "marginHorizontal": 16,
-      }
+      [
+        {
+          "flex": 1,
+          "marginHorizontal": 16,
+        },
+        {},
+        {},
+      ]
     }
   >
     <View
       collapsable={false}
       style={
-        {
-          "marginTop": 24,
-        }
+        [
+          {
+            "marginTop": 24,
+          },
+          {},
+          {},
+        ]
       }
     >
       <Text
@@ -95,9 +103,13 @@ exports[`EditAccountName should render correctly 1`] = `
     <View
       collapsable={false}
       style={
-        {
-          "marginTop": 24,
-        }
+        [
+          {
+            "marginTop": 24,
+          },
+          {},
+          {},
+        ]
       }
     >
       <Text
@@ -168,10 +180,14 @@ exports[`EditAccountName should render correctly 1`] = `
   <View
     collapsable={false}
     style={
-      {
-        "flexDirection": "row",
-        "marginHorizontal": 16,
-      }
+      [
+        {
+          "flexDirection": "row",
+          "marginHorizontal": 16,
+        },
+        {},
+        {},
+      ]
     }
   >
     <TouchableOpacity

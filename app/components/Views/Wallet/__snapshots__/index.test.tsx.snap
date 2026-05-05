@@ -23,9 +23,12 @@ exports[`Wallet should render correctly 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -53,31 +56,39 @@ exports[`Wallet should render correctly 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": {
-                  "alternative": "#f3f5f9",
-                  "alternativeHover": "#f6f6f7",
-                  "alternativePressed": "#ebecef",
-                  "default": "#ffffff",
-                  "defaultHover": "#f6f6f7",
-                  "defaultPressed": "#ebecef",
-                  "hover": "#858b9a14",
-                  "muted": "#f3f5f9",
-                  "mutedHover": "#e7ebee",
-                  "mutedPressed": "#ebecef",
-                  "pressed": "#858b9a29",
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": {
+                    "alternative": "#f3f5f9",
+                    "alternativeHover": "#f6f6f7",
+                    "alternativePressed": "#ebecef",
+                    "default": "#ffffff",
+                    "defaultHover": "#f6f6f7",
+                    "defaultPressed": "#ebecef",
+                    "hover": "#858b9a14",
+                    "muted": "#f3f5f9",
+                    "mutedHover": "#e7ebee",
+                    "mutedPressed": "#ebecef",
+                    "pressed": "#858b9a29",
+                  },
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -85,13 +96,15 @@ exports[`Wallet should render correctly 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -643,14 +656,18 @@ exports[`Wallet should render correctly 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -719,9 +736,13 @@ exports[`Wallet should render correctly 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -1214,9 +1235,12 @@ exports[`Wallet should render correctly when Solana support is enabled 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -1244,31 +1268,39 @@ exports[`Wallet should render correctly when Solana support is enabled 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": {
-                  "alternative": "#f3f5f9",
-                  "alternativeHover": "#f6f6f7",
-                  "alternativePressed": "#ebecef",
-                  "default": "#ffffff",
-                  "defaultHover": "#f6f6f7",
-                  "defaultPressed": "#ebecef",
-                  "hover": "#858b9a14",
-                  "muted": "#f3f5f9",
-                  "mutedHover": "#e7ebee",
-                  "mutedPressed": "#ebecef",
-                  "pressed": "#858b9a29",
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": {
+                    "alternative": "#f3f5f9",
+                    "alternativeHover": "#f6f6f7",
+                    "alternativePressed": "#ebecef",
+                    "default": "#ffffff",
+                    "defaultHover": "#f6f6f7",
+                    "defaultPressed": "#ebecef",
+                    "hover": "#858b9a14",
+                    "muted": "#f3f5f9",
+                    "mutedHover": "#e7ebee",
+                    "mutedPressed": "#ebecef",
+                    "pressed": "#858b9a29",
+                  },
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -1276,13 +1308,15 @@ exports[`Wallet should render correctly when Solana support is enabled 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -1834,14 +1868,18 @@ exports[`Wallet should render correctly when Solana support is enabled 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -1910,9 +1948,13 @@ exports[`Wallet should render correctly when Solana support is enabled 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
@@ -2405,9 +2447,12 @@ exports[`Wallet should render correctly when there are no detected tokens 1`] = 
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -2435,31 +2480,39 @@ exports[`Wallet should render correctly when there are no detected tokens 1`] = 
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": {
-                  "alternative": "#f3f5f9",
-                  "alternativeHover": "#f6f6f7",
-                  "alternativePressed": "#ebecef",
-                  "default": "#ffffff",
-                  "defaultHover": "#f6f6f7",
-                  "defaultPressed": "#ebecef",
-                  "hover": "#858b9a14",
-                  "muted": "#f3f5f9",
-                  "mutedHover": "#e7ebee",
-                  "mutedPressed": "#ebecef",
-                  "pressed": "#858b9a29",
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": {
+                    "alternative": "#f3f5f9",
+                    "alternativeHover": "#f6f6f7",
+                    "alternativePressed": "#ebecef",
+                    "default": "#ffffff",
+                    "defaultHover": "#f6f6f7",
+                    "defaultPressed": "#ebecef",
+                    "hover": "#858b9a14",
+                    "muted": "#f3f5f9",
+                    "mutedHover": "#e7ebee",
+                    "mutedPressed": "#ebecef",
+                    "pressed": "#858b9a29",
+                  },
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -2467,13 +2520,15 @@ exports[`Wallet should render correctly when there are no detected tokens 1`] = 
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -3025,14 +3080,18 @@ exports[`Wallet should render correctly when there are no detected tokens 1`] = 
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -3101,9 +3160,13 @@ exports[`Wallet should render correctly when there are no detected tokens 1`] = 
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
