@@ -206,7 +206,10 @@ class SendFlow extends PureComponent {
 
     // Disabling back press for not be able to exit the send flow without reseting the transaction object
     this.hardwareBackPress = () => true;
-    BackHandler.addEventListener('hardwareBackPress', this.hardwareBackPress);
+    this.backHandlerSubscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.hardwareBackPress,
+    );
   };
 
   componentDidUpdate = () => {
@@ -214,10 +217,7 @@ class SendFlow extends PureComponent {
   };
 
   componentWillUnmount() {
-    BackHandler.removeEventListener(
-      'hardwareBackPress',
-      this.hardwareBackPress,
-    );
+    this.backHandlerSubscription?.remove();
   }
 
   isAddressSaved = () => {

@@ -19,7 +19,7 @@ const config = {
   setupFilesAfterEnv: ['<rootDir>/app/util/test/testSetup.js'],
   testEnvironment: 'jest-environment-node',
   transformIgnorePatterns: [
-    'node_modules/(?!((@metamask/)?(@react-native|react-native|redux-persist-filesystem|@react-navigation|@react-native-community|@react-native-masked-view|react-navigation|react-navigation-redux-helpers|@sentry|d3-color|@notifee)))',
+    'node_modules/(?!((@metamask/)?(@react-native|react-native|redux-persist-filesystem|@react-navigation|@react-native-community|@react-native-masked-view|react-navigation|react-navigation-redux-helpers|@sentry|d3-color|@notifee|multiformats|uint8arrays)))',
   ],
   transform: {
     '^.+\\.[jt]sx?$': ['babel-jest', { configFile: './babel.config.tests.js' }],
@@ -47,6 +47,10 @@ const config = {
     '\\webview/index.html': '<rootDir>/app/__mocks__/htmlMock.ts',
     '^@expo/vector-icons@expo/vector-icons$': 'react-native-vector-icons',
     '^@expo/vector-icons/(.*)': 'react-native-vector-icons/$1',
+    '^multiformats$':
+      '<rootDir>/node_modules/multiformats/dist/src/index.js',
+    '^multiformats/(.*)$':
+      '<rootDir>/node_modules/multiformats/dist/src/$1.js',
   },
   // Disable jest cache
   cache: false,

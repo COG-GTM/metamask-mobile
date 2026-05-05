@@ -217,7 +217,10 @@ class OptinMetrics extends PureComponent {
 
   componentDidMount() {
     this.updateNavBar();
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+    this.backHandlerSubscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.handleBackPress,
+    );
   }
 
   componentDidUpdate(_, prevState) {
@@ -242,7 +245,7 @@ class OptinMetrics extends PureComponent {
   }
 
   componentWillUnmount() {
-    BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
+    this.backHandlerSubscription?.remove();
   }
 
   /**

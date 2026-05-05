@@ -85,16 +85,16 @@ class ImportPrivateKeySuccess extends PureComponent {
 
   componentDidMount = () => {
     InteractionManager.runAfterInteractions(() => {
-      BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+      this.backHandlerSubscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        this.handleBackPress,
+      );
     });
   };
 
   componentWillUnmount = () => {
     InteractionManager.runAfterInteractions(() => {
-      BackHandler.removeEventListener(
-        'hardwareBackPress',
-        this.handleBackPress,
-      );
+      this.backHandlerSubscription?.remove();
     });
   };
 

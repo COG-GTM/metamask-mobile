@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-modal/dist/modal.js b/node_modules/react-native-modal/dist/modal.js
-index ec3cc0b..bed08a4 100644
+index ec3cc0b..c93a925 100644
 --- a/node_modules/react-native-modal/dist/modal.js
 +++ b/node_modules/react-native-modal/dist/modal.js
 @@ -52,6 +52,7 @@ export class ReactNativeModal extends React.Component {
@@ -10,7 +10,7 @@ index ec3cc0b..bed08a4 100644
          this.state = {
              showContent: true,
              isVisible: false,
-@@ -448,7 +449,7 @@ export class ReactNativeModal extends React.Component {
+@@ -448,15 +449,15 @@ export class ReactNativeModal extends React.Component {
          if (this.props.onSwipe) {
              console.warn('`<Modal onSwipe="..." />` is deprecated and will be removed starting from 13.0.0. Use `<Modal onSwipeComplete="..." />` instead.');
          }
@@ -19,11 +19,13 @@ index ec3cc0b..bed08a4 100644
          if (this.state.isVisible) {
              this.open();
          }
-@@ -456,7 +457,7 @@ export class ReactNativeModal extends React.Component {
+-        BackHandler.addEventListener('hardwareBackPress', this.onBackButtonPress);
++        this.backHandlerSubscription = BackHandler.addEventListener('hardwareBackPress', this.onBackButtonPress);
      }
      componentWillUnmount() {
-         BackHandler.removeEventListener('hardwareBackPress', this.onBackButtonPress);
+-        BackHandler.removeEventListener('hardwareBackPress', this.onBackButtonPress);
 -        DeviceEventEmitter.removeListener('didUpdateDimensions', this.handleDimensionsUpdate);
++        this.backHandlerSubscription?.remove?.();
 +        this.dimensionsUpdateListener?.remove?.();
          if (this.interactionHandle) {
              InteractionManager.clearInteractionHandle(this.interactionHandle);

@@ -163,11 +163,14 @@ const AccountBackupStep1 = (props) => {
       const hardwareBackPress = () => true;
 
       // Add event listener
-      BackHandler.addEventListener('hardwareBackPress', hardwareBackPress);
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        hardwareBackPress,
+      );
 
       // Remove event listener on cleanup
       return () => {
-        BackHandler.removeEventListener('hardwareBackPress', hardwareBackPress);
+        subscription.remove();
       };
     },
     [], // Run only when component mounts

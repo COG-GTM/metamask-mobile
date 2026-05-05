@@ -6115,7 +6115,7 @@
     semver "^7.5.4"
     uuid "^9.0.1"
 
-"@metamask/utils@^11.0.1", "@metamask/utils@^11.1.0", "@metamask/utils@^11.10.0", "@metamask/utils@^11.11.0", "@metamask/utils@^11.2.0", "@metamask/utils@^11.4.0", "@metamask/utils@^11.4.2", "@metamask/utils@^11.8.1", "@metamask/utils@^11.9.0":
+"@metamask/utils@^11.0.1", "@metamask/utils@^11.1.0", "@metamask/utils@^11.10.0", "@metamask/utils@^11.11.0", "@metamask/utils@^11.2.0", "@metamask/utils@^11.4.0", "@metamask/utils@^11.8.1", "@metamask/utils@^11.9.0":
   version "11.11.0"
   resolved "https://registry.yarnpkg.com/@metamask/utils/-/utils-11.11.0.tgz#6675946df767da6cbe306c7b5e76685320a6c826"
   integrity sha512-0nF2CWjWQr/m0Y2t2lJnBTU1/CZPPTvKvcESLplyWe/tyeb8zFOi/FeneDmaFnML6LYRIGZU6f+xR0jKAIUZfw==

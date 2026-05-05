@@ -23,9 +23,12 @@ exports[`OptinMetrics render matches snapshot 1`] = `
       collapsable={false}
       pointerEvents="box-none"
       style={
-        {
-          "zIndex": 1,
-        }
+        [
+          {
+            "zIndex": 1,
+          },
+          false,
+        ]
       }
     >
       <View
@@ -53,19 +56,27 @@ exports[`OptinMetrics render matches snapshot 1`] = `
           <View
             collapsable={false}
             style={
-              {
-                "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgb(216, 216, 216)",
-                "elevation": 0,
-                "flex": 1,
-                "shadowColor": "transparent",
-                "shadowOffset": {
-                  "height": 0.5,
-                  "width": 0,
+              [
+                {
+                  "flex": 1,
+                  "shadowOffset": {
+                    "height": 0.5,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.85,
+                  "shadowRadius": 0,
                 },
-                "shadowOpacity": 0.85,
-                "shadowRadius": 0,
-              }
+                {
+                  "backgroundColor": "rgb(255, 255, 255)",
+                  "borderBottomColor": "rgb(216, 216, 216)",
+                  "shadowColor": "rgb(216, 216, 216)",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "elevation": 0,
+                  "shadowColor": "transparent",
+                },
+              ]
             }
           />
         </View>
@@ -73,13 +84,15 @@ exports[`OptinMetrics render matches snapshot 1`] = `
           collapsable={false}
           pointerEvents="box-none"
           style={
-            {
-              "height": 64,
-              "maxHeight": undefined,
-              "minHeight": undefined,
-              "opacity": undefined,
-              "transform": undefined,
-            }
+            [
+              {
+                "height": 64,
+                "maxHeight": undefined,
+                "minHeight": undefined,
+                "opacity": undefined,
+                "transform": undefined,
+              },
+            ]
           }
         >
           <View
@@ -181,14 +194,18 @@ exports[`OptinMetrics render matches snapshot 1`] = `
         sheetGrabberVisible={false}
         sheetLargestUndimmedDetent="all"
         style={
-          {
-            "bottom": 0,
-            "left": 0,
-            "position": "absolute",
-            "right": 0,
-            "top": 0,
-            "zIndex": undefined,
-          }
+          [
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            {
+              "zIndex": undefined,
+            },
+          ]
         }
       >
         <View
@@ -257,9 +274,13 @@ exports[`OptinMetrics render matches snapshot 1`] = `
             needsOffscreenAlphaCompositing={false}
             pointerEvents="box-none"
             style={
-              {
-                "flex": 1,
-              }
+              [
+                {
+                  "flex": 1,
+                },
+                undefined,
+                null,
+              ]
             }
           >
             <View
