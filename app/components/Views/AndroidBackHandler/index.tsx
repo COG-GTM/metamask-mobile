@@ -1,6 +1,10 @@
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { PureComponent } from 'react';
-import { BackHandler, InteractionManager } from 'react-native';
+import {
+  BackHandler,
+  InteractionManager,
+  NativeEventSubscription,
+} from 'react-native';
 
 interface AndroidBackHandlerProps {
   /**
@@ -18,19 +22,20 @@ interface AndroidBackHandlerProps {
  */
 export default class AndroidBackHandler extends PureComponent<AndroidBackHandlerProps> {
   pressed = false;
+  private backHandlerSubscription?: NativeEventSubscription;
 
   componentDidMount() {
     InteractionManager.runAfterInteractions(() => {
-      BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+      this.backHandlerSubscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        this.handleBackPress,
+      );
     });
   }
 
   componentWillUnmount() {
     InteractionManager.runAfterInteractions(() => {
-      BackHandler.removeEventListener(
-        'hardwareBackPress',
-        this.handleBackPress,
-      );
+      this.backHandlerSubscription?.remove();
     });
   }
 

@@ -144,7 +144,10 @@ const Login: React.FC = () => {
       createEventBuilder(MetaMetricsEvents.LOGIN_SCREEN_VIEWED).build(),
     );
 
-    BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    const backHandlerSubscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackPress,
+    );
 
     const getUserAuthPreferences = async () => {
       const authData = await Authentication.getType();
@@ -182,7 +185,7 @@ const Login: React.FC = () => {
     getUserAuthPreferences();
 
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+      backHandlerSubscription.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

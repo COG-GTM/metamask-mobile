@@ -542,24 +542,24 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       return true;
     };
 
-    BackHandler.addEventListener('hardwareBackPress', handleAndroidBackPress);
+    let backHandlerSubscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleAndroidBackPress,
+    );
 
     // Handle hardwareBackPress event only for browser, not components rendered on top
     navigation.addListener('focus', () => {
-      BackHandler.addEventListener('hardwareBackPress', handleAndroidBackPress);
-    });
-    navigation.addListener('blur', () => {
-      BackHandler.removeEventListener(
+      backHandlerSubscription = BackHandler.addEventListener(
         'hardwareBackPress',
         handleAndroidBackPress,
       );
+    });
+    navigation.addListener('blur', () => {
+      backHandlerSubscription.remove();
     });
 
     return function cleanup() {
-      BackHandler.removeEventListener(
-        'hardwareBackPress',
-        handleAndroidBackPress,
-      );
+      backHandlerSubscription.remove();
     };
   }, [goBack, isTabActive, navigation]);
 
