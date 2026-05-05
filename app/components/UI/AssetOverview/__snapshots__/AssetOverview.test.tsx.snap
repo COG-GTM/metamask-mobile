@@ -62,7 +62,7 @@ exports[`AssetOverview should render correctly 1`] = `
             <View
               style={
                 {
-                  "position": "relative",
+                  "backgroundColor": "transparent",
                 }
               }
             >
@@ -74,9 +74,18 @@ exports[`AssetOverview should render correctly 1`] = `
                       "height": 32,
                       "width": 100,
                     },
+                    [
+                      {
+                        "overflow": "hidden",
+                      },
+                      {
+                        "backgroundColor": "#E1E9EE",
+                      },
+                    ],
                     {
-                      "backgroundColor": "#E1E9EE",
-                      "overflow": "hidden",
+                      "borderRadius": 6,
+                      "height": 32,
+                      "width": 100,
                     },
                   ]
                 }
@@ -112,7 +121,7 @@ exports[`AssetOverview should render correctly 1`] = `
             <View
               style={
                 {
-                  "position": "relative",
+                  "backgroundColor": "transparent",
                 }
               }
             >
@@ -124,9 +133,18 @@ exports[`AssetOverview should render correctly 1`] = `
                       "height": 18,
                       "width": 150,
                     },
+                    [
+                      {
+                        "overflow": "hidden",
+                      },
+                      {
+                        "backgroundColor": "#E1E9EE",
+                      },
+                    ],
                     {
-                      "backgroundColor": "#E1E9EE",
-                      "overflow": "hidden",
+                      "borderRadius": 6,
+                      "height": 18,
+                      "width": 150,
                     },
                   ]
                 }
@@ -151,7 +169,7 @@ exports[`AssetOverview should render correctly 1`] = `
         <View
           style={
             {
-              "position": "relative",
+              "backgroundColor": "transparent",
             }
           }
         >
@@ -163,9 +181,18 @@ exports[`AssetOverview should render correctly 1`] = `
                   "height": 586.96,
                   "width": 718,
                 },
+                [
+                  {
+                    "overflow": "hidden",
+                  },
+                  {
+                    "backgroundColor": "#E1E9EE",
+                  },
+                ],
                 {
-                  "backgroundColor": "#E1E9EE",
-                  "overflow": "hidden",
+                  "borderRadius": 6,
+                  "height": 586.96,
+                  "width": 718,
                 },
               ]
             }
@@ -1222,7 +1249,7 @@ exports[`AssetOverview should render native balances even if there are no accoun
             <View
               style={
                 {
-                  "position": "relative",
+                  "backgroundColor": "transparent",
                 }
               }
             >
@@ -1234,9 +1261,18 @@ exports[`AssetOverview should render native balances even if there are no accoun
                       "height": 32,
                       "width": 100,
                     },
+                    [
+                      {
+                        "overflow": "hidden",
+                      },
+                      {
+                        "backgroundColor": "#E1E9EE",
+                      },
+                    ],
                     {
-                      "backgroundColor": "#E1E9EE",
-                      "overflow": "hidden",
+                      "borderRadius": 6,
+                      "height": 32,
+                      "width": 100,
                     },
                   ]
                 }
@@ -1272,7 +1308,7 @@ exports[`AssetOverview should render native balances even if there are no accoun
             <View
               style={
                 {
-                  "position": "relative",
+                  "backgroundColor": "transparent",
                 }
               }
             >
@@ -1284,9 +1320,18 @@ exports[`AssetOverview should render native balances even if there are no accoun
                       "height": 18,
                       "width": 150,
                     },
+                    [
+                      {
+                        "overflow": "hidden",
+                      },
+                      {
+                        "backgroundColor": "#E1E9EE",
+                      },
+                    ],
                     {
-                      "backgroundColor": "#E1E9EE",
-                      "overflow": "hidden",
+                      "borderRadius": 6,
+                      "height": 18,
+                      "width": 150,
                     },
                   ]
                 }
@@ -1311,7 +1356,7 @@ exports[`AssetOverview should render native balances even if there are no accoun
         <View
           style={
             {
-              "position": "relative",
+              "backgroundColor": "transparent",
             }
           }
         >
@@ -1323,9 +1368,18 @@ exports[`AssetOverview should render native balances even if there are no accoun
                   "height": 586.96,
                   "width": 718,
                 },
+                [
+                  {
+                    "overflow": "hidden",
+                  },
+                  {
+                    "backgroundColor": "#E1E9EE",
+                  },
+                ],
                 {
-                  "backgroundColor": "#E1E9EE",
-                  "overflow": "hidden",
+                  "borderRadius": 6,
+                  "height": 586.96,
+                  "width": 718,
                 },
               ]
             }
