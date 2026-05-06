@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   ScrollView,
@@ -36,6 +35,10 @@ import {
   selectConversionRate,
   selectCurrentCurrency,
 } from '../../../selectors/currencyRateController';
+import type { ParamListBase, RouteProp } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { Colors } from '../../../util/theme/models';
+import type { RootState } from '../../../reducers';
 
 const IMAGE_3_RATIO = 281 / 354;
 const IMAGE_2_RATIO = 353 / 416;
@@ -44,7 +47,7 @@ const DEVICE_WIDTH = Dimensions.get('window').width;
 
 const IMG_PADDING = Device.isIphone5() ? 220 : 200;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     scroll: {
       flexGrow: 1,
@@ -141,15 +144,32 @@ const carousel_images = [
 /**
  * View that is displayed to first time (new) users
  */
+interface GasEducationCarouselRouteParams {
+  navigateTo?: () => void;
+}
+
+interface OwnProps {
+  navigation: StackNavigationProp<ParamListBase>;
+  route?: RouteProp<{ params: GasEducationCarouselRouteParams }, 'params'>;
+}
+
+interface StateProps {
+  conversionRate: number;
+  currentCurrency: string;
+  ticker: string;
+}
+
+type GasEducationCarouselProps = OwnProps & StateProps;
+
 const GasEducationCarousel = ({
   navigation,
   route,
   conversionRate,
   currentCurrency,
   ticker,
-}) => {
+}: GasEducationCarouselProps) => {
   const [currentTab, setCurrentTab] = useState(1);
-  const [gasFiat, setGasFiat] = useState(null);
+  const [gasFiat, setGasFiat] = useState<string | null>(null);
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [isLoading, setIsLoading] = useState(true);
@@ -227,7 +247,7 @@ const GasEducationCarousel = ({
 
   const renderTabBar = () => <View />;
 
-  const onChangeTab = (obj) => {
+  const onChangeTab = (obj: { i: number }) => {
     setCurrentTab(obj.i + 1);
   };
 
@@ -239,7 +259,7 @@ const GasEducationCarousel = ({
       },
     });
 
-  const renderText = (key) => {
+  const renderText = (key: number) => {
     if (key === 1) {
       return (
         <View style={styles.tab}>
@@ -387,30 +407,7 @@ const GasEducationCarousel = ({
   );
 };
 
-GasEducationCarousel.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-    /* conversion rate of ETH - FIAT
-    */
-  conversionRate: PropTypes.any,
-  /**
-    /* Selected currency
-    */
-  currentCurrency: PropTypes.string,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),

@@ -30,7 +30,11 @@ interface TermsAndConditionsProps {
   /**
    * navigation object required to push and pop other views
    */
-  navigation: StackNavigationProp<ParamListBase>;
+  navigation?: StackNavigationProp<ParamListBase>;
+  /**
+   * Optional action identifier (e.g., 'import')
+   */
+  action?: string;
 }
 
 /**
@@ -43,7 +47,7 @@ export default class TermsAndConditions extends PureComponent<TermsAndConditions
 
   press = () => {
     const { navigation } = this.props;
-    navigation.navigate('Webview', {
+    navigation?.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: AppConstants.URLS.TERMS_AND_CONDITIONS,

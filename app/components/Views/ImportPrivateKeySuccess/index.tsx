@@ -75,7 +75,7 @@ const createStyles = (colors: Colors) =>
   });
 
 interface ImportPrivateKeySuccessProps {
-  navigation: StackNavigationProp<ParamListBase>;
+  navigation?: StackNavigationProp<ParamListBase>;
 }
 
 /**
@@ -102,11 +102,12 @@ class ImportPrivateKeySuccess extends PureComponent<ImportPrivateKeySuccessProps
   };
 
   handleBackPress = () => {
-    this.props.navigation.popToTop();
+    this.props.navigation?.popToTop();
     return true;
   };
 
   dismiss = () => {
+    if (!this.props.navigation) return;
     const { popToTop, canGoBack, goBack } = this.props.navigation;
     popToTop();
     canGoBack() && goBack();

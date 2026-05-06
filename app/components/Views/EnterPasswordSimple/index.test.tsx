@@ -3,6 +3,8 @@ import { render, screen } from '@testing-library/react-native';
 import EnterPasswordSimple from './';
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeContext } from '../../../util/theme';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 
 const mockTheme = {
   colors: {
@@ -33,7 +35,11 @@ describe('EnterPasswordSimple', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <NavigationContainer>
-          <EnterPasswordSimple navigation={mockNavigation} />
+          <EnterPasswordSimple
+            navigation={
+              mockNavigation as unknown as StackNavigationProp<ParamListBase>
+            }
+          />
         </NavigationContainer>
       </ThemeContext.Provider>,
     );

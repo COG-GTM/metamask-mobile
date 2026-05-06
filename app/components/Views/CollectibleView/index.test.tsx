@@ -5,6 +5,9 @@ import CollectibleView from '.';
 import configureMockStore from 'redux-mock-store';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { ComponentProps } from 'react';
+
+type CollectibleViewProps = ComponentProps<typeof CollectibleView>;
 
 const initialState = {
   collectibles: {
@@ -35,7 +38,7 @@ describe('CollectibleView Snapshot', () => {
     const { toJSON } = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <CollectibleView {...(props as unknown as CollectibleViewProps)} />
         </ThemeContext.Provider>
       </Provider>,
     );
@@ -60,7 +63,7 @@ describe('CollectibleView Snapshot', () => {
     const wrapper = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <CollectibleView {...(props as unknown as CollectibleViewProps)} />
         </ThemeContext.Provider>
       </Provider>,
     );

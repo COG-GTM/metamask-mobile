@@ -7,6 +7,21 @@ import { backgroundState } from '../../../util/test/initial-root-state';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { act, render } from '@testing-library/react-native';
 import Engine from '../../../core/Engine';
+import type { ParamListBase, RouteProp } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+
+type CollectibleNav = StackNavigationProp<ParamListBase>;
+type CollectibleRoute = RouteProp<
+  {
+    params: {
+      address: string;
+      collectible?: { address: string; name?: string; image?: string };
+      contractName?: string;
+      [key: string]: unknown;
+    };
+  },
+  'params'
+>;
 
 jest.mock('../../../core/Engine', () => ({
   context: {
@@ -63,7 +78,10 @@ describe('Collectible', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <Collectible route={{ params: { address: '0x1' } }} />
+        <Collectible
+          route={{ params: { address: '0x1' } } as CollectibleRoute}
+          navigation={{} as CollectibleNav}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
@@ -81,8 +99,10 @@ describe('Collectible', () => {
       <Provider store={storeMocked}>
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
-            navigation={navigationMock}
-            route={{ params: defaultCollectibleContract }}
+            navigation={navigationMock as unknown as CollectibleNav}
+            route={
+              { params: defaultCollectibleContract } as CollectibleRoute
+            }
           />
         </ThemeContext.Provider>
       </Provider>,
@@ -98,8 +118,10 @@ describe('Collectible', () => {
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
-            navigation={navigationMock}
-            route={{ params: defaultCollectibleContract }}
+            navigation={navigationMock as unknown as CollectibleNav}
+            route={
+              { params: defaultCollectibleContract } as CollectibleRoute
+            }
           />
         </ThemeContext.Provider>
       </Provider>,

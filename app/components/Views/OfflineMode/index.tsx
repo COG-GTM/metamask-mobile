@@ -58,7 +58,7 @@ interface OwnProps {
   /**
    * Object that represents the navigator
    */
-  navigation: StackNavigationProp<ParamListBase>;
+  navigation?: StackNavigationProp<ParamListBase>;
 }
 
 interface StateProps {
@@ -78,12 +78,12 @@ const OfflineMode = ({ navigation, infuraBlocked }: OfflineModeProps) => {
 
   const tryAgain = () => {
     if (netinfo?.isConnected) {
-      navigation.pop();
+      navigation?.pop();
     }
   };
 
   const learnMore = () => {
-    navigation.navigate('Webview', {
+    navigation?.navigate('Webview', {
       screen: 'SimpleWebview',
       params: { url: AppConstants.URLS.CONNECTIVITY_ISSUES },
     });
@@ -122,11 +122,7 @@ const OfflineMode = ({ navigation, infuraBlocked }: OfflineModeProps) => {
   );
 };
 
-OfflineMode.navigationOptions = ({
-  navigation,
-}: {
-  navigation: StackNavigationProp<ParamListBase>;
-}) => getOfflineModalNavbar(navigation);
+OfflineMode.navigationOptions = () => getOfflineModalNavbar();
 
 const mapStateToProps = (state: RootState): StateProps => ({
   infuraBlocked: getInfuraBlockedSelector(state),

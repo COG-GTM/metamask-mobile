@@ -53,7 +53,7 @@ interface EnterPasswordSimpleRouteParams {
 
 interface EnterPasswordSimpleProps {
   navigation: StackNavigationProp<ParamListBase>;
-  route: RouteProp<{ params: EnterPasswordSimpleRouteParams }, 'params'>;
+  route?: RouteProp<{ params: EnterPasswordSimpleRouteParams }, 'params'>;
 }
 
 interface EnterPasswordSimpleState {
@@ -114,7 +114,7 @@ export default class EnterPasswordSimple extends PureComponent<
         strings('choose_password.password_length_error'),
       );
     } else {
-      this.props.route.params.onPasswordSet(this.state.password);
+      this.props.route?.params?.onPasswordSet?.(this.state.password);
       this.props.navigation.pop();
       return;
     }

@@ -21,10 +21,10 @@ import {
   mockTheme,
   ThemeContext,
 } from '../../../util/theme';
+import type { AppThemeKey, Colors } from '../../../util/theme/models';
 import Routes from '../../../constants/navigation/Routes';
 import { CommonActions } from '@react-navigation/native';
 import trackErrorAsAnalytics from '../../../util/metrics/TrackError/trackErrorAsAnalytics';
-import type { Colors } from '../../../util/theme/models';
 import type { RootState } from '../../../reducers';
 
 const LOGO_SIZE = 175;
@@ -76,7 +76,7 @@ interface OwnProps {
 }
 
 interface StateProps {
-  appTheme: string;
+  appTheme: AppThemeKey;
 }
 
 type LockScreenProps = OwnProps & StateProps;
@@ -149,7 +149,7 @@ class LockScreen extends PureComponent<LockScreenProps, LockScreenState> {
       this.lock();
       trackErrorAsAnalytics(
         'Lockscreen: Authentication failed',
-        (error as { message?: string })?.message,
+        (error as { message?: string })?.message ?? '',
       );
     }
   }
@@ -243,13 +243,13 @@ const mapStateToProps = (state: RootState): StateProps => ({
 const ConnectedLockScreen = connect(mapStateToProps)(LockScreen);
 
 interface LockScreenFCWrapperProps {
-  navigation: StackNavigationProp<ParamListBase>;
-  route: RouteProp<{ params: { bioStateMachineId?: string } }, 'params'>;
+  navigation?: StackNavigationProp<ParamListBase>;
+  route?: RouteProp<{ params: { bioStateMachineId?: string } }, 'params'>;
 }
 
 // Wrapper that forces LockScreen to re-render when bioStateMachineId changes.
 const LockScreenFCWrapper = (props: LockScreenFCWrapperProps) => {
-  const { bioStateMachineId } = props.route.params;
+  const bioStateMachineId = props.route?.params?.bioStateMachineId;
   return (
     <ConnectedLockScreen
       key={bioStateMachineId}
