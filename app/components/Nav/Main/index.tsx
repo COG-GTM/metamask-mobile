@@ -28,11 +28,11 @@ import BackupAlert from '../../UI/BackupAlert';
 import Notification from '../../UI/Notification';
 import RampOrders from '../../UI/Ramp';
 import {
-  showTransactionNotification,
-  hideCurrentNotification,
-  showSimpleNotification,
-  removeNotificationById,
-  removeNotVisibleNotifications,
+  showTransactionNotification as showTransactionNotificationAction,
+  hideCurrentNotification as hideCurrentNotificationAction,
+  showSimpleNotification as showSimpleNotificationAction,
+  removeNotificationById as removeNotificationByIdAction,
+  removeNotVisibleNotifications as removeNotVisibleNotificationsAction,
 } from '../../../actions/notification';
 
 import ProtectYourWalletModal from '../../UI/ProtectYourWalletModal';
@@ -54,6 +54,7 @@ import {
   ToastContext,
   ToastVariants,
 } from '../../../component-library/components/Toast';
+import type { ToastOptions } from '../../../component-library/components/Toast/Toast.types';
 import { useEnableAutomaticSecurityChecks } from '../../hooks/EnableAutomaticSecurityChecks';
 import { useMinimumVersions } from '../../hooks/MinimumVersions';
 import navigateTermsOfUse from '../../../util/termsOfUse/termsOfUse';
@@ -285,13 +286,13 @@ const Main = (props: Props) => {
 
   const hasNetworkChanged = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (chainId: string, previousConfig: any, isEvmSelected: boolean) => {
+    (currentChainId: string, previousConfig: any, isEvm: boolean) => {
       if (!previousConfig) return false;
 
-      return isEvmSelected
-        ? chainId !== previousConfig.chainId ||
+      return isEvm
+        ? currentChainId !== previousConfig.chainId ||
             providerConfig.type !== previousConfig.type
-        : chainId !== previousConfig.chainId;
+        : currentChainId !== previousConfig.chainId;
     },
     [providerConfig.type],
   );
@@ -317,7 +318,6 @@ const Main = (props: Props) => {
           });
         }
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       toastRef?.current?.showToast({
         variant: ToastVariants.Network,
         labelOptions: [
@@ -328,7 +328,7 @@ const Main = (props: Props) => {
           { label: strings('toast.now_active') },
         ],
         networkImageSource: networkImage,
-      } as any);
+      } as unknown as ToastOptions);
     }
     previousProviderConfig.current = !isEvmSelected
       ? { chainId }
@@ -350,8 +350,8 @@ const Main = (props: Props) => {
     if (!isNetworkUiRedesignEnabled()) return;
 
     // Memoized values to avoid recalculations
-    const currentNetworkValues = Object.values(networkConfigurations);
-    const previousNetworkValues = Object.values(
+    const currentNetworkValues: unknown[] = Object.values(networkConfigurations);
+    const previousNetworkValues: unknown[] = Object.values(
       previousNetworkConfigurations.current ?? {},
     );
 
@@ -360,18 +360,13 @@ const Main = (props: Props) => {
       currentNetworkValues.length !== previousNetworkValues.length
     ) {
       // Find the newly added network
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newNetwork = currentNetworkValues.find(
-        (network: any) => !previousNetworkValues.includes(network),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ) as any;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (network) => !previousNetworkValues.includes(network),
+      ) as { name?: string } | undefined;
       const deletedNetwork = previousNetworkValues.find(
-        (network: any) => !currentNetworkValues.includes(network),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ) as any;
+        (network) => !currentNetworkValues.includes(network),
+      ) as { name?: string } | undefined;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       toastRef?.current?.showToast({
         variant: ToastVariants.Plain,
         labelOptions: [
@@ -389,7 +384,7 @@ const Main = (props: Props) => {
           },
         ],
         networkImageSource: networkImage,
-      } as any);
+      } as unknown as ToastOptions);
     }
     previousNetworkConfigurations.current = networkConfigurations as unknown;
   }, [networkConfigurations, networkName, networkImage, toastRef]);
@@ -422,9 +417,8 @@ const Main = (props: Props) => {
         removeNotificationById: props.removeNotificationById,
       });
       checkInfuraAvailability();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       removeConnectionStatusListener.current = NetInfo.addEventListener(
-        connectionChangeHandler as any,
+        connectionChangeHandler as Parameters<typeof NetInfo.addEventListener>[0],
       );
     }, 1000);
 
@@ -452,14 +446,14 @@ const Main = (props: Props) => {
   };
 
   const renderDeprecatedNetworkAlert = (
-    chainId: string,
+    currentChainId: string,
     backUpSeedphraseVisible: boolean,
   ) => {
     if (
-      DEPRECATED_NETWORKS.includes(chainId as `0x${string}`) &&
+      DEPRECATED_NETWORKS.includes(currentChainId as `0x${string}`) &&
       showDeprecatedAlert
     ) {
-      if (NETWORKS_CHAIN_ID.MUMBAI === chainId) {
+      if (NETWORKS_CHAIN_ID.MUMBAI === currentChainId) {
         return (
           <WarningAlert
             text={strings('networks.network_deprecated_title')}
@@ -537,17 +531,19 @@ const mapStateToProps = (state: RootState): StateProps => ({
 const mapDispatchToProps = (dispatch: any): DispatchProps => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showTransactionNotification: (args: any) =>
-    dispatch(showTransactionNotification(args)),
+    dispatch(showTransactionNotificationAction(args)),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  showSimpleNotification: (args: any) => dispatch(showSimpleNotification(args)),
-  hideCurrentNotification: () => dispatch(hideCurrentNotification()),
+  showSimpleNotification: (args: any) =>
+    dispatch(showSimpleNotificationAction(args)),
+  hideCurrentNotification: () => dispatch(hideCurrentNotificationAction()),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  removeNotificationById: (id: any) => dispatch(removeNotificationById(id)),
+  removeNotificationById: (id: any) =>
+    dispatch(removeNotificationByIdAction(id)),
   setInfuraAvailabilityBlocked: () => dispatch(setInfuraAvailabilityBlocked()),
   setInfuraAvailabilityNotBlocked: () =>
     dispatch(setInfuraAvailabilityNotBlocked()),
   removeNotVisibleNotifications: () =>
-    dispatch(removeNotVisibleNotifications()),
+    dispatch(removeNotVisibleNotificationsAction()),
 });
 
 const ConnectedMain = connect(mapStateToProps, mapDispatchToProps)(Main);

@@ -5,16 +5,15 @@ import { connect, useSelector } from 'react-redux';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { RootState } from '../../../reducers';
 import { ethers } from 'ethers';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const abi: unknown = require('human-standard-token-abi');
+import abi from 'human-standard-token-abi';
 
 import NotificationManager from '../../../core/NotificationManager';
 import Engine from '../../../core/Engine';
 import { strings } from '../../../../locales/i18n';
 import { hexToBN, fromWei, isZeroValue } from '../../../util/number';
 import {
-  setEtherTransaction,
-  setTransactionObject,
+  setEtherTransaction as setEtherTransactionAction,
+  setTransactionObject as setTransactionObjectAction,
 } from '../../../actions/transaction';
 import WalletConnect from '../../../core/WalletConnect/WalletConnect';
 import {
@@ -82,9 +81,7 @@ import SnapDialogApproval from '../../Snaps/SnapDialogApproval/SnapDialogApprova
 import SnapAccountCustomNameApproval from '../../Approvals/SnapAccountCustomNameApproval';
 ///: END:ONLY_INCLUDE_IF
 
-const hstInterface = new ethers.utils.Interface(
-  abi as ConstructorParameters<typeof ethers.utils.Interface>[0],
-);
+const hstInterface = new ethers.utils.Interface(abi);
 
 function useSwapsTransactions() {
   const swapTransactions = useSelector(selectSwapsTransactions, isEqual);
@@ -350,25 +347,25 @@ const RootRPCMethodsUI = (props: Props) => {
         Engine.controllerMessenger.subscribeOnceIf(
           'TransactionController:transactionFinished',
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (transactionMeta: any) => {
-            if (transactionMeta.status === 'submitted') {
+          (txMeta: any) => {
+            if (txMeta.status === 'submitted') {
               NotificationManager.watchSubmittedTransaction({
-                ...transactionMeta,
-                assetType: transactionMeta.txParams.assetType,
+                ...txMeta,
+                assetType: txMeta.txParams.assetType,
               });
             } else {
-              if (swapsTransactions[transactionMeta.id]?.analytics) {
+              if (swapsTransactions[txMeta.id]?.analytics) {
                 trackSwaps(
                   MetaMetricsEvents.SWAP_FAILED,
-                  transactionMeta,
+                  txMeta,
                   swapsTransactions,
                 );
               }
-              throw transactionMeta.error;
+              throw txMeta.error;
             }
           },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (transactionMeta: any) => transactionMeta.id === transactionId,
+          (txMeta: any) => txMeta.id === transactionId,
         );
 
         // Queue txMetaId to listen for confirmation event
@@ -391,9 +388,8 @@ const RootRPCMethodsUI = (props: Props) => {
               deviceId,
               // eslint-disable-next-line no-empty-function
               onConfirmationComplete: () => {},
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               type: 'signTransaction',
-            } as any),
+            } as Parameters<typeof createLedgerTransactionModalNavDetails>[0]),
           );
         } else {
           Engine.acceptPendingApproval(transactionMeta.id);
@@ -406,7 +402,7 @@ const RootRPCMethodsUI = (props: Props) => {
         ) {
           Alert.alert(
             strings('transactions.transaction_error'),
-            err && err.message,
+            err?.message,
             [{ text: strings('navigation.ok') }],
           );
           Logger.error(
@@ -455,7 +451,7 @@ const RootRPCMethodsUI = (props: Props) => {
         const {
           chainId,
           networkClientId,
-          txParams: { value, gas, gasPrice, data },
+          txParams: { value, gas, gasPrice },
         } = transactionMeta;
         const { AssetsContractController } = Engine.context;
         transactionMeta.txParams.gas = hexToBN(gas);
@@ -480,8 +476,7 @@ const RootRPCMethodsUI = (props: Props) => {
 
             if (!asset) {
               try {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                asset = {} as any;
+                asset = {};
                 asset.decimals =
                   await AssetsContractController.getERC20TokenDecimals(to);
                 asset.symbol =
@@ -491,12 +486,11 @@ const RootRPCMethodsUI = (props: Props) => {
               } catch {
                 // This could fail when requesting a transfer in other network
                 // adding `to` here as well
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 asset = {
                   symbol: 'ERC20',
                   decimals: new BN(0),
                   address: to,
-                } as any;
+                };
               }
             }
           }
@@ -650,10 +644,10 @@ const mapStateToProps = (state: RootState): StateProps => ({
 const mapDispatchToProps = (dispatch: any): DispatchProps => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setEtherTransaction: (transaction: any) =>
-    dispatch(setEtherTransaction(transaction)),
+    dispatch(setEtherTransactionAction(transaction)),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setTransactionObject: (transaction: any) =>
-    dispatch(setTransactionObject(transaction)),
+    dispatch(setTransactionObjectAction(transaction)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RootRPCMethodsUI);

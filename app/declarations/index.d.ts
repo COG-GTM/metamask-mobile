@@ -11,6 +11,13 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'human-standard-token-abi' {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const abi: any[];
+  export default abi;
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
