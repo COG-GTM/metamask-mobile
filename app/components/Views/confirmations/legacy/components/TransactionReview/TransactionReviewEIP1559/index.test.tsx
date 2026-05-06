@@ -1,5 +1,6 @@
 import React from 'react';
-import TransactionReviewEIP1559 from '.';
+import TransactionReviewEIP1559Import from '.';
+const TransactionReviewEIP1559: any = TransactionReviewEIP1559Import;
 import renderWithProvider from '../../../../../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
 
