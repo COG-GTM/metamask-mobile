@@ -8,8 +8,11 @@ import {
   StyleSheet,
   BackHandler,
   Image,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from 'react-native';
-import PropTypes from 'prop-types';
+import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../styles/common';
 import StyledButton from '../../UI/StyledButton';
 import OnboardingProgress from '../../UI/OnboardingProgress';
@@ -35,28 +38,28 @@ import Routes from '../../../../app/constants/navigation/Routes';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import SRPDesign from '../../../images/srp-lock-design.png';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
       flex: 1,
-    },
+    } as ViewStyle,
     scrollviewWrapper: {
       flexGrow: 1,
-    },
+    } as ViewStyle,
     wrapper: {
       flex: 1,
       padding: 20,
       paddingTop: 0,
       paddingBottom: 0,
       marginTop: 16,
-    },
+    } as ViewStyle,
     content: {
       alignItems: 'center',
       justifyContent: 'flex-start',
       flex: 1,
       marginBottom: 10,
-    },
+    } as ViewStyle,
     title: {
       fontSize: 24,
       marginBottom: 24,
@@ -64,70 +67,85 @@ const createStyles = (colors) =>
       color: colors.text.default,
       textAlign: 'center',
       ...fontStyles.bold,
-    },
+    } as TextStyle,
     text: {
       marginTop: 32,
       justifyContent: 'center',
-    },
+    } as ViewStyle,
     label: {
       lineHeight: scaling.scale(20),
       fontSize: scaling.scale(14),
       color: colors.text.default,
       textAlign: 'left',
       ...fontStyles.normal,
-    },
+    } as TextStyle,
     buttonWrapper: {
       flex: 1,
       justifyContent: 'flex-end',
-    },
+    } as ViewStyle,
     bold: {
       ...fontStyles.bold,
-    },
+    } as TextStyle,
     blue: {
       color: colors.primary.default,
-    },
+    } as TextStyle,
     remindLaterText: {
       textAlign: 'center',
       fontSize: 15,
       lineHeight: 20,
       color: colors.primary.default,
       ...fontStyles.normal,
-    },
+    } as TextStyle,
     remindLaterSubText: {
       textAlign: 'center',
       fontSize: 11,
       lineHeight: 20,
       color: colors.text.alternative,
       ...fontStyles.normal,
-    },
+    } as TextStyle,
     startSubText: {
       textAlign: 'center',
       fontSize: 11,
       marginTop: 12,
       color: colors.text.alternative,
       ...fontStyles.normal,
-    },
+    } as TextStyle,
     remindLaterContainer: {
       marginBottom: 34,
-    },
+    } as ViewStyle,
     remindLaterButton: {
       elevation: 10,
       zIndex: 10,
-    },
+    } as ViewStyle,
     ctaContainer: {
       marginBottom: 30,
-    },
+    } as ViewStyle,
     srpDesign: {
       width: 200,
       height: 225,
-    },
+    } as ImageStyle,
+    button: {} as ViewStyle,
   });
+
+interface AccountBackupStep1OwnProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route?: any;
+}
+
+interface AccountBackupStep1DispatchProps {
+  setOnboardingWizardStep: (step: number) => void;
+}
+
+type AccountBackupStep1Props = AccountBackupStep1OwnProps &
+  AccountBackupStep1DispatchProps;
 
 /**
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1 = (props) => {
+const AccountBackupStep1 = (props: AccountBackupStep1Props) => {
   const { navigation, route } = props;
   const [showRemindLaterModal, setRemindLaterModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -136,9 +154,13 @@ const AccountBackupStep1 = (props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const track = (event, properties) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const track = (event: any, properties?: Record<string, unknown>) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
-    eventBuilder.addProperties(properties);
+    if (properties) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      eventBuilder.addProperties(properties as any);
+    }
     trackOnboarding(eventBuilder.build());
   };
 
@@ -298,23 +320,10 @@ const AccountBackupStep1 = (props) => {
   );
 };
 
-AccountBackupStep1.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Action to set onboarding wizard step
-   */
-  setOnboardingWizardStep: PropTypes.func,
-};
-
-const mapDispatchToProps = (dispatch) => ({
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any): AccountBackupStep1DispatchProps => ({
+  setOnboardingWizardStep: (step: number) =>
+    dispatch(setOnboardingWizardStep(step)),
 });
 
 export default connect(null, mapDispatchToProps)(AccountBackupStep1);

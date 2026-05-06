@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   Platform,
   KeyboardAvoidingView,
@@ -12,15 +11,21 @@ import {
   ScrollView,
   Image,
   InteractionManager,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { connect } from 'react-redux';
+import zxcvbn from 'zxcvbn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { Theme } from '@metamask/design-tokens';
 import Text, {
   TextColor,
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 import StorageWrapper from '../../../store/storage-wrapper';
-import { connect } from 'react-redux';
 import { passwordSet, seedphraseNotBackedUp } from '../../../actions/user';
 import { setLockTime } from '../../../actions/settings';
 import StyledButton from '../../UI/StyledButton';
@@ -29,9 +34,7 @@ import Device from '../../../util/device';
 import { fontStyles, baseStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import AppConstants from '../../../core/AppConstants';
-import zxcvbn from 'zxcvbn';
 import { ONBOARDING, PREVIOUS_SCREEN } from '../../../constants/navigation';
 import {
   TRUE,
@@ -56,22 +59,22 @@ import Logger from '../../../util/Logger';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
 import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ChoosePassword.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
       flex: 1,
-    },
+    } as ViewStyle,
     scrollviewWrapper: {
       flexGrow: 1,
-    },
+    } as ViewStyle,
     confirm_title: {
       marginTop: 10,
       marginBottom: 10,
       justifyContent: 'center',
       textAlign: 'left',
       ...fontStyles.normal,
-    },
+    } as TextStyle,
     confirm_input: {
       borderWidth: 2,
       borderRadius: 5,
@@ -80,45 +83,45 @@ const createStyles = (colors) =>
       padding: 10,
       height: 40,
       color: colors.text.default,
-    },
+    } as TextStyle,
     confirm_label: {
       textAlign: 'left',
       ...fontStyles.normal,
-    },
+    } as TextStyle,
     wrapper: {
       flex: 1,
       marginBottom: 10,
-    },
+    } as ViewStyle,
     scrollableWrapper: {
       flex: 1,
       paddingHorizontal: 32,
-    },
+    } as ViewStyle,
     keyboardScrollableWrapper: {
       flexGrow: 1,
-    },
+    } as ViewStyle,
     loadingWrapper: {
       paddingHorizontal: 40,
       paddingBottom: 30,
       alignItems: 'center',
       flex: 1,
-    },
+    } as ViewStyle,
     foxWrapper: {
       width: Device.isIos() ? 90 : 80,
       height: Device.isIos() ? 90 : 80,
       marginTop: 30,
       marginBottom: 30,
-    },
+    } as ViewStyle,
     image: {
       alignSelf: 'center',
       width: 80,
       height: 80,
-    },
+    } as ImageStyle,
     passwordRequiredContent: {
       marginBottom: 20,
-    },
+    } as ViewStyle,
     content: {
       alignItems: 'flex-start',
-    },
+    } as ViewStyle,
     title: {
       marginTop: 20,
       marginBottom: 20,
@@ -126,17 +129,17 @@ const createStyles = (colors) =>
       textAlign: 'center',
       width: '100%',
       ...fontStyles.normal,
-    },
+    } as TextStyle,
     subtitle: {
       lineHeight: 23,
       textAlign: 'center',
       fontWeight: '400',
-    },
+    } as TextStyle,
     text: {
       marginBottom: 10,
       justifyContent: 'center',
       ...fontStyles.normal,
-    },
+    } as TextStyle,
     checkboxContainer: {
       marginTop: 10,
       marginHorizontal: 10,
@@ -144,27 +147,27 @@ const createStyles = (colors) =>
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'row',
-    },
+    } as ViewStyle,
     checkbox: {
       width: 18,
       height: 18,
       margin: 10,
       marginTop: -5,
-    },
+    } as ViewStyle,
     label: {
       ...fontStyles.normal,
       fontSize: 14,
       color: colors.text.default,
       paddingHorizontal: 10,
       lineHeight: 18,
-    },
+    } as TextStyle,
     learnMore: {
       textDecorationLine: 'underline',
       textDecorationColor: colors.primary.default,
-    },
+    } as TextStyle,
     field: {
       position: 'relative',
-    },
+    } as ViewStyle,
     input: {
       borderWidth: 1,
       borderColor: colors.border.default,
@@ -174,108 +177,135 @@ const createStyles = (colors) =>
       height: 50,
       ...fontStyles.normal,
       color: colors.text.default,
-    },
+    } as TextStyle,
     ctaWrapper: {
       flex: 1,
       marginTop: 20,
       paddingHorizontal: 10,
-    },
+    } as ViewStyle,
     biometrics: {
       position: 'relative',
       marginTop: 20,
       marginBottom: 30,
-    },
+    } as ViewStyle,
     biometryLabel: {
       fontSize: 14,
       color: colors.text.default,
       position: 'absolute',
       top: 0,
       left: 0,
-    },
+    } as TextStyle,
     biometrySwitch: {
       position: 'absolute',
       top: 0,
       right: 0,
-    },
+    } as ViewStyle,
     hintLabel: {
       marginTop: 14,
       textAlign: 'left',
-    },
+    } as TextStyle,
     showPassword: {
       marginTop: 14,
       position: 'absolute',
       top: 0,
       right: 0,
-    },
+    } as TextStyle,
+    // eslint-disable-next-line react-native/no-unused-styles
     strength_weak: {
       color: colors.error.default,
-    },
+    } as TextStyle,
+    // eslint-disable-next-line react-native/no-unused-styles
     strength_good: {
       color: colors.primary.default,
-    },
+    } as TextStyle,
+    // eslint-disable-next-line react-native/no-unused-styles
     strength_strong: {
       color: colors.success.default,
-    },
+    } as TextStyle,
     showMatchingPasswords: {
       position: 'absolute',
       top: 50,
       right: 17,
       alignSelf: 'flex-end',
-    },
+    } as ViewStyle,
     confirmPasswordWrapper: {
       flex: 1,
       padding: 30,
       paddingTop: 0,
-    },
+    } as ViewStyle,
     buttonWrapper: {
       flex: 1,
       marginTop: 20,
       justifyContent: 'flex-end',
-    },
+    } as ViewStyle,
     warningMessageText: {
       paddingVertical: 10,
-    },
+    } as TextStyle,
     keyboardAvoidingView: {
       flex: 1,
       flexDirection: 'row',
       alignSelf: 'center',
-    },
+    } as ViewStyle,
+    button: {} as ViewStyle,
+    loader: {
+      paddingHorizontal: 40,
+      paddingBottom: 30,
+      alignItems: 'center',
+      flex: 1,
+    } as ViewStyle,
   });
 
 const PASSCODE_NOT_SET_ERROR = 'Error: Passcode not set.';
 const RESET_PASSWORD = 'reset_password';
 const CONFIRM_PASSWORD = 'confirm_password';
 
+interface ResetPasswordOwnProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route?: any;
+}
+
+interface ResetPasswordStateProps {
+  selectedAddress?: string;
+}
+
+interface ResetPasswordDispatchProps {
+  passwordSet: () => void;
+  setLockTime: (time: number) => void;
+  seedphraseNotBackedUp: () => void;
+}
+
+type ResetPasswordProps = ResetPasswordOwnProps &
+  ResetPasswordStateProps &
+  ResetPasswordDispatchProps;
+
+interface ResetPasswordState {
+  isSelected: boolean;
+  password: string | null;
+  confirmPassword: string;
+  secureTextEntry: boolean;
+  biometryType: string | null | undefined;
+  biometryChoice: boolean;
+  rememberMe: boolean;
+  loading: boolean;
+  error: string | null;
+  inputWidth: { width: string };
+  view: string;
+  originalPassword: string | null;
+  ready: boolean;
+  passwordStrength?: number;
+  warningIncorrectPassword?: string;
+}
+
 /**
  * View where users can set their password for the first time
  */
-class ResetPassword extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * The action to update the password set flag
-     * in the redux store
-     */
-    passwordSet: PropTypes.func,
-    /**
-     * The action to update the lock time
-     * in the redux store
-     */
-    setLockTime: PropTypes.func,
-    /**
-     * A string representing the selected address => account
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
-
-  state = {
+class ResetPassword extends PureComponent<
+  ResetPasswordProps,
+  ResetPasswordState
+> {
+  state: ResetPasswordState = {
     isSelected: false,
     password: '',
     confirmPassword: '',
@@ -293,11 +323,12 @@ class ResetPassword extends PureComponent {
 
   mounted = true;
 
-  confirmPasswordInput = React.createRef();
+  confirmPasswordInput = React.createRef<TextInput>();
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('password_reset.change_password'),
@@ -341,7 +372,10 @@ class ResetPassword extends PureComponent {
     }, 100);
   }
 
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(
+    _prevProps: ResetPasswordProps,
+    prevState: ResetPasswordState,
+  ) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
     const { loading } = this.state;
@@ -365,12 +399,13 @@ class ResetPassword extends PureComponent {
 
   onPressCreate = async () => {
     const { loading, isSelected, password, confirmPassword } = this.state;
-    const passwordsMatch = password !== '' && password === confirmPassword;
+    const passwordsMatch =
+      password !== '' && password !== null && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
 
     if (!canSubmit) return;
     if (loading) return;
-    if (!passwordRequirementsMet(password)) {
+    if (!passwordRequirementsMet(password as string)) {
       Alert.alert('Error', strings('choose_password.password_length_error'));
       return;
     } else if (password !== confirmPassword) {
@@ -389,9 +424,12 @@ class ResetPassword extends PureComponent {
           this.state.biometryChoice,
           this.state.rememberMe,
         );
-        await Authentication.storePassword(password, authData.currentAuthType);
+        await Authentication.storePassword(
+          password as string,
+          authData.currentAuthType,
+        );
       } catch (error) {
-        Logger.error(error);
+        Logger.error(error as Error);
       }
 
       this.props.setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT);
@@ -407,15 +445,16 @@ class ResetPassword extends PureComponent {
         });
       });
     } catch (error) {
+      const errorString = (error as Error).toString();
       // Should we force people to enable passcode / biometrics?
-      if (error.toString() === PASSCODE_NOT_SET_ERROR) {
+      if (errorString === PASSCODE_NOT_SET_ERROR) {
         Alert.alert(
           strings('choose_password.security_alert_title'),
           strings('choose_password.security_alert_message'),
         );
         this.setState({ loading: false });
       } else {
-        this.setState({ loading: false, error: error.toString() });
+        this.setState({ loading: false, error: errorString });
       }
     }
   };
@@ -428,9 +467,9 @@ class ResetPassword extends PureComponent {
     const { originalPassword, password: newPassword } = this.state;
     // Recreate keyring with password
     await recreateVaultWithNewPassword(
-      originalPassword,
-      newPassword,
-      this.props.selectedAddress,
+      originalPassword as string,
+      newPassword as string,
+      this.props.selectedAddress as string,
     );
   };
 
@@ -439,19 +478,19 @@ class ResetPassword extends PureComponent {
     current && current.focus();
   };
 
-  updateBiometryChoice = async (biometryChoice) => {
+  updateBiometryChoice = async (biometryChoice: boolean) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     this.setState({ biometryChoice });
   };
 
   renderSwitch = () => {
     const { biometryType, biometryChoice } = this.state;
-    const handleUpdateRememberMe = (rememberMe) => {
+    const handleUpdateRememberMe = (rememberMe: boolean) => {
       this.setState({ rememberMe });
     };
     return (
       <LoginOptionsSwitch
-        shouldRenderBiometricOption={biometryType}
+        shouldRenderBiometricOption={biometryType ?? null}
         biometryChoiceState={biometryChoice}
         onUpdateBiometryChoice={this.updateBiometryChoice}
         onUpdateRememberMe={handleUpdateRememberMe}
@@ -459,12 +498,12 @@ class ResetPassword extends PureComponent {
     );
   };
 
-  tryExportSeedPhrase = async (password) => {
+  tryExportSeedPhrase = async (password: string) => {
     const { KeyringController } = Engine.context;
     await KeyringController.exportSeedPhrase(password);
   };
 
-  tryUnlockWithPassword = async (password) => {
+  tryUnlockWithPassword = async (password: string) => {
     this.setState({ ready: false });
     try {
       // Just try
@@ -486,10 +525,10 @@ class ResetPassword extends PureComponent {
 
   tryUnlock = () => {
     const { password } = this.state;
-    this.tryUnlockWithPassword(password);
+    this.tryUnlockWithPassword(password as string);
   };
 
-  onPasswordChange = (val) => {
+  onPasswordChange = (val: string) => {
     const passInfo = zxcvbn(val);
 
     this.setState({ password: val, passwordStrength: passInfo.score });
@@ -510,7 +549,8 @@ class ResetPassword extends PureComponent {
   };
 
   renderLoader = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -520,12 +560,15 @@ class ResetPassword extends PureComponent {
     );
   };
 
-  setConfirmPassword = (val) => this.setState({ confirmPassword: val });
+  setConfirmPassword = (val: string) => this.setState({ confirmPassword: val });
 
   renderConfirmPassword() {
     const { warningIncorrectPassword } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
+    const themeAppearance =
+      (this.context as unknown as { themeAppearance?: string })
+        ?.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (
@@ -551,14 +594,16 @@ class ResetPassword extends PureComponent {
                 </Text>
               </View>
               <TextInput
-                style={styles.confirm_input}
+                style={styles.confirm_input as never}
                 placeholder={'Password'}
                 placeholderTextColor={colors.text.muted}
                 onChangeText={this.onPasswordChange}
                 secureTextEntry
                 onSubmitEditing={this.tryUnlock}
                 testID={ChoosePasswordSelectorsIDs.NEW_PASSWORD_INPUT_ID}
-                keyboardAppearance={themeAppearance}
+                keyboardAppearance={
+                  themeAppearance as 'light' | 'dark' | 'default'
+                }
               />
               {warningIncorrectPassword && (
                 <Text color={TextColor.Error} style={styles.warningMessageText}>
@@ -593,13 +638,19 @@ class ResetPassword extends PureComponent {
       error,
       loading,
     } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
+    const themeAppearance =
+      (this.context as unknown as { themeAppearance?: string })
+        ?.themeAppearance || 'light';
     const styles = createStyles(colors);
-    const passwordsMatch = password !== '' && password === confirmPassword;
+    const passwordsMatch =
+      password !== '' && password !== null && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
-    const previousScreen = this.props.route.params?.[PREVIOUS_SCREEN];
-    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength);
+    const previousScreen = this.props.route?.params?.[PREVIOUS_SCREEN];
+    const passwordStrengthWord = getPasswordStrengthWord(
+      passwordStrength as number,
+    );
 
     return (
       <SafeAreaView style={styles.mainWrapper}>
@@ -659,8 +710,8 @@ class ResetPassword extends PureComponent {
                     )}
                   </Text>
                   <TextInput
-                    style={[styles.input, inputWidth]}
-                    value={password}
+                    style={[styles.input, inputWidth] as never}
+                    value={password ?? ''}
                     onChangeText={this.onPasswordChange}
                     secureTextEntry={secureTextEntry}
                     placeholder=""
@@ -669,14 +720,23 @@ class ResetPassword extends PureComponent {
                     onSubmitEditing={this.jumpToConfirmPassword}
                     returnKeyType="next"
                     autoCapitalize="none"
-                    keyboardAppearance={themeAppearance}
+                    keyboardAppearance={
+                      themeAppearance as 'light' | 'dark' | 'default'
+                    }
                   />
                   {(password !== '' && (
                     <Text variant={TextVariant.BodySM} style={styles.hintLabel}>
                       {strings('reset_password.password_strength')}
                       <Text
                         variant={TextVariant.BodySM}
-                        style={styles[`strength_${passwordStrengthWord}`]}
+                        style={
+                          (
+                            styles as unknown as Record<
+                              string,
+                              TextStyle | undefined
+                            >
+                          )[`strength_${passwordStrengthWord}`]
+                        }
                       >
                         {' '}
                         {strings(
@@ -685,10 +745,9 @@ class ResetPassword extends PureComponent {
                       </Text>
                     </Text>
                   )) || (
-                    <Text
-                      variant={TextVariant.BodySM}
-                      style={styles.hintLabel}
-                    />
+                    <Text variant={TextVariant.BodySM} style={styles.hintLabel}>
+                      {''}
+                    </Text>
                   )}
                 </View>
                 <View style={styles.field}>
@@ -697,7 +756,7 @@ class ResetPassword extends PureComponent {
                   </Text>
                   <TextInput
                     ref={this.confirmPasswordInput}
-                    style={[styles.input, inputWidth]}
+                    style={[styles.input, inputWidth] as never}
                     value={confirmPassword}
                     onChangeText={this.setConfirmPassword}
                     secureTextEntry={secureTextEntry}
@@ -706,11 +765,12 @@ class ResetPassword extends PureComponent {
                     testID={
                       ChoosePasswordSelectorsIDs.CONFIRM_PASSWORD_INPUT_ID
                     }
-                    zasdfasfasf
                     onSubmitEditing={this.onPressCreate}
                     returnKeyType={'done'}
                     autoCapitalize="none"
-                    keyboardAppearance={themeAppearance}
+                    keyboardAppearance={
+                      themeAppearance as 'light' | 'dark' | 'default'
+                    }
                   />
                   <View style={styles.showMatchingPasswords}>
                     {passwordsMatch ? (
@@ -781,7 +841,8 @@ class ResetPassword extends PureComponent {
 
   render() {
     const { view, ready } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!ready) return this.renderLoader();
@@ -801,15 +862,18 @@ class ResetPassword extends PureComponent {
   }
 }
 
-ResetPassword.contextType = ThemeContext;
+(ResetPassword as unknown as { contextType: typeof ThemeContext }).contextType =
+  ThemeContext;
 
-const mapStateToProps = (state) => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any): ResetPasswordStateProps => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
   passwordSet: () => dispatch(passwordSet()),
-  setLockTime: (time) => dispatch(setLockTime(time)),
+  setLockTime: (time: number) => dispatch(setLockTime(time)),
   seedphraseNotBackedUp: () => dispatch(seedphraseNotBackedUp()),
 });
 

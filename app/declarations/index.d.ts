@@ -408,3 +408,33 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'zxcvbn' {
+  interface ZXCVBNResult {
+    score: 0 | 1 | 2 | 3 | 4;
+    guesses: number;
+    guesses_log10: number;
+    calc_time: number;
+    feedback: { warning: string; suggestions: string[] };
+    crack_times_seconds: Record<string, number>;
+    crack_times_display: Record<string, string>;
+    sequence: unknown[];
+    password: string;
+  }
+  function zxcvbn(password: string, userInputs?: string[]): ZXCVBNResult;
+  export default zxcvbn;
+}
+
+declare module '@metamask/react-native-button' {
+  import { ComponentType } from 'react';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Button: ComponentType<any>;
+  export default Button;
+}
+
+declare module 'react-native-elevated-view' {
+  import { ComponentType } from 'react';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ElevatedView: ComponentType<any>;
+  export default ElevatedView;
+}

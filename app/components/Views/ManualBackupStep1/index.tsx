@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Appearance,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import FeatherIcons from 'react-native-vector-icons/Feather';
@@ -39,19 +38,38 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
+interface ManualBackupStep1OwnProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route?: any;
+}
+
+interface ManualBackupStep1StateProps {
+  appTheme?: string;
+}
+
+type ManualBackupStep1Props = ManualBackupStep1OwnProps &
+  ManualBackupStep1StateProps;
+
 /**
  * View that's shown during the second step of
  * the backup seed phrase flow
  */
-const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
+const ManualBackupStep1 = ({
+  route,
+  navigation,
+  appTheme,
+}: ManualBackupStep1Props) => {
   const [seedPhraseHidden, setSeedPhraseHidden] = useState(true);
 
-  const [password, setPassword] = useState(undefined);
-  const [warningIncorrectPassword, setWarningIncorrectPassword] =
-    useState(undefined);
+  const [password, setPassword] = useState<string | undefined>(undefined);
+  const [warningIncorrectPassword, setWarningIncorrectPassword] = useState<
+    string | undefined
+  >(undefined);
   const [ready, setReady] = useState(false);
   const [view, setView] = useState(SEED_PHRASE);
-  const [words, setWords] = useState([]);
+  const [words, setWords] = useState<string[]>([]);
 
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
@@ -60,14 +78,15 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
   const steps = MANUAL_BACKUP_STEPS;
 
   const updateNavBar = useCallback(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation.setOptions(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getOnboardingNavbarOptions(route, {} as any, colors),
+    );
   }, [colors, navigation, route]);
 
-  const tryExportSeedPhrase = async (password) => {
+  const tryExportSeedPhrase = async (pwd: string) => {
     const { KeyringController } = Engine.context;
-    const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(
-      password,
-    );
+    const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(pwd);
     return uint8ArrayToMnemonic(uint8ArrayMnemonic, wordlist).split(' ');
   };
 
@@ -101,8 +120,8 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     updateNavBar();
   }, [updateNavBar]);
 
-  const onPasswordChange = (password) => {
-    setPassword(password);
+  const onPasswordChange = (pwd: string) => {
+    setPassword(pwd);
   };
 
   const goNext = () => {
@@ -121,16 +140,19 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     );
   };
 
-  const tryUnlockWithPassword = async (password) => {
+  const tryUnlockWithPassword = async (pwd: string) => {
     setReady(false);
     try {
-      const seedPhrase = await tryExportSeedPhrase(password);
+      const seedPhrase = await tryExportSeedPhrase(pwd);
       setWords(seedPhrase);
       setView(SEED_PHRASE);
       setReady(true);
     } catch (e) {
       let msg = strings('reveal_credential.warning_incorrect_password');
-      if (e.toString().toLowerCase() !== WRONG_PASSWORD_ERROR.toLowerCase()) {
+      if (
+        (e as Error).toString().toLowerCase() !==
+        WRONG_PASSWORD_ERROR.toLowerCase()
+      ) {
         msg = strings('reveal_credential.unknown_error');
       }
       setWarningIncorrectPassword(msg);
@@ -139,11 +161,11 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
   };
 
   const tryUnlock = () => {
-    tryUnlockWithPassword(password);
+    tryUnlockWithPassword(password as string);
   };
 
-  const getBlurType = () => {
-    let blurType = 'light';
+  const getBlurType = (): 'light' | 'dark' | 'xlight' => {
+    let blurType: 'light' | 'dark' | 'xlight' = 'light';
     switch (appTheme) {
       case 'light':
         blurType = 'light';
@@ -151,9 +173,11 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
       case 'dark':
         blurType = 'dark';
         break;
-      case 'os':
-        blurType = Appearance.getColorScheme();
+      case 'os': {
+        const scheme = Appearance.getColorScheme();
+        blurType = scheme === 'dark' ? 'dark' : 'light';
         break;
+      }
       default:
         blurType = 'light';
     }
@@ -174,7 +198,12 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
           <Text style={styles.watching}>
             {strings('manual_backup_step_1.watching')}
           </Text>
-          <View style={styles.viewButtonWrapper}>
+          <View
+            style={
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (styles as any).viewButtonWrapper
+            }
+          >
             <StyledButton
               type={'onOverlay'}
               onPress={revealSeedPhrase}
@@ -224,7 +253,10 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
           </View>
           <View style={styles.buttonWrapper}>
             <StyledButton
-              containerStyle={styles.button}
+              containerStyle={
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (styles as any).button
+              }
               type={'confirm'}
               onPress={tryUnlock}
               testID={ManualBackUpStepsSelectorsIDs.SUBMIT_BUTTON}
@@ -306,22 +338,8 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
   );
 };
 
-ManualBackupStep1.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Theme that app is set to
-   */
-  appTheme: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any): ManualBackupStep1StateProps => ({
   appTheme: state.user.appTheme,
 });
 

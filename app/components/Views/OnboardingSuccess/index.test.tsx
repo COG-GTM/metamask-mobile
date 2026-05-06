@@ -46,24 +46,33 @@ const mockProviderConfig = {
 
 describe('OnboardingSuccess', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
-      if (selector === selectProviderConfig) return mockProviderConfig;
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (useSelector as unknown as jest.Mock).mockImplementation(
+      (selector: unknown) => {
+        if (selector === selectProviderConfig) return mockProviderConfig;
+      },
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Component = OnboardingSuccess as any;
     const { toJSON } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} />,
+      <Component navigation={useNavigation()} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('imports additional accounts and sets completedOnboarding to true when onDone is called', () => {
-    useSelector.mockImplementation((selector) => {
-      if (selector === selectProviderConfig) return mockProviderConfig;
-    });
+    (useSelector as unknown as jest.Mock).mockImplementation(
+      (selector: unknown) => {
+        if (selector === selectProviderConfig) return mockProviderConfig;
+      },
+    );
     const mockDispatch = jest.fn();
-    useDispatch.mockImplementation(() => mockDispatch);
+    (useDispatch as unknown as jest.Mock).mockImplementation(() => mockDispatch);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Component = OnboardingSuccess as any;
     const { getByTestId } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} onDone={jest.fn()} />,
+      <Component navigation={useNavigation()} onDone={jest.fn()} />,
     );
     const button = getByTestId(OnboardingSuccessSelectorIDs.DONE_BUTTON);
     button.props.onPress();

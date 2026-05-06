@@ -9,8 +9,8 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../styles/common';
 import StyledButton from '../../UI/StyledButton';
 import OnboardingProgress from '../../UI/OnboardingProgress';
@@ -34,8 +34,9 @@ const IMAGE_1_RATIO = 162.8 / 138;
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const IMG_PADDING = Device.isIphoneX() ? 100 : Device.isIphone5S() ? 180 : 220;
 
-const createStyles = (colors) =>
-  StyleSheet.create({
+const createStyles = (colors: Theme['colors']) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  StyleSheet.create<any>({
     mainWrapper: {
       backgroundColor: colors.background.default,
       flex: 1,
@@ -194,13 +195,22 @@ const createStyles = (colors) =>
       lineHeight: 20,
       color: colors.text.default,
     },
+    button: {},
+    remindLaterButton: {},
   });
+
+interface AccountBackupStep1BProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route?: any;
+}
 
 /**
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1B = (props) => {
+const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
   const { navigation, route } = props;
   const [showWhySecureWalletModal, setWhySecureWalletModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -208,7 +218,10 @@ const AccountBackupStep1B = (props) => {
   const styles = createStyles(colors);
 
   useEffect(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation.setOptions(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getOnboardingNavbarOptions(route, {} as any, colors),
+    );
   }, [navigation, route, colors]);
 
   const goNext = () => {
@@ -385,15 +398,6 @@ const AccountBackupStep1B = (props) => {
   );
 };
 
-AccountBackupStep1B.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-};
+
 
 export default AccountBackupStep1B;
