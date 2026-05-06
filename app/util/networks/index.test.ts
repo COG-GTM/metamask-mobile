@@ -564,7 +564,7 @@ describe('network-utils', () => {
     });
     it('returns undefined when no valid scope is found', () => {
       const MOCK_INVALID_ACCOUNT = {
-        scopes: ['unknown:network'],
+        scopes: ['unknown:network'] as `${string}:${string}`[],
         address: 'invalidAddress123',
       };
       const url = findBlockExplorerForNonEvmAccount(MOCK_INVALID_ACCOUNT);

@@ -1,5 +1,6 @@
 // Third party dependencies
 import React from 'react';
+import { ImageSourcePropType } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { fireEvent, waitFor } from '@testing-library/react-native';
 
@@ -291,7 +292,7 @@ describe('Network Selector', () => {
   it('renders correctly when network UI redesign is enabled and calls setNetworkClientIdForDomain', async () => {
     const testMock = {
       networkName: '',
-      networkImageSource: '',
+      networkImageSource: '' as unknown as ImageSourcePropType,
       domainNetworkClientId: '',
       chainId: CHAIN_IDS.MAINNET,
       rpcUrl: '',
@@ -655,7 +656,7 @@ describe('Network Selector', () => {
       // Mock non-connected dapp state
       const nonConnectedDappMock = {
         networkName: 'Test Network',
-        networkImageSource: '',
+        networkImageSource: '' as unknown as ImageSourcePropType,
         domainNetworkClientId: 'test-network-id',
         chainId: CHAIN_IDS.MAINNET,
         rpcUrl: 'https://test.network',

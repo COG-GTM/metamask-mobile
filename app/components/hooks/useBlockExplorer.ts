@@ -26,8 +26,12 @@ const useBlockExplorer = () => {
       let accountLink: string;
       if (type === RPC && rpcUrl) {
         const blockExplorer =
-          findBlockExplorerForRpc(rpcUrl, networkConfigurations) ||
-          NO_RPC_BLOCK_EXPLORER;
+          findBlockExplorerForRpc(
+            rpcUrl,
+            networkConfigurations as Parameters<
+              typeof findBlockExplorerForRpc
+            >[1],
+          ) || NO_RPC_BLOCK_EXPLORER;
         accountLink = `${blockExplorer}/address/${address}`;
       } else {
         accountLink = getEtherscanAddressUrl(type, address);

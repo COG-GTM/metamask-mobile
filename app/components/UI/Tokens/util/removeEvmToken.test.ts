@@ -45,7 +45,7 @@ describe('removeEvmToken', () => {
     currentChainId: '0x1',
     trackEvent: jest.fn(),
     strings: jest.fn((key) => key),
-    getDecimalChainId: jest.fn(() => 1),
+    getDecimalChainId: jest.fn(() => '1'),
     createEventBuilder: mockCreateEventBuilder,
   };
 
