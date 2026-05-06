@@ -224,7 +224,13 @@ const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
   const styles = createStyles(colors);
 
   useEffect(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation.setOptions(
+      getOnboardingNavbarOptions(
+        route,
+        { headerLeft: () => null },
+        colors,
+      ),
+    );
   }, [navigation, route, colors]);
 
   const goNext = () => {
@@ -337,7 +343,7 @@ const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
             </Text>
 
             <StyledButton
-              containerStyle={styles.button}
+              containerStyle={styles.card}
               type={'confirm'}
               onPress={goNext}
             >
@@ -382,7 +388,7 @@ const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
               </Text>
             </Text>
             <TouchableOpacity
-              style={styles.remindLaterButton}
+              style={styles.learnMoreText}
               onPress={learnMore}
               hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
             >

@@ -38,6 +38,8 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import Routes from '../../../../app/constants/navigation/Routes';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import type { JsonMap } from '../../../core/Analytics/MetaMetrics.types';
+import type { Dispatch } from 'redux';
 import SRPDesign from '../../../images/srp-lock-design.png';
 
 const createStyles = (colors: Colors) =>
@@ -160,7 +162,7 @@ const AccountBackupStep1 = (props: AccountBackupStep1Props) => {
 
   const track = (
     event: Parameters<typeof MetricsEventBuilder.createEventBuilder>[0],
-    properties?: Record<string, unknown>,
+    properties?: JsonMap,
   ) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     if (properties) eventBuilder.addProperties(properties);
@@ -291,7 +293,7 @@ const AccountBackupStep1 = (props: AccountBackupStep1Props) => {
             )}
             <View style={styles.ctaContainer}>
               <StyledButton
-                containerStyle={styles.button}
+                containerStyle={styles.ctaContainer}
                 type={'confirm'}
                 onPress={goNext}
               >
@@ -323,9 +325,12 @@ const AccountBackupStep1 = (props: AccountBackupStep1Props) => {
   );
 };
 
-const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   setOnboardingWizardStep: (step: number) =>
     dispatch(setOnboardingWizardStep(step)),
 });
 
-export default connect(null, mapDispatchToProps)(AccountBackupStep1);
+export default connect(
+  null,
+  mapDispatchToProps,
+)(AccountBackupStep1 as unknown as React.ComponentType);

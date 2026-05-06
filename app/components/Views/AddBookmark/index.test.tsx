@@ -1,6 +1,10 @@
 import React from 'react';
 import { screen, render } from '@testing-library/react-native';
-import AddBookmark from './';
+import AddBookmarkBase from './';
+
+const AddBookmark = AddBookmarkBase as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
 import { ThemeContext } from '../../../util/theme';
 
 const mockTheme = {

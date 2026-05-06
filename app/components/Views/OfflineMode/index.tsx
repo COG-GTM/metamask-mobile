@@ -127,9 +127,11 @@ const OfflineMode = ({ navigation, infuraBlocked }: Props) => {
   );
 };
 
-(OfflineMode as unknown as { navigationOptions: (props: OfflineModeNavigationProps) => object }).navigationOptions = ({
-  navigation,
-}: OfflineModeNavigationProps) => getOfflineModalNavbar(navigation);
+(
+  OfflineMode as unknown as {
+    navigationOptions: (props: OfflineModeNavigationProps) => object;
+  }
+).navigationOptions = () => getOfflineModalNavbar();
 
 const mapStateToProps = (state: RootState): StateProps => ({
   infuraBlocked: getInfuraBlockedSelector(state),

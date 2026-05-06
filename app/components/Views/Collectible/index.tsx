@@ -7,6 +7,7 @@ import {
 } from '@react-navigation/native';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
 import Collectibles from '../../UI/Collectibles';
 import CollectibleContractOverview from '../../UI/CollectibleContractOverview';
 import Engine from '../../../core/Engine';
@@ -24,6 +25,9 @@ const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
+      flex: 1,
+    },
+    assetOverviewWrapper: {
       flex: 1,
     },
   });
@@ -210,11 +214,12 @@ const mapStateToProps = (state: RootState): StateProps => ({
   collectibleContractModalVisible: state.modals.collectibleContractModalVisible,
 });
 
-const mapDispatchToProps = (
-  dispatch: (action: unknown) => void,
-): DispatchProps => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Collectible);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Collectible as unknown as React.ComponentType<StateProps & DispatchProps>);

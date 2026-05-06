@@ -302,11 +302,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
 });
 
+const TransactionsViewWithNavigation = withNavigation(
+  TransactionsView as unknown as Parameters<typeof withNavigation>[0],
+);
+
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(
-  withNavigation(
-    TransactionsView as React.ComponentType<TransactionsViewProps>,
-  ) as unknown as React.ComponentType<TransactionsViewProps>,
-);
+)(TransactionsViewWithNavigation as unknown as React.ComponentType);

@@ -40,6 +40,7 @@ import {
   MetaMetricsEvents,
   withMetricsAwareness,
 } from '../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import AppConstants from '../../../core/AppConstants';
 import { useSelector } from 'react-redux';
 import { isTest } from '../../../util/test/utils';
@@ -365,7 +366,6 @@ export const Fallback = (props: FallbackProps) => {
                     name={IconName.Close}
                     size={IconSize.Md}
                     color={IconColor.Default}
-                    onPress={toggleModal}
                   />
                 </TouchableOpacity>
               </View>
@@ -526,6 +526,11 @@ class ErrorBoundary extends Component<
             credentialName={'seed_phrase'}
             cancel={this.cancelExportSeedphrase}
             navigation={this.props.navigation}
+            route={
+              {
+                params: { credentialName: 'seed_phrase' },
+              } as React.ComponentProps<typeof RevealPrivateCredential>['route']
+            }
           />,
         )
       : this.state.error
@@ -543,4 +548,6 @@ class ErrorBoundary extends Component<
   }
 }
 
-export default withMetricsAwareness(ErrorBoundary);
+export default withMetricsAwareness(
+  ErrorBoundary as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+);

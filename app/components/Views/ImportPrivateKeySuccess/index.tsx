@@ -106,8 +106,9 @@ class ImportPrivateKeySuccess extends PureComponent<ImportPrivateKeySuccessProps
     });
   };
 
-  handleBackPress = () => {
+  handleBackPress = (): boolean => {
     this.props.navigation.popToTop();
+    return true;
   };
 
   dismiss = () => {

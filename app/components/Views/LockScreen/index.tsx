@@ -25,7 +25,7 @@ import {
   mockTheme,
   ThemeContext,
 } from '../../../util/theme';
-import { Colors } from '../../../util/theme/models';
+import { AppThemeKey, Colors } from '../../../util/theme/models';
 import Routes from '../../../constants/navigation/Routes';
 import trackErrorAsAnalytics from '../../../util/metrics/TrackError/trackErrorAsAnalytics';
 import { RootState } from '../../../reducers';
@@ -78,7 +78,7 @@ interface LockScreenProps {
    * The navigator object
    */
   navigation: NavigationProp<ParamListBase>;
-  appTheme?: string;
+  appTheme: AppThemeKey;
   /**
    * ID associated with each biometric session.
    * This is used by the biometric sagas to handle actions with the matching ID.

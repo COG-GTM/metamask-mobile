@@ -1,7 +1,12 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
-import CollectibleView from '.';
+import CollectibleViewBase from '.';
+
+const CollectibleView =
+  CollectibleViewBase as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
 import configureMockStore from 'redux-mock-store';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { ThemeContext, mockTheme } from '../../../util/theme';

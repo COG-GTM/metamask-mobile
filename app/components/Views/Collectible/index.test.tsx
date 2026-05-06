@@ -1,6 +1,10 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import Collectible from '.';
+import CollectibleBase from '.';
+
+const Collectible = CollectibleBase as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';

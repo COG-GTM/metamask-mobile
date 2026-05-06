@@ -89,7 +89,6 @@ const createStyles = (params: StyleSheetParams) => {
     },
     title: {
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
       ...typography.sHeadingMD,
       fontFamily: getFontFamily(TextVariant.HeadingMD),
@@ -137,7 +136,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            accountsByChainId[selectedAddress ?? ''] ?? {},
           ).length,
         })
         .build(),
@@ -174,65 +173,103 @@ const ActivityView = () => {
 
   const renderTabBar = () => (hasOrders ? <TabBar /> : <View />);
 
+  const typedParams = params as { redirectToOrders?: boolean } | undefined;
   useFocusEffect(
     useCallback(() => {
-      if (hasOrders && params.redirectToOrders) {
+      if (hasOrders && typedParams?.redirectToOrders) {
         navigation.setParams({ redirectToOrders: false });
         tabViewRef.current?.goToPage(1);
       }
-    }, [hasOrders, navigation, params.redirectToOrders]),
+    }, [hasOrders, navigation, typedParams?.redirectToOrders]),
   );
 
   return (
     <ErrorBoundary navigation={navigation} view="ActivityView">
       <View style={[styles.header, { marginTop: insets.top }]}>
-        <Text
-          style={styles.title}
-          variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT}
-        >
-          {strings('transactions_view.title')}
-        </Text>
+        {React.createElement(
+          Text as React.ComponentType<
+            React.ComponentProps<typeof Text> & {
+              variant?: TextVariant;
+            }
+          >,
+          {
+            style: styles.title as React.ComponentProps<typeof Text>['style'],
+            variant: DEFAULT_HEADERBASE_TITLE_TEXTVARIANT,
+          },
+          strings('transactions_view.title'),
+        )}
       </View>
       <View style={styles.wrapper}>
         <View style={styles.controlButtonOuterWrapper}>
-          <ButtonBase
-            testID={WalletViewSelectorsIDs.TOKEN_NETWORK_FILTER}
-            label={
-              <Text numberOfLines={1} style={styles.titleText}>
-                {isAllNetworks && isPopularNetwork && isEvmSelected
-                  ? strings('wallet.popular_networks')
-                  : networkName ?? strings('wallet.current_network')}
-              </Text>
-            }
-            isDisabled={isTestnetOrNotPopularNetwork}
-            onPress={isEvmSelected ? showFilterControls : () => null}
-            endIconName={isEvmSelected ? IconName.ArrowDown : undefined}
-            style={
-              isTestNet(currentChainId) || !isPopularNetwork
-                ? styles.controlButtonDisabled
-                : styles.controlButton
-            }
-            disabled={isTestNet(currentChainId) || !isPopularNetwork}
-          />
+          {React.createElement(
+            ButtonBase as React.ComponentType<
+              React.ComponentProps<typeof ButtonBase> & {
+                isDisabled?: boolean;
+                disabled?: boolean;
+              }
+            >,
+            {
+              testID: WalletViewSelectorsIDs.TOKEN_NETWORK_FILTER,
+              label: (
+                <Text numberOfLines={1} style={styles.titleText}>
+                  {isAllNetworks && isPopularNetwork && isEvmSelected
+                    ? strings('wallet.popular_networks')
+                    : networkName ?? strings('wallet.current_network')}
+                </Text>
+              ),
+              isDisabled: isTestnetOrNotPopularNetwork,
+              onPress: isEvmSelected ? showFilterControls : () => null,
+              endIconName: isEvmSelected ? IconName.ArrowDown : undefined,
+              style:
+                isTestNet(currentChainId) || !isPopularNetwork
+                  ? styles.controlButtonDisabled
+                  : styles.controlButton,
+              disabled: isTestNet(currentChainId) || !isPopularNetwork,
+            },
+          )}
         </View>
-        <ScrollableTabView
-          ref={tabViewRef}
-          renderTabBar={renderTabBar}
-          locked={!hasOrders}
-        >
-          {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
-              tabLabel={strings('transactions_view.title')}
-            />
-          ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title')} />
-          )}
-          {hasOrders && (
-            <RampOrdersList
-              tabLabel={strings('fiat_on_ramp_aggregator.orders')}
-            />
-          )}
-        </ScrollableTabView>
+        {React.createElement(
+          ScrollableTabView as unknown as React.ComponentType<{
+            ref?: React.Ref<{ goToPage: (page: number) => void }>;
+            renderTabBar?: () => React.ReactNode;
+            locked?: boolean;
+            children?: React.ReactNode;
+          }>,
+          {
+            ref: tabViewRef,
+            renderTabBar,
+            locked: !hasOrders,
+          },
+          selectedAddress && isNonEvmAddress(selectedAddress)
+            ? React.createElement(
+                MultichainTransactionsView as unknown as React.ComponentType<{
+                  tabLabel?: string;
+                }>,
+                {
+                  tabLabel: strings('transactions_view.title'),
+                  key: 'multichain',
+                },
+              )
+            : React.createElement(
+                TransactionsView as unknown as React.ComponentType<{
+                  tabLabel?: string;
+                }>,
+                {
+                  tabLabel: strings('transactions_view.title'),
+                  key: 'evm',
+                },
+              ),
+          hasOrders &&
+            React.createElement(
+              RampOrdersList as unknown as React.ComponentType<{
+                tabLabel?: string;
+              }>,
+              {
+                tabLabel: strings('fiat_on_ramp_aggregator.orders'),
+                key: 'orders',
+              },
+            ),
+        )}
       </View>
     </ErrorBoundary>
   );

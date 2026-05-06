@@ -1,6 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
-import EnterPasswordSimple from './';
+import EnterPasswordSimpleBase from './';
+
+const EnterPasswordSimple =
+  EnterPasswordSimpleBase as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeContext } from '../../../util/theme';
 
