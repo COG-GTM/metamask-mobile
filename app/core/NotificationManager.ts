@@ -268,13 +268,23 @@ class NotificationManager {
           TokenBalancesController,
           TokenDetectionController,
           AccountTrackerController,
+          NetworkController,
         } = Engine.context;
         // account balances for ETH txs
         // Detect assets and tokens for ERC20 txs
         // Detect assets for ERC721 txs
         // right after a transaction was confirmed
+        const txNetworkConfig =
+          NetworkController.state.networkConfigurationsByChainId[
+            transactionMeta.chainId
+          ];
+        const txNetworkClientId =
+          txNetworkConfig?.rpcEndpoints?.[txNetworkConfig.defaultRpcEndpointIndex]
+            ?.networkClientId;
         const pollPromises = [
-          AccountTrackerController.refresh([]),
+          AccountTrackerController.refresh(
+            txNetworkClientId ? [txNetworkClientId] : [],
+          ),
           TokenBalancesController.updateBalancesByChainId({
             chainId: transactionMeta.chainId,
           }),
@@ -486,7 +496,8 @@ class NotificationManager {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   gotIncomingTransaction = async (incomingTransactions: any[]) => {
     try {
-      const { AccountTrackerController, AccountsController } = Engine.context;
+      const { AccountTrackerController, AccountsController, NetworkController } =
+        Engine.context;
 
       const selectedInternalAccount = AccountsController.getSelectedAccount();
 
@@ -534,7 +545,17 @@ class NotificationManager {
       });
 
       // Update balance upon detecting a new incoming transaction
-      AccountTrackerController.refresh([]);
+      const incomingChainId = filteredTransactions[0]?.chainId;
+      const incomingNetworkConfig = incomingChainId
+        ? NetworkController.state.networkConfigurationsByChainId[incomingChainId]
+        : undefined;
+      const incomingNetworkClientId =
+        incomingNetworkConfig?.rpcEndpoints?.[
+          incomingNetworkConfig.defaultRpcEndpointIndex
+        ]?.networkClientId;
+      AccountTrackerController.refresh(
+        incomingNetworkClientId ? [incomingNetworkClientId] : [],
+      );
     } catch (error) {
       Logger.log(
         'Notifications',
