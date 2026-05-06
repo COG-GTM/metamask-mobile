@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
+import type { Dispatch } from 'redux';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { connect, useSelector } from 'react-redux';
 import { withNavigation } from '@react-navigation/compat';
 import { showAlert } from '../../../actions/alert';
@@ -36,12 +38,68 @@ import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectTokenNetworkFilter } from '../../../selectors/preferencesController';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { PopularList } from '../../../util/networks/customNetworks';
+import type { RootState } from '../../../reducers';
 
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
   },
 });
+
+interface TransactionItem {
+  id: string;
+  status: string;
+  chainId: string;
+  txParams: {
+    from: string;
+    nonce: string;
+    [key: string]: unknown;
+  };
+  insertImportTime?: boolean;
+  [key: string]: unknown;
+}
+
+interface TokenItem {
+  address: string;
+  symbol: string;
+  [key: string]: unknown;
+}
+
+interface InternalAccount {
+  address: string;
+  metadata: {
+    importTime?: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+interface OwnProps {
+  navigation: StackNavigationProp<ParamListBase>;
+  tabLabel?: string;
+}
+
+interface StateProps {
+  conversionRate: number;
+  currentCurrency: string;
+  selectedInternalAccount: InternalAccount;
+  transactions: TransactionItem[];
+  networkType: string;
+  chainId: string;
+  tokens: TokenItem[];
+  tokenNetworkFilter: Record<string, unknown>;
+}
+
+interface DispatchProps {
+  showAlert: (config: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: { msg: string };
+  }) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
 
 const TransactionsView = ({
   navigation,
@@ -53,11 +111,11 @@ const TransactionsView = ({
   chainId,
   tokens,
   tokenNetworkFilter,
-}) => {
-  const [allTransactions, setAllTransactions] = useState([]);
-  const [submittedTxs, setSubmittedTxs] = useState([]);
-  const [confirmedTxs, setConfirmedTxs] = useState([]);
-  const [loading, setLoading] = useState();
+}: Props) => {
+  const [allTransactions, setAllTransactions] = useState<TransactionItem[]>([]);
+  const [submittedTxs, setSubmittedTxs] = useState<TransactionItem[]>([]);
+  const [confirmedTxs, setConfirmedTxs] = useState<TransactionItem[]>([]);
+  const [loading, setLoading] = useState<boolean | undefined>();
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
   const selectedAddress = toChecksumHexAddress(
@@ -67,69 +125,76 @@ const TransactionsView = ({
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
 
   const filterTransactions = useCallback(
-    (networkId) => {
+    (networkId: string) => {
       let accountAddedTimeInsertPointFound = false;
       const addedAccountTime = selectedInternalAccount?.metadata.importTime;
 
-      const submittedTxs = [];
-      const confirmedTxs = [];
-      const submittedNonces = [];
+      const submittedTxsLocal: TransactionItem[] = [];
+      const confirmedTxsLocal: TransactionItem[] = [];
+      const submittedNonces: string[] = [];
 
       const allTransactionsSorted = sortTransactions(transactions).filter(
-        (tx, index, self) =>
-          self.findIndex((_tx) => _tx.id === tx.id) === index,
+        (tx: TransactionItem, index: number, self: TransactionItem[]) =>
+          self.findIndex((_tx: TransactionItem) => _tx.id === tx.id) === index,
       );
 
-      const allTransactions = allTransactionsSorted.filter((tx) => {
-        const filter = filterByAddressAndNetwork(
-          tx,
-          tokens,
-          selectedAddress,
-          networkId,
-          chainId,
-          tokenNetworkFilter,
-        );
+      const allTransactionsLocal = allTransactionsSorted.filter(
+        (tx: TransactionItem) => {
+          const filter = filterByAddressAndNetwork(
+            tx,
+            tokens,
+            selectedAddress,
+            networkId,
+            chainId,
+            tokenNetworkFilter,
+          );
 
-        if (!filter) return false;
+          if (!filter) return false;
 
-        tx.insertImportTime = addAccountTimeFlagFilter(
-          tx,
-          addedAccountTime,
-          accountAddedTimeInsertPointFound,
-        );
-        if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
+          tx.insertImportTime = addAccountTimeFlagFilter(
+            tx,
+            addedAccountTime,
+            accountAddedTimeInsertPointFound,
+          );
+          if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
 
-        switch (tx.status) {
-          case TX_SUBMITTED:
-          case TX_SIGNED:
-          case TX_UNAPPROVED:
-          case TX_PENDING:
-            submittedTxs.push(tx);
-            return false;
-          case TX_CONFIRMED:
-            confirmedTxs.push(tx);
-            break;
-        }
+          switch (tx.status) {
+            case TX_SUBMITTED:
+            case TX_SIGNED:
+            case TX_UNAPPROVED:
+            case TX_PENDING:
+              submittedTxsLocal.push(tx);
+              return false;
+            case TX_CONFIRMED:
+              confirmedTxsLocal.push(tx);
+              break;
+          }
 
-        return filter;
-      });
+          return filter;
+        },
+      );
 
       const allTransactionsFiltered = isPopularNetwork
-        ? allTransactions.filter(
-            (tx) =>
+        ? allTransactionsLocal.filter(
+            (tx: TransactionItem) =>
               tx.chainId === CHAIN_IDS.MAINNET ||
               tx.chainId === CHAIN_IDS.LINEA_MAINNET ||
-              PopularList.some((network) => network.chainId === tx.chainId),
+              PopularList.some(
+                (network: { chainId: string }) =>
+                  network.chainId === tx.chainId,
+              ),
           )
-        : allTransactions.filter((tx) => tx.chainId === chainId);
+        : allTransactionsLocal.filter(
+            (tx: TransactionItem) => tx.chainId === chainId,
+          );
 
-      const submittedTxsFiltered = submittedTxs.filter(({ txParams }) => {
+      const submittedTxsFiltered = submittedTxsLocal.filter(({ txParams }) => {
         const { from, nonce } = txParams;
         if (!toLowerCaseEquals(from, selectedAddress)) {
           return false;
         }
         const alreadySubmitted = submittedNonces.includes(nonce);
-        const alreadyConfirmed = confirmedTxs.find(
+        const alreadyConfirmed = confirmedTxsLocal.find(
           (tx) =>
             toLowerCaseEquals(
               safeToChecksumAddress(tx.txParams.from),
@@ -143,7 +208,6 @@ const TransactionsView = ({
         return !alreadySubmitted;
       });
 
-      // If the account added insert point is not found, add it to the last transaction
       if (
         !accountAddedTimeInsertPointFound &&
         allTransactionsFiltered &&
@@ -156,7 +220,7 @@ const TransactionsView = ({
 
       setAllTransactions(allTransactionsFiltered);
       setSubmittedTxs(submittedTxsFiltered);
-      setConfirmedTxs(confirmedTxs);
+      setConfirmedTxs(confirmedTxsLocal);
       setLoading(false);
     },
     [
@@ -195,46 +259,7 @@ const TransactionsView = ({
   );
 };
 
-TransactionsView.propTypes = {
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * InternalAccount object required to get account name, address and import time
-   */
-  selectedInternalAccount: PropTypes.object,
-  /**
-   * navigation object required to push new views
-   */
-  navigation: PropTypes.object,
-  /**
-   * An array that represents the user transactions
-   */
-  transactions: PropTypes.array,
-  /**
-   * A string represeting the network name
-   */
-  networkType: PropTypes.string,
-  /**
-   * Array of ERC20 assets
-   */
-  tokens: PropTypes.array,
-  /**
-   * Current chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * Array of network tokens filter
-   */
-  tokenNetworkFilter: PropTypes.object,
-};
-
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState): StateProps => {
   const chainId = selectChainId(state);
 
   return {
@@ -249,7 +274,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
 });
 

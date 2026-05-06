@@ -32,6 +32,7 @@ import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetwork
 import { selectNetworkName } from '../../../selectors/networkInfos';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { Colors } from '../../../util/theme/models';
 import { DEFAULT_HEADERBASE_TITLE_TEXTVARIANT } from '../../../component-library/components/HeaderBase/HeaderBase.constants';
 import { typography } from '@metamask/design-tokens';
 import { useStyles } from '../../hooks/useStyles';
@@ -40,7 +41,7 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (params) => {
+const createStyles = (params: { theme: { colors: Colors } }) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -113,7 +114,7 @@ const ActivityView = () => {
   const networkName = useSelector(selectNetworkName);
   const hasOrders = useSelector((state) => getHasOrders(state) || false);
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
+  const tabViewRef = useRef<{ goToPage: (page: number) => void }>(null);
   const params = useParams();
 
   const isTestnetOrNotPopularNetwork =
