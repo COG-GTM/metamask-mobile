@@ -1,14 +1,20 @@
 /* eslint-disable import/no-commonjs */
+import type { Duplex, Transform } from 'stream';
+
 const Through = require('through2');
 const ObjectMultiplex = require('@metamask/object-multiplex');
 const pump = require('pump');
 
 /**
  * Returns a stream transform that parses JSON strings passing through
- * @return {stream.Transform}
  */
-function jsonParseStream() {
-  return Through.obj(function (serialized, _, cb) {
+function jsonParseStream(): Transform {
+  return Through.obj(function (
+    this: Transform,
+    serialized: string,
+    _: unknown,
+    cb: () => void,
+  ) {
     this.push(JSON.parse(serialized));
     cb();
   });
@@ -17,10 +23,14 @@ function jsonParseStream() {
 /**
  * Returns a stream transform that calls {@code JSON.stringify}
  * on objects passing through
- * @return {stream.Transform} the stream transform
  */
-function jsonStringifyStream() {
-  return Through.obj(function (obj, _, cb) {
+function jsonStringifyStream(): Transform {
+  return Through.obj(function (
+    this: Transform,
+    obj: unknown,
+    _: unknown,
+    cb: () => void,
+  ) {
     this.push(JSON.stringify(obj));
     cb();
   });
@@ -28,12 +38,12 @@ function jsonStringifyStream() {
 
 /**
  * Sets up stream multiplexing for the given stream
- * @param {any} connectionStream - the stream to mux
- * @return {stream.Stream} the multiplexed stream
+ * @param connectionStream - the stream to mux
+ * @return the multiplexed stream
  */
-function setupMultiplex(connectionStream) {
+function setupMultiplex(connectionStream: Duplex): Duplex {
   const mux = new ObjectMultiplex();
-  pump(connectionStream, mux, connectionStream, (err) => {
+  pump(connectionStream, mux, connectionStream, (err: Error | null) => {
     if (err) {
       console.warn(err);
     }
