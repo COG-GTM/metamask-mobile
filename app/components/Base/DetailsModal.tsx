@@ -1,13 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { fontStyles } from '../../styles/common';
 import Text from './Text';
 import { useTheme } from '../../util/theme';
+import { Colors } from '../../util/theme/models';
 import { TransactionDetailsModalSelectorsIDs } from '../../../e2e/selectors/Transactions/TransactionDetailsModal.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     modalContainer: {
       width: '100%',
@@ -59,7 +59,35 @@ const createStyles = (colors) =>
       marginBottom: 8,
     },
   });
-const DetailsModal = ({ children }) => {
+
+interface DetailsModalProps {
+  children?: React.ReactNode;
+}
+
+interface DetailsModalSubProps {
+  style?: StyleProp<ViewStyle> | StyleProp<ViewStyle>[];
+  [key: string]: unknown;
+}
+
+interface DetailsModalSectionProps extends DetailsModalSubProps {
+  borderBottom?: boolean;
+}
+
+interface DetailsModalColumnProps extends DetailsModalSubProps {
+  end?: boolean;
+}
+
+interface DetailsModalComponent extends React.FC<DetailsModalProps> {
+  Header: React.FC<DetailsModalSubProps>;
+  Title: React.FC<DetailsModalSubProps>;
+  CloseIcon: React.FC<DetailsModalSubProps>;
+  Body: React.FC<DetailsModalSubProps>;
+  Section: React.FC<DetailsModalSectionProps>;
+  SectionTitle: React.FC<DetailsModalSubProps>;
+  Column: React.FC<DetailsModalColumnProps>;
+}
+
+const DetailsModal: DetailsModalComponent = ({ children }: DetailsModalProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -70,13 +98,13 @@ const DetailsModal = ({ children }) => {
   );
 };
 
-const DetailsModalHeader = ({ style, ...props }) => {
+const DetailsModalHeader = ({ style, ...props }: DetailsModalSubProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  return <View style={[styles.header, style]} {...props} />;
+  return <View style={[styles.header, style as StyleProp<ViewStyle>]} {...props} />;
 };
-const DetailsModalTitle = ({ style, ...props }) => {
+const DetailsModalTitle = ({ style, ...props }: DetailsModalSubProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -88,13 +116,13 @@ const DetailsModalTitle = ({ style, ...props }) => {
     />
   );
 };
-const DetailsModalCloseIcon = ({ style, ...props }) => {
+const DetailsModalCloseIcon = ({ style, ...props }: DetailsModalSubProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return (
     <TouchableOpacity
-      style={[styles.closeIcon, style]}
+      style={[styles.closeIcon, style as StyleProp<ViewStyle>]}
       {...props}
       testID={TransactionDetailsModalSelectorsIDs.CLOSE_ICON}
     >
@@ -102,19 +130,19 @@ const DetailsModalCloseIcon = ({ style, ...props }) => {
     </TouchableOpacity>
   );
 };
-const DetailsModalBody = ({ style, ...props }) => {
+const DetailsModalBody = ({ style, ...props }: DetailsModalSubProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return (
     <View
       testID={TransactionDetailsModalSelectorsIDs.BODY}
-      style={[styles.body, style]}
+      style={[styles.body, style as StyleProp<ViewStyle>]}
       {...props}
     />
   );
 };
-const DetailsModalSection = ({ style, borderBottom, ...props }) => {
+const DetailsModalSection = ({ borderBottom, ...props }: DetailsModalSectionProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -125,18 +153,18 @@ const DetailsModalSection = ({ style, borderBottom, ...props }) => {
     />
   );
 };
-const DetailsModalSectionTitle = ({ style, ...props }) => {
+const DetailsModalSectionTitle = ({ style, ...props }: DetailsModalSubProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return <Text style={[styles.sectionTitle, style]} {...props} />;
 };
-const DetailsModalColumn = ({ style, end, ...props }) => {
+const DetailsModalColumn = ({ style, end, ...props }: DetailsModalColumnProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return (
-    <View style={[styles.column, end && styles.columnEnd, style]} {...props} />
+    <View style={[styles.column, end && styles.columnEnd, style as StyleProp<ViewStyle>]} {...props} />
   );
 };
 
@@ -148,42 +176,4 @@ DetailsModal.Section = DetailsModalSection;
 DetailsModal.SectionTitle = DetailsModalSectionTitle;
 DetailsModal.Column = DetailsModalColumn;
 
-/**
- * Any other external style defined in props will be applied
- */
-const stylePropType = PropTypes.oneOfType([PropTypes.object, PropTypes.array]);
-
-DetailsModal.propTypes = {
-  children: PropTypes.node,
-};
-
-DetailsModalHeader.propTypes = {
-  style: stylePropType,
-};
-DetailsModalTitle.propTypes = {
-  style: stylePropType,
-};
-DetailsModalCloseIcon.propTypes = {
-  style: stylePropType,
-};
-DetailsModalBody.propTypes = {
-  style: stylePropType,
-};
-DetailsModalSection.propTypes = {
-  style: stylePropType,
-  /**
-   * Adds a border to the bottom of the section
-   */
-  borderBottom: PropTypes.bool,
-};
-DetailsModalSectionTitle.propTypes = {
-  style: stylePropType,
-};
-DetailsModalColumn.propTypes = {
-  style: stylePropType,
-  /**
-   * Aligns column content to flex-end
-   */
-  end: PropTypes.bool,
-};
 export default DetailsModal;
