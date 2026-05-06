@@ -1,4 +1,4 @@
-export const ImportSRPIDs = {
+export const ImportSRPIDs: Record<string, string> = {
   CONTAINER: 'import-srp-screen',
   IMPORT_BUTTON: 'import-button',
   BACK: 'back-button-on-input-screen',

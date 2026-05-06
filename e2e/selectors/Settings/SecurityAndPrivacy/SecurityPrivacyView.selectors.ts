@@ -15,7 +15,7 @@ export const SecurityPrivacyViewSelectorsIDs = {
   CLEAR_PRIVACY_DATA_BUTTON: 'clear-privacy-data-button',
 };
 
-export const SecurityPrivacyViewSelectorsText = {
+export const SecurityPrivacyViewSelectorsText: Record<string, string> = {
   SECURITY_AND_PRIVACY_HEADING: enContent.app_settings.security_title,
   BACK_UP_NOW: enContent.app_settings.back_up_now,
   PRIVACY_HEADING: enContent.app_settings.privacy_heading,

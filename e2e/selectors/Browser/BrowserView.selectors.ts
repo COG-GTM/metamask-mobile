@@ -19,7 +19,7 @@ export const BrowserViewSelectorsIDs = {
   DONE_BUTTON: 'tabs_done',
 };
 
-export const BrowserViewSelectorsText = {
+export const BrowserViewSelectorsText: Record<string, string> = {
   BACK_TO_SAFETY_BUTTON: enContent.phishing.back_to_safety,
   RETURN_HOME: enContent.webview_error.return_home,
 };

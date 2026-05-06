@@ -1,6 +1,6 @@
 import enContent from '../../locales/languages/en.json';
 
-export const CommonSelectorsIDs = {
+export const CommonSelectorsIDs: Record<string, string> = {
   ERROR_MESSAGE: 'error-message-warning',
   BACK_ARROW_BUTTON: 'back-arrow-button',
   CONNECT_BUTTON: 'connect-button',
