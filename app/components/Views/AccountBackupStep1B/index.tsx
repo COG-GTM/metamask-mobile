@@ -388,7 +388,6 @@ const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
               </Text>
             </Text>
             <TouchableOpacity
-              style={styles.learnMoreText}
               onPress={learnMore}
               hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
             >
