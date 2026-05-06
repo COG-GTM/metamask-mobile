@@ -33,14 +33,16 @@ jest.mock('react-redux', () => ({
 
 const mockNetworkName = 'Ethereum Main Network';
 
+const mockedUseSelector = useSelector as unknown as jest.Mock;
+
 describe('ManageNetworks', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
+    mockedUseSelector.mockImplementation((selector: unknown) => {
       if (selector === selectNetworkName) return mockNetworkName;
+      return undefined;
     });
-    const { toJSON } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
-    );
+    useNavigation();
+    const { toJSON } = renderWithProvider(<ManageNetworks />);
     expect(toJSON()).toMatchSnapshot();
   });
 
@@ -55,15 +57,18 @@ describe('ManageNetworks', () => {
         testId: 'solana-privacy-policy-link',
       },
     ],
-  ])('opens link %link', ({ link, testId }) => {
-    useSelector.mockImplementation((selector) => {
-      if (selector === selectNetworkName) return mockNetworkName;
-    });
-    const { getByTestId } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
-    );
-    const button = getByTestId(testId);
-    fireEvent.press(button);
-    expect(Linking.openURL).toHaveBeenCalledWith(link);
-  });
+  ])(
+    'opens link %link',
+    ({ link, testId }: { link: string; testId: string }) => {
+      mockedUseSelector.mockImplementation((selector: unknown) => {
+        if (selector === selectNetworkName) return mockNetworkName;
+        return undefined;
+      });
+      useNavigation();
+      const { getByTestId } = renderWithProvider(<ManageNetworks />);
+      const button = getByTestId(testId);
+      fireEvent.press(button);
+      expect(Linking.openURL).toHaveBeenCalledWith(link);
+    },
+  );
 });
