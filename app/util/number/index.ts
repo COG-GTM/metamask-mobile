@@ -633,7 +633,7 @@ export function weiToFiatNumber(
   const base = Math.pow(10, decimalsToShow);
   const eth = fromWei(wei).toString();
   let value = parseFloat(
-    String(Math.floor((Number(eth) * conversionRate * base) / base)),
+    String(Math.floor(Number(eth) * conversionRate * base) / base),
   );
   value = isNaN(value) ? 0.0 : value;
   return value;
@@ -758,9 +758,7 @@ export function balanceToFiatNumber(
   const base = Math.pow(10, decimalsToShow);
   let fiatFixed = parseFloat(
     String(
-      Math.floor(
-        (Number(balance) * conversionRate * exchangeRate * base) / base,
-      ),
+      Math.floor(Number(balance) * conversionRate * exchangeRate * base) / base,
     ),
   );
   fiatFixed = isNaN(fiatFixed) ? 0.0 : fiatFixed;
