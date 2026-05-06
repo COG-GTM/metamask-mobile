@@ -32,7 +32,7 @@ describe(SmokeConfirmations('Security Alert API - Signature'), () => {
     await Assertions.checkIfVisible(SigningBottomSheet.typedRequest);
   };
 
-  const runTest = async (testSpecificMock, alertAssertion) => {
+  const runTest = async (testSpecificMock: unknown, alertAssertion: () => Promise<unknown>) => {
     await withFixtures(
       {
         dapp: true,

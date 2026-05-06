@@ -31,7 +31,10 @@ describe(SmokeConfirmationsRedesigned('Alert System - Signature'), () => {
     await TestHelpers.reverseServerPort();
   });
 
-  const runTest = async (testSpecificMock, alertAssertion) => {
+  const runTest = async (
+    testSpecificMock: { GET?: unknown[]; POST?: unknown[] },
+    alertAssertion: () => Promise<unknown>,
+  ) => {
     await withFixtures(
       {
         dapp: true,

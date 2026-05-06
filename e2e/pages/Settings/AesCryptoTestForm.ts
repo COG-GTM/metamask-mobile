@@ -157,7 +157,7 @@ class AesCryptoTestForm {
     );
   }
 
-  async generateSalt(saltBytesCount: number) {
+  async generateSalt(saltBytesCount: number | string) {
     await this.scrollUpToGenerateSalt();
     await Gestures.typeTextAndHideKeyboard(
       this.generateSaltBytesCountInput,

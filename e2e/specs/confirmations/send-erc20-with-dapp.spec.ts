@@ -72,7 +72,8 @@ describe(SmokeConfirmations('ERC20 tokens'), () => {
         // Assert "Sent Tokens" transaction is displayed
         await Assertions.checkIfTextIsDisplayed(
           ActivitiesViewSelectorsText.SENT_TOKENS_MESSAGE_TEXT(
-            contractConfiguration[HST_CONTRACT].tokenName,
+            (contractConfiguration[HST_CONTRACT] as { tokenName: string })
+              .tokenName,
           ),
         );
       },

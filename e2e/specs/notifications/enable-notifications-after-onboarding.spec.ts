@@ -22,18 +22,21 @@ import {
  * @param {number} port
  * @returns {import('detox/detox').DeviceLaunchAppConfig}
  */
-const launchAppSettings = (port) => ({
+const launchAppSettings = (
+  port: number,
+): Detox.DeviceLaunchAppConfig => ({
   newInstance: true,
   delete: true,
   permissions: {
-    notifications: 'YES',
+    notifications: 'YES' as const,
   },
-  launchArgs: { mockServerPort: port },
+  launchArgs: { mockServerPort: String(port) },
 });
 
 describe(SmokeNotifications('Notification Onboarding'), () => {
   /** @type {import('mockttp').Mockttp} */
-  let mockServer;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let mockServer: any;
 
   beforeAll(async () => {
     jest.setTimeout(200000);

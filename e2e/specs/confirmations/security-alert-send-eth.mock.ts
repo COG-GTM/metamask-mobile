@@ -33,7 +33,7 @@ describe(SmokeConfirmations('Security Alert API - Send flow'), () => {
     await AmountView.tapNextButton();
   };
 
-  const runTest = async (testSpecificMock, alertAssertion) => {
+  const runTest = async (testSpecificMock: unknown, alertAssertion: () => Promise<unknown>) => {
     await withFixtures(
       {
         fixture: defaultFixture,

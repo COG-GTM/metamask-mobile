@@ -668,8 +668,16 @@ class FixtureBuilder {
    * @param {object} data - Data to merge into the PermissionController's state.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withPermissionController(data: Record<string, unknown>): this {
+  withPermissionController(data: Record<string, unknown> = {}): this {
     merge(this.fixture.state.engine.backgroundState.PermissionController, data);
+    return this;
+  }
+
+  withAddressBookController(data: Record<string, unknown>): this {
+    merge(
+      this.fixture.state.engine.backgroundState.AddressBookController,
+      data,
+    );
     return this;
   }
 
@@ -859,7 +867,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withGanacheNetwork(): this {
+  withGanacheNetwork(_permissions?: unknown): this {
     const fixtures = this.fixture.state.engine.backgroundState;
 
     // Generate a unique key for the new network client ID

@@ -25,7 +25,7 @@ describe(SmokeTrade('Sell Crypto Deeplinks'), () => {
     jest.setTimeout(150000);
   });
 
-  const itif = (condition) => (condition ? it : it.skip);
+  const itif = (condition: boolean) => (condition ? it : it.skip);
 
   itif(device.getPlatform() === 'android')('should deep link to offramp ETH', async () => {
     const sellDeepLinkURL = 'metamask://sell?chainId=1&amount=50';

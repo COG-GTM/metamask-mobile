@@ -62,7 +62,8 @@ describe(
     };
 
     let accountsToMockBalances = [...INITIAL_ACCOUNTS];
-    let mockServer;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let mockServer: any;
 
     /**
      * This test verifies the complete account syncing flow in three phases:

@@ -90,7 +90,7 @@ describe(SmokeWalletPlatform('Browser Tests'), () => {
   // We temporarily disable this test for android until we work out a solution
   // https://consensyssoftware.atlassian.net/browse/IDENTITY-75
 
-  const itif = (condition) => (condition ? it : it.skip);
+  const itif = (condition: boolean) => (condition ? it : it.skip);
   itif(device.getPlatform() === 'ios')(
     'should test phishing sites',
     async () => {

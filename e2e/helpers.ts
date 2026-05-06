@@ -13,7 +13,9 @@ interface Point {
   y: number;
 }
 
-type LaunchOptions = Detox.DeviceLaunchAppConfig;
+type LaunchOptions = Detox.DeviceLaunchAppConfig & {
+  ganacheOptions?: Record<string, unknown>;
+};
 
 export default class TestHelpers {
   /**
@@ -480,7 +482,7 @@ export default class TestHelpers {
     }
   }
 
-  static async launchApp(launchOptions: LaunchOptions): Promise<void> {
+  static async launchApp(launchOptions: LaunchOptions = {}): Promise<void> {
     const config = await resolveConfig();
     const platform = device.getPlatform();
     if (config.configurationName.endsWith('debug')) {

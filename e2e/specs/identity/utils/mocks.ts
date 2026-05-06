@@ -11,7 +11,7 @@ const AuthMocks = AuthenticationController.Mocks;
  * @param server - server obj used to mock our endpoints
  * @param userStorageMockttpController - optional controller to mock user storage endpoints
  */
-export async function mockIdentityServices(server) {
+export async function mockIdentityServices(server: import("mockttp").Mockttp) {
   // Auth
   mockAPICall(server, AuthMocks.getMockAuthNonceResponse());
   mockAPICall(server, AuthMocks.getMockAuthLoginResponse());
@@ -35,7 +35,16 @@ export async function mockIdentityServices(server) {
   };
 }
 
-function mockAPICall(server, response) {
+interface APICallResponse {
+  requestMethod: string;
+  url: string;
+  response: unknown;
+}
+
+function mockAPICall(
+  server: import('mockttp').Mockttp,
+  response: APICallResponse,
+) {
   let requestRuleBuilder;
 
   if (response.requestMethod === 'GET') {
@@ -55,7 +64,7 @@ function mockAPICall(server, response) {
   }
 
   requestRuleBuilder
-    ?.matching((request) => {
+    ?.matching((request: { url: string }) => {
       const url = getDecodedProxiedURL(request.url);
 
       return url.includes(String(response.url));
@@ -74,7 +83,10 @@ const INFURA_URL = 'https://mainnet.infura.io/v3/';
  * @param {Object} mockServer - The server object to set up the mock responses on
  * @param {Array<String>} accounts - List of account addresses to mock balances for
  */
-export const setupAccountMockedBalances = async (mockServer, accounts) => {
+export const setupAccountMockedBalances = async (
+  mockServer: import('mockttp').Mockttp,
+  accounts: string[],
+) => {
   if (!accounts.length) {
     return;
   }
@@ -82,7 +94,7 @@ export const setupAccountMockedBalances = async (mockServer, accounts) => {
   for (const account of accounts) {
     await mockServer
       .forPost('/proxy')
-      .matching((request) => {
+      .matching((request: { url: string }) => {
         const url = getDecodedProxiedURL(request.url);
         return url.includes(INFURA_URL);
       })

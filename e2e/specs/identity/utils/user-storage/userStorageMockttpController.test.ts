@@ -3,7 +3,8 @@ import { UserStorageMockttpController } from './userStorageMockttpController';
 import { USER_STORAGE_FEATURE_NAMES } from '@metamask/profile-sync-controller/sdk';
 
 describe('UserStorageMockttpController', () => {
-  let mockServer;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let mockServer: any;
 
   const baseUrl =
     'http://localhost/proxy?url=https://user-storage.api.cx.metamask.io/api/v1/userstorage';
@@ -267,7 +268,7 @@ describe('UserStorageMockttpController', () => {
         },
       );
 
-      const putData = {};
+      const putData: Record<string, unknown> = {};
       mockedUpdatedData.forEach((entry) => {
         putData[entry.HashedKey] = entry.Data;
       });

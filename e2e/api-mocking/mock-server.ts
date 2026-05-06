@@ -7,7 +7,7 @@ import { device } from 'detox';
 export interface MockEvent {
   urlEndpoint: string;
   responseCode: number;
-  response: unknown;
+  response?: unknown;
   requestBody?: Record<string, unknown>;
 }
 

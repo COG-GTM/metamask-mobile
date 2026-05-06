@@ -100,7 +100,7 @@ class Assertions {
    * Check if text is visible.
    */
   static async checkIfTextIsDisplayed(
-    text: string,
+    text: string | RegExp,
     timeout: number = TIMEOUT,
   ): Promise<boolean> {
     const element = Matchers.getElementByText(text);
@@ -111,7 +111,7 @@ class Assertions {
    * Check if text is not visible.
    */
   static async checkIfTextIsNotDisplayed(
-    text: string,
+    text: string | RegExp,
     timeout: number = TIMEOUT,
   ): Promise<void> {
     const element = Matchers.getElementByText(text);
@@ -244,7 +244,10 @@ class Assertions {
   /**
    * Check if a value is present (not null, not undefined, not an empty string).
    */
-  static async checkIfValueIsPresent(value: unknown): Promise<boolean> {
+  static async checkIfValueIsPresent(
+    value: unknown,
+    _key?: string,
+  ): Promise<boolean> {
     if (value === null || value === undefined || value === '') {
       throw new Error('Value is not present (null, undefined, or empty string)');
     }

@@ -19,20 +19,17 @@ import AccountActionsBottomSheet from '../../../pages/wallet/AccountActionsBotto
 import { mockIdentityServices } from '../utils/mocks';
 import { SmokeWalletPlatform } from '../../../tags';
 import { USER_STORAGE_FEATURE_NAMES } from '@metamask/profile-sync-controller/sdk';
-import TabBarComponent from '../../../pages/wallet/TabBarComponent';
-import SettingsView from '../../../pages/Settings/SettingsView';
-import BackupAndSyncView from '../../../pages/Settings/BackupAndSyncView';
-import CommonView from '../../../pages/CommonView';
 
 describe(
   SmokeWalletPlatform(
-    'Sync and Backup settings - Account Sync toggle',
+    'Account syncing - syncs and retrieves accounts after adding a custom name account',
   ),
   () => {
-    const ADDED_ACCOUNT = 'Account 3';
+    const NEW_ACCOUNT_NAME = 'My third account';
     const TEST_SPECIFIC_MOCK_SERVER_PORT = 8000;
-    let decryptedAccountNames = '';
-    let mockServer;
+    let decryptedAccountNames: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let mockServer: any;
 
     beforeAll(async () => {
       await TestHelpers.reverseServerPort();
@@ -75,7 +72,7 @@ describe(
       }
     });
 
-    it('should not sync new accounts when accounts sync toggle is off ', async () => {
+    it('syncs newly added accounts with custom names and retrieves same accounts after importing the same SRP', async () => {
       await importWalletWithRecoveryPhrase(
         {
           seedPhrase: IDENTITY_TEAM_SEED_PHRASE,
@@ -93,34 +90,16 @@ describe(
         );
       }
 
-      await AccountListBottomSheet.swipeToDismissAccountsModal();
-      await Assertions.checkIfNotVisible(
-        AccountListBottomSheet.accountList,
-      );
-
-      await TabBarComponent.tapSettings();
-      await Assertions.checkIfVisible(SettingsView.backupAndSyncSectionButton);
-      await SettingsView.tapBackupAndSync();
-
-      await Assertions.checkIfVisible(BackupAndSyncView.backupAndSyncToggle);
-      await BackupAndSyncView.toggleAccountSync();
-      await TestHelpers.delay(2000);
-
-      await CommonView.tapBackButton();
-      await Assertions.checkIfVisible(SettingsView.backupAndSyncSectionButton);
-      await TabBarComponent.tapWallet();
-      await Assertions.checkIfVisible(WalletView.container);
-
-      await WalletView.tapIdenticon();
-      await Assertions.checkIfVisible(AccountListBottomSheet.accountList);
-      await TestHelpers.delay(2000);
-
       await AccountListBottomSheet.tapAddAccountButton();
       await AddAccountBottomSheet.tapCreateAccount();
+      await TestHelpers.delay(2000);
+
+      await AccountListBottomSheet.tapEditAccountActionsAtIndex(2);
+      await AccountActionsBottomSheet.renameActiveAccount(NEW_ACCOUNT_NAME);
 
       await Assertions.checkIfElementToHaveText(
         WalletView.accountName,
-        ADDED_ACCOUNT,
+        NEW_ACCOUNT_NAME,
       );
 
       await TestHelpers.launchApp({
@@ -128,7 +107,6 @@ describe(
         delete: true,
         launchArgs: { mockServerPort: String(TEST_SPECIFIC_MOCK_SERVER_PORT) },
       });
-
 
       await importWalletWithRecoveryPhrase(
         {
@@ -139,10 +117,10 @@ describe(
 
       await WalletView.tapIdenticon();
       await Assertions.checkIfVisible(AccountListBottomSheet.accountList);
-      await TestHelpers.delay(2000);
+      await TestHelpers.delay(4000);
 
-      await Assertions.checkIfNotVisible(
-        AccountListBottomSheet.getAccountElementByAccountName(ADDED_ACCOUNT),
+      await Assertions.checkIfVisible(
+        AccountListBottomSheet.getAccountElementByAccountName(NEW_ACCOUNT_NAME),
       );
     });
   },

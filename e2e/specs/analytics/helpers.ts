@@ -6,11 +6,16 @@ import { E2E_METAMETRICS_TRACK_URL } from '../../../app/util/test/utils';
  * @param {Array<string>} [events] - Event names to filter payloads. If not provided, all events are returned. i.e. ['event1', 'event2']
  * @returns {Promise<Array>} Filtered request payloads.
  */
-export const getEventsPayloads = async (mockServer, events = []) => {
+export const getEventsPayloads = async (
+  mockServer: import('mockttp').Mockttp,
+  events: string[] = [],
+) => {
   const waitForPendingEndpoints = async (timeout = 5000) => {
     const startTime = Date.now();
 
-    const checkPendingEndpoints = async () => {
+    const checkPendingEndpoints = async (): Promise<
+      Awaited<ReturnType<typeof mockServer.getMockedEndpoints>>
+    > => {
       const mockedEndpoints = await mockServer.getMockedEndpoints();
       const pendingEndpoints = await Promise.all(
         mockedEndpoints.map((endpoint) => endpoint.isPending()),
@@ -55,9 +60,12 @@ export const getEventsPayloads = async (mockServer, events = []) => {
 
   const payloads = (
     await Promise.all(matchingRequests.map((req) => req.body?.getJson()))
-  ).filter(Boolean);
+  ).filter((value): value is Record<string, unknown> => Boolean(value));
 
   return payloads
-    .filter((payload) => events.length === 0 || events.includes(payload.event))
+    .filter(
+      (payload) =>
+        events.length === 0 || events.includes(payload.event as string),
+    )
     .map(({ event, properties }) => ({ event, properties }));
 };

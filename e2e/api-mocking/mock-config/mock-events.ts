@@ -13,7 +13,19 @@ const suggestedGasApiResponses = rawSuggestedGasApiResponses as Record<
   unknown
 >;
 
-export const mockEvents = {
+interface MockEventConfig {
+  urlEndpoint: string;
+  response?: unknown;
+  responseCode: number;
+  requestBody?: Record<string, unknown>;
+}
+
+interface MockEventsRegistry {
+  GET: { [key: string]: MockEventConfig };
+  POST: { [key: string]: MockEventConfig };
+}
+
+export const mockEvents: MockEventsRegistry = {
   /**
    * Mock GET request events.
    */
@@ -101,6 +113,7 @@ export const mockEvents = {
     suggestedGasApiPostResponse: {
       urlEndpoint: 'https://gas.api.cx.metamask.io/networks/1/suggestedGasFees',
       response: suggestedGasApiResponses.success,
+      responseCode: 200,
       requestBody: {
         priorityFee: '2',
         maxFee: '2.000855333',

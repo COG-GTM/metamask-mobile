@@ -25,7 +25,8 @@ describe(
   SmokeWalletPlatform('Account syncing - syncs previously synced accounts'),
   () => {
     const TEST_SPECIFIC_MOCK_SERVER_PORT = 8001;
-    let mockServer;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let mockServer: any;
 
     beforeAll(async () => {
         const segmentMock = {

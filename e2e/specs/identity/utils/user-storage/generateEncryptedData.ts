@@ -12,7 +12,7 @@ import {
  * @param storageKey - The key used for encryption.
  * @returns A promise that resolves to the encrypted string.
  */
-const encryptData = async (data, storageKey) =>
+const encryptData = async (data: unknown, storageKey: string) =>
   await Encryption.encryptString(JSON.stringify(data), storageKey);
 
 /**
@@ -22,8 +22,10 @@ const encryptData = async (data, storageKey) =>
  * @param storageKey - The storage key to be used in the hash generation.
  * @returns The generated SHA-256 hash as a string.
  */
-const generateEncryptedHash = (path, storageKey) => {
-  const { key: featureKey } = getFeatureAndKeyFromPath(path);
+const generateEncryptedHash = (path: string, storageKey: string) => {
+  const { key: featureKey } = getFeatureAndKeyFromPath(
+    path as UserStoragePathWithFeatureAndKey,
+  );
   return createSHA256Hash(featureKey + storageKey);
 };
 
@@ -37,7 +39,11 @@ const generateEncryptedHash = (path, storageKey) => {
  * @param options.path - The user storage path with feature and key.
  * @returns A promise that resolves to an object containing the hashed key and encrypted data.
  */
-export const createEncryptedResponse = async (options) => {
+export const createEncryptedResponse = async (options: {
+  data: unknown;
+  storageKey: string;
+  path: string;
+}) => {
   const { data, storageKey: key, path } = options;
   return {
     HashedKey: generateEncryptedHash(path, key),

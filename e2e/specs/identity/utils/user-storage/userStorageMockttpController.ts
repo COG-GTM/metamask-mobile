@@ -24,12 +24,29 @@ export const pathRegexps = {
   ),
 };
 
+export interface MockRequest {
+  url?: string;
+  path?: string;
+  body?: {
+    getJson: () => Promise<{ data?: unknown; batch_delete?: string[] }>;
+  };
+  [key: string]: unknown;
+}
+
+interface FeatureEntry {
+  HashedKey: string;
+  Data: unknown;
+}
+
 export class UserStorageMockttpController {
-  paths = new Map();
+  paths = new Map<
+    string,
+    { response: FeatureEntry[] }
+  >();
 
   eventEmitter = new EventEmitter();
 
-  async onGet(path, request, statusCode = 200) {
+  async onGet(path: string, request: MockRequest, statusCode = 200) {
     const internalPathData = this.paths.get(path);
 
     if (!internalPathData) {
@@ -43,14 +60,14 @@ export class UserStorageMockttpController {
       };
     }
 
-    const isFeatureEntry = determineIfFeatureEntryFromURL(request.url);
+    const isFeatureEntry = determineIfFeatureEntryFromURL((request.url ?? request.path ?? "") as string);
 
     if (isFeatureEntry) {
       const json =
         internalPathData.response?.find(
-          (entry) =>
+          (entry: FeatureEntry) =>
             entry.HashedKey ===
-            getDecodedProxiedURL(request.url).split('/').pop(),
+            getDecodedProxiedURL((request.url ?? request.path ?? "") as string).split('/').pop(),
         ) || null;
 
       this.eventEmitter.emit('GET_SINGLE', {
@@ -79,14 +96,17 @@ export class UserStorageMockttpController {
     };
   }
 
-  async onPut(path, request, statusCode = 204) {
-    const isFeatureEntry = determineIfFeatureEntryFromURL(request.url);
+  async onPut(path: string, request: MockRequest, statusCode = 204) {
+    const isFeatureEntry = determineIfFeatureEntryFromURL((request.url ?? request.path ?? "") as string);
 
-    const data = await request.body.getJson();
+    const data = ((await request.body?.getJson()) ?? {}) as {
+      data?: unknown;
+      batch_delete?: string[];
+    };
 
     // We're handling batch delete inside the PUT method due to API limitations
     if (data?.batch_delete) {
-      const keysToDelete = data.batch_delete;
+      const keysToDelete = data.batch_delete as string[];
 
       const internalPathData = this.paths.get(path);
 
@@ -103,7 +123,7 @@ export class UserStorageMockttpController {
       this.paths.set(path, {
         ...internalPathData,
         response: internalPathData.response.filter(
-          (entry) => !keysToDelete.includes(entry.HashedKey),
+          (entry: FeatureEntry) => !keysToDelete.includes(entry.HashedKey),
         ),
       });
 
@@ -114,20 +134,23 @@ export class UserStorageMockttpController {
     }
 
     if (data?.data) {
-      const newOrUpdatedSingleOrBatchEntries =
+      const newOrUpdatedSingleOrBatchEntries: FeatureEntry[] =
         isFeatureEntry && typeof data?.data === 'string'
           ? [
               {
-                HashedKey: getDecodedProxiedURL(request.url).split('/').pop(),
+                HashedKey:
+                  getDecodedProxiedURL((request.url ?? request.path ?? "") as string).split('/').pop() ?? '',
                 Data: data?.data,
               },
             ]
-          : Object.entries(data?.data).map(([key, value]) => ({
+          : Object.entries(
+              data?.data as Record<string, unknown>,
+            ).map(([key, value]) => ({
               HashedKey: key,
               Data: value,
             }));
 
-      newOrUpdatedSingleOrBatchEntries.forEach((entry) => {
+      newOrUpdatedSingleOrBatchEntries.forEach((entry: FeatureEntry) => {
         const internalPathData = this.paths.get(path);
 
         if (!internalPathData) {
@@ -135,16 +158,18 @@ export class UserStorageMockttpController {
         }
 
         const doesThisEntryExist = internalPathData.response?.find(
-          (existingEntry) => existingEntry.HashedKey === entry.HashedKey,
+          (existingEntry: FeatureEntry) =>
+            existingEntry.HashedKey === entry.HashedKey,
         );
 
         if (doesThisEntryExist) {
           this.paths.set(path, {
             ...internalPathData,
-            response: internalPathData.response.map((existingEntry) =>
-              existingEntry.HashedKey === entry.HashedKey
-                ? entry
-                : existingEntry,
+            response: internalPathData.response.map(
+              (existingEntry: FeatureEntry) =>
+                existingEntry.HashedKey === entry.HashedKey
+                  ? entry
+                  : existingEntry,
             ),
           });
         } else {
@@ -173,7 +198,7 @@ export class UserStorageMockttpController {
     };
   }
 
-  async onDelete(path, request, statusCode = 204) {
+  async onDelete(path: string, request: MockRequest, statusCode = 204) {
     const internalPathData = this.paths.get(path);
 
     if (!internalPathData) {
@@ -187,15 +212,15 @@ export class UserStorageMockttpController {
       };
     }
 
-    const isFeatureEntry = determineIfFeatureEntryFromURL(request.url);
+    const isFeatureEntry = determineIfFeatureEntryFromURL((request.url ?? request.path ?? "") as string);
 
     if (isFeatureEntry) {
       this.paths.set(path, {
         ...internalPathData,
         response: internalPathData?.response.filter(
-          (entry) =>
+          (entry: FeatureEntry) =>
             entry.HashedKey !==
-            getDecodedProxiedURL(request.url).split('/').pop(),
+            getDecodedProxiedURL((request.url ?? request.path ?? "") as string).split('/').pop(),
         ),
       });
 
@@ -228,39 +253,50 @@ export class UserStorageMockttpController {
    *   getStatusCode?: number
    * }} overrides - initial state of this mock user storage
    */
-  async setupPath(path, server, overrides) {
+  async setupPath(
+    path: string,
+    server: import('mockttp').Mockttp,
+    overrides?: {
+      getResponse?: FeatureEntry[];
+      getStatusCode?: number;
+      putStatusCode?: number;
+      deleteStatusCode?: number;
+    },
+  ) {
     const previouslySetupPath = this.paths.get(path);
 
     this.paths.set(path, {
-      response: overrides?.getResponse || previouslySetupPath?.response || [],
+      response:
+        overrides?.getResponse || previouslySetupPath?.response || [],
     });
 
+    const regexpKey = path as keyof typeof pathRegexps;
     await server
       .forGet('/proxy')
-      .matching((request) =>
-        pathRegexps[path].test(getDecodedProxiedURL(request.url)),
+      .matching((request: { url: string }) =>
+        pathRegexps[regexpKey].test(getDecodedProxiedURL(request.url)),
       )
       .always()
       .thenCallback((request) =>
-        this.onGet(path, request, overrides?.getStatusCode),
+        this.onGet(path, request as unknown as MockRequest, overrides?.getStatusCode),
       );
     await server
       .forPut('/proxy')
-      .matching((request) =>
-        pathRegexps[path].test(getDecodedProxiedURL(request.url)),
+      .matching((request: { url: string }) =>
+        pathRegexps[regexpKey].test(getDecodedProxiedURL(request.url)),
       )
       .always()
       .thenCallback((request) =>
-        this.onPut(path, request, overrides?.putStatusCode),
+        this.onPut(path, request as unknown as MockRequest, overrides?.putStatusCode),
       );
     await server
       .forDelete('/proxy')
-      .matching((request) =>
-        pathRegexps[path].test(getDecodedProxiedURL(request.url)),
+      .matching((request: { url: string }) =>
+        pathRegexps[regexpKey].test(getDecodedProxiedURL(request.url)),
       )
       .always()
       .thenCallback((request) =>
-        this.onDelete(path, request, overrides?.deleteStatusCode),
+        this.onDelete(path, request as unknown as MockRequest, overrides?.deleteStatusCode),
       );
   }
 }

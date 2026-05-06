@@ -43,8 +43,8 @@ describe(
           const accountLabelElement =
             await PermissionSummaryBottomSheet.accountPermissionLabelContainer;
           const accountLabelAttributes =
-            await accountLabelElement.getAttributes();
-          const accountLabel = accountLabelAttributes.label;
+            (await accountLabelElement.getAttributes()) as { label?: string };
+          const accountLabel = accountLabelAttributes.label ?? '';
 
           await Assertions.checkIfTextMatches(
             accountLabel,

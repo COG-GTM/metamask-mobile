@@ -44,8 +44,11 @@ class RequestPaymentView {
     await Gestures.waitAndTap(tokenElement);
   }
 
-  async typeInTokenAmount(amount: string) {
-    await Gestures.typeTextAndHideKeyboard(this.requestAmountInput, amount);
+  async typeInTokenAmount(amount: string | number) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.requestAmountInput,
+      String(amount),
+    );
   }
 }
 

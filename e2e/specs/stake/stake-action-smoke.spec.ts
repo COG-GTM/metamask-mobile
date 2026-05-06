@@ -38,7 +38,8 @@ const fixtureServer = new FixtureServer();
 describe.skip(SmokeTrade('Stake from Actions'), () => {
   const FIRST_ROW = 0;
   const AMOUNT_TO_SEND = '.005';
-  let mockServer;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let mockServer: any;
   const wallet = ethers.Wallet.createRandom();
 
   beforeAll(async () => {
@@ -75,7 +76,9 @@ describe.skip(SmokeTrade('Stake from Actions'), () => {
     await AccountListBottomSheet.tapAddAccountButton();
     await AddAccountBottomSheet.tapImportAccount();
     await Assertions.checkIfVisible(ImportAccountView.container);
-    await ImportAccountView.enterPrivateKey(process.env.MM_STAKE_TEST_ACCOUNT_PRIVATE_KEY);
+    await ImportAccountView.enterPrivateKey(
+      process.env.MM_STAKE_TEST_ACCOUNT_PRIVATE_KEY ?? '',
+    );
     await Assertions.checkIfVisible(SuccessImportAccountView.container);
     await SuccessImportAccountView.tapCloseButton();
     await AccountListBottomSheet.swipeToDismissAccountsModal();

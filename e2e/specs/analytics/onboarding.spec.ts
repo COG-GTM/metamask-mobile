@@ -43,7 +43,7 @@ describe(SmokeCore('Analytics during import wallet flow'), () => {
         restartDevice: true,
         testSpecificMock,
         launchArgs: {
-          sendMetaMetricsinE2E: true,
+          sendMetaMetricsinE2E: "true",
         },
       },
       async ({ mockServer }) => {
@@ -68,14 +68,14 @@ describe(SmokeCore('Analytics during import wallet flow'), () => {
         );
 
         await Assertions.checkIfObjectsMatch(
-          walletSetupCompletedEvent.properties,
+          walletSetupCompletedEvent?.properties,
           {
             wallet_setup_type: 'import',
             new_wallet: false,
           },
         );
 
-        await Assertions.checkIfObjectsMatch(walletImportedEvent.properties, {
+        await Assertions.checkIfObjectsMatch(walletImportedEvent?.properties, {
           biometrics_enabled: false,
         });
       },
@@ -89,7 +89,7 @@ describe(SmokeCore('Analytics during import wallet flow'), () => {
         restartDevice: true,
         testSpecificMock,
         launchArgs: {
-          sendMetaMetricsinE2E: true,
+          sendMetaMetricsinE2E: "true",
         },
       },
       async ({ mockServer }) => {
@@ -110,7 +110,7 @@ describe(SmokeCore('Analytics during import wallet flow'), () => {
         );
 
         await Assertions.checkIfObjectsMatch(
-          walletSetupCompletedEvent.properties,
+          walletSetupCompletedEvent?.properties,
           {
             wallet_setup_type: 'new',
             new_wallet: true,
@@ -127,7 +127,7 @@ describe(SmokeCore('Analytics during import wallet flow'), () => {
         restartDevice: true,
         testSpecificMock,
         launchArgs: {
-          sendMetaMetricsinE2E: true,
+          sendMetaMetricsinE2E: "true",
         },
       },
       async ({ mockServer }) => {

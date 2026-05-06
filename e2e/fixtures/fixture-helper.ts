@@ -222,9 +222,12 @@ interface WithFixturesOptions {
 }
 
 interface TestSuiteContext {
-  contractRegistry?: unknown;
-  mockServer?: unknown;
-  localNodes: unknown[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contractRegistry?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mockServer?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  localNodes: any[];
 }
 
 export async function withFixtures(

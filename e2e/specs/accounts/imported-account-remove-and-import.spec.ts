@@ -64,8 +64,10 @@ describe(
       await SuccessImportAccountView.tapCloseButton();
 
       const tagElement = await AccountListBottomSheet.accountTagLabel;
-      const tagElementAttribute = await tagElement.getAttributes();
-      const tagLabel = tagElementAttribute.label;
+      const tagElementAttribute = (await tagElement.getAttributes()) as {
+        label?: string;
+      };
+      const tagLabel = tagElementAttribute.label ?? '';
 
       // Check if the account type label is visible
       await Assertions.checkIfTextMatches(
