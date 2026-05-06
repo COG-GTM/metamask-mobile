@@ -692,7 +692,7 @@ class NetworkSettings extends PureComponent<NetworkSettingsProps> {
         'eth_chainId',
       );
     } catch (err) {
-      Logger.error(err, 'Failed to fetch the chainId from the endpoint.');
+      Logger.error(err as Error, 'Failed to fetch the chainId from the endpoint.');
       providerError = err;
     }
 
@@ -711,7 +711,7 @@ class NetworkSettings extends PureComponent<NetworkSettingsProps> {
           }
           endpointChainId = endpointChainIdNumber.toString(10);
         } catch (err) {
-          Logger.error(err, {
+          Logger.error(err as Error, {
             endpointChainId,
             message: 'Failed to convert endpoint chain ID to decimal',
           });
@@ -1102,7 +1102,7 @@ class NetworkSettings extends PureComponent<NetworkSettingsProps> {
         'eth_chainId',
       );
     } catch (err) {
-      Logger.error(err, 'Failed to fetch the chainId from the endpoint.');
+      Logger.error(err as Error, 'Failed to fetch the chainId from the endpoint.');
       providerError = err;
     }
 

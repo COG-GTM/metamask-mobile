@@ -379,7 +379,7 @@ class ResetPassword extends PureComponent<ResetPasswordProps> {
         );
         await Authentication.storePassword(password, authData.currentAuthType);
       } catch (error) {
-        Logger.error(error);
+        Logger.error(error as Error);
       }
 
       this.props.setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT);

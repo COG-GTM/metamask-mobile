@@ -467,7 +467,7 @@ const HomeTabs = () => {
       );
       return permittedAcc;
     } catch (error) {
-      Logger.error(error, {
+      Logger.error(error as Error, {
         message: 'ParseUrl::MainNavigator error while parsing URL',
       });
     }

@@ -343,7 +343,7 @@ export const Browser = (props) => {
       const activeTab = tabs.find((tab) => tab.id === activeTabId);
       await takeScreenshot(activeTab.url, activeTab.id);
     } catch (e) {
-      Logger.error(e);
+      Logger.error(e as Error);
     }
 
     navigation.setParams({

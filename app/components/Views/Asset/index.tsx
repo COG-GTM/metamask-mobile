@@ -242,7 +242,7 @@ class Asset extends PureComponent<AssetProps> {
       );
       this.props.setLiveness(chainId, featureFlags);
     } catch (error) {
-      Logger.error(error, 'Swaps: error while fetching swaps liveness');
+      Logger.error(error as Error, 'Swaps: error while fetching swaps liveness');
       this.props.setLiveness(chainId, null);
     }
   };

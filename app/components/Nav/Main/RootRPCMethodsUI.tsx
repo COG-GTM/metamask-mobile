@@ -268,7 +268,7 @@ const RootRPCMethodsUI = (props) => {
             .build(),
         );
       } catch (e) {
-        Logger.error(e, MetaMetricsEvents.SWAP_TRACKING_FAILED);
+        Logger.error(e as Error, MetaMetricsEvents.SWAP_TRACKING_FAILED);
         trackEvent(
           createEventBuilder(MetaMetricsEvents.SWAP_TRACKING_FAILED)
             .addProperties({
@@ -355,7 +355,7 @@ const RootRPCMethodsUI = (props) => {
             error && error.message,
             [{ text: strings('navigation.ok') }],
           );
-          Logger.error(error, 'error while trying to send transaction (Main)');
+          Logger.error(error as Error, 'error while trying to send transaction (Main)');
         } else {
           trackEvent(
             createEventBuilder(

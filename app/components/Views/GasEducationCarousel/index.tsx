@@ -233,7 +233,7 @@ const GasEducationCarousel = ({
         const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
         setGasFiat(gasFiat);
       } catch (e) {
-        Logger.error(e);
+        Logger.error(e as Error);
       }
       setIsLoading(false);
     };

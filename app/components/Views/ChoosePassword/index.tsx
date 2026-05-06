@@ -435,7 +435,7 @@ class ChoosePassword extends PureComponent<ChoosePasswordProps> {
       }
     } catch (e) {
       Logger.error(
-        e,
+        e as Error,
         'error while trying to get imported accounts on recreate vault',
       );
     }
@@ -468,7 +468,7 @@ class ChoosePassword extends PureComponent<ChoosePasswordProps> {
       }
     } catch (e) {
       Logger.error(
-        e,
+        e as Error,
         'error while trying to import accounts on recreate vault',
       );
     }
