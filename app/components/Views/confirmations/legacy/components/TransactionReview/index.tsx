@@ -395,7 +395,7 @@ class TransactionReview extends PureComponent<Props, TransactionReviewState> {
 
   getConfirmButtonState() {
     const { securityAlertResponse } = this.props;
-    let confirmButtonState = ConfirmButtonState.Normal;
+    let confirmButtonState: typeof ConfirmButtonState[keyof typeof ConfirmButtonState] = ConfirmButtonState.Normal;
 
     if (securityAlertResponse) {
       if (securityAlertResponse?.result_type === ResultType.Malicious) {

@@ -5,7 +5,8 @@ import {
   act,
   userEvent,
 } from '@testing-library/react-native';
-import PaymentRequest from './index';
+import PaymentRequestImport from './index';
+const PaymentRequest: any = PaymentRequestImport;
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import { ThemeContext, mockTheme } from '../../../util/theme';

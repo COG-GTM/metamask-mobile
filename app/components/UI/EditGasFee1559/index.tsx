@@ -535,7 +535,7 @@ const EditGasFee1559: React.FC<EditGasFee1559Props> = ({
                     maxPriorityFeePerGasPrimary &&
                     `≈ ${maxPriorityFeePerGasPrimary}`
                   }
-                  error={maxPriorityFeeError}
+                  error={maxPriorityFeeError ?? undefined}
                   onChangeValue={changedMaxPriorityFee}
                 />
               </View>
@@ -581,7 +581,7 @@ const EditGasFee1559: React.FC<EditGasFee1559Props> = ({
                   unit={'GWEI'}
                   min={GAS_MIN}
                   increment={GAS_INCREMENT}
-                  error={maxFeeError}
+                  error={maxFeeError ?? undefined}
                   onChangeValue={changedMaxFeePerGas}
                   inputInsideLabel={
                     maxFeePerGasPrimary && `≈ ${maxFeePerGasPrimary}`

@@ -1,6 +1,7 @@
 import React from 'react';
 import renderWithProvider from '../../../util/test/renderWithProvider';
-import DrawerView from './';
+import DrawerViewImport from './';
+const DrawerView: any = DrawerViewImport;
 
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
