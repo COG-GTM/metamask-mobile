@@ -91,7 +91,7 @@ const foxImage = require('../../../../images/branding/fox.png'); // eslint-disab
  * View that contains app information
  */
 export default interface AppInformationProps {
-  navigation?: Record<string, unknown>;
+  navigation?: NavigationProp<ParamListBase>;
 }
 
 class AppInformation extends PureComponent<AppInformationProps> {

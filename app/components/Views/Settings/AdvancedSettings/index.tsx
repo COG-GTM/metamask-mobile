@@ -140,7 +140,7 @@ const createStyles = (colors: Colors) =>
  * Main view for app configurations
  */
 interface AdvancedSettingsProps {
-  navigation?: Record<string, unknown>;
+  navigation?: NavigationProp<ParamListBase>;
   showHexData?: boolean;
   setShowHexData?: (...args: unknown[]) => unknown;
   setShowCustomNonce?: (...args: unknown[]) => unknown;
@@ -148,7 +148,7 @@ interface AdvancedSettingsProps {
   showFiatOnTestnets?: boolean;
   setShowFiatOnTestnets?: (...args: unknown[]) => unknown;
   fullState?: Record<string, unknown>;
-  route?: Record<string, unknown>;
+  route?: RouteProp<ParamListBase, string>;
   metrics?: Record<string, unknown>;
   smartTransactionsOptInStatus?: boolean;
 }

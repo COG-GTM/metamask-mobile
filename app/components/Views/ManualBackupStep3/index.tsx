@@ -78,8 +78,8 @@ const HARDWARE_BACK_PRESS = 'hardwareBackPress';
  * the backup seed phrase flow
  */
 interface ManualBackupStep3Props {
-  navigation?: Record<string, unknown>;
-  route?: Record<string, unknown>;
+  navigation?: NavigationProp<ParamListBase>;
+  route?: RouteProp<ParamListBase, string>;
   setOnboardingWizardStep?: (...args: unknown[]) => unknown;
 }
 

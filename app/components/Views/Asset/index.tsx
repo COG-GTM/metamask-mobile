@@ -132,7 +132,7 @@ const createStyles = (colors: Colors) =>
  * and also the transaction list
  */
 interface AssetProps {
-  navigation?: Record<string, unknown>;
+  navigation?: NavigationProp<ParamListBase>;
   conversionRate?: unknown;
   currentCurrency?: string;
   selectedInternalAccount?: Record<string, unknown>;
@@ -143,7 +143,7 @@ interface AssetProps {
   swapsTokens?: Record<string, unknown>;
   searchDiscoverySwapsTokens?: unknown[];
   swapsTransactions?: Record<string, unknown>;
-  route?: Record<string, unknown>;
+  route?: RouteProp<ParamListBase, string>;
   rpcUrl?: string;
   networkConfigurations?: Record<string, unknown>;
   isNetworkRampSupported?: boolean;

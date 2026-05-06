@@ -207,12 +207,12 @@ const PASSCODE_NOT_SET_ERROR = 'Error: Passcode not set.';
  * View where users can set their password for the first time
  */
 interface ChoosePasswordProps {
-  navigation?: Record<string, unknown>;
+  navigation?: NavigationProp<ParamListBase>;
   passwordSet?: (...args: unknown[]) => unknown;
   passwordUnset?: (...args: unknown[]) => unknown;
   setLockTime?: (...args: unknown[]) => unknown;
   seedphraseNotBackedUp?: (...args: unknown[]) => unknown;
-  route?: Record<string, unknown>;
+  route?: RouteProp<ParamListBase, string>;
 }
 
 class ChoosePassword extends PureComponent<ChoosePasswordProps> {

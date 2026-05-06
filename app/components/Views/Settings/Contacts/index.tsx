@@ -37,7 +37,7 @@ const ADD = 'add';
  */
 interface ContactsProps {
   addressBook?: Record<string, unknown>;
-  navigation?: Record<string, unknown>;
+  navigation?: NavigationProp<ParamListBase>;
   chainId?: string;
 }
 

@@ -404,8 +404,8 @@ const infuraProjectId = InfuraKey === 'null' ? '' : InfuraKey;
  */
 export interface NetworkSettingsProps {
   networkConfigurations?: Record<string, unknown>;
-  navigation?: Record<string, unknown>;
-  route?: Record<string, unknown>;
+  navigation?: NavigationProp<ParamListBase>;
+  route?: RouteProp<ParamListBase, string>;
   showNetworkOnboardingAction?: (...args: unknown[]) => unknown;
   networkOnboardedState?: Record<string, unknown>;
   isCustomMainnet?: boolean;

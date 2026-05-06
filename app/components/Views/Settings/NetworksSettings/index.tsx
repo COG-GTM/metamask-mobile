@@ -127,7 +127,7 @@ const createStyles = (colors: Colors) =>
  */
 interface NetworksSettingsProps {
   networkConfigurations?: Record<string, unknown>;
-  navigation?: Record<string, unknown>;
+  navigation?: NavigationProp<ParamListBase>;
   providerConfig?: Record<string, unknown>;
   BEGIN?: Record<string, unknown>;
   END?: unknown;

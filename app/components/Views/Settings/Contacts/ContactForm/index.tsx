@@ -118,10 +118,10 @@ const EDIT = 'edit';
  * View that contains app information
  */
 interface ContactFormProps {
-  navigation?: Record<string, unknown>;
+  navigation?: NavigationProp<ParamListBase>;
   internalAccounts?: unknown[];
   addressBook?: Record<string, unknown>;
-  route?: Record<string, unknown>;
+  route?: RouteProp<ParamListBase, string>;
   chainId?: string;
 }
 
