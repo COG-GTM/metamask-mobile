@@ -65,7 +65,7 @@ export default class CustomAlert extends PureComponent<Props> {
     return (
       <Modal
         style={styles.modal}
-        isVisible={(this as any).propTypes}
+        isVisible={this.props.isVisible}
         onBackButtonPress={this.props.onPress}
         {...(this.props as any)}
         backdropColor={colors.overlay.default}

@@ -726,8 +726,8 @@ const EditGasFee1559: React.FC<EditGasFee1559Props> = ({
                 </View>
               )}
             </View>
-            {renderWarning}
-            {renderError}
+            {renderWarning()}
+            {renderError()}
             <FadeAnimationView
               style={styles.headerContainer}
               valueToWatch={valueToWatch}
