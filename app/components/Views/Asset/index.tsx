@@ -1,5 +1,4 @@
 import { swapsUtils } from '@metamask/swaps-controller/';
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   ActivityIndicator,
@@ -71,8 +70,10 @@ import { selectSupportedSwapTokenAddressesForChainId } from '../../../selectors/
 import { isNonEvmChainId } from '../../../core/Multichain/utils';
 import { isBridgeAllowed } from '../../UI/Bridge/utils';
 import { getIsSwapsAssetAllowed, getSwapsIsLive } from './utils';
+import type { Dispatch } from 'redux';
+import type { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -130,60 +131,27 @@ const createStyles = (colors) =>
  * including the overview (Amount, Balance, Symbol, Logo)
  * and also the transaction list
  */
-class Asset extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-    /* conversion rate of ETH - FIAT
-    */
-    conversionRate: PropTypes.any,
-    /**
-    /* Selected currency
-    */
-    currentCurrency: PropTypes.string,
-    /**
-    /* InternalAccount object required to get account name
-    */
-    selectedInternalAccount: PropTypes.object,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string,
-    /**
-     * An array that represents the user transactions
-     */
-    transactions: PropTypes.array,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    swapsIsLive: PropTypes.bool,
-    swapsTokens: PropTypes.object,
-    searchDiscoverySwapsTokens: PropTypes.array,
-    swapsTransactions: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    rpcUrl: PropTypes.string,
-    networkConfigurations: PropTypes.object,
-    /**
-     * Boolean that indicates if network is supported to buy
-     */
-    isNetworkRampSupported: PropTypes.bool,
-    /**
-     * Boolean that indicates if native token is supported to buy
-     */
-    isNetworkBuyNativeTokenSupported: PropTypes.bool,
-    /**
-     * Function to set the swaps liveness
-     */
-    setLiveness: PropTypes.func,
-  };
+interface AssetProps {
+  navigation?: Record<string, unknown>;
+  conversionRate?: unknown;
+  currentCurrency?: string;
+  selectedInternalAccount?: Record<string, unknown>;
+  chainId?: string;
+  transactions?: unknown[];
+  tokens?: unknown[];
+  swapsIsLive?: boolean;
+  swapsTokens?: Record<string, unknown>;
+  searchDiscoverySwapsTokens?: unknown[];
+  swapsTransactions?: Record<string, unknown>;
+  route?: Record<string, unknown>;
+  rpcUrl?: string;
+  networkConfigurations?: Record<string, unknown>;
+  isNetworkRampSupported?: boolean;
+  isNetworkBuyNativeTokenSupported?: boolean;
+  setLiveness?: (...args: unknown[]) => unknown;
+}
+
+class Asset extends PureComponent<AssetProps> {
 
   state = {
     refreshing: false,
@@ -609,7 +577,7 @@ const mapStateToProps = (state, { route }) => ({
   networkClientId: selectNetworkClientId(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   setLiveness: (chainId, featureFlags) =>
     dispatch(setSwapsLiveness(chainId, featureFlags)),
 });

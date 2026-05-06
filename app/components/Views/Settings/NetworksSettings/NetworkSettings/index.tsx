@@ -1,5 +1,4 @@
 /* eslint-disable */
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   StyleSheet,
@@ -95,8 +94,11 @@ import Text, {
   getFontFamily,
   TextVariant,
 } from '../../../../../component-library/components/Texts/Text';
+import type { RootState } from '../../../../../reducers';
+import type { Dispatch } from 'redux';
+import type { Colors } from '../../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     base: {
       paddingHorizontal: 16,
@@ -400,61 +402,22 @@ const infuraProjectId = InfuraKey === 'null' ? '' : InfuraKey;
 /**
  * Main view for app configurations
  */
-export class NetworkSettings extends PureComponent {
-  static propTypes = {
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * handles action for onboarding to a network
-     */
-    showNetworkOnboardingAction: PropTypes.func,
-    /**
-     * returns an array of onboarded networks
-     */
-    networkOnboardedState: PropTypes.object,
-    /**
-     * Checks if adding custom mainnet.
-     */
-    isCustomMainnet: PropTypes.bool,
-    /**
-     * Current network provider configuration
-     */
-    providerConfig: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
+export interface NetworkSettingsProps {
+  networkConfigurations?: Record<string, unknown>;
+  navigation?: Record<string, unknown>;
+  route?: Record<string, unknown>;
+  showNetworkOnboardingAction?: (...args: unknown[]) => unknown;
+  networkOnboardedState?: Record<string, unknown>;
+  isCustomMainnet?: boolean;
+  providerConfig?: Record<string, unknown>;
+  metrics?: Record<string, unknown>;
+  useSafeChainsListValidation?: boolean;
+  matchedChainNetwork?: Record<string, unknown>;
+  isAllNetworks?: boolean;
+  tokenNetworkFilter?: Record<string, unknown>;
+}
 
-    /**
-     * Checks if toggle verification is enabled
-     */
-    useSafeChainsListValidation: PropTypes.bool,
-
-    /**
-     * Matched object from third provider
-     */
-    matchedChainNetwork: PropTypes.object,
-
-    /**
-     * Checks if all networks are selected
-     */
-    isAllNetworks: PropTypes.bool,
-
-    /**
-     * Token network filter
-     */
-    tokenNetworkFilter: PropTypes.object,
-  };
+class NetworkSettings extends PureComponent<NetworkSettingsProps> {
 
   state = {
     rpcUrl: undefined,
@@ -2564,7 +2527,7 @@ export class NetworkSettings extends PureComponent {
 }
 
 NetworkSettings.contextType = ThemeContext;
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   showNetworkOnboardingAction: ({
     networkUrl,
     networkType,
@@ -2581,7 +2544,7 @@ const mapDispatchToProps = (dispatch) => ({
     ),
 });
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   providerConfig: selectProviderConfig(state),
   networkConfigurations: selectNetworkConfigurations(state),
   networkOnboardedState: state.networkOnboarded.networkOnboardedState,

@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   Platform,
   KeyboardAvoidingView,
@@ -55,8 +54,11 @@ import { recreateVaultWithNewPassword } from '../../../core/Vault';
 import Logger from '../../../util/Logger';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
 import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ChoosePassword.selectors';
+import type { RootState } from '../../../reducers';
+import type { Dispatch } from 'redux';
+import type { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -249,31 +251,15 @@ const CONFIRM_PASSWORD = 'confirm_password';
 /**
  * View where users can set their password for the first time
  */
-class ResetPassword extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * The action to update the password set flag
-     * in the redux store
-     */
-    passwordSet: PropTypes.func,
-    /**
-     * The action to update the lock time
-     * in the redux store
-     */
-    setLockTime: PropTypes.func,
-    /**
-     * A string representing the selected address => account
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+interface ResetPasswordProps {
+  navigation?: Record<string, unknown>;
+  passwordSet?: (...args: unknown[]) => unknown;
+  setLockTime?: (...args: unknown[]) => unknown;
+  selectedAddress?: string;
+  route?: Record<string, unknown>;
+}
+
+class ResetPassword extends PureComponent<ResetPasswordProps> {
 
   state = {
     isSelected: false,
@@ -803,11 +789,11 @@ class ResetPassword extends PureComponent {
 
 ResetPassword.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   passwordSet: () => dispatch(passwordSet()),
   setLockTime: (time) => dispatch(setLockTime(time)),
   seedphraseNotBackedUp: () => dispatch(seedphraseNotBackedUp()),

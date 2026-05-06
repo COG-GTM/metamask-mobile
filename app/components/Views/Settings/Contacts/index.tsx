@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import { connect } from 'react-redux';
@@ -14,8 +13,10 @@ import Routes from '../../../../../app/constants/navigation/Routes';
 
 import { ContactsViewSelectorIDs } from '../../../../../e2e/selectors/Settings/Contacts/ContacsView.selectors';
 import { selectAddressBook } from '../../../../selectors/addressBookController';
+import type { RootState } from '../../../../reducers';
+import type { Colors } from '../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -34,21 +35,13 @@ const ADD = 'add';
 /**
  * View that contains app information
  */
-class Contacts extends PureComponent {
-  static propTypes = {
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     /* navigation object required to push new views
-     */
-    navigation: PropTypes.object,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string,
-  };
+interface ContactsProps {
+  addressBook?: Record<string, unknown>;
+  navigation?: Record<string, unknown>;
+  chainId?: string;
+}
+
+class Contacts extends PureComponent<ContactsProps> {
 
   state = {
     reloadAddressList: false,
@@ -177,7 +170,7 @@ class Contacts extends PureComponent {
 
 Contacts.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   addressBook: selectAddressBook(state),
   chainId: selectChainId(state),
 });

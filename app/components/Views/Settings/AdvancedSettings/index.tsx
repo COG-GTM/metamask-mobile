@@ -1,5 +1,4 @@
 // Third party dependencies.
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { Linking, SafeAreaView, StyleSheet, Switch, View } from 'react-native';
 import { connect } from 'react-redux';
@@ -45,8 +44,11 @@ import { wipeTransactions } from '../../../../util/transaction-controller';
 import AppConstants from '../../../../../app/core/AppConstants';
 import { downloadStateLogs } from '../../../../util/logs';
 import AutoDetectTokensSettings from '../AutoDetectTokensSettings';
+import type { RootState } from '../../../../reducers';
+import type { Dispatch } from 'redux';
+import type { Colors } from '../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -137,53 +139,21 @@ const createStyles = (colors) =>
 /**
  * Main view for app configurations
  */
-class AdvancedSettings extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Indicates whether hex data should be shown in transaction editor
-     */
-    showHexData: PropTypes.bool,
-    /**
-     * Called to toggle show hex data
-     */
-    setShowHexData: PropTypes.func,
-    /**
-     * Called to toggle show custom nonce
-     */
-    setShowCustomNonce: PropTypes.func,
-    /**
-     * Indicates whether custom nonce should be shown in transaction editor
-     */
-    showCustomNonce: PropTypes.bool,
-    /**
-     * Indicates whether fiat conversions should be shown on testnets
-     */
-    showFiatOnTestnets: PropTypes.bool,
-    /**
-     * Called to toggle showing fiat conversions on testnets
-     */
-    setShowFiatOnTestnets: PropTypes.func,
-    /**
-     * Entire redux state used to generate state logs
-     */
-    fullState: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that checks if smart transactions is enabled
-     */
-    smartTransactionsOptInStatus: PropTypes.bool,
-  };
+interface AdvancedSettingsProps {
+  navigation?: Record<string, unknown>;
+  showHexData?: boolean;
+  setShowHexData?: (...args: unknown[]) => unknown;
+  setShowCustomNonce?: (...args: unknown[]) => unknown;
+  showCustomNonce?: boolean;
+  showFiatOnTestnets?: boolean;
+  setShowFiatOnTestnets?: (...args: unknown[]) => unknown;
+  fullState?: Record<string, unknown>;
+  route?: Record<string, unknown>;
+  metrics?: Record<string, unknown>;
+  smartTransactionsOptInStatus?: boolean;
+}
+
+class AdvancedSettings extends PureComponent<AdvancedSettingsProps> {
 
   scrollView = React.createRef();
 
@@ -507,7 +477,7 @@ class AdvancedSettings extends PureComponent {
 
 AdvancedSettings.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   showHexData: state.settings.showHexData,
   showCustomNonce: state.settings.showCustomNonce,
   showFiatOnTestnets: state.settings.showFiatOnTestnets,
@@ -521,7 +491,7 @@ const mapStateToProps = (state) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   setShowHexData: (showHexData) => dispatch(setShowHexData(showHexData)),
   setShowCustomNonce: (showCustomNonce) =>
     dispatch(setShowCustomNonce(showCustomNonce)),

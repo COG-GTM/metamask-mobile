@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   StyleSheet,
@@ -39,6 +38,9 @@ import Text, {
 import { MetaMetricsEvents } from '../../../../core/Analytics';
 import { MetricsEventBuilder } from '../../../../core/Analytics/MetricsEventBuilder';
 import { UserProfileProperty } from '../../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
+import type { RootState } from '../../../../reducers';
+import type { Dispatch } from 'redux';
+import type { Colors } from '../../../../util/theme/models';
 
 const diameter = 40;
 const spacing = 8;
@@ -87,7 +89,7 @@ export const updateUserTraitsWithCurrencyType = (primaryCurrency, metrics) => {
   );
 };
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -162,61 +164,23 @@ const createStyles = (colors) =>
 /**
  * Main view for general app configurations
  */
-class Settings extends PureComponent {
-  static propTypes = {
-    /**
-    /* State current currency
-    */
-    currentCurrency: PropTypes.string,
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Called to set the active search engine
-     */
-    setSearchEngine: PropTypes.func,
-    /**
-     * Called to set primary currency
-     */
-    setPrimaryCurrency: PropTypes.func,
-    /**
-     * Active search engine
-     */
-    searchEngine: PropTypes.string,
-    /**
-     * Active primary currency
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Show a BlockieIcon instead of JazzIcon
-     */
-    useBlockieIcon: PropTypes.bool,
-    /**
-     * called to toggle BlockieIcon
-     */
-    setUseBlockieIcon: PropTypes.func,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * A bool that represents if the user wants to hide zero balance token
-     */
-    hideZeroBalanceTokens: PropTypes.bool,
-    /**
-     * Called to toggle zero balance token display
-     */
-    setHideZeroBalanceTokens: PropTypes.func,
-    /**
-     * App theme
-     */
-    // appTheme: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+interface SettingsProps {
+  currentCurrency?: string;
+  navigation?: Record<string, unknown>;
+  setSearchEngine?: (...args: unknown[]) => unknown;
+  setPrimaryCurrency?: (...args: unknown[]) => unknown;
+  searchEngine?: string;
+  primaryCurrency?: string;
+  useBlockieIcon?: boolean;
+  setUseBlockieIcon?: (...args: unknown[]) => unknown;
+  selectedAddress?: string;
+  hideZeroBalanceTokens?: boolean;
+  setHideZeroBalanceTokens?: (...args: unknown[]) => unknown;
+  appTheme?: string;
+  metrics?: Record<string, unknown>;
+}
+
+class Settings extends PureComponent<SettingsProps> {
 
   state = {
     currentLanguage: I18n.locale.substr(0, 2),
@@ -517,7 +481,7 @@ class Settings extends PureComponent {
 
 Settings.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   currentCurrency: selectCurrentCurrency(state),
   searchEngine: state.settings.searchEngine,
   primaryCurrency: state.settings.primaryCurrency,
@@ -527,7 +491,7 @@ const mapStateToProps = (state) => ({
   // appTheme: state.user.appTheme,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   setSearchEngine: (searchEngine) => dispatch(setSearchEngine(searchEngine)),
   setPrimaryCurrency: (primaryCurrency) =>
     dispatch(setPrimaryCurrency(primaryCurrency)),

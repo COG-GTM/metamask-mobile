@@ -16,16 +16,16 @@ import {
   getBuildNumber,
 } from 'react-native-device-info';
 import { fontStyles } from '../../../../styles/common';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import AppConstants from '../../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
+import type { Colors } from '../../../../util/theme/models';
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -90,13 +90,11 @@ const foxImage = require('../../../../images/branding/fox.png'); // eslint-disab
 /**
  * View that contains app information
  */
-export default class AppInformation extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-  };
+export default interface AppInformationProps {
+  navigation?: Record<string, unknown>;
+}
+
+class AppInformation extends PureComponent<AppInformationProps> {
 
   state = {
     appInfo: '',
