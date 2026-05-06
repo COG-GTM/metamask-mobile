@@ -15,7 +15,7 @@ import {
 import { connect } from 'react-redux';
 import type { Dispatch } from 'redux';
 import { fontStyles } from '../../../styles/common';
-import { Colors } from '../../../util/theme/models';
+import { Colors, Theme } from '../../../util/theme/models';
 import StorageWrapper from '../../../store/storage-wrapper';
 import OnboardingProgress from '../../UI/OnboardingProgress';
 import { strings } from '../../../../locales/i18n';
@@ -126,7 +126,6 @@ class ManualBackupStep3 extends PureComponent<
   ManualBackupStep3State
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   steps?: string[];
   backHandlerSubscription?: NativeEventSubscription;
@@ -144,7 +143,7 @@ class ManualBackupStep3 extends PureComponent<
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     navigation.setOptions(getTransparentOnboardingNavbarOptions(colors));
   };
 
@@ -247,7 +246,7 @@ class ManualBackupStep3 extends PureComponent<
   };
 
   render() {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

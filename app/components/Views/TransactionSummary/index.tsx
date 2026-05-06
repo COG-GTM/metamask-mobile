@@ -32,7 +32,7 @@ type SummaryWithChildren = React.ComponentType<
 
 const Summary = SummaryBase as unknown as SummaryWithChildren;
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import { Colors } from '../../../util/theme/models';
+import { Colors, Theme } from '../../../util/theme/models';
 import { isTestNet } from '../../../util/networks';
 
 const createStyles = (colors: Colors) =>
@@ -56,11 +56,10 @@ interface TransactionSummaryProps {
 
 export default class TransactionSummary extends PureComponent<TransactionSummaryProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   renderIfGastEstimationReady = (children: ReactNode) => {
     const { gasEstimationReady } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return !gasEstimationReady ? (

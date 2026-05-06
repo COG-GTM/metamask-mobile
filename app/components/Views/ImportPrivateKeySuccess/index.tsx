@@ -16,7 +16,7 @@ import { strings } from '../../../../locales/i18n';
 import Device from '../../../util/device';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import { Colors } from '../../../util/theme/models';
+import { Colors, Theme } from '../../../util/theme/models';
 import { SuccessImportAccountIDs } from '../../../../e2e/selectors/ImportAccount/SuccessImportAccount.selectors';
 
 const createStyles = (colors: Colors) =>
@@ -89,7 +89,6 @@ interface ImportPrivateKeySuccessProps {
  */
 class ImportPrivateKeySuccess extends PureComponent<ImportPrivateKeySuccessProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   componentDidMount = () => {
     InteractionManager.runAfterInteractions(() => {
@@ -118,7 +117,7 @@ class ImportPrivateKeySuccess extends PureComponent<ImportPrivateKeySuccessProps
   };
 
   render() {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

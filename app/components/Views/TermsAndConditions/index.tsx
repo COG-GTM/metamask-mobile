@@ -5,7 +5,7 @@ import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import { Colors } from '../../../util/theme/models';
+import { Colors, Theme } from '../../../util/theme/models';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { TERMS_AND_CONDITIONS_BUTTON_ID } from '../../../../wdio/screen-objects/testIDs/Components/TermsAndConditions.testIds';
 
@@ -38,7 +38,6 @@ interface TermsAndConditionsProps {
  */
 export default class TermsAndConditions extends PureComponent<TermsAndConditionsProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   press = () => {
     const { navigation } = this.props;
@@ -52,7 +51,7 @@ export default class TermsAndConditions extends PureComponent<TermsAndConditions
   };
 
   render() {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

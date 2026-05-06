@@ -17,7 +17,7 @@ import { strings } from '../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import { passwordRequirementsMet } from '../../../util/password';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import { Colors } from '../../../util/theme/models';
+import { Colors, Theme } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -77,7 +77,6 @@ export default class EnterPasswordSimple extends PureComponent<
   EnterPasswordSimpleState
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: EnterPasswordSimpleState = {
     password: '',
@@ -89,7 +88,7 @@ export default class EnterPasswordSimple extends PureComponent<
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('enter_password.title'),
@@ -131,8 +130,8 @@ export default class EnterPasswordSimple extends PureComponent<
   };
 
   render() {
-    const colors = this.context?.colors || mockTheme.colors;
-    const themeAppearance = this.context?.themeAppearance || 'light';
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
+    const themeAppearance = (this.context as Theme | undefined)?.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (

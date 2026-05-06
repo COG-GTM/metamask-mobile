@@ -17,7 +17,7 @@ import { toggleCollectibleContractModal } from '../../../actions/modals';
 import { toLowerCaseEquals } from '../../../util/general';
 import { collectiblesSelector } from '../../../reducers/collectibles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import { Colors } from '../../../util/theme/models';
+import { Colors, Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
 
@@ -90,7 +90,6 @@ interface CollectibleState {
  */
 class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: CollectibleState = {
     refreshing: false,
@@ -99,7 +98,7 @@ class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.name ?? '',
       false,
@@ -140,7 +139,7 @@ class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
     const collectibleContract = params;
     const address = params.address;
     const { collectibles } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const filteredCollectibles = collectibles.filter(
       (collectible: CollectibleItem) =>

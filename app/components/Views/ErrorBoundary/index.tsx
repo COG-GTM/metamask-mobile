@@ -28,7 +28,7 @@ import CLIcon, {
 } from '../../../component-library/components/Icons/Icon';
 import ClipboardManager from '../../../core/ClipboardManager';
 import { mockTheme, ThemeContext, useTheme } from '../../../util/theme';
-import { Colors } from '../../../util/theme/models';
+import { Colors, Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BannerAlert from '../../../component-library/components/Banners/Banner/variants/BannerAlert';
@@ -440,7 +440,6 @@ class ErrorBoundary extends Component<
   ErrorBoundaryState
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: ErrorBoundaryState = { error: null };
 
@@ -513,7 +512,7 @@ class ErrorBoundary extends Component<
   };
 
   renderWithSafeArea = (children: ReactNode) => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return <SafeAreaView style={styles.container}>{children}</SafeAreaView>;

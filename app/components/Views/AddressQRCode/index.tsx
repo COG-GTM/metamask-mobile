@@ -122,7 +122,6 @@ type Props = StateProps & DispatchProps & OwnProps;
  */
 class AddressQRCode extends PureComponent<Props> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   /**
    * Closes QR code modal
@@ -155,7 +154,7 @@ class AddressQRCode extends PureComponent<Props> {
   };
 
   render() {
-    const theme = this.context ?? mockTheme;
+    const theme = (this.context as Theme | undefined) ?? mockTheme;
     const colors = theme.colors;
     const styles = createStyles(theme);
 

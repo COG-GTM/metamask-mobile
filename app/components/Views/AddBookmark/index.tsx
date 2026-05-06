@@ -6,7 +6,7 @@ import { fontStyles } from '../../../styles/common';
 import ActionView from '../../UI/ActionView';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import { Colors } from '../../../util/theme/models';
+import { Colors, Theme } from '../../../util/theme/models';
 
 import { AddBookmarkViewSelectorsIDs } from '../../../../e2e/selectors/Browser/AddBookmarkView.selectors';
 
@@ -71,7 +71,6 @@ export default class AddBookmark extends PureComponent<
   AddBookmarkState
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: AddBookmarkState = {
     title: '',
@@ -80,7 +79,7 @@ export default class AddBookmark extends PureComponent<
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
 
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -136,8 +135,8 @@ export default class AddBookmark extends PureComponent<
   };
 
   render = () => {
-    const colors = this.context?.colors || mockTheme.colors;
-    const themeAppearance = this.context?.themeAppearance || 'light';
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
+    const themeAppearance = (this.context as Theme | undefined)?.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (

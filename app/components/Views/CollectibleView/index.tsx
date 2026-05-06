@@ -10,7 +10,7 @@ import { fontStyles } from '../../../styles/common';
 import collectiblesTransferInformation from '../../../util/collectibles-transfer.json';
 import { newAssetTransaction } from '../../../actions/transaction';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import { Colors } from '../../../util/theme/models';
+import { Colors, Theme } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -75,13 +75,12 @@ type Props = OwnProps & DispatchProps;
  */
 class CollectibleView extends PureComponent<Props> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   scrollViewRef = React.createRef<ScrollView>();
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.contractName ?? '',
       false,
@@ -112,7 +111,7 @@ class CollectibleView extends PureComponent<Props> {
       navigation,
     } = this.props;
     const collectible = params;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const lowerAddress = collectible.address.toLowerCase();

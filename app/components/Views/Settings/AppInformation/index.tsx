@@ -21,7 +21,7 @@ import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import AppConstants from '../../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
-import { Colors } from '../../../../util/theme/models';
+import { Colors, Theme } from '../../../../util/theme/models';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
@@ -108,7 +108,6 @@ export default class AppInformation extends PureComponent<
   AppInformationState
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: AppInformationState = {
     appInfo: '',
@@ -117,7 +116,7 @@ export default class AppInformation extends PureComponent<
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.info_title'),
@@ -186,7 +185,7 @@ export default class AppInformation extends PureComponent<
   };
 
   render = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

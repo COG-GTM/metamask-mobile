@@ -25,7 +25,7 @@ import {
   mockTheme,
   ThemeContext,
 } from '../../../util/theme';
-import { AppThemeKey, Colors } from '../../../util/theme/models';
+import { AppThemeKey, Colors, Theme } from '../../../util/theme/models';
 import Routes from '../../../constants/navigation/Routes';
 import trackErrorAsAnalytics from '../../../util/metrics/TrackError/trackErrorAsAnalytics';
 import { RootState } from '../../../reducers';
@@ -95,7 +95,6 @@ interface LockScreenState {
  */
 class LockScreen extends PureComponent<LockScreenProps, LockScreenState> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: LockScreenState = {
     ready: false,
@@ -180,7 +179,7 @@ class LockScreen extends PureComponent<LockScreenProps, LockScreenState> {
   };
 
   getStyles = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 

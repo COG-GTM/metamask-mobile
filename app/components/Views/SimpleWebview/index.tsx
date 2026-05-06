@@ -6,6 +6,7 @@ import Share from 'react-native-share'; // eslint-disable-line  import/default
 import Logger from '../../../util/Logger';
 import { baseStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
 interface SimpleWebviewRouteParams {
   url?: string;
@@ -34,11 +35,10 @@ interface SimpleWebviewProps {
 
 export default class SimpleWebview extends PureComponent<SimpleWebviewProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     navigation.setOptions(getWebviewNavbar(navigation, route, colors));
   };
 
