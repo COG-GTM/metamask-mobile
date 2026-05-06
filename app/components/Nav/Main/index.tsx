@@ -14,8 +14,9 @@ import {
   Linking,
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
-import PropTypes from 'prop-types';
 import { connect, useSelector } from 'react-redux';
+import type { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
+import type { RootState } from '../../../reducers';
 import GlobalAlert from '../../UI/GlobalAlert';
 import BackgroundTimer from 'react-native-background-timer';
 import NotificationManager from '../../../core/NotificationManager';
@@ -94,7 +95,8 @@ import { useIdentityEffects } from '../../../util/identity/hooks/useIdentityEffe
 
 const Stack = createStackNavigator();
 
-const createStyles = (colors) =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     flex: {
       flex: 1,
@@ -107,7 +109,39 @@ const createStyles = (colors) =>
     },
   });
 
-const Main = (props) => {
+interface StateProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showIncomingTransactionsNetworks: any;
+  providerType: string;
+  chainId: string;
+  networkClientId: string;
+  backUpSeedphraseVisible: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  networkConfigurations: any;
+}
+
+interface DispatchProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showTransactionNotification: (args: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showSimpleNotification: (args: any) => void;
+  hideCurrentNotification: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  removeNotificationById: (id: any) => void;
+  setInfuraAvailabilityBlocked: () => void;
+  setInfuraAvailabilityNotBlocked: () => void;
+  removeNotVisibleNotifications: () => void;
+}
+
+interface OwnProps {
+  navigation: NavigationProp<ParamListBase>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: RouteProp<Record<string, any>, string>;
+}
+
+type Props = StateProps & DispatchProps & OwnProps;
+
+const Main = (props: Props) => {
   const [forceReload, setForceReload] = useState(false);
   const [showRemindLaterModal, setShowRemindLaterModal] = useState(false);
   const [skipCheckbox, setSkipCheckbox] = useState(false);
@@ -116,7 +150,8 @@ const Main = (props) => {
   const styles = createStyles(colors);
   const backgroundMode = useRef(false);
   const locale = useRef(I18n.locale);
-  const removeConnectionStatusListener = useRef();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const removeConnectionStatusListener = useRef<any>(undefined);
 
   const { connectionChangeHandler } = useConnectionHandler(props.navigation);
 
@@ -129,7 +164,7 @@ const Main = (props) => {
   const { chainId, networkClientId, showIncomingTransactionsNetworks } = props;
 
   useEffect(() => {
-    if (DEPRECATED_NETWORKS.includes(props.chainId)) {
+    if (DEPRECATED_NETWORKS.includes(props.chainId as `0x${string}`)) {
       setShowDeprecatedAlert(true);
     } else {
       setShowDeprecatedAlert(false);
@@ -153,7 +188,10 @@ const Main = (props) => {
         await query(ethQuery, 'blockNumber', []);
         props.setInfuraAvailabilityNotBlocked();
       } catch (e) {
-        if (e.message === AppConstants.ERRORS.INFURA_BLOCKED_MESSAGE) {
+        if (
+          (e as { message?: string })?.message ===
+          AppConstants.ERRORS.INFURA_BLOCKED_MESSAGE
+        ) {
           props.navigation.navigate('OfflineModeView');
           props.setInfuraAvailabilityBlocked();
         }
@@ -170,7 +208,7 @@ const Main = (props) => {
   ]);
 
   const handleAppStateChange = useCallback(
-    (appState) => {
+    (appState: string) => {
       const newModeIsBackground = appState === 'background';
 
       // If it was in background and it's not anymore
@@ -235,8 +273,10 @@ const Main = (props) => {
   const networkConfigurations = useSelector(selectNetworkConfigurations);
   const networkName = useSelector(selectNetworkName);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
-  const previousProviderConfig = useRef(undefined);
-  const previousNetworkConfigurations = useRef(undefined);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const previousProviderConfig = useRef<any>(undefined);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const previousNetworkConfigurations = useRef<any>(undefined);
   const { toastRef } = useContext(ToastContext);
   const networkImage = useSelector(selectNetworkImageSource);
 
@@ -244,7 +284,8 @@ const Main = (props) => {
   const tokenNetworkFilter = useSelector(selectTokenNetworkFilter);
 
   const hasNetworkChanged = useCallback(
-    (chainId, previousConfig, isEvmSelected) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (chainId: string, previousConfig: any, isEvmSelected: boolean) => {
       if (!previousConfig) return false;
 
       return isEvmSelected
@@ -264,16 +305,19 @@ const Main = (props) => {
       if (isPortfolioViewEnabled()) {
         const { PreferencesController } = Engine.context;
         if (Object.keys(tokenNetworkFilter).length === 1) {
-          PreferencesController.setTokenNetworkFilter({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (PreferencesController as any).setTokenNetworkFilter({
             [chainId]: true,
           });
         } else {
-          PreferencesController.setTokenNetworkFilter({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (PreferencesController as any).setTokenNetworkFilter({
             ...tokenNetworkFilter,
             [chainId]: true,
           });
         }
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       toastRef?.current?.showToast({
         variant: ToastVariants.Network,
         labelOptions: [
@@ -284,11 +328,11 @@ const Main = (props) => {
           { label: strings('toast.now_active') },
         ],
         networkImageSource: networkImage,
-      });
+      } as any);
     }
     previousProviderConfig.current = !isEvmSelected
       ? { chainId }
-      : providerConfig;
+      : providerConfig as unknown;
   }, [
     providerConfig,
     networkName,
@@ -316,13 +360,18 @@ const Main = (props) => {
       currentNetworkValues.length !== previousNetworkValues.length
     ) {
       // Find the newly added network
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newNetwork = currentNetworkValues.find(
-        (network) => !previousNetworkValues.includes(network),
-      );
+        (network: any) => !previousNetworkValues.includes(network),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ) as any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const deletedNetwork = previousNetworkValues.find(
-        (network) => !currentNetworkValues.includes(network),
-      );
+        (network: any) => !currentNetworkValues.includes(network),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ) as any;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       toastRef?.current?.showToast({
         variant: ToastVariants.Plain,
         labelOptions: [
@@ -340,9 +389,9 @@ const Main = (props) => {
           },
         ],
         networkImageSource: networkImage,
-      });
+      } as any);
     }
-    previousNetworkConfigurations.current = networkConfigurations;
+    previousNetworkConfigurations.current = networkConfigurations as unknown;
   }, [networkConfigurations, networkName, networkImage, toastRef]);
 
   useEffect(() => {
@@ -373,15 +422,17 @@ const Main = (props) => {
         removeNotificationById: props.removeNotificationById,
       });
       checkInfuraAvailability();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       removeConnectionStatusListener.current = NetInfo.addEventListener(
-        connectionChangeHandler,
+        connectionChangeHandler as any,
       );
     }, 1000);
 
     return function cleanup() {
       appStateListener.remove();
-      removeConnectionStatusListener.current &&
+      if (removeConnectionStatusListener.current) {
         removeConnectionStatusListener.current();
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionChangeHandler]);
@@ -400,8 +451,14 @@ const Main = (props) => {
     Linking.openURL(GOERLI_DEPRECATED_ARTICLE);
   };
 
-  const renderDeprecatedNetworkAlert = (chainId, backUpSeedphraseVisible) => {
-    if (DEPRECATED_NETWORKS.includes(chainId) && showDeprecatedAlert) {
+  const renderDeprecatedNetworkAlert = (
+    chainId: string,
+    backUpSeedphraseVisible: boolean,
+  ) => {
+    if (
+      DEPRECATED_NETWORKS.includes(chainId as `0x${string}`) &&
+      showDeprecatedAlert
+    ) {
       if (NETWORKS_CHAIN_ID.MUMBAI === chainId) {
         return (
           <WarningAlert
@@ -426,13 +483,16 @@ const Main = (props) => {
     <React.Fragment>
       <View style={styles.flex}>
         {!forceReload ? (
-          <MainNavigator navigation={props.navigation} />
+          <MainNavigator />
         ) : (
           renderLoader()
         )}
         <GlobalAlert />
         <FadeOutOverlay />
-        <Notification navigation={props.navigation} />
+        {React.createElement(
+          Notification as unknown as React.ComponentType<{ navigation: unknown }>,
+          { navigation: props.navigation },
+        )}
         <RampOrders />
         <SwapsLiveness />
         <BackupAlert
@@ -451,75 +511,19 @@ const Main = (props) => {
           toggleSkipCheckbox={toggleSkipCheckbox}
         />
         <ProtectYourWalletModal navigation={props.navigation} />
-        <RootRPCMethodsUI navigation={props.navigation} />
+        <RootRPCMethodsUI
+          navigation={props.navigation as unknown as NavigationProp<ParamListBase>}
+        />
       </View>
     </React.Fragment>
   );
 };
 
-Main.router = MainNavigator.router;
+// Legacy static property from react-navigation v4
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(Main as any).router = (MainNavigator as any).router;
 
-Main.propTypes = {
-  /**
-   * Object that represents the navigator
-   */
-  navigation: PropTypes.object,
-  /**
-   * Dispatch showing a transaction notification
-   */
-  showTransactionNotification: PropTypes.func,
-  /**
-   * Dispatch showing a simple notification
-   */
-  showSimpleNotification: PropTypes.func,
-  /**
-   * Dispatch hiding a transaction notification
-   */
-  hideCurrentNotification: PropTypes.func,
-  removeNotificationById: PropTypes.func,
-  /**
-   * Indicates whether networks allows incoming transactions
-   */
-  showIncomingTransactionsNetworks: PropTypes.object,
-  /**
-   * Network provider type
-   */
-  providerType: PropTypes.string,
-  /**
-   * Dispatch infura availability blocked
-   */
-  setInfuraAvailabilityBlocked: PropTypes.func,
-  /**
-   * Dispatch infura availability not blocked
-   */
-  setInfuraAvailabilityNotBlocked: PropTypes.func,
-  /**
-   * Remove not visible notifications from state
-   */
-  removeNotVisibleNotifications: PropTypes.func,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Current chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * backup seed phrase modal visible
-   */
-  backUpSeedphraseVisible: PropTypes.bool,
-  /**
-   * ID of the global network client
-   */
-  networkClientId: PropTypes.string,
-  /**
-   * Network configurations
-   */
-  networkConfigurations: PropTypes.object,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   showIncomingTransactionsNetworks:
     selectShowIncomingTransactionNetworks(state),
   providerType: selectProviderType(state),
@@ -529,12 +533,16 @@ const mapStateToProps = (state) => ({
   networkConfigurations: selectNetworkConfigurations(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showTransactionNotification: (args) =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any): DispatchProps => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showTransactionNotification: (args: any) =>
     dispatch(showTransactionNotification(args)),
-  showSimpleNotification: (args) => dispatch(showSimpleNotification(args)),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showSimpleNotification: (args: any) => dispatch(showSimpleNotification(args)),
   hideCurrentNotification: () => dispatch(hideCurrentNotification()),
-  removeNotificationById: (id) => dispatch(removeNotificationById(id)),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  removeNotificationById: (id: any) => dispatch(removeNotificationById(id)),
   setInfuraAvailabilityBlocked: () => dispatch(setInfuraAvailabilityBlocked()),
   setInfuraAvailabilityNotBlocked: () =>
     dispatch(setInfuraAvailabilityNotBlocked()),
