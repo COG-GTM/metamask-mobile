@@ -16,13 +16,34 @@ import fs from 'fs';
 import Assertions from '../utils/Assertions';
 import PermissionSummaryBottomSheet from '../pages/Browser/PermissionSummaryBottomSheet';
 
-const getBase64FromPath = async (path) => {
+const getBase64FromPath = async (path: string): Promise<string> => {
   const data = await fs.promises.readFile(path);
   return data.toString('base64');
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface RuleDriver {
+  runScript: (script: string) => Promise<unknown>;
+}
+
+interface RuleOptions {
+  driver: RuleDriver;
+  only?: string[];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Call = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Method = any;
+
 export default class ConfirmationsRejectRule {
-  constructor(options) {
+  driver: RuleDriver;
+  only?: string[];
+  allCapsCancel: string[];
+  permissionConnectionSheet: string[];
+  requiresEthAccountsPermission: string[];
+
+  constructor(options: RuleOptions) {
     this.driver = options.driver; // Pass element for detox instead of all the driver
     this.only = options.only;
     this.allCapsCancel = ['wallet_watchAsset'];
@@ -39,7 +60,7 @@ export default class ConfirmationsRejectRule {
     return 'Confirmations Rejection Rule';
   }
 
-  async beforeRequest(_, call) {
+  async beforeRequest(_: unknown, call: Call): Promise<void> {
     await new Promise((resolve, reject) => {
       addToQueue({
         name: 'beforeRequest',
@@ -96,8 +117,8 @@ export default class ConfirmationsRejectRule {
 
   // get all the confirmation calls to make and expect to pass
   // Need this now?
-  getCalls(_, method) {
-    const calls = [];
+  getCalls(_: unknown, method: Method): Call[] {
+    const calls: Call[] = [];
     const isMethodAllowed = this.only ? this.only.includes(method.name) : true;
     if (isMethodAllowed) {
       if (method.examples) {
@@ -108,7 +129,7 @@ export default class ConfirmationsRejectRule {
         if (!ex.result) {
           return calls;
         }
-        const p = ex.params.map((e) => e.value);
+        const p = ex.params.map((entry: { value: unknown }) => entry.value);
         const params =
           method.paramStructure === 'by-name'
             ? paramsToObj(p, method.params)
@@ -135,7 +156,7 @@ export default class ConfirmationsRejectRule {
     return calls;
   }
 
-  async afterRequest(_, call) {
+  async afterRequest(_: unknown, call: Call): Promise<void> {
     await new Promise((resolve, reject) => {
       addToQueue({
         name: 'afterRequest',
@@ -153,7 +174,7 @@ export default class ConfirmationsRejectRule {
             image,
             type: 'image',
           });
-          let cancelButton;
+          let cancelButton: Detox.NativeElement | undefined;
           await TestHelpers.delay(3000);
           if (this.allCapsCancel.includes(call.methodName)) {
             await AssetWatchBottomSheet.tapCancelButton();
@@ -174,7 +195,7 @@ export default class ConfirmationsRejectRule {
      */
   }
 
-  async afterResponse(_, call) {
+  async afterResponse(_: unknown, call: Call): Promise<void> {
     await new Promise((resolve, reject) => {
       addToQueue({
         name: 'afterResponse',
@@ -198,7 +219,7 @@ export default class ConfirmationsRejectRule {
     });
   }
 
-  validateCall(call) {
+  validateCall(call: Call): Call {
     if (call.error) {
       call.valid = call.error.code === 4001;
       if (!call.valid) {

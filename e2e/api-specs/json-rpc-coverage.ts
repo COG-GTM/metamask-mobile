@@ -7,7 +7,7 @@ import JsonSchemaFakerRule from '@open-rpc/test-coverage/build/rules/json-schema
 import HtmlReporter from '@open-rpc/test-coverage/build/reporters/html-reporter';
 
 import Browser from '../pages/Browser/BrowserView';
-// eslint-disable-next-line import/no-commonjs
+// eslint-disable-next-line @typescript-eslint/no-require-imports, import/no-commonjs
 const mockServer = require('@open-rpc/mock-server/build/index').default;
 import TabBarComponent from '../pages/wallet/TabBarComponent';
 import FixtureBuilder from '../fixtures/fixture-builder';
@@ -24,20 +24,31 @@ import { BrowserViewSelectorsIDs } from '../selectors/Browser/BrowserView.select
 import { getGanachePort } from '../fixtures/utils';
 import { mockEvents } from '../api-mocking/mock-config/mock-events';
 
-const port = getGanachePort(8545, process.pid);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RpcMethod = any;
+
+const port = getGanachePort();
 const chainId = 1337;
 
 const main = async () => {
-  const openrpcDocument = await parseOpenRPCDocument(
+  const openrpcDocument = (await parseOpenRPCDocument(
     'https://metamask.github.io/api-specs/0.10.8/openrpc.json',
-  );
+  )) as unknown as {
+    methods: RpcMethod[];
+    components?: {
+      schemas?: Record<string, RpcMethod>;
+    };
+  };
 
   const signTypedData4 = openrpcDocument.methods.find(
-    (m) => m.name === 'eth_signTypedData_v4',
+    (m: RpcMethod) => m.name === 'eth_signTypedData_v4',
   );
   const switchEthereumChain = openrpcDocument.methods.find(
-    (m) => m.name === 'wallet_switchEthereumChain',
+    (m: RpcMethod) => m.name === 'wallet_switchEthereumChain',
   );
+  if (!switchEthereumChain) {
+    throw new Error('wallet_switchEthereumChain method not found');
+  }
   switchEthereumChain.examples = [
     {
       name: 'wallet_switchEthereumChain',
@@ -58,8 +69,11 @@ const main = async () => {
   ];
 
   const chainIdMethod = openrpcDocument.methods.find(
-    (m) => m.name === 'eth_chainId',
+    (m: RpcMethod) => m.name === 'eth_chainId',
   );
+  if (!chainIdMethod) {
+    throw new Error('eth_chainId method not found');
+  }
 
   chainIdMethod.examples = [
     {
@@ -74,8 +88,11 @@ const main = async () => {
   ];
 
   const blockNumber = openrpcDocument.methods.find(
-    (m) => m.name === 'eth_blockNumber',
+    (m: RpcMethod) => m.name === 'eth_blockNumber',
   );
+  if (!blockNumber) {
+    throw new Error('eth_blockNumber method not found');
+  }
 
   blockNumber.examples = [
     {
@@ -89,6 +106,9 @@ const main = async () => {
     },
   ];
 
+  if (!signTypedData4) {
+    throw new Error('eth_signTypedData_v4 method not found');
+  }
   // just update address for signTypedData
   signTypedData4.examples[0].params[0].value =
     '0x76cf1CdD1fcC252442b50D6e97207228aA4aefC3';
@@ -96,8 +116,11 @@ const main = async () => {
   signTypedData4.examples[0].params[1].value.domain.chainId = chainId;
 
   const personalSign = openrpcDocument.methods.find(
-    (m) => m.name === 'personal_sign',
+    (m: RpcMethod) => m.name === 'personal_sign',
   );
+  if (!personalSign) {
+    throw new Error('personal_sign method not found');
+  }
 
   personalSign.examples = [
     {
@@ -194,7 +217,7 @@ const main = async () => {
       // tag: Confirmations
       const filteredMethods = openrpcDocument.methods
         .filter(
-          (m) =>
+          (m: RpcMethod) =>
             m.name.includes('snap') ||
             m.name.includes('Snap') ||
             m.name.toLowerCase().includes('account') ||
@@ -208,7 +231,7 @@ const main = async () => {
             m.name.includes('maxPriorityFeePerGas') || // eth_maxPriorityFeePerGas not supported
             methodsWithConfirmations.includes(m.name),
         )
-        .map((m) => m.name);
+        .map((m: RpcMethod) => m.name);
 
       const skip = [
         'eth_coinbase',
@@ -218,7 +241,8 @@ const main = async () => {
       ];
 
       const results = await rpcCoverageTool({
-        openrpcDocument,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        openrpcDocument: openrpcDocument as any,
         transport,
         reporters: [
           'console-streaming',
@@ -241,11 +265,13 @@ const main = async () => {
         ],
         skip,
       });
-      const failing = results.filter((r) => !r.valid);
+      const failing = (results as { valid: boolean }[]).filter(
+        (r) => !r.valid,
+      );
       await detox.cleanup();
 
       // wait 1s to allow for cleanup
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve) => {
         setTimeout(() => {
           resolve();
         }, 1000);
@@ -256,9 +282,12 @@ const main = async () => {
 };
 
 const start = async () => {
-  await detox.init({ workerId: null });
-  await detox.installWorker({
-    global: this.global,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (detox as any).init({ workerId: null });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (detox as any).installWorker({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    global: (globalThis as any).global ?? globalThis,
     workerId: `w1`,
   });
   await main();
