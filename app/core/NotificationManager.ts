@@ -16,6 +16,7 @@ import { SmartTransactionStatuses } from '@metamask/smart-transactions-controlle
 
 import Logger from '../util/Logger';
 import { TransactionStatus, TransactionMeta } from '@metamask/transaction-controller';
+import { getGlobalNetworkClientId } from '../util/networks/global-network';
 
 interface NotificationTransaction {
   id?: string;
@@ -287,7 +288,7 @@ class NotificationManager {
         // Detect assets for ERC721 txs
         // right after a transaction was confirmed
         const pollPromises: Promise<unknown>[] = [
-          AccountTrackerController.refresh([]),
+          AccountTrackerController.refresh([transactionMeta.networkClientId]),
           TokenBalancesController.updateBalancesByChainId({
             chainId: transactionMeta.chainId,
           }),
@@ -317,7 +318,7 @@ class NotificationManager {
   };
 
   _speedupCallback = (transactionMeta: TransactionMeta): void => {
-    this.watchSubmittedTransaction(transactionMeta as unknown as WatchedTransaction, true);
+    this.watchSubmittedTransaction({ id: transactionMeta.id }, true);
     setTimeout(() => {
       this._showNotification({
         autoHide: false,
@@ -539,7 +540,7 @@ class NotificationManager {
       });
 
       // Update balance upon detecting a new incoming transaction
-      AccountTrackerController.refresh([]);
+      AccountTrackerController.refresh([getGlobalNetworkClientId()]);
     } catch (error) {
       Logger.log(
         'Notifications',

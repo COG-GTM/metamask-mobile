@@ -161,8 +161,9 @@ export const recreateVaultWithNewPassword = async (
  * @param selectedAddress - the currently selected address
  */
 export const recreateVaultWithSamePassword = async (
-  selectedAddress: string,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
   password = '',
+  selectedAddress: string,
 ): Promise<void> =>
   recreateVaultWithNewPassword(password, password, selectedAddress);
 
