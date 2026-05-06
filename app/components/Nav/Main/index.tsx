@@ -26,7 +26,7 @@ import type {
 // but is no longer in the public API; recreate the minimal shape used here.
 interface ProviderConfigLike {
   chainId: string;
-  type: string;
+  type?: string;
 }
 import GlobalAlert from '../../UI/GlobalAlert';
 import BackgroundTimer from 'react-native-background-timer';
@@ -154,7 +154,7 @@ interface MainDispatchProps {
 interface MainOwnProps {
   navigation: NavigationProp<ParamListBase>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  route?: RouteProp<ParamListBase, string> & { params?: any };
+  route: RouteProp<ParamListBase, string> & { params?: any };
 }
 
 type MainProps = MainStateProps & MainDispatchProps & MainOwnProps;
@@ -279,7 +279,7 @@ const Main = (props: MainProps) => {
       'SetPasswordFlow' as never,
       {
         screen: 'AccountBackupStep1B',
-        params: { ...(props.route?.params ?? {}) },
+        params: { ...props.route.params },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     );
@@ -364,7 +364,7 @@ const Main = (props: MainProps) => {
       } as any);
     }
     previousProviderConfig.current = !isEvmSelected
-      ? ({ chainId, type: 'unknown' } as ProviderConfigLike)
+      ? ({ chainId } as ProviderConfigLike)
       : (providerConfig as unknown as ProviderConfigLike);
   }, [
     providerConfig,
