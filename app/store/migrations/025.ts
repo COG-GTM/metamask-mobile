@@ -9,7 +9,7 @@ export default function migrate(state: unknown) {
     Object.values(ETHERSCAN_SUPPORTED_CHAIN_IDS).forEach((hexChainId) => {
       const thirdPartyApiMode =
         isObject(state.privacy) && hasProperty(state.privacy, 'thirdPartyApiMode')
-          ? state.privacy.thirdPartyApiMode
+          ? state.privacy.thirdPartyApiMode ?? true
           : true;
       const preferencesController =
         isObject(state.engine) && isObject(state.engine.backgroundState)
