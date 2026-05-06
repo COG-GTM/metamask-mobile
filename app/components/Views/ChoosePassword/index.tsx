@@ -375,8 +375,7 @@ class ChoosePassword extends PureComponent<
         try {
           await Authentication.newWalletAndKeychain(password, authType);
         } catch (error) {
-          if (Device.isIos as unknown as boolean)
-          await this.handleRejectedOsBiometricPrompt();
+          if (Device.isIos()) await this.handleRejectedOsBiometricPrompt();
         }
         this.keyringControllerPasswordSet = true;
         this.props.seedphraseNotBackedUp();
