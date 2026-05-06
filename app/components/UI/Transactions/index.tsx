@@ -1,5 +1,6 @@
+// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   ActivityIndicator,
@@ -142,93 +143,6 @@ const ROW_HEIGHT = (Device.isIos() ? 95 : 100) + StyleSheet.hairlineWidth;
  * View that renders a list of transactions for a specific asset
  */
 class Transactions extends PureComponent {
-  static propTypes = {
-    assetSymbol: PropTypes.string,
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * Callback to close the view
-     */
-    close: PropTypes.func,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object representing the configuration of the current selected network
-     */
-    providerConfig: PropTypes.object,
-    /**
-     * An array that represents the user collectible contracts
-     */
-    collectibleContracts: PropTypes.array,
-    /**
-     * An array that represents the user tokens
-     */
-    tokens: PropTypes.object,
-    /**
-     * An array of transactions objects
-     */
-    transactions: PropTypes.array,
-    /**
-     * An array of transactions objects that have been submitted
-     */
-    submittedTransactions: PropTypes.array,
-    /**
-     * An array of transactions objects that have been confirmed
-     */
-    confirmedTransactions: PropTypes.array,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Loading flag from an external call
-     */
-    loading: PropTypes.bool,
-    /**
-     * Pass the flatlist ref to the parent
-     */
-    onRefSet: PropTypes.func,
-    /**
-     * Optional header component
-     */
-    header: PropTypes.object,
-    /**
-     * Optional header height
-     */
-    headerHeight: PropTypes.number,
-    exchangeRate: PropTypes.number,
-    isSigningQRObject: PropTypes.bool,
-    chainId: PropTypes.string,
-    /**
-     * On scroll past navbar callback
-     */
-    onScrollThroughContent: PropTypes.func,
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * Chain ID of the token
-     */
-    tokenChainId: PropTypes.string,
-  };
 
   static defaultProps = {
     headerHeight: 0,

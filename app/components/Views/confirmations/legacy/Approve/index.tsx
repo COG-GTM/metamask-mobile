@@ -1,90 +1,91 @@
+// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { PureComponent } from 'react';
 import { Alert, AppState, View } from 'react-native';
-import PropTypes from 'prop-types';
-import { getApproveNavbar } from '../../../../../UI/Navbar';
+import { getApproveNavbar } from '../../../../UI/Navbar';
 import { connect } from 'react-redux';
 import {
   safeToChecksumAddress,
   isHardwareAccount,
-} from '../../../../../../util/address';
-import Engine from '../../../../../../core/Engine';
-import AnimatedTransactionModal from '../../../../../UI/AnimatedTransactionModal';
-import ApproveTransactionReview from '../../components/ApproveTransactionReview';
-import AddNickname from '../../components/ApproveTransactionReview/AddNickname';
+} from '../../../../../util/address';
+import Engine from '../../../../../core/Engine';
+import AnimatedTransactionModal from '../../../../UI/AnimatedTransactionModal';
+import ApproveTransactionReview from '../components/ApproveTransactionReview';
+import AddNickname from '../components/ApproveTransactionReview/AddNickname';
 import Modal from 'react-native-modal';
-import { strings } from '../../../../../../../locales/i18n';
+import { strings } from '../../../../../../locales/i18n';
 
 import {
   setTransactionObject,
   setNonce,
   setProposedNonce,
-} from '../../../../../../actions/transaction';
+} from '../../../../../actions/transaction';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
-import { fromWei, renderFromWei, hexToBN } from '../../../../../../util/number';
+import { fromWei, renderFromWei, hexToBN } from '../../../../../util/number';
 import {
   getNormalizedTxState,
   getTicker,
-} from '../../../../../../util/transactions';
-import { getGasLimit } from '../../../../../../util/custom-gas';
+} from '../../../../../util/transactions';
+import { getGasLimit } from '../../../../../util/custom-gas';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import NotificationManager from '../../../../../../core/NotificationManager';
-import { MetaMetricsEvents } from '../../../../../../core/Analytics';
-import Logger from '../../../../../../util/Logger';
-import EditGasFee1559 from '../../components/EditGasFee1559Update';
-import EditGasFeeLegacy from '../../components/EditGasFeeLegacyUpdate';
-import AppConstants from '../../../../../../core/AppConstants';
-import { shallowEqual } from '../../../../../../util/general';
-import { KEYSTONE_TX_CANCELED } from '../../../../../../constants/error';
-import GlobalAlert from '../../../../../UI/GlobalAlert';
-import checkIfAddressIsSaved from '../../../../../../util/checkAddress';
-import { ThemeContext, mockTheme } from '../../../../../../util/theme';
-import { createLedgerTransactionModalNavDetails } from '../../../../../UI/LedgerModals/LedgerTransactionModal';
+import NotificationManager from '../../../../../core/NotificationManager';
+import { MetaMetricsEvents } from '../../../../../core/Analytics';
+import Logger from '../../../../../util/Logger';
+import EditGasFee1559 from '../components/EditGasFee1559Update';
+import EditGasFeeLegacy from '../components/EditGasFeeLegacyUpdate';
+import AppConstants from '../../../../../core/AppConstants';
+import { shallowEqual } from '../../../../../util/general';
+import { KEYSTONE_TX_CANCELED } from '../../../../../constants/error';
+import GlobalAlert from '../../../../UI/GlobalAlert';
+import checkIfAddressIsSaved from '../../../../../util/checkAddress';
+import { ThemeContext, mockTheme } from '../../../../../util/theme';
+import { createLedgerTransactionModalNavDetails } from '../../../../UI/LedgerModals/LedgerTransactionModal';
 import {
   startGasPolling,
   stopGasPolling,
-} from '../../../../../../core/GasPolling/GasPolling';
+} from '../../../../../core/GasPolling/GasPolling';
 import {
   selectNativeCurrencyByChainId,
   selectEvmNetworkConfigurationsByChainId,
   selectProviderTypeByChainId,
   selectRpcUrlByChainId,
   selectEvmChainId,
-} from '../../../../../../selectors/networkController';
+} from '../../../../../selectors/networkController';
 import {
   selectConversionRateByChainId,
   selectCurrentCurrency,
-} from '../../../../../../selectors/currencyRateController';
-import { selectTokensLength } from '../../../../../../selectors/tokensController';
+} from '../../../../../selectors/currencyRateController';
+import { selectTokensLength } from '../../../../../selectors/tokensController';
 import {
   selectAccounts,
   selectAccountsLength,
-} from '../../../../../../selectors/accountTrackerController';
-import ShowBlockExplorer from '../../components/ApproveTransactionReview/ShowBlockExplorer';
+} from '../../../../../selectors/accountTrackerController';
+import ShowBlockExplorer from '../components/ApproveTransactionReview/ShowBlockExplorer';
 import createStyles from './styles';
 import { providerErrors } from '@metamask/rpc-errors';
-import { getDeviceId } from '../../../../../../core/Ledger/Ledger';
-import ExtendedKeyringTypes from '../../../../../../constants/keyringTypes';
+import { getDeviceId } from '../../../../../core/Ledger/Ledger';
+import ExtendedKeyringTypes from '../../../../../constants/keyringTypes';
 import {
   getNetworkNonce,
   updateTransaction,
-} from '../../../../../../util/transaction-controller';
-import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
+} from '../../../../../util/transaction-controller';
+import { withMetricsAwareness } from '../../../../../components/hooks/useMetrics';
 import {
   selectGasFeeEstimates,
   selectCurrentTransactionMetadata,
-} from '../../../../../../selectors/confirmTransaction';
-import { selectGasFeeControllerEstimateType } from '../../../../../../selectors/gasFeeController';
-import { selectShouldUseSmartTransaction } from '../../../../../../selectors/smartTransactionsController';
-import { STX_NO_HASH_ERROR } from '../../../../../../util/smart-transactions/smart-publish-hook';
-import { selectTransactions } from '../../../../../../selectors/transactionController';
+} from '../../../../../selectors/confirmTransaction';
+import { selectGasFeeControllerEstimateType } from '../../../../../selectors/gasFeeController';
+import { selectShouldUseSmartTransaction } from '../../../../../selectors/smartTransactionsController';
+import { STX_NO_HASH_ERROR } from '../../../../../util/smart-transactions/smart-publish-hook';
+import { selectTransactions } from '../../../../../selectors/transactionController';
 import {
   selectPrimaryCurrency,
   selectShowCustomNonce,
-} from '../../../../../../selectors/settings';
-import { selectAddressBook } from '../../../../../../selectors/addressBookController';
-import { buildTransactionParams } from '../../../../../../util/confirmation/transactions';
-import Routes from '../../../../../../constants/navigation/Routes';
-import { isNonEvmChainId } from '../../../../../../core/Multichain/utils';
+} from '../../../../../selectors/settings';
+import { selectAddressBook } from '../../../../../selectors/addressBookController';
+import { buildTransactionParams } from '../../../../../util/confirmation/transactions';
+import Routes from '../../../../../constants/navigation/Routes';
+import { isNonEvmChainId } from '../../../../../core/Multichain/utils';
 
 const EDIT = 'edit';
 const REVIEW = 'review';
@@ -100,94 +101,6 @@ class Approve extends PureComponent {
   static navigationOptions = ({ navigation }) =>
     getApproveNavbar('approve.title', navigation);
 
-  static propTypes = {
-    /**
-     * List of accounts from the AccountTrackerController
-     */
-    accounts: PropTypes.object,
-    /**
-     * Transaction state
-     */
-    transaction: PropTypes.object.isRequired,
-    /**
-     * Action that sets transaction attributes from object to a transaction
-     */
-    setTransactionObject: PropTypes.func.isRequired,
-    /**
-     * List of transactions
-     */
-    transactions: PropTypes.array,
-    /**
-     * A string representing the network name
-     */
-    providerType: PropTypes.string,
-    /**
-     * Whether the modal is visible
-     */
-    modalVisible: PropTypes.bool,
-    /**
-    /* Hide modal visible or not
-    */
-    hideModal: PropTypes.func,
-    /**
-     * Current selected ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Gas fee estimates returned by the gas fee controller
-     */
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * Estimate type returned by the gas fee controller, can be market-fee, legacy or eth_gasPrice
-     */
-    gasEstimateType: PropTypes.string,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * A string representing the network chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * ID of the global network client
-     */
-    networkClientId: PropTypes.string,
-    /**
-     * An object of all saved addresses
-     */
-    addressBook: PropTypes.object,
-    networkConfigurations: PropTypes.object,
-    providerRpcTarget: PropTypes.string,
-    /**
-     * Set transaction nonce
-     */
-    setNonce: PropTypes.func,
-    /**
-     * Set proposed nonce (from network)
-     */
-    setProposedNonce: PropTypes.func,
-    /**
-     * Indicates whether custom nonce should be shown in transaction editor
-     */
-    showCustomNonce: PropTypes.bool,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-    /**
-     * Object containing simulation data
-     */
-    simulationData: PropTypes.object,
-  };
 
   state = {
     approved: false,
@@ -468,7 +381,6 @@ class Approve extends PureComponent {
 
   onLedgerConfirmation = (approve, transactionId, gaParams) => {
     const { metrics } = this.props;
-
     try {
       //manual cancel from UI when transaction is awaiting from ledger confirmation
       if (!approve) {
