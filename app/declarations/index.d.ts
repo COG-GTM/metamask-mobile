@@ -408,3 +408,48 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
+declare module '@metamask/react-native-button' {
+  import { ComponentType, ReactNode } from 'react';
+  import { StyleProp, TextStyle, ViewStyle } from 'react-native';
+
+  interface ButtonProps {
+    accessibilityLabel?: string;
+    accessibilityRole?: string;
+    activeOpacity?: number;
+    allowFontScaling?: boolean;
+    children?: ReactNode;
+    containerStyle?: StyleProp<ViewStyle>;
+    delayLongPress?: number;
+    delayPressIn?: number;
+    delayPressOut?: number;
+    disabled?: boolean;
+    disabledContainerStyle?: StyleProp<ViewStyle>;
+    isLoading?: boolean;
+    isLoadingTitle?: string;
+    onLongPress?: () => void;
+    onPress?: () => void;
+    onPressIn?: () => void;
+    onPressOut?: () => void;
+    style?: StyleProp<TextStyle> | StyleProp<TextStyle>[];
+    styleDisabled?: StyleProp<TextStyle> | null;
+    testID?: string;
+  }
+
+  const Button: ComponentType<ButtonProps>;
+  export default Button;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  import { ReactNode } from 'react';
+  function coalesceNonElementChildren(
+    children: ReactNode,
+    coalesce: (group: ReactNode, index: number) => ReactNode,
+  ): ReactNode[];
+  export default coalesceNonElementChildren;
+}
