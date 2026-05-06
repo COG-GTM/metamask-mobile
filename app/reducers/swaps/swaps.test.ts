@@ -8,14 +8,17 @@ import reducer, {
   swapsSmartTxFlagEnabled,
   swapsTokensObjectSelector,
   selectSwapsChainFeatureFlags,
+  SwapsAction,
+  SwapsState,
 } from './index';
 import { NetworkClientType } from '@metamask/network-controller';
+import type { FeatureFlags } from '@metamask/swaps-controller/dist/types';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
 
 jest.mock('../../selectors/tokensController');
 
-const emptyAction = { type: null };
+const emptyAction = { type: null } as unknown as SwapsAction;
 
 const DEFAULT_FEATURE_FLAGS = {
   ethereum: {
@@ -56,6 +59,9 @@ const DEFAULT_FEATURE_FLAGS = {
   },
 };
 
+const asFeatureFlags = (value: unknown): FeatureFlags =>
+  value as unknown as FeatureFlags;
+
 describe('swaps reducer', () => {
   it('should return initial state', () => {
     const state = reducer(undefined, emptyAction);
@@ -72,11 +78,11 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags: DEFAULT_FEATURE_FLAGS,
+          featureFlags: asFeatureFlags(DEFAULT_FEATURE_FLAGS),
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(true);
+      expect((liveState['0x1'] as { isLive: boolean }).isLive).toBe(true);
     });
     it('should set isLive to false for iOS when flag is false', () => {
       Device.isIos = jest.fn().mockReturnValue(true);
@@ -104,11 +110,11 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags,
+          featureFlags: asFeatureFlags(featureFlags),
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(false);
+      expect((liveState['0x1'] as { isLive: boolean }).isLive).toBe(false);
     });
     it('should set isLive to true for Android when flag is true', () => {
       Device.isIos = jest.fn().mockReturnValue(false);
@@ -136,11 +142,11 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags,
+          featureFlags: asFeatureFlags(featureFlags),
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(true);
+      expect((liveState['0x1'] as { isLive: boolean }).isLive).toBe(true);
     });
     it('should set isLive to false for Android when flag is false', () => {
       Device.isIos = jest.fn().mockReturnValue(false);
@@ -168,11 +174,11 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags,
+          featureFlags: asFeatureFlags(featureFlags),
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(false);
+      expect((liveState['0x1'] as { isLive: boolean }).isLive).toBe(false);
     });
   });
 
@@ -236,7 +242,7 @@ describe('swaps reducer', () => {
             },
           },
         },
-      };
+      } as unknown as SwapsState;
 
       const enabled = swapsSmartTxFlagEnabled(rootState);
       expect(enabled).toEqual(true);
@@ -291,7 +297,7 @@ describe('swaps reducer', () => {
             },
           },
         },
-      };
+      } as unknown as SwapsState;
 
       const enabled = swapsSmartTxFlagEnabled(rootState);
       expect(enabled).toEqual(false);
