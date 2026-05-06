@@ -1,4 +1,4 @@
-export default {
+const TransactionTypes = {
   CUSTOM_GAS: {
     AVERAGE_GAS: 20,
     LOW_GAS: 10,
@@ -14,3 +14,5 @@ export default {
   MMM: 'MetaMask Mobile',
   MM: 'metamask',
 };
+
+export default TransactionTypes;

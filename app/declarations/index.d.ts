@@ -10,6 +10,21 @@ declare module 'react-native-fast-crypto';
 
 declare module 'react-native-minimizer';
 
+declare module 'readable-stream' {
+  // eslint-disable-next-line import/no-nodejs-modules, import/no-namespace
+  import * as nodeStream from 'stream';
+  export const Duplex: typeof nodeStream.Duplex;
+  export type Duplex = nodeStream.Duplex;
+  export const Readable: typeof nodeStream.Readable;
+  export type Readable = nodeStream.Readable;
+  export const Writable: typeof nodeStream.Writable;
+  export type Writable = nodeStream.Writable;
+  export const Transform: typeof nodeStream.Transform;
+  export type Transform = nodeStream.Transform;
+  export const PassThrough: typeof nodeStream.PassThrough;
+  export type PassThrough = nodeStream.PassThrough;
+}
+
 declare module 'xhr2';
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type

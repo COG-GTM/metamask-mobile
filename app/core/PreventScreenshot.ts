@@ -1,5 +1,16 @@
 import { NativeModules, Platform } from 'react-native';
 
+interface PreventScreenshotModule {
+  forbid: () => Promise<void>;
+  allow: () => Promise<void>;
+}
+
+declare module 'react-native' {
+  interface NativeModulesStatic {
+    PreventScreenshot: PreventScreenshotModule;
+  }
+}
+
 // eslint-disable-next-line dot-notation
 const METAMASK_ENVIRONMENT = process.env['METAMASK_ENVIRONMENT'];
 
