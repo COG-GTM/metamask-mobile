@@ -5,7 +5,11 @@ import renderWithProvider from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import Asset from './';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
-import { isPortfolioViewEnabled } from '../../../util/networks';
+import type { ParamListBase, RouteProp } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+
+type AssetNavigation = StackNavigationProp<ParamListBase>;
+type AssetRoute = RouteProp<{ params: Record<string, unknown> }, 'params'>;
 
 const mockInitialState = {
   swaps: { '0x1': { isLive: true }, hasOnboarded: false, isLive: true },
@@ -112,15 +116,17 @@ describe('Asset', () => {
   it('should render correctly', () => {
     const { toJSON } = renderWithProvider(
       <Asset
-        navigation={{ setOptions: jest.fn() }}
-        route={{
-          params: {
-            symbol: 'ETH',
-            address: 'something',
-            isETH: true,
-            chainId: '0x1',
-          },
-        }}
+        navigation={{ setOptions: jest.fn() } as unknown as AssetNavigation}
+        route={
+          {
+            params: {
+              symbol: 'ETH',
+              address: 'something',
+              isETH: true,
+              chainId: '0x1',
+            },
+          } as AssetRoute
+        }
       />,
       {
         state: mockInitialState,
@@ -133,15 +139,19 @@ describe('Asset', () => {
     const mockSetOptions = jest.fn();
     renderWithProvider(
       <Asset
-        navigation={{ setOptions: mockSetOptions }}
-        route={{
-          params: {
-            symbol: 'BNB',
-            address: 'something',
-            isETH: true,
-            chainId: '0x1',
-          },
-        }}
+        navigation={
+          { setOptions: mockSetOptions } as unknown as AssetNavigation
+        }
+        route={
+          {
+            params: {
+              symbol: 'BNB',
+              address: 'something',
+              isETH: true,
+              chainId: '0x1',
+            },
+          } as AssetRoute
+        }
         transactions={[]}
       />,
       {
@@ -155,15 +165,17 @@ describe('Asset', () => {
   it('should display swaps button if the asset is allowed', () => {
     const { toJSON } = renderWithProvider(
       <Asset
-        navigation={{ setOptions: jest.fn() }}
-        route={{
-          params: {
-            symbol: 'ETH',
-            address: 'something',
-            isETH: true,
-            chainId: '0x1',
-          },
-        }}
+        navigation={{ setOptions: jest.fn() } as unknown as AssetNavigation}
+        route={
+          {
+            params: {
+              symbol: 'ETH',
+              address: 'something',
+              isETH: true,
+              chainId: '0x1',
+            },
+          } as AssetRoute
+        }
       />,
       {
         state: mockInitialState,
@@ -177,15 +189,17 @@ describe('Asset', () => {
     jest.spyOn(swapsUtils, 'fetchSwapsFeatureFlags').mockRejectedValue('error');
     const { toJSON } = renderWithProvider(
       <Asset
-        navigation={{ setOptions: jest.fn() }}
-        route={{
-          params: {
-            symbol: 'AVAX',
-            address: 'something',
-            isETH: false,
-            chainId: '0x1',
-          },
-        }}
+        navigation={{ setOptions: jest.fn() } as unknown as AssetNavigation}
+        route={
+          {
+            params: {
+              symbol: 'AVAX',
+              address: 'something',
+              isETH: false,
+              chainId: '0x1',
+            },
+          } as AssetRoute
+        }
       />,
       {
         state: mockInitialState,
