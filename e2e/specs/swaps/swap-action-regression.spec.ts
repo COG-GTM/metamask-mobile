@@ -96,7 +96,7 @@ describe(Regression('Multiple Swaps from Actions'), () => {
 
       if (network.providerConfig.nickname !== currentNetwork) {
         await WalletView.tapNetworksButtonOnNavBar();
-        await Assertions.checkIfToggleIsOn(NetworkListModal.testNetToggle);
+        await Assertions.checkIfToggleIsOn((NetworkListModal.testNetToggle as unknown as Promise<Detox.IndexableNativeElement>));
         await NetworkListModal.changeNetworkTo(
           network.providerConfig.nickname,
           false,
@@ -134,7 +134,7 @@ describe(Regression('Multiple Swaps from Actions'), () => {
       //Make sure slippage is zero for wrapped tokens
       if (sourceTokenSymbol === 'WETH' || destTokenSymbol === 'WETH') {
         await Assertions.checkIfElementToHaveText(
-          QuoteView.maxSlippage,
+          (QuoteView.maxSlippage as unknown as Promise<Detox.IndexableNativeElement>),
           'Max slippage 0%',
         );
       }
@@ -165,14 +165,14 @@ describe(Regression('Multiple Swaps from Actions'), () => {
       await Assertions.checkIfVisible(
         ActivitiesView.swapActivityTitle(sourceTokenSymbol, destTokenSymbol),
       );
-      await Assertions.checkIfElementToHaveText(ActivitiesView.transactionStatus(FIRST_ROW), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
+      await Assertions.checkIfElementToHaveText((ActivitiesView.transactionStatus(FIRST_ROW) as unknown as Promise<Detox.IndexableNativeElement>), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
 
       // Check the token approval completed
       if (type === 'unapproved') {
         await Assertions.checkIfVisible(
           ActivitiesView.tokenApprovalActivity(sourceTokenSymbol),
         );
-        await Assertions.checkIfElementToHaveText(ActivitiesView.transactionStatus(SECOND_ROW), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
+        await Assertions.checkIfElementToHaveText((ActivitiesView.transactionStatus(SECOND_ROW) as unknown as Promise<Detox.IndexableNativeElement>), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
       }
     },
   );

@@ -15,7 +15,6 @@ import WalletView from '../../../pages/wallet/WalletView';
 import AccountListBottomSheet from '../../../pages/wallet/AccountListBottomSheet';
 import Assertions from '../../../utils/Assertions';
 import AddAccountBottomSheet from '../../../pages/wallet/AddAccountBottomSheet';
-import AccountActionsBottomSheet from '../../../pages/wallet/AccountActionsBottomSheet';
 import { mockIdentityServices } from '../utils/mocks';
 import { SmokeWalletPlatform } from '../../../tags';
 import { USER_STORAGE_FEATURE_NAMES } from '@metamask/profile-sync-controller/sdk';
@@ -31,8 +30,8 @@ describe(
   () => {
     const ADDED_ACCOUNT = 'Account 3';
     const TEST_SPECIFIC_MOCK_SERVER_PORT = 8000;
-    let decryptedAccountNames = '';
-    let mockServer;
+    let decryptedAccountNames: string[] = [];
+    let mockServer: import('mockttp').Mockttp;
 
     beforeAll(async () => {
       await TestHelpers.reverseServerPort();
@@ -95,7 +94,7 @@ describe(
 
       await AccountListBottomSheet.swipeToDismissAccountsModal();
       await Assertions.checkIfNotVisible(
-        AccountListBottomSheet.accountList,
+        (AccountListBottomSheet.accountList as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>),
       );
 
       await TabBarComponent.tapSettings();
@@ -119,7 +118,7 @@ describe(
       await AddAccountBottomSheet.tapCreateAccount();
 
       await Assertions.checkIfElementToHaveText(
-        WalletView.accountName,
+        (WalletView.accountName as unknown as Promise<Detox.IndexableNativeElement>),
         ADDED_ACCOUNT,
       );
 
@@ -142,7 +141,7 @@ describe(
       await TestHelpers.delay(2000);
 
       await Assertions.checkIfNotVisible(
-        AccountListBottomSheet.getAccountElementByAccountName(ADDED_ACCOUNT),
+        (AccountListBottomSheet.getAccountElementByAccountName(ADDED_ACCOUNT) as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>),
       );
     });
   },

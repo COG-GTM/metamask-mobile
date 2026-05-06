@@ -26,7 +26,7 @@ describe(SmokeNetworkAbstractions('Chain Permission Management'), () => {
           .withChainPermission()
           .build(),
         restartDevice: true,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await TabBarComponent.tapBrowser();

@@ -1,4 +1,3 @@
-// @ts-check
 import { startMockServer, stopMockServer } from '../../api-mocking/mock-server';
 import TestHelpers from '../../helpers';
 import NotificationSettingsView from '../../pages/Notifications/NotificationSettingsView';
@@ -18,7 +17,7 @@ import { mockNotificationServices } from './utils/mocks';
  * @param {number} port
  * @returns {import('detox/detox').DeviceLaunchAppConfig}
  */
-const launchAppSettings = (port) => ({
+const launchAppSettings = (port: number) => ({
   newInstance: true,
   delete: true,
   permissions: {
@@ -29,7 +28,7 @@ const launchAppSettings = (port) => ({
 
 describe(SmokeNetworkAbstractions('Notification Settings Flow'), () => {
   /** @type {import('mockttp').Mockttp} */
-  let mockServer;
+  let mockServer: import('mockttp').Mockttp;
 
   beforeAll(async () => {
     jest.setTimeout(200000);
@@ -105,17 +104,17 @@ describe(SmokeNetworkAbstractions('Notification Settings Flow'), () => {
     TestHelpers.delay(2000);
     await Assertions.checkIfNotVisible(
       /** @type {Promise<import('detox/detox').IndexableNativeElement>} */ (
-        NotificationSettingsView.pushNotificationsToggle
+        (NotificationSettingsView.pushNotificationsToggle as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>)
       ),
     );
     await Assertions.checkIfNotVisible(
       /** @type {Promise<import('detox/detox').IndexableNativeElement>} */ (
-        NotificationSettingsView.featureAnnonucementsToggle
+        (NotificationSettingsView.featureAnnonucementsToggle as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>)
       ),
     );
     await Assertions.checkIfNotVisible(
       /** @type {Promise<import('detox/detox').IndexableNativeElement>} */ (
-        NotificationSettingsView.accountActivitySection
+        (NotificationSettingsView.accountActivitySection as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>)
       ),
     );
   });

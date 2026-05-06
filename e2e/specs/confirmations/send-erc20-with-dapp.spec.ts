@@ -45,8 +45,8 @@ describe(SmokeConfirmations('ERC20 tokens'), () => {
         ganacheOptions: defaultGanacheOptions,
         smartContract: HST_CONTRACT,
         testSpecificMock,
-      },
-      async ({ contractRegistry }) => {
+      } as Parameters<typeof withFixtures>[0],
+      async ({ contractRegistry }: { mockServer: import('mockttp').Mockttp; contractRegistry: { getContractAddress: (contractName: string) => string }; localNodes: unknown }) => {
         const hstAddress = await contractRegistry.getContractAddress(
           HST_CONTRACT,
         );
@@ -72,7 +72,8 @@ describe(SmokeConfirmations('ERC20 tokens'), () => {
         // Assert "Sent Tokens" transaction is displayed
         await Assertions.checkIfTextIsDisplayed(
           ActivitiesViewSelectorsText.SENT_TOKENS_MESSAGE_TEXT(
-            contractConfiguration[HST_CONTRACT].tokenName,
+            (contractConfiguration[HST_CONTRACT] as { tokenName: string })
+              .tokenName,
           ),
         );
       },

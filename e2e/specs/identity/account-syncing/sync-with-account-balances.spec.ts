@@ -16,7 +16,6 @@ import WalletView from '../../../pages/wallet/WalletView';
 import AccountListBottomSheet from '../../../pages/wallet/AccountListBottomSheet';
 import Assertions from '../../../utils/Assertions';
 import AddAccountBottomSheet from '../../../pages/wallet/AddAccountBottomSheet';
-import AccountActionsBottomSheet from '../../../pages/wallet/AccountActionsBottomSheet';
 import {
   mockIdentityServices,
   setupAccountMockedBalances,
@@ -62,7 +61,7 @@ describe(
     };
 
     let accountsToMockBalances = [...INITIAL_ACCOUNTS];
-    let mockServer;
+    let mockServer: import('mockttp').Mockttp;
 
     /**
      * This test verifies the complete account syncing flow in three phases:

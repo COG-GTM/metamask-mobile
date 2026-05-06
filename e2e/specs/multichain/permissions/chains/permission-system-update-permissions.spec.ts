@@ -15,7 +15,6 @@ import WalletView from '../../../../pages/wallet/WalletView';
 import NetworkEducationModal from '../../../../pages/Network/NetworkEducationModal';
 import PermissionSummaryBottomSheet from '../../../../pages/Browser/PermissionSummaryBottomSheet';
 import { NetworkNonPemittedBottomSheetSelectorsText } from '../../../../selectors/Network/NetworkNonPemittedBottomSheet.selectors';
-import TestDApp from '../../../../pages/Browser/TestDApp';
 
 describe(SmokeNetworkAbstractions('Chain Permission Management'), () => {
   beforeAll(async () => {
@@ -34,7 +33,7 @@ describe(SmokeNetworkAbstractions('Chain Permission Management'), () => {
           ]) // Initialize with Ethereum mainnet and Sepolia
           .build(),
         restartDevice: true,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await TabBarComponent.tapBrowser();
@@ -79,7 +78,7 @@ describe(SmokeNetworkAbstractions('Chain Permission Management'), () => {
           ])
           .build(),
         restartDevice: true,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await TabBarComponent.tapBrowser();
@@ -112,7 +111,7 @@ describe(SmokeNetworkAbstractions('Chain Permission Management'), () => {
         await TabBarComponent.tapWallet();
         await Assertions.checkIfVisible(WalletView.container);
         const networkPicker = await WalletView.getNavbarNetworkPicker();
-        await Assertions.checkIfElementHasLabel(networkPicker, 'Sepolia');
+        await Assertions.checkIfElementHasLabel((networkPicker as unknown as Promise<Detox.IndexableNativeElement>), 'Sepolia');
       },
     );
   });

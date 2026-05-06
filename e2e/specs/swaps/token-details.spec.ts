@@ -23,7 +23,7 @@ describe(SmokeTrade('Token Chart Tests'), () => {
   it('should view the token chart', async () => {
     await WalletView.tapOnToken();
     await Assertions.checkIfElementNotToHaveText(
-      TokenOverview.tokenPrice,
+      (TokenOverview.tokenPrice as unknown as Promise<Detox.IndexableNativeElement>),
       '$0',
     );
 
@@ -53,6 +53,6 @@ describe(SmokeTrade('Token Chart Tests'), () => {
     await switchToSepoliaNetwork();
     await WalletView.tapOnToken(sepoliaTokenSymbol);
     await Assertions.checkIfVisible(TokenOverview.noChartData, 60000);
-    await Assertions.checkIfElementToHaveText(TokenOverview.tokenPrice, '$0');
+    await Assertions.checkIfElementToHaveText((TokenOverview.tokenPrice as unknown as Promise<Detox.IndexableNativeElement>), '$0');
   });
 });

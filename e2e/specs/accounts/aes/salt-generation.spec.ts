@@ -58,7 +58,7 @@ describe(SmokeNetworkExpansion('AES Crypto - Salt generation'), () => {
         SALT_BYTES_COUNT.toString(),
       );
       await Assertions.checkIfElementDoesNotHaveLabel(
-        AesCryptoTestForm.generateSaltResponse,
+        (AesCryptoTestForm.generateSaltResponse as unknown as Promise<Detox.IndexableNativeElement>),
         previousSalt,
       );
     }

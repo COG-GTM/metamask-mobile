@@ -61,9 +61,8 @@ describe(SmokeConfirmationsRedesigned('Signature Requests'), () => {
   });
 
   // using for loop here to ensure synchronous execution
-  for (let index = 0; index < SIGNATURE_LIST.length; index++) {
-    const { specName, testDappBtn, requestType, additionAssertions } =
-      SIGNATURE_LIST[index];
+  for (const item of SIGNATURE_LIST) {
+    const { specName, testDappBtn, requestType, additionAssertions } = item;
     it(`should sign ${specName} message`, async () => {
       await withFixtures(
         {
@@ -75,7 +74,7 @@ describe(SmokeConfirmationsRedesigned('Signature Requests'), () => {
           restartDevice: true,
           ganacheOptions: defaultGanacheOptions,
           testSpecificMock,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
 
@@ -86,7 +85,7 @@ describe(SmokeConfirmationsRedesigned('Signature Requests'), () => {
           await testDappBtn();
           await Assertions.checkIfVisible(requestType);
           await FooterActions.tapCancelButton();
-          await Assertions.checkIfNotVisible(requestType);
+          await Assertions.checkIfNotVisible((requestType as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
 
           await testDappBtn();
           await Assertions.checkIfVisible(requestType);
@@ -103,7 +102,7 @@ describe(SmokeConfirmationsRedesigned('Signature Requests'), () => {
 
           // confirm request
           await FooterActions.tapConfirmButton();
-          await Assertions.checkIfNotVisible(requestType);
+          await Assertions.checkIfNotVisible((requestType as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
         },
       );
     });

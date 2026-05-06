@@ -66,7 +66,7 @@ describe(Regression('Import Tokens'), () => {
 
   it('should hide token from Wallet view', async () => {
     await WalletView.removeTokenFromWallet('0 SNX');
-    await Assertions.checkIfNotVisible(WalletView.tokenInWallet('SNX'));
+    await Assertions.checkIfNotVisible((WalletView.tokenInWallet('SNX') as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
   });
 
   it('should add a token via token footer link', async () => {

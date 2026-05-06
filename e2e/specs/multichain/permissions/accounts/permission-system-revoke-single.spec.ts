@@ -24,7 +24,7 @@ describe(SmokeNetworkExpansion('Account Permission Management'), () => {
           .withPermissionControllerConnectedToTestDapp()
           .build(),
         restartDevice: true,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await TabBarComponent.tapBrowser();
@@ -38,7 +38,7 @@ describe(SmokeNetworkExpansion('Account Permission Management'), () => {
         await ConnectedAccountsModal.tapConfirmDisconnectNetworksButton();
 
         await Browser.tapNetworkAvatarButtonOnBrowser();
-        await Assertions.checkIfNotVisible(ConnectedAccountsModal.title);
+        await Assertions.checkIfNotVisible((ConnectedAccountsModal.title as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
         await Assertions.checkIfVisible(NetworkListModal.networkScroll);
       },
     );

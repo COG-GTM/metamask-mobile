@@ -44,7 +44,7 @@ describe(SmokeNetworkExpansion('Import account via private to wallet'), () => {
     await AccountListBottomSheet.swipeToDismissAccountsModal();
     await Assertions.checkIfVisible(WalletView.container);
     await Assertions.checkIfElementNotToHaveText(
-      WalletView.accountName,
+      (WalletView.accountName as unknown as Promise<Detox.IndexableNativeElement>),
       'Account 1',
     );
   });

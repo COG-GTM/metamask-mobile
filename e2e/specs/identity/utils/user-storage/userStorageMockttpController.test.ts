@@ -1,9 +1,9 @@
-import { getLocal } from 'mockttp';
+import { getLocal, type CompletedRequest, type Mockttp } from 'mockttp';
 import { UserStorageMockttpController } from './userStorageMockttpController';
 import { USER_STORAGE_FEATURE_NAMES } from '@metamask/profile-sync-controller/sdk';
 
 describe('UserStorageMockttpController', () => {
-  let mockServer;
+  let mockServer: Mockttp;
 
   const baseUrl =
     'http://localhost/proxy?url=https://user-storage.api.cx.metamask.io/api/v1/userstorage';
@@ -23,7 +23,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           url: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(request.json).toEqual(null);
@@ -56,7 +56,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           url: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(request.json).toEqual(mockedData);
@@ -89,7 +89,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           url: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(request.json).toEqual(mockedData);
@@ -122,7 +122,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           url: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}/7f8a7963423985c50f75f6ad42a6cf4e7eac43a6c55e3c6fcd49d73f01c1471b`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(request.json).toEqual(mockedData[0]);
@@ -165,7 +165,7 @@ describe('UserStorageMockttpController', () => {
               data: mockedAddedData.Data,
             }),
           },
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(putRequest.statusCode).toEqual(204);
@@ -174,7 +174,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           url: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(getRequest.json).toEqual([...mockedData, mockedAddedData]);
@@ -217,7 +217,7 @@ describe('UserStorageMockttpController', () => {
               data: mockedUpdatedData.Data,
             }),
           },
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(putRequest.statusCode).toEqual(204);
@@ -226,7 +226,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           url: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(getRequest.json).toEqual([mockedData[0], mockedUpdatedData]);
@@ -267,7 +267,7 @@ describe('UserStorageMockttpController', () => {
         },
       );
 
-      const putData = {};
+      const putData: Record<string, unknown> = {};
       mockedUpdatedData.forEach((entry) => {
         putData[entry.HashedKey] = entry.Data;
       });
@@ -281,7 +281,7 @@ describe('UserStorageMockttpController', () => {
               data: putData,
             }),
           },
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(putRequest.statusCode).toEqual(204);
@@ -290,7 +290,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           url: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(getRequest.json).toEqual(mockedUpdatedData);
@@ -323,7 +323,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           url: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}/c236b92ea7d513b2beda062cb546986961dfa7ca4334a2913f7837e43d050468`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(deleteRequest.statusCode).toEqual(204);
@@ -332,7 +332,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           url: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(getRequest.json).toEqual([mockedData[0]]);
@@ -371,7 +371,7 @@ describe('UserStorageMockttpController', () => {
               batch_delete: [mockedData[1].HashedKey, mockedData[2].HashedKey],
             }),
           },
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(deleteRequest.statusCode).toEqual(204);
@@ -380,7 +380,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           path: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(getRequest.json).toEqual([mockedData[0]]);
@@ -413,7 +413,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           path: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(deleteRequest.statusCode).toEqual(204);
@@ -422,7 +422,7 @@ describe('UserStorageMockttpController', () => {
         USER_STORAGE_FEATURE_NAMES.accounts,
         {
           path: `${baseUrl}/${USER_STORAGE_FEATURE_NAMES.accounts}`,
-        },
+        } as unknown as CompletedRequest,
       );
 
       expect(getRequest.json).toEqual(null);

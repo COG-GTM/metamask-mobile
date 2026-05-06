@@ -29,7 +29,7 @@ describe(
             .withChainPermission() // Initialize with Ethereum mainnet only
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           // Step 1: Initial app setup
           await loginToApp();
@@ -43,8 +43,8 @@ describe(
           const accountLabelElement =
             await PermissionSummaryBottomSheet.accountPermissionLabelContainer;
           const accountLabelAttributes =
-            await accountLabelElement.getAttributes();
-          const accountLabel = accountLabelAttributes.label;
+            (await accountLabelElement.getAttributes()) as Detox.IosElementAttributes;
+          const accountLabel = accountLabelAttributes.label ?? '';
 
           await Assertions.checkIfTextMatches(
             accountLabel,

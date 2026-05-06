@@ -29,8 +29,12 @@ describe(SmokeConfirmations('Send ETH'), () => {
 
   beforeEach(async () => {
     await TestHelpers.reverseServerPort();
-    const fixture = new FixtureBuilder()
-      .withNetworkController(CustomNetworks.Tenderly)
+    const builder = new FixtureBuilder().withNetworkController(
+      CustomNetworks.Tenderly,
+    ) as FixtureBuilder & {
+      withAddressBookController: (config: unknown) => FixtureBuilder;
+    };
+    const fixture = builder
       .withAddressBookController({
         addressBook: {
           '0x1': {

@@ -36,7 +36,7 @@ describe(SmokeConfirmations('Ethereum Sign'), () => {
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
         testSpecificMock,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
 
@@ -46,12 +46,12 @@ describe(SmokeConfirmations('Ethereum Sign'), () => {
         await TestDApp.tapEthereumSignButton();
         await Assertions.checkIfVisible(SigningBottomSheet.personalRequest);
         await SigningBottomSheet.tapCancelButton();
-        await Assertions.checkIfNotVisible(SigningBottomSheet.personalRequest);
+        await Assertions.checkIfNotVisible((SigningBottomSheet.personalRequest as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
 
         await TestDApp.tapEthereumSignButton();
         await Assertions.checkIfVisible(SigningBottomSheet.personalRequest);
         await SigningBottomSheet.tapSignButton();
-        await Assertions.checkIfNotVisible(SigningBottomSheet.personalRequest);
+        await Assertions.checkIfNotVisible((SigningBottomSheet.personalRequest as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
       },
     );
   });

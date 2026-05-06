@@ -1,4 +1,3 @@
-// @ts-check
 import { startMockServer, stopMockServer } from '../../api-mocking/mock-server';
 import TestHelpers from '../../helpers';
 import EnableNotificationsModal from '../../pages/Notifications/EnableNotificationsModal';
@@ -19,10 +18,9 @@ import {
 } from './utils/mocks';
 
 /**
- * @param {number} port
- * @returns {import('detox/detox').DeviceLaunchAppConfig}
+ * @param port
  */
-const launchAppSettings = (port) => ({
+const launchAppSettings = (port: number) => ({
   newInstance: true,
   delete: true,
   permissions: {
@@ -33,7 +31,7 @@ const launchAppSettings = (port) => ({
 
 describe(SmokeNotifications('Notification Onboarding'), () => {
   /** @type {import('mockttp').Mockttp} */
-  let mockServer;
+  let mockServer: import('mockttp').Mockttp;
 
   beforeAll(async () => {
     jest.setTimeout(200000);

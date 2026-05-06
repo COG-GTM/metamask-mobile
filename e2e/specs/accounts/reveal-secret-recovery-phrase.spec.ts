@@ -74,7 +74,7 @@ describe(SmokeNetworkExpansion('Secret Recovery Phrase Reveal from Settings'), (
     );
     await SrpQuizModal.tapQuestionContinueButton(QUIZ_QUESTION_1);
     await Assertions.checkIfNotVisible(
-      SrpQuizModal.getQuestionRightContinueButton(QUIZ_QUESTION_1),
+      (SrpQuizModal.getQuestionRightContinueButton(QUIZ_QUESTION_1) as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>),
     );
   });
 
@@ -96,7 +96,7 @@ describe(SmokeNetworkExpansion('Secret Recovery Phrase Reveal from Settings'), (
     );
     await SrpQuizModal.tapQuestionContinueButton(QUIZ_QUESTION_2);
     await Assertions.checkIfNotVisible(
-      SrpQuizModal.getQuestionRightContinueButton(QUIZ_QUESTION_2),
+      (SrpQuizModal.getQuestionRightContinueButton(QUIZ_QUESTION_2) as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>),
     );
   });
 
@@ -138,7 +138,7 @@ describe(SmokeNetworkExpansion('Secret Recovery Phrase Reveal from Settings'), (
     );
     await Assertions.checkIfVisible(RevealSecretRecoveryPhrase.passwordWarning);
     await Assertions.checkIfNotVisible(
-      RevealSecretRecoveryPhrase.revealSecretRecoveryPhraseButton,
+      (RevealSecretRecoveryPhrase.revealSecretRecoveryPhraseButton as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>),
     );
   });
 });

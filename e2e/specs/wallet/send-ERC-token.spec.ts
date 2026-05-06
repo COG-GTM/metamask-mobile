@@ -35,7 +35,7 @@ describe(Regression('Send ERC Token'), () => {
     await NetworkListModal.scrollToBottomOfNetworkList();
     await NetworkListModal.tapTestNetworkSwitch();
     await NetworkListModal.scrollToBottomOfNetworkList();
-    await Assertions.checkIfToggleIsOn(NetworkListModal.testNetToggle);
+    await Assertions.checkIfToggleIsOn((NetworkListModal.testNetToggle as unknown as Promise<Detox.IndexableNativeElement>));
     await NetworkListModal.changeNetworkTo(
       CustomNetworks.Sepolia.providerConfig.nickname,
     );
@@ -44,7 +44,7 @@ describe(Regression('Send ERC Token'), () => {
   it('should dismiss network education modal', async () => {
     await Assertions.checkIfVisible(NetworkEducationModal.container);
     await NetworkEducationModal.tapGotItButton();
-    await Assertions.checkIfNotVisible(NetworkEducationModal.container);
+    await Assertions.checkIfNotVisible((NetworkEducationModal.container as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
   });
 
   it('should Import custom token', async () => {

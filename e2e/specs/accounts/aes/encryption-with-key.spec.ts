@@ -51,7 +51,7 @@ describe(
 
       // Assert the address derived from SRP
       await Assertions.checkIfElementToHaveText(
-        AesCryptoTestForm.accountAddress,
+        (AesCryptoTestForm.accountAddress as unknown as Promise<Detox.IndexableNativeElement>),
         '0x76cf1CdD1fcC252442b50D6e97207228aA4aefC3',
       );
 
@@ -66,7 +66,7 @@ describe(
       await AesCryptoTestForm.decryptWithKey(encryptionKey);
 
       await Assertions.checkIfElementHasLabel(
-        AesCryptoTestForm.decryptWithKeyResponse,
+        (AesCryptoTestForm.decryptWithKeyResponse as unknown as Promise<Detox.IndexableNativeElement>),
         DATA_TO_ENCRYPT_ONE,
       );
 

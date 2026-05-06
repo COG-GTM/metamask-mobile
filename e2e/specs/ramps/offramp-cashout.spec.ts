@@ -38,7 +38,7 @@ describe(SmokeTrade('Off-Ramp Cashout destination'), () => {
     await withFixtures(
       {
         fixture: new FixtureBuilder()
-          .withRampsSelectedRegion(franceRegion)
+          .withRampsSelectedRegion(franceRegion as unknown as null)
           .withRampsSelectedPaymentMethod()
           .build(),
         restartDevice: true,

@@ -27,8 +27,8 @@ describe(
   () => {
     const NEW_ACCOUNT_NAME = 'My third account';
     const TEST_SPECIFIC_MOCK_SERVER_PORT = 8000;
-    let decryptedAccountNames = '';
-    let mockServer;
+    let decryptedAccountNames: string[] = [];
+    let mockServer: import('mockttp').Mockttp;
 
     beforeAll(async () => {
       await TestHelpers.reverseServerPort();
@@ -97,7 +97,7 @@ describe(
       await AccountActionsBottomSheet.renameActiveAccount(NEW_ACCOUNT_NAME);
 
       await Assertions.checkIfElementToHaveText(
-        WalletView.accountName,
+        (WalletView.accountName as unknown as Promise<Detox.IndexableNativeElement>),
         NEW_ACCOUNT_NAME,
       );
 

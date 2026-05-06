@@ -21,7 +21,7 @@ const fixtureServer = new FixtureServer();
 describe(SmokeNetworkAbstractions('Connect account to Portfolio'), () => {
   beforeAll(async () => {
     await TestHelpers.reverseServerPort();
-    const fixture = new FixtureBuilder().withKeyringController().build();
+    const fixture = new FixtureBuilder().withKeyringController().build() as { state: { user: { seedphraseBackedUp: boolean } } };
     fixture.state.user.seedphraseBackedUp = false;
     await startFixtureServer(fixtureServer);
     await loadFixture(fixtureServer, { fixture });
@@ -59,10 +59,10 @@ describe(SmokeNetworkAbstractions('Connect account to Portfolio'), () => {
   });
 
   it('should not open additional browser tabs to portfolio', async () => {
-    await Assertions.checkIfElementToHaveText(BrowserView.tabsNumber, '1');
+    await Assertions.checkIfElementToHaveText((BrowserView.tabsNumber as unknown as Promise<Detox.IndexableNativeElement>), '1');
     await TabBarComponent.tapWallet();
     await WalletView.tapPortfolio();
     await BrowserView.waitForBrowserPageToLoad();
-    await Assertions.checkIfElementToHaveText(BrowserView.tabsNumber, '1');
+    await Assertions.checkIfElementToHaveText((BrowserView.tabsNumber as unknown as Promise<Detox.IndexableNativeElement>), '1');
   });
 });

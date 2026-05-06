@@ -26,7 +26,7 @@ const fixtureServer = new FixtureServer();
 describe(SmokeWalletPlatform('Request Token Flow with Unprotected Wallet'), () => {
   beforeAll(async () => {
     await TestHelpers.reverseServerPort();
-    const fixture = new FixtureBuilder().withKeyringController().build();
+    const fixture = new FixtureBuilder().withKeyringController().build() as { state: { user: { seedphraseBackedUp: boolean } } };
     fixture.state.user.seedphraseBackedUp = false;
     await startFixtureServer(fixtureServer);
     await loadFixture(fixtureServer, { fixture });

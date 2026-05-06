@@ -4,7 +4,6 @@ import { SmokeWalletPlatform } from '../../tags';
 import TestHelpers from '../../helpers';
 import { loginToApp } from '../../viewHelper';
 import Assertions from '../../utils/Assertions';
-import { startMockServer, stopMockServer } from '../../api-mocking/mock-server';
 import { withFixtures } from '../../fixtures/fixture-helper';
 import FixtureBuilder, {
   DEFAULT_FIXTURE_ACCOUNT,
@@ -64,7 +63,7 @@ const RESPONSE_OUTGOING_TRANSACTION_MOCK = {
   from: DEFAULT_FIXTURE_ACCOUNT.toLowerCase(),
 };
 
-function mockAccountsApi(transactions) {
+function mockAccountsApi(transactions?: unknown[]) {
   return {
     urlEndpoint: `https://accounts.api.cx.metamask.io/v1/accounts/${DEFAULT_FIXTURE_ACCOUNT}/transactions?networks=0x1,0x89,0x38,0xe708,0x2105,0xa,0xa4b1,0x82750&sortDirection=ASC`,
     response: {
@@ -92,14 +91,14 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
         testSpecificMock: {
           GET: [mockAccountsApi()],
         },
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
         await ActivitiesView.swipeDown();
         await Assertions.checkIfTextIsDisplayed('Received ETH');
-        await Assertions.checkIfTextIsDisplayed(/.*1\.23 ETH.*/);
-        await Assertions.checkIfTextIsDisplayed(/.*2\.34 ETH.*/);
+        await Assertions.checkIfTextIsDisplayed(/.*1\.23 ETH.*/ as unknown as string);
+        await Assertions.checkIfTextIsDisplayed(/.*2\.34 ETH.*/ as unknown as string);
       },
     );
   });
@@ -120,13 +119,13 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
         testSpecificMock: {
           GET: [mockAccountsApi([RESPONSE_TOKEN_TRANSFER_MOCK])],
         },
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
         await ActivitiesView.swipeDown();
         await Assertions.checkIfTextIsDisplayed('Received ABC');
-        await Assertions.checkIfTextIsDisplayed(/.*4\.56 ABC.*/);
+        await Assertions.checkIfTextIsDisplayed(/.*4\.56 ABC.*/ as unknown as string);
       },
     );
   });
@@ -139,13 +138,13 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
         testSpecificMock: {
           GET: [mockAccountsApi([RESPONSE_OUTGOING_TRANSACTION_MOCK])],
         },
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
         await ActivitiesView.swipeDown();
         await Assertions.checkIfTextIsDisplayed('Sent ETH');
-        await Assertions.checkIfTextIsDisplayed(/.*1\.23 ETH.*/);
+        await Assertions.checkIfTextIsDisplayed(/.*1\.23 ETH.*/ as unknown as string);
       },
     );
   });
@@ -160,7 +159,7 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
           .build(),
         restartDevice: true,
         testSpecificMock: { GET: [mockAccountsApi()] },
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
@@ -187,7 +186,7 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
           .build(),
         restartDevice: true,
         testSpecificMock: { GET: [mockAccountsApi([RESPONSE_STANDARD_MOCK])] },
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
@@ -204,13 +203,13 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
         fixture: new FixtureBuilder().build(),
         restartDevice: true,
         testSpecificMock: { GET: [mockAccountsApi()] },
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
         await ActivitiesView.swipeDown();
         await Assertions.checkIfElementToHaveText(
-          await ToastModal.notificationTitle,
+          (await ToastModal.notificationTitle as unknown as Promise<Detox.IndexableNativeElement>),
           'You received 1.23 ETH',
         );
       },

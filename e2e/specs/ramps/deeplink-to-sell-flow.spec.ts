@@ -25,7 +25,7 @@ describe(SmokeTrade('Sell Crypto Deeplinks'), () => {
     jest.setTimeout(150000);
   });
 
-  const itif = (condition) => (condition ? it : it.skip);
+  const itif = (condition: boolean) => (condition ? it : it.skip);
 
   itif(device.getPlatform() === 'android')('should deep link to offramp ETH', async () => {
     const sellDeepLinkURL = 'metamask://sell?chainId=1&amount=50';
@@ -42,7 +42,7 @@ describe(SmokeTrade('Sell Crypto Deeplinks'), () => {
     await withFixtures(
       {
         fixture: new FixtureBuilder()
-          .withRampsSelectedRegion(franceRegion)
+          .withRampsSelectedRegion(franceRegion as unknown as null)
           .withRampsSelectedPaymentMethod()
           .build(),
         restartDevice: true,
@@ -54,7 +54,7 @@ describe(SmokeTrade('Sell Crypto Deeplinks'), () => {
           url: sellDeepLinkURL,
         });
         await Assertions.checkIfVisible(
-          await SellGetStartedView.getStartedButton,
+          (await SellGetStartedView.getStartedButton as unknown as Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement>),
         );
 
         await SellGetStartedView.tapGetStartedButton();
@@ -83,7 +83,7 @@ describe(SmokeTrade('Sell Crypto Deeplinks'), () => {
           url: SellDeepLink,
         });
         await Assertions.checkIfVisible(
-          await SellGetStartedView.getStartedButton,
+          (await SellGetStartedView.getStartedButton as unknown as Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement>),
         );
         await SellGetStartedView.tapGetStartedButton();
         await Assertions.checkIfVisible(NetworkApprovalBottomSheet.container);

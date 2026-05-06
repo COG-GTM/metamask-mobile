@@ -41,7 +41,7 @@ describe(SmokeRamps('Buy Crypto Deeplinks'), () => {
           url: buyLink,
         });
         await Assertions.checkIfVisible(
-          await SellGetStartedView.getStartedButton,
+          (await SellGetStartedView.getStartedButton as unknown as Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement>),
         );
 
         await BuyGetStartedView.tapGetStartedButton();
@@ -74,7 +74,7 @@ describe(SmokeRamps('Buy Crypto Deeplinks'), () => {
         });
 
         await Assertions.checkIfVisible(
-          await SellGetStartedView.getStartedButton,
+          (await SellGetStartedView.getStartedButton as unknown as Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement>),
         );
 
         await BuyGetStartedView.tapGetStartedButton();

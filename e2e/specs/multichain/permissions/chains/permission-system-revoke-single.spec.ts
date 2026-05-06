@@ -25,7 +25,7 @@ describe(SmokeNetworkExpansion('Chain Permission Management'), () => {
           .withChainPermission()
           .build(),
         restartDevice: true,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         // Step 1: Navigate to browser view
         await loginToApp();
@@ -46,10 +46,10 @@ describe(SmokeNetworkExpansion('Chain Permission Management'), () => {
 
         // Step 4: Verify UI state after permission removal
         await Browser.tapNetworkAvatarButtonOnBrowser();
-        await Assertions.checkIfNotVisible(ConnectedAccountsModal.title);
+        await Assertions.checkIfNotVisible((ConnectedAccountsModal.title as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
         await Assertions.checkIfVisible(NetworkListModal.networkScroll);
         await NetworkListModal.swipeToDismissModal();
-        await Assertions.checkIfNotVisible(NetworkListModal.networkScroll);
+        await Assertions.checkIfNotVisible((NetworkListModal.networkScroll as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
       },
     );
   });

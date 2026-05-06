@@ -36,7 +36,7 @@ describe(SmokeConfirmations('Send ETH'), () => {
         fixture: new FixtureBuilder().withGanacheNetwork().build(),
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
 
@@ -66,8 +66,8 @@ describe(SmokeConfirmations('Send ETH'), () => {
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
         smartContract: MULTISIG_CONTRACT,
-      },
-      async ({ contractRegistry }) => {
+      } as Parameters<typeof withFixtures>[0],
+      async ({ contractRegistry }: { mockServer: import('mockttp').Mockttp; contractRegistry: { getContractAddress: (contractName: string) => string }; localNodes: unknown }) => {
         const multisigAddress = await contractRegistry.getContractAddress(
           MULTISIG_CONTRACT,
         );
@@ -92,7 +92,9 @@ describe(SmokeConfirmations('Send ETH'), () => {
   it('should send ETH to an EOA from token detail page', async () => {
     const ETHEREUM_NAME = 'Ethereum';
     const RECIPIENT = '0x1FDb169Ef12954F20A15852980e1F0C122BfC1D6';
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const AMOUNT = '0.12345';
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const TOKEN_NAME = enContent.unit.eth;
 
     await withFixtures(
@@ -100,7 +102,7 @@ describe(SmokeConfirmations('Send ETH'), () => {
         fixture: new FixtureBuilder().withGanacheNetwork().build(),
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await WalletView.tapOnToken(ETHEREUM_NAME);

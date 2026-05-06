@@ -38,7 +38,7 @@ describe(Regression('Permission System'), () => {
           .withPermissionControllerConnectedToTestDapp()
           .build(),
         restartDevice: true,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
 
@@ -66,12 +66,12 @@ describe(Regression('Permission System'), () => {
         await DeleteWalletModal.tapIUnderstandButton();
         await DeleteWalletModal.typeDeleteInInputBox();
         await DeleteWalletModal.tapDeleteMyWalletButton();
-        await Assertions.checkIfNotVisible(DeleteWalletModal.container);
+        await Assertions.checkIfNotVisible((DeleteWalletModal.container as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
         await TestHelpers.delay(2000);
         await Assertions.checkIfVisible(OnboardingView.container);
         if (device.getPlatform() === 'ios') {
           await Assertions.checkIfVisible(ToastModal.notificationTitle);
-          await Assertions.checkIfNotVisible(ToastModal.notificationTitle);
+          await Assertions.checkIfNotVisible((ToastModal.notificationTitle as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
         } else {
           await TestHelpers.delay(3000);
         }
@@ -99,7 +99,7 @@ describe(Regression('Permission System'), () => {
         await TabBarComponent.tapBrowser();
         await Assertions.checkIfVisible(Browser.browserScreenID);
         await Browser.tapNetworkAvatarButtonOnBrowser();
-        await Assertions.checkIfNotVisible(ConnectedAccountsModal.title);
+        await Assertions.checkIfNotVisible((ConnectedAccountsModal.title as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
         await NetworkListModal.scrollToBottomOfNetworkList();
         await Assertions.checkIfVisible(NetworkListModal.testNetToggle);
       },

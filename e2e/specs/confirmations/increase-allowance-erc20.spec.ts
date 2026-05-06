@@ -44,8 +44,8 @@ describe(SmokeConfirmations('ERC20 - Increase Allowance'), () => {
         ganacheOptions: defaultGanacheOptions,
         smartContract: HST_CONTRACT,
         testSpecificMock,
-      },
-      async ({ contractRegistry }) => {
+      } as Parameters<typeof withFixtures>[0],
+      async ({ contractRegistry }: { mockServer: import('mockttp').Mockttp; contractRegistry: { getContractAddress: (contractName: string) => string }; localNodes: unknown }) => {
         const hstAddress = await contractRegistry.getContractAddress(
           HST_CONTRACT,
         );
@@ -67,7 +67,7 @@ describe(SmokeConfirmations('ERC20 - Increase Allowance'), () => {
 
         // Assert that custom token amount is shown
         await Assertions.checkIfElementToHaveText(
-          ContractApprovalBottomSheet.approveTokenAmount,
+          (ContractApprovalBottomSheet.approveTokenAmount as unknown as Promise<Detox.IndexableNativeElement>),
           '2',
         );
         // Tap next button

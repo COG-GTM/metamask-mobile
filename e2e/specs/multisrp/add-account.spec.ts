@@ -29,7 +29,10 @@ const SRP_2 = {
   id: '01JN61V9ACE7ZA3ZRZFPYFYCJ1',
 };
 
-const addAccountToSrp = async (srp, accountName) => {
+const addAccountToSrp = async (
+  srp: { index: number; id?: string },
+  accountName: string,
+) => {
   await AccountListBottomSheet.tapAddAccountButton();
   await AddAccountBottomSheet.tapCreateAccount();
   await Assertions.checkIfVisible(AddNewHdAccountComponent.container);

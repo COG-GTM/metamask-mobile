@@ -13,10 +13,7 @@ import {
   withFixtures,
   defaultGanacheOptions,
 } from '../../fixtures/fixture-helper';
-import {
-  SMART_CONTRACTS,
-  contractConfiguration,
-} from '../../../app/util/test/smart-contracts';
+import { SMART_CONTRACTS } from '../../../app/util/test/smart-contracts';
 import { ActivitiesViewSelectorsText } from '../../selectors/Transactions/ActivitiesView.selectors';
 
 import TabBarComponent from '../../pages/wallet/TabBarComponent';
@@ -37,12 +34,14 @@ describe(SmokeConfirmations('Send to contract address'), () => {
     await withFixtures(
       {
         dapp: true,
-        fixture: new FixtureBuilder().withGanacheNetwork(buildPermissions(['0x539'])).build(),
+        fixture: new FixtureBuilder()
+          .withGanacheNetwork(...([buildPermissions(['0x539'])] as unknown as []))
+          .build(),
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
         smartContract: HST_CONTRACT,
-      },
-      async ({ contractRegistry }) => {
+      } as Parameters<typeof withFixtures>[0],
+      async ({ contractRegistry }: { mockServer: import('mockttp').Mockttp; contractRegistry: { getContractAddress: (contractName: string) => string }; localNodes: unknown }) => {
         const hstAddress = await contractRegistry.getContractAddress(
           HST_CONTRACT,
         );

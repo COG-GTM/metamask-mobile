@@ -24,7 +24,7 @@ describe(SmokeTrade('Buy Crypto Deeplinks'), () => {
   beforeEach(async () => {
     jest.setTimeout(150000);
   });
-  const itif = (condition) => (condition ? it : it.skip);
+  const itif = (condition: boolean) => (condition ? it : it.skip);
 
 
   itif(device.getPlatform() === 'android')('should deep link to onramp to unsupported network', async () => {
@@ -43,7 +43,7 @@ describe(SmokeTrade('Buy Crypto Deeplinks'), () => {
         });
 
         await Assertions.checkIfVisible(
-          await SellGetStartedView.getStartedButton,
+          (await SellGetStartedView.getStartedButton as unknown as Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement>),
         );
 
         await BuyGetStartedView.tapGetStartedButton();

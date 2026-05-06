@@ -38,7 +38,7 @@ const fixtureServer = new FixtureServer();
 describe.skip(SmokeTrade('Stake from Actions'), () => {
   const FIRST_ROW = 0;
   const AMOUNT_TO_SEND = '.005';
-  let mockServer;
+  let mockServer: import('mockttp').Mockttp;
   const wallet = ethers.Wallet.createRandom();
 
   beforeAll(async () => {
@@ -92,7 +92,7 @@ describe.skip(SmokeTrade('Stake from Actions'), () => {
     await TransactionConfirmationView.tapConfirmButton();
     await TabBarComponent.tapActivity();
     await Assertions.checkIfVisible(ActivitiesView.title);
-    await Assertions.checkIfElementToHaveText(ActivitiesView.transactionStatus(FIRST_ROW), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
+    await Assertions.checkIfElementToHaveText((ActivitiesView.transactionStatus(FIRST_ROW) as unknown as Promise<Detox.IndexableNativeElement>), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
     // Wait fot toeast to clear
     await TestHelpers.delay(8000);
     await Assertions.checkIfVisible(TabBarComponent.tabBarWalletButton);
@@ -126,7 +126,7 @@ describe.skip(SmokeTrade('Stake from Actions'), () => {
     await TestHelpers.delay(2000);
     await Assertions.checkIfVisible(ActivitiesView.title);
     await Assertions.checkIfVisible(ActivitiesView.stakeDepositedLabel);
-    await Assertions.checkIfElementToHaveText(ActivitiesView.transactionStatus(FIRST_ROW), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
+    await Assertions.checkIfElementToHaveText((ActivitiesView.transactionStatus(FIRST_ROW) as unknown as Promise<Detox.IndexableNativeElement>), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
     // Wait fot toeast to clear
     await TestHelpers.delay(8000);
     await Assertions.checkIfVisible(TabBarComponent.tabBarWalletButton);
@@ -149,7 +149,7 @@ describe.skip(SmokeTrade('Stake from Actions'), () => {
     await TestHelpers.delay(10000);
     await Assertions.checkIfVisible(ActivitiesView.title);
     await Assertions.checkIfVisible(ActivitiesView.stakeDepositedLabel);
-    await Assertions.checkIfElementToHaveText(ActivitiesView.transactionStatus(FIRST_ROW), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
+    await Assertions.checkIfElementToHaveText((ActivitiesView.transactionStatus(FIRST_ROW) as unknown as Promise<Detox.IndexableNativeElement>), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
     await TestHelpers.delay(8000);
     await Assertions.checkIfVisible(TabBarComponent.tabBarWalletButton);
     await TabBarComponent.tapWallet();
@@ -169,7 +169,7 @@ describe.skip(SmokeTrade('Stake from Actions'), () => {
     await TestHelpers.delay(15000);
     await Assertions.checkIfVisible(ActivitiesView.title);
     await Assertions.checkIfVisible(ActivitiesView.unstakeLabel);
-    await Assertions.checkIfElementToHaveText(ActivitiesView.transactionStatus(FIRST_ROW), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
+    await Assertions.checkIfElementToHaveText((ActivitiesView.transactionStatus(FIRST_ROW) as unknown as Promise<Detox.IndexableNativeElement>), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
     // Wait fot toeast to clear
     await TestHelpers.delay(8000);
     await Assertions.checkIfVisible(TabBarComponent.tabBarWalletButton);
@@ -188,17 +188,17 @@ describe.skip(SmokeTrade('Stake from Actions'), () => {
     await WalletView.tapNetworksButtonOnNavBar();
     await NetworkListModal.changeNetworkTo(PopularNetworksList.zkSync.providerConfig.nickname, false);
     await NetworkEducationModal.tapGotItButton();
-    await Assertions.checkIfNotVisible(WalletView.earnButton);
-    await Assertions.checkIfNotVisible(WalletView.stakedEthereumLabel);
+    await Assertions.checkIfNotVisible((WalletView.earnButton as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
+    await Assertions.checkIfNotVisible((WalletView.stakedEthereumLabel as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
     await WalletView.tapTokenNetworkFilter();
     await WalletView.tapTokenNetworkFilterAll();
     // 3rd one is Linea Network
     await WalletView.tapOnToken('Ethereum', THIRD_ONE);
     await TokenOverview.scrollOnScreen();
     await TestHelpers.delay(3000);
-    await Assertions.checkIfNotVisible(TokenOverview.stakedBalance);
-    await Assertions.checkIfNotVisible(TokenOverview.unstakingBanner);
-    await Assertions.checkIfNotVisible(TokenOverview.unstakeButton);
+    await Assertions.checkIfNotVisible((TokenOverview.stakedBalance as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
+    await Assertions.checkIfNotVisible((TokenOverview.unstakingBanner as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
+    await Assertions.checkIfNotVisible((TokenOverview.unstakeButton as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
     await TokenOverview.tapBackButton();
     await WalletView.tapNetworksButtonOnNavBar();
     await NetworkListModal.changeNetworkTo(CustomNetworks.Holesky.providerConfig.nickname);
@@ -272,6 +272,6 @@ it('should Stake Claim ETH', async () => {
   await TabBarComponent.tapActivity();
   await Assertions.checkIfVisible(ActivitiesView.title);
   await Assertions.checkIfVisible(ActivitiesView.stackingClaimLabel);
-  await Assertions.checkIfElementToHaveText(ActivitiesView.transactionStatus(FIRST_ROW), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
+  await Assertions.checkIfElementToHaveText((ActivitiesView.transactionStatus(FIRST_ROW) as unknown as Promise<Detox.IndexableNativeElement>), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
   });
 });

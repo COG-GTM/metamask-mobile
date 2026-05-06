@@ -45,8 +45,8 @@ describe(SmokeCore('Analytics during import wallet flow'), () => {
         launchArgs: {
           sendMetaMetricsinE2E: true,
         },
-      },
-      async ({ mockServer }) => {
+      } as Parameters<typeof withFixtures>[0],
+      async ({ mockServer }: { mockServer: import('mockttp').Mockttp; contractRegistry: { getContractAddress: (contractName: string) => string }; localNodes: unknown }) => {
         await importWalletWithRecoveryPhrase({
           seedPhrase: IDENTITY_TEAM_SEED_PHRASE,
           password: IDENTITY_TEAM_PASSWORD,
@@ -66,6 +66,10 @@ describe(SmokeCore('Analytics during import wallet flow'), () => {
         const walletSetupCompletedEvent = events.find(
           (event) => event.event === EVENT_NAME.WALLET_SETUP_COMPLETED,
         );
+
+        if (!walletImportedEvent || !walletSetupCompletedEvent) {
+          throw new Error('Expected analytics events were not found.');
+        }
 
         await Assertions.checkIfObjectsMatch(
           walletSetupCompletedEvent.properties,
@@ -91,8 +95,8 @@ describe(SmokeCore('Analytics during import wallet flow'), () => {
         launchArgs: {
           sendMetaMetricsinE2E: true,
         },
-      },
-      async ({ mockServer }) => {
+      } as Parameters<typeof withFixtures>[0],
+      async ({ mockServer }: { mockServer: import('mockttp').Mockttp; contractRegistry: { getContractAddress: (contractName: string) => string }; localNodes: unknown }) => {
         await CreateNewWallet();
 
         const events = await getEventsPayloads(mockServer, [
@@ -102,12 +106,17 @@ describe(SmokeCore('Analytics during import wallet flow'), () => {
 
         await Assertions.checkIfArrayHasLength(events, 2);
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const walletCreatedEvent = events.find(
           (event) => event.event === EVENT_NAME.WALLET_CREATED,
         );
         const walletSetupCompletedEvent = events.find(
           (event) => event.event === EVENT_NAME.WALLET_SETUP_COMPLETED,
         );
+
+        if (!walletSetupCompletedEvent) {
+          throw new Error('Expected wallet setup completed event was not found.');
+        }
 
         await Assertions.checkIfObjectsMatch(
           walletSetupCompletedEvent.properties,
@@ -129,8 +138,8 @@ describe(SmokeCore('Analytics during import wallet flow'), () => {
         launchArgs: {
           sendMetaMetricsinE2E: true,
         },
-      },
-      async ({ mockServer }) => {
+      } as Parameters<typeof withFixtures>[0],
+      async ({ mockServer }: { mockServer: import('mockttp').Mockttp; contractRegistry: { getContractAddress: (contractName: string) => string }; localNodes: unknown }) => {
         await importWalletWithRecoveryPhrase({
           seedPhrase: IDENTITY_TEAM_SEED_PHRASE,
           password: IDENTITY_TEAM_PASSWORD,

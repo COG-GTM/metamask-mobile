@@ -32,14 +32,17 @@ describe(SmokeConfirmations('Security Alert API - Signature'), () => {
     await Assertions.checkIfVisible(SigningBottomSheet.typedRequest);
   };
 
-  const runTest = async (testSpecificMock, alertAssertion) => {
+  const runTest = async (
+    testSpecificMock: { GET?: unknown[]; POST?: unknown[] },
+    alertAssertion: () => Promise<void>,
+  ) => {
     await withFixtures(
       {
         dapp: true,
         fixture: defaultFixture,
         restartDevice: true,
         testSpecificMock,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await navigateToTestDApp();
         await alertAssertion();
@@ -73,7 +76,7 @@ describe(SmokeConfirmations('Security Alert API - Signature'), () => {
     await runTest(testSpecificMock, async () => {
       try {
         await Assertions.checkIfNotVisible(
-          ConfirmationView.securityAlertBanner,
+          (ConfirmationView.securityAlertBanner as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>),
         );
       } catch (e) {
         // eslint-disable-next-line no-console

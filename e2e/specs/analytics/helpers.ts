@@ -1,16 +1,27 @@
+import type { Mockttp, MockedEndpoint } from 'mockttp';
 import { E2E_METAMETRICS_TRACK_URL } from '../../../app/util/test/utils';
+
+export interface MetaMetricsEventPayload {
+  event: string;
+  properties: Record<string, unknown>;
+}
 
 /**
  * Retrieves payloads of requests matching specified metametrics events.
- * @param {Object} mockServer - The mock server instance.
- * @param {Array<string>} [events] - Event names to filter payloads. If not provided, all events are returned. i.e. ['event1', 'event2']
- * @returns {Promise<Array>} Filtered request payloads.
+ * @param mockServer - The mock server instance.
+ * @param events - Event names to filter payloads. If not provided, all events are returned.
+ * @returns Filtered request payloads.
  */
-export const getEventsPayloads = async (mockServer, events = []) => {
-  const waitForPendingEndpoints = async (timeout = 5000) => {
+export const getEventsPayloads = async (
+  mockServer: Mockttp,
+  events: string[] = [],
+): Promise<MetaMetricsEventPayload[]> => {
+  const waitForPendingEndpoints = async (
+    timeout = 5000,
+  ): Promise<MockedEndpoint[]> => {
     const startTime = Date.now();
 
-    const checkPendingEndpoints = async () => {
+    const checkPendingEndpoints = async (): Promise<MockedEndpoint[]> => {
       const mockedEndpoints = await mockServer.getMockedEndpoints();
       const pendingEndpoints = await Promise.all(
         mockedEndpoints.map((endpoint) => endpoint.isPending()),
@@ -55,9 +66,11 @@ export const getEventsPayloads = async (mockServer, events = []) => {
 
   const payloads = (
     await Promise.all(matchingRequests.map((req) => req.body?.getJson()))
-  ).filter(Boolean);
+  ).filter(Boolean) as MetaMetricsEventPayload[];
 
   return payloads
-    .filter((payload) => events.length === 0 || events.includes(payload.event))
+    .filter(
+      (payload) => events.length === 0 || events.includes(payload.event),
+    )
     .map(({ event, properties }) => ({ event, properties }));
 };

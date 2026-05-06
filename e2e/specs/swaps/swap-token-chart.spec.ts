@@ -129,7 +129,7 @@ describe(Regression('Swap from Token view'), () => {
       ActivitiesView.swapActivityTitle(sourceTokenSymbol, destTokenSymbol),
     );
     await Assertions.checkIfElementToHaveText(
-      ActivitiesView.transactionStatus(FIRST_ROW),
+      (ActivitiesView.transactionStatus(FIRST_ROW) as unknown as Promise<Detox.IndexableNativeElement>),
       ActivitiesViewSelectorsText.CONFIRM_TEXT,
       120000,
     );

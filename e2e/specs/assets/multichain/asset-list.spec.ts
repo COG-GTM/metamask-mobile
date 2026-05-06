@@ -62,11 +62,12 @@ describe(SmokeNetworkAbstractions('Import Tokens'), () => {
     const avax = WalletView.tokenInWallet(AVAX_NAME);
     const bnb = WalletView.tokenInWallet(BNB_NAME);
     await Assertions.checkIfVisible(eth);
-    await Assertions.checkIfNotVisible(avax);
-    await Assertions.checkIfNotVisible(bnb);
+    await Assertions.checkIfNotVisible((avax as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
+    await Assertions.checkIfNotVisible((bnb as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
   });
 
   it.skip('should switch networks when clicking on swap if an asset on a different network is selected', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const BNB_NAME = 'BNB Smart Chain';
     await WalletView.tapTokenNetworkFilter();
     await WalletView.tapTokenNetworkFilterAll();
@@ -78,7 +79,7 @@ describe(SmokeNetworkAbstractions('Import Tokens'), () => {
 
     await Assertions.checkIfVisible(NetworkEducationModal.container);
     await Assertions.checkIfElementToHaveText(
-      NetworkEducationModal.networkName,
+      (NetworkEducationModal.networkName as unknown as Promise<Detox.IndexableNativeElement>),
       BNB_NAME,
     );
     await NetworkEducationModal.tapGotItButton();
@@ -86,6 +87,7 @@ describe(SmokeNetworkAbstractions('Import Tokens'), () => {
   });
 
   it('should switch networks when clicking on send if an asset on a different network is selected', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const BNB_NAME = 'BNB Smart Chain';
     await WalletView.tapTokenNetworkFilter();
     await WalletView.tapTokenNetworkFilterAll();
@@ -97,7 +99,7 @@ describe(SmokeNetworkAbstractions('Import Tokens'), () => {
 
     await Assertions.checkIfVisible(NetworkEducationModal.container);
     await Assertions.checkIfElementToHaveText(
-      NetworkEducationModal.networkName,
+      (NetworkEducationModal.networkName as unknown as Promise<Detox.IndexableNativeElement>),
       BNB_NAME,
     );
     await TestHelpers.delay(1500); // Nasty work. Only adding delay because app is slow on CI.

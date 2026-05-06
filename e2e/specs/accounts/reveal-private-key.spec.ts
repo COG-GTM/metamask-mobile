@@ -155,6 +155,6 @@ describe(Regression('reveal private key'), () => {
       INCORRECT_PASSWORD,
     );
     await Assertions.checkIfVisible(RevealPrivateKey.passwordWarning);
-    await Assertions.checkIfNotVisible(RevealPrivateKey.revealPrivateKeyButton);
+    await Assertions.checkIfNotVisible((RevealPrivateKey.revealPrivateKeyButton as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
   });
 });

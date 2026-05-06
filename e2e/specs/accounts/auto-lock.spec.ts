@@ -53,7 +53,7 @@ const isIOS = device.getPlatform() === 'ios';
     await TabBarComponent.tapWallet();
     await device.sendToHome();
     await TestHelpers.launchApp();
-    await Assertions.checkIfNotVisible(WalletView.container);
+    await Assertions.checkIfNotVisible((WalletView.container as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
     await Assertions.checkIfVisible(LoginView.container);
   });
 });

@@ -37,7 +37,7 @@ describe(Regression('Term of Use Modal'), () => {
     await TermsOfUseModal.tapScrollEndButton();
     await TermsOfUseModal.tapAgreeCheckBox();
     await TermsOfUseModal.tapAcceptButton();
-    await Assertions.checkIfNotVisible(TermsOfUseModal.container);
+    await Assertions.checkIfNotVisible((TermsOfUseModal.container as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
     await Assertions.checkIfVisible(ImportWalletView.container);
   });
 
@@ -47,6 +47,6 @@ describe(Regression('Term of Use Modal'), () => {
     await OnboardingCarouselView.tapOnGetStartedButton();
     await Assertions.checkIfVisible(OnboardingView.container);
     await OnboardingView.tapImportWalletFromSeedPhrase();
-    await Assertions.checkIfNotVisible(TermsOfUseModal.container);
+    await Assertions.checkIfNotVisible((TermsOfUseModal.container as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
   });
 });

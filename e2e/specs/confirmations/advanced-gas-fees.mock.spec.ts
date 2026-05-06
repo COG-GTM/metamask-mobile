@@ -38,7 +38,7 @@ describe(SmokeConfirmations('Advanced Gas Fees and Priority Tests'), () => {
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
         testSpecificMock,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
 

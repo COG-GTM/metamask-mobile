@@ -39,7 +39,7 @@ describe(SmokeNetworkAbstractions('Fiat On Testnets Setting'), () => {
 
         // Verify no fiat values displayed
         await Assertions.checkIfElementToHaveText(
-          WalletView.totalBalance,
+          (WalletView.totalBalance as unknown as Promise<Detox.IndexableNativeElement>),
           '$0.00',
         );
 
@@ -56,7 +56,7 @@ describe(SmokeNetworkAbstractions('Fiat On Testnets Setting'), () => {
         // Verify fiat values are displayed
         await TabBarComponent.tapWallet();
         await Assertions.checkIfElementNotToHaveText(
-          WalletView.totalBalance,
+          (WalletView.totalBalance as unknown as Promise<Detox.IndexableNativeElement>),
           '$0',
         );
       },

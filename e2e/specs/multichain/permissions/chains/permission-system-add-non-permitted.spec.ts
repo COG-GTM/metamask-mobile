@@ -39,7 +39,7 @@ describe(
             .withChainPermission()
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
 
@@ -74,7 +74,7 @@ describe(
             ])
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
 
@@ -91,7 +91,7 @@ describe(
           await TestHelpers.delay(3000);
           await Browser.navigateToTestDApp();
           await Assertions.checkIfNotVisible(
-            NetworkNonPemittedBottomSheet.addThisNetworkTitle,
+            (NetworkNonPemittedBottomSheet.addThisNetworkTitle as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>),
           );
         },
       );
@@ -106,7 +106,7 @@ describe(
             .withChainPermission()
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
 
@@ -150,7 +150,7 @@ describe(
             ]) // Initialize with Ethereum mainnet and Sepolia
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
 
@@ -181,7 +181,7 @@ describe(
           await TabBarComponent.tapWallet();
           await Assertions.checkIfVisible(WalletView.container);
           const networkPicker = await WalletView.getNavbarNetworkPicker();
-          await Assertions.checkIfElementHasLabel(networkPicker, SEPOLIA);
+          await Assertions.checkIfElementHasLabel((networkPicker as unknown as Promise<Detox.IndexableNativeElement>), SEPOLIA);
         },
       );
     });
@@ -195,7 +195,7 @@ describe(
             .withChainPermission() // Initialize with only Ethereum mainnet
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
 
@@ -235,7 +235,7 @@ describe(
           await Assertions.checkIfVisible(WalletView.container);
           const networkPicker = await WalletView.getNavbarNetworkPicker();
           await Assertions.checkIfElementHasLabel(
-            networkPicker,
+            (networkPicker as unknown as Promise<Detox.IndexableNativeElement>),
             'Linea Sepolia',
           );
         },

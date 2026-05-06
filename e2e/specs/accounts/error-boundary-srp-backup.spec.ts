@@ -32,7 +32,7 @@ describe(SmokeNetworkExpansion('Error Boundary Screen'), () => {
           .build(),
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
 

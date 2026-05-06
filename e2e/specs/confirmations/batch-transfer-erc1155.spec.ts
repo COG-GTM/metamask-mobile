@@ -44,8 +44,8 @@ describe(SmokeConfirmations('ERC1155 token'), () => {
         ganacheOptions: defaultGanacheOptions,
         smartContract: ERC1155_CONTRACT,
         testSpecificMock,
-      },
-      async ({ contractRegistry }) => {
+      } as Parameters<typeof withFixtures>[0],
+      async ({ contractRegistry }: { mockServer: import('mockttp').Mockttp; contractRegistry: { getContractAddress: (contractName: string) => string }; localNodes: unknown }) => {
         const erc1155Address = await contractRegistry.getContractAddress(
           ERC1155_CONTRACT,
         );

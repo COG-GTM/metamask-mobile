@@ -1,7 +1,14 @@
 import { AuthenticationController } from '@metamask/profile-sync-controller';
+import type { CompletedRequest, Mockttp } from 'mockttp';
 import { UserStorageMockttpController } from './user-storage/userStorageMockttpController';
 import { getDecodedProxiedURL } from './helpers';
 import { USER_STORAGE_FEATURE_NAMES } from '@metamask/profile-sync-controller/sdk';
+
+interface MockAPIResponse {
+  requestMethod: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  url: string;
+  response: unknown;
+}
 
 const AuthMocks = AuthenticationController.Mocks;
 
@@ -11,7 +18,7 @@ const AuthMocks = AuthenticationController.Mocks;
  * @param server - server obj used to mock our endpoints
  * @param userStorageMockttpController - optional controller to mock user storage endpoints
  */
-export async function mockIdentityServices(server) {
+export async function mockIdentityServices(server: Mockttp) {
   // Auth
   mockAPICall(server, AuthMocks.getMockAuthNonceResponse());
   mockAPICall(server, AuthMocks.getMockAuthLoginResponse());
@@ -35,7 +42,7 @@ export async function mockIdentityServices(server) {
   };
 }
 
-function mockAPICall(server, response) {
+function mockAPICall(server: Mockttp, response: MockAPIResponse) {
   let requestRuleBuilder;
 
   if (response.requestMethod === 'GET') {
@@ -55,7 +62,7 @@ function mockAPICall(server, response) {
   }
 
   requestRuleBuilder
-    ?.matching((request) => {
+    ?.matching((request: CompletedRequest) => {
       const url = getDecodedProxiedURL(request.url);
 
       return url.includes(String(response.url));
@@ -71,10 +78,13 @@ const INFURA_URL = 'https://mainnet.infura.io/v3/';
 
 /**
  * Sets up mock responses for Infura balance checks and account syncing
- * @param {Object} mockServer - The server object to set up the mock responses on
- * @param {Array<String>} accounts - List of account addresses to mock balances for
+ * @param mockServer - The server object to set up the mock responses on
+ * @param accounts - List of account addresses to mock balances for
  */
-export const setupAccountMockedBalances = async (mockServer, accounts) => {
+export const setupAccountMockedBalances = async (
+  mockServer: Mockttp,
+  accounts: string[],
+) => {
   if (!accounts.length) {
     return;
   }
@@ -82,7 +92,7 @@ export const setupAccountMockedBalances = async (mockServer, accounts) => {
   for (const account of accounts) {
     await mockServer
       .forPost('/proxy')
-      .matching((request) => {
+      .matching((request: CompletedRequest) => {
         const url = getDecodedProxiedURL(request.url);
         return url.includes(INFURA_URL);
       })

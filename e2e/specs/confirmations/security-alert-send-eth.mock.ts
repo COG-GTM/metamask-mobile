@@ -33,13 +33,16 @@ describe(SmokeConfirmations('Security Alert API - Send flow'), () => {
     await AmountView.tapNextButton();
   };
 
-  const runTest = async (testSpecificMock, alertAssertion) => {
+  const runTest = async (
+    testSpecificMock: { GET?: unknown[]; POST?: unknown[] },
+    alertAssertion: () => Promise<void>,
+  ) => {
     await withFixtures(
       {
         fixture: defaultFixture,
         restartDevice: true,
         testSpecificMock,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await navigateToSendConfirmation();
         await alertAssertion();
@@ -50,7 +53,7 @@ describe(SmokeConfirmations('Security Alert API - Send flow'), () => {
   it('should not show security alerts for benign requests', async () => {
     const testSpecificMock = {
       GET: [
-        mockEvents.GET.remoteFeatureFlags,
+        (mockEvents.GET as Record<string, unknown>).remoteFeatureFlags,
       ],
       POST: [mockEvents.POST.securityAlertApiValidate],
     };
@@ -58,7 +61,7 @@ describe(SmokeConfirmations('Security Alert API - Send flow'), () => {
     await runTest(testSpecificMock, async () => {
       try {
         await Assertions.checkIfNotVisible(
-          TransactionConfirmationView.securityAlertBanner,
+          (TransactionConfirmationView.securityAlertBanner as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>),
         );
       } catch (e) {
         // eslint-disable-next-line no-console
@@ -70,7 +73,7 @@ describe(SmokeConfirmations('Security Alert API - Send flow'), () => {
   it('should show security alerts for malicious request', async () => {
     const testSpecificMock = {
       GET: [
-        mockEvents.GET.remoteFeatureFlags,
+        (mockEvents.GET as Record<string, unknown>).remoteFeatureFlags,
       ],
       POST: [
         {
@@ -96,7 +99,7 @@ describe(SmokeConfirmations('Security Alert API - Send flow'), () => {
   it('should show security alerts for error when validating request fails', async () => {
     const testSpecificMock = {
       GET: [
-        mockEvents.GET.remoteFeatureFlags,
+        (mockEvents.GET as Record<string, unknown>).remoteFeatureFlags,
         {
           urlEndpoint:
             'https://static.cx.metamask.io/api/v1/confirmations/ppom/ppom_version.json',

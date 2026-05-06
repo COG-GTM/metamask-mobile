@@ -30,10 +30,10 @@ describe(SmokeNetworkAbstractions('Chain Permission System'), () => {
           fixture: new FixtureBuilder()
             .withNetworkController(CustomNetworks.ElysiumTestnet)
             .withNetworkController(CustomNetworks.EthereumMainCustom)
-            .withPermissionController()
+            .withPermissionController(undefined as unknown as Record<string, unknown>)
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           // Setup: Login and navigate to browser
           await loginToApp();
@@ -59,7 +59,7 @@ describe(SmokeNetworkAbstractions('Chain Permission System'), () => {
           await Assertions.checkIfVisible(WalletView.container);
           const networkPicker = await WalletView.getNavbarNetworkPicker();
           await Assertions.checkIfElementHasLabel(
-            networkPicker,
+            (networkPicker as unknown as Promise<Detox.IndexableNativeElement>),
             CustomNetworks.ElysiumTestnet.providerConfig.nickname,
           );
         },

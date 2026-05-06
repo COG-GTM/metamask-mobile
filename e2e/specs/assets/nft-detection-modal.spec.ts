@@ -29,7 +29,7 @@ describe(SmokeNetworkAbstractions('NFT Detection Modal'), () => {
           .build(),
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await Assertions.checkIfVisible(NftDetectionModal.container);
@@ -62,7 +62,7 @@ describe(SmokeNetworkAbstractions('NFT Detection Modal'), () => {
           .build(),
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
 

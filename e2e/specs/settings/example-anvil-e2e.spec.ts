@@ -25,7 +25,7 @@ describe('NFT Details page', () => {
         restartDevice: true,
         localNodeOptions: [{ type: 'anvil' }],
         //   ganacheOptions: defaultGanacheOptions,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         // Launch app and login
         await loginToApp();

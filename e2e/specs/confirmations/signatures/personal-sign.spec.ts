@@ -36,7 +36,7 @@ describe(SmokeConfirmations('Personal Sign'), () => {
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
         testSpecificMock,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
 
@@ -46,14 +46,14 @@ describe(SmokeConfirmations('Personal Sign'), () => {
         await TestDApp.tapPersonalSignButton();
         await Assertions.checkIfVisible(SigningBottomSheet.personalRequest);
         await SigningBottomSheet.tapCancelButton();
-        await Assertions.checkIfNotVisible(SigningBottomSheet.typedRequest);
-        await Assertions.checkIfNotVisible(SigningBottomSheet.personalRequest);
+        await Assertions.checkIfNotVisible((SigningBottomSheet.typedRequest as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
+        await Assertions.checkIfNotVisible((SigningBottomSheet.personalRequest as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
 
         await TestDApp.tapPersonalSignButton();
         await Assertions.checkIfVisible(SigningBottomSheet.personalRequest);
         await SigningBottomSheet.tapSignButton();
-        await Assertions.checkIfNotVisible(SigningBottomSheet.typedRequest);
-        await Assertions.checkIfNotVisible(SigningBottomSheet.personalRequest);
+        await Assertions.checkIfNotVisible((SigningBottomSheet.typedRequest as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
+        await Assertions.checkIfNotVisible((SigningBottomSheet.personalRequest as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
       },
     );
   });

@@ -1,4 +1,4 @@
-// @ts-check
+import type { CompletedRequest, Mockttp } from 'mockttp';
 import {
   getMockAuthNonceResponse,
   getMockAuthLoginResponse,
@@ -76,12 +76,18 @@ export function getMockFeatureAnnouncementItemId() {
   );
 }
 
+interface MockAPIResponse {
+  requestMethod: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  url: string | RegExp;
+  response: unknown;
+}
+
 /**
  * E2E mock setup for notification APIs (Notifications, Push Notifications)
  *
- * @param {import('mockttp').Mockttp} server - obj used to mock our endpoints
+ * @param server - obj used to mock our endpoints
  */
-export async function mockNotificationServices(server) {
+export async function mockNotificationServices(server: Mockttp) {
   // Auth
   mockAPICall(server, getMockAuthNonceResponse());
   mockAPICall(server, getMockAuthLoginResponse());
@@ -123,16 +129,7 @@ export async function mockNotificationServices(server) {
   };
 }
 
-/**
- *
- * @param {import('mockttp').Mockttp} server
- * @param {{
- *   requestMethod: 'GET' | 'POST' | 'PUT' | 'DELETE';
- *   url: string | RegExp;
- *   response: unknown;
- * }} response
- */
-function mockAPICall(server, response) {
+function mockAPICall(server: Mockttp, response: MockAPIResponse) {
   let requestRuleBuilder;
 
   if (response.requestMethod === 'GET') {
@@ -152,7 +149,7 @@ function mockAPICall(server, response) {
   }
 
   requestRuleBuilder
-    ?.matching((request) => {
+    ?.matching((request: CompletedRequest) => {
       const url = getDecodedProxiedURL(request.url);
 
       return url.includes(String(response.url));

@@ -25,7 +25,7 @@ describe(
   SmokeWalletPlatform('Account syncing - syncs previously synced accounts'),
   () => {
     const TEST_SPECIFIC_MOCK_SERVER_PORT = 8001;
-    let mockServer;
+    let mockServer: import('mockttp').Mockttp;
 
     beforeAll(async () => {
         const segmentMock = {
@@ -121,10 +121,12 @@ describe(
       );
 
       for (const event of events) {
-        await Assertions.checkIfValueIsPresent(
-          event.properties,
-          'profile_id',
-        );
+        await (
+          Assertions.checkIfValueIsPresent as unknown as (
+            value: unknown,
+            key?: string,
+          ) => Promise<void>
+        )(event.properties, 'profile_id');
       }
 
     });

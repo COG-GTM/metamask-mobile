@@ -60,8 +60,8 @@ describe(SmokeNetworkAbstractions('Import Tokens'), () => {
     await SortModal.tapSortAlphabetically();
 
     const tokens = await WalletView.getTokensInWallet();
-    const tokensAttributes = await tokens.getAttributes();
-    const label = tokensAttributes.label;
+    const tokensAttributes = (await tokens.getAttributes()) as Detox.IosElementAttributes;
+    const label = tokensAttributes.label ?? '';
 
     // Ensure `label` contains "Aave" followed (somewhere) by "Ethereum".
     const textOrderRegex = new RegExp('Aave([\\s\\S]*?)Ethereum', 'i');
@@ -76,8 +76,8 @@ describe(SmokeNetworkAbstractions('Import Tokens'), () => {
     await SortModal.tapSortFiatAmount();
 
     const tokens = await WalletView.getTokensInWallet();
-    const tokensAttributes = await tokens.getAttributes();
-    const label = tokensAttributes.label;
+    const tokensAttributes = (await tokens.getAttributes()) as Detox.IosElementAttributes;
+    const label = tokensAttributes.label ?? '';
 
     // Ensure `label` contains "Ethereum" followed (somewhere) by "Aave".
     const textOrderRegex = new RegExp('Ethereum([\\s\\S]*?)Aave', 'i');

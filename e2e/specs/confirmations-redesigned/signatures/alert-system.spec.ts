@@ -31,7 +31,10 @@ describe(SmokeConfirmationsRedesigned('Alert System - Signature'), () => {
     await TestHelpers.reverseServerPort();
   });
 
-  const runTest = async (testSpecificMock, alertAssertion) => {
+  const runTest = async (
+    testSpecificMock: { GET?: unknown[]; POST?: unknown[] },
+    alertAssertion: () => Promise<void>,
+  ) => {
     await withFixtures(
       {
         dapp: true,
@@ -47,7 +50,7 @@ describe(SmokeConfirmationsRedesigned('Alert System - Signature'), () => {
           ],
           POST: [...(testSpecificMock.POST ?? [])],
         },
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await TabBarComponent.tapBrowser();
@@ -72,7 +75,7 @@ describe(SmokeConfirmationsRedesigned('Alert System - Signature'), () => {
 
       await runTest(testSpecificMock, async () => {
         try {
-          await Assertions.checkIfNotVisible(AlertSystem.securityAlertBanner);
+          await Assertions.checkIfNotVisible((AlertSystem.securityAlertBanner as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log('The banner alert is not visible');
@@ -108,7 +111,7 @@ describe(SmokeConfirmationsRedesigned('Alert System - Signature'), () => {
         // Acknowledge and confirm alert
         await AlertSystem.tapConfirmAlertCheckbox();
         await AlertSystem.tapConfirmAlertButton();
-        await Assertions.checkIfNotVisible(RequestTypes.TypedSignRequest);
+        await Assertions.checkIfNotVisible((RequestTypes.TypedSignRequest as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
       });
     });
 
@@ -156,7 +159,7 @@ describe(SmokeConfirmationsRedesigned('Alert System - Signature'), () => {
           testSpecificMock: {
             GET: [mockEvents.GET.remoteFeatureFlagsReDesignedConfirmations],
           },
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
           await TabBarComponent.tapBrowser();
@@ -175,7 +178,7 @@ describe(SmokeConfirmationsRedesigned('Alert System - Signature'), () => {
           // Acknowledge and confirm alert
           await AlertSystem.tapConfirmAlertCheckbox();
           await AlertSystem.tapConfirmAlertButton();
-          await Assertions.checkIfNotVisible(RequestTypes.PersonalSignRequest);
+          await Assertions.checkIfNotVisible((RequestTypes.PersonalSignRequest as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
         },
       );
     });

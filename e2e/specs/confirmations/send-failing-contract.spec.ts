@@ -42,8 +42,8 @@ describe(SmokeConfirmations('Failing contracts'), () => {
         ganacheOptions: defaultGanacheOptions,
         smartContract: FAILING_CONTRACT,
         testSpecificMock,
-      },
-      async ({ contractRegistry }) => {
+      } as Parameters<typeof withFixtures>[0],
+      async ({ contractRegistry }: { mockServer: import('mockttp').Mockttp; contractRegistry: { getContractAddress: (contractName: string) => string }; localNodes: unknown }) => {
         const failingAddress = await contractRegistry.getContractAddress(
           FAILING_CONTRACT,
         );

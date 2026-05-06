@@ -59,7 +59,7 @@ describe(Regression('Change Account Name'), () => {
 
     // Verify updated name
     await Assertions.checkIfElementToHaveText(
-      WalletView.accountName,
+      (WalletView.accountName as unknown as Promise<Detox.IndexableNativeElement>),
       NEW_ACCOUNT_NAME,
     );
 
@@ -74,7 +74,7 @@ describe(Regression('Change Account Name'), () => {
     // Unlock wallet and verify updated name persists
     await loginToApp();
     await Assertions.checkIfElementToHaveText(
-      WalletView.accountName,
+      (WalletView.accountName as unknown as Promise<Detox.IndexableNativeElement>),
       NEW_ACCOUNT_NAME,
     );
   });
@@ -98,7 +98,7 @@ describe(Regression('Change Account Name'), () => {
 
     // Verify updated name
     await Assertions.checkIfElementToHaveText(
-      WalletView.accountName,
+      (WalletView.accountName as unknown as Promise<Detox.IndexableNativeElement>),
       NEW_IMPORTED_ACCOUNT_NAME,
     );
 
@@ -113,7 +113,7 @@ describe(Regression('Change Account Name'), () => {
     // Unlock wallet and verify updated name persists
     await loginToApp();
     await Assertions.checkIfElementToHaveText(
-      WalletView.accountName,
+      (WalletView.accountName as unknown as Promise<Detox.IndexableNativeElement>),
       NEW_IMPORTED_ACCOUNT_NAME,
     );
   });

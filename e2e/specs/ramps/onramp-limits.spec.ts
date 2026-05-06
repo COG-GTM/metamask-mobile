@@ -33,7 +33,7 @@ describe(SmokeTrade('On-Ramp Limits'), () => {
     await withFixtures(
       {
         fixture: new FixtureBuilder()
-          .withRampsSelectedRegion(franceRegion)
+          .withRampsSelectedRegion(franceRegion as unknown as null)
           .withRampsSelectedPaymentMethod()
           .build(),
         restartDevice: true,

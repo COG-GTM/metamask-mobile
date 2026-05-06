@@ -23,9 +23,9 @@ describe(SmokeNetworkExpansion('Chain Permission Management'), () => {
       await withFixtures(
         {
           dapp: true,
-          fixture: new FixtureBuilder().withPermissionController().build(),
+          fixture: new FixtureBuilder().withPermissionController(undefined as unknown as Record<string, unknown>).build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
           await TabBarComponent.tapBrowser();
@@ -45,9 +45,9 @@ describe(SmokeNetworkExpansion('Chain Permission Management'), () => {
       await withFixtures(
         {
           dapp: true,
-          fixture: new FixtureBuilder().withPermissionController().build(),
+          fixture: new FixtureBuilder().withPermissionController(undefined as unknown as Record<string, unknown>).build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           // Initial setup: Login and navigate to test dapp
           await loginToApp();

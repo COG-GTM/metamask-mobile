@@ -60,9 +60,9 @@ describe(Regression('Deep linking Tests'), () => {
   });
 
   it('should enable remember me', async () => {
-    await Assertions.checkIfToggleIsOn(SecurityAndPrivacy.rememberMeToggle);
+    await Assertions.checkIfToggleIsOn((SecurityAndPrivacy.rememberMeToggle as unknown as Promise<Detox.IndexableNativeElement>));
     await SecurityAndPrivacy.tapTurnOnRememberMeToggle();
-    await Assertions.checkIfToggleIsOff(SecurityAndPrivacy.rememberMeToggle);
+    await Assertions.checkIfToggleIsOff((SecurityAndPrivacy.rememberMeToggle as unknown as Promise<Detox.IndexableNativeElement>));
   });
 
   it('should relaunch the app then enable remember me', async () => {
@@ -101,7 +101,7 @@ describe(Regression('Deep linking Tests'), () => {
 
     await Assertions.checkIfVisible(NetworkApprovalBottomSheet.container);
     await Assertions.checkIfElementToHaveText(
-      NetworkApprovalBottomSheet.displayName,
+      (NetworkApprovalBottomSheet.displayName as unknown as Promise<Detox.IndexableNativeElement>),
       PopularNetworksList.BNB.providerConfig.nickname,
     );
     await NetworkApprovalBottomSheet.tapApproveButton();
@@ -118,7 +118,7 @@ describe(Regression('Deep linking Tests'), () => {
 
     await Assertions.checkIfVisible(NetworkApprovalBottomSheet.container);
     await Assertions.checkIfElementToHaveText(
-      NetworkApprovalBottomSheet.displayName,
+      (NetworkApprovalBottomSheet.displayName as unknown as Promise<Detox.IndexableNativeElement>),
       PopularNetworksList.Polygon.providerConfig.nickname,
     );
 
@@ -130,7 +130,7 @@ describe(Regression('Deep linking Tests'), () => {
 
     await Assertions.checkIfVisible(WalletView.container);
     await Assertions.checkIfElementToHaveText(
-      WalletView.navbarNetworkText,
+      (WalletView.navbarNetworkText as unknown as Promise<Detox.IndexableNativeElement>),
       PopularNetworksList.Polygon.providerConfig.nickname,
     );
   });
@@ -199,6 +199,6 @@ describe(Regression('Deep linking Tests'), () => {
     await TestHelpers.checkIfElementWithTextIsVisible('app.sushi.com', 0);
 
     await Assertions.checkIfVisible(Browser.browserScreenID);
-    await Assertions.checkIfNotVisible(ConnectBottomSheet.container);
+    await Assertions.checkIfNotVisible((ConnectBottomSheet.container as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
   });
 });

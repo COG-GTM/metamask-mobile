@@ -36,7 +36,7 @@ describe(SmokeRamps('Off-ramp token amounts'), () => {
       {
         fixture: new FixtureBuilder()
           .withNetworkController(CustomNetworks.Tenderly.Mainnet)
-          .withRampsSelectedRegion(franceRegion)
+          .withRampsSelectedRegion(franceRegion as unknown as null)
           .withRampsSelectedPaymentMethod()
           .build(),
         restartDevice: true,

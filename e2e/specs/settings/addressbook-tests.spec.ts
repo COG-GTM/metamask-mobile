@@ -94,7 +94,7 @@ describe(SmokeWalletPlatform('Addressbook Tests'), () => {
     await AddContactView.typeInAddress(INVALID_ADDRESS);
     await Assertions.checkIfVisible(CommonView.errorMessage);
     await Assertions.checkIfElementToHaveText(
-      CommonView.errorMessage,
+      (CommonView.errorMessage as unknown as Promise<Detox.IndexableNativeElement>),
       enContent.transaction.invalid_address,
     );
     await AddContactView.clearAddressInputBox();

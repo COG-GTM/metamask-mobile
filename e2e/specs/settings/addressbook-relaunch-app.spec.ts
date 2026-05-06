@@ -26,9 +26,9 @@ describe(SmokeWalletPlatform('Relaunch App after Adding Address to Contact Book'
     await withFixtures(
       {
         dapp: true,
-        fixture: new FixtureBuilder().withPermissionController().build(),
+        fixture: new FixtureBuilder().withPermissionController(undefined as unknown as Record<string, unknown>).build(),
         restartDevice: true,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
         await device.disableSynchronization();

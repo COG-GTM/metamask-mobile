@@ -35,7 +35,7 @@ describe(SmokeNetworkAbstractions('Chain Permission Management'), () => {
           .withNetworkController(PopularNetworksList.Polygon)
           .build(),
         restartDevice: true,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         // Setup: Navigate to browser and login
         await loginToApp();

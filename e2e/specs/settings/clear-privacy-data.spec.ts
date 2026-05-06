@@ -28,7 +28,7 @@ describe(Regression('Clear Privacy data'), () => {
           .withPermissionControllerConnectedToTestDapp()
           .build(),
         restartDevice: true,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
 
@@ -49,7 +49,7 @@ describe(Regression('Clear Privacy data'), () => {
 
         await TabBarComponent.tapBrowser();
         await BrowserView.tapNetworkAvatarButtonOnBrowser();
-        await Assertions.checkIfNotVisible(ConnectedAccountsModal.title);
+        await Assertions.checkIfNotVisible((ConnectedAccountsModal.title as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
       },
     );
   });

@@ -35,8 +35,8 @@ describe(SmokeNetworkAbstractions('Asset Watch:'), () => {
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
         smartContract: ERC20_CONTRACT,
-      },
-      async ({ contractRegistry }) => {
+      } as Parameters<typeof withFixtures>[0],
+      async ({ contractRegistry }: { mockServer: import('mockttp').Mockttp; contractRegistry: { getContractAddress: (contractName: string) => string }; localNodes: unknown }) => {
         const hstAddress = await contractRegistry.getContractAddress(
           ERC20_CONTRACT,
         );
@@ -52,7 +52,7 @@ describe(SmokeNetworkAbstractions('Asset Watch:'), () => {
         await TestDApp.tapAddERC20TokenToWalletButton();
         await Assertions.checkIfVisible(AssetWatchBottomSheet.container);
         await AssetWatchBottomSheet.tapAddTokenButton();
-        await Assertions.checkIfNotVisible(AssetWatchBottomSheet.container);
+        await Assertions.checkIfNotVisible((AssetWatchBottomSheet.container as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
 
         await TabBarComponent.tapWallet();
         await Assertions.checkIfVisible(WalletView.tokenInWallet('100 TST'));

@@ -53,7 +53,7 @@ describe(
       // Remove the imported account
       await AccountListBottomSheet.longPressAccountAtIndex(ACCOUNT_INDEX);
       await AccountListBottomSheet.tapYesToRemoveImportedAccountAlertButton();
-      await Assertions.checkIfNotVisible(AccountListBottomSheet.accountTypeLabel);
+      await Assertions.checkIfNotVisible((AccountListBottomSheet.accountTypeLabel as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>));
 
       // Import account again
       await AccountListBottomSheet.tapAddAccountButton();
@@ -64,8 +64,9 @@ describe(
       await SuccessImportAccountView.tapCloseButton();
 
       const tagElement = await AccountListBottomSheet.accountTagLabel;
-      const tagElementAttribute = await tagElement.getAttributes();
-      const tagLabel = tagElementAttribute.label;
+      const tagElementAttribute =
+        (await tagElement.getAttributes()) as Detox.IosElementAttributes;
+      const tagLabel = tagElementAttribute.label ?? '';
 
       // Check if the account type label is visible
       await Assertions.checkIfTextMatches(

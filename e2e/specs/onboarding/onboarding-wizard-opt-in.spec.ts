@@ -69,7 +69,7 @@ describe(
         await Assertions.checkIfVisible(OnboardingWizardModal.stepOneContainer);
         await OnboardingWizardModal.tapNoThanksButton();
         await Assertions.checkIfNotVisible(
-          OnboardingWizardModal.stepOneContainer,
+          (OnboardingWizardModal.stepOneContainer as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>),
         );
       } catch {
         //
@@ -105,14 +105,14 @@ describe(
       await SettingsView.tapSecurityAndPrivacy();
       await SecurityAndPrivacy.scrollToMetaMetrics();
       await TestHelpers.delay(2000);
-      await Assertions.checkIfToggleIsOn(SecurityAndPrivacy.metaMetricsToggle);
+      await Assertions.checkIfToggleIsOn((SecurityAndPrivacy.metaMetricsToggle as unknown as Promise<Detox.IndexableNativeElement>));
     });
 
     it('should disable metametrics', async () => {
       await SecurityAndPrivacy.tapMetaMetricsToggle();
       await TestHelpers.delay(1500);
       await CommonView.tapOkAlert();
-      await Assertions.checkIfToggleIsOff(SecurityAndPrivacy.metaMetricsToggle);
+      await Assertions.checkIfToggleIsOff((SecurityAndPrivacy.metaMetricsToggle as unknown as Promise<Detox.IndexableNativeElement>));
     });
 
     it('should relaunch the app and log in', async () => {
@@ -130,7 +130,7 @@ describe(
         await Assertions.checkIfVisible(OnboardingWizardModal.stepOneContainer);
         await OnboardingWizardModal.tapNoThanksButton();
         await Assertions.checkIfNotVisible(
-          OnboardingWizardModal.stepOneContainer,
+          (OnboardingWizardModal.stepOneContainer as unknown as Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>),
         );
       } catch {
         /* eslint-disable no-console */
@@ -143,7 +143,7 @@ describe(
       await TabBarComponent.tapSettings();
       await SettingsView.tapSecurityAndPrivacy();
       await SecurityAndPrivacy.scrollToMetaMetrics();
-      await Assertions.checkIfToggleIsOff(SecurityAndPrivacy.metaMetricsToggle);
+      await Assertions.checkIfToggleIsOff((SecurityAndPrivacy.metaMetricsToggle as unknown as Promise<Detox.IndexableNativeElement>));
     });
   },
 );
