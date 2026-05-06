@@ -23,16 +23,27 @@ export const DEFAULT_IMPORTED_FIXTURE_ACCOUNT =
 
 const DAPP_URL = 'localhost';
 
+interface FixtureBuilderOptions {
+  onboarding?: boolean;
+}
+
+// The fixture is an opaque MetaMask redux state blob assembled dynamically by
+// the builder methods. Typing every deeply-nested controller would duplicate
+// large portions of `app/`'s type definitions, so we keep the internal shape
+// loose and rely on the public method signatures for type safety.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FixtureState = Record<string, any>;
+
 /**
  * FixtureBuilder class provides a fluent interface for building fixture data.
  */
 class FixtureBuilder {
+  fixture: FixtureState = {};
+
   /**
    * Create a new instance of FixtureBuilder.
-   * @param {Object} options - Options for the fixture builder.
-   * @param {boolean} options.onboarding - Flag indicating if onboarding fixture should be used.
    */
-  constructor({ onboarding = false } = {}) {
+  constructor({ onboarding = false }: FixtureBuilderOptions = {}) {
     // Initialize the fixture based on the onboarding flag
     onboarding === true
       ? this.withOnboardingFixture()
@@ -44,7 +55,7 @@ class FixtureBuilder {
    * @param {any} asyncState - The value to set for asyncState.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withAsyncState(asyncState) {
+  withAsyncState(asyncState: unknown): this {
     this.fixture.asyncState = asyncState;
     return this;
   }
@@ -54,7 +65,7 @@ class FixtureBuilder {
    * @param {any} state - The value to set for state.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withState(state) {
+  withState(state: Record<string, unknown>): this {
     this.fixture.state = state;
     return this;
   }
@@ -63,7 +74,7 @@ class FixtureBuilder {
    * Set the default fixture values.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withDefaultFixture() {
+  withDefaultFixture(): this {
     this.fixture = {
       state: {
         legalNotices: {
@@ -657,7 +668,7 @@ class FixtureBuilder {
    * @param {object} data - Data to merge into the PermissionController's state.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withPermissionController(data) {
+  withPermissionController(data: Record<string, unknown>): this {
     merge(this.fixture.state.engine.backgroundState.PermissionController, data);
     return this;
   }
@@ -667,12 +678,12 @@ class FixtureBuilder {
    * @param {object} data - Data to merge into the NetworkController's state.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withNetworkController(data) {
+  withNetworkController(data: Record<string, unknown>): this {
     const networkController =
       this.fixture.state.engine.backgroundState.NetworkController;
 
-    // Extract providerConfig data
-    const { providerConfig } = data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { providerConfig } = data as { providerConfig: any };
 
     // Generate a unique key for the new network client ID
     const newNetworkClientId = `networkClientId${
@@ -712,10 +723,17 @@ class FixtureBuilder {
    * @param {Object} additionalPermissions - Additional permissions to merge with permission
    * @returns {Object} Permission controller configuration object
    */
-  createPermissionControllerConfig(additionalPermissions = {}) {
-    const caip25CaveatValue = additionalPermissions?.[
+  createPermissionControllerConfig(
+    additionalPermissions: Record<string, unknown> = {},
+  ): Record<string, unknown> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const additional = additionalPermissions as any;
+    const caip25CaveatValue = additional?.[
       Caip25EndowmentPermissionName
-    ]?.caveats?.find((caveat) => caveat.type === Caip25CaveatType)?.value ?? {
+    ]?.caveats?.find(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (caveat: any) => caveat.type === Caip25CaveatType,
+    )?.value ?? {
       optionalScopes: {
         'eip155:1': { accounts: [] },
       },
@@ -754,14 +772,16 @@ class FixtureBuilder {
    * @param {Object} additionalPermissions - Additional permissions to merge.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withPermissionControllerConnectedToTestDapp(additionalPermissions = {}) {
+  withPermissionControllerConnectedToTestDapp(
+    additionalPermissions: Record<string, unknown> = {},
+  ): this {
     this.withPermissionController(
       this.createPermissionControllerConfig(additionalPermissions),
     );
     return this;
   }
 
-  withRampsSelectedRegion(region = null) {
+  withRampsSelectedRegion(region: Record<string, unknown> | null = null): this {
     const defaultRegion = {
       currencies: ['/currencies/fiat/xcd'],
       emoji: '🇱🇨',
@@ -777,7 +797,7 @@ class FixtureBuilder {
     this.fixture.state.fiatOrders.selectedRegionAgg = region ?? defaultRegion;
     return this;
   }
-  withRampsSelectedPaymentMethod() {
+  withRampsSelectedPaymentMethod(): this {
     const paymentType = '/payments/debit-credit-card';
 
     // Use the provided region or fallback to the default
@@ -790,7 +810,7 @@ class FixtureBuilder {
    * @param {string[]} chainIds - Array of chain IDs to permit (defaults to ['0x1']), other nexts like linea mainnet 0xe708
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withChainPermission(chainIds = ['0x1']) {
+  withChainPermission(chainIds: string[] = ['0x1']): this {
     const optionalScopes = chainIds
       .map((id) => ({
         [`eip155:${parseInt(id)}`]: { accounts: [] },
@@ -812,7 +832,10 @@ class FixtureBuilder {
         caveats: [
           {
             type: Caip25CaveatType,
-            value: setPermittedEthChainIds(defaultCaip25CaveatValue, chainIds),
+            value: setPermittedEthChainIds(
+              defaultCaip25CaveatValue,
+              chainIds as `0x${string}`[],
+            ),
           },
         ],
         date: 1732715918637,
@@ -829,14 +852,14 @@ class FixtureBuilder {
    * Set the fixture to an empty object for onboarding.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withOnboardingFixture() {
+  withOnboardingFixture(): this {
     this.fixture = {
       asyncState: {},
     };
     return this;
   }
 
-  withGanacheNetwork() {
+  withGanacheNetwork(): this {
     const fixtures = this.fixture.state.engine.backgroundState;
 
     // Generate a unique key for the new network client ID
@@ -873,7 +896,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withSepoliaNetwork() {
+  withSepoliaNetwork(): this {
     const fixtures = this.fixture.state.engine.backgroundState;
 
     // Extract Sepolia network configuration from CustomNetworks
@@ -913,7 +936,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withPopularNetworks() {
+  withPopularNetworks(): this {
     const fixtures = this.fixture.state.engine.backgroundState;
     const networkConfigurationsByChainId = {
       ...fixtures.NetworkController.networkConfigurationsByChainId,
@@ -921,7 +944,8 @@ class FixtureBuilder {
 
     // Loop through each network in PopularNetworksList
     for (const key in PopularNetworksList) {
-      const network = PopularNetworksList[key];
+      const network =
+        PopularNetworksList[key as keyof typeof PopularNetworksList];
       const {
         rpcUrl: rpcTarget,
         chainId,
@@ -964,7 +988,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withPreferencesController(data) {
+  withPreferencesController(data: Record<string, unknown>): this {
     merge(
       this.fixture.state.engine.backgroundState.PreferencesController,
       data,
@@ -972,7 +996,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withKeyringController() {
+  withKeyringController(): this {
     merge(this.fixture.state.engine.backgroundState.KeyringController, {
       keyrings: [
         {
@@ -987,7 +1011,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withImportedAccountKeyringController() {
+  withImportedAccountKeyringController(): this {
     merge(this.fixture.state.engine.backgroundState.KeyringController, {
       keyrings: [
         {
@@ -1005,7 +1029,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withImportedHdKeyringController() {
+  withImportedHdKeyringController(): this {
     merge(this.fixture.state.engine.backgroundState.KeyringController, {
       keyrings: [
         {
@@ -1033,7 +1057,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withImportedHdKeyringAndTwoDefaultAccountsOneImportedHdAccountKeyringController() {
+  withImportedHdKeyringAndTwoDefaultAccountsOneImportedHdAccountKeyringController(): this {
     merge(this.fixture.state.engine.backgroundState.KeyringController, {
       keyrings: [
         {
@@ -1061,7 +1085,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withTokens(tokens) {
+  withTokens(tokens: unknown): this {
     merge(this.fixture.state.engine.backgroundState.TokensController, {
       allTokens: {
         [CHAIN_IDS.MAINNET]: {
@@ -1072,14 +1096,16 @@ class FixtureBuilder {
     return this;
   }
 
-  withIncomingTransactionPreferences(incomingTransactionPreferences) {
+  withIncomingTransactionPreferences(
+    incomingTransactionPreferences: unknown,
+  ): this {
     merge(this.fixture.state.engine.backgroundState.PreferencesController, {
       showIncomingTransactions: incomingTransactionPreferences,
     });
     return this;
   }
 
-  withTransactions(transactions) {
+  withTransactions(transactions: unknown): this {
     merge(this.fixture.state.engine.backgroundState.TransactionController, {
       transactions,
     });
@@ -1090,7 +1116,7 @@ class FixtureBuilder {
    * Build and return the fixture object.
    * @returns {Object} - The built fixture object.
    */
-  build() {
+  build(): FixtureState {
     return this.fixture;
   }
 }

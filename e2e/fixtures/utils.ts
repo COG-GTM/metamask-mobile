@@ -8,40 +8,59 @@ import { DEFAULT_DAPP_SERVER_PORT } from './fixture-helper';
 
 export const DEFAULT_MOCKSERVER_PORT = 8000;
 
-function transformToValidPort(defaultPort, pid) {
+function transformToValidPort(defaultPort: number, pid: number): number {
   // Improve uniqueness by using a simple transformation
-  const transformedPort = (parseInt(pid, 10) % 100000) + defaultPort;
+  const transformedPort = (pid % 100000) + defaultPort;
 
   // Ensure the transformed port falls within the valid port range (0-65535)
   return transformedPort % 65536;
 }
 
-function getServerPort(defaultPort) {
+function getServerPort(defaultPort: number): number {
   if (process.env.CI) {
     return transformToValidPort(defaultPort, process.pid);
   }
   return defaultPort;
 }
 
-export function getGanachePort() {
+export function getGanachePort(): number {
   return getServerPort(DEFAULT_GANACHE_PORT);
 }
 
-export function getFixturesServerPort() {
+export function getFixturesServerPort(): number {
   return getServerPort(DEFAULT_FIXTURE_SERVER_PORT);
 }
 
-export function getLocalTestDappPort() {
+export function getLocalTestDappPort(): number {
   return getServerPort(DEFAULT_DAPP_SERVER_PORT);
 }
 
-export function getMockServerPort() {
+export function getMockServerPort(): number {
   return getServerPort(DEFAULT_MOCKSERVER_PORT);
 }
 
-export function buildPermissions(chainIds) {
+interface ScopeEntry {
+  accounts: string[];
+}
+
+type OptionalScopes = Record<string, ScopeEntry>;
+
+export function buildPermissions(chainIds: string[]): Record<
+  string,
+  {
+    caveats: {
+      type: string;
+      value: {
+        optionalScopes: OptionalScopes;
+        requiredScopes: Record<string, ScopeEntry>;
+        sessionProperties: Record<string, unknown>;
+        isMultichainOrigin: boolean;
+      };
+    }[];
+  }
+> {
   // default mainnet
-  const optionalScopes = { 'eip155:1': { accounts: [] } };
+  const optionalScopes: OptionalScopes = { 'eip155:1': { accounts: [] } };
 
   for (const chainId of chainIds) {
     optionalScopes[`eip155:${parseInt(chainId)}`] = {
