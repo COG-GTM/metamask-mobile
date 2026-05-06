@@ -7,11 +7,22 @@ import {
   ViewStyle,
 } from 'react-native';
 import AndroidMediaPlayer from './AndroidMediaPlayer';
-import Video, { TextTrack, SelectedTrack } from 'react-native-video';
+import Video, {
+  TextTracks,
+  SelectedTrack,
+  VideoRef,
+  ReactVideoSource,
+} from 'react-native-video';
 import Device from '../../../util/device';
 import Loader from './Loader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { TapGestureHandler } from 'react-native-gesture-handler';
+import { TapGestureHandler as TapGestureHandlerBase } from 'react-native-gesture-handler';
+
+const TapGestureHandler = TapGestureHandlerBase as React.ComponentType<
+  React.PropsWithChildren<
+    React.ComponentProps<typeof TapGestureHandlerBase>
+  >
+>;
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -87,7 +98,7 @@ interface MediaPlayerProps {
   /**
    * Array of remote possible text tracks to display
    */
-  textTracks?: TextTrack[];
+  textTracks?: TextTracks;
   /**
    * The selected text track to display by id, language, title, index
    */
@@ -103,7 +114,7 @@ function MediaPlayer({
 }: MediaPlayerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const videoRef = useRef<Video>(null);
+  const videoRef = useRef<VideoRef>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const videoControlsOpacity = useSharedValue(0);
@@ -124,7 +135,9 @@ function MediaPlayer({
 
   // Video source can be either a number returned by import for bundled files
   // or an object of the form { uri: 'http://...' } for remote files
-  const source = Number.isInteger(uri) ? (uri as number) : { uri: uri as string };
+  const source: ReactVideoSource = Number.isInteger(uri)
+    ? (uri as unknown as ReactVideoSource)
+    : ({ uri: uri as string } as unknown as ReactVideoSource);
 
   const videoControlsStyle = useAnimatedStyle(() => ({
     ...styles.videoControlsStyle,
