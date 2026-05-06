@@ -1,21 +1,53 @@
-export default function migrate(state) {
-  // This migration ensures that ignored tokens are in the correct form
-  const allIgnoredTokens =
-    state.engine.backgroundState.TokensController.allIgnoredTokens || {};
-  const ignoredTokens =
-    state.engine.backgroundState.TokensController.ignoredTokens || [];
+import { isObject } from '@metamask/utils';
+import { captureException } from '@sentry/react-native';
 
-  const reduceTokens = (tokens) =>
-    tokens.reduce((final, token) => {
+interface TokenLike {
+  address?: string;
+  [key: string]: unknown;
+}
+
+type TokenInput = string | TokenLike;
+
+type IgnoredTokenMap = Record<string, Record<string, TokenInput[]>>;
+
+export default function migrate(state: unknown) {
+  if (
+    !isObject(state) ||
+    !isObject(state.engine) ||
+    !isObject(state.engine.backgroundState) ||
+    !isObject(state.engine.backgroundState.TokensController)
+  ) {
+    captureException(
+      new Error(
+        `Migration 8: Invalid state structure for TokensController migration`,
+      ),
+    );
+    return state;
+  }
+
+  const tokensController = state.engine.backgroundState.TokensController as {
+    allIgnoredTokens?: IgnoredTokenMap;
+    ignoredTokens?: TokenInput[];
+    [key: string]: unknown;
+  };
+
+  // This migration ensures that ignored tokens are in the correct form
+  const allIgnoredTokens = tokensController.allIgnoredTokens || {};
+  const ignoredTokens = tokensController.ignoredTokens || [];
+
+  const reduceTokens = (tokens: TokenInput[]): string[] =>
+    tokens.reduce<string[]>((final, token) => {
       const tokenAddress =
-        (typeof token === 'string' && token) || token?.address || '';
+        (typeof token === 'string' && token) ||
+        (typeof token === 'object' && token?.address) ||
+        '';
       tokenAddress && final.push(tokenAddress);
       return final;
     }, []);
 
   const newIgnoredTokens = reduceTokens(ignoredTokens);
 
-  const newAllIgnoredTokens = {};
+  const newAllIgnoredTokens: Record<string, Record<string, string[]>> = {};
   Object.entries(allIgnoredTokens).forEach(
     ([chainId, tokensByAccountAddress]) => {
       Object.entries(tokensByAccountAddress).forEach(
@@ -35,7 +67,7 @@ export default function migrate(state) {
   );
 
   state.engine.backgroundState.TokensController = {
-    ...state.engine.backgroundState.TokensController,
+    ...tokensController,
     allIgnoredTokens: newAllIgnoredTokens,
     ignoredTokens: newIgnoredTokens,
   };

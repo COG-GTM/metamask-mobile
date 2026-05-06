@@ -8,6 +8,12 @@ jest.mock('@sentry/react-native', () => ({
 }));
 const mockedCaptureException = jest.mocked(captureException);
 
+interface MigratedState {
+  engine: { backgroundState: Record<string, unknown> };
+}
+
+const runMigrate = (state: unknown) => migrate(state) as MigratedState;
+
 describe('Migration #24', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
@@ -61,7 +67,7 @@ describe('Migration #24', () => {
       },
     };
 
-    const newState = migrate(state);
+    const newState = runMigrate(state);
 
     expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
       networkId: null,
@@ -80,7 +86,7 @@ describe('Migration #24', () => {
       },
     };
 
-    const newState = migrate(state);
+    const newState = runMigrate(state);
 
     expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
       networkId: '1',

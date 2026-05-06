@@ -1,6 +1,29 @@
-export default function migrate(state) {
-  const allTokens = state.engine.backgroundState.TokensController.allTokens;
-  const newAllTokens = {};
+import { isObject } from '@metamask/utils';
+import { captureException } from '@sentry/react-native';
+
+type ChainTokenMap = Record<string, Record<string, unknown>>;
+
+export default function migrate(state: unknown) {
+  if (
+    !isObject(state) ||
+    !isObject(state.engine) ||
+    !isObject(state.engine.backgroundState) ||
+    !isObject(state.engine.backgroundState.TokensController)
+  ) {
+    captureException(
+      new Error(
+        `Migration 7: Invalid state structure for TokensController migration`,
+      ),
+    );
+    return state;
+  }
+
+  const tokensController = state.engine.backgroundState.TokensController as {
+    allTokens?: Record<string, Record<string, unknown>>;
+    ignoredTokens?: unknown;
+  };
+  const allTokens = tokensController.allTokens;
+  const newAllTokens: ChainTokenMap = {};
   if (allTokens) {
     Object.keys(allTokens).forEach((accountAddress) => {
       Object.keys(allTokens[accountAddress]).forEach((chainId) => {
@@ -17,11 +40,10 @@ export default function migrate(state) {
     });
   }
 
-  const ignoredTokens =
-    state.engine.backgroundState.TokensController.ignoredTokens;
-  const newAllIgnoredTokens = {};
-  Object.keys(allTokens).forEach((accountAddress) => {
-    Object.keys(allTokens[accountAddress]).forEach((chainId) => {
+  const ignoredTokens = tokensController.ignoredTokens;
+  const newAllIgnoredTokens: ChainTokenMap = {};
+  Object.keys(allTokens ?? {}).forEach((accountAddress) => {
+    Object.keys(allTokens?.[accountAddress] ?? {}).forEach((chainId) => {
       if (newAllIgnoredTokens[chainId] === undefined) {
         newAllIgnoredTokens[chainId] = {
           [accountAddress]: ignoredTokens,

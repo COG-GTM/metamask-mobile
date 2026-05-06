@@ -1,22 +1,67 @@
-import { NetworksChainId } from '@metamask/controller-utils';
+import { isObject } from '@metamask/utils';
+import { captureException } from '@sentry/react-native';
 
-export default function migrate(state) {
-  const { allTokens } = state.engine.backgroundState.TokensController;
-  const { allCollectibleContracts, allCollectibles } =
-    state.engine.backgroundState.CollectiblesController;
-  const { frequentRpcList } =
-    state.engine.backgroundState.PreferencesController;
+interface FrequentRpcEntry {
+  chainId: string;
+  [key: string]: unknown;
+}
 
-  const newAllCollectibleContracts = {};
-  const newAllCollectibles = {};
-  const newAllTokens = {};
+type AddressMap<T> = Record<string, Record<string, T>>;
+
+// Decimal chain IDs of well-known networks at the time this migration ran.
+// Replaces the deprecated `NetworksChainId` enum from `@metamask/controller-utils`.
+const NETWORKS_CHAIN_ID: Record<string, string> = {
+  mainnet: '1',
+  ropsten: '3',
+  rinkeby: '4',
+  goerli: '5',
+  kovan: '42',
+  rpc: '',
+  localhost: '',
+};
+
+export default function migrate(state: unknown) {
+  if (
+    !isObject(state) ||
+    !isObject(state.engine) ||
+    !isObject(state.engine.backgroundState) ||
+    !isObject(state.engine.backgroundState.TokensController) ||
+    !isObject(state.engine.backgroundState.CollectiblesController) ||
+    !isObject(state.engine.backgroundState.PreferencesController)
+  ) {
+    captureException(
+      new Error(`Migration 4: Invalid state structure for migration`),
+    );
+    return state;
+  }
+
+  const tokensController = state.engine.backgroundState.TokensController as {
+    allTokens: AddressMap<unknown>;
+  };
+  const collectiblesController = state.engine.backgroundState
+    .CollectiblesController as {
+    allCollectibleContracts: AddressMap<unknown>;
+    allCollectibles: AddressMap<unknown>;
+  };
+  const preferencesController = state.engine.backgroundState
+    .PreferencesController as {
+    frequentRpcList: FrequentRpcEntry[];
+  };
+
+  const { allTokens } = tokensController;
+  const { allCollectibleContracts, allCollectibles } = collectiblesController;
+  const { frequentRpcList } = preferencesController;
+
+  const newAllCollectibleContracts: AddressMap<unknown> = {};
+  const newAllCollectibles: AddressMap<unknown> = {};
+  const newAllTokens: AddressMap<unknown> = {};
 
   Object.keys(allTokens).forEach((address) => {
     newAllTokens[address] = {};
     Object.keys(allTokens[address]).forEach((networkType) => {
-      if (NetworksChainId[networkType]) {
-        newAllTokens[address][NetworksChainId[networkType]] =
-          allTokens[address][networkType];
+      const mappedChainId = NETWORKS_CHAIN_ID[networkType];
+      if (mappedChainId) {
+        newAllTokens[address][mappedChainId] = allTokens[address][networkType];
       } else {
         frequentRpcList.forEach(({ chainId }) => {
           newAllTokens[address][chainId] = allTokens[address][networkType];
@@ -28,8 +73,9 @@ export default function migrate(state) {
   Object.keys(allCollectibles).forEach((address) => {
     newAllCollectibles[address] = {};
     Object.keys(allCollectibles[address]).forEach((networkType) => {
-      if (NetworksChainId[networkType]) {
-        newAllCollectibles[address][NetworksChainId[networkType]] =
+      const mappedChainId = NETWORKS_CHAIN_ID[networkType];
+      if (mappedChainId) {
+        newAllCollectibles[address][mappedChainId] =
           allCollectibles[address][networkType];
       } else {
         frequentRpcList.forEach(({ chainId }) => {
@@ -43,8 +89,9 @@ export default function migrate(state) {
   Object.keys(allCollectibleContracts).forEach((address) => {
     newAllCollectibleContracts[address] = {};
     Object.keys(allCollectibleContracts[address]).forEach((networkType) => {
-      if (NetworksChainId[networkType]) {
-        newAllCollectibleContracts[address][NetworksChainId[networkType]] =
+      const mappedChainId = NETWORKS_CHAIN_ID[networkType];
+      if (mappedChainId) {
+        newAllCollectibleContracts[address][mappedChainId] =
           allCollectibleContracts[address][networkType];
       } else {
         frequentRpcList.forEach(({ chainId }) => {
@@ -56,11 +103,11 @@ export default function migrate(state) {
   });
 
   state.engine.backgroundState.TokensController = {
-    ...state.engine.backgroundState.TokensController,
+    ...tokensController,
     allTokens: newAllTokens,
   };
   state.engine.backgroundState.CollectiblesController = {
-    ...state.engine.backgroundState.CollectiblesController,
+    ...collectiblesController,
     allCollectibles: newAllCollectibles,
     allCollectibleContracts: newAllCollectibleContracts,
   };

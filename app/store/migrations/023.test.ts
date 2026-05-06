@@ -11,6 +11,15 @@ jest.mock('@sentry/react-native', () => ({
 }));
 const mockedCaptureException = jest.mocked(captureException);
 
+interface MigratedState {
+  user: typeof userInitialState & {
+    ambiguousAddressEntries?: Record<string, string[]>;
+  };
+  engine: { backgroundState: Record<string, unknown> };
+}
+
+const runMigrate = (state: unknown) => migrate(state) as MigratedState;
+
 describe('Migration #23', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
@@ -136,7 +145,7 @@ describe('Migration #23', () => {
 
   for (const { errorMessage, scenario, state } of invalidBackgroundStates) {
     it(`should capture exception if ${scenario}`, () => {
-      const newState = migrate(state);
+      const newState = runMigrate(state);
 
       expect(newState).toStrictEqual(state);
       expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
@@ -155,7 +164,7 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = runMigrate(state);
 
     expect(newState).toStrictEqual(state);
   });
@@ -181,7 +190,7 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = runMigrate(state);
 
     expect(newState).toStrictEqual(state);
   });
@@ -229,7 +238,7 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = runMigrate(state);
 
     expect(newState.user).toStrictEqual(userInitialState);
     expect(newState.engine.backgroundState).toStrictEqual(
@@ -315,7 +324,7 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = runMigrate(state);
 
     expect(newState.user).toStrictEqual(
       merge({}, userInitialState, {
@@ -402,7 +411,7 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = runMigrate(state);
 
     expect(newState.user).toStrictEqual(userInitialState);
     expect(newState.engine.backgroundState).toStrictEqual(

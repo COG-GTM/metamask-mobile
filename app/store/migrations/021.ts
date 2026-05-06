@@ -1,6 +1,15 @@
+import { isObject } from '@metamask/utils';
 import { IPFS_DEFAULT_GATEWAY_URL } from '../../../app/constants/network';
 
-export default function migrate(state) {
+export default function migrate(state: unknown) {
+  if (
+    !isObject(state) ||
+    !isObject(state.engine) ||
+    !isObject(state.engine.backgroundState)
+  ) {
+    return state;
+  }
+
   const outdatedIpfsGateways = [
     'https://hardbin.com/ipfs/',
     'https://ipfs.greyh.at/ipfs/',
@@ -8,13 +17,17 @@ export default function migrate(state) {
     'https://cdn.cwinfo.net/ipfs/',
   ];
 
+  const preferencesController = state.engine.backgroundState
+    .PreferencesController as
+    | { ipfsGateway?: string; [key: string]: unknown }
+    | undefined;
+
   const isUsingOutdatedGateway = outdatedIpfsGateways.includes(
-    state.engine.backgroundState?.PreferencesController?.ipfsGateway,
+    preferencesController?.ipfsGateway as string,
   );
 
-  if (isUsingOutdatedGateway) {
-    state.engine.backgroundState.PreferencesController.ipfsGateway =
-      IPFS_DEFAULT_GATEWAY_URL;
+  if (isUsingOutdatedGateway && preferencesController) {
+    preferencesController.ipfsGateway = IPFS_DEFAULT_GATEWAY_URL;
   }
   return state;
 }
