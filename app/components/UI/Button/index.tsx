@@ -1,11 +1,27 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet } from 'react-native';
-import GenericButton from '../GenericButton'; // eslint-disable-line import/no-unresolved
+import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import GenericButton from '../GenericButton';
 import { useTheme } from '../../../util/theme';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface ButtonProps {
+  /**
+   * Children components of the Button
+   * it can be a text node, an image, or an icon
+   * or an Array with a combination of them
+   */
+  children?: React.ReactNode;
+  /**
+   * Styles to be applied to the Button
+   */
+  style?: StyleProp<ViewStyle>;
+  /**
+   * Function to be called on press
+   */
+  onPress?: () => void;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     button: {
       flex: 1,
@@ -27,7 +43,7 @@ const createStyles = (colors) =>
  * If you would like to help with the replacement of the old `Button` component, please submit a pull request against this GitHub issue:
  * {@link https://github.com/MetaMask/metamask-mobile/issues/8108}
  */
-const Button = (props) => {
+const Button = (props: ButtonProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -36,23 +52,6 @@ const Button = (props) => {
       {props.children}
     </GenericButton>
   );
-};
-
-Button.propTypes = {
-  /**
-   * Children components of the Button
-   * it can be a text node, an image, or an icon
-   * or an Array with a combination of them
-   */
-  children: PropTypes.any,
-  /**
-   * Styles to be applied to the Button
-   */
-  style: ViewPropTypes.style,
-  /**
-   * Function to be called on press
-   */
-  onPress: PropTypes.func,
 };
 
 export default Button;

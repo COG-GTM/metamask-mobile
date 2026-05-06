@@ -1,4 +1,9 @@
-import StyledButton from './StyledButton'; // eslint-disable-line import/no-unresolved
+// This barrel file is overshadowed by index.android.tsx / index.ios.tsx at
+// runtime via the React Native platform-extension resolver. It exists as a
+// fallback for TypeScript consumers that import the directory without a
+// platform context.
+import StyledButton from './index.ios';
+
 /**
  * @deprecated The `<StyledButton>` component has been deprecated in favor of the new `<Button>` component from the component-library.
  * Please update your code to use the new `<Button>` component instead, which can be found at app/component-library/components/Buttons/Button/Button.tsx.
