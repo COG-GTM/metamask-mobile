@@ -150,7 +150,11 @@ const DetailsModalBody = ({ style, ...props }: StyledProps) => {
     />
   );
 };
-const DetailsModalSection = ({ borderBottom, ...props }: SectionProps) => {
+const DetailsModalSection = ({
+  style: _style,
+  borderBottom,
+  ...props
+}: SectionProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
