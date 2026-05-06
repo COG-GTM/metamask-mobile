@@ -274,7 +274,15 @@ const ERROR_URL_ALLOWLIST = [
  * @param options.sentryId - ID of captured exception
  * @param options.comments - User's feedback/comments
  */
-export const captureSentryFeedback = ({ sentryId, comments }) => {
+interface CaptureSentryFeedbackArgs {
+  sentryId: string;
+  comments: string;
+}
+
+export const captureSentryFeedback = ({
+  sentryId,
+  comments,
+}: CaptureSentryFeedbackArgs): void => {
   const userFeedback = {
     event_id: sentryId,
     name: '',
@@ -284,11 +292,16 @@ export const captureSentryFeedback = ({ sentryId, comments }) => {
   Sentry.captureUserFeedback(userFeedback);
 };
 
-function getProtocolFromURL(url) {
+function getProtocolFromURL(url: string): string {
   return new URL(url).protocol;
 }
 
-function rewriteBreadcrumb(breadcrumb) {
+interface SentryBreadcrumb {
+  data?: { url?: string; to?: string; from?: string; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
+function rewriteBreadcrumb(breadcrumb: SentryBreadcrumb): SentryBreadcrumb {
   if (breadcrumb.data?.url) {
     breadcrumb.data.url = getProtocolFromURL(breadcrumb.data.url);
   }
@@ -302,15 +315,29 @@ function rewriteBreadcrumb(breadcrumb) {
   return breadcrumb;
 }
 
-function rewriteErrorMessages(report, rewriteFn) {
+interface SentryReport {
+  message?: string;
+  exception?: { values?: { value?: string; stacktrace?: { frames?: { filename?: string; [key: string]: unknown }[] }; [key: string]: unknown }[] };
+  contexts?: {
+    device?: { timezone?: string | null; name?: string | null; [key: string]: unknown };
+    appState?: unknown;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+function rewriteErrorMessages(
+  report: SentryReport,
+  rewriteFn: (message: string) => string,
+): void {
   // rewrite top level message
   if (typeof report.message === 'string') {
     /** @todo parse and remove/replace URL(s) found in report.message  */
     report.message = rewriteFn(report.message);
   }
   // rewrite each exception message
-  if (report.exception && report.exception.values) {
-    report.exception.values.forEach((item) => {
+  if (report.exception?.values) {
+    report.exception.values.forEach((item: { value?: string }) => {
       if (typeof item.value === 'string') {
         item.value = rewriteFn(item.value);
       }
@@ -318,8 +345,8 @@ function rewriteErrorMessages(report, rewriteFn) {
   }
 }
 
-function simplifyErrorMessages(report) {
-  rewriteErrorMessages(report, (errorMessage) => {
+function simplifyErrorMessages(report: SentryReport): void {
+  rewriteErrorMessages(report, (errorMessage: string) => {
     // simplify ethjs error messages
     let simplifiedErrorMessage = extractEthJsErrorMessage(errorMessage);
     // simplify 'Transaction Failed: known transaction'
@@ -335,13 +362,13 @@ function simplifyErrorMessages(report) {
   });
 }
 
-function removeDeviceTimezone(report) {
-  if (report.contexts && report.contexts.device)
+function removeDeviceTimezone(report: SentryReport): void {
+  if (report.contexts?.device)
     report.contexts.device.timezone = null;
 }
 
-function removeDeviceName(report) {
-  if (report.contexts && report.contexts.device)
+function removeDeviceName(report: SentryReport): void {
+  if (report.contexts?.device)
     report.contexts.device.name = null;
 }
 
@@ -352,13 +379,19 @@ function removeDeviceName(report) {
  * since the 'context_line' is rather verbose.
  * @param {*} report - the error event
  */
-function removeSES(report) {
-  const stacktraceFrames = report?.exception?.values[0]?.stacktrace?.frames;
+function removeSES(report: SentryReport): void {
+  const stacktraceFrames =
+    report?.exception?.values?.[0]?.stacktrace?.frames;
   if (stacktraceFrames) {
     const filteredFrames = stacktraceFrames.filter(
-      (frame) => frame.filename !== 'app:///ses.cjs',
+      (frame: { filename?: string }) => frame.filename !== 'app:///ses.cjs',
     );
-    report.exception.values[0].stacktrace.frames = filteredFrames;
+    const exceptionValues = report.exception?.values;
+    if (
+      exceptionValues?.[0]?.stacktrace
+    ) {
+      exceptionValues[0].stacktrace.frames = filteredFrames;
+    }
   }
 }
 
@@ -380,35 +413,47 @@ function removeSES(report) {
  * @param {{[key: string]: object | boolean}} mask - The mask to apply to the object
  * @returns {object} - The masked object
  */
-export function maskObject(objectToMask, mask = {}) {
+type MaskValue = boolean | symbol | { [key: string]: MaskValue } | { [key: symbol]: MaskValue };
+type Mask = { [key: string]: MaskValue } & { [key: symbol]: MaskValue };
+
+export function maskObject(
+  objectToMask: Record<string, unknown> | undefined | null,
+  mask: Mask = {} as Mask,
+): Record<string, unknown> {
   if (!objectToMask) return {};
 
   // Include both string and symbol keys.
   const maskKeys = Reflect.ownKeys(mask);
   const allPropertiesMask = maskKeys.includes(AllProperties)
-    ? mask[AllProperties]
+    ? (mask as Record<symbol, MaskValue>)[AllProperties]
     : undefined;
 
-  return Object.keys(objectToMask).reduce((maskedObject, key) => {
+  return Object.keys(objectToMask).reduce<Record<string, unknown>>((maskedObject, key) => {
     // Start with the AllProperties mask if available
     let maskKey = allPropertiesMask;
 
     // If a key-specific mask exists, it overrides the AllProperties mask
-    if (mask[key] !== undefined && mask[key] !== AllProperties) {
-      maskKey = mask[key];
+    if (
+      (mask as Record<string, MaskValue>)[key] !== undefined &&
+      (mask as Record<string, MaskValue>)[key] !== AllProperties
+    ) {
+      maskKey = (mask as Record<string, MaskValue>)[key];
     }
 
     const shouldPrintValue = maskKey === true;
     const shouldIterateSubMask =
       Boolean(maskKey) &&
       typeof maskKey === 'object' &&
-      maskKey !== AllProperties;
+      (maskKey as unknown) !== AllProperties;
     const shouldPrintType = maskKey === undefined || maskKey === false;
 
     if (shouldPrintValue) {
       maskedObject[key] = objectToMask[key];
     } else if (shouldIterateSubMask) {
-      maskedObject[key] = maskObject(objectToMask[key], maskKey);
+      maskedObject[key] = maskObject(
+        objectToMask[key] as Record<string, unknown>,
+        maskKey as Mask,
+      );
     } else if (shouldPrintType) {
       // For excluded fields, return their type or a placeholder
       maskedObject[key] =
@@ -419,7 +464,7 @@ export function maskObject(objectToMask, mask = {}) {
   }, {});
 }
 
-function rewriteReport(report) {
+function rewriteReport(report: SentryReport): SentryReport {
   try {
     // filter out SES from error stack trace
     removeSES(report);
@@ -438,7 +483,11 @@ function rewriteReport(report) {
     removeDeviceName(report);
 
     const appState = store?.getState();
-    const maskedState = maskObject(appState, sentryStateMask);
+    const maskedState = maskObject(
+      appState as unknown as Record<string, unknown>,
+      sentryStateMask as unknown as Mask,
+    );
+    if (!report.contexts) report.contexts = {};
     report.contexts.appState = maskedState;
   } catch (err) {
     console.error('ENTER ERROR OF REPORT ', err);
@@ -453,7 +502,14 @@ function rewriteReport(report) {
  * @param {*} event - to be logged
  * @returns {(event|null)}
  */
-export function excludeEvents(event) {
+interface SentryEvent {
+  transaction?: string;
+  tags?: Record<string, unknown>;
+  start_timestamp?: number;
+  [key: string]: unknown;
+}
+
+export function excludeEvents(event: SentryEvent | null): SentryEvent | null {
   // This is needed because store starts to initialise before performance observers completes to measure app start time
   if (event?.transaction === TraceName.UIStartup) {
     event.tags = getTraceTags(store.getState());
@@ -480,12 +536,14 @@ export function excludeEvents(event) {
   return event;
 }
 
-function sanitizeUrlsFromErrorMessages(report) {
-  rewriteErrorMessages(report, (errorMessage) => {
+function sanitizeUrlsFromErrorMessages(report: SentryReport): void {
+  rewriteErrorMessages(report, (errorMessage: string) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
 
-    urlsInMessage?.forEach((url) => {
-      if (!ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
+    urlsInMessage?.forEach((url: string) => {
+      if (
+        !ERROR_URL_ALLOWLIST.some((allowedUrl: string) => url.match(allowedUrl))
+      ) {
         errorMessage.replace(url, '**');
       }
     });
@@ -493,8 +551,8 @@ function sanitizeUrlsFromErrorMessages(report) {
   });
 }
 
-function sanitizeAddressesFromErrorMessages(report) {
-  rewriteErrorMessages(report, (errorMessage) => {
+function sanitizeAddressesFromErrorMessages(report: SentryReport): void {
+  rewriteErrorMessages(report, (errorMessage: string) => {
     const newErrorMessage = errorMessage.replace(
       regex.replaceNetworkErrorSentry,
       '**',
@@ -508,21 +566,16 @@ function sanitizeAddressesFromErrorMessages(report) {
  * This function is similar to the environment logic used in MetaMask extension.
  * - https://github.com/MetaMask/metamask-extension/blob/34375a57e558853aab95fe35d5f278aa52b66636/app/scripts/lib/setupSentry.js#L91
  *
- * @param {boolean} isDev - Represents if the current environment is development (__DEV__ global variable).
- * @param {string} [metamaskEnvironment='local'] - The environment MetaMask is running in
- *                                                  (process.env.METAMASK_ENVIRONMENT).
- *                                                  It defaults to 'local' if not provided.
- * @param {string} [metamaskBuildType='main'] - The build type of MetaMask
- *                                              (process.env.METAMASK_BUILD_TYPE).
- *                                              It defaults to 'main' if not provided.
- *
- * @returns {string} - "metamaskEnvironment-metamaskBuildType" or just "metamaskEnvironment" if the build type is "main".
+ * @param isDev - Represents if the current environment is development (__DEV__ global variable).
+ * @param metamaskEnvironment - The environment MetaMask is running in (process.env.METAMASK_ENVIRONMENT). Defaults to 'local' if not provided.
+ * @param metamaskBuildType - The build type of MetaMask (process.env.METAMASK_BUILD_TYPE). Defaults to 'main' if not provided.
+ * @returns "metamaskEnvironment-metamaskBuildType" or just "metamaskEnvironment" if the build type is "main".
  */
 export function deriveSentryEnvironment(
-  isDev,
-  metamaskEnvironment = 'local',
-  metamaskBuildType = 'main',
-) {
+  isDev: boolean,
+  metamaskEnvironment: string = 'local',
+  metamaskBuildType: string = 'main',
+): string {
   if (isDev || !metamaskEnvironment) {
     return 'development';
   }
@@ -535,7 +588,7 @@ export function deriveSentryEnvironment(
 }
 
 // Setup sentry remote error reporting
-export function setupSentry() {
+export function setupSentry(): void {
   const dsn = process.env.MM_SENTRY_DSN;
 
   // Disable Sentry for E2E tests or when DSN is not provided
@@ -564,9 +617,21 @@ export function setupSentry() {
       // Set tracesSampleRate to 1.0, as that ensures that every transaction will be sent to Sentry for development builds.
       tracesSampleRate: isDev || isQa ? 1.0 : 0.03,
       profilesSampleRate: 1.0,
-      beforeSend: (report) => rewriteReport(report),
-      beforeBreadcrumb: (breadcrumb) => rewriteBreadcrumb(breadcrumb),
-      beforeSendTransaction: (event) => excludeEvents(event),
+      beforeSend: ((report: unknown) =>
+        rewriteReport(
+          report as SentryReport,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        )) as any,
+      beforeBreadcrumb: ((breadcrumb: unknown) =>
+        rewriteBreadcrumb(
+          breadcrumb as SentryBreadcrumb,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        )) as any,
+      beforeSendTransaction: ((event: unknown) =>
+        excludeEvents(
+          event as SentryEvent,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        )) as any,
       enabled: metricsOptIn === AGREED,
       // Use tracePropagationTargets from v5 SDK as default
       tracePropagationTargets: ['localhost', /^\/(?!\/)/],
@@ -576,4 +641,4 @@ export function setupSentry() {
 }
 
 // eslint-disable-next-line no-empty-function
-export function deleteSentryData() {}
+export function deleteSentryData(): void {}

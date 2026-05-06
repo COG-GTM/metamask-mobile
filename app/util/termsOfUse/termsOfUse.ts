@@ -5,6 +5,9 @@ import Routes from '../../constants/navigation/Routes';
 import { strings } from '../../../locales/i18n';
 import { TermsOfUseModalSelectorsIDs } from '../../../e2e/selectors/Onboarding/TermsOfUseModal.selectors';
 import StorageWrapper from '../../store/storage-wrapper';
+// termsOfUseContent is generated at build time (yarn setup); declared in app/declarations/index.d.ts.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import termsOfUse from './termsOfUseContent';
 
 interface TermsOfUseParamsI {

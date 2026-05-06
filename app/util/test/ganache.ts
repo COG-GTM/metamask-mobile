@@ -12,15 +12,37 @@ const defaultOptions = {
   quiet: false,
 };
 
+export interface GanacheStartOptions {
+  mnemonic: string;
+  blockTime?: number;
+  network_id?: number;
+  port?: number;
+  vmErrorsOnRPCResponse?: boolean;
+  hardfork?: string;
+  quiet?: boolean;
+  [key: string]: unknown;
+}
+
+interface GanacheServer {
+  listen: (port: number) => Promise<void>;
+  close: () => Promise<void>;
+  provider: {
+    request: (args: { method: string; params: unknown[] }) => Promise<unknown>;
+  };
+}
+
 export default class Ganache {
-  async start(opts) {
+  private _server: GanacheServer | undefined;
+
+  async start(opts: GanacheStartOptions): Promise<void> {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
     const options = { ...defaultOptions, ...opts, port: getGanachePort() };
     const { port } = options;
     try {
-      this._server = ganache.server(options);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this._server = ganache.server(options as any) as unknown as GanacheServer;
       await this._server.listen(port);
     } catch (error) {
       console.error(error);
@@ -28,23 +50,27 @@ export default class Ganache {
     }
   }
 
-  getProvider() {
+  getProvider(): GanacheServer['provider'] | undefined {
     return this._server?.provider;
   }
 
-  async getAccounts() {
-    return await this.getProvider().request({
+  async getAccounts(): Promise<string[]> {
+    const provider = this.getProvider();
+    if (!provider) throw new Error('Provider not available');
+    return (await provider.request({
       method: 'eth_accounts',
       params: [],
-    });
+    })) as string[];
   }
 
-  async getBalance() {
+  async getBalance(): Promise<number | string> {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider().request({
+    const provider = this.getProvider();
+    if (!provider) throw new Error('Provider not available');
+    const balanceHex = (await provider.request({
       method: 'eth_getBalance',
       params: [accounts[0], 'latest'],
-    });
+    })) as string;
     const balanceInt = parseInt(balanceHex, 16) / 10 ** 18;
 
     const balanceFormatted =
@@ -53,7 +79,7 @@ export default class Ganache {
     return balanceFormatted;
   }
 
-  async quit() {
+  async quit(): Promise<void> {
     if (!this._server) {
       throw new Error('Server not running yet');
     }

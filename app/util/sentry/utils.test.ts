@@ -261,6 +261,7 @@ describe('captureSentryFeedback', () => {
           },
           PermissionController: undefined,
           PreferencesController: {
+            // @ts-expect-error - displayNftMedia not in test type but exists at runtime
             displayNftMedia: true,
             featureFlags: {},
             identities: {

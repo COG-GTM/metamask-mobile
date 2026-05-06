@@ -419,7 +419,7 @@ describe('Number utils :: renderFromWei', () => {
 });
 
 describe('Number utils :: localizeLargeNumber', () => {
-  let i18n: { t: unknown };
+  let i18n: { t: (key: string) => string };
 
   beforeEach(() => {
     i18n = {
@@ -676,6 +676,7 @@ describe('toHexadecimal', () => {
     expect(toHexadecimal('001')).toEqual('1');
     expect(toHexadecimal('0x01')).toEqual('0x01');
     expect(toHexadecimal(2)).toEqual('2');
+    // @ts-expect-error - intentionally testing without arguments
     expect(toHexadecimal()).toEqual(undefined);
     expect(toHexadecimal(1232)).toEqual('4d0');
     expect(
