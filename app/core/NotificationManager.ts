@@ -478,11 +478,10 @@ class NotificationManager {
       }
     ).subscribeOnceIf(
       'TransactionController:transactionFailed',
-      ({ transactionMeta: txMeta }: { transactionMeta: TransactionMeta }) => {
+      (txMeta: TransactionMeta) => {
         this._failedCallback(txMeta);
       },
-      ({ transactionMeta: txMeta }: { transactionMeta: TransactionMeta }) =>
-        txMeta.id === transaction.id,
+      (txMeta: TransactionMeta) => txMeta.id === transaction.id,
     );
 
     this._transactionSpeedupListener = (

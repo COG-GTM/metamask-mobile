@@ -32,6 +32,8 @@ const defaultOptions = {
 
 type AuthType = 'BIOMETRICS' | 'PASSCODE' | 'REMEMBER_ME';
 
+const privates = new WeakMap<SecureKeychain, { code: string }>();
+
 /**
  * Class that wraps Keychain from react-native-keychain
  * abstracting metamask specific functionality and settings
@@ -42,11 +44,10 @@ class SecureKeychain {
   private static _instance: SecureKeychain | undefined;
 
   isAuthenticating = false;
-  private code: string;
 
   constructor(code: string) {
-    this.code = code;
     if (!SecureKeychain._instance) {
+      privates.set(this, { code });
       SecureKeychain._instance = this;
     } else {
       return SecureKeychain._instance;
@@ -54,11 +55,13 @@ class SecureKeychain {
   }
 
   encryptPassword(password: string): Promise<string> {
-    return encryptor.encrypt(this.code, { password });
+    return encryptor.encrypt(privates.get(this)?.code ?? '', { password });
   }
 
   decryptPassword(str: string): Promise<{ password: string }> {
-    return encryptor.decrypt(this.code, str) as Promise<{ password: string }>;
+    return encryptor.decrypt(privates.get(this)?.code ?? '', str) as Promise<{
+      password: string;
+    }>;
   }
 }
 
