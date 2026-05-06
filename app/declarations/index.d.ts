@@ -8,6 +8,8 @@ declare module 'react-native-fade-in-image';
 
 declare module 'react-native-fast-crypto';
 
+declare module 'human-standard-token-abi';
+
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
