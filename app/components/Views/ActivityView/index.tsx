@@ -3,6 +3,8 @@ import { View, StyleSheet, Text } from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import { isNonEvmAddress } from '../../../core/Multichain/utils';
 import { getHasOrders } from '../../../reducers/fiatOrders';
 import { getTransactionsNavbarOptions } from '../../UI/Navbar';
@@ -40,7 +42,12 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (params) => {
+interface StyleSheetParams {
+  theme: Theme;
+  vars?: Record<string, unknown>;
+}
+
+const createStyles = (params: StyleSheetParams) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -111,9 +118,11 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector(
+    (state: RootState) => getHasOrders(state) || false,
+  );
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
+  const tabViewRef = useRef<{ goToPage: (page: number) => void }>(null);
   const params = useParams();
 
   const isTestnetOrNotPopularNetwork =
