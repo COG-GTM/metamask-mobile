@@ -33,7 +33,7 @@ import TestDApp from './pages/Browser/TestDApp';
 const LOCALHOST_URL = `http://localhost:${getGanachePort()}/`;
 const validAccount = Accounts.getValidAccount();
 
-export const acceptTermOfUse = async () => {
+export const acceptTermOfUse = async (): Promise<void> => {
   // tap on accept term of use screen
   await Assertions.checkIfVisible(TermsOfUseModal.container);
   await TermsOfUseModal.tapScrollEndButton();
@@ -41,7 +41,7 @@ export const acceptTermOfUse = async () => {
   await TermsOfUseModal.tapAcceptButton();
   await Assertions.checkIfNotVisible(TermsOfUseModal.container);
 };
-export const closeOnboardingModals = async () => {
+export const closeOnboardingModals = async (): Promise<void> => {
   /*
 These onboarding modals are becoming a bit wild. We need less of these so we don't
 have to have all these workarounds in the tests
@@ -70,7 +70,7 @@ have to have all these workarounds in the tests
   }
 };
 
-export const skipNotificationsDeviceSettings = async () => {
+export const skipNotificationsDeviceSettings = async (): Promise<void> => {
   await TestHelpers.delay(1000);
 
   try {
@@ -88,22 +88,20 @@ export const skipNotificationsDeviceSettings = async () => {
   }
 };
 
+interface ImportWalletOptions {
+  seedPhrase?: string;
+  password?: string;
+  optInToMetrics?: boolean;
+}
+
 /**
  * Imports a wallet using a secret recovery phrase during the onboarding process.
- *
- * @async
- * @function importWalletWithRecoveryPhrase
- * @param {Object} [options={}] - Options for importing the wallet.
- * @param {string} [options.seedPhrase] - The secret recovery phrase to import the wallet. Defaults to a valid account's seed phrase.
- * @param {string} [options.password] - The password to set for the wallet. Defaults to a valid account's password.
- * @param {boolean} [options.optInToMetrics=true] - Whether to opt in to MetaMetrics. Defaults to true.
- * @returns {Promise<void>} Resolves when the wallet import process is complete.
  */
 export const importWalletWithRecoveryPhrase = async ({
   seedPhrase,
   password,
   optInToMetrics = true,
-} = {}) => {
+}: ImportWalletOptions = {}): Promise<void> => {
   // tap on import seed phrase button
   await Assertions.checkIfVisible(OnboardingCarouselView.container);
   await OnboardingCarouselView.tapOnGetStartedButton();
@@ -138,7 +136,7 @@ export const importWalletWithRecoveryPhrase = async ({
   await closeOnboardingModals();
 };
 
-export const CreateNewWallet = async () => {
+export const CreateNewWallet = async (): Promise<void> => {
   //'should create new wallet'
 
   // tap on import seed phrase button
@@ -165,14 +163,14 @@ export const CreateNewWallet = async () => {
   await TestHelpers.delay(3500);
   await OnboardingSuccessView.tapDone();
   //'Should dismiss Enable device Notifications checks alert'
-  await this.skipNotificationsDeviceSettings();
+  await skipNotificationsDeviceSettings();
   //'Should dismiss Automatic Security checks screen'
   await Assertions.checkIfVisible(EnableAutomaticSecurityChecksView.container);
   await EnableAutomaticSecurityChecksView.tapNoThanks();
 
   // 'should dismiss the onboarding wizard'
   // dealing with flakiness on bitrise.
-  await this.closeOnboardingModals();
+  await closeOnboardingModals();
 
   // Dismissing to protect your wallet modal
   await Assertions.checkIfVisible(ProtectYourWalletModal.collapseWalletModal);
@@ -181,7 +179,7 @@ export const CreateNewWallet = async () => {
   await SkipAccountSecurityModal.tapSkipButton();
 };
 
-export const addLocalhostNetwork = async () => {
+export const addLocalhostNetwork = async (): Promise<void> => {
   await TabBarComponent.tapSettings();
   await SettingsView.tapNetworks();
   await Assertions.checkIfVisible(NetworkView.networkContainer);
@@ -210,7 +208,7 @@ export const addLocalhostNetwork = async () => {
   await Assertions.checkIfNotVisible(NetworkEducationModal.container);
 };
 
-export const switchToSepoliaNetwork = async () => {
+export const switchToSepoliaNetwork = async (): Promise<void> => {
   await WalletView.tapNetworksButtonOnNavBar();
   await NetworkListModal.scrollToBottomOfNetworkList();
   await NetworkListModal.tapTestNetworkSwitch();
@@ -235,14 +233,14 @@ export const switchToSepoliaNetwork = async () => {
   }
 };
 
-export const loginToApp = async () => {
+export const loginToApp = async (): Promise<void> => {
   const PASSWORD = '123123123';
   await Assertions.checkIfVisible(LoginView.container);
   await Assertions.checkIfVisible(LoginView.passwordInput);
   await LoginView.enterPassword(PASSWORD);
 };
 
-export const waitForTestDappToLoad = async () => {
+export const waitForTestDappToLoad = async (): Promise<void> => {
   const MAX_RETRIES = 3;
   const RETRY_DELAY = 5000;
 
@@ -256,7 +254,10 @@ export const waitForTestDappToLoad = async () => {
 
     } catch (error) {
       if (attempt === MAX_RETRIES) {
-        throw new Error(`Test dapp failed to load after ${MAX_RETRIES} attempts: ${error.message}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `Test dapp failed to load after ${MAX_RETRIES} attempts: ${message}`,
+        );
       }
       await TestHelpers.delay(RETRY_DELAY);
     }
