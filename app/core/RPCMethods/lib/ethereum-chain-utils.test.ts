@@ -2,7 +2,12 @@ import { mockNetworkState } from '../../../util/test/network';
 import MetaMetrics from '../../Analytics/MetaMetrics';
 import { MetricsEventBuilder } from '../../Analytics/MetricsEventBuilder';
 import { MetaMetricsEvents } from '../../Analytics';
-import { switchToNetwork } from './ethereum-chain-utils';
+import type { Hex } from '@metamask/utils';
+import type { NetworkConfiguration } from '@metamask/network-controller';
+import {
+  switchToNetwork,
+  type SwitchToNetworkHooks,
+} from './ethereum-chain-utils';
 import { getDefaultCaip25CaveatValue } from '../../Permissions';
 
 jest.mock('../../Analytics/MetaMetrics');
@@ -39,17 +44,17 @@ describe('switchToNetwork', () => {
       build: jest.fn().mockReturnValue(mockMetricsBuilderBuild),
     });
 
-    const mockHooks = {
+    const mockHooks: SwitchToNetworkHooks = {
       getCaveat: jest
         .fn()
         .mockReturnValue({ value: getDefaultCaip25CaveatValue() }),
       requestPermittedChainsPermissionIncrementalForOrigin: jest.fn(),
       hasApprovalRequestsForOrigin: jest.fn(),
-      toNetworkConfiguration: jest.fn(),
-      fromNetworkConfiguration: jest.fn(),
+      toNetworkConfiguration: jest.fn() as unknown as NetworkConfiguration,
+      fromNetworkConfiguration: jest.fn() as unknown as NetworkConfiguration,
     };
 
-    const chainId = '0x1';
+    const chainId = '0x1' as Hex;
     const {
       selectedNetworkClientId: networkClientId,
       networkConfigurationsByChainId: { [chainId]: network },
