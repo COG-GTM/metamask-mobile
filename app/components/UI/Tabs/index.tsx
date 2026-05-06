@@ -157,7 +157,6 @@ interface State {
  */
 class Tabs extends PureComponent<Props, State> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   thumbnails: Record<string | number, React.RefObject<unknown>> = {};
 
@@ -213,8 +212,8 @@ class Tabs extends PureComponent<Props, State> {
   };
 
   getStyles = () => {
-    const colors = this.context?.colors || mockTheme.colors;
-    const shadows = this.context?.shadows || mockTheme.shadows;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
+    const shadows = (this.context as Theme | undefined)?.shadows || mockTheme.shadows;
     return createStyles(colors, shadows);
   };
 

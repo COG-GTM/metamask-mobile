@@ -53,7 +53,6 @@ interface State {
  */
 class WebsiteIcon extends PureComponent<Props, State> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: State = {
     renderIconUrlError: false,
@@ -74,7 +73,7 @@ class WebsiteIcon extends PureComponent<Props, State> {
       icon,
       faviconSource,
     } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const apiLogoUrl = {
@@ -122,7 +121,7 @@ class WebsiteIcon extends PureComponent<Props, State> {
           <FadeIn
             placeholderStyle={{
               backgroundColor: transparent
-                ? colors.transparent
+                ? 'transparent'
                 : colors.background.alternative,
             }}
           >

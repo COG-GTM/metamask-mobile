@@ -11,6 +11,7 @@ import {
 import coalesceNonElementChildren from '@metamask/react-native-button/coalesceNonElementChildren';
 import getStyles from './styledButtonStyles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
 interface Props extends AccessibilityProps {
   accessible?: boolean;
@@ -81,7 +82,6 @@ interface TouchableProps {
  */
 export default class StyledButton extends PureComponent<Props> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   static defaultProps: Partial<Props> = {
     styleDisabled: { opacity: 0.6 },
@@ -123,7 +123,7 @@ export default class StyledButton extends PureComponent<Props> {
 
   render = () => {
     const { type } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const { fontStyle, containerStyle } = getStyles(type ?? 'normal', colors);
     const touchableProps: TouchableProps = {};
     const containerStyles: StyleProp<ViewStyle>[] = [

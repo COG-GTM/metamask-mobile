@@ -42,11 +42,10 @@ type Props = StateProps & OwnProps;
  */
 class TabCountIcon extends PureComponent<Props> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   render() {
     const { tabCount, style } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

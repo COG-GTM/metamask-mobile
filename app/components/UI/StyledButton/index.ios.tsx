@@ -8,6 +8,7 @@ import {
 import Button from '@metamask/react-native-button';
 import getStyles from './styledButtonStyles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
 interface Props extends AccessibilityProps {
   /**
@@ -64,7 +65,6 @@ interface Props extends AccessibilityProps {
  */
 export default class StyledButton extends PureComponent<Props> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   static defaultProps: Partial<Props> = {
     styleDisabled: { opacity: 0.6 },
@@ -83,7 +83,7 @@ export default class StyledButton extends PureComponent<Props> {
       testID,
       disabledContainerStyle,
     } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const { fontStyle, containerStyle } = getStyles(type ?? 'normal', colors);
 
     return (

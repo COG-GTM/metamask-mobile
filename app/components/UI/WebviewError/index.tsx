@@ -76,7 +76,6 @@ interface Props {
  */
 export default class WebviewError extends PureComponent<Props> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   static defaultProps: Partial<Props> = {
     error: false,
@@ -88,7 +87,7 @@ export default class WebviewError extends PureComponent<Props> {
 
   render() {
     const { error } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return error ? (

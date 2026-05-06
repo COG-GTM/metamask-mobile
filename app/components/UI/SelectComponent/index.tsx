@@ -129,7 +129,6 @@ interface State {
 
 export default class SelectComponent extends PureComponent<Props, State> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: State = {
     pickerVisible: false,
@@ -191,7 +190,7 @@ export default class SelectComponent extends PureComponent<Props, State> {
   };
 
   renderDropdownSelector = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
