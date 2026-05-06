@@ -16,7 +16,6 @@ import {
   getBuildNumber,
 } from 'react-native-device-info';
 import { fontStyles } from '../../../../styles/common';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import AppConstants from '../../../../core/AppConstants';
@@ -25,7 +24,15 @@ import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
-const createStyles = (colors) =>
+interface ThemeColors {
+  background: { default: string };
+  text: { default: string; alternative: string };
+  primary: { default: string };
+  border: { muted: string };
+  [key: string]: unknown;
+}
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -38,14 +45,14 @@ const createStyles = (colors) =>
     },
     title: {
       fontSize: 18,
-      textAlign: 'left',
+      textAlign: 'left' as const,
       marginBottom: 20,
       ...fontStyles.normal,
       color: colors.text.default,
     },
     link: {
       fontSize: 18,
-      textAlign: 'left',
+      textAlign: 'left' as const,
       marginBottom: 20,
       ...fontStyles.normal,
       color: colors.primary.default,
@@ -53,7 +60,7 @@ const createStyles = (colors) =>
     division: {
       borderBottomColor: colors.border.muted,
       borderBottomWidth: 1,
-      width: '30%',
+      width: '30%' as const,
       marginBottom: 20,
     },
     image: {
@@ -63,22 +70,22 @@ const createStyles = (colors) =>
     logoWrapper: {
       flex: 1,
       backgroundColor: colors.background.default,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
       top: 20,
       marginBottom: 40,
     },
     versionInfo: {
       marginTop: 20,
       fontSize: 18,
-      textAlign: 'left',
+      textAlign: 'left' as const,
       marginBottom: 20,
       color: colors.text.alternative,
       ...fontStyles.normal,
     },
     branchInfo: {
       fontSize: 18,
-      textAlign: 'left',
+      textAlign: 'left' as const,
       marginBottom: 20,
       color: colors.text.alternative,
       ...fontStyles.normal,
@@ -87,31 +94,43 @@ const createStyles = (colors) =>
 
 const foxImage = require('../../../../images/branding/fox.png'); // eslint-disable-line import/no-commonjs
 
+interface Navigation {
+  navigate: (route: string, params?: Record<string, unknown>) => void;
+  setOptions: (opts: Record<string, unknown>) => void;
+}
+
+interface Props {
+  navigation?: Navigation;
+}
+
+interface State {
+  appInfo: string;
+  appVersion: string;
+}
+
 /**
  * View that contains app information
  */
-export default class AppInformation extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-  };
+export default class AppInformation extends PureComponent<Props, State> {
+  static contextType = ThemeContext;
 
-  state = {
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  state: State = {
     appInfo: '',
     appVersion: '',
   };
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(
+    if (!navigation) return;
+    const colors = (this.context?.colors || mockTheme.colors) as ThemeColors;
+    (navigation as { setOptions: (opts: unknown) => void }).setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.info_title'),
-        navigation,
+        navigation as unknown as Record<string, unknown>,
         false,
-        colors,
+        colors as unknown as Record<string, unknown>,
       ),
     );
   };
@@ -131,9 +150,9 @@ export default class AppInformation extends PureComponent {
     this.updateNavBar();
   };
 
-  goTo = (url, title) => {
+  goTo = (url: string, title: string) => {
     InteractionManager.runAfterInteractions(() => {
-      this.props.navigation.navigate('Webview', {
+      this.props.navigation?.navigate('Webview', {
         screen: 'SimpleWebview',
         params: {
           url,
@@ -174,7 +193,7 @@ export default class AppInformation extends PureComponent {
   };
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context?.colors || mockTheme.colors) as ThemeColors;
     const styles = createStyles(colors);
 
     return (
@@ -197,7 +216,7 @@ export default class AppInformation extends PureComponent {
             ) : null}
           </View>
           <Text style={styles.title}>{strings('app_information.links')}</Text>
-          <View style={styles.links}>
+          <View>
             <TouchableOpacity onPress={this.onPrivacyPolicy}>
               <Text style={styles.link}>
                 {strings('app_information.privacy_policy')}
@@ -215,7 +234,7 @@ export default class AppInformation extends PureComponent {
             </TouchableOpacity>
           </View>
           <View style={styles.division} />
-          <View style={styles.links}>
+          <View>
             <TouchableOpacity onPress={this.onSupportCenter}>
               <Text style={styles.link}>
                 {strings('app_information.support_center')}
@@ -237,5 +256,3 @@ export default class AppInformation extends PureComponent {
     );
   };
 }
-
-AppInformation.contextType = ThemeContext;
