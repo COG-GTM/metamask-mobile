@@ -80,8 +80,8 @@ const HARDWARE_BACK_PRESS = 'hardwareBackPress';
  * the backup seed phrase flow
  */
 interface ManualBackupStep3Props {
-  navigation?: NavigationProp<ParamListBase>;
-  route?: RouteProp<{
+  navigation: NavigationProp<ParamListBase>;
+  route: RouteProp<{
   params: {
     steps?: unknown;
     words?: unknown;

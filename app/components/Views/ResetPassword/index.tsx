@@ -254,11 +254,11 @@ const CONFIRM_PASSWORD = 'confirm_password';
  * View where users can set their password for the first time
  */
 interface ResetPasswordProps {
-  navigation?: NavigationProp<ParamListBase>;
+  navigation: NavigationProp<ParamListBase>;
   passwordSet?: (...args: unknown[]) => unknown;
   setLockTime?: (...args: unknown[]) => unknown;
   selectedAddress?: string;
-  route?: RouteProp<{ params: Record<string, unknown> }, 'params'>;
+  route: RouteProp<{ params: Record<string, unknown> }, 'params'>;
 }
 
 class ResetPassword extends PureComponent<ResetPasswordProps> {

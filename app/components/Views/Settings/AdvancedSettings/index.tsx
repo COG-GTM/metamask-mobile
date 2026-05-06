@@ -142,7 +142,7 @@ const createStyles = (colors: Colors) =>
  * Main view for app configurations
  */
 interface AdvancedSettingsProps {
-  navigation?: NavigationProp<ParamListBase>;
+  navigation: NavigationProp<ParamListBase>;
   showHexData?: boolean;
   setShowHexData?: (...args: unknown[]) => unknown;
   setShowCustomNonce?: (...args: unknown[]) => unknown;
@@ -150,7 +150,7 @@ interface AdvancedSettingsProps {
   showFiatOnTestnets?: boolean;
   setShowFiatOnTestnets?: (...args: unknown[]) => unknown;
   fullState?: Record<string, unknown>;
-  route?: RouteProp<{
+  route: RouteProp<{
   params: {
     isFullScreenModal?: unknown;
     scrollToBottom?: unknown;

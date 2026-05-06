@@ -406,8 +406,8 @@ const infuraProjectId = InfuraKey === 'null' ? '' : InfuraKey;
  */
 export interface NetworkSettingsProps {
   networkConfigurations?: Record<string, unknown>;
-  navigation?: NavigationProp<ParamListBase>;
-  route?: RouteProp<{
+  navigation: NavigationProp<ParamListBase>;
+  route: RouteProp<{
   params: {
     isCustomMainnet?: unknown;
     network?: unknown;

@@ -30,7 +30,7 @@ interface TermsAndConditionsProps {
   /**
    * navigation object required to push and pop other views
    */
-  navigation?: StackNavigationProp<ParamListBase>;
+  navigation: StackNavigationProp<ParamListBase>;
   /**
    * Optional action identifier (e.g., 'import')
    */

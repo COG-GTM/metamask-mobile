@@ -168,7 +168,7 @@ const createStyles = (colors: Colors) =>
  */
 interface SettingsProps {
   currentCurrency?: string;
-  navigation?: NavigationProp<ParamListBase>;
+  navigation: NavigationProp<ParamListBase>;
   setSearchEngine?: (...args: unknown[]) => unknown;
   setPrimaryCurrency?: (...args: unknown[]) => unknown;
   searchEngine?: string;

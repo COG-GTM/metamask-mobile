@@ -150,7 +150,7 @@ interface GasEducationCarouselRouteParams {
 
 interface OwnProps {
   navigation: StackNavigationProp<ParamListBase>;
-  route?: RouteProp<{ params: GasEducationCarouselRouteParams }, 'params'>;
+  route: RouteProp<{ params: GasEducationCarouselRouteParams }, 'params'>;
 }
 
 interface StateProps {

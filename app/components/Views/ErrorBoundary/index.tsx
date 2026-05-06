@@ -411,7 +411,7 @@ export const Fallback = (props: FallbackProps) => {
 interface ErrorBoundaryProps {
   children?: React.ReactNode;
   view: string;
-  navigation?: NavigationProp<ParamListBase>;
+  navigation: NavigationProp<ParamListBase>;
   metrics?: {
     trackEvent: (event: unknown) => void;
     createEventBuilder: (event: unknown) => {

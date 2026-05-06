@@ -134,7 +134,7 @@ const createStyles = (colors: Colors) =>
  * and also the transaction list
  */
 interface AssetProps {
-  navigation?: NavigationProp<ParamListBase>;
+  navigation: NavigationProp<ParamListBase>;
   conversionRate?: unknown;
   currentCurrency?: string;
   selectedInternalAccount?: Record<string, unknown>;
@@ -145,7 +145,7 @@ interface AssetProps {
   swapsTokens?: Record<string, unknown>;
   searchDiscoverySwapsTokens?: unknown[];
   swapsTransactions?: Record<string, unknown>;
-  route?: RouteProp<{
+  route: RouteProp<{
   params: {
     address?: unknown;
     chainId?: unknown;

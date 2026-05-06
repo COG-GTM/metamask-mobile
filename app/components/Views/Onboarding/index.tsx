@@ -143,13 +143,13 @@ const createStyles = (colors: Colors) =>
  */
 interface OnboardingProps {
   disableNewPrivacyPolicyToast?: (...args: unknown[]) => unknown;
-  navigation?: NavigationProp<ParamListBase>;
+  navigation: NavigationProp<ParamListBase>;
   passwordSet?: boolean;
   loading?: boolean;
   setLoading?: (...args: unknown[]) => unknown;
   unsetLoading?: (...args: unknown[]) => unknown;
   loadingMsg?: string;
-  route?: RouteProp<{
+  route: RouteProp<{
   params: {
     delete?: unknown;
   };
