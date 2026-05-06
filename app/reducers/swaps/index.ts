@@ -212,17 +212,14 @@ export const selectSwapsChainFeatureFlags = createSelector(
   // break the wider type graph.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (swapsState, chainId): any => {
-    const chainEntry = swapsState[chainId] as SwapsChainState | undefined;
-    const chainFlags = (chainEntry?.featureFlags ?? {}) as Record<
-      string,
-      unknown
-    > & {
+    const chainEntry = swapsState[chainId] as SwapsChainState;
+    const chainFlags = chainEntry.featureFlags as Record<string, unknown> & {
       smartTransactions?: Record<string, unknown>;
     };
     return {
       ...chainFlags,
       smartTransactions: {
-        ...(chainFlags.smartTransactions || {}),
+        ...(chainFlags?.smartTransactions || {}),
         ...((swapsState.featureFlags?.smartTransactions as Record<
           string,
           unknown
