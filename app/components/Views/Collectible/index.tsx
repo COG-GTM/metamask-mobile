@@ -1,6 +1,10 @@
 import React, { PureComponent } from 'react';
 import { RefreshControl, ScrollView, View, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import { connect } from 'react-redux';
 import Collectibles from '../../UI/Collectibles';
@@ -12,9 +16,11 @@ import { toggleCollectibleContractModal } from '../../../actions/modals';
 import { toLowerCaseEquals } from '../../../util/general';
 import { collectiblesSelector } from '../../../reducers/collectibles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -22,44 +28,74 @@ const createStyles = (colors) =>
     },
   });
 
+interface CollectibleItem {
+  address: string;
+  name?: string;
+  image?: string;
+  [key: string]: unknown;
+}
+
+interface CollectibleContract {
+  address: string;
+  name?: string;
+  logo?: string;
+  [key: string]: unknown;
+}
+
+interface StateProps {
+  /**
+   * Array of assets (in this case Collectibles)
+   */
+  collectibles: CollectibleItem[];
+  /**
+   * Whether collectible contract information is visible
+   */
+  collectibleContractModalVisible: boolean;
+}
+
+interface DispatchProps {
+  /**
+   * Called to toggle collectible contract information modal
+   */
+  toggleCollectibleContractModal: () => void;
+}
+
+interface OwnProps {
+  /**
+   * navigation object required to access the props
+   * passed by the parent component
+   */
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: RouteProp<{ params: CollectibleContract }, 'params'>;
+}
+
+type CollectibleProps = StateProps & DispatchProps & OwnProps;
+
+interface CollectibleState {
+  refreshing: boolean;
+  collectibles: CollectibleItem[];
+}
+
 /**
  * View that displays a specific collectible
  * including the overview (name, address, symbol, logo, description, total supply)
  * and also individual collectibles list
  */
-class Collectible extends PureComponent {
-  static propTypes = {
-    /**
-     * Array of assets (in this case Collectibles)
-     */
-    collectibles: PropTypes.array,
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-     * Called to toggle collectible contract information modal
-     */
-    toggleCollectibleContractModal: PropTypes.func,
-    /**
-     * Whether collectible contract information is visible
-     */
-    collectibleContractModalVisible: PropTypes.bool,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: CollectibleState = {
     refreshing: false,
     collectibles: [],
   };
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.name ?? '',
       false,
@@ -100,12 +136,13 @@ class Collectible extends PureComponent {
     const collectibleContract = params;
     const address = params.address;
     const { collectibles } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const filteredCollectibles = collectibles.filter((collectible) =>
-      toLowerCaseEquals(collectible.address, address),
+    const filteredCollectibles = collectibles.filter(
+      (collectible: CollectibleItem) =>
+        toLowerCaseEquals(collectible.address, address),
     );
-    filteredCollectibles.map((collectible) => {
+    filteredCollectibles.map((collectible: CollectibleItem) => {
       if (!collectible.name || collectible.name === '') {
         collectible.name = collectibleContract.name;
       }
@@ -168,16 +205,16 @@ class Collectible extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
-  collectibles: collectiblesSelector(state),
+const mapStateToProps = (state: RootState): StateProps => ({
+  collectibles: collectiblesSelector(state) as unknown as CollectibleItem[],
   collectibleContractModalVisible: state.modals.collectibleContractModalVisible,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (
+  dispatch: (action: unknown) => void,
+): DispatchProps => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),
 });
-
-Collectible.contextType = ThemeContext;
 
 export default connect(mapStateToProps, mapDispatchToProps)(Collectible);
