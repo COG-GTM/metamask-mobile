@@ -39,7 +39,7 @@ interface EditGasFee1559Props {
   selected?: string;
   gasFee?: any;
   gasOptions?: any;
-  onChange?: (option: string) => void;
+  onChange?: (gas: any, option: string | null) => void;
   onCancel?: () => void;
   onSave?: (option?: string) => void;
   gasFeeNative?: string;
@@ -61,7 +61,7 @@ interface EditGasFee1559Props {
   ignoreOptions?: string[];
   updateOption?: any;
   extendOptions?: Record<string, any>;
-  recommended?: { type?: string; render?: () => React.ReactNode } | undefined;
+  recommended?: { name?: string; render?: () => React.ReactNode } | undefined;
   warningMinimumEstimateOption?: string;
   suggestedEstimateOption?: string;
   onUpdatingValuesStart?: () => void;
@@ -282,7 +282,7 @@ const EditGasFee1559: React.FC<EditGasFee1559Props> = ({
 
   const changeGas = (gas: any, newSelectedOption: string | null) => {
     setSelectedOption(newSelectedOption ?? undefined);
-    (onChange as any)?.(gas, newSelectedOption);
+    onChange?.(gas, newSelectedOption);
   };
 
   const changedMaxPriorityFee = (value: any) => {
@@ -403,7 +403,7 @@ const EditGasFee1559: React.FC<EditGasFee1559Props> = ({
         name,
         label: renderLabel(selectedOption === name, false, label),
         topLabel:
-          (recommended as any)?.name === name && recommended?.render,
+          recommended?.name === name && recommended?.render,
         ...option,
         ...((extendOptions as any)[name] ?? {}),
       }));
