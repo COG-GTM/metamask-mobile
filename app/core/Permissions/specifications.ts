@@ -40,23 +40,27 @@ export const CaveatFactories = Object.freeze({
  * last selected in the UI.
  */
 
+interface GetCaveatSpecificationsOptions {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  listAccounts?: () => any[];
+  findNetworkClientIdByChainId?: (chainId: `0x${string}`) => string;
+}
+
 /**
  * Gets the specifications for all caveats that will be recognized by the
  * PermissionController.
  *
- * @param {{
- * listAccounts: () => import('@metamask/keyring-api').InternalAccount[],
- * findNetworkClientIdByChainId: (chainId: `0x${string}`) => string,
- * }} options - Options bag.
+ * @param options - Options bag.
  */
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
-}) => ({
+}: GetCaveatSpecificationsOptions) => ({
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
-  }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any),
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   ...snapsCaveatsSpecifications,
   ...snapsEndowmentCaveatSpecifications,

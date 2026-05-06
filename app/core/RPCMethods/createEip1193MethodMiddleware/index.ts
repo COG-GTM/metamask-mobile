@@ -14,4 +14,5 @@ export const createEip1193MethodMiddleware = makeMethodMiddlewareMaker([
   getPermissionsHandler,
   requestPermissionsHandler,
   revokePermissionsHandler,
-]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+] as any);

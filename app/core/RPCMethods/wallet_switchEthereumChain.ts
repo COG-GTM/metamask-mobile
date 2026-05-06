@@ -25,6 +25,17 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  req: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  res: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  requestUserApproval: (request: any) => Promise<unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  analytics?: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  hooks: any;
 }) => {
   const {
     CurrencyRateController,
@@ -46,7 +57,9 @@ export const wallet_switchEthereumChain = async ({
     chainId: true,
   };
 
-  const extraKeys = Object.keys(params).filter((key) => !allowedKeys[key]);
+  const extraKeys = Object.keys(params).filter(
+    (key) => !(allowedKeys as Record<string, boolean>)[key],
+  );
   if (extraKeys.length) {
     throw rpcErrors.invalidParams(
       `Received unexpected keys on object parameter. Unsupported keys:\n${extraKeys}`,
@@ -98,7 +111,8 @@ export const wallet_switchEthereumChain = async ({
         fromNetworkConfiguration,
         ...hooks,
       },
-    });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     res.result = null;
     return;

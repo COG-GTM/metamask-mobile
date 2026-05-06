@@ -32,7 +32,9 @@ describe('setupBridge', () => {
   });
 
   it('should returns existing backgroundBridge if it already exists', () => {
-    const existingBridge = new BackgroundBridge();
+    const existingBridge = new BackgroundBridge({
+      url: 'https://example.com',
+    });
     connection.backgroundBridge = existingBridge;
 
     const result = setupBridge({ originatorInfo, connection });
