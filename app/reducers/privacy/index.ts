@@ -1,10 +1,26 @@
-const initialState = {
+import { AnyAction } from 'redux';
+
+export interface PrivacyState {
+  approvedHosts: Record<string, boolean>;
+  revealSRPTimestamps: number[];
+}
+
+export type PrivacyAction =
+  | { type: 'APPROVE_HOST'; hostname: string }
+  | { type: 'REJECT_HOST'; hostname: string }
+  | { type: 'CLEAR_HOSTS' }
+  | { type: 'RECORD_SRP_REVEAL_TIMESTAMP'; timestamp: number };
+
+const initialState: PrivacyState = {
   approvedHosts: {},
   revealSRPTimestamps: [],
 };
 
-const privacyReducer = (state = initialState, action) => {
-  const newHosts = { ...state.approvedHosts };
+const privacyReducer = (
+  state: PrivacyState = initialState,
+  action: AnyAction = { type: '' },
+): PrivacyState => {
+  const newHosts: Record<string, boolean> = { ...state.approvedHosts };
   switch (action.type) {
     case 'APPROVE_HOST':
       return {

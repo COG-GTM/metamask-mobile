@@ -1,7 +1,94 @@
+import { AnyAction } from 'redux';
 import { REHYDRATE } from 'redux-persist';
+import type { SecurityAlertResponse } from '@metamask/transaction-controller';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
 
-const initialState = {
+export type AssetType = 'ETH' | 'ERC20' | 'ERC721';
+
+export interface SelectedAsset {
+  isETH?: boolean;
+  symbol?: string;
+  tokenId?: string;
+  address?: string;
+  [key: string]: unknown;
+}
+
+export interface TransactionFields {
+  data?: string;
+  from?: string;
+  gas?: unknown;
+  gasPrice?: unknown;
+  to?: string;
+  value?: unknown;
+  maxFeePerGas?: unknown;
+  maxPriorityFeePerGas?: unknown;
+}
+
+export interface TransactionPayload extends TransactionFields {
+  selectedAsset?: SelectedAsset;
+  assetType?: AssetType;
+  [key: string]: unknown;
+}
+
+export interface TransactionState {
+  ensRecipient: string | undefined;
+  assetType: AssetType | undefined;
+  selectedAsset: SelectedAsset;
+  transaction: TransactionFields;
+  warningGasPriceHigh: string | undefined;
+  transactionTo: string | undefined;
+  transactionToName: string | undefined;
+  transactionFromName: string | undefined;
+  transactionValue: string | undefined;
+  symbol: string | undefined;
+  paymentRequest: boolean | undefined;
+  readableValue: string | undefined;
+  id: string | undefined;
+  type: string | undefined;
+  proposedNonce: number | undefined;
+  nonce: number | undefined;
+  securityAlertResponses: Record<string, SecurityAlertResponse>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+}
+
+export type TransactionAction =
+  | { type: typeof REHYDRATE }
+  | { type: 'RESET_TRANSACTION' }
+  | {
+      type: 'NEW_ASSET_TRANSACTION';
+      selectedAsset: SelectedAsset;
+      assetType: AssetType;
+    }
+  | { type: 'SET_NONCE'; nonce: number }
+  | { type: 'SET_PROPOSED_NONCE'; proposedNonce: number }
+  | {
+      type: 'SET_RECIPIENT';
+      from: string;
+      to: string;
+      ensRecipient?: string;
+      transactionToName?: string;
+      transactionFromName?: string;
+    }
+  | {
+      type: 'SET_SELECTED_ASSET';
+      selectedAsset: SelectedAsset;
+      assetType?: AssetType;
+    }
+  | { type: 'PREPARE_TRANSACTION'; transaction: TransactionFields }
+  | { type: 'SET_TRANSACTION_OBJECT'; transaction: TransactionPayload }
+  | { type: 'SET_TOKENS_TRANSACTION'; asset: SelectedAsset }
+  | { type: 'SET_ETHER_TRANSACTION'; transaction: TransactionPayload }
+  | {
+      type: 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE';
+      transactionId: string;
+      securityAlertResponse: SecurityAlertResponse;
+    }
+  | { type: 'SET_TRANSACTION_ID'; transactionId: string }
+  | { type: 'SET_MAX_VALUE_MODE'; maxValueMode: boolean }
+  | { type: 'SET_TRANSACTION_VALUE'; value: unknown };
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,8 +119,8 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
-  let assetType;
+const getAssetType = (selectedAsset?: SelectedAsset): AssetType | undefined => {
+  let assetType: AssetType | undefined;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
       assetType = 'ERC721';
@@ -46,7 +133,10 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: AnyAction = { type: '' },
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {

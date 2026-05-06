@@ -1,10 +1,31 @@
-import reducer, { ACTIONS, initialState } from './index';
+import reducer, {
+  ACTIONS,
+  initialState,
+  NotificationAction,
+  NotificationState,
+} from './index';
 import { NotificationTypes } from '../../util/notifications';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-const emptyAction = { type: null };
+interface SimpleNotificationFixture {
+  id: string;
+  status: string;
+  duration: number;
+  title: string;
+  description: string;
+}
 
-const simpleNotification = (number) => ({
+interface TxNotificationFixture {
+  transaction: { id: string };
+  status: string;
+  duration: number;
+  title: string;
+  description: string;
+}
+
+const emptyAction = { type: null } as unknown as NotificationAction;
+
+const simpleNotification = (number: number): SimpleNotificationFixture => ({
   id: `simple${number}`,
   status: `simple${number} status`,
   duration: 5000,
@@ -12,7 +33,7 @@ const simpleNotification = (number) => ({
   description: `Simple Notification ${number} description}`,
 });
 
-const txNotification = (number) => ({
+const txNotification = (number: number): TxNotificationFixture => ({
   transaction: { id: `tx${number}` },
   status: `tx${number} status`,
   duration: 5000,
@@ -105,41 +126,46 @@ describe('notifications reducer', () => {
   });
 
   describe('actions', () => {
-    let stateWithNotifications;
+    let stateWithNotifications: NotificationState;
 
     beforeEach(() => {
-      stateWithNotifications = [
-        (state) =>
-          reducer(state, {
-            type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
-            ...simpleNotification(0),
-          }),
-        (state) =>
-          reducer(state, {
-            type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
-            ...txNotification(1),
-          }),
-        (state) =>
-          reducer(state, {
-            type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
-            ...simpleNotification(1),
-          }),
-        (state) =>
-          reducer(state, {
-            type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
-            ...txNotification(2),
-          }),
-        (state) =>
-          reducer(state, {
-            type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
-            ...simpleNotification(2),
-          }),
-        (state) =>
-          reducer(state, {
-            type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
-            ...simpleNotification(3),
-          }),
-      ].reduce((acc, current) => current(acc), undefined);
+      const reducers: ((s: NotificationState | undefined) => NotificationState)[] =
+        [
+          (state) =>
+            reducer(state, {
+              type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
+              ...simpleNotification(0),
+            }),
+          (state) =>
+            reducer(state, {
+              type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
+              ...txNotification(1),
+            }),
+          (state) =>
+            reducer(state, {
+              type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
+              ...simpleNotification(1),
+            }),
+          (state) =>
+            reducer(state, {
+              type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
+              ...txNotification(2),
+            }),
+          (state) =>
+            reducer(state, {
+              type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
+              ...simpleNotification(2),
+            }),
+          (state) =>
+            reducer(state, {
+              type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
+              ...simpleNotification(3),
+            }),
+        ];
+      stateWithNotifications = reducers.reduce<NotificationState | undefined>(
+        (acc, current) => current(acc),
+        undefined,
+      ) as NotificationState;
     });
 
     it('should hide current notification', () => {
@@ -156,9 +182,9 @@ describe('notifications reducer', () => {
         id,
       });
       const notification = state.notifications.find(
-        (notification) => notification.id === id,
+        (notif) => notif.id === id,
       );
-      expect(notification.isVisible).toBe(false);
+      expect(notification?.isVisible).toBe(false);
     });
 
     it('should modify or show transaction notification', () => {
@@ -173,9 +199,8 @@ describe('notifications reducer', () => {
       });
       expect(state.notifications.length).toBe(currentCount);
       expect(
-        state.notifications.find(
-          (notification) => notification.id === notificationId,
-        )?.status,
+        state.notifications.find((notif) => notif.id === notificationId)
+          ?.status,
       ).toEqual(status);
 
       const newNotification = txNotification(3);
@@ -186,7 +211,7 @@ describe('notifications reducer', () => {
       expect(state2.notifications.length).toBe(currentCount + 1);
       expect(
         state2.notifications.find(
-          (notification) => notification.id === newNotification.transaction.id,
+          (notif) => notif.id === newNotification.transaction.id,
         ),
       ).not.toBeUndefined();
     });
@@ -198,14 +223,13 @@ describe('notifications reducer', () => {
       const description = 'Description from modify action test';
       const state = reducer(stateWithNotifications, {
         type: ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION,
-        id: notificationId,
         ...{ ...simpleNotification(1), description },
+        id: notificationId,
       });
       expect(state.notifications.length).toBe(currentCount);
       expect(
-        state.notifications.find(
-          (notification) => notification.id === notificationId,
-        )?.description,
+        state.notifications.find((notif) => notif.id === notificationId)
+          ?.description,
       ).toBe(description);
 
       const newNotification = simpleNotification(4);
@@ -215,9 +239,7 @@ describe('notifications reducer', () => {
       });
       expect(state2.notifications.length).toBe(currentCount + 1);
       expect(
-        state2.notifications.find(
-          (notification) => notification.id === newNotification.id,
-        ),
+        state2.notifications.find((notif) => notif.id === newNotification.id),
       ).not.toBeUndefined();
     });
 
@@ -228,6 +250,8 @@ describe('notifications reducer', () => {
         ...txNotification(2),
         description: 'Replaced notification',
         id: notificationId,
+        isVisible: true,
+        type: TRANSACTION,
       };
       const state = reducer(stateWithNotifications, {
         type: ACTIONS.REPLACE_NOTIFICATION_BY_ID,
@@ -236,10 +260,10 @@ describe('notifications reducer', () => {
       });
 
       const replacedNotification = state.notifications.find(
-        (notification) => notification.id === notificationId,
+        (notif) => notif.id === notificationId,
       );
       expect(state.notifications.length).toBe(currentCount);
-      expect(replacedNotification.description).toEqual('Replaced notification');
+      expect(replacedNotification?.description).toEqual('Replaced notification');
     });
 
     it('should remove notification by id', () => {
@@ -251,9 +275,7 @@ describe('notifications reducer', () => {
       });
       expect(state.notifications.length).toEqual(currentCount - 1);
       expect(
-        state.notifications.find(
-          (notification) => notification.id === notificationId,
-        ),
+        state.notifications.find((notif) => notif.id === notificationId),
       ).toBeUndefined();
     });
 
@@ -266,7 +288,7 @@ describe('notifications reducer', () => {
       expect(state.notifications.length).toEqual(currentCount - 1);
       expect(
         state.notifications.find(
-          (notification) => notification.id === currentNotificationId,
+          (notif) => notif.id === currentNotificationId,
         ),
       ).toBeUndefined();
     });
