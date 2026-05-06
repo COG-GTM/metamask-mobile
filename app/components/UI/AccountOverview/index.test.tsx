@@ -65,8 +65,10 @@ describe('AccountOverview', () => {
       balanceFiat: 1604.2,
       label: 'Account 1',
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const AccountOverviewAny: any = AccountOverview;
     const { toJSON } = renderWithProvider(
-      <AccountOverview account={account} />,
+      <AccountOverviewAny account={account} />,
       { state: mockInitialState },
     );
     expect(toJSON()).toMatchSnapshot();
