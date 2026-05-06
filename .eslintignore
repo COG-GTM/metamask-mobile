@@ -1,6 +1,7 @@
 /scripts/inpage-bridge
 /app/core/InpageBridgeWeb3.js
 /app/util/blockies.js
+/app/util/blockies.ts
 __snapshots__
 android
 coverage
@@ -10,6 +11,7 @@ node_modules
 CHANGELOG.md
 wdio
 /app/util/test/testSetup.js
+/app/util/test/testSetup.tsx
 /app/lib/ppom/ppom.html.js
 /app/lib/ppom/blockaid-version.js
 /ppom

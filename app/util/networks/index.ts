@@ -1,0 +1,728 @@
+// eslint-disable-next-line @typescript-eslint/no-shadow
+import URL from 'url-parse';
+import { ImageSourcePropType } from 'react-native';
+import networksWithImages from 'images/image-icons';
+import {
+  MAINNET,
+  NETWORKS_CHAIN_ID,
+  SEPOLIA,
+  RPC,
+  LINEA_GOERLI,
+  LINEA_MAINNET,
+  LINEA_SEPOLIA,
+  MEGAETH_TESTNET,
+} from '../../../app/constants/network';
+import { NetworkSwitchErrorType } from '../../../app/constants/error';
+import {
+  BlockExplorerUrl,
+  ChainId,
+  NetworkType,
+  toHex,
+} from '@metamask/controller-utils';
+import { toLowerCaseEquals } from '../general';
+import { fastSplit } from '../number';
+import { regex } from '../../../app/util/regex';
+import { MULTICHAIN_NETWORK_BLOCK_EXPLORER_FORMAT_URLS_MAP } from '../../../app/core/Multichain/constants';
+
+/* eslint-disable */
+const ethLogo = require('../../images/eth-logo-new.png');
+const sepoliaLogo = require('../../images/sepolia-logo-dark.png');
+const lineaTestnetLogo = require('../../images/linea-testnet-logo.png');
+const lineaMainnetLogo = require('../../images/linea-mainnet-logo.png');
+const megaEthTestnetLogo = require('../../images/megaeth-testnet-logo.png');
+
+/* eslint-enable */
+import {
+  PopularList,
+  UnpopularNetworkList,
+  CustomNetworkImgMapping,
+  getNonEvmNetworkImageSourceByChainId,
+} from './customNetworks';
+import { strings } from '../../../locales/i18n';
+import {
+  getEtherscanAddressUrl,
+  getEtherscanBaseUrl,
+  getEtherscanTransactionUrl,
+} from '../etherscan';
+import {
+  LINEA_FAUCET,
+  LINEA_MAINNET_BLOCK_EXPLORER,
+  LINEA_SEPOLIA_BLOCK_EXPLORER,
+  MAINNET_BLOCK_EXPLORER,
+  SEPOLIA_BLOCK_EXPLORER,
+  SEPOLIA_FAUCET,
+} from '../../constants/urls';
+import { isNonEvmChainId } from '../../core/Multichain/utils';
+import { SolScope } from '@metamask/keyring-api';
+import { store } from '../../store';
+import {
+  selectSelectedNonEvmNetworkChainId,
+  selectMultichainNetworkControllerState,
+} from '../../selectors/multichainNetworkController';
+import { formatBlockExplorerAddressUrl } from '../../core/Multichain/networks';
+import { CHAIN_IDS } from '@metamask/transaction-controller';
+import { isCaipChainId } from '@metamask/utils';
+
+/**
+ * List of the supported networks
+ * including name, id, and color
+ *
+ * This values are used in certain places like
+ * navbar and the network switcher.
+ */
+export const NetworkList = {
+  [MAINNET]: {
+    name: 'Ethereum Main Network',
+    shortName: 'Ethereum',
+    networkId: 1,
+    chainId: toHex('1'),
+    ticker: 'ETH',
+    // Third party color
+    // eslint-disable-next-line @metamask/design-tokens/color-no-hex
+    color: '#3cc29e',
+    networkType: 'mainnet',
+    imageSource: ethLogo,
+    blockExplorerUrl: MAINNET_BLOCK_EXPLORER,
+  },
+  [LINEA_MAINNET]: {
+    name: 'Linea Main Network',
+    shortName: 'Linea',
+    networkId: 59144,
+    chainId: toHex('59144'),
+    ticker: 'ETH',
+    // Third party color
+    // eslint-disable-next-line @metamask/design-tokens/color-no-hex
+    color: '#121212',
+    networkType: 'linea-mainnet',
+    imageSource: lineaMainnetLogo,
+    blockExplorerUrl: LINEA_MAINNET_BLOCK_EXPLORER,
+  },
+  [SEPOLIA]: {
+    name: 'Sepolia',
+    shortName: 'Sepolia',
+    networkId: 11155111,
+    chainId: toHex('11155111'),
+    ticker: 'SepoliaETH',
+    // Third party color
+    // eslint-disable-next-line @metamask/design-tokens/color-no-hex
+    color: '#cfb5f0',
+    networkType: 'sepolia',
+    imageSource: sepoliaLogo,
+    blockExplorerUrl: SEPOLIA_BLOCK_EXPLORER,
+  },
+  [LINEA_SEPOLIA]: {
+    name: 'Linea Sepolia',
+    shortName: 'Linea Sepolia',
+    networkId: 59141,
+    chainId: toHex('59141'),
+    ticker: 'LineaETH',
+    // Third party color
+    // eslint-disable-next-line @metamask/design-tokens/color-no-hex
+    color: '#61dfff',
+    networkType: 'linea-sepolia',
+    imageSource: lineaTestnetLogo,
+    blockExplorerUrl: LINEA_SEPOLIA_BLOCK_EXPLORER,
+  },
+  [MEGAETH_TESTNET]: {
+    name: 'Mega Testnet',
+    shortName: 'Mega Testnet',
+    networkId: 6342,
+    chainId: toHex('6342'),
+    ticker: 'MegaETH',
+    // Third party color
+    // eslint-disable-next-line @metamask/design-tokens/color-no-hex
+    color: '#61dfff',
+    networkType: 'megaeth-testnet',
+    imageSource: megaEthTestnetLogo,
+    blockExplorerUrl: BlockExplorerUrl['megaeth-testnet'],
+  },
+  [RPC]: {
+    name: 'Private Network',
+    shortName: 'Private',
+    // Third party color
+    // eslint-disable-next-line @metamask/design-tokens/color-no-hex
+    color: '#f2f3f4',
+    networkType: 'rpc',
+  },
+};
+
+const NetworkListKeys: string[] = Object.keys(NetworkList);
+
+export const BLOCKAID_SUPPORTED_NETWORK_NAMES: Record<string, string> = {
+  [NETWORKS_CHAIN_ID.MAINNET]: 'Ethereum Mainnet',
+  [NETWORKS_CHAIN_ID.BSC]: 'Binance Smart Chain',
+  [NETWORKS_CHAIN_ID.BASE]: 'Base',
+  [NETWORKS_CHAIN_ID.OPTIMISM]: 'Optimism',
+  [NETWORKS_CHAIN_ID.POLYGON]: 'Polygon',
+  [NETWORKS_CHAIN_ID.ARBITRUM]: 'Arbitrum',
+  [NETWORKS_CHAIN_ID.LINEA_MAINNET]: 'Linea',
+  [NETWORKS_CHAIN_ID.SEPOLIA]: 'Sepolia',
+  [NETWORKS_CHAIN_ID.OPBNB]: 'opBNB',
+  [NETWORKS_CHAIN_ID.ZKSYNC_ERA]: 'zkSync Era Mainnet',
+  [NETWORKS_CHAIN_ID.SCROLL]: 'Scroll',
+  [NETWORKS_CHAIN_ID.BERACHAIN]: 'Berachain Artio',
+  [NETWORKS_CHAIN_ID.METACHAIN_ONE]: 'Metachain One Mainnet',
+};
+
+export default NetworkList;
+
+export const getAllNetworks = () =>
+  NetworkListKeys.filter((name) => name !== RPC);
+
+/**
+ * Checks if network is default mainnet.
+ *
+ * @param {string} networkType - Type of network.
+ * @returns If the network is default mainnet.
+ */
+export const isDefaultMainnet = (networkType: string): boolean =>
+  networkType === MAINNET;
+
+/**
+ * Check whether the given chain ID is Ethereum Mainnet.
+ *
+ * @param {string} chainId - The chain ID to check.
+ * @returns True if the chain ID is Ethereum Mainnet, false otherwise.
+ */
+export const isMainNet = (chainId: string): boolean => chainId === '0x1';
+
+export const isLineaMainnet = (networkType: string): boolean =>
+  networkType === LINEA_MAINNET;
+export const isLineaMainnetChainId = (chainId: string): boolean =>
+  chainId === CHAIN_IDS.LINEA_MAINNET;
+
+export const isSolanaMainnet = (chainId: string): boolean =>
+  chainId === SolScope.Mainnet;
+
+/**
+ * Converts a hexadecimal or decimal chain ID to a base 10 number as a string.
+ * If the input is in CAIP-2 format (e.g., `eip155:1` or `eip155:137`), the function returns the input string as is.
+ *
+ * @param chainId - The chain ID to be converted. It can be in hexadecimal, decimal, or CAIP-2 format.
+ * @returns - The chain ID converted to a base 10 number as a string, or the original input if it is in CAIP-2 format.
+ */
+// Returns a decimal chain id string. The return is typed permissively
+// (`any`) so that consumers passing the result into APIs expecting a
+// ChainId / number / hex-prefixed string continue to type-check the same
+// way they did when this module was untyped JavaScript.
+export const getDecimalChainId = (
+  chainId: string | number | undefined | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any => {
+  if (
+    !chainId ||
+    typeof chainId !== 'string' ||
+    !chainId.startsWith('0x') ||
+    isNonEvmChainId(chainId)
+  ) {
+    return chainId;
+  }
+  return parseInt(chainId, 16).toString(10);
+};
+
+export const isMainnetByChainId = (chainId: string | number): boolean =>
+  getDecimalChainId(String(chainId)) === String(1);
+
+export const isLineaMainnetByChainId = (chainId: string | number): boolean =>
+  getDecimalChainId(String(chainId)) === String(59144);
+
+export const isMultiLayerFeeNetwork = (chainId: string): boolean =>
+  chainId === NETWORKS_CHAIN_ID.OPTIMISM;
+
+/**
+ * Gets the test network image icon.
+ *
+ * @param {string} networkType - Type of network.
+ * @returns - Image of test network or undefined.
+ */
+export const getTestNetImage = (networkType: string | undefined): unknown => {
+  if (
+    networkType === SEPOLIA ||
+    networkType === LINEA_GOERLI ||
+    networkType === LINEA_SEPOLIA
+  ) {
+    return (networksWithImages as Record<string, unknown> | undefined)?.[
+      networkType.toUpperCase()
+    ];
+  }
+  return undefined;
+};
+
+export const getTestNetImageByChainId = (chainId: string): unknown => {
+  const images = networksWithImages as Record<string, unknown> | undefined;
+  if (NETWORKS_CHAIN_ID.SEPOLIA === chainId) {
+    return images?.SEPOLIA;
+  }
+  if (NETWORKS_CHAIN_ID.LINEA_GOERLI === chainId) {
+    return images?.['LINEA-GOERLI'];
+  }
+  if (NETWORKS_CHAIN_ID.LINEA_SEPOLIA === chainId) {
+    return images?.['LINEA-SEPOLIA'];
+  }
+  if (NETWORKS_CHAIN_ID.MEGAETH_TESTNET === chainId) {
+    return images?.['MEGAETH-TESTNET'];
+  }
+  return undefined;
+};
+
+/**
+ * A list of chain IDs for known testnets
+ */
+export const TESTNET_CHAIN_IDS = [
+  ChainId[NetworkType.goerli],
+  ChainId[NetworkType.sepolia],
+  ChainId[NetworkType['linea-goerli']],
+  ChainId[NetworkType['linea-sepolia']],
+  ChainId[NetworkType['megaeth-testnet']],
+];
+
+/**
+ * A map of testnet chainId and its faucet link
+ */
+export const TESTNET_FAUCETS: Record<string, string> = {
+  [ChainId[NetworkType.sepolia]]: SEPOLIA_FAUCET,
+  [ChainId[NetworkType['linea-goerli']]]: LINEA_FAUCET,
+  [ChainId[NetworkType['linea-sepolia']]]: LINEA_FAUCET,
+};
+
+export const isTestNetworkWithFaucet = (chainId: string): boolean =>
+  TESTNET_FAUCETS[chainId] !== undefined;
+
+/**
+ * Determine whether the given chain ID is for a known testnet.
+ *
+ * @param {string} chainId - The chain ID of the network to check
+ * @returns {boolean} `true` if the given chain ID is for a known testnet, `false` otherwise
+ */
+export const isTestNet = (chainId: string): boolean =>
+  (TESTNET_CHAIN_IDS as readonly string[]).includes(chainId);
+
+interface NetworkListEntry {
+  name: string;
+  shortName?: string;
+  networkId?: number;
+  chainId?: string;
+  ticker?: string;
+  color: string;
+  networkType: string;
+  imageSource?: unknown;
+  blockExplorerUrl?: string;
+}
+
+export function getNetworkTypeById(id?: string | number): string {
+  if (!id) {
+    throw new Error(NetworkSwitchErrorType.missingNetworkId);
+  }
+  const networkListMap = NetworkList as Record<string, NetworkListEntry>;
+  const filteredNetworkTypes = NetworkListKeys.filter(
+    (key) => networkListMap[key].networkId === parseInt(String(id), 10),
+  );
+  if (filteredNetworkTypes.length > 0) {
+    return filteredNetworkTypes[0];
+  }
+
+  throw new Error(`${NetworkSwitchErrorType.unknownNetworkId} ${id}`);
+}
+
+export function getDefaultNetworkByChainId(
+  chainId: string,
+): NetworkListEntry | undefined {
+  if (!chainId) {
+    throw new Error(NetworkSwitchErrorType.missingChainId);
+  }
+
+  let returnNetwork: NetworkListEntry | undefined;
+  const networkListMap = NetworkList as Record<string, NetworkListEntry>;
+
+  getAllNetworks().forEach((type) => {
+    if (toLowerCaseEquals(String(networkListMap[type].chainId), chainId)) {
+      returnNetwork = networkListMap[type];
+    }
+  });
+
+  return returnNetwork;
+}
+
+export function hasBlockExplorer(key: string): boolean {
+  return key.toLowerCase() !== RPC;
+}
+
+export function isPrivateConnection(hostname: string): boolean {
+  return hostname === 'localhost' || regex.localNetwork.test(hostname);
+}
+
+/**
+ * Returns custom block explorer for specific rpcTarget
+ *
+ * @param {string} providerRpcTarget
+ * @param {object} networkConfigurations
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+interface NetworkConfiguration {
+  rpcEndpoints?: { url: string; [key: string]: unknown }[];
+  blockExplorerUrls: string[];
+  defaultBlockExplorerUrlIndex?: number;
+  [key: string]: unknown;
+}
+
+export function findBlockExplorerForRpc(
+  rpcTargetUrl: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  networkConfigurations: Record<string, any>,
+): string | undefined {
+  const networkConfiguration = Object.values(networkConfigurations).find(
+    ({ rpcEndpoints }) =>
+      rpcEndpoints?.some(({ url }: { url: string }) => url === rpcTargetUrl),
+  );
+
+  if (networkConfiguration) {
+    return networkConfiguration?.blockExplorerUrls?.[
+      networkConfiguration?.defaultBlockExplorerUrlIndex ?? 0
+    ];
+  }
+
+  return undefined;
+}
+
+/**
+ * Returns block explorer for non-evm chain id
+ *
+ * @param {object} internalAccount - Internal account object
+ * @returns {string} - Block explorer url or undefined if not found
+ */
+export function findBlockExplorerForNonEvmChainId(
+  chainId: string,
+): string | undefined {
+  const blockExplorerMap = MULTICHAIN_NETWORK_BLOCK_EXPLORER_FORMAT_URLS_MAP as unknown as Record<
+    string,
+    { url?: string } | undefined
+  >;
+  const blockExplorerUrls = blockExplorerMap[chainId];
+  return blockExplorerUrls?.url;
+}
+
+/**
+ * Returns block explorer for non-evm account
+ *
+ * @param {object} internalAccount - Internal account object
+ * @returns {string} - Block explorer url or undefined if not found
+ */
+interface InternalAccountLike {
+  address: string;
+  scopes?: string[];
+}
+
+export function findBlockExplorerForNonEvmAccount(
+  internalAccount: InternalAccountLike,
+): string | undefined {
+  let scope: string | undefined;
+
+  const selectedNonEvmNetworkChainId = selectSelectedNonEvmNetworkChainId(
+    store.getState(),
+  );
+  // Check if the selectedNonEvmNetworkChainId exists in the scopes array
+  if (
+    selectedNonEvmNetworkChainId &&
+    internalAccount.scopes?.includes(selectedNonEvmNetworkChainId)
+  ) {
+    // Prioritize the selected chain ID if it's in the scopes array
+    scope = selectedNonEvmNetworkChainId;
+  } else {
+    // Fall back to a scope that is matching of our networks
+    const nonEvmNetworks = selectMultichainNetworkControllerState(
+      store.getState(),
+    );
+    const networkConfigs =
+      nonEvmNetworks.multichainNetworkConfigurationsByChainId;
+    const matchingNetwork = Object.values(networkConfigs || {}).find(
+      (network: { chainId: string }) =>
+        internalAccount.scopes?.includes(network.chainId),
+    );
+
+    if (matchingNetwork) {
+      scope = matchingNetwork.chainId;
+    }
+  }
+  // If we couldn't determine a scope, return undefined
+  if (!scope) {
+    return undefined;
+  }
+
+  const blockExplorerMap = MULTICHAIN_NETWORK_BLOCK_EXPLORER_FORMAT_URLS_MAP as unknown as Record<
+    string,
+    unknown
+  >;
+  const blockExplorerFormatUrls = blockExplorerMap[scope];
+
+  if (!blockExplorerFormatUrls) {
+    return undefined;
+  }
+
+  return formatBlockExplorerAddressUrl(
+    blockExplorerFormatUrls as never,
+    internalAccount.address,
+  );
+}
+
+/**
+ * Returns a boolean indicating if both URLs have the same host
+ *
+ * @param {string} rpcOne
+ * @param {string} rpcTwo
+ */
+export function compareRpcUrls(rpcOne: unknown, rpcTwo: unknown): boolean {
+  // First check that both objects are of the type string
+  if (typeof rpcOne === 'string' && typeof rpcTwo === 'string') {
+    const rpcUrlOne = new URL(rpcOne);
+    const rpcUrlTwo = new URL(rpcTwo);
+    return rpcUrlOne.host === rpcUrlTwo.host;
+  }
+  return false;
+}
+
+/**
+ * From block explorer url, get rendereable name or undefined
+ *
+ * @param {string} blockExplorerUrl - block explorer url
+ */
+export function getBlockExplorerName(
+  blockExplorerUrl: string | undefined,
+): string | undefined {
+  if (!blockExplorerUrl) return undefined;
+  const hostname = new URL(blockExplorerUrl).hostname;
+  if (!hostname) return undefined;
+  const tempBlockExplorerName = fastSplit(hostname);
+  if (!tempBlockExplorerName?.[0]) return undefined;
+  return (
+    tempBlockExplorerName[0].toUpperCase() + tempBlockExplorerName.slice(1)
+  );
+}
+
+/**
+ * Checks whether the given value is a 0x-prefixed, non-zero, non-zero-padded,
+ * hexadecimal string.
+ *
+ * @param {any} value - The value to check.
+ * @returns {boolean} True if the value is a correctly formatted hex string,
+ * false otherwise.
+ */
+export function isPrefixedFormattedHexString(value: unknown): boolean {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  return regex.prefixedFormattedHexString.test(value);
+}
+
+export function blockTagParamIndex(payload: { method: string }): number | undefined {
+  switch (payload.method) {
+    // blockTag is at index 2
+    case 'eth_getStorageAt':
+      return 2;
+    // blockTag is at index 1
+    case 'eth_getBalance':
+    case 'eth_getCode':
+    case 'eth_getTransactionCount':
+    case 'eth_call':
+      return 1;
+    // blockTag is at index 0
+    case 'eth_getBlockByNumber':
+      return 0;
+    // there is no blockTag
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Gets the current network name given the network provider.
+ *
+ * @param {Object} providerConfig - The provider configuration for the current selected network.
+ * @returns {string} Name of the network.
+ */
+interface ProviderConfig {
+  nickname?: string;
+  chainId?: string;
+  type?: string;
+}
+
+export const getNetworkNameFromProviderConfig = (
+  providerConfig: ProviderConfig,
+): string => {
+  let name = strings('network_information.unknown_network');
+  const networkListMap = NetworkList as Record<string, NetworkListEntry>;
+  if (providerConfig.nickname) {
+    name = providerConfig.nickname;
+  } else if (providerConfig.chainId === NETWORKS_CHAIN_ID.MAINNET) {
+    name = 'Ethereum Main Network';
+  } else if (providerConfig.chainId === NETWORKS_CHAIN_ID.LINEA_MAINNET) {
+    name = 'Linea Main Network';
+  } else {
+    const networkType = providerConfig.type;
+    name =
+      (networkType && networkListMap?.[networkType]?.name) ||
+      networkListMap[RPC].name;
+  }
+  return name;
+};
+
+/**
+ * Gets the image source given both the network type and the chain ID.
+ *
+ * @param params - Params that contains information about the network.
+ * @param params.networkType - Type of network from the provider.
+ * @param params.chainId - ChainID of the network.
+ * @returns Image source of the network.
+ */
+interface GetNetworkImageSourceParams {
+  networkType?: string;
+  chainId: string;
+}
+
+// Permissive return type retained from the JS-era implicit-any behavior so
+// that downstream consumers can spread/mock the result with plain strings.
+export const getNetworkImageSource = ({
+  networkType,
+  chainId,
+}: GetNetworkImageSourceParams):
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any => {
+  const defaultNetwork = getDefaultNetworkByChainId(chainId);
+
+  if (defaultNetwork) {
+    return defaultNetwork.imageSource as ImageSourcePropType;
+  }
+
+  const unpopularNetwork = UnpopularNetworkList.find(
+    (networkConfig: { chainId: string }) => networkConfig.chainId === chainId,
+  );
+
+  const customNetworkImg = (
+    CustomNetworkImgMapping as Record<string, unknown>
+  )[chainId];
+
+  const popularNetwork = PopularList.find(
+    (networkConfig: { chainId: string }) => networkConfig.chainId === chainId,
+  );
+
+  const network = unpopularNetwork || popularNetwork;
+  if (network) {
+    return (network as { rpcPrefs: { imageSource: ImageSourcePropType } })
+      .rpcPrefs.imageSource;
+  }
+  if (customNetworkImg) {
+    return customNetworkImg as ImageSourcePropType;
+  }
+
+  if (isCaipChainId(chainId)) {
+    return getNonEvmNetworkImageSourceByChainId(
+      chainId as never,
+    ) as ImageSourcePropType;
+  }
+
+  return getTestNetImage(networkType) as ImageSourcePropType;
+};
+
+/**
+ * Returns block explorer address url and title by network
+ *
+ * @param {string} networkType Network type
+ * @param {string} address Ethereum address to be used on the link
+ * @param {string} rpcBlockExplorer rpc block explorer base url
+ */
+interface BlockExplorerInfo {
+  url: string | null;
+  title: string | null;
+}
+
+export const getBlockExplorerAddressUrl = (
+  networkType: string,
+  address: string,
+  rpcBlockExplorer: string | null = null,
+): BlockExplorerInfo => {
+  const isCustomRpcBlockExplorerNetwork = networkType === RPC;
+
+  if (isCustomRpcBlockExplorerNetwork) {
+    if (!rpcBlockExplorer) return { url: null, title: null };
+
+    const url = `${rpcBlockExplorer}/address/${address}`;
+    const title = new URL(rpcBlockExplorer).hostname;
+    return { url, title };
+  }
+
+  const url = getEtherscanAddressUrl(networkType, address);
+  const title = getEtherscanBaseUrl(networkType).replace('https://', '');
+  return { url, title };
+};
+
+/**
+ * Returns block explorer transaction url and title by network
+ *
+ * @param {string} networkType Network type
+ * @param {string} transactionHash hash of the transaction to be used on the link
+ * @param {string} rpcBlockExplorer rpc block explorer base url
+ */
+export const getBlockExplorerTxUrl = (
+  networkType: string,
+  transactionHash: string,
+  rpcBlockExplorer: string | null = null,
+): BlockExplorerInfo => {
+  const isCustomRpcBlockExplorerNetwork = networkType === RPC;
+
+  if (isCustomRpcBlockExplorerNetwork) {
+    if (!rpcBlockExplorer) return { url: null, title: null };
+
+    const url = `${rpcBlockExplorer}/tx/${transactionHash}`;
+    const title = new URL(rpcBlockExplorer).hostname;
+    return { url, title };
+  }
+
+  const url = getEtherscanTransactionUrl(networkType, transactionHash);
+  const title = getEtherscanBaseUrl(networkType).replace('https://', '');
+  return { url, title };
+};
+
+/**
+ * Returns if the chainId network provided is already onboarded or not
+ * @param {string} chainId - network chain Id
+ * @param {obj} networkOnboardedState - Object with onboarded networks
+ * @returns
+ */
+export const getIsNetworkOnboarded = (
+  chainId: string,
+  networkOnboardedState: Record<string, boolean>,
+): boolean => networkOnboardedState[chainId];
+
+export const isChainPermissionsFeatureEnabled = true;
+
+export const isPermissionsSettingsV1Enabled =
+  process.env.MM_PERMISSIONS_SETTINGS_V1_ENABLED === 'true';
+
+export const isPortfolioViewEnabled = () =>
+  process.env.PORTFOLIO_VIEW === 'true';
+
+export const isMultichainV1Enabled = () => process.env.MULTICHAIN_V1 === 'true';
+
+// The whitelisted network names for the given chain IDs to prevent showing warnings on Network Settings.
+export const WHILELIST_NETWORK_NAME: Record<string, string> = {
+  [ChainId.mainnet]: 'Mainnet',
+  [ChainId['linea-mainnet']]: 'Linea Mainnet',
+  [ChainId['megaeth-testnet']]: 'Mega Testnet',
+};
+
+/**
+ * Checks if the network name is valid for the given chain ID.
+ * This function allows for specific network names for certain chain IDs.
+ * For example, it allows 'Mainnet' for Ethereum Mainnet, 'Linea Mainnet' for Linea Mainnet,
+ * and 'Mega Testnet' for MegaEth Testnet.
+ *
+ * @param {string} chainId - The chain ID to check.
+ * @param {string} networkName - The network name to validate.
+ * @param {string} nickname - The nickname of the network.
+ * @returns A boolean indicating whether the network name is valid for the given chain ID.
+ */
+export const isValidNetworkName = (
+  chainId: string,
+  networkName: string,
+  nickname: string,
+): boolean =>
+  networkName === nickname || WHILELIST_NETWORK_NAME[chainId] === nickname;
