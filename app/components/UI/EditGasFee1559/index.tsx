@@ -685,8 +685,10 @@ const EditGasFee1559: React.FC<EditGasFee1559Props> = ({
       <ScrollView style={styles.wrapper}>
         {((): React.ReactElement => {
           const TwfAny: any = TouchableWithoutFeedback;
+          const ViewAny: any = View;
           return (
             <TwfAny>
+            <ViewAny>
             <View>
               <View style={styles.customGasHeader}>
                 <TouchableOpacity onPress={onCancel}>
@@ -697,7 +699,7 @@ const EditGasFee1559: React.FC<EditGasFee1559Props> = ({
                   />
                 </TouchableOpacity>
                 <Text bold black>
-                  {renderDisplayTitle as any}
+                  {renderDisplayTitle()}
                 </Text>
                 <Icon
                   name={'arrow-back'}
@@ -894,6 +896,7 @@ const EditGasFee1559: React.FC<EditGasFee1559Props> = ({
               timeEstimateId={timeEstimateId}
               onHideModal={hideTimeEstimateInfoModal}
             />
+            </ViewAny>
             </TwfAny>
           );
         })()}
