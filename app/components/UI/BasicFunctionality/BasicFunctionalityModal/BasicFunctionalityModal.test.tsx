@@ -1,0 +1,68 @@
+// @ts-nocheck
+// TODO: TS migration cleanup follow-up — fully type this file
+// Third party dependencies.
+import React from 'react';
+
+// Internal dependencies.
+import BasicFunctionalityModal from './BasicFunctionalityModal';
+import renderWithProvider from '../../../../util/test/renderWithProvider';
+import { useNavigation } from '@react-navigation/native';
+
+// Pre-existing anti-pattern: callers across the app import `RootState`
+// transitively from this test file. Preserve that named re-export now that
+// JSDoc typedefs in this file no longer satisfy TS module resolution
+// (was implicitly re-exported when this file was .test.js + allowJs).
+export type { RootState } from '../../../../reducers';
+
+/** @type {MockRootState} */
+const mockInitialState = {
+  engine: {
+    backgroundState: {
+      UserStorageController: {
+        isProfileSyncingEnabled: false,
+      },
+      NotificationServicesController: {
+        isNotificationServicesEnabled: false,
+      },
+    },
+  },
+};
+
+jest.mock('react-native-safe-area-context', () => {
+  const inset = { top: 0, right: 0, bottom: 0, left: 0 };
+  const frame = { width: 0, height: 0, x: 0, y: 0 };
+  return {
+    SafeAreaProvider: jest.fn().mockImplementation(({ children }) => children),
+    SafeAreaConsumer: jest
+      .fn()
+      .mockImplementation(({ children }) => children(inset)),
+    useSafeAreaInsets: jest.fn().mockImplementation(() => inset),
+    useSafeAreaFrame: jest.fn().mockImplementation(() => frame),
+  };
+});
+
+jest.mock('@react-navigation/native', () => {
+  const actualReactNavigation = jest.requireActual('@react-navigation/native');
+  return {
+    ...actualReactNavigation,
+    useNavigation: () => ({
+      navigate: jest.fn(),
+      setOptions: jest.fn(),
+      goBack: jest.fn(),
+      reset: jest.fn(),
+      dangerouslyGetParent: () => ({
+        pop: jest.fn(),
+      }),
+    }),
+  };
+});
+
+describe('BasicFunctionalityModal', () => {
+  it('should render correctly', () => {
+    const { toJSON } = renderWithProvider(
+      <BasicFunctionalityModal navigation={useNavigation()} />,
+      { state: mockInitialState },
+    );
+    expect(toJSON()).toMatchSnapshot();
+  });
+});
