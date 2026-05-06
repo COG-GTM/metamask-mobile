@@ -1,6 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, SafeAreaView, View } from 'react-native';
+import { StyleSheet, SafeAreaView, View, TextStyle, StyleProp } from 'react-native';
 import Modal from 'react-native-modal';
 import FAIcon from 'react-native-vector-icons/FontAwesome5';
 import ModalDragger from '../../../Base/ModalDragger';
@@ -10,8 +9,9 @@ import TokenIcon from './TokenIcon';
 import StyledButton from '../../StyledButton';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
+import { Theme } from '../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -56,7 +56,22 @@ const createStyles = (colors) =>
     },
   });
 
-function TokenImportModal({ isVisible, dismiss, token, onPressImport }) {
+interface TokenInfo {
+  address?: string;
+  name?: string;
+  symbol?: string;
+  decimals?: number;
+  iconUrl?: string;
+}
+
+interface Props {
+  isVisible?: boolean;
+  dismiss?: () => void;
+  token: TokenInfo;
+  onPressImport?: () => void;
+}
+
+function TokenImportModal({ isVisible, dismiss, token, onPressImport }: Props): React.JSX.Element {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -86,7 +101,7 @@ function TokenImportModal({ isVisible, dismiss, token, onPressImport }) {
               />
             )}
           >
-            {(textStyle) => (
+            {(textStyle: StyleProp<TextStyle>) => (
               <Text style={textStyle}>{strings('swaps.add_warning')}</Text>
             )}
           </Alert>
@@ -118,16 +133,4 @@ function TokenImportModal({ isVisible, dismiss, token, onPressImport }) {
   );
 }
 
-TokenImportModal.propTypes = {
-  isVisible: PropTypes.bool,
-  dismiss: PropTypes.func,
-  token: PropTypes.shape({
-    address: PropTypes.string,
-    name: PropTypes.string,
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-    iconUrl: PropTypes.string,
-  }),
-  onPressImport: PropTypes.func,
-};
 export default TokenImportModal;

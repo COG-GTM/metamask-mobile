@@ -9,13 +9,38 @@ import { strings } from '../../../../../locales/i18n';
 import { getEtherscanBaseUrl } from '../../../../util/etherscan';
 import { useSelector } from 'react-redux';
 import {
+  ProviderConfig,
   selectEvmChainId,
   selectProviderConfig,
 } from '../../../../selectors/networkController';
 import { selectNetworkName } from '../../../../selectors/networkInfos';
 
-function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
-  const [explorer, setExplorer] = useState({
+interface NetworkConfigurationLike {
+  rpcUrl?: string;
+  blockExplorerUrls?: string[];
+  defaultBlockExplorerUrlIndex?: number;
+  [key: string]: unknown;
+}
+
+interface ExplorerState {
+  name: string;
+  value: string | null;
+  isValid: boolean;
+  isRPC: boolean;
+  baseUrl: string;
+}
+
+export interface UseBlockExplorerResult extends ExplorerState {
+  tx: (hash: string) => string;
+  account: (address: string) => string;
+  token: (address: string) => string;
+}
+
+function useBlockExplorer(
+  networkConfigurations: Record<string, NetworkConfigurationLike>,
+  providerConfigTokenExplorer?: ProviderConfig,
+): UseBlockExplorerResult {
+  const [explorer, setExplorer] = useState<ExplorerState>({
     name: '',
     value: null,
     isValid: false,
@@ -23,7 +48,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     baseUrl: '',
   });
   const providerConfig = useSelector(selectProviderConfig);
-  const chainId = useSelector(selectEvmChainId);
+  const chainId = useSelector(selectEvmChainId) as string;
   const networkName = useSelector(selectNetworkName);
 
   useEffect(() => {
@@ -80,8 +105,8 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
   ]);
 
   const tx = useCallback(
-    (hash) => {
-      if (!explorer.isValid) {
+    (hash: string): string => {
+      if (!explorer.isValid || !explorer.value) {
         return '';
       }
 
@@ -93,8 +118,8 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const account = useCallback(
-    (address) => {
-      if (!explorer.isValid) {
+    (address: string): string => {
+      if (!explorer.isValid || !explorer.value) {
         return '';
       }
 
@@ -106,8 +131,8 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const token = useCallback(
-    (address) => {
-      if (!explorer.isValid) {
+    (address: string): string => {
+      if (!explorer.isValid || !explorer.value) {
         return '';
       }
 

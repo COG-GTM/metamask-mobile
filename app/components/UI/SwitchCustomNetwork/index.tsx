@@ -1,15 +1,34 @@
 import React, { useEffect, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import { getDecimalChainId } from '../../../util/networks';
 import PermissionSummary from '../PermissionsSummary';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { useNetworkInfo } from '../../../selectors/selectedNetworkController';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 
+interface CustomNetworkInformation {
+  chainId: string;
+  chainName: string;
+  [key: string]: unknown;
+}
+
+interface PageInformation {
+  url: string;
+  currentEnsName?: string;
+  icon?: string | { uri: string };
+  [key: string]: unknown;
+}
+
+interface Props {
+  customNetworkInformation: CustomNetworkInformation;
+  currentPageInformation: PageInformation;
+  onCancel?: () => void;
+  onConfirm?: () => void;
+}
+
 /**
  * Account access approval component
  */
-const SwitchCustomNetwork = ({
+const SwitchCustomNetwork: React.FC<Props> = ({
   customNetworkInformation,
   currentPageInformation,
   onCancel,
@@ -42,32 +61,13 @@ const SwitchCustomNetwork = ({
   return (
     <PermissionSummary
       customNetworkInformation={customNetworkInformation}
-      currentPageInformation={currentPageInformation}
+      currentPageInformation={currentPageInformation as { currentEnsName: string; icon: string | { uri: string }; url: string }}
       onCancel={onCancel}
       onConfirm={onConfirm}
       isDisconnectAllShown={false}
       isNetworkSwitch
     />
   );
-};
-
-SwitchCustomNetwork.propTypes = {
-  /**
-   * Object containing current page title, url, and icon href
-   */
-  currentPageInformation: PropTypes.object,
-  /**
-   * Callback triggered on account access approval
-   */
-  onConfirm: PropTypes.func,
-  /**
-   * Callback triggered on account access rejection
-   */
-  onCancel: PropTypes.func,
-  /**
-   * Object containing info of the network to add
-   */
-  customNetworkInformation: PropTypes.object,
 };
 
 export default SwitchCustomNetwork;
