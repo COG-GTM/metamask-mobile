@@ -1,8 +1,12 @@
 /* eslint-disable import/no-commonjs, import/no-nodejs-modules */
-const path = require('path');
+import path from 'path';
 
-module.exports = {
-  process(_, filename) {
+interface JestTransformerResult {
+  code: string;
+}
+
+export = {
+  process(_: string, filename: string): JestTransformerResult {
     const assetFilename = JSON.stringify(path.basename(filename));
 
     return {
