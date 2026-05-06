@@ -91,7 +91,7 @@ const QRSigningModal = ({
           cancelCallback={handleCancel}
           failureCallback={handleFailure}
           bypassAndroidCameraAccessCheck={false}
-          fromAddress={from}
+          fromAddress={from ?? ''}
         />
       </View>
     </Modal>
