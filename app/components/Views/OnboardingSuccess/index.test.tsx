@@ -46,7 +46,7 @@ const mockProviderConfig = {
 
 describe('OnboardingSuccess', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as jest.Mock).mockImplementation((selector: unknown) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const { toJSON } = renderWithProvider(
@@ -56,11 +56,13 @@ describe('OnboardingSuccess', () => {
   });
 
   it('imports additional accounts and sets completedOnboarding to true when onDone is called', () => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as jest.Mock).mockImplementation((selector: unknown) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const mockDispatch = jest.fn();
-    useDispatch.mockImplementation(() => mockDispatch);
+    (useDispatch as unknown as jest.Mock).mockImplementation(
+      () => mockDispatch,
+    );
 
     const { getByTestId } = renderWithProvider(
       <OnboardingSuccess navigation={useNavigation()} onDone={jest.fn()} />,
