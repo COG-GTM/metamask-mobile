@@ -1,9 +1,10 @@
 import isUrl from 'is-url';
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import { strings } from '../../../../locales/i18n';
+import { RootState } from '../../../reducers';
+import { Colors } from '../../../util/theme/models';
 import Text, {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
@@ -33,7 +34,7 @@ import ApproveTransactionHeader from '../../Views/confirmations/legacy/component
 import Identicon from '../Identicon';
 import { selectInternalAccounts } from '../../../selectors/accountsController';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     accountInformation: {
       flexDirection: 'row',
@@ -100,43 +101,35 @@ const createStyles = (colors) =>
     },
   });
 
-class AccountInfoCard extends PureComponent {
-  static propTypes = {
-    /**
-     * A string that represents the from address.
-     */
-    fromAddress: PropTypes.string.isRequired,
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * A number that specifies the ETH/USD conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * The selected currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Declares the operation being performed i.e. 'signing'
-     */
-    operation: PropTypes.string,
-    /**
-     * Clarify should show fiat balance
-     */
-    showFiatBalance: PropTypes.bool,
-    /**
-     * Current selected ticker
-     */
-    ticker: PropTypes.string,
-    transaction: PropTypes.object,
-    origin: PropTypes.string,
-  };
+const mapStateToPropsFn = (state: RootState) => ({
+  accounts: selectAccounts(state),
+  internalAccounts: selectInternalAccounts(state),
+  conversionRate: selectConversionRate(state),
+  currentCurrency: selectCurrentCurrency(state),
+  ticker: selectEvmTicker(state),
+  transaction: getNormalizedTxState(state),
+  activeTabUrl: getActiveTabUrl(state),
+});
+
+const connector = connect(mapStateToPropsFn);
+
+type PropsFromRedux = ConnectedProps<typeof connector>;
+
+interface OwnProps {
+  /** A string that represents the from address. */
+  fromAddress: string;
+  /** Declares the operation being performed i.e. 'signing' */
+  operation?: string;
+  /** Clarify should show fiat balance */
+  showFiatBalance?: boolean;
+  origin?: string;
+}
+
+type Props = OwnProps & PropsFromRedux;
+
+class AccountInfoCard extends PureComponent<Props> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
   render() {
     const {
@@ -154,7 +147,7 @@ class AccountInfoCard extends PureComponent {
 
     const fromAddress = safeToChecksumAddress(rawFromAddress);
     const accountLabelTag = getLabelTextByAddress(fromAddress);
-    const colors = this.context.colors || mockTheme.colors;
+    const colors: Colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const weiBalance = accounts?.[fromAddress]?.balance
       ? hexToBN(accounts[fromAddress].balance)
@@ -242,16 +235,4 @@ class AccountInfoCard extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
-  accounts: selectAccounts(state),
-  internalAccounts: selectInternalAccounts(state),
-  conversionRate: selectConversionRate(state),
-  currentCurrency: selectCurrentCurrency(state),
-  ticker: selectEvmTicker(state),
-  transaction: getNormalizedTxState(state),
-  activeTabUrl: getActiveTabUrl(state),
-});
-
-AccountInfoCard.contextType = ThemeContext;
-
-export default connect(mapStateToProps)(AccountInfoCard);
+export default connector(AccountInfoCard);

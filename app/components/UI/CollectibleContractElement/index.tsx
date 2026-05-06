@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
 import { connect } from 'react-redux';
+import { RootState } from '../../../reducers';
+import { Colors } from '../../../util/theme/models';
 import { fontStyles } from '../../../styles/common';
 import CollectibleMedia from '../CollectibleMedia';
 import Device from '../../../util/device';
@@ -27,7 +28,11 @@ import { getDecimalChainId } from '../../../util/networks';
 const DEVICE_WIDTH = Device.getDeviceWidth();
 const COLLECTIBLE_WIDTH = (DEVICE_WIDTH - 30 - 16) / 3;
 
-const createStyles = (colors, brandColors) =>
+interface BrandColors {
+  [key: string]: string;
+}
+
+const createStyles = (colors: Colors, brandColors: BrandColors) =>
   StyleSheet.create({
     itemWrapper: {
       paddingHorizontal: 15,
@@ -76,13 +81,51 @@ const createStyles = (colors, brandColors) =>
     },
   });
 
-const splitIntoSubArrays = (array, count) => {
-  const newArray = [];
-  while (array.length > 0) {
-    newArray.push(array.splice(0, count));
+const splitIntoSubArrays = <T,>(array: T[], count: number): T[][] => {
+  const newArray: T[][] = [];
+  const copy = [...array];
+  while (copy.length > 0) {
+    newArray.push(copy.splice(0, count));
   }
   return newArray;
 };
+
+interface CollectibleItem {
+  address: string;
+  tokenId: string;
+  name?: string;
+  image?: string;
+  logo?: string;
+  favorites?: boolean;
+}
+
+interface AssetItem {
+  address?: string;
+  name?: string;
+  logo?: string;
+  favorites?: boolean;
+}
+
+interface Props {
+  /** Object being rendered */
+  asset: AssetItem;
+  /** Array of collectibles */
+  contractCollectibles: CollectibleItem[];
+  /** Whether the collectibles are visible or not */
+  collectiblesVisible?: boolean;
+  /** Called when the collectible is pressed */
+  onPress: (collectible: CollectibleItem) => void;
+  /** Selected address */
+  selectedAddress?: string;
+  /** Chain id */
+  chainId?: string;
+  /** Dispatch remove collectible from favorites action */
+  removeFavoriteCollectible: (
+    selectedAddress: string,
+    chainId: string,
+    collectible: CollectibleItem,
+  ) => void;
+}
 
 /**
  * Customizable view to render assets in lists
@@ -95,13 +138,15 @@ function CollectibleContractElement({
   chainId,
   selectedAddress,
   removeFavoriteCollectible,
-}) {
-  const [collectiblesGrid, setCollectiblesGrid] = useState([]);
+}: Props) {
+  const [collectiblesGrid, setCollectiblesGrid] = useState<
+    CollectibleItem[][]
+  >([]);
   const [collectiblesVisible, setCollectiblesVisible] = useState(
     propsCollectiblesVisible,
   );
-  const actionSheetRef = useRef();
-  const longPressedCollectible = useRef(null);
+  const actionSheetRef = useRef<{ show: () => void } | null>(null);
+  const longPressedCollectible = useRef<CollectibleItem | null>(null);
   const { colors, themeAppearance, brandColors } = useTheme();
   const styles = createStyles(colors, brandColors);
   const { trackEvent, createEventBuilder } = useMetrics();
@@ -111,28 +156,33 @@ function CollectibleContractElement({
   }, [collectiblesVisible, setCollectiblesVisible]);
 
   const onPressCollectible = useCallback(
-    (collectible) => {
+    (collectible: CollectibleItem) => {
       onPress(collectible);
     },
     [onPress],
   );
 
-  const onLongPressCollectible = useCallback((collectible) => {
-    actionSheetRef.current.show();
-    longPressedCollectible.current = collectible;
-  }, []);
+  const onLongPressCollectible = useCallback(
+    (collectible: CollectibleItem) => {
+      actionSheetRef.current?.show();
+      longPressedCollectible.current = collectible;
+    },
+    [],
+  );
 
   const removeNft = () => {
     const { NftController } = Engine.context;
-    removeFavoriteCollectible(
-      selectedAddress,
-      chainId,
-      longPressedCollectible.current,
-    );
-    NftController.removeAndIgnoreNft(
-      longPressedCollectible.current.address,
-      longPressedCollectible.current.tokenId,
-    );
+    if (longPressedCollectible.current) {
+      removeFavoriteCollectible(
+        selectedAddress as string,
+        chainId as string,
+        longPressedCollectible.current,
+      );
+      NftController.removeAndIgnoreNft(
+        longPressedCollectible.current.address,
+        longPressedCollectible.current.tokenId,
+      );
+    }
     trackEvent(
       createEventBuilder(MetaMetricsEvents.COLLECTIBLE_REMOVED)
         .addProperties({
@@ -149,13 +199,15 @@ function CollectibleContractElement({
   const refreshMetadata = () => {
     const { NftController } = Engine.context;
 
-    NftController.addNft(
-      longPressedCollectible.current.address,
-      longPressedCollectible.current.tokenId,
-    );
+    if (longPressedCollectible.current) {
+      NftController.addNft(
+        longPressedCollectible.current.address,
+        longPressedCollectible.current.tokenId,
+      );
+    }
   };
 
-  const handleMenuAction = (index) => {
+  const handleMenuAction = (index: number) => {
     if (index === 1) {
       removeNft();
     } else if (index === 0) {
@@ -164,7 +216,7 @@ function CollectibleContractElement({
   };
 
   const renderCollectible = useCallback(
-    (collectible, index) => {
+    (collectible: CollectibleItem, index: number) => {
       if (!collectible) return null;
       const onPress = () => onPressCollectible({ ...collectible });
       const onLongPress = () =>
@@ -272,38 +324,7 @@ function CollectibleContractElement({
   );
 }
 
-CollectibleContractElement.propTypes = {
-  /**
-   * Object being rendered
-   */
-  asset: PropTypes.object,
-  /**
-   * Array of collectibles
-   */
-  contractCollectibles: PropTypes.array,
-  /**
-   * Whether the collectibles are visible or not
-   */
-  collectiblesVisible: PropTypes.bool,
-  /**
-   * Called when the collectible is pressed
-   */
-  onPress: PropTypes.func,
-  /**
-   * Selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Dispatch remove collectible from favorites action
-   */
-  removeFavoriteCollectible: PropTypes.func,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
 });
