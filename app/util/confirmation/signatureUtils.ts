@@ -18,13 +18,31 @@ export const typedSign = {
   V1: 'eth_signTypedData',
   V3: 'eth_signTypedData_v3',
   V4: 'eth_signTypedData_v4',
-};
+} as const;
+
+interface MessageParams {
+  from: string;
+  origin?: string;
+  version?: string;
+  currentPageInformation?: { url?: string; analytics?: Record<string, unknown> };
+  meta?: { url?: string; analytics?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface AnalyticsParams {
+  account_type: string | undefined;
+  dapp_host_name: string;
+  chain_id: string | null;
+  signature_type: string;
+  version: string;
+  [key: string]: unknown;
+}
 
 export const getAnalyticsParams = (
-  messageParams,
-  signType,
-  securityAlertResponse,
-) => {
+  messageParams: MessageParams,
+  signType: string,
+  securityAlertResponse?: unknown,
+): AnalyticsParams => {
   if (!messageParams || typeof messageParams !== 'object') {
     throw new Error('Invalid messageParams provided');
   }
@@ -32,7 +50,7 @@ export const getAnalyticsParams = (
   const { currentPageInformation = {}, meta = {} } = messageParams;
   const pageInfo = { ...currentPageInformation, ...meta };
 
-  const analyticsParams = {
+  const analyticsParams: AnalyticsParams = {
     account_type: getAddressAccountType(messageParams.from),
     dapp_host_name: 'N/A',
     chain_id: null,
@@ -43,7 +61,7 @@ export const getAnalyticsParams = (
 
   try {
     const chainId = selectEvmChainId(store.getState());
-    analyticsParams.chain_id = getDecimalChainId(chainId);
+    analyticsParams.chain_id = getDecimalChainId(chainId) ?? null;
 
     if (pageInfo.url) {
       const url = new URL(pageInfo.url);
@@ -61,7 +79,10 @@ export const getAnalyticsParams = (
   return analyticsParams;
 };
 
-export const walletConnectNotificationTitle = (confirmation, isError) => {
+export const walletConnectNotificationTitle = (
+  confirmation: boolean,
+  isError: boolean,
+): string => {
   if (isError) return strings('notifications.wc_signed_failed_title');
   return confirmation
     ? strings('notifications.wc_signed_title')
@@ -69,15 +90,17 @@ export const walletConnectNotificationTitle = (confirmation, isError) => {
 };
 
 export const showWalletConnectNotification = (
-  messageParams = {},
-  confirmation = false,
-  isError = false,
-) => {
+  messageParams: Partial<MessageParams> = {},
+  confirmation: boolean = false,
+  isError: boolean = false,
+): void => {
   InteractionManager.runAfterInteractions(() => {
     /**
      * FIXME: need to rewrite the way BackgroundBridge sets the origin.
      */
-    const origin = messageParams.origin.toLowerCase().replaceAll(':', '');
+    const origin = (messageParams.origin ?? '')
+      .toLowerCase()
+      .replaceAll(':', '');
     const isWCOrigin = origin.startsWith(
       WALLET_CONNECT_ORIGIN.replaceAll(':', '').toLowerCase(),
     );
@@ -97,12 +120,12 @@ export const showWalletConnectNotification = (
 };
 
 export const handleSignatureAction = async (
-  onAction,
-  messageParams,
-  signType,
-  securityAlertResponse,
-  confirmation,
-) => {
+  onAction: () => Promise<void> | void,
+  messageParams: MessageParams,
+  signType: string,
+  securityAlertResponse: unknown,
+  confirmation: boolean,
+): Promise<void> => {
   await onAction();
   showWalletConnectNotification(messageParams, confirmation);
   MetaMetrics.getInstance().trackEvent(
@@ -118,21 +141,33 @@ export const handleSignatureAction = async (
   );
 };
 
-export const addSignatureErrorListener = (metamaskId, onSignatureError) => {
+type SignatureErrorListener = (...args: unknown[]) => void;
+
+export const addSignatureErrorListener = (
+  metamaskId: string,
+  onSignatureError: SignatureErrorListener,
+): void => {
   Engine.context.SignatureController.hub.on(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const removeSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const removeSignatureErrorListener = (
+  metamaskId: string,
+  onSignatureError: SignatureErrorListener,
+): void => {
   Engine.context.SignatureController.hub.removeListener(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const shouldTruncateMessage = (e) => {
+interface LayoutChangeEventLike {
+  nativeEvent: { layout: { height: number } };
+}
+
+export const shouldTruncateMessage = (e: LayoutChangeEventLike): boolean => {
   if (
     (Device.isIos() && e.nativeEvent.layout.height > 70) ||
     (Device.isAndroid() && e.nativeEvent.layout.height > 100)
