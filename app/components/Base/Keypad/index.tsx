@@ -1,9 +1,31 @@
-import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
-import Keypad from './components';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { ReactNode, useCallback } from 'react';
+import { StyleProp, ViewStyle, TextStyle } from 'react-native';
+import KeypadOrig from './components';
 import { KEYS } from './constants';
 import useCurrency from './useCurrency';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+
+const Keypad: any = KeypadOrig;
+
+interface KeypadChangeArgs {
+  value: string;
+  valueAsNumber: number;
+  pressedKey: string;
+}
+
+interface Props {
+  onChange: (args: KeypadChangeArgs) => void;
+  currency?: string;
+  decimals?: number;
+  value?: string;
+  style?: StyleProp<ViewStyle>;
+  digitButtonStyle?: StyleProp<ViewStyle>;
+  digitTextStyle?: StyleProp<TextStyle>;
+  periodButtonStyle?: StyleProp<ViewStyle>;
+  periodTextStyle?: StyleProp<TextStyle>;
+  deleteButtonStyle?: StyleProp<ViewStyle>;
+  deleteIcon?: ReactNode;
+}
 
 function KeypadComponent({
   onChange,
@@ -17,10 +39,10 @@ function KeypadComponent({
   periodTextStyle,
   deleteButtonStyle,
   deleteIcon,
-}) {
+}: Props) {
   const { handler, decimalSeparator } = useCurrency(currency, decimals);
   const handleKeypadPress = useCallback(
-    (pressedKey) => {
+    (pressedKey: string) => {
       const newValue = handler(value, pressedKey);
       let valueAsNumber = 0;
       try {
@@ -203,54 +225,6 @@ function KeypadComponent({
     </Keypad>
   );
 }
-
-KeypadComponent.propTypes = {
-  /**
-   * Function that will be called when a key is pressed with arguments `(value, key)`
-   */
-  onChange: PropTypes.func,
-  /**
-   * Currency code for the keypad rules and symbols. Defaults to
-   * currency without decimals (CURRENCIES[default])
-   */
-  currency: PropTypes.string,
-  /**
-   * Currency decimals
-   */
-  decimals: PropTypes.number,
-  /**
-   * Current value used to create new value when a key is pressed.
-   */
-  value: PropTypes.string,
-  /**
-   * Custom style for container
-   */
-  style: ViewPropTypes.style,
-  /**
-   * Custom style for digit buttons
-   */
-  digitButtonStyle: ViewPropTypes.style,
-  /**
-   * Custom style for digit text
-   */
-  digitTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  /**
-   * Custom style for period button
-   */
-  periodButtonStyle: ViewPropTypes.style,
-  /**
-   * Custom style for period text
-   */
-  periodTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  /**
-   * Custom style for delete button
-   */
-  deleteButtonStyle: ViewPropTypes.style,
-  /**
-   * Custom icon for delete button
-   */
-  deleteIcon: PropTypes.node,
-};
 
 export { KEYS };
 export default KeypadComponent;
