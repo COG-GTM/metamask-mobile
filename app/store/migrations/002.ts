@@ -1,8 +1,21 @@
 import { isObject } from '@metamask/utils';
-import { isSafeChainId } from '@metamask/controller-utils';
 import { captureException } from '@sentry/react-native';
 import { getAllNetworks } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
+import AppConstants from '../../core/AppConstants';
+
+// Re-implementation of the deprecated `isSafeChainId(chainId: number)` helper
+// that used to live in `app/util/networks/index.js`. The replacement
+// `isSafeChainId` exported from `@metamask/controller-utils` now expects a
+// 0x-prefixed hex string, but this legacy migration historically passed a
+// decimal number, so we preserve the original numeric-input semantics.
+function isSafeChainId(chainId: number): boolean {
+  return (
+    Number.isSafeInteger(chainId) &&
+    chainId > 0 &&
+    chainId <= AppConstants.MAX_SAFE_CHAIN_ID
+  );
+}
 
 interface Provider {
   type?: string;
@@ -36,9 +49,7 @@ export default function migrate(state: unknown) {
 
   // Check if the current network has a valid chainId
   const chainIdNumber = parseInt(provider.chainId ?? '', 10);
-  const isCustomRpcWithInvalidChainId = !isSafeChainId(
-    chainIdNumber as unknown as `0x${string}`,
-  );
+  const isCustomRpcWithInvalidChainId = !isSafeChainId(chainIdNumber);
 
   if (!isInitialNetwork && isCustomRpcWithInvalidChainId) {
     // If the current network does not have a chainId, switch to testnet.

@@ -1,8 +1,21 @@
 import { isObject } from '@metamask/utils';
-import { isSafeChainId } from '@metamask/controller-utils';
 import { captureException } from '@sentry/react-native';
 import { GOERLI } from '../../../app/constants/network';
 import { regex } from '../../../app/util/regex';
+import AppConstants from '../../core/AppConstants';
+
+// Re-implementation of the deprecated `isSafeChainId(chainId: number)` helper
+// that used to live in `app/util/networks/index.js`. The replacement
+// `isSafeChainId` exported from `@metamask/controller-utils` now expects a
+// 0x-prefixed hex string, but this legacy migration historically passed a
+// decimal number, so we preserve the original numeric-input semantics.
+function isSafeChainId(chainId: number): boolean {
+  return (
+    Number.isSafeInteger(chainId) &&
+    chainId > 0 &&
+    chainId <= AppConstants.MAX_SAFE_CHAIN_ID
+  );
+}
 
 interface Provider {
   type?: string;
@@ -56,10 +69,7 @@ export default function migrate(state: unknown) {
     typeof provider.chainId === 'string' ? provider.chainId : '';
   const isDecimalString = regex.decimalStringMigrations.test(storedChainId);
   const hasInvalidChainId =
-    !isDecimalString ||
-    !isSafeChainId(
-      parseInt(storedChainId, 10) as unknown as `0x${string}`,
-    );
+    !isDecimalString || !isSafeChainId(parseInt(storedChainId, 10));
 
   if (hasInvalidChainId) {
     // If the current network does not have a chainId, switch to testnet.
