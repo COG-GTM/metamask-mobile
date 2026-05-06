@@ -1,10 +1,15 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, Animated, Easing } from 'react-native';
+import {
+  StyleSheet,
+  Animated,
+  Easing,
+  LayoutChangeEvent,
+} from 'react-native';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -27,68 +32,88 @@ const createStyles = (colors) =>
 //TODO this custom gas modal needs to be removed from the animated tx modal.
 const customGasHeightPlaceHolder = 400;
 
+type XTranslationName = 'reviewToEdit' | 'editToAdvanced' | 'reviewToData';
+
+type Mode = 'edit' | 'review' | string;
+
+interface AnimateArgs {
+  modalEndValue: number;
+  xTranslationName: XTranslationName;
+  xTranslationEndValue: number;
+}
+
+interface Props {
+  /** Changes the mode to 'review' */
+  review?: () => void;
+  /** Called when a user changes modes */
+  onModeChange?: (mode: Mode) => void;
+  /** Whether or not basic gas estimates have been fetched */
+  ready?: boolean;
+  /** Children components */
+  children: React.ReactNode;
+}
+
+interface State {
+  originComponent: 'dapp' | 'wallet';
+  modalValue: Animated.Value;
+  width: number;
+  rootHeight: number | null;
+  customGasHeight: number;
+  transactionReviewDataHeight: number | null;
+  hideGasSelectors: boolean;
+  hideData: boolean;
+  advancedCustomGas: boolean;
+  toAdvancedFrom: 'edit' | 'review';
+  mode: Mode;
+}
+
 /**
  * PureComponent that handles most of the animation/transition logic
  */
-class AnimatedTransactionModal extends PureComponent {
-  static propTypes = {
-    /**
-     * Changes the mode to 'review'
-     */
-    review: PropTypes.func,
-    /**
-     * Called when a user changes modes
-     */
-    onModeChange: PropTypes.func,
-    /**
-     * Whether or not basic gas estimates have been fetched
-     */
-    ready: PropTypes.bool,
-    /**
-     * Children components
-     */
-    children: PropTypes.oneOfType([
-      PropTypes.arrayOf(PropTypes.node),
-      PropTypes.node,
-    ]).isRequired,
-  };
+class AnimatedTransactionModal extends PureComponent<Props, State> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
-    originComponent:
-      React.Children.toArray(this.props?.children).length > 1
-        ? 'dapp'
-        : 'wallet',
-    modalValue:
-      React.Children.toArray(this.props?.children).length > 1
-        ? new Animated.Value(1)
-        : new Animated.Value(0),
-    width: Device.getDeviceWidth(),
-    rootHeight: null,
-    customGasHeight: customGasHeightPlaceHolder,
-    transactionReviewDataHeight: null,
-    hideGasSelectors: false,
-    hideData: true,
-    advancedCustomGas: false,
-    toAdvancedFrom: 'edit',
-    mode: 'review',
-  };
+  state: State;
 
   reviewToEditValue = new Animated.Value(0);
   reviewToDataValue = new Animated.Value(0);
   editToAdvancedValue = new Animated.Value(0);
 
-  xTranslationMappings = {
-    reviewToEdit: this.reviewToEditValue,
-    editToAdvanced: this.editToAdvancedValue,
-    reviewToData: this.reviewToDataValue,
-  };
+  xTranslationMappings: Record<XTranslationName, Animated.Value>;
+
+  constructor(props: Props) {
+    super(props);
+    const isMultipleChildren =
+      React.Children.toArray(props?.children).length > 1;
+    this.state = {
+      originComponent: isMultipleChildren ? 'dapp' : 'wallet',
+      modalValue: isMultipleChildren
+        ? new Animated.Value(1)
+        : new Animated.Value(0),
+      width: Device.getDeviceWidth(),
+      rootHeight: null,
+      customGasHeight: customGasHeightPlaceHolder,
+      transactionReviewDataHeight: null,
+      hideGasSelectors: false,
+      hideData: true,
+      advancedCustomGas: false,
+      toAdvancedFrom: 'edit',
+      mode: 'review',
+    };
+    this.xTranslationMappings = {
+      reviewToEdit: this.reviewToEditValue,
+      editToAdvanced: this.editToAdvancedValue,
+      reviewToData: this.reviewToDataValue,
+    };
+  }
 
   review = () => {
-    this.props.review();
+    this.props.review?.();
     this.onModeChange('review');
   };
 
-  onModeChange = (mode) => {
+  onModeChange = (mode: Mode) => {
     if (mode === 'edit') {
       this.setState({ toAdvancedFrom: 'review' });
       this.animate({
@@ -105,10 +130,14 @@ class AnimatedTransactionModal extends PureComponent {
         xTranslationEndValue: 0,
       });
     }
-    this.props.onModeChange(mode);
+    this.props.onModeChange?.(mode);
   };
 
-  animate = ({ modalEndValue, xTranslationName, xTranslationEndValue }) => {
+  animate = ({
+    modalEndValue,
+    xTranslationName,
+    xTranslationEndValue,
+  }: AnimateArgs) => {
     const { modalValue } = this.state;
     this.hideComponents(xTranslationName, xTranslationEndValue, 'start');
     Animated.parallel([
@@ -137,8 +166,11 @@ class AnimatedTransactionModal extends PureComponent {
     });
   };
 
-  hideComponents = (xTranslationName, xTranslationEndValue, animationTime) => {
-    //data view is hidden by default because when we switch from review to edit, since view is nested in review, it also gets transformed. It's shown if it's the animation's destination.
+  hideComponents = (
+    xTranslationName: XTranslationName,
+    xTranslationEndValue: number,
+    animationTime: 'start' | 'end',
+  ) => {
     if (xTranslationName === 'editToAdvanced') {
       this.setState({
         hideGasSelectors: xTranslationEndValue === 1 && animationTime === 'end',
@@ -151,7 +183,10 @@ class AnimatedTransactionModal extends PureComponent {
     }
   };
 
-  generateTransform = (valueType, outRange) => {
+  generateTransform = (
+    valueType: 'modal' | 'saveButton' | XTranslationName,
+    outRange: number[],
+  ) => {
     const { modalValue } = this.state;
     if (valueType === 'modal' || valueType === 'saveButton') {
       return {
@@ -170,14 +205,14 @@ class AnimatedTransactionModal extends PureComponent {
         ],
       };
     }
-    let value;
+    let value: Animated.Value | undefined;
     if (valueType === 'reviewToEdit') value = this.reviewToEditValue;
     else if (valueType === 'editToAdvanced') value = this.editToAdvancedValue;
     else if (valueType === 'reviewToData') value = this.reviewToDataValue;
     return {
       transform: [
         {
-          translateX: value.interpolate({
+          translateX: (value as Animated.Value).interpolate({
             inputRange: [0, 1],
             outputRange: outRange,
           }),
@@ -189,17 +224,16 @@ class AnimatedTransactionModal extends PureComponent {
   getAnimatedModalValueForAdvancedCG = () => {
     const { rootHeight, customGasHeight, originComponent } = this.state;
     if (originComponent === 'wallet') return 1;
-    //70 is the fixed height + margin of the error message in advanced custom gas. It expands 70 units vertically to accomodate it
-    return 70 / (rootHeight - customGasHeight);
+    return 70 / ((rootHeight ?? 0) - customGasHeight);
   };
 
-  saveRootHeight = (event) =>
+  saveRootHeight = (event: LayoutChangeEvent) =>
     this.setState({ rootHeight: event.nativeEvent.layout.height });
 
-  saveCustomGasHeight = (event) =>
+  saveCustomGasHeight = (event: LayoutChangeEvent) =>
     this.setState({ customGasHeight: event.nativeEvent.layout.height });
 
-  saveTransactionReviewDataHeight = (event) =>
+  saveTransactionReviewDataHeight = (event: LayoutChangeEvent) =>
     !this.state.transactionReviewDataHeight &&
     this.setState({
       transactionReviewDataHeight: event.nativeEvent.layout.height,
@@ -207,7 +241,7 @@ class AnimatedTransactionModal extends PureComponent {
 
   getTransformValue = () => {
     const { rootHeight, customGasHeight } = this.state;
-    return rootHeight - customGasHeight;
+    return (rootHeight ?? 0) - customGasHeight;
   };
 
   render = () => {
@@ -221,9 +255,11 @@ class AnimatedTransactionModal extends PureComponent {
       toAdvancedFrom,
     } = this.state;
     const { ready, children } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors: Colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const components = React.Children.toArray(children);
+    const components = React.Children.toArray(
+      children,
+    ) as React.ReactElement[];
     let gasTransformStyle;
     let modalTransformStyle;
     let gasComponent;
@@ -291,7 +327,5 @@ class AnimatedTransactionModal extends PureComponent {
     );
   };
 }
-
-AnimatedTransactionModal.contextType = ThemeContext;
 
 export default AnimatedTransactionModal;
