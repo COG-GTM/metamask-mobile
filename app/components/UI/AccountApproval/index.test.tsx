@@ -74,11 +74,16 @@ const mockInitialState = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AccountApprovalAny: any = AccountApproval;
+
 describe('AccountApproval', () => {
   it('should render correctly', () => {
     const container = renderWithProvider(
-      <AccountApproval
+      <AccountApprovalAny
         currentPageInformation={{ icon: '', url: '', title: '' }}
+        onConfirm={() => undefined}
+        onCancel={() => undefined}
       />,
       { state: mockInitialState },
     );
@@ -88,8 +93,10 @@ describe('AccountApproval', () => {
 
   it('should render a warning banner if the hostname is included in phishing list', async () => {
     const { findByText } = renderWithProvider(
-      <AccountApproval
+      <AccountApprovalAny
         currentPageInformation={{ icon: '', url: 'phishing.com', title: '' }}
+        onConfirm={() => undefined}
+        onCancel={() => undefined}
       />,
       { state: mockInitialState },
     );

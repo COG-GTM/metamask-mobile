@@ -49,7 +49,7 @@ jest.mock('../../../core/ClipboardManager', () => ({
 describe('ReceiveRequest', () => {
   it('render matches snapshot', () => {
     const { toJSON } = renderScreen(
-      ReceiveRequest,
+      ReceiveRequest as any,
       { name: 'ReceiveRequest' },
       { state: initialState },
     );
@@ -62,7 +62,7 @@ describe('ReceiveRequest', () => {
       '0x1'
     ].nativeCurrency = 'DIFF';
     const { toJSON } = renderScreen(
-      ReceiveRequest,
+      ReceiveRequest as any,
       { name: 'ReceiveRequest' },
       { state },
     );
@@ -75,7 +75,7 @@ describe('ReceiveRequest', () => {
       fiatOrders: undefined,
     };
     const { toJSON } = renderScreen(
-      ReceiveRequest,
+      ReceiveRequest as any,
       { name: 'ReceiveRequest' },
       { state },
     );

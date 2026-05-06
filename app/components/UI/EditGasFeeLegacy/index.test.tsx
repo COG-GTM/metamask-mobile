@@ -1,7 +1,8 @@
 import { shallow } from 'enzyme';
 import React from 'react';
 
-import EditGasFeeLegacy from './';
+import EditGasFeeLegacyImport from './';
+const EditGasFeeLegacy: any = EditGasFeeLegacyImport;
 
 describe('EditGasFeeLegacy', () => {
   it('should render correctly', () => {

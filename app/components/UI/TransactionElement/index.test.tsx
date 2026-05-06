@@ -1,5 +1,6 @@
 import React from 'react';
-import TransactionElement from './';
+import TransactionElementImport from './';
+const TransactionElement: any = TransactionElementImport;
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';

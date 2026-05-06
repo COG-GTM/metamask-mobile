@@ -1,5 +1,6 @@
 import React from 'react';
-import TransactionReviewInformation from '.';
+import TransactionReviewInformationImport from '.';
+const TransactionReviewInformation: any = TransactionReviewInformationImport;
 import configureMockStore from 'redux-mock-store';
 import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
