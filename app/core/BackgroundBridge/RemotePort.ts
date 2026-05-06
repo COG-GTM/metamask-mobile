@@ -2,7 +2,7 @@
 const EventEmitter = require('events').EventEmitter;
 
 class RemotePort extends EventEmitter {
-  constructor(sendMessage: () => void) {
+  constructor(sendMessage?: (...args: unknown[]) => unknown) {
     super();
     this.sendMessage = sendMessage;
   }
@@ -10,7 +10,7 @@ class RemotePort extends EventEmitter {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   postMessage = (msg: any) => {
-    this.sendMessage(msg);
+    this.sendMessage?.(msg);
   };
 }
 
