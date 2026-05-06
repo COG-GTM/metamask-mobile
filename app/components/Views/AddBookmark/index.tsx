@@ -1,15 +1,16 @@
 import React, { PureComponent } from 'react';
 import { SafeAreaView, Text, TextInput, View, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
+import { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import ActionView from '../../UI/ActionView';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 
 import { AddBookmarkViewSelectorsIDs } from '../../../../e2e/selectors/Browser/AddBookmarkView.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -36,29 +37,50 @@ const createStyles = (colors) =>
     },
   });
 
+interface AddBookmarkRouteParams {
+  title?: string;
+  url?: string;
+  onAddBookmark: (bookmark: { name: string; url: string }) => void;
+}
+
+interface AddBookmarkProps {
+  /**
+   * navigation object required to push new views
+   */
+  navigation: NavigationProp<ParamListBase> & {
+    pop: () => void;
+  };
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: RouteProp<{ params: AddBookmarkRouteParams }, 'params'>;
+}
+
+interface AddBookmarkState {
+  title: string;
+  url: string;
+  warningSymbol?: string;
+  warningDecimals?: string;
+}
+
 /**
  * Copmonent that provides ability to add a bookmark
  */
-export default class AddBookmark extends PureComponent {
-  state = {
+export default class AddBookmark extends PureComponent<
+  AddBookmarkProps,
+  AddBookmarkState
+> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  state: AddBookmarkState = {
     title: '',
     url: '',
   };
 
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
-
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
 
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -98,15 +120,15 @@ export default class AddBookmark extends PureComponent {
     this.props.navigation.pop();
   };
 
-  onTitleChange = (title) => {
+  onTitleChange = (title: string) => {
     this.setState({ title });
   };
 
-  onUrlChange = (url) => {
+  onUrlChange = (url: string) => {
     this.setState({ url });
   };
 
-  urlInput = React.createRef();
+  urlInput = React.createRef<TextInput>();
 
   jumpToUrl = () => {
     const { current } = this.urlInput;
@@ -114,8 +136,8 @@ export default class AddBookmark extends PureComponent {
   };
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = this.context?.colors || mockTheme.colors;
+    const themeAppearance = this.context?.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (
@@ -160,7 +182,7 @@ export default class AddBookmark extends PureComponent {
                 onChangeText={this.onUrlChange}
                 testID={AddBookmarkViewSelectorsIDs.URL_TEXT}
                 ref={this.urlInput}
-                onSubmitEditing={this.addToken}
+                onSubmitEditing={this.addBookmark}
                 returnKeyType={'done'}
                 placeholderTextColor={colors.text.muted}
                 keyboardAppearance={themeAppearance}
@@ -175,5 +197,3 @@ export default class AddBookmark extends PureComponent {
     );
   };
 }
-
-AddBookmark.contextType = ThemeContext;
