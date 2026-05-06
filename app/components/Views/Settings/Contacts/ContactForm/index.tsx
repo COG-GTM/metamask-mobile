@@ -335,7 +335,10 @@ class ContactForm extends PureComponent<Props, State> {
       toChecksumAddress(toEnsAddress || address),
       name,
       chainId,
-      memo ?? undefined,
+      // Preserve original behavior: pass `memo` (which may be null) through
+      // unchanged. The 4th arg is typed as `string | undefined` upstream, but
+      // the JS predecessor passed null and we keep parity.
+      memo as unknown as string,
     );
     navigation?.pop();
   };
@@ -343,13 +346,17 @@ class ContactForm extends PureComponent<Props, State> {
   deleteContact = () => {
     const { AddressBookController } = Engine.context;
     const { chainId, navigation, route } = this.props;
-    if (!this.contactAddressToRemove || !chainId) return;
+    if (!this.contactAddressToRemove || !chainId || !route || !navigation) {
+      return;
+    }
     AddressBookController.delete(
       chainId,
       this.contactAddressToRemove as `0x${string}`,
     );
-    route?.params?.onDelete?.();
-    navigation?.pop();
+    // Preserve original behavior: route.params.onDelete is assumed to exist
+    // here (the caller always passes it via navigation params).
+    (route.params as { onDelete: () => void }).onDelete();
+    navigation.pop();
   };
 
   onScan = () => {
