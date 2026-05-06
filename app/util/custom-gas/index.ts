@@ -127,7 +127,8 @@ export async function getGasLimit(
     estimation = (await estimateGas(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       newTransactionObj as any,
-      networkClientId ?? '',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      networkClientId as any,
     )) as { gas: string };
   } catch (error) {
     estimation = {
