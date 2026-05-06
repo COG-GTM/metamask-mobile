@@ -156,9 +156,10 @@ describe('network-utils', () => {
     });
 
     it('should fail if network Id is missing', () => {
-      expect(() => getNetworkTypeById()).toThrow(
-        NetworkSwitchErrorType.missingNetworkId,
-      );
+      expect(() =>
+        // @ts-expect-error - intentionally calling without arguments to test error path
+        getNetworkTypeById(),
+      ).toThrow(NetworkSwitchErrorType.missingNetworkId);
     });
 
     it('should fail if network Id is unknown', () => {

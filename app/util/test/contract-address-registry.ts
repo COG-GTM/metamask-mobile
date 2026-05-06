@@ -3,24 +3,19 @@
  * a local blockchain instance.
  */
 class ContractAddressRegistry {
-  #addresses = {};
+  #addresses: Record<string, string> = {};
 
   /**
    * Store new contract address in key:value pair.
-   *
-   * @param contractName
-   * @param contractAddress
    */
-  storeNewContractAddress(contractName, contractAddress) {
+  storeNewContractAddress(contractName: string, contractAddress: string): void {
     this.#addresses[contractName] = contractAddress;
   }
 
   /**
    * Get deployed contract address by its name (key).
-   *
-   * @param contractName
    */
-  getContractAddress(contractName) {
+  getContractAddress(contractName: string): string | undefined {
     return this.#addresses[contractName];
   }
 }

@@ -1,5 +1,5 @@
-import { Web3Provider } from '@ethersproject/providers';
-import { ContractFactory } from '@ethersproject/contracts';
+import { Web3Provider, ExternalProvider } from '@ethersproject/providers';
+import { ContractFactory, Contract } from '@ethersproject/contracts';
 import { SMART_CONTRACTS, contractConfiguration } from './smart-contracts';
 import ContractAddressRegistry from './contract-address-registry';
 
@@ -7,35 +7,36 @@ import ContractAddressRegistry from './contract-address-registry';
  * Ganache seeder is used to seed initial smart contract or set initial blockchain state.
  */
 class GanacheSeeder {
-  constructor(ganacheProvider) {
+  smartContractRegistry: ContractAddressRegistry;
+  ganacheProvider: ExternalProvider;
+
+  constructor(ganacheProvider: ExternalProvider) {
     this.smartContractRegistry = new ContractAddressRegistry();
     this.ganacheProvider = ganacheProvider;
   }
 
   /**
    * Deploy initial smart contracts that can be used later within the e2e tests.
-   *
-   * @param contractName
    */
-
-  async deploySmartContract(contractName) {
+  async deploySmartContract(contractName: string): Promise<void> {
     const ethersProvider = new Web3Provider(this.ganacheProvider, 'any');
     const signer = ethersProvider.getSigner();
     const fromAddress = await signer.getAddress();
     const contractFactory = new ContractFactory(
-      contractConfiguration[contractName].abi,
+      contractConfiguration[contractName].abi as never,
       contractConfiguration[contractName].bytecode,
       signer,
     );
 
-    let contract;
+    let contract: Contract;
 
     if (contractName === SMART_CONTRACTS.HST) {
+      const hstConfig = contractConfiguration[SMART_CONTRACTS.HST];
       contract = await contractFactory.deploy(
-        contractConfiguration[SMART_CONTRACTS.HST].initialAmount,
-        contractConfiguration[SMART_CONTRACTS.HST].tokenName,
-        contractConfiguration[SMART_CONTRACTS.HST].decimalUnits,
-        contractConfiguration[SMART_CONTRACTS.HST].tokenSymbol,
+        hstConfig.initialAmount,
+        hstConfig.tokenName,
+        hstConfig.decimalUnits,
+        hstConfig.tokenSymbol,
       );
     } else {
       contract = await contractFactory.deploy();
@@ -65,11 +66,11 @@ class GanacheSeeder {
   /**
    * Store deployed smart contract address within the environment variables
    * to make it available everywhere.
-   *
-   * @param contractName
-   * @param contractAddress
    */
-  storeSmartContractAddress(contractName, contractAddress) {
+  storeSmartContractAddress(
+    contractName: string,
+    contractAddress: string,
+  ): void {
     this.smartContractRegistry.storeNewContractAddress(
       contractName,
       contractAddress,
@@ -78,10 +79,8 @@ class GanacheSeeder {
 
   /**
    * Return an instance of the currently used smart contract registry.
-   *
-   * @returns ContractAddressRegistry
    */
-  getContractRegistry() {
+  getContractRegistry(): ContractAddressRegistry {
     return this.smartContractRegistry;
   }
 }

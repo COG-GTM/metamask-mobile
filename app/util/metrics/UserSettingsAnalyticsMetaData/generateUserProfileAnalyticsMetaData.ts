@@ -21,10 +21,11 @@ const generateUserProfileAnalyticsMetaData = (): UserProfileMetaData => {
       reduxState?.security?.dataCollectionForMarketing;
 
   return {
-    [UserProfileProperty.ENABLE_OPENSEA_API]:
-      preferencesController?.displayNftMedia
-        ? UserProfileProperty.ON
-        : UserProfileProperty.OFF,
+    [UserProfileProperty.ENABLE_OPENSEA_API]: (
+      preferencesController as { displayNftMedia?: boolean } | undefined
+    )?.displayNftMedia
+      ? UserProfileProperty.ON
+      : UserProfileProperty.OFF,
     [UserProfileProperty.NFT_AUTODETECTION]:
       preferencesController?.useNftDetection
         ? UserProfileProperty.ON

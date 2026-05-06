@@ -501,7 +501,7 @@ export function isValidHexAddress(
  * @returns String | undefined - When it is saved returns a string "contactAlreadySaved" if it's not reutrn undefined
  */
 function checkIfAddressAlreadySaved(
-  address: string,
+  address: string | undefined,
   addressBook: AddressBookControllerState['addressBook'],
   chainId: Hex,
   internalAccounts: InternalAccount[],
@@ -580,7 +580,7 @@ export async function validateAddressOrENS(
     }
     const checksummedAddress = toChecksumAddress(toAccount);
     addressReady = true;
-    const ens = await doENSReverseLookup(checksummedAddress);
+    const ens = await doENSReverseLookup(checksummedAddress, chainId);
     if (ens) {
       toAddressName = ens;
       if (!contactAlreadySaved) {
@@ -700,7 +700,7 @@ export async function getAddress(
   chainId: string,
 ): Promise<string | null> {
   if (isENS(toAccount)) {
-    return await doENSLookup(toAccount, chainId);
+    return (await doENSLookup(toAccount, chainId)) ?? null;
   }
   if (isValidHexAddress(toAccount, { mixedCaseUseChecksum: true })) {
     return toAccount;
