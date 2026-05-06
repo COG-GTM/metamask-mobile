@@ -1,12 +1,26 @@
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
 import { Duplex } from 'readable-stream';
+// eslint-disable-next-line import/no-nodejs-modules
+import type { EventEmitter } from 'events';
 
 // eslint-disable-next-line no-empty-function
 const noop = () => {};
 
+interface PortLike extends EventEmitter {
+  postMessage: (msg: unknown, url?: string) => void;
+}
+
+interface BufferLikeMessage {
+  _isBuffer?: boolean;
+  [key: string]: unknown;
+}
+
 export default class PortDuplexStream extends Duplex {
-  constructor(port, url) {
+  _port: PortLike;
+  _url: string;
+
+  constructor(port: PortLike, url: string) {
     super({
       objectMode: true,
     });
@@ -19,14 +33,12 @@ export default class PortDuplexStream extends Duplex {
   /**
    * Callback triggered when a message is received from
    * the remote Port associated with this Stream.
-   *
-   * @private
-   * @param {Object} msg - Payload from the onMessage listener of Port
    */
-  _onMessage = function (msg) {
+  _onMessage = function (this: PortDuplexStream, msg: unknown): void {
     if (Buffer.isBuffer(msg)) {
-      delete msg._isBuffer;
-      const data = new Buffer(msg);
+      // Strip our internal `_isBuffer` flag before re-wrapping the buffer.
+      delete (msg as unknown as BufferLikeMessage)._isBuffer;
+      const data = Buffer.from(msg as Uint8Array);
       this.push(data);
     } else {
       this.push(msg);
@@ -36,11 +48,9 @@ export default class PortDuplexStream extends Duplex {
   /**
    * Callback triggered when the remote Port
    * associated with this Stream disconnects.
-   *
-   * @private
    */
-  _onDisconnect = function () {
-    this.destroy && this.destroy();
+  _onDisconnect = function (this: PortDuplexStream): void {
+    this.destroy?.();
   };
 
   /**
@@ -51,16 +61,16 @@ export default class PortDuplexStream extends Duplex {
   /**
    * Called internally when data should be written to
    * this writable stream.
-   *
-   * @private
-   * @param {*} msg Arbitrary object to write
-   * @param {string} encoding Encoding to use when writing payload
-   * @param {Function} cb Called when writing is complete or an error occurs
    */
-  _write = function (msg, encoding, cb) {
+  _write = function (
+    this: PortDuplexStream,
+    msg: unknown,
+    _encoding: string,
+    cb: (err?: Error) => void,
+  ): void {
     try {
       if (Buffer.isBuffer(msg)) {
-        const data = msg.toJSON();
+        const data = (msg as Buffer).toJSON() as unknown as BufferLikeMessage;
         data._isBuffer = true;
         this._port.postMessage(data, this._url);
       } else {

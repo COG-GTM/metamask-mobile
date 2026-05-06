@@ -4,8 +4,19 @@ import {
   endowmentCaveatSpecifications as snapsEndowmentCaveatSpecifications,
 } from '@metamask/snaps-rpc-methods';
 ///: END:ONLY_INCLUDE_IF
-import {  RestrictedMethods } from './constants';
-import { caip25CaveatBuilder, Caip25CaveatType, caip25EndowmentBuilder, createCaip25Caveat } from '@metamask/chain-agnostic-permission';
+import { RestrictedMethods } from './constants';
+import {
+  caip25CaveatBuilder,
+  Caip25CaveatType,
+  caip25EndowmentBuilder,
+  createCaip25Caveat,
+} from '@metamask/chain-agnostic-permission';
+import type { Hex } from '@metamask/utils';
+
+interface ListAccountsResult {
+  type: string;
+  address: Hex;
+}
 
 /**
  * This file contains the specifications of the permissions and caveats
@@ -20,7 +31,7 @@ import { caip25CaveatBuilder, Caip25CaveatType, caip25EndowmentBuilder, createCa
 export const PermissionKeys = Object.freeze({
   ...RestrictedMethods,
   permittedChains: 'endowment:permitted-chains',
-});
+} as const);
 
 /**
  * Factory functions for all caveat types recognized by the
@@ -28,35 +39,26 @@ export const PermissionKeys = Object.freeze({
  */
 export const CaveatFactories = Object.freeze({
   [Caip25CaveatType]: createCaip25Caveat,
-});
+} as const);
 
-/**
- * A PreferencesController identity object.
- *
- * @typedef {Object} Identity
- * @property {string} address - The address of the identity.
- * @property {string} name - The name of the identity.
- * @property {number} [lastSelected] - Unix timestamp of when the identity was
- * last selected in the UI.
- */
+interface CaveatSpecificationOptions {
+  listAccounts?: () => ListAccountsResult[];
+  findNetworkClientIdByChainId?: (chainId: Hex) => string;
+}
 
 /**
  * Gets the specifications for all caveats that will be recognized by the
  * PermissionController.
- *
- * @param {{
- * listAccounts: () => import('@metamask/keyring-api').InternalAccount[],
- * findNetworkClientIdByChainId: (chainId: `0x${string}`) => string,
- * }} options - Options bag.
  */
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
-}) => ({
+}: CaveatSpecificationOptions = {}) => ({
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
-  }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any),
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   ...snapsCaveatsSpecifications,
   ...snapsEndowmentCaveatSpecifications,
@@ -66,7 +68,6 @@ export const getCaveatSpecifications = ({
 /**
  * Gets the specifications for all permissions that will be recognized by the
  * PermissionController.
- *
  */
 export const getPermissionSpecifications = () => ({
   [caip25EndowmentBuilder.targetName]:
@@ -80,7 +81,7 @@ export const getPermissionSpecifications = () => ({
  * restricted or unrestricted method, or the request will be rejected with a
  * "method not found" error.
  */
-export const unrestrictedMethods = Object.freeze([
+export const unrestrictedMethods: readonly string[] = Object.freeze([
   'eth_blockNumber',
   'eth_call',
   'eth_decrypt',

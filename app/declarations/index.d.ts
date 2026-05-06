@@ -408,3 +408,30 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'readable-stream' {
+  import { Duplex as NodeDuplex } from 'stream';
+  export class Duplex extends NodeDuplex {}
+}
+
+declare module 'pump' {
+  function pump(...streams: unknown[]): unknown;
+  export = pump;
+}
+
+declare module '@metamask/eth-json-rpc-filters' {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createFilterMiddleware: (provider: any) => any;
+  export = createFilterMiddleware;
+}
+
+declare module '@metamask/eth-json-rpc-filters/subscriptionManager' {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createSubscriptionManager: (provider: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    events: { on: (event: string, handler: (msg: any) => void) => void };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    middleware: any;
+  };
+  export = createSubscriptionManager;
+}
