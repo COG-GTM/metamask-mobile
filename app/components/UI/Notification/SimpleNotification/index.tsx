@@ -1,7 +1,6 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
-import Animated from 'react-native-reanimated';
+import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import Animated, { SharedValue } from 'react-native-reanimated';
 import BaseNotification from './../BaseNotification';
 import Device from '../../../../util/device';
 import ElevatedView from 'react-native-elevated-view';
@@ -24,26 +23,42 @@ const styles = StyleSheet.create({
   },
 });
 
+interface SimpleNotificationData {
+  status?: string;
+  title?: string;
+  description?: string;
+}
+
+interface SimpleNotificationProps {
+  isInBrowserView?: boolean;
+  notificationAnimated?: SharedValue<number> | number;
+  currentNotification: SimpleNotificationData;
+  hideCurrentNotification?: () => void;
+}
+
 function SimpleNotification({
   isInBrowserView,
   notificationAnimated,
   hideCurrentNotification,
   currentNotification,
-}) {
+}: SimpleNotificationProps) {
+  const animatedTransform = {
+    transform: [{ translateY: notificationAnimated }],
+  } as unknown as StyleProp<ViewStyle>;
   return (
     <Animated.View
       style={[
         styles.notificationContainer,
         isInBrowserView && styles.modalTypeViewBrowser,
-        { transform: [{ translateY: notificationAnimated }] },
+        animatedTransform,
       ]}
     >
       <ElevatedView style={styles.elevatedView} elevation={100}>
         <BaseNotification
           status={currentNotification.status}
           data={{
-            title: currentNotification.title,
-            description: currentNotification.description,
+            title: currentNotification.title ?? null,
+            description: currentNotification.description ?? null,
           }}
           onHide={hideCurrentNotification}
         />
@@ -51,12 +66,5 @@ function SimpleNotification({
     </Animated.View>
   );
 }
-
-SimpleNotification.propTypes = {
-  isInBrowserView: PropTypes.bool,
-  notificationAnimated: PropTypes.object,
-  currentNotification: PropTypes.object,
-  hideCurrentNotification: PropTypes.func,
-};
 
 export default SimpleNotification;

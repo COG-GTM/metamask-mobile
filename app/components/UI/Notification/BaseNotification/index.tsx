@@ -1,6 +1,10 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
+import {
+  GestureResponderEvent,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { fontStyles, baseStyles } from '../../../../styles/common';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AnimatedSpinner from '../../AnimatedSpinner';
@@ -9,9 +13,10 @@ import IonicIcon from 'react-native-vector-icons/Ionicons';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
+import { Colors } from '../../../../util/theme/models';
 import { ToastSelectorsIDs } from '../../../../../e2e/selectors/wallet/ToastModal.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     floatingBackground: {
       backgroundColor: colors.background.default,
@@ -60,7 +65,15 @@ const createStyles = (colors) =>
     },
   });
 
-export const getIcon = (status, colors, styles) => {
+type NotificationStyles = ReturnType<typeof createStyles> & {
+  checkIcon?: never;
+};
+
+export const getIcon = (
+  status: string | undefined,
+  colors: Colors,
+  styles: NotificationStyles,
+): React.ReactNode => {
   switch (status) {
     case 'pending':
     case 'pending_withdrawal':
@@ -118,10 +131,25 @@ export const getIcon = (status, colors, styles) => {
           style={styles.checkIcon}
         />
       );
+    default:
+      return null;
   }
 };
 
-const getTitle = (status, { nonce, amount, assetType }) => {
+interface BaseNotificationData {
+  nonce?: string | number;
+  amount?: string | number | object | null;
+  assetType?: string;
+  type?: string | null;
+  title?: string | null;
+  description?: string | null;
+  [key: string]: unknown;
+}
+
+const getTitle = (
+  status: string | undefined,
+  { nonce, amount, assetType }: BaseNotificationData,
+): string | undefined => {
   switch (status) {
     case 'pending':
       return strings('notifications.pending_title');
@@ -130,7 +158,9 @@ const getTitle = (status, { nonce, amount, assetType }) => {
     case 'pending_withdrawal':
       return strings('notifications.pending_withdrawal_title');
     case 'success':
-      return strings('notifications.success_title', { nonce: parseInt(nonce) });
+      return strings('notifications.success_title', {
+        nonce: parseInt(String(nonce)),
+      });
     case 'success_deposit':
       return strings('notifications.success_deposit_title');
     case 'success_withdrawal':
@@ -141,36 +171,52 @@ const getTitle = (status, { nonce, amount, assetType }) => {
         assetType,
       });
     case 'speedup':
-      return strings('notifications.speedup_title', { nonce: parseInt(nonce) });
+      return strings('notifications.speedup_title', {
+        nonce: parseInt(String(nonce)),
+      });
     case 'received_payment':
       return strings('notifications.received_payment_title');
     case 'cancelled':
       return strings('notifications.cancelled_title');
     case 'error':
       return strings('notifications.error_title');
+    default:
+      return undefined;
   }
 };
 
-export const getDescription = (status, { amount = null, type = null }) => {
+export const getDescription = (
+  status: string | undefined,
+  { amount = null, type = null }: BaseNotificationData,
+): string => {
   if (amount && typeof amount !== 'object' && type) {
     return strings(`notifications.${type}_${status}_message`, { amount });
   }
   return strings(`notifications.${status}_message`);
 };
 
+interface BaseNotificationProps {
+  status?: string;
+  data?: BaseNotificationData | null;
+  onPress?: (event: GestureResponderEvent) => void;
+  onHide?: (event: GestureResponderEvent) => void;
+  autoDismiss?: boolean;
+}
+
 /**
  * BaseNotification component used to render in-app notifications
  */
 const BaseNotification = ({
   status,
-  data = null,
-  data: { description = null, title = null },
+  data,
   onPress,
   onHide,
-  autoDismiss,
-}) => {
+  autoDismiss = false,
+}: BaseNotificationProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const safeData: BaseNotificationData = data ?? {};
+  const { description, title } = safeData;
 
   return (
     <View style={baseStyles.flexGrow}>
@@ -181,17 +227,17 @@ const BaseNotification = ({
           activeOpacity={0.8}
         >
           <View style={styles.flashIcon}>
-            {getIcon(status, colors, styles)}
+            {getIcon(status, colors, styles as NotificationStyles)}
           </View>
           <View style={styles.flashLabel}>
             <Text
               style={styles.flashTitle}
               testID={ToastSelectorsIDs.NOTIFICATION_TITLE}
             >
-              {!title ? getTitle(status, data) : title}
+              {!title ? getTitle(status, safeData) : title}
             </Text>
             <Text style={styles.flashText}>
-              {!description ? getDescription(status, data) : description}
+              {!description ? getDescription(status, safeData) : description}
             </Text>
           </View>
           <View>
@@ -205,18 +251,6 @@ const BaseNotification = ({
       </View>
     </View>
   );
-};
-
-BaseNotification.propTypes = {
-  status: PropTypes.string,
-  data: PropTypes.object,
-  onPress: PropTypes.func,
-  onHide: PropTypes.func,
-  autoDismiss: PropTypes.bool,
-};
-
-BaseNotification.defaultProps = {
-  autoDismiss: false,
 };
 
 export default BaseNotification;
