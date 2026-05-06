@@ -5,8 +5,26 @@ import {
 } from '@metamask/utils';
 import { createEip1193MethodMiddleware } from '.';
 
+interface MockReq {
+  params?: unknown[];
+  method: string;
+}
+interface MockRes {
+  result?: unknown;
+}
+interface MockHooks {
+  hook1: () => number;
+  hook2: () => number;
+}
+
 const getHandler = () => ({
-  implementation: (req, res, _next, end, hooks) => {
+  implementation: (
+    req: MockReq,
+    res: MockRes,
+    _next: () => void,
+    end: (err?: Error) => void,
+    hooks: MockHooks,
+  ) => {
     if (Array.isArray(req.params)) {
       switch (req.params[0]) {
         case 1:
@@ -144,7 +162,10 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(
+      (response.error.data as Record<string, Record<string, string>>)?.cause
+        ?.message,
+    ).toBe('test error');
   });
 
   it('should handle errors thrown by the implementation', async () => {
@@ -161,7 +182,10 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(
+      (response.error.data as Record<string, Record<string, string>>)?.cause
+        ?.message,
+    ).toBe('test error');
   });
 
   it('should handle non-errors thrown by the implementation', async () => {

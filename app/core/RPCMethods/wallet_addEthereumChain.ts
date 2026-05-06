@@ -20,15 +20,62 @@ import { getDecimalChainId } from '../../util/networks';
 import { RpcEndpointType } from '@metamask/network-controller';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 
-const waitForInteraction = async () =>
-  new Promise((resolve) => {
+interface RpcEndpoint {
+  url: string;
+  name?: string;
+  type?: string;
+  networkClientId?: string;
+}
+
+interface NetworkConfiguration {
+  chainId: string;
+  rpcEndpoints: RpcEndpoint[];
+  defaultRpcEndpointIndex: number;
+  blockExplorerUrls?: string[];
+  defaultBlockExplorerUrlIndex?: number;
+  name?: string;
+  nativeCurrency?: string;
+  [key: string]: unknown;
+}
+
+interface JsonRpcRequestLike {
+  origin?: string;
+  params?: unknown;
+}
+
+interface JsonRpcResponseLike {
+  result?: unknown;
+}
+
+interface AddEthereumChainHooks {
+  getNetworkConfigurationByChainId: (
+    chainId: string,
+  ) => NetworkConfiguration | undefined;
+  [hook: string]: unknown;
+}
+
+interface WalletAddEthereumChainParams {
+  req: JsonRpcRequestLike;
+  res: JsonRpcResponseLike;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  requestUserApproval: (req: any) => Promise<unknown>;
+  analytics?: Record<string, unknown>;
+  hooks: AddEthereumChainHooks;
+}
+
+const waitForInteraction = async (): Promise<void> =>
+  new Promise<void>((resolve) => {
     InteractionManager.runAfterInteractions(() => {
       resolve();
     });
   });
 
 // Utility function to find or add an item in an array and return the updated array and index
-const addOrUpdateIndex = (array, value, comparator) => {
+const addOrUpdateIndex = <T>(
+  array: T[],
+  value: T,
+  comparator: (item: T, index: number) => boolean,
+): { updatedArray: T[]; index: number } => {
   const index = array.findIndex(comparator);
   if (index === -1) {
     return {
@@ -39,15 +86,18 @@ const addOrUpdateIndex = (array, value, comparator) => {
   return { updatedArray: array, index };
 };
 
+interface RequestData {
+  chainId: string;
+  blockExplorerUrl: string | null;
+  chainName: string;
+  rpcUrl: string;
+  ticker: string;
+  isNetworkRpcUpdate: boolean;
+  alerts?: unknown;
+}
+
 /**
  * Add chain implementation to be used in JsonRpcEngine middleware.
- *
- * @param params.req - The JsonRpcEngine request.
- * @param params.res - The JsonRpcEngine result object.
- * @param params.requestUserApproval - The callback to trigger user approval flow.
- * @param params.analytics - Analytics parameters to be passed when tracking event via `MetaMetrics`.
- * @param params.hooks - Method hooks passed to the method implementation.
- * @returns {Nothing}.
  */
 export const wallet_addEthereumChain = async ({
   req,
@@ -55,14 +105,8 @@ export const wallet_addEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
-  const {
-    NetworkController,
-    MultichainNetworkController,
-    ApprovalController,
-    PermissionController,
-    SelectedNetworkController,
-  } = Engine.context;
+}: WalletAddEthereumChainParams): Promise<void> => {
+  const { NetworkController, ApprovalController } = Engine.context;
 
   const { origin } = req;
   const params = validateAddEthereumChainParams(req.params);
@@ -75,7 +119,10 @@ export const wallet_addEthereumChain = async ({
     ticker,
   } = params;
 
-  const switchToNetworkAndMetrics = async (network, isAddNetworkFlow) => {
+  const switchToNetworkAndMetrics = async (
+    network: NetworkConfiguration,
+    isAddNetworkFlow: boolean,
+  ): Promise<void> => {
     const { networkClientId } =
       network.rpcEndpoints[network.defaultRpcEndpointIndex];
 
@@ -85,7 +132,7 @@ export const wallet_addEthereumChain = async ({
     );
 
     const blockExplorerIndex = firstValidBlockExplorerUrl
-      ? existingNetwork?.blockExplorerUrls.findIndex((url) =>
+      ? existingNetwork?.blockExplorerUrls?.findIndex((url) =>
           equal(url, firstValidBlockExplorerUrl),
         )
       : undefined;
@@ -97,24 +144,26 @@ export const wallet_addEthereumChain = async ({
         blockExplorerIndex !== existingNetwork.defaultBlockExplorerUrlIndex);
 
     await switchToNetwork({
-      network: [networkClientId, network],
+      network: [networkClientId, network] as Parameters<
+        typeof switchToNetwork
+      >[0]['network'],
       chainId,
-      controllers: {
-        MultichainNetworkController,
-        PermissionController,
-        SelectedNetworkController,
-      },
       requestUserApproval,
       analytics,
-      origin,
+      origin: origin ?? '',
       isAddNetworkFlow,
-      autoApprove: shouldAddOrUpdateNetwork,
-      hooks,
+      hooks: {
+        ...hooks,
+        autoApprove: shouldAddOrUpdateNetwork,
+      } as unknown as Parameters<typeof switchToNetwork>[0]['hooks'],
     });
   };
 
   //TODO: Remove aurora from default chains in @metamask/controller-utils
-  const actualChains = { ...ChainId, aurora: undefined };
+  const actualChains: Record<string, string | undefined> = {
+    ...ChainId,
+    aurora: undefined,
+  };
   if (Object.values(actualChains).find((value) => value === chainId)) {
     throw rpcErrors.invalidParams(`May not specify default MetaMask chain.`);
   }
@@ -122,8 +171,8 @@ export const wallet_addEthereumChain = async ({
     store.getState(),
   );
 
-  const existingNetworkConfiguration = Object.values(
-    networkConfigurations,
+  const existingNetworkConfiguration = (
+    Object.values(networkConfigurations) as NetworkConfiguration[]
   ).find((networkConfiguration) => networkConfiguration.chainId === chainId);
 
   const existingNetworkConfigurationHasRpcEndpoint =
@@ -160,7 +209,7 @@ export const wallet_addEthereumChain = async ({
   }
 
   await validateRpcEndpoint(firstValidRPCUrl, chainId);
-  const requestData = {
+  const requestData: RequestData = {
     chainId,
     blockExplorerUrl: firstValidBlockExplorerUrl,
     chainName,
@@ -216,7 +265,7 @@ export const wallet_addEthereumChain = async ({
     throw providerErrors.userRejectedRequest();
   }
 
-  let newNetworkConfiguration;
+  let newNetworkConfiguration: NetworkConfiguration;
   if (existingNetworkConfiguration) {
     const currentChainId = selectEvmChainId(store.getState());
 
@@ -231,8 +280,8 @@ export const wallet_addEthereumChain = async ({
     );
 
     const blockExplorerResult = addOrUpdateIndex(
-      existingNetworkConfiguration.blockExplorerUrls,
-      firstValidBlockExplorerUrl,
+      existingNetworkConfiguration.blockExplorerUrls ?? [],
+      firstValidBlockExplorerUrl ?? '',
       (url) => url === firstValidBlockExplorerUrl,
     );
 
@@ -244,20 +293,24 @@ export const wallet_addEthereumChain = async ({
       defaultBlockExplorerUrlIndex: blockExplorerResult.index,
     };
 
-    newNetworkConfiguration = await NetworkController.updateNetwork(
-      chainId,
-      updatedNetworkConfiguration,
+    newNetworkConfiguration = (await NetworkController.updateNetwork(
+      chainId as `0x${string}`,
+      updatedNetworkConfiguration as unknown as Parameters<
+        typeof NetworkController.updateNetwork
+      >[1],
       currentChainId === chainId
         ? {
             replacementSelectedRpcEndpointIndex:
               updatedNetworkConfiguration.defaultRpcEndpointIndex,
           }
         : undefined,
-    );
+    )) as unknown as NetworkConfiguration;
   } else {
     newNetworkConfiguration = NetworkController.addNetwork({
-      chainId,
-      blockExplorerUrls: [firstValidBlockExplorerUrl],
+      chainId: chainId as `0x${string}`,
+      blockExplorerUrls: firstValidBlockExplorerUrl
+        ? [firstValidBlockExplorerUrl]
+        : [],
       defaultRpcEndpointIndex: 0,
       defaultBlockExplorerUrlIndex: 0,
       name: chainName,
@@ -269,7 +322,7 @@ export const wallet_addEthereumChain = async ({
           type: RpcEndpointType.Custom,
         },
       ],
-    });
+    }) as unknown as NetworkConfiguration;
 
     MetaMetrics.getInstance().trackEvent(
       MetricsEventBuilder.createEventBuilder(MetaMetricsEvents.NETWORK_ADDED)

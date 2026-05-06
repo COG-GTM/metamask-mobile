@@ -9,15 +9,32 @@ import {
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 
+interface JsonRpcRequestLike {
+  origin?: string;
+  params?: unknown;
+}
+
+interface JsonRpcResponseLike {
+  result?: unknown;
+}
+
+interface SwitchEthereumChainHooks {
+  getCurrentChainIdForDomain: (origin: string) => string;
+  getNetworkConfigurationByChainId: (chainId: string) => unknown;
+  [hook: string]: unknown;
+}
+
+interface WalletSwitchEthereumChainParams {
+  req: JsonRpcRequestLike;
+  res: JsonRpcResponseLike;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  requestUserApproval: (req: any) => Promise<unknown>;
+  analytics?: Record<string, unknown>;
+  hooks: SwitchEthereumChainHooks;
+}
+
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
- *
- * @param params.req - The JsonRpcEngine request.
- * @param params.res - The JsonRpcEngine result object.
- * @param params.requestUserApproval - The callback to trigger user approval flow.
- * @param params.analytics - Analytics parameters to be passed when tracking event via `MetaMetrics`.
- * @param params.hooks - Method hooks passed to the method implementation.
- * @returns {void}.
  */
 export const wallet_switchEthereumChain = async ({
   req,
@@ -25,14 +42,9 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
-  const {
-    CurrencyRateController,
-    NetworkController,
-    MultichainNetworkController,
-    SelectedNetworkController,
-  } = Engine.context;
-  const params = req.params?.[0];
+}: WalletSwitchEthereumChainParams): Promise<void> => {
+  const { NetworkController, SelectedNetworkController } = Engine.context;
+  const params = (req.params as ({ chainId?: unknown } | undefined)[])?.[0];
   const { origin } = req;
   if (!params || typeof params !== 'object') {
     throw rpcErrors.invalidParams({
@@ -42,7 +54,7 @@ export const wallet_switchEthereumChain = async ({
     });
   }
   const { chainId } = params;
-  const allowedKeys = {
+  const allowedKeys: Record<string, true> = {
     chainId: true,
   };
 
@@ -57,46 +69,48 @@ export const wallet_switchEthereumChain = async ({
   const networkConfigurations = selectEvmNetworkConfigurationsByChainId(
     store.getState(),
   );
-  const existingNetwork = findExistingNetwork(_chainId, networkConfigurations);
+  const existingNetwork = findExistingNetwork(
+    _chainId,
+    networkConfigurations as Parameters<typeof findExistingNetwork>[1],
+  );
   if (existingNetwork) {
     const currentDomainSelectedNetworkClientId =
-      SelectedNetworkController.getNetworkClientIdForDomain(origin);
-    const {
-      configuration: { chainId: currentDomainSelectedChainId },
-    } = NetworkController.getNetworkClientById(
+      SelectedNetworkController.getNetworkClientIdForDomain(origin ?? '');
+    const networkClient = NetworkController.getNetworkClientById(
       currentDomainSelectedNetworkClientId,
-    ) || { configuration: {} };
+    );
+    const currentDomainSelectedChainId = (
+      networkClient as { configuration?: { chainId?: string } } | undefined
+    )?.configuration?.chainId;
 
     if (currentDomainSelectedChainId === _chainId) {
       res.result = null;
       return;
     }
 
-    const currentChainIdForOrigin = hooks.getCurrentChainIdForDomain(origin);
+    const currentChainIdForOrigin = hooks.getCurrentChainIdForDomain(
+      origin ?? '',
+    );
 
     const fromNetworkConfiguration = hooks.getNetworkConfigurationByChainId(
       currentChainIdForOrigin,
     );
 
-    const toNetworkConfiguration =
-      hooks.getNetworkConfigurationByChainId(chainId);
+    const toNetworkConfiguration = hooks.getNetworkConfigurationByChainId(
+      chainId as string,
+    );
 
     await switchToNetwork({
       network: existingNetwork,
       chainId: _chainId,
-      controllers: {
-        CurrencyRateController,
-        MultichainNetworkController,
-        SelectedNetworkController,
-      },
       requestUserApproval,
       analytics,
-      origin,
+      origin: origin ?? '',
       isAddNetworkFlow: false,
       hooks: {
+        ...(hooks as unknown as Parameters<typeof switchToNetwork>[0]['hooks']),
         toNetworkConfiguration,
         fromNetworkConfiguration,
-        ...hooks,
       },
     });
 
