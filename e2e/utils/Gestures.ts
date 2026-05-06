@@ -39,9 +39,13 @@ class Gestures {
   }
 
   /**
-   * Tap an element.
+   * Tap an element. An optional index is accepted for compatibility with
+   * historical callers; it is currently unused.
    */
-  static async tap(elementID: GestureElement): Promise<void> {
+  static async tap(
+    elementID: GestureElement,
+    _index?: number,
+  ): Promise<void> {
     const element = await elementID;
     await element.tap();
   }
@@ -71,11 +75,15 @@ class Gestures {
    * Wait for an element at a specific index to be visible and then tap it.
    */
   static async TapAtIndex(
-    elementID: Promise<Detox.IndexableNativeElement>,
+    elementID: Promise<
+      Detox.IndexableNativeElement | Detox.NativeElement
+    >,
     index: number,
     timeout: number = 15000,
   ): Promise<void> {
-    const element = (await elementID).atIndex(index);
+    const resolved =
+      (await elementID) as Detox.IndexableNativeElement;
+    const element = resolved.atIndex(index);
     await waitFor(element).toBeVisible().withTimeout(timeout);
     await element.tap();
   }
@@ -154,7 +162,9 @@ class Gestures {
    * Swipe on an element at a specific index.
    */
   static async swipeAtIndex(
-    elementID: Promise<Detox.IndexableNativeElement>,
+    elementID: Promise<
+      Detox.IndexableNativeElement | Detox.NativeElement
+    >,
     direction: Detox.Direction,
     speed?: Detox.Speed,
     percentage?: number,
@@ -162,7 +172,7 @@ class Gestures {
     yStart?: number,
     index: number = 0,
   ): Promise<void> {
-    const element = await elementID;
+    const element = (await elementID) as Detox.IndexableNativeElement;
     await element
       .atIndex(index)
       .swipe(direction, speed, percentage, xStart, yStart);
