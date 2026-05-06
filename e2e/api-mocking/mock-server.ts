@@ -1,8 +1,24 @@
 /* eslint-disable no-console */
-import { getLocal } from 'mockttp';
+import { getLocal, Mockttp } from 'mockttp';
 import portfinder from 'portfinder';
 import _ from 'lodash';
 import { device } from 'detox';
+
+export interface MockEvent {
+  urlEndpoint: string;
+  responseCode: number;
+  response: unknown;
+  requestBody?: Record<string, unknown>;
+}
+
+export interface MockEvents {
+  GET?: MockEvent[];
+  POST?: MockEvent[];
+  PUT?: MockEvent[];
+  PATCH?: MockEvent[];
+  DELETE?: MockEvent[];
+  [method: string]: MockEvent[] | undefined;
+}
 
 /**
  * Utility function to handle direct fetch requests
@@ -12,11 +28,16 @@ import { device } from 'detox';
  * @param {Object} requestBody - The request body object
  * @returns {Promise<{statusCode: number, body: string}>} Response object
  */
-const handleDirectFetch = async (url, method, headers, requestBody) => {
+const handleDirectFetch = async (
+  url: string,
+  method: string,
+  headers: Record<string, string | string[] | undefined>,
+  requestBody?: string,
+): Promise<{ statusCode: number; body: string }> => {
   try {
     const response = await global.fetch(url, {
       method,
-      headers,
+      headers: headers as Record<string, string>,
       body: ['POST', 'PUT', 'PATCH'].includes(method) ? requestBody : undefined,
     });
 
@@ -41,12 +62,15 @@ const handleDirectFetch = async (url, method, headers, requestBody) => {
  * @param {number} [port] - Optional port number. If not provided, a free port will be used.
  * @returns {Promise} Resolves to the running mock server.
  */
-export const startMockServer = async (events, port) => {
+export const startMockServer = async (
+  events: MockEvents,
+  port?: number,
+): Promise<Mockttp> => {
   const mockServer = getLocal();
-  port = port || (await portfinder.getPortPromise());
+  const resolvedPort = port || (await portfinder.getPortPromise());
 
-  await mockServer.start(port);
-  console.log(`Mockttp server running at http://localhost:${port}`);
+  await mockServer.start(resolvedPort);
+  console.log(`Mockttp server running at http://localhost:${resolvedPort}`);
 
   await mockServer
     .forGet('/health-check')
@@ -63,7 +87,7 @@ export const startMockServer = async (events, port) => {
       // Find matching mock event
       const methodEvents = events[method] || [];
       const matchingEvent = methodEvents.find(
-        (event) => event.urlEndpoint === urlEndpoint,
+        (event: MockEvent) => event.urlEndpoint === urlEndpoint,
       );
 
       if (matchingEvent) {
@@ -127,8 +151,8 @@ export const startMockServer = async (events, port) => {
       // If no matching mock found, pass through to actual endpoint
       const updatedUrl =
         device.getPlatform() === 'android'
-          ? urlEndpoint.replace('localhost', '127.0.0.1')
-          : urlEndpoint;
+          ? (urlEndpoint as string).replace('localhost', '127.0.0.1')
+          : (urlEndpoint as string);
 
       return handleDirectFetch(
         updatedUrl,
@@ -153,7 +177,7 @@ export const startMockServer = async (events, port) => {
  * Stops the mock server.
  * @param {import('mockttp').Mockttp} mockServer
  */
-export const stopMockServer = async (mockServer) => {
+export const stopMockServer = async (mockServer: Mockttp): Promise<void> => {
   await mockServer.stop();
   console.log('Mock server shutting down');
 };

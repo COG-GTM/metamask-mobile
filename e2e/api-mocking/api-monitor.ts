@@ -1,9 +1,20 @@
 /* eslint-disable import/no-nodejs-modules */
 /* eslint-disable no-console */
-import { getLocal } from 'mockttp';
+import { getLocal, Mockttp } from 'mockttp';
 import portfinder from 'portfinder';
 import { readFile, writeFile, access, mkdir } from 'fs/promises';
 import path from 'path';
+
+interface LogEntry {
+  timestamp: string;
+  type: 'request' | 'response';
+  method?: string;
+  url?: string;
+  headers?: unknown;
+  body?: unknown;
+  statusCode?: number;
+  statusMessage?: string;
+}
 
 const LOGS_DIR = 'api-monitor-logs';
 
@@ -19,7 +30,7 @@ const CONSOLE_LOG_CONFIG = {
  * @param {string} dir - The path of the directory to check.
  * @returns {Promise<boolean>} A promise that resolves to `true` if the directory exists, or `false` otherwise.
  */
-const dirExists = async (dir) => {
+const dirExists = async (dir: string): Promise<boolean> => {
   try {
     await access(dir);
     return true;
@@ -32,7 +43,7 @@ const dirExists = async (dir) => {
  * Creates a new log file name with timestamp
  * @returns {string} The log file path
  */
-const createLogFile = async () => {
+const createLogFile = async (): Promise<string> => {
   const logsDirExists = await dirExists(LOGS_DIR);
   if (!logsDirExists) {
     await mkdir(LOGS_DIR, { recursive: true });
@@ -50,14 +61,14 @@ const createLogFile = async () => {
 };
 
 // For locking files during write operations
-const fileLocks = new Map();
+const fileLocks = new Map<string, boolean>();
 
 /**
  * Acquire a lock for a file
  * @param {string} filePath - The path to the file
  * @returns {Promise<void>}
  */
-const acquireLock = async (filePath) => {
+const acquireLock = async (filePath: string): Promise<void> => {
   while (fileLocks.get(filePath)) {
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
@@ -68,7 +79,7 @@ const acquireLock = async (filePath) => {
  * Release a lock for a file
  * @param {string} filePath - The path to the file
  */
-const releaseLock = (filePath) => {
+const releaseLock = (filePath: string): void => {
   fileLocks.delete(filePath);
 };
 
@@ -78,17 +89,21 @@ const releaseLock = (filePath) => {
  * @param {Object} logEntry - The log entry to write
  * @param {number} retries - Number of retries for file operations
  */
-const writeToLogFile = async (logFile, logEntry, retries = 3) => {
+const writeToLogFile = async (
+  logFile: string,
+  logEntry: LogEntry,
+  retries: number = 3,
+): Promise<void> => {
   await acquireLock(logFile);
 
   try {
     for (let i = 0; i < retries; i++) {
       try {
         const fileContent = await readFile(logFile, 'utf8');
-        let logs;
+        let logs: LogEntry[];
 
         try {
-          logs = JSON.parse(fileContent);
+          logs = JSON.parse(fileContent) as LogEntry[];
         } catch (parseError) {
           // If JSON is corrupted, try to recover by reading the file line by line
           console.warn('JSON parse error, attempting to recover...');
@@ -96,7 +111,7 @@ const writeToLogFile = async (logFile, logEntry, retries = 3) => {
           logs = [];
           for (const line of lines) {
             try {
-              const entry = JSON.parse(line);
+              const entry = JSON.parse(line) as LogEntry;
               logs.push(entry);
             } catch (e) {
               console.warn('Skipping corrupted line:', line);
@@ -127,25 +142,29 @@ const writeToLogFile = async (logFile, logEntry, retries = 3) => {
  * @param {number} [port] - Optional port number. If not provided, a free port will be used.
  * @returns {Promise} Resolves to the running mock server.
  */
-export const startApiMonitor = async (port) => {
+export const startApiMonitor = async (port?: number): Promise<Mockttp> => {
   const mockServer = getLocal();
-  port = port || (await portfinder.getPortPromise());
+  const resolvedPort = port || (await portfinder.getPortPromise());
 
   const logFile = await createLogFile();
   console.log(`\n📝 Logging to file: ${path.resolve(logFile)}`);
 
-  await mockServer.start(port);
-  console.log(`\n🚀 API Monitor running at http://localhost:${port}\n`);
+  await mockServer.start(resolvedPort);
+  console.log(
+    `\n🚀 API Monitor running at http://localhost:${resolvedPort}\n`,
+  );
 
   await mockServer
     .forGet('/health-check')
     .thenReply(200, 'API Monitor is running');
 
   await mockServer.forUnmatchedRequest().thenPassThrough({
-    beforeRequest: async ({ url, method, rawHeaders, requestBody }) => {
+    beforeRequest: async (req) => {
+      const { url, method, rawHeaders } = req;
+      const requestBody = req.body;
       const returnUrl = new URL(url).searchParams.get('url') || url;
 
-      const requestLog = {
+      const requestLog: LogEntry = {
         timestamp: new Date().toISOString(),
         type: 'request',
         method,
@@ -155,7 +174,7 @@ export const startApiMonitor = async (port) => {
 
       if (requestBody) {
         try {
-          const bodyText = await requestBody.getText();
+          const bodyText = (await requestBody.getText()) ?? '';
           console.log('bodyText:', bodyText);
           try {
             requestLog.body = JSON.parse(bodyText);
@@ -200,8 +219,8 @@ export const startApiMonitor = async (port) => {
     },
     beforeResponse: async ({ statusCode, headers, body, statusMessage }) => {
       try {
-        const responseBody = await body.getText();
-        let parsedBody = responseBody;
+        const responseBody = (await body.getText()) ?? '';
+        let parsedBody: string | Record<string, unknown> = responseBody;
 
         try {
           parsedBody = JSON.parse(responseBody);
@@ -209,7 +228,7 @@ export const startApiMonitor = async (port) => {
           // Keep as raw text if not JSON
         }
 
-        const responseLog = {
+        const responseLog: LogEntry = {
           timestamp: new Date().toISOString(),
           type: 'response',
           statusCode,
@@ -245,7 +264,7 @@ export const startApiMonitor = async (port) => {
  * Stops the API monitoring server.
  *
  */
-export const stopApiMonitor = async (mockServer) => {
+export const stopApiMonitor = async (mockServer: Mockttp): Promise<void> => {
   await mockServer.stop();
   console.log('🛑 API Monitor shutting down');
 };

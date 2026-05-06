@@ -253,7 +253,10 @@ export async function withFixtures(
 
   if (testSpecificMock) {
     mockServerPort = getMockServerPort();
-    mockServer = await startMockServer(testSpecificMock, mockServerPort);
+    mockServer = await startMockServer(
+      testSpecificMock as Parameters<typeof startMockServer>[0],
+      mockServerPort,
+    );
   }
 
   let localNode: AnvilManager | Ganache | undefined;

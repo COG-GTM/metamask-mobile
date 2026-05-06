@@ -19,16 +19,24 @@ const INFURA_URL = `https://mainnet.infura.io/v3/${process.env.MM_INFURA_PROJECT
  * @param {BalanceMocksOptions} options - Configuration options
  * @returns {Object[]} Array of balance mock response objects
  */
-export const getBalanceMocks = (accountBalances = []) => accountBalances.map(({ address, balance = INFURA_MOCK_BALANCE_ZERO_ETH }) => ({
-    urlEndpoint: INFURA_URL,
-    response: {
-      jsonrpc: '2.0',
-      id: 1111111111111111,
-      result: balance
-    },
-    requestBody: {
-      method: 'eth_getBalance',
-      params: [address]
-    },
-    responseCode: 200
-  }));
+interface AccountBalance {
+  address: string;
+  balance?: string;
+}
+
+export const getBalanceMocks = (accountBalances: AccountBalance[] = []) =>
+  accountBalances.map(
+    ({ address, balance = INFURA_MOCK_BALANCE_ZERO_ETH }: AccountBalance) => ({
+      urlEndpoint: INFURA_URL,
+      response: {
+        jsonrpc: '2.0',
+        id: 1111111111111111,
+        result: balance,
+      },
+      requestBody: {
+        method: 'eth_getBalance',
+        params: [address],
+      },
+      responseCode: 200,
+    }),
+  );

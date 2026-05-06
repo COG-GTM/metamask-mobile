@@ -4,9 +4,14 @@
 
 import { E2E_METAMETRICS_TRACK_URL } from '../../../app/util/test/utils';
 import {
-  suggestedGasApiResponses,
+  suggestedGasApiResponses as rawSuggestedGasApiResponses,
   suggestedGasFeesApiGanache,
 } from '../mock-responses/gas-api-responses.json';
+
+const suggestedGasApiResponses = rawSuggestedGasApiResponses as Record<
+  string,
+  unknown
+>;
 
 export const mockEvents = {
   /**

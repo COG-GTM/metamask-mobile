@@ -23,11 +23,19 @@ const AuthMocks = AuthenticationController.Mocks;
  * @param {ReturnType<AuthMocks.getMockAuthAccessTokenResponse>} [options.accessTokenResponse] - Custom access token response
  * @returns {AuthMocksByMethod} Authentication mocks organized by HTTP method
  */
+interface AuthMockOptions {
+  nonceResponse?: ReturnType<typeof AuthMocks.getMockAuthNonceResponse>;
+  loginResponse?: ReturnType<typeof AuthMocks.getMockAuthLoginResponse>;
+  accessTokenResponse?: ReturnType<
+    typeof AuthMocks.getMockAuthAccessTokenResponse
+  >;
+}
+
 export const getAuthMocks = ({
   nonceResponse,
   loginResponse,
-  accessTokenResponse
-} = {}) => {
+  accessTokenResponse,
+}: AuthMockOptions = {}) => {
   const authNonceResponse = nonceResponse || AuthMocks.getMockAuthNonceResponse();
   const authLoginResponse = loginResponse || AuthMocks.getMockAuthLoginResponse();
   const authAccessTokenResponse = accessTokenResponse || AuthMocks.getMockAuthAccessTokenResponse();
