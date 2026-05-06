@@ -1,5 +1,6 @@
 import React, { PureComponent, ReactNode } from 'react';
 import {
+  AccessibilityProps,
   Text,
   View,
   TouchableNativeFeedback,
@@ -11,7 +12,8 @@ import coalesceNonElementChildren from '@metamask/react-native-button/coalesceNo
 import getStyles from './styledButtonStyles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-interface Props {
+interface Props extends AccessibilityProps {
+  accessible?: boolean;
   /**
    * Children components of the Button
    * it can be a text node, an image, or an icon

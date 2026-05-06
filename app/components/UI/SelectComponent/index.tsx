@@ -91,10 +91,9 @@ const createStyles = (colors: Theme['colors']) =>
   });
 
 interface SelectOption {
-  key: string;
-  value?: string;
-  label: string;
-  [extra: string]: unknown;
+  key?: string | number;
+  value?: string | number;
+  label?: string;
 }
 
 interface Props {
@@ -111,13 +110,16 @@ interface Props {
    */
   selectedValue?: string;
   /**
-   * Available options
+   * Available options. Loosely typed to accept any object array
+   * because legacy callers pass differently-shaped option objects.
    */
-  options?: SelectOption[];
+  options?: ReadonlyArray<unknown>;
   /**
-   * Callback for value change
+   * Callback for value change. Accepts the raw `value` field of the
+   * selected option, which legacy callers may type as either a string
+   * or a number.
    */
-  onValueChange?: (val: string) => void;
+  onValueChange?: ((val: string) => void) | ((val: number) => void);
   testID?: string;
 }
 
@@ -137,8 +139,10 @@ export default class SelectComponent extends PureComponent<Props, State> {
     ? React.createRef<ScrollView>()
     : null;
 
-  onValueChange = (val: string | undefined) => {
-    this.props.onValueChange?.(val as string);
+  onValueChange = (val: SelectOption['value']) => {
+    (this.props.onValueChange as ((val: SelectOption['value']) => void) | undefined)?.(
+      val,
+    );
     setTimeout(() => {
       this.hidePicker();
     }, 1000);
@@ -156,7 +160,8 @@ export default class SelectComponent extends PureComponent<Props, State> {
       // that should fit in a normal screen)
       // then let's scroll to the selected item
       (this.props.options?.length ?? 0) > 13 &&
-      this.props.options?.forEach((item, i) => {
+      this.props.options?.forEach((rawItem, i) => {
+        const item = rawItem as SelectOption;
         if (item.value === this.props.selectedValue) {
           setTimeout(() => {
             this.scrollView &&
@@ -173,7 +178,9 @@ export default class SelectComponent extends PureComponent<Props, State> {
 
   getSelectedValue = (): string => {
     const { options, selectedValue, defaultValue } = this.props;
-    const el = options && options.filter((o) => o.value === selectedValue);
+    const el =
+      options &&
+      (options as SelectOption[]).filter((o) => o.value === selectedValue);
     if (el && el.length && el[0].label) {
       return el[0].label;
     }
@@ -217,26 +224,29 @@ export default class SelectComponent extends PureComponent<Props, State> {
             </View>
             <ScrollView style={styles.list} ref={this.scrollView}>
               <View style={styles.listWrapper}>
-                {this.props.options?.map((option) => (
-                  <TouchableOpacity
-                    // eslint-disable-next-line react/jsx-no-bind
-                    onPress={() => this.onValueChange(option.value)}
-                    style={styles.optionButton}
-                    key={option.key}
-                  >
-                    <Text style={styles.optionLabel} numberOfLines={1}>
-                      {option.label}
-                    </Text>
-                    {this.props.selectedValue === option.value ? (
-                      <IconCheck
-                        style={styles.icon}
-                        name="check"
-                        size={24}
-                        color={colors.primary.default}
-                      />
-                    ) : null}
-                  </TouchableOpacity>
-                ))}
+                {this.props.options?.map((rawOption) => {
+                  const option = rawOption as SelectOption;
+                  return (
+                    <TouchableOpacity
+                      // eslint-disable-next-line react/jsx-no-bind
+                      onPress={() => this.onValueChange(option.value)}
+                      style={styles.optionButton}
+                      key={option.key}
+                    >
+                      <Text style={styles.optionLabel} numberOfLines={1}>
+                        {option.label}
+                      </Text>
+                      {this.props.selectedValue === option.value ? (
+                        <IconCheck
+                          style={styles.icon}
+                          name="check"
+                          size={24}
+                          color={colors.primary.default}
+                        />
+                      ) : null}
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </ScrollView>
           </View>

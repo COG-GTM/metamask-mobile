@@ -416,11 +416,10 @@ declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
 
 declare module '@metamask/react-native-button' {
   import { ComponentType, ReactNode } from 'react';
-  import { StyleProp, TextStyle, ViewStyle } from 'react-native';
+  import { AccessibilityProps, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
-  interface ButtonProps {
-    accessibilityLabel?: string;
-    accessibilityRole?: string;
+  interface ButtonProps extends AccessibilityProps {
+    accessible?: boolean;
     activeOpacity?: number;
     allowFontScaling?: boolean;
     children?: ReactNode;

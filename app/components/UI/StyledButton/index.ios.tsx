@@ -1,10 +1,15 @@
 import React, { PureComponent, ReactNode } from 'react';
-import { StyleProp, TextStyle, ViewStyle } from 'react-native';
+import {
+  AccessibilityProps,
+  StyleProp,
+  TextStyle,
+  ViewStyle,
+} from 'react-native';
 import Button from '@metamask/react-native-button';
 import getStyles from './styledButtonStyles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-interface Props {
+interface Props extends AccessibilityProps {
   /**
    * Children components of the Button
    * it can be a text node, an image, or an icon
@@ -83,8 +88,9 @@ export default class StyledButton extends PureComponent<Props> {
 
     return (
       <Button
+        {...this.props}
         testID={testID}
-        accessibilityRole="button"
+        accessibilityRole={this.props.accessibilityRole ?? 'button'}
         disabled={disabled}
         styleDisabled={disabled ? styleDisabled : null}
         disabledContainerStyle={disabled ? disabledContainerStyle : null}
