@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
 import QRCode from 'react-native-qrcode-svg';
 import { strings } from '../../../../locales/i18n';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
@@ -79,9 +80,9 @@ const createStyles = (theme: Theme) =>
 
 interface AlertConfig {
   isVisible: boolean;
-  autodismiss?: number;
-  content?: string;
-  data?: { msg?: string };
+  autodismiss: number;
+  content: string;
+  data: { msg?: string };
 }
 
 interface StateProps {
@@ -199,9 +200,7 @@ const mapStateToProps = (state: RootState): StateProps => ({
   seedphraseBackedUp: state.user.seedphraseBackedUp,
 });
 
-const mapDispatchToProps = (
-  dispatch: (action: unknown) => void,
-): DispatchProps => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
