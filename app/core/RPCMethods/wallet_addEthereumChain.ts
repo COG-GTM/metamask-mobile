@@ -21,14 +21,18 @@ import { RpcEndpointType } from '@metamask/network-controller';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 
 const waitForInteraction = async () =>
-  new Promise((resolve) => {
+  new Promise<void>((resolve) => {
     InteractionManager.runAfterInteractions(() => {
       resolve();
     });
   });
 
 // Utility function to find or add an item in an array and return the updated array and index
-const addOrUpdateIndex = (array, value, comparator) => {
+const addOrUpdateIndex = <T>(
+  array: T[],
+  value: T,
+  comparator: (item: T, index: number, array: T[]) => boolean,
+) => {
   const index = array.findIndex(comparator);
   if (index === -1) {
     return {
@@ -49,12 +53,24 @@ const addOrUpdateIndex = (array, value, comparator) => {
  * @param params.hooks - Method hooks passed to the method implementation.
  * @returns {Nothing}.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const wallet_addEthereumChain = async ({
   req,
   res,
   requestUserApproval,
   analytics,
   hooks,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  req: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  res: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  requestUserApproval: (request: any) => Promise<unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  analytics?: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  hooks: any;
 }) => {
   const {
     NetworkController,
@@ -75,17 +91,22 @@ export const wallet_addEthereumChain = async ({
     ticker,
   } = params;
 
-  const switchToNetworkAndMetrics = async (network, isAddNetworkFlow) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const switchToNetworkAndMetrics = async (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    network: any,
+    isAddNetworkFlow: boolean,
+  ) => {
     const { networkClientId } =
       network.rpcEndpoints[network.defaultRpcEndpointIndex];
 
     const existingNetwork = hooks.getNetworkConfigurationByChainId(chainId);
-    const rpcIndex = existingNetwork?.rpcEndpoints.findIndex(({ url }) =>
-      equal(url, firstValidRPCUrl),
+    const rpcIndex = existingNetwork?.rpcEndpoints.findIndex(
+      ({ url }: { url: string }) => equal(url, firstValidRPCUrl),
     );
 
     const blockExplorerIndex = firstValidBlockExplorerUrl
-      ? existingNetwork?.blockExplorerUrls.findIndex((url) =>
+      ? existingNetwork?.blockExplorerUrls.findIndex((url: string) =>
           equal(url, firstValidBlockExplorerUrl),
         )
       : undefined;
@@ -110,7 +131,8 @@ export const wallet_addEthereumChain = async ({
       isAddNetworkFlow,
       autoApprove: shouldAddOrUpdateNetwork,
       hooks,
-    });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
   };
 
   //TODO: Remove aurora from default chains in @metamask/controller-utils
@@ -128,7 +150,8 @@ export const wallet_addEthereumChain = async ({
 
   const existingNetworkConfigurationHasRpcEndpoint =
     existingNetworkConfiguration?.rpcEndpoints.some(
-      (endpoint) => endpoint.url === firstValidRPCUrl,
+      (endpoint: { url: string }) =>
+        endpoint.url === firstValidRPCUrl,
     );
 
   // If the network already exists and the RPC URL is the same, perform a network switch only
@@ -137,13 +160,15 @@ export const wallet_addEthereumChain = async ({
     existingNetworkConfigurationHasRpcEndpoint
   ) {
     const rpcResult = addOrUpdateIndex(
-      existingNetworkConfiguration.rpcEndpoints,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      existingNetworkConfiguration.rpcEndpoints as any[],
       {
         url: firstValidRPCUrl,
         type: RpcEndpointType.Custom,
         name: chainName,
-      },
-      (endpoint) => endpoint.url === firstValidRPCUrl,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
+      (endpoint: { url: string }) => endpoint.url === firstValidRPCUrl,
     );
 
     switchToNetworkAndMetrics(
@@ -160,7 +185,8 @@ export const wallet_addEthereumChain = async ({
   }
 
   await validateRpcEndpoint(firstValidRPCUrl, chainId);
-  const requestData = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const requestData: Record<string, any> = {
     chainId,
     blockExplorerUrl: firstValidBlockExplorerUrl,
     chainName,
@@ -221,19 +247,21 @@ export const wallet_addEthereumChain = async ({
     const currentChainId = selectEvmChainId(store.getState());
 
     const rpcResult = addOrUpdateIndex(
-      existingNetworkConfiguration.rpcEndpoints,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      existingNetworkConfiguration.rpcEndpoints as any[],
       {
         url: firstValidRPCUrl,
         type: RpcEndpointType.Custom,
         name: chainName,
-      },
-      (endpoint) => endpoint.url === firstValidRPCUrl,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
+      (endpoint: { url: string }) => endpoint.url === firstValidRPCUrl,
     );
 
     const blockExplorerResult = addOrUpdateIndex(
       existingNetworkConfiguration.blockExplorerUrls,
-      firstValidBlockExplorerUrl,
-      (url) => url === firstValidBlockExplorerUrl,
+      firstValidBlockExplorerUrl as string,
+      (url: string) => url === firstValidBlockExplorerUrl,
     );
 
     const updatedNetworkConfiguration = {
@@ -245,8 +273,9 @@ export const wallet_addEthereumChain = async ({
     };
 
     newNetworkConfiguration = await NetworkController.updateNetwork(
-      chainId,
-      updatedNetworkConfiguration,
+      chainId as `0x${string}`,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      updatedNetworkConfiguration as any,
       currentChainId === chainId
         ? {
             replacementSelectedRpcEndpointIndex:
@@ -256,8 +285,10 @@ export const wallet_addEthereumChain = async ({
     );
   } else {
     newNetworkConfiguration = NetworkController.addNetwork({
-      chainId,
-      blockExplorerUrls: [firstValidBlockExplorerUrl],
+      chainId: chainId as `0x${string}`,
+      blockExplorerUrls: firstValidBlockExplorerUrl
+        ? [firstValidBlockExplorerUrl as string]
+        : [],
       defaultRpcEndpointIndex: 0,
       defaultBlockExplorerUrlIndex: 0,
       name: chainName,
