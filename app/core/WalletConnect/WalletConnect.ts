@@ -11,6 +11,7 @@ import {
 } from '../../util/walletconnect';
 import { WALLETCONNECT_SESSIONS } from '../../constants/storage';
 import { WalletDevice } from '@metamask/transaction-controller';
+import type { Hex } from '@metamask/utils';
 import BackgroundBridge from '../BackgroundBridge/BackgroundBridge';
 import getRpcMethodMiddleware, {
   checkActiveAccountAndChainId,
@@ -279,15 +280,20 @@ class WalletConnect {
 
                 const { NetworkController } = Engine.context;
                 const networkClientId =
-                  NetworkController.findNetworkClientIdByChainId(chainId);
+                  NetworkController.findNetworkClientIdByChainId(
+                    chainId as unknown as Hex,
+                  );
 
-                const trx = await addTransaction(payload.params[0], {
+                const trx = await addTransaction(
+                  payload.params[0] as Parameters<typeof addTransaction>[0],
+                  {
                   deviceConfirmedOn: WalletDevice.MM_MOBILE,
                   networkClientId,
                   origin: this.url.current
                     ? WALLET_CONNECT_ORIGIN + this.url.current
                     : undefined,
-                });
+                  },
+                );
 
                 const id = trx.transactionMeta.id;
                 const reqObject = {
