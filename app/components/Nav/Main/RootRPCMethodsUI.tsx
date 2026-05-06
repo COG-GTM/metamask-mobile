@@ -461,8 +461,12 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
         }
       }
     },
+    // Only `props.navigation` is read from props inside this callback; the
+    // exhaustive-deps rule asks for `props` itself but depending on the whole
+    // `props` object would defeat memoisation (a new reference each render).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      props,
+      props.navigation,
       trackSwaps,
       trackEvent,
       swapsTransactions,
