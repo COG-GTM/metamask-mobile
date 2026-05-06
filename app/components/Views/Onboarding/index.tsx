@@ -51,6 +51,8 @@ import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder
 import type { RootState } from '../../../reducers';
 import type { Dispatch } from 'redux';
 import type { Colors } from '../../../util/theme/models';
+import type { NavigationProp, RouteProp, ParamListBase } from '@react-navigation/native';
+
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -147,7 +149,11 @@ interface OnboardingProps {
   setLoading?: (...args: unknown[]) => unknown;
   unsetLoading?: (...args: unknown[]) => unknown;
   loadingMsg?: string;
-  route?: RouteProp<ParamListBase, string>;
+  route?: RouteProp<{
+  params: {
+    delete?: unknown;
+  };
+}, 'params'>;
   metrics?: Record<string, unknown>;
 }
 

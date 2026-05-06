@@ -22,6 +22,8 @@ import AppConstants from '../../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
 import type { Colors } from '../../../../util/theme/models';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 

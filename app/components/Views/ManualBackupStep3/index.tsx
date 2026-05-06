@@ -23,6 +23,8 @@ import OnboardingSuccess from '../OnboardingSuccess';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import type { Dispatch } from 'redux';
 import type { Colors } from '../../../util/theme/models';
+import type { NavigationProp, RouteProp, ParamListBase } from '@react-navigation/native';
+
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -79,7 +81,12 @@ const HARDWARE_BACK_PRESS = 'hardwareBackPress';
  */
 interface ManualBackupStep3Props {
   navigation?: NavigationProp<ParamListBase>;
-  route?: RouteProp<ParamListBase, string>;
+  route?: RouteProp<{
+  params: {
+    steps?: unknown;
+    words?: unknown;
+  };
+}, 'params'>;
   setOnboardingWizardStep?: (...args: unknown[]) => unknown;
 }
 

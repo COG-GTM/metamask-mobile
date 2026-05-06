@@ -37,6 +37,8 @@ import { toLowerCaseEquals } from '../../../../../util/general';
 import { selectAddressBook } from '../../../../../selectors/addressBookController';
 import type { RootState } from '../../../../../reducers';
 import type { Colors } from '../../../../../util/theme/models';
+import type { NavigationProp, RouteProp, ParamListBase } from '@react-navigation/native';
+
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -121,7 +123,13 @@ interface ContactFormProps {
   navigation?: NavigationProp<ParamListBase>;
   internalAccounts?: unknown[];
   addressBook?: Record<string, unknown>;
-  route?: RouteProp<ParamListBase, string>;
+  route?: RouteProp<{
+  params: {
+    address?: unknown;
+    mode?: unknown;
+    onDelete?: unknown;
+  };
+}, 'params'>;
   chainId?: string;
 }
 

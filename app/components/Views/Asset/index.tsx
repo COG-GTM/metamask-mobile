@@ -72,6 +72,8 @@ import { isBridgeAllowed } from '../../UI/Bridge/utils';
 import { getIsSwapsAssetAllowed, getSwapsIsLive } from './utils';
 import type { Dispatch } from 'redux';
 import type { Colors } from '../../../util/theme/models';
+import type { NavigationProp, RouteProp, ParamListBase } from '@react-navigation/native';
+
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -143,7 +145,15 @@ interface AssetProps {
   swapsTokens?: Record<string, unknown>;
   searchDiscoverySwapsTokens?: unknown[];
   swapsTransactions?: Record<string, unknown>;
-  route?: RouteProp<ParamListBase, string>;
+  route?: RouteProp<{
+  params: {
+    address?: unknown;
+    chainId?: unknown;
+    isETH?: unknown;
+    isNative?: unknown;
+    symbol?: unknown;
+  };
+}, 'params'>;
   rpcUrl?: string;
   networkConfigurations?: Record<string, unknown>;
   isNetworkRampSupported?: boolean;

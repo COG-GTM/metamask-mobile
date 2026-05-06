@@ -41,6 +41,8 @@ import { UserProfileProperty } from '../../../../util/metrics/UserSettingsAnalyt
 import type { RootState } from '../../../../reducers';
 import type { Dispatch } from 'redux';
 import type { Colors } from '../../../../util/theme/models';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+
 
 const diameter = 40;
 const spacing = 8;

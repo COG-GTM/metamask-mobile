@@ -47,6 +47,8 @@ import AutoDetectTokensSettings from '../AutoDetectTokensSettings';
 import type { RootState } from '../../../../reducers';
 import type { Dispatch } from 'redux';
 import type { Colors } from '../../../../util/theme/models';
+import type { NavigationProp, RouteProp, ParamListBase } from '@react-navigation/native';
+
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -148,7 +150,12 @@ interface AdvancedSettingsProps {
   showFiatOnTestnets?: boolean;
   setShowFiatOnTestnets?: (...args: unknown[]) => unknown;
   fullState?: Record<string, unknown>;
-  route?: RouteProp<ParamListBase, string>;
+  route?: RouteProp<{
+  params: {
+    isFullScreenModal?: unknown;
+    scrollToBottom?: unknown;
+  };
+}, 'params'>;
   metrics?: Record<string, unknown>;
   smartTransactionsOptInStatus?: boolean;
 }

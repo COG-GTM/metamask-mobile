@@ -49,6 +49,8 @@ import { selectNonEvmNetworkConfigurationsByChainId } from '../../../../selector
 ///: END:ONLY_INCLUDE_IF
 import type { RootState } from '../../../../reducers';
 import type { Colors } from '../../../../util/theme/models';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({

@@ -64,6 +64,8 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import type { Dispatch } from 'redux';
 import type { Colors } from '../../../util/theme/models';
+import type { NavigationProp, RouteProp, ParamListBase } from '@react-navigation/native';
+
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
     mainWrapper: {
@@ -212,7 +214,7 @@ interface ChoosePasswordProps {
   passwordUnset?: (...args: unknown[]) => unknown;
   setLockTime?: (...args: unknown[]) => unknown;
   seedphraseNotBackedUp?: (...args: unknown[]) => unknown;
-  route?: RouteProp<ParamListBase, string>;
+  route?: RouteProp<{ params: Record<string, unknown> }, 'params'>;
 }
 
 class ChoosePassword extends PureComponent<ChoosePasswordProps> {

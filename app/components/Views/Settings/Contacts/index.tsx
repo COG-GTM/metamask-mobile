@@ -15,6 +15,8 @@ import { ContactsViewSelectorIDs } from '../../../../../e2e/selectors/Settings/C
 import { selectAddressBook } from '../../../../selectors/addressBookController';
 import type { RootState } from '../../../../reducers';
 import type { Colors } from '../../../../util/theme/models';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({

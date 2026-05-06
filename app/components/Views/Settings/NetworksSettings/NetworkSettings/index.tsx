@@ -97,6 +97,8 @@ import Text, {
 import type { RootState } from '../../../../../reducers';
 import type { Dispatch } from 'redux';
 import type { Colors } from '../../../../../util/theme/models';
+import type { NavigationProp, RouteProp, ParamListBase } from '@react-navigation/native';
+
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -405,7 +407,14 @@ const infuraProjectId = InfuraKey === 'null' ? '' : InfuraKey;
 export interface NetworkSettingsProps {
   networkConfigurations?: Record<string, unknown>;
   navigation?: NavigationProp<ParamListBase>;
-  route?: RouteProp<ParamListBase, string>;
+  route?: RouteProp<{
+  params: {
+    isCustomMainnet?: unknown;
+    network?: unknown;
+    shouldNetworkSwitchPopToWallet?: unknown;
+    shouldShowPopularNetworks?: unknown;
+  };
+}, 'params'>;
   showNetworkOnboardingAction?: (...args: unknown[]) => unknown;
   networkOnboardedState?: Record<string, unknown>;
   isCustomMainnet?: boolean;

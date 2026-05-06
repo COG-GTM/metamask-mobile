@@ -57,6 +57,8 @@ import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding
 import type { RootState } from '../../../reducers';
 import type { Dispatch } from 'redux';
 import type { Colors } from '../../../util/theme/models';
+import type { NavigationProp, RouteProp, ParamListBase } from '@react-navigation/native';
+
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -256,7 +258,7 @@ interface ResetPasswordProps {
   passwordSet?: (...args: unknown[]) => unknown;
   setLockTime?: (...args: unknown[]) => unknown;
   selectedAddress?: string;
-  route?: RouteProp<ParamListBase, string>;
+  route?: RouteProp<{ params: Record<string, unknown> }, 'params'>;
 }
 
 class ResetPassword extends PureComponent<ResetPasswordProps> {
