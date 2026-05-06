@@ -1,5 +1,5 @@
-// @ts-nocheck
-// TODO: TS migration cleanup follow-up — fully type this file
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck -- TS migration cleanup follow-up: fully type this file
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
 import { isHexString } from '@metamask/utils';

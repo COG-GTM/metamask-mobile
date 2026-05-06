@@ -1,5 +1,5 @@
-// @ts-nocheck
-// TODO: TS migration cleanup follow-up — fully type this file
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck -- TS migration cleanup follow-up: fully type this file
 /* eslint-disable react/display-name */
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import BigNumber from 'bignumber.js';

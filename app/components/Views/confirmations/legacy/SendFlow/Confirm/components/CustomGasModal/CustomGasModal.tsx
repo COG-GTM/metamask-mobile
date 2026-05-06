@@ -1,5 +1,5 @@
-// @ts-nocheck
-// TODO: TS migration cleanup follow-up — fully type this file
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck -- TS migration cleanup follow-up: fully type this file
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Modal from 'react-native-modal';

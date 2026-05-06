@@ -1,5 +1,5 @@
-// @ts-nocheck
-// TODO: TS migration cleanup follow-up — fully type this file
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck -- TS migration cleanup follow-up: fully type this file
 import StyledButton from './StyledButton'; // eslint-disable-line import/no-unresolved
 /**
  * @deprecated The `<StyledButton>` component has been deprecated in favor of the new `<Button>` component from the component-library.
