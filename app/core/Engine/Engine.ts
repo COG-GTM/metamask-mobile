@@ -43,6 +43,9 @@ import {
   ApprovalController,
 } from '@metamask/approval-controller';
 import { HdKeyring } from '@metamask/eth-hd-keyring';
+///: BEGIN:ONLY_INCLUDE_IF(bitcoin)
+import { bitcoinKeyringBuilder } from '../BitcoinKeyring';
+///: END:ONLY_INCLUDE_IF
 import { SelectedNetworkController } from '@metamask/selected-network-controller';
 import {
   PermissionController,
@@ -423,6 +426,10 @@ export class Engine {
       });
     hdKeyringBuilder.type = HdKeyring.type;
     additionalKeyrings.push(hdKeyringBuilder);
+
+    ///: BEGIN:ONLY_INCLUDE_IF(bitcoin)
+    additionalKeyrings.push(bitcoinKeyringBuilder());
+    ///: END:ONLY_INCLUDE_IF
 
     ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
     const snapKeyringBuildMessenger = this.controllerMessenger.getRestricted({
