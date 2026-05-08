@@ -1,8 +1,9 @@
 import { StyleSheet } from 'react-native';
+import { Colors } from '../../../../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
-    overview: (noMargin) => ({
+    overview: (noMargin: boolean) => ({
       marginHorizontal: noMargin ? 0 : 24,
       paddingTop: 10,
       paddingBottom: 10,
@@ -15,7 +16,7 @@ const createStyles = (colors) =>
     gasInfoContainer: {
       paddingLeft: 2,
     },
-    gasInfoIcon: (hasOrigin) => ({
+    gasInfoIcon: (hasOrigin: boolean) => ({
       color: hasOrigin ? colors.warning.default : colors.icon.muted,
     }),
     amountContainer: {
