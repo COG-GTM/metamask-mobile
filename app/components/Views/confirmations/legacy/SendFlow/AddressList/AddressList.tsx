@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -16,8 +15,19 @@ import { selectInternalAccounts } from '../../../../../../selectors/accountsCont
 import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { type RootState } from '../../../../../../reducers';
 
-const LabelElement = (styles, label) => (
+interface AddressListProps {
+  chainId: string;
+  inputSearch?: string;
+  onAccountPress: (address: string) => void;
+  onAccountLongPress?: (address: string) => void;
+  onIconPress?: (address: string) => void;
+  onlyRenderAddressBook?: boolean;
+  reloadAddressList?: number;
+}
+
+const LabelElement = (styles: ReturnType<typeof styleSheet>, label: string) => (
   <View key={label} style={styles.labelElementWrapper}>
     <Text variant={TextVariant.BodyMD} style={styles.contactLabel}>
       {label.toUpperCase()}
@@ -33,15 +43,15 @@ const AddressList = ({
   onIconPress,
   onlyRenderAddressBook = false,
   reloadAddressList,
-}) => {
+}: AddressListProps) => {
   const { colors } = useTheme();
   const styles = styleSheet(colors);
-  const [contactElements, setContactElements] = useState([]);
-  const [fuse, setFuse] = useState(undefined);
+  const [contactElements, setContactElements] = useState<(string | Record<string, unknown>)[]>([]);
+  const [fuse, setFuse] = useState<Fuse<Record<string, unknown>> | undefined>(undefined);
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
-    (state) => state.user.ambiguousAddressEntries,
+    (state: RootState) => state.user.ambiguousAddressEntries,
   );
 
   const networkAddressBook = useMemo(
@@ -49,7 +59,7 @@ const AddressList = ({
     [addressBook, chainId],
   );
   const parseAddressBook = useCallback(
-    (networkAddressBookList) => {
+    (networkAddressBookList: Record<string, unknown>[]) => {
       const contacts = networkAddressBookList.map((contact) => {
         const isAmbiguousAddress =
           chainId &&
@@ -175,7 +185,7 @@ const AddressList = ({
     );
   };
 
-  const renderElement = (addressElement) => {
+  const renderElement = (addressElement: string | Record<string, unknown>) => {
     if (typeof addressElement === 'string') {
       return LabelElement(styles, addressElement);
     }
