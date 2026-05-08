@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, Text, InteractionManager } from 'react-native';
 import URL from 'url-parse';
 import { useSelector } from 'react-redux';
@@ -13,6 +12,7 @@ import { MetaMetricsEvents } from '../../../../../../core/Analytics';
 
 import useTokenBalance from '../../../../../hooks/useTokenBalance';
 import { useTheme } from '../../../../../../util/theme';
+import { Colors } from '../../../../../../util/theme/models';
 import NotificationManager from '../../../../../../core/NotificationManager';
 import { selectEvmChainId } from '../../../../../../selectors/networkController';
 import ApproveTransactionHeader from '../ApproveTransactionHeader';
@@ -23,7 +23,37 @@ import { getDecimalChainId } from '../../../../../../util/networks';
 import { useMetrics } from '../../../../../../components/hooks/useMetrics';
 import Logger from '../../../../../../util/Logger';
 
-const createStyles = (colors) =>
+interface Asset {
+  address: string;
+  symbol: string;
+  decimals: number;
+  image?: string;
+  standard?: string;
+}
+
+interface SuggestedAssetMeta {
+  asset: Asset;
+  interactingAddress: string;
+}
+
+interface CurrentPageInformation {
+  url?: string;
+  title?: string;
+  icon?: string;
+}
+
+interface WatchAssetRequestProps {
+  /** Callback triggered when this message signature is rejected */
+  onCancel?: () => void;
+  /** Callback triggered when this message signature is approved */
+  onConfirm?: () => Promise<void>;
+  /** Token object */
+  suggestedAssetMeta: SuggestedAssetMeta;
+  /** Object containing current page title, url, and icon href */
+  currentPageInformation?: CurrentPageInformation;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -101,7 +131,7 @@ const WatchAssetRequest = ({
   currentPageInformation,
   onCancel,
   onConfirm,
-}) => {
+}: WatchAssetRequestProps) => {
   const { asset, interactingAddress } = suggestedAssetMeta;
   // TODO - Once TokensController is updated, interactingAddress should always be defined
   const { colors } = useTheme();
@@ -126,8 +156,11 @@ const WatchAssetRequest = ({
         chain_id: getDecimalChainId(chainId),
         source: 'Dapp suggested (watchAsset)',
       };
-    } catch (error) {
-      Logger.error(error, 'WatchAssetRequest.getTokenAddedAnalyticsParams');
+    } catch (analyticsError) {
+      Logger.error(
+        analyticsError as Error,
+        'WatchAssetRequest.getTokenAddedAnalyticsParams',
+      );
       return undefined;
     }
   };
@@ -175,7 +208,7 @@ const WatchAssetRequest = ({
         />
       </View>
       <View style={styles.titleWrapper}>
-        <Text style={styles.title} onPress={this.cancelSignature}>
+        <Text style={styles.title}>
           {strings('watch_asset_request.title')}
         </Text>
       </View>
@@ -228,25 +261,6 @@ const WatchAssetRequest = ({
       </ActionView>
     </View>
   );
-};
-
-WatchAssetRequest.propTypes = {
-  /**
-   * Callback triggered when this message signature is rejected
-   */
-  onCancel: PropTypes.func,
-  /**
-   * Callback triggered when this message signature is approved
-   */
-  onConfirm: PropTypes.func,
-  /**
-   * Token object
-   */
-  suggestedAssetMeta: PropTypes.object,
-  /**
-   * Object containing current page title, url, and icon href
-   */
-  currentPageInformation: PropTypes.object,
 };
 
 export default WatchAssetRequest;
