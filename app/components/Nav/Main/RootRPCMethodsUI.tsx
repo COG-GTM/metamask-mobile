@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
 import { Alert } from 'react-native';
-import PropTypes from 'prop-types';
 import { connect, useSelector } from 'react-redux';
+import type { Dispatch } from 'redux';
 import { ethers } from 'ethers';
 import abi from 'human-standard-token-abi';
 
@@ -43,6 +43,7 @@ import {
   selectEvmChainId,
   selectProviderType,
 } from '../../../selectors/networkController';
+import { RootState } from '../../../reducers';
 import WatchAssetApproval from '../../Approvals/WatchAssetApproval';
 import SignatureApproval from '../../Approvals/SignatureApproval';
 import AddChainApproval from '../../Approvals/AddChainApproval';
@@ -89,11 +90,19 @@ function useSwapsTransactions() {
   return useMemo(() => swapTransactions ?? {}, [swapTransactions]);
 }
 
-export const useSwapConfirmedEvent = ({ trackSwaps }) => {
-  const [transactionMetaIdsForListening, setTransactionMetaIdsForListening] =
-    useState([]);
+interface UseSwapConfirmedEventParams {
+  trackSwaps: (
+    event: string,
+    transactionMeta: Record<string, unknown>,
+    swapsTransactions: Record<string, Record<string, unknown>>,
+  ) => void;
+}
 
-  const addTransactionMetaIdForListening = useCallback((txMetaId) => {
+export const useSwapConfirmedEvent = ({ trackSwaps }: UseSwapConfirmedEventParams) => {
+  const [transactionMetaIdsForListening, setTransactionMetaIdsForListening] =
+    useState<string[]>([]);
+
+  const addTransactionMetaIdForListening = useCallback((txMetaId: string) => {
     setTransactionMetaIdsForListening((transactionMetaIdsForListening) => [
       ...transactionMetaIdsForListening,
       txMetaId,
@@ -132,9 +141,37 @@ export const useSwapConfirmedEvent = ({ trackSwaps }) => {
   };
 };
 
-const RootRPCMethodsUI = (props) => {
+/**
+ * Props passed directly by the parent component.
+ */
+interface OwnProps {
+  navigation: Record<string, unknown> & { navigate: (...args: unknown[]) => void };
+}
+
+/**
+ * Props derived from Redux state via mapStateToProps.
+ */
+interface StateProps {
+  selectedAddress: string | undefined;
+  chainId: string;
+  tokens: Record<string, unknown>[];
+  providerType: string;
+  shouldUseSmartTransaction: boolean;
+}
+
+/**
+ * Props derived from Redux dispatch via mapDispatchToProps.
+ */
+interface DispatchProps {
+  setEtherTransaction: (transaction: Record<string, unknown>) => void;
+  setTransactionObject: (transaction: Record<string, unknown>) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+const RootRPCMethodsUI = (props: Props) => {
   const { trackEvent, createEventBuilder } = useMetrics();
-  const [transactionModalType, setTransactionModalType] = useState(undefined);
+  const [transactionModalType, setTransactionModalType] = useState<TransactionModalType | undefined>(undefined);
   const tokenList = useSelector(selectTokenList);
   const setTransactionObject = props.setTransactionObject;
   const setEtherTransaction = props.setEtherTransaction;
@@ -552,38 +589,7 @@ const RootRPCMethodsUI = (props) => {
   );
 };
 
-RootRPCMethodsUI.propTypes = {
-  /**
-   * Object that represents the navigator
-   */
-  navigation: PropTypes.object,
-  /**
-   * Action that sets an ETH transaction
-   */
-  setEtherTransaction: PropTypes.func,
-  /**
-   * Action that sets a transaction
-   */
-  setTransactionObject: PropTypes.func,
-  /**
-   * Array of ERC20 assets
-   */
-  tokens: PropTypes.array,
-  /**
-   * Selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * If smart transactions should be used
-   */
-  shouldUseSmartTransaction: PropTypes.bool,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   chainId: selectEvmChainId(state),
   tokens: selectTokens(state),
@@ -594,10 +600,10 @@ const mapStateToProps = (state) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setEtherTransaction: (transaction) =>
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  setEtherTransaction: (transaction: Record<string, unknown>) =>
     dispatch(setEtherTransaction(transaction)),
-  setTransactionObject: (transaction) =>
+  setTransactionObject: (transaction: Record<string, unknown>) =>
     dispatch(setTransactionObject(transaction)),
 });
 
