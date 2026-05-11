@@ -111,7 +111,9 @@ class NavbarTitle extends PureComponent<NavbarTitleProps> {
     } = this.props;
     let name: string | null = null;
 
-    (this.context as unknown as Theme)?.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
+    void colors;
     const styles = createStyles();
 
     if (selectedNetworkName || networkName) {

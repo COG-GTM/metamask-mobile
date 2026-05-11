@@ -121,7 +121,7 @@ class GlobalAlert extends PureComponent<GlobalAlertProps> {
           />
         </View>
         <Text style={styles.copyAlertText}>
-          {this.props.data && this.props.data.msg}
+          {this.props.data?.msg}
         </Text>
       </ElevatedView>
     );
@@ -156,12 +156,12 @@ interface AlertState {
 }
 
 const mapStateToProps = (state: RootState): StateProps => {
-  const alert = (state as unknown as { alert: AlertState }).alert;
+  const alertState = (state as unknown as { alert: AlertState }).alert;
   return {
-    isVisible: alert.isVisible,
-    autodismiss: alert.autodismiss,
-    content: alert.content,
-    data: alert.data,
+    isVisible: alertState.isVisible,
+    autodismiss: alertState.autodismiss,
+    content: alertState.content,
+    data: alertState.data,
   };
 };
 

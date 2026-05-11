@@ -152,8 +152,8 @@ export default class SelectComponent extends PureComponent<
 
   getSelectedValue = () => {
     const { options, selectedValue, defaultValue } = this.props;
-    const el = options && options.filter((o) => o.value === selectedValue);
-    if (el && el.length && el[0].label) {
+    const el = options?.filter((o) => o.value === selectedValue);
+    if (el?.length && el[0].label) {
       return el[0].label;
     }
     if (defaultValue) {

@@ -15,7 +15,7 @@ import {
 import StyledButton from '../../StyledButton';
 import { strings } from '../../../../../locales/i18n';
 import { mockTheme, ThemeContext } from '../../../../util/theme';
-import { Theme } from '@metamask/design-tokens';
+import { Theme , typography } from '@metamask/design-tokens';
 import ButtonIcon, {
   ButtonIconSizes,
 } from '../../../../component-library/components/Buttons/ButtonIcon';
@@ -23,7 +23,6 @@ import {
   IconName,
   IconColor,
 } from '../../../../component-library/components/Icons/Icon';
-import { typography } from '@metamask/design-tokens';
 import {
   ButtonSize,
   ButtonVariants,

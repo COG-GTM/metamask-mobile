@@ -420,6 +420,7 @@ declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
 
 declare module '@metamask/react-native-button' {
   import { ComponentType } from 'react';
+  // eslint-disable-next-line no-duplicate-imports
   import { TouchableHighlightProps } from 'react-native';
   interface ButtonProps extends TouchableHighlightProps {
     onLongPress?: () => void;

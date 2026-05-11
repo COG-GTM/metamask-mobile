@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { getNetworkNavbarOptions } from '.';
-import { SolScope } from '@metamask/keyring-api';
+
 
 describe('getNetworkNavbarOptions', () => {
   const Stack = createStackNavigator();
@@ -43,7 +43,7 @@ describe('getNetworkNavbarOptions', () => {
       {},
     );
 
-    const { getByText, getByRole } = renderWithProvider(
+    const { getByText } = renderWithProvider(
       <TestNavigator options={options} />,
       {
         state: {

@@ -4,7 +4,7 @@ import {
   isSwapsAllowed,
 } from './index';
 import { swapsUtils } from '@metamask/swaps-controller';
-import { SolScope } from '@metamask/keyring-api';
+
 
 // Mock AppConstants
 const mockSwapsConstantsGetter = jest.fn(() => ({

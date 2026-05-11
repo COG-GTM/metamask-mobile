@@ -109,7 +109,7 @@ class NavbarBrowserTitle extends PureComponent<NavbarBrowserTitleProps> {
         name = providerConfig.nickname;
       } else if (providerConfig.type) {
         const currentNetwork = networksMap[providerConfig.type];
-        if (currentNetwork && currentNetwork.name) {
+        if (currentNetwork?.name) {
           name = currentNetwork.name;
         }
       }

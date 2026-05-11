@@ -34,11 +34,11 @@ function useBalance(
     if (isSwapsNativeAsset(sourceToken)) {
       if (asUnits) {
         return safeNumberToBN(
-          (accounts[selectedAddress] && accounts[selectedAddress].balance) || 0,
+          (accounts[selectedAddress]?.balance) || 0,
         );
       }
       return renderFromWei(
-        (accounts[selectedAddress] && accounts[selectedAddress].balance) || 0,
+        (accounts[selectedAddress]?.balance) || 0,
       );
     }
     const tokenAddress = safeToChecksumAddress(sourceToken.address);

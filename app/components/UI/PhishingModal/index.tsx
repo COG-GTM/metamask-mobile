@@ -10,7 +10,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
-import URL from 'url-parse';
+import ParsedURL from 'url-parse';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { Theme } from '@metamask/design-tokens';
 import generateTestId from '../../../../wdio/utils/generateTestId';
@@ -137,7 +137,7 @@ export default class PhishingModal extends PureComponent<PhishingModalProps> {
     const colors =
       (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    new URL(this.props.fullUrl ?? '');
+    new ParsedURL(this.props.fullUrl ?? '');
 
     return (
       <View style={styles.phishingModalWrapper}>
