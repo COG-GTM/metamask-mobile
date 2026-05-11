@@ -226,7 +226,11 @@ const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
 
   useEffect(() => {
     navigation?.setOptions?.(
-      getOnboardingNavbarOptions(route, { headerLeft: null }, colors),
+      getOnboardingNavbarOptions(
+        route,
+        {} as Parameters<typeof getOnboardingNavbarOptions>[1],
+        colors,
+      ),
     );
   }, [navigation, route, colors]);
 

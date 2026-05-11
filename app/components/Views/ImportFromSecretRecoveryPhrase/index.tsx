@@ -154,7 +154,11 @@ const ImportFromSecretRecoveryPhrase = ({
 
   const updateNavBar = () => {
     navigation?.setOptions?.(
-      getOnboardingNavbarOptions(route, { headerLeft: null }, colors),
+      getOnboardingNavbarOptions(
+        route,
+        {} as Parameters<typeof getOnboardingNavbarOptions>[1],
+        colors,
+      ),
     );
   };
 
