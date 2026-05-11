@@ -1,12 +1,21 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
-import PropTypes from 'prop-types';
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  TextStyle,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import { strings } from '../../../../../../../locales/i18n';
 import Alert, { AlertType } from '../../../../../Base/Alert';
 import Text from '../../../../../Base/Text';
 import { CommonSelectorsIDs } from '../../../../../../../e2e/selectors/Common.selectors';
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<{
+  button: ViewStyle;
+  errorMessage: TextStyle;
+}>({
   button: {
     marginTop: 27,
     marginBottom: 12,
@@ -16,11 +25,30 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function ErrorMessage(props) {
+interface Props {
+  /**
+   * Error message to display, can be a string or a Text component
+   */
+  errorMessage?: React.ReactNode;
+  /**
+   * Show continue button when it is a contract address
+   */
+  errorContinue?: boolean;
+  /**
+   * Function that is called when continue button is pressed
+   */
+  onContinue?: () => void;
+  /**
+   * Show a warning info instead of an error
+   */
+  isOnlyWarning?: boolean;
+}
+
+export default function ErrorMessage(props: Props) {
   const { errorMessage, errorContinue, onContinue, isOnlyWarning } = props;
   return (
     <Alert type={isOnlyWarning ? AlertType.Info : AlertType.Error}>
-      {(textStyle) => (
+      {(textStyle: StyleProp<TextStyle>) => (
         <View>
           <Text
             small
@@ -41,26 +69,3 @@ export default function ErrorMessage(props) {
     </Alert>
   );
 }
-
-ErrorMessage.propTypes = {
-  /**
-   * Error message to display, can be a string or a Text component
-   */
-  errorMessage: PropTypes.oneOfType([
-    PropTypes.object,
-    PropTypes.array,
-    PropTypes.string,
-  ]),
-  /**
-   * Show continue button when it is a contract address
-   */
-  errorContinue: PropTypes.bool,
-  /**
-   * Function that is called when continue button is pressed
-   */
-  onContinue: PropTypes.func,
-  /**
-   * Show a warning info instead of an error
-   */
-  isOnlyWarning: PropTypes.bool,
-};

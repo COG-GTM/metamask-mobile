@@ -1,12 +1,15 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import PropTypes from 'prop-types';
+import { StyleSheet, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { strings } from '../../../../../../../locales/i18n';
 import Text from '../../../../../Base/Text';
 import { useTheme } from '../../../../../../util/theme';
+import { Colors } from '../../../../../../util/theme/models';
 
-const createStyles = (colors) =>
-  StyleSheet.create({
+const createStyles = (colors: Colors) =>
+  StyleSheet.create<{
+    customNonce: ViewStyle;
+    nonceNumber: TextStyle;
+  }>({
     customNonce: {
       marginTop: 10,
       marginHorizontal: 24,
@@ -23,7 +26,18 @@ const createStyles = (colors) =>
     },
   });
 
-const CustomNonce = ({ nonce, onNonceEdit }) => {
+interface Props {
+  /**
+   * Current nonce
+   */
+  nonce?: number;
+  /**
+   * Function called when editing nonce
+   */
+  onNonceEdit?: () => void;
+}
+
+const CustomNonce = ({ nonce, onNonceEdit }: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -41,17 +55,6 @@ const CustomNonce = ({ nonce, onNonceEdit }) => {
       </Text>
     </TouchableOpacity>
   );
-};
-
-CustomNonce.propTypes = {
-  /**
-   * Current nonce
-   */
-  nonce: PropTypes.number,
-  /**
-   * Function called when editing nonce
-   */
-  onNonceEdit: PropTypes.func,
 };
 
 export default CustomNonce;

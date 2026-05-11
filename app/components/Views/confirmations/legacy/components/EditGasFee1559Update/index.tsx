@@ -36,8 +36,18 @@ import StyledButton from '../../../../../UI/StyledButton';
 import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../UI/TimeEstimateInfoModal';
 import createStyles from './styles';
+import type { EditGasFee1559UpdateProps } from './types';
 
-const EditGasFee1559Update = ({
+type GasOptionsLooseRecord = Record<
+  string,
+  | {
+      suggestedMaxFeePerGas?: string;
+      suggestedMaxPriorityFeePerGas?: string;
+    }
+  | undefined
+>;
+
+const EditGasFee1559Update: React.FC<EditGasFee1559UpdateProps> = ({
   selectedGasValue,
   gasOptions,
   primaryCurrency,
@@ -67,10 +77,10 @@ const EditGasFee1559Update = ({
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(
     !selectedGasValue,
   );
-  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState('');
-  const [maxFeeError, setMaxFeeError] = useState('');
+  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<string | null>('');
+  const [maxFeeError, setMaxFeeError] = useState<string | null>('');
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(selectedGasValue);
+  const [selectedOption, setSelectedOption] = useState<string | null>(selectedGasValue);
   const [showInputs, setShowInputs] = useState(!dappSuggestedGas);
   const [gasObject, updateGasObject] = useState({
     suggestedMaxFeePerGas: selectedGasObject.suggestedMaxFeePerGas,
@@ -88,12 +98,34 @@ const EditGasFee1559Update = ({
   const { trackEvent, createEventBuilder } = useMetrics();
   const styles = createStyles(colors);
 
-  const gasTransaction = useGasTransaction({
+  const gasTransactionRaw = useGasTransaction({
     onlyGas,
     gasSelected: selectedOption,
     legacy: false,
     gasObject,
   });
+  /**
+   * `useGasTransaction` returns a discriminated union. For runtime parity with the
+   * legacy JS, we destructure as if the success shape is present. When the underlying
+   * helper returns an error string or partial object, missing properties resolve to
+   * `undefined` at runtime — matching the prior JS behavior.
+   */
+  const gasTransaction = gasTransactionRaw as unknown as {
+    renderableGasFeeMinNative?: string;
+    renderableGasFeeMaxNative?: string;
+    renderableGasFeeMaxConversion?: string;
+    renderableMaxFeePerGasNative?: string;
+    renderableGasFeeMinConversion?: string;
+    renderableMaxPriorityFeeNative?: string;
+    renderableMaxFeePerGasConversion?: string;
+    renderableMaxPriorityFeeConversion?: string;
+    timeEstimateColor?: string;
+    timeEstimate?: string;
+    timeEstimateId?: string;
+    suggestedMaxFeePerGas?: string;
+    suggestedMaxPriorityFeePerGas?: string;
+    suggestedGasLimit?: string;
+  };
 
   const {
     renderableGasFeeMinNative,
@@ -142,7 +174,7 @@ const EditGasFee1559Update = ({
   }, [showLearnMoreModal]);
 
   const toggleInfoModal = useCallback(
-    (value) => {
+    (value: string) => {
       updateModalInfo({ isVisible: !modalInfo.isVisible, value });
     },
     [updateModalInfo, modalInfo.isVisible],
@@ -172,7 +204,14 @@ const EditGasFee1559Update = ({
   ]);
 
   const changeGas = useCallback(
-    (gas, option) => {
+    (
+      gas: {
+        suggestedMaxFeePerGas: string;
+        suggestedMaxPriorityFeePerGas: string;
+        suggestedGasLimit: string;
+      },
+      option: string | null,
+    ) => {
       setSelectedOption(option);
       updateGasObject({
         ...gasObject,
@@ -186,25 +225,32 @@ const EditGasFee1559Update = ({
   );
 
   const changedGasLimit = useCallback(
-    (value) => {
-      const newGas = { ...gasTransaction, suggestedGasLimit: value };
+    (value: string) => {
+      const newGas = { ...gasTransaction, suggestedGasLimit: value } as unknown as {
+        suggestedMaxFeePerGas: string;
+        suggestedMaxPriorityFeePerGas: string;
+        suggestedGasLimit: string;
+      };
       changeGas(newGas, null);
     },
     [changeGas, gasTransaction],
   );
 
   const changedMaxPriorityFee = useCallback(
-    (value) => {
+    (value: string) => {
+      const gasOptionsLoose = gasOptions as unknown as GasOptionsLooseRecord;
       const lowerValue = new BigNumber(
-        gasOptions?.[
-          warningMinimumEstimateOption
-        ]?.suggestedMaxPriorityFeePerGas,
+        gasOptionsLoose?.[
+          warningMinimumEstimateOption ?? ''
+        ]?.suggestedMaxPriorityFeePerGas ?? '',
       );
 
       const higherValue = new BigNumber(
-        gasOptions?.high?.suggestedMaxPriorityFeePerGas,
+        gasOptionsLoose?.high?.suggestedMaxPriorityFeePerGas ?? '',
       ).multipliedBy(new BigNumber(1.5));
-      const updateFloor = new BigNumber(updateOption?.maxPriortyFeeThreshold);
+      const updateFloor = new BigNumber(
+        updateOption?.maxPriortyFeeThreshold ?? '',
+      );
 
       const valueBN = new BigNumber(value);
 
@@ -233,6 +279,10 @@ const EditGasFee1559Update = ({
       const newGas = {
         ...gasTransaction,
         suggestedMaxPriorityFeePerGas: value,
+      } as unknown as {
+        suggestedMaxFeePerGas: string;
+        suggestedMaxPriorityFeePerGas: string;
+        suggestedGasLimit: string;
       };
 
       changeGas(newGas, null);
@@ -247,14 +297,15 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxFeePerGas = useCallback(
-    (value) => {
+    (value: string) => {
+      const gasOptionsLoose = gasOptions as unknown as GasOptionsLooseRecord;
       const lowerValue = new BigNumber(
-        gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxFeePerGas,
+        gasOptionsLoose?.[warningMinimumEstimateOption ?? '']?.suggestedMaxFeePerGas ?? '',
       );
       const higherValue = new BigNumber(
-        gasOptions?.high?.suggestedMaxFeePerGas,
+        gasOptionsLoose?.high?.suggestedMaxFeePerGas ?? '',
       ).multipliedBy(new BigNumber(1.5));
-      const updateFloor = new BigNumber(updateOption?.maxFeeThreshold);
+      const updateFloor = new BigNumber(updateOption?.maxFeeThreshold ?? '');
 
       const valueBN = new BigNumber(value);
 
@@ -279,6 +330,10 @@ const EditGasFee1559Update = ({
       const newGas = {
         ...gasTransaction,
         suggestedMaxFeePerGas: value,
+      } as unknown as {
+        suggestedMaxFeePerGas: string;
+        suggestedMaxPriorityFeePerGas: string;
+        suggestedGasLimit: string;
       };
 
       changeGas(newGas, null);
@@ -293,17 +348,22 @@ const EditGasFee1559Update = ({
   );
 
   const selectOption = useCallback(
-    (option) => {
+    (option: string) => {
       setSelectedOption(option);
       setMaxFeeError('');
       setMaxPriorityFeeError('');
-      changeGas({ ...gasOptions?.[option] }, option);
+      const gasOptionsLoose = gasOptions as unknown as GasOptionsLooseRecord;
+      changeGas({ ...gasOptionsLoose?.[option] } as unknown as {
+        suggestedMaxFeePerGas: string;
+        suggestedMaxPriorityFeePerGas: string;
+        suggestedGasLimit: string;
+      }, option);
     },
     [changeGas, gasOptions],
   );
 
   const shouldIgnore = useCallback(
-    (option) => ignoreOptions?.find((item) => item === option),
+    (option: string) => ignoreOptions?.find((item: string) => item === option),
     [ignoreOptions],
   );
 
@@ -326,7 +386,7 @@ const EditGasFee1559Update = ({
         .filter(({ name }) => !shouldIgnore(name))
         .map(({ name, label, ...option }) => ({
           name,
-          label: function LabelComponent(selected, disabled) {
+          label: function LabelComponent(selected: boolean, disabled: boolean) {
             return (
               <Text bold primary={selected && !disabled}>
                 {label}
@@ -335,7 +395,7 @@ const EditGasFee1559Update = ({
           },
           topLabel: recommended?.name === name && recommended.render,
           ...option,
-          ...extendOptions[name],
+          ...(extendOptions as Record<string, Record<string, unknown>>)[name],
         })),
     [recommended, extendOptions, shouldIgnore],
   );
@@ -344,8 +404,8 @@ const EditGasFee1559Update = ({
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
   const switchNativeCurrencyDisplayOptions = (
-    nativeValue,
-    fiatValue,
+    nativeValue: string,
+    fiatValue: string,
   ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
@@ -356,6 +416,9 @@ const EditGasFee1559Update = ({
   const LeftLabelComponent = ({
     value,
     infoValue,
+  }: {
+    value: string;
+    infoValue: string;
   }) => (
     <View style={styles.labelTextContainer}>
       <Text black bold noMargin>
@@ -374,18 +437,24 @@ const EditGasFee1559Update = ({
     </View>
   );
 
-  const RightLabelComponent = ({ value }) => (
-    <Text noMargin small grey>
-      <Text bold reset>
-        {strings(value)}:
-      </Text>{' '}
-      {gasOptions?.[suggestedEstimateOption]?.suggestedMaxFeePerGas} GWEI
-    </Text>
-  );
+  const RightLabelComponent = ({ value }: { value: string }) => {
+    const gasOptionsLoose = gasOptions as unknown as GasOptionsLooseRecord;
+    return (
+      <Text noMargin small grey>
+        <Text bold reset>
+          {strings(value)}:
+        </Text>{' '}
+        {gasOptionsLoose?.[suggestedEstimateOption ?? '']?.suggestedMaxFeePerGas} GWEI
+      </Text>
+    );
+  };
 
   const TextComponent = ({
     title,
     value,
+  }: {
+    title: string;
+    value: string;
   }) => (
     <>
       <Text noMargin primary infoModal bold style={styles.learnMoreLabels}>
@@ -397,7 +466,7 @@ const EditGasFee1559Update = ({
     </>
   );
 
-  const renderInputs = (option) => (
+  const renderInputs = (option: import('./types').RenderInputProps | undefined) => (
     <View>
       <FadeAnimationView
         valueToWatch={valueToWatch}
@@ -405,7 +474,7 @@ const EditGasFee1559Update = ({
       >
         <View>
           <HorizontalSelector
-            selected={selectedOption}
+            selected={selectedOption ?? undefined}
             onPress={selectOption}
             options={renderOptions}
           />
@@ -462,8 +531,8 @@ const EditGasFee1559Update = ({
                   inputInsideLabel={
                     renderableMaxPriorityFeeNative &&
                     `≈ ${switchNativeCurrencyDisplayOptions(
-                      renderableMaxPriorityFeeNative,
-                      renderableMaxPriorityFeeConversion,
+                      renderableMaxPriorityFeeNative ?? '',
+                      renderableMaxPriorityFeeConversion ?? '',
                     )}`
                   }
                   error={maxPriorityFeeError}
@@ -491,8 +560,8 @@ const EditGasFee1559Update = ({
                   inputInsideLabel={
                     renderableMaxFeePerGasNative &&
                     `≈ ${switchNativeCurrencyDisplayOptions(
-                      renderableMaxFeePerGasNative,
-                      renderableMaxFeePerGasConversion,
+                      renderableMaxFeePerGasNative ?? '',
+                      renderableMaxFeePerGasConversion ?? '',
                     )}`
                   }
                 />
@@ -651,8 +720,8 @@ const EditGasFee1559Update = ({
                 >
                   ~
                   {switchNativeCurrencyDisplayOptions(
-                    renderableGasFeeMinNative,
-                    renderableGasFeeMinConversion,
+                    renderableGasFeeMinNative ?? '',
+                    renderableGasFeeMinConversion ?? '',
                   )}
                 </Text>
               </View>
@@ -661,13 +730,13 @@ const EditGasFee1559Update = ({
                   {strings('edit_gas_fee_eip1559.max_fee')}:{' '}
                 </Text>
                 {switchNativeCurrencyDisplayOptions(
-                  renderableGasFeeMaxNative,
-                  renderableGasFeeMaxConversion,
+                  renderableGasFeeMaxNative ?? '',
+                  renderableGasFeeMaxConversion ?? '',
                 )}{' '}
                 (
                 {switchNativeCurrencyDisplayOptions(
-                  renderableGasFeeMaxConversion,
-                  renderableGasFeeMaxNative,
+                  renderableGasFeeMaxConversion ?? '',
+                  renderableGasFeeMaxNative ?? '',
                 )}
                 )
               </Text>

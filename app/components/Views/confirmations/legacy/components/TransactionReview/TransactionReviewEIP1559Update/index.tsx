@@ -19,8 +19,9 @@ import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
+import type { TransactionEIP1559UpdateProps } from './types';
 
-const TransactionReviewEIP1559Update = ({
+const TransactionReviewEIP1559Update: React.FC<TransactionEIP1559UpdateProps> = ({
   primaryCurrency,
   chainId,
   onEdit,

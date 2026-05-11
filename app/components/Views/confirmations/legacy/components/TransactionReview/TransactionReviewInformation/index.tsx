@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   Text,
@@ -8,6 +7,11 @@ import {
   TouchableOpacity,
   InteractionManager,
 } from 'react-native';
+import type { Dispatch } from 'redux';
+import { RootState } from '../../../../../../../reducers';
+import { Theme } from '../../../../../../../util/theme/models';
+import { IWithMetricsAwarenessProps } from '../../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
+import type { LegacyTransactionState } from '../../../types';
 import { fontStyles } from '../../../../../../../styles/common';
 import { connect } from 'react-redux';
 import {
@@ -61,7 +65,7 @@ import { getNetworkNonce } from '../../../../../../../util/transaction-controlle
 import { selectNativeCurrencyByChainId } from '../../../../../../../selectors/networkController';
 import { selectContractExchangeRatesByChainId } from '../../../../../../../selectors/tokenRatesController';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     overviewAlert: {
       alignItems: 'center',
@@ -128,123 +132,70 @@ const createStyles = (colors) =>
     },
   });
 
+interface OwnProps {
+  /** Callback for transaction edition */
+  edit?: () => void;
+  /** Hides or shows transaction data */
+  toggleDataView?: () => void;
+  /** Whether or not basic gas estimates have been fetched */
+  ready?: boolean;
+  /** Transaction error */
+  error?: string | boolean;
+  /** True if transaction is over the available funds */
+  over?: boolean;
+  /** Object that represents the navigator */
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  navigation?: object;
+  /** Called when the cancel button is clicked */
+  onCancelPress?: () => void;
+  gasEstimateType?: string;
+  EIP1559GasData?: Record<string, unknown>;
+  origin?: string;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  originWarning?: boolean;
+  gasSelected?: string;
+  multiLayerL1FeeTotal?: string;
+}
+
+interface StateProps {
+  conversionRate?: number;
+  currentCurrency: string;
+  transaction: LegacyTransactionState;
+  contractExchangeRates: Record<string, unknown>;
+  ticker?: string;
+  primaryCurrency?: string;
+  chainId?: string;
+  networkClientId?: string;
+  showCustomNonce?: boolean;
+  isNativeTokenBuySupported: boolean;
+  shouldUseSmartTransaction: boolean;
+}
+
+interface DispatchProps {
+  setNonce: (nonce: number) => void;
+  setProposedNonce: (nonce: number) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps & IWithMetricsAwarenessProps;
+
+interface State {
+  toFocused: boolean;
+  amountError: string;
+  actionKey: string;
+  nonceModalVisible: boolean;
+}
+
 /**
  * PureComponent that supports reviewing a transaction information
  */
-class TransactionReviewInformation extends PureComponent {
-  static propTypes = {
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Callback for transaction edition
-     */
-    edit: PropTypes.func,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Hides or shows transaction data
-     */
-    toggleDataView: PropTypes.func,
-    /**
-     * Whether or not basic gas estimates have been fetched
-     */
-    ready: PropTypes.bool,
-    /**
-     * Transaction error
-     */
-    error: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-    /**
-     * True if transaction is over the available funds
-     */
-    over: PropTypes.bool,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Called when the cancel button is clicked
-     */
-    onCancelPress: PropTypes.func,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string,
-    /**
-     * ID of the global network client
-     */
-    networkClientId: PropTypes.string,
-    /**
-     * Indicates whether custom nonce should be shown in transaction editor
-     */
-    showCustomNonce: PropTypes.bool,
-    /**
-     * Set transaction nonce
-     */
-    setNonce: PropTypes.func,
-    /**
-     * Set proposed nonce (from network)
-     */
-    setProposedNonce: PropTypes.func,
-    gasEstimateType: PropTypes.string,
-    EIP1559GasData: PropTypes.object,
-    origin: PropTypes.string,
-    /**
-     * Function to call when update animation starts
-     */
-    onUpdatingValuesStart: PropTypes.func,
-    /**
-     * Function to call when update animation ends
-     */
-    onUpdatingValuesEnd: PropTypes.func,
-    /**
-     * If the values should animate upon update or not
-     */
-    animateOnChange: PropTypes.bool,
-    /**
-     * Boolean to determine if the animation is happening
-     */
-    isAnimating: PropTypes.bool,
-    /**
-     * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
-     */
-    originWarning: PropTypes.bool,
-    gasSelected: PropTypes.string,
-    multiLayerL1FeeTotal: PropTypes.string,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNativeTokenBuySupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
+class TransactionReviewInformation extends PureComponent<Props, State> {
+  static contextType = ThemeContext;
+  declare context: Theme | undefined;
 
-  state = {
+  state: State = {
     toFocused: false,
     amountError: '',
     actionKey: strings('transactions.tx_review_confirm'),
@@ -668,7 +619,7 @@ class TransactionReviewInformation extends PureComponent {
       shouldUseSmartTransaction,
     } = this.props;
     const { nonce } = this.props.transaction;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const errorPress = this.isTestNetwork() ? this.goToFaucet : this.buyEth;
@@ -747,8 +698,11 @@ class TransactionReviewInformation extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => {
-  const transaction = getNormalizedTxState(state);
+const mapStateToProps = (state: RootState): StateProps => {
+  const transaction = getNormalizedTxState(state) as LegacyTransactionState & {
+    chainId?: string;
+    networkClientId?: string;
+  };
   const chainId = transaction?.chainId;
   const networkClientId = transaction?.networkClientId;
 
@@ -770,14 +724,16 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  setNonce: (nonce) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  setNonce: (nonce: number) => dispatch(setNonce(nonce)),
+  setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
 });
-
-TransactionReviewInformation.contextType = ThemeContext;
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(TransactionReviewInformation));
+)(
+  withMetricsAwareness(
+    TransactionReviewInformation as unknown as React.ComponentClass<IWithMetricsAwarenessProps>,
+  ),
+);

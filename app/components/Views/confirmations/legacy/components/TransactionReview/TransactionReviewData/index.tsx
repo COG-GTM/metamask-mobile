@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
@@ -8,6 +7,7 @@ import { strings } from '../../../../../../../../locales/i18n';
 import { connect } from 'react-redux';
 import Device from '../../../../../../../util/device';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
+import { Theme } from '../../../../../../../util/theme/models';
 import ClipboardManager from '../../../../../../../core/ClipboardManager';
 import { showAlert } from '../../../../../../../actions/alert';
 import GlobalAlert from '../../../../../../UI/GlobalAlert';
@@ -15,8 +15,15 @@ import {
   selectConversionRateByChainId,
   selectCurrentCurrency,
 } from '../../../../../../../selectors/currencyRateController';
+import { RootState } from '../../../../../../../reducers';
+import type { Dispatch } from 'redux';
+import type {
+  LegacyTransactionState,
+  ShowAlertConfig,
+} from '../../../types';
+import type { Hex } from '@metamask/utils';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     root: {
       paddingHorizontal: 24,
@@ -75,32 +82,45 @@ const createStyles = (colors) =>
     },
   });
 
+interface OwnProps {
+  /**
+   * Transaction corresponding action key
+   */
+  actionKey?: string;
+  /**
+   * Hides or shows transaction data
+   */
+  toggleDataView?: () => void;
+  /**
+   * Height of custom gas and data modal
+   */
+  customGasHeight?: number;
+}
+
+interface StateProps {
+  /**
+   * Transaction object associated with this transaction
+   */
+  transaction: LegacyTransactionState;
+  conversionRate?: number;
+  currentCurrency: string;
+}
+
+interface DispatchProps {
+  /**
+   * Triggers global alert
+   */
+  showAlert: (config: ShowAlertConfig) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
 /**
  * PureComponent that supports reviewing transaction data
  */
-class TransactionReviewData extends PureComponent {
-  static propTypes = {
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Transaction corresponding action key
-     */
-    actionKey: PropTypes.string,
-    /**
-     * Hides or shows transaction data
-     */
-    toggleDataView: PropTypes.func,
-    /**
-     * Height of custom gas and data modal
-     */
-    customGasHeight: PropTypes.number,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-  };
+class TransactionReviewData extends PureComponent<Props> {
+  static contextType = ThemeContext;
+  declare context: Theme | undefined;
 
   applyRootHeight = () => ({ height: this.props.customGasHeight });
 
@@ -127,7 +147,7 @@ class TransactionReviewData extends PureComponent {
       actionKey,
       toggleDataView,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -182,17 +202,21 @@ class TransactionReviewData extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
-  conversionRate: selectConversionRateByChainId(state, state.transaction.chainId),
-  currentCurrency: selectCurrentCurrency(state),
-  transaction: state.transaction,
-});
+const mapStateToProps = (state: RootState): StateProps => {
+  const transaction = state.transaction as LegacyTransactionState;
+  return {
+    conversionRate: selectConversionRateByChainId(
+      state,
+      transaction.transaction?.chainId as Hex,
+    ),
+    currentCurrency: selectCurrentCurrency(state),
+    transaction,
+  };
+};
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  showAlert: (config: ShowAlertConfig) => dispatch(showAlert(config)),
 });
-
-TransactionReviewData.contextType = ThemeContext;
 
 export default connect(
   mapStateToProps,

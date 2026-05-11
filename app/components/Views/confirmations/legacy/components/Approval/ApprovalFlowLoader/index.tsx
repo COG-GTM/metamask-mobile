@@ -1,13 +1,17 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
+import { StyleSheet, View, ViewStyle, TextStyle } from 'react-native';
 import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
+import { Colors } from '../../../../../../../util/theme/models';
 import Text from '../../../../../../Base/Text';
 import Spinner from '../../../../../../UI/AnimatedSpinner';
 
-const createStyles = (colors) =>
-  StyleSheet.create({
+const createStyles = (colors: Colors) =>
+  StyleSheet.create<{
+    root: ViewStyle;
+    spinnerWrapper: ViewStyle;
+    text: TextStyle;
+  }>({
     root: {
       backgroundColor: colors.background.default,
       borderTopLeftRadius: 10,
@@ -27,7 +31,14 @@ const createStyles = (colors) =>
     },
   });
 
-const ApprovalFlowLoader = ({ loadingText }) => {
+interface Props {
+  /**
+   * Text that will be displayed while the approval flow modal is active
+   */
+  loadingText?: string | null;
+}
+
+const ApprovalFlowLoader = ({ loadingText }: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -41,13 +52,6 @@ const ApprovalFlowLoader = ({ loadingText }) => {
       </Text>
     </View>
   );
-};
-
-ApprovalFlowLoader.propTypes = {
-  /**
-   * Text that will be displayed while the approval flow modal is active
-   */
-  loadingText: PropTypes.string,
 };
 
 export default ApprovalFlowLoader;

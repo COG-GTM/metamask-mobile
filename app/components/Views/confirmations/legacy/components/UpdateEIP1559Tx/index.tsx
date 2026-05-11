@@ -24,8 +24,42 @@ import {
 } from '../../../../../../util/number';
 import { getTicker } from '../../../../../../util/transactions';
 import EditGasFee1559Update from '../EditGasFee1559Update';
+import { RootState } from '../../../../../../reducers';
 
-const UpdateEIP1559Tx = ({
+interface ExistingGas {
+  maxFeePerGas: string;
+  maxPriorityFeePerGas: string;
+}
+
+interface GasTxn {
+  totalMaxHex: string;
+  suggestedMaxFeePerGas: string;
+  suggestedMaxPriorityFeePerGas: string;
+  error?: string;
+  [key: string]: unknown;
+}
+
+interface OwnProps {
+  gas: string;
+  existingGas: ExistingGas;
+  isCancel: boolean;
+  chainId: string;
+  onCancel: () => void;
+  onSave: (gasTxn: GasTxn) => void;
+}
+
+interface StateProps {
+  accounts: Record<string, { balance: string }>;
+  selectedAddress?: string;
+  ticker?: string;
+  gasFeeEstimates: Record<string, { suggestedMaxPriorityFeePerGas: string; suggestedMaxFeePerGas: string }>;
+  gasEstimateType: string;
+  primaryCurrency: string;
+}
+
+type Props = OwnProps & StateProps;
+
+const UpdateEIP1559Tx: React.FC<Props> = ({
   gas,
   accounts,
   selectedAddress,
@@ -51,8 +85,16 @@ const UpdateEIP1559Tx = ({
   /**
    * Options
    */
-  const updateTx1559Options = useRef();
-  const pollToken = useRef();
+  const updateTx1559Options = useRef<
+    | {
+        maxPriortyFeeThreshold: BigNumber | string;
+        maxFeeThreshold: BigNumber | string;
+        showAdvanced: boolean;
+        isCancel: boolean;
+      }
+    | undefined
+  >();
+  const pollToken = useRef<string | undefined>();
   const firstTime = useRef(true);
 
   const suggestedGasLimit = fromWei(gas, 'wei');
@@ -73,7 +115,7 @@ const UpdateEIP1559Tx = ({
   }, []);
 
   const isMaxFeePerGasMoreThanLegacy = useCallback(
-    (maxFeePerGas) => {
+    (maxFeePerGas: BigNumber) => {
       const newDecMaxFeePerGas = new BigNumber(existingGas.maxFeePerGas).times(
         new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE),
       );
@@ -86,7 +128,7 @@ const UpdateEIP1559Tx = ({
   );
 
   const isMaxPriorityFeePerGasMoreThanLegacy = useCallback(
-    (maxPriorityFeePerGas) => {
+    (maxPriorityFeePerGas: BigNumber) => {
       const newDecMaxPriorityFeePerGas = new BigNumber(
         existingGas.maxPriorityFeePerGas,
       ).times(new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE));
@@ -99,15 +141,15 @@ const UpdateEIP1559Tx = ({
   );
 
   const validateAmount = useCallback(
-    (updateTx) => {
-      let error;
+    (updateTx: GasTxn) => {
+      let error: string | undefined;
       const totalMaxHexPrefixed = addHexPrefix(updateTx.totalMaxHex);
 
       if (!isHexString(totalMaxHexPrefixed)) {
         return strings('transaction.invalid_amount');
       }
       const updateTxCost = hexToBN(totalMaxHexPrefixed);
-      const accountBalance = hexToBN(accounts[selectedAddress].balance);
+      const accountBalance = hexToBN(accounts[selectedAddress ?? ''].balance);
       const isMaxFeePerGasMoreThanLegacyResult = isMaxFeePerGasMoreThanLegacy(
         new BigNumber(updateTx.suggestedMaxFeePerGas),
       );
@@ -211,12 +253,12 @@ const UpdateEIP1559Tx = ({
     isMaxPriorityFeePerGasMoreThanLegacy,
   ]);
 
-  const update1559TempGasValue = (selected) => {
+  const update1559TempGasValue = (selected: string) => {
     stopUpdateGas.current = !selected;
     setGasSelected(selected);
   };
 
-  const onSaveTxnWithError = (gasTxn) => {
+  const onSaveTxnWithError = (gasTxn: GasTxn) => {
     gasTxn.error = validateAmount(gasTxn);
     onSave(gasTxn);
   };
@@ -257,7 +299,7 @@ const UpdateEIP1559Tx = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => ({
   accounts: selectAccounts(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   ticker: selectNativeCurrencyByChainId(state, ownProps.chainId),

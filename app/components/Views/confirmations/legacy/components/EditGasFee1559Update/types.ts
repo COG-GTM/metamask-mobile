@@ -1,15 +1,31 @@
-import { GasFeeOptions } from '../../../../../../core/GasPolling/types';
+import type React from 'react';
+import type { GasFeeOptions } from '../../../../../../core/GasPolling/types';
 
 export interface RenderInputProps {
-  updateOption:
-    | {
-        isCancel: boolean;
-        maxFeeThreshold: string;
-        maxPriortyFeeThreshold: string;
-        showAdvanced: boolean | undefined;
-      }
-    | undefined;
+  isCancel?: boolean;
+  maxFeeThreshold?: string;
+  maxPriortyFeeThreshold?: string;
+  showAdvanced?: boolean;
 }
+
+export interface GasTxnSaveData {
+  totalMaxHex?: string;
+  totalHex?: string;
+  error?: string;
+  suggestedGasLimit?: string;
+  [key: string]: unknown;
+}
+
+export interface NewGasObject {
+  suggestedMaxFeePerGas?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedGasLimit?: string;
+  legacyGasLimit?: string;
+  suggestedGasPrice?: string;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
+}
+
 export interface EditGasFee1559UpdateProps {
   /**
    * The selected gas value (low, medium, high)
@@ -26,7 +42,7 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Option to display speed up/cancel view
    */
-  updateOption: RenderInputProps;
+  updateOption?: RenderInputProps;
   /**
    * If the values should animate upon update or not
    */
@@ -38,61 +54,50 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Function to set the gas selected value
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onChange: any;
+  onChange: (option: string | null) => void;
   /**
    * Function called when user cancels
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onCancel: any;
+  onCancel: () => void;
   /**
    * Function called when user saves the new gas data
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSave: any;
+  onSave: (gasTxn: GasTxnSaveData, newGasObject: NewGasObject) => void;
   /**
    * Error message to show
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: any;
+  error?: string | React.ReactNode;
   /**
    * Warning message to show
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warning: any;
+  warning?: string | React.ReactNode;
   /**
    * Boolean that specifies if the gas price was suggested by the dapp
    */
-  dappSuggestedGas: boolean | undefined;
+  dappSuggestedGas?: boolean;
   /**
    * An array of selected gas value and lower that should be ignored.
    */
-  ignoreOptions: string[] | undefined;
+  ignoreOptions?: string[];
   /**
    * Extend options object. Object has option keys and properties will be spread
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extendOptions: any;
+  extendOptions?: Record<string, Record<string, unknown>>;
   /**
    * Recommended object with type and render function
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  recommended: any;
+  recommended?: {
+    name?: string;
+    render?: React.ReactNode;
+  };
   /**
    * Estimate option to compare with for too low warning
    */
-  warningMinimumEstimateOption: string;
+  warningMinimumEstimateOption?: string;
   /**
    * Suggested estimate option to show recommended values
    */
-  suggestedEstimateOption: string;
+  suggestedEstimateOption?: string;
   /**
    * Boolean to determine if the animation is happening
    */
@@ -100,12 +105,12 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Extra analytics params to be send with the gas analytics
    */
-  analyticsParams: {
-    chain_id: string;
-    gas_estimate_type: string;
-    gas_mode: string;
-    speed_set: string;
-    view: string;
+  analyticsParams: Record<string, unknown> & {
+    chain_id?: string;
+    gas_estimate_type?: string;
+    gas_mode?: string;
+    speed_set?: string;
+    view?: string;
   };
   /**
    * This is used in calculating the new gas price from the advanced view.
