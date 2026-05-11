@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import type { Dispatch, AnyAction } from 'redux';
+import type { RootState } from '../../../reducers';
 import {
   Platform,
   KeyboardAvoidingView,
@@ -31,6 +32,8 @@ import { strings } from '../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AppConstants from '../../../core/AppConstants';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error no types for zxcvbn
 import zxcvbn from 'zxcvbn';
 import { ONBOARDING, PREVIOUS_SCREEN } from '../../../constants/navigation';
 import {
@@ -56,7 +59,9 @@ import Logger from '../../../util/Logger';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
 import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ChoosePassword.selectors';
 
-const createStyles = (colors) =>
+type ThemeColors = typeof mockTheme.colors;
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -240,42 +245,63 @@ const createStyles = (colors) =>
       flexDirection: 'row',
       alignSelf: 'center',
     },
+    loader: {},
+    button: {},
   });
 
 const PASSCODE_NOT_SET_ERROR = 'Error: Passcode not set.';
 const RESET_PASSWORD = 'reset_password';
 const CONFIRM_PASSWORD = 'confirm_password';
 
+interface ResetPasswordNavigation {
+  setOptions?: (options: unknown) => void;
+  setParams?: (params: unknown) => void;
+  navigate?: (route: string, params?: unknown) => void;
+  push?: (route: string, params?: unknown) => void;
+}
+
+interface ResetPasswordRoute {
+  params?: Record<string, unknown>;
+}
+
+interface ResetPasswordProps {
+  navigation?: ResetPasswordNavigation;
+  passwordSet: () => void;
+  setLockTime: (time: number) => void;
+  selectedAddress?: string;
+  route?: ResetPasswordRoute;
+  seedphraseNotBackedUp?: () => void;
+}
+
+interface ResetPasswordState {
+  isSelected: boolean;
+  password: string | null;
+  confirmPassword: string;
+  secureTextEntry: boolean;
+  biometryType: string | null;
+  biometryChoice: boolean;
+  rememberMe: boolean;
+  loading: boolean;
+  error: string | null;
+  inputWidth: { width: `${number}%` };
+  view: string;
+  originalPassword: string | null;
+  ready: boolean;
+  passwordStrength?: number;
+  warningIncorrectPassword?: string;
+}
+
 /**
  * View where users can set their password for the first time
  */
-class ResetPassword extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * The action to update the password set flag
-     * in the redux store
-     */
-    passwordSet: PropTypes.func,
-    /**
-     * The action to update the lock time
-     * in the redux store
-     */
-    setLockTime: PropTypes.func,
-    /**
-     * A string representing the selected address => account
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+class ResetPassword extends PureComponent<
+  ResetPasswordProps,
+  ResetPasswordState
+> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: ResetPasswordState = {
     isSelected: false,
     password: '',
     confirmPassword: '',
@@ -293,12 +319,12 @@ class ResetPassword extends PureComponent {
 
   mounted = true;
 
-  confirmPasswordInput = React.createRef();
+  confirmPasswordInput = React.createRef<TextInput>();
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(
+    const colors = this.context?.colors || mockTheme.colors;
+    navigation?.setOptions?.(
       getNavigationOptionsTitle(
         strings('password_reset.change_password'),
         navigation,
@@ -341,14 +367,14 @@ class ResetPassword extends PureComponent {
     }, 100);
   }
 
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(_: ResetPasswordProps, prevState: ResetPasswordState) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
     const { loading } = this.state;
     const { navigation } = this.props;
     if (!prevLoading && loading) {
       // update navigationOptions
-      navigation.setParams({
+      navigation?.setParams?.({
         headerLeft: () => <View />,
       });
     }
@@ -391,14 +417,14 @@ class ResetPassword extends PureComponent {
         );
         await Authentication.storePassword(password, authData.currentAuthType);
       } catch (error) {
-        Logger.error(error);
+        Logger.error(error as Error);
       }
 
       this.props.setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT);
       this.props.passwordSet();
       this.setState({ loading: false });
       InteractionManager.runAfterInteractions(() => {
-        this.props.navigation.navigate('SecuritySettings');
+        this.props.navigation?.navigate?.('SecuritySettings');
         NotificationManager.showSimpleNotification({
           status: 'success',
           duration: 5000,
@@ -408,14 +434,15 @@ class ResetPassword extends PureComponent {
       });
     } catch (error) {
       // Should we force people to enable passcode / biometrics?
-      if (error.toString() === PASSCODE_NOT_SET_ERROR) {
+      const errString = (error as Error)?.toString?.() ?? '';
+      if (errString === PASSCODE_NOT_SET_ERROR) {
         Alert.alert(
           strings('choose_password.security_alert_title'),
           strings('choose_password.security_alert_message'),
         );
         this.setState({ loading: false });
       } else {
-        this.setState({ loading: false, error: error.toString() });
+        this.setState({ loading: false, error: errString });
       }
     }
   };
@@ -439,14 +466,14 @@ class ResetPassword extends PureComponent {
     current && current.focus();
   };
 
-  updateBiometryChoice = async (biometryChoice) => {
+  updateBiometryChoice = async (biometryChoice: boolean) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     this.setState({ biometryChoice });
   };
 
   renderSwitch = () => {
     const { biometryType, biometryChoice } = this.state;
-    const handleUpdateRememberMe = (rememberMe) => {
+    const handleUpdateRememberMe = (rememberMe: boolean) => {
       this.setState({ rememberMe });
     };
     return (
@@ -459,12 +486,12 @@ class ResetPassword extends PureComponent {
     );
   };
 
-  tryExportSeedPhrase = async (password) => {
+  tryExportSeedPhrase = async (password: string) => {
     const { KeyringController } = Engine.context;
     await KeyringController.exportSeedPhrase(password);
   };
 
-  tryUnlockWithPassword = async (password) => {
+  tryUnlockWithPassword = async (password: string) => {
     this.setState({ ready: false });
     try {
       // Just try
@@ -486,10 +513,10 @@ class ResetPassword extends PureComponent {
 
   tryUnlock = () => {
     const { password } = this.state;
-    this.tryUnlockWithPassword(password);
+    if (password) this.tryUnlockWithPassword(password);
   };
 
-  onPasswordChange = (val) => {
+  onPasswordChange = (val: string) => {
     const passInfo = zxcvbn(val);
 
     this.setState({ password: val, passwordStrength: passInfo.score });
@@ -500,7 +527,7 @@ class ResetPassword extends PureComponent {
   };
 
   learnMore = () => {
-    this.props.navigation.push('Webview', {
+    this.props.navigation?.push?.('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: 'https://support.metamask.io/managing-my-wallet/resetting-deleting-and-restoring/how-can-i-reset-my-password/',
@@ -510,7 +537,7 @@ class ResetPassword extends PureComponent {
   };
 
   renderLoader = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -520,12 +547,13 @@ class ResetPassword extends PureComponent {
     );
   };
 
-  setConfirmPassword = (val) => this.setState({ confirmPassword: val });
+  setConfirmPassword = (val: string) =>
+    this.setState({ confirmPassword: val });
 
   renderConfirmPassword() {
     const { warningIncorrectPassword } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = this.context?.colors || mockTheme.colors;
+    const themeAppearance = this.context?.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (
@@ -593,13 +621,13 @@ class ResetPassword extends PureComponent {
       error,
       loading,
     } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = this.context?.colors || mockTheme.colors;
+    const themeAppearance = this.context?.themeAppearance || 'light';
     const styles = createStyles(colors);
     const passwordsMatch = password !== '' && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
-    const previousScreen = this.props.route.params?.[PREVIOUS_SCREEN];
-    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength);
+    const previousScreen = this.props.route?.params?.[PREVIOUS_SCREEN];
+    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength ?? 0);
 
     return (
       <SafeAreaView style={styles.mainWrapper}>
@@ -660,7 +688,7 @@ class ResetPassword extends PureComponent {
                   </Text>
                   <TextInput
                     style={[styles.input, inputWidth]}
-                    value={password}
+                    value={password ?? ''}
                     onChangeText={this.onPasswordChange}
                     secureTextEntry={secureTextEntry}
                     placeholder=""
@@ -676,7 +704,11 @@ class ResetPassword extends PureComponent {
                       {strings('reset_password.password_strength')}
                       <Text
                         variant={TextVariant.BodySM}
-                        style={styles[`strength_${passwordStrengthWord}`]}
+                        style={
+                          styles[
+                            `strength_${passwordStrengthWord}` as keyof typeof styles
+                          ]
+                        }
                       >
                         {' '}
                         {strings(
@@ -688,7 +720,9 @@ class ResetPassword extends PureComponent {
                     <Text
                       variant={TextVariant.BodySM}
                       style={styles.hintLabel}
-                    />
+                    >
+                      {' '}
+                    </Text>
                   )}
                 </View>
                 <View style={styles.field}>
@@ -706,7 +740,6 @@ class ResetPassword extends PureComponent {
                     testID={
                       ChoosePasswordSelectorsIDs.CONFIRM_PASSWORD_INPUT_ID
                     }
-                    zasdfasfasf
                     onSubmitEditing={this.onPressCreate}
                     returnKeyType={'done'}
                     autoCapitalize="none"
@@ -781,7 +814,7 @@ class ResetPassword extends PureComponent {
 
   render() {
     const { view, ready } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!ready) return this.renderLoader();
@@ -801,16 +834,39 @@ class ResetPassword extends PureComponent {
   }
 }
 
-ResetPassword.contextType = ThemeContext;
+interface ResetPasswordStateProps {
+  selectedAddress?: string;
+}
 
-const mapStateToProps = (state) => ({
+interface ResetPasswordDispatchProps {
+  passwordSet: () => void;
+  setLockTime: (time: number) => void;
+  seedphraseNotBackedUp: () => void;
+}
+
+interface ResetPasswordOwnProps {
+  navigation?: ResetPasswordNavigation;
+  route?: ResetPasswordRoute;
+}
+
+const mapStateToProps = (state: RootState): ResetPasswordStateProps => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (
+  dispatch: Dispatch<AnyAction>,
+): ResetPasswordDispatchProps => ({
   passwordSet: () => dispatch(passwordSet()),
-  setLockTime: (time) => dispatch(setLockTime(time)),
+  setLockTime: (time: number) => dispatch(setLockTime(time)),
   seedphraseNotBackedUp: () => dispatch(seedphraseNotBackedUp()),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ResetPassword);
+export default connect<
+  ResetPasswordStateProps,
+  ResetPasswordDispatchProps,
+  ResetPasswordOwnProps,
+  RootState
+>(
+  mapStateToProps,
+  mapDispatchToProps,
+)(ResetPassword);

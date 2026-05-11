@@ -9,7 +9,6 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import StyledButton from '../../UI/StyledButton';
@@ -23,7 +22,7 @@ import { getOnboardingNavbarOptions } from '../../UI/Navbar';
 import { CHOOSE_PASSWORD_STEPS } from '../../../constants/onboarding';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 
-import { useTheme } from '../../../util/theme';
+import { useTheme, mockTheme } from '../../../util/theme';
 import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ManualBackUpSteps.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
@@ -34,7 +33,9 @@ const IMAGE_1_RATIO = 162.8 / 138;
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const IMG_PADDING = Device.isIphoneX() ? 100 : Device.isIphone5S() ? 180 : 220;
 
-const createStyles = (colors) =>
+type ThemeColors = typeof mockTheme.colors;
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -194,13 +195,29 @@ const createStyles = (colors) =>
       lineHeight: 20,
       color: colors.text.default,
     },
+    button: {},
+    remindLaterButton: {},
   });
 
 /**
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1B = (props) => {
+interface AccountBackupStep1BNavigation {
+  setOptions?: (options: unknown) => void;
+  navigate?: (route: string, params?: unknown) => void;
+}
+
+interface AccountBackupStep1BRoute {
+  params?: Record<string, unknown>;
+}
+
+interface AccountBackupStep1BProps {
+  navigation?: AccountBackupStep1BNavigation;
+  route?: AccountBackupStep1BRoute;
+}
+
+const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
   const { navigation, route } = props;
   const [showWhySecureWalletModal, setWhySecureWalletModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -208,11 +225,15 @@ const AccountBackupStep1B = (props) => {
   const styles = createStyles(colors);
 
   useEffect(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation?.setOptions?.(
+      getOnboardingNavbarOptions(route, { headerLeft: null }, colors),
+    );
   }, [navigation, route, colors]);
 
   const goNext = () => {
-    props.navigation.navigate('ManualBackupStep1', { ...props.route.params });
+    props.navigation?.navigate?.('ManualBackupStep1', {
+      ...props.route?.params,
+    });
     trackOnboarding(
       MetricsEventBuilder.createEventBuilder(
         MetaMetricsEvents.WALLET_SECURITY_MANUAL_BACKUP_INITIATED,
@@ -222,7 +243,7 @@ const AccountBackupStep1B = (props) => {
 
   const learnMore = () => {
     setWhySecureWalletModal(false);
-    props.navigation.navigate('Webview', {
+    props.navigation?.navigate?.('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: 'https://support.metamask.io/privacy-and-security/basic-safety-and-security-tips-for-metamask/',
@@ -383,17 +404,6 @@ const AccountBackupStep1B = (props) => {
       />
     </SafeAreaView>
   );
-};
-
-AccountBackupStep1B.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
 };
 
 export default AccountBackupStep1B;

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   ScrollView,
@@ -18,7 +17,9 @@ import OnboardingScreenWithBg from '../../UI/OnboardingScreenWithBg';
 import Text from '../../Base/Text';
 import { connect } from 'react-redux';
 import Device from '../../../util/device';
-import { useTheme } from '../../../util/theme';
+import { useTheme, mockTheme } from '../../../util/theme';
+
+type ThemeColors = typeof mockTheme.colors;
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import AppConstants from '../../../core/AppConstants';
 import { decGWEIToHexWEI } from '../../../util/conversions';
@@ -44,7 +45,7 @@ const DEVICE_WIDTH = Dimensions.get('window').width;
 
 const IMG_PADDING = Device.isIphone5() ? 220 : 200;
 
-const createStyles = (colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     scroll: {
       flexGrow: 1,
@@ -127,6 +128,7 @@ const createStyles = (colors) =>
     tab: {
       margin: 32,
     },
+    scrollTabs: {},
   });
 
 const gas_education_carousel_1 = require('../../../images/gas-education-carousel-1.png'); // eslint-disable-line
@@ -141,21 +143,42 @@ const carousel_images = [
 /**
  * View that is displayed to first time (new) users
  */
+interface GasEducationCarouselNavigation {
+  setOptions?: (options: unknown) => void;
+  navigate?: (route: string, params?: unknown) => void;
+  pop?: () => void;
+  getParam?: (key: string, fallback?: unknown) => unknown;
+}
+
+interface GasEducationCarouselRoute {
+  params?: {
+    navigateTo?: () => void;
+  };
+}
+
+interface GasEducationCarouselProps {
+  navigation: GasEducationCarouselNavigation;
+  route?: GasEducationCarouselRoute;
+  conversionRate: number | null | undefined;
+  currentCurrency: string;
+  ticker: string;
+}
+
 const GasEducationCarousel = ({
   navigation,
   route,
   conversionRate,
   currentCurrency,
   ticker,
-}) => {
+}: GasEducationCarouselProps) => {
   const [currentTab, setCurrentTab] = useState(1);
-  const [gasFiat, setGasFiat] = useState(null);
+  const [gasFiat, setGasFiat] = useState<string | null>(null);
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    navigation.setOptions(getTransparentOnboardingNavbarOptions(colors));
+    navigation?.setOptions?.(getTransparentOnboardingNavbarOptions(colors));
   }, [navigation, colors]);
 
   useEffect(() => {
@@ -164,15 +187,26 @@ const GasEducationCarousel = ({
       const gas = hexToBN(TransactionTypes.CUSTOM_GAS.DEFAULT_GAS_LIMIT);
       let estimatedTotalGas;
       try {
-        const gasEstimates = await GasFeeController.fetchGasFeeEstimates({
-          shouldUpdateState: false,
-        });
+        const gasEstimates =
+          (await GasFeeController.fetchGasFeeEstimates({
+            shouldUpdateState: false,
+          })) as {
+            gasEstimateType: string;
+            gasFeeEstimates: Record<string, unknown> & {
+              estimatedBaseFee?: string;
+              gasPrice?: string;
+            };
+          };
 
         if (gasEstimates.gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
-          const gasFeeEstimates =
-            gasEstimates.gasFeeEstimates[AppConstants.GAS_OPTIONS.MEDIUM];
+          const gasFeeEstimates = gasEstimates.gasFeeEstimates[
+            AppConstants.GAS_OPTIONS.MEDIUM
+          ] as {
+            suggestedMaxPriorityFeePerGas: string;
+            suggestedMaxFeePerGas: string;
+          };
           const estimatedBaseFeeHex = decGWEIToHexWEI(
-            gasEstimates.gasFeeEstimates.estimatedBaseFee,
+            gasEstimates.gasFeeEstimates.estimatedBaseFee as string,
           );
           const suggestedMaxPriorityFeePerGasHex = decGWEIToHexWEI(
             gasFeeEstimates.suggestedMaxPriorityFeePerGas,
@@ -183,6 +217,7 @@ const GasEducationCarousel = ({
           const gasLimitHex = BNToHex(gas);
           const gasHexes = calculateEIP1559GasFeeHexes({
             gasLimitHex,
+            estimatedGasLimitHex: gasLimitHex,
             estimatedBaseFeeHex,
             suggestedMaxFeePerGasHex,
             suggestedMaxPriorityFeePerGasHex,
@@ -191,13 +226,15 @@ const GasEducationCarousel = ({
         } else if (gasEstimates.gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
           const gasPrice = hexToBN(
             decGWEIToHexWEI(
-              gasEstimates.gasFeeEstimates[AppConstants.GAS_OPTIONS.MEDIUM],
+              gasEstimates.gasFeeEstimates[
+                AppConstants.GAS_OPTIONS.MEDIUM
+              ] as string,
             ),
           );
           estimatedTotalGas = gas.mul(gasPrice);
         } else {
           const gasPrice = hexToBN(
-            decGWEIToHexWEI(gasEstimates.gasFeeEstimates.gasPrice),
+            decGWEIToHexWEI(gasEstimates.gasFeeEstimates.gasPrice as string),
           );
           estimatedTotalGas = gas.mul(gasPrice);
         }
@@ -213,7 +250,7 @@ const GasEducationCarousel = ({
         const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
         setGasFiat(gasFiat);
       } catch (e) {
-        Logger.error(e);
+        Logger.error(e as Error);
       }
       setIsLoading(false);
     };
@@ -221,25 +258,25 @@ const GasEducationCarousel = ({
   }, [conversionRate, currentCurrency, ticker]);
 
   const onPresGetStarted = () => {
-    navigation.pop();
+    navigation?.pop?.();
     route?.params?.navigateTo?.();
   };
 
   const renderTabBar = () => <View />;
 
-  const onChangeTab = (obj) => {
+  const onChangeTab = (obj: { i: number }) => {
     setCurrentTab(obj.i + 1);
   };
 
   const openLink = () =>
-    navigation.navigate('Webview', {
+    navigation?.navigate?.('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: 'https://community.metamask.io/t/what-is-gas-why-do-transactions-take-so-long/3172',
       },
     });
 
-  const renderText = (key) => {
+  const renderText = (key: number) => {
     if (key === 1) {
       return (
         <View style={styles.tab}>
@@ -333,7 +370,8 @@ const GasEducationCarousel = ({
             >
               {['one', 'two', 'three'].map((value, index) => {
                 const key = index + 1;
-                const imgStyleKey = `carouselImage${key}`;
+                const imgStyleKey =
+                  `carouselImage${key}` as keyof typeof styles;
                 return (
                   <View key={key} style={baseStyles.flexGrow}>
                     <View style={styles.carouselImageWrapper}>
@@ -387,33 +425,28 @@ const GasEducationCarousel = ({
   );
 };
 
-GasEducationCarousel.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-    /* conversion rate of ETH - FIAT
-    */
-  conversionRate: PropTypes.any,
-  /**
-    /* Selected currency
-    */
-  currentCurrency: PropTypes.string,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-};
+import type { RootState } from '../../../reducers';
 
-const mapStateToProps = (state) => ({
+interface GasEducationCarouselStateProps {
+  conversionRate: number | null | undefined;
+  currentCurrency: string;
+  ticker: string;
+}
+
+const mapStateToProps = (state: RootState): GasEducationCarouselStateProps => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),
 });
 
-export default connect(mapStateToProps)(GasEducationCarousel);
+interface GasEducationCarouselOwnProps {
+  navigation: GasEducationCarouselNavigation;
+  route?: GasEducationCarouselRoute;
+}
+
+export default connect<
+  GasEducationCarouselStateProps,
+  Record<string, never>,
+  GasEducationCarouselOwnProps,
+  RootState
+>(mapStateToProps)(GasEducationCarousel as React.ComponentType<GasEducationCarouselProps>);
