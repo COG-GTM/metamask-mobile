@@ -14,8 +14,24 @@ import {
 } from '../../../../selectors/networkController';
 import { selectNetworkName } from '../../../../selectors/networkInfos';
 
-function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
-  const [explorer, setExplorer] = useState({
+interface ExplorerState {
+  name: string;
+  value: string | null;
+  isValid: boolean;
+  isRPC: boolean;
+  baseUrl: string;
+}
+
+interface ProviderConfig {
+  type: string;
+  rpcUrl?: string;
+}
+
+function useBlockExplorer(
+  networkConfigurations: unknown,
+  providerConfigTokenExplorer?: ProviderConfig,
+) {
+  const [explorer, setExplorer] = useState<ExplorerState>({
     name: '',
     value: null,
     isValid: false,
@@ -40,7 +56,9 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
         }
         const url = new URL(blockExplorer);
         if (!['http:', 'https:'].includes(url.protocol)) {
-          throw new Error('Block explorer URL is not a valid http(s) protocol');
+          throw new Error(
+            'Block explorer URL is not a valid http(s) protocol',
+          );
         }
 
         const name =
@@ -80,7 +98,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
   ]);
 
   const tx = useCallback(
-    (hash) => {
+    (hash: string) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -93,7 +111,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const account = useCallback(
-    (address) => {
+    (address: string) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -106,7 +124,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const token = useCallback(
-    (address) => {
+    (address: string) => {
       if (!explorer.isValid) {
         return '';
       }

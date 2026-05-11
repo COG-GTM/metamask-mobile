@@ -7,21 +7,32 @@ import {
 } from '../../../../util/number';
 import { safeToChecksumAddress } from '../../../../util/address';
 
+interface AccountBalance {
+  balance?: string;
+}
+
+interface SourceToken {
+  address: string;
+  decimals: number;
+}
+
+interface UseBalanceOptions {
+  asUnits?: boolean;
+}
+
 function useBalance(
-  accounts,
-  balances,
-  selectedAddress,
-  sourceToken,
-  { asUnits = false } = {},
+  accounts: Record<string, AccountBalance>,
+  balances: Record<string, unknown>,
+  selectedAddress: string,
+  sourceToken: SourceToken | null | undefined,
+  { asUnits = false }: UseBalanceOptions = {},
 ) {
-  // TODO: This doesn't always return type BN. Objects down the line may attempt to call functions on the BN object.
   const balance = useMemo(() => {
     if (!sourceToken) {
       return null;
     }
     if (isSwapsNativeAsset(sourceToken)) {
       if (asUnits) {
-        // Controller stores balances in hex for ETH
         return safeNumberToBN(
           (accounts[selectedAddress] && accounts[selectedAddress].balance) || 0,
         );
@@ -32,12 +43,12 @@ function useBalance(
     }
     const tokenAddress = safeToChecksumAddress(sourceToken.address);
 
-    if (tokenAddress in balances) {
+    if (tokenAddress && tokenAddress in balances) {
       if (asUnits) {
         return balances[tokenAddress];
       }
       return renderFromTokenMinimalUnit(
-        balances[tokenAddress],
+        balances[tokenAddress] as string,
         sourceToken.decimals,
       );
     }
