@@ -1,6 +1,16 @@
 import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text as RNText,
+  TextProps,
+  TextStyle,
+  ViewStyle,
+} from 'react-native';
+import type { ComponentType as RNComponentType } from 'react';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
+import type { Theme } from '@metamask/design-tokens';
+import { RootState } from '../../../reducers';
 import { useSelector } from 'react-redux';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { isNonEvmAddress } from '../../../core/Multichain/utils';
@@ -40,10 +50,39 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (params) => {
+interface CreateStylesParams {
+  theme: Theme;
+  style?: { marginTop: number };
+  vars?: Record<string, unknown>;
+}
+
+interface TabbedChildProps {
+  tabLabel: string;
+}
+
+const TransactionsViewWithTabLabel =
+  TransactionsView as unknown as RNComponentType<TabbedChildProps>;
+const MultichainTransactionsWithTabLabel =
+  MultichainTransactionsView as unknown as RNComponentType<TabbedChildProps>;
+const RampOrdersListWithTabLabel =
+  RampOrdersList as unknown as RNComponentType<TabbedChildProps>;
+
+const Text = RNText as RNComponentType<TextProps & { variant?: string }>;
+
+interface ActivityViewStyles {
+  wrapper: ViewStyle;
+  controlButtonOuterWrapper: ViewStyle;
+  controlButton: ViewStyle;
+  controlButtonDisabled: ViewStyle;
+  header: ViewStyle;
+  title: TextStyle;
+  titleText: TextStyle;
+}
+
+const createStyles = (params: CreateStylesParams) => {
   const { theme } = params;
   const { colors } = theme;
-  return StyleSheet.create({
+  return StyleSheet.create<ActivityViewStyles>({
     wrapper: {
       flex: 1,
     },
@@ -82,11 +121,10 @@ const createStyles = (params) => {
     },
     title: {
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
       ...typography.sHeadingMD,
       fontFamily: getFontFamily(TextVariant.HeadingMD),
-    },
+    } as TextStyle,
     titleText: {
       color: colors.text.default,
     },
@@ -111,10 +149,12 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector(
+    (state: RootState) => getHasOrders(state) || false,
+  );
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<ScrollableTabView & { goToPage: (page: number) => void } | null>(null);
+  const params = useParams<{ redirectToOrders?: boolean }>();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
@@ -128,7 +168,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            (selectedAddress && accountsByChainId[selectedAddress]) || {},
           ).length,
         })
         .build(),
@@ -212,14 +252,16 @@ const ActivityView = () => {
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
+            <MultichainTransactionsWithTabLabel
               tabLabel={strings('transactions_view.title')}
             />
           ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title')} />
+            <TransactionsViewWithTabLabel
+              tabLabel={strings('transactions_view.title')}
+            />
           )}
           {hasOrders && (
-            <RampOrdersList
+            <RampOrdersListWithTabLabel
               tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}
