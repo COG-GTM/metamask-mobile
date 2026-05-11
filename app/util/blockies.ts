@@ -1,11 +1,9 @@
-(function (global, factory) {
-  exports && typeof exports === 'object' && typeof module !== 'undefined'
-    ? factory(exports)
-    : typeof define === 'function' && define.amd
-    ? define(['exports'], factory)
-    : factory((global.blockies = {}));
-})(this, (exports) => {
-  'use strict';
+// @ts-nocheck
+// This module is a legacy PNG / blockies generator. Strict type-checking is
+// skipped for the internal body; the public interface is
+// `toDataUrl(address: string): string`. The original code was wrapped in a UMD
+// factory; it has been unwrapped to a proper ES module while preserving the
+// runtime behavior.
 
   /**
    * A handy class to calculate color values.
@@ -408,11 +406,6 @@
     return ret;
   }
 
-  exports.toDataUrl = toDataUrl;
-
-  Object.defineProperty(exports, '__esModule', { value: true });
-});
-
 /**
  * Utility class with the single responsibility
  * of caching Blockies Data URIs
@@ -420,3 +413,5 @@
 class Blockies {
   static cache = {};
 }
+
+export { toDataUrl };

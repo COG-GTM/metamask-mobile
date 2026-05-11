@@ -1,18 +1,33 @@
+// @ts-expect-error eth-ens-namehash has no type definitions
 import namehash from 'eth-ens-namehash';
+// @ts-expect-error @metamask/ethjs-query has no type definitions
 import Eth from '@metamask/ethjs-query';
+// @ts-expect-error @metamask/ethjs-contract has no type definitions
 import EthContract from '@metamask/ethjs-contract';
 import registryAbi from './contracts/registry';
 import resolverAbi from './contracts/resolver';
+// @ts-expect-error content-hash has no type definitions
 import contentHash from 'content-hash';
 import multihash from 'multihashes';
 import Engine from '../../core/Engine';
 import { IPFS_GATEWAY_DISABLED_ERROR } from '../../components/Views/BrowserTab/constants';
 
+export interface ResolveEnsParams {
+  provider: unknown;
+  name: string;
+  chainId: string;
+}
+
+export interface ResolvedIpfsContent {
+  type: string;
+  hash: string;
+}
+
 export default async function resolveEnsToIpfsContentId({
   provider,
   name,
   chainId,
-}) {
+}: ResolveEnsParams): Promise<ResolvedIpfsContent> {
   const eth = new Eth(provider);
   const hash = namehash.hash(name);
   const contract = new EthContract(eth);
@@ -70,7 +85,7 @@ export default async function resolveEnsToIpfsContentId({
   );
 }
 
-function hexValueIsEmpty(value) {
+function hexValueIsEmpty(value: string | null | undefined): boolean {
   return [
     undefined,
     null,
@@ -80,7 +95,7 @@ function hexValueIsEmpty(value) {
   ].includes(value);
 }
 
-function getRegistryForChainId(chainId) {
+function getRegistryForChainId(chainId: string): string | null {
   switch (chainId) {
     // mainnet
     case '0x1':
@@ -93,7 +108,11 @@ function getRegistryForChainId(chainId) {
   }
 }
 
-export function isGatewayUrl(urlObj) {
+export interface UrlLike {
+  pathname: string;
+}
+
+export function isGatewayUrl(urlObj: UrlLike): boolean {
   // All IPFS gateway urls start with the path /ipfs/
   if (urlObj.pathname.substr(0, 6) === '/ipfs/') return true;
   // All Swarm gateway urls start with the path /bzz:/

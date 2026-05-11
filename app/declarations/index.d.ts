@@ -11,6 +11,47 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'unicode-confusables' {
+  export interface ConfusablePoint {
+    point: string;
+    similarTo?: string;
+  }
+  export const isConfusing: (input: string) => boolean;
+  export const confusables: (input: string) => ConfusablePoint[];
+  export const rectifyConfusion: (input: string) => string;
+}
+
+declare module 'ethjs-ens' {
+  export default class Ens {
+    constructor(opts: { provider: unknown; network: string });
+    reverse(address: string): Promise<string>;
+    lookup(name: string): Promise<string>;
+  }
+}
+
+declare module '@metamask/ethjs-unit' {
+  type NumericLike = number | string | { toString(radix?: number): string };
+  export function fromWei(value: NumericLike, unit: string): string;
+  export function toWei(
+    value: NumericLike,
+    unit: string,
+  ): import('bnjs4').default;
+  export function numberToString(value: NumericLike): string;
+  const _default: {
+    fromWei: typeof fromWei;
+    toWei: typeof toWei;
+    numberToString: typeof numberToString;
+  };
+  export default _default;
+}
+
+declare module 'number-to-bn' {
+  import BN from 'bnjs4';
+  type NumericLike = number | string | { toString(radix?: number): string };
+  const numberToBN: (value: NumericLike) => BN;
+  export default numberToBN;
+}
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -407,4 +448,22 @@ declare module '@sentry/react-native' {
     hint?: ExclusiveEventHintOrCaptureContext,
   ) => string;
   export { captureException };
+}
+
+declare module 'multihashes' {
+  export function decode(buffer: Buffer | Uint8Array): {
+    code: number;
+    name: string;
+    length: number;
+    digest: Buffer;
+  };
+  export function toB58String(buffer: Buffer | Uint8Array): string;
+  export function fromB58String(input: string): Buffer;
+  export function fromHexString(input: string): Buffer;
+  export function toHexString(buffer: Buffer | Uint8Array): string;
+  export function encode(
+    digest: Buffer | Uint8Array,
+    code: string | number,
+    length?: number,
+  ): Buffer;
 }

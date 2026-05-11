@@ -626,7 +626,7 @@ export async function validateAddressOrENS(
     confusableCollection = collectConfusables(toEnsName);
     const resolvedAddress = await doENSLookup(toAccount, chainId);
     const contactAlreadySaved = checkIfAddressAlreadySaved(
-      resolvedAddress,
+      resolvedAddress ?? '',
       addressBook,
       chainId,
       internalAccounts,
