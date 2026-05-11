@@ -17,7 +17,7 @@ describe('ContactForm', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ContactForm />
+        {React.createElement(ContactForm as unknown as React.ComponentType)}
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

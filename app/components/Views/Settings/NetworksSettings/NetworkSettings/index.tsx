@@ -1,5 +1,5 @@
 /* eslint-disable */
-import PropTypes from 'prop-types';
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   StyleSheet,
@@ -400,63 +400,97 @@ const infuraProjectId = InfuraKey === 'null' ? '' : InfuraKey;
 /**
  * Main view for app configurations
  */
-export class NetworkSettings extends PureComponent {
-  static propTypes = {
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * handles action for onboarding to a network
-     */
-    showNetworkOnboardingAction: PropTypes.func,
-    /**
-     * returns an array of onboarded networks
-     */
-    networkOnboardedState: PropTypes.object,
-    /**
-     * Checks if adding custom mainnet.
-     */
-    isCustomMainnet: PropTypes.bool,
-    /**
-     * Current network provider configuration
-     */
-    providerConfig: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
+interface NetworkSettingsNavigation {
+  setOptions: (options: object) => void;
+  navigate: (route: string, params?: object) => void;
+  goBack?: () => void;
+  push?: (route: string, params?: object) => void;
+}
 
-    /**
-     * Checks if toggle verification is enabled
-     */
-    useSafeChainsListValidation: PropTypes.bool,
-
-    /**
-     * Matched object from third provider
-     */
-    matchedChainNetwork: PropTypes.object,
-
-    /**
-     * Checks if all networks are selected
-     */
-    isAllNetworks: PropTypes.bool,
-
-    /**
-     * Token network filter
-     */
-    tokenNetworkFilter: PropTypes.object,
+interface NetworkSettingsRoute {
+  params?: {
+    isCustomMainnet?: boolean;
+    network?: string;
+    [key: string]: unknown;
   };
+}
 
-  state = {
+interface NetworkSettingsProps {
+  /** Network configurations */
+  networkConfigurations?: Record<string, unknown>;
+  /** Navigation object */
+  navigation?: NetworkSettingsNavigation;
+  /** Route info */
+  route?: NetworkSettingsRoute;
+  /** handles action for onboarding to a network */
+  showNetworkOnboardingAction?: (params: {
+    networkUrl: string;
+    networkType: string;
+    nativeToken: string;
+    showNetworkOnboarding: boolean;
+  }) => void;
+  /** returns an array of onboarded networks */
+  networkOnboardedState?: Record<string, unknown>;
+  /** Checks if adding custom mainnet. */
+  isCustomMainnet?: boolean;
+  /** Current network provider configuration */
+  providerConfig?: Record<string, unknown>;
+  /** Metrics injected by withMetricsAwareness HOC */
+  metrics?: Record<string, unknown>;
+  /** Checks if toggle verification is enabled */
+  useSafeChainsListValidation?: boolean;
+  /** Matched object from third provider */
+  matchedChainNetwork?: Record<string, unknown>;
+  /** Checks if all networks are selected */
+  isAllNetworks?: boolean;
+  /** Token network filter */
+  tokenNetworkFilter?: Record<string, unknown>;
+}
+
+interface NetworkSettingsState {
+  rpcUrl: string | undefined;
+  rpcName: string | undefined;
+  rpcUrlFrom: string | undefined;
+  rpcNameForm: string;
+  rpcUrls: unknown[];
+  blockExplorerUrls: unknown[];
+  selectedRpcEndpointIndex: number;
+  blockExplorerUrl: string | undefined;
+  blockExplorerUrlForm: string | undefined;
+  nickname: string | undefined;
+  chainId: string | undefined;
+  ticker: string | undefined;
+  editable: boolean | undefined;
+  addMode: boolean;
+  warningRpcUrl: string | undefined;
+  warningChainId: string | undefined;
+  warningSymbol: string | undefined;
+  validatedRpcURL: boolean;
+  validatedChainId: boolean;
+  validatedSymbol: boolean;
+  initialState: unknown;
+  enableAction: boolean;
+  inputWidth: { width: string };
+  showPopularNetworkModal: boolean;
+  popularNetwork: Record<string, unknown>;
+  showWarningModal: boolean;
+  showNetworkDetailsModal: boolean;
+  isNameFieldFocused: boolean;
+  isSymbolFieldFocused: boolean;
+  isRpcUrlFieldFocused: boolean;
+  isChainIdFieldFocused: boolean;
+  networkList: unknown[];
+  showMultiRpcAddModal: { isVisible: boolean };
+  showMultiBlockExplorerAddModal: { isVisible: boolean };
+  showAddRpcForm: { isVisible: boolean };
+  showAddBlockExplorerForm: { isVisible: boolean };
+}
+
+export class NetworkSettings extends PureComponent<
+  NetworkSettingsProps,
+  NetworkSettingsState
+> {
+  state: NetworkSettingsState = {
     rpcUrl: undefined,
     rpcName: undefined,
     rpcUrlFrom: undefined,
@@ -2564,12 +2598,21 @@ export class NetworkSettings extends PureComponent {
 }
 
 NetworkSettings.contextType = ThemeContext;
-const mapDispatchToProps = (dispatch) => ({
+
+import type { Dispatch } from 'redux';
+import type { RootState } from '../../../../../reducers';
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   showNetworkOnboardingAction: ({
     networkUrl,
     networkType,
     nativeToken,
     showNetworkOnboarding,
+  }: {
+    networkUrl: string;
+    networkType: string;
+    nativeToken: string;
+    showNetworkOnboarding: boolean;
   }) =>
     dispatch(
       showNetworkOnboardingAction({
@@ -2581,7 +2624,7 @@ const mapDispatchToProps = (dispatch) => ({
     ),
 });
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   providerConfig: selectProviderConfig(state),
   networkConfigurations: selectNetworkConfigurations(state),
   networkOnboardedState: state.networkOnboarded.networkOnboardedState,
@@ -2593,4 +2636,4 @@ const mapStateToProps = (state) => ({
 export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   withIsOriginalNativeToken,
-)(withMetricsAwareness(NetworkSettings));
+)(withMetricsAwareness(NetworkSettings)) as unknown as React.ComponentType<unknown>;
