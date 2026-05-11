@@ -1,0 +1,401 @@
+/* eslint-disable no-console, import/no-nodejs-modules */
+import FixtureServer, { DEFAULT_FIXTURE_SERVER_PORT } from './fixture-server';
+import FixtureBuilder from './fixture-builder';
+import { AnvilManager, defaultOptions } from '../seeder/anvil-manager';
+import Ganache from '../../app/util/test/ganache';
+
+import GanacheSeeder from '../../app/util/test/ganache-seeder';
+import axios from 'axios';
+import path from 'path';
+import createStaticServer from '../create-static-server';
+import {
+  DEFAULT_MOCKSERVER_PORT,
+  getFixturesServerPort,
+  getLocalTestDappPort,
+  getMockServerPort,
+} from './utils';
+import Utilities from '../utils/Utilities';
+import TestHelpers from '../helpers';
+import { startMockServer, stopMockServer } from '../api-mocking/mock-server';
+
+export const DEFAULT_DAPP_SERVER_PORT = 8085;
+
+// While Appium is still in use it's necessary to check if getFixturesServerPort if defined and provide a fallback in case it's not.
+const getFixturesPort =
+  typeof getFixturesServerPort === 'function'
+    ? getFixturesServerPort
+    : () => DEFAULT_FIXTURE_SERVER_PORT;
+const FIXTURE_SERVER_URL = `http://localhost:${getFixturesPort()}/state.json`;
+
+// checks if server has already been started
+const isFixtureServerStarted = async () => {
+  try {
+    const response = await axios.get(FIXTURE_SERVER_URL);
+    return response.status === 200;
+  } catch (error) {
+    return false;
+  }
+};
+
+// SRP corresponding to the vault set in the default fixtures - it's an empty test account, not secret
+export const defaultGanacheOptions = {
+  hardfork: 'london',
+  mnemonic:
+    'drive manage close raven tape average sausage pledge riot furnace august tip',
+};
+
+/**
+ *
+ * Normalizes the localNodeOptions into a consistent format to handle different data structures.
+ * Case 1: A string: localNodeOptions = 'anvil'
+ * Case 2: Array of strings: localNodeOptions = ['anvil', 'bitcoin']
+ * Case 3: Array of objects: localNodeOptions =
+ * [{ type: 'anvil', options: {anvilOpts}}, { type: 'bitcoin', options: {bitcoinOpts}}]
+ * Case 4: Options object without type: localNodeOptions = {options}
+ *
+ * @param {string | object | Array} localNodeOptions - The input local node options.
+ * @returns {Array} The normalized local node options.
+ */
+type LocalNodeType = 'ganache' | 'anvil' | 'none' | string;
+interface LocalNodeEntry {
+  type: LocalNodeType;
+  options: Record<string, unknown>;
+}
+type LocalNodeOptionsInput =
+  | string
+  | Record<string, unknown>
+  | (string | { type?: LocalNodeType; options?: Record<string, unknown> })[];
+
+interface WithFixturesOptions {
+  fixture?: unknown;
+  restartDevice?: boolean;
+  ganacheOptions?: Record<string, unknown>;
+  smartContract?: unknown;
+  disableGanache?: boolean;
+  dapp?: boolean;
+  localNodeOptions?: LocalNodeOptionsInput;
+  dappOptions?: { numberOfDapps?: number };
+  dappPath?: string;
+  dappPaths?: string[];
+  testSpecificMock?: unknown;
+  launchArgs?: Record<string, string | number | boolean>;
+}
+
+export interface ContractRegistry {
+  getContractAddress(name: string): string | Promise<string>;
+}
+
+type MockServerInstance = Awaited<ReturnType<typeof startMockServer>>;
+
+interface TestSuiteContext {
+  contractRegistry: ContractRegistry;
+  mockServer: MockServerInstance | undefined;
+  localNodes: unknown[];
+}
+
+function normalizeLocalNodeOptions(
+  localNodeOptions: LocalNodeOptionsInput,
+): LocalNodeEntry[] {
+  if (typeof localNodeOptions === 'string') {
+    // Case 1: Passing a string
+    return [
+      {
+        type: localNodeOptions,
+        options:
+          localNodeOptions === 'ganache'
+            ? defaultGanacheOptions
+            : localNodeOptions === 'anvil'
+            ? defaultOptions
+            : {},
+      },
+    ];
+  } else if (Array.isArray(localNodeOptions)) {
+    return localNodeOptions.map((node) => {
+      if (typeof node === 'string') {
+        // Case 2: Array of strings
+        return {
+          type: node,
+          options:
+            node === 'ganache'
+              ? defaultGanacheOptions
+              : node === 'anvil'
+              ? defaultOptions
+              : {},
+        };
+      }
+      if (typeof node === 'object' && node !== null) {
+        // Case 3: Array of objects
+        const type = node.type || 'ganache';
+        return {
+          type,
+          options:
+            type === 'ganache'
+              ? { ...defaultGanacheOptions, ...(node.options || {}) }
+              : type === 'anvil'
+              ? { ...defaultOptions, ...(node.options || {}) }
+              : node.options || {},
+        };
+      }
+      throw new Error(`Invalid localNodeOptions entry: ${node}`);
+    });
+  }
+  if (typeof localNodeOptions === 'object' && localNodeOptions !== null) {
+    // Case 4: Passing an options object without type
+    return [
+      {
+        type: 'ganache',
+        options: { ...defaultGanacheOptions, ...localNodeOptions },
+      },
+    ];
+  }
+  throw new Error(`Invalid localNodeOptions type: ${typeof localNodeOptions}`);
+}
+
+/**
+ * Loads a fixture into the fixture server.
+ *
+ * @param {FixtureServer} fixtureServer - An instance of the FixtureServer class responsible for loading fixtures.
+ * @param {Object} options - An object containing the fixture to load.
+ * @param {Object} [options.fixture] - The fixture data to load. If not provided, a default fixture is created.
+ * @returns {Promise<void>} - A promise that resolves once the fixture is successfully loaded.
+ * @throws {Error} - Throws an error if the fixture fails to load or if the fixture server is not properly set up.
+ */
+export const loadFixture = async (
+  fixtureServer: FixtureServer,
+  { fixture }: { fixture?: unknown } = {},
+): Promise<void> => {
+  // If no fixture is provided, the `onboarding` option is set to `true` by default, which means
+  // the app will be loaded without any fixtures and will start and go through the onboarding process.
+  const state = (fixture as Record<string, unknown> | undefined) ||
+    (new FixtureBuilder({ onboarding: true }).build() as Record<string, unknown>);
+  await fixtureServer.loadJsonState(
+    state as Record<string, unknown>,
+    undefined as unknown as { getContractAddress(c: string | undefined): unknown },
+  );
+  // Checks if state is loaded
+  const response = await axios.get(FIXTURE_SERVER_URL);
+
+  // Throws if state is not properly loaded
+  if (response.status !== 200) {
+    throw new Error('Not able to load fixtures');
+  }
+};
+
+// Start the fixture server
+export const startFixtureServer = async (
+  fixtureServer: FixtureServer,
+): Promise<void> => {
+  if (await isFixtureServerStarted()) {
+    console.log('The fixture server has already been started');
+    return;
+  }
+
+  try {
+    await fixtureServer.start();
+    console.log('The fixture server is started');
+  } catch (err) {
+    console.log('Fixture server error:', err);
+  }
+};
+
+// Stop the fixture server
+export const stopFixtureServer = async (
+  fixtureServer: FixtureServer,
+): Promise<void> => {
+  if (!(await isFixtureServerStarted())) {
+    console.log('The fixture server has already been stopped');
+    return;
+  }
+  await fixtureServer.stop();
+  console.log('The fixture server is stopped');
+};
+
+/**
+ * Executes a test suite with fixtures by setting up a fixture server, loading a specified fixture,
+ * and running the test suite. After the test suite execution, it stops the fixture server.
+ *
+ * @param {Object} options - An object containing configuration options.
+ * @param {Object} options.fixture - The fixture to load.
+ * @param {boolean} [options.restartDevice=false] - If true, restarts the app to apply the loaded fixture.
+ * @param {Object} [options.launchArgs] - Additional launch arguments for the app.
+ * @param {Function} testSuite - The test suite function to execute after setting up the fixture.
+ * @returns {Promise<void>} - A promise that resolves once the test suite completes.
+ * @throws {Error} - Throws an error if an exception occurs during the test suite execution.
+ */
+export async function withFixtures(
+  options: WithFixturesOptions,
+  testSuite: (ctx: TestSuiteContext) => Promise<void>,
+): Promise<void> {
+  const {
+    fixture,
+    restartDevice = false,
+    smartContract,
+    disableGanache,
+    dapp,
+    localNodeOptions = 'ganache',
+    dappOptions,
+    dappPath = undefined,
+    dappPaths,
+    testSpecificMock,
+    launchArgs,
+  } = options;
+
+  const fixtureServer = new FixtureServer();
+  let mockServer: MockServerInstance | undefined;
+  let mockServerPort: number = DEFAULT_MOCKSERVER_PORT;
+  const localNodeOptsNormalized = normalizeLocalNodeOptions(localNodeOptions);
+
+  if (testSpecificMock) {
+    mockServerPort = getMockServerPort();
+    mockServer = await startMockServer(
+      testSpecificMock as Parameters<typeof startMockServer>[0],
+      mockServerPort,
+    );
+  }
+
+  let localNode: AnvilManager | Ganache | undefined;
+  const localNodes: (AnvilManager | Ganache)[] = [];
+
+  try {
+    // Start servers based on the localNodes array
+    if (!disableGanache) {
+      for (const nodeOpt of localNodeOptsNormalized) {
+        const nodeType = nodeOpt.type;
+        const nodeOptions = nodeOpt.options || {};
+
+        switch (nodeType) {
+          case 'anvil':
+            localNode = new AnvilManager();
+            await localNode.start(nodeOptions);
+            localNodes.push(localNode);
+            await localNode.setAccountBalance('1200');
+
+            break;
+
+          case 'ganache':
+            localNode = new Ganache();
+            await localNode.start(nodeOptions);
+            localNodes.push(localNode);
+            break;
+
+          case 'none':
+            break;
+
+          default:
+            throw new Error(
+              `Unsupported localNode: '${nodeType}'. Cannot start the server.`,
+            );
+        }
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+
+  const dappBasePort = getLocalTestDappPort();
+  let numberOfDapps = dapp ? 1 : 0;
+  const dappServer: ReturnType<typeof createStaticServer>[] = [];
+
+  try {
+    let contractRegistry: ContractRegistry | undefined;
+    if (!disableGanache && smartContract) {
+      const ganacheSeeder = new GanacheSeeder(
+        (localNodes[0] as { getProvider(): unknown }).getProvider(),
+      );
+      await ganacheSeeder.deploySmartContract(smartContract);
+      contractRegistry =
+        ganacheSeeder.getContractRegistry() as unknown as ContractRegistry;
+    }
+
+    if (dapp) {
+      if (dappOptions?.numberOfDapps) {
+        numberOfDapps = dappOptions.numberOfDapps;
+      }
+      for (let i = 0; i < numberOfDapps; i++) {
+        let dappDirectory: string;
+        if (dappPath || (dappPaths?.[i])) {
+          dappDirectory = path.resolve(
+            __dirname,
+            dappPath || (dappPaths as string[])[i],
+          );
+        } else {
+          dappDirectory = path.resolve(
+            __dirname,
+            '..',
+            '..',
+            'node_modules',
+            '@metamask',
+            'test-dapp',
+            'dist',
+          );
+        }
+        dappServer.push(createStaticServer(dappDirectory));
+        dappServer[i].listen(`${dappBasePort + i}`);
+        await new Promise<void>((resolve, reject) => {
+          dappServer[i].on('listening', () => resolve());
+          dappServer[i].on('error', reject);
+        });
+      }
+    }
+
+    // Start the fixture server
+    await startFixtureServer(fixtureServer);
+    await loadFixture(fixtureServer, { fixture });
+    console.log(
+      'The fixture server is started, and the initial state is successfully loaded.',
+    );
+    // Due to the fact that the app was already launched on `init.js`, it is necessary to
+    // launch into a fresh installation of the app to apply the new fixture loaded perviously.
+    if (restartDevice) {
+      await TestHelpers.launchApp({
+        delete: true,
+        launchArgs: {
+          fixtureServerPort: `${getFixturesServerPort()}`,
+          detoxURLBlacklistRegex: Utilities.BlacklistURLs,
+          mockServerPort: `${mockServerPort}`,
+          ...(launchArgs || {}),
+        },
+      });
+    }
+
+    await testSuite({
+      contractRegistry: contractRegistry as ContractRegistry,
+      mockServer,
+      localNodes: localNodes as unknown[],
+    }); // Pass localNodes instead of anvilServer
+  } catch (error) {
+    console.error(error);
+    throw error;
+  } finally {
+    // Clean up all local nodes
+    for (const server of localNodes) {
+      if (server) {
+        await server.quit();
+      }
+    }
+
+    if (dapp) {
+      for (let i = 0; i < numberOfDapps; i++) {
+        if (dappServer[i]?.listening) {
+          await new Promise<void>((resolve, reject) => {
+            dappServer[i].close((error: unknown) => {
+              if (error) {
+                return reject(error);
+              }
+              return resolve();
+            });
+          });
+        }
+      }
+    }
+
+    if (testSpecificMock) {
+      await stopMockServer(
+        mockServer as Parameters<typeof stopMockServer>[0],
+      );
+    }
+
+    await stopFixtureServer(fixtureServer);
+  }
+}
