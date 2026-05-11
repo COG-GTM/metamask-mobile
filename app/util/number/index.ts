@@ -517,8 +517,8 @@ export function weiToFiat(
   conversionRate: number | null = null,
   currencyCode: string,
   decimalsToShow: number = 5,
-): string {
-  if (!conversionRate) return '';
+): string | undefined {
+  if (!conversionRate) return undefined;
   if (!wei || !isBN(wei) || !conversionRate) {
     return addCurrencySymbol(0, currencyCode);
   }
