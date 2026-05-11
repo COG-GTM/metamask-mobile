@@ -18,12 +18,18 @@ jest.mock('react-native/Libraries/Linking/Linking', () => ({
 
 describe('PhishingModal', () => {
   it('should render correctly', () => {
-    const { toJSON } = renderWithProvider(<PhishingModal />);
+    const Component = PhishingModal as unknown as React.ComponentType<{
+      fullUrl?: string;
+    }>;
+    const { toJSON } = renderWithProvider(<Component />);
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('should open Twitter with correct sharing text when share button is pressed', async () => {
-    const { getByText } = renderWithProvider(<PhishingModal fullUrl="https://malicious-site.com" />);
+    const Component = PhishingModal as unknown as React.ComponentType<{
+      fullUrl: string;
+    }>;
+    const { getByText } = renderWithProvider(<Component fullUrl="https://malicious-site.com" />);
 
     // Find and press the share button
     const shareButton = getByText('If you found this helpful, share on X!');

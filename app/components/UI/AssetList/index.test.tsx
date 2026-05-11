@@ -8,8 +8,8 @@ describe('AssetList', () => {
       <AssetList
         searchQuery={''}
         searchResults={[]}
-        handleSelectAsset={null}
-        selectedAsset={{ address: '0xABC', symbol: 'ABC', decimals: 0 }}
+        handleSelectAsset={undefined}
+        selectedAsset={{ address: '0xABC', symbol: 'ABC' }}
       />,
     );
     expect(toJSON()).toMatchSnapshot();

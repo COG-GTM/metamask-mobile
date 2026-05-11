@@ -8,6 +8,10 @@ declare module 'react-native-fade-in-image';
 
 declare module 'react-native-fast-crypto';
 
+declare module 'react-native-confetti';
+
+declare module 'react-native-progress/Bar';
+
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
@@ -407,4 +411,33 @@ declare module '@sentry/react-native' {
     hint?: ExclusiveEventHintOrCaptureContext,
   ) => string;
   export { captureException };
+}
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
+declare module '@metamask/react-native-button' {
+  import { ComponentType } from 'react';
+  // eslint-disable-next-line no-duplicate-imports
+  import { TouchableHighlightProps } from 'react-native';
+  interface ButtonProps extends TouchableHighlightProps {
+    onLongPress?: () => void;
+    styleDisabled?: unknown;
+    isLoading?: boolean;
+    accessibilityLabel?: string;
+    testID?: string;
+    children?: React.ReactNode;
+  }
+  const Button: ComponentType<ButtonProps>;
+  export default Button;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  const coalesceNonElementChildren: (
+    children: React.ReactNode,
+    coalesce: (children: React.ReactNode[]) => React.ReactNode,
+  ) => React.ReactNode[];
+  export default coalesceNonElementChildren;
 }
