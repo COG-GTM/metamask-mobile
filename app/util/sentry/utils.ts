@@ -351,7 +351,7 @@ function rewriteErrorMessages(
     report.message = rewriteFn(report.message);
   }
   // rewrite each exception message
-  if (report.exception && report.exception.values) {
+  if (report.exception?.values) {
     report.exception.values.forEach((item: SentryExceptionValue) => {
       if (typeof item.value === 'string') {
         item.value = rewriteFn(item.value);
@@ -378,13 +378,11 @@ function simplifyErrorMessages(report: SentryReport): void {
 }
 
 function removeDeviceTimezone(report: SentryReport): void {
-  if (report.contexts && report.contexts.device)
-    report.contexts.device.timezone = null;
+  if (report.contexts?.device) report.contexts.device.timezone = null;
 }
 
 function removeDeviceName(report: SentryReport): void {
-  if (report.contexts && report.contexts.device)
-    report.contexts.device.name = null;
+  if (report.contexts?.device) report.contexts.device.name = null;
 }
 
 /**

@@ -6,8 +6,9 @@ import {
   addCurrencies,
   multiplyCurrencies,
   conversionGreaterThan,
+  type EthDenomination,
+  type NumericBase,
 } from './conversion';
-import type { EthDenomination, NumericBase } from './conversion';
 import I18n from '../../locales/i18n';
 
 const NON_ISO4217_CRYPTO_CODES = [

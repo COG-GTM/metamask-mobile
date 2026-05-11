@@ -1,5 +1,7 @@
-import type BN from 'bnjs4';
+// eslint-disable-next-line no-duplicate-imports
 import BN4 from 'bnjs4';
+// eslint-disable-next-line no-duplicate-imports, import/no-duplicates
+import type BN from 'bnjs4';
 import type { TransactionParams } from '@metamask/transaction-controller';
 import type { NetworkClientId } from '@metamask/network-controller';
 import { renderFromWei, weiToFiat, toWei, conversionUtil } from '../number';

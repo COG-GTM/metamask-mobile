@@ -5,9 +5,9 @@ import {
   conversionUtil,
   addCurrencies,
   subtractCurrencies,
+  type EthDenomination,
 } from './conversion';
 import { formatCurrency } from './confirm-tx';
-import type { EthDenomination } from './conversion';
 
 export function hexToDecimal(hexValue: string): string {
   return conversionUtil(hexValue, {

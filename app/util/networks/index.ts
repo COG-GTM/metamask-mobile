@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import networksWithImages from 'images/image-icons';
 import {

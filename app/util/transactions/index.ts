@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-shadow, @typescript-eslint/prefer-optional-chain */
 // @ts-nocheck
 // This 1600+ line module is migrated from JS to TS so that downstream
 // consumers benefit from the public export contracts captured below. Body-

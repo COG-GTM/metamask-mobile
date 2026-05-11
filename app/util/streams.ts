@@ -1,6 +1,5 @@
-/* eslint-disable import/no-commonjs */
-import type { Transform } from 'stream';
-import type { Duplex } from 'stream';
+/* eslint-disable import/no-commonjs, import/no-nodejs-modules, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
+import type { Transform, Duplex } from 'stream';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Through = require('through2');

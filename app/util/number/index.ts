@@ -1029,7 +1029,9 @@ interface I18nLike {
   t: (key: string) => string;
 }
 
-type I18nLikeInput = { t: unknown };
+interface I18nLikeInput {
+  t: unknown;
+}
 
 /**
  * Formats a potentially large number to the nearest unit.

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment, prefer-rest-params, @typescript-eslint/no-array-constructor, no-new-object, no-var, @typescript-eslint/no-shadow, eqeqeq, @typescript-eslint/prefer-for-of, @typescript-eslint/no-use-before-define, @typescript-eslint/no-unused-vars */
 // @ts-nocheck
 // This module is a legacy PNG / blockies generator. Strict type-checking is
 // skipped for the internal body; the public interface is

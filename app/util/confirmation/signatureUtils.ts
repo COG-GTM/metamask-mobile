@@ -1,11 +1,10 @@
-import { LayoutChangeEvent } from 'react-native';
+import { InteractionManager, type LayoutChangeEvent } from 'react-native';
 import Engine from '../../core/Engine';
 import { MetaMetrics, MetaMetricsEvents } from '../../core/Analytics';
 import { getAddressAccountType } from '../address';
 import NotificationManager from '../../core/NotificationManager';
 import { WALLET_CONNECT_ORIGIN } from '../walletconnect';
 import AppConstants from '../../core/AppConstants';
-import { InteractionManager } from 'react-native';
 import { strings } from '../../../locales/i18n';
 import { selectEvmChainId } from '../../selectors/networkController';
 import { store } from '../../store';
