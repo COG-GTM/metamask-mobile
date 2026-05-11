@@ -1569,7 +1569,10 @@ const mapDispatchToProps = (dispatch: any) => ({
   setTransactionValue: (value: any) => dispatch(setTransactionValue(value)),
 });
 
-export default connect(
+const __Connected = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(withMetricsAwareness(Confirm));
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default __Connected as unknown as React.ComponentType<any>;

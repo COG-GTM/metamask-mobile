@@ -669,12 +669,14 @@ const mapStateToProps = (state: RootState): StateProps => {
   };
 };
 
-export default connect(mapStateToProps)(
+const ConnectedTransactionReview = connect(mapStateToProps)(
   withNavigation(
     withQRHardwareAwareness(
       withMetricsAwareness(
-        TransactionReview as unknown as React.ComponentClass<IWithMetricsAwarenessProps>,
+        TransactionReview as unknown as React.ComponentClass<OwnProps & IWithMetricsAwarenessProps>,
       ),
     ),
   ),
 );
+
+export default ConnectedTransactionReview as unknown as React.ComponentType<OwnProps>;

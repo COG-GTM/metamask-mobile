@@ -1287,7 +1287,7 @@ const mapDispatchToProps = (dispatch: any) => ({
 
 ApproveTransactionReview.contextType = ThemeContext;
 
-export default connect(
+const ConnectedApproveTransactionReview = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(
@@ -1295,3 +1295,6 @@ export default connect(
     withQRHardwareAwareness(withMetricsAwareness(ApproveTransactionReview)),
   ),
 );
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default ConnectedApproveTransactionReview as unknown as React.ComponentType<any>;

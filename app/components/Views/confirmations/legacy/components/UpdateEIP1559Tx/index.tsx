@@ -308,4 +308,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => ({
   primaryCurrency: state.settings.primaryCurrency,
 });
 
-export default connect(mapStateToProps)(UpdateEIP1559Tx);
+const __Connected = connect(mapStateToProps)(UpdateEIP1559Tx);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default __Connected as unknown as React.ComponentType<any>;

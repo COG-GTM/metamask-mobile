@@ -435,12 +435,14 @@ const mapStateToProps = (state: RootState): StateProps => ({
   securityAlertResponse: state.signatureRequest.securityAlertResponse,
 });
 
-export default connect(mapStateToProps)(
+const ConnectedSignatureRequest = connect(mapStateToProps)(
   withQRHardwareAwareness(
     withMetricsAwareness(
       SignatureRequest as unknown as React.ComponentClass<
-        IWithMetricsAwarenessProps
+        OwnProps & IWithMetricsAwarenessProps
       >,
     ),
   ),
 );
+
+export default ConnectedSignatureRequest as unknown as React.ComponentType<OwnProps>;

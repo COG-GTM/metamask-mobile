@@ -354,4 +354,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => {
   };
 };
 
-export default connect(mapStateToProps)(withMetricsAwareness(TypedSign));
+const __Connected = connect(mapStateToProps)(withMetricsAwareness(TypedSign));
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default __Connected as unknown as React.ComponentType<any>;

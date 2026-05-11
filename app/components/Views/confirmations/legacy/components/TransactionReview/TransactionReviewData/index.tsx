@@ -218,7 +218,10 @@ const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   showAlert: (config: ShowAlertConfig) => dispatch(showAlert(config)),
 });
 
-export default connect(
+const __Connected = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(TransactionReviewData);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default __Connected as unknown as React.ComponentType<any>;

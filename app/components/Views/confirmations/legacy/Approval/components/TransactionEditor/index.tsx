@@ -968,4 +968,7 @@ const mapDispatchToProps = (dispatch: any) => ({
     dispatch(setTransactionObject(transaction)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(TransactionEditor);
+const __Connected = connect(mapStateToProps, mapDispatchToProps)(TransactionEditor);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default __Connected as unknown as React.ComponentType<any>;

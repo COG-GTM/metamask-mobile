@@ -793,7 +793,10 @@ const mapDispatchToProps = (dispatch: any) => ({
 
 Send.contextType = ThemeContext;
 
-export default connect(
+const __Connected = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(withMetricsAwareness(Send));
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default __Connected as unknown as React.ComponentType<any>;

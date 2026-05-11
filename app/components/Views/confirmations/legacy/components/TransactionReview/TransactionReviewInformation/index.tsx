@@ -725,11 +725,13 @@ const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
 });
 
-export default connect(
+const ConnectedTransactionReviewInformation = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(
   withMetricsAwareness(
-    TransactionReviewInformation as unknown as React.ComponentClass<IWithMetricsAwarenessProps>,
+    TransactionReviewInformation as unknown as React.ComponentClass<OwnProps & IWithMetricsAwarenessProps>,
   ),
 );
+
+export default ConnectedTransactionReviewInformation as unknown as React.ComponentType<OwnProps>;
