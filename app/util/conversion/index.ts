@@ -72,7 +72,9 @@ export interface ConverterInput {
   toDenomination?: EthDenomination;
   toCurrency?: string | null;
   numberOfDecimals?: number;
-  conversionRate?: number | string | null;
+  // Accept BigNumber-shaped objects (anything with `.toString()`) in addition
+  // to the basic numeric and string forms.
+  conversionRate?: number | string | { toString(): string } | null;
   invertConversionRate?: boolean;
   roundDown?: number;
 }
@@ -109,9 +111,13 @@ const converter = ({
         `Converting from ${fromCurrency} to ${toCurrency} requires a conversionRate, but one was not provided`,
       );
     }
-    let rate = toBigNumber.dec(conversionRate);
+    const normalizedRate =
+      typeof conversionRate === 'number' || typeof conversionRate === 'string'
+        ? conversionRate
+        : conversionRate.toString();
+    let rate = toBigNumber.dec(normalizedRate);
     if (invertConversionRate) {
-      rate = new BigNumber(1.0).div(conversionRate);
+      rate = new BigNumber(1.0).div(normalizedRate);
     }
     convertedValue = convertedValue.times(rate);
   }
@@ -148,7 +154,10 @@ export interface ConversionUtilOptions {
   fromDenomination?: EthDenomination;
   toDenomination?: EthDenomination;
   numberOfDecimals?: number;
-  conversionRate?: number | string | null;
+  // Accept BigNumber-shaped objects (anything with a `.toString()`) in
+  // addition to plain numbers and strings so callers can supply higher
+  // precision values without losing accuracy.
+  conversionRate?: number | string | { toString(): string } | null;
   invertConversionRate?: boolean;
 }
 

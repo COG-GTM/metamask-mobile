@@ -517,8 +517,8 @@ export function weiToFiat(
   conversionRate: number | null = null,
   currencyCode: string,
   decimalsToShow: number = 5,
-): string | undefined {
-  if (!conversionRate) return undefined;
+): string {
+  if (!conversionRate) return '';
   if (!wei || !isBN(wei) || !conversionRate) {
     return addCurrencySymbol(0, currencyCode);
   }
@@ -831,7 +831,9 @@ export interface ConverterArgs {
   toDenomination?: EthDenomination;
   toCurrency?: string | null;
   numberOfDecimals?: number;
-  conversionRate?: number | string | null;
+  // Accept BigNumber-shaped objects (anything with `.toString()`) in addition
+  // to the basic numeric and string forms.
+  conversionRate?: number | string | { toString(): string } | null;
   invertConversionRate?: boolean;
   roundDown?: number;
 }
@@ -865,9 +867,13 @@ const converter = ({
         `Converting from ${fromCurrency} to ${toCurrency} requires a conversionRate, but one was not provided`,
       );
     }
-    let rate = toBigNumber.dec(conversionRate);
+    const normalizedRate =
+      typeof conversionRate === 'number' || typeof conversionRate === 'string'
+        ? conversionRate
+        : conversionRate.toString();
+    let rate = toBigNumber.dec(normalizedRate);
     if (invertConversionRate) {
-      rate = new BigNumber(1.0).div(conversionRate);
+      rate = new BigNumber(1.0).div(normalizedRate);
     }
     convertedValue = (convertedValue as BigNumber).times(rate);
   }
@@ -906,7 +912,9 @@ export interface ConversionUtilOptions {
   fromDenomination?: EthDenomination;
   toDenomination?: EthDenomination;
   numberOfDecimals?: number;
-  conversionRate?: number | string | null;
+  // Accept BigNumber-shaped objects (anything with `.toString()`) in addition
+  // to the basic numeric and string forms.
+  conversionRate?: number | string | { toString(): string } | null;
   invertConversionRate?: boolean;
   roundDown?: number;
 }
@@ -938,16 +946,18 @@ export const conversionUtil = (
     value: value || '0',
   });
 
-export const toHexadecimal = (decimal?: number | string): string => {
-  if (!decimal) return decimal as string;
+export const toHexadecimal = (
+  decimal?: number | string,
+): `0x${string}` => {
+  if (!decimal) return decimal as `0x${string}`;
   let decimalString: string;
   if (typeof decimal !== 'string') {
     decimalString = String(decimal);
   } else {
     decimalString = decimal;
   }
-  if (decimalString.startsWith('0x')) return decimalString;
-  return toBigNumber.dec(decimalString).toString(16);
+  if (decimalString.startsWith('0x')) return decimalString as `0x${string}`;
+  return toBigNumber.dec(decimalString).toString(16) as `0x${string}`;
 };
 
 export const calculateEthFeeForMultiLayer = ({

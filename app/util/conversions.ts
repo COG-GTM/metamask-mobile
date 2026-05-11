@@ -63,7 +63,9 @@ export interface GetValueFromWeiHexOptions {
   value: string;
   fromCurrency?: string;
   toCurrency?: string;
-  conversionRate?: number | string | null;
+  // Accept BigNumber-shaped objects (anything with `.toString()`) so callers
+  // can pass higher-precision conversion rates without precision loss.
+  conversionRate?: number | string | { toString(): string } | null;
   numberOfDecimals?: number;
   toDenomination?: EthDenomination;
 }

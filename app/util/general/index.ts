@@ -39,7 +39,7 @@ interface NavigatorState {
 
 export function findRouteNameFromNavigatorState(
   routes: NavigatorRoute[] | undefined,
-): string | undefined {
+): string {
   let route: NavigatorRoute | NavigatorState | undefined =
     routes?.[routes.length - 1];
   if (route && 'state' in route && route.state) {
@@ -59,7 +59,7 @@ export function findRouteNameFromNavigatorState(
     name = 'WalletView';
   if (name === 'TransactionsHome') name = 'TransactionsView';
 
-  return name;
+  return name ?? '';
 }
 export const capitalize = (str: string | undefined | null): string | false =>
   (str && str.charAt(0).toUpperCase() + str.slice(1)) || false;

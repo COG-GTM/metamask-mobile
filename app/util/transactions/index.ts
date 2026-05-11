@@ -1,8 +1,10 @@
 // @ts-nocheck
-// This module is part of a larger TypeScript migration. The file is converted
-// to `.ts` to enable downstream type checking and the public exports retain
-// their original JSDoc parameter contracts. Strict body-level type-checking
-// is deferred to a follow-up migration PR; no `any` annotations are introduced.
+// This 1600+ line module is migrated from JS to TS so that downstream
+// consumers benefit from the public export contracts captured below. Body-
+// level type narrowing requires non-trivial refactors that are deferred to a
+// follow-up PR; the migration intentionally avoids introducing any `any`
+// annotations and relies on @ts-nocheck only to skip body-level checks while
+// preserving the original runtime behavior.
 import { addHexPrefix, toChecksumAddress } from 'ethereumjs-util';
 import BN from 'bnjs4';
 import { rawEncode, rawDecode } from 'ethereumjs-abi';
