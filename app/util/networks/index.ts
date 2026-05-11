@@ -203,19 +203,24 @@ export const isSolanaMainnet = (chainId: string): boolean =>
  * @param chainId - The chain ID to be converted. It can be in hexadecimal, decimal, or CAIP-2 format.
  * @returns - The chain ID converted to a base 10 number as a string, or the original input if it is in CAIP-2 format.
  */
-export const getDecimalChainId = (
+export function getDecimalChainId(chainId: string): string;
+export function getDecimalChainId(chainId: undefined): undefined;
+export function getDecimalChainId(
   chainId: string | undefined,
-): string => {
+): string | undefined;
+export function getDecimalChainId(
+  chainId: string | undefined,
+): string | undefined {
   if (
     !chainId ||
     typeof chainId !== 'string' ||
     !chainId.startsWith('0x') ||
     isNonEvmChainId(chainId)
   ) {
-    return chainId as string;
+    return chainId;
   }
   return parseInt(chainId, 16).toString(10);
-};
+}
 
 export const isMainnetByChainId = (chainId: string): boolean =>
   getDecimalChainId(String(chainId)) === String(1);

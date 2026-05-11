@@ -15,7 +15,7 @@ interface RemoveEvmTokenProps {
   currentChainId: string;
   trackEvent: (event: ITrackingEvent, saveDataRecording?: boolean) => void;
   strings: (key: string, args?: Record<string, unknown>) => string;
-  getDecimalChainId: (chainId: string | undefined) => string;
+  getDecimalChainId: (chainId: string) => string;
   createEventBuilder: (event: IMetaMetricsEvent) => MetricsEventBuilder;
 }
 

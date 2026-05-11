@@ -16,7 +16,7 @@ interface GoToAddEvmTokenProps {
   navigation: StackNavigationProp<TokenListNavigationParamList, 'AddAsset'>;
   trackEvent: (event: ITrackingEvent, saveDataRecording?: boolean) => void;
   createEventBuilder: (event: IMetaMetricsEvent) => MetricsEventBuilder;
-  getDecimalChainId: (chainId: string | undefined) => string;
+  getDecimalChainId: (chainId: string) => string;
   currentChainId: string;
 }
 
