@@ -156,7 +156,7 @@ class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
           <FadeIn
             placeholderStyle={{
               backgroundColor: transparent
-                ? colors.background.alternative
+                ? 'transparent'
                 : colors.background.alternative,
             }}
           >
