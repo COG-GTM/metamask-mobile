@@ -130,7 +130,6 @@ export default class WalletConnectSessions extends PureComponent<
   WalletConnectSessionsState
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: WalletConnectSessionsState = {
     sessions: [],
@@ -143,7 +142,7 @@ export default class WalletConnectSessions extends PureComponent<
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     navigation?.setOptions?.(
       getNavigationOptionsTitle(
         strings('experimental_settings.wallet_connect_dapps'),
@@ -184,7 +183,7 @@ export default class WalletConnectSessions extends PureComponent<
 
   renderDesc = (meta: WCSessionPeerMeta) => {
     const { description } = meta;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (description) {
@@ -244,7 +243,7 @@ export default class WalletConnectSessions extends PureComponent<
   };
 
   renderV1 = (session: WCV1Session) => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
       <TouchableOpacity
@@ -265,7 +264,7 @@ export default class WalletConnectSessions extends PureComponent<
   };
 
   renderV2 = (session: WCV2Session, index: number) => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
       <TouchableOpacity
@@ -289,7 +288,7 @@ export default class WalletConnectSessions extends PureComponent<
   };
 
   renderEmpty = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -304,8 +303,8 @@ export default class WalletConnectSessions extends PureComponent<
   render = () => {
     const { ready, sessions, sessionsV2 } = this.state;
     if (!ready) return null;
-    const colors = this.context?.colors || mockTheme.colors;
-    const themeAppearance = this.context?.themeAppearance;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
+    const themeAppearance = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.themeAppearance;
     const styles = createStyles(colors);
 
     const sessionsLength = sessions.length + sessionsV2.length;

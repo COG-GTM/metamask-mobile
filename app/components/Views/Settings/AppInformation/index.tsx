@@ -115,7 +115,6 @@ export default class AppInformation extends PureComponent<
   AppInformationState
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: AppInformationState = {
     appInfo: '',
@@ -124,7 +123,7 @@ export default class AppInformation extends PureComponent<
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     navigation?.setOptions?.(
       getNavigationOptionsTitle(
         strings('app_settings.info_title'),
@@ -193,7 +192,7 @@ export default class AppInformation extends PureComponent<
   };
 
   render = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

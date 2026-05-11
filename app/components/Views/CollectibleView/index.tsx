@@ -90,13 +90,12 @@ type CollectibleViewProps = CollectibleViewOwnProps &
  */
 class CollectibleView extends PureComponent<CollectibleViewProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   scrollViewRef = React.createRef<ScrollView>();
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.contractName ?? '',
       false,
@@ -127,7 +126,7 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
       navigation,
     } = this.props;
     const collectible = params;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const lowerAddress = collectible.address.toLowerCase();

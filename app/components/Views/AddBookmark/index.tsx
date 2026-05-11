@@ -81,7 +81,6 @@ export default class AddBookmark extends PureComponent<
   AddBookmarkState
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: AddBookmarkState = {
     title: '',
@@ -90,7 +89,7 @@ export default class AddBookmark extends PureComponent<
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
 
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -146,8 +145,8 @@ export default class AddBookmark extends PureComponent<
   };
 
   render = () => {
-    const colors = this.context?.colors || mockTheme.colors;
-    const themeAppearance = this.context?.themeAppearance || 'light';
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
+    const themeAppearance = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (

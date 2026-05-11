@@ -53,11 +53,10 @@ interface TransactionSummaryProps {
 
 export default class TransactionSummary extends PureComponent<TransactionSummaryProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   renderIfGastEstimationReady = (children: React.ReactNode) => {
     const { gasEstimationReady } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return !gasEstimationReady ? (

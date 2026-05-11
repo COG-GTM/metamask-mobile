@@ -41,7 +41,6 @@ interface TermsAndConditionsProps {
  */
 export default class TermsAndConditions extends PureComponent<TermsAndConditionsProps> {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   press = () => {
     const { navigation } = this.props;
@@ -55,7 +54,7 @@ export default class TermsAndConditions extends PureComponent<TermsAndConditions
   };
 
   render() {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

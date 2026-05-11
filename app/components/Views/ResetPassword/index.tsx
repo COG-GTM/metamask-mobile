@@ -299,7 +299,6 @@ class ResetPassword extends PureComponent<
   ResetPasswordState
 > {
   static contextType = ThemeContext;
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: ResetPasswordState = {
     isSelected: false,
@@ -323,7 +322,7 @@ class ResetPassword extends PureComponent<
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     navigation?.setOptions?.(
       getNavigationOptionsTitle(
         strings('password_reset.change_password'),
@@ -537,7 +536,7 @@ class ResetPassword extends PureComponent<
   };
 
   renderLoader = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -552,8 +551,8 @@ class ResetPassword extends PureComponent<
 
   renderConfirmPassword() {
     const { warningIncorrectPassword } = this.state;
-    const colors = this.context?.colors || mockTheme.colors;
-    const themeAppearance = this.context?.themeAppearance || 'light';
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
+    const themeAppearance = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (
@@ -621,8 +620,8 @@ class ResetPassword extends PureComponent<
       error,
       loading,
     } = this.state;
-    const colors = this.context?.colors || mockTheme.colors;
-    const themeAppearance = this.context?.themeAppearance || 'light';
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
+    const themeAppearance = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.themeAppearance || 'light';
     const styles = createStyles(colors);
     const passwordsMatch = password !== '' && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
@@ -814,7 +813,7 @@ class ResetPassword extends PureComponent<
 
   render() {
     const { view, ready } = this.state;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as unknown as { colors?: typeof mockTheme.colors; themeAppearance?: 'light' | 'dark' | 'default' })?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!ready) return this.renderLoader();
