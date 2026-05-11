@@ -342,9 +342,7 @@ export const wallet_addEthereumChain = async ({
   } else {
     newNetworkConfiguration = NetworkController.addNetwork({
       chainId: chainId as `0x${string}`,
-      blockExplorerUrls: firstValidBlockExplorerUrl
-        ? [firstValidBlockExplorerUrl]
-        : [],
+      blockExplorerUrls: [firstValidBlockExplorerUrl] as string[],
       defaultRpcEndpointIndex: 0,
       defaultBlockExplorerUrlIndex: 0,
       name: chainName,
