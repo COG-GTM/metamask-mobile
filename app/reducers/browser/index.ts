@@ -1,8 +1,56 @@
-import { BrowserActionTypes } from '../../actions/browser';
+/* eslint-disable @typescript-eslint/default-param-last */
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
 
-const initialState = {
+// Mirrors `BrowserActionTypes` exported from `app/actions/browser`
+// (still .js). When that module migrates to TypeScript we should
+// reconcile to import the union from there.
+export const ADD_TO_VIEWED_DAPP = 'ADD_TO_VIEWED_DAPP' as const;
+
+export interface BrowserHistoryItem {
+  url: string;
+  name: string;
+}
+
+export interface BrowserFavicon {
+  origin: string;
+  url: string;
+}
+
+export interface BrowserTab {
+  url: string;
+  id: number;
+  linkType?: string;
+  [key: string]: unknown;
+}
+
+export interface BrowserState {
+  history: BrowserHistoryItem[];
+  whitelist: string[];
+  tabs: BrowserTab[];
+  favicons: BrowserFavicon[];
+  activeTab: number | null;
+  visitedDappsByHostname: Record<string, boolean>;
+}
+
+export type BrowserAction =
+  | { type: typeof ADD_TO_VIEWED_DAPP; hostname: string }
+  | { type: 'ADD_TO_BROWSER_HISTORY'; url: string; name: string }
+  | { type: 'ADD_TO_BROWSER_WHITELIST'; url: string }
+  | {
+      type: 'CLEAR_BROWSER_HISTORY';
+      id: number;
+      metricsEnabled: boolean;
+      marketingEnabled: boolean;
+    }
+  | { type: 'CLOSE_ALL_TABS' }
+  | { type: 'CREATE_NEW_TAB'; url: string; linkType?: string; id: number }
+  | { type: 'CLOSE_TAB'; id: number }
+  | { type: 'SET_ACTIVE_TAB'; id: number }
+  | { type: 'UPDATE_TAB'; id: number; data: Partial<BrowserTab> }
+  | { type: 'STORE_FAVICON_URL'; origin: string; url: string };
+
+const initialState: BrowserState = {
   history: [],
   whitelist: [],
   tabs: [],
@@ -11,9 +59,13 @@ const initialState = {
   // Keep track of viewed Dapps, which is used for MetaMetricsEvents.DAPP_VIEWED event
   visitedDappsByHostname: {},
 };
-const browserReducer = (state = initialState, action) => {
+
+const browserReducer = (
+  state: BrowserState = initialState,
+  action: BrowserAction,
+): BrowserState => {
   switch (action.type) {
-    case BrowserActionTypes.ADD_TO_VIEWED_DAPP: {
+    case ADD_TO_VIEWED_DAPP: {
       const { hostname } = action;
       return {
         ...state,
