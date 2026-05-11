@@ -2636,4 +2636,4 @@ const mapStateToProps = (state: RootState) => ({
 export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   withIsOriginalNativeToken,
-)(withMetricsAwareness(NetworkSettings));
+)(withMetricsAwareness(NetworkSettings)) as unknown as React.ComponentType<unknown>;
