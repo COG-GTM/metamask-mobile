@@ -1,13 +1,30 @@
 import Engine from '../Engine';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
+import type {
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
 import { selectEvmNetworkConfigurationsByChainId } from '../../selectors/networkController';
 import { store } from '../../store';
 import {
   validateChainId,
   findExistingNetwork,
   switchToNetwork,
+  type RequestUserApproval,
+  type SwitchAnalyticsParams,
+  type SwitchToNetworkHooks,
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
+
+/**
+ * Hook functions consumed by {@link wallet_switchEthereumChain}.
+ */
+export interface SwitchEthereumChainHooks extends SwitchToNetworkHooks {
+  getCurrentChainIdForDomain: (origin: string) => string;
+  getNetworkConfigurationByChainId: (chainId: string) => unknown;
+}
 
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
@@ -17,7 +34,7 @@ import { MESSAGE_TYPE } from '../createTracingMiddleware';
  * @param params.requestUserApproval - The callback to trigger user approval flow.
  * @param params.analytics - Analytics parameters to be passed when tracking event via `MetaMetrics`.
  * @param params.hooks - Method hooks passed to the method implementation.
- * @returns {void}.
+ * @returns void.
  */
 export const wallet_switchEthereumChain = async ({
   req,
@@ -25,14 +42,20 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: {
+  req: JsonRpcRequest<JsonRpcParams> & { origin: string };
+  res: PendingJsonRpcResponse<Json>;
+  requestUserApproval: RequestUserApproval;
+  analytics: SwitchAnalyticsParams;
+  hooks: SwitchEthereumChainHooks;
+}): Promise<void> => {
   const {
     CurrencyRateController,
     NetworkController,
     MultichainNetworkController,
     SelectedNetworkController,
   } = Engine.context;
-  const params = req.params?.[0];
+  const params = Array.isArray(req.params) ? req.params[0] : undefined;
   const { origin } = req;
   if (!params || typeof params !== 'object') {
     throw rpcErrors.invalidParams({
@@ -41,8 +64,8 @@ export const wallet_switchEthereumChain = async ({
       )}`,
     });
   }
-  const { chainId } = params;
-  const allowedKeys = {
+  const { chainId } = params as { chainId?: unknown };
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
@@ -63,9 +86,9 @@ export const wallet_switchEthereumChain = async ({
       SelectedNetworkController.getNetworkClientIdForDomain(origin);
     const {
       configuration: { chainId: currentDomainSelectedChainId },
-    } = NetworkController.getNetworkClientById(
+    } = (NetworkController.getNetworkClientById(
       currentDomainSelectedNetworkClientId,
-    ) || { configuration: {} };
+    ) as { configuration: { chainId?: string } }) || { configuration: {} };
 
     if (currentDomainSelectedChainId === _chainId) {
       res.result = null;
@@ -78,17 +101,22 @@ export const wallet_switchEthereumChain = async ({
       currentChainIdForOrigin,
     );
 
-    const toNetworkConfiguration =
-      hooks.getNetworkConfigurationByChainId(chainId);
+    const toNetworkConfiguration = hooks.getNetworkConfigurationByChainId(
+      chainId as string,
+    );
 
     await switchToNetwork({
       network: existingNetwork,
       chainId: _chainId,
-      controllers: {
-        CurrencyRateController,
-        MultichainNetworkController,
-        SelectedNetworkController,
-      },
+      // Preserved from legacy JS implementation: callers pass an additional
+      // `controllers` field. It is forwarded verbatim to avoid runtime change.
+      ...({
+        controllers: {
+          CurrencyRateController,
+          MultichainNetworkController,
+          SelectedNetworkController,
+        },
+      } as Record<string, unknown>),
       requestUserApproval,
       analytics,
       origin,
@@ -110,7 +138,19 @@ export const wallet_switchEthereumChain = async ({
   });
 };
 
-export const switchEthereumChainHandler = {
+interface SwitchEthereumChainHandler {
+  methodNames: string[];
+  implementation: (params: {
+    req: JsonRpcRequest<JsonRpcParams> & { origin: string };
+    res: PendingJsonRpcResponse<Json>;
+    requestUserApproval: RequestUserApproval;
+    analytics: SwitchAnalyticsParams;
+    hooks: SwitchEthereumChainHooks;
+  }) => Promise<void>;
+  hookNames: Record<string, true>;
+}
+
+export const switchEthereumChainHandler: SwitchEthereumChainHandler = {
   methodNames: [MESSAGE_TYPE.SWITCH_ETHEREUM_CHAIN],
   implementation: wallet_switchEthereumChain,
   hookNames: {
