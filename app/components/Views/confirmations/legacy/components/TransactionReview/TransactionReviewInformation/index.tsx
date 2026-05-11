@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { PureComponent } from 'react';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -232,12 +233,12 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
   };
 
   getTotalFiat = (
-    asset,
-    totalGas,
-    conversionRate,
-    exchangeRate,
-    currentCurrency,
-    amountToken,
+    asset: any,
+    totalGas: any,
+    conversionRate: any,
+    exchangeRate: any,
+    currentCurrency: any,
+    amountToken: any,
   ) => {
     let total = 0;
     const gasFeeFiat = weiToFiatNumber(totalGas, conversionRate);
@@ -273,7 +274,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
     edit && edit();
   };
 
-  getRenderTotals = (totalGas, totalGasFiat) => {
+  getRenderTotals = (totalGas: any, totalGasFiat) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
@@ -332,12 +333,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
     return isTestNet(chainId);
   };
 
-  getRenderTotalsEIP1559 = ({
-    gasFeeMinNative,
-    gasFeeMinConversion,
-    gasFeeMaxNative,
-    gasFeeMaxConversion,
-  }) => {
+  getRenderTotalsEIP1559 = ({ gasFeeMinNative, gasFeeMinConversion, gasFeeMaxNative, gasFeeMaxConversion }: { gasFeeMinNative: any; gasFeeMinConversion: any; gasFeeMaxNative: any; gasFeeMaxConversion: any }) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,

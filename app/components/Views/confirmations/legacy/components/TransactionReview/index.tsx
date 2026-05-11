@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Eth from '@metamask/ethjs-query';
 import { withNavigation } from '@react-navigation/compat';
 import React, { PureComponent } from 'react';
@@ -404,7 +405,7 @@ class TransactionReview extends PureComponent<Props, State> {
   getUrlFromBrowser() {
     const { browser } = this.props;
     let url;
-    browser.tabs.forEach((tab) => {
+    browser.tabs.forEach((tab: any) => {
       if (tab.id === browser.activeTab) {
         url = tab.url;
       }
