@@ -1015,15 +1015,21 @@ export const formatValueToMatchTokenDecimals = (
   return normalized;
 };
 
-export const safeBNToHex = (
+export function safeBNToHex(value: null): null;
+export function safeBNToHex(value: undefined): undefined;
+export function safeBNToHex(value: BN4): string;
+export function safeBNToHex(
   value: BN4 | null | undefined,
-): string | undefined => {
+): string | null | undefined;
+export function safeBNToHex(
+  value: BN4 | null | undefined,
+): string | null | undefined {
   if (value === null || value === undefined) {
-    return undefined;
+    return value;
   }
 
   return BNToHex(value);
-};
+}
 
 interface I18nLike {
   t: (key: string) => string;
