@@ -74,7 +74,7 @@ interface TransactionsViewProps {
   networkType?: string;
   tokens?: unknown[];
   chainId?: string;
-  tokenNetworkFilter?: { [key: string]: boolean };
+  tokenNetworkFilter?: { [key: string]: boolean }[];
 }
 
 const TransactionsView = ({
@@ -123,15 +123,15 @@ const TransactionsView = ({
           selectedAddress,
           networkId,
           chainId ?? '',
-          tokenNetworkFilter ?? {},
+          tokenNetworkFilter ?? [],
         );
 
         if (!filter) return false;
 
         tx.insertImportTime = addAccountTimeFlagFilter(
           tx,
-          addedAccountTime,
-          accountAddedTimeInsertPointFound,
+          (addedAccountTime ?? 0) as unknown as object,
+          accountAddedTimeInsertPointFound as unknown as object,
         );
         if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
 
