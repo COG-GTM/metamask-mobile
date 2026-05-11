@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
 import React, { PureComponent } from 'react';
@@ -17,7 +18,6 @@ import { connect } from 'react-redux';
 import {
   setSelectedAsset,
   prepareTransaction,
-  setTransactionObject,
   resetTransaction,
   setMaxValueMode,
 } from '../../../../../../actions/transaction';
@@ -376,7 +376,6 @@ const createStyles = (colors: any) =>
     },
   });
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface AmountProps {
   accounts?: any;
   collectibles?: any;
@@ -423,7 +422,6 @@ interface AmountState {
   isRedesignedTransferTransactionLoading?: any;
   [key: string]: any;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 
 /**
@@ -603,7 +601,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         )}`;
       }
     }
-    if (value && value.includes(',')) {
+    if (value?.includes(',')) {
       value = inputValue.replace(',', '.');
     }
 
@@ -868,9 +866,9 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       hasExchangeRate,
       comma;
     // Remove spaces from input
-    inputValue = inputValue && inputValue.replace(regex.whiteSpaces, '');
+    inputValue = inputValue?.replace(regex.whiteSpaces, '');
     // Handle semicolon for other languages
-    if (inputValue && inputValue.includes(',')) {
+    if (inputValue?.includes(',')) {
       comma = true;
       inputValue = inputValue.replace(',', '.');
     }
@@ -933,7 +931,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         renderableInputValueConversion = `${inputValueConversion} ${selectedAsset.symbol}`;
       }
     }
-    if (comma) inputValue = inputValue && inputValue.replace('.', ',');
+    if (comma) inputValue = inputValue?.replace('.', ',');
     inputValueConversion =
       inputValueConversion === '0' ? undefined : inputValueConversion;
     this.setState({
@@ -978,9 +976,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       // Wait for input to mount first
       setTimeout(
         () =>
-          this.amountInput &&
-          this.amountInput.current &&
-          this.amountInput.current.focus(),
+          this.amountInput?.current?.focus(),
         500,
       );
     }

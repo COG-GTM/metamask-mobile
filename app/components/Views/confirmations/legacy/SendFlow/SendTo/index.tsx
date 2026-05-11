@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
 import React, { Fragment, PureComponent } from 'react';
@@ -67,7 +68,6 @@ import { selectAddressBook } from '../../../../../../selectors/addressBookContro
 
 const dummy = () => true;
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface SendFlowProps {
   addressBook?: any;
   globalChainId?: any;
@@ -105,7 +105,6 @@ interface SendFlowState {
   showAmbiguousAcountWarning?: any;
   [key: string]: any;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 
 /**
@@ -158,9 +157,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
     const networkAddressBook = addressBook[globalChainId] || {};
     if (!Object.keys(networkAddressBook).length) {
       setTimeout(() => {
-        this.addressToInputRef &&
-          this.addressToInputRef.current &&
-          this.addressToInputRef.current.focus();
+        this.addressToInputRef?.current?.focus();
       }, 500);
     }
     //Fills in to address and sets the transaction if coming from QR code scan
@@ -297,9 +294,6 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
   };
 
   renderBuyEth = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
-
     if (!this.props.isNativeTokenBuySupported) {
       return null;
     }
@@ -393,8 +387,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
 
   onToSelectedAddressChange = (toAccount: any) => {
     const currentChain =
-      this.props.ambiguousAddressEntries &&
-      this.props.ambiguousAddressEntries[this.props.globalChainId];
+      this.props.ambiguousAddressEntries?.[this.props.globalChainId];
     const isAmbiguousAddress = includes(currentChain, toAccount);
     if (isAmbiguousAddress) {
       this.setState({ showAmbiguousAcountWarning: isAmbiguousAddress });
@@ -471,13 +464,11 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
     );
     const existingContact =
       checksummedAddress &&
-      addressBook[globalChainId] &&
-      addressBook[globalChainId][checksummedAddress];
+      addressBook[globalChainId]?.[checksummedAddress];
     const displayConfusableWarning =
       !existingContact && confusableCollection && !!confusableCollection.length;
     const displayAsWarning =
-      confusableCollection &&
-      confusableCollection.length &&
+      confusableCollection?.length &&
       !confusableCollection.some(hasZeroWidthPoints);
     const explanations =
       displayConfusableWarning &&

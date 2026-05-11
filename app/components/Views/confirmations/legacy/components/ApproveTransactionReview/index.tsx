@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
 import React, { PureComponent } from 'react';
@@ -116,7 +117,6 @@ const {
   ASSET: { ERC20 },
 } = TransactionTypes;
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface ApproveTransactionReviewProps {
   onCancel?: any;
   onConfirm?: any;
@@ -191,7 +191,6 @@ interface ApproveTransactionReviewState {
   unroundedAccountBalance?: any;
   [key: string]: any;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 
 /**
@@ -609,7 +608,7 @@ class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewPro
       tokenDecimals,
       tokenName,
     });
-    onModeChange && onModeChange('edit');
+    onModeChange?.('edit');
   };
 
   openLinkAboutGas = () =>
@@ -1158,7 +1157,7 @@ class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewPro
 
   onCancelPress = () => {
     const { onCancel, transaction } = this.props;
-    onCancel && onCancel();
+    onCancel?.();
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.APPROVAL_PERMISSION_UPDATED)
@@ -1190,7 +1189,7 @@ class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewPro
       return this.setState({ isReadyToApprove: true });
     }
 
-    return onConfirm && onConfirm();
+    return onConfirm?.();
   };
 
   goToFaucet = () => {

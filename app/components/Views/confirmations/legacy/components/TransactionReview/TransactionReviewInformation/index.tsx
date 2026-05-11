@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { PureComponent } from 'react';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -235,7 +235,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
   };
 
   getTotalFiat = (
-    asset: any,
+    _asset: any,
     totalGas: any,
     conversionRate: any,
     exchangeRate: any,

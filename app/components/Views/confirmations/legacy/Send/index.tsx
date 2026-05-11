@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
 import React, { PureComponent } from 'react';
@@ -92,7 +93,6 @@ const createStyles = (colors: any) =>
     },
   });
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface SendProps {
   navigation: any;
   resetTransaction: () => void;
@@ -124,7 +124,6 @@ interface SendState {
   transactionSubmitted: boolean;
   [key: string]: any;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * View that wraps the wraps the "Send" screen
@@ -198,8 +197,7 @@ class Send extends PureComponent<SendProps, SendState> {
       toggleDappTransactionModal,
     } = this.props;
     this.updateNavBar();
-    navigation &&
-      navigation.setParams({
+    navigation?.setParams({
         mode: REVIEW,
         dispatch: this.onModeChange,
         disableModeChange:
@@ -238,8 +236,7 @@ class Send extends PureComponent<SendProps, SendState> {
       const prevTxMeta = prevRoute.params?.txMeta;
       const currentTxMeta = route.params?.txMeta;
       if (
-        currentTxMeta &&
-        currentTxMeta.source &&
+        currentTxMeta?.source &&
         (!prevTxMeta.source || prevTxMeta.source !== currentTxMeta.source)
       ) {
         this.handleNewTxMeta(currentTxMeta);
@@ -253,8 +250,7 @@ class Send extends PureComponent<SendProps, SendState> {
     const assetTypeDefined =
       prevProps.transaction.assetType === undefined && assetType === 'ERC20';
     if (assetTypeDefined || erc20ContractBalanceChanged) {
-      navigation &&
-        navigation.setParams({
+      navigation?.setParams({
           disableModeChange: contractBalance === undefined,
         });
     }
@@ -281,7 +277,15 @@ class Send extends PureComponent<SendProps, SendState> {
   /**
    * Handle txMeta object, setting neccesary state to make a transaction
    */
-  handleNewTxMeta = async ({ target_address: any, action, parameters = null }) => {
+  handleNewTxMeta = async ({
+    target_address,
+    action,
+    parameters = null,
+  }: {
+    target_address: string;
+    action: string;
+    parameters?: Record<string, unknown> | null;
+  }) => {
     const { addressBook, globalChainId, internalAccounts, selectedAddress } =
       this.props;
 
@@ -299,7 +303,7 @@ class Send extends PureComponent<SendProps, SendState> {
           ...txRecipient,
         };
 
-        if (parameters && parameters.value) {
+        if (parameters?.value) {
           newTxMeta.value = BNToHex(toBN(parameters.value));
           newTxMeta.transactionValue = newTxMeta.value;
           newTxMeta.readableValue = fromWei(newTxMeta.value);
@@ -569,8 +573,7 @@ class Send extends PureComponent<SendProps, SendState> {
         }
       }
       const existingContact =
-        addressBook[globalChainId] &&
-        addressBook[globalChainId][checksummedAddress];
+        addressBook[globalChainId]?.[checksummedAddress];
       if (!existingContact) {
         AddressBookController.set(checksummedAddress, '', globalChainId);
       }
@@ -599,7 +602,7 @@ class Send extends PureComponent<SendProps, SendState> {
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: strings('navigation.ok') }],
         );
         Logger.error(error, 'error while trying to send transaction (Send)');
@@ -709,7 +712,7 @@ class Send extends PureComponent<SendProps, SendState> {
    */
   onModeChange = (mode: any) => {
     const { navigation } = this.props;
-    navigation && navigation.setParams({ mode });
+    navigation?.setParams({ mode });
     this.mounted && this.setState({ mode });
     InteractionManager.runAfterInteractions(() => {
       mode === REVIEW && this.trackConfirmScreen();

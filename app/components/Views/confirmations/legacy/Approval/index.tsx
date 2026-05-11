@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
 import React, { PureComponent } from 'react';
@@ -73,7 +74,6 @@ const styles = StyleSheet.create({
   },
 });
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface ApprovalProps {
   selectedAddress?: any;
   navigation?: any;
@@ -100,7 +100,6 @@ interface ApprovalState {
   isChangeInSimulationModalOpen?: any;
   [key: string]: any;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 
 /**
@@ -215,8 +214,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
       'change',
       this.handleAppStateChange,
     );
-    navigation &&
-      navigation.setParams({ mode: REVIEW, dispatch: this.onModeChange });
+    navigation?.setParams({ mode: REVIEW, dispatch: this.onModeChange });
     this.initialise();
   };
 
@@ -392,8 +390,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
   showWalletConnectNotification = (confirmation = false) => {
     const { transaction } = this.props;
     InteractionManager.runAfterInteractions(() => {
-      transaction.origin &&
-        transaction.origin.startsWith(WALLET_CONNECT_ORIGIN) &&
+      transaction.origin?.startsWith(WALLET_CONNECT_ORIGIN) &&
         NotificationManager.showSimpleNotification({
           status: `simple_notification${!confirmation ? '_rejected' : ''}`,
           duration: 5000,
@@ -421,7 +418,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
     );
   };
 
-  onLedgerConfirmation = (approve: any, transactionId, gaParams) => {
+  onLedgerConfirmation = (approve: any, _transactionId: string, gaParams: Record<string, unknown>) => {
     try {
       //manual cancel from UI when transaction is awaiting from ledger confirmation
       if (!approve) {
@@ -456,7 +453,15 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
   /**
    * Callback on confirm transaction
    */
-  onConfirm = async ({ gasEstimateType: any, EIP1559GasData, gasSelected }) => {
+  onConfirm = async ({
+    gasEstimateType,
+    EIP1559GasData,
+    gasSelected,
+  }: {
+    gasEstimateType?: string;
+    EIP1559GasData?: any;
+    gasSelected?: string;
+  }) => {
     const { KeyringController, ApprovalController } = Engine.context;
     const {
       transactions,
@@ -579,7 +584,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: strings('navigation.ok') }],
         );
         Logger.error(
@@ -624,7 +629,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
    */
   onModeChange = (mode: any) => {
     const { navigation } = this.props;
-    navigation && navigation.setParams({ mode });
+    navigation?.setParams({ mode });
     this.setState({ mode });
     InteractionManager.runAfterInteractions(() => {
       mode === REVIEW && this.trackConfirmScreen();
@@ -639,7 +644,13 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
    * @param {object} transaction - Transaction object
    * @param {object} selectedAsset - Asset object
    */
-  prepareTransaction = ({ EIP1559GasData: any, gasEstimateType }) => {
+  prepareTransaction = ({
+    EIP1559GasData,
+    gasEstimateType,
+  }: {
+    EIP1559GasData?: any;
+    gasEstimateType?: string;
+  }) => {
     const { transaction: rawTransaction, showCustomNonce } = this.props;
     const { assetType, gas, gasPrice, selectedAsset } = rawTransaction;
 

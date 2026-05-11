@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
 /* eslint-disable react/prop-types */
@@ -19,7 +20,6 @@ import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface AddressContact {
   name?: string;
   address: string;
@@ -38,7 +38,6 @@ interface AddressListProps {
   onlyRenderAddressBook?: boolean;
   reloadAddressList?: boolean;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 const LabelElement = (styles: { labelElementWrapper: object; contactLabel: object }, label: string) => (
   <View key={label} style={styles.labelElementWrapper}>

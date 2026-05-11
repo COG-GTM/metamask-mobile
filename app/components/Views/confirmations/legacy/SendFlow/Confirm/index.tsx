@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
 import React, { PureComponent } from 'react';
@@ -148,7 +149,6 @@ const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
 let intervalIdForEstimatedL1Fee;
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface ConfirmProps {
   navigation?: any;
   route?: any;
@@ -213,7 +213,6 @@ interface ConfirmState {
   hasHandledFirstGasUpdate?: any;
   [key: string]: any;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 
 /**
@@ -452,7 +451,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       navigation.navigate(Routes.WALLET_VIEW);
       Alert.alert(
         strings('transactions.transaction_error'),
-        error && error.message,
+        error?.message,
         [{ text: 'OK' }],
       );
       return;
@@ -890,7 +889,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       }
     } finally {
       // Error handling derived to LedgerConfirmationModal component
-      navigation && navigation.dangerouslyGetParent()?.popToTop();
+      navigation?.dangerouslyGetParent()?.popToTop();
     }
   };
 
@@ -1023,7 +1022,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: 'OK' }],
         );
         Logger.error(error, 'error while trying to send transaction (Confirm)');
@@ -1211,7 +1210,17 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     });
   };
 
-  updateGasState = ({ gasTxn: any, gasObj, gasSelect, txnType }) => {
+  updateGasState = ({
+    gasTxn,
+    gasObj,
+    gasSelect,
+    txnType,
+  }: {
+    gasTxn?: any;
+    gasObj?: any;
+    gasSelect?: any;
+    txnType?: any;
+  }) => {
     this.setState({
       gasSelectedTemp: gasSelect,
       gasSelected: gasSelect,
@@ -1566,7 +1575,7 @@ const mapDispatchToProps = (dispatch: any) => ({
   removeFavoriteCollectible: (selectedAddress: any, chainId, collectible) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
   showAlert: (config: any) => dispatch(showAlert(config)),
-  updateConfirmationMetric: ({ id: any, params }) =>
+  updateConfirmationMetric: ({ id, params }: { id: string; params: unknown }) =>
     dispatch(updateConfirmationMetric({ id, params })),
   setTransactionValue: (value: any) => dispatch(setTransactionValue(value)),
 });

@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Eth from '@metamask/ethjs-query';
 import { withNavigation } from '@react-navigation/compat';
 import React, { PureComponent } from 'react';
@@ -277,7 +277,7 @@ class TransactionReview extends PureComponent<Props, State> {
           ({ address }) => address === safeToChecksumAddress(to),
         );
       }
-      const symbol = (contract && contract.symbol) || 'ERC20';
+      const symbol = (contract?.symbol) || 'ERC20';
       assetAmount = `${decodeTransferData('transfer', data)[1]} ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();

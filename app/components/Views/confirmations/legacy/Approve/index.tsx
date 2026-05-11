@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
 import React, { PureComponent } from 'react';
@@ -49,7 +50,6 @@ import {
   selectEvmNetworkConfigurationsByChainId,
   selectProviderTypeByChainId,
   selectRpcUrlByChainId,
-  selectEvmChainId,
 } from '../../../../../selectors/networkController';
 import {
   selectConversionRateByChainId,
@@ -90,7 +90,6 @@ import { isNonEvmChainId } from '../../../../../core/Multichain/utils';
 const EDIT = 'edit';
 const REVIEW = 'review';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface ApproveProps {
   accounts?: any;
   transaction?: any;
@@ -142,7 +141,6 @@ interface ApproveState {
   isChangeInSimulationModalOpen?: any;
   [key: string]: any;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 
 /**
@@ -432,7 +430,7 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
     }
   };
 
-  onLedgerConfirmation = (approve: any, transactionId, gaParams) => {
+  onLedgerConfirmation = (approve: any, _transactionId: string, gaParams: Record<string, unknown>) => {
     const { metrics } = this.props;
     try {
       //manual cancel from UI when transaction is awaiting from ledger confirmation
@@ -595,7 +593,7 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: 'OK' }],
         );
         Logger.error(error, 'error while trying to send transaction (Approve)');
