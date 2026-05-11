@@ -1,8 +1,6 @@
 import React, { PureComponent } from 'react';
 import { View } from 'react-native';
 import { WebView } from '@metamask/react-native-webview';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RouteProp } from '@react-navigation/native';
 import { getWebviewNavbar } from '../../UI/Navbar';
 import Share from 'react-native-share'; // eslint-disable-line  import/default
 import Logger from '../../../util/Logger';
@@ -14,15 +12,24 @@ interface SimpleWebviewParams {
   title?: string;
 }
 
+interface SimpleWebviewNavigation {
+  setOptions: (options: unknown) => void;
+  setParams?: (params: { dispatch: () => void }) => void;
+}
+
+interface SimpleWebviewRoute {
+  params?: SimpleWebviewParams;
+}
+
 interface SimpleWebviewProps {
   /**
    * react-navigation object used to switch between screens
    */
-  navigation: StackNavigationProp<Record<string, object | undefined>>;
+  navigation: SimpleWebviewNavigation;
   /**
    * Object that represents the current route info like params passed to it
    */
-  route: RouteProp<Record<string, SimpleWebviewParams | undefined>, string>;
+  route: SimpleWebviewRoute;
 }
 
 export default class SimpleWebview extends PureComponent<SimpleWebviewProps> {
@@ -38,7 +45,7 @@ export default class SimpleWebview extends PureComponent<SimpleWebviewProps> {
   componentDidMount = () => {
     const { navigation } = this.props;
     this.updateNavBar();
-    navigation && navigation.setParams({ dispatch: this.share });
+    navigation?.setParams?.({ dispatch: this.share });
   };
 
   componentDidUpdate = () => {

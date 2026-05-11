@@ -10,8 +10,6 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import StyledButton from '../../UI/StyledButton';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RouteProp } from '@react-navigation/native';
 
 import { baseStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
@@ -49,20 +47,29 @@ const createStyles = (colors: ThemeColors) =>
   });
 
 interface EnterPasswordSimpleRouteParams {
-  onPasswordSet: (password: string) => void;
+  onPasswordSet?: (password: string) => void;
+}
+
+interface EnterPasswordSimpleNavigation {
+  setOptions: (options: unknown) => void;
+  pop?: () => void;
+  goBack?: () => void;
+  navigate?: (route: string, params?: unknown) => void;
+}
+
+interface EnterPasswordSimpleRoute {
+  params?: EnterPasswordSimpleRouteParams;
 }
 
 interface EnterPasswordSimpleProps {
   /**
    * The navigator object
    */
-  navigation: StackNavigationProp<Record<string, object | undefined>> & {
-    pop: () => void;
-  };
+  navigation: EnterPasswordSimpleNavigation;
   /**
    * Object that represents the current route info like params passed to it
    */
-  route: RouteProp<Record<string, EnterPasswordSimpleRouteParams>, string>;
+  route?: EnterPasswordSimpleRoute;
 }
 
 interface EnterPasswordSimpleState {
@@ -122,8 +129,8 @@ export default class EnterPasswordSimple extends PureComponent<
         strings('choose_password.password_length_error'),
       );
     } else {
-      this.props.route.params.onPasswordSet(this.state.password);
-      this.props.navigation.pop();
+      this.props.route?.params?.onPasswordSet?.(this.state.password);
+      this.props.navigation.pop?.();
       return;
     }
   };

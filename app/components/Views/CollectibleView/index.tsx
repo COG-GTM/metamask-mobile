@@ -13,12 +13,11 @@ import StyledButton from '../../UI/StyledButton';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
-import collectiblesTransferInformation from '../../../util/collectibles-transfer';
+// eslint-disable-next-line import/no-unresolved
+import collectiblesTransferInformation from '../../../util/collectibles-transfer.json';
+import type { Dispatch, AnyAction } from 'redux';
 import { newAssetTransaction } from '../../../actions/transaction';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RouteProp } from '@react-navigation/native';
-
 type ThemeColors = typeof mockTheme.colors;
 
 const createStyles = (colors: ThemeColors) =>
@@ -55,21 +54,36 @@ interface CollectibleRouteParams {
   [key: string]: unknown;
 }
 
-interface CollectibleViewProps {
+interface CollectibleViewNavigation {
+  navigate: (route: string, params?: unknown) => void;
+  setOptions?: (options: unknown) => void;
+}
+
+interface CollectibleViewRoute {
+  params: CollectibleRouteParams;
+}
+
+interface CollectibleViewOwnProps {
   /**
    * navigation object required to access the props
    * passed by the parent component
    */
-  navigation: StackNavigationProp<Record<string, object | undefined>>;
+  navigation: CollectibleViewNavigation;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: CollectibleViewRoute;
+}
+
+interface CollectibleViewDispatchProps {
   /**
    * Start transaction with asset
    */
   newAssetTransaction: (selectedAsset: CollectibleRouteParams) => void;
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: RouteProp<Record<string, CollectibleRouteParams>, string>;
 }
+
+type CollectibleViewProps = CollectibleViewOwnProps &
+  CollectibleViewDispatchProps;
 
 /**
  * View that displays a specific collectible asset
@@ -156,9 +170,16 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
   }
 }
 
-const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
   newAssetTransaction: (selectedAsset: CollectibleRouteParams) =>
     dispatch(newAssetTransaction(selectedAsset)),
 });
 
-export default connect(null, mapDispatchToProps)(CollectibleView);
+export default connect<
+  Record<string, never>,
+  CollectibleViewDispatchProps,
+  CollectibleViewOwnProps
+>(
+  null,
+  mapDispatchToProps,
+)(CollectibleView);

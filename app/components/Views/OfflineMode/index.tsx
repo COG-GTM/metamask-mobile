@@ -19,8 +19,6 @@ import AppConstants from '../../../core/AppConstants';
 import { connect } from 'react-redux';
 import { getInfuraBlockedSelector } from '../../../reducers/infuraAvailability';
 import { useTheme, mockTheme } from '../../../util/theme';
-import type { StackNavigationProp } from '@react-navigation/stack';
-
 type ThemeColors = typeof mockTheme.colors;
 
 const createStyles = (colors: ThemeColors) =>
@@ -59,13 +57,17 @@ const createStyles = (colors: ThemeColors) =>
 
 const astronautImage = require('../../../images/astronaut.png'); // eslint-disable-line import/no-commonjs
 
+interface OfflineModeNavigation {
+  pop?: () => void;
+  navigate?: (route: string, params?: unknown) => void;
+  setOptions?: (options: unknown) => void;
+}
+
 interface OfflineModeProps {
   /**
    * Object that represents the navigator
    */
-  navigation: StackNavigationProp<Record<string, object | undefined>> & {
-    pop: () => void;
-  };
+  navigation?: OfflineModeNavigation;
   /**
    * Whether infura was blocked or not
    */
@@ -84,12 +86,12 @@ const OfflineMode = ({ navigation, infuraBlocked }: OfflineModeProps) => {
 
   const tryAgain = () => {
     if (netinfo?.isConnected) {
-      navigation.pop();
+      navigation?.pop?.();
     }
   };
 
   const learnMore = () => {
-    navigation.navigate('Webview', {
+    navigation?.navigate?.('Webview', {
       screen: 'SimpleWebview',
       params: { url: AppConstants.URLS.CONNECTIVITY_ISSUES },
     });
@@ -128,9 +130,8 @@ const OfflineMode = ({ navigation, infuraBlocked }: OfflineModeProps) => {
   );
 };
 
-OfflineMode.navigationOptions = ({
-  navigation,
-}: OfflineModeNavigationOptionsProps) => getOfflineModalNavbar(navigation);
+OfflineMode.navigationOptions = (_props: OfflineModeNavigationOptionsProps) =>
+  getOfflineModalNavbar();
 
 const mapStateToProps = (state: unknown) => ({
   infuraBlocked: getInfuraBlockedSelector(state),

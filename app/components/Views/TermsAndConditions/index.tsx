@@ -6,7 +6,6 @@ import {
   Platform,
   type TextStyle,
 } from 'react-native';
-import type { StackNavigationProp } from '@react-navigation/stack';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
@@ -33,7 +32,8 @@ interface TermsAndConditionsProps {
   /**
    * navigation object required to push and pop other views
    */
-  navigation: StackNavigationProp<Record<string, object | undefined>>;
+  navigation?: { navigate: (route: string, params?: unknown) => void };
+  action?: string;
 }
 
 /**
@@ -45,7 +45,7 @@ export default class TermsAndConditions extends PureComponent<TermsAndConditions
 
   press = () => {
     const { navigation } = this.props;
-    navigation.navigate('Webview', {
+    navigation?.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: AppConstants.URLS.TERMS_AND_CONDITIONS,

@@ -7,10 +7,28 @@ import {
 } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import { TRANSACTION_TYPES } from '../../../util/transactions';
-import Summary from '../../Base/Summary';
-import Text from '../../Base/Text';
+import SummaryBase from '../../Base/Summary';
+import TextBase from '../../Base/Text';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { isTestNet } from '../../../util/networks';
+
+const Summary = SummaryBase as unknown as React.FC<{
+  children?: React.ReactNode;
+}> & {
+  Row: React.FC<{
+    children?: React.ReactNode;
+    end?: boolean;
+    last?: boolean;
+  }>;
+  Col: React.FC<{ children?: React.ReactNode; end?: boolean }>;
+  Separator: React.FC<unknown>;
+};
+const Text = TextBase as unknown as React.FC<
+  React.ComponentProps<typeof TextBase> & {
+    italic?: boolean;
+    children?: React.ReactNode;
+  }
+>;
 
 type ThemeColors = typeof mockTheme.colors;
 
@@ -73,7 +91,7 @@ export default class TransactionSummary extends PureComponent<TransactionSummary
       chainId,
     } = this.props;
 
-    const isTestNetResult = isTestNet(chainId);
+    const isTestNetResult = chainId ? isTestNet(chainId) : false;
 
     if (
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED_TOKEN ||
