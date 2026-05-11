@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  type ComponentType,
 } from 'react';
 import { View } from 'react-native';
 import { captureScreen } from 'react-native-view-shot';
@@ -49,7 +50,6 @@ import { isSolanaAccount } from '../../../core/Multichain/utils';
 import { useFocusEffect } from '@react-navigation/native';
 ///: END:ONLY_INCLUDE_IF
 import type { Dispatch } from 'redux';
-import type { ComponentType } from 'react';
 import type { RootState } from '../../../reducers';
 import type { ToastOptions } from '../../../component-library/components/Toast/Toast.types';
 

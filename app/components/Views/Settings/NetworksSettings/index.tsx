@@ -1,12 +1,12 @@
 import React, { PureComponent } from 'react';
 import type { RootState } from '../../../../reducers';
-import type { ImageSourcePropType } from 'react-native';
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  type ImageSourcePropType,
 } from 'react-native';
 import { connect } from 'react-redux';
 import ActionSheet from '@metamask/react-native-actionsheet';

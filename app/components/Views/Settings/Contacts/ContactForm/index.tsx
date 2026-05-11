@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import type { TextInput as TextInputType } from 'react-native';
 import {
   Platform,
   SafeAreaView,
@@ -8,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  type TextInput as TextInputType,
 } from 'react-native';
 import { fontStyles } from '../../../../../styles/common';
 import type { RootState } from '../../../../../reducers';

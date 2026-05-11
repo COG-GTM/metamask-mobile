@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import type { Dispatch } from 'redux';
-import type { TextInput as TextInputType } from 'react-native';
 import {
   ActivityIndicator,
   Alert,
@@ -9,6 +8,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Image,
+  type TextInput as TextInputType,
 } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';

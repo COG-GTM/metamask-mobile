@@ -1,7 +1,13 @@
 // Third party dependencies.
 import React, { PureComponent, ComponentType } from 'react';
-import type { ScrollView as ScrollViewType } from 'react-native';
-import { Linking, SafeAreaView, StyleSheet, Switch, View } from 'react-native';
+import {
+  Linking,
+  SafeAreaView,
+  StyleSheet,
+  Switch,
+  View,
+  type ScrollView as ScrollViewType,
+} from 'react-native';
 import { connect } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import type { Dispatch } from 'redux';

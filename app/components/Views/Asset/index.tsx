@@ -1,5 +1,5 @@
 import { swapsUtils } from '@metamask/swaps-controller/';
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type ComponentType } from 'react';
 import {
   ActivityIndicator,
   InteractionManager,
@@ -71,7 +71,6 @@ import { isNonEvmChainId } from '../../../core/Multichain/utils';
 import { isBridgeAllowed } from '../../UI/Bridge/utils';
 import { getIsSwapsAssetAllowed, getSwapsIsLive } from './utils';
 import type { Dispatch } from 'redux';
-import type { ComponentType } from 'react';
 import type { RootState } from '../../../reducers';
 import type { Hex } from '@metamask/utils';
 

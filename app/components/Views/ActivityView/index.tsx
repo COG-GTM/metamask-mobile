@@ -1,4 +1,9 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, {
+  useEffect,
+  useCallback,
+  useRef,
+  type ComponentType as RNComponentType,
+} from 'react';
 import {
   View,
   StyleSheet,
@@ -7,9 +12,7 @@ import {
   TextStyle,
   ViewStyle,
 } from 'react-native';
-import type { ComponentType as RNComponentType } from 'react';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
-import type { Theme } from '@metamask/design-tokens';
 import { RootState } from '../../../reducers';
 import { useSelector } from 'react-redux';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -43,7 +46,7 @@ import { selectNetworkName } from '../../../selectors/networkInfos';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DEFAULT_HEADERBASE_TITLE_TEXTVARIANT } from '../../../component-library/components/HeaderBase/HeaderBase.constants';
-import { typography } from '@metamask/design-tokens';
+import { typography, type Theme } from '@metamask/design-tokens';
 import { useStyles } from '../../hooks/useStyles';
 import {
   getFontFamily,

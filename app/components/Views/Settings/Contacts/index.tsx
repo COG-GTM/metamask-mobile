@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, type ComponentType } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
@@ -17,7 +17,6 @@ import { RootState } from '../../../../reducers';
 import type { AddressBookEntry } from '@metamask/address-book-controller';
 import type { Hex } from '@metamask/utils';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
-import type { ComponentType } from 'react';
 
 interface AddressListExtraProps {
   chainId: Hex;
@@ -48,9 +47,9 @@ const createStyles = (colors: { background: { default: string } }) =>
 const EDIT = 'edit';
 const ADD = 'add';
 
-type AddressBook = {
+interface AddressBook {
   [chainId: Hex]: { [address: string]: AddressBookEntry };
-};
+}
 
 interface OwnProps {
   /**

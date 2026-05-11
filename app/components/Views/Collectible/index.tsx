@@ -44,15 +44,15 @@ const createStyles = (colors: { background: { default: string } }) =>
     } as ViewStyle,
   });
 
-type CollectibleNavigation = {
+interface CollectibleNavigation {
   navigate: (...args: unknown[]) => void;
   setOptions?: (options: object) => void;
   push?: (...args: unknown[]) => void;
-};
+}
 
-type CollectibleRoute = {
+interface CollectibleRoute {
   params: CollectibleContractParams;
-};
+}
 
 interface OwnProps {
   /**
