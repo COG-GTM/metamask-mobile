@@ -14,7 +14,7 @@ import URL from 'url-parse';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { Theme } from '@metamask/design-tokens';
 import generateTestId from '../../../../wdio/utils/generateTestId';
-import { ETHEREUM_DETECTION_TITLE } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
+const ETHEREUM_DETECTION_TITLE = 'ethereum-detection-title';
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({

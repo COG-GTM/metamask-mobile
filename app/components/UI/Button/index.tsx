@@ -1,6 +1,8 @@
 import React, { ReactNode } from 'react';
 import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
-import GenericButton from '../GenericButton'; // eslint-disable-line import/no-unresolved
+// eslint-disable-next-line import/no-unresolved
+// @ts-expect-error - platform-specific module resolves via Metro
+import GenericButton from '../GenericButton';
 import { useTheme } from '../../../util/theme';
 import { Theme } from '@metamask/design-tokens';
 

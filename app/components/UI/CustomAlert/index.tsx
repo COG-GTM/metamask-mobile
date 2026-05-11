@@ -48,7 +48,7 @@ interface CustomAlertProps {
   isVisible?: boolean;
   onBackdropPress?: () => void;
   onSwipeComplete?: () => void;
-  swipeDirection?: string;
+  swipeDirection?: 'up' | 'down' | 'left' | 'right';
   children?: ReactNode;
 }
 

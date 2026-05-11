@@ -123,7 +123,7 @@ class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
       title =
         typeof this.props.title === 'string'
           ? this.props.title.substring(0, 1)
-          : getHost(url).substring(0, 1);
+          : getHost(url ?? '').substring(0, 1);
     }
 
     if (title && (!apiLogoUrl?.uri || renderIconUrlError)) {
@@ -174,4 +174,4 @@ class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
 
 WebsiteIcon.contextType = ThemeContext;
 
-export default withFaviconAwareness(WebsiteIcon);
+export default withFaviconAwareness(WebsiteIcon as unknown as React.ComponentClass<{ url: string }>);

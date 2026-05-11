@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { ImageStyle, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import AssetIcon from '../AssetIcon';
 import Identicon from '../Identicon';
 import isUrl from 'is-url';
@@ -23,6 +23,8 @@ const styles = StyleSheet.create({
 interface TokenAsset {
   address?: string;
   image?: string;
+  symbol?: string;
+  [key: string]: unknown;
 }
 
 interface TokenListEntry {
@@ -32,7 +34,7 @@ interface TokenListEntry {
 interface OwnProps {
   asset?: TokenAsset;
   containerStyle?: StyleProp<ViewStyle>;
-  iconStyle?: StyleProp<ViewStyle>;
+  iconStyle?: StyleProp<ImageStyle>;
 }
 
 interface StateProps {
@@ -49,7 +51,7 @@ const TokenImage = ({
 }: TokenImageProps) => {
   const isIpfsGatewayEnabled = useSelector(selectIsIpfsGatewayEnabled);
 
-  const assetImage = isUrl(asset?.image) ? asset?.image : null;
+  const assetImage = isUrl(asset?.image ?? '') ? asset?.image : null;
   const iconUrl =
     assetImage ||
     (asset?.address && tokenList[asset.address]?.iconUrl) ||

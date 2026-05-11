@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, View } from 'react-native';
+import React, { ReactNode } from 'react';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import StyledButton from '../../StyledButton';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     viewWrapper: {
       flexDirection: 'column',
@@ -41,12 +41,31 @@ const createStyles = (colors) =>
     },
   });
 
+interface ActionContentProps {
+  cancelButtonDisabled?: boolean;
+  cancelTestID?: string;
+  confirmTestID?: string;
+  cancelText?: string;
+  children?: ReactNode;
+  cancelButtonMode?: string;
+  confirmButtonMode?: string;
+  confirmDisabled?: boolean;
+  confirmText?: string;
+  displayCancelButton?: boolean;
+  displayConfirmButton?: boolean;
+  onCancelPress?: () => void;
+  onConfirmPress?: () => void;
+  viewWrapperStyle?: StyleProp<ViewStyle>;
+  viewContainerStyle?: StyleProp<ViewStyle>;
+  actionContainerStyle?: StyleProp<ViewStyle>;
+  childrenContainerStyle?: StyleProp<ViewStyle>;
+  verticalButtons?: boolean;
+}
+
 /**
  * View that renders the content of an action modal
- * The objective of this component is to reuse it in other places and not
- * only on ActionModal component
  */
-export default function ActionContent({
+function ActionContent({
   cancelTestID,
   confirmTestID,
   cancelText,
@@ -65,7 +84,7 @@ export default function ActionContent({
   actionContainerStyle,
   childrenContainerStyle,
   verticalButtons,
-}) {
+}: ActionContentProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -133,74 +152,4 @@ ActionContent.defaultProps = {
   childrenContainerStyle: null,
 };
 
-ActionContent.propTypes = {
-  cancelButtonDisabled: PropTypes.bool,
-  /**
-   * TestID for the cancel button
-   */
-  cancelTestID: PropTypes.string,
-  /**
-   * TestID for the confirm button
-   */
-  confirmTestID: PropTypes.string,
-  /**
-   * Text to show in the cancel button
-   */
-  cancelText: PropTypes.string,
-  /**
-   * Content to display above the action buttons
-   */
-  children: PropTypes.node,
-  /**
-   * Type of button to show as the cancel button
-   */
-  cancelButtonMode: PropTypes.string,
-  /**
-   * Type of button to show as the confirm button
-   */
-  confirmButtonMode: PropTypes.string,
-  /**
-   * Whether confirm button is disabled
-   */
-  confirmDisabled: PropTypes.bool,
-  /**
-   * Text to show in the confirm button
-   */
-  confirmText: PropTypes.string,
-  /**
-   * Whether cancel button should be displayed
-   */
-  displayCancelButton: PropTypes.bool,
-  /**
-   * Whether confirm button should be displayed
-   */
-  displayConfirmButton: PropTypes.bool,
-  /**
-   * Called when the cancel button is clicked
-   */
-  onCancelPress: PropTypes.func,
-  /**
-   * Called when the confirm button is clicked
-   */
-  onConfirmPress: PropTypes.func,
-  /**
-   * View wrapper style
-   */
-  viewWrapperStyle: PropTypes.object,
-  /**
-   * View container style
-   */
-  viewContainerStyle: PropTypes.object,
-  /**
-   * Action container style
-   */
-  actionContainerStyle: PropTypes.object,
-  /**
-   * Whether buttons are rendered vertically
-   */
-  verticalButtons: PropTypes.bool,
-  /**
-   * Children container style
-   */
-  childrenContainerStyle: PropTypes.object,
-};
+export default ActionContent;

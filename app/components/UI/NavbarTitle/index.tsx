@@ -1,25 +1,28 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactNode } from 'react';
 import { connect } from 'react-redux';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import Networks, { getDecimalChainId } from '../../../util/networks';
 import { strings } from '../../../../locales/i18n';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 import Routes from '../../../constants/navigation/Routes';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { withNavigation } from '@react-navigation/compat';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import {
   selectChainId,
   selectProviderConfig,
 } from '../../../selectors/networkController';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import Text, {
   TextVariant,
   TextColor,
 } from '../../../component-library/components/Texts/Text';
 import { selectNetworkName } from '../../../selectors/networkInfos';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+const createStyles = () =>
   StyleSheet.create({
     wrapper: {
       justifyContent: 'center',
@@ -31,58 +34,41 @@ const createStyles = (colors) =>
     },
   });
 
+interface ProviderConfig {
+  type?: string;
+  nickname?: string;
+  chainId?: string;
+}
+
+interface OwnProps {
+  title?: string;
+  translate?: boolean;
+  disableNetwork?: boolean;
+  showSelectedNetwork?: boolean;
+  networkName?: string;
+  children?: ReactNode;
+}
+
+interface NavigationProps {
+  navigation: NavigationProp<ParamListBase>;
+}
+
+interface StateProps {
+  providerConfig: ProviderConfig;
+  chainId: string;
+  selectedNetworkName: string;
+}
+
+type NavbarTitleProps = OwnProps &
+  NavigationProps &
+  IWithMetricsAwarenessProps &
+  StateProps;
+
 /**
  * UI PureComponent that renders inside the navbar
  * showing the view title and the selected network
  */
-class NavbarTitle extends PureComponent {
-  static propTypes = {
-    /**
-     * Object representing the configuration of the current selected network
-     */
-    providerConfig: PropTypes.object.isRequired,
-    /**
-     * Name of the current view
-     */
-    title: PropTypes.string,
-    /**
-     * Boolean that specifies if the title needs translation
-     */
-    translate: PropTypes.bool,
-    /**
-     * Boolean that specifies if the network can be changed
-     */
-    disableNetwork: PropTypes.bool,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that specifies if the network selected is displayed
-     */
-    showSelectedNetwork: PropTypes.bool,
-    /**
-     * Name of the network to display
-     */
-    networkName: PropTypes.string,
-    /**
-     * Content to display inside text element
-     */
-    children: PropTypes.node,
-    /**
-     * Selected multichain chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Selected network name
-     */
-    selectedNetworkName: PropTypes.string,
-  };
-
+class NavbarTitle extends PureComponent<NavbarTitleProps> {
   static defaultProps = {
     translate: true,
     showSelectedNetwork: true,
@@ -123,23 +109,28 @@ class NavbarTitle extends PureComponent {
       networkName,
       selectedNetworkName,
     } = this.props;
-    let name = null;
+    let name: string | null = null;
 
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    (this.context as unknown as Theme)?.colors || mockTheme.colors;
+    const styles = createStyles();
 
     if (selectedNetworkName || networkName) {
       name = networkName || selectedNetworkName;
-      // TODO: [SOLANA] Revisit this before shipping, some screens do not pass a network name as a prop, consider using the selector instead
     } else if (providerConfig.nickname) {
       name = providerConfig.nickname;
     } else {
+      const networksMap = Networks as Record<
+        string,
+        { name?: string; color?: string | null } | undefined
+      >;
+      const networkType = providerConfig.type;
       name =
-        (Networks[providerConfig.type] && Networks[providerConfig.type].name) ||
-        { ...Networks.rpc, color: null }.name;
+        (networkType && networksMap[networkType]?.name) ||
+        networksMap.rpc?.name ||
+        null;
     }
 
-    const realTitle = translate ? strings(title) : title;
+    const realTitle = translate && title ? strings(title) : title;
     return (
       <TouchableOpacity
         onPress={this.openNetworkList}
@@ -174,12 +165,18 @@ class NavbarTitle extends PureComponent {
 
 NavbarTitle.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
-  providerConfig: selectProviderConfig(state),
-  chainId: selectChainId(state),
-  selectedNetworkName: selectNetworkName(state),
+const mapStateToProps = (state: RootState): StateProps => ({
+  providerConfig: selectProviderConfig(state) as ProviderConfig,
+  chainId: selectChainId(state) as string,
+  selectedNetworkName: selectNetworkName(state) as string,
 });
 
 export default withNavigation(
-  connect(mapStateToProps)(withMetricsAwareness(NavbarTitle)),
+  connect(mapStateToProps)(
+    withMetricsAwareness(
+      NavbarTitle as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+    ),
+  ) as unknown as React.ComponentType<{
+    navigation?: NavigationProp<ParamListBase>;
+  }>,
 );
