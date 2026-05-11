@@ -1,11 +1,11 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
   View,
   Text,
+  type TextStyle,
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
@@ -19,10 +19,13 @@ import { protectWalletModalVisible } from '../../../actions/user';
 import ClipboardManager from '../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
+import type { Dispatch, AnyAction } from 'redux';
 
 const WIDTH = Dimensions.get('window').width - 88;
 
-const createStyles = (theme) =>
+type Theme = typeof mockTheme;
+
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     root: {
       flex: 1,
@@ -63,11 +66,11 @@ const createStyles = (theme) =>
       fontSize: 16,
       paddingHorizontal: 28,
       paddingVertical: 4,
-      ...fontStyles.normal,
+      ...(fontStyles.normal as TextStyle),
       color: theme.colors.text.default,
     },
     address: {
-      ...fontStyles.normal,
+      ...(fontStyles.normal as TextStyle),
       paddingHorizontal: 28,
       paddingVertical: 4,
       fontSize: 16,
@@ -76,33 +79,51 @@ const createStyles = (theme) =>
     },
   });
 
+interface AddressQRCodeStateProps {
+  /**
+   * Selected address as string
+   */
+  selectedAddress?: string;
+  /**
+   * redux flag that indicates if the user
+   * completed the seed phrase backup flow
+   */
+  seedphraseBackedUp?: boolean;
+}
+
+interface AddressQRCodeDispatchProps {
+  /**
+   * Triggers global alert
+   */
+  showAlert: (config: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: { msg: string };
+  }) => void;
+  /**
+   * Prompts protect wallet modal
+   */
+  protectWalletModalVisible: () => void;
+}
+
+interface AddressQRCodeOwnProps {
+  /**
+   * Callback to close the modal
+   */
+  closeQrModal: () => void;
+}
+
+type AddressQRCodeProps = AddressQRCodeStateProps &
+  AddressQRCodeDispatchProps &
+  AddressQRCodeOwnProps;
+
 /**
  * PureComponent that renders a public address view
  */
-class AddressQRCode extends PureComponent {
-  static propTypes = {
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-    /* Triggers global alert
-    */
-    showAlert: PropTypes.func,
-    /**
-    /* Callback to close the modal
-    */
-    closeQrModal: PropTypes.func,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-  };
+class AddressQRCode extends PureComponent<AddressQRCodeProps> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
 
   /**
    * Closes QR code modal
@@ -115,6 +136,7 @@ class AddressQRCode extends PureComponent {
 
   copyAccountToClipboard = async () => {
     const { selectedAddress } = this.props;
+    if (!selectedAddress) return;
     await ClipboardManager.setString(selectedAddress);
     this.props.showAlert({
       isVisible: true,
@@ -126,10 +148,11 @@ class AddressQRCode extends PureComponent {
 
   processAddress = () => {
     const { selectedAddress } = this.props;
+    if (!selectedAddress) return '';
     const processedAddress = `${selectedAddress.slice(0, 2)} ${selectedAddress
       .slice(2)
       .match(/.{1,4}/g)
-      .join(' ')}`;
+      ?.join(' ')}`;
     return processedAddress;
   };
 
@@ -174,16 +197,33 @@ class AddressQRCode extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+interface RootState {
+  user: { seedphraseBackedUp: boolean };
+  [key: string]: unknown;
+}
+
+const mapStateToProps = (state: RootState): AddressQRCodeStateProps => ({
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(
+    state as unknown as Parameters<
+      typeof selectSelectedInternalAccountFormattedAddress
+    >[0],
+  ),
   seedphraseBackedUp: state.user.seedphraseBackedUp,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (
+  dispatch: Dispatch<AnyAction>,
+): AddressQRCodeDispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 
-AddressQRCode.contextType = ThemeContext;
-
-export default connect(mapStateToProps, mapDispatchToProps)(AddressQRCode);
+export default connect<
+  AddressQRCodeStateProps,
+  AddressQRCodeDispatchProps,
+  AddressQRCodeOwnProps,
+  RootState
+>(
+  mapStateToProps,
+  mapDispatchToProps,
+)(AddressQRCode);

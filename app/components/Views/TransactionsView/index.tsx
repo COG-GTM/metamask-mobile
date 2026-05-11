@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
 import { connect, useSelector } from 'react-redux';
 import { withNavigation } from '@react-navigation/compat';
 import { showAlert } from '../../../actions/alert';
@@ -36,12 +35,47 @@ import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectTokenNetworkFilter } from '../../../selectors/preferencesController';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { PopularList } from '../../../util/networks/customNetworks';
+import type { Dispatch, AnyAction } from 'redux';
 
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
   },
 });
+
+interface TransactionTxParams {
+  from: string;
+  to?: string;
+  nonce?: string;
+}
+
+interface TransactionItem {
+  id: string;
+  status: string;
+  time: number;
+  chainId?: string;
+  txParams: TransactionTxParams;
+  insertImportTime?: boolean;
+  isTransfer?: boolean;
+  transferInformation?: unknown;
+}
+
+interface InternalAccount {
+  address: string;
+  metadata: { importTime: number };
+}
+
+interface TransactionsViewProps {
+  conversionRate?: number;
+  currentCurrency?: string;
+  selectedInternalAccount?: InternalAccount;
+  navigation?: unknown;
+  transactions?: TransactionItem[];
+  networkType?: string;
+  tokens?: unknown[];
+  chainId?: string;
+  tokenNetworkFilter?: { [key: string]: boolean };
+}
 
 const TransactionsView = ({
   navigation,
@@ -53,41 +87,43 @@ const TransactionsView = ({
   chainId,
   tokens,
   tokenNetworkFilter,
-}) => {
-  const [allTransactions, setAllTransactions] = useState([]);
-  const [submittedTxs, setSubmittedTxs] = useState([]);
-  const [confirmedTxs, setConfirmedTxs] = useState([]);
-  const [loading, setLoading] = useState();
+}: TransactionsViewProps) => {
+  const [allTransactions, setAllTransactions] = useState<TransactionItem[]>([]);
+  const [submittedTxs, setSubmittedTxs] = useState<TransactionItem[]>([]);
+  const [confirmedTxs, setConfirmedTxs] = useState<TransactionItem[]>([]);
+  const [loading, setLoading] = useState<boolean | undefined>();
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
   const selectedAddress = toChecksumHexAddress(
-    selectedInternalAccount?.address,
+    selectedInternalAccount?.address ?? '',
   );
 
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
 
   const filterTransactions = useCallback(
-    (networkId) => {
+    (networkId: string) => {
       let accountAddedTimeInsertPointFound = false;
       const addedAccountTime = selectedInternalAccount?.metadata.importTime;
 
-      const submittedTxs = [];
-      const confirmedTxs = [];
-      const submittedNonces = [];
+      const submittedTxsLocal: TransactionItem[] = [];
+      const confirmedTxsLocal: TransactionItem[] = [];
+      const submittedNonces: (string | undefined)[] = [];
 
-      const allTransactionsSorted = sortTransactions(transactions).filter(
+      const allTransactionsSorted = (
+        sortTransactions(transactions ?? []) as TransactionItem[]
+      ).filter(
         (tx, index, self) =>
           self.findIndex((_tx) => _tx.id === tx.id) === index,
       );
 
-      const allTransactions = allTransactionsSorted.filter((tx) => {
+      const allTransactionsAccum = allTransactionsSorted.filter((tx) => {
         const filter = filterByAddressAndNetwork(
           tx,
-          tokens,
+          tokens ?? [],
           selectedAddress,
           networkId,
-          chainId,
-          tokenNetworkFilter,
+          chainId ?? '',
+          tokenNetworkFilter ?? {},
         );
 
         if (!filter) return false;
@@ -104,10 +140,10 @@ const TransactionsView = ({
           case TX_SIGNED:
           case TX_UNAPPROVED:
           case TX_PENDING:
-            submittedTxs.push(tx);
+            submittedTxsLocal.push(tx);
             return false;
           case TX_CONFIRMED:
-            confirmedTxs.push(tx);
+            confirmedTxsLocal.push(tx);
             break;
         }
 
@@ -115,21 +151,21 @@ const TransactionsView = ({
       });
 
       const allTransactionsFiltered = isPopularNetwork
-        ? allTransactions.filter(
+        ? allTransactionsAccum.filter(
             (tx) =>
               tx.chainId === CHAIN_IDS.MAINNET ||
               tx.chainId === CHAIN_IDS.LINEA_MAINNET ||
               PopularList.some((network) => network.chainId === tx.chainId),
           )
-        : allTransactions.filter((tx) => tx.chainId === chainId);
+        : allTransactionsAccum.filter((tx) => tx.chainId === chainId);
 
-      const submittedTxsFiltered = submittedTxs.filter(({ txParams }) => {
+      const submittedTxsFiltered = submittedTxsLocal.filter(({ txParams }) => {
         const { from, nonce } = txParams;
         if (!toLowerCaseEquals(from, selectedAddress)) {
           return false;
         }
         const alreadySubmitted = submittedNonces.includes(nonce);
-        const alreadyConfirmed = confirmedTxs.find(
+        const alreadyConfirmed = confirmedTxsLocal.find(
           (tx) =>
             toLowerCaseEquals(
               safeToChecksumAddress(tx.txParams.from),
@@ -156,7 +192,7 @@ const TransactionsView = ({
 
       setAllTransactions(allTransactionsFiltered);
       setSubmittedTxs(submittedTxsFiltered);
-      setConfirmedTxs(confirmedTxs);
+      setConfirmedTxs(confirmedTxsLocal);
       setLoading(false);
     },
     [
@@ -195,46 +231,9 @@ const TransactionsView = ({
   );
 };
 
-TransactionsView.propTypes = {
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * InternalAccount object required to get account name, address and import time
-   */
-  selectedInternalAccount: PropTypes.object,
-  /**
-   * navigation object required to push new views
-   */
-  navigation: PropTypes.object,
-  /**
-   * An array that represents the user transactions
-   */
-  transactions: PropTypes.array,
-  /**
-   * A string represeting the network name
-   */
-  networkType: PropTypes.string,
-  /**
-   * Array of ERC20 assets
-   */
-  tokens: PropTypes.array,
-  /**
-   * Current chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * Array of network tokens filter
-   */
-  tokenNetworkFilter: PropTypes.object,
-};
+type RootState = Parameters<typeof selectChainId>[0];
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const chainId = selectChainId(state);
 
   return {
@@ -249,8 +248,9 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
+  showAlert: (config: Parameters<typeof showAlert>[0]) =>
+    dispatch(showAlert(config)),
 });
 
 export default connect(
