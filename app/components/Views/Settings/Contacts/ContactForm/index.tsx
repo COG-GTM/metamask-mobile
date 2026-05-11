@@ -178,7 +178,6 @@ interface ActionSheetInstance {
 class ContactForm extends PureComponent<Props, State> {
   static contextType = ThemeContext;
 
-  declare context: React.ContextType<typeof ThemeContext>;
 
   contactAddressToRemove: string | null = null;
 

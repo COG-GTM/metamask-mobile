@@ -99,7 +99,6 @@ interface State {
 class LockScreen extends PureComponent<Props, State> {
   static contextType = ThemeContext;
 
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: State = {
     ready: false,

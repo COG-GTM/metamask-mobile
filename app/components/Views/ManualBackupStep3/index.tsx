@@ -115,7 +115,6 @@ interface State {
 class ManualBackupStep3 extends PureComponent<Props, State> {
   static contextType = ThemeContext;
 
-  declare context: React.ContextType<typeof ThemeContext>;
 
   steps: string[] | undefined;
 

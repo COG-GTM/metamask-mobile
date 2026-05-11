@@ -260,7 +260,6 @@ interface State {
 class ChoosePassword extends PureComponent<Props, State> {
   static contextType = ThemeContext;
 
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: State = {
     isSelected: false,

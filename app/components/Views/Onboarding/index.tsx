@@ -202,7 +202,6 @@ interface State {
 class Onboarding extends PureComponent<Props, State> {
   static contextType = ThemeContext;
 
-  declare context: React.ContextType<typeof ThemeContext>;
 
   notificationAnimated: Animated.Value = new Animated.Value(100);
   detailsYAnimated: Animated.Value = new Animated.Value(0);

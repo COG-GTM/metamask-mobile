@@ -81,7 +81,6 @@ interface State {
 class Contacts extends PureComponent<Props, State> {
   static contextType = ThemeContext;
 
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: State = {
     reloadAddressList: false,

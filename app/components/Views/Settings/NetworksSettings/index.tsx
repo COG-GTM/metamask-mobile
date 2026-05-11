@@ -194,7 +194,6 @@ interface ActionSheetRef {
 class NetworksSettings extends PureComponent<Props, State> {
   static contextType = ThemeContext;
 
-  declare context: React.ContextType<typeof ThemeContext>;
 
   actionSheet: ActionSheetRef | null = null;
   networkToRemove: string | null = null;
