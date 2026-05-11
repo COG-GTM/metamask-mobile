@@ -14,6 +14,11 @@ import ParsedURL from 'url-parse';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { Theme } from '@metamask/design-tokens';
 import generateTestId from '../../../../wdio/utils/generateTestId';
+import Button from '../../../component-library/components/Buttons/Button/Button';
+import {
+  ButtonVariants,
+  ButtonWidthTypes,
+} from '../../../component-library/components/Buttons/Button/Button.types';
 const ETHEREUM_DETECTION_TITLE = 'ethereum-detection-title';
 
 const createStyles = (colors: Theme['colors']) =>
@@ -70,18 +75,6 @@ const createStyles = (colors: Theme['colors']) =>
       color: colors.text.default,
       width: 24,
       textAlign: 'center',
-    },
-    backToSafetyButton: {
-      backgroundColor: colors.primary.default,
-      borderRadius: 30,
-      padding: 16,
-      alignItems: 'center',
-      marginTop: 32,
-    },
-    backToSafetyText: {
-      ...fontStyles.normal,
-      fontSize: 16,
-      color: colors.primary.default,
     },
     warningContainer: {
       alignItems: 'flex-start',
@@ -170,13 +163,21 @@ export default class PhishingModal extends PureComponent<PhishingModalProps> {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.backToSafetyButton}
-          onPress={this.props.goBackToSafety}
+          style={styles.buttonContainer}
+          onPress={this.shareToTwitter}
         >
-          <Text style={styles.backToSafetyText}>
-            {strings('phishing.back_to_safety')}
+          <Icon name="twitter" size={16} style={styles.buttonIcon} />
+          <Text style={styles.buttonText}>
+            {strings('phishing.share_on_twitter')}
           </Text>
         </TouchableOpacity>
+        <Button
+          variant={ButtonVariants.Primary}
+          label={strings('phishing.back_to_safety')}
+          onPress={this.props.goBackToSafety as () => void}
+          style={styles.buttonWrapper}
+          width={ButtonWidthTypes.Full}
+        />
       </View>
     );
   }
