@@ -132,7 +132,7 @@ const CustomGasModal: React.FC<CustomGasModalProps> = ({
   const eip1559GasObject = {
     suggestedMaxFeePerGas:
       eip1559GasObj?.suggestedMaxFeePerGas ||
-      (eip1559GasObj?.[selectedGas] as GasObj | undefined)?.suggestedMaxFeePerGas ||
+      (eip1559GasObj?.[selectedGas as keyof GasObj] as GasObj | undefined)?.suggestedMaxFeePerGas ||
       '',
     suggestedMaxPriorityFeePerGas:
       eip1559GasObj?.suggestedMaxPriorityFeePerGas ||
@@ -182,8 +182,8 @@ const CustomGasModal: React.FC<CustomGasModalProps> = ({
           <EditGasFee1559
             selectedGasValue={selectedGas}
             gasOptions={gasFeeEstimate as unknown as import('../../../../components/EditGasFee1559Update/types').EditGasFee1559UpdateProps['gasOptions']}
-            onChange={(option) => onChangeGas(option ?? '')}
-            primaryCurrency={primaryCurrency}
+            onChange={(option) => onChangeGas(String(option ?? ''))}
+            primaryCurrency={String(primaryCurrency ?? '')}
             chainId={chainId ?? ''}
             onCancel={onCancelGas}
             onSave={onSaveEIP1559GasOption}

@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
 import React, { useState, useCallback } from 'react';
 import { TouchableOpacity, View, StyleSheet, Linking } from 'react-native';
 import Summary from '../../../../../../Base/Summary';

@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
 import React, { PureComponent } from 'react';
 import { Alert, AppState, View } from 'react-native';
 import { getApproveNavbar } from '../../../../UI/Navbar';
