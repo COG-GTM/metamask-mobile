@@ -9,6 +9,7 @@ import {
 import { fontStyles, baseStyles } from '../../../styles/common';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Modal from 'react-native-modal';
+// eslint-disable-next-line import/no-unresolved
 import dismissKeyboard from 'react-native/Libraries/Utilities/dismissKeyboard';
 import IconCheck from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
@@ -91,9 +92,10 @@ const createStyles = (colors: Theme['colors']) =>
   });
 
 interface SelectOption {
-  value: string;
+  value?: string | number;
+  val?: string;
   label?: string;
-  key: string;
+  key?: string | number;
 }
 
 interface SelectComponentProps {
@@ -101,7 +103,7 @@ interface SelectComponentProps {
   label?: string;
   selectedValue?: string;
   options?: SelectOption[];
-  onValueChange?: (value: string) => void;
+  onValueChange?: (value: never) => void;
   testID?: string;
 }
 
@@ -119,8 +121,8 @@ export default class SelectComponent extends PureComponent<
 
   scrollView = Device.isIos() ? React.createRef<ScrollView>() : null;
 
-  onValueChange = (val: string) => {
-    this.props.onValueChange?.(val);
+  onValueChange = (val: string | number) => {
+    this.props.onValueChange?.(val as never);
     setTimeout(() => {
       this.hidePicker();
     }, 1000);
@@ -205,9 +207,9 @@ export default class SelectComponent extends PureComponent<
                 {this.props.options?.map((option) => (
                   <TouchableOpacity
                     // eslint-disable-next-line react/jsx-no-bind
-                    onPress={() => this.onValueChange(option.value)}
+                    onPress={() => this.onValueChange(option.value ?? '')}
                     style={styles.optionButton}
-                    key={option.key}
+                    key={String(option.key)}
                   >
                     <Text style={styles.optionLabel} numberOfLines={1}>
                       {option.label}

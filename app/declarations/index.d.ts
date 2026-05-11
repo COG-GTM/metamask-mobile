@@ -412,3 +412,31 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
+declare module '@metamask/react-native-button' {
+  import { ComponentType } from 'react';
+  import { TouchableHighlightProps } from 'react-native';
+  interface ButtonProps extends TouchableHighlightProps {
+    onLongPress?: () => void;
+    styleDisabled?: unknown;
+    isLoading?: boolean;
+    accessibilityLabel?: string;
+    testID?: string;
+    children?: React.ReactNode;
+  }
+  const Button: ComponentType<ButtonProps>;
+  export default Button;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  const coalesceNonElementChildren: (
+    children: React.ReactNode,
+    coalesce: (children: React.ReactNode[]) => React.ReactNode,
+  ) => React.ReactNode[];
+  export default coalesceNonElementChildren;
+}

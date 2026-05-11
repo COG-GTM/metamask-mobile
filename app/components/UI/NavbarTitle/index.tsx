@@ -171,12 +171,14 @@ const mapStateToProps = (state: RootState): StateProps => ({
   selectedNetworkName: selectNetworkName(state) as string,
 });
 
+const ConnectedNavbarTitle = connect(mapStateToProps)(
+  withMetricsAwareness(
+    NavbarTitle as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+  ),
+) as unknown as React.ComponentType<{
+  navigation: NavigationProp<ParamListBase>;
+}>;
+
 export default withNavigation(
-  connect(mapStateToProps)(
-    withMetricsAwareness(
-      NavbarTitle as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
-    ),
-  ) as unknown as React.ComponentType<{
-    navigation?: NavigationProp<ParamListBase>;
-  }>,
+  ConnectedNavbarTitle as unknown as Parameters<typeof withNavigation>[0],
 );

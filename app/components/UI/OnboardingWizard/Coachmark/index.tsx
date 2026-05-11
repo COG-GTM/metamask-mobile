@@ -4,6 +4,7 @@ import {
   StyleProp,
   StyleSheet,
   Text,
+  TextStyle,
   View,
   ViewStyle,
 } from 'react-native';
@@ -171,7 +172,7 @@ const createStyles = (colors: Theme['colors']) =>
       alignSelf: 'center',
     },
     stepCounter: {
-      ...typography.BodyMD,
+      ...(typography as unknown as { BodyMD: TextStyle }).BodyMD,
       fontFamily: getFontFamily(TextVariant.BodyMD),
       color: colors.info.inverse,
     },
@@ -208,7 +209,7 @@ interface CoachmarkProps {
   action?: boolean;
   topIndicatorPosition?: TopIndicatorPosition;
   bottomIndicatorPosition?: BottomIndicatorPosition;
-  onClose?: () => void;
+  onClose?: () => void | Promise<void>;
 }
 
 interface CoachmarkState {
@@ -379,7 +380,9 @@ export default class Coachmark extends PureComponent<
             <ButtonIcon
               iconName={IconName.Close}
               size={ButtonIconSizes.Sm}
-              onPress={onClose}
+              onPress={() => {
+                onClose?.();
+              }}
               iconColor={IconColor.Inverse}
             />
           </View>

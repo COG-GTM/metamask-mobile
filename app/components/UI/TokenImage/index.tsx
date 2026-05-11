@@ -24,7 +24,7 @@ interface TokenAsset {
   address?: string;
   image?: string;
   symbol?: string;
-  [key: string]: unknown;
+  decimals?: number;
 }
 
 interface TokenListEntry {

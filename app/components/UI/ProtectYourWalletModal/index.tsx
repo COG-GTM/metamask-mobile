@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import ActionModal from '../ActionModal';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { protectWalletModalNotVisible } from '../../../actions/user';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -206,15 +207,13 @@ const mapStateToProps = (state: RootState): StateProps => {
   };
 };
 
-const mapDispatchToProps = (
-  dispatch: (action: unknown) => void,
-): DispatchProps => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   protectWalletModalNotVisible: () => dispatch(protectWalletModalNotVisible()),
 });
 
 ProtectYourWalletModal.contextType = ThemeContext;
 
-export default connect(
+export default connect<StateProps, DispatchProps, OwnProps, RootState>(
   mapStateToProps,
   mapDispatchToProps,
 )(

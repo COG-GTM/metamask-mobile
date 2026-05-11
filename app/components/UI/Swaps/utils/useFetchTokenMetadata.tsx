@@ -34,7 +34,7 @@ function useFetchTokenMetadata(
         setTokenMetadata(defaultTokenMetadata);
         setIsLoading(true);
         const { data } = await axios.request({
-          url: swapsUtils.getTokenMetadataURL(chainId),
+          url: swapsUtils.getTokenMetadataURL(chainId as `0x${string}`),
           params: {
             address,
           },

@@ -15,31 +15,45 @@ const defaultProps = [
   { status: 'error', data: { description: 'Testing description', title: 'Testing Title' } },
  ];
 
+const BaseNotificationAny =
+  BaseNotification as unknown as React.ComponentType<{
+    status?: string;
+    data?: { description?: string | null; title?: string | null };
+  }>;
+
 describe('BaseNotification', () => {
   it('gets icon correctly for each status', () => {
-    defaultProps.forEach(({ status, data}) => {
-      const { toJSON } = renderWithProvider(<BaseNotification status={status} data={data} />);
+    defaultProps.forEach(({ status, data }) => {
+      const { toJSON } = renderWithProvider(
+        <BaseNotificationAny status={status} data={data} />,
+      );
       expect(toJSON()).toMatchSnapshot();
     });
   });
 
   it('gets titles correctly for each status', () => {
     defaultProps.forEach(({ status }) => {
-      const { getByText } = renderWithProvider(<BaseNotification status={status} data={{}} />);
-        expect(getByText(strings(`notifications.${status}_title`))).toBeTruthy();
+      const { getByText } = renderWithProvider(
+        <BaseNotificationAny status={status} data={{}} />,
+      );
+      expect(getByText(strings(`notifications.${status}_title`))).toBeTruthy();
     });
   });
 
   it('gets descriptions correctly for if they are provided', () => {
     defaultProps.forEach(({ status, data }) => {
-      const { getByText } = renderWithProvider(<BaseNotification status={status} data={data} />);
+      const { getByText } = renderWithProvider(
+        <BaseNotificationAny status={status} data={data} />,
+      );
       expect(getByText(data.description)).toBeTruthy();
     });
   });
 
   it('constructs the correct description using getDescription when no description is provided', () => {
     defaultProps.forEach(({ status }) => {
-      const { getByText } = renderWithProvider(<BaseNotification status={status} data={{}} />);
+      const { getByText } = renderWithProvider(
+        <BaseNotificationAny status={status} data={{}} />,
+      );
       expect(getByText(getDescription(status, {}))).toBeTruthy();
     });
   });

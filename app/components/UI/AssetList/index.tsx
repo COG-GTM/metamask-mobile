@@ -78,7 +78,7 @@ export default class AssetList extends PureComponent<AssetListProps> {
               key={i}
             >
               <View style={styles.assetListElement}>
-                <AssetIcon address={address} logo={iconUrl} />
+                <AssetIcon address={address} logo={iconUrl ?? ''} />
                 <Text style={styles.text}>
                   {name} ({symbol})
                 </Text>

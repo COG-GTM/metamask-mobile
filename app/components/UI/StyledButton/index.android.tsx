@@ -53,7 +53,7 @@ export default class StyledButton extends PureComponent<StyledButtonProps> {
 
     const children = coalesceNonElementChildren(
       this.props.children,
-      (groupedChildren: ReactNode, index: number) => (
+      ((groupedChildren: ReactNode, index: number) => (
         <Text
           key={index}
           style={style}
@@ -61,7 +61,7 @@ export default class StyledButton extends PureComponent<StyledButtonProps> {
         >
           {groupedChildren}
         </Text>
-      ),
+      )) as unknown as (children: ReactNode[]) => ReactNode,
     );
 
     switch (children.length) {
@@ -78,7 +78,7 @@ export default class StyledButton extends PureComponent<StyledButtonProps> {
     const { type } = this.props;
     const colors =
       (this.context as unknown as Theme)?.colors || mockTheme.colors;
-    const { fontStyle, containerStyle } = getStyles(type, colors);
+    const { fontStyle, containerStyle } = getStyles(type ?? '', colors);
     const touchableProps: TouchableProps = {};
     const containerStyles = [
       ...containerStyle,

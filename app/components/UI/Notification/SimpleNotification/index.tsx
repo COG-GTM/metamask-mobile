@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { SharedValue } from 'react-native-reanimated';
 import BaseNotification from './../BaseNotification';
 import Device from '../../../../util/device';
 import ElevatedView from 'react-native-elevated-view';
@@ -31,7 +31,7 @@ interface NotificationData {
 
 interface SimpleNotificationProps {
   isInBrowserView?: boolean;
-  notificationAnimated?: Animated.AnimatedValue;
+  notificationAnimated?: SharedValue<number>;
   currentNotification: NotificationData;
   hideCurrentNotification?: () => void;
 }
@@ -54,11 +54,13 @@ function SimpleNotification({
     >
       <ElevatedView style={styles.elevatedView} elevation={100}>
         <BaseNotification
-          status={currentNotification.status}
-          data={{
-            title: currentNotification.title,
-            description: currentNotification.description,
-          }}
+          status={currentNotification.status ?? null}
+          data={
+            {
+              title: currentNotification.title ?? null,
+              description: currentNotification.description ?? null,
+            } as unknown as { description?: null; title?: null }
+          }
           onHide={hideCurrentNotification}
         />
       </ElevatedView>

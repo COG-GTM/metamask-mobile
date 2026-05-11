@@ -78,6 +78,7 @@ const createStyles = (colors: Theme['colors'], measure: MeasureEntry) =>
 
 interface AnimatedSpinnerProps {
   size?: SpinnerSizeType;
+  testID?: string;
 }
 
 interface AnimatedSpinnerState {

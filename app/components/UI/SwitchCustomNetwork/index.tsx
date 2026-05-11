@@ -8,7 +8,8 @@ import { useMetrics } from '../../../components/hooks/useMetrics';
 interface CurrentPageInformation {
   url: string;
   title?: string;
-  icon?: string;
+  icon?: string | { uri: string };
+  currentEnsName?: string;
 }
 
 interface CustomNetworkInformation {
@@ -57,7 +58,11 @@ const SwitchCustomNetwork = ({
   return (
     <PermissionSummary
       customNetworkInformation={customNetworkInformation}
-      currentPageInformation={currentPageInformation}
+      currentPageInformation={{
+        icon: '',
+        currentEnsName: '',
+        ...currentPageInformation,
+      }}
       onCancel={onCancel}
       onConfirm={onConfirm}
       isDisconnectAllShown={false}

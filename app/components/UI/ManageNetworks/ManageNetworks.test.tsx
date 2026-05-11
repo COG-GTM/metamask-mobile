@@ -6,6 +6,8 @@ import ManageNetworks from './ManageNetworks';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
+
+const mockedUseSelector = useSelector as unknown as jest.Mock;
 import { selectNetworkName } from '../../../selectors/networkInfos';
 import AppConstants from '../../../core/AppConstants';
 import { fireEvent } from '@testing-library/react-native';
@@ -35,11 +37,16 @@ const mockNetworkName = 'Ethereum Main Network';
 
 describe('ManageNetworks', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
-      if (selector === selectNetworkName) return mockNetworkName;
-    });
+    mockedUseSelector.mockImplementation(
+      (selector: unknown) => {
+        if (selector === selectNetworkName) return mockNetworkName;
+      },
+    );
+    const Component = ManageNetworks as unknown as React.ComponentType<{
+      navigation: ReturnType<typeof useNavigation>;
+    }>;
     const { toJSON } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
+      <Component navigation={useNavigation()} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
@@ -55,12 +62,17 @@ describe('ManageNetworks', () => {
         testId: 'solana-privacy-policy-link',
       },
     ],
-  ])('opens link %link', ({ link, testId }) => {
-    useSelector.mockImplementation((selector) => {
-      if (selector === selectNetworkName) return mockNetworkName;
-    });
+  ])('opens link %link', ({ link, testId }: { link: string; testId: string }) => {
+    mockedUseSelector.mockImplementation(
+      (selector: unknown) => {
+        if (selector === selectNetworkName) return mockNetworkName;
+      },
+    );
+    const Component = ManageNetworks as unknown as React.ComponentType<{
+      navigation: ReturnType<typeof useNavigation>;
+    }>;
     const { getByTestId } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
+      <Component navigation={useNavigation()} />,
     );
     const button = getByTestId(testId);
     fireEvent.press(button);

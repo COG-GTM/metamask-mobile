@@ -154,7 +154,7 @@ class AccountInfoCard extends PureComponent<AccountInfoCardProps> {
 
     const currentConnection = sdkConnections[origin ?? ''];
 
-    const isOriginUrl = isUrl(origin);
+    const isOriginUrl = isUrl(origin ?? '');
 
     const originatorInfo = currentConnection?.originatorInfo;
 
@@ -168,8 +168,15 @@ class AccountInfoCard extends PureComponent<AccountInfoCardProps> {
       ? origin
       : originatorInfo?.url ?? strings('sdk.unknown');
 
+    const HeaderComponent =
+      ApproveTransactionHeader as unknown as React.ComponentType<{
+        origin?: string;
+        url: string;
+        from: string;
+        sdkDappMetadata?: { url: string; icon: string };
+      }>;
     return operation === 'signing' && transaction !== undefined ? (
-      <ApproveTransactionHeader
+      <HeaderComponent
         origin={actualOriginUrl}
         url={actualOriginUrl}
         from={rawFromAddress}

@@ -3,6 +3,7 @@ import Modal from 'react-native-modal';
 import { StyleSheet, View, Text } from 'react-native';
 import { dismissAlert } from '../../../actions/alert';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
 import { fontStyles } from '../../../styles/common';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ElevatedView from 'react-native-elevated-view';
@@ -164,10 +165,13 @@ const mapStateToProps = (state: RootState): StateProps => {
   };
 };
 
-const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   dismissAlert: () => dispatch(dismissAlert()),
 });
 
 GlobalAlert.contextType = ThemeContext;
 
-export default connect(mapStateToProps, mapDispatchToProps)(GlobalAlert);
+export default connect<StateProps, DispatchProps, OwnProps, RootState>(
+  mapStateToProps,
+  mapDispatchToProps,
+)(GlobalAlert);

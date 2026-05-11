@@ -4,7 +4,8 @@ import GlobalAlert from './';
 
 describe('GlobalAlert', () => {
   it('should render correctly', () => {
-    const { toJSON } = renderWithProvider(<GlobalAlert />);
+    const Component = GlobalAlert as unknown as React.ComponentType;
+    const { toJSON } = renderWithProvider(<Component />);
     expect(toJSON()).toMatchSnapshot();
   });
 });

@@ -92,12 +92,15 @@ function ApprovalTransactionEditionModal({
 
   const onSetApprovalAmount = useCallback(() => {
     try {
+      if (!chainId || !customApprovalTransaction) {
+        return;
+      }
       const newApprovalTransaction = generateTxWithNewTokenAllowance(
         spendLimitUnlimitedSelected
           ? approvalTransactionAmount
           : approvalCustomValue,
         sourceToken.decimals,
-        swapsUtils.getSwapsContractAddress(chainId),
+        swapsUtils.getSwapsContractAddress(chainId as `0x${string}`),
         customApprovalTransaction,
       );
       setCustomApprovalTransaction(newApprovalTransaction);
@@ -170,7 +173,7 @@ function ApprovalTransactionEditionModal({
               onPressSpendLimitUnlimitedSelected
             }
             onPressSpendLimitCustomSelected={onPressSpendLimitCustomSelected}
-            toggleEditPermission={onCancelEditQuoteTransactions}
+            toggleEditPermission={onCancelEditQuoteTransactions ?? (() => undefined)}
           />
         )}
       </KeyboardAwareScrollView>

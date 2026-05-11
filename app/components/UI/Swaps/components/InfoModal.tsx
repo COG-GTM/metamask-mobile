@@ -55,7 +55,7 @@ interface InfoModalProps {
   isVisible: boolean | undefined;
   title?: React.ReactNode;
   body?: React.ReactNode;
-  toggleModal: () => void;
+  toggleModal?: () => void;
   propagateSwipe?: boolean;
   message?: string;
   urlText?: string;
@@ -151,7 +151,7 @@ function InfoModal({
             message={message}
             urlText={urlText}
             url={url}
-            onClose={toggleModal}
+            onClose={toggleModal ?? (() => undefined)}
             style={styles}
           />
         </View>

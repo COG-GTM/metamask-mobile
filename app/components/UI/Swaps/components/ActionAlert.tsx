@@ -138,7 +138,7 @@ function ActionAlert({
   return (
     <Alert
       small
-      type={type}
+      type={type ?? AlertType.Info}
       style={[style, Boolean(action) && styles.contentWithAction]}
     >
       {(textStyle: StyleProp<TextStyle>) => (

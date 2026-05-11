@@ -41,10 +41,22 @@ export default class StyledButton extends PureComponent<StyledButtonProps> {
     } = this.props;
     const colors =
       (this.context as unknown as Theme)?.colors || mockTheme.colors;
-    const { fontStyle, containerStyle } = getStyles(type, colors);
+    const { fontStyle, containerStyle } = getStyles(type ?? '', colors);
 
+    const ButtonAny = Button as unknown as React.ComponentType<{
+      testID?: string;
+      accessibilityRole?: 'button';
+      disabled?: boolean;
+      styleDisabled?: unknown;
+      disabledContainerStyle?: unknown;
+      onPress?: () => void;
+      onPressOut?: () => void;
+      style?: unknown;
+      containerStyle?: unknown;
+      children?: ReactNode;
+    }>;
     return (
-      <Button
+      <ButtonAny
         testID={testID}
         accessibilityRole="button"
         disabled={disabled}
@@ -56,7 +68,7 @@ export default class StyledButton extends PureComponent<StyledButtonProps> {
         containerStyle={[...containerStyle, this.props.containerStyle]}
       >
         {children}
-      </Button>
+      </ButtonAny>
     );
   };
 }

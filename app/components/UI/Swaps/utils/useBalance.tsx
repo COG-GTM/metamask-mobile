@@ -38,7 +38,7 @@ function useBalance(
         );
       }
       return renderFromWei(
-        accounts[selectedAddress] && accounts[selectedAddress].balance,
+        (accounts[selectedAddress] && accounts[selectedAddress].balance) || 0,
       );
     }
     const tokenAddress = safeToChecksumAddress(sourceToken.address);

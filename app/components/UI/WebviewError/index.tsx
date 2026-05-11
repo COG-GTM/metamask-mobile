@@ -68,9 +68,9 @@ interface WebviewErrorObject {
 
 interface WebviewErrorProps {
   /**
-   * Error info or `false` when no error is present.
+   * Error info or falsy when no error is present.
    */
-  error?: WebviewErrorObject | false;
+  error?: WebviewErrorObject | boolean;
   /**
    * Function that reloads the page
    */
@@ -117,7 +117,7 @@ export default class WebviewError extends PureComponent<WebviewErrorProps> {
           >
             {strings('webview_error.message')}
           </Text>
-          {error && error.description ? (
+          {error && typeof error === 'object' && error.description ? (
             <Text style={styles.errorInfo}>{error.description}</Text>
           ) : null}
         </View>

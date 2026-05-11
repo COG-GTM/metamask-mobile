@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
 import { useNavigationState } from '@react-navigation/native';
 import {
   removeCurrentNotification,
@@ -29,6 +30,9 @@ interface CurrentNotification {
   type?: string;
   isVisible?: boolean;
   autodismiss?: number;
+  status?: string;
+  title?: string;
+  description?: string;
   [key: string]: unknown;
 }
 
@@ -133,7 +137,10 @@ function Notification({
 }
 
 const mapStateToProps = (state: RootState): StateProps => {
-  const currentNotification = currentNotificationSelector(
+  const selector = currentNotificationSelector as unknown as (
+    notificationState: unknown,
+  ) => CurrentNotification;
+  const currentNotification = selector(
     (state as unknown as { notification: unknown }).notification,
   );
   return {
@@ -142,11 +149,12 @@ const mapStateToProps = (state: RootState): StateProps => {
   };
 };
 
-const mapDispatchToProps = (
-  dispatch: (action: unknown) => void,
-): DispatchProps => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   removeCurrentNotification: () => dispatch(removeCurrentNotification()),
   hideCurrentNotification: () => dispatch(hideCurrentNotification()),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Notification);
+export default connect<StateProps, DispatchProps, Record<string, never>, RootState>(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Notification);

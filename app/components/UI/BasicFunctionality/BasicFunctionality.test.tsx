@@ -7,7 +7,8 @@ import renderWithProvider from '../../../util/test/renderWithProvider';
 
 describe('BasicFunctionality', () => {
   it('should render correctly', () => {
-    const { toJSON } = renderWithProvider(<BasicFunctionality />);
+    const Component = BasicFunctionality as unknown as React.ComponentType;
+    const { toJSON } = renderWithProvider(<Component />);
     expect(toJSON()).toMatchSnapshot();
   });
 });

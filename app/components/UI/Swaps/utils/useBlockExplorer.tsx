@@ -28,7 +28,7 @@ interface ProviderConfig {
 }
 
 function useBlockExplorer(
-  networkConfigurations: unknown,
+  networkConfigurations: Record<string, unknown>,
   providerConfigTokenExplorer?: ProviderConfig,
 ) {
   const [explorer, setExplorer] = useState<ExplorerState>({
@@ -98,8 +98,8 @@ function useBlockExplorer(
   ]);
 
   const tx = useCallback(
-    (hash: string) => {
-      if (!explorer.isValid) {
+    (hash?: string) => {
+      if (!explorer.isValid || !explorer.value || !hash) {
         return '';
       }
 
@@ -111,8 +111,8 @@ function useBlockExplorer(
     [explorer],
   );
   const account = useCallback(
-    (address: string) => {
-      if (!explorer.isValid) {
+    (address?: string) => {
+      if (!explorer.isValid || !explorer.value || !address) {
         return '';
       }
 
@@ -124,8 +124,8 @@ function useBlockExplorer(
     [explorer],
   );
   const token = useCallback(
-    (address: string) => {
-      if (!explorer.isValid) {
+    (address?: string) => {
+      if (!explorer.isValid || !explorer.value || !address) {
         return '';
       }
 

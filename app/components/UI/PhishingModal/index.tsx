@@ -96,7 +96,7 @@ interface PhishingModalProps {
   /**
    * name of the blacklisted url
    */
-  fullUrl: string;
+  fullUrl?: string;
   /**
    * Called to the user decides to proceed to the phishing site
    */
@@ -109,6 +109,14 @@ interface PhishingModalProps {
    * Called when the user takes the recommended action
    */
   goBackToSafety?: () => void;
+  /**
+   * Called when the user wants to inspect the phishing detector
+   */
+  goToETHPhishingDetector?: () => void;
+  /**
+   * Called when the user wants to report a scam
+   */
+  goToEtherscam?: () => void;
 }
 
 export default class PhishingModal extends PureComponent<PhishingModalProps> {
@@ -129,7 +137,7 @@ export default class PhishingModal extends PureComponent<PhishingModalProps> {
     const colors =
       (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    new URL(this.props.fullUrl);
+    new URL(this.props.fullUrl ?? '');
 
     return (
       <View style={styles.phishingModalWrapper}>

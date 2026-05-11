@@ -10,9 +10,12 @@ const store = mockStore({});
 describe('NavbarTitle', () => {
   it('should render correctly', () => {
     const title = 'Test';
+    const Component = NavbarTitle as unknown as React.ComponentType<{
+      title?: string;
+    }>;
     const wrapper = shallow(
       <Provider store={store}>
-        <NavbarTitle title={title} />
+        <Component title={title} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

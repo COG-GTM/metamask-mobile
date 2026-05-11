@@ -51,7 +51,7 @@ describe('getFetchParams', () => {
     walletAddress: '0x789',
     networkClientId: '1',
     enableGasIncludedQuotes: true,
-  };
+  } as unknown as Parameters<typeof getFetchParams>[0];
 
   it('returns correct parameters with default slippage', () => {
     const result = getFetchParams(mockBaseParams);
@@ -96,7 +96,7 @@ describe('getFetchParams', () => {
     const result = getFetchParams({
       ...mockBaseParams,
       enableGasIncludedQuotes: false,
-    });
+    } as unknown as Parameters<typeof getFetchParams>[0]);
 
     expect(result).toEqual({
       slippage: 1,
@@ -227,7 +227,7 @@ describe('isSwapsAllowed', () => {
 
   describe('testnet chain IDs', () => {
     it('should return true for testnet chain IDs in development when ONLY_MAINNET is true', () => {
-      global.__DEV__ = true;
+      (global as unknown as { __DEV__: boolean }).__DEV__ = true;
       mockSwapsConstantsGetter.mockReturnValue({
         ...mockSwapsConstantsGetter(),
         ONLY_MAINNET: true,
@@ -236,7 +236,7 @@ describe('isSwapsAllowed', () => {
     });
 
     it('should return true for testnet chain IDs when ONLY_MAINNET is false', () => {
-      global.__DEV__ = false;
+      (global as unknown as { __DEV__: boolean }).__DEV__ = false;
       mockSwapsConstantsGetter.mockReturnValue({
         ...mockSwapsConstantsGetter(),
         ONLY_MAINNET: false,

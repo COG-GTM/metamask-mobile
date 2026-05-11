@@ -13,9 +13,16 @@ describe('getNetworkNavbarOptions', () => {
     pop: jest.fn(),
   };
 
-  const TestNavigator = ({ options }) => (
+  const TestNavigator = ({
+    options,
+  }: {
+    options: { header: () => React.ReactNode };
+  }) => (
     <Stack.Navigator>
-      <Stack.Screen name="TestScreen" component={() => options.header()} />
+      <Stack.Screen
+        name="TestScreen"
+        component={() => options.header() as React.ReactElement}
+      />
     </Stack.Navigator>
   );
 
@@ -24,10 +31,16 @@ describe('getNetworkNavbarOptions', () => {
   });
 
   it('renders correctly with default options', () => {
-    const options = getNetworkNavbarOptions(
+    const options = (getNetworkNavbarOptions as unknown as (
+      title: string,
+      translate: boolean,
+      navigation: unknown,
+      themeColors: unknown,
+    ) => { header: () => React.ReactElement })(
       'Test Title',
       false,
       mockNavigation,
+      {},
     );
 
     const { getByText, getByRole } = renderWithProvider(

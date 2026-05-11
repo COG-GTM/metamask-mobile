@@ -14,7 +14,7 @@ interface KeypadComponentProps {
   onChange: (payload: KeypadChangePayload) => void;
   currency?: string;
   decimals?: number;
-  value: string;
+  value?: string;
   style?: StyleProp<ViewStyle>;
   digitButtonStyle?: StyleProp<ViewStyle>;
   digitTextStyle?: StyleProp<TextStyle>;
@@ -40,7 +40,7 @@ function KeypadComponent({
   const { handler, decimalSeparator } = useCurrency(currency, decimals);
   const handleKeypadPress = useCallback(
     (pressedKey: string) => {
-      const newValue = handler(value, pressedKey);
+      const newValue = handler(value ?? '0', pressedKey);
       let valueAsNumber = 0;
       try {
         valueAsNumber = Number(

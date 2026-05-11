@@ -57,7 +57,7 @@ export default function createKeypadRule({
         if (
           hasDecimals(
             decimalSeparator as string,
-            decimals as number,
+            String(decimals),
           ).test(currentAmount)
         ) {
           return currentAmount;
