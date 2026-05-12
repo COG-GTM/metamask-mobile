@@ -1,0 +1,60 @@
+import React from 'react';
+import { StyleSheet, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
+import { strings } from '../../../../../../../locales/i18n';
+import Text from '../../../../../Base/Text';
+import { useTheme } from '../../../../../../util/theme';
+import { Colors } from '../../../../../../util/theme/models';
+
+const createStyles = (colors: Colors) =>
+  StyleSheet.create<{
+    customNonce: ViewStyle;
+    nonceNumber: TextStyle;
+  }>({
+    customNonce: {
+      marginTop: 10,
+      marginHorizontal: 24,
+      borderWidth: 1,
+      borderColor: colors.border.default,
+      borderRadius: 8,
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      display: 'flex',
+      flexDirection: 'row',
+    },
+    nonceNumber: {
+      marginLeft: 'auto',
+    },
+  });
+
+interface Props {
+  /**
+   * Current nonce
+   */
+  nonce?: number;
+  /**
+   * Function called when editing nonce
+   */
+  onNonceEdit?: () => void;
+}
+
+const CustomNonce = ({ nonce, onNonceEdit }: Props) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
+  return (
+    <TouchableOpacity style={styles.customNonce} onPress={onNonceEdit}>
+      <Text bold black>
+        {strings('transaction.custom_nonce')}
+      </Text>
+      <Text bold link>
+        {'  '}
+        {strings('transaction.edit')}
+      </Text>
+      <Text bold black style={styles.nonceNumber}>
+        {nonce}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+export default CustomNonce;

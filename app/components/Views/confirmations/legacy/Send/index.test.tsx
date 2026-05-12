@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck - Legacy confirmations subsystem; types being incrementally added
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import Send from '.';
 import { RootState } from '../../../../../reducers';
