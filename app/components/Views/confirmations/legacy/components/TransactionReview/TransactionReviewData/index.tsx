@@ -123,7 +123,6 @@ type Props = OwnProps & StateProps & DispatchProps;
  */
 class TransactionReviewData extends PureComponent<Props> {
   static contextType = ThemeContext;
-  declare context: Theme | undefined;
 
   applyRootHeight = () => ({ height: this.props.customGasHeight });
 

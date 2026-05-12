@@ -102,7 +102,6 @@ interface Props {
  */
 export default class ExpandedMessage extends PureComponent<Props> {
   static contextType = ThemeContext;
-  declare context: Theme | undefined;
 
   render() {
     const { currentPageInformation, renderMessage, toggleExpandedMessage } =

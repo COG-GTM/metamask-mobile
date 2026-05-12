@@ -206,7 +206,6 @@ interface State {
  */
 class TransactionReview extends PureComponent<Props, State> {
   static contextType = ThemeContext;
-  declare context: Theme | undefined;
 
   state: State = {
     toFocused: false,

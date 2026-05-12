@@ -99,7 +99,6 @@ interface Props {
  */
 class TransactionReviewSummary extends PureComponent<Props> {
   static contextType = ThemeContext;
-  declare context: Theme | undefined;
 
   renderWarning = () => (
     <Text>{`${strings('transaction.approve_warning')} ${

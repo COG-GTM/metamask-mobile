@@ -205,7 +205,6 @@ type Props = OwnProps &
  */
 class SignatureRequest extends PureComponent<Props> {
   static contextType = ThemeContext;
-  declare context: Theme | undefined;
 
   /**
    * Calls trackCancelSignature and onReject callback

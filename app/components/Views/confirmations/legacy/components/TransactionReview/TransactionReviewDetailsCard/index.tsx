@@ -111,7 +111,6 @@ interface Props {
 
 export default class TransactionReviewDetailsCard extends Component<Props> {
   static contextType = ThemeContext;
-  declare context: Theme | undefined;
 
   render() {
     const {
