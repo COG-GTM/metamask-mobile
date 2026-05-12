@@ -139,7 +139,6 @@ interface State {
  */
 class TypedSign extends PureComponent<Props, State> {
   static contextType = ThemeContext;
-  declare context: Theme | undefined;
 
   state: State = {
     truncateMessage: false,
