@@ -1,11 +1,4 @@
-import React, { useCallback, useState } from 'react';
-import useApprovalRequest from '../../Views/confirmations/hooks/useApprovalRequest';
-import { ApprovalTypes } from '../../../core/RPCMethods/RPCMethodMiddleware';
-import Approval from '../../Views/confirmations/legacy/Approval';
-import Approve from '../../Views/confirmations/legacy/ApproveView/Approve';
-import QRSigningModal from '../../UI/QRHardware/QRSigningModal';
-import withQRHardwareAwareness from '../../UI/QRHardware/withQRHardwareAwareness';
-import { IQRState } from '../../UI/QRHardware/types';
+import React from 'react';
 import { useConfirmationRedesignEnabled } from '../../Views/confirmations/hooks/useConfirmationRedesignEnabled';
 
 export enum TransactionModalType {
@@ -19,71 +12,25 @@ export interface TransactionApprovalProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   navigation: any;
   onComplete: () => void;
-  QRState?: IQRState;
-  isSigningQRObject?: boolean;
+  // QRState and isSigningQRObject are no longer needed with the redesigned confirmation system
 }
 
-const TransactionApprovalInternal = (props: TransactionApprovalProps) => {
-  const { approvalRequest } = useApprovalRequest();
+const TransactionApprovalInternal = (_props: TransactionApprovalProps) => {
   const { isRedesignedEnabled } = useConfirmationRedesignEnabled();
-  const [modalVisible, setModalVisible] = useState(false);
-  const { onComplete: propsOnComplete } = props;
 
-  const onComplete = useCallback(() => {
-    setModalVisible(false);
-    propsOnComplete();
-  }, [propsOnComplete]);
-
-  if (
-    (approvalRequest?.type !== ApprovalTypes.TRANSACTION && !modalVisible) ||
-    isRedesignedEnabled
-  ) {
+  // With confirmation redesign enabled, all transaction approvals are handled
+  // by the new confirmation system. This component now serves as a compatibility
+  // layer and will return null as the new system handles everything.
+  if (isRedesignedEnabled) {
     return null;
   }
 
-  if (!modalVisible) {
-    setModalVisible(true);
-  }
-
-  if (props.transactionType === TransactionModalType.Dapp) {
-    return (
-      <Approval
-        navigation={props.navigation}
-        dappTransactionModalVisible
-        hideModal={onComplete}
-      />
-    );
-  }
-
-  if (props.transactionType === TransactionModalType.Transaction) {
-    return (
-      <Approve
-        modalVisible
-        hideModal={onComplete}
-        navigation={props.navigation}
-      />
-    );
-  }
-
-  if (props.isSigningQRObject && !props.transactionType) {
-    return (
-      <QRSigningModal
-        isVisible
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        QRState={props.QRState as any}
-        onSuccess={onComplete}
-        onCancel={onComplete}
-        onFailure={onComplete}
-      />
-    );
-  }
-
+  // Fallback for cases where redesign is not enabled (should not happen with
+  // current feature flag configuration)
   return null;
 };
 
-export const TransactionApproval = withQRHardwareAwareness(
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  TransactionApprovalInternal as any,
-);
+// Note: QR hardware awareness is now handled by the new confirmation system
+// This component is kept for backwards compatibility but no longer processes
+// transactions directly
+export const TransactionApproval = TransactionApprovalInternal;

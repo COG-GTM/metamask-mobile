@@ -1,20 +1,12 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import useApprovalRequest from '../../Views/confirmations/hooks/useApprovalRequest';
-import { ApprovalTypes } from '../../../core/RPCMethods/RPCMethodMiddleware';
-import SignatureRequestRoot from '../../Views/confirmations/legacy/components/SignatureRequest/Root';
+import { useConfirmationRedesignEnabled } from '../../Views/confirmations/hooks/useConfirmationRedesignEnabled';
 import { endTrace, TraceName } from '../../../util/trace';
 
 const SignatureApproval = () => {
-  const { approvalRequest, onReject, onConfirm } = useApprovalRequest();
+  const { approvalRequest } = useApprovalRequest();
+  const { isRedesignedEnabled } = useConfirmationRedesignEnabled();
   const signatureRequestId = approvalRequest?.requestData?.requestId;
-
-  const onSignConfirm = useCallback(async () => {
-    await onConfirm({
-      waitForResult: true,
-      deleteAfterResult: true,
-      handleErrors: false,
-    });
-  }, [onConfirm]);
 
   useEffect(() => {
     endTrace({
@@ -23,22 +15,16 @@ const SignatureApproval = () => {
     });
   }, [signatureRequestId]);
 
-  const messageParams =
-    approvalRequest &&
-    [ApprovalTypes.PERSONAL_SIGN, ApprovalTypes.ETH_SIGN_TYPED_DATA].includes(
-      approvalRequest.type as ApprovalTypes,
-    )
-      ? approvalRequest?.requestData
-      : undefined;
+  // With confirmation redesign enabled, all signature approvals are handled
+  // by the new confirmation system. This component now serves as a compatibility
+  // layer and will return null as the new system handles everything.
+  if (isRedesignedEnabled) {
+    return null;
+  }
 
-  return (
-    <SignatureRequestRoot
-      messageParams={messageParams}
-      approvalType={approvalRequest?.type}
-      onSignConfirm={onSignConfirm}
-      onSignReject={onReject}
-    />
-  );
+  // Fallback for cases where redesign is not enabled (should not happen with
+  // current feature flag configuration)
+  return null;
 };
 
 export default SignatureApproval;
