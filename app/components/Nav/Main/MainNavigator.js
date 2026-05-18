@@ -26,8 +26,7 @@ import Asset from '../../Views/Asset';
 import AssetDetails from '../../Views/AssetDetails';
 import AddAsset from '../../Views/AddAsset';
 import Collectible from '../../Views/Collectible';
-import Send from '../../Views/confirmations/legacy/Send';
-import SendTo from '../../Views/confirmations/legacy/SendFlow/SendTo';
+// Legacy send components removed - now using redesigned confirmation system
 import { RevealPrivateCredential } from '../../Views/RevealPrivateCredential';
 import WalletConnectSessions from '../../Views/WalletConnectSessions';
 import OfflineMode from '../../Views/OfflineMode';
@@ -42,8 +41,7 @@ import ManualBackupStep2 from '../../Views/ManualBackupStep2';
 import ManualBackupStep3 from '../../Views/ManualBackupStep3';
 import PaymentRequest from '../../UI/PaymentRequest';
 import PaymentRequestSuccess from '../../UI/PaymentRequestSuccess';
-import Amount from '../../Views/confirmations/legacy/SendFlow/Amount';
-import Confirm from '../../Views/confirmations/legacy/SendFlow/Confirm';
+// Legacy confirmation components removed - now using redesigned confirmation system
 import { Confirm as RedesignedConfirm } from '../../Views/confirmations/components/confirm';
 import ContactForm from '../../Views/Settings/Contacts/ContactForm';
 import ActivityView from '../../Views/ActivityView';
@@ -615,12 +613,13 @@ const Webview = () => (
   </Stack.Navigator>
 );
 
+// Legacy SendView - now redirects to redesigned confirmation system
 const SendView = () => (
   <Stack.Navigator>
     <Stack.Screen
       name="Send"
-      component={Send}
-      options={Send.navigationOptions}
+      component={RedesignedConfirm}
+      options={{ headerShown: false }}
     />
   </Stack.Navigator>
 );
@@ -651,26 +650,28 @@ const NftDetailsFullImageModeView = (props) => (
   </Stack.Navigator>
 );
 
+// Legacy SendFlowView - now redirects to redesigned confirmation system
 const SendFlowView = () => (
   <Stack.Navigator>
     <Stack.Screen
       name="SendTo"
-      component={SendTo}
-      options={SendTo.navigationOptions}
+      component={RedesignedConfirm}
+      options={{ headerShown: false }}
     />
     <Stack.Screen
       name="Amount"
-      component={Amount}
-      options={Amount.navigationOptions}
+      component={RedesignedConfirm}
+      options={{ headerShown: false }}
     />
     <Stack.Screen
       name={Routes.SEND_FLOW.CONFIRM}
-      component={Confirm}
-      options={Confirm.navigationOptions}
+      component={RedesignedConfirm}
+      options={{ headerShown: false }}
     />
     <Stack.Screen
       name={Routes.STANDALONE_CONFIRMATIONS.TRANSFER}
       component={RedesignedConfirm}
+      options={{ headerShown: false }}
     />
   </Stack.Navigator>
 );

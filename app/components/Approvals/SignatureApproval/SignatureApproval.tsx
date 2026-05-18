@@ -2,10 +2,12 @@ import React, { useCallback, useEffect } from 'react';
 import useApprovalRequest from '../../Views/confirmations/hooks/useApprovalRequest';
 import { ApprovalTypes } from '../../../core/RPCMethods/RPCMethodMiddleware';
 import SignatureRequestRoot from '../../Views/confirmations/legacy/components/SignatureRequest/Root';
+import { useConfirmationRedesignEnabled } from '../../Views/confirmations/hooks/useConfirmationRedesignEnabled';
 import { endTrace, TraceName } from '../../../util/trace';
 
 const SignatureApproval = () => {
   const { approvalRequest, onReject, onConfirm } = useApprovalRequest();
+  const { isRedesignedEnabled } = useConfirmationRedesignEnabled();
   const signatureRequestId = approvalRequest?.requestData?.requestId;
 
   const onSignConfirm = useCallback(async () => {
@@ -22,6 +24,10 @@ const SignatureApproval = () => {
       id: signatureRequestId,
     });
   }, [signatureRequestId]);
+
+  if (isRedesignedEnabled) {
+    return null;
+  }
 
   const messageParams =
     approvalRequest &&
