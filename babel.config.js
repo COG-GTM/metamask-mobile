@@ -1,3 +1,4 @@
+/** @type {import('@babel/core').TransformOptions} */
 // eslint-disable-next-line import/no-commonjs
 module.exports = {
   ignore: [/\/ses\.cjs$/, /\/ses-hermes\.cjs$/],
