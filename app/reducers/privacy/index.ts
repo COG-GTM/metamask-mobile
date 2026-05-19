@@ -1,9 +1,20 @@
-const initialState = {
+interface PrivacyState {
+  approvedHosts: Record<string, boolean>;
+  revealSRPTimestamps: number[];
+}
+
+interface PrivacyAction {
+  type: string;
+  hostname?: string;
+  timestamp?: number;
+}
+
+const initialState: PrivacyState = {
   approvedHosts: {},
   revealSRPTimestamps: [],
 };
 
-const privacyReducer = (state = initialState, action) => {
+const privacyReducer = (state: PrivacyState = initialState, action: PrivacyAction): PrivacyState => {
   const newHosts = { ...state.approvedHosts };
   switch (action.type) {
     case 'APPROVE_HOST':

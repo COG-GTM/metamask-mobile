@@ -8,9 +8,30 @@ import { selectSelectedInternalAccountAddress } from '../../selectors/accountsCo
 import { compareTokenIds } from '../../util/tokens';
 import { createDeepEqualSelector } from '../../selectors/util';
 
-const favoritesSelector = (state) => state.collectibles.favorites;
+interface CollectibleFavorite {
+  tokenId: string;
+  address: string;
+}
 
-export const isNftFetchingProgressSelector = (state) =>
+interface CollectiblesState {
+  favorites: Record<string, Record<string, CollectibleFavorite[]>>;
+  isNftFetchingProgress: boolean;
+}
+
+interface CollectiblesRootState {
+  collectibles: CollectiblesState;
+}
+
+interface CollectiblesAction {
+  type: string;
+  selectedAddress: string;
+  chainId: string;
+  collectible: CollectibleFavorite;
+}
+
+const favoritesSelector = (state: CollectiblesRootState) => state.collectibles.favorites;
+
+export const isNftFetchingProgressSelector = (state: CollectiblesRootState) =>
   state.collectibles.isNftFetchingProgress;
 
 export const collectibleContractsSelector = createSelector(
@@ -62,10 +83,10 @@ export const isCollectibleInFavoritesSelector = createSelector(
 );
 
 const getFavoritesCollectibles = (
-  favoriteCollectibles,
-  selectedAddress,
-  chainId,
-) => favoriteCollectibles[selectedAddress]?.[chainId] || [];
+  favoriteCollectibles: Record<string, Record<string, CollectibleFavorite[]>>,
+  selectedAddress: string,
+  chainId: string,
+): CollectibleFavorite[] => favoriteCollectibles[selectedAddress]?.[chainId] || [];
 
 export const ADD_FAVORITE_COLLECTIBLE = 'ADD_FAVORITE_COLLECTIBLE';
 export const REMOVE_FAVORITE_COLLECTIBLE = 'REMOVE_FAVORITE_COLLECTIBLE';
@@ -77,7 +98,7 @@ const initialState = {
   isNftFetchingProgress: false,
 };
 
-const collectiblesFavoritesReducer = (state = initialState, action) => {
+const collectiblesFavoritesReducer = (state: CollectiblesState = initialState, action: CollectiblesAction): CollectiblesState => {
   switch (action.type) {
     case ADD_FAVORITE_COLLECTIBLE: {
       const { selectedAddress, chainId, collectible } = action;

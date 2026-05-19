@@ -2,16 +2,54 @@ import { BrowserActionTypes } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
 
-const initialState = {
+interface BrowserTab {
+  url: string;
+  id: number;
+  linkType?: string;
+  [key: string]: unknown;
+}
+
+interface BrowserHistoryEntry {
+  url: string;
+  name: string;
+}
+
+interface FaviconEntry {
+  origin: string;
+  url: string;
+}
+
+interface BrowserState {
+  history: BrowserHistoryEntry[];
+  whitelist: string[];
+  tabs: BrowserTab[];
+  favicons: FaviconEntry[];
+  activeTab: number | null;
+  visitedDappsByHostname: Record<string, boolean>;
+}
+
+interface BrowserReducerAction {
+  type: string;
+  hostname?: string;
+  url?: string;
+  name?: string;
+  id?: number;
+  data?: Record<string, unknown>;
+  origin?: string;
+  metricsEnabled?: boolean;
+  marketingEnabled?: boolean;
+  linkType?: string;
+}
+
+const initialState: BrowserState = {
   history: [],
   whitelist: [],
   tabs: [],
   favicons: [],
   activeTab: null,
-  // Keep track of viewed Dapps, which is used for MetaMetricsEvents.DAPP_VIEWED event
   visitedDappsByHostname: {},
 };
-const browserReducer = (state = initialState, action) => {
+const browserReducer = (state: BrowserState = initialState, action: BrowserReducerAction): BrowserState => {
   switch (action.type) {
     case BrowserActionTypes.ADD_TO_VIEWED_DAPP: {
       const { hostname } = action;

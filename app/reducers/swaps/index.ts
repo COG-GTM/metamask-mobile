@@ -17,7 +17,7 @@ import { selectSelectedInternalAccountAddress } from '../../selectors/accountsCo
 
 // If we are in dev and on a testnet, just use mainnet feature flags,
 // since we don't have feature flags for testnets in the API
-export const getFeatureFlagChainId = (chainId) =>
+export const getFeatureFlagChainId = (chainId: string): string =>
   __DEV__ && allowedTestnetChainIds.includes(chainId)
     ? NETWORKS_CHAIN_ID.MAINNET
     : chainId;
@@ -28,18 +28,18 @@ export const SWAPS_SET_HAS_ONBOARDED = 'SWAPS_SET_HAS_ONBOARDED';
 const MAX_TOKENS_WITH_BALANCE = 5;
 
 // * Action Creator
-export const setSwapsLiveness = (chainId, featureFlags) => ({
+export const setSwapsLiveness = (chainId: string, featureFlags: Record<string, unknown>) => ({
   type: SWAPS_SET_LIVENESS,
   payload: { chainId, featureFlags },
 });
-export const setSwapsHasOnboarded = (hasOnboarded) => ({
+export const setSwapsHasOnboarded = (hasOnboarded: boolean) => ({
   type: SWAPS_SET_HAS_ONBOARDED,
   payload: hasOnboarded,
 });
 
 // * Functions
 
-function addMetadata(chainId, tokens, tokenList) {
+function addMetadata(chainId: string, tokens: Record<string, unknown>[], tokenList: Record<string, Record<string, unknown>>): Record<string, unknown>[] {
   if (!isMainnetByChainId(chainId)) {
     return tokens;
   }
@@ -55,7 +55,7 @@ function addMetadata(chainId, tokens, tokenList) {
 
 // * Selectors
 const chainIdSelector = selectEvmChainId;
-const swapsStateSelector = (state) => state.swaps;
+const swapsStateSelector = (state: Record<string, unknown>) => (state as Record<string, Record<string, unknown>>).swaps;
 /**
  * Returns the swaps liveness state
  */
@@ -364,7 +364,12 @@ export const initialState = {
   },
 };
 
-function swapsReducer(state = initialState, action) {
+interface SwapsAction {
+  type: string;
+  payload: Record<string, unknown>;
+}
+
+function swapsReducer(state: Record<string, unknown> = initialState, action: SwapsAction): Record<string, unknown> {
   switch (action.type) {
     case SWAPS_SET_LIVENESS: {
       const { chainId: rawChainId, featureFlags } = action.payload;
