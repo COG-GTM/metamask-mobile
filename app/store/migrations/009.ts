@@ -1,0 +1,7 @@
+export default function migrate(state: Record<string, unknown>): Record<string, unknown> {
+  state.engine.backgroundState.PreferencesController = {
+    ...state.engine.backgroundState.PreferencesController,
+    useStaticTokenList: true,
+  };
+  return state;
+}
