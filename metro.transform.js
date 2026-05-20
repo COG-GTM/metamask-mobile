@@ -23,7 +23,7 @@ const availableFeatures = new Set([
   'solana',
 ]);
 
-const mainFeatureSet = new Set(['preinstalled-snaps', 'multi-srp']);
+const mainFeatureSet = new Set(['preinstalled-snaps', 'multi-srp', 'bitcoin']);
 const betaFeatureSet = new Set([
   'beta',
   'preinstalled-snaps',

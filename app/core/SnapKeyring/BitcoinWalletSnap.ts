@@ -3,8 +3,8 @@ import { SnapId } from '@metamask/snaps-sdk';
 import { Sender } from '@metamask/keyring-snap-client';
 import { HandlerType } from '@metamask/snaps-utils';
 import { Json, JsonRpcRequest } from '@metamask/utils';
-// This dependency is still installed as part of the `package.json`, however
-// the Snap is being pre-installed only for Flask build (for the moment).
+// This dependency is installed as part of the `package.json` and
+// the Snap is pre-installed for both main and Flask builds.
 import BitcoinWalletSnap from '@metamask/bitcoin-wallet-snap/dist/preinstalled-snap.json';
 import { handleSnapRequest } from '../Snaps/utils';
 import Engine from '../Engine';
