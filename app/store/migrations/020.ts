@@ -1,4 +1,5 @@
 import { v4 } from 'uuid';
+import { isObject } from '@metamask/utils';
 
 /**
  * Migrate network configuration from Preferences controller to Network controller.
@@ -11,13 +12,28 @@ import { v4 } from 'uuid';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
+export default function migrate(state: unknown): Record<string, unknown> {
+  if (!isObject(state)) {
+    return state as Record<string, unknown>;
+  }
+
+  if (
+    !isObject(state.engine) ||
+    !isObject((state.engine as Record<string, unknown>).backgroundState)
+  ) {
+    return state as Record<string, unknown>;
+  }
+
+  const engine = state.engine as Record<string, unknown>;
+  const backgroundState = engine.backgroundState as Record<string, unknown>;
+
   const preferencesControllerState =
-    state.engine.backgroundState.PreferencesController;
-  const networkControllerState = state.engine.backgroundState.NetworkController;
-  const frequentRpcList = preferencesControllerState?.frequentRpcList;
+    backgroundState.PreferencesController as Record<string, unknown> | undefined;
+  const networkControllerState =
+    backgroundState.NetworkController as Record<string, unknown> | undefined;
+  const frequentRpcList = preferencesControllerState?.frequentRpcList as Array<Record<string, unknown>> | undefined;
   if (networkControllerState && frequentRpcList) {
-    const networkConfigurations = frequentRpcList.reduce(
+    const networkConfigurations = frequentRpcList.reduce<Record<string, Record<string, unknown>>>(
       (networkConfigs, networkConfig) => {
         const networkConfigurationId = v4();
         return {
@@ -37,5 +53,5 @@ export default function migrate(state) {
 
     networkControllerState.networkConfigurations = networkConfigurations ?? {};
   }
-  return state;
+  return state as Record<string, unknown>;
 }
