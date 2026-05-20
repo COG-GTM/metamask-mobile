@@ -54,7 +54,7 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+function setupBackgroundBridge(url: string) {
   // Arrange
   const {
     AccountsController,
@@ -116,8 +116,8 @@ describe('BackgroundBridge', () => {
       const url = 'https:www.mock.io';
       const origin = new URL(url).hostname;
       const bridge = setupBackgroundBridge(url);
-      const eip1193MethodMiddlewareHooks =
-        createEip1193MethodMiddleware.mock.calls[0][0];
+      const mockCreateEip1193 = jest.mocked(createEip1193MethodMiddleware);
+      const eip1193MethodMiddlewareHooks = mockCreateEip1193.mock.calls[0][0];
 
       // Assert getAccounts
       eip1193MethodMiddlewareHooks.getAccounts();
@@ -183,8 +183,11 @@ describe('BackgroundBridge', () => {
     it('creates EthAccountsMethodMiddleware with expected hooks', async () => {
       const url = 'https:www.mock.io';
       const bridge = setupBackgroundBridge(url);
+      const mockCreateEthAccounts = jest.mocked(
+        createEthAccountsMethodMiddleware,
+      );
       const ethAccountsMethodMiddlewareHooks =
-        createEthAccountsMethodMiddleware.mock.calls[0][0];
+        mockCreateEthAccounts.mock.calls[0][0];
 
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
