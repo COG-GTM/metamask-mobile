@@ -16,7 +16,7 @@ import {
   isSolanaAccount,
   isBtcAccount,
   isBtcMainnetAddress,
-  ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+  ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps,bitcoin)
   isBtcTestnetAddress,
   ///: END:ONLY_INCLUDE_IF
 } from '../core/Multichain/utils';
@@ -200,7 +200,7 @@ export const selectHasCreatedBtcMainnetAccount = createSelector(
     ),
 );
 
-///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps,bitcoin)
 
 /**
  * A selector that returns whether the user has already created a Bitcoin testnet account
@@ -211,6 +211,10 @@ export function hasCreatedBtcTestnetAccount(state: RootState): boolean {
     (account) => isBtcAccount(account) && isBtcTestnetAddress(account.address),
   );
 }
+
+///: END:ONLY_INCLUDE_IF
+
+///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 
 /**
  * A selector that returns the solana account address
