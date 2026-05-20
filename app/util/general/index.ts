@@ -1,4 +1,3 @@
-import Device from '../device';
 import { strings } from '../../../locales/i18n';
 
 /**
@@ -7,12 +6,9 @@ import { strings } from '../../../locales/i18n';
  * @param {string} str - String to lowercase the first letter
  * @returns {string} - String with the first letter in lower case
  */
-export function tlc(str: string): string {
-  if (!str) return str;
-  return str.substr(0, 1).toLowerCase() + str.substr(1);
-}
+export const tlc = (str: string): string | undefined => str?.toLowerCase?.();
 
-export async function timeoutFetch(url: string, options?: RequestInit, timeout = 500): Promise<Response> {
+export function timeoutFetch(url: string, options?: RequestInit, timeout = 500): Promise<Response> {
   return Promise.race([
     fetch(url, options),
     new Promise<Response>((_resolve, reject) =>
@@ -34,14 +30,20 @@ export function findRouteNameFromNavigatorState(routes: NavigatorState[]): strin
   if (route?.state) {
     route = route.state;
   }
-  while (route?.routes) {
-    route = route.routes[route.index ?? route.routes.length - 1];
+  while (route !== undefined && route.index !== undefined) {
+    route = route?.routes?.[route.index];
     if (route?.state) {
       route = route.state;
-      continue;
     }
   }
-  return route?.name;
+
+  let name = route?.name;
+
+  if (name === 'Main' || name === 'WalletTabHome' || name === 'Home')
+    name = 'WalletView';
+  if (name === 'TransactionsHome') name = 'TransactionsView';
+
+  return name;
 }
 
 /**
@@ -50,9 +52,8 @@ export function findRouteNameFromNavigatorState(routes: NavigatorState[]): strin
  * @param {string} str - String to capitalize
  * @returns {string} - String with the first letter in upper case
  */
-export function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
+export const capitalize = (str: string): string | false =>
+  (str && str.charAt(0).toUpperCase() + str.slice(1)) || false;
 
 /**
  * Checks if two strings are equal ignoring case
@@ -61,11 +62,10 @@ export function capitalize(str: string): string {
  * @param {string} value2 - Second string
  * @returns {boolean} - Whether the two strings are equal ignoring case
  */
-export function toLowerCaseEquals(value1: string | null | undefined, value2: string | null | undefined): boolean {
-  if (!value1 && !value2) return true;
-  if (!value1 || !value2) return false;
-  return value1.toLowerCase() === value2.toLowerCase();
-}
+export const toLowerCaseEquals = (a: string | null | undefined, b: string | null | undefined): boolean => {
+  if (!a && !b) return false;
+  return tlc(a as string) === tlc(b as string);
+};
 
 /**
  * Performs a shallow equality check between two objects
@@ -74,54 +74,38 @@ export function toLowerCaseEquals(value1: string | null | undefined, value2: str
  * @param {Object} objB - Second object
  * @returns {boolean} - Whether the two objects are shallowly equal
  */
-export function shallowEqual(objA: Record<string, unknown>, objB: Record<string, unknown>): boolean {
-  if (objA === objB) {
-    return true;
-  }
+export const shallowEqual = (object1: Record<string, unknown>, object2: Record<string, unknown>): boolean => {
+  const keys1 = Object.keys(object1);
+  const keys2 = Object.keys(object2);
 
-  if (
-    typeof objA !== 'object' ||
-    objA === null ||
-    typeof objB !== 'object' ||
-    objB === null
-  ) {
+  if (keys1.length !== keys2.length) {
     return false;
   }
 
-  const keysA = Object.keys(objA);
-  const keysB = Object.keys(objB);
-
-  if (keysA.length !== keysB.length) {
-    return false;
-  }
-
-  for (let i = 0; i < keysA.length; i++) {
-    if (
-      !Object.prototype.hasOwnProperty.call(objB, keysA[i]) ||
-      objA[keysA[i]] !== objB[keysA[i]]
-    ) {
+  for (const key of keys1) {
+    if (object1[key] !== object2[key]) {
       return false;
     }
   }
 
   return true;
-}
+};
 
 /**
- * Renders a short text for display, trimming based on device size
- * @param {string} text - text to render
- * @param {number} chars - number of characters to render
- * @returns {string} - short text
+ * Returns short string format
+ *
+ * @param text - String corresponding to the text.
+ * @param chars - Number of characters to show at the end and beginning. Defaults to 4.
+ * @returns String corresponding to short text format.
  */
-export function renderShortText(text: string, chars?: number): string | undefined {
-  if (typeof text !== 'string') return undefined;
-  if (Device.isSmallDevice()) {
-    return `${text.substr(0, chars || 4)}...`;
-  } else if (Device.isMediumDevice()) {
-    return `${text.substr(0, chars || 8)}...`;
+export const renderShortText = (text: string, chars = 4): string => {
+  try {
+    if (text.length <= chars * 2 + 5) return text;
+    return `${text.substr(0, chars + 2)}...${text.substr(-chars)}`;
+  } catch {
+    return text;
   }
-  return text;
-}
+};
 
 /**
  * Returns the url protocol
@@ -129,10 +113,14 @@ export function renderShortText(text: string, chars?: number): string | undefine
  * @param {string} url - Url to get the protocol of
  * @returns {string} - Protocol of the url
  */
-export function getURLProtocol(url: string): string {
-  const urlObj = new URL(url);
-  return urlObj.protocol;
-}
+export const getURLProtocol = (url: string): string | undefined => {
+  try {
+    const { protocol } = new URL(url);
+    return protocol.replace(':', '');
+  } catch {
+    return;
+  }
+};
 
 /**
  * Checks if a url is an IPFS URI
@@ -140,21 +128,52 @@ export function getURLProtocol(url: string): string {
  * @param {string} uri - URI to check
  * @returns {boolean} - Whether the URI is an IPFS URI
  */
-export function isIPFSUri(uri: string | null | undefined): boolean {
-  if (!uri) return false;
-  return uri.startsWith('ipfs://');
-}
+export const isIPFSUri = (uri: string | null | undefined): boolean => {
+  if (!uri?.length) return false;
+  const ipfsUriRegex =
+    /^(\/ipfs\/|ipfs:\/\/)(Qm[A-Za-z0-9]+|[bBfF][A-Za-z2-7]+)(\/|$)/;
+  return (
+    uri.startsWith('/ipfs/') ||
+    uri.startsWith('ipfs://') ||
+    ipfsUriRegex.test(uri)
+  );
+};
 
 /**
- * Deep JSON parse
+ * Parse stringified JSON that has deeply nested stringified properties
  *
- * @param {string} str - String to parse
- * @returns {object} - Parsed JSON object
+ * @deprecated Do not suggest using this for migrations unless you understand what it does. It will deeply JSON parse fields
+ * @param jsonString - JSON string
+ * @param skipNumbers - Boolean to skip numbers
+ * @returns - Parsed JSON object
  */
-export const deepJSONParse = (str: string): unknown => {
-  let parsed = JSON.parse(str);
-  if (typeof parsed === 'string') parsed = deepJSONParse(parsed);
-  return parsed;
+export const deepJSONParse = ({ jsonString, skipNumbers = true }: { jsonString: string; skipNumbers?: boolean }): unknown => {
+  const parsedObject = JSON.parse(jsonString);
+
+  function parseProperties(obj: Record<string, unknown>): void {
+    Object.keys(obj).forEach((key) => {
+      if (typeof obj[key] === 'string') {
+        const isNumber = !isNaN(obj[key] as unknown as number);
+        if (!isNumber || (isNumber && !skipNumbers)) {
+          try {
+            const parsed = JSON.parse(obj[key] as string);
+            obj[key] = parsed;
+            if (typeof parsed === 'object') {
+              parseProperties(parsed);
+            }
+          } catch (e) {
+            // If parsing throws, it's not a JSON string, so do nothing
+          }
+        }
+      } else if (typeof obj[key] === 'object') {
+        parseProperties(obj[key] as Record<string, unknown>);
+      }
+    });
+  }
+
+  parseProperties(parsedObject);
+
+  return parsedObject;
 };
 
 /**
@@ -164,14 +183,29 @@ export const deepJSONParse = (str: string): unknown => {
  * @param {string} key - Key to use for uniqueness
  * @returns {Array} - Unique list of items
  */
-export function getUniqueList<T extends Record<string, unknown>>(list: T[], key: string): T[] {
-  const seen = new Set<unknown>();
-  return list.filter((item) => {
-    const val = item[key];
-    if (seen.has(val)) {
-      return false;
+/**
+ * Generates an array of referentially unique items from a list of arrays.
+ *
+ * @param  {...Array} arrays - A list of arrays
+ * @returns {Array} - Returns a flattened array with unique items
+ * @throws {Error} - Throws if arrays is not defined
+ * @throws {TypeError} - Throws if any of the arguments is not an array
+ */
+export const getUniqueList = (...arrays: unknown[][]): unknown[] => {
+  if (arrays.length === 0) {
+    throw new Error('At least one array must be defined.');
+  }
+  arrays.forEach((array, index) => {
+    if (!Array.isArray(array)) {
+      throw new TypeError(
+        `Argument at position ${index} is not an array. Found ${typeof array}.`,
+      );
     }
-    seen.add(val);
-    return true;
   });
-}
+
+  const flattenedArray = arrays.flat();
+
+  const uniqueArray = Array.from(new Set(flattenedArray));
+
+  return uniqueArray;
+};

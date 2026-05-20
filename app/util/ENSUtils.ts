@@ -1,74 +1,119 @@
 import Engine from '../core/Engine';
 import ENS from 'ethjs-ens';
-import { toLowerCaseEquals } from './general';
+import { toLowerCaseEquals } from '../util/general';
+import {
+  ChainId,
+  InfuraNetworkType,
+  NetworkType,
+} from '@metamask/controller-utils';
+const ENS_NAME_NOT_DEFINED_ERROR = 'ENS name not defined';
+const INVALID_ENS_NAME_ERROR = 'invalid ENS name';
+// One hour cache threshold.
+const CACHE_REFRESH_THRESHOLD = 60 * 60 * 1000;
+import { EMPTY_ADDRESS } from '../constants/transaction';
 import { regex } from '../../app/util/regex';
 import { isSiweMessage } from '@metamask/controller-utils';
 
-class ENSCache {
-  static cache: Record<string, Record<string, string | null>> = {};
+interface CacheEntry {
+  name?: string;
+  timestamp: number;
 }
 
-export function getCachedENSName(address: string, chainId: string): string | null {
-  const chain = ENSCache.cache[chainId];
-  if (!chain) return null;
-  return chain[address] ?? null;
+/**
+ * Utility class with the single responsibility
+ * of caching ENS names
+ */
+export class ENSCache {
+  static cache: Record<string, CacheEntry> = {};
+}
+
+/**
+ * A list of all chain IDs supported by the current legacy ENS library we are
+ * using.
+ */
+const ENS_SUPPORTED_CHAIN_IDS: string[] = [ChainId[NetworkType.mainnet]];
+
+/**
+ * We still need it to support the legacy ENS library that we are using.
+ */
+const ENS_SUPPORTED_NETWORK_IDS: Record<string, string> = {
+  [InfuraNetworkType.mainnet]: '1',
+};
+
+/**
+ * A map of chain ID to network ID for networks supported by the current
+ * legacy ENS library we are using.
+ */
+const CHAIN_ID_TO_NETWORK_ID: Record<string, string> = {
+  [ChainId[NetworkType.mainnet]]:
+    ENS_SUPPORTED_NETWORK_IDS[NetworkType.mainnet],
+};
+
+export function getCachedENSName(address: string, chainId: string): string | undefined {
+  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
+  if (!networkHasEnsSupport) {
+    return undefined;
+  }
+
+  const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
+  const cacheEntry = ENSCache.cache[networkId + address];
+
+  return cacheEntry?.name;
 }
 
 export async function doENSReverseLookup(address: string, chainId: string): Promise<string | undefined> {
-  const cached = getCachedENSName(address, chainId);
-  if (cached) {
-    return cached;
+  const { provider } =
+    Engine.context.NetworkController.getProviderAndBlockTracker();
+  const { name: cachedName, timestamp } =
+    ENSCache.cache[chainId + address] || {};
+  const nowTimestamp = Date.now();
+  if (timestamp && nowTimestamp - timestamp < CACHE_REFRESH_THRESHOLD) {
+    return Promise.resolve(cachedName);
   }
 
-  const { NetworkController } = Engine.context;
-  const networkClientId =
-    NetworkController.findNetworkClientIdByChainId(chainId);
-  const networkClient = NetworkController.getNetworkClientById(networkClientId);
+  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
 
-  const provider = networkClient?.provider;
-
-  const ens = new ENS({ provider, network: chainId });
-
-  try {
-    const name = await ens.reverse(address);
-    const resolvedAddress = await ens.lookup(name);
-
-    if (toLowerCaseEquals(address, resolvedAddress)) {
-      if (!ENSCache.cache[chainId]) {
-        ENSCache.cache[chainId] = {};
+  if (networkHasEnsSupport) {
+    const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
+    const ens = new ENS({ provider, network: networkId });
+    try {
+      const name = await ens.reverse(address);
+      const resolvedAddress = await ens.lookup(name);
+      if (toLowerCaseEquals(address, resolvedAddress)) {
+        ENSCache.cache[networkId + address] = { name, timestamp: Date.now() };
+        return name;
       }
-      ENSCache.cache[chainId][address] = name;
-      return name;
+    } catch (e) {
+      if (
+        (e as Error).message.includes(ENS_NAME_NOT_DEFINED_ERROR) ||
+        (e as Error).message.includes(INVALID_ENS_NAME_ERROR)
+      ) {
+        ENSCache.cache[networkId + address] = { timestamp: Date.now() };
+      }
     }
-  } catch (e) {
-    // ENS lookup failed
   }
-  return undefined;
 }
 
 export async function doENSLookup(ensName: string, chainId: string): Promise<string | undefined> {
-  const { NetworkController } = Engine.context;
-  const networkClientId =
-    NetworkController.findNetworkClientIdByChainId(chainId);
-  const networkClient = NetworkController.getNetworkClientById(networkClientId);
+  const { provider } =
+    Engine.context.NetworkController.getProviderAndBlockTracker();
 
-  const provider = networkClient?.provider;
+  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
 
-  const ens = new ENS({ provider, network: chainId });
-
-  try {
-    const resolvedAddress = await ens.lookup(ensName);
-    if (resolvedAddress && resolvedAddress !== '0x') {
+  if (networkHasEnsSupport) {
+    const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
+    const ens = new ENS({ provider, network: networkId });
+    try {
+      const resolvedAddress = await ens.lookup(ensName);
+      if (resolvedAddress === EMPTY_ADDRESS) return;
       return resolvedAddress;
-    }
-  } catch (e) {
-    // ENS lookup failed
+      // eslint-disable-next-line no-empty
+    } catch (e) {}
   }
-  return undefined;
 }
 
 export function isDefaultAccountName(name: string): boolean {
-  return regex.defaultAccountName.test(name);
+  return regex.defaultAccount.test(name);
 }
 
 export { isSiweMessage };
