@@ -525,7 +525,7 @@ export function weiToFiat(
   if (!wei || !isBN(wei) || !conversionRate) {
     return addCurrencySymbol(0, currencyCode);
   }
-  decimalsToShow = (currencyCode === 'usd' ? 2 : undefined) ?? decimalsToShow;
+  decimalsToShow = currencyCode === 'usd' ? 2 : 5;
   const value = weiToFiatNumber(wei, conversionRate, decimalsToShow);
   return addCurrencySymbol(value, currencyCode);
 }
