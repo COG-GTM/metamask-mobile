@@ -67,15 +67,15 @@ const createStyles = (colors: Record<string, Record<string, string>>) =>
  * only on ActionModal component
  */
 export default function ActionContent({
-  cancelTestID,
-  confirmTestID,
-  cancelText,
+  cancelTestID = '',
+  confirmTestID = '',
+  cancelText = strings('action_view.cancel'),
   children,
-  confirmText,
-  confirmDisabled,
-  cancelButtonMode,
-  cancelButtonDisabled,
-  confirmButtonMode,
+  confirmText = strings('action_view.confirm'),
+  confirmDisabled = false,
+  cancelButtonMode = 'neutral',
+  cancelButtonDisabled = false,
+  confirmButtonMode = 'warning',
   displayCancelButton = true,
   displayConfirmButton = true,
   onCancelPress,

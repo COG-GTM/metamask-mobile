@@ -41,14 +41,14 @@ interface Props {
 }
 
 export default function ActionModal({
-  cancelTestID,
-  confirmTestID,
-  cancelText,
+  cancelTestID = '',
+  confirmTestID = '',
+  cancelText = strings('action_view.cancel'),
   children,
-  confirmText,
-  confirmDisabled,
-  cancelButtonMode,
-  confirmButtonMode,
+  confirmText = strings('action_view.confirm'),
+  confirmDisabled = false,
+  cancelButtonMode = 'neutral',
+  confirmButtonMode = 'warning',
   displayCancelButton = true,
   displayConfirmButton = true,
   onCancelPress,

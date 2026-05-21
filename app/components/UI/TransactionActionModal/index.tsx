@@ -23,17 +23,17 @@ interface Props {
 
 export default function TransactionActionModal({
   isVisible,
-  confirmDisabled,
+  confirmDisabled = false,
   onCancelPress,
   onConfirmPress,
-  confirmText,
-  cancelText,
+  confirmText = strings('action_view.confirm'),
+  cancelText = strings('action_view.cancel'),
   feeText,
   titleText,
   gasTitleText,
   descriptionText,
-  cancelButtonMode,
-  confirmButtonMode,
+  cancelButtonMode = 'neutral',
+  confirmButtonMode = 'warning',
 }: Props) {
   return (
     <ActionModal

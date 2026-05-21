@@ -92,12 +92,12 @@ interface Props {
   rightLabelComponent?: React.ReactNode;
   value: number | string;
   unit?: string;
-  increment?: number;
+  increment?: number | BigNumber;
   onChangeValue: (value: string) => void;
   inputInsideLabel?: boolean;
   error?: string;
-  min?: number;
-  max?: number;
+  min?: number | BigNumber;
+  max?: number | BigNumber;
   name?: string;
 }
 
