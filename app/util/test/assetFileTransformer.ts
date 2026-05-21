@@ -2,7 +2,7 @@
 const path = require('path');
 
 module.exports = {
-  process(_, filename) {
+  process(_: string, filename: string): { code: string } {
     const assetFilename = JSON.stringify(path.basename(filename));
 
     return {
