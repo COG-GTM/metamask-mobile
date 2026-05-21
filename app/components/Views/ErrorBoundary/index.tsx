@@ -224,7 +224,7 @@ const createStyles = (colors: Colors) =>
     hitSlop: { top: 50, right: 50, bottom: 50, left: 50 },
   });
 
-export const Fallback = (props) => {
+export const Fallback = (props: { errorMessage?: string; showExportSeedphrase?: boolean; resetError?: () => void }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [modalVisible, setModalVisible] = React.useState(false);

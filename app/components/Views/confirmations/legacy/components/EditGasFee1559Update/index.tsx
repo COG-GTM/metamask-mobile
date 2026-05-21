@@ -380,7 +380,7 @@ const EditGasFee1559Update = ({
   const LeftLabelComponent = ({
     value,
     infoValue,
-  }) => (
+  }: { value: string; infoValue?: string }) => (
     <View style={styles.labelTextContainer}>
       <Text black bold noMargin>
         {strings(value)}
@@ -398,7 +398,7 @@ const EditGasFee1559Update = ({
     </View>
   );
 
-  const RightLabelComponent = ({ value }) => (
+  const RightLabelComponent = ({ value }: { value: string }) => (
     <Text noMargin small grey>
       <Text bold reset>
         {strings(value)}:
@@ -410,7 +410,7 @@ const EditGasFee1559Update = ({
   const TextComponent = ({
     title,
     value,
-  }) => (
+  }: { title: string; value: string }) => (
     <>
       <Text noMargin primary infoModal bold style={styles.learnMoreLabels}>
         {strings(title)}

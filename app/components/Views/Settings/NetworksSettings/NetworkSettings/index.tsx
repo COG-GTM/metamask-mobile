@@ -2433,7 +2433,7 @@ class NetworkSettings extends PureComponent<NetworkSettingsProps, NetworkSetting
 
   goToLearnMore = () => Linking.openURL(strings('networks.learn_more_url'));
 
-  renderTabBar = (props) => {
+  renderTabBar = (props: Record<string, unknown>) => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (

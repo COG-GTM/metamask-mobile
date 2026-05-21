@@ -1058,7 +1058,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     );
   };
 
-  renderAsset = (props) => {
+  renderAsset = (props: Record<string, unknown>) => {
     const { item: asset, index } = props;
     if (!asset.tokenId) {
       return this.renderToken(asset, index);

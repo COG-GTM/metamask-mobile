@@ -119,7 +119,7 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
 
   #transactionFinishedSubscription;
 
-  static navigationOptions = ({ navigation }) =>
+  static navigationOptions = ({ navigation }: { navigation: Record<string, unknown> }) =>
     getApproveNavbar('approve.title', navigation);
 
   state = {

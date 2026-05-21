@@ -659,7 +659,7 @@ class TransactionEditor extends PureComponent<TransactionEditorProps, Transactio
   updateEIP1559GasDataFromLegacyTransaction = ({
     legacyGasTransaction,
     totalGasValue,
-  }) => ({
+  }: { legacyGasTransaction: Record<string, unknown>; totalGasValue: string }) => ({
     // These values are updated to EIP1559GasData to reflect the gas values on the review UI
     suggestedGasLimit: legacyGasTransaction.suggestedGasLimit,
     renderableGasFeeMaxNative: legacyGasTransaction.transactionFee,

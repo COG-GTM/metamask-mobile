@@ -141,7 +141,7 @@ interface ApproveTransactionReviewState {
 }
 
 class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewProps, ApproveTransactionReviewState> {
-  static navigationOptions = ({ navigation }) =>
+  static navigationOptions = ({ navigation }: { navigation: Record<string, unknown> }) =>
     getApproveNavbar('approve.title', navigation);
 
   state = {

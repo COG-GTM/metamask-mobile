@@ -103,7 +103,7 @@ const OfflineMode = ({ navigation, infuraBlocked }: { navigation: { goBack: () =
   );
 };
 
-OfflineMode.navigationOptions = ({ navigation }) =>
+OfflineMode.navigationOptions = ({ navigation }: { navigation: { goBack: () => void } }) =>
   getOfflineModalNavbar(navigation);
 
 
