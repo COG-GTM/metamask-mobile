@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import { Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
@@ -8,7 +7,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { TERMS_AND_CONDITIONS_BUTTON_ID } from '../../../../wdio/screen-objects/testIDs/Components/TermsAndConditions.testIds';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     text: {
       ...fontStyles.normal,
@@ -25,12 +24,6 @@ const createStyles = (colors) =>
  * View that is displayed in the flow to agree terms and conditions
  */
 export default class TermsAndConditions extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
-  };
 
   press = () => {
     const { navigation } = this.props;

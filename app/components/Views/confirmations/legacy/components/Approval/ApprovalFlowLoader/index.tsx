@@ -1,12 +1,11 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
 import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
 import Text from '../../../../../../Base/Text';
 import Spinner from '../../../../../../UI/AnimatedSpinner';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -43,11 +42,5 @@ const ApprovalFlowLoader = ({ loadingText }) => {
   );
 };
 
-ApprovalFlowLoader.propTypes = {
-  /**
-   * Text that will be displayed while the approval flow modal is active
-   */
-  loadingText: PropTypes.string,
-};
 
 export default ApprovalFlowLoader;

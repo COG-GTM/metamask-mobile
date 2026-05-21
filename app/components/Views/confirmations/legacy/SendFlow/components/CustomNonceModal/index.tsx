@@ -13,13 +13,12 @@ import ModalDragger from '../../../../../../Base/ModalDragger';
 import Text from '../../../../../../Base/Text';
 import StyledButton from '../../../../../../UI/StyledButton';
 import Modal from 'react-native-modal';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import { useTheme } from '../../../../../../../util/theme';
 import { isNumber } from '../../../../../../../util/number';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     bottomModal: {
       justifyContent: 'flex-end',
@@ -258,11 +257,5 @@ const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }) => {
   );
 };
 
-CustomModalNonce.propTypes = {
-  proposedNonce: PropTypes.number.isRequired,
-  nonceValue: PropTypes.number.isRequired,
-  save: PropTypes.func.isRequired,
-  close: PropTypes.func.isRequired,
-};
 
 export default CustomModalNonce;

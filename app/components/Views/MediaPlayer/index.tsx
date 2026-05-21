@@ -1,5 +1,4 @@
 import React, { useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -163,30 +162,6 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
   );
 }
 
-MediaPlayer.propTypes = {
-  /**
-   * Media URI
-   * Can be a number returned by import for bundled files
-   * or a string for remote files (http://...)
-   */
-  uri: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  /**
-   * Custom style object
-   */
-  style: ViewPropTypes.style,
-  /**
-   * On close callback
-   */
-  onClose: PropTypes.func,
-  /**
-   * Array of remote possible text tracks to display
-   */
-  textTracks: PropTypes.arrayOf(PropTypes.object),
-  /**
-   * The selected text track to display by id, language, title, index
-   */
-  selectedTextTrack: PropTypes.object,
-};
 
 MediaPlayer.defaultProps = {
   onError: () => null,
