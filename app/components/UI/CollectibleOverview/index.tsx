@@ -57,7 +57,7 @@ const VERTICAL_ALIGNMENT = IS_SMALL_DEVICE ? 12 : 16;
 
 const THRESHOLD = 50;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     wrapper: {
       flex: 0,
@@ -147,6 +147,19 @@ const FieldType = {
 /**
  * View that displays the information of a specific ERC-721 Token
  */
+interface Props {
+  chainId: string;
+  collectible: Record<string, unknown>;
+  selectedAddress: string;
+  tradable?: boolean;
+  onSend: () => void;
+  addFavoriteCollectible: (collectible: Record<string, unknown>) => void;
+  removeFavoriteCollectible: (collectible: Record<string, unknown>) => void;
+  isInFavorites?: boolean;
+  openLink: (url: string) => void;
+  onTranslation: (translation: number) => void;
+}
+
 const CollectibleOverview = ({
   chainId,
   collectible,
@@ -158,7 +171,7 @@ const CollectibleOverview = ({
   isInFavorites,
   openLink,
   onTranslation,
-}) => {
+}: Props) => {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [prevWrapperHeight, setPrevWrapperHeight] = useState(0);
   const [wrapperHeight, setWrapperHeight] = useState(0);

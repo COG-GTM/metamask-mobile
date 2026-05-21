@@ -1,10 +1,31 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { ReactNode } from 'react';
+import { StyleSheet, View, StyleProp, ViewStyle } from 'react-native';
 import StyledButton from '../../StyledButton';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
 
-const createStyles = (colors) =>
+interface Props {
+  cancelTestID?: string;
+  confirmTestID?: string;
+  cancelText?: string;
+  children?: ReactNode;
+  confirmText?: string;
+  confirmDisabled?: boolean;
+  cancelButtonMode?: string;
+  cancelButtonDisabled?: boolean;
+  confirmButtonMode?: string;
+  displayCancelButton?: boolean;
+  displayConfirmButton?: boolean;
+  onCancelPress?: () => void;
+  onConfirmPress?: () => void;
+  viewWrapperStyle?: StyleProp<ViewStyle>;
+  viewContainerStyle?: StyleProp<ViewStyle>;
+  actionContainerStyle?: StyleProp<ViewStyle>;
+  childrenContainerStyle?: StyleProp<ViewStyle>;
+  verticalButtons?: boolean;
+}
+
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     viewWrapper: {
       flexDirection: 'column',
@@ -64,7 +85,7 @@ export default function ActionContent({
   actionContainerStyle,
   childrenContainerStyle,
   verticalButtons,
-}) {
+}: Props) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

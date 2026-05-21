@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import StyledButton from '../StyledButton';
 import {
   Keyboard,
@@ -6,6 +6,8 @@ import {
   View,
   ActivityIndicator,
   TouchableWithoutFeedback,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import { baseStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
@@ -18,7 +20,29 @@ export const ConfirmButtonState = {
   Normal: 'normal',
 };
 
-const getStyles = (colors) =>
+interface Props {
+  cancelTestID?: string;
+  confirmTestID?: string;
+  cancelText?: string;
+  children?: ReactNode;
+  confirmText?: string;
+  confirmButtonMode?: string;
+  onCancelPress?: () => void;
+  onConfirmPress?: () => void;
+  onTouchablePress?: () => void;
+  showCancelButton?: boolean;
+  showConfirmButton?: boolean;
+  confirmed?: boolean;
+  confirmDisabled?: boolean;
+  loading?: boolean;
+  keyboardShouldPersistTaps?: 'always' | 'never' | 'handled';
+  style?: StyleProp<ViewStyle>;
+  confirmButtonState?: string;
+  scrollViewTestID?: string;
+  contentContainerStyle?: StyleProp<ViewStyle>;
+}
+
+const getStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     actionContainer: {
       flex: 0,
@@ -68,7 +92,7 @@ export default function ActionView({
   confirmButtonState = ConfirmButtonState.Normal,
   scrollViewTestID,
   contentContainerStyle,
-}) {
+}: Props) {
   const { colors } = useTheme();
   confirmText = confirmText || strings('action_view.confirm');
   cancelText = cancelText || strings('action_view.cancel');

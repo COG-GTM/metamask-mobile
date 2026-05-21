@@ -16,7 +16,7 @@ import { useTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { SkipAccountSecurityModalSelectorsIDs } from '../../../../e2e/selectors/Onboarding/SkipAccountSecurityModal.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     imageWarning: {
       alignSelf: 'center',
@@ -65,6 +65,15 @@ const createStyles = (colors) =>
     },
   });
 
+interface Props {
+  modalVisible?: boolean;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  onPress?: () => void;
+  toggleSkipCheckbox?: () => void;
+  skipCheckbox?: boolean;
+}
+
 const SkipAccountSecurityModal = ({
   modalVisible,
   onConfirm,
@@ -72,7 +81,7 @@ const SkipAccountSecurityModal = ({
   onPress,
   toggleSkipCheckbox,
   skipCheckbox,
-}) => {
+}: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

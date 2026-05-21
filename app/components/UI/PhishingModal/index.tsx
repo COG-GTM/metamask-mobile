@@ -20,7 +20,7 @@ import {
   ButtonWidthTypes,
 } from '../../../component-library/components/Buttons/Button/Button.types';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     warningIcon: {
       color: colors.error.default,
@@ -96,7 +96,8 @@ const createStyles = (colors) =>
     },
   });
 
-export default class PhishingModal extends PureComponent {
+export default class PhishingModal extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   shareToTwitter = () => {
     const tweetText =

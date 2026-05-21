@@ -32,7 +32,7 @@ import ApproveTransactionHeader from '../../Views/confirmations/legacy/component
 import Identicon from '../Identicon';
 import { selectInternalAccounts } from '../../../selectors/accountsController';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     accountInformation: {
       flexDirection: 'row',
@@ -99,7 +99,8 @@ const createStyles = (colors) =>
     },
   });
 
-class AccountInfoCard extends PureComponent {
+class AccountInfoCard extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   render() {
     const {
@@ -205,7 +206,7 @@ class AccountInfoCard extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   accounts: selectAccounts(state),
   internalAccounts: selectInternalAccounts(state),
   conversionRate: selectConversionRate(state),

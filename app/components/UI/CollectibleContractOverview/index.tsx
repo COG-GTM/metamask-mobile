@@ -15,7 +15,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import { TokenOverviewSelectorsIDs } from '../../../../e2e/selectors/wallet/TokenOverview.selectors';
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -53,7 +53,8 @@ const createStyles = (colors) =>
  * View that displays a specific collectible contract
  * including the overview (name, address, symbol, logo, description, total supply)
  */
-class CollectibleContractOverview extends PureComponent {
+class CollectibleContractOverview extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   onAdd = () => {
     const { navigation, collectibleContract } = this.props;
@@ -131,7 +132,7 @@ class CollectibleContractOverview extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   collectibles: collectiblesSelector(state),
 });
 

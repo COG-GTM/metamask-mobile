@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { CURRENCIES } from './constants';
 import createKeypadRule from './createKeypadRule';
 
-function useCurrency(currency, decimals) {
+function useCurrency(currency?: string, decimals?: number) {
   const currencyData = useMemo(() => {
     if (!currency) {
       return CURRENCIES.default;

@@ -54,7 +54,7 @@ import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
 import Logger from '../../../util/Logger';
 import { prepareNftDetectionEvents } from '../../../util/assets';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -538,7 +538,7 @@ const CollectibleContracts = ({
 };
 
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   networkType: selectProviderType(state),
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),

@@ -108,7 +108,8 @@ const createStyles = (theme) =>
 /**
  * PureComponent that renders receive options
  */
-class ReceiveRequest extends PureComponent {
+class ReceiveRequest extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     qrModalVisible: false,
@@ -231,7 +232,7 @@ class ReceiveRequest extends PureComponent {
 
 ReceiveRequest.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   receiveAsset: state.modals.receiveAsset,

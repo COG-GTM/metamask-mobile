@@ -140,7 +140,8 @@ const ROW_HEIGHT = (Device.isIos() ? 95 : 100) + StyleSheet.hairlineWidth;
 /**
  * View that renders a list of transactions for a specific asset
  */
-class Transactions extends PureComponent {
+class Transactions extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   static defaultProps = {
     headerHeight: 0,
@@ -844,7 +845,7 @@ class Transactions extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   accounts: selectAccounts(state),
   chainId: selectChainId(state),
   networkClientId: selectNetworkClientId(state),

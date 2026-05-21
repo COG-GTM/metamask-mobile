@@ -5,7 +5,13 @@ import InfoModal from '../Swaps/components/InfoModal';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 
-const TimeEstimateInfoModal = ({ timeEstimateId, isVisible, onHideModal }) => (
+interface Props {
+  timeEstimateId?: string;
+  isVisible?: boolean;
+  onHideModal?: () => void;
+}
+
+const TimeEstimateInfoModal = ({ timeEstimateId, isVisible, onHideModal }: Props) => (
   <InfoModal
     isVisible={isVisible}
     toggleModal={onHideModal}

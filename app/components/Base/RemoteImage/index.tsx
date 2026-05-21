@@ -60,7 +60,19 @@ const createStyles = () =>
     },
   });
 
-const RemoteImage = (props) => {
+interface Props {
+  source: { uri?: string } | number;
+  style?: Record<string, unknown>;
+  chainId?: string;
+  isTokenImage?: boolean;
+  address?: string;
+  isDetailedNft?: boolean;
+  fadeIn?: boolean;
+  resizeMode?: string;
+  [key: string]: unknown;
+}
+
+const RemoteImage = (props: Props) => {
   const [error, setError] = useState(undefined);
   // Avoid using this component with animated SVG
   const source = resolveAssetSource(props.source);
@@ -80,7 +92,7 @@ const RemoteImage = (props) => {
       ? ''
       : source.uri);
 
-  const onError = ({ nativeEvent: { error } }) => setError(error);
+  const onError = ({ nativeEvent: { error } }: { nativeEvent: { error: string } }) => setError(error);
 
   const [dimensions, setDimensions] = useState(null);
 

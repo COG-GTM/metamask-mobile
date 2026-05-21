@@ -19,7 +19,7 @@ import { TransactionReviewSelectorsIDs } from '../../../../e2e/selectors/SendFlo
 
 const { ORIGIN_DEEPLINK, ORIGIN_QR_CODE } = AppConstants.DEEPLINKS;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     transactionHeader: {
       justifyContent: 'center',
@@ -85,7 +85,24 @@ const createStyles = (colors) =>
 /**
  * PureComponent that renders the transaction header used for signing, granting permissions and sending
  */
-const TransactionHeader = (props) => {
+interface OwnProps {
+  currentPageInformation: {
+    origin?: string;
+    url?: string;
+    currentEnsName?: string;
+    spenderAddress?: string;
+    icon?: string | { uri?: string };
+  };
+}
+
+interface StateProps {
+  networkType?: string;
+  nickname?: string;
+}
+
+type Props = OwnProps & StateProps;
+
+const TransactionHeader = (props: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -225,7 +242,7 @@ const TransactionHeader = (props) => {
 };
 
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   networkType: selectProviderType(state),
   nickname: selectNickname(state),
 });

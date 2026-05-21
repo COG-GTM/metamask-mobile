@@ -123,7 +123,8 @@ const createStyles = (colors, shadows) =>
  * PureComponent that wraps all the thumbnails
  * representing all the open tabs
  */
-class Tabs extends PureComponent {
+class Tabs extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   thumbnails = {};
 

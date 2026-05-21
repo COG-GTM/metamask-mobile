@@ -15,7 +15,7 @@ import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
 const ROW_HEIGHT = 35;
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     dropdown: {
       flexDirection: 'row',
@@ -89,7 +89,8 @@ const createStyles = (colors) =>
     },
   });
 
-export default class SelectComponent extends PureComponent {
+export default class SelectComponent extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     pickerVisible: false,

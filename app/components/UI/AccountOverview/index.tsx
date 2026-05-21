@@ -45,7 +45,7 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { isPortfolioUrl } from '../../../util/url';
 import { toLowerCaseEquals } from '../../../util/general';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     scrollView: {
       backgroundColor: colors.background.default,
@@ -145,7 +145,8 @@ const createStyles = (colors) =>
  * View that's part of the <Wallet /> component
  * which shows information about the selected account
  */
-class AccountOverview extends PureComponent {
+class AccountOverview extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     accountLabelEditable: false,
@@ -401,7 +402,7 @@ class AccountOverview extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   internalAccounts: selectInternalAccounts(state),
   currentCurrency: selectCurrentCurrency(state),

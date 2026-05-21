@@ -38,7 +38,8 @@ import { getPhishingTestResultAsync } from '../../../util/phishingDetection';
 /**
  * Account access approval component
  */
-class AccountApproval extends PureComponent {
+class AccountApproval extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     start: Date.now(),
@@ -364,7 +365,7 @@ class AccountApproval extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   accountsLength: selectAccountsLength(state),
   tokensLength: selectTokensLength(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),

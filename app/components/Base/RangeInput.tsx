@@ -5,7 +5,7 @@ import Text from './Text';
 import BigNumber from 'bignumber.js';
 import { useTheme } from '../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     labelContainer: {
       flexDirection: 'row',
@@ -87,6 +87,20 @@ const createStyles = (colors) =>
     },
   });
 
+interface Props {
+  leftLabelComponent?: React.ReactNode;
+  rightLabelComponent?: React.ReactNode;
+  value: number | string;
+  unit?: string;
+  increment?: number;
+  onChangeValue: (value: string) => void;
+  inputInsideLabel?: boolean;
+  error?: string;
+  min?: number;
+  max?: number;
+  name?: string;
+}
+
 const RangeInput = ({
   leftLabelComponent,
   rightLabelComponent,
@@ -99,7 +113,7 @@ const RangeInput = ({
   min,
   max,
   name,
-}) => {
+}: Props) => {
   const textInput = useRef(null);
   const [errorState, setErrorState] = useState();
   const { colors, themeAppearance } = useTheme();
@@ -110,7 +124,7 @@ const RangeInput = ({
   }, []);
 
   const changeValue = useCallback(
-    (newValue, dontEmptyError) => {
+    (newValue: string, dontEmptyError?: boolean) => {
       if (!dontEmptyError) setErrorState('');
       const cleanValue = newValue?.replace?.(',', '.');
       if (cleanValue && new BigNumber(cleanValue).isNaN()) {

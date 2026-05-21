@@ -27,7 +27,7 @@ import {
   TextVariant,
 } from '../../../../component-library/components/Texts/Text';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     coachmark: {
       backgroundColor: colors.primary.default,
@@ -174,7 +174,8 @@ const createStyles = (colors) =>
     },
   });
 
-export default class Coachmark extends PureComponent {
+export default class Coachmark extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     ready: false,

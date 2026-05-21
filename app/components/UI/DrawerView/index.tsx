@@ -88,7 +88,7 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import safePromiseHandler from './utils';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -330,7 +330,8 @@ const ICON_IMAGES = {
  * View component that displays the MetaMask fox
  * in the middle of the screen
  */
-class DrawerView extends PureComponent {
+class DrawerView extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     showProtectWalletModal: undefined,
@@ -1142,7 +1143,7 @@ class DrawerView extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   providerConfig: selectProviderConfig(state),
   chainId: selectChainId(state),
   accounts: selectAccounts(state),

@@ -3,6 +3,20 @@ import Keypad from './components';
 import { KEYS } from './constants';
 import useCurrency from './useCurrency';
 
+interface Props {
+  onChange: (data: { value: string; valueAsNumber: number; pressedKey: string }) => void;
+  value: string;
+  currency?: string;
+  decimals?: number;
+  style?: Record<string, unknown>;
+  digitButtonStyle?: Record<string, unknown>;
+  digitTextStyle?: Record<string, unknown>;
+  periodButtonStyle?: Record<string, unknown>;
+  periodTextStyle?: Record<string, unknown>;
+  deleteButtonStyle?: Record<string, unknown>;
+  deleteIcon?: React.ReactNode;
+}
+
 function KeypadComponent({
   onChange,
   value,
@@ -15,10 +29,10 @@ function KeypadComponent({
   periodTextStyle,
   deleteButtonStyle,
   deleteIcon,
-}) {
+}: Props) {
   const { handler, decimalSeparator } = useCurrency(currency, decimals);
   const handleKeypadPress = useCallback(
-    (pressedKey) => {
+    (pressedKey: string) => {
       const newValue = handler(value, pressedKey);
       let valueAsNumber = 0;
       try {

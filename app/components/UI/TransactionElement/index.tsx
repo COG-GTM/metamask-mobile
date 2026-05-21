@@ -151,7 +151,8 @@ const transactionIconSwapFailed = require('../../../images/transaction-icons/swa
 /**
  * View that renders a transaction item part of transactions list
  */
-class TransactionElement extends PureComponent {
+class TransactionElement extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     actionKey: undefined,
@@ -647,7 +648,7 @@ class TransactionElement extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   networkConfigurationsByChainId:
     selectEvmNetworkConfigurationsByChainId(state),
   selectedInternalAccount: selectSelectedInternalAccount(state),

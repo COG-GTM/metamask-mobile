@@ -62,7 +62,7 @@ import { selectSelectedInternalAccountFormattedAddress } from '../../../selector
 import { RequestPaymentViewSelectors } from '../../../../e2e/selectors/Receive/RequestPaymentView.selectors';
 
 const KEYBOARD_OFFSET = 120;
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -255,7 +255,8 @@ const MODE_AMOUNT = 'amount';
 /**
  * View to generate a payment request link
  */
-class PaymentRequest extends PureComponent {
+class PaymentRequest extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   amountInput = React.createRef();
   searchInput = React.createRef();
@@ -843,7 +844,7 @@ class PaymentRequest extends PureComponent {
 
 PaymentRequest.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   contractExchangeRates: selectContractExchangeRates(state),

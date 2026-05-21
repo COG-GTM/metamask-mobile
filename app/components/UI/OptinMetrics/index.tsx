@@ -132,7 +132,8 @@ const createStyles = ({ colors }) =>
 /**
  * View that is displayed in the flow to agree to metrics
  */
-class OptinMetrics extends PureComponent {
+class OptinMetrics extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     /**
@@ -650,7 +651,7 @@ class OptinMetrics extends PureComponent {
 
 OptinMetrics.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   events: state.onboarding.events,
   isDataCollectionForMarketingEnabled:
     state.security.dataCollectionForMarketing,

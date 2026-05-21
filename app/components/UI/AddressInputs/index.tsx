@@ -19,7 +19,7 @@ import Text, {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (colors, layout = 'horizontal') => {
+const createStyles = (colors: Record<string, Record<string, string>>, layout = 'horizontal') => {
   const isVerticalLayout = layout === 'vertical';
   return StyleSheet.create({
     wrapper: {
@@ -177,7 +177,12 @@ const createStyles = (colors, layout = 'horizontal') => {
   });
 };
 
-const AddressName = ({ toAddressName, confusableCollection = [] }) => {
+interface AddressNameProps {
+  toAddressName?: string;
+  confusableCollection?: string[];
+}
+
+const AddressName = ({ toAddressName, confusableCollection = [] }: AddressNameProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   if (confusableCollection.length) {
@@ -214,7 +219,27 @@ const AddressName = ({ toAddressName, confusableCollection = [] }) => {
 };
 
 
-export const AddressTo = (props) => {
+interface AddressToProps {
+  addressToReady?: boolean;
+  highlighted?: boolean;
+  inputRef?: React.RefObject<TextInput>;
+  toSelectedAddress?: string;
+  onToSelectedAddressChange?: (text: string) => void;
+  onScan?: () => void;
+  onClear?: () => void;
+  toAddressName?: string;
+  onInputFocus?: () => void;
+  onSubmit?: () => void;
+  onInputBlur?: () => void;
+  inputWidth?: string;
+  confusableCollection?: string[];
+  displayExclamation?: boolean;
+  isConfirmScreen?: boolean;
+  isFromAddressBook?: boolean;
+  layout?: string;
+}
+
+export const AddressTo = (props: AddressToProps) => {
   const {
     addressToReady,
     highlighted,
@@ -484,7 +509,16 @@ export const AddressTo = (props) => {
 };
 
 
-export const AddressFrom = (props) => {
+interface AddressFromProps {
+  highlighted?: boolean;
+  onPressIcon?: () => void;
+  fromAccountName?: string;
+  fromAccountBalance?: string;
+  fromAccountAddress?: string;
+  layout?: string;
+}
+
+export const AddressFrom = (props: AddressFromProps) => {
   const {
     highlighted,
     onPressIcon,

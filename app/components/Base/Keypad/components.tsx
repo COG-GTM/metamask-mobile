@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import {
   View,
   StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import Device from '../../../util/device';
 import Text from '../Text';
 import { useTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     keypad: {
       paddingHorizontal: 25,
@@ -40,7 +43,28 @@ const createStyles = (colors) =>
     },
   });
 
-const KeypadContainer = ({ style, ...props }) => {
+interface KeypadContainerProps {
+  style?: StyleProp<ViewStyle>;
+  children?: ReactNode;
+}
+
+interface KeypadButtonProps {
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
+  children?: ReactNode;
+  onPress?: () => void;
+  accessibilityRole?: string;
+  accessible?: boolean;
+}
+
+interface KeypadDeleteButtonProps {
+  style?: StyleProp<ViewStyle>;
+  icon?: ReactNode;
+  onPress?: () => void;
+  onLongPress?: () => void;
+}
+
+const KeypadContainer = ({ style, ...props }: KeypadContainerProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -48,13 +72,13 @@ const KeypadContainer = ({ style, ...props }) => {
 };
 
 
-const KeypadRow = (props) => {
+const KeypadRow = (props: { children?: ReactNode }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return <View style={styles.keypadRow} {...props} />;
 };
-const KeypadButton = ({ style, textStyle, children, ...props }) => {
+const KeypadButton = ({ style, textStyle, children, ...props }: KeypadButtonProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -66,7 +90,7 @@ const KeypadButton = ({ style, textStyle, children, ...props }) => {
 };
 
 
-const KeypadDeleteButton = ({ style, icon, ...props }) => {
+const KeypadDeleteButton = ({ style, icon, ...props }: KeypadDeleteButtonProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

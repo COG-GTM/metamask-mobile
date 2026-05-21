@@ -17,7 +17,17 @@ import Text, {
   TextColor,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (colors, titleColor) =>
+interface Props {
+  title?: string;
+  description?: string;
+  onPress?: () => void;
+  warning?: string;
+  renderArrowRight?: boolean;
+  testID?: string;
+  titleColor?: string;
+}
+
+const createStyles = (colors: Record<string, Record<string, string>>, titleColor: string) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -56,7 +66,7 @@ const SettingsDrawer = ({
   renderArrowRight = true,
   testID,
   titleColor = TextColor.Default,
-}) => {
+}: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors, titleColor);
   return (

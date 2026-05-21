@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
+import React, { ReactNode } from 'react';
+import { StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import Modal from 'react-native-modal';
 import { strings } from '../../../../locales/i18n';
 import ActionContent from './ActionContent';
@@ -15,6 +15,31 @@ const styles = StyleSheet.create({
 /**
  * View that renders an action modal
  */
+interface Props {
+  cancelTestID?: string;
+  confirmTestID?: string;
+  cancelText?: string;
+  children?: ReactNode;
+  confirmText?: string;
+  confirmDisabled?: boolean;
+  cancelButtonMode?: string;
+  confirmButtonMode?: string;
+  displayCancelButton?: boolean;
+  displayConfirmButton?: boolean;
+  onCancelPress?: () => void;
+  onConfirmPress?: () => void;
+  onRequestClose?: () => void;
+  modalVisible?: boolean;
+  modalStyle?: StyleProp<ViewStyle>;
+  viewWrapperStyle?: StyleProp<ViewStyle>;
+  viewContainerStyle?: StyleProp<ViewStyle>;
+  actionContainerStyle?: StyleProp<ViewStyle>;
+  childrenContainerStyle?: StyleProp<ViewStyle>;
+  verticalButtons?: boolean;
+  propagateSwipe?: boolean;
+  cancelButtonDisabled?: boolean;
+}
+
 export default function ActionModal({
   cancelTestID,
   confirmTestID,
@@ -38,7 +63,7 @@ export default function ActionModal({
   verticalButtons,
   propagateSwipe,
   cancelButtonDisabled,
-}) {
+}: Props) {
   const { colors } = useTheme();
 
   return (

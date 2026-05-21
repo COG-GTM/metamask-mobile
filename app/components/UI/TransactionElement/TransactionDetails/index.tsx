@@ -61,7 +61,7 @@ import {
 } from '../../../../constants/urls';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     viewOnEtherscan: {
       fontSize: 16,
@@ -114,7 +114,8 @@ const createStyles = (colors) =>
 /**
  * View that renders a transaction details as part of transactions list
  */
-class TransactionDetails extends PureComponent {
+class TransactionDetails extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     rpcBlockExplorer: undefined,

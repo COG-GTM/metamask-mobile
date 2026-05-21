@@ -1,11 +1,8 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, ReactNode } from 'react';
+import { StyleProp, ViewStyle, TextStyle } from 'react-native';
 import Button from '@metamask/react-native-button';
 import getStyles from './styledButtonStyles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import {
-  ViewPropTypes,
-  TextPropTypes,
-} from 'deprecated-react-native-prop-types';
 
 /**
  * @deprecated The `<StyledButton>` component has been deprecated in favor of the new `<Button>` component from the component-library.
@@ -15,7 +12,21 @@ import {
  * If you would like to help with the replacement of the old `Button` component, please submit a pull request against this GitHub issue:
  * {@link https://github.com/MetaMask/metamask-mobile/issues/8106}
  */
-export default class StyledButton extends PureComponent {
+interface Props {
+  type?: string;
+  onPress?: () => void;
+  onPressOut?: () => void;
+  style?: StyleProp<TextStyle>;
+  children?: ReactNode;
+  disabled?: boolean;
+  styleDisabled?: StyleProp<ViewStyle>;
+  testID?: string;
+  disabledContainerStyle?: StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
+}
+
+export default class StyledButton extends PureComponent<Props> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   static defaultProps = {
     ...PureComponent.defaultProps,

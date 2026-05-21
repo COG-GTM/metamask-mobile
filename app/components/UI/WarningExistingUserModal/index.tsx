@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import ActionModal from '../ActionModal';
 import { useTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     warningModalView: {
       margin: 24,
@@ -57,6 +57,19 @@ const Default = () => {
 /**
  * View that renders a warning for existing user in a modal
  */
+interface Props {
+  warningModalVisible?: boolean;
+  onCancelPress?: () => void;
+  cancelButtonDisabled?: boolean;
+  onRequestClose?: () => void;
+  onConfirmPress?: () => void;
+  children?: ReactNode;
+  cancelText?: string;
+  confirmText?: string;
+  confirmTestID?: string;
+  cancelTestID?: string;
+}
+
 export default function WarningExistingUserModal({
   warningModalVisible,
   onCancelPress,
@@ -68,7 +81,7 @@ export default function WarningExistingUserModal({
   confirmText,
   confirmTestID,
   cancelTestID,
-}) {
+}: Props) {
   return (
     <ActionModal
       modalVisible={warningModalVisible}

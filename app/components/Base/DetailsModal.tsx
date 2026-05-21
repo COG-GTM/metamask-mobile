@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { ReactNode } from 'react';
+import { View, StyleSheet, TouchableOpacity, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { fontStyles } from '../../styles/common';
 import Text from './Text';
 import { useTheme } from '../../util/theme';
 import { TransactionDetailsModalSelectorsIDs } from '../../../e2e/selectors/Transactions/TransactionDetailsModal.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     modalContainer: {
       width: '100%',
@@ -58,7 +58,17 @@ const createStyles = (colors) =>
       marginBottom: 8,
     },
   });
-const DetailsModal = ({ children }) => {
+interface DetailsModalProps {
+  children?: ReactNode;
+}
+
+interface StyleableProps {
+  style?: StyleProp<ViewStyle | TextStyle>;
+  children?: ReactNode;
+  [key: string]: unknown;
+}
+
+const DetailsModal = ({ children }: DetailsModalProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -69,13 +79,13 @@ const DetailsModal = ({ children }) => {
   );
 };
 
-const DetailsModalHeader = ({ style, ...props }) => {
+const DetailsModalHeader = ({ style, ...props }: StyleableProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return <View style={[styles.header, style]} {...props} />;
 };
-const DetailsModalTitle = ({ style, ...props }) => {
+const DetailsModalTitle = ({ style, ...props }: StyleableProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -87,7 +97,7 @@ const DetailsModalTitle = ({ style, ...props }) => {
     />
   );
 };
-const DetailsModalCloseIcon = ({ style, ...props }) => {
+const DetailsModalCloseIcon = ({ style, ...props }: StyleableProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -101,7 +111,7 @@ const DetailsModalCloseIcon = ({ style, ...props }) => {
     </TouchableOpacity>
   );
 };
-const DetailsModalBody = ({ style, ...props }) => {
+const DetailsModalBody = ({ style, ...props }: StyleableProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -113,7 +123,7 @@ const DetailsModalBody = ({ style, ...props }) => {
     />
   );
 };
-const DetailsModalSection = ({ style, borderBottom, ...props }) => {
+const DetailsModalSection = ({ style, borderBottom, ...props }: StyleableProps & { borderBottom?: boolean }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -124,13 +134,13 @@ const DetailsModalSection = ({ style, borderBottom, ...props }) => {
     />
   );
 };
-const DetailsModalSectionTitle = ({ style, ...props }) => {
+const DetailsModalSectionTitle = ({ style, ...props }: StyleableProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return <Text style={[styles.sectionTitle, style]} {...props} />;
 };
-const DetailsModalColumn = ({ style, end, ...props }) => {
+const DetailsModalColumn = ({ style, end, ...props }: StyleableProps & { end?: boolean }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -150,7 +160,6 @@ DetailsModal.Column = DetailsModalColumn;
 /**
  * Any other external style defined in props will be applied
  */
-const stylePropType = PropTypes.oneOfType([PropTypes.object, PropTypes.array]);
 
 
 export default DetailsModal;

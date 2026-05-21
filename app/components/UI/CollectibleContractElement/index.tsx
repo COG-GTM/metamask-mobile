@@ -26,7 +26,7 @@ import { getDecimalChainId } from '../../../util/networks';
 const DEVICE_WIDTH = Device.getDeviceWidth();
 const COLLECTIBLE_WIDTH = (DEVICE_WIDTH - 30 - 16) / 3;
 
-const createStyles = (colors, brandColors) =>
+const createStyles = (colors: Record<string, Record<string, string>>, brandColors: Record<string, string>) =>
   StyleSheet.create({
     itemWrapper: {
       paddingHorizontal: 15,
@@ -75,7 +75,7 @@ const createStyles = (colors, brandColors) =>
     },
   });
 
-const splitIntoSubArrays = (array, count) => {
+const splitIntoSubArrays = (array: unknown[], count: number) => {
   const newArray = [];
   while (array.length > 0) {
     newArray.push(array.splice(0, count));
@@ -86,6 +86,16 @@ const splitIntoSubArrays = (array, count) => {
 /**
  * Customizable view to render assets in lists
  */
+interface Props {
+  asset: Record<string, unknown>;
+  contractCollectibles: Record<string, unknown>[];
+  collectiblesVisible?: boolean;
+  onPress: (collectible: Record<string, unknown>) => void;
+  chainId: string;
+  selectedAddress: string;
+  removeFavoriteCollectible: (collectibleId: string | number, chainId: string) => void;
+}
+
 function CollectibleContractElement({
   asset,
   contractCollectibles,
@@ -94,7 +104,7 @@ function CollectibleContractElement({
   chainId,
   selectedAddress,
   removeFavoriteCollectible,
-}) {
+}: Props) {
   const [collectiblesGrid, setCollectiblesGrid] = useState([]);
   const [collectiblesVisible, setCollectiblesVisible] = useState(
     propsCollectiblesVisible,
@@ -272,7 +282,7 @@ function CollectibleContractElement({
 }
 
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
 });

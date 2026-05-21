@@ -51,7 +51,7 @@ import Avatar, {
 import ButtonIcon from '../../../component-library/components/Buttons/ButtonIcon';
 import { endTrace, trace, TraceName } from '../../../util/trace';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -150,7 +150,8 @@ const createStyles = (colors) =>
 /**
  * Copmonent that provides ability to add custom tokens.
  */
-class AddCustomToken extends PureComponent {
+class AddCustomToken extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
   state = {
     address: '',
     symbol: '',

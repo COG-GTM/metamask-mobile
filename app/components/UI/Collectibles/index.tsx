@@ -16,7 +16,7 @@ import CollectibleMedia from '../CollectibleMedia';
 import AssetElement from '../AssetElement';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -60,7 +60,8 @@ const createStyles = (colors) =>
  * View that renders a list of Collectibles
  * also known as ERC-721 Tokens
  */
-export default class Collectibles extends PureComponent {
+export default class Collectibles extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     refreshing: false,

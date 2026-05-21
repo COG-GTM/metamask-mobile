@@ -34,7 +34,7 @@ import {
 } from '../../../util/gasUtils';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -147,6 +147,43 @@ const createStyles = (colors) =>
  * The EditGasFee1559 component will be deprecated in favor of EditGasFee1559Update as part of the gas polling refactor code that moves gas fee modifications to `app/core/GasPolling`. When the refactoring is completed, the EditGasFee1559Update will be renamed EditGasFee1559 and this component will be removed. The EditGasFee1559Update is currently being used in the Update Transaction(Speed Up/Cancel) flow.
  */
 
+interface Props {
+  selected?: string;
+  gasFee: Record<string, unknown>;
+  gasOptions: Record<string, unknown>;
+  onChange: (value: unknown, option?: string) => void;
+  onCancel: () => void;
+  onSave: (option: string) => void;
+  gasFeeNative?: string;
+  gasFeeConversion?: string;
+  gasFeeMaxNative?: string;
+  gasFeeMaxConversion?: string;
+  maxPriorityFeeNative?: string;
+  maxPriorityFeeConversion?: string;
+  maxFeePerGasNative?: string;
+  maxFeePerGasConversion?: string;
+  primaryCurrency?: string;
+  chainId?: string;
+  timeEstimate?: string;
+  timeEstimateColor?: string;
+  timeEstimateId?: string;
+  error?: string | null;
+  warning?: string;
+  dappSuggestedGas?: Record<string, unknown>;
+  ignoreOptions?: string[];
+  updateOption?: string;
+  extendOptions?: Record<string, unknown>;
+  recommended?: Record<string, unknown>;
+  warningMinimumEstimateOption?: string;
+  suggestedEstimateOption?: string;
+  animateOnChange?: (value: unknown) => void;
+  isAnimating?: boolean;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  analyticsParams?: Record<string, unknown>;
+  view?: string;
+}
+
 const EditGasFee1559 = ({
   selected,
   gasFee,
@@ -182,7 +219,7 @@ const EditGasFee1559 = ({
   onUpdatingValuesEnd,
   analyticsParams,
   view,
-}) => {
+}: Props) => {
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(!selected);
   const [maxPriorityFeeError, setMaxPriorityFeeError] = useState(null);

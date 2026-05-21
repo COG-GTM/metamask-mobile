@@ -3,7 +3,7 @@ import { StyleSheet, Animated, Easing } from 'react-native';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -29,7 +29,8 @@ const customGasHeightPlaceHolder = 400;
 /**
  * PureComponent that handles most of the animation/transition logic
  */
-class AnimatedTransactionModal extends PureComponent {
+class AnimatedTransactionModal extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     originComponent:

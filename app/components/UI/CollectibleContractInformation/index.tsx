@@ -17,7 +17,7 @@ import { isMainNet } from '../../../util/networks';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { selectChainId } from '../../../selectors/networkController';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -111,7 +111,8 @@ const openSeaLogo = require('../../../images/opensea-logo-flat-colored-blue.png'
 /**
  * View that contains a collectible contract information as description, total supply and address
  */
-class CollectibleContractInformation extends PureComponent {
+class CollectibleContractInformation extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   closeModal = () => {
     this.props.onClose(true);
@@ -207,7 +208,7 @@ class CollectibleContractInformation extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   chainId: selectChainId(state),
 });
 

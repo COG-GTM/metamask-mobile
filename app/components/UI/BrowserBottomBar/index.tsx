@@ -18,7 +18,19 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 // const HOME_INDICATOR_HEIGHT = 0;
 // const defaultBottomBarPadding = 0;
 
-const createStyles = (colors) =>
+interface Props {
+  canGoBack?: boolean;
+  goBack: () => void;
+  canGoForward?: boolean;
+  goForward: () => void;
+  showTabs: () => void;
+  goHome: () => void;
+  showUrlModal: () => void;
+  toggleOptions: () => void;
+  metrics: { trackEvent: (event: unknown) => void; createEventBuilder: (event: unknown) => { addProperties: (props: Record<string, unknown>) => { build: () => unknown } } };
+}
+
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     bottomBar: {
       backgroundColor: colors.background.default,
@@ -56,7 +68,8 @@ const createStyles = (colors) =>
  * Browser bottom bar that contains icons for navigation
  * tab management, url change and other options
  */
-class BrowserBottomBar extends PureComponent {
+class BrowserBottomBar extends PureComponent<Props> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   trackSearchEvent = () => {
     this.props.metrics.trackEvent(
@@ -70,7 +83,7 @@ class BrowserBottomBar extends PureComponent {
     );
   };
 
-  trackNavigationEvent = (navigationOption) => {
+  trackNavigationEvent = (navigationOption: string) => {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.BROWSER_NAVIGATION)

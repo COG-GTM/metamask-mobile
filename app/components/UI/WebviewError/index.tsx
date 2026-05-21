@@ -11,7 +11,12 @@ import {
   ERROR_PAGE_TITLE,
 } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
 
-const createStyles = (colors) =>
+interface Props {
+  error?: boolean | { description?: string };
+  returnHome: () => void;
+}
+
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     wrapper: {
       ...StyleSheet.absoluteFillObject,
@@ -64,7 +69,8 @@ const createStyles = (colors) =>
 /**
  * View that renders custom error page for the browser
  */
-export default class WebviewError extends PureComponent {
+export default class WebviewError extends PureComponent<Props> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   static defaultProps = {
     error: false,

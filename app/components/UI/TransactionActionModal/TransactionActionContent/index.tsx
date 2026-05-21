@@ -4,7 +4,7 @@ import { fontStyles } from '../../../../styles/common';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     modalView: {
       flexDirection: 'column',
@@ -57,13 +57,21 @@ const createStyles = (colors) =>
 /**
  * View that renders a modal to be used for speed up or cancel transaction modal
  */
+interface Props {
+  confirmDisabled?: boolean;
+  feeText?: string;
+  titleText?: string;
+  gasTitleText?: string;
+  descriptionText?: string;
+}
+
 export default function TransactionActionContent({
   confirmDisabled,
   feeText,
   titleText,
   gasTitleText,
   descriptionText,
-}) {
+}: Props) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

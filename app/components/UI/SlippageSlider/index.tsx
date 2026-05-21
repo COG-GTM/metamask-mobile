@@ -28,7 +28,17 @@ const TOOLTIP_HEIGHT = 36;
 const TOOLTIP_WIDTH = 40;
 const COMPONENT_HEIGHT = DIAMETER + TOOLTIP_HEIGHT + 10;
 
-const createStyles = (colors, shadows) =>
+interface Props {
+  range: [number, number];
+  increment: number;
+  onChange: (value: number) => void;
+  value: number;
+  formatTooltipText?: (value: number) => string;
+  disabled?: boolean;
+  changeOnRelease?: boolean;
+}
+
+const createStyles = (colors: Record<string, Record<string, string>>, shadows: { size: { md: Record<string, unknown> } }) =>
   StyleSheet.create({
     root: {
       position: 'relative',
@@ -96,7 +106,7 @@ const createStyles = (colors, shadows) =>
     },
   });
 
-const setAnimatedValue = (animatedValue, value) =>
+const setAnimatedValue = (animatedValue: Animated.Value, value: number) =>
   animatedValue.setValue(value);
 
 const SlippageSlider = ({
@@ -107,7 +117,7 @@ const SlippageSlider = ({
   formatTooltipText,
   disabled,
   changeOnRelease,
-}) => {
+}: Props) => {
   const { colors, shadows } = useTheme();
   const styles = createStyles(colors, shadows);
   /* Reusable/truncated references to the range prop values */

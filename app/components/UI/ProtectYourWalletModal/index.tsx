@@ -15,7 +15,7 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 
 const protectWalletImage = require('../../../images/explain-backup-seedphrase.png'); // eslint-disable-line
 
-const createStyles = (colors) =>
+const createStyles = (colors: Record<string, Record<string, string>>) =>
   StyleSheet.create({
     wrapper: {
       marginTop: 24,
@@ -73,7 +73,8 @@ const createStyles = (colors) =>
 /**
  * View that renders an action modal
  */
-class ProtectYourWalletModal extends PureComponent {
+class ProtectYourWalletModal extends PureComponent<Record<string, unknown>> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   goToBackupFlow = () => {
     this.props.protectWalletModalNotVisible();
@@ -171,7 +172,7 @@ class ProtectYourWalletModal extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: Record<string, unknown>) => ({
   protectWalletModalVisible: state.user.protectWalletModalVisible,
   passwordSet: state.user.passwordSet,
 });

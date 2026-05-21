@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
 /**
  * PureComponent that provides ability to search assets.
  */
-export default class AssetList extends PureComponent {
+export default class AssetList extends PureComponent<Record<string, unknown>> {
 
   onToggleAsset = (key) => {
     const { searchResults, handleSelectAsset } = this.props;
