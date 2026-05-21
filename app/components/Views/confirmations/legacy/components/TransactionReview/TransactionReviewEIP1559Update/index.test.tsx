@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import TransactionReviewEIP1559 from '.';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';

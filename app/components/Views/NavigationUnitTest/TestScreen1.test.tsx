@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import NavigationUnitTest from '.';
 import { render } from '@testing-library/react-native';

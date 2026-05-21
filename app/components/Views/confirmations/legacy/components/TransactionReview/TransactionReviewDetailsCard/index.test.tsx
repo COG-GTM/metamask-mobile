@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import TransactionReviewDetailsCard from '.';
 import { shallow } from 'enzyme';

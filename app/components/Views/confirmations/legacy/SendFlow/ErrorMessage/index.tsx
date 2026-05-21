@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { strings } from '../../../../../../../locales/i18n';

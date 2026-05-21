@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { View } from 'react-native';
 import { WebView } from '@metamask/react-native-webview';

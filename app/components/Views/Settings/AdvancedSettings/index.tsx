@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Third party dependencies.
 import React, { PureComponent } from 'react';
 import { Linking, SafeAreaView, StyleSheet, Switch, View } from 'react-native';

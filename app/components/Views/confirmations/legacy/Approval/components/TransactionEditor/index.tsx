@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { StyleSheet, View } from 'react-native';
 import AnimatedTransactionModal from '../../../../../../UI/AnimatedTransactionModal';

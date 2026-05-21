@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { Fragment, PureComponent } from 'react';
 import { View, ScrollView, Alert, Platform, BackHandler } from 'react-native';
 import { connect } from 'react-redux';

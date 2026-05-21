@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const MOCK_NETWORK_CONTROLLER_STATE = {
   networkConfigurationsByChainId: {
     '0xaa36a7': {

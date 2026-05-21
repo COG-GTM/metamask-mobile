@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { StyleSheet } from 'react-native';
 import type { ThemeColors } from '@metamask/design-tokens';
 

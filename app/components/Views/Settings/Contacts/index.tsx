@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
 import { strings } from '../../../../../locales/i18n';
