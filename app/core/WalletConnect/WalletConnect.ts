@@ -28,6 +28,8 @@ import { parseWalletConnectUri } from './wc-utils';
 import { store } from '../../store';
 import { selectEvmChainId } from '../../selectors/networkController';
 import ppomUtil from '../../../app/lib/ppom/ppom-util';
+import type { Hex } from '@metamask/utils';
+import type { IWalletConnectSession } from '@walletconnect/client/node_modules/@walletconnect/types';
 
 const hub = new EventEmitter();
 let connectors: WalletConnect[] = [];
@@ -47,24 +49,17 @@ const METHODS_TO_REDIRECT: Record<string, boolean> = {
   wallet_switchEthereumChain: true,
 };
 
-interface WalletConnectSession {
+interface WalletConnectSessionExtended extends IWalletConnectSession {
   redirectUrl?: string;
   autosign?: boolean;
   requestOriginatedFrom?: string;
-  peerMeta?: {
-    url: string;
-    name?: string;
-    icons?: string[];
-    dappScheme?: string;
-  };
-  peerId?: string;
+  dappScheme?: string;
   lastTimeConnected?: Date | string;
-  [key: string]: unknown;
 }
 
 interface WalletConnectOptions {
   uri?: string;
-  session: WalletConnectSession;
+  session?: IWalletConnectSession;
 }
 
 interface WcPayload {
@@ -123,16 +118,18 @@ class WalletConnect {
   walletConnector: RNWalletConnect;
 
   constructor(options: WalletConnectOptions, existing?: boolean) {
-    if (options.session.redirectUrl) {
-      this.redirectUrl = options.session.redirectUrl;
+    const session = (options.session ?? {}) as WalletConnectSessionExtended;
+
+    if (session.redirectUrl) {
+      this.redirectUrl = session.redirectUrl;
     }
 
-    if (options.session.autosign) {
-      this.autosign = options.session.autosign;
+    if (session.autosign) {
+      this.autosign = session.autosign;
     }
 
-    if (options.session.requestOriginatedFrom) {
-      this.requestOriginatedFrom = options.session.requestOriginatedFrom;
+    if (session.requestOriginatedFrom) {
+      this.requestOriginatedFrom = session.requestOriginatedFrom;
     }
 
     this.walletConnector = new RNWalletConnect({
@@ -144,7 +141,7 @@ class WalletConnect {
      */
     this.walletConnector.on(
       'session_request',
-      async (error: Error | null, payload: { params: WalletConnectSession[] }) => {
+      async (error: Error | null, payload: { params: WalletConnectSessionExtended[] }) => {
         Logger.log('WC session_request:', payload);
         if (error) {
           throw error;
@@ -153,7 +150,7 @@ class WalletConnect {
         await waitForKeychainUnlocked();
 
         try {
-          const sessionData: WalletConnectSession = {
+          const sessionData: WalletConnectSessionExtended = {
             ...payload.params[0],
             autosign: this.autosign,
             redirectUrl: this.redirectUrl ?? undefined,
@@ -192,7 +189,7 @@ class WalletConnect {
         }
 
         if (payload.method) {
-          const payloadUrl = this.walletConnector.session.peerMeta.url;
+          const payloadUrl = this.walletConnector.session.peerMeta!.url;
           const payloadHostname = new URL(payloadUrl).hostname;
           if (payloadHostname === this.backgroundBridge?.hostname) {
             if (METHODS_TO_REDIRECT[payload.method]) {
@@ -213,17 +210,16 @@ class WalletConnect {
 
                 checkActiveAccountAndChainId({
                   address: payload.params[0].from as string,
-                  chainId,
+                  chainId: parseInt(chainId, 16),
                   isWalletConnect: true,
-                  activeAccounts: [selectedAddress],
                   hostname: payloadHostname,
                 });
 
                 const { NetworkController } = Engine.context;
                 const networkClientId =
-                  NetworkController.findNetworkClientIdByChainId(chainId);
+                  NetworkController.findNetworkClientIdByChainId(chainId as Hex);
 
-                const trx = await addTransaction(payload.params[0], {
+                const trx = await addTransaction(payload.params[0] as Parameters<typeof addTransaction>[0], {
                   deviceConfirmedOn: WalletDevice.MM_MOBILE,
                   networkClientId,
                   origin: this.url.current
@@ -234,9 +230,9 @@ class WalletConnect {
                 const id = trx.transactionMeta.id;
                 const reqObject = {
                   id: payload.id,
-                  jsonrpc: '2.0',
+                  jsonrpc: '2.0' as const,
                   method: payload.method,
-                  origin: this.url.current,
+                  origin: this.url.current ?? '',
                   params: [
                     {
                       from: payload.params[0].from,
@@ -266,7 +262,6 @@ class WalletConnect {
             this.backgroundBridge.onMessage({
               name: 'walletconnect-provider',
               data: payload,
-              origin: this.hostname,
             });
           }
         }
@@ -298,7 +293,7 @@ class WalletConnect {
     );
 
     if (existing) {
-      this.startSession(options.session, existing);
+      this.startSession(session, existing);
     }
   }
 
@@ -337,7 +332,7 @@ class WalletConnect {
   rejectRequest = ({ id, error }: { id: number; error: unknown }) => {
     this.walletConnector.rejectRequest({
       id,
-      error,
+      error: error as { message: string },
     });
     this.needsRedirect(id);
   };
@@ -356,7 +351,7 @@ class WalletConnect {
   };
 
   startSession = async (
-    sessionData: WalletConnectSession,
+    sessionData: WalletConnectSessionExtended,
     existing?: boolean,
   ) => {
     const chainId = selectEvmChainId(store.getState());
@@ -376,7 +371,7 @@ class WalletConnect {
     this.url.current = sessionData.peerMeta!.url;
     this.title.current = sessionData.peerMeta?.name ?? null;
     this.icon.current = sessionData.peerMeta?.icons?.[0] ?? null;
-    this.dappScheme.current = sessionData.peerMeta?.dappScheme ?? null;
+    this.dappScheme.current = sessionData.dappScheme ?? null;
 
     this.hostname = new URL(this.url.current).hostname;
 
@@ -384,37 +379,29 @@ class WalletConnect {
       webview: null,
       url: this.url.current,
       isWalletConnect: true,
-      wcWalletConnector: this.walletConnector,
       wcRequestActions: {
         approveRequest: this.approveRequest,
         rejectRequest: this.rejectRequest,
         updateSession: this.updateSession,
       },
       getRpcMethodMiddleware: ({
-        hostname,
+        hostname: _hostname,
         getProviderState,
-      }: {
-        hostname: string;
-        getProviderState: () => Promise<unknown>;
       }) =>
         getRpcMethodMiddleware({
           hostname: WALLET_CONNECT_ORIGIN + this.hostname,
           getProviderState,
-          navigation: null, //props.navigation,
-          // Website info
-          url: this.url,
-          title: this.title,
-          icon: this.icon,
-          // Bookmarks
-          isHomepage: false,
-          // Show autocomplete
-          fromHomepage: false,
+          navigation: null,
+          url: this.url as { current: string },
+          title: this.title as { current: string },
+          icon: this.icon as unknown as { current: undefined },
+          isHomepage: () => false,
+          fromHomepage: { current: false },
           toggleUrlModal: () => null,
-          // Wizard
-          wizardScrollAdjusted: () => null,
+          wizardScrollAdjusted: { current: false },
           tabId: false,
           isWalletConnect: true,
-        }),
+        } as unknown as Parameters<typeof getRpcMethodMiddleware>[0]),
       isMainFrame: true,
       isRemoteConn: false,
     });
@@ -426,14 +413,14 @@ class WalletConnect {
     this.walletConnector = null as unknown as RNWalletConnect;
   };
 
-  sessionRequest = async (peerInfo: WalletConnectSession) => {
+  sessionRequest = async (peerInfo: WalletConnectSessionExtended) => {
     const { ApprovalController } = Engine.context;
     try {
       const { host } = new URL(peerInfo.peerMeta!.url);
       return await ApprovalController.add({
         id: random(),
         origin: host,
-        requestData: peerInfo,
+        requestData: peerInfo as unknown as Record<string, import('@metamask/utils').Json>,
         type: ApprovalTypes.WALLET_CONNECT,
       });
     } catch (error) {
@@ -442,28 +429,11 @@ class WalletConnect {
   };
 }
 
-interface WalletConnectInstance {
-  init(): Promise<void>;
-  connectors(): WalletConnect[];
-  newSession(
-    uri: string,
-    redirectUrl?: string,
-    autosign?: boolean,
-    requestOriginatedFrom?: string,
-  ): Promise<void>;
-  getSessions(): Promise<WalletConnectSession[]>;
-  killSession(id: string): Promise<void>;
-  hub: EventEmitter;
-  isValidUri(uri: string): boolean;
-  getValidUriFromDeeplink(uri: string): string;
-  isSessionConnected(uri: string): boolean;
-}
-
-const instance: WalletConnectInstance = {
+const instance = {
   async init() {
     const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
     if (sessionData) {
-      const sessions: WalletConnectSession[] = JSON.parse(sessionData);
+      const sessions: WalletConnectSessionExtended[] = JSON.parse(sessionData);
 
       sessions.forEach((session) => {
         if (session.lastTimeConnected) {
@@ -512,23 +482,25 @@ const instance: WalletConnectInstance = {
         ...connector.walletConnector.session,
       }));
     if (sessions.length >= AppConstants.WALLET_CONNECT.LIMIT_SESSIONS) {
-      await this.killSession(sessions[0].peerId as string);
+      await this.killSession(sessions[0].peerId!);
     }
 
-    const data: WalletConnectOptions = { uri, session: {} };
+    const data: WalletConnectOptions = { uri };
+    const sessionExtended: Partial<WalletConnectSessionExtended> = {};
     if (redirectUrl) {
-      data.session.redirectUrl = redirectUrl;
+      sessionExtended.redirectUrl = redirectUrl;
     }
     if (autosign) {
-      data.session.autosign = autosign;
+      sessionExtended.autosign = autosign;
     }
     if (requestOriginatedFrom) {
-      data.session.requestOriginatedFrom = requestOriginatedFrom;
+      sessionExtended.requestOriginatedFrom = requestOriginatedFrom;
     }
+    data.session = sessionExtended as IWalletConnectSession;
     connectors.push(new WalletConnect(data));
   },
-  getSessions: async (): Promise<WalletConnectSession[]> => {
-    let sessions: WalletConnectSession[] = [];
+  getSessions: async (): Promise<WalletConnectSessionExtended[]> => {
+    let sessions: WalletConnectSessionExtended[] = [];
     const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
     if (sessionData) {
       sessions = JSON.parse(sessionData);

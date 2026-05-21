@@ -75,7 +75,7 @@ const SecureKeychainExport = {
   init(salt: string) {
     instance = new SecureKeychain(salt);
 
-    if (Device.isAndroid && Keychain.SECURITY_LEVEL?.SECURE_HARDWARE)
+    if (Device.isAndroid() && Keychain.SECURITY_LEVEL?.SECURE_HARDWARE)
       MetaMetrics.getInstance().trackEvent(
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.ANDROID_HARDWARE_KEYSTORE,
@@ -130,7 +130,7 @@ const SecureKeychainExport = {
     return null;
   },
 
-  async setGenericPassword(password: string, type: SecureKeychainType) {
+  async setGenericPassword(password: string, type?: SecureKeychainType) {
     const authOptions: Keychain.Options = {
       accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     };

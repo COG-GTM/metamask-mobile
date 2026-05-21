@@ -54,6 +54,9 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
+// Engine is auto-mocked. Access mock methods via jest.mocked().
+const MockedEngine = jest.mocked(Engine, { shallow: true });
+
 function setupBackgroundBridge(url: string) {
   // Arrange
   const {
@@ -61,7 +64,7 @@ function setupBackgroundBridge(url: string) {
     PermissionController,
     SelectedNetworkController,
     NetworkController,
-  } = Engine.context;
+  } = MockedEngine.context as unknown as Record<string, Record<string, jest.Mock>>;
 
   AccountsController.getSelectedAccount.mockReturnValue({
     address: '0x0',
@@ -104,20 +107,22 @@ function setupBackgroundBridge(url: string) {
     url,
     isRemoteConn: true,
     ...defaultBridgeParams,
-  });
+  } as unknown as ConstructorParameters<typeof BackgroundBridge>[0]);
 }
 
 describe('BackgroundBridge', () => {
   beforeEach(() => jest.clearAllMocks());
   describe('constructor', () => {
-    const { KeyringController, PermissionController } = Engine.context;
+    const { KeyringController, PermissionController } =
+      MockedEngine.context as unknown as Record<string, Record<string, jest.Mock>>;
 
     it('creates Eip1193MethodMiddleware with expected hooks', async () => {
       const url = 'https:www.mock.io';
       const origin = new URL(url).hostname;
       const bridge = setupBackgroundBridge(url);
       const mockCreateEip1193 = jest.mocked(createEip1193MethodMiddleware);
-      const eip1193MethodMiddlewareHooks = mockCreateEip1193.mock.calls[0][0];
+      const eip1193MethodMiddlewareHooks = mockCreateEip1193.mock
+        .calls[0][0] as Record<string, (...args: unknown[]) => unknown>;
 
       // Assert getAccounts
       eip1193MethodMiddlewareHooks.getAccounts();
@@ -173,7 +178,10 @@ describe('BackgroundBridge', () => {
       // when needs to be unlocked
       KeyringController.isUnlocked.mockReturnValueOnce(false);
       eip1193MethodMiddlewareHooks.getUnlockPromise();
-      expect(Engine.controllerMessenger.subscribeOnceIf).toHaveBeenCalledWith(
+      expect(
+        (MockedEngine.controllerMessenger as unknown as Record<string, jest.Mock>)
+          .subscribeOnceIf,
+      ).toHaveBeenCalledWith(
         'KeyringController:unlock',
         expect.any(Function),
         expect.any(Function),
@@ -186,8 +194,8 @@ describe('BackgroundBridge', () => {
       const mockCreateEthAccounts = jest.mocked(
         createEthAccountsMethodMiddleware,
       );
-      const ethAccountsMethodMiddlewareHooks =
-        mockCreateEthAccounts.mock.calls[0][0];
+      const ethAccountsMethodMiddlewareHooks = mockCreateEthAccounts.mock
+        .calls[0][0] as Record<string, (...args: unknown[]) => unknown>;
 
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();

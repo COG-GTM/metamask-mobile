@@ -1,6 +1,9 @@
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
-import { Duplex } from 'readable-stream';
+
+// readable-stream v2 has no type declarations
+// eslint-disable-next-line @typescript-eslint/no-var-requires, import/no-commonjs
+const { Duplex } = require('readable-stream');
 
 // eslint-disable-next-line no-empty-function
 const noop = () => {};
@@ -17,9 +20,7 @@ interface BufferMessage {
   [key: string]: unknown;
 }
 
-export default class PortDuplexStream extends (Duplex as {
-  new (options?: { objectMode?: boolean }): Duplex;
-}) {
+export default class PortDuplexStream extends Duplex {
   _port: Port;
   _url: string;
 

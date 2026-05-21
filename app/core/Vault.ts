@@ -1,6 +1,6 @@
 import Engine from './Engine';
 import Logger from '../util/Logger';
-import { KeyringTypes } from '@metamask/keyring-controller';
+import { KeyringTypes, AccountImportStrategy } from '@metamask/keyring-controller';
 import { withLedgerKeyring } from './Ledger/Ledger';
 
 /**
@@ -16,7 +16,7 @@ export const restoreQRKeyring = async (
   try {
     await KeyringController.restoreQRKeyring(serializedQrKeyring);
   } catch (e) {
-    Logger.error(e, 'error while trying to get qr accounts on recreate vault');
+    Logger.error(e as Error, 'error while trying to get qr accounts on recreate vault');
   }
 };
 
@@ -29,12 +29,12 @@ export const restoreLedgerKeyring = async (
   serializedLedgerKeyring: unknown,
 ): Promise<void> => {
   try {
-    await withLedgerKeyring(async (keyring) => {
-      await keyring.deserialize(serializedLedgerKeyring);
+    await withLedgerKeyring(async ({ keyring }) => {
+      await (keyring as unknown as { deserialize: (data: unknown) => Promise<void> }).deserialize(serializedLedgerKeyring);
     });
   } catch (e) {
     Logger.error(
-      e,
+      e as Error,
       'error while trying to restore Ledger accounts on recreate vault',
     );
   }
@@ -82,7 +82,7 @@ export const recreateVaultWithNewPassword = async (
     }
   } catch (e) {
     Logger.error(
-      e,
+      e as Error,
       'error while trying to get imported accounts on recreate vault',
     );
   }
@@ -105,7 +105,7 @@ export const recreateVaultWithNewPassword = async (
     : undefined;
 
   // Recreate keyring with password given to this method
-  await KeyringController.createNewVaultAndRestore(newPassword, seedPhrase);
+  await KeyringController.createNewVaultAndRestore(newPassword, seedPhrase as Uint8Array);
 
   if (serializedQrKeyring !== undefined) {
     await restoreQRKeyring(serializedQrKeyring);
@@ -122,12 +122,12 @@ export const recreateVaultWithNewPassword = async (
   try {
     // Import imported accounts again
     for (let i = 0; i < importedAccounts.length; i++) {
-      await KeyringController.importAccountWithStrategy('privateKey', [
+      await KeyringController.importAccountWithStrategy(AccountImportStrategy.privateKey, [
         importedAccounts[i],
       ]);
     }
   } catch (e) {
-    Logger.error(e, 'error while trying to import accounts on recreate vault');
+    Logger.error(e as Error, 'error while trying to import accounts on recreate vault');
   }
   const recreatedKeyrings = KeyringController.state.keyrings;
   // Reselect previous selected account if still available
