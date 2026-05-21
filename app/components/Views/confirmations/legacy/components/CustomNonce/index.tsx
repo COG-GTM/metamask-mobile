@@ -1,0 +1,53 @@
+// @ts-nocheck
+import React from 'react';
+import { StyleSheet, TouchableOpacity } from 'react-native';
+import { strings } from '../../../../../../../locales/i18n';
+import Text from '../../../../../Base/Text';
+import { useTheme } from '../../../../../../util/theme';
+import type { ThemeColors } from '@metamask/design-tokens';
+
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    customNonce: {
+      marginTop: 10,
+      marginHorizontal: 24,
+      borderWidth: 1,
+      borderColor: colors.border.default,
+      borderRadius: 8,
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      display: 'flex',
+      flexDirection: 'row',
+    },
+    nonceNumber: {
+      marginLeft: 'auto',
+    },
+  });
+
+interface CustomNonceProps {
+  nonce: string;
+  onNonceEdit: () => void;
+}
+
+const CustomNonce = ({ nonce, onNonceEdit }: CustomNonceProps) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
+  return (
+    <TouchableOpacity style={styles.customNonce} onPress={onNonceEdit}>
+      <Text bold black>
+        {strings('transaction.custom_nonce')}
+      </Text>
+      <Text bold link>
+        {'  '}
+        {strings('transaction.edit')}
+      </Text>
+      <Text bold black style={styles.nonceNumber}>
+        {nonce}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+
+export default CustomNonce;

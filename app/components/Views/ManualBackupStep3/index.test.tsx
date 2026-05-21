@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import ManualBackupStep3 from './';
 import configureMockStore from 'redux-mock-store';

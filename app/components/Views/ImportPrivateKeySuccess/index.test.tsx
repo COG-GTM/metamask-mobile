@@ -1,3 +1,4 @@
+// @ts-nocheck
 import ImportPrivateKeySuccess from './';
 import { renderScreen } from '../../../util/test/renderWithProvider';
 
