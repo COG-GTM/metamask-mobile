@@ -47,7 +47,27 @@ const createStyles = (colors: Colors) =>
 /**
  * View where users can re-enter their password
  */
-export default class EnterPasswordSimple extends PureComponent {
+export default interface Props {
+  navigation: {
+    pop: () => void;
+    goBack: () => void;
+    setOptions: (options: Record<string, unknown>) => void;
+  };
+  route: {
+    params?: {
+      onPasswordSet?: (password: string) => void;
+    };
+  };
+}
+
+interface State {
+  password: string;
+  confirmPassword: string;
+  error: string | null;
+  loading: boolean;
+}
+
+class EnterPasswordSimple extends PureComponent<Props, State> {
 
   state = {
     password: '',
@@ -96,7 +116,7 @@ export default class EnterPasswordSimple extends PureComponent {
     }
   };
 
-  onPasswordChange = (val) => {
+  onPasswordChange = (val: string) => {
     this.setState({ password: val });
   };
 

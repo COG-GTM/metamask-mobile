@@ -24,7 +24,7 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import type { Dispatch } from 'redux';
 
-const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
+const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

@@ -74,7 +74,17 @@ const createStyles = (colors: Colors) =>
 /**
  * View that's displayed the first time imports account
  */
-class ImportPrivateKeySuccess extends PureComponent {
+interface Props {
+  navigation: {
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    pop: (count?: number) => void;
+    goBack: () => void;
+    setOptions: (options: Record<string, unknown>) => void;
+  };
+  route: { params?: Record<string, unknown> };
+}
+
+class ImportPrivateKeySuccess extends PureComponent<Props> {
 
   componentDidMount = () => {
     InteractionManager.runAfterInteractions(() => {

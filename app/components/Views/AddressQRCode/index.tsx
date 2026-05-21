@@ -81,7 +81,23 @@ const createStyles = (theme: Theme) =>
 /**
  * PureComponent that renders a public address view
  */
-class AddressQRCode extends PureComponent {
+interface OwnProps {
+  closeQrModal: () => void;
+}
+
+interface StateProps {
+  selectedAddress: string;
+  seedphraseBackedUp: boolean;
+}
+
+interface DispatchProps {
+  showAlert: (config: { isVisible: boolean; autodismiss: number; content: string; data: { msg: string } }) => void;
+  protectWalletModalVisible: () => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+class AddressQRCode extends PureComponent<Props> {
 
   /**
    * Closes QR code modal

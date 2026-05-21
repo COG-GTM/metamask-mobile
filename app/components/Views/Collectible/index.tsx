@@ -28,7 +28,35 @@ const createStyles = (colors: Colors) =>
  * including the overview (name, address, symbol, logo, description, total supply)
  * and also individual collectibles list
  */
-class Collectible extends PureComponent {
+interface OwnProps {
+  route: {
+    params?: {
+      address?: string;
+      tokenId?: string;
+    };
+  };
+}
+
+interface StateProps {
+  chainId: string;
+  selectedAddress: string;
+  collectibleContracts: unknown[];
+  networkConfigurations: Record<string, unknown>;
+}
+
+type Props = OwnProps & StateProps & {
+  navigation: {
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    goBack: () => void;
+  };
+};
+
+interface State {
+  collectible: Record<string, unknown> | null;
+}
+
+class Collectible extends PureComponent<Props, State> {
 
   state = {
     refreshing: false,

@@ -23,7 +23,23 @@ const createStyles = (colors: Colors) =>
 /**
  * View that is displayed in the flow to agree terms and conditions
  */
-export default class TermsAndConditions extends PureComponent {
+export default interface Props {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    goBack: () => void;
+  };
+  route: {
+    params?: {
+      action?: string;
+    };
+  };
+}
+
+interface State {
+  accepted: boolean;
+}
+
+class TermsAndConditions extends PureComponent<Props, State> {
 
   press = () => {
     const { navigation } = this.props;

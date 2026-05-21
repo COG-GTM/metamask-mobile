@@ -396,7 +396,29 @@ export const Fallback = (props) => {
 };
 
 
-class ErrorBoundary extends Component {
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+  };
+  route: { params?: Record<string, unknown> };
+  metrics: {
+    trackEvent: (event: Record<string, unknown>) => void;
+    createEventBuilder: (event: unknown) => { addProperties: (props: Record<string, unknown>) => { build: () => Record<string, unknown> } };
+  };
+  view?: string;
+}
+
+interface ErrorBoundaryState {
+  error: Error | null;
+  showExportSeedphrase: boolean;
+  showFeedbackModal: boolean;
+  backupComplete: boolean;
+  feedbackMessage: string;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state = { error: null };
 
   static getDerivedStateFromError(error) {

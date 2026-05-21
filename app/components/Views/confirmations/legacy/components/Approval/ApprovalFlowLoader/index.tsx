@@ -26,7 +26,11 @@ const createStyles = (colors: Colors) =>
     },
   });
 
-const ApprovalFlowLoader = ({ loadingText }) => {
+interface ApprovalFlowLoaderProps {
+  loadingText?: string;
+}
+
+const ApprovalFlowLoader = ({ loadingText }: ApprovalFlowLoaderProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

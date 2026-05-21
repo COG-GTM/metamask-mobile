@@ -164,7 +164,28 @@ const createStyles = (colors: Colors) =>
 /**
  * Main view for general app configurations
  */
-class Settings extends PureComponent {
+interface SettingsProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface SettingsState {
+  [key: string]: unknown;
+}
+
+class Settings extends PureComponent<SettingsProps, SettingsState> {
 
   state = {
     currentLanguage: I18n.locale.substr(0, 2),

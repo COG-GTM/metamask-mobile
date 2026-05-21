@@ -8,6 +8,9 @@ import React, {
 import { View } from 'react-native';
 import { captureScreen } from 'react-native-view-shot';
 import { connect, useSelector } from 'react-redux';
+import type { NavigationProp, RouteProp } from '@react-navigation/native';
+import type { Dispatch } from 'redux';
+import { RootState } from '../../../reducers';
 import { strings } from '../../../../locales/i18n';
 import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/BrowserView.selectors';
 import {
@@ -51,11 +54,38 @@ import { useFocusEffect } from '@react-navigation/native';
 
 const MAX_BROWSER_TABS = 5;
 
+interface BrowserTab {
+  id: number;
+  url: string;
+  linkType?: string;
+  isArchived?: boolean;
+}
+
+interface OwnProps {
+  route: RouteProp<Record<string, { url?: string; linkType?: string; showTabs?: boolean }>, string>;
+  navigation: NavigationProp<Record<string, unknown>>;
+}
+
+interface StateProps {
+  tabs: BrowserTab[];
+  activeTab: number;
+}
+
+interface DispatchProps {
+  createNewTab: (url: string, linkType?: string) => void;
+  closeAllTabs: () => void;
+  closeTab: (id: number) => void;
+  setActiveTab: (id: number) => void;
+  updateTab: (id: number, url: Record<string, unknown>) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
 /**
  * Component that wraps all the browser
  * individual tabs and the tabs view
  */
-export const Browser = (props) => {
+export const Browser = (props: Props) => {
   const {
     route,
     navigation,
@@ -125,11 +155,9 @@ export const Browser = (props) => {
     }, [toastRef, currentSelectedAccount]),
   );
   ///: END:ONLY_INCLUDE_IF
-import { RootState } from '../../../reducers';
-import type { Dispatch } from 'redux';
 
   const newTab = useCallback(
-    (url, linkType) => {
+    (url?: string, linkType?: string) => {
       // if tabs.length > MAX_BROWSER_TABS, show the max browser tabs modal
       if (tabs.length >= MAX_BROWSER_TABS) {
         navigation.navigate(Routes.MODAL.MAX_BROWSER_TABS_MODAL);
@@ -142,13 +170,13 @@ import type { Dispatch } from 'redux';
   );
 
   const updateTabInfo = useCallback(
-    (tabID, info) => {
+    (tabID: number, info: Record<string, unknown>) => {
       updateTab(tabID, info);
     },
     [updateTab],
   );
 
-  const hideTabsAndUpdateUrl = (url) => {
+  const hideTabsAndUpdateUrl = (url: string) => {
     navigation.setParams({
       ...route.params,
       showTabs: false,
@@ -156,7 +184,7 @@ import type { Dispatch } from 'redux';
     });
   };
 
-  const switchToTab = (tab) => {
+  const switchToTab = (tab: BrowserTab) => {
     trackEvent(
       createEventBuilder(MetaMetricsEvents.BROWSER_SWITCH_TAB).build(),
     );
@@ -463,11 +491,11 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  createNewTab: (url, linkType) => dispatch(createNewTab(url, linkType)),
+  createNewTab: (url: string, linkType?: string) => dispatch(createNewTab(url, linkType)),
   closeAllTabs: () => dispatch(closeAllTabs()),
-  closeTab: (id) => dispatch(closeTab(id)),
-  setActiveTab: (id) => dispatch(setActiveTab(id)),
-  updateTab: (id, url) => dispatch(updateTab(id, url)),
+  closeTab: (id: number) => dispatch(closeTab(id)),
+  setActiveTab: (id: number) => dispatch(setActiveTab(id)),
+  updateTab: (id: number, url: Record<string, unknown>) => dispatch(updateTab(id, url)),
 });
 
 

@@ -76,7 +76,28 @@ const HARDWARE_BACK_PRESS = 'hardwareBackPress';
  * View that's shown during the last step of
  * the backup seed phrase flow
  */
-class ManualBackupStep3 extends PureComponent {
+interface Props {
+  navigation: {
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    replace: (route: string, params?: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+  };
+  route: { params?: Record<string, unknown> };
+  seedphraseBackedUp?: boolean;
+}
+
+interface State {
+  currentStep: number;
+  seedPhraseHidden: boolean;
+  confirmedWords: unknown[];
+  wordsDict: Record<string, unknown>;
+  seedphraseRevealed: boolean;
+}
+
+class ManualBackupStep3 extends PureComponent<Props, State> {
   constructor(props) {
     super(props);
     this.steps = props.route.params?.steps;

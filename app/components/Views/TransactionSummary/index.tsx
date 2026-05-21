@@ -20,7 +20,37 @@ const createStyles = (colors: Colors) =>
     },
   });
 
-export default class TransactionSummary extends PureComponent {
+export default interface OwnProps {
+  route: {
+    params?: {
+      transaction?: Record<string, unknown>;
+    };
+  };
+}
+
+interface StateProps {
+  chainId: string;
+  currentCurrency: string;
+  conversionRate: number;
+  primaryCurrency: string;
+  tokens: unknown[];
+  selectedAddress: string;
+  transactions: unknown[];
+}
+
+type Props = OwnProps & StateProps & {
+  navigation: {
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    goBack: () => void;
+  };
+};
+
+interface State {
+  transaction: Record<string, unknown>;
+}
+
+class TransactionSummary extends PureComponent<Props, State> {
 
   renderIfGastEstimationReady = (children) => {
     const { gasEstimationReady } = this.props;

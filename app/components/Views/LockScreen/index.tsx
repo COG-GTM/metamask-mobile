@@ -69,7 +69,26 @@ const wordmarkDark = require('../../../animations/wordmark-dark.json');
 /**
  * Main view component for the Lock screen
  */
-class LockScreen extends PureComponent {
+interface OwnProps {
+  bioStateMachineId?: string;
+}
+
+interface StateProps {
+  appTheme: string;
+}
+
+type Props = OwnProps & StateProps & {
+  navigation: {
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+  };
+};
+
+interface State {
+  ready: boolean;
+}
+
+class LockScreen extends PureComponent<Props, State> {
 
   state = {
     ready: false,
@@ -90,7 +109,7 @@ class LockScreen extends PureComponent {
     );
   }
 
-  handleAppStateChange = async (nextAppState) => {
+  handleAppStateChange = async (nextAppState: string) => {
     // Trigger biometrics
     if (nextAppState === 'active') {
       this.firstAnimation?.play();
@@ -229,7 +248,7 @@ LockScreen.contextType = ThemeContext;
 const ConnectedLockScreen = connect(mapStateToProps)(LockScreen);
 
 // Wrapper that forces LockScreen to re-render when bioStateMachineId changes.
-const LockScreenFCWrapper = (props) => {
+const LockScreenFCWrapper = (props: { route: { params: { bioStateMachineId: string } } }) => {
   const { bioStateMachineId } = props.route.params;
   return (
     <ConnectedLockScreen

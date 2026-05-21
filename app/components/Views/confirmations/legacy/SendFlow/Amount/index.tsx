@@ -380,7 +380,28 @@ const createStyles = (colors: Colors) =>
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Amount extends PureComponent {
+interface AmountProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface AmountState {
+  [key: string]: unknown;
+}
+
+class Amount extends PureComponent<AmountProps, AmountState> {
 
   state = {
     amountError: undefined,

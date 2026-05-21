@@ -151,7 +151,28 @@ let intervalIdForEstimatedL1Fee;
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Confirm extends PureComponent {
+interface ConfirmProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface ConfirmState {
+  [key: string]: unknown;
+}
+
+class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
   state = {
     gasEstimationReady: false,
@@ -718,7 +739,7 @@ class Confirm extends PureComponent {
    * Validates transaction balances
    * @returns - Whether there is an error with the amount
    */
-  validateAmount = ({ transaction }) => {
+  validateAmount = ({ transaction }: { transaction: Record<string, unknown> }) => {
     const {
       accounts,
       contractBalances,
@@ -1144,7 +1165,7 @@ class Confirm extends PureComponent {
     });
   };
 
-  updateGasState = ({ gasTxn, gasObj, gasSelect, txnType }) => {
+  updateGasState = ({ gasTxn, gasObj, gasSelect, txnType }: { gasTxn: Record<string, unknown>; gasObj: Record<string, unknown>; gasSelect: string; txnType: string }) => {
     this.setState({
       gasSelectedTemp: gasSelect,
       gasSelected: gasSelect,

@@ -115,12 +115,19 @@ const createStyles = (colors: Colors) =>
     },
   });
 
-const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }) => {
+interface CustomModalNonceProps {
+  proposedNonce: string;
+  nonceValue: string;
+  close: () => void;
+  save: (nonce: string) => void;
+}
+
+const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }: CustomModalNonceProps) => {
   const [nonce, onChangeText] = React.useState(nonceValue);
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
-  const incrementDecrementNonce = (isDecrement) => {
+  const incrementDecrementNonce = (isDecrement: boolean) => {
     const currentNonce = Number(nonce);
     const updatedValue = isDecrement ? currentNonce - 1 : currentNonce + 1;
     const clampedValue = Math.max(updatedValue, 0);

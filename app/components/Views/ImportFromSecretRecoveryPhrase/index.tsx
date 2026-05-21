@@ -76,6 +76,15 @@ const IOS_REJECTED_BIOMETRICS_ERROR =
  * using a secret recovery phrase (SRP)
  * The SRP was formally called the seed phrase
  */
+interface ImportFromSecretRecoveryPhraseProps {
+  navigation: Record<string, unknown>;
+  passwordSet: boolean;
+  setLockTime: (time: number) => void;
+  seedphraseBackedUp: boolean;
+  setOnboardingWizardStep: (step: number) => void;
+  route: { params?: Record<string, unknown> };
+}
+
 const ImportFromSecretRecoveryPhrase = ({
   navigation,
   passwordSet,
@@ -83,7 +92,7 @@ const ImportFromSecretRecoveryPhrase = ({
   seedphraseBackedUp,
   setOnboardingWizardStep,
   route,
-}) => {
+}: ImportFromSecretRecoveryPhraseProps) => {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 

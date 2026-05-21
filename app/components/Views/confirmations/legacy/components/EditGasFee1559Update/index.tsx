@@ -37,6 +37,30 @@ import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../UI/TimeEstimateInfoModal';
 import createStyles from './styles';
 
+interface EditGasFee1559UpdateProps {
+  selectedGasValue: string;
+  gasOptions: Record<string, unknown>;
+  primaryCurrency: string;
+  chainId: string;
+  onCancel: () => void;
+  onChange: (value: Record<string, unknown>) => void;
+  onSave: (gasObj: Record<string, unknown>, gasTxn: Record<string, unknown>) => void;
+  error: string;
+  dappSuggestedGas: Record<string, unknown>;
+  ignoreOptions: Record<string, boolean>;
+  updateOption: Record<string, unknown>;
+  extendOptions?: Record<string, unknown>;
+  recommended: Record<string, unknown>;
+  warningMinimumEstimateOption: string;
+  suggestedEstimateOption: string;
+  animateOnChange: unknown;
+  isAnimating: boolean;
+  analyticsParams: Record<string, unknown>;
+  warning: string;
+  selectedGasObject: Record<string, unknown>;
+  onlyGas: boolean;
+}
+
 const EditGasFee1559Update = ({
   selectedGasValue,
   gasOptions,
@@ -59,7 +83,7 @@ const EditGasFee1559Update = ({
   warning,
   selectedGasObject,
   onlyGas,
-}) => {
+}: EditGasFee1559UpdateProps) => {
   const [modalInfo, updateModalInfo] = useState({
     isVisible: false,
     value: '',

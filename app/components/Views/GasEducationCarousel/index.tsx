@@ -142,13 +142,25 @@ const carousel_images = [
 /**
  * View that is displayed to first time (new) users
  */
+interface GasEducationCarouselProps {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    goBack: () => void;
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+  };
+  route: { params?: Record<string, unknown> };
+  conversionRate: number;
+  currentCurrency: string;
+  ticker: string;
+}
+
 const GasEducationCarousel = ({
   navigation,
   route,
   conversionRate,
   currentCurrency,
   ticker,
-}) => {
+}: GasEducationCarouselProps) => {
   const [currentTab, setCurrentTab] = useState(1);
   const [gasFiat, setGasFiat] = useState(null);
   const { colors } = useTheme();

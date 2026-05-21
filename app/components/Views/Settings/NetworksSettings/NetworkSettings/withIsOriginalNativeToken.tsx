@@ -3,9 +3,9 @@ import axios from 'axios';
 
 const CHAIN_ID_NETWORK_URL = 'https://chainid.network/chains.json';
 
-const withIsOriginalNativeToken = (WrappedComponent) => {
+const withIsOriginalNativeToken = (WrappedComponent: React.ComponentType<Record<string, unknown>>) => {
   // This is the functional component wrapper that can use hooks
-  const WithIsOriginalNativeTokenWrapper = (props) => {
+  const WithIsOriginalNativeTokenWrapper = (props: Record<string, unknown>) => {
     // Use the useSelector hook to access Redux state
     const [matchedChainNetwork, setMatchedChainNetwork] = useState(null);
 

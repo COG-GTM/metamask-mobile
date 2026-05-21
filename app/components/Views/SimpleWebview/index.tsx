@@ -7,7 +7,27 @@ import Logger from '../../../util/Logger';
 import { baseStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-export default class SimpleWebview extends PureComponent {
+export default interface Props {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    goBack: () => void;
+  };
+  route: {
+    params?: {
+      url?: string;
+      title?: string;
+    };
+  };
+}
+
+interface State {
+  url: string;
+  progress: number;
+  title: string;
+  fullscreen: boolean;
+}
+
+class SimpleWebview extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation, route } = this.props;

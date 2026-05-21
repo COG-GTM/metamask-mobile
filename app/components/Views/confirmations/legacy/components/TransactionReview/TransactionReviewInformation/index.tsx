@@ -133,7 +133,28 @@ const createStyles = (colors: Colors) =>
 /**
  * PureComponent that supports reviewing a transaction information
  */
-class TransactionReviewInformation extends PureComponent {
+interface TransactionReviewInformationProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface TransactionReviewInformationState {
+  [key: string]: unknown;
+}
+
+class TransactionReviewInformation extends PureComponent<TransactionReviewInformationProps, TransactionReviewInformationState> {
 
   state = {
     toFocused: false,
@@ -277,7 +298,7 @@ class TransactionReviewInformation extends PureComponent {
     gasFeeMinConversion,
     gasFeeMaxNative,
     gasFeeMaxConversion,
-  }) => {
+  }: { gasFeeMinNative: string; gasFeeMinConversion: string; gasFeeMaxNative: string; gasFeeMaxConversion: string }) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,

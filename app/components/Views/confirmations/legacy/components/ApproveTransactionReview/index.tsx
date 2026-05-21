@@ -119,7 +119,28 @@ const {
 /**
  * PureComponent that manages ERC20 approve from the dapp browser
  */
-class ApproveTransactionReview extends PureComponent {
+interface ApproveTransactionReviewProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface ApproveTransactionReviewState {
+  [key: string]: unknown;
+}
+
+class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewProps, ApproveTransactionReviewState> {
   static navigationOptions = ({ navigation }) =>
     getApproveNavbar('approve.title', navigation);
 

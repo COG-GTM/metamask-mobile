@@ -80,7 +80,16 @@ const createStyles = (colors: Colors) =>
 /**
  * View that displays all the active WalletConnect Sessions
  */
-export default class WalletConnectSessions extends PureComponent {
+export default interface Props {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    goBack: () => void;
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+  };
+  route: { params?: Record<string, unknown> };
+}
+
+class WalletConnectSessions extends PureComponent<Props> {
   state = {
     sessions: [],
     sessionsV2: [],

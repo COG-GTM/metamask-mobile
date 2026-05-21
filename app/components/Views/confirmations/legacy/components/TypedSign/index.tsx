@@ -58,7 +58,28 @@ const createStyles = (colors: Colors) =>
 /**
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
-class TypedSign extends PureComponent {
+interface TypedSignProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface TypedSignState {
+  [key: string]: unknown;
+}
+
+class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
 
   state = {
     truncateMessage: false,
@@ -88,7 +109,7 @@ class TypedSign extends PureComponent {
     removeSignatureErrorListener(metamaskId, this.onSignatureError);
   };
 
-  onSignatureError = ({ error }) => {
+  onSignatureError = ({ error }: { error: string }) => {
     const { metrics } = this.props;
     if (error?.message.startsWith(KEYSTONE_TX_CANCELED)) {
       metrics.trackEvent(

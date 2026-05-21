@@ -16,7 +16,7 @@ import { Text } from 'react-native';
 
 const Stack = createStackNavigator();
 
-const TestScreen = ({ route }) => {
+const TestScreen = ({ route }: { route: { params?: Record<string, unknown> } }) => {
   const routes = useNavigationState((state) => state.routes);
 
   const name = findRouteNameFromNavigatorState(routes);

@@ -64,7 +64,7 @@ const createStyles = (colors: Colors) =>
   });
 
 // eslint-disable-next-line react/prop-types
-const Skeleton = ({ width, noStyle }) => {
+const Skeleton = ({ width, noStyle }: { width: number | string; noStyle?: boolean }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -76,6 +76,35 @@ const Skeleton = ({ width, noStyle }) => {
     </View>
   );
 };
+
+interface TransactionReviewEIP1559Props {
+  gasFeeNative: string;
+  gasFeeConversion: string;
+  gasFeeMaxNative: string;
+  gasFeeMaxConversion: string;
+  primaryCurrency: string;
+  timeEstimate: string;
+  timeEstimateColor: string;
+  timeEstimateId: string;
+  hideFeeModal?: boolean;
+  hideTotal?: boolean;
+  onEdit: () => void;
+  over: boolean;
+  onUpdatingValuesStart: () => void;
+  onUpdatingValuesEnd: () => void;
+  animateOnChange: unknown;
+  isAnimating: boolean;
+  gasEstimateType: string;
+  gasOptions: Record<string, unknown>;
+  onChange: (value: Record<string, unknown>) => void;
+  gasSelected: string;
+  chainId: string;
+  onGasChanged?: (gas: Record<string, unknown>) => void;
+  onGasCanceled?: (gas: Record<string, unknown>) => void;
+  view: string;
+  analyticsParams: Record<string, unknown>;
+  [key: string]: unknown;
+}
 
 const TransactionReviewEIP1559 = ({
   gasFeeNative,
@@ -97,7 +126,7 @@ const TransactionReviewEIP1559 = ({
   isAnimating,
   gasEstimationReady,
   legacy,
-}) => {
+}: TransactionReviewEIP1559Props) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,

@@ -43,7 +43,7 @@ import { RootState } from '../../../reducers';
  * View that's shown during the second step of
  * the backup seed phrase flow
  */
-const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
+const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
   const [seedPhraseHidden, setSeedPhraseHidden] = useState(true);
 
   const [password, setPassword] = useState(undefined);

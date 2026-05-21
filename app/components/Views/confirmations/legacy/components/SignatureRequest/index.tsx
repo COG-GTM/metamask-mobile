@@ -126,7 +126,28 @@ const createStyles = (colors: Colors) =>
 /**
  * PureComponent that renders scrollable content inside signature request user interface
  */
-class SignatureRequest extends PureComponent {
+interface SignatureRequestProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface SignatureRequestState {
+  [key: string]: unknown;
+}
+
+class SignatureRequest extends PureComponent<SignatureRequestProps, SignatureRequestState> {
 
   /**
    * Calls trackCancelSignature and onReject callback

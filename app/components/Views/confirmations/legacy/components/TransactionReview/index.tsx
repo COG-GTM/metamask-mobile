@@ -126,7 +126,28 @@ const createStyles = (colors: Colors) =>
 /**
  * PureComponent that supports reviewing a transaction
  */
-class TransactionReview extends PureComponent {
+interface TransactionReviewProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface TransactionReviewState {
+  [key: string]: unknown;
+}
+
+class TransactionReview extends PureComponent<TransactionReviewProps, TransactionReviewState> {
 
   state = {
     toFocused: false,

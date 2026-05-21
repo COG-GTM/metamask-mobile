@@ -79,7 +79,24 @@ const createStyles = (colors: Colors) =>
 /**
  * PureComponent that supports reviewing transaction data
  */
-class TransactionReviewData extends PureComponent {
+interface TransactionReviewDataProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+class TransactionReviewData extends PureComponent<TransactionReviewDataProps> {
 
   applyRootHeight = () => ({ height: this.props.customGasHeight });
 

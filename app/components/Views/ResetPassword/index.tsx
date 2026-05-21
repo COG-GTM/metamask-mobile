@@ -251,7 +251,28 @@ const CONFIRM_PASSWORD = 'confirm_password';
 /**
  * View where users can set their password for the first time
  */
-class ResetPassword extends PureComponent {
+interface ResetPasswordProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface ResetPasswordState {
+  [key: string]: unknown;
+}
+
+class ResetPassword extends PureComponent<ResetPasswordProps, ResetPasswordState> {
 
   state = {
     isSelected: false,

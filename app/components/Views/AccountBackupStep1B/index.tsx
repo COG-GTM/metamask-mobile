@@ -200,7 +200,16 @@ const createStyles = (colors: Colors) =>
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1B = (props) => {
+interface Props {
+  navigation: {
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    goBack: () => void;
+    setOptions: (options: Record<string, unknown>) => void;
+  };
+  route: { params?: Record<string, unknown> };
+}
+
+const AccountBackupStep1B = (props: Props) => {
   const { navigation, route } = props;
   const [showWhySecureWalletModal, setWhySecureWalletModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);

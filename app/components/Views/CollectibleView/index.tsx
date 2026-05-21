@@ -40,7 +40,31 @@ const createStyles = (colors: Colors) =>
 /**
  * View that displays a specific collectible asset
  */
-class CollectibleView extends PureComponent {
+interface OwnProps {
+  route: {
+    params?: {
+      address?: string;
+      tokenId?: string;
+      collectible?: Record<string, unknown>;
+    };
+  };
+}
+
+interface StateProps {
+  chainId: string;
+  selectedAddress: string;
+  collectibleContracts: unknown[];
+}
+
+type Props = OwnProps & StateProps & {
+  navigation: {
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    goBack: () => void;
+  };
+};
+
+class CollectibleView extends PureComponent<Props> {
 
   updateNavBar = () => {
     const { navigation, route } = this.props;

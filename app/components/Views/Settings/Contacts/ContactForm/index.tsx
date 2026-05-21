@@ -117,7 +117,28 @@ const EDIT = 'edit';
 /**
  * View that contains app information
  */
-class ContactForm extends PureComponent {
+interface ContactFormProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface ContactFormState {
+  [key: string]: unknown;
+}
+
+class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
 
   state = {
     name: null,

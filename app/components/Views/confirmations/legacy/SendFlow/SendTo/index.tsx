@@ -70,7 +70,28 @@ const dummy = () => true;
 /**
  * View that wraps the wraps the "Send" screen
  */
-class SendFlow extends PureComponent {
+interface SendFlowProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface SendFlowState {
+  [key: string]: unknown;
+}
+
+class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
 
   addressToInputRef = React.createRef();
 

@@ -71,7 +71,24 @@ const createStyles = (colors: Colors) =>
 /**
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
-export default class ExpandedMessage extends PureComponent {
+export default interface ExpandedMessageProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+class ExpandedMessage extends PureComponent<ExpandedMessageProps> {
 
   render() {
     const { currentPageInformation, renderMessage, toggleExpandedMessage } =

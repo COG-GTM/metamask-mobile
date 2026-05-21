@@ -41,6 +41,23 @@ import StyledButton from '../../../../../UI/StyledButton';
 import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import createStyles from './styles';
 
+interface EditGasFeeLegacyProps {
+  onCancel: () => void;
+  onSave: (gasObj: Record<string, unknown>, gasTxn: Record<string, unknown>) => void;
+  error: string;
+  warning: string;
+  onUpdatingValuesStart: () => void;
+  onUpdatingValuesEnd: () => void;
+  animateOnChange: unknown;
+  isAnimating: boolean;
+  analyticsParams: Record<string, unknown>;
+  view: string;
+  onlyGas: boolean;
+  selectedGasObject: Record<string, unknown>;
+  hasDappSuggestedGas: boolean;
+  chainId: string;
+}
+
 const EditGasFeeLegacy = ({
   onCancel,
   onSave,
@@ -56,7 +73,7 @@ const EditGasFeeLegacy = ({
   selectedGasObject,
   hasDappSuggestedGas,
   chainId,
-}) => {
+}: EditGasFeeLegacyProps) => {
   const { trackEvent, createEventBuilder } = useMetrics();
   const [showRangeInfoModal, setShowRangeInfoModal] = useState(false);
   const [infoText, setInfoText] = useState('');

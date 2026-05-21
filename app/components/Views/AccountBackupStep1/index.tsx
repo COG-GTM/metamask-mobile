@@ -128,7 +128,23 @@ const createStyles = (colors: Colors) =>
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1 = (props) => {
+interface DispatchProps {
+  setOnboardingWizardStep: (step: number) => void;
+}
+
+interface OwnProps {
+  navigation: {
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    goBack: () => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    pop: () => void;
+  };
+  route: { params?: Record<string, unknown> };
+}
+
+type Props = OwnProps & DispatchProps;
+
+const AccountBackupStep1 = (props: Props) => {
   const { navigation, route } = props;
   const [showRemindLaterModal, setRemindLaterModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -137,7 +153,7 @@ const AccountBackupStep1 = (props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const track = (event, properties) => {
+  const track = (event: Record<string, unknown>, properties?: Record<string, unknown>) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
     trackOnboarding(eventBuilder.build());
@@ -301,7 +317,7 @@ const AccountBackupStep1 = (props) => {
 
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+  setOnboardingWizardStep: (step: number) => dispatch(setOnboardingWizardStep(step)),
 });
 
 export default connect(null, mapDispatchToProps)(AccountBackupStep1);

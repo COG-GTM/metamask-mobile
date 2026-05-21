@@ -38,7 +38,28 @@ const createStyles = (colors: Colors) =>
 /**
  * Copmonent that provides ability to add a bookmark
  */
-export default class AddBookmark extends PureComponent {
+interface Props {
+  navigation: {
+    pop: () => void;
+    setOptions: (options: Record<string, unknown>) => void;
+  };
+  route: {
+    params?: {
+      title?: string;
+      url?: string;
+      onAddBookmark?: (bookmark: { name: string; url: string }) => void;
+    };
+  };
+}
+
+interface State {
+  title: string;
+  url: string;
+  warningSymbol?: string;
+  warningDecimals?: string;
+}
+
+export default class AddBookmark extends PureComponent<Props, State> {
   state = {
     title: '',
     url: '',
@@ -86,11 +107,11 @@ export default class AddBookmark extends PureComponent {
     this.props.navigation.pop();
   };
 
-  onTitleChange = (title) => {
+  onTitleChange = (title: string) => {
     this.setState({ title });
   };
 
-  onUrlChange = (url) => {
+  onUrlChange = (url: string) => {
     this.setState({ url });
   };
 

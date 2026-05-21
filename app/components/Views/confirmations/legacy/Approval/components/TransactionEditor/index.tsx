@@ -63,7 +63,28 @@ const styles = StyleSheet.create({
 /**
  * PureComponent that supports editing and reviewing a transaction
  */
-class TransactionEditor extends PureComponent {
+interface TransactionEditorProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface TransactionEditorState {
+  [key: string]: unknown;
+}
+
+class TransactionEditor extends PureComponent<TransactionEditorProps, TransactionEditorState> {
 
   state = {
     toFocused: false,

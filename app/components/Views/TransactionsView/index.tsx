@@ -44,6 +44,21 @@ const styles = StyleSheet.create({
   },
 });
 
+interface TransactionsViewProps {
+  navigation: {
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    goBack: () => void;
+    setOptions: (options: Record<string, unknown>) => void;
+  };
+  conversionRate: number;
+  selectedInternalAccount: Record<string, unknown>;
+  networkConfigurations: Record<string, unknown>;
+  identities: Record<string, unknown>;
+  chainId: string;
+  tokens: unknown[];
+  transactions: unknown[];
+}
+
 const TransactionsView = ({
   navigation,
   conversionRate,
@@ -54,7 +69,7 @@ const TransactionsView = ({
   chainId,
   tokens,
   tokenNetworkFilter,
-}) => {
+}: TransactionsViewProps) => {
   const [allTransactions, setAllTransactions] = useState([]);
   const [submittedTxs, setSubmittedTxs] = useState([]);
   const [confirmedTxs, setConfirmedTxs] = useState([]);

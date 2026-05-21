@@ -76,7 +76,28 @@ const styles = StyleSheet.create({
 /**
  * PureComponent that manages transaction approval from the dapp browser
  */
-class Approval extends PureComponent {
+interface ApprovalProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface ApprovalState {
+  [key: string]: unknown;
+}
+
+class Approval extends PureComponent<ApprovalProps, ApprovalState> {
   appStateListener;
 
   #transactionFinishedListener;
@@ -610,7 +631,7 @@ class Approval extends PureComponent {
    * @param {object} transaction - Transaction object
    * @param {object} selectedAsset - Asset object
    */
-  prepareTransaction = ({ EIP1559GasData, gasEstimateType }) => {
+  prepareTransaction = ({ EIP1559GasData, gasEstimateType }: { EIP1559GasData: Record<string, unknown>; gasEstimateType: string }) => {
     const { transaction: rawTransaction, showCustomNonce } = this.props;
     const { assetType, gas, gasPrice, selectedAsset } = rawTransaction;
 

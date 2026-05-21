@@ -22,7 +22,12 @@ const createStyles = (colors: Colors) =>
     },
   });
 
-const CustomNonce = ({ nonce, onNonceEdit }) => {
+interface CustomNonceProps {
+  nonce: string;
+  onNonceEdit: () => void;
+}
+
+const CustomNonce = ({ nonce, onNonceEdit }: CustomNonceProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

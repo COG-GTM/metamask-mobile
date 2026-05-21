@@ -138,7 +138,28 @@ const createStyles = (colors: Colors) =>
 /**
  * View that is displayed to first time (new) users
  */
-class Onboarding extends PureComponent {
+interface OnboardingProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+    goBack: () => void;
+    pop: (count?: number) => void;
+    push: (...args: unknown[]) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
+    dispatch: (action: unknown) => void;
+    replace: (...args: unknown[]) => void;
+    addListener: (event: string, callback: () => void) => () => void;
+    dangerouslyGetParent?: () => unknown;
+  };
+  route: { params?: Record<string, unknown> };
+  [key: string]: unknown;
+}
+
+interface OnboardingState {
+  [key: string]: unknown;
+}
+
+class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
 
   notificationAnimated = new Animated.Value(100);
   detailsYAnimated = new Animated.Value(0);

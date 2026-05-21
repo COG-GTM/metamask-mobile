@@ -25,6 +25,15 @@ const LabelElement = (styles, label) => (
   </View>
 );
 
+interface AddressListProps {
+  chainId: string;
+  inputSearch: string;
+  onAccountPress: (address: string) => void;
+  onAccountLongPress: (address: string) => void;
+  isAmbiguousAddress: boolean;
+  onlyRenderAddressBook?: boolean;
+}
+
 const AddressList = ({
   chainId,
   inputSearch,
@@ -33,7 +42,7 @@ const AddressList = ({
   onIconPress,
   onlyRenderAddressBook = false,
   reloadAddressList,
-}) => {
+}: AddressListProps) => {
   const { colors } = useTheme();
   const styles = styleSheet(colors);
   const [contactElements, setContactElements] = useState([]);
