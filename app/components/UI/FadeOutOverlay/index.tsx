@@ -1,10 +1,13 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { Animated, StyleSheet } from 'react-native';
+import { Animated, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+interface ThemeColors {
+  background: { default: string };
+}
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     view: {
       backgroundColor: colors.background.default,
@@ -16,22 +19,34 @@ const createStyles = (colors) =>
     },
   });
 
-/**
- * View that is displayed to first time (new) users
- */
-export default class FadeOutOverlay extends PureComponent {
-  static propTypes = {
-    style: PropTypes.any,
-    duration: PropTypes.number,
+interface FadeOutOverlayProps {
+  style?: StyleProp<ViewStyle>;
+  duration?: number;
+}
+
+interface FadeOutOverlayState {
+  done: boolean;
+}
+
+export default class FadeOutOverlay extends PureComponent<
+  FadeOutOverlayProps,
+  FadeOutOverlayState
+> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  static defaultProps = {
+    style: null,
+    duration: Device.isAndroid() ? 300 : 300,
   };
 
-  state = {
+  state: FadeOutOverlayState = {
     done: false,
   };
 
   opacity = new Animated.Value(1);
 
-  componentDidMount() {
+  componentDidMount(): void {
     Animated.timing(this.opacity, {
       toValue: 0,
       duration: this.props.duration,
@@ -42,8 +57,8 @@ export default class FadeOutOverlay extends PureComponent {
     });
   }
 
-  render() {
-    const colors = this.context.colors || mockTheme.colors;
+  render(): React.ReactNode {
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (this.state.done) return null;
@@ -54,10 +69,3 @@ export default class FadeOutOverlay extends PureComponent {
     );
   }
 }
-
-FadeOutOverlay.contextType = ThemeContext;
-
-FadeOutOverlay.defaultProps = {
-  style: null,
-  duration: Device.isAndroid() ? 300 : 300,
-};

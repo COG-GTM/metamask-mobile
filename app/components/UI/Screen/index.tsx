@@ -1,20 +1,13 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactNode } from 'react';
 import { SafeAreaView, View } from 'react-native';
 import { baseStyles } from '../../../styles/common';
 
-/**
- * Base view component providing consistent styling meant to wrap other views
- */
-export default class Screen extends PureComponent {
-  static propTypes = {
-    /**
-     * Content to wrap inside this view
-     */
-    children: PropTypes.node,
-  };
+interface ScreenProps {
+  children?: ReactNode;
+}
 
-  render() {
+export default class Screen extends PureComponent<ScreenProps> {
+  render(): React.ReactNode {
     return (
       <View style={baseStyles.flexGrow}>
         <SafeAreaView style={baseStyles.flexGrow}>
