@@ -193,7 +193,15 @@ class NotificationManager {
         this._transactionToView.push(id);
       }
 
-      const pushData = {
+      const pushData: {
+        channelId: string;
+        title: string;
+        body: string;
+        data: unknown;
+        id: string | undefined;
+        tag?: string;
+        userInfo?: Record<string, unknown>;
+      } = {
         channelId: ChannelId.DEFAULT_NOTIFICATION_CHANNEL_ID,
         title,
         body: message,
@@ -201,18 +209,18 @@ class NotificationManager {
           ...data?.transaction,
           action: 'tx',
           id,
-        } as unknown,
-        id: undefined as string | undefined,
+        },
+        id: undefined,
       };
 
       const extraData = { action: 'tx', id };
       pushData.data = { ...data?.transaction, ...extraData };
       if (Device.isAndroid()) {
-        // Android uses tag field
+        pushData.tag = JSON.stringify(extraData);
       } else {
-        // iOS uses userInfo field
+        pushData.userInfo = extraData;
       }
-      await NotificationsService.displayNotification(pushData);
+      await NotificationsService.displayNotification(pushData as Parameters<typeof NotificationsService.displayNotification>[0]);
     } else {
       this._showTransactionNotification({
         autodismiss: data.duration,

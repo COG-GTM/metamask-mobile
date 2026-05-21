@@ -98,7 +98,7 @@ export class BackgroundBridge extends EventEmitter {
   disconnected: boolean;
   getApprovedHosts: ((...args: unknown[]) => unknown) | undefined;
   channelId: string | undefined;
-  deprecatedNetworkVersions: Record<string, string>;
+  deprecatedNetworkVersions: Record<string, string | null>;
   createMiddleware: BackgroundBridgeParams['getRpcMethodMiddleware'];
   port: RemotePort | WalletConnectPort | Port;
   engine: JsonRpcEngine | null;
@@ -300,13 +300,13 @@ export class BackgroundBridge extends EventEmitter {
     let networkVersion = this.deprecatedNetworkVersions[networkClientId];
     if (!networkVersion) {
       const ethQuery = new EthQuery(networkClient.provider);
-      networkVersion = await new Promise<string>((resolve) => {
+      networkVersion = await new Promise<string | null>((resolve) => {
         ethQuery.sendAsync(
           { method: 'net_version' },
           (...args: [unknown, undefined] | [null, string]) => {
             if (args[0]) {
               console.error(args[0]);
-              resolve('loading');
+              resolve(null);
             } else {
               resolve(args[1] as string);
             }
