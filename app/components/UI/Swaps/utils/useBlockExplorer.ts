@@ -14,7 +14,15 @@ import {
 } from '../../../../selectors/networkController';
 import { selectNetworkName } from '../../../../selectors/networkInfos';
 
-function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
+interface ExplorerState {
+  name: string;
+  value: string | null;
+  isValid: boolean;
+  isRPC: boolean;
+  baseUrl: string;
+}
+
+function useBlockExplorer(networkConfigurations: Record<string, unknown>, providerConfigTokenExplorer?: Record<string, unknown>) {
   const [explorer, setExplorer] = useState({
     name: '',
     value: null,
