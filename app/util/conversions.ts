@@ -249,3 +249,11 @@ export function sumHexWEIsToRenderableEth(hexWEIs: string[]): string {
     }),
   );
 }
+
+export function multiplyHexes(hex1: string, hex2: string): string {
+  return hexToBN(hex1).mul(hexToBN(hex2)).toString(16);
+}
+
+export function decimalToPrefixedHex(decimal: number | string): string {
+  return addHexPrefix(decimalToHex(decimal));
+}

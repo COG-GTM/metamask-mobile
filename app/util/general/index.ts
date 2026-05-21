@@ -142,8 +142,15 @@ export const deepJSONParse = ({
 
 export const getUniqueList = (...arrays: unknown[][]): unknown[] => {
   if (arrays.length === 0) {
-    throw new Error('No arrays provided');
+    throw new Error('At least one array must be defined.');
   }
+  arrays.forEach((array, index) => {
+    if (!Array.isArray(array)) {
+      throw new TypeError(
+        `Argument at position ${index} is not an array. Found ${typeof array}.`,
+      );
+    }
+  });
 
   return [...new Set(arrays.flat())];
 };
