@@ -31,7 +31,7 @@ declare module '@metamask/ethjs-contract' {
     at(address: string): ContractInstance;
   }
 
-  type EthContractConstructor = new (eth: unknown) => (abi: ReadonlyArray<Record<string, unknown>>) => ContractFactory;
+  type EthContractConstructor = new (eth: unknown) => (abi: readonly Record<string, unknown>[]) => ContractFactory;
 
   const EthContract: EthContractConstructor;
   export default EthContract;
