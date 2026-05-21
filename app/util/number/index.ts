@@ -855,7 +855,7 @@ export const conversionUtil = (
   value: string | number | BigNumber,
   {
     fromCurrency = null,
-    toCurrency = fromCurrency ?? undefined,
+    toCurrency = fromCurrency,
     fromNumericBase,
     toNumericBase,
     fromDenomination,
@@ -893,9 +893,9 @@ export const calculateEthFeeForMultiLayer = ({
 }: {
   multiLayerL1FeeTotal: string;
   ethFee?: number | string;
-}): string => {
+}): number | string => {
   if (!multiLayerL1FeeTotal) {
-    return String(ethFee);
+    return ethFee;
   }
   const multiLayerL1FeeTotalDecEth = String(conversionUtil(multiLayerL1FeeTotal, {
     fromNumericBase: 'hex',

@@ -1388,7 +1388,7 @@ export const parseTransactionEIP1559 = (
     const rawAmountString = parseInt(rawAmount, 16).toLocaleString('fullwide', {
       useGrouping: false,
     });
-    const tokenAmount = renderFromTokenMinimalUnit(rawAmountString, decimals ?? 0);
+    const tokenAmount = renderFromTokenMinimalUnit(rawAmountString, decimals);
 
     const exchangeRate = contractExchangeRates[address ?? '']?.price;
 
@@ -1537,7 +1537,7 @@ export const parseTransactionLegacy = (
     const rawAmountString = parseInt(rawAmount2, 16).toLocaleString('fullwide', {
       useGrouping: false,
     });
-    const transferValue = renderFromTokenMinimalUnit(rawAmountString, decimals ?? 0);
+    const transferValue = renderFromTokenMinimalUnit(rawAmountString, decimals);
     const transactionValue = `${transferValue} ${symbol}`;
     const exchangeRate = contractExchangeRates?.[address ?? '']?.price;
     const transactionFeeFiatNumber = weiToFiatNumber(
