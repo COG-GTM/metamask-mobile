@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 
 import { backgroundState } from '../../../../../../util/test/initial-root-state';

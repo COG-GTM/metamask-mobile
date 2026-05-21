@@ -25,7 +25,7 @@ const createStyles = (colors: ThemeColors) =>
 /**
  * View that is displayed in the flow to agree terms and conditions
  */
-export default interface Props {
+interface Props {
   navigation: {
     setOptions: (options: Record<string, unknown>) => void;
     goBack: () => void;
@@ -77,3 +77,5 @@ class TermsAndConditions extends PureComponent<Props, State> {
 }
 
 TermsAndConditions.contextType = ThemeContext;
+
+export default TermsAndConditions;

@@ -89,7 +89,7 @@ const createStyles = (colors: ThemeColors) =>
     },
   });
 
-export default interface TransactionReviewDetailsCardProps {
+interface TransactionReviewDetailsCardProps {
   navigation: {
     navigate: (...args: unknown[]) => void;
     goBack: () => void;
@@ -222,3 +222,5 @@ class TransactionReviewDetailsCard extends Component<TransactionReviewDetailsCar
 }
 
 TransactionReviewDetailsCard.contextType = ThemeContext;
+
+export default TransactionReviewDetailsCard;

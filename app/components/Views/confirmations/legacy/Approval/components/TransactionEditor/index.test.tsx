@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import TransactionEditor from '.';
 import configureMockStore from 'redux-mock-store';

@@ -49,7 +49,7 @@ const createStyles = (colors: ThemeColors) =>
 /**
  * View where users can re-enter their password
  */
-export default interface Props {
+interface Props {
   navigation: {
     pop: () => void;
     goBack: () => void;
@@ -179,3 +179,5 @@ class EnterPasswordSimple extends PureComponent<Props, State> {
 }
 
 EnterPasswordSimple.contextType = ThemeContext;
+
+export default EnterPasswordSimple;

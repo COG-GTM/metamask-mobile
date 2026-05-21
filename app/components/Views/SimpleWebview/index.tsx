@@ -8,7 +8,7 @@ import Logger from '../../../util/Logger';
 import { baseStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-export default interface Props {
+interface Props {
   navigation: {
     setOptions: (options: Record<string, unknown>) => void;
     goBack: () => void;
@@ -74,3 +74,5 @@ class SimpleWebview extends PureComponent<Props, State> {
 export { default as createWebviewNavDetails } from './SimpleWebview.types';
 
 SimpleWebview.contextType = ThemeContext;
+
+export default SimpleWebview;

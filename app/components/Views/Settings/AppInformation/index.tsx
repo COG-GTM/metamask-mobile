@@ -91,7 +91,7 @@ const foxImage = require('../../../../images/branding/fox.png'); // eslint-disab
 /**
  * View that contains app information
  */
-export default interface AppInformationProps {
+interface AppInformationProps {
   navigation: {
     navigate: (...args: unknown[]) => void;
     goBack: () => void;
@@ -250,3 +250,5 @@ class AppInformation extends PureComponent<AppInformationProps> {
 }
 
 AppInformation.contextType = ThemeContext;
+
+export default AppInformation;

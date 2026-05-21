@@ -73,7 +73,7 @@ const createStyles = (colors: ThemeColors) =>
 /**
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
-export default interface ExpandedMessageProps {
+interface ExpandedMessageProps {
   navigation: {
     navigate: (...args: unknown[]) => void;
     goBack: () => void;
@@ -141,3 +141,5 @@ class ExpandedMessage extends PureComponent<ExpandedMessageProps> {
 }
 
 ExpandedMessage.contextType = ThemeContext;
+
+export default ExpandedMessage;

@@ -82,7 +82,7 @@ const createStyles = (colors: ThemeColors) =>
 /**
  * View that displays all the active WalletConnect Sessions
  */
-export default interface Props {
+interface Props {
   navigation: {
     setOptions: (options: Record<string, unknown>) => void;
     goBack: () => void;
@@ -291,3 +291,5 @@ class WalletConnectSessions extends PureComponent<Props> {
 
 WalletConnectSessions.contextType = ThemeContext;
 
+
+export default WalletConnectSessions;

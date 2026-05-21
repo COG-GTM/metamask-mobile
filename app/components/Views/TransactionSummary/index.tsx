@@ -22,7 +22,7 @@ const createStyles = (colors: ThemeColors) =>
     },
   });
 
-export default interface OwnProps {
+interface OwnProps {
   route: {
     params?: {
       transaction?: Record<string, unknown>;
@@ -185,3 +185,5 @@ class TransactionSummary extends PureComponent<Props, State> {
 }
 
 TransactionSummary.contextType = ThemeContext;
+
+export default TransactionSummary;

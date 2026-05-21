@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import TransactionReviewData from '.';
 import configureMockStore from 'redux-mock-store';

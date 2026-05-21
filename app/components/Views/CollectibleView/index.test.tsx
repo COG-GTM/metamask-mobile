@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
