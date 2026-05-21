@@ -16,9 +16,9 @@ import Device from '../../../util/device';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { SuccessImportAccountIDs } from '../../../../e2e/selectors/ImportAccount/SuccessImportAccount.selectors';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,

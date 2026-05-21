@@ -35,7 +35,7 @@ import {
   selectConversionRate,
   selectCurrentCurrency,
 } from '../../../selectors/currencyRateController';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../reducers';
 
 const IMAGE_3_RATIO = 281 / 354;
@@ -45,7 +45,7 @@ const DEVICE_WIDTH = Dimensions.get('window').width;
 
 const IMG_PADDING = Device.isIphone5() ? 220 : 200;
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     scroll: {
       flexGrow: 1,

@@ -14,9 +14,9 @@ import Routes from '../../../../../app/constants/navigation/Routes';
 import { ContactsViewSelectorIDs } from '../../../../../e2e/selectors/Settings/Contacts/ContacsView.selectors';
 import { selectAddressBook } from '../../../../selectors/addressBookController';
 import { RootState } from '../../../../reducers';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -49,11 +49,9 @@ interface ContactsProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface ContactsState {
-  [key: string]: unknown;
 }
 
 class Contacts extends PureComponent<ContactsProps, ContactsState> {

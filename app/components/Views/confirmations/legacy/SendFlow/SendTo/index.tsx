@@ -84,11 +84,9 @@ interface SendFlowProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface SendFlowState {
-  [key: string]: unknown;
 }
 
 class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {

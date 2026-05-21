@@ -10,13 +10,13 @@ import ConnectHeader from '../../../../../../UI/ConnectHeader';
 import formatNumber from '../../../../../../../util/formatNumber';
 import TransactionTypes from '../../../../../../../core/TransactionTypes';
 import { renderShortAddress } from '../../../../../../../util/address';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
 const {
   ASSET: { ERC20 },
 } = TransactionTypes;
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     uppercase: {
       textTransform: 'capitalize',
@@ -102,7 +102,6 @@ export default interface TransactionReviewDetailsCardProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 class TransactionReviewDetailsCard extends Component<TransactionReviewDetailsCardProps> {

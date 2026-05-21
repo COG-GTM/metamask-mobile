@@ -10,9 +10,9 @@ import collectiblesTransferInformation from '../../../util/collectibles-transfer
 import { newAssetTransaction } from '../../../actions/transaction';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import type { Dispatch } from 'redux';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     root: {
       flex: 1,

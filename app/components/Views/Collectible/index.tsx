@@ -14,9 +14,9 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
 import { RootState } from '../../../reducers';
 import type { Dispatch } from 'redux';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,

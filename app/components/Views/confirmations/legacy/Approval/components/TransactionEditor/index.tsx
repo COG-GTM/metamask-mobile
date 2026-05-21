@@ -77,11 +77,9 @@ interface TransactionEditorProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface TransactionEditorState {
-  [key: string]: unknown;
 }
 
 class TransactionEditor extends PureComponent<TransactionEditorProps, TransactionEditorState> {

@@ -7,9 +7,9 @@ import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
 import { AddBookmarkViewSelectorsIDs } from '../../../../e2e/selectors/Browser/AddBookmarkView.selectors';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,

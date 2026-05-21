@@ -5,9 +5,9 @@ import { strings } from '../../../../../../../../locales/i18n';
 import WarningMessage from '../../../SendFlow/WarningMessage';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
 import { isTestNet } from '../../../../../../../util/networks';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     confirmBadge: {
       ...fontStyles.normal,
@@ -76,7 +76,6 @@ interface TransactionReviewSummaryProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 class TransactionReviewSummary extends PureComponent<TransactionReviewSummaryProps> {

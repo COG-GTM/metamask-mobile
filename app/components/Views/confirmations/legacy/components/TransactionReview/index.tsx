@@ -59,13 +59,13 @@ import DevLogger from '../../../../../../core/SDKConnect/utils/DevLogger';
 import { selectNativeCurrencyByChainId } from '../../../../../../selectors/networkController';
 import { selectContractExchangeRatesByChainId } from '../../../../../../selectors/tokenRatesController';
 import SmartTransactionsMigrationBanner from '../SmartTransactionsMigrationBanner/SmartTransactionsMigrationBanner';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../../../../reducers';
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
 let intervalIdForEstimatedL1Fee;
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     tabUnderlineStyle: {
       height: 2,
@@ -140,11 +140,9 @@ interface TransactionReviewProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface TransactionReviewState {
-  [key: string]: unknown;
 }
 
 class TransactionReview extends PureComponent<TransactionReviewProps, TransactionReviewState> {

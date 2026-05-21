@@ -27,10 +27,10 @@ import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selecto
 import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
 import { selectProviderTypeByChainId } from '../../../../../../selectors/networkController';
 import { selectSignatureRequestById } from '../../../../../../selectors/signatureController';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../../../../reducers';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     messageText: {
       color: colors.text.default,
@@ -72,11 +72,9 @@ interface TypedSignProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface TypedSignState {
-  [key: string]: unknown;
 }
 
 class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {

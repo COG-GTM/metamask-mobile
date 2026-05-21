@@ -21,11 +21,11 @@ import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import AppConstants from '../../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -104,7 +104,6 @@ export default interface AppInformationProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 class AppInformation extends PureComponent<AppInformationProps> {

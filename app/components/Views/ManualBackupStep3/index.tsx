@@ -22,9 +22,9 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import OnboardingSuccess from '../OnboardingSuccess';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import type { Dispatch } from 'redux';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,

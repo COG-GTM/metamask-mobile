@@ -38,7 +38,7 @@ import Text, {
 import { MetaMetricsEvents } from '../../../../core/Analytics';
 import { MetricsEventBuilder } from '../../../../core/Analytics/MetricsEventBuilder';
 import { UserProfileProperty } from '../../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../../reducers';
 import type { Dispatch } from 'redux';
 
@@ -89,7 +89,7 @@ export const updateUserTraitsWithCurrencyType = (primaryCurrency, metrics) => {
   );
 };
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -178,11 +178,9 @@ interface SettingsProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface SettingsState {
-  [key: string]: unknown;
 }
 
 class Settings extends PureComponent<SettingsProps, SettingsState> {

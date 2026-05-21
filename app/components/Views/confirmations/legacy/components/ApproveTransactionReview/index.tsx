@@ -133,11 +133,9 @@ interface ApproveTransactionReviewProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface ApproveTransactionReviewState {
-  [key: string]: unknown;
 }
 
 class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewProps, ApproveTransactionReviewState> {

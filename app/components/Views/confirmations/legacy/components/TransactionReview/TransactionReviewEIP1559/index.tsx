@@ -13,9 +13,9 @@ import useModalHandler from '../../../../../../Base/hooks/useModalHandler';
 import AppConstants from '../../../../../../../core/AppConstants';
 import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     overview: (noMargin) => ({
       marginHorizontal: noMargin ? 0 : 24,
@@ -104,7 +104,6 @@ interface TransactionReviewEIP1559Props {
   onGasCanceled?: (gas: Record<string, unknown>) => void;
   view: string;
   analyticsParams: Record<string, unknown>;
-  [key: string]: unknown;
 }
 
 const TransactionReviewEIP1559 = ({

@@ -41,7 +41,6 @@ interface UpdateEIP1559TxProps {
   onSave: (gasObj: Record<string, unknown>, gasTxn: Record<string, unknown>) => void;
   error: string;
   analyticsParams: Record<string, unknown>;
-  [key: string]: unknown;
 }
 
 const UpdateEIP1559Tx = ({

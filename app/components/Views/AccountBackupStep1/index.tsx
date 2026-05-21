@@ -33,10 +33,10 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import Routes from '../../../../app/constants/navigation/Routes';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import SRPDesign from '../../../images/srp-lock-design.png';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import type { Dispatch } from 'redux';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,

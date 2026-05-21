@@ -70,7 +70,7 @@ import {
   /* eslint-enable no-restricted-syntax */
   selectProviderTypeByChainId,
 } from '../../../../../selectors/networkController';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../../../reducers';
 import type { Dispatch } from 'redux';
 
@@ -78,7 +78,7 @@ const REVIEW = 'review';
 const EDIT = 'edit';
 const SEND = 'Send';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -109,11 +109,9 @@ interface SendProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface SendState {
-  [key: string]: unknown;
 }
 
 class Send extends PureComponent<SendProps, SendState> {

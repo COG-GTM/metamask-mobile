@@ -50,9 +50,9 @@ import { trace, TraceName, TraceOperation } from '../../../util/trace';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import { RootState } from '../../../reducers';
 import type { Dispatch } from 'redux';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     scroll: {
       flex: 1,
@@ -153,11 +153,9 @@ interface OnboardingProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface OnboardingState {
-  [key: string]: unknown;
 }
 
 class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {

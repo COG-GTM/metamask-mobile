@@ -90,11 +90,9 @@ interface ApprovalProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface ApprovalState {
-  [key: string]: unknown;
 }
 
 class Approval extends PureComponent<ApprovalProps, ApprovalState> {

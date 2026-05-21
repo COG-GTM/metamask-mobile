@@ -59,11 +59,11 @@ import { selectShouldUseSmartTransaction } from '../../../../../../../selectors/
 import { getNetworkNonce } from '../../../../../../../util/transaction-controller';
 import { selectNativeCurrencyByChainId } from '../../../../../../../selectors/networkController';
 import { selectContractExchangeRatesByChainId } from '../../../../../../../selectors/tokenRatesController';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../../../../../reducers';
 import type { Dispatch } from 'redux';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     overviewAlert: {
       alignItems: 'center',
@@ -147,11 +147,9 @@ interface TransactionReviewInformationProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface TransactionReviewInformationState {
-  [key: string]: unknown;
 }
 
 class TransactionReviewInformation extends PureComponent<TransactionReviewInformationProps, TransactionReviewInformationState> {

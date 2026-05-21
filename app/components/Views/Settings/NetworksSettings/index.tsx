@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../../reducers';
 import ActionSheet from '@metamask/react-native-actionsheet';
 import { fontStyles } from '../../../../styles/common';
@@ -50,7 +50,7 @@ import { SolScope } from '@metamask/keyring-api';
 import { selectNonEvmNetworkConfigurationsByChainId } from '../../../../selectors/multichainNetworkController';
 ///: END:ONLY_INCLUDE_IF
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -139,11 +139,9 @@ interface NetworksSettingsProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface NetworksSettingsState {
-  [key: string]: unknown;
 }
 
 class NetworksSettings extends PureComponent<NetworksSettingsProps, NetworksSettingsState> {

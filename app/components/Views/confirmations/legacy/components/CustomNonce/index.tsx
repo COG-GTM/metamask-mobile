@@ -3,9 +3,9 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { strings } from '../../../../../../../locales/i18n';
 import Text from '../../../../../Base/Text';
 import { useTheme } from '../../../../../../util/theme';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     customNonce: {
       marginTop: 10,

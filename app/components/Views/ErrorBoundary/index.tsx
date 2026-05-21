@@ -40,11 +40,11 @@ import {
 import AppConstants from '../../../core/AppConstants';
 import { useSelector } from 'react-redux';
 import { isTest } from '../../../util/test/utils';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 // eslint-disable-next-line import/no-commonjs
 const WarningIcon = require('./warning-icon.png');
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     container: {
       flex: 1,

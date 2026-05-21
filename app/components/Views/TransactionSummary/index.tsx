@@ -11,9 +11,9 @@ import Summary from '../../Base/Summary';
 import Text from '../../Base/Text';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { isTestNet } from '../../../util/networks';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     loader: {
       backgroundColor: colors.background.default,

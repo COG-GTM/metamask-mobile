@@ -20,7 +20,7 @@ import withQRHardwareAwareness from '../../../../../UI/QRHardware/withQRHardware
 import WebsiteIcon from '../../../../../UI/WebsiteIcon';
 import BlockaidBanner from '../BlockaidBanner/BlockaidBanner';
 import { ResultType } from '../BlockaidBanner/BlockaidBanner.types';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../../../../reducers';
 
 const getCleanUrl = (url) => {
@@ -33,7 +33,7 @@ const getCleanUrl = (url) => {
   }
 };
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -140,11 +140,9 @@ interface SignatureRequestProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface SignatureRequestState {
-  [key: string]: unknown;
 }
 
 class SignatureRequest extends PureComponent<SignatureRequestProps, SignatureRequestState> {

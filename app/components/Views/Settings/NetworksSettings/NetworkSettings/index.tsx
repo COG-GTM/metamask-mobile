@@ -8,7 +8,7 @@ import {
   Linking,
 } from 'react-native';
 import { connect } from 'react-redux';
-import { typography, Colors } from '@metamask/design-tokens';
+import { typography, ThemeColors } from '@metamask/design-tokens';
 import isUrl from 'is-url';
 import {
   fontStyles,
@@ -97,7 +97,7 @@ import Text, {
 import { RootState } from '../../../../../reducers';
 import type { Dispatch } from 'redux';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     base: {
       paddingHorizontal: 16,
@@ -415,11 +415,9 @@ export interface NetworkSettingsProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface NetworkSettingsState {
-  [key: string]: unknown;
 }
 
 class NetworkSettings extends PureComponent<NetworkSettingsProps, NetworkSettingsState> {

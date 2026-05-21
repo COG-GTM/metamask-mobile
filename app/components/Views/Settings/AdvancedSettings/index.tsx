@@ -44,11 +44,11 @@ import { wipeTransactions } from '../../../../util/transaction-controller';
 import AppConstants from '../../../../../app/core/AppConstants';
 import { downloadStateLogs } from '../../../../util/logs';
 import AutoDetectTokensSettings from '../AutoDetectTokensSettings';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../../reducers';
 import type { Dispatch } from 'redux';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -153,11 +153,9 @@ interface AdvancedSettingsProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface AdvancedSettingsState {
-  [key: string]: unknown;
 }
 
 class AdvancedSettings extends PureComponent<AdvancedSettingsProps, AdvancedSettingsState> {

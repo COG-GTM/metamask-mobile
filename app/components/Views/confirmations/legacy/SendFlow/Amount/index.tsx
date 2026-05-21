@@ -109,13 +109,13 @@ import { selectContractExchangeRatesByChainId } from '../../../../../../selector
 import { isNativeToken } from '../../../utils/generic';
 import { selectConfirmationRedesignFlags } from '../../../../../../selectors/featureFlagController/confirmations';
 import { MMM_ORIGIN } from '../../../constants/confirmations';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../../../../reducers';
 import type { Dispatch } from 'redux';
 
 const KEYBOARD_OFFSET = Device.isSmallDevice() ? 80 : 120;
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -394,11 +394,9 @@ interface AmountProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface AmountState {
-  [key: string]: unknown;
 }
 
 class Amount extends PureComponent<AmountProps, AmountState> {

@@ -165,11 +165,9 @@ interface ConfirmProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface ConfirmState {
-  [key: string]: unknown;
 }
 
 class Confirm extends PureComponent<ConfirmProps, ConfirmState> {

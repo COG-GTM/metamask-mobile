@@ -4,9 +4,9 @@ import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
 import Text from '../../../../../../Base/Text';
 import Spinner from '../../../../../../UI/AnimatedSpinner';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,

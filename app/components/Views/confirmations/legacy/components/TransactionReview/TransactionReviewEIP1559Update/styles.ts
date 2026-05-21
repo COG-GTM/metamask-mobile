@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     overview: (noMargin) => ({
       marginHorizontal: noMargin ? 0 : 24,

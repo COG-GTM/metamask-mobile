@@ -22,10 +22,10 @@ import Routes from '../../../constants/navigation/Routes';
 import { CommonActions } from '@react-navigation/native';
 import trackErrorAsAnalytics from '../../../util/metrics/TrackError/trackErrorAsAnalytics';
 import { RootState } from '../../../reducers';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
 const LOGO_SIZE = 175;
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     container: {
       backgroundColor: colors.background.default,

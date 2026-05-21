@@ -21,9 +21,9 @@ import { AssetWatcherSelectorsIDs } from '../../../../../../../e2e/selectors/Tra
 import { getDecimalChainId } from '../../../../../../util/networks';
 import { useMetrics } from '../../../../../../components/hooks/useMetrics';
 import Logger from '../../../../../../util/Logger';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -104,7 +104,6 @@ interface WatchAssetRequestProps {
   onCancel: () => void;
   onConfirm: () => void;
   currentPageInformation: Record<string, unknown>;
-  [key: string]: unknown;
 }
 
 const WatchAssetRequest = ({

@@ -35,10 +35,10 @@ import { AddContactViewSelectorsIDs } from '../../../../../../e2e/selectors/Sett
 import { selectInternalAccounts } from '../../../../../selectors/accountsController';
 import { toLowerCaseEquals } from '../../../../../util/general';
 import { selectAddressBook } from '../../../../../selectors/addressBookController';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../../../reducers';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -131,11 +131,9 @@ interface ContactFormProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface ContactFormState {
-  [key: string]: unknown;
 }
 
 class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {

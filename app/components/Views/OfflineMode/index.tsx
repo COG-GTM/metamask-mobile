@@ -14,9 +14,9 @@ import { connect } from 'react-redux';
 import { getInfuraBlockedSelector } from '../../../reducers/infuraAvailability';
 import { useTheme } from '../../../util/theme';
 import { RootState } from '../../../reducers';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     container: {
       flex: 1,

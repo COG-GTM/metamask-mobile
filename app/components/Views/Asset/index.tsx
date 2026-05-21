@@ -70,10 +70,10 @@ import { selectSupportedSwapTokenAddressesForChainId } from '../../../selectors/
 import { isNonEvmChainId } from '../../../core/Multichain/utils';
 import { isBridgeAllowed } from '../../UI/Bridge/utils';
 import { getIsSwapsAssetAllowed, getSwapsIsLive } from './utils';
-import type { Colors } from '@metamask/design-tokens';
+import type { ThemeColors } from '@metamask/design-tokens';
 import type { Dispatch } from 'redux';
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -145,11 +145,9 @@ interface AssetProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
-  [key: string]: unknown;
 }
 
 interface AssetState {
-  [key: string]: unknown;
 }
 
 class Asset extends PureComponent<AssetProps, AssetState> {

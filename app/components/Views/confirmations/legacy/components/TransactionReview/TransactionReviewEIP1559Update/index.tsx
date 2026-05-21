@@ -39,7 +39,6 @@ interface TransactionReviewEIP1559UpdateProps {
   onGasCanceled?: (gas: Record<string, unknown>) => void;
   view: string;
   analyticsParams: Record<string, unknown>;
-  [key: string]: unknown;
 }
 
 const TransactionReviewEIP1559Update = ({
