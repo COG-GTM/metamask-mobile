@@ -1,3 +1,4 @@
+import URL from 'url-parse';
 import { strings } from '../../../locales/i18n';
 
 /**

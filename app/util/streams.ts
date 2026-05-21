@@ -34,6 +34,10 @@ export function setupMultiplex(connectionStream: Duplex): {
   [key: string]: unknown;
 } {
   const mux = new ObjectMultiplex();
-  pump(connectionStream, mux, connectionStream);
+  pump(connectionStream, mux, connectionStream, (err: Error | undefined) => {
+    if (err) {
+      console.warn(err);
+    }
+  });
   return mux;
 }
