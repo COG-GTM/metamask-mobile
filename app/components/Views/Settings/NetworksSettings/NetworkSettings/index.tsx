@@ -444,7 +444,7 @@ export interface NetworkSettingsProps {
 interface NetworkSettingsState {
 }
 
-class NetworkSettings extends PureComponent<NetworkSettingsProps, NetworkSettingsState> {
+export class NetworkSettings extends PureComponent<NetworkSettingsProps, NetworkSettingsState> {
 
   state = {
     rpcUrl: undefined,
