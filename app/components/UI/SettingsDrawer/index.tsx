@@ -112,7 +112,4 @@ const SettingsDrawer = ({
   );
 };
 
-SettingsDrawer.propTypes = propTypes;
-SettingsDrawer.defaultProps = defaultProps;
-
 export default SettingsDrawer;

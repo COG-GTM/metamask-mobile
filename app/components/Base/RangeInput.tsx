@@ -106,7 +106,7 @@ const RangeInput = ({
   rightLabelComponent,
   value,
   unit,
-  increment,
+  increment = 1,
   onChangeValue,
   inputInsideLabel,
   error,
