@@ -99,15 +99,15 @@ export const constructTitleAndMessage = (
       break;
     case NotificationTransactionTypes.received:
       title = strings('notifications.received_title', {
-        amount: notification.transaction!.amount,
-        assetType: notification.transaction!.assetType,
+        amount: notification.transaction?.amount,
+        assetType: notification.transaction?.assetType,
       });
       message = strings('notifications.received_message');
       break;
     case NotificationTransactionTypes.received_payment:
       title = strings('notifications.received_payment_title');
       message = strings('notifications.received_payment_message', {
-        amount: notification.transaction!.amount,
+        amount: notification.transaction?.amount,
       });
       break;
     default:
@@ -233,8 +233,7 @@ class NotificationManager {
     const nonce = transactionMeta.txParams.nonce;
     if (!nonce) return;
     const transaction = this._transactionsWatchTable[nonce];
-    transaction &&
-      transaction.length &&
+    transaction?.length &&
       setTimeout(() => {
         // Then we show the error notification
         this._showNotification({

@@ -1,4 +1,5 @@
 /* eslint-disable import/no-commonjs */
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import {
   createSelectedNetworkMiddleware,
@@ -128,7 +129,7 @@ export class BackgroundBridge extends EventEmitter {
     this.isWalletConnect = isWalletConnect;
     this.isMMSDK = isMMSDK;
     this.isRemoteConn = isRemoteConn;
-    this._webviewRef = webview && webview.current;
+    this._webviewRef = webview?.current;
     this.disconnected = false;
     this.getApprovedHosts = getApprovedHosts as ((...args: unknown[]) => unknown) | undefined;
     this.channelId = channelId;
@@ -137,6 +138,7 @@ export class BackgroundBridge extends EventEmitter {
     this.createMiddleware = getRpcMethodMiddleware;
 
     this.port = isRemoteConn
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       ? new RemotePort(sendMessage!)
       : this.isWalletConnect
       ? new WalletConnectPort(wcRequestActions)
@@ -214,6 +216,7 @@ export class BackgroundBridge extends EventEmitter {
           const selectedAddress = this.getState().selectedAddress;
           this.notifySelectedAddressChanged(selectedAddress);
         },
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         (state: { subjects: Record<string, unknown> }) => state.subjects[this.channelId!],
       );
     } catch (err) {
@@ -454,7 +457,7 @@ export class BackgroundBridge extends EventEmitter {
 
     pump(outStream, providerStream, outStream, (err: Error | null) => {
       // handle any middleware cleanup
-      this.engine!.destroy();
+      this.engine?.destroy();
       if (err) Logger.log('Error with provider stream conn', err);
     });
   }
@@ -621,7 +624,7 @@ export class BackgroundBridge extends EventEmitter {
 
   sendNotification(payload: { method: string; params: unknown }) {
     DevLogger.log(`BackgroundBridge::sendNotification: `, payload);
-    this.engine && this.engine.emit('notification', payload);
+    this.engine?.emit('notification', payload);
   }
 
   /**

@@ -23,6 +23,7 @@ import { strings } from '../../../locales/i18n';
 import NotificationManager from '../NotificationManager';
 import { msBetweenDates, msToHours } from '../../util/date';
 import { addTransaction } from '../../util/transaction-controller';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import { parseWalletConnectUri } from './wc-utils';
 import { store } from '../../store';
@@ -136,6 +137,7 @@ class WalletConnect {
       ...options,
       ...CLIENT_OPTIONS,
     });
+    // eslint-disable-next-line jsdoc/check-indentation
     /**
      *  Subscribe to session requests
      */
@@ -172,6 +174,7 @@ class WalletConnect {
       },
     );
 
+    // eslint-disable-next-line jsdoc/check-indentation
     /**
      *  Subscribe to call requests
      */
@@ -189,6 +192,7 @@ class WalletConnect {
         }
 
         if (payload.method) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const payloadUrl = this.walletConnector.session.peerMeta!.url;
           const payloadHostname = new URL(payloadUrl).hostname;
           if (payloadHostname === this.backgroundBridge?.hostname) {
@@ -203,7 +207,7 @@ class WalletConnect {
             // We have to implement this method here since the eth_sendTransaction in Engine is not working because we can't send correct origin
             if (payload.method === 'eth_sendTransaction') {
               try {
-                const selectedAddress =
+                const _selectedAddress =
                   Engine.context.AccountsController.getSelectedAccount().address?.toLowerCase();
 
                 const chainId = payload.params[0].chainId as string;
@@ -250,10 +254,10 @@ class WalletConnect {
                   id: payload.id,
                   result: hash,
                 });
-              } catch (error) {
+              } catch (txError) {
                 this.rejectRequest({
                   id: payload.id,
-                  error,
+                  error: txError,
                 });
               }
               return;
@@ -306,6 +310,7 @@ class WalletConnect {
         Linking.openURL(
           this.dappScheme.current
             ? `${this.dappScheme.current}://`
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             : this.redirectUrl!,
         );
       } else {
@@ -368,6 +373,7 @@ class WalletConnect {
       persistSessions();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.url.current = sessionData.peerMeta!.url;
     this.title.current = sessionData.peerMeta?.name ?? null;
     this.icon.current = sessionData.peerMeta?.icons?.[0] ?? null;
@@ -409,13 +415,14 @@ class WalletConnect {
 
   killSession = () => {
     this.backgroundBridge?.onDisconnect();
-    this.walletConnector && this.walletConnector.killSession();
+    this.walletConnector?.killSession();
     this.walletConnector = null as unknown as RNWalletConnect;
   };
 
   sessionRequest = async (peerInfo: WalletConnectSessionExtended) => {
     const { ApprovalController } = Engine.context;
     try {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const { host } = new URL(peerInfo.peerMeta!.url);
       return await ApprovalController.add({
         id: random(),
@@ -482,6 +489,7 @@ const instance = {
         ...connector.walletConnector.session,
       }));
     if (sessions.length >= AppConstants.WALLET_CONNECT.LIMIT_SESSIONS) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await this.killSession(sessions[0].peerId!);
     }
 
@@ -511,9 +519,7 @@ const instance = {
     // 1) First kill the session
     const connectorToKill = connectors.find(
       (connector) =>
-        connector &&
-        connector.walletConnector &&
-        connector.walletConnector.session.peerId === id,
+        connector?.walletConnector?.session.peerId === id,
     );
     if (connectorToKill) {
       await connectorToKill.killSession();
@@ -521,9 +527,7 @@ const instance = {
     // 2) Remove from the list of connectors
     connectors = connectors.filter(
       (connector) =>
-        connector &&
-        connector.walletConnector &&
-        connector.walletConnector.connected &&
+        connector?.walletConnector?.connected &&
         connector.walletConnector.session.peerId !== id,
     );
     // 3) Persist the list

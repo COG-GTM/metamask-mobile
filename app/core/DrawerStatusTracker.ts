@@ -26,9 +26,9 @@ const SharedDrawerStatusTracker = {
     instance = new DrawerStatusTracker();
   },
   setStatus: (status: DrawerStatus) => {
-    instance!.setStatus(status);
+    instance?.setStatus(status);
   },
-  getStatus: (): DrawerStatus => (instance!.open ? 'open' : 'closed'),
+  getStatus: (): DrawerStatus => (instance?.open ? 'open' : 'closed'),
   hub,
 };
 

@@ -58,7 +58,7 @@ export default class PortDuplexStream extends Duplex {
    * @private
    */
   _onDisconnect = function (this: PortDuplexStream) {
-    this.destroy && this.destroy();
+    this.destroy?.();
   };
 
   /**
