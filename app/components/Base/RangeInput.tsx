@@ -94,7 +94,7 @@ interface Props {
   unit?: string;
   increment?: number | BigNumber;
   onChangeValue: (value: string) => void;
-  inputInsideLabel?: boolean;
+  inputInsideLabel?: string;
   error?: string;
   min?: number | BigNumber;
   max?: number | BigNumber;
