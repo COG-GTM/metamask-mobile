@@ -49,6 +49,8 @@ interface ContactsProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  addressBook?: Record<string, unknown>;
+  chainId?: string;
 }
 
 interface ContactsState {
@@ -80,7 +82,7 @@ class Contacts extends PureComponent<ContactsProps, ContactsState> {
     this.updateNavBar();
   };
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate = (prevProps: Record<string, unknown>) => {
     this.updateNavBar();
     const { chainId } = this.props;
     if (
@@ -99,7 +101,7 @@ class Contacts extends PureComponent<ContactsProps, ContactsState> {
     }, 100);
   };
 
-  onAddressLongPress = (address) => {
+  onAddressLongPress = (address: string) => {
     this.contactAddressToRemove = address;
     this.actionSheet && this.actionSheet.show();
   };
@@ -111,7 +113,7 @@ class Contacts extends PureComponent<ContactsProps, ContactsState> {
     this.updateAddressList();
   };
 
-  onAddressPress = (address) => {
+  onAddressPress = (address: string) => {
     this.props.navigation.navigate('ContactForm', {
       mode: EDIT,
       editMode: EDIT,
@@ -124,7 +126,7 @@ class Contacts extends PureComponent<ContactsProps, ContactsState> {
     this.props.navigation.navigate('ContactForm', { mode: ADD });
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: unknown) => {
     this.actionSheet = ref;
   };
 
@@ -173,7 +175,7 @@ class Contacts extends PureComponent<ContactsProps, ContactsState> {
           cancelButtonIndex={1}
           destructiveButtonIndex={0}
           // eslint-disable-next-line react/jsx-no-bind
-          onPress={(index) => (index === 0 ? this.deleteContact() : null)}
+          onPress={(index: number) => (index === 0 ? this.deleteContact() : null)}
           theme={themeAppearance}
         />
       </SafeAreaView>

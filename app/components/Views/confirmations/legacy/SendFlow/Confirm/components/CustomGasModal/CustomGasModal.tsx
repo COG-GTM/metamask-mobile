@@ -24,6 +24,9 @@ interface CustomGasModalProps {
   view: string;
   selectedQuote: Record<string, unknown>;
   hideSomething: boolean;
+  EIP1559GasData?: unknown;
+  EIP1559GasTxn?: unknown;
+  legacyGasData?: unknown;
 }
 
 const CustomGasModal = ({
@@ -71,7 +74,7 @@ const CustomGasModal = ({
     gas_estimate_type: gasEstimateType,
   });
 
-  const onChangeGas = (gasValue) => {
+  const onChangeGas = (gasValue: string) => {
     setSelectedGas(gasValue);
     onGasChanged(selectedGas);
   };
@@ -90,7 +93,7 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: Record<string, unknown>, gasObj: Record<string, unknown>) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalHex,
@@ -103,7 +106,7 @@ const CustomGasModal = ({
   );
 
   const onSaveEIP1559GasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: Record<string, unknown>, gasObj: Record<string, unknown>) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalMaxHex,

@@ -72,6 +72,8 @@ const wordmarkDark = require('../../../animations/wordmark-dark.json');
  */
 interface OwnProps {
   bioStateMachineId?: string;
+  message?: unknown;
+  play?: unknown;
 }
 
 interface StateProps {

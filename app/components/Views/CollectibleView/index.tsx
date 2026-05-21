@@ -49,6 +49,11 @@ interface OwnProps {
       collectible?: Record<string, unknown>;
     };
   };
+  assetOverviewWrapper?: unknown;
+  contractName?: unknown;
+  flexRow?: unknown;
+  newAssetTransaction?: Record<string, unknown>;
+  scrollViewRef?: unknown;
 }
 
 interface StateProps {
@@ -142,7 +147,7 @@ class CollectibleView extends PureComponent<Props> {
 CollectibleView.contextType = ThemeContext;
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  newAssetTransaction: (selectedAsset) =>
+  newAssetTransaction: (selectedAsset: Record<string, unknown>) =>
     dispatch(newAssetTransaction(selectedAsset)),
 });
 

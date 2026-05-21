@@ -130,6 +130,8 @@ const createStyles = (colors: ThemeColors) =>
  */
 interface DispatchProps {
   setOnboardingWizardStep: (step: number) => void;
+  button?: unknown;
+  reset?: unknown;
 }
 
 interface OwnProps {

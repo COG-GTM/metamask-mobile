@@ -147,6 +147,37 @@ interface TransactionReviewInformationProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  EIP1559GasData?: unknown;
+  animateOnChange?: unknown;
+  chainId?: string;
+  contractExchangeRates?: Record<string, unknown>;
+  conversionRate?: number;
+  currentCurrency?: string;
+  edit?: unknown;
+  error?: unknown;
+  gasEstimateType?: string;
+  gasSelected?: unknown;
+  isAnimating?: unknown;
+  isNativeTokenBuySupported?: unknown;
+  metrics?: unknown;
+  multiLayerL1FeeTotal?: unknown;
+  networkClientId?: unknown;
+  nonceModalVisible?: unknown;
+  onCancelPress?: unknown;
+  onUpdatingValuesEnd?: unknown;
+  onUpdatingValuesStart?: unknown;
+  origin?: unknown;
+  originWarning?: unknown;
+  over?: unknown;
+  primaryCurrency?: string;
+  ready?: unknown;
+  setNonce?: (nonce: string) => void;
+  setProposedNonce?: (nonce: string) => void;
+  shouldUseSmartTransaction?: unknown;
+  showCustomNonce?: boolean;
+  ticker?: string;
+  toggleDataView?: unknown;
+  transaction?: unknown;
 }
 
 interface TransactionReviewInformationState {
@@ -191,12 +222,12 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
   };
 
   getTotalFiat = (
-    asset,
-    totalGas,
-    conversionRate,
-    exchangeRate,
-    currentCurrency,
-    amountToken,
+    asset: Record<string, unknown>,
+    totalGas: unknown,
+    conversionRate: unknown,
+    exchangeRate: unknown,
+    currentCurrency: unknown,
+    amountToken: unknown,
   ) => {
     let total = 0;
     const gasFeeFiat = weiToFiatNumber(totalGas, conversionRate);
@@ -232,7 +263,7 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
     edit && edit();
   };
 
-  getRenderTotals = (totalGas, totalGasFiat) => {
+  getRenderTotals = (totalGas: unknown, totalGasFiat: unknown) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
@@ -681,8 +712,8 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setNonce: (nonce) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
+  setNonce: (nonce: string) => dispatch(setNonce(nonce)),
+  setProposedNonce: (nonce: string) => dispatch(setProposedNonce(nonce)),
 });
 
 TransactionReviewInformation.contextType = ThemeContext;

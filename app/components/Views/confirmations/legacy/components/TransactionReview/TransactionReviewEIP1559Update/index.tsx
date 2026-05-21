@@ -39,6 +39,42 @@ interface TransactionReviewEIP1559UpdateProps {
   onGasCanceled?: (gas: Record<string, unknown>) => void;
   view: string;
   analyticsParams: Record<string, unknown>;
+  amountContainer?: unknown;
+  flex?: unknown;
+  gasBottomRowContainer?: unknown;
+  gasEstimationReady?: unknown;
+  gasFeeMaxNative?: unknown;
+  gasInfoContainer?: unknown;
+  gasInfoIcon?: unknown;
+  gasObject?: unknown;
+  gasObjectLegacy?: unknown;
+  gasRowContainer?: unknown;
+  hitSlop?: unknown;
+  legacy?: unknown;
+  multiLayerL1FeeTotal?: unknown;
+  noMargin?: unknown;
+  onlyGas?: unknown;
+  originWarning?: unknown;
+  overview?: unknown;
+  redInfo?: unknown;
+  renderableGasFeeMaxConversion?: unknown;
+  renderableGasFeeMaxNative?: unknown;
+  renderableGasFeeMinConversion?: unknown;
+  renderableGasFeeMinNative?: unknown;
+  renderableTotalMaxNative?: unknown;
+  renderableTotalMinConversion?: unknown;
+  renderableTotalMinNative?: unknown;
+  suggestedGasLimit?: unknown;
+  timeEstimate?: unknown;
+  timeEstimateColor?: unknown;
+  timeEstimateContainer?: unknown;
+  timeEstimateId?: unknown;
+  transactionFee?: unknown;
+  transactionFeeFiat?: unknown;
+  transactionTotalAmount?: unknown;
+  transactionTotalAmountFiat?: unknown;
+  updateTransactionState?: (state: Record<string, unknown>) => void;
+  valuesContainer?: unknown;
 }
 
 const TransactionReviewEIP1559Update = ({
@@ -129,7 +165,7 @@ const TransactionReviewEIP1559Update = ({
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
-  const switchNativeCurrencyDisplayOptions = (nativeValue, fiatValue) => {
+  const switchNativeCurrencyDisplayOptions = (nativeValue: unknown, fiatValue: unknown) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
   };

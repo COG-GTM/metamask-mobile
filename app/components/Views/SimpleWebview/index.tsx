@@ -18,6 +18,7 @@ export default interface Props {
       title?: string;
     };
   };
+  setParams?: unknown;
 }
 
 interface State {

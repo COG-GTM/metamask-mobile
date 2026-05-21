@@ -51,6 +51,10 @@ interface Props {
       onAddBookmark?: (bookmark: { name: string; url: string }) => void;
     };
   };
+  addToken?: unknown;
+  focus?: unknown;
+  warningDecimals?: unknown;
+  warningSymbol?: unknown;
 }
 
 interface State {

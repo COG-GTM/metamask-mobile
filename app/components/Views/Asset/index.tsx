@@ -145,6 +145,23 @@ interface AssetProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  chainId?: string;
+  conversionRate?: number;
+  currentCurrency?: string;
+  isNetworkBuyNativeTokenSupported?: unknown;
+  isNetworkRampSupported?: unknown;
+  mounted?: unknown;
+  networkConfigurations?: Record<string, unknown>;
+  rpcUrl?: unknown;
+  searchDiscoverySwapsTokens?: unknown;
+  selectedInternalAccount?: Record<string, unknown>;
+  setLiveness?: unknown;
+  swapsIsLive?: unknown;
+  swapsTokens?: Record<string, unknown>;
+  swapsTransactions?: Record<string, unknown>;
+  toLowerCase?: unknown;
+  tokens?: unknown[];
+  transactions?: unknown[];
 }
 
 interface AssetState {
@@ -223,7 +240,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
     this.updateNavBar(contentOffset);
   };
 
-  checkLiveness = async (chainId) => {
+  checkLiveness = async (chainId: string) => {
     try {
       const featureFlags = await swapsUtils.fetchSwapsFeatureFlags(
         getFeatureFlagChainId(chainId),
@@ -258,7 +275,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Record<string, unknown>) {
     if (
       prevProps.chainId !== this.props.chainId ||
       prevProps.selectedInternalAccount.address !==
@@ -280,10 +297,10 @@ class Asset extends PureComponent<AssetProps, AssetState> {
     this.mounted = false;
   }
 
-  didTxStatusesChange = (newTxsPending) =>
+  didTxStatusesChange = (newTxsPending: boolean) =>
     this.txsPending.length !== newTxsPending.length;
 
-  ethFilter = (tx) => {
+  ethFilter = (tx: Record<string, unknown>) => {
     const { networkId } = store.getState().inpageProvider;
     const { chainId } = this.props;
     const {
@@ -313,7 +330,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
     return false;
   };
 
-  noEthFilter = (tx) => {
+  noEthFilter = (tx: Record<string, unknown>) => {
     const { networkId } = store.getState().inpageProvider;
 
     const { chainId, swapsTransactions } = this.props;
@@ -547,7 +564,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
 
 Asset.contextType = ThemeContext;
 
-const mapStateToProps = (state, { route }) => ({
+const mapStateToProps = (state: RootState, { route }) => ({
   swapsIsLive: getSwapsIsLive(state, route.params.chainId),
   swapsTokens: isPortfolioViewEnabled()
     ? swapsTokensMultiChainObjectSelector(state)
@@ -577,7 +594,7 @@ const mapStateToProps = (state, { route }) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setLiveness: (chainId, featureFlags) =>
+  setLiveness: (chainId: string, featureFlags: Record<string, unknown>) =>
     dispatch(setSwapsLiveness(chainId, featureFlags)),
 });
 

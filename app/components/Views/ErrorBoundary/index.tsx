@@ -408,6 +408,11 @@ interface ErrorBoundaryProps {
     createEventBuilder: (event: unknown) => { addProperties: (props: Record<string, unknown>) => { build: () => Record<string, unknown> } };
   };
   view?: string;
+  backupSeedphrase?: unknown;
+  copyErrorToClipboard?: unknown;
+  sentryId?: unknown;
+  stack?: unknown;
+  toString?: unknown;
 }
 
 interface ErrorBoundaryState {
@@ -421,11 +426,11 @@ interface ErrorBoundaryState {
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state = { error: null };
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: string | null) {
     return { error };
   }
 
-  generateErrorReport = (error, errorInfo = '') => {
+  generateErrorReport = (error: string | null, errorInfo = '') => {
     const {
       view,
       metrics: { trackEvent, createEventBuilder },
@@ -445,7 +450,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     );
   };
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: string | null, errorInfo: unknown) {
     // Note: Sentry briefly removed this in the next version but eventually added it back in later versions.
     // Read more here - https://github.com/getsentry/sentry-javascript/issues/11951
     const sentryId = getLatestSentryId();
@@ -486,7 +491,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     Linking.openURL(url);
   };
 
-  renderWithSafeArea = (children) => {
+  renderWithSafeArea = (children: unknown) => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 

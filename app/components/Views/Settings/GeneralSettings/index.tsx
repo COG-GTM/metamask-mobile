@@ -59,7 +59,7 @@ const infuraCurrencyOptions = sortedCurrencies.map(
   }),
 );
 
-export const updateUserTraitsWithCurrentCurrency = (currency, metrics) => {
+export const updateUserTraitsWithCurrentCurrency = (currency: unknown, metrics: unknown) => {
   // track event and add selected currency to user profile for analytics
   const traits = { [UserProfileProperty.CURRENT_CURRENCY]: currency };
   metrics.addTraitsToUser(traits);
@@ -73,7 +73,7 @@ export const updateUserTraitsWithCurrentCurrency = (currency, metrics) => {
   );
 };
 
-export const updateUserTraitsWithCurrencyType = (primaryCurrency, metrics) => {
+export const updateUserTraitsWithCurrencyType = (primaryCurrency: unknown, metrics: unknown) => {
   // track event and add primary currency preference (fiat/crypto) to user profile for analytics
   const traits = { [UserProfileProperty.PRIMARY_CURRENCY]: primaryCurrency };
   metrics.addTraitsToUser(traits);
@@ -178,6 +178,22 @@ interface SettingsProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  brandColors?: unknown;
+  colors?: unknown;
+  currentCurrency?: string;
+  hideZeroBalanceTokens?: boolean;
+  languageOptions?: unknown;
+  metrics?: unknown;
+  primaryCurrency?: string;
+  primaryCurrencyOptions?: unknown;
+  searchEngine?: string;
+  searchEngineOptions?: unknown;
+  selectedAddress?: string;
+  setHideZeroBalanceTokens?: (hide: boolean) => void;
+  setPrimaryCurrency?: (currency: string) => void;
+  setSearchEngine?: (engine: string) => void;
+  setUseBlockieIcon?: (use: boolean) => void;
+  useBlockieIcon?: boolean;
 }
 
 interface SettingsState {
@@ -190,30 +206,30 @@ class Settings extends PureComponent<SettingsProps, SettingsState> {
     languages: {},
   };
 
-  selectCurrency = async (currency) => {
+  selectCurrency = async (currency: unknown) => {
     const { CurrencyRateController } = Engine.context;
     CurrencyRateController.setCurrentCurrency(currency);
     updateUserTraitsWithCurrentCurrency(currency, this.props.metrics);
   };
 
-  selectLanguage = (language) => {
+  selectLanguage = (language: unknown) => {
     if (language === this.state.currentLanguage) return;
     setLocale(language);
     this.setState({ currentLanguage: language });
     setTimeout(() => this.props.navigation.navigate('Home'), 100);
   };
 
-  selectSearchEngine = (searchEngine) => {
+  selectSearchEngine = (searchEngine: unknown) => {
     this.props.setSearchEngine(searchEngine);
   };
 
-  selectPrimaryCurrency = (primaryCurrency) => {
+  selectPrimaryCurrency = (primaryCurrency: unknown) => {
     this.props.setPrimaryCurrency(primaryCurrency);
 
     updateUserTraitsWithCurrencyType(primaryCurrency, this.props.metrics);
   };
 
-  toggleHideZeroBalanceTokens = (toggleHideZeroBalanceTokens) => {
+  toggleHideZeroBalanceTokens = (toggleHideZeroBalanceTokens: unknown) => {
     this.props.setHideZeroBalanceTokens(toggleHideZeroBalanceTokens);
   };
 
@@ -495,12 +511,12 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setSearchEngine: (searchEngine) => dispatch(setSearchEngine(searchEngine)),
-  setPrimaryCurrency: (primaryCurrency) =>
+  setSearchEngine: (searchEngine: unknown) => dispatch(setSearchEngine(searchEngine)),
+  setPrimaryCurrency: (primaryCurrency: unknown) =>
     dispatch(setPrimaryCurrency(primaryCurrency)),
-  setUseBlockieIcon: (useBlockieIcon) =>
+  setUseBlockieIcon: (useBlockieIcon: unknown) =>
     dispatch(setUseBlockieIcon(useBlockieIcon)),
-  setHideZeroBalanceTokens: (hideZeroBalanceTokens) =>
+  setHideZeroBalanceTokens: (hideZeroBalanceTokens: unknown) =>
     dispatch(setHideZeroBalanceTokens(hideZeroBalanceTokens)),
 });
 

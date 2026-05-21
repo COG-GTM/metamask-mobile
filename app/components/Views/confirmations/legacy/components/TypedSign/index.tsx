@@ -72,6 +72,16 @@ interface TypedSignProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  currentPageInformation?: unknown;
+  message?: unknown;
+  messageParams?: unknown;
+  metrics?: unknown;
+  networkType?: string;
+  onConfirm?: () => void;
+  onReject?: () => void;
+  securityAlertResponse?: unknown;
+  showExpandedMessage?: unknown;
+  toggleExpandedMessage?: unknown;
 }
 
 interface TypedSignState {
@@ -160,7 +170,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
     }
   };
 
-  updateShouldTruncateMessage = (e) => {
+  updateShouldTruncateMessage = (e: Error) => {
     const truncateMessage = shouldTruncateMessage(e);
     this.setState({ truncateMessage });
   };
@@ -170,7 +180,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
     return createStyles(colors);
   };
 
-  renderTypedMessageV3 = (obj) => {
+  renderTypedMessageV3 = (obj: Record<string, unknown>) => {
     const styles = this.getStyles();
     return Object.keys(obj).map((key) => (
       <View style={styles.message} key={key}>
@@ -198,7 +208,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
     if (messageParams.version === 'V1') {
       return (
         <View style={styles.message}>
-          {messageParams.data.map((obj, i) => (
+          {messageParams.data.map((obj: Record<string, unknown>, i: number) => (
             <View key={`${obj.name}_${i}`}>
               <Text style={[styles.messageText, styles.msgKey]}>
                 {escapeSpecialUnicode(obj.name)}:

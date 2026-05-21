@@ -394,6 +394,42 @@ interface AmountProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  accounts?: Record<string, Record<string, unknown>>;
+  add?: unknown;
+  arrow?: unknown;
+  collectibleContracts?: unknown;
+  collectibles?: unknown[];
+  contractBalances?: Record<string, unknown>;
+  contractExchangeRates?: Record<string, unknown>;
+  conversionRate?: number;
+  currentBalance?: unknown;
+  currentCurrency?: string;
+  data?: unknown;
+  focus?: unknown;
+  gasEstimateType?: string;
+  gasFeeEstimates?: Record<string, unknown>;
+  globalChainId?: unknown;
+  globalNetworkClientId?: unknown;
+  isNetworkBuyNativeTokenSupported?: unknown;
+  isPaymentRequest?: boolean;
+  isRedesignedTransferConfirmationEnabled?: unknown;
+  maxFiatInput?: unknown;
+  metrics?: unknown;
+  onConfirm?: () => void;
+  prepareTransaction?: (transaction: Record<string, unknown>) => void;
+  primaryCurrency?: string;
+  providerType?: string;
+  resetTransaction?: () => void;
+  selectedAddress?: string;
+  selectedAsset?: Record<string, unknown>;
+  setMaxValueMode?: unknown;
+  setSelectedAsset?: (asset: Record<string, unknown>) => void;
+  swapsIsLive?: unknown;
+  ticker?: string;
+  to?: unknown;
+  tokens?: unknown[];
+  transactionState?: Record<string, unknown>;
+  value?: unknown;
 }
 
 interface AmountState {
@@ -674,7 +710,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     return collectibleTransferTransactionProperties;
   }
 
-  prepareTransaction = async (value) => {
+  prepareTransaction = async (value: string) => {
     const {
       prepareTransaction,
       selectedAsset,
@@ -709,7 +745,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
    * @param {string} - Crypto value
    * @returns - Whether there is an error with the amount
    */
-  validateAmount = (inputValue, internalPrimaryCurrencyIsCrypto) => {
+  validateAmount = (inputValue: unknown, internalPrimaryCurrencyIsCrypto: unknown) => {
     const { accounts, selectedAddress, selectedAsset, contractBalances } =
       this.props;
     const { estimatedTotalGas, inputValueConversion } = this.state;
@@ -822,7 +858,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     this.onInputChange(input, undefined, true);
   };
 
-  onInputChange = (inputValue, selectedAsset, useMax) => {
+  onInputChange = (inputValue: unknown, selectedAsset: Record<string, unknown>, useMax: unknown) => {
     const {
       contractExchangeRates,
       conversionRate,
@@ -922,7 +958,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     this.setState({ assetsModalVisible: !assetsModalVisible });
   };
 
-  handleSelectedAssetBalance = (selectedAsset, renderableBalance) => {
+  handleSelectedAssetBalance = (selectedAsset: Record<string, unknown>, renderableBalance: unknown) => {
     const { accounts, selectedAddress, contractBalances } = this.props;
     let currentBalance;
     if (renderableBalance) {
@@ -940,7 +976,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     this.setState({ currentBalance });
   };
 
-  pickSelectedAsset = (selectedAsset) => {
+  pickSelectedAsset = (selectedAsset: Record<string, unknown>) => {
     this.toggleAssetsModal();
     this.props.setSelectedAsset(selectedAsset);
     if (!selectedAsset.tokenId) {
@@ -957,14 +993,14 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     }
   };
 
-  assetKeyExtractor = (asset) => {
+  assetKeyExtractor = (asset: Record<string, unknown>) => {
     if (asset.tokenId) {
       return asset.address + asset.tokenId;
     }
     return asset.address;
   };
 
-  renderToken = (token, index) => {
+  renderToken = (token: string, index: number) => {
     const {
       accounts,
       selectedAddress,
@@ -1029,7 +1065,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     );
   };
 
-  renderCollectible = (collectible, index) => {
+  renderCollectible = (collectible: unknown, index: number) => {
     const { name } = collectible;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
@@ -1079,7 +1115,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         collectiblesTransferInformation[address].tradable;
       if (!isTradable) return;
       const collectibleContract = collectibleContracts.find(
-        (contract) => contract.address.toLowerCase() === address,
+        (contract: unknown) => contract.address.toLowerCase() === address,
       );
       if (!collectible.name) collectible.name = collectibleContract.name;
       if (!collectible.image) collectible.image = collectibleContract.logo;
@@ -1487,12 +1523,12 @@ const mapStateToProps = (state: RootState, ownProps: Record<string, unknown>) =>
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  prepareTransaction: (transaction) =>
+  prepareTransaction: (transaction: Record<string, unknown>) =>
     dispatch(prepareTransaction(transaction)),
-  setSelectedAsset: (selectedAsset) =>
+  setSelectedAsset: (selectedAsset: Record<string, unknown>) =>
     dispatch(setSelectedAsset(selectedAsset)),
   resetTransaction: () => dispatch(resetTransaction()),
-  setMaxValueMode: (maxValueMode) => dispatch(setMaxValueMode(maxValueMode)),
+  setMaxValueMode: (maxValueMode: unknown) => dispatch(setMaxValueMode(maxValueMode)),
 });
 
 export default connect(

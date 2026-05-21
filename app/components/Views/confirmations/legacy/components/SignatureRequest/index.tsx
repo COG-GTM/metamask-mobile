@@ -23,7 +23,7 @@ import { ResultType } from '../BlockaidBanner/BlockaidBanner.types';
 import type { ThemeColors } from '@metamask/design-tokens';
 import { RootState } from '../../../../../../reducers';
 
-const getCleanUrl = (url) => {
+const getCleanUrl = (url: string) => {
   try {
     const urlObject = new URL(url);
 
@@ -140,6 +140,20 @@ interface SignatureRequestProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  QRState?: Record<string, unknown>;
+  children?: unknown;
+  currentPageInformation?: unknown;
+  fromAddress?: string;
+  isSigningQRObject?: boolean;
+  metrics?: unknown;
+  networkType?: string;
+  onConfirm?: () => void;
+  onReject?: () => void;
+  securityAlertResponse?: unknown;
+  testID?: unknown;
+  toggleExpandedMessage?: unknown;
+  truncateMessage?: unknown;
+  type?: unknown;
 }
 
 interface SignatureRequestState {

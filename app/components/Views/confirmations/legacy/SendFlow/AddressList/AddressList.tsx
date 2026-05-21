@@ -17,7 +17,7 @@ import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
 
-const LabelElement = (styles, label) => (
+const LabelElement = (styles: unknown, label: string) => (
   <View key={label} style={styles.labelElementWrapper}>
     <Text variant={TextVariant.BodyMD} style={styles.contactLabel}>
       {label.toUpperCase()}
@@ -32,6 +32,11 @@ interface AddressListProps {
   onAccountLongPress: (address: string) => void;
   isAmbiguousAddress: boolean;
   onlyRenderAddressBook?: boolean;
+  isSmartContract?: unknown;
+  name?: unknown;
+  onIconPress?: unknown;
+  reloadAddressList?: unknown;
+  search?: unknown;
 }
 
 const AddressList = ({
@@ -58,8 +63,8 @@ const AddressList = ({
     [addressBook, chainId],
   );
   const parseAddressBook = useCallback(
-    (networkAddressBookList) => {
-      const contacts = networkAddressBookList.map((contact) => {
+    (networkAddressBookList: unknown) => {
+      const contacts = networkAddressBookList.map((contact: Record<string, unknown>) => {
         const isAmbiguousAddress =
           chainId &&
           ambiguousAddressEntries?.[chainId]?.includes(contact.address);
@@ -71,7 +76,7 @@ const AddressList = ({
       });
 
       Promise.all(
-        contacts.map((contact) =>
+        contacts.map((contact: Record<string, unknown>) =>
           isSmartContractAddress(contact.address, contact.chainId)
             .then((isSmartContract) => {
               if (isSmartContract) {
@@ -104,7 +109,7 @@ const AddressList = ({
           .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
           .forEach((initial) => {
             newContactElements.push(initial);
-            addressBookTree[initial].forEach((contact) => {
+            addressBookTree[initial].forEach((contact: Record<string, unknown>) => {
               newContactElements.push(contact);
             });
           });
@@ -184,7 +189,7 @@ const AddressList = ({
     );
   };
 
-  const renderElement = (addressElement) => {
+  const renderElement = (addressElement: unknown) => {
     if (typeof addressElement === 'string') {
       return LabelElement(styles, addressElement);
     }

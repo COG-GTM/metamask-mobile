@@ -153,6 +153,13 @@ interface OnboardingProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  disableNewPrivacyPolicyToast?: unknown;
+  loading?: unknown;
+  loadingMsg?: unknown;
+  metrics?: unknown;
+  passwordSet?: boolean;
+  setLoading?: unknown;
+  unsetLoading?: unknown;
 }
 
 interface OnboardingState {
@@ -165,7 +172,7 @@ class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
   actionXAnimated = new Animated.Value(0);
   detailsAnimated = new Animated.Value(0);
 
-  animatedTimingStart = (animatedRef, toValue) => {
+  animatedTimingStart = (animatedRef: unknown, toValue: unknown) => {
     Animated.timing(animatedRef, {
       toValue,
       duration: 500,
@@ -261,7 +268,7 @@ class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
     }
   };
 
-  handleExistingUser = (action) => {
+  handleExistingUser = (action: unknown) => {
     if (this.state.existingUser) {
       this.alertExistingUser(action);
     } else {
@@ -314,11 +321,11 @@ class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
     this.handleExistingUser(action);
   };
 
-  track = (event) => {
+  track = (event: Record<string, unknown>) => {
     trackOnboarding(MetricsEventBuilder.createEventBuilder(event).build());
   };
 
-  alertExistingUser = (callback) => {
+  alertExistingUser = (callback: () => void) => {
     this.warningCallback = () => {
       callback();
       this.toggleWarningModal();
@@ -484,7 +491,7 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setLoading: (msg) => dispatch(loadingSet(msg)),
+  setLoading: (msg: string) => dispatch(loadingSet(msg)),
   unsetLoading: () => dispatch(loadingUnset()),
   disableNewPrivacyPolicyToast: () =>
     dispatch(storePrivacyPolicyClickedOrClosedAction()),

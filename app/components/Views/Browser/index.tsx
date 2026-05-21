@@ -64,6 +64,10 @@ interface BrowserTab {
 interface OwnProps {
   route: RouteProp<Record<string, { url?: string; linkType?: string; showTabs?: boolean }>, string>;
   navigation: NavigationProp<Record<string, unknown>>;
+  existingTabId?: unknown;
+  length?: unknown;
+  newTabUrl?: unknown;
+  timestamp?: unknown;
 }
 
 interface StateProps {
@@ -342,7 +346,7 @@ export const Browser = (props: Props) => {
   );
 
   const takeScreenshot = useCallback(
-    (url, tabID) =>
+    (url: string, tabID: number) =>
       new Promise((resolve, reject) => {
         captureScreen({
           format: 'jpg',
@@ -390,7 +394,7 @@ export const Browser = (props: Props) => {
     }
   };
 
-  const closeTab = (tab) => {
+  const closeTab = (tab: Record<string, unknown>) => {
     // If the tab was selected we have to select
     // the next one, and if there's no next one,
     // we select the previous one.

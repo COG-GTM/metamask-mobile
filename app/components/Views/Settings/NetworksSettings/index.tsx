@@ -139,6 +139,12 @@ interface NetworksSettingsProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  mainnetHeader?: unknown;
+  name?: unknown;
+  networkConfigurations?: Record<string, unknown>;
+  nonEvmNetworkConfigurations?: unknown;
+  providerConfig?: Record<string, unknown>;
+  syncConfirm?: unknown;
 }
 
 interface NetworksSettingsState {
@@ -171,7 +177,7 @@ class NetworksSettings extends PureComponent<NetworksSettingsProps, NetworksSett
     this.updateNavBar();
   };
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate = (prevProps: Record<string, unknown>) => {
     if (this.props.networkConfigurations !== prevProps.networkConfigurations) {
       this.handleSearchTextChange(this.state.searchString);
     }
@@ -181,7 +187,7 @@ class NetworksSettings extends PureComponent<NetworksSettingsProps, NetworksSett
 
   getOtherNetworks = () => getAllNetworks().slice(2);
 
-  onNetworkPress = (networkTypeOrRpcUrl) => {
+  onNetworkPress = (networkTypeOrRpcUrl: unknown) => {
     const { navigation } = this.props;
     navigation.navigate(Routes.ADD_NETWORK, {
       network: networkTypeOrRpcUrl,
@@ -193,7 +199,7 @@ class NetworksSettings extends PureComponent<NetworksSettingsProps, NetworksSett
     navigation.navigate(Routes.ADD_NETWORK);
   };
 
-  showRemoveMenu = (networkTypeOrRpcUrl) => {
+  showRemoveMenu = (networkTypeOrRpcUrl: unknown) => {
     this.networkToRemove = networkTypeOrRpcUrl;
     this.actionSheet.show();
   };
@@ -223,7 +229,7 @@ class NetworksSettings extends PureComponent<NetworksSettingsProps, NetworksSett
     const entry = Object.entries(networkConfigurations).find(
       ([, networkConfiguration]) =>
         networkConfiguration.rpcEndpoints.some(
-          (rpcEndpoint) => rpcEndpoint.networkClientId === this.networkToRemove,
+          (rpcEndpoint: unknown) => rpcEndpoint.networkClientId === this.networkToRemove,
         ),
     );
 
@@ -247,13 +253,13 @@ class NetworksSettings extends PureComponent<NetworksSettingsProps, NetworksSett
     this.setState({ filteredNetworks: [] });
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: unknown) => {
     this.actionSheet = ref;
   };
 
-  onActionSheetPress = (index) => (index === 0 ? this.removeNetwork() : null);
+  onActionSheetPress = (index: number) => (index === 0 ? this.removeNetwork() : null);
 
-  networkElement(name, image, i, networkTypeOrRpcUrl, isCustomRPC, color) {
+  networkElement(name: string, image: unknown, i: number, networkTypeOrRpcUrl: unknown, isCustomRPC: unknown, color: unknown) {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
@@ -483,7 +489,7 @@ class NetworksSettings extends PureComponent<NetworksSettingsProps, NetworksSett
     );
   }
   ///: END:ONLY_INCLUDE_IF
-  handleSearchTextChange = (text) => {
+  handleSearchTextChange = (text: string) => {
     this.setState({ searchString: text });
     const defaultNetwork = getAllNetworks().map((networkType, i) => {
       const { color, name, chainId } = Networks[networkType];

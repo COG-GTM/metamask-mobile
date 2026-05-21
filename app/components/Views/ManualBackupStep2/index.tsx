@@ -41,7 +41,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: Props) => 
 
   const createWordsDictionary = () => {
     const dict = {};
-    words.forEach((word, i) => {
+    words.forEach((word: string, i: number) => {
       dict[`${word},${i}`] = { currentPosition: undefined };
     });
     setWordsDict(dict);
@@ -73,7 +73,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: Props) => 
   );
 
   const selectWord = useCallback(
-    (word, i) => {
+    (word: string, i: number) => {
       let tempCurrentIndex = currentIndex;
       const tempWordsDict = wordsDict;
       const tempConfirmedWords = confirmedWords;
@@ -98,7 +98,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: Props) => 
     [confirmedWords, currentIndex, findNextAvailableIndex, wordsDict],
   );
 
-  const clearConfirmedWordAt = (i) => {
+  const clearConfirmedWordAt = (i: number) => {
     const { word, originalPosition } = confirmedWords[i];
     const currentIndex = i;
     if (word && (originalPosition || originalPosition === 0)) {
@@ -161,7 +161,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: Props) => 
     );
   };
 
-  const renderWordBox = (word, i) => {
+  const renderWordBox = (word: string, i: number) => {
     const styles = createStyles(colors);
 
     return (
@@ -185,7 +185,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: Props) => 
   };
 
   const renderWordSelectableBox = useCallback(
-    (key, i) => {
+    (key: string, i: number) => {
       const [word] = key.split(',');
       const selected = wordsDict[key].currentPosition !== undefined;
       const styles = createStyles(colors);

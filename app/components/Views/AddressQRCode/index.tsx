@@ -83,6 +83,8 @@ const createStyles = (theme: Theme) =>
  */
 interface OwnProps {
   closeQrModal: () => void;
+  brandColors?: unknown;
+  colors?: unknown;
 }
 
 interface StateProps {
@@ -175,7 +177,7 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 

@@ -265,6 +265,15 @@ interface ResetPasswordProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  button?: unknown;
+  focus?: unknown;
+  loader?: unknown;
+  passwordSet?: boolean;
+  passwordStrength?: unknown;
+  secureTextEntry?: unknown;
+  selectedAddress?: string;
+  setLockTime?: (time: number) => void;
+  warningIncorrectPassword?: unknown;
 }
 
 interface ResetPasswordState {
@@ -338,7 +347,7 @@ class ResetPassword extends PureComponent<ResetPasswordProps, ResetPasswordState
     }, 100);
   }
 
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(_: unknown, prevState: Record<string, unknown>) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
     const { loading } = this.state;
@@ -436,14 +445,14 @@ class ResetPassword extends PureComponent<ResetPasswordProps, ResetPasswordState
     current && current.focus();
   };
 
-  updateBiometryChoice = async (biometryChoice) => {
+  updateBiometryChoice = async (biometryChoice: unknown) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     this.setState({ biometryChoice });
   };
 
   renderSwitch = () => {
     const { biometryType, biometryChoice } = this.state;
-    const handleUpdateRememberMe = (rememberMe) => {
+    const handleUpdateRememberMe = (rememberMe: unknown) => {
       this.setState({ rememberMe });
     };
     return (
@@ -456,12 +465,12 @@ class ResetPassword extends PureComponent<ResetPasswordProps, ResetPasswordState
     );
   };
 
-  tryExportSeedPhrase = async (password) => {
+  tryExportSeedPhrase = async (password: string) => {
     const { KeyringController } = Engine.context;
     await KeyringController.exportSeedPhrase(password);
   };
 
-  tryUnlockWithPassword = async (password) => {
+  tryUnlockWithPassword = async (password: string) => {
     this.setState({ ready: false });
     try {
       // Just try
@@ -486,7 +495,7 @@ class ResetPassword extends PureComponent<ResetPasswordProps, ResetPasswordState
     this.tryUnlockWithPassword(password);
   };
 
-  onPasswordChange = (val) => {
+  onPasswordChange = (val: string) => {
     const passInfo = zxcvbn(val);
 
     this.setState({ password: val, passwordStrength: passInfo.score });
@@ -517,7 +526,7 @@ class ResetPassword extends PureComponent<ResetPasswordProps, ResetPasswordState
     );
   };
 
-  setConfirmPassword = (val) => this.setState({ confirmPassword: val });
+  setConfirmPassword = (val: string) => this.setState({ confirmPassword: val });
 
   renderConfirmPassword() {
     const { warningIncorrectPassword } = this.state;
@@ -806,7 +815,7 @@ const mapStateToProps = (state: RootState) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   passwordSet: () => dispatch(passwordSet()),
-  setLockTime: (time) => dispatch(setLockTime(time)),
+  setLockTime: (time: unknown) => dispatch(setLockTime(time)),
   seedphraseNotBackedUp: () => dispatch(seedphraseNotBackedUp()),
 });
 

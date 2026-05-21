@@ -220,6 +220,13 @@ interface ChoosePasswordProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  focus?: unknown;
+  passwordSet?: boolean;
+  passwordStrength?: unknown;
+  passwordUnset?: unknown;
+  secureTextEntry?: unknown;
+  seedphraseNotBackedUp?: () => void;
+  setLockTime?: (time: number) => void;
 }
 
 interface ChoosePasswordState {
@@ -246,7 +253,7 @@ class ChoosePassword extends PureComponent<ChoosePasswordProps, ChoosePasswordSt
   // Flag to know if password in keyring was set or not
   keyringControllerPasswordSet = false;
 
-  track = (event, properties) => {
+  track = (event: Record<string, unknown>, properties: Record<string, unknown>) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
     trackOnboarding(eventBuilder.build());
@@ -294,7 +301,7 @@ class ChoosePassword extends PureComponent<ChoosePasswordProps, ChoosePasswordSt
     this.termsOfUse();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps: Record<string, unknown>, prevState: Record<string, unknown>) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
     const { loading } = this.state;
@@ -420,7 +427,7 @@ class ChoosePassword extends PureComponent<ChoosePasswordProps, ChoosePasswordSt
    *
    * @param password - Password to recreate and set the vault with
    */
-  recreateVault = async (password, authType) => {
+  recreateVault = async (password: string, authType: unknown) => {
     const { KeyringController } = Engine.context;
     const seedPhrase = await this.getSeedPhrase();
     let importedAccounts = [];
@@ -499,14 +506,14 @@ class ChoosePassword extends PureComponent<ChoosePasswordProps, ChoosePasswordSt
     current && current.focus();
   };
 
-  updateBiometryChoice = async (biometryChoice) => {
+  updateBiometryChoice = async (biometryChoice: unknown) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     this.setState({ biometryChoice });
   };
 
   renderSwitch = () => {
     const { biometryType, biometryChoice } = this.state;
-    const handleUpdateRememberMe = (rememberMe) => {
+    const handleUpdateRememberMe = (rememberMe: unknown) => {
       this.setState({ rememberMe });
     };
     return (
@@ -519,7 +526,7 @@ class ChoosePassword extends PureComponent<ChoosePasswordProps, ChoosePasswordSt
     );
   };
 
-  onPasswordChange = (val) => {
+  onPasswordChange = (val: string) => {
     const passInfo = zxcvbn(val);
 
     this.setState({ password: val, passwordStrength: passInfo.score });
@@ -539,7 +546,7 @@ class ChoosePassword extends PureComponent<ChoosePasswordProps, ChoosePasswordSt
     });
   };
 
-  setConfirmPassword = (val) => this.setState({ confirmPassword: val });
+  setConfirmPassword = (val: string) => this.setState({ confirmPassword: val });
 
   render() {
     const {
@@ -762,7 +769,7 @@ ChoosePassword.contextType = ThemeContext;
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   passwordSet: () => dispatch(passwordSet()),
   passwordUnset: () => dispatch(passwordUnset()),
-  setLockTime: (time) => dispatch(setLockTime(time)),
+  setLockTime: (time: unknown) => dispatch(setLockTime(time)),
   seedphraseNotBackedUp: () => dispatch(seedphraseNotBackedUp()),
 });
 

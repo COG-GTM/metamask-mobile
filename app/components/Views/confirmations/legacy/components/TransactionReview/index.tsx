@@ -140,6 +140,48 @@ interface TransactionReviewProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  EIP1559GasData?: unknown;
+  QRState?: Record<string, unknown>;
+  accountWrapper?: unknown;
+  animate?: unknown;
+  animateOnChange?: unknown;
+  approveTransaction?: unknown;
+  browser?: unknown;
+  chainId?: string;
+  contractExchangeRates?: Record<string, unknown>;
+  conversionRate?: number;
+  currentCurrency?: string;
+  customGasHeight?: unknown;
+  dappSuggestedGas?: unknown;
+  dappSuggestedGasWarning?: unknown;
+  error?: unknown;
+  gasEstimateType?: string;
+  gasSelected?: unknown;
+  generateTransform?: unknown;
+  hideData?: unknown;
+  isAnimating?: unknown;
+  isSigningQRObject?: boolean;
+  metrics?: unknown;
+  networkClientId?: unknown;
+  onCancel?: () => void;
+  onConfirm?: () => void;
+  onModeChange?: unknown;
+  onUpdatingValuesEnd?: unknown;
+  onUpdatingValuesStart?: unknown;
+  over?: unknown;
+  primaryCurrency?: string;
+  ready?: unknown;
+  saveTransactionReviewDataHeight?: unknown;
+  securityAlertResponse?: unknown;
+  shouldUseSmartTransaction?: unknown;
+  showHexData?: boolean;
+  ticker?: string;
+  tokenList?: Record<string, unknown>;
+  tokens?: unknown[];
+  transaction?: unknown;
+  transactionConfirmed?: unknown;
+  transactionMetadata?: unknown;
+  useTransactionSimulations?: unknown;
 }
 
 interface TransactionReviewState {
@@ -346,7 +388,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps, Transactio
   getUrlFromBrowser() {
     const { browser } = this.props;
     let url;
-    browser.tabs.forEach((tab) => {
+    browser.tabs.forEach((tab: Record<string, unknown>) => {
       if (tab.id === browser.activeTab) {
         url = tab.url;
       }

@@ -90,6 +90,21 @@ interface ApprovalProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  chainId?: string;
+  confirmationMetricsById?: unknown;
+  dappTransactionModalVisible?: boolean;
+  hideModal?: unknown;
+  message?: unknown;
+  metrics?: unknown;
+  networkType?: string;
+  resetTransaction?: () => void;
+  securityAlertResponse?: unknown;
+  selectedAddress?: string;
+  shouldUseSmartTransaction?: unknown;
+  showCustomNonce?: boolean;
+  simulationData?: unknown;
+  transaction?: unknown;
+  transactions?: unknown[];
 }
 
 interface ApprovalState {
@@ -158,7 +173,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
     }
   };
 
-  isTxStatusCancellable = (transaction) => {
+  isTxStatusCancellable = (transaction: Record<string, unknown>) => {
     if (
       transaction?.status === TX_SUBMITTED ||
       transaction?.status === TX_REJECTED ||
@@ -171,12 +186,12 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
     return true;
   };
 
-  handleAppStateChange = (appState) => {
+  handleAppStateChange = (appState: string) => {
     try {
       if (appState !== 'active') {
         const { transaction, transactions } = this.props;
         const currentTransaction = transactions.find(
-          (tx) => tx.id === transaction.id,
+          (tx: Record<string, unknown>) => tx.id === transaction.id,
         );
 
         if (transaction?.id && this.isTxStatusCancellable(currentTransaction)) {
@@ -411,7 +426,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
     );
   };
 
-  onLedgerConfirmation = (approve, transactionId, gaParams) => {
+  onLedgerConfirmation = (approve: unknown, transactionId: unknown, gaParams: unknown) => {
     try {
       //manual cancel from UI when transaction is awaiting from ledger confirmation
       if (!approve) {
@@ -612,7 +627,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
    *
    * @param mode - Transaction mode, review or edit
    */
-  onModeChange = (mode) => {
+  onModeChange = (mode: unknown) => {
     const { navigation } = this.props;
     navigation && navigation.setParams({ mode });
     this.setState({ mode });

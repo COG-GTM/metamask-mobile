@@ -84,6 +84,28 @@ interface SendFlowProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  addressBook?: Record<string, unknown>;
+  ambiguousAddressEntries?: unknown;
+  errorContinue?: unknown;
+  focus?: unknown;
+  globalChainId?: unknown;
+  hardwareBackPress?: unknown;
+  internalAccounts?: unknown;
+  isNativeTokenBuySupported?: unknown;
+  isOnlyWarning?: unknown;
+  isPaymentRequest?: boolean;
+  join?: unknown;
+  metrics?: unknown;
+  newAssetTransaction?: Record<string, unknown>;
+  providerType?: string;
+  resetTransaction?: () => void;
+  selectedAddress?: string;
+  setRecipient?: (from: string, to: string, ensRecipient: string, transactionToName: string, transactionFromName: string) => void;
+  showAlert?: (config: Record<string, unknown>) => void;
+  substring?: unknown;
+  target_address?: unknown;
+  ticker?: string;
+  toInputHighlighted?: unknown;
 }
 
 interface SendFlowState {
@@ -172,7 +194,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
     const checksummedAddress = toChecksumAddress(toAccount);
     return !!(
       networkAddressBook[checksummedAddress] ||
-      internalAccounts.find((account) =>
+      internalAccounts.find((account: Record<string, unknown>) =>
         toLowerCaseEquals(account.address, checksummedAddress),
       )
     );
@@ -192,7 +214,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
     return addressError;
   };
 
-  handleNetworkSwitch = (globalChainId) => {
+  handleNetworkSwitch = (globalChainId: unknown) => {
     try {
       const { showAlert } = this.props;
       const networkName = handleNetworkSwitch(globalChainId);
@@ -297,7 +319,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
     );
   };
 
-  renderAddressError = (addressError) =>
+  renderAddressError = (addressError: unknown) =>
     addressError === SYMBOL_ERROR ? (
       <Fragment>
         <Text>{strings('transaction.tokenContractAddressWarning_1')}</Text>
@@ -308,26 +330,26 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
       addressError
     );
 
-  updateParentState = (state) => {
+  updateParentState = (state: RootState) => {
     this.setState({ ...state });
   };
 
-  fromAccountBalanceState = (value) => {
+  fromAccountBalanceState = (value: string) => {
     this.setState({ balanceIsZero: value });
   };
 
-  setFromAddress = (address) => {
+  setFromAddress = (address: string) => {
     this.setState({ fromSelectedAddress: address });
   };
 
-  getAddressNameFromBookOrInternalAccounts = (toAccount) => {
+  getAddressNameFromBookOrInternalAccounts = (toAccount: unknown) => {
     const { addressBook, internalAccounts, globalChainId } = this.props;
     if (!toAccount) return;
 
     const networkAddressBook = addressBook[globalChainId] || {};
 
     const checksummedAddress = toChecksumAddress(toAccount);
-    const matchingAccount = internalAccounts.find((account) =>
+    const matchingAccount = internalAccounts.find((account: Record<string, unknown>) =>
       toLowerCaseEquals(account.address, checksummedAddress),
     );
 
@@ -338,7 +360,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
       : null;
   };
 
-  validateAddressOrENSFromInput = async (toAccount) => {
+  validateAddressOrENSFromInput = async (toAccount: unknown) => {
     const { addressBook, internalAccounts, globalChainId } = this.props;
     const {
       addressError,
@@ -370,7 +392,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
     });
   };
 
-  onToSelectedAddressChange = (toAccount) => {
+  onToSelectedAddressChange = (toAccount: unknown) => {
     const currentChain =
       this.props.ambiguousAddressEntries &&
       this.props.ambiguousAddressEntries[this.props.globalChainId];
@@ -654,11 +676,11 @@ const mapStateToProps = (state: RootState) => {
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   setRecipient: (
-    from,
-    to,
-    ensRecipient,
-    transactionToName,
-    transactionFromName,
+    from: unknown,
+    to: unknown,
+    ensRecipient: unknown,
+    transactionToName: unknown,
+    transactionFromName: unknown,
   ) =>
     dispatch(
       setRecipient(
@@ -669,11 +691,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
         transactionFromName,
       ),
     ),
-  newAssetTransaction: (selectedAsset) =>
+  newAssetTransaction: (selectedAsset: Record<string, unknown>) =>
     dispatch(newAssetTransaction(selectedAsset)),
-  setSelectedAsset: (selectedAsset) =>
+  setSelectedAsset: (selectedAsset: Record<string, unknown>) =>
     dispatch(setSelectedAsset(selectedAsset)),
-  showAlert: (config) => dispatch(showAlert(config)),
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
   resetTransaction: () => dispatch(resetTransaction()),
 });
 

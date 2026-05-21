@@ -102,6 +102,21 @@ export default interface TransactionReviewDetailsCardProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  address?: unknown;
+  copyContractAddress?: unknown;
+  data?: unknown;
+  displayViewData?: unknown;
+  host?: unknown;
+  method?: unknown;
+  nickname?: unknown;
+  nicknameExists?: unknown;
+  toggleViewData?: unknown;
+  toggleViewDetails?: unknown;
+  tokenName?: unknown;
+  tokenSpendValue?: unknown;
+  tokenStandard?: unknown;
+  tokenSymbol?: unknown;
+  tokenValue?: unknown;
 }
 
 class TransactionReviewDetailsCard extends Component<TransactionReviewDetailsCardProps> {

@@ -153,6 +153,19 @@ interface AdvancedSettingsProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  brandColors?: unknown;
+  fullState?: unknown;
+  metrics?: unknown;
+  modalText?: unknown;
+  mounted?: unknown;
+  scrollToEnd?: unknown;
+  setShowCustomNonce?: (show: boolean) => void;
+  setShowFiatOnTestnets?: (show: boolean) => void;
+  setShowHexData?: (show: boolean) => void;
+  showCustomNonce?: boolean;
+  showFiatOnTestnets?: boolean;
+  showHexData?: boolean;
+  smartTransactionsOptInStatus?: unknown;
 }
 
 interface AdvancedSettingsState {
@@ -227,12 +240,12 @@ class AdvancedSettings extends PureComponent<AdvancedSettingsProps, AdvancedSett
     downloadStateLogs(fullState);
   };
 
-  toggleTokenDetection = (detectionStatus) => {
+  toggleTokenDetection = (detectionStatus: unknown) => {
     const { PreferencesController } = Engine.context;
     PreferencesController.setUseTokenDetection(detectionStatus);
   };
 
-  toggleSmartTransactionsOptInStatus = (smartTransactionsOptInStatus) => {
+  toggleSmartTransactionsOptInStatus = (smartTransactionsOptInStatus: unknown) => {
     const { PreferencesController } = Engine.context;
     PreferencesController.setSmartTransactionsOptInStatus(
       smartTransactionsOptInStatus,
@@ -497,10 +510,10 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setShowHexData: (showHexData) => dispatch(setShowHexData(showHexData)),
-  setShowCustomNonce: (showCustomNonce) =>
+  setShowHexData: (showHexData: unknown) => dispatch(setShowHexData(showHexData)),
+  setShowCustomNonce: (showCustomNonce: unknown) =>
     dispatch(setShowCustomNonce(showCustomNonce)),
-  setShowFiatOnTestnets: (showFiatOnTestnets) =>
+  setShowFiatOnTestnets: (showFiatOnTestnets: unknown) =>
     dispatch(setShowFiatOnTestnets(showFiatOnTestnets)),
 });
 

@@ -27,6 +27,13 @@ export default interface OwnProps {
       transaction?: Record<string, unknown>;
     };
   };
+  amount?: unknown;
+  fee?: unknown;
+  gasEstimationReady?: unknown;
+  onEditPress?: unknown;
+  secondaryTotalAmount?: unknown;
+  totalAmount?: unknown;
+  transactionType?: unknown;
 }
 
 interface StateProps {
@@ -53,7 +60,7 @@ interface State {
 
 class TransactionSummary extends PureComponent<Props, State> {
 
-  renderIfGastEstimationReady = (children) => {
+  renderIfGastEstimationReady = (children: unknown) => {
     const { gasEstimationReady } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);

@@ -34,6 +34,7 @@ export default interface Props {
       action?: string;
     };
   };
+  navigate?: unknown;
 }
 
 interface State {

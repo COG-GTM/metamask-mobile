@@ -36,6 +36,11 @@ interface OwnProps {
       tokenId?: string;
     };
   };
+  assetOverviewWrapper?: unknown;
+  collectibleContractModalVisible?: unknown;
+  collectibles?: unknown[];
+  logo?: unknown;
+  name?: unknown;
 }
 
 interface StateProps {
@@ -109,10 +114,10 @@ class Collectible extends PureComponent<Props, State> {
     const { collectibles } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const filteredCollectibles = collectibles.filter((collectible) =>
+    const filteredCollectibles = collectibles.filter((collectible: unknown) =>
       toLowerCaseEquals(collectible.address, address),
     );
-    filteredCollectibles.map((collectible) => {
+    filteredCollectibles.map((collectible: unknown) => {
       if (!collectible.name || collectible.name === '') {
         collectible.name = collectibleContract.name;
       }

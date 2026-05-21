@@ -57,6 +57,9 @@ interface TransactionsViewProps {
   chainId: string;
   tokens: unknown[];
   transactions: unknown[];
+  currentCurrency?: string;
+  networkType?: string;
+  tokenNetworkFilter?: unknown;
 }
 
 const TransactionsView = ({
@@ -83,7 +86,7 @@ const TransactionsView = ({
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
 
   const filterTransactions = useCallback(
-    (networkId) => {
+    (networkId: string) => {
       let accountAddedTimeInsertPointFound = false;
       const addedAccountTime = selectedInternalAccount?.metadata.importTime;
 
@@ -228,7 +231,7 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
 });
 
 export default connect(

@@ -86,6 +86,9 @@ export default interface ExpandedMessageProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  currentPageInformation?: unknown;
+  renderMessage?: unknown;
+  toggleExpandedMessage?: unknown;
 }
 
 class ExpandedMessage extends PureComponent<ExpandedMessageProps> {

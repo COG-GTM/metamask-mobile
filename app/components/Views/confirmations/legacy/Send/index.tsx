@@ -109,6 +109,39 @@ interface SendProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  addressBook?: Record<string, unknown>;
+  contractBalances?: Record<string, unknown>;
+  dappTransactionModalVisible?: boolean;
+  data?: unknown;
+  decimals?: unknown;
+  ensRecipient?: string;
+  from?: unknown;
+  gas?: unknown;
+  gasPrice?: unknown;
+  globalChainId?: unknown;
+  globalNetworkClientId?: unknown;
+  internalAccounts?: unknown;
+  message?: unknown;
+  metrics?: unknown;
+  networkType?: string;
+  readableValue?: unknown;
+  resetTransaction?: () => void;
+  selectedAddress?: string;
+  setTransactionObject?: (tx: Record<string, unknown>) => void;
+  shouldUseSmartTransaction?: unknown;
+  showAlert?: (config: Record<string, unknown>) => void;
+  source?: unknown;
+  symbol?: unknown;
+  to?: unknown;
+  toggleDappTransactionModal?: () => void;
+  tokenList?: Record<string, unknown>;
+  tokens?: unknown[];
+  transaction?: unknown;
+  transactionFromName?: unknown;
+  transactionTo?: unknown;
+  transactionToName?: unknown;
+  transactionValue?: unknown;
+  value?: unknown;
 }
 
 interface SendState {
@@ -210,7 +243,7 @@ class Send extends PureComponent<SendProps, SendState> {
     this.mounted = false;
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Record<string, unknown>) {
     const prevRoute = prevProps.route;
     const {
       route,
@@ -248,7 +281,7 @@ class Send extends PureComponent<SendProps, SendState> {
   /**
    * Handle deeplink txMeta recipient
    */
-  handleNewTxMetaRecipient = async (recipient) => {
+  handleNewTxMetaRecipient = async (recipient: unknown) => {
     const to = await getAddress(recipient, this.props.globalChainId);
 
     if (!to) {
@@ -370,7 +403,7 @@ class Send extends PureComponent<SendProps, SendState> {
     }
 
     newTxMeta.from = selectedAddress;
-    const fromAccount = internalAccounts.find((account) =>
+    const fromAccount = internalAccounts.find((account: Record<string, unknown>) =>
       toLowerCaseEquals(account.address, selectedAddress),
     );
     newTxMeta.transactionFromName = fromAccount.metadata.name;
@@ -385,7 +418,7 @@ class Send extends PureComponent<SendProps, SendState> {
    *
    * @returns ERC20 asset, containing address, symbol and decimals
    */
-  handleTokenDeeplink = async (address) => {
+  handleTokenDeeplink = async (address: string) => {
     const { tokens, tokenList } = this.props;
     address = toChecksumAddress(address);
     // First check if we have token information in token list
@@ -393,7 +426,7 @@ class Send extends PureComponent<SendProps, SendState> {
       return tokenList[address];
     }
     // Then check if the token is already in state
-    const stateToken = tokens.find((token) => token.address === address);
+    const stateToken = tokens.find((token: string) => token.address === address);
     if (stateToken) {
       return stateToken;
     }
@@ -430,7 +463,7 @@ class Send extends PureComponent<SendProps, SendState> {
    *
    * @param {object} transaction - Transaction object
    */
-  prepareTransaction = (transaction) => ({
+  prepareTransaction = (transaction: Record<string, unknown>) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -444,7 +477,7 @@ class Send extends PureComponent<SendProps, SendState> {
    * @param {object} transaction - Transaction object
    * @param {object} selectedAsset - Asset object
    */
-  prepareAssetTransaction = (transaction, selectedAsset) => ({
+  prepareAssetTransaction = (transaction: Record<string, unknown>, selectedAsset: Record<string, unknown>) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -457,7 +490,7 @@ class Send extends PureComponent<SendProps, SendState> {
    *
    * @param transaction - Transaction object
    */
-  sanitizeTransaction = (transaction) => ({
+  sanitizeTransaction = (transaction: Record<string, unknown>) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -479,7 +512,7 @@ class Send extends PureComponent<SendProps, SendState> {
    *
    * @param if - Transaction id
    */
-  onCancel = (id) => {
+  onCancel = (id: string) => {
     Engine.context.ApprovalController.reject(
       id,
       providerErrors.userRejectedRequest(),
@@ -692,7 +725,7 @@ class Send extends PureComponent<SendProps, SendState> {
    *
    * @param mode - Transaction mode, review or edit
    */
-  onModeChange = (mode) => {
+  onModeChange = (mode: unknown) => {
     const { navigation } = this.props;
     navigation && navigation.setParams({ mode });
     this.mounted && this.setState({ mode });
@@ -772,9 +805,9 @@ const mapStateToProps = (state: RootState) => {
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   resetTransaction: () => dispatch(resetTransaction()),
-  setTransactionObject: (transaction) =>
+  setTransactionObject: (transaction: Record<string, unknown>) =>
     dispatch(setTransactionObject(transaction)),
-  showAlert: (config) => dispatch(showAlert(config)),
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
   toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal()),
 });
 

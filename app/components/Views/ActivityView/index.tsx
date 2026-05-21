@@ -40,7 +40,7 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (params) => {
+const createStyles = (params: Record<string, unknown>) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({

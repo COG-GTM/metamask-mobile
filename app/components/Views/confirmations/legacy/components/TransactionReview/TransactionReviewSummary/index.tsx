@@ -76,6 +76,13 @@ interface TransactionReviewSummaryProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  actionKey?: unknown;
+  approveTransaction?: unknown;
+  assetAmount?: unknown;
+  chainId?: string;
+  conversionRate?: number;
+  fiatValue?: unknown;
+  primaryCurrency?: string;
 }
 
 class TransactionReviewSummary extends PureComponent<TransactionReviewSummaryProps> {

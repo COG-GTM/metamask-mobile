@@ -56,6 +56,13 @@ interface EditGasFeeLegacyProps {
   selectedGasObject: Record<string, unknown>;
   hasDappSuggestedGas: boolean;
   chainId: string;
+  gasPrice?: unknown;
+  high?: unknown;
+  low?: unknown;
+  suggestedGasLimit?: unknown;
+  suggestedGasPrice?: unknown;
+  transactionFee?: unknown;
+  transactionFeeFiat?: unknown;
 }
 
 const EditGasFeeLegacy = ({
@@ -128,7 +135,7 @@ const EditGasFeeLegacy = ({
     createEventBuilder,
   ]);
 
-  const changeGas = useCallback((gas) => {
+  const changeGas = useCallback((gas: unknown) => {
     updateGasObjectLegacy({
       legacyGasLimit: gas.suggestedGasLimit,
       suggestedGasPrice: gas.suggestedGasPrice,
@@ -136,7 +143,7 @@ const EditGasFeeLegacy = ({
   }, []);
 
   const changedGasPrice = useCallback(
-    (value) => {
+    (value: string) => {
       let newGas;
 
       const lowerValue = new BigNumber(
@@ -172,7 +179,7 @@ const EditGasFeeLegacy = ({
   );
 
   const changedGasLimit = useCallback(
-    (value) => {
+    (value: string) => {
       const newGas =
         typeof gasTransaction === 'object'
           ? { ...gasTransaction, suggestedGasLimit: value }
@@ -260,7 +267,7 @@ const EditGasFeeLegacy = ({
 
   const valueToWatch = transactionFee;
 
-  const handleInfoModalPress = (text) => {
+  const handleInfoModalPress = (text: string) => {
     setShowRangeInfoModal(true);
     setInfoText(text);
   };

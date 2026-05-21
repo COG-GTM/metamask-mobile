@@ -104,6 +104,7 @@ interface WatchAssetRequestProps {
   onCancel: () => void;
   onConfirm: () => void;
   currentPageInformation: Record<string, unknown>;
+  interactingAddress?: unknown;
 }
 
 const WatchAssetRequest = ({

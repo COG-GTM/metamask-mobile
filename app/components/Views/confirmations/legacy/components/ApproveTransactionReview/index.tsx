@@ -133,6 +133,67 @@ interface ApproveTransactionReviewProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  QRState?: Record<string, unknown>;
+  accountsLength?: unknown;
+  activeTabUrl?: unknown;
+  animateOnChange?: unknown;
+  blockaidWarning?: unknown;
+  chainId?: string;
+  closeVerifyContractDetails?: unknown;
+  eip1559GasObject?: unknown;
+  encodedHexAmount?: unknown;
+  gasError?: unknown;
+  gasEstimateType?: string;
+  gasEstimationReady?: unknown;
+  gasSelected?: unknown;
+  iconUrl?: unknown;
+  isAnimating?: unknown;
+  isGasEstimateStatusIn?: unknown;
+  isNativeTokenBuySupported?: unknown;
+  isSigningQRObject?: boolean;
+  learnMoreURL?: unknown;
+  legacyGasObject?: unknown;
+  method?: unknown;
+  metrics?: unknown;
+  networkConfigurations?: Record<string, unknown>;
+  nickname?: unknown;
+  nicknameExists?: unknown;
+  onCancel?: () => void;
+  onConfirm?: () => void;
+  onModeChange?: unknown;
+  onSetAnalyticsParams?: unknown;
+  onUpdatingValuesEnd?: unknown;
+  onUpdatingValuesStart?: unknown;
+  originIsWalletConnect?: unknown;
+  over?: unknown;
+  primaryCurrency?: string;
+  providerRpcTarget?: unknown;
+  providerType?: string;
+  savedContactListToArray?: unknown;
+  securityAlertResponse?: unknown;
+  setTransactionObject?: (tx: Record<string, unknown>) => void;
+  shouldUseSmartTransaction?: unknown;
+  shouldVerifyContractDetails?: unknown;
+  showAlert?: (config: Record<string, unknown>) => void;
+  showBlockExplorer?: unknown;
+  showGasTooltip?: unknown;
+  showVerifyContractDetails?: unknown;
+  ticker?: string;
+  toggleModal?: unknown;
+  tokenAllowanceState?: unknown;
+  tokenBalance?: unknown;
+  tokenDecimals?: unknown;
+  tokenImage?: unknown;
+  tokenList?: Record<string, unknown>;
+  tokenName?: unknown;
+  tokenStandard?: unknown;
+  tokenSymbol?: unknown;
+  tokenValue?: unknown;
+  tokensLength?: number;
+  transaction?: unknown;
+  transactionConfirmed?: unknown;
+  updateTokenAllowanceState?: unknown;
+  updateTransactionState?: (state: Record<string, unknown>) => void;
 }
 
 interface ApproveTransactionReviewState {
@@ -359,7 +420,7 @@ class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewPro
     }
   };
 
-  componentDidUpdate = (_, prevState) => {
+  componentDidUpdate = (_: unknown, prevState: Record<string, unknown>) => {
     const { transaction, setTransactionObject } = this.props;
     const {
       tokenSpendValue,
@@ -389,7 +450,7 @@ class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewPro
     clearInterval(intervalIdForEstimatedL1Fee);
   };
 
-  getTrustMessage = (originIsDeeplink, isMethodSetApprovalForAll) => {
+  getTrustMessage = (originIsDeeplink: unknown, isMethodSetApprovalForAll: unknown) => {
     if (isMethodSetApprovalForAll) {
       return strings('spend_limit_edition.you_trust_this_third_party');
     }
@@ -400,9 +461,9 @@ class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewPro
   };
 
   getTrustTitle = (
-    originIsDeeplink,
-    isNonFungibleToken,
-    isMethodSetApprovalForAll,
+    originIsDeeplink: unknown,
+    isNonFungibleToken: unknown,
+    isMethodSetApprovalForAll: unknown,
   ) => {
     if (isMethodSetApprovalForAll) {
       return strings('spend_limit_edition.allow_to_transfer_all');
@@ -474,7 +535,7 @@ class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewPro
     }
   };
 
-  trackApproveEvent = (event) => {
+  trackApproveEvent = (event: Record<string, unknown>) => {
     const { transaction, tokensLength, accountsLength, providerType } =
       this.props;
 
@@ -506,7 +567,7 @@ class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewPro
     this.setState({ viewDetails: !viewDetails });
   };
 
-  copyContractAddress = async (address) => {
+  copyContractAddress = async (address: string) => {
     await ClipboardManager.setString(address);
     this.props.showAlert({
       isVisible: true,
@@ -599,18 +660,18 @@ class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewPro
 
   goToSpendCap = () => this.setState({ isReadyToApprove: false });
 
-  handleSetIsCustomSpendInputValid = (value) => {
+  handleSetIsCustomSpendInputValid = (value: string) => {
     this.setState({ isCustomSpendInputValid: value });
   };
 
-  toggleLearnMoreWebPage = (url) => {
+  toggleLearnMoreWebPage = (url: string) => {
     this.setState({
       showBlockExplorerModal: !this.state.showBlockExplorerModal,
       learnMoreURL: url,
     });
   };
 
-  handleCustomSpendOnInputChange = (value) => {
+  handleCustomSpendOnInputChange = (value: string) => {
     if (isNumber(value)) {
       this.setState({
         tokenSpendValue: value.replace(regex.nonNumber, ''),
@@ -1018,7 +1079,7 @@ class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewPro
       token: { tokenSymbol },
     } = this.state;
 
-    const toggleBlockExplorerModal = (address) => {
+    const toggleBlockExplorerModal = (address: string) => {
       closeVerifyContractDetails();
       this.setState({
         showBlockExplorerModal: !showBlockExplorerModal,
@@ -1026,7 +1087,7 @@ class ApproveTransactionReview extends PureComponent<ApproveTransactionReviewPro
       });
     };
 
-    const showNickname = (address) => {
+    const showNickname = (address: string) => {
       toggleModal(address);
     };
 
@@ -1224,9 +1285,9 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setTransactionObject: (transaction) =>
+  setTransactionObject: (transaction: Record<string, unknown>) =>
     dispatch(setTransactionObject(transaction)),
-  showAlert: (config) => dispatch(showAlert(config)),
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
 });
 
 ApproveTransactionReview.contextType = ThemeContext;

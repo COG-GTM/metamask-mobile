@@ -165,6 +165,53 @@ interface ConfirmProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  accounts?: Record<string, Record<string, unknown>>;
+  animateOnChange?: unknown;
+  blockaidBanner?: unknown;
+  chainId?: string;
+  closeModal?: unknown;
+  confirmationMetricsById?: unknown;
+  contractBalances?: Record<string, unknown>;
+  contractExchangeRates?: Record<string, unknown>;
+  conversionRate?: number;
+  currentCurrency?: string;
+  error?: unknown;
+  gasEstimateType?: string;
+  gasFeeEstimates?: Record<string, unknown>;
+  gasFeeMaxHex?: unknown;
+  globalNetworkClientId?: unknown;
+  id?: unknown;
+  isAnimating?: unknown;
+  isNativeTokenBuySupported?: unknown;
+  isPaymentRequest?: boolean;
+  maxValueMode?: unknown;
+  message?: unknown;
+  metrics?: unknown;
+  networkClientId?: unknown;
+  pollToken?: unknown;
+  popToTop?: unknown;
+  prepareTransaction?: (transaction: Record<string, unknown>) => void;
+  primaryCurrency?: string;
+  providerType?: string;
+  resetTransaction?: () => void;
+  scrollView?: unknown;
+  securityAlertResponse?: unknown;
+  selectedAsset?: Record<string, unknown>;
+  setNonce?: (nonce: string) => void;
+  setProposedNonce?: (nonce: string) => void;
+  setTransactionId?: unknown;
+  setTransactionValue?: unknown;
+  shouldUseSmartTransaction?: unknown;
+  showAlert?: (config: Record<string, unknown>) => void;
+  showCustomNonce?: boolean;
+  showHexData?: boolean;
+  ticker?: string;
+  totalMaxHex?: unknown;
+  transaction?: unknown;
+  transactionConfirmed?: unknown;
+  transactionMetadata?: unknown;
+  transactionState?: Record<string, unknown>;
+  updateConfirmationMetric?: unknown;
 }
 
 interface ConfirmState {
@@ -215,7 +262,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     setProposedNonce(proposedNonce);
   };
 
-  getAnalyticsParams = (transactionMeta) => {
+  getAnalyticsParams = (transactionMeta: unknown) => {
     const {
       selectedAsset,
       gasEstimateType,
@@ -436,7 +483,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     ppomUtil.validateRequest(reqObject, id);
   };
 
-  componentDidUpdate = (prevProps, prevState) => {
+  componentDidUpdate = (prevProps: Record<string, unknown>, prevState: Record<string, unknown>) => {
     const {
       accounts,
       transactionState: {
@@ -579,16 +626,16 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     }
   };
 
-  setScrollViewRef = (ref) => {
+  setScrollViewRef = (ref: unknown) => {
     this.scrollView = ref;
   };
 
-  toggleConfirmationModal = (MODE) => {
+  toggleConfirmationModal = (MODE: unknown) => {
     this.onModeChange(MODE);
     this.setState({ closeModal: false });
   };
 
-  onModeChange = (mode) => {
+  onModeChange = (mode: unknown) => {
     this.setState({ mode });
     if (mode === EDIT) {
       this.props.metrics.trackEvent(
@@ -799,7 +846,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     return insufficientBalanceMessage || insufficientTokenBalanceMessage;
   };
 
-  setError = (errorMessage) => {
+  setError = (errorMessage: unknown) => {
     this.setState({ errorMessage }, () => {
       if (errorMessage) {
         this.scrollView.scrollToEnd({ animated: true });
@@ -808,11 +855,11 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
   };
 
   onLedgerConfirmation = async (
-    approve,
-    result,
-    transactionMeta,
-    assetType,
-    gaParams,
+    approve: unknown,
+    result: Record<string, unknown>,
+    transactionMeta: unknown,
+    assetType: unknown,
+    gaParams: unknown,
   ) => {
     const { navigation } = this.props;
     // Manual cancel from UI or rejected from ledger device.
@@ -994,7 +1041,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     this.setState({ transactionConfirmed: false });
   };
 
-  getBalanceError = (balance) => {
+  getBalanceError = (balance: unknown) => {
     const {
       transactionState: {
         transaction: { value = '0x0', gas = '0x0', gasPrice = '0x0' },
@@ -1011,7 +1058,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     return balanceIsInsufficient ? strings('transaction.insufficient') : null;
   };
 
-  onSelectAccount = async (accountAddress) => {
+  onSelectAccount = async (accountAddress: unknown) => {
     const { accounts } = this.props;
     // If new account doesn't have the asset
     this.setState({
@@ -1038,7 +1085,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     this.setState({ hexDataModalVisible: !hexDataModalVisible });
   };
 
-  updateTransactionStateWithUpdatedNonce = (nonceValue) => {
+  updateTransactionStateWithUpdatedNonce = (nonceValue: unknown) => {
     this.props.setNonce(nonceValue);
   };
 
@@ -1144,18 +1191,18 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     this.setState({ isAnimating: false });
   };
 
-  updateTransactionState = (gas) => {
+  updateTransactionState = (gas: unknown) => {
     this.setState({
       EIP1559GasTransaction: gas,
       legacyGasTransaction: gas,
     });
   };
 
-  onGasChanged = (gasValue) => {
+  onGasChanged = (gasValue: string) => {
     this.setState({ gasSelected: gasValue });
   };
 
-  onGasCanceled = (gasValue) => {
+  onGasCanceled = (gasValue: string) => {
     this.setState({
       stopUpdateGas: false,
       gasSelectedTemp: gasValue,
@@ -1213,7 +1260,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     return confirmButtonStyle;
   }
 
-  async persistTransactionParameters(transactionParams) {
+  async persistTransactionParameters(transactionParams: unknown) {
     const { TransactionController } = Engine.context;
     const { transactionMeta } = this.state;
     const { id: transactionId } = transactionMeta;
@@ -1508,19 +1555,19 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  prepareTransaction: (transaction) =>
+  prepareTransaction: (transaction: Record<string, unknown>) =>
     dispatch(prepareTransaction(transaction)),
   resetTransaction: () => dispatch(resetTransaction()),
-  setTransactionId: (transactionId) =>
+  setTransactionId: (transactionId: unknown) =>
     dispatch(setTransactionId(transactionId)),
-  setNonce: (nonce) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
-  removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
+  setNonce: (nonce: string) => dispatch(setNonce(nonce)),
+  setProposedNonce: (nonce: string) => dispatch(setProposedNonce(nonce)),
+  removeFavoriteCollectible: (selectedAddress: unknown, chainId: string, collectible: unknown) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
-  showAlert: (config) => dispatch(showAlert(config)),
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
   updateConfirmationMetric: ({ id, params }) =>
     dispatch(updateConfirmationMetric({ id, params })),
-  setTransactionValue: (value) => dispatch(setTransactionValue(value)),
+  setTransactionValue: (value: string) => dispatch(setTransactionValue(value)),
 });
 
 export default connect(

@@ -94,6 +94,11 @@ interface TransactionReviewDataProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  actionKey?: unknown;
+  customGasHeight?: unknown;
+  showAlert?: (config: Record<string, unknown>) => void;
+  toggleDataView?: unknown;
+  transaction?: unknown;
 }
 
 class TransactionReviewData extends PureComponent<TransactionReviewDataProps> {
@@ -185,7 +190,7 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
 });
 
 TransactionReviewData.contextType = ThemeContext;

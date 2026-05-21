@@ -281,7 +281,7 @@ export default function VideoPlayer({
   );
 
   const updateSeekerPosition = useCallback(
-    (position) => {
+    (position: unknown) => {
       if (!position) return;
       position = constrainToSeekerMinMax(position);
       setSeekerFillWidth(position);
@@ -425,7 +425,7 @@ export default function VideoPlayer({
   );
 
   const renderControl = useCallback(
-    (children, callback, style = {}) => (
+    (children: unknown, callback: () => void, style = {}) => (
       <TouchableHighlight
         underlayColor="transparent"
         onPress={callback}
@@ -452,7 +452,7 @@ export default function VideoPlayer({
   );
 
   const onLayoutSeekerWidth = useCallback(
-    (event) => setSeekerWidth(event.nativeEvent.layout.width),
+    (event: Record<string, unknown>) => setSeekerWidth(event.nativeEvent.layout.width),
     [],
   );
 

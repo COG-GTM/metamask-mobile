@@ -88,6 +88,7 @@ export default interface Props {
     navigate: (route: string, params?: Record<string, unknown>) => void;
   };
   route: { params?: Record<string, unknown> };
+  ready?: unknown;
 }
 
 class WalletConnectSessions extends PureComponent<Props> {
@@ -139,7 +140,7 @@ class WalletConnectSessions extends PureComponent<Props> {
     this.setState({ ready: true, sessions, sessionsV2 });
   };
 
-  renderDesc = (meta) => {
+  renderDesc = (meta: Record<string, unknown>) => {
     const { description } = meta;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
@@ -150,16 +151,16 @@ class WalletConnectSessions extends PureComponent<Props> {
     return null;
   };
 
-  onLongPress = (session) => {
+  onLongPress = (session: unknown) => {
     this.sessionToRemove = session;
     this.actionSheet.show();
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: unknown) => {
     this.actionSheet = ref;
   };
 
-  onActionSheetPress = (index) => (index === 0 ? this.killSession() : null);
+  onActionSheetPress = (index: number) => (index === 0 ? this.killSession() : null);
 
   killSession = async () => {
     const isV2 = this.sessionToRemove.peerId === undefined;
@@ -193,7 +194,7 @@ class WalletConnectSessions extends PureComponent<Props> {
     );
   };
 
-  renderV1 = (session) => {
+  renderV1 = (session: unknown) => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
@@ -214,7 +215,7 @@ class WalletConnectSessions extends PureComponent<Props> {
     );
   };
 
-  renderV2 = (session, index) => {
+  renderV2 = (session: unknown, index: number) => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (

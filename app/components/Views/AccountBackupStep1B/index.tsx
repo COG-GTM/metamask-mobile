@@ -207,6 +207,8 @@ interface Props {
     setOptions: (options: Record<string, unknown>) => void;
   };
   route: { params?: Record<string, unknown> };
+  button?: unknown;
+  remindLaterButton?: unknown;
 }
 
 const AccountBackupStep1B = (props: Props) => {

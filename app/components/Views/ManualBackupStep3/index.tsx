@@ -88,6 +88,11 @@ interface Props {
   };
   route: { params?: Record<string, unknown> };
   seedphraseBackedUp?: boolean;
+  join?: unknown;
+  reset?: unknown;
+  setOnboardingWizardStep?: (step: number) => void;
+  showHint?: unknown;
+  steps?: unknown;
 }
 
 interface State {
@@ -99,7 +104,7 @@ interface State {
 }
 
 class ManualBackupStep3 extends PureComponent<Props, State> {
-  constructor(props) {
+  constructor(props: unknown) {
     super(props);
     this.steps = props.route.params?.steps;
   }
@@ -156,10 +161,10 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
       },
     });
 
-  isHintSeedPhrase = (hintText) => {
+  isHintSeedPhrase = (hintText: unknown) => {
     const words = this.props.route.params?.words;
     if (words) {
-      const lower = (string) => String(string).toLowerCase();
+      const lower = (string: unknown) => String(string).toLowerCase();
       return lower(hintText) === lower(words.join(' '));
     }
     return false;
@@ -198,7 +203,7 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
     }
   };
 
-  handleChangeText = (text) => this.setState({ hintText: text });
+  handleChangeText = (text: string) => this.setState({ hintText: text });
 
   renderHint = () => {
     const { showHint, hintText } = this.state;
@@ -242,8 +247,8 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
 ManualBackupStep3.contextType = ThemeContext;
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+  showAlert: (config: Record<string, unknown>) => dispatch(showAlert(config)),
+  setOnboardingWizardStep: (step: number) => dispatch(setOnboardingWizardStep(step)),
 });
 
 export default connect(null, mapDispatchToProps)(ManualBackupStep3);

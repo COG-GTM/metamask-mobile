@@ -17,7 +17,7 @@ import type { ThemeColors } from '@metamask/design-tokens';
 
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
-    overview: (noMargin) => ({
+    overview: (noMargin: unknown) => ({
       marginHorizontal: noMargin ? 0 : 24,
       paddingTop: 10,
       paddingBottom: 10,
@@ -30,7 +30,7 @@ const createStyles = (colors: ThemeColors) =>
     gasInfoContainer: {
       paddingLeft: 2,
     },
-    gasInfoIcon: (hasOrigin) => ({
+    gasInfoIcon: (hasOrigin: unknown) => ({
       color: hasOrigin ? colors.warning.default : colors.icon.muted,
     }),
     amountContainer: {
@@ -104,6 +104,21 @@ interface TransactionReviewEIP1559Props {
   onGasCanceled?: (gas: Record<string, unknown>) => void;
   view: string;
   analyticsParams: Record<string, unknown>;
+  amountContainer?: unknown;
+  flex?: unknown;
+  gasEstimationReady?: unknown;
+  gasInfoContainer?: unknown;
+  gasInfoIcon?: unknown;
+  gasRowContainer?: unknown;
+  hitSlop?: unknown;
+  legacy?: unknown;
+  noMargin?: unknown;
+  origin?: unknown;
+  originWarning?: unknown;
+  overview?: unknown;
+  redInfo?: unknown;
+  timeEstimateContainer?: unknown;
+  valuesContainer?: unknown;
 }
 
 const TransactionReviewEIP1559 = ({

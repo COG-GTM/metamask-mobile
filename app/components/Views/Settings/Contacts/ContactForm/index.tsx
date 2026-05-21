@@ -131,6 +131,14 @@ interface ContactFormProps {
     dangerouslyGetParent?: () => unknown;
   };
   route: { params?: Record<string, unknown> };
+  addressBook?: Record<string, unknown>;
+  chainId?: string;
+  contactAddressToRemove?: unknown;
+  errorContinue?: unknown;
+  focus?: unknown;
+  internalAccounts?: unknown;
+  show?: unknown;
+  transparent?: unknown;
 }
 
 interface ContactFormState {
@@ -184,7 +192,7 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
       const contact =
         networkAddressBook[address] ||
         (address &&
-          internalAccounts.find((account) =>
+          internalAccounts.find((account: Record<string, unknown>) =>
             toLowerCaseEquals(account.address, address),
           ));
       this.setState({
@@ -216,11 +224,11 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
     this.actionSheet && this.actionSheet.show();
   };
 
-  onChangeName = (name) => {
+  onChangeName = (name: string) => {
     this.setState({ name });
   };
 
-  validateAddressOrENSFromInput = async (address) => {
+  validateAddressOrENSFromInput = async (address: string) => {
     const { addressBook, internalAccounts, chainId } = this.props;
 
     const {
@@ -245,12 +253,12 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
     });
   };
 
-  onChangeAddress = (address) => {
+  onChangeAddress = (address: string) => {
     this.validateAddressOrENSFromInput(address);
     this.setState({ address });
   };
 
-  onChangeMemo = (memo) => {
+  onChangeMemo = (memo: unknown) => {
     this.setState({ memo });
   };
 
@@ -299,11 +307,11 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
     );
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: unknown) => {
     this.actionSheet = ref;
   };
 
-  renderErrorMessage = (addressError) => {
+  renderErrorMessage = (addressError: unknown) => {
     let errorMessage = addressError;
 
     if (addressError === CONTACT_ALREADY_SAVED) {
@@ -491,7 +499,7 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
             cancelButtonIndex={1}
             destructiveButtonIndex={0}
             // eslint-disable-next-line react/jsx-no-bind
-            onPress={(index) => (index === 0 ? this.deleteContact() : null)}
+            onPress={(index: number) => (index === 0 ? this.deleteContact() : null)}
             theme={themeAppearance}
           />
         </KeyboardAwareScrollView>

@@ -83,6 +83,8 @@ interface Props {
     setOptions: (options: Record<string, unknown>) => void;
   };
   route: { params?: Record<string, unknown> };
+  canGoBack?: unknown;
+  popToTop?: unknown;
 }
 
 class ImportPrivateKeySuccess extends PureComponent<Props> {

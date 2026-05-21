@@ -59,6 +59,20 @@ interface EditGasFee1559UpdateProps {
   warning: string;
   selectedGasObject: Record<string, unknown>;
   onlyGas: boolean;
+  renderableGasFeeMaxConversion?: unknown;
+  renderableGasFeeMaxNative?: unknown;
+  renderableGasFeeMinConversion?: unknown;
+  renderableGasFeeMinNative?: unknown;
+  renderableMaxFeePerGasConversion?: unknown;
+  renderableMaxFeePerGasNative?: unknown;
+  renderableMaxPriorityFeeConversion?: unknown;
+  renderableMaxPriorityFeeNative?: unknown;
+  suggestedGasLimit?: unknown;
+  suggestedMaxFeePerGas?: unknown;
+  suggestedMaxPriorityFeePerGas?: unknown;
+  timeEstimate?: unknown;
+  timeEstimateColor?: unknown;
+  timeEstimateId?: unknown;
 }
 
 const EditGasFee1559Update = ({
@@ -166,7 +180,7 @@ const EditGasFee1559Update = ({
   }, [showLearnMoreModal]);
 
   const toggleInfoModal = useCallback(
-    (value) => {
+    (value: string) => {
       updateModalInfo({ isVisible: !modalInfo.isVisible, value });
     },
     [updateModalInfo, modalInfo.isVisible],
@@ -196,7 +210,7 @@ const EditGasFee1559Update = ({
   ]);
 
   const changeGas = useCallback(
-    (gas, option) => {
+    (gas: unknown, option: unknown) => {
       setSelectedOption(option);
       updateGasObject({
         ...gasObject,
@@ -210,7 +224,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedGasLimit = useCallback(
-    (value) => {
+    (value: string) => {
       const newGas = { ...gasTransaction, suggestedGasLimit: value };
       changeGas(newGas, null);
     },
@@ -218,7 +232,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxPriorityFee = useCallback(
-    (value) => {
+    (value: string) => {
       const lowerValue = new BigNumber(
         gasOptions?.[
           warningMinimumEstimateOption
@@ -271,7 +285,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxFeePerGas = useCallback(
-    (value) => {
+    (value: string) => {
       const lowerValue = new BigNumber(
         gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxFeePerGas,
       );
@@ -317,7 +331,7 @@ const EditGasFee1559Update = ({
   );
 
   const selectOption = useCallback(
-    (option) => {
+    (option: unknown) => {
       setSelectedOption(option);
       setMaxFeeError('');
       setMaxPriorityFeeError('');
@@ -327,7 +341,7 @@ const EditGasFee1559Update = ({
   );
 
   const shouldIgnore = useCallback(
-    (option) => ignoreOptions?.find((item) => item === option),
+    (option: unknown) => ignoreOptions?.find((item: Record<string, unknown>) => item === option),
     [ignoreOptions],
   );
 
@@ -350,7 +364,7 @@ const EditGasFee1559Update = ({
         .filter(({ name }) => !shouldIgnore(name))
         .map(({ name, label, ...option }) => ({
           name,
-          label: function LabelComponent(selected, disabled) {
+          label: function LabelComponent(selected: string, disabled: unknown) {
             return (
               <Text bold primary={selected && !disabled}>
                 {label}
@@ -368,8 +382,8 @@ const EditGasFee1559Update = ({
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
   const switchNativeCurrencyDisplayOptions = (
-    nativeValue,
-    fiatValue,
+    nativeValue: unknown,
+    fiatValue: unknown,
   ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
@@ -421,7 +435,7 @@ const EditGasFee1559Update = ({
     </>
   );
 
-  const renderInputs = (option) => (
+  const renderInputs = (option: unknown) => (
     <View>
       <FadeAnimationView
         valueToWatch={valueToWatch}
