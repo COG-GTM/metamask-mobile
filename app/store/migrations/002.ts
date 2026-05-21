@@ -1,7 +1,7 @@
 import { getAllNetworks, isSafeChainId } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
 
-export default function migrate(state) {
+export default function migrate(state: Record<string, unknown>) {
   const provider = state.engine.backgroundState.NetworkController.provider;
 
   // Check if the current network is one of the initial networks

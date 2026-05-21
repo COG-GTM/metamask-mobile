@@ -1,4 +1,4 @@
-export default function migrate(state) {
+export default function migrate(state: Record<string, unknown>) {
   if (state.networkOnboarded && state.networkOnboarded.networkOnboardedState) {
     state.networkOnboarded.networkOnboardedState = {};
   }

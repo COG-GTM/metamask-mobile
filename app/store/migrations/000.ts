@@ -2,7 +2,7 @@
  * Needed after https://github.com/MetaMask/controllers/pull/152
  *
  **/
-export default function migrate(state) {
+export default function migrate(state: Record<string, unknown>) {
   const addressBook =
     state.engine.backgroundState.AddressBookController.addressBook;
   const migratedAddressBook = {};
