@@ -40,6 +40,15 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import { RootState } from '../../../reducers';
 
+interface Props {
+  route: { params?: Record<string, unknown> };
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+  };
+  appTheme: string;
+}
+
 /**
  * View that's shown during the second step of
  * the backup seed phrase flow

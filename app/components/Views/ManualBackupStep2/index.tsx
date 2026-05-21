@@ -25,6 +25,15 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import type { Dispatch } from 'redux';
 
+interface Props {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+  };
+  seedphraseBackedUp: () => void;
+  route: { params?: { words?: string[] } };
+}
+
 const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

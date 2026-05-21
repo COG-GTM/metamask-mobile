@@ -298,7 +298,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
     this.mounted = false;
   }
 
-  didTxStatusesChange = (newTxsPending: boolean) =>
+  didTxStatusesChange = (newTxsPending: unknown[]) =>
     this.txsPending.length !== newTxsPending.length;
 
   ethFilter = (tx: Record<string, unknown>) => {
