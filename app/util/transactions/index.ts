@@ -14,8 +14,8 @@ import {
 import {
   isEIP1559Transaction,
   TransactionType,
+  type TransactionMeta,
 } from '@metamask/transaction-controller';
-import type { TransactionMeta } from '@metamask/transaction-controller';
 import { swapsUtils } from '@metamask/swaps-controller';
 import Engine from '../../core/Engine';
 import I18n, { strings } from '../../../locales/i18n';
