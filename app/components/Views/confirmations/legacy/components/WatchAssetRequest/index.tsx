@@ -21,6 +21,7 @@ import { AssetWatcherSelectorsIDs } from '../../../../../../../e2e/selectors/Tra
 import { getDecimalChainId } from '../../../../../../util/networks';
 import { useMetrics } from '../../../../../../components/hooks/useMetrics';
 import Logger from '../../../../../../util/Logger';
+import type { Colors } from '@metamask/design-tokens';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({

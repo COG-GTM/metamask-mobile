@@ -7,6 +7,7 @@ import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
 import { AddBookmarkViewSelectorsIDs } from '../../../../e2e/selectors/Browser/AddBookmarkView.selectors';
+import type { Colors } from '@metamask/design-tokens';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({

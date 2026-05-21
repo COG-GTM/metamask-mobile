@@ -13,6 +13,7 @@ import useModalHandler from '../../../../../../Base/hooks/useModalHandler';
 import AppConstants from '../../../../../../../core/AppConstants';
 import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
+import type { Colors } from '@metamask/design-tokens';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({

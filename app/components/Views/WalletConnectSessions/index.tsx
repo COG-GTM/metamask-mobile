@@ -22,6 +22,7 @@ import WC2Manager, {
   isWC2Enabled,
 } from '../../../../app/core/WalletConnect/WalletConnectV2';
 import { ExperimentalSelectorsIDs } from '../../../../e2e/selectors/Settings/ExperimentalView.selectors';
+import type { Colors } from '@metamask/design-tokens';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({

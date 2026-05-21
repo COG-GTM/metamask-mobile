@@ -8,7 +8,7 @@ import {
   Linking,
 } from 'react-native';
 import { connect } from 'react-redux';
-import { typography } from '@metamask/design-tokens';
+import { typography, Colors } from '@metamask/design-tokens';
 import isUrl from 'is-url';
 import {
   fontStyles,

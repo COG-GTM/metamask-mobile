@@ -7,6 +7,8 @@ import {
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
+import type { Colors } from '@metamask/design-tokens';
+import { RootState } from '../../../../reducers';
 import ActionSheet from '@metamask/react-native-actionsheet';
 import { fontStyles } from '../../../../styles/common';
 import CustomText from '../../../../components/Base/Text';
@@ -633,8 +635,6 @@ const mapStateToProps = (state: RootState) => ({
   nonEvmNetworkConfigurations:
     selectNonEvmNetworkConfigurationsByChainId(state),
   ///: END:ONLY_INCLUDE_IF
-import type { Colors } from '@metamask/design-tokens';
-import { RootState } from '../../../../reducers';
 });
 
 export default connect(mapStateToProps)(NetworksSettings);

@@ -22,6 +22,7 @@ import Routes from '../../../constants/navigation/Routes';
 import { CommonActions } from '@react-navigation/native';
 import trackErrorAsAnalytics from '../../../util/metrics/TrackError/trackErrorAsAnalytics';
 import { RootState } from '../../../reducers';
+import type { Colors } from '@metamask/design-tokens';
 
 const LOGO_SIZE = 175;
 const createStyles = (colors: Colors) =>

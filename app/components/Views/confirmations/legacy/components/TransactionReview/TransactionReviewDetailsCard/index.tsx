@@ -10,6 +10,7 @@ import ConnectHeader from '../../../../../../UI/ConnectHeader';
 import formatNumber from '../../../../../../../util/formatNumber';
 import TransactionTypes from '../../../../../../../core/TransactionTypes';
 import { renderShortAddress } from '../../../../../../../util/address';
+import type { Colors } from '@metamask/design-tokens';
 
 const {
   ASSET: { ERC20 },

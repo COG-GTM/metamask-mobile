@@ -22,6 +22,7 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import OnboardingSuccess from '../OnboardingSuccess';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import type { Dispatch } from 'redux';
+import type { Colors } from '@metamask/design-tokens';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({

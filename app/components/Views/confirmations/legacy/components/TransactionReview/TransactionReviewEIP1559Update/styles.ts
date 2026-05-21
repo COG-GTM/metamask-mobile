@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import type { Colors } from '@metamask/design-tokens';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({

@@ -4,6 +4,7 @@ import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
 import Text from '../../../../../../Base/Text';
 import Spinner from '../../../../../../UI/AnimatedSpinner';
+import type { Colors } from '@metamask/design-tokens';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({

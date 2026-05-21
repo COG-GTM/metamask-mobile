@@ -5,6 +5,7 @@ import { strings } from '../../../../../../../../locales/i18n';
 import WarningMessage from '../../../SendFlow/WarningMessage';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
 import { isTestNet } from '../../../../../../../util/networks';
+import type { Colors } from '@metamask/design-tokens';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({

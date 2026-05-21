@@ -21,6 +21,7 @@ import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import AppConstants from '../../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
+import type { Colors } from '@metamask/design-tokens';
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
