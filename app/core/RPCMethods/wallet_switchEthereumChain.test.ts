@@ -5,10 +5,11 @@ import {
   Caip25CaveatType,
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
+import { Hex } from '@metamask/utils';
 
 const existingNetworkConfiguration = {
   id: 'test-network-configuration-id',
-  chainId: '0x64',
+  chainId: '0x64' as Hex,
   rpcUrl: 'https://rpc.test-chain.com',
   ticker: 'ETH',
   nickname: 'Gnosis Chain',
@@ -73,7 +74,7 @@ const correctParams = {
 };
 
 const otherOptions = {
-  res: {},
+  res: {} as { result: unknown },
   switchCustomNetworkRequest: {},
   requestUserApproval: jest.fn(),
   hooks: {
@@ -99,7 +100,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         ...otherOptions,
       });
     } catch (error) {
-      expect(error.message).toContain('Expected single, object parameter.');
+      expect((error as Error).message).toContain('Expected single, object parameter.');
     }
   });
 
@@ -112,7 +113,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         ...otherOptions,
       });
     } catch (error) {
-      expect(error.message).toContain(
+      expect((error as Error).message).toContain(
         'Received unexpected keys on object parameter. Unsupported keys',
       );
     }
@@ -127,7 +128,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         ...otherOptions,
       });
     } catch (error) {
-      expect(error.message).toContain(
+      expect((error as Error).message).toContain(
         `Expected 0x-prefixed, unpadded, non-zero hexadecimal string 'chainId'.`,
       );
     }
@@ -142,7 +143,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         ...otherOptions,
       });
     } catch (error) {
-      expect(error.message).toContain(
+      expect((error as Error).message).toContain(
         'numerical value greater than max safe value.',
       );
     }
@@ -162,6 +163,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
       .mockReturnValue('mainnet');
     jest
       .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
+      // @ts-expect-error Test mock return value
       .mockReturnValue({ configuration: { chainId: '0x1' } });
     const spyOnSetActiveNetwork = jest.spyOn(
       Engine.context.MultichainNetworkController,
@@ -200,6 +202,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         .mockReturnValue('mainnet');
       jest
         .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
+        // @ts-expect-error Test mock return value
         .mockReturnValue({ configuration: { chainId: '0x1' } });
       otherOptions.hooks.getCaveat.mockReturnValue({
         type: Caip25CaveatType,
@@ -247,6 +250,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         .mockReturnValue('mainnet');
       jest
         .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
+        // @ts-expect-error Test mock return value
         .mockReturnValue({ configuration: { chainId: '0x1' } });
       const spyOnSetActiveNetwork = jest.spyOn(
         Engine.context.MultichainNetworkController,
