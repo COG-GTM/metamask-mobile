@@ -133,7 +133,7 @@ const AccountPermissions = (props: AccountPermissionsProps) => {
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts({
     isLoading,
   });
-  const previousPermittedAccounts = useRef<string[]>();
+  const previousPermittedAccounts = useRef<string[]>(undefined);
 
   const [userIntent, setUserIntent] = useState(USER_INTENT.None);
   const [networkSelectorUserIntent, setNetworkSelectorUserIntent] = useState(

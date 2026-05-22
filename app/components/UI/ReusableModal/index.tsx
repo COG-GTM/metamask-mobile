@@ -58,7 +58,7 @@ const ReusableModal = forwardRef<ReusableModalRef, ReusableModalProps>(
     },
     ref,
   ) => {
-    const postCallback = useRef<ReusableModalPostCallback>();
+    const postCallback = useRef<ReusableModalPostCallback>(undefined);
     const { height: screenHeight } = useWindowDimensions();
     const { styles } = useStyles(styleSheet, {});
     const currentYOffset = useSharedValue(screenHeight);
@@ -167,7 +167,7 @@ const ReusableModal = forwardRef<ReusableModalRef, ReusableModalProps>(
     useEffect(() => debouncedHide.cancel(), [children, debouncedHide]);
 
     useImperativeHandle(ref, () => ({
-      dismissModal: (callback) => {
+      dismissModal: (callback?: ReusableModalPostCallback) => {
         postCallback.current = callback;
         debouncedHide();
       },
@@ -203,7 +203,7 @@ const ReusableModal = forwardRef<ReusableModalRef, ReusableModalProps>(
     return (
       <View style={styles.absoluteFill} {...props}>
         <Animated.View style={combinedOverlayStyle}></Animated.View>
-        {/* @ts-expect-error - PanGestureHandler is not correctly typed and react-natige-gesture-handler is outdated */}
+        {/* PanGestureHandler typing compatible with gesture-handler v2 */}
         <PanGestureHandler
           enabled={isInteractable}
           onGestureEvent={gestureHandler}

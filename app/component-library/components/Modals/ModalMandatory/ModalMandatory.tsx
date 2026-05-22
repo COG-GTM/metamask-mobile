@@ -115,10 +115,10 @@ const ModalMandatory = ({ route }: MandatoryModalProps) => {
   useEffect(() => {
     const hardwareBackPress = () => true;
 
-    BackHandler.addEventListener('hardwareBackPress', hardwareBackPress);
+    const subscription = BackHandler.addEventListener('hardwareBackPress', hardwareBackPress);
 
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', hardwareBackPress);
+      subscription.remove();
     };
   }, []);
 

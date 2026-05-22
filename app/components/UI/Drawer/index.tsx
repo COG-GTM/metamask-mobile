@@ -76,7 +76,7 @@ const Drawer = forwardRef<DrawerRef, Props>((props, ref) => {
   const { width: screenWidth } = useWindowDimensions();
   const dispatch = useDispatch();
 
-  const prevNetwork = useRef<string>();
+  const prevNetwork = useRef<string>(undefined);
   const networkOnboardingState = useSelector(
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -238,7 +238,7 @@ const Drawer = forwardRef<DrawerRef, Props>((props, ref) => {
   // Drawer view is no longer in the UI
   const renderContent = useCallback(() => {
     return (
-      // @ts-expect-error - PanGestureHandler is not correctly typed and react-natige-gesture-handler is outdated
+      // PanGestureHandler typing compatible with gesture-handler v2
       <PanGestureHandler onGestureEvent={gestureHandler}>
         <Animated.View style={[animatedDrawerStyle, style]}>
           <Animated.View style={animatedTouchableStyle}>

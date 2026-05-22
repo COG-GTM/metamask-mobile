@@ -41,7 +41,7 @@ function useLedgerBluetooth(deviceId: string): UseLedgerBluetoothHook {
   const [isAppLaunchConfirmationNeeded, setIsAppLaunchConfirmationNeeded] =
     useState<boolean>(false);
 
-  const transportRef = useRef<BluetoothInterface>();
+  const transportRef = useRef<BluetoothInterface>(undefined);
   const restartConnectionState = useRef<{
     shouldRestartConnection: boolean;
     restartCount: number;

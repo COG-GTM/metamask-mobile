@@ -31,7 +31,7 @@ function useGasPriceEstimation({
   gasLimit = defaultGasLimit,
   estimateRange = 'medium',
 }: Options) {
-  const pollTokenRef = useRef<string>();
+  const pollTokenRef = useRef<string>(undefined);
 
   const gasFeeControllerState = useSelector(selectGasFeeControllerState);
 
