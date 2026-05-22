@@ -6,17 +6,17 @@ import useCurrency from './useCurrency';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
 function KeypadComponent({
-  onChange,
-  value,
-  currency,
-  decimals,
-  style,
-  digitButtonStyle,
-  digitTextStyle,
-  periodButtonStyle,
-  periodTextStyle,
-  deleteButtonStyle,
-  deleteIcon,
+  onChange = undefined,
+  value = undefined,
+  currency = undefined,
+  decimals = undefined,
+  style = undefined,
+  digitButtonStyle = undefined,
+  digitTextStyle = undefined,
+  periodButtonStyle = undefined,
+  periodTextStyle = undefined,
+  deleteButtonStyle = undefined,
+  deleteIcon = undefined,
 }) {
   const { handler, decimalSeparator } = useCurrency(currency, decimals);
   const handleKeypadPress = useCallback(

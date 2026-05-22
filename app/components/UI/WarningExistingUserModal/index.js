@@ -59,16 +59,16 @@ const Default = () => {
  * View that renders a warning for existing user in a modal
  */
 export default function WarningExistingUserModal({
-  warningModalVisible,
-  onCancelPress,
-  cancelButtonDisabled,
-  onRequestClose,
-  onConfirmPress,
-  children,
-  cancelText,
-  confirmText,
-  confirmTestID,
-  cancelTestID,
+  warningModalVisible = false,
+  onCancelPress = undefined,
+  cancelButtonDisabled = false,
+  onRequestClose = undefined,
+  onConfirmPress = undefined,
+  children = undefined,
+  cancelText = undefined,
+  confirmText = undefined,
+  confirmTestID = undefined,
+  cancelTestID = undefined,
 }) {
   return (
     <ActionModal

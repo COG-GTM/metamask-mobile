@@ -83,9 +83,9 @@ const SettingsDrawer = ({
   title,
   description,
   onPress,
-  warning,
+  warning = undefined,
   renderArrowRight = true,
-  testID,
+  testID = undefined,
   titleColor = TextColor.Default,
 }) => {
   const { colors } = useTheme();

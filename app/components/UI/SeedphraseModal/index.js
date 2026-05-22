@@ -52,8 +52,8 @@ const createStyles = (colors) =>
   });
 
 const SeedphraseModal = ({
-  showWhatIsSeedphraseModal,
-  hideWhatIsSeedphrase,
+  showWhatIsSeedphraseModal = false,
+  hideWhatIsSeedphrase = undefined,
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

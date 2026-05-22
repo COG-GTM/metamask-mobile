@@ -58,13 +58,13 @@ export default function ActionContent({
   confirmButtonMode = 'warning',
   displayCancelButton = true,
   displayConfirmButton = true,
-  onCancelPress,
-  onConfirmPress,
+  onCancelPress = undefined,
+  onConfirmPress = undefined,
   viewWrapperStyle = null,
   viewContainerStyle = null,
-  actionContainerStyle,
+  actionContainerStyle = undefined,
   childrenContainerStyle = null,
-  verticalButtons,
+  verticalButtons = undefined,
 }) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
