@@ -188,8 +188,4 @@ MediaPlayer.propTypes = {
   selectedTextTrack: PropTypes.object,
 };
 
-MediaPlayer.defaultProps = {
-  onError: () => null,
-};
-
 export default MediaPlayer;

@@ -171,12 +171,12 @@ const EditGasFee1559 = ({
   error,
   warning,
   dappSuggestedGas,
-  ignoreOptions,
+  ignoreOptions = [],
   updateOption,
   extendOptions = {},
   recommended,
-  warningMinimumEstimateOption,
-  suggestedEstimateOption,
+  warningMinimumEstimateOption = AppConstants.GAS_OPTIONS.LOW,
+  suggestedEstimateOption = AppConstants.GAS_OPTIONS.MEDIUM,
   animateOnChange,
   isAnimating,
   onUpdatingValuesStart,
@@ -848,12 +848,6 @@ const EditGasFee1559 = ({
       </ScrollView>
     </View>
   );
-};
-
-EditGasFee1559.defaultProps = {
-  ignoreOptions: [],
-  warningMinimumEstimateOption: AppConstants.GAS_OPTIONS.LOW,
-  suggestedEstimateOption: AppConstants.GAS_OPTIONS.MEDIUM,
 };
 
 EditGasFee1559.propTypes = {

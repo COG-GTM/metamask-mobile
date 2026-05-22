@@ -137,7 +137,7 @@ const AccountConnect = (props: AccountConnectProps) => {
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts({
     isLoading,
   });
-  const previousIdentitiesListSize = useRef<number>();
+  const previousIdentitiesListSize = useRef<number>(undefined);
   const internalAccounts = useSelector(selectInternalAccounts);
   const [showPhishingModal, setShowPhishingModal] = useState(false);
   const [userIntent, setUserIntent] = useState(USER_INTENT.None);

@@ -129,10 +129,10 @@ const EditGasFeeLegacy = ({
   gasEstimateType,
   error,
   warning,
-  ignoreOptions,
+  ignoreOptions = [],
   extendOptions = {},
   recommended,
-  warningMinimumEstimateOption,
+  warningMinimumEstimateOption = AppConstants.GAS_OPTIONS.LOW,
   onUpdatingValuesStart,
   onUpdatingValuesEnd,
   animateOnChange,
@@ -513,11 +513,6 @@ const EditGasFeeLegacy = ({
       </ScrollView>
     </View>
   );
-};
-
-EditGasFeeLegacy.defaultProps = {
-  ignoreOptions: [],
-  warningMinimumEstimateOption: AppConstants.GAS_OPTIONS.LOW,
 };
 
 EditGasFeeLegacy.propTypes = {

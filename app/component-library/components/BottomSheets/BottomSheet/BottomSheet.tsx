@@ -44,7 +44,7 @@ const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     },
     ref,
   ) => {
-    const postCallback = useRef<BottomSheetPostCallback>();
+    const postCallback = useRef<BottomSheetPostCallback>(undefined);
     const bottomSheetDialogRef = useRef<BottomSheetDialogRef>(null);
     const { bottom: screenBottomPadding } = useSafeAreaInsets();
     const { styles } = useStyles(styleSheet, {
@@ -70,18 +70,18 @@ const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         isInteractable && bottomSheetDialogRef.current?.onCloseDialog();
         return true;
       };
-      BackHandler.addEventListener('hardwareBackPress', hardwareBackPress);
+      const subscription = BackHandler.addEventListener('hardwareBackPress', hardwareBackPress);
       return () => {
-        BackHandler.removeEventListener('hardwareBackPress', hardwareBackPress);
+        subscription.remove();
       };
     }, [onCloseCB, isInteractable]);
 
     useImperativeHandle(ref, () => ({
-      onCloseBottomSheet: (callback) => {
+      onCloseBottomSheet: (callback?: BottomSheetPostCallback) => {
         postCallback.current = callback;
         bottomSheetDialogRef.current?.onCloseDialog();
       },
-      onOpenBottomSheet: (callback) => {
+      onOpenBottomSheet: (callback?: BottomSheetPostCallback) => {
         postCallback.current = callback;
         bottomSheetDialogRef.current?.onOpenDialog();
       },

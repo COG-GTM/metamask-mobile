@@ -74,7 +74,7 @@ const Tokens = memo(() => {
   const evmTokens = useSelector(selectEvmTokens);
   const tokenFiatBalances = useSelector(selectEvmTokenFiatBalances);
 
-  const actionSheet = useRef<typeof ActionSheet>();
+  const actionSheet = useRef<typeof ActionSheet>(undefined);
   const [tokenToRemove, setTokenToRemove] = useState<TokenI>();
   const [refreshing, setRefreshing] = useState(false);
   const [isAddTokenEnabled, setIsAddTokenEnabled] = useState(true);

@@ -50,25 +50,25 @@ const getStyles = (colors) =>
  * PureComponent that renders scrollable content above configurable buttons
  */
 export default function ActionView({
-  cancelTestID,
-  confirmTestID,
-  cancelText,
+  cancelTestID = '',
+  confirmTestID = '',
+  cancelText = '',
   children,
-  confirmText,
-  confirmButtonMode,
+  confirmText = '',
+  confirmButtonMode = 'normal',
   onCancelPress,
   onConfirmPress,
   onTouchablePress,
-  showCancelButton,
-  showConfirmButton,
-  confirmed,
+  showCancelButton = true,
+  showConfirmButton = true,
+  confirmed = false,
   confirmDisabled,
   loading = false,
   keyboardShouldPersistTaps = 'never',
   style = undefined,
   confirmButtonState = ConfirmButtonState.Normal,
   scrollViewTestID,
-  contentContainerStyle,
+  contentContainerStyle = undefined,
 }) {
   const { colors } = useTheme();
   confirmText = confirmText || strings('action_view.confirm');
@@ -141,18 +141,6 @@ export default function ActionView({
     </View>
   );
 }
-
-ActionView.defaultProps = {
-  cancelText: '',
-  confirmButtonMode: 'normal',
-  confirmText: '',
-  confirmTestID: '',
-  confirmed: false,
-  cancelTestID: '',
-  showCancelButton: true,
-  showConfirmButton: true,
-  contentContainerStyle: undefined,
-};
 
 ActionView.propTypes = {
   /**

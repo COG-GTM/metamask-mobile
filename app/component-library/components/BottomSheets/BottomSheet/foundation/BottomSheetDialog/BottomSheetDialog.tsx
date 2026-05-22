@@ -235,7 +235,7 @@ const BottomSheetDialog = forwardRef<
         }
         {...props}
       >
-        {/* @ts-expect-error - PanGestureHandler is not correctly typed and react-natige-gesture-handler is outdated */}
+        {/* PanGestureHandler typing compatible with gesture-handler v2 */}
         <PanGestureHandler
           enabled={isInteractable}
           onGestureEvent={gestureHandler}
