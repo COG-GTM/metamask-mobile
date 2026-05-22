@@ -93,7 +93,7 @@ const RangeInput = ({
   rightLabelComponent,
   value,
   unit,
-  increment,
+  increment = new BigNumber(1),
   onChangeValue,
   inputInsideLabel,
   error,
@@ -229,10 +229,6 @@ const RangeInput = ({
       )}
     </View>
   );
-};
-
-RangeInput.defaultProps = {
-  increment: new BigNumber(1),
 };
 
 RangeInput.propTypes = {

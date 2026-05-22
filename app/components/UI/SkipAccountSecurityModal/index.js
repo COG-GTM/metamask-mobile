@@ -67,12 +67,12 @@ const createStyles = (colors) =>
   });
 
 const SkipAccountSecurityModal = ({
-  modalVisible,
+  modalVisible = false,
   onConfirm,
   onCancel,
   onPress,
   toggleSkipCheckbox,
-  skipCheckbox,
+  skipCheckbox = false,
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -152,12 +152,6 @@ const propTypes = {
   skipCheckbox: PropTypes.bool.isRequired,
 };
 
-const defaultProps = {
-  modalVisible: false,
-  skipCheckbox: false,
-};
-
 SkipAccountSecurityModal.propTypes = propTypes;
-SkipAccountSecurityModal.defaultProps = defaultProps;
 
 export default SkipAccountSecurityModal;
