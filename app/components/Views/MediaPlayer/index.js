@@ -56,7 +56,7 @@ const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
     },
   });
 
-function MediaPlayer({ uri, style, onClose = undefined, textTracks = undefined, selectedTextTrack = undefined }) {
+function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const videoRef = useRef();

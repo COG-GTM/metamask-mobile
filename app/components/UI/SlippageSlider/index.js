@@ -104,10 +104,10 @@ const SlippageSlider = ({
   range,
   increment,
   onChange,
-  value = undefined,
-  formatTooltipText = undefined,
-  disabled = false,
-  changeOnRelease = false,
+  value,
+  formatTooltipText,
+  disabled,
+  changeOnRelease,
 }) => {
   const { colors, shadows } = useTheme();
   const styles = createStyles(colors, shadows);

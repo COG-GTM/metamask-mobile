@@ -100,9 +100,9 @@ const createStyles = (colors, shadows) =>
 function SliderButton({
   incompleteText,
   completeText,
-  onComplete = undefined,
-  disabled = false,
-  onSwipeChange = undefined,
+  onComplete,
+  disabled,
+  onSwipeChange,
 }) {
   const [componentWidth, setComponentWidth] = useState(0);
   const [hasCompletedCalled, setHasCompletedCalled] = useState(false);
