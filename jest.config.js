@@ -16,6 +16,7 @@ process.env.MM_SMART_ACCOUNT_UI_ENABLED = 'true';
 
 const config = {
   preset: 'react-native',
+  setupFiles: ['<rootDir>/app/util/test/react19-shim.js'],
   setupFilesAfterEnv: ['<rootDir>/app/util/test/testSetup.js'],
   testEnvironment: 'jest-environment-node',
   transformIgnorePatterns: [
