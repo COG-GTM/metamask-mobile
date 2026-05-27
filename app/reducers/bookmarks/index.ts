@@ -1,4 +1,21 @@
-const bookmarksReducer = (state = [], action) => {
+export interface Bookmark {
+  url: string;
+  name: string;
+}
+
+interface AddBookmarkAction {
+  type: 'ADD_BOOKMARK';
+  bookmark: Bookmark;
+}
+
+interface RemoveBookmarkAction {
+  type: 'REMOVE_BOOKMARK';
+  bookmark: Bookmark;
+}
+
+type BookmarkAction = AddBookmarkAction | RemoveBookmarkAction;
+
+const bookmarksReducer = (state: Bookmark[] = [], action: BookmarkAction): Bookmark[] => {
   switch (action.type) {
     case 'ADD_BOOKMARK':
       return [...state, action.bookmark];
