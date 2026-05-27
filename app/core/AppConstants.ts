@@ -7,7 +7,7 @@ import { SECOND, MINUTE } from '../constants/time';
 const DEVELOPMENT = 'development';
 
 const getEnvVar = (key: string, defaultValue: string): string =>
-  process.env[key] ?? defaultValue;
+  process.env[key] || defaultValue;
 
 const PORTFOLIO_URL = getEnvVar(
   'MM_PORTFOLIO_URL',
