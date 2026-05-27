@@ -1,9 +1,11 @@
-export const MIN_IN_MS = 1000 * 60;
-export const HOUR_IN_MS = MIN_IN_MS * 60;
-export const DAY_IN_MS = HOUR_IN_MS * 24;
-export const DEFAULT_SESSION_TIMEOUT_MS = 30 * DAY_IN_MS;
+import { SECOND, MINUTE, HOUR, DAY } from '../../constants/time';
 
-export const TIMEOUT_PAUSE_CONNECTIONS = 25000;
+export const MIN_IN_MS = MINUTE;
+export const HOUR_IN_MS = HOUR;
+export const DAY_IN_MS = DAY;
+export const DEFAULT_SESSION_TIMEOUT_MS = 30 * DAY;
+
+export const TIMEOUT_PAUSE_CONNECTIONS = 25 * SECOND;
 
 export const RPC_METHODS = {
   METAMASK_GETPROVIDERSTATE: 'metamask_getProviderState',
