@@ -11,6 +11,7 @@ import {
 } from '@sentry/core';
 import performance from 'react-native-performance';
 import { createModuleLogger, createProjectLogger } from '@metamask/utils';
+import { MINUTE } from '../constants/time';
 
 // Cannot create this 'sentry' logger in Sentry util file because of circular dependency
 const projectLogger = createProjectLogger('sentry');
@@ -75,7 +76,7 @@ export enum TraceOperation {
 
 const ID_DEFAULT = 'default';
 const OP_DEFAULT = 'custom';
-export const TRACES_CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
+export const TRACES_CLEANUP_INTERVAL = 5 * MINUTE;
 
 const tracesByKey: Map<string, PendingTrace> = new Map();
 

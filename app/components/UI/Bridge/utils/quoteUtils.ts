@@ -3,8 +3,9 @@ import {
   FeatureFlagsPlatformConfig,
 } from '@metamask/bridge-controller';
 import type { BridgeToken } from '../types';
+import { SECOND } from '../../../../constants/time';
 
-const DEFAULT_REFRESH_RATE = 30 * 1000; // 30 seconds
+const DEFAULT_REFRESH_RATE = 30 * SECOND;
 
 /**
  * Gets the refresh rate for quotes based on feature flags and source token
