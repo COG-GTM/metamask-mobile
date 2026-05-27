@@ -1,6 +1,51 @@
 import AppConstants from '../../core/AppConstants';
 
-const initialState = {
+interface TokenSortConfig {
+  key: string;
+  order: string;
+  sortCallback?: string;
+}
+
+export interface SettingsState {
+  searchEngine: string;
+  primaryCurrency: string;
+  lockTime: number;
+  useBlockieIcon: boolean;
+  hideZeroBalanceTokens: boolean;
+  basicFunctionalityEnabled: boolean;
+  showHexData?: boolean;
+  showCustomNonce?: boolean;
+  showFiatOnTestnets?: boolean;
+  deviceNotificationEnabled?: boolean;
+  tokenSortConfig?: TokenSortConfig;
+}
+
+interface SetSearchEngineAction { type: 'SET_SEARCH_ENGINE'; searchEngine: string }
+interface SetLockTimeAction { type: 'SET_LOCK_TIME'; lockTime: number }
+interface SetShowHexDataAction { type: 'SET_SHOW_HEX_DATA'; showHexData: boolean }
+interface SetShowCustomNonceAction { type: 'SET_SHOW_CUSTOM_NONCE'; showCustomNonce: boolean }
+interface SetHideZeroBalanceTokensAction { type: 'SET_HIDE_ZERO_BALANCE_TOKENS'; hideZeroBalanceTokens: boolean }
+interface SetUseBlockieIconAction { type: 'SET_USE_BLOCKIE_ICON'; useBlockieIcon: boolean }
+interface SetPrimaryCurrencyAction { type: 'SET_PRIMARY_CURRENCY'; primaryCurrency: string }
+interface SetShowFiatOnTestnetsAction { type: 'SET_SHOW_FIAT_ON_TESTNETS'; showFiatOnTestnets: boolean }
+interface ToggleBasicFunctionalityAction { type: 'TOGGLE_BASIC_FUNCTIONALITY'; basicFunctionalityEnabled: boolean }
+interface ToggleDeviceNotificationsAction { type: 'TOGGLE_DEVICE_NOTIFICATIONS'; deviceNotificationEnabled: boolean }
+interface SetTokenSortConfigAction { type: 'SET_TOKEN_SORT_CONFIG'; tokenSortConfig: TokenSortConfig }
+
+type SettingsAction =
+  | SetSearchEngineAction
+  | SetLockTimeAction
+  | SetShowHexDataAction
+  | SetShowCustomNonceAction
+  | SetHideZeroBalanceTokensAction
+  | SetUseBlockieIconAction
+  | SetPrimaryCurrencyAction
+  | SetShowFiatOnTestnetsAction
+  | ToggleBasicFunctionalityAction
+  | ToggleDeviceNotificationsAction
+  | SetTokenSortConfigAction;
+
+const initialState: SettingsState = {
   searchEngine: AppConstants.DEFAULT_SEARCH_ENGINE,
   primaryCurrency: 'ETH',
   lockTime: -1, // Disabled by default
@@ -9,7 +54,7 @@ const initialState = {
   basicFunctionalityEnabled: true,
 };
 
-const settingsReducer = (state = initialState, action) => {
+const settingsReducer = (state: SettingsState = initialState, action: SettingsAction): SettingsState => {
   switch (action.type) {
     case 'SET_SEARCH_ENGINE':
       return {
