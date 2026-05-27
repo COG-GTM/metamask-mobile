@@ -1,6 +1,6 @@
 import { NetworksChainId } from '@metamask/controller-utils';
 
-export default function migrate(state) {
+export default function migrate(state: Record<string, unknown>) {
   const { allTokens } = state.engine.backgroundState.TokensController;
   const { allCollectibleContracts, allCollectibles } =
     state.engine.backgroundState.CollectiblesController;

@@ -1,4 +1,4 @@
-export default function migrate(state) {
+export default function migrate(state: Record<string, unknown>) {
   state.engine.backgroundState.TokensController = {
     allTokens: state.engine.backgroundState.AssetsController.allTokens,
     ignoredTokens: state.engine.backgroundState.AssetsController.ignoredTokens,
