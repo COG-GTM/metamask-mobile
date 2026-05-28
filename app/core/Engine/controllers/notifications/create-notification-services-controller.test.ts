@@ -20,8 +20,7 @@ describe('Notification Services Controller', () => {
 
     const mockConstructor = jest.spyOn(
       NotificationServicesController.prototype,
-      // @ts-expect-error - this is not something you should be able to call, but this is a mock
-      'constructor',
+      'constructor' as keyof NotificationServicesController,
     );
 
     const assertGetConstructorCall = () =>

@@ -899,8 +899,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       backgroundBridgeRef.current?.onDisconnect();
       backgroundBridgeRef.current = undefined;
 
-      //@ts-expect-error - We should type bacgkround bridge js file
-      const newBridge = new BackgroundBridge({
+      const newBridge = new (BackgroundBridge as new (args: Record<string, unknown>) => { onDisconnect: () => void })({
         webview: webviewRef,
         url: urlBridge,
         getRpcMethodMiddleware: ({

@@ -20,8 +20,7 @@ export async function jsonRpcRequest(rpcUrl: string, rpcMethod: string, rpcParam
 
   // Convert basic auth URL component to Authorization header
   const parsedUrl = new ParsedURL(rpcUrl);
-  // @ts-expect-error Property 'search' does not exist on type 'URLParse<string>'.
-  const { origin, pathname, username, password, search } = parsedUrl;
+  const { origin, pathname, username, password, search } = parsedUrl as unknown as { origin: string; pathname: string; username: string; password: string; search: string };
   // URLs containing username and password needs special processing
   if (username && password) {
     const encodedAuth = Buffer.from(`${username}:${password}`).toString(

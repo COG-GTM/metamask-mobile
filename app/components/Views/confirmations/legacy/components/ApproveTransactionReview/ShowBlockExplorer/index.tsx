@@ -67,18 +67,14 @@ const ShowBlockExplorer = (props: ShowBlockExplorerProps) => {
     learnMoreURL ||
     (type === RPC
       ? `${findBlockExplorerForRpc(
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          providerRpcTarget,
+          providerRpcTarget ?? '',
           networkConfigurations,
         )}/address/${address}`
       : getEtherscanAddressUrl(type, address));
   const title =
     type === RPC
       ? new URL(
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          findBlockExplorerForRpc(providerRpcTarget, networkConfigurations),
+          findBlockExplorerForRpc(providerRpcTarget ?? '', networkConfigurations) ?? '',
         ).hostname
       : getEtherscanBaseUrl(type).replace('https://', '');
 

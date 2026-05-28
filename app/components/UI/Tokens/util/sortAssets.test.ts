@@ -145,8 +145,7 @@ describe('sortAssets function - nested value handling with dates and numeric sor
 
     // Expect the undefined categories to be at the end
     expect(
-      // @ts-expect-error // testing for undefined value
-      sortedByCategory[sortedByCategory.length - 1].profile.info?.category,
+      (sortedByCategory[sortedByCategory.length - 1].profile.info as Record<string, unknown> | undefined)?.category,
     ).toBeUndefined();
   });
 });

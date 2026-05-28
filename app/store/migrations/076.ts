@@ -392,7 +392,6 @@ export default function migrate(oldState: unknown) {
       caveats: [
         {
           type: Caip25CaveatType,
-          //@ts-expect-error this is a valid CAIP-25 caveat value
           value: {
             requiredScopes: {},
             optionalScopes: scopes,

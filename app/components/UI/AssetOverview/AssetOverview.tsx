@@ -310,8 +310,7 @@ const AssetOverview: React.FC<AssetOverviewProps> = ({
     );
   } else if (isEthOrNative) {
     balance = renderFromWei(
-      // @ts-expect-error - This should be fixed at the accountsController selector level, ongoing discussion
-      accountsByChainId[toHexadecimal(chainId)]?.[selectedAddress]?.balance,
+      (accountsByChainId as Record<string, Record<string, { balance?: string }>>)[toHexadecimal(chainId)]?.[selectedAddress]?.balance,
     );
   } else {
     const multiChainTokenBalanceHex =

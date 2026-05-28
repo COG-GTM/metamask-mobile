@@ -135,8 +135,7 @@ export type GasIncludedQuote = Fees & { isGasIncludedTrade?: boolean };
 
 // Currently, we take the first token for gas fee payment, but later, a user can choose which token to use for gas payment.
 export const getTradeTxTokenFee = (quote: GasIncludedQuote) =>
-  // @ts-expect-error Property 'tokenFees' does not exist on type 'Fee'. Need to update the type.
-  quote?.tradeTxFees?.fees?.[0]?.tokenFees?.[0];
+  (quote?.tradeTxFees?.fees?.[0] as Record<string, unknown[] | undefined> | undefined)?.tokenFees?.[0];
 
 // We get gas included fees from a swap quote now. In a future iteration we will have a universal
 // implementation that works for non-swaps transactions as well.

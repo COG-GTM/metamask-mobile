@@ -96,8 +96,7 @@ describe('getSwapsIsLive', () => {
     it('should return false for Solana chain when bridge is not enabled', () => {
       const newState = deepClone(mockState);
       const remoteFeatureFlags = newState.engine.backgroundState.RemoteFeatureFlagController.remoteFeatureFlags;
-      // @ts-expect-error - It's defined in the mock
-      remoteFeatureFlags.bridgeConfig.chains[1151111081099710] =
+      (remoteFeatureFlags.bridgeConfig as Record<string, unknown> & { chains: Record<number, unknown> }).chains[1151111081099710] =
         {
           isActiveDest: false,
           isActiveSrc: false,

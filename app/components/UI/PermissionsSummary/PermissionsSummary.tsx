@@ -404,8 +404,7 @@ const PermissionsSummary = ({
                   </View>
                   <View style={styles.avatarGroup}>
                     <AvatarGroup
-                      // @ts-expect-error - AvatarGroup is not typed
-                      avatarPropsList={networkAvatars.map((avatar) => ({
+                      avatarPropsList={networkAvatars.map((avatar: Record<string, unknown>) => ({
                         ...avatar,
                         variant: AvatarVariant.Network,
                       }))}

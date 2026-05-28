@@ -117,8 +117,7 @@ async function initiateQRHardwareConnection(
 
   const qrInteractions = await KeyringController.withKeyring(
     { type: KeyringTypes.qr },
-    // @ts-expect-error The QR Keyring type is not compatible with our keyring type yet
-    async ({ keyring }: QRKeyring) => ({
+    async ({ keyring }: { keyring: Pick<QRKeyring, 'cancelSync' | 'submitCryptoAccount' | 'submitCryptoHDKey'> }) => ({
       cancelSync: keyring.cancelSync.bind(keyring),
       submitCryptoAccount: keyring.submitCryptoAccount.bind(keyring),
       submitCryptoHDKey: keyring.submitCryptoHDKey.bind(keyring),

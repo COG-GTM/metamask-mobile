@@ -149,8 +149,7 @@ describe('AccountFromToInfoCard', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        {/* @ts-expect-error: Rest props are ignored for testing purposes */}
-        <AccountFromToInfoCard transactionState={transactionState} />
+        <AccountFromToInfoCard transactionState={transactionState} {...({} as Record<string, unknown>)} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
@@ -158,8 +157,7 @@ describe('AccountFromToInfoCard', () => {
 
   it('should match snapshot', async () => {
     const container = renderWithProvider(
-      //@ts-expect-error - Rest props are ignored for testing purposes
-      <AccountFromToInfoCard transactionState={transactionState} />,
+      <AccountFromToInfoCard transactionState={transactionState} {...({} as Record<string, unknown>)} />,
       { state: mockInitialState },
     );
     expect(container).toMatchSnapshot();
@@ -167,8 +165,7 @@ describe('AccountFromToInfoCard', () => {
 
   it('should render to account name', async () => {
     const { findByText } = renderWithProvider(
-      //@ts-expect-error - Rest props are ignored for testing purposes
-      <AccountFromToInfoCard transactionState={transactionState} />,
+      <AccountFromToInfoCard transactionState={transactionState} {...({} as Record<string, unknown>)} />,
       { state: mockInitialState },
     );
     expect(await findByText('Account 2')).toBeDefined();
@@ -176,8 +173,7 @@ describe('AccountFromToInfoCard', () => {
 
   it('should render to address', async () => {
     const { findByText } = renderWithProvider(
-      //@ts-expect-error - Rest props are ignored for testing purposes
-      <AccountFromToInfoCard transactionState={transactionState} />,
+      <AccountFromToInfoCard transactionState={transactionState} {...({} as Record<string, unknown>)} />,
       { state: mockInitialState },
     );
     expect(await findByText('0x519d2...c9CC7')).toBeDefined();
@@ -203,8 +199,7 @@ describe('AccountFromToInfoCard', () => {
       transactionToName: '0xF4e8263979A89Dc357d7f9F79533Febc7f3e287B',
     };
     const { findByText } = renderWithProvider(
-      //@ts-expect-error - Rest props are ignored for testing purposes
-      <AccountFromToInfoCard transactionState={NFTTransaction} />,
+      <AccountFromToInfoCard transactionState={NFTTransaction} {...({} as Record<string, unknown>)} />,
       { state: mockInitialState },
     );
     expect(await findByText('0xF4e82...e287B')).toBeDefined();
@@ -232,8 +227,7 @@ describe('AccountFromToInfoCard', () => {
       },
     };
     const { queryByText } = renderWithProvider(
-      //@ts-expect-error - Rest props are ignored for testing purposes
-      <AccountFromToInfoCard transactionState={txState} />,
+      <AccountFromToInfoCard transactionState={txState} {...({} as Record<string, unknown>)} />,
       { state: mockInitialState },
     );
     expect(await queryByText('test1.eth')).toBeDefined();

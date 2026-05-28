@@ -570,8 +570,7 @@ class SmartTransactionHook {
   #updateSwapsTransactions = (uuid: string) => {
     // We do this so we can show the Swap data (e.g. ETH to USDC, fiat values) in the app/components/Views/TransactionsView/index.js
     const swapsTransactions =
-      // @ts-expect-error This is not defined on the type, but is a field added in app/components/UI/Swaps/QuotesView.js
-      this.#transactionController.state.swapsTransactions || {};
+      (this.#transactionController.state as Record<string, unknown>).swapsTransactions as Record<string, unknown> || {};
 
     const originalSwapsTransaction =
       swapsTransactions[this.#transactionMeta.id];

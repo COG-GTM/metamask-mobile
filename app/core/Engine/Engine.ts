@@ -520,8 +520,7 @@ export class Engine {
     };
 
     const snapRestrictedMethods = {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error - SnapController action types not fully compatible with messenger generic
       clearSnapState: this.controllerMessenger.call.bind(
         this.controllerMessenger,
         SnapControllerClearSnapStateAction,
@@ -591,14 +590,12 @@ export class Engine {
       ),
       handleSnapRpcRequest: async (args: HandleSnapRequestArgs) =>
         await handleSnapRequest(this.controllerMessenger, args),
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error - SnapController action types not fully compatible with messenger generic
       getSnapState: this.controllerMessenger.call.bind(
         this.controllerMessenger,
         SnapControllerGetSnapStateAction,
       ),
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error - SnapController action types not fully compatible with messenger generic
       updateSnapState: this.controllerMessenger.call.bind(
         this.controllerMessenger,
         SnapControllerUpdateSnapStateAction,
@@ -1681,9 +1678,7 @@ export class Engine {
                 )
                 : undefined);
             const tokenBalanceFiat = balanceToFiatNumber(
-              // TODO: Fix this by handling or eliminating the undefined case
-              // @ts-expect-error This variable can be `undefined`, which would break here.
-              tokenBalance,
+              tokenBalance ?? '0',
               conversionRate,
               exchangeRate,
               decimalsToShow,
@@ -1786,9 +1781,7 @@ export class Engine {
       const {
         engine: { backgroundState },
       } = store.getState();
-      // TODO: Check `allNfts[currentChainId]` property instead
-      // @ts-expect-error This property does not exist
-      const nfts = backgroundState.NftController.nfts;
+      const nfts = (backgroundState.NftController as Record<string, unknown>).nfts as unknown[] | undefined;
 
       const { tokenBalances } = backgroundState.TokenBalancesController;
 

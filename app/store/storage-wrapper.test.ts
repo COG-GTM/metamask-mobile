@@ -21,8 +21,7 @@ describe('StorageWrapper', () => {
     const setItemSpy = jest.spyOn(StorageWrapper, 'setItem');
 
     try {
-      //@ts-expect-error - Expected to test non string scenario
-      await StorageWrapper.setItem('test-key', 123);
+      await StorageWrapper.setItem('test-key', 123 as unknown as string);
     } catch (error) {
       const e = error as unknown as Error;
       expect(e).toBeInstanceOf(Error);

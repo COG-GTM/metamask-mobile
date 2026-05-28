@@ -27,9 +27,7 @@ describe('handleClientsConnected', () => {
       _loading: false,
     } as unknown as Connection;
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    Engine.context = { KeyringController: {} as KeyringController };
+    (Engine as Record<string, unknown>).context = { KeyringController: {} as KeyringController };
   });
 
   it('should log clients connected event with channel ID and origin', async () => {

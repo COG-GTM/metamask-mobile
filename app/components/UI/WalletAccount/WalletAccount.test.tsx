@@ -153,10 +153,9 @@ describe('WalletAccount', () => {
   });
   it('displays custom account name when ENS is defined but account name is not the default', async () => {
     const customAccountName = 'Custom Account Name';
-    //@ts-expect-error - for testing purposes we will assume that this is not possibly undefined
     mockInitialState.engine.backgroundState.AccountsController.internalAccounts.accounts[
       expectedUuid2
-    ].metadata.name = customAccountName;
+    ]!.metadata.name = customAccountName;
     const { getByText } = renderWithProvider(<WalletAccount />, {
       state: mockInitialState,
     });

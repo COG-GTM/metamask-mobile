@@ -57,8 +57,7 @@ describe('NetworkVerificationInfo', () => {
 
     const { toJSON, getByText } = render(
       <NetworkVerificationInfo
-        // @ts-expect-error - The CustomNetworkInformation type is missing the pageMeta property
-        customNetworkInformation={networkWithCustomRpcUrl}
+        customNetworkInformation={networkWithCustomRpcUrl as Parameters<typeof NetworkVerificationInfo>[0]['customNetworkInformation']}
         onReject={() => undefined}
         onConfirm={() => undefined}
         isNetworkRpcUpdate
