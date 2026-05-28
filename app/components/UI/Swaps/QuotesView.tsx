@@ -418,7 +418,7 @@ async function addTokenToAssetsController(newToken: SwapToken, chainId: string, 
     : [];
   if (
     !isSwapsNativeAsset(newToken) &&
-    !allTokens.includes((token: any) =>
+    !allTokens.some((token: any) =>
       toLowerCaseEquals(token.address, newToken.address),
     )
   ) {
