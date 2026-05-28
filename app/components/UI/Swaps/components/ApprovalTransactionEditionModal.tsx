@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import Modal from 'react-native-modal';
@@ -15,6 +14,34 @@ import {
 import { useTheme } from '../../../../util/theme';
 import Logger from '../../../../util/Logger';
 import { selectSwapsApprovalTransaction } from '../../../../reducers/swaps';
+import { RootState } from '../../../../reducers';
+
+interface ApprovalTransaction {
+  data?: string;
+  [key: string]: unknown;
+}
+
+interface SourceTokenInfo {
+  symbol: string;
+  decimals: number;
+  [key: string]: unknown;
+}
+
+interface StateProps {
+  originalApprovalTransaction: ApprovalTransaction | null;
+}
+
+interface OwnProps {
+  approvalTransaction?: ApprovalTransaction | null;
+  editQuoteTransactionsVisible?: boolean;
+  minimumSpendLimit: string;
+  onCancelEditQuoteTransactions?: () => void;
+  setApprovalTransaction?: (tx: ApprovalTransaction | null) => void;
+  sourceToken: SourceTokenInfo;
+  chainId?: string;
+}
+
+type ApprovalTransactionEditionModalProps = StateProps & OwnProps;
 
 const styles = StyleSheet.create({
   keyboardAwareWrapper: {
@@ -36,7 +63,7 @@ function ApprovalTransactionEditionModal({
   sourceToken,
   minimumSpendLimit,
   chainId,
-}) {
+}: ApprovalTransactionEditionModalProps) {
   /* Approval transaction if any */
   const [customApprovalTransaction, setCustomApprovalTransaction] =
     useState(approvalTransaction);
@@ -49,7 +76,7 @@ function ApprovalTransactionEditionModal({
   const { colors } = useTheme();
 
   const onSpendLimitCustomValueChange = useCallback(
-    (approvalCustomValue) => setApprovalCustomValue(approvalCustomValue),
+    (value: string) => setApprovalCustomValue(value),
     [],
   );
 
@@ -74,8 +101,8 @@ function ApprovalTransactionEditionModal({
         customApprovalTransaction,
       );
       setCustomApprovalTransaction(newApprovalTransaction);
-      setApprovalTransaction(newApprovalTransaction);
-      onCancelEditQuoteTransactions();
+      setApprovalTransaction?.(newApprovalTransaction);
+      onCancelEditQuoteTransactions?.();
     } catch (err) {
       Logger.log('Failed to setTransactionObject', err);
     }
@@ -94,7 +121,7 @@ function ApprovalTransactionEditionModal({
     const newApprovalTx = spendLimitUnlimitedSelected
       ? originalApprovalTransaction
       : customApprovalTransaction;
-    setApprovalTransaction(newApprovalTx);
+    setApprovalTransaction?.(newApprovalTx);
     if (newApprovalTx) {
       const approvalTransactionAmount = decodeApproveData(
         newApprovalTx.data,
@@ -153,18 +180,7 @@ function ApprovalTransactionEditionModal({
   );
 }
 
-ApprovalTransactionEditionModal.propTypes = {
-  approvalTransaction: PropTypes.object,
-  originalApprovalTransaction: PropTypes.object,
-  editQuoteTransactionsVisible: PropTypes.bool,
-  minimumSpendLimit: PropTypes.string.isRequired,
-  onCancelEditQuoteTransactions: PropTypes.func,
-  setApprovalTransaction: PropTypes.func,
-  sourceToken: PropTypes.object,
-  chainId: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   originalApprovalTransaction: selectSwapsApprovalTransaction(state),
 });
 

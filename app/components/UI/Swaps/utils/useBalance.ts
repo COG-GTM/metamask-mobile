@@ -7,12 +7,18 @@ import {
 } from '../../../../util/number';
 import { safeToChecksumAddress } from '../../../../util/address';
 
+interface SourceToken {
+  address: string;
+  decimals: number;
+  [key: string]: unknown;
+}
+
 function useBalance(
-  accounts,
-  balances,
-  selectedAddress,
-  sourceToken,
-  { asUnits = false } = {},
+  accounts: Record<string, { balance?: string }>,
+  balances: Record<string, string>,
+  selectedAddress: string,
+  sourceToken: SourceToken | null | undefined,
+  { asUnits = false }: { asUnits?: boolean } = {},
 ) {
   // TODO: This doesn't always return type BN. Objects down the line may attempt to call functions on the BN object.
   const balance = useMemo(() => {
