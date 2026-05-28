@@ -1,4 +1,47 @@
-const initialState = {
+/* eslint-disable @typescript-eslint/default-param-last */
+
+// TODO: import from actions when migrated
+type ToggleNetworkModalAction = {
+  type: 'TOGGLE_NETWORK_MODAL';
+  shouldNetworkSwitchPopToWallet: boolean;
+};
+
+type ToggleCollectibleContractModalAction = {
+  type: 'TOGGLE_COLLECTIBLE_CONTRACT_MODAL';
+};
+
+type ToggleDappTransactionModalAction = {
+  type: 'TOGGLE_DAPP_TRANSACTION_MODAL';
+  show: boolean | null;
+};
+
+type ToggleInfoNetworkModalAction = {
+  type: 'TOGGLE_INFO_NETWORK_MODAL';
+  show: boolean | null;
+};
+
+type ToggleSignModalAction = {
+  type: 'TOGGLE_SIGN_MODAL';
+  show: boolean | null;
+};
+
+type ModalsAction =
+  | ToggleNetworkModalAction
+  | ToggleCollectibleContractModalAction
+  | ToggleDappTransactionModalAction
+  | ToggleInfoNetworkModalAction
+  | ToggleSignModalAction;
+
+export interface ModalsState {
+  networkModalVisible: boolean;
+  shouldNetworkSwitchPopToWallet: boolean;
+  collectibleContractModalVisible: boolean;
+  dappTransactionModalVisible: boolean;
+  signMessageModalVisible: boolean;
+  infoNetworkModalVisible?: boolean;
+}
+
+const initialState: ModalsState = {
   networkModalVisible: false,
   shouldNetworkSwitchPopToWallet: true,
   collectibleContractModalVisible: false,
@@ -6,7 +49,10 @@ const initialState = {
   signMessageModalVisible: true,
 };
 
-const modalsReducer = (state = initialState, action) => {
+const modalsReducer = (
+  state: ModalsState = initialState,
+  action: ModalsAction,
+): ModalsState => {
   switch (action.type) {
     case 'TOGGLE_NETWORK_MODAL':
       return {
