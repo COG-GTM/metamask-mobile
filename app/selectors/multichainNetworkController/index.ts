@@ -62,8 +62,7 @@ export const selectNonEvmNetworkConfigurationsByChainId = createSelector(
       Object.keys(networks)
         .filter((key) => !NON_EVM_TESTNET_IDS.includes(key as CaipChainId))
         .reduce((filteredNetworks: Record<CaipChainId, MultichainNetworkConfiguration>, key: string) => {
-          // @ts-expect-error - key is typed as string because that is the type of Object.keys but we know it is a CaipChainId
-          filteredNetworks[key] = networks[key];
+          filteredNetworks[key as CaipChainId] = networks[key as CaipChainId];
           return filteredNetworks;
       },
     {});

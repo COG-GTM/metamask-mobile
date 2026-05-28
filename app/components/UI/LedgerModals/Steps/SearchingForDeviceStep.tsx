@@ -74,8 +74,7 @@ const SearchingForDeviceStep = () => {
   );
 
   const handleOpenInstallEthAppInstructions = () => {
-    //@ts-expect-error - Property 'push' does not exist on type 'NavigationProp<ParamListBase>'
-    navigation.push('Webview', {
+    (navigation as unknown as { push: (route: string, params: Record<string, unknown>) => void }).push('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: LEDGER_SUPPORT_LINK,

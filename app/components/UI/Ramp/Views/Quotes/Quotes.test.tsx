@@ -136,8 +136,6 @@ const mockQueryGetQuotes = jest.fn();
 const mockCustomAction: PaymentCustomAction = {
   buy: {
     providerId: '/providers/paypal-staging',
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     provider: {
       description: 'Per Paypal: [Paypal Description]',
       environmentType: 'STAGING',

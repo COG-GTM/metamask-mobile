@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { cloneDeep } from 'lodash';
 import Device from '../../util/device';
 import reducer, {
@@ -15,7 +14,7 @@ import * as tokensControllerSelectors from '../../selectors/tokensController';
 
 jest.mock('../../selectors/tokensController');
 
-const emptyAction = { type: null };
+const emptyAction = { type: null } as Parameters<typeof reducer>[1];
 
 const DEFAULT_FEATURE_FLAGS = {
   ethereum: {
@@ -68,14 +67,13 @@ describe('swaps reducer', () => {
       Device.isAndroid = jest.fn().mockReturnValue(false);
 
       const initalState = reducer(undefined, emptyAction);
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
           featureFlags: DEFAULT_FEATURE_FLAGS,
           chainId: '0x1',
         },
-      });
+      } as Parameters<typeof reducer>[1]);
       expect(liveState['0x1'].isLive).toBe(true);
     });
     it('should set isLive to false for iOS when flag is false', () => {
@@ -100,14 +98,13 @@ describe('swaps reducer', () => {
         },
       };
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
           featureFlags,
           chainId: '0x1',
         },
-      });
+      } as Parameters<typeof reducer>[1]);
       expect(liveState['0x1'].isLive).toBe(false);
     });
     it('should set isLive to true for Android when flag is true', () => {
@@ -132,14 +129,13 @@ describe('swaps reducer', () => {
         },
       };
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
           featureFlags,
           chainId: '0x1',
         },
-      });
+      } as Parameters<typeof reducer>[1]);
       expect(liveState['0x1'].isLive).toBe(true);
     });
     it('should set isLive to false for Android when flag is false', () => {
@@ -164,14 +160,13 @@ describe('swaps reducer', () => {
         },
       };
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
           featureFlags,
           chainId: '0x1',
         },
-      });
+      } as Parameters<typeof reducer>[1]);
       expect(liveState['0x1'].isLive).toBe(false);
     });
   });
@@ -183,9 +178,7 @@ describe('swaps reducer', () => {
           backgroundState: {
             NetworkController: {
               getNetworkClientById: () => ({
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                configuration: {
+                  configuration: {
                   rpcUrl: 'https://mainnet.infura.io/v3',
                   chainId: '0x1',
                   ticker: 'ETH',
@@ -213,7 +206,6 @@ describe('swaps reducer', () => {
       };
 
       rootState.swaps = {
-        // @ts-ignore
         featureFlags: {
           smart_transactions: {
             mobile_active: true,
@@ -227,7 +219,6 @@ describe('swaps reducer', () => {
           },
         },
         '0x1': {
-          // @ts-ignore
           featureFlags: {
             smartTransactions: {
               expectedDeadline: 45,
@@ -268,7 +259,6 @@ describe('swaps reducer', () => {
       };
 
       rootState.swaps = {
-        // @ts-ignore
         featureFlags: {
           smart_transactions: {
             mobile_active: false,
@@ -282,7 +272,6 @@ describe('swaps reducer', () => {
           },
         },
         '0x1': {
-          // @ts-ignore
           featureFlags: {
             smartTransactions: {
               expectedDeadline: 45,
@@ -527,17 +516,15 @@ describe('swaps reducer', () => {
 
   it('should set has onboarded', () => {
     const initalState = reducer(undefined, emptyAction);
-    // @ts-ignore
     const notOnboardedState = reducer(initalState, {
       type: SWAPS_SET_HAS_ONBOARDED,
       payload: false,
-    });
+    } as Parameters<typeof reducer>[1]);
     expect(notOnboardedState.hasOnboarded).toBe(false);
-    // @ts-ignore
     const liveState = reducer(initalState, {
       type: SWAPS_SET_HAS_ONBOARDED,
       payload: true,
-    });
+    } as Parameters<typeof reducer>[1]);
     expect(liveState.hasOnboarded).toBe(true);
   });
 });

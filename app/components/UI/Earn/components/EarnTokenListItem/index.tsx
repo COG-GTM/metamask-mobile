@@ -70,8 +70,7 @@ const EarnTokenListItem = ({
             <Badge
               variant={BadgeVariant.Network}
               name={networkName}
-              // @ts-expect-error The utils/network file is still JS and this function expects a networkType that should be optional
-              imageSource={getNetworkImageSource({ chainId: token.chainId })}
+              imageSource={getNetworkImageSource({ chainId: token.chainId } as Parameters<typeof getNetworkImageSource>[0])}
             />
           }
         >

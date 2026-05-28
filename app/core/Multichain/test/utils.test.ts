@@ -271,8 +271,7 @@ describe('MultiChain utils', () => {
     });
 
     it('returns the selected EVM account address', () => {
-      // @ts-expect-error - getSelectedAccount is mocked in the top of the file
-      Engine.context.AccountsController.getSelectedAccount.mockReturnValue({
+      (Engine.context.AccountsController.getSelectedAccount as jest.Mock).mockReturnValue({
         address: MOCK_ETH_ADDRESS,
       });
 
@@ -280,8 +279,7 @@ describe('MultiChain utils', () => {
     });
 
     it('returns undefined when no account is selected', () => {
-      // @ts-expect-error - getSelectedAccount is mocked in the top of the file
-      Engine.context.AccountsController.getSelectedAccount.mockReturnValue(
+      (Engine.context.AccountsController.getSelectedAccount as jest.Mock).mockReturnValue(
         undefined,
       );
 
@@ -295,8 +293,7 @@ describe('MultiChain utils', () => {
     });
 
     it('returns the selected non-EVM account address for Solana', () => {
-      // @ts-expect-error - getSelectedMultichainAccount is mocked in the top of the file
-      Engine.context.AccountsController.getSelectedMultichainAccount.mockImplementation(
+      (Engine.context.AccountsController.getSelectedMultichainAccount as jest.Mock).mockImplementation(
         (chainId: string) =>
           chainId === SolScope.Mainnet ? { address: SOL_ADDRESS } : undefined,
       );
@@ -307,8 +304,7 @@ describe('MultiChain utils', () => {
     });
 
     it('returns the selected non-EVM account address for Bitcoin', () => {
-      // @ts-expect-error - getSelectedMultichainAccount is mocked in the top of the file
-      Engine.context.AccountsController.getSelectedMultichainAccount.mockImplementation(
+      (Engine.context.AccountsController.getSelectedMultichainAccount as jest.Mock).mockImplementation(
         (chainId: string) =>
           chainId === BtcScope.Mainnet
             ? { address: MOCK_BTC_MAINNET_ADDRESS }
@@ -321,8 +317,7 @@ describe('MultiChain utils', () => {
     });
 
     it('returns undefined when no account is selected for the chain', () => {
-      // @ts-expect-error - getSelectedMultichainAccount is mocked in the top of the file
-      Engine.context.AccountsController.getSelectedMultichainAccount.mockReturnValue(
+      (Engine.context.AccountsController.getSelectedMultichainAccount as jest.Mock).mockReturnValue(
         undefined,
       );
 

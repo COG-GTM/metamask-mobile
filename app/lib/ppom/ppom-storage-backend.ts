@@ -10,12 +10,8 @@ declare global {
     _error: string | null;
   }
 }
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-if (window.FileReader?.prototype.readAsArrayBuffer) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  window.FileReader.prototype.readAsArrayBuffer = function (blob) {
+if (typeof FileReader !== 'undefined' && FileReader.prototype.readAsArrayBuffer) {
+  FileReader.prototype.readAsArrayBuffer = function (blob: Blob) {
     if (this.readyState === this.LOADING) throw new Error('InvalidStateError');
     this._setReadyState(this.LOADING);
     this._result = null;

@@ -6,8 +6,7 @@ import { fromByteArray } from 'react-native-quick-base64';
 
 import Logger from '../../util/Logger';
 import asyncInvoke from './invoke-lib';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// @ts-expect-error - ppom.html.js has no type declarations
 import { html } from './ppom.html.js';
 
 const styles = StyleSheet.create({
@@ -29,9 +28,7 @@ let invokeResolve: any = null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const convertFilesToBase64 = (files: any[][]) =>
   files.map(([key, value]) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const base64 = fromByteArray(value).toString('base64');
+    const base64 = fromByteArray(value as Uint8Array).toString('base64');
     return [key, base64];
   });
 

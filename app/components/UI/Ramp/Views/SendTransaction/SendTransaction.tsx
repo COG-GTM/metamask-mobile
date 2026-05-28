@@ -115,10 +115,7 @@ function SendTransaction() {
   useEffect(() => {
     trackEvent(
       'OFFRAMP_SEND_CRYPTO_PROMPT_VIEWED',
-      //@ts-expect-error - TODO: Ramps team needs to resolve discrepancy between
-      // transactionAnalyticsPayload expecting chain_id_source to be a string
-      // but RampTransaction type / interface expecting it to be a number
-      transactionAnalyticsPayload,
+      transactionAnalyticsPayload as Parameters<typeof trackEvent>[1],
     );
   }, [trackEvent, transactionAnalyticsPayload]);
 
@@ -162,10 +159,7 @@ function SendTransaction() {
 
       trackEvent(
         'OFFRAMP_SEND_TRANSACTION_INVOKED',
-        //@ts-expect-error - TODO: Ramps team needs to resolve discrepancy between
-        // transactionAnalyticsPayload expecting chain_id_source to be a string
-        // but RampTransaction type / interface expecting it to be a number
-        transactionAnalyticsPayload,
+        transactionAnalyticsPayload as Parameters<typeof trackEvent>[1],
       );
 
       const response = await addTransaction(transactionParams, {
@@ -181,19 +175,13 @@ function SendTransaction() {
         navigation.goBack();
         trackEvent(
           'OFFRAMP_SEND_TRANSACTION_CONFIRMED',
-          //@ts-expect-error - TODO: Ramps team needs to resolve discrepancy between
-          // transactionAnalyticsPayload expecting chain_id_source to be a string
-          // but RampTransaction type / interface expecting it to be a number
-          transactionAnalyticsPayload,
+          transactionAnalyticsPayload as Parameters<typeof trackEvent>[1],
         );
       }
     } catch (error) {
       trackEvent(
         'OFFRAMP_SEND_TRANSACTION_REJECTED',
-        //@ts-expect-error - TODO: Ramps team needs to resolve discrepancy between
-        // transactionAnalyticsPayload expecting chain_id_source to be a string
-        // but RampTransaction type / interface expecting it to be a number
-        transactionAnalyticsPayload,
+        transactionAnalyticsPayload as Parameters<typeof trackEvent>[1],
       );
     } finally {
       setIsConfirming(false);

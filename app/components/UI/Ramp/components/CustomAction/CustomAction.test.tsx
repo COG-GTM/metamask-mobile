@@ -22,8 +22,6 @@ const mockReanimated = () => {
   }));
   Reanimated.useAnimatedStyle = jest.fn((callback) => callback());
 };
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 (selectIpfsGateway as unknown as jest.Mock).mockReturnValue(
   'https://mock-ipfs-gateway.com',
 );
@@ -31,8 +29,6 @@ const mockReanimated = () => {
 const mockCustomAction: PaymentCustomAction = {
   buy: {
     providerId: '/providers/paypal-staging',
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     provider: {
       description: 'Per Paypal: [Paypal Description]',
       environmentType: 'STAGING',

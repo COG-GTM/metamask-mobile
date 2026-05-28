@@ -36,8 +36,7 @@ export const selectSortedTransactions = createDeepEqualSelector(
 export const selectSwapsTransactions = createSelector(
   selectTransactionControllerState,
   (transactionControllerState) =>
-    //@ts-expect-error - This is populated at the app level, the TransactionController is not aware of this property
-    transactionControllerState.swapsTransactions ?? {},
+    (transactionControllerState as Record<string, unknown>).swapsTransactions ?? {},
 );
 
 export const selectTransactionMetadataById = createDeepEqualSelector(

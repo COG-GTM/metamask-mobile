@@ -101,8 +101,7 @@ const persistTransform = createTransform(
 
       const persistedState = getPersistentState(
         value,
-        // @ts-expect-error - EngineContext have stateless controllers, so metadata is not available
-        Engine.context[key as keyof EngineContext]?.metadata,
+        (Engine.context[key as keyof EngineContext] as Record<string, unknown> | undefined)?.metadata as Parameters<typeof getPersistentState>[1],
       );
       persistableControllersState[key] = persistedState;
     }

@@ -65,18 +65,14 @@ jest.mock('@react-navigation/native', () => {
 describe('ConfirmTurnOnBackupAndSyncModal', () => {
   it('renders correctly', () => {
     const { toJSON } = renderWithProvider(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      <ConfirmTurnOnBackupAndSyncModal navigation={useNavigation()} />,
+      <ConfirmTurnOnBackupAndSyncModal {...{ navigation: useNavigation() } as Record<string, unknown>} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('enables basic functionality, then backup and sync', async () => {
     const { getByText } = renderWithProvider(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      <ConfirmTurnOnBackupAndSyncModal navigation={useNavigation()} />,
+      <ConfirmTurnOnBackupAndSyncModal {...{ navigation: useNavigation() } as Record<string, unknown>} />,
     );
 
     const confirmButton = getByText('Turn on');

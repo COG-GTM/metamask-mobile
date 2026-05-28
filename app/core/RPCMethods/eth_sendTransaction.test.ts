@@ -186,8 +186,7 @@ describe('eth_sendTransaction', () => {
         async () =>
           await eth_sendTransaction({
             hostname: 'example.metamask.io',
-            //@ts-expect-error - invalid parameters forced
-            req: constructSendTransactionRequest(invalidParameter),
+            req: constructSendTransactionRequest(invalidParameter as Parameters<typeof constructSendTransactionRequest>[0]),
             res: constructPendingJsonRpcResponse(),
             sendTransaction: getMockAddTransaction({
               returnValue: 'fake-hash',
@@ -209,8 +208,7 @@ describe('eth_sendTransaction', () => {
         async () =>
           await eth_sendTransaction({
             hostname: 'example.metamask.io',
-            //@ts-expect-error - invalid parameters forced
-            req: constructSendTransactionRequest(invalidParameter),
+            req: constructSendTransactionRequest(invalidParameter as Parameters<typeof constructSendTransactionRequest>[0]),
             res: constructPendingJsonRpcResponse(),
             sendTransaction: getMockAddTransaction({
               returnValue: 'fake-hash',

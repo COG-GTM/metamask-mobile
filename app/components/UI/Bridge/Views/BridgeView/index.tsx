@@ -355,8 +355,7 @@ const BridgeView = () => {
 
   return (
     // Need this to be full height of screen
-    // @ts-expect-error The type is incorrect, this will work
-    <ScreenView contentContainerStyle={styles.screen}>
+    <ScreenView contentContainerStyle={styles.screen as Record<string, unknown>}>
       <Box style={styles.content}>
         <Box style={styles.mainContent}>
           <Box style={styles.inputsContainer} gap={8}>

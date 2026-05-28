@@ -86,8 +86,7 @@ const NetworkVerificationInfo = ({
   const customRpcUrl = customNetworkInformation.rpcUrl;
 
   const isDappRequest = useMemo(
-    // @ts-expect-error - The CustomNetworkInformation type is missing the pageMeta property
-    () => Boolean(customNetworkInformation.pageMeta?.url),
+    () => Boolean((customNetworkInformation as Record<string, unknown>).pageMeta && ((customNetworkInformation as Record<string, { pageMeta?: { url?: string } }>).pageMeta?.url)),
     [customNetworkInformation],
   );
 
@@ -120,8 +119,7 @@ const NetworkVerificationInfo = ({
   );
 
   const dappOrigin = useMemo(() => {
-    // @ts-expect-error - The CustomNetworkInformation type is missing the pageMeta property
-    const customNetworkUrl = customNetworkInformation.pageMeta?.url;
+    const customNetworkUrl = (customNetworkInformation as Record<string, { pageMeta?: { url?: string } }>).pageMeta?.url;
     const url = customNetworkUrl ? new URL(customNetworkUrl) : null;
     if (url) {
       try {

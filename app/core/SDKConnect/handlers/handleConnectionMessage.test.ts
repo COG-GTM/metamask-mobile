@@ -160,8 +160,7 @@ describe('handleConnectionMessage', () => {
       );
     });
     it('should log and return on invalid messages', async () => {
-      // @ts-ignore
-      message.type = 'fsdfsdf';
+      (message as Record<string, unknown>).type = 'fsdfsdf';
       message.method = '';
       message.id = '';
 

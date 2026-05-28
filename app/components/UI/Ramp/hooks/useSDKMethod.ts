@@ -129,8 +129,7 @@ export default function useSDKMethod<T extends keyof RegionsService>(
           const methodParams = abortController
             ? [...queryParams, abortController]
             : queryParams;
-          const response = (await sdk[method](
-            // @ts-expect-error spreading params error
+          const response = (await (sdk[method] as (...args: unknown[]) => Promise<unknown>)(
             ...methodParams,
           )) as Awaited<ReturnType<RegionsService[T]>>;
           setData(response);

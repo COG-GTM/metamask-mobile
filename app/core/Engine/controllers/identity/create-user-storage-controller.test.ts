@@ -54,8 +54,7 @@ describe('UserStorage Controller', () => {
 
     const mockConstructor = jest.spyOn(
       UserStorageController.prototype,
-      // @ts-expect-error - this is not something you should be able to call, but this is a mock
-      'constructor',
+      'constructor' as keyof UserStorageController,
     );
 
     const assertGetConstructorCall = () =>

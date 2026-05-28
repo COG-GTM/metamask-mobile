@@ -1,6 +1,9 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { RPCQueueManager } from './RPCQueueManager';
 import { METHODS_TO_REDIRECT, RPC_METHODS } from './SDKConnectConstants';
+
+type RPCQueueManagerInternals = RPCQueueManager & {
+  rpcQueue: Record<string, string>;
+};
 
 jest.mock('./utils/DevLogger');
 
@@ -19,8 +22,7 @@ describe('RPCQueueManager', () => {
         method: 'method',
       });
 
-      // @ts-ignore
-      expect(rpcQueueManager.rpcQueue).toEqual({ id: 'method' });
+      expect((rpcQueueManager as unknown as RPCQueueManagerInternals).rpcQueue).toEqual({ id: 'method' });
     });
   });
 
@@ -28,8 +30,7 @@ describe('RPCQueueManager', () => {
     it('should clear the RPC queue', () => {
       rpcQueueManager.reset();
 
-      // @ts-ignore
-      expect(rpcQueueManager.rpcQueue).toEqual({});
+      expect((rpcQueueManager as unknown as RPCQueueManagerInternals).rpcQueue).toEqual({});
     });
 
     it('should warn if there are RPCs in the queue on reset', () => {
@@ -39,8 +40,7 @@ describe('RPCQueueManager', () => {
           // do nothing
         });
 
-      // @ts-ignore
-      rpcQueueManager.rpcQueue = [{ method: 'method', params: 'params' }];
+      (rpcQueueManager as unknown as RPCQueueManagerInternals).rpcQueue = [{ method: 'method', params: 'params' }] as unknown as Record<string, string>;
 
       rpcQueueManager.reset();
 
@@ -53,15 +53,13 @@ describe('RPCQueueManager', () => {
 
   describe('isEmpty', () => {
     it('should return true if the queue is empty', () => {
-      // @ts-ignore
-      rpcQueueManager.rpcQueue = [];
+      (rpcQueueManager as unknown as RPCQueueManagerInternals).rpcQueue = [] as unknown as Record<string, string>;
 
       expect(rpcQueueManager.isEmpty()).toBe(true);
     });
 
     it('should return false if the queue is not empty', () => {
-      // @ts-ignore
-      rpcQueueManager.rpcQueue = [{ method: 'method', params: 'params' }];
+      (rpcQueueManager as unknown as RPCQueueManagerInternals).rpcQueue = [{ method: 'method', params: 'params' }] as unknown as Record<string, string>;
 
       expect(rpcQueueManager.isEmpty()).toBe(false);
     });
@@ -69,8 +67,7 @@ describe('RPCQueueManager', () => {
 
   describe('canRedirect', () => {
     it('should return true if method is redirectable and queue is empty', () => {
-      // @ts-ignore
-      rpcQueueManager.rpcQueue = [];
+      (rpcQueueManager as unknown as RPCQueueManagerInternals).rpcQueue = [] as unknown as Record<string, string>;
 
       const result = rpcQueueManager.canRedirect({
         method: RPC_METHODS.ETH_REQUESTACCOUNTS,
@@ -80,11 +77,9 @@ describe('RPCQueueManager', () => {
     });
 
     it('should return false if method is not redirectable', () => {
-      // @ts-ignore
-      rpcQueueManager.rpcQueue = [];
+      (rpcQueueManager as unknown as RPCQueueManagerInternals).rpcQueue = [] as unknown as Record<string, string>;
 
-      // @ts-ignore
-      METHODS_TO_REDIRECT.method = false;
+      (METHODS_TO_REDIRECT as Record<string, boolean>).method = false;
 
       const result = rpcQueueManager.canRedirect({ method: 'method' });
 
@@ -94,34 +89,29 @@ describe('RPCQueueManager', () => {
 
   describe('remove', () => {
     it('should remove an RPC method from the queue', () => {
-      // @ts-ignore
-      rpcQueueManager.rpcQueue = {
+      (rpcQueueManager as unknown as RPCQueueManagerInternals).rpcQueue = {
         id: 'method',
       };
 
       rpcQueueManager.remove('id');
 
-      // @ts-ignore
-      expect(rpcQueueManager.rpcQueue).toEqual({});
+      expect((rpcQueueManager as unknown as RPCQueueManagerInternals).rpcQueue).toEqual({});
     });
   });
 
   describe('get', () => {
     it('should return the current state of the RPC queue', () => {
-      // @ts-ignore
-      rpcQueueManager.rpcQueue = [{ method: 'method', params: 'params' }];
+      (rpcQueueManager as unknown as RPCQueueManagerInternals).rpcQueue = [{ method: 'method', params: 'params' }] as unknown as Record<string, string>;
 
       const result = rpcQueueManager.get();
 
-      // @ts-ignore
       expect(result).toEqual([{ method: 'method', params: 'params' }]);
     });
   });
 
   describe('getId', () => {
     it('should return the method for a given ID', () => {
-      // @ts-ignore
-      rpcQueueManager.rpcQueue = {
+      (rpcQueueManager as unknown as RPCQueueManagerInternals).rpcQueue = {
         id: 'method',
       };
 

@@ -137,8 +137,7 @@ describe('TransactionsView', () => {
           <Stack.Navigator>
             <Stack.Screen
               name="TransactionsView"
-              // @ts-expect-error-next-line
-              component={TransactionsView}
+              component={TransactionsView as React.ComponentType}
             />
           </Stack.Navigator>
         </NavigationContainer>

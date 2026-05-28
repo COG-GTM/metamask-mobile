@@ -131,19 +131,14 @@ const QRTabSwitcher = () => {
             />
           }
         >
-          {selectedIndex === QRTabSwitcherScreens.Receive ? (
-            // @ts-expect-error proptypes components requires ts-expect-error
-            <NavbarTitle
-              // @ts-expect-error proptypes components requires ts-expect-error
-              title={strings(`receive.title`)}
-              // @ts-expect-error proptypes components requires ts-expect-error
-              translate={false}
-              // @ts-expect-error proptypes components requires ts-expect-error
-              disableNetwork
-              // @ts-expect-error proptypes components requires ts-expect-error
-              networkName={networkName}
-            />
-          ) : null}
+          {selectedIndex === QRTabSwitcherScreens.Receive
+            ? React.createElement(NavbarTitle as React.ComponentType<Record<string, unknown>>, {
+              title: strings(`receive.title`),
+              translate: false,
+              disableNetwork: true,
+              networkName,
+            })
+            : null}
         </HeaderBase>
       </View>
 

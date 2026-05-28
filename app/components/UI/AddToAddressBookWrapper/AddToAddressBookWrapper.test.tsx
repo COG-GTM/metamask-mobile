@@ -39,8 +39,7 @@ const initialState = {
 
 describe('AddToAddressBookWrapper', () => {
   beforeAll(() => {
-    //@ts-expect-error - This is for test purposes
-    Engine.context = {
+    (Engine as Record<string, unknown>).context = {
       AddressBookController: {
         set: jest.fn(),
       },
