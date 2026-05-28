@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -28,13 +27,49 @@ import Text from '../../../Base/Text';
 import Title from '../../../Base/Title';
 import Ratio from './Ratio';
 import { useTheme } from '../../../../util/theme';
+import { RootState } from '../../../../reducers';
+import { Theme } from '@metamask/design-tokens';
 import {
   selectConversionRate,
   selectCurrentCurrency,
 } from '../../../../selectors/currencyRateController';
 import { selectSwapsQuoteValues } from '../../../../reducers/swaps';
 
-const createStyles = (colors, shadows) =>
+interface TokenInfo {
+  symbol?: string;
+  decimals?: number;
+  [key: string]: unknown;
+}
+
+interface QuoteValue {
+  overallValueOfQuote?: string;
+  ethFee?: string;
+  maxEthFee?: string;
+  ethValueOfTokens?: string;
+  [key: string]: unknown;
+}
+
+interface StateProps {
+  conversionRate: number;
+  currentCurrency: string;
+  quoteValues: Record<string, QuoteValue>;
+}
+
+interface OwnProps {
+  isVisible?: boolean;
+  toggleModal?: () => void;
+  quotes?: Array<Record<string, unknown>>;
+  selectedQuote?: string;
+  destinationToken?: TokenInfo;
+  sourceToken?: TokenInfo;
+  ticker?: string;
+  showOverallValue?: boolean;
+  multiLayerL1ApprovalFeeTotal?: string;
+}
+
+type QuotesModalProps = StateProps & OwnProps;
+
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']) =>
   StyleSheet.create({
     modalView: {
       backgroundColor: colors.background.default,
@@ -140,7 +175,7 @@ function QuotesModal({
   showOverallValue,
   ticker,
   multiLayerL1ApprovalFeeTotal,
-}) {
+}: QuotesModalProps) {
   const bestOverallValue =
     quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
   const [displayDetails, setDisplayDetails] = useState(false);
@@ -471,40 +506,10 @@ function QuotesModal({
   );
 }
 
-QuotesModal.propTypes = {
-  isVisible: PropTypes.bool,
-  toggleModal: PropTypes.func,
-  quotes: PropTypes.array,
-  selectedQuote: PropTypes.string,
-  destinationToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  sourceToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  quoteValues: PropTypes.object,
-  showOverallValue: PropTypes.bool,
-  multiLayerL1ApprovalFeeTotal: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   quoteValues: selectSwapsQuoteValues(state),
 });
 
-export default connect(mapStateToProps)(QuotesModal);
+export default connect(mapStateToProps)(QuotesModal) as React.ComponentType<OwnProps>;
