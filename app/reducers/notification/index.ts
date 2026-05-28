@@ -1,10 +1,34 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { createSelector } from 'reselect';
 import { NotificationTypes } from '../../util/notifications';
+import { RootState } from '..';
+
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-export const initialState = {
-  notifications: [],
-};
+interface TransactionObject {
+  id: string;
+  [key: string]: unknown;
+}
+
+interface BaseNotification {
+  id: string;
+  isVisible: boolean;
+  autodismiss?: number;
+  status?: string;
+}
+
+interface SimpleNotification extends BaseNotification {
+  type: typeof SIMPLE;
+  title?: string;
+  description?: string;
+}
+
+interface TransactionNotification extends BaseNotification {
+  type: typeof TRANSACTION;
+  transaction?: TransactionObject;
+}
+
+type Notification = SimpleNotification | TransactionNotification;
 
 export const ACTIONS = {
   HIDE_CURRENT_NOTIFICATION: 'HIDE_CURRENT_NOTIFICATION',
@@ -19,23 +43,105 @@ export const ACTIONS = {
   SHOW_SIMPLE_NOTIFICATION: 'SHOW_SIMPLE_NOTIFICATION',
   SHOW_TRANSACTION_NOTIFICATION: 'SHOW_TRANSACTION_NOTIFICATION',
   UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
+} as const;
+
+// TODO: import from actions when migrated
+type HideCurrentNotificationAction = {
+  type: typeof ACTIONS.HIDE_CURRENT_NOTIFICATION;
 };
 
-const enqueue = (notifications, notification) => [
+type HideNotificationByIdAction = {
+  type: typeof ACTIONS.HIDE_NOTIFICATION_BY_ID;
+  id: string;
+};
+
+type ModifyOrShowTransactionNotificationAction = {
+  type: typeof ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION;
+  id?: string;
+  transaction: TransactionObject;
+  autodismiss?: number;
+  status?: string;
+};
+
+type ModifyOrShowSimpleNotificationAction = {
+  type: typeof ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION;
+  id: string;
+  autodismiss?: number;
+  title?: string;
+  description?: string;
+  status?: string;
+};
+
+type ReplaceNotificationByIdAction = {
+  type: typeof ACTIONS.REPLACE_NOTIFICATION_BY_ID;
+  id: string;
+  notification: Notification;
+};
+
+type RemoveNotificationByIdAction = {
+  type: typeof ACTIONS.REMOVE_NOTIFICATION_BY_ID;
+  id: string;
+};
+
+type RemoveCurrentNotificationAction = {
+  type: typeof ACTIONS.REMOVE_CURRENT_NOTIFICATION;
+};
+
+type RemoveNotVisibleNotificationsAction = {
+  type: typeof ACTIONS.REMOVE_NOT_VISIBLE_NOTIFICATIONS;
+};
+
+type ShowSimpleNotificationAction = {
+  type: typeof ACTIONS.SHOW_SIMPLE_NOTIFICATION;
+  id: string;
+  autodismiss?: number;
+  title?: string;
+  description?: string;
+  status?: string;
+};
+
+type ShowTransactionNotificationAction = {
+  type: typeof ACTIONS.SHOW_TRANSACTION_NOTIFICATION;
+  transaction: TransactionObject;
+  autodismiss?: number;
+  status?: string;
+};
+
+type NotificationAction =
+  | HideCurrentNotificationAction
+  | HideNotificationByIdAction
+  | ModifyOrShowTransactionNotificationAction
+  | ModifyOrShowSimpleNotificationAction
+  | ReplaceNotificationByIdAction
+  | RemoveNotificationByIdAction
+  | RemoveCurrentNotificationAction
+  | RemoveNotVisibleNotificationsAction
+  | ShowSimpleNotificationAction
+  | ShowTransactionNotificationAction;
+
+export interface NotificationState {
+  notifications: Notification[];
+}
+
+export const initialState: NotificationState = {
+  notifications: [],
+};
+
+const enqueue = (notifications: Notification[], notification: Notification): Notification[] => [
   ...notifications,
   notification,
 ];
-const dequeue = (notifications) => notifications.slice(1);
+const dequeue = (notifications: Notification[]): Notification[] => notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
-  (
-    /** @type {import('..').RootState} */
-    state,
-  ) => state?.notifications,
+  (state: RootState) => state?.notification?.notifications,
   (notifications) => notifications[0] || {},
 );
 
-const notificationReducer = (state = initialState, action) => {
+const notificationReducer = (
+  state: NotificationState = initialState,
+  action: NotificationAction,
+): NotificationState => {
   const { notifications } = state;
   switch (action.type) {
     // make current notification isVisible props false
