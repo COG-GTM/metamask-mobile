@@ -1,16 +1,138 @@
 // This file contains type declarations for asset types.
 // Ex. This makes it so that when you import CloseIcon from './close-icon.svg, CloseIcon, will be detected as a React.FC component.
-declare module '*.mp4';
+// TODO: Once all PropTypes usage is eliminated from the codebase (~148 files still use prop-types),
+// remove prop-types from package.json dependencies.
+declare module '*.mp4' {
+  const source: number;
+  export default source;
+}
 
-declare module '@metamask/react-native-payments/lib/js/__mocks__';
+declare module '@metamask/react-native-payments/lib/js/__mocks__' {
+  interface MockReactNative {
+    Platform: { OS: string };
+    DeviceEventEmitter: {
+      removeSubscription: () => void;
+      addListener: () => void;
+    };
+  }
 
-declare module 'react-native-fade-in-image';
+  interface MockNativePayments {
+    canMakePayments: boolean;
+    createPaymentRequest: () => void;
+    handleDetailsUpdate: () => void;
+    show: (cb: () => void) => void;
+    abort: (cb: () => void) => void;
+    complete: (paymentStatus: unknown, cb: () => void) => void;
+  }
 
-declare module 'react-native-fast-crypto';
+  export const mockReactNativeIOS: MockReactNative;
+  export const mockReactNativeAndroid: MockReactNative;
+  export const mockNativePaymentsSupportedIOS: MockNativePayments;
+  export const mockNativePaymentsUnsupportedIOS: MockNativePayments;
+}
 
-declare module 'react-native-minimizer';
+declare module 'react-native-fade-in-image' {
+  import { Component } from 'react';
+  import { ViewProps, StyleProp, ViewStyle } from 'react-native';
 
-declare module 'xhr2';
+  interface FadeInProps extends ViewProps {
+    placeholderStyle?: StyleProp<ViewStyle>;
+    renderPlaceholderContent?: React.ReactNode;
+    useNativeDriver?: boolean;
+    children: React.ReactElement;
+  }
+
+  export default class FadeIn extends Component<FadeInProps> {}
+}
+
+declare module 'react-native-fast-crypto' {
+  export function scrypt(
+    passwd: Uint8Array,
+    salt: Uint8Array,
+    N: number,
+    r: number,
+    p: number,
+    size: number,
+  ): Promise<Uint8Array>;
+
+  export const secp256k1: {
+    publicKeyCreate(
+      privateKey: Uint8Array,
+      compressed: boolean,
+    ): Promise<Uint8Array>;
+    privateKeyTweakAdd(
+      privateKey: Uint8Array,
+      tweak: Uint8Array,
+    ): Promise<Uint8Array>;
+    publicKeyTweakAdd(
+      publicKey: Uint8Array,
+      tweak: Uint8Array,
+      compressed: boolean,
+    ): Promise<Uint8Array>;
+  };
+
+  export const pbkdf2: {
+    deriveAsync(
+      data: Uint8Array,
+      salt: Uint8Array,
+      iterations: number,
+      size: number,
+      alg: string,
+    ): Promise<Uint8Array>;
+  };
+}
+
+declare module 'xhr2' {
+  export class XMLHttpRequest {
+    readonly UNSENT: 0;
+    readonly OPENED: 1;
+    readonly HEADERS_RECEIVED: 2;
+    readonly LOADING: 3;
+    readonly DONE: 4;
+
+    readyState: number;
+    status: number;
+    statusText: string;
+    responseText: string;
+    responseType: string;
+    response: unknown;
+    responseURL: string;
+    timeout: number;
+    withCredentials: boolean;
+
+    onreadystatechange: ((this: XMLHttpRequest, ev: ProgressEvent) => void) | null;
+    onload: ((this: XMLHttpRequest, ev: ProgressEvent) => void) | null;
+    onerror: ((this: XMLHttpRequest, ev: ProgressEvent) => void) | null;
+    onabort: ((this: XMLHttpRequest, ev: ProgressEvent) => void) | null;
+    ontimeout: ((this: XMLHttpRequest, ev: ProgressEvent) => void) | null;
+    onloadstart: ((this: XMLHttpRequest, ev: ProgressEvent) => void) | null;
+    onloadend: ((this: XMLHttpRequest, ev: ProgressEvent) => void) | null;
+    onprogress: ((this: XMLHttpRequest, ev: ProgressEvent) => void) | null;
+
+    open(method: string, url: string, async?: boolean, user?: string | null, password?: string | null): void;
+    setRequestHeader(header: string, value: string): void;
+    send(data?: string | Buffer | ArrayBufferView | null): void;
+    abort(): void;
+    getResponseHeader(header: string): string | null;
+    getAllResponseHeaders(): string;
+    addEventListener(type: string, listener: (ev: ProgressEvent) => void): void;
+    removeEventListener(type: string, listener: (ev: ProgressEvent) => void): void;
+
+    static readonly XMLHttpRequestUpload: typeof XMLHttpRequestUpload;
+  }
+
+  class XMLHttpRequestUpload {
+    onprogress: ((this: XMLHttpRequestUpload, ev: ProgressEvent) => void) | null;
+    onload: ((this: XMLHttpRequestUpload, ev: ProgressEvent) => void) | null;
+    onerror: ((this: XMLHttpRequestUpload, ev: ProgressEvent) => void) | null;
+    onabort: ((this: XMLHttpRequestUpload, ev: ProgressEvent) => void) | null;
+    ontimeout: ((this: XMLHttpRequestUpload, ev: ProgressEvent) => void) | null;
+    onloadstart: ((this: XMLHttpRequestUpload, ev: ProgressEvent) => void) | null;
+    onloadend: ((this: XMLHttpRequestUpload, ev: ProgressEvent) => void) | null;
+    addEventListener(type: string, listener: (ev: ProgressEvent) => void): void;
+    removeEventListener(type: string, listener: (ev: ProgressEvent) => void): void;
+  }
+}
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -294,7 +416,44 @@ declare module '@metamask/react-native-actionsheet' {
   export default ActionSheet;
 }
 
-declare module '@metamask/react-native-search-api';
+declare module '@metamask/react-native-search-api' {
+  import { NativeEventEmitter } from 'react-native';
+
+  interface SpotlightItem {
+    title: string;
+    contentDescription?: string;
+    uniqueIdentifier: string;
+    domain?: string;
+    keywords?: string[];
+    thumbnailURL?: string;
+  }
+
+  interface AppHistoryItem {
+    title: string;
+    contentDescription?: string;
+    userInfo: Record<string, unknown>;
+    keywords?: string[];
+    eligibleForPublicIndexing?: boolean;
+    expirationDate?: Date;
+    webpageURL?: string;
+  }
+
+  class SearchApi extends NativeEventEmitter {
+    addOnSpotlightItemOpenEventListener(listener: (uniqueIdentifier: string) => void): void;
+    removeOnSpotlightItemOpenEventListener(listener: (uniqueIdentifier: string) => void): void;
+    addOnAppHistoryItemOpenEventListener(listener: (userInfo: Record<string, unknown>) => void): void;
+    removeOnAppHistoryItemOpenEventListener(listener: (userInfo: Record<string, unknown>) => void): void;
+    indexSpotlightItem(item: SpotlightItem): Promise<void>;
+    indexSpotlightItems(items: SpotlightItem[]): Promise<void>;
+    deleteSpotlightItemsWithIdentifiers(identifiers: string[]): Promise<void>;
+    deleteSpotlightItemsInDomains(domains: string[]): Promise<void>;
+    deleteAllSpotlightItems(): Promise<void>;
+    indexAppHistoryItem(item: AppHistoryItem): Promise<void>;
+  }
+
+  const searchApi: SearchApi;
+  export default searchApi;
+}
 
 /**
  * @sentry/react-native types for v^6.10.0
