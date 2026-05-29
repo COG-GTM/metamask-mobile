@@ -12,7 +12,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
     };
 
     const action = {
-      type: 'STORE_FAVICON_URL',
+      type: 'STORE_FAVICON_URL' as const,
       origin: 'testOrigin',
       url: 'testUrl',
     };
@@ -43,7 +43,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
     };
 
     const action = {
-      type: 'STORE_FAVICON_URL',
+      type: 'STORE_FAVICON_URL' as const,
       origin: 'newOrigin',
       url: 'newUrl',
     };
