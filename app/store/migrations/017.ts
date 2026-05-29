@@ -1,6 +1,13 @@
-export default function migrate(state) {
-  if (state.networkOnboarded && state.networkOnboarded.networkOnboardedState) {
-    state.networkOnboarded.networkOnboardedState = {};
+interface Migration17State {
+  networkOnboarded?: {
+    networkOnboardedState?: unknown;
+  };
+}
+
+export default function migrate(state: unknown) {
+  const typedState = state as Migration17State;
+  if (typedState.networkOnboarded?.networkOnboardedState) {
+    typedState.networkOnboarded.networkOnboardedState = {};
   }
-  return state;
+  return typedState;
 }

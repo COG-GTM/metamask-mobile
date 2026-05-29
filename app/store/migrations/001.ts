@@ -1,13 +1,29 @@
 import AppConstants from '../../core/AppConstants';
 import { toLowerCaseEquals } from '../../util/general';
 
+interface Token {
+  symbol: string;
+  address: string;
+}
+
+interface Migration1State {
+  engine: {
+    backgroundState: {
+      TokensController: {
+        tokens: Token[];
+      };
+    };
+  };
+}
+
 /**
  * MakerDAO DAI => SAI
  *
  **/
-export default function migrate(state) {
-  const tokens = state.engine.backgroundState.TokensController.tokens;
-  const migratedTokens = [];
+export default function migrate(state: unknown) {
+  const typedState = state as Migration1State;
+  const tokens = typedState.engine.backgroundState.TokensController.tokens;
+  const migratedTokens: Token[] = [];
   tokens.forEach((token) => {
     if (
       token.symbol === 'DAI' &&
@@ -17,7 +33,7 @@ export default function migrate(state) {
     }
     migratedTokens.push(token);
   });
-  state.engine.backgroundState.TokensController.tokens = migratedTokens;
+  typedState.engine.backgroundState.TokensController.tokens = migratedTokens;
 
-  return state;
+  return typedState;
 }

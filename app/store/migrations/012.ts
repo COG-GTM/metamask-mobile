@@ -1,26 +1,33 @@
-export default function migrate(state) {
+interface Migration12State {
+  engine: {
+    backgroundState: Record<string, Record<string, unknown>>;
+  };
+}
+
+export default function migrate(state: unknown) {
+  const typedState = state as Migration12State;
   const {
     allCollectibles,
     allCollectibleContracts,
     ignoredCollectibles,
     ...unexpectedCollectiblesControllerState
-  } = state.engine.backgroundState.CollectiblesController;
-  state.engine.backgroundState.NftController = {
+  } = typedState.engine.backgroundState.CollectiblesController;
+  typedState.engine.backgroundState.NftController = {
     ...unexpectedCollectiblesControllerState,
     allNfts: allCollectibles,
     allNftContracts: allCollectibleContracts,
     ignoredNfts: ignoredCollectibles,
   };
-  delete state.engine.backgroundState.CollectiblesController;
+  delete typedState.engine.backgroundState.CollectiblesController;
 
-  state.engine.backgroundState.NftDetectionController =
-    state.engine.backgroundState.CollectibleDetectionController;
-  delete state.engine.backgroundState.CollectibleDetectionController;
+  typedState.engine.backgroundState.NftDetectionController =
+    typedState.engine.backgroundState.CollectibleDetectionController;
+  delete typedState.engine.backgroundState.CollectibleDetectionController;
 
-  state.engine.backgroundState.PreferencesController.useNftDetection =
-    state.engine.backgroundState.PreferencesController.useCollectibleDetection;
-  delete state.engine.backgroundState.PreferencesController
+  typedState.engine.backgroundState.PreferencesController.useNftDetection =
+    typedState.engine.backgroundState.PreferencesController.useCollectibleDetection;
+  delete typedState.engine.backgroundState.PreferencesController
     .useCollectibleDetection;
 
-  return state;
+  return typedState;
 }

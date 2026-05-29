@@ -1,6 +1,17 @@
-export default function migrate(state) {
-  if (state.engine.backgroundState.TokensController.suggestedAssets) {
-    delete state.engine.backgroundState.TokensController.suggestedAssets;
+interface Migration18State {
+  engine: {
+    backgroundState: {
+      TokensController: {
+        suggestedAssets?: unknown;
+      };
+    };
+  };
+}
+
+export default function migrate(state: unknown) {
+  const typedState = state as Migration18State;
+  if (typedState.engine.backgroundState.TokensController.suggestedAssets) {
+    delete typedState.engine.backgroundState.TokensController.suggestedAssets;
   }
-  return state;
+  return typedState;
 }

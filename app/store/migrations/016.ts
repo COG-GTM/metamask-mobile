@@ -1,8 +1,20 @@
-export default function migrate(state) {
-  if (state.engine.backgroundState.NetworkController.properties) {
-    state.engine.backgroundState.NetworkController.networkDetails =
-      state.engine.backgroundState.NetworkController.properties;
-    delete state.engine.backgroundState.NetworkController.properties;
+interface Migration16State {
+  engine: {
+    backgroundState: {
+      NetworkController: {
+        properties?: unknown;
+        networkDetails?: unknown;
+      };
+    };
+  };
+}
+
+export default function migrate(state: unknown) {
+  const typedState = state as Migration16State;
+  if (typedState.engine.backgroundState.NetworkController.properties) {
+    typedState.engine.backgroundState.NetworkController.networkDetails =
+      typedState.engine.backgroundState.NetworkController.properties;
+    delete typedState.engine.backgroundState.NetworkController.properties;
   }
-  return state;
+  return typedState;
 }
