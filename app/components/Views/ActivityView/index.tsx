@@ -1,7 +1,14 @@
 import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text as RNText,
+  TextProps,
+  TextStyle,
+} from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
+import { RootState } from '../../../reducers';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { isNonEvmAddress } from '../../../core/Multichain/utils';
 import { getHasOrders } from '../../../reducers/fiatOrders';
@@ -39,8 +46,29 @@ import {
   getFontFamily,
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (params) => {
+interface ActivityViewStyleSheetParams {
+  theme: Theme;
+}
+
+interface TabChildProps {
+  tabLabel: string;
+}
+
+// React Native's Text does not type the `variant` prop, but it is passed here
+// to preserve the existing rendered output.
+const Text = RNText as React.ComponentType<
+  TextProps & { variant?: TextVariant }
+>;
+
+const TransactionsTab =
+  TransactionsView as unknown as React.ComponentType<TabChildProps>;
+const MultichainTransactionsTab =
+  MultichainTransactionsView as React.ComponentType<TabChildProps>;
+const RampOrdersTab = RampOrdersList as React.ComponentType<TabChildProps>;
+
+const createStyles = (params: ActivityViewStyleSheetParams) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -81,10 +109,9 @@ const createStyles = (params) => {
       paddingHorizontal: 16,
     },
     title: {
+      ...(typography.sHeadingMD as TextStyle),
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
-      ...typography.sHeadingMD,
       fontFamily: getFontFamily(TextVariant.HeadingMD),
     },
     titleText: {
@@ -111,10 +138,14 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector(
+    (state: RootState) => getHasOrders(state) || false,
+  );
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<
+    ScrollableTabView & { goToPage: (pageNumber: number) => void }
+  >(null);
+  const params = useParams<{ redirectToOrders?: boolean }>();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
@@ -128,7 +159,9 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            (selectedAddress
+              ? accountsByChainId[selectedAddress]
+              : undefined) ?? {},
           ).length,
         })
         .build(),
@@ -212,14 +245,14 @@ const ActivityView = () => {
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
+            <MultichainTransactionsTab
               tabLabel={strings('transactions_view.title')}
             />
           ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title')} />
+            <TransactionsTab tabLabel={strings('transactions_view.title')} />
           )}
           {hasOrders && (
-            <RampOrdersList
+            <RampOrdersTab
               tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}
