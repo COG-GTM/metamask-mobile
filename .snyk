@@ -1,0 +1,15 @@
+# Snyk (https://snyk.io) policy file
+version: v1.5.0
+ignore:
+  SNYK-JS-REACTNATIVEAESCRYPTOFORKED-3018868:
+    - '*':
+        reason: >-
+          False positive (name + version collision). This project does NOT install
+          the malicious npm package react-native-aes-crypto-forked@1.2.1. It installs
+          from MetaMask's own git fork pinned to commit
+          397d5db5250e8e7408294807965b5b9fd4ca6a25
+          (git+https://github.com/MetaMask/react-native-aes-crypto-forked.git), which
+          was verified to be reachable in the MetaMask-owned repository. The package
+          is only referenced via native autolinking in react-native.config.js and has
+          no JS/TS imports.
+        expires: 2026-12-31T00:00:00.000Z
