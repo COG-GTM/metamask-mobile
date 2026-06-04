@@ -1,28 +1,28 @@
 'use strict';
 
-import { SmokeNetworkExpansion } from '../../tags.js';
-import TestHelpers from '../../helpers.js';
-import { loginToApp } from '../../viewHelper.js';
-import TabBarComponent from '../../pages/wallet/TabBarComponent.js';
-import SettingsView from '../../pages/Settings/SettingsView.js';
-import SecurityAndPrivacy from '../../pages/Settings/SecurityAndPrivacy/SecurityAndPrivacyView.js';
+import { SmokeNetworkExpansion } from '../../tags';
+import TestHelpers from '../../helpers';
+import { loginToApp } from '../../viewHelper';
+import TabBarComponent from '../../pages/wallet/TabBarComponent';
+import SettingsView from '../../pages/Settings/SettingsView';
+import SecurityAndPrivacy from '../../pages/Settings/SecurityAndPrivacy/SecurityAndPrivacyView';
 import SrpQuizModal from '../../pages/Settings/SecurityAndPrivacy/SrpQuizModal';
 import {
   SrpSecurityQuestionOneSelectorsText,
   SrpSecurityQuestionTwoSelectorsText,
 } from '../../selectors/Settings/SecurityAndPrivacy/SrpQuizModal.selectors';
-import RevealSecretRecoveryPhrase from '../../pages/Settings/SecurityAndPrivacy/RevealSecretRecoveryPhrase.js';
-import { RevealSeedViewSelectorsText } from '../../selectors/Settings/SecurityAndPrivacy/RevealSeedView.selectors.js';
-import FixtureServer from '../../fixtures/fixture-server.js';
-import FixtureBuilder from '../../fixtures/fixture-builder.js';
+import RevealSecretRecoveryPhrase from '../../pages/Settings/SecurityAndPrivacy/RevealSecretRecoveryPhrase';
+import { RevealSeedViewSelectorsText } from '../../selectors/Settings/SecurityAndPrivacy/RevealSeedView.selectors';
+import FixtureServer from '../../fixtures/fixture-server';
+import FixtureBuilder from '../../fixtures/fixture-builder';
 import {
   defaultGanacheOptions,
   loadFixture,
   startFixtureServer,
   stopFixtureServer,
-} from '../../fixtures/fixture-helper.js';
-import { getFixturesServerPort } from '../../fixtures/utils.js';
-import Assertions from '../../utils/Assertions.js';
+} from '../../fixtures/fixture-helper';
+import { getFixturesServerPort } from '../../fixtures/utils';
+import Assertions from '../../utils/Assertions';
 
 const fixtureServer = new FixtureServer();
 const PASSWORD = '123123123';

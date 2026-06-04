@@ -34,7 +34,9 @@ module.exports = {
             ignoreRestSiblings: true, // this line is what has changed
           },
         ],
-        '@typescript-eslint/no-explicit-any': 'error',
+        // Relaxed to 'warn' during the JS->TS migration so mechanical
+        // conversions using loose types can land incrementally.
+        '@typescript-eslint/no-explicit-any': 'warn',
         // Under discussion
         '@typescript-eslint/no-duplicate-enum-values': 'off',
       },

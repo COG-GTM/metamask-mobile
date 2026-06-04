@@ -1,12 +1,12 @@
 import Selectors from '../helpers/Selectors';
-import Gestures from '../helpers/Gestures.js';
+import Gestures from '../helpers/Gestures';
 import { ProtectWalletModalSelectorsIDs } from '../../e2e/selectors/Onboarding/ProtectWalletModal.selectors';
 import { AccountActionsBottomSheetSelectorsIDs } from '../../e2e/selectors/wallet/AccountActionsBottomSheet.selectors';
 import { ToastSelectorsIDs } from '../../e2e/selectors/wallet/ToastModal.selectors';
 import { TabBarSelectorIDs } from '../../e2e/selectors/wallet/TabBar.selectors';
 
 import { BACK_BUTTON_SIMPLE_WEBVIEW } from './testIDs/Components/SimpleWebView.testIds';
-import { WalletViewSelectorsIDs } from '../../e2e/selectors/wallet/WalletView.selectors.js';
+import { WalletViewSelectorsIDs } from '../../e2e/selectors/wallet/WalletView.selectors';
 
 class WalletMainScreen {
   get ImportToken() {

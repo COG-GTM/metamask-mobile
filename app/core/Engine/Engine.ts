@@ -104,7 +104,7 @@ import {
   getCaveatSpecifications,
   getPermissionSpecifications,
   unrestrictedMethods,
-} from '../Permissions/specifications.js';
+} from '../Permissions/specifications';
 import { backupVault } from '../BackupVault';
 import { Hex, Json } from '@metamask/utils';
 import { providerErrors } from '@metamask/rpc-errors';

@@ -1,5 +1,5 @@
 import { Given, Then, When } from '@wdio/cucumber-framework';
-import WalletMainScreen from '../screen-objects/WalletMainScreen.js';
+import WalletMainScreen from '../screen-objects/WalletMainScreen';
 import AccountListComponent from '../screen-objects/AccountListComponent';
 import CommonScreen from '../screen-objects/CommonScreen';
 import TabBarModal from '../screen-objects/Modals/TabBarModal';

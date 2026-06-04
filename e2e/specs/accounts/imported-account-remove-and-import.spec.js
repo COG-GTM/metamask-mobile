@@ -1,7 +1,7 @@
 'use strict';
 
-import { Regression } from '../../tags.js';
-import TestHelpers from '../../helpers.js';
+import { Regression } from '../../tags';
+import TestHelpers from '../../helpers';
 import FixtureBuilder from '../../fixtures/fixture-builder';
 import {
   loadFixture,
@@ -10,13 +10,13 @@ import {
 } from '../../fixtures/fixture-helper';
 import FixtureServer from '../../fixtures/fixture-server';
 import { getFixturesServerPort } from '../../fixtures/utils';
-import { loginToApp } from '../../viewHelper.js';
-import WalletView from '../../pages/wallet/WalletView.js';
-import AccountListBottomSheet from '../../pages/wallet/AccountListBottomSheet.js';
-import ImportAccountView from '../../pages/importAccount/ImportAccountView.js';
-import Assertions from '../../utils/Assertions.js';
-import { AccountListBottomSheetSelectorsText } from '../../selectors/wallet/AccountListBottomSheet.selectors.js';
-import AddAccountBottomSheet from '../../pages/wallet/AddAccountBottomSheet.js';
+import { loginToApp } from '../../viewHelper';
+import WalletView from '../../pages/wallet/WalletView';
+import AccountListBottomSheet from '../../pages/wallet/AccountListBottomSheet';
+import ImportAccountView from '../../pages/importAccount/ImportAccountView';
+import Assertions from '../../utils/Assertions';
+import { AccountListBottomSheetSelectorsText } from '../../selectors/wallet/AccountListBottomSheet.selectors';
+import AddAccountBottomSheet from '../../pages/wallet/AddAccountBottomSheet';
 import SuccessImportAccountView from '../../pages/importAccount/SuccessImportAccountView';
 
 const fixtureServer = new FixtureServer();
