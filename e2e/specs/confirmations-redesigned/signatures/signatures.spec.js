@@ -1,21 +1,21 @@
 'use strict';
-import Assertions from '../../../utils/Assertions.js';
-import Browser from '../../../pages/Browser/BrowserView.js';
-import FooterActions from '../../../pages/Browser/Confirmations/FooterActions.js';
-import FixtureBuilder from '../../../fixtures/fixture-builder.js';
-import PageSections from '../../../pages/Browser/Confirmations/PageSections.js';
-import RequestTypes from '../../../pages/Browser/Confirmations/RequestTypes.js';
-import TabBarComponent from '../../../pages/wallet/TabBarComponent.js';
-import TestDApp from '../../../pages/Browser/TestDApp.js';
-import TestHelpers from '../../../helpers.js';
-import { loginToApp } from '../../../viewHelper.js';
+import Assertions from '../../../utils/Assertions';
+import Browser from '../../../pages/Browser/BrowserView';
+import FooterActions from '../../../pages/Browser/Confirmations/FooterActions';
+import FixtureBuilder from '../../../fixtures/fixture-builder';
+import PageSections from '../../../pages/Browser/Confirmations/PageSections';
+import RequestTypes from '../../../pages/Browser/Confirmations/RequestTypes';
+import TabBarComponent from '../../../pages/wallet/TabBarComponent';
+import TestDApp from '../../../pages/Browser/TestDApp';
+import TestHelpers from '../../../helpers';
+import { loginToApp } from '../../../viewHelper';
 import {
   withFixtures,
   defaultGanacheOptions,
-} from '../../../fixtures/fixture-helper.js';
-import { SmokeConfirmationsRedesigned } from '../../../tags.js';
-import { mockEvents } from '../../../api-mocking/mock-config/mock-events.js';
-import { buildPermissions } from '../../../fixtures/utils.js';
+} from '../../../fixtures/fixture-helper';
+import { SmokeConfirmationsRedesigned } from '../../../tags';
+import { mockEvents } from '../../../api-mocking/mock-config/mock-events';
+import { buildPermissions } from '../../../fixtures/utils';
 
 const SIGNATURE_LIST = [
   {

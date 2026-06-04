@@ -1,4 +1,4 @@
-import './shim.js';
+import './shim';
 
 // Needed to polyfill random number generation.
 import 'react-native-get-random-values';
@@ -16,8 +16,8 @@ setupSentry();
 
 import { AppRegistry, LogBox, ErrorUtils } from 'react-native';
 import Root from './app/components/Views/Root';
-import { name } from './app.config.js';
-import { isE2E } from './app/util/test/utils.js';
+import { name } from './app.config';
+import { isE2E } from './app/util/test/utils';
 
 import { Performance } from './app/core/Performance';
 import { handleCustomError, setReactNativeDefaultHandler } from './app/core/ErrorHandler';

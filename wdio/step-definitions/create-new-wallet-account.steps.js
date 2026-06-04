@@ -2,7 +2,7 @@ import { Then, When } from '@wdio/cucumber-framework';
 
 import AccountListComponent from '../screen-objects/AccountListComponent';
 
-import WalletAccountModal from '../screen-objects/Modals/WalletAccountModal.js';
+import WalletAccountModal from '../screen-objects/Modals/WalletAccountModal';
 import CommonScreen from '../screen-objects/CommonScreen';
 import AddAccountModal from '../screen-objects/Modals/AddAccountModal';
 

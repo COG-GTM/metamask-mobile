@@ -9,7 +9,7 @@ import {
   SEND_WARNING_MESSAGE,
   UNDERSTAND_WARNING_CONTINUE,
 } from './testIDs/Screens/SendScreen.testIds';
-import { TRANSACTION_AMOUNT_INPUT } from './testIDs/Screens/AmountScreen.testIds.js';
+import { TRANSACTION_AMOUNT_INPUT } from './testIDs/Screens/AmountScreen.testIds';
 
 class SendScreen {
   get container() {
