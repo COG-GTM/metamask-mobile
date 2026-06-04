@@ -1,9 +1,22 @@
 import React from 'react';
-import BaseNotification, { getDescription } from './';
+import BaseNotificationComponent, { getDescription } from './';
 import renderWithProvider from '../../../../util/test/renderWithProvider';
 import { strings } from '../../../../../locales/i18n';
 
-const defaultProps = [
+interface NotificationData {
+  description?: string;
+  title?: string;
+}
+
+const BaseNotification = BaseNotificationComponent as unknown as React.ComponentType<{
+  status: string;
+  data?: NotificationData;
+}>;
+
+const defaultProps: {
+  status: string;
+  data: { description: string; title: string };
+}[] = [
   { status: 'pending', data: { description: 'Testing description', title: 'Testing Title' } },
   { status: 'pending_withdrawal', data: { description: 'Testing description', title: 'Testing Title' } },
   { status: 'pending_deposit', data: { description: 'Testing description', title: 'Testing Title' } },
