@@ -408,3 +408,52 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'eth-ens-namehash' {
+  const namehash: {
+    hash(name: string): string;
+    normalize(name: string): string;
+  };
+  export default namehash;
+}
+
+declare module '@metamask/ethjs-query' {
+  class Eth {
+    constructor(provider: unknown);
+  }
+  export default Eth;
+}
+
+declare module '@metamask/ethjs-contract' {
+  import Eth from '@metamask/ethjs-query';
+
+  interface EthjsContractInstance {
+    [methodName: string]: (
+      ...args: (string | number)[]
+    ) => Promise<Record<number, string>>;
+  }
+
+  interface EthjsContractFactory {
+    at(address: string): EthjsContractInstance;
+  }
+
+  function contract(eth: Eth): (abi: unknown[]) => EthjsContractFactory;
+  export default contract;
+}
+
+declare module 'content-hash' {
+  const contentHash: {
+    decode(hash: string): string;
+    getCodec(hash: string): string;
+  };
+  export default contentHash;
+}
+
+declare module 'multihashes' {
+  const multihash: {
+    fromHexString(hex: string): Uint8Array;
+    toB58String(buf: Uint8Array): string;
+    encode(buf: Uint8Array, code: string | number): Uint8Array;
+  };
+  export default multihash;
+}
