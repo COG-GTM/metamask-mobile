@@ -8,14 +8,25 @@ import multihash from 'multihashes';
 import Engine from '../../core/Engine';
 import { IPFS_GATEWAY_DISABLED_ERROR } from '../../components/Views/BrowserTab/constants';
 
+interface ResolveEnsToIpfsContentIdParams {
+  provider: unknown;
+  name: string;
+  chainId: string;
+}
+
+interface ResolvedContent {
+  type: string;
+  hash: string;
+}
+
 export default async function resolveEnsToIpfsContentId({
   provider,
   name,
   chainId,
-}) {
+}: ResolveEnsToIpfsContentIdParams): Promise<ResolvedContent> {
   const eth = new Eth(provider);
   const hash = namehash.hash(name);
-  const contract = new EthContract(eth);
+  const contract = EthContract(eth);
   // lookup registry
   const registryAddress = getRegistryForChainId(chainId);
   if (!registryAddress) {
@@ -70,7 +81,7 @@ export default async function resolveEnsToIpfsContentId({
   );
 }
 
-function hexValueIsEmpty(value) {
+function hexValueIsEmpty(value: string | null | undefined): boolean {
   return [
     undefined,
     null,
@@ -80,7 +91,7 @@ function hexValueIsEmpty(value) {
   ].includes(value);
 }
 
-function getRegistryForChainId(chainId) {
+function getRegistryForChainId(chainId: string): string | null {
   switch (chainId) {
     // mainnet
     case '0x1':
@@ -93,7 +104,7 @@ function getRegistryForChainId(chainId) {
   }
 }
 
-export function isGatewayUrl(urlObj) {
+export function isGatewayUrl(urlObj: Pick<URL, 'pathname'>): boolean {
   // All IPFS gateway urls start with the path /ipfs/
   if (urlObj.pathname.substr(0, 6) === '/ipfs/') return true;
   // All Swarm gateway urls start with the path /bzz:/
