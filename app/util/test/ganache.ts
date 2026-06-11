@@ -34,8 +34,16 @@ export default class Ganache {
     return this._server?.provider;
   }
 
-  async getAccounts(): Promise<string[] | undefined> {
-    return await this.getProvider()?.request({
+  private getRequiredProvider() {
+    const provider = this.getProvider();
+    if (!provider) {
+      throw new Error('Server not running yet');
+    }
+    return provider;
+  }
+
+  async getAccounts(): Promise<string[]> {
+    return await this.getRequiredProvider().request({
       method: 'eth_accounts',
       params: [],
     });
@@ -43,11 +51,14 @@ export default class Ganache {
 
   async getBalance(): Promise<number | string> {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider()?.request({
+    if (!accounts?.length) {
+      throw new Error('No accounts available');
+    }
+    const balanceHex = await this.getRequiredProvider().request({
       method: 'eth_getBalance',
-      params: [accounts?.[0] as string, 'latest'],
+      params: [accounts[0], 'latest'],
     });
-    const balanceInt = parseInt(balanceHex as string, 16) / 10 ** 18;
+    const balanceInt = parseInt(balanceHex, 16) / 10 ** 18;
 
     const balanceFormatted =
       balanceInt % 1 === 0 ? balanceInt : balanceInt.toFixed(4);
