@@ -1,5 +1,5 @@
+import ganache, { Server, ServerOptions } from 'ganache';
 import { getGanachePort } from '../../../e2e/fixtures/utils';
-import ganache from 'ganache';
 
 export const DEFAULT_GANACHE_PORT = 8545;
 
@@ -13,7 +13,9 @@ const defaultOptions = {
 };
 
 export default class Ganache {
-  async start(opts) {
+  private _server?: Server;
+
+  async start(opts: ServerOptions & { mnemonic?: string }): Promise<void> {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
@@ -32,16 +34,27 @@ export default class Ganache {
     return this._server?.provider;
   }
 
-  async getAccounts() {
-    return await this.getProvider().request({
+  private getRequiredProvider() {
+    const provider = this.getProvider();
+    if (!provider) {
+      throw new Error('Server not running yet');
+    }
+    return provider;
+  }
+
+  async getAccounts(): Promise<string[]> {
+    return await this.getRequiredProvider().request({
       method: 'eth_accounts',
       params: [],
     });
   }
 
-  async getBalance() {
+  async getBalance(): Promise<number | string> {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider().request({
+    if (!accounts?.length) {
+      throw new Error('No accounts available');
+    }
+    const balanceHex = await this.getRequiredProvider().request({
       method: 'eth_getBalance',
       params: [accounts[0], 'latest'],
     });
@@ -53,7 +66,7 @@ export default class Ganache {
     return balanceFormatted;
   }
 
-  async quit() {
+  async quit(): Promise<void> {
     if (!this._server) {
       throw new Error('Server not running yet');
     }
