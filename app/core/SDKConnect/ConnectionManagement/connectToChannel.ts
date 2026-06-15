@@ -26,6 +26,7 @@ async function connectToChannel({
   trigger,
   otherPublicKey,
   originatorInfo,
+  originatorInfoVerified,
   protocolVersion,
   initialConnection,
   origin,
@@ -81,6 +82,7 @@ async function connectToChannel({
       initialConnection,
       validUntil,
       originatorInfo,
+      originatorInfoVerified,
       lastAuthorized: initialConnection ? 0 : instance.state.approvedHosts[id],
     };
 

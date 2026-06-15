@@ -129,6 +129,7 @@ export class SDKConnect {
     origin,
     protocolVersion,
     originatorInfo,
+    originatorInfoVerified,
     initialConnection,
     validUntil = Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
   }: ConnectionProps) {
@@ -139,6 +140,7 @@ export class SDKConnect {
       protocolVersion,
       origin,
       originatorInfo,
+      originatorInfoVerified,
       validUntil,
       initialConnection,
       instance: this,
