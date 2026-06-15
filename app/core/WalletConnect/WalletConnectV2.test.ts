@@ -1,6 +1,4 @@
 import { ERROR_MESSAGES, WC2Manager } from './WalletConnectV2';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: Ignoring the import error for testing purposes
 import { NavigationContainerRef } from '@react-navigation/native';
 import { SessionTypes } from '@walletconnect/types/dist/types/sign-client/session';
 import StorageWrapper from '../../store/storage-wrapper';

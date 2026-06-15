@@ -8,6 +8,7 @@ import { OriginatorInfo } from '@metamask/sdk-communication-layer';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Logger from '../../../util/Logger';
 import { Connection } from '../Connection';
+import { SDKMessage } from '../SDKConnect.types';
 import DevLogger from '../utils/DevLogger';
 import handleSendMessage from './handleSendMessage';
 import { ImageSourcePropType } from 'react-native';
@@ -31,9 +32,7 @@ export const setupBridge = ({
     url:
       PROTOCOLS.METAMASK + '://' + originatorInfo.url || originatorInfo.title,
     isRemoteConn: true,
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sendMessage: (msg: any) => {
+    sendMessage: (msg: SDKMessage) => {
       DevLogger.log(`setupBride::sendMessage`, msg);
       handleSendMessage({
         msg,

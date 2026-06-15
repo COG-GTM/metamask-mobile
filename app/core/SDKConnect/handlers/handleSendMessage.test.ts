@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import Device from '../../../util/device';
 import { Connection } from '../Connection';
+import { SDKMessage } from '../SDKConnect.types';
 import { RPC_METHODS } from '../SDKConnectConstants';
 import DevLogger from '../utils/DevLogger';
 import { wait } from '../utils/wait.util';
@@ -76,8 +77,14 @@ describe('handleSendMessage', () => {
       expect(mockSetLoading).toHaveBeenCalledWith(false);
     });
     it('should handle undefined or null message gracefully', async () => {
-      await handleSendMessage({ msg: undefined, connection: mockConnection });
-      await handleSendMessage({ msg: null, connection: mockConnection });
+      await handleSendMessage({
+        msg: undefined as unknown as SDKMessage,
+        connection: mockConnection,
+      });
+      await handleSendMessage({
+        msg: null as unknown as SDKMessage,
+        connection: mockConnection,
+      });
 
       expect(mockSetLoading).toHaveBeenCalledWith(false);
     });

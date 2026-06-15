@@ -14,9 +14,13 @@ jest.mock('./handleConnectionMessage');
 
 describe('handleDeeplink', () => {
   let sdkConnect = {} as unknown as SDKConnect;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let fakeConnections = {} as any;
+  let fakeConnections: {
+    channelId: string;
+    origin: string;
+    url: string;
+    otherPublicKey: string;
+    context: string;
+  }[] = [];
   const rpc = Buffer.from('{"jsonrpc":"2.0","method":"eth_accounts"}').toString(
     'base64',
   );

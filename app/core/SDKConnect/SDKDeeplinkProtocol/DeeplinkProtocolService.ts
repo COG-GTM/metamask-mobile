@@ -1,6 +1,5 @@
 import { KeyringController } from '@metamask/keyring-controller';
 import { NetworkController } from '@metamask/network-controller';
-import { PermissionController } from '@metamask/permission-controller';
 import { OriginatorInfo } from '@metamask/sdk-communication-layer';
 import { Linking } from 'react-native';
 import { PROTOCOLS } from '../../../constants/deeplinks';
@@ -13,6 +12,7 @@ import getDefaultBridgeParams from '../AndroidSDK/getDefaultBridgeParams';
 import BatchRPCManager from '../BatchRPCManager';
 import RPCQueueManager from '../RPCQueueManager';
 import SDKConnect from '../SDKConnect';
+import { SDKMessage } from '../SDKConnect.types';
 import {
   DEFAULT_SESSION_TIMEOUT_MS,
   METHODS_TO_DELAY,
@@ -107,18 +107,14 @@ export default class DeeplinkProtocolService {
       isMMSDK: true,
       url: PROTOCOLS.METAMASK + '://' + AppConstants.MM_SDK.SDK_REMOTE_ORIGIN,
       isRemoteConn: true,
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      sendMessage: (msg: any) => this.sendMessage(msg),
+      sendMessage: (msg: SDKMessage) => this.sendMessage(msg),
       ...defaultBridgeParams,
     });
 
     this.bridgeByClientId[clientInfo.clientId] = bridge;
   }
 
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async sendMessage(message: any, forceRedirect?: boolean) {
+  async sendMessage(message: SDKMessage, forceRedirect?: boolean) {
     const messageWithMetadata = {
       ...message,
       data: {
@@ -128,7 +124,7 @@ export default class DeeplinkProtocolService {
       },
     };
 
-    const id = message?.data?.id;
+    const id = message?.data?.id as string;
 
     DevLogger.log(`DeeplinkProtocolService::sendMessage id=${id}`);
 
@@ -212,7 +208,7 @@ export default class DeeplinkProtocolService {
         )}`,
       );
 
-      const origRpcId = messageWithMetadata?.data?.id;
+      const origRpcId = messageWithMetadata?.data?.id as string | undefined;
 
       const isPartOfBatchRequest = origRpcId?.includes('_');
 
@@ -241,9 +237,7 @@ export default class DeeplinkProtocolService {
     clientId,
     scheme,
   }: {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    message: any;
+    message: SDKMessage;
     clientId: string;
     scheme?: string;
   }) {
@@ -279,13 +273,7 @@ export default class DeeplinkProtocolService {
     originatorInfo: OriginatorInfo;
     channelId: string;
   }): Promise<unknown> {
-    const permissionsController = (
-      Engine.context as {
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        PermissionController: PermissionController<any, any>;
-      }
-    ).PermissionController;
+    const permissionsController = Engine.context.PermissionController;
 
     return permissionsController.requestPermissions(
       { origin: channelId },
@@ -515,9 +503,7 @@ export default class DeeplinkProtocolService {
     const requestObject = JSON.parse(params.request!) as {
       id: string;
       method: string;
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      params: any;
+      params: unknown[];
     };
 
     // Handle custom rpc method
@@ -673,9 +659,7 @@ export default class DeeplinkProtocolService {
       let data: {
         id: string;
         method: string;
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        params?: any;
+        params: unknown[];
       };
 
       const sessionId: string = params.channelId;
@@ -714,9 +698,9 @@ export default class DeeplinkProtocolService {
           const isBatchRequest = rpcMethod === RPC_METHODS.METAMASK_BATCH;
 
           if (isBatchRequest) {
-            const batchRpcMethods: string[] = data.params.map(
-              (rpc: { method: string }) => rpc.method,
-            );
+            const batchRpcMethods: string[] = (
+              data.params as { method: string }[]
+            ).map((rpc) => rpc.method);
 
             const shouldSkip = batchRpcMethods.some((r) =>
               RPC_METHODS_TO_SKIP.includes(r),

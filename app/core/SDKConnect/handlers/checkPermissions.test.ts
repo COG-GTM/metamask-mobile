@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 // Mock Platform first, before any imports
 jest.mock('react-native/Libraries/Utilities/Platform', () => {
   const Platform = {
@@ -31,7 +29,6 @@ import { PreferencesController } from '@metamask/preferences-controller';
 import Engine from '../../Engine';
 import { Connection } from '../Connection';
 import checkPermissions from './checkPermissions';
-import { PermissionController } from '@metamask/permission-controller';
 import {
   getDefaultCaip25CaveatValue,
   getPermittedAccounts,
@@ -79,9 +76,7 @@ describe('checkPermissions', () => {
     executeRestrictedMethod: jest.fn().mockResolvedValue({}),
     hasPermissions: jest.fn(),
     requestPermissions,
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as unknown as PermissionController<any, any>;
+  } as unknown as typeof Engine.context.PermissionController;
   const currentTime = Date.now();
 
   const mockGetPermittedAccounts = getPermittedAccounts as jest.MockedFunction<
@@ -129,9 +124,7 @@ describe('checkPermissions', () => {
       getPermission: jest.fn(),
       getCaveat: jest.fn(),
       requestPermissions,
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as unknown as PermissionController<any, any>;
+    } as unknown as typeof Engine.context.PermissionController;
 
     engine = {
       context: {
