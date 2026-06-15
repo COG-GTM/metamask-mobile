@@ -124,8 +124,8 @@ export const formatRewardsWei = (
   }
   // return a string without special characters
   return asset.isETH
-    ? fromWei(rewardsValue)
-    : fromTokenMinimalUnit(rewardsValue, asset.decimals);
+    ? fromWei(rewardsValue.toString())
+    : fromTokenMinimalUnit(rewardsValue.toString(), asset.decimals);
 };
 
 /**
