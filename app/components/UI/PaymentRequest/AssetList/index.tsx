@@ -74,7 +74,17 @@ interface Props {
   /**
    * Message string to display when searchResults is empty
    */
-  emptyMessage: string;
+  emptyMessage?: string;
+  /**
+   * Currently selected asset
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectedAsset?: any;
+  /**
+   * Current search query string
+   */
+  searchQuery?: string;
 }
 
 const AssetList = ({

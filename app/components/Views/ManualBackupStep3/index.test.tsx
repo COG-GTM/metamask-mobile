@@ -8,11 +8,14 @@ const mockStore = configureMockStore();
 const initialState = {};
 const store = mockStore(initialState);
 
+const ManualBackupStep3Component =
+  ManualBackupStep3 as unknown as React.ComponentType;
+
 describe('ManualBackupStep3', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ManualBackupStep3 />
+        <ManualBackupStep3Component />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

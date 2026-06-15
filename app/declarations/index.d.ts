@@ -2,9 +2,13 @@
 // Ex. This makes it so that when you import CloseIcon from './close-icon.svg, CloseIcon, will be detected as a React.FC component.
 declare module '*.mp4';
 
+declare module '@metamask/ethjs-query';
+
 declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
 declare module 'react-native-fade-in-image';
+
+declare module 'react-native-progress/Bar';
 
 declare module 'react-native-fast-crypto';
 
@@ -295,6 +299,10 @@ declare module '@metamask/react-native-actionsheet' {
 }
 
 declare module '@metamask/react-native-search-api';
+
+declare module '@metamask/react-native-button';
+
+declare module 'zxcvbn';
 
 /**
  * @sentry/react-native types for v^6.10.0

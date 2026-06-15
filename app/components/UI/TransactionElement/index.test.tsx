@@ -56,19 +56,23 @@ describe('TransactionElement', () => {
     const component = renderWithProvider(
       <Provider store={store}>
         <TransactionElement
-          tx={{
-            transaction: {
-              to: '0x0',
-              from: '0x1',
-              nonce: 1,
-            },
-            chainId: '0x1',
-            txParams: {
-              to: '0x0',
-              from: '0x1',
-              status: 'CONFIRMED',
-            },
-          }}
+          tx={
+            {
+              transaction: {
+                to: '0x0',
+                from: '0x1',
+                nonce: 1,
+              },
+              chainId: '0x1',
+              txParams: {
+                to: '0x0',
+                from: '0x1',
+                status: 'CONFIRMED',
+              },
+            } as unknown as React.ComponentProps<
+              typeof TransactionElement
+            >['tx']
+          }
         />
       </Provider>,
     );
