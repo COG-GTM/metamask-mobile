@@ -120,7 +120,10 @@ import SmartTransactionsController from '@metamask/smart-transactions-controller
 import { getAllowedSmartTransactionsChainIds } from '../../../app/constants/smartTransactions';
 import { selectBasicFunctionalityEnabled } from '../../selectors/settings';
 import { selectSwapsChainFeatureFlags } from '../../reducers/swaps';
-import { ClientId } from '@metamask/smart-transactions-controller/dist/types';
+import {
+  ClientId,
+  FeatureFlags as SmartTransactionsFeatureFlags,
+} from '@metamask/smart-transactions-controller/dist/types';
 import { zeroAddress } from 'ethereumjs-util';
 import {
   ApprovalType,
@@ -910,7 +913,10 @@ export class Engine {
         this.transactionController.getTransactions(...args),
       updateTransaction: (...args) =>
         this.transactionController.updateTransaction(...args),
-      getFeatureFlags: () => selectSwapsChainFeatureFlags(store.getState()),
+      getFeatureFlags: () =>
+        selectSwapsChainFeatureFlags(
+          store.getState(),
+        ) as unknown as SmartTransactionsFeatureFlags,
       getMetaMetricsProps: () => Promise.resolve({}), // Return MetaMetrics props once we enable HW wallets for smart transactions.
     });
 

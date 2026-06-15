@@ -1,5 +1,8 @@
 import React from 'react';
-import renderWithProvider from '../../../util/test/renderWithProvider';
+import renderWithProvider, {
+  DeepPartial,
+} from '../../../util/test/renderWithProvider';
+import { RootState } from '../../../reducers';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
 import BrowserTab from './BrowserTab';
@@ -33,7 +36,7 @@ const mockInitialState = {
   transaction: {
     selectedAsset: '',
   },
-};
+} as unknown as DeepPartial<RootState>;
 
 jest.mock('../../../core/Engine', () => ({
   context: {

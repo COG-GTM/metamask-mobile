@@ -1,11 +1,14 @@
 import React from 'react';
 import Settings from './';
 
-import renderWithProvider from '../../../util/test/renderWithProvider';
+import renderWithProvider, {
+  DeepPartial,
+} from '../../../util/test/renderWithProvider';
 import { SettingsViewSelectorsIDs } from '../../../../e2e/selectors/Settings/SettingsView.selectors';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { fireEvent } from '@testing-library/react-native';
 import Routes from '../../../constants/navigation/Routes';
+import { RootState } from '../../../reducers';
 
 const initialState = {
   user: { seedphraseBackedUp: true, passwordSet: true },
@@ -19,7 +22,7 @@ const initialState = {
   engine: {
     backgroundState,
   },
-};
+} as unknown as DeepPartial<RootState>;
 
 const mockSetOptions = jest.fn();
 const mockNavigate = jest.fn();
