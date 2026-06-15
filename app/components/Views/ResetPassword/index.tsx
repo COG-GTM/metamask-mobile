@@ -17,7 +17,7 @@ import { ParamListBase, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ThunkDispatch } from 'redux-thunk';
 import { AnyAction } from 'redux';
-import { Theme } from '@metamask/design-tokens';
+import { Theme } from '../../../util/theme/models';
 import CheckBox from '@react-native-community/checkbox';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Text, {
@@ -301,7 +301,7 @@ class ResetPassword extends PureComponent<
   ResetPasswordProps,
   ResetPasswordState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
+  static contextType = ThemeContext;
 
   state: ResetPasswordState = {
     isSelected: false,
@@ -325,7 +325,8 @@ class ResetPassword extends PureComponent<
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('password_reset.change_password'),
@@ -548,7 +549,8 @@ class ResetPassword extends PureComponent<
 
   renderConfirmPassword() {
     const { warningIncorrectPassword } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
 
@@ -616,7 +618,8 @@ class ResetPassword extends PureComponent<
       error,
       loading,
     } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
     const passwordsMatch = password !== '' && password === confirmPassword;
@@ -806,7 +809,8 @@ class ResetPassword extends PureComponent<
 
   render() {
     const { view, ready } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!ready) return this.renderLoader();
@@ -825,8 +829,6 @@ class ResetPassword extends PureComponent<
     );
   }
 }
-
-ResetPassword.contextType = ThemeContext;
 
 const mapStateToProps = (state: RootState): ResetPasswordStateProps => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),

@@ -17,7 +17,7 @@ import {
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ThunkDispatch } from 'redux-thunk';
 import { AnyAction } from 'redux';
-import { Theme } from '@metamask/design-tokens';
+import { Theme } from '../../../util/theme/models';
 import Text, {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
@@ -181,7 +181,7 @@ interface OnboardingState {
  * View that is displayed to first time (new) users
  */
 class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
-  declare context: React.ContextType<typeof ThemeContext>;
+  static contextType = ThemeContext;
 
   notificationAnimated = new Animated.Value(100);
   detailsYAnimated = new Animated.Value(0);
@@ -230,7 +230,8 @@ class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
 
   updateNavBar = () => {
     const { route, navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       route.params?.delete
         ? getTransparentOnboardingNavbarOptions(colors)
@@ -357,7 +358,8 @@ class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
   };
 
   renderLoader = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -371,7 +373,8 @@ class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
   };
 
   renderContent() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -423,7 +426,8 @@ class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
   }
 
   handleSimpleNotification = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!this.props.route.params?.delete) return;
@@ -451,7 +455,8 @@ class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
   render() {
     const { loading } = this.props;
     const { existingUser } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -499,7 +504,6 @@ class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
   }
 }
 
-Onboarding.contextType = ThemeContext;
 
 const mapStateToProps = (state: RootState): OnboardingStateProps => ({
   accounts: selectAccounts(state),
