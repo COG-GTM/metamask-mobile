@@ -2,6 +2,7 @@ import Routes from '../../../../app/constants/navigation/Routes';
 import AppConstants from '../../../../app/core/AppConstants';
 import Logger from '../../../util/Logger';
 import { Connection } from '../Connection';
+import { SDKMessage } from '../SDKConnect.types';
 import { METHODS_TO_DELAY, RPC_METHODS } from '../SDKConnectConstants';
 import DevLogger from '../utils/DevLogger';
 import { wait } from '../utils/wait.util';
@@ -11,9 +12,7 @@ export const handleSendMessage = async ({
   msg,
   connection,
 }: {
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  msg: any;
+  msg: SDKMessage;
   connection: Connection;
 }) => {
   try {
@@ -31,9 +30,7 @@ export const handleSendMessage = async ({
         msg,
         batchRPCManager: connection.batchRPCManager,
         backgroundBridge: connection.backgroundBridge,
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        sendMessage: ({ msg: newmsg }: { msg: any }) =>
+        sendMessage: ({ msg: newmsg }: { msg: SDKMessage }) =>
           handleSendMessage({ msg: newmsg, connection }),
       });
 

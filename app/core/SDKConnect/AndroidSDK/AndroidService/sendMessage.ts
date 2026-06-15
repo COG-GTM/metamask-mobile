@@ -1,7 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AccountsController } from '@metamask/accounts-controller';
 import Logger from '../../../../util/Logger';
 import Engine from '../../../Engine';
+import {
+  SDKMessage,
+  SDKRpcMessageData,
+} from '../../SDKConnect.types';
 import { METHODS_TO_DELAY, RPC_METHODS } from '../../SDKConnectConstants';
 import handleBatchRpcResponse from '../../handlers/handleBatchRpcResponse';
 import DevLogger from '../../utils/DevLogger';
@@ -10,10 +13,10 @@ import AndroidService from '../AndroidService';
 
 async function sendMessage(
   instance: AndroidService,
-  message: any,
+  message: SDKMessage,
   forceRedirect?: boolean,
 ) {
-  const id = message?.data?.id;
+  const id = message?.data?.id as string;
   let rpcMethod = instance.rpcQueueManager.getId(id);
 
   const isConnectionResponse = rpcMethod === RPC_METHODS.ETH_REQUESTACCOUNTS;
@@ -29,9 +32,9 @@ async function sendMessage(
       .getSelectedAccount()
       .address.toLowerCase();
 
-    const lowercaseAccounts = (message.data.result as string[]).map(
-      (a: string) => a.toLowerCase(),
-    );
+    const lowercaseAccounts = (
+      (message.data as SDKRpcMessageData).result as string[]
+    ).map((a: string) => a.toLowerCase());
 
     const isPartOfConnectedAddresses =
       lowercaseAccounts.includes(selectedAddress);

@@ -1,5 +1,4 @@
 import { KeyringController } from '@metamask/keyring-controller';
-import { PermissionController } from '@metamask/permission-controller';
 import { CommunicationLayerMessage } from '@metamask/sdk-communication-layer';
 import {
   Caip25EndowmentPermissionName,
@@ -49,13 +48,7 @@ export const checkPermissions = async ({
       return true;
     }
 
-    const permissionsController = (
-      engine.context as {
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        PermissionController: PermissionController<any, any>;
-      }
-    ).PermissionController;
+    const permissionsController = engine.context.PermissionController;
 
     // Make sure to wait for user to be on main pages before requesting permissions or request can get cancelled.
     const pendingRoutes = [Routes.LOCK_SCREEN, Routes.ONBOARDING.LOGIN];

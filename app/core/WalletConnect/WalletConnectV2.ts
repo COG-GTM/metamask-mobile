@@ -1,7 +1,6 @@
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { KeyringController } from '@metamask/keyring-controller';
-import { PermissionController } from '@metamask/permission-controller';
 import { NavigationContainerRef } from '@react-navigation/native';
 import { IWalletKit, WalletKit, WalletKitTypes } from '@reown/walletkit';
 import { Core } from '@walletconnect/core';
@@ -105,13 +104,7 @@ export class WC2Manager {
       `[WC2Manager::constructor chainId=${chainId} type=${typeof chainId}`,
       this.navigation,
     );
-    const permissionController = (
-      Engine.context as {
-        // TODO: Replace 'any' with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        PermissionController: PermissionController<any, any>;
-      }
-    ).PermissionController;
+    const permissionController = Engine.context.PermissionController;
 
     const activeSessions = this.getSessions();
 
@@ -318,13 +311,7 @@ export class WC2Manager {
       delete this.sessions[session.topic];
 
       // Remove associated permissions
-      const permissionsController = (
-        Engine.context as {
-          // TODO: Replace 'any' with type
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          PermissionController: PermissionController<any, any>;
-        }
-      ).PermissionController;
+      const permissionsController = Engine.context.PermissionController;
       DevLogger.log(
         `WC2::removeSession revokeAllPermissions for ${session.topic}`,
         permissionsController.state,
@@ -400,13 +387,7 @@ export class WC2Manager {
 
     hideWCLoadingState({ navigation: this.navigation });
 
-    const permissionsController = (
-      Engine.context as {
-        // TODO: Replace 'any' with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        PermissionController: PermissionController<any, any>;
-      }
-    ).PermissionController;
+    const permissionsController = Engine.context.PermissionController;
 
     const { proposer } = params;
     const { metadata } = proposer;

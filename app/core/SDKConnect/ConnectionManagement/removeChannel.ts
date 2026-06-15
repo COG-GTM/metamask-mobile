@@ -1,4 +1,3 @@
-import { PermissionController } from '@metamask/permission-controller';
 import {
   removeApprovedHost,
   removeConnection,
@@ -65,13 +64,7 @@ async function removeChannel({
   delete instance.state.connecting[channelId];
   if (engine) {
     // Remove matching permissions from controller
-    const permissionsController = (
-      engine.context as {
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        PermissionController: PermissionController<any, any>;
-      }
-    ).PermissionController;
+    const permissionsController = engine.context.PermissionController;
     if (permissionsController.getPermissions(channelId)) {
       permissionsController.revokeAllPermissions(channelId);
     }

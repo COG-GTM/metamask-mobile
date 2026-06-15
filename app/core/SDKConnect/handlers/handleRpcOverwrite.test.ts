@@ -37,7 +37,9 @@ describe('handleRpcOverwrite', () => {
 
     const result = overwriteRPCWith({ rpc, accountAddress, selectedChainId });
 
-    expect(result.params[1].domain.chainId).toBe(selectedChainId);
+    expect(
+      (result.params[1] as { domain: { chainId: string } }).domain.chainId,
+    ).toBe(selectedChainId);
     expect(result.params[0]).toBe(accountAddress);
   });
 
@@ -49,7 +51,9 @@ describe('handleRpcOverwrite', () => {
 
     const result = overwriteRPCWith({ rpc, accountAddress, selectedChainId });
 
-    expect(JSON.parse(result.params[1]).domain.chainId).toBe(selectedChainId);
+    expect(JSON.parse(result.params[1] as string).domain.chainId).toBe(
+      selectedChainId,
+    );
     expect(result.params[0]).toBe(accountAddress);
   });
 

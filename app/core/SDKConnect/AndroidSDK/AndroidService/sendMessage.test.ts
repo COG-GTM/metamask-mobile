@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Logger from '../../../../util/Logger';
 import { createMockInternalAccount } from '../../../../util/test/accountsControllerTestUtils';
 import Engine from '../../../Engine';
@@ -7,6 +6,7 @@ import { RPC_METHODS } from '../../SDKConnectConstants';
 import handleBatchRpcResponse from '../../handlers/handleBatchRpcResponse';
 import { wait } from '../../utils/wait.util';
 import AndroidService from '../AndroidService';
+import { SDKMessage } from '../../SDKConnect.types';
 import sendMessage from './sendMessage';
 
 jest.mock('../../../Engine');
@@ -31,7 +31,7 @@ const mockInternalAccount = createMockInternalAccount(
 
 describe('sendMessage', () => {
   let instance: jest.Mocked<AndroidService>;
-  let message: any;
+  let message: SDKMessage = {};
 
   const mockGetId = jest.fn();
   const mockRemove = jest.fn();
@@ -67,7 +67,7 @@ describe('sendMessage', () => {
       },
     };
 
-    (Engine.context as any) = {
+    (Engine.context as unknown) = {
       AccountsController: {
         getSelectedAccount: jest.fn().mockReturnValue(mockInternalAccount),
       },
@@ -97,9 +97,11 @@ describe('sendMessage', () => {
       'Account 2',
     );
 
-    (Engine.context as any).AccountsController.getSelectedAccount = jest
-      .fn()
-      .mockReturnValue(mockInternalAccount2);
+    (
+      Engine.context.AccountsController as unknown as {
+        getSelectedAccount: jest.Mock;
+      }
+    ).getSelectedAccount = jest.fn().mockReturnValue(mockInternalAccount2);
 
     mockGetId.mockReturnValue(RPC_METHODS.ETH_REQUESTACCOUNTS);
 

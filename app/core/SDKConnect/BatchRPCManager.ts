@@ -39,9 +39,7 @@ export class BatchRPCManager {
   }: {
     id: string;
     index: number;
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    response: any;
+    response: unknown;
   }) {
     if (this.rpcChain[id]) {
       this.rpcChain[id][index].response = response;
