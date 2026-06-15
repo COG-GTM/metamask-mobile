@@ -1,10 +1,37 @@
 import React, { useEffect, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import { getDecimalChainId } from '../../../util/networks';
 import PermissionSummary from '../PermissionsSummary';
+import { PermissionsSummaryProps } from '../PermissionsSummary/PermissionsSummary.types';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { useNetworkInfo } from '../../../selectors/selectedNetworkController';
 import { useMetrics } from '../../../components/hooks/useMetrics';
+
+interface SwitchCustomNetworkPageInformation {
+  url: string;
+  currentEnsName?: string;
+  icon?: string | { uri: string };
+}
+
+interface SwitchCustomNetworkProps {
+  /**
+   * Object containing current page title, url, and icon href
+   */
+  currentPageInformation: SwitchCustomNetworkPageInformation;
+  /**
+   * Callback triggered on account access approval
+   */
+  onConfirm?: () => void;
+  /**
+   * Callback triggered on account access rejection
+   */
+  onCancel?: () => void;
+  /**
+   * Object containing info of the network to add
+   */
+  customNetworkInformation: NonNullable<
+    PermissionsSummaryProps['customNetworkInformation']
+  >;
+}
 
 /**
  * Account access approval component
@@ -14,7 +41,7 @@ const SwitchCustomNetwork = ({
   currentPageInformation,
   onCancel,
   onConfirm,
-}) => {
+}: SwitchCustomNetworkProps) => {
   const { networkName } = useNetworkInfo(
     new URL(currentPageInformation.url).hostname,
   );
@@ -42,32 +69,15 @@ const SwitchCustomNetwork = ({
   return (
     <PermissionSummary
       customNetworkInformation={customNetworkInformation}
-      currentPageInformation={currentPageInformation}
+      currentPageInformation={
+        currentPageInformation as PermissionsSummaryProps['currentPageInformation']
+      }
       onCancel={onCancel}
       onConfirm={onConfirm}
       isDisconnectAllShown={false}
       isNetworkSwitch
     />
   );
-};
-
-SwitchCustomNetwork.propTypes = {
-  /**
-   * Object containing current page title, url, and icon href
-   */
-  currentPageInformation: PropTypes.object,
-  /**
-   * Callback triggered on account access approval
-   */
-  onConfirm: PropTypes.func,
-  /**
-   * Callback triggered on account access rejection
-   */
-  onCancel: PropTypes.func,
-  /**
-   * Object containing info of the network to add
-   */
-  customNetworkInformation: PropTypes.object,
 };
 
 export default SwitchCustomNetwork;
