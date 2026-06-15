@@ -21,7 +21,10 @@ import StorageWrapper from '../../../store/storage-wrapper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import zxcvbn from 'zxcvbn';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { OutlinedTextField } from 'react-native-material-textfield';
+import {
+  OutlinedTextField,
+  TextFieldProps,
+} from 'react-native-material-textfield';
 import Clipboard from '@react-native-clipboard/clipboard';
 import AppConstants from '../../../core/AppConstants';
 import Device from '../../../util/device';
@@ -420,8 +423,8 @@ const ImportFromSecretRecoveryPhrase = ({
   const hiddenSRPInput = useCallback(
     () => (
       <OutlinedTextField
-        style={styles.input}
-        containerStyle={inputWidth}
+        style={styles.input as TextFieldProps['style']}
+        containerStyle={inputWidth as TextFieldProps['containerStyle']}
         inputContainerStyle={styles.padding}
         placeholder={strings('import_from_seed.seed_phrase_placeholder')}
         testID={ImportFromSeedSelectorsIDs.SEED_PHRASE_INPUT_ID}
@@ -542,8 +545,8 @@ const ImportFromSecretRecoveryPhrase = ({
               </View>
             </View>
             <OutlinedTextField
-              style={styles.input}
-              containerStyle={inputWidth}
+              style={styles.input as TextFieldProps['style']}
+              containerStyle={inputWidth as TextFieldProps['containerStyle']}
               testID={ChoosePasswordSelectorsIDs.NEW_PASSWORD_INPUT_ID}
               placeholder={strings('import_from_seed.new_password')}
               placeholderTextColor={colors.text.muted}
@@ -583,8 +586,8 @@ const ImportFromSecretRecoveryPhrase = ({
               {strings('import_from_seed.confirm_password')}
             </Text>
             <OutlinedTextField
-              style={styles.input}
-              containerStyle={inputWidth}
+              style={styles.input as TextFieldProps['style']}
+              containerStyle={inputWidth as TextFieldProps['containerStyle']}
               testID={ChoosePasswordSelectorsIDs.CONFIRM_PASSWORD_INPUT_ID}
               onChangeText={onPasswordConfirmChange}
               returnKeyType={'next'}
