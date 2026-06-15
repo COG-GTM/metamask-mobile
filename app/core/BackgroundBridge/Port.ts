@@ -11,7 +11,7 @@ const EventEmitter = require('events').EventEmitter;
 class Port extends EventEmitter {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(browserWindow: any, isMainFrame: boolean) {
+  constructor(browserWindow: any, isMainFrame?: boolean) {
     super();
     this._window = browserWindow;
     this._isMainFrame = isMainFrame;
