@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import Icon, {
   IconColor,
@@ -18,7 +18,7 @@ import Text, {
   TextColor,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (colors, titleColor) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -47,41 +47,37 @@ const createStyles = (colors, titleColor) =>
     },
   });
 
-const propTypes = {
-  title: PropTypes.string,
+interface SettingsDrawerProps {
+  title?: string;
   /**
    * Additional descriptive text about this option
    */
-  description: PropTypes.string,
+  description?: string;
   /**
    * Disable bottom border
    */
-  noBorder: PropTypes.bool,
+  noBorder?: boolean;
   /**
    * Handler called when this drawer is pressed
    */
-  onPress: PropTypes.func,
+  onPress?: () => void;
   /**
    * Display SettingsNotification
    */
-  warning: PropTypes.string,
+  warning?: string;
   /**
    * Display arrow right
    */
-  renderArrowRight: PropTypes.bool,
+  renderArrowRight?: boolean;
   /**
    * Test id for testing purposes
    */
-  testID: PropTypes.string,
+  testID?: string;
   /**
    * Title color
    */
-  titleColor: PropTypes.string,
-};
-
-const defaultProps = {
-  onPress: undefined,
-};
+  titleColor?: TextColor;
+}
 
 const SettingsDrawer = ({
   title,
@@ -91,9 +87,9 @@ const SettingsDrawer = ({
   renderArrowRight = true,
   testID,
   titleColor = TextColor.Default,
-}) => {
+}: SettingsDrawerProps) => {
   const { colors } = useTheme();
-  const styles = createStyles(colors, titleColor);
+  const styles = createStyles(colors);
   return (
     <TouchableOpacity onPress={onPress} {...generateTestId(Platform, testID)}>
       <ListItem style={styles.root} gap={16}>
@@ -136,8 +132,5 @@ const SettingsDrawer = ({
     </TouchableOpacity>
   );
 };
-
-SettingsDrawer.propTypes = propTypes;
-SettingsDrawer.defaultProps = defaultProps;
 
 export default SettingsDrawer;
