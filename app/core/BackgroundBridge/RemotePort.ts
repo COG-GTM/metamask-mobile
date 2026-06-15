@@ -8,7 +8,7 @@ class RemotePort extends EventEmitter {
   }
 
   postMessage = (msg?: unknown) => {
-    this.sendMessage(msg);
+    this.sendMessage?.(msg);
   };
 }
 
