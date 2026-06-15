@@ -87,7 +87,9 @@ describe('Utils', () => {
 
       // Act
       const [transactionElement, transactionDetails] =
-        decodeIncomingTransfer(args);
+        decodeIncomingTransfer(
+          args as unknown as Parameters<typeof decodeIncomingTransfer>[0],
+        );
 
       // Assert
       expect(transactionElement).toEqual({
@@ -147,7 +149,9 @@ describe('Utils', () => {
 
       // Act
       const [transactionElement, transactionDetails] =
-        decodeIncomingTransfer(args);
+        decodeIncomingTransfer(
+          args as unknown as Parameters<typeof decodeIncomingTransfer>[0],
+        );
 
       // Assert
       expect(transactionElement).toEqual({
@@ -222,7 +226,9 @@ describe('Utils', () => {
         },
       };
 
-      const result = await decodeTransaction(args);
+      const result = await decodeTransaction(
+        args as unknown as Parameters<typeof decodeTransaction>[0],
+      );
 
       expect(result).toEqual([
         {
@@ -265,7 +271,9 @@ describe('Utils', () => {
         },
       };
 
-      const result = await decodeTransaction(args);
+      const result = await decodeTransaction(
+        args as unknown as Parameters<typeof decodeTransaction>[0],
+      );
 
       expect(result).toEqual([
         {
@@ -307,7 +315,9 @@ describe('Utils', () => {
         },
       };
 
-      const result = await decodeTransaction(args);
+      const result = await decodeTransaction(
+        args as unknown as Parameters<typeof decodeTransaction>[0],
+      );
 
       expect(result).toEqual([
         {
