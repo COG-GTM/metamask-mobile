@@ -34,7 +34,7 @@ jest.mock('../../../core/Engine', () => {
   };
 });
 
-const mockInitialState: DeepPartial<RootState> = {
+const mockInitialState = {
   settings: {
     useBlockieIcon: false,
   },
@@ -76,7 +76,7 @@ const mockInitialState: DeepPartial<RootState> = {
   transaction: {
     origin: 'https://metamask.io',
   },
-};
+} as unknown as DeepPartial<RootState>;
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
