@@ -62,7 +62,10 @@ interface OwnProps {
   gasEstimateType?: string;
   gasFeeEstimates: Record<string, GasFeeEstimate>;
   defaultGasFeeOptionLegacy?: string;
+  defaultGasFeeOptionFeeLegacy?: string;
   defaultGasFeeOptionFeeMarket?: string;
+  gasLimit?: string;
+  customGasLimit?: string | null;
   isVisible?: boolean;
   onGasUpdate: (customGas: Record<string, unknown>, gasLimit?: unknown) => void;
   customGasFee?: CustomGasFee | null;
