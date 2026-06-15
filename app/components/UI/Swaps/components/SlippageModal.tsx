@@ -86,7 +86,7 @@ function SlippageModal({
               increment={1}
               onChange={onChange}
               value={slippage}
-              formatTooltipText={(text: string) => `${text}%`}
+              formatTooltipText={(text: number) => `${text}%`}
             />
           </View>
 
