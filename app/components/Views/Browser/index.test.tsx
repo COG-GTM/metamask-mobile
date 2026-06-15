@@ -109,15 +109,17 @@ describe('Browser', () => {
               <Stack.Screen name={Routes.BROWSER.VIEW}>
                 {() => (
                   <Browser
-                    route={routeMock}
-                    tabs={mockTabs}
-                    activeTab={1}
-                    navigation={mockNavigation}
-                    createNewTab={jest.fn}
-                    closeAllTabs={jest.fn}
-                    closeTab={jest.fn}
-                    setActiveTab={jest.fn}
-                    updateTab={jest.fn}
+                    {...({
+                      route: routeMock,
+                      tabs: mockTabs,
+                      activeTab: 1,
+                      navigation: mockNavigation,
+                      createNewTab: jest.fn,
+                      closeAllTabs: jest.fn,
+                      closeTab: jest.fn,
+                      setActiveTab: jest.fn,
+                      updateTab: jest.fn,
+                    } as unknown as React.ComponentProps<typeof Browser>)}
                   />
                 )}
               </Stack.Screen>
@@ -139,15 +141,17 @@ describe('Browser', () => {
             <Stack.Screen name={Routes.BROWSER.VIEW}>
               {() => (
                 <Browser
-                  route={routeMock}
-                  tabs={[]}
-                  activeTab={1}
-                  navigation={mockNavigation}
-                  createNewTab={jest.fn}
-                  closeAllTabs={jest.fn}
-                  closeTab={jest.fn}
-                  setActiveTab={jest.fn}
-                  updateTab={jest.fn}
+                  {...({
+                    route: routeMock,
+                    tabs: [],
+                    activeTab: 1,
+                    navigation: mockNavigation,
+                    createNewTab: jest.fn,
+                    closeAllTabs: jest.fn,
+                    closeTab: jest.fn,
+                    setActiveTab: jest.fn,
+                    updateTab: jest.fn,
+                  } as unknown as React.ComponentProps<typeof Browser>)}
                 />
               )}
             </Stack.Screen>
@@ -168,17 +172,19 @@ describe('Browser', () => {
             <Stack.Screen name={Routes.BROWSER.VIEW}>
               {() => (
                 <Browser
-                  route={{
-                    params: { newTabUrl: 'about:blank', timestamp: '987' },
-                  }}
-                  tabs={mockTabs}
-                  activeTab={1}
-                  navigation={mockNavigation}
-                  createNewTab={jest.fn}
-                  closeAllTabs={jest.fn}
-                  closeTab={jest.fn}
-                  setActiveTab={jest.fn}
-                  updateTab={jest.fn}
+                  {...({
+                    route: {
+                      params: { newTabUrl: 'about:blank', timestamp: '987' },
+                    },
+                    tabs: mockTabs,
+                    activeTab: 1,
+                    navigation: mockNavigation,
+                    createNewTab: jest.fn,
+                    closeAllTabs: jest.fn,
+                    closeTab: jest.fn,
+                    setActiveTab: jest.fn,
+                    updateTab: jest.fn,
+                  } as unknown as React.ComponentProps<typeof Browser>)}
                 />
               )}
             </Stack.Screen>
@@ -211,15 +217,17 @@ describe('Browser', () => {
             <Stack.Screen name="Browser">
               {() => (
                 <Browser
-                  route={{ params: {} }}
-                  tabs={mockTabsForIdling}
-                  activeTab={1}
-                  navigation={mockNavigation}
-                  createNewTab={jest.fn}
-                  closeAllTabs={jest.fn}
-                  closeTab={jest.fn}
-                  setActiveTab={jest.fn}
-                  updateTab={mockUpdateTab}
+                  {...({
+                    route: { params: {} },
+                    tabs: mockTabsForIdling,
+                    activeTab: 1,
+                    navigation: mockNavigation,
+                    createNewTab: jest.fn,
+                    closeAllTabs: jest.fn,
+                    closeTab: jest.fn,
+                    setActiveTab: jest.fn,
+                    updateTab: mockUpdateTab,
+                  } as unknown as React.ComponentProps<typeof Browser>)}
                 />
               )}
             </Stack.Screen>
