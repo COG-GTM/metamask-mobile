@@ -1,5 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
+import { ParamListBase, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import ManualBackupStep2 from './';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
@@ -18,6 +20,7 @@ describe('ManualBackupStep2', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <ManualBackupStep2
+          navigation={{} as StackNavigationProp<ParamListBase>}
           route={{
             params: {
               words: [
@@ -36,7 +39,10 @@ describe('ManualBackupStep2', () => {
               ],
               steps: ['one', 'two', 'three'],
             },
-          }}
+          } as unknown as RouteProp<
+            { params: { words: string[]; steps: string[] } },
+            'params'
+          >}
         />
       </Provider>,
     );
