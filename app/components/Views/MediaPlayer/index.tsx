@@ -1,16 +1,23 @@
 import React, { useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
+  StyleProp,
   StyleSheet,
   TouchableOpacity,
   View,
+  ViewStyle,
 } from 'react-native';
 import AndroidMediaPlayer from './AndroidMediaPlayer';
-import Video from 'react-native-video';
+import Video, {
+  ReactVideoSource,
+  SelectedTrack,
+  TextTracks,
+  VideoRef,
+} from 'react-native-video';
+import { Theme } from '@metamask/design-tokens';
 import Device from '../../../util/device';
 import Loader from './Loader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { TapGestureHandler } from 'react-native-gesture-handler';
+import { TapGestureHandler as TapGestureHandlerBase } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -19,10 +26,20 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useStyles } from '../../../component-library/hooks';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
-const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
-  StyleSheet.create({
+const TapGestureHandler = TapGestureHandlerBase as React.FC<
+  React.PropsWithChildren<React.ComponentProps<typeof TapGestureHandlerBase>>
+>;
+
+const styleSheet = (params: {
+  theme: Theme;
+  vars: { isPlaying: boolean };
+}) => {
+  const {
+    theme: { colors },
+    vars: { isPlaying },
+  } = params;
+  return StyleSheet.create({
     loaderContainer: {
       position: 'absolute',
       zIndex: 999,
@@ -55,11 +72,47 @@ const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
       alignItems: 'center',
     },
   });
+};
 
-function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
+interface MediaPlayerProps {
+  /**
+   * Media URI
+   * Can be a number returned by import for bundled files
+   * or a string for remote files (http://...)
+   */
+  uri?: string | number;
+  /**
+   * Custom style object
+   */
+  style?: StyleProp<ViewStyle>;
+  /**
+   * On close callback
+   */
+  onClose?: () => void;
+  /**
+   * On error callback
+   */
+  onError?: () => void;
+  /**
+   * Array of remote possible text tracks to display
+   */
+  textTracks?: TextTracks;
+  /**
+   * The selected text track to display by id, language, title, index
+   */
+  selectedTextTrack?: SelectedTrack;
+}
+
+function MediaPlayer({
+  uri,
+  style,
+  onClose,
+  textTracks,
+  selectedTextTrack,
+}: MediaPlayerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const videoRef = useRef();
+  const videoRef = useRef<VideoRef>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const videoControlsOpacity = useSharedValue(0);
@@ -80,7 +133,9 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
 
   // Video source can be either a number returned by import for bundled files
   // or an object of the form { uri: 'http://...' } for remote files
-  const source = Number.isInteger(uri) ? uri : { uri };
+  const source = (
+    Number.isInteger(uri) ? uri : { uri }
+  ) as ReactVideoSource;
 
   const videoControlsStyle = useAnimatedStyle(() => ({
     ...styles.videoControlsStyle,
@@ -162,31 +217,6 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
     </View>
   );
 }
-
-MediaPlayer.propTypes = {
-  /**
-   * Media URI
-   * Can be a number returned by import for bundled files
-   * or a string for remote files (http://...)
-   */
-  uri: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  /**
-   * Custom style object
-   */
-  style: ViewPropTypes.style,
-  /**
-   * On close callback
-   */
-  onClose: PropTypes.func,
-  /**
-   * Array of remote possible text tracks to display
-   */
-  textTracks: PropTypes.arrayOf(PropTypes.object),
-  /**
-   * The selected text track to display by id, language, title, index
-   */
-  selectedTextTrack: PropTypes.object,
-};
 
 MediaPlayer.defaultProps = {
   onError: () => null,

@@ -1,19 +1,35 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactNode } from 'react';
 import {
+  StyleProp,
   StyleSheet,
   View,
+  ViewStyle,
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
+import { Theme } from '@metamask/design-tokens';
 import { strings } from '../../../../locales/i18n';
 import { TRANSACTION_TYPES } from '../../../util/transactions';
-import Summary from '../../Base/Summary';
-import Text from '../../Base/Text';
+import SummaryBase from '../../Base/Summary';
+import TextBase from '../../Base/Text';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { isTestNet } from '../../../util/networks';
 
-const createStyles = (colors) =>
+type SummaryRowLikeProps = React.PropsWithChildren<{
+  style?: StyleProp<ViewStyle>;
+  end?: boolean;
+  last?: boolean;
+}>;
+const Summary = SummaryBase as unknown as React.FC<SummaryRowLikeProps> & {
+  Row: React.FC<SummaryRowLikeProps>;
+  Col: React.FC<SummaryRowLikeProps>;
+  Separator: React.FC<SummaryRowLikeProps>;
+};
+const Text = TextBase as React.FC<
+  React.ComponentProps<typeof TextBase> & { italic?: boolean }
+>;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     loader: {
       backgroundColor: colors.background.default,
@@ -21,21 +37,24 @@ const createStyles = (colors) =>
     },
   });
 
-export default class TransactionSummary extends PureComponent {
-  static propTypes = {
-    amount: PropTypes.string,
-    fee: PropTypes.string,
-    totalAmount: PropTypes.string,
-    secondaryTotalAmount: PropTypes.string,
-    gasEstimationReady: PropTypes.bool,
-    onEditPress: PropTypes.func,
-    transactionType: PropTypes.string,
-    chainId: PropTypes.string,
-  };
+interface TransactionSummaryProps {
+  amount?: string;
+  fee?: string;
+  totalAmount?: string;
+  secondaryTotalAmount?: string;
+  gasEstimationReady?: boolean;
+  onEditPress?: () => void;
+  transactionType?: string;
+  chainId?: string;
+}
 
-  renderIfGastEstimationReady = (children) => {
+export default class TransactionSummary extends PureComponent<TransactionSummaryProps> {
+  static contextType = ThemeContext;
+
+  renderIfGastEstimationReady = (children: ReactNode) => {
     const { gasEstimationReady } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return !gasEstimationReady ? (
@@ -69,7 +88,7 @@ export default class TransactionSummary extends PureComponent {
       chainId,
     } = this.props;
 
-    const isTestNetResult = isTestNet(chainId);
+    const isTestNetResult = isTestNet(chainId ?? '');
 
     if (
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED_TOKEN ||
@@ -156,4 +175,4 @@ export default class TransactionSummary extends PureComponent {
   };
 }
 
-TransactionSummary.contextType = ThemeContext;
+
