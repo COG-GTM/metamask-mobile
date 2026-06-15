@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
 import { ParamListBase } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Hex } from '@metamask/utils';
 import { Theme } from '../../../../util/theme/models';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
@@ -86,8 +87,8 @@ class Contacts extends PureComponent<ContactsProps, ContactsState> {
     if (
       prevProps.addressBook &&
       this.props.addressBook &&
-      JSON.stringify(prevProps.addressBook[chainId]) !==
-        JSON.stringify(this.props.addressBook[chainId])
+      JSON.stringify(prevProps.addressBook[chainId as Hex]) !==
+        JSON.stringify(this.props.addressBook[chainId as Hex])
     )
       this.updateAddressList();
   };
@@ -107,7 +108,10 @@ class Contacts extends PureComponent<ContactsProps, ContactsState> {
   deleteContact = () => {
     const { AddressBookController } = Engine.context;
     const { chainId } = this.props;
-    AddressBookController.delete(chainId, this.contactAddressToRemove);
+    AddressBookController.delete(
+      chainId as Hex,
+      this.contactAddressToRemove as string,
+    );
     this.updateAddressList();
   };
 
@@ -150,6 +154,7 @@ class Contacts extends PureComponent<ContactsProps, ContactsState> {
       >
         <AddressList
           chainId={chainId}
+          inputSearch={undefined}
           onlyRenderAddressBook
           reloadAddressList={reloadAddressList}
           onAccountPress={this.onAddressPress}

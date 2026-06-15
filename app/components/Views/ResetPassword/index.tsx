@@ -551,7 +551,8 @@ class ResetPassword extends PureComponent<
     const { warningIncorrectPassword } = this.state;
     const colors =
       (this.context as unknown as Theme).colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const themeAppearance =
+      (this.context as unknown as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (
@@ -620,7 +621,8 @@ class ResetPassword extends PureComponent<
     } = this.state;
     const colors =
       (this.context as unknown as Theme).colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const themeAppearance =
+      (this.context as unknown as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);
     const passwordsMatch = password !== '' && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;

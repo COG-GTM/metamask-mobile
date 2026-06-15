@@ -13,11 +13,13 @@ const initialState = {
 };
 const store = mockStore(initialState);
 
+const ContactsComponent = Contacts as unknown as React.ComponentType;
+
 describe('Contacts', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <Contacts />
+        <ContactsComponent />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
