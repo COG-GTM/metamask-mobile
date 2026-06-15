@@ -20,6 +20,7 @@ declare module '@metamask/ethjs-unit' {
 }
 
 declare module 'number-to-bn' {
+  // eslint-disable-next-line no-duplicate-imports
   import BN from 'bnjs4';
 
   export default function numberToBN(value: number | string | BN): BN;

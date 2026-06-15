@@ -373,19 +373,19 @@ export function renderFromWei(
   value: number | string | BN4,
   decimalsToShow = 5,
 ): string {
-  let renderWei = '0';
+  let renderResult = '0';
   // avoid undefined
   if (value) {
     const wei = fromWei(value);
     const weiNumber = parseFloat(wei);
     if (weiNumber < 0.00001 && weiNumber > 0) {
-      renderWei = '< 0.00001';
+      renderResult = '< 0.00001';
     } else {
       const base = Math.pow(10, decimalsToShow);
-      renderWei = (Math.round(weiNumber * base) / base).toString();
+      renderResult = (Math.round(weiNumber * base) / base).toString();
     }
   }
-  return renderWei;
+  return renderResult;
 }
 
 /**
@@ -552,6 +552,7 @@ export function renderToGwei(
  */
 export function weiToFiat(
   wei: number | string | BN4,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
   conversionRate: number | null = null,
   currencyCode: string,
   decimalsToShow: number | undefined = 5,
@@ -818,8 +819,8 @@ export function renderFiat(
 export function renderWei(value: number | string | BN4): string {
   if (!value) return '0';
   const wei = fromWei(value);
-  const renderWei = Number(wei) * Math.pow(10, 18);
-  return renderWei.toString();
+  const weiValue = Number(wei) * Math.pow(10, 18);
+  return weiValue.toString();
 }
 /**
  * Format a string number in an string number with at most 5 decimal places
@@ -1004,9 +1005,9 @@ export const formatValueToMatchTokenDecimals = (
 
 export const safeBNToHex = (
   value: BN4 | null | undefined,
-): string | undefined => {
+): string | null | undefined => {
   if (value === null || value === undefined) {
-    return undefined;
+    return value;
   }
 
   return BNToHex(value);

@@ -1,6 +1,7 @@
 /* eslint-disable import/no-commonjs */
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-var-requires */
+// eslint-disable-next-line import/no-nodejs-modules
 import { Duplex, Transform } from 'stream';
 import ObjectMultiplex from '@metamask/object-multiplex';
 

@@ -40,7 +40,7 @@ export function generateETHLink(
   chainId: string,
 ): string {
   const data = {
-    chain_id: getDecimalChainId(chainId),
+    chain_id: getDecimalChainId(chainId) as `${number}`,
     function_name: undefined,
     parameters: {
       value,
@@ -68,7 +68,7 @@ export function generateERC20Link(
   chainId: string,
 ): string {
   const data = {
-    chain_id: getDecimalChainId(chainId),
+    chain_id: getDecimalChainId(chainId) as `${number}`,
     function_name: 'transfer',
     parameters: {
       address: receiverAddress,
