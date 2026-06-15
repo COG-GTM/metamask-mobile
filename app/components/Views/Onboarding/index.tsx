@@ -1,5 +1,4 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ComponentType } from 'react';
 import {
   ActivityIndicator,
   BackHandler,
@@ -11,6 +10,14 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+import {
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ThunkDispatch } from 'redux-thunk';
+import { AnyAction } from 'redux';
+import { Theme } from '@metamask/design-tokens';
 import Text, {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
@@ -40,6 +47,8 @@ import { PREVIOUS_SCREEN, ONBOARDING } from '../../../constants/navigation';
 import { EXISTING_USER } from '../../../constants/storage';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { withMetricsAwareness } from '../../hooks/useMetrics';
+import { IUseMetricsHook } from '../../hooks/useMetrics/useMetrics.types';
+import { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
 import { Authentication } from '../../../core';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { OnboardingSelectorIDs } from '../../../../e2e/selectors/Onboarding/Onboarding.selectors';
@@ -47,10 +56,11 @@ import { OnboardingSelectorIDs } from '../../../../e2e/selectors/Onboarding/Onbo
 import Routes from '../../../constants/navigation/Routes';
 import { selectAccounts } from '../../../selectors/accountTrackerController';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
-import { trace, TraceName, TraceOperation } from '../../../util/trace';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { RootState } from '../../../reducers';
+import foxImage from '../../../images/branding/fox.png';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     scroll: {
       flex: 1,
@@ -134,52 +144,51 @@ const createStyles = (colors) =>
     },
   });
 
+interface OnboardingRouteParams {
+  delete?: boolean;
+}
+
+interface OnboardingOwnProps {
+  navigation: StackNavigationProp<ParamListBase>;
+  route: RouteProp<{ params: OnboardingRouteParams }, 'params'>;
+  metrics: IUseMetricsHook;
+}
+
+interface OnboardingStateProps {
+  accounts: ReturnType<typeof selectAccounts>;
+  passwordSet: boolean;
+  loading: boolean;
+  loadingMsg: string;
+}
+
+interface OnboardingDispatchProps {
+  setLoading: (msg: string) => void;
+  unsetLoading: () => void;
+  disableNewPrivacyPolicyToast: () => void;
+}
+
+type OnboardingProps = OnboardingOwnProps &
+  OnboardingStateProps &
+  OnboardingDispatchProps;
+
+interface OnboardingState {
+  warningModalVisible: boolean;
+  loading: boolean;
+  existingUser: boolean;
+}
+
 /**
  * View that is displayed to first time (new) users
  */
-class Onboarding extends PureComponent {
-  static propTypes = {
-    disableNewPrivacyPolicyToast: PropTypes.func,
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * redux flag that indicates if the user set a password
-     */
-    passwordSet: PropTypes.bool,
-    /**
-     * loading status
-     */
-    loading: PropTypes.bool,
-    /**
-     * set loading status
-     */
-    setLoading: PropTypes.func,
-    /**
-     * unset loading status
-     */
-    unsetLoading: PropTypes.func,
-    /**
-     * loadings msg
-     */
-    loadingMsg: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   notificationAnimated = new Animated.Value(100);
   detailsYAnimated = new Animated.Value(0);
   actionXAnimated = new Animated.Value(0);
   detailsAnimated = new Animated.Value(0);
 
-  animatedTimingStart = (animatedRef, toValue) => {
+  animatedTimingStart = (animatedRef: Animated.Value, toValue: number) => {
     Animated.timing(animatedRef, {
       toValue,
       duration: 500,
@@ -194,14 +203,14 @@ class Onboarding extends PureComponent {
     existingUser: false,
   };
 
-  seedwords = null;
-  importedAccounts = null;
-  channelName = null;
+  seedwords: string | null = null;
+  importedAccounts: string[] | null = null;
+  channelName: string | null = null;
   incomingDataStr = '';
-  dataToSync = null;
+  dataToSync: unknown = null;
   mounted = false;
 
-  warningCallback = () => true;
+  warningCallback: () => void = () => true;
 
   showNotification = () => {
     // show notification
@@ -275,7 +284,7 @@ class Onboarding extends PureComponent {
     }
   };
 
-  handleExistingUser = (action) => {
+  handleExistingUser = (action: () => void) => {
     if (this.state.existingUser) {
       this.alertExistingUser(action);
     } else {
@@ -328,11 +337,13 @@ class Onboarding extends PureComponent {
     this.handleExistingUser(action);
   };
 
-  track = (event) => {
+  track = (
+    event: Parameters<typeof MetricsEventBuilder.createEventBuilder>[0],
+  ) => {
     trackOnboarding(MetricsEventBuilder.createEventBuilder(event).build());
   };
 
-  alertExistingUser = (callback) => {
+  alertExistingUser = (callback: () => void) => {
     this.warningCallback = () => {
       callback();
       this.toggleWarningModal();
@@ -367,7 +378,7 @@ class Onboarding extends PureComponent {
       <View style={styles.ctas}>
         <View style={styles.largeFoxWrapper}>
           <Image
-            source={require('../../../images/branding/fox.png')}
+            source={foxImage}
             style={styles.foxImage}
             resizeMethod={'auto'}
           />
@@ -456,7 +467,7 @@ class Onboarding extends PureComponent {
             {loading && (
               <View style={styles.foxWrapper}>
                 <Image
-                  source={require('../../../images/branding/fox.png')}
+                  source={foxImage}
                   style={styles.image}
                   resizeMethod={'auto'}
                 />
@@ -490,15 +501,17 @@ class Onboarding extends PureComponent {
 
 Onboarding.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): OnboardingStateProps => ({
   accounts: selectAccounts(state),
   passwordSet: state.user.passwordSet,
   loading: state.user.loadingSet,
   loadingMsg: state.user.loadingMsg,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setLoading: (msg) => dispatch(loadingSet(msg)),
+const mapDispatchToProps = (
+  dispatch: ThunkDispatch<RootState, unknown, AnyAction>,
+): OnboardingDispatchProps => ({
+  setLoading: (msg: string) => dispatch(loadingSet(msg)),
   unsetLoading: () => dispatch(loadingUnset()),
   disableNewPrivacyPolicyToast: () =>
     dispatch(storePrivacyPolicyClickedOrClosedAction()),
@@ -507,4 +520,8 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Onboarding));
+)(
+  withMetricsAwareness(
+    Onboarding as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);

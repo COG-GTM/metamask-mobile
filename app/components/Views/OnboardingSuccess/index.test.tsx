@@ -4,7 +4,11 @@ import React from 'react';
 // Internal dependencies.
 import OnboardingSuccess from './';
 import renderWithProvider from '../../../util/test/renderWithProvider';
-import { useNavigation } from '@react-navigation/native';
+import {
+  useNavigation,
+  NavigationProp,
+  ParamListBase,
+} from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectProviderConfig } from '../../../selectors/networkController';
 import { OnboardingSuccessSelectorIDs } from '../../../../e2e/selectors/Onboarding/OnboardingSuccess.selectors';
@@ -44,26 +48,38 @@ const mockProviderConfig = {
   chainId: '1',
 };
 
+const OnboardingSuccessComponent = OnboardingSuccess as unknown as React.ComponentType<{
+  navigation?: NavigationProp<ParamListBase>;
+  onDone?: () => void;
+  backedUpSRP?: boolean;
+  noSRP?: boolean;
+}>;
+
 describe('OnboardingSuccess', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as jest.Mock).mockImplementation((selector) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const { toJSON } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} />,
+      <OnboardingSuccessComponent
+        navigation={useNavigation() as NavigationProp<ParamListBase>}
+      />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('imports additional accounts and sets completedOnboarding to true when onDone is called', () => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as jest.Mock).mockImplementation((selector) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const mockDispatch = jest.fn();
-    useDispatch.mockImplementation(() => mockDispatch);
+    (useDispatch as jest.Mock).mockImplementation(() => mockDispatch);
 
     const { getByTestId } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} onDone={jest.fn()} />,
+      <OnboardingSuccessComponent
+        navigation={useNavigation() as NavigationProp<ParamListBase>}
+        onDone={jest.fn()}
+      />,
     );
     const button = getByTestId(OnboardingSuccessSelectorIDs.DONE_BUTTON);
     button.props.onPress();
