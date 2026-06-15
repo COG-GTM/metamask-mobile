@@ -16,7 +16,7 @@ describe('isUUID', () => {
   });
 
   it('should return false for invalid UUIDs', () => {
-    const invalidUUIDs = [
+    const invalidUUIDs: unknown[] = [
       '',
       'not-a-uuid',
       '123e4567-e89b-12d3-a456', // incomplete
@@ -28,8 +28,8 @@ describe('isUUID', () => {
     ];
 
     invalidUUIDs.forEach((uuid) => {
-      // @ts-expect-error Testing invalid inputs
-      expect(isUUID(uuid)).toBe(false);
+      // Intentionally testing invalid (non-string) inputs.
+      expect(isUUID(uuid as string)).toBe(false);
     });
   });
 });
