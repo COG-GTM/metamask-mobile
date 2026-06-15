@@ -13,7 +13,11 @@ import {
   Image,
   TextInput,
 } from 'react-native';
-import PropTypes from 'prop-types';
+import {
+  NavigationProp,
+  ParamListBase,
+} from '@react-navigation/native';
+import { Theme } from '@metamask/design-tokens';
 import { lastEventId as getLatestSentryId } from '@sentry/react-native';
 import { captureSentryFeedback } from '../../../util/sentry/utils';
 import { RevealPrivateCredential } from '../RevealPrivateCredential';
@@ -35,16 +39,17 @@ import CLText, {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 import {
+  IUseMetricsHook,
   MetaMetricsEvents,
   withMetricsAwareness,
 } from '../../../components/hooks/useMetrics';
 import AppConstants from '../../../core/AppConstants';
 import { useSelector } from 'react-redux';
+import { RootState } from '../../../reducers';
 import { isTest } from '../../../util/test/utils';
-// eslint-disable-next-line import/no-commonjs
-const WarningIcon = require('./warning-icon.png');
+import WarningIcon from './warning-icon.png';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -224,13 +229,22 @@ const createStyles = (colors) =>
     hitSlop: { top: 50, right: 50, bottom: 50, left: 50 },
   });
 
-export const Fallback = (props) => {
+interface FallbackProps {
+  errorMessage?: string;
+  showExportSeedphrase?: () => void;
+  copyErrorToClipboard?: () => void;
+  sentryId?: string;
+  resetError?: () => void;
+  openTicket?: () => void;
+}
+
+export const Fallback = (props: FallbackProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [feedback, setFeedback] = React.useState('');
   const dataCollectionForMarketing = useSelector(
-    (state) => state.security.dataCollectionForMarketing,
+    (state: RootState) => state.security.dataCollectionForMarketing,
   );
 
   const toggleModal = () => {
@@ -354,7 +368,7 @@ export const Fallback = (props) => {
                     name={IconName.Close}
                     size={IconSize.Md}
                     color={IconColor.Default}
-                    onPress={toggleModal}
+                    {...({ onPress: toggleModal } as object)}
                   />
                 </TouchableOpacity>
               </View>
@@ -395,36 +409,41 @@ export const Fallback = (props) => {
   );
 };
 
-Fallback.propTypes = {
-  errorMessage: PropTypes.string,
-  showExportSeedphrase: PropTypes.func,
-  copyErrorToClipboard: PropTypes.func,
-  sentryId: PropTypes.string,
-};
+interface ErrorBoundaryProps {
+  children?: React.ReactNode;
+  view: string;
+  navigation: NavigationProp<ParamListBase>;
+  metrics: IUseMetricsHook;
+}
 
-class ErrorBoundary extends Component {
-  state = { error: null };
+interface ErrorBoundaryState {
+  error: Error | null;
+  sentryId?: string;
+  backupSeedphrase?: boolean;
+}
 
-  static propTypes = {
-    children: PropTypes.oneOfType([
-      PropTypes.arrayOf(PropTypes.node),
-      PropTypes.node,
-    ]),
-    view: PropTypes.string.isRequired,
-    navigation: PropTypes.object,
-    metrics: PropTypes.object,
-  };
+class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
+  static contextType = ThemeContext;
 
-  static getDerivedStateFromError(error) {
+  state: ErrorBoundaryState = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
     return { error };
   }
 
-  generateErrorReport = (error, errorInfo = '') => {
+  generateErrorReport = (error: Error, errorInfo = '') => {
     const {
       view,
       metrics: { trackEvent, createEventBuilder },
     } = this.props;
-    const analyticsParams = { error: error?.toString(), boundary: view };
+    const analyticsParams: {
+      error?: string;
+      boundary: string;
+      stack?: string;
+    } = { error: error?.toString(), boundary: view };
     // Organize stack trace
     const stackList = (errorInfo.split('\n') || []).map((stack) =>
       stack.trim(),
@@ -439,12 +458,12 @@ class ErrorBoundary extends Component {
     );
   };
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Note: Sentry briefly removed this in the next version but eventually added it back in later versions.
     // Read more here - https://github.com/getsentry/sentry-javascript/issues/11951
     const sentryId = getLatestSentryId();
     this.setState({ sentryId });
-    this.generateErrorReport(error, errorInfo?.componentStack);
+    this.generateErrorReport(error, errorInfo?.componentStack ?? '');
     Logger.error(error, { View: this.props.view, ...errorInfo });
   }
 
@@ -480,8 +499,9 @@ class ErrorBoundary extends Component {
     Linking.openURL(url);
   };
 
-  renderWithSafeArea = (children) => {
-    const colors = this.context.colors || mockTheme.colors;
+  renderWithSafeArea = (children: React.ReactNode) => {
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return <SafeAreaView style={styles.container}>{children}</SafeAreaView>;
@@ -491,9 +511,11 @@ class ErrorBoundary extends Component {
     return this.state.backupSeedphrase
       ? this.renderWithSafeArea(
           <RevealPrivateCredential
-            credentialName={'seed_phrase'}
-            cancel={this.cancelExportSeedphrase}
-            navigation={this.props.navigation}
+            {...({
+              credentialName: 'seed_phrase',
+              cancel: this.cancelExportSeedphrase,
+              navigation: this.props.navigation,
+            } as React.ComponentProps<typeof RevealPrivateCredential>)}
           />,
         )
       : this.state.error
@@ -511,6 +533,6 @@ class ErrorBoundary extends Component {
   }
 }
 
-ErrorBoundary.contextType = ThemeContext;
-
-export default withMetricsAwareness(ErrorBoundary);
+export default withMetricsAwareness(
+  ErrorBoundary as unknown as Parameters<typeof withMetricsAwareness>[0],
+);
