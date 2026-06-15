@@ -1,14 +1,21 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { ReactNode } from 'react';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  GestureResponderEvent,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Alert, { AlertType } from '../../../Base/Alert';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
-const AlertTypeKeys = Object.keys(AlertType);
+import { Colors } from '../../../../util/theme/models';
 
 const VERTICAL_DISPLACEMENT = 12;
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     content: {
       flex: 1,
@@ -54,7 +61,9 @@ const createStyles = (colors) =>
     },
   });
 
-const getButtonStyle = (type, styles) => {
+type Styles = ReturnType<typeof createStyles>;
+
+const getButtonStyle = (type: AlertType | undefined, styles: Styles) => {
   switch (type) {
     case AlertType.Error: {
       return styles.errorButton;
@@ -66,7 +75,7 @@ const getButtonStyle = (type, styles) => {
   }
 };
 
-const getInfoIconStyle = (type, styles) => {
+const getInfoIconStyle = (type: AlertType | undefined, styles: Styles) => {
   switch (type) {
     case AlertType.Error: {
       return styles.errorInfoIcon;
@@ -78,7 +87,13 @@ const getInfoIconStyle = (type, styles) => {
   }
 };
 
-function Button({ type, onPress, children }) {
+interface ButtonProps {
+  type?: AlertType;
+  onPress?: (event: GestureResponderEvent) => void;
+  children?: ReactNode;
+}
+
+function Button({ type, onPress, children }: ButtonProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -99,13 +114,23 @@ function Button({ type, onPress, children }) {
   );
 }
 
-Button.propTypes = {
-  type: PropTypes.oneOf(AlertTypeKeys),
-  onPress: PropTypes.func,
-  children: PropTypes.string,
-};
+interface ActionAlertProps {
+  type?: AlertType;
+  style?: StyleProp<ViewStyle>;
+  onPress?: (event: GestureResponderEvent) => void;
+  onInfoPress?: (event: GestureResponderEvent) => void;
+  action?: string;
+  children: (textStyle: StyleProp<TextStyle>) => ReactNode;
+}
 
-function ActionAlert({ type, style, action, onInfoPress, onPress, children }) {
+function ActionAlert({
+  type = AlertType.Info,
+  style,
+  action,
+  onInfoPress,
+  onPress,
+  children,
+}: ActionAlertProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -146,12 +171,4 @@ function ActionAlert({ type, style, action, onInfoPress, onPress, children }) {
   );
 }
 
-ActionAlert.propTypes = {
-  type: PropTypes.oneOf(AlertTypeKeys),
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  onPress: PropTypes.func,
-  onInfoPress: PropTypes.func,
-  action: PropTypes.string,
-  children: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
-};
 export default ActionAlert;

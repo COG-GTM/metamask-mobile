@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   StyleSheet,
@@ -10,20 +9,22 @@ import {
   UIManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 import { strings } from '../../../../../locales/i18n';
 import Device from '../../../../util/device';
 import Text from '../../../Base/Text';
 import StyledButton from '../../StyledButton';
 import { useTheme, useAssetFromTheme } from '../../../../util/theme';
+import { Colors } from '../../../../util/theme/models';
+import onboardingDeviceImage from '../../../../images/swaps_onboard_device.png';
+import swapsAggregatorsLight from '../../../../images/swaps_aggs-light.png';
+import swapsAggregatorsDark from '../../../../images/swaps_aggs-dark.png';
 
-/* eslint-disable import/no-commonjs */
-const onboardingDeviceImage = require('../../../../images/swaps_onboard_device.png');
-const swapsAggregatorsLight = require('../../../../images/swaps_aggs-light.png');
-const swapsAggregatorsDark = require('../../../../images/swaps_aggs-dark.png');
-/* eslint-enable import/no-commonjs */
-
-const createStyles = (colors, bottomInset) =>
+const createStyles = (colors: Colors, bottomInset: number) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -72,8 +73,12 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-function Onboarding({ setHasOnboarded }) {
-  const navigation = useNavigation();
+interface OnboardingProps {
+  setHasOnboarded: (hasOnboarded: boolean) => void;
+}
+
+function Onboarding({ setHasOnboarded }: OnboardingProps) {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { colors } = useTheme();
   const { bottom: bottomInset } = useSafeAreaInsets();
   const styles = createStyles(colors, bottomInset);
@@ -144,9 +149,5 @@ function Onboarding({ setHasOnboarded }) {
     </View>
   );
 }
-
-Onboarding.propTypes = {
-  setHasOnboarded: PropTypes.func,
-};
 
 export default Onboarding;
