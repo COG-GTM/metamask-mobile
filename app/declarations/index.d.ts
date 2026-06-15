@@ -11,6 +11,13 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'react-native-progress/Bar';
+
+declare module '@metamask/react-native-button';
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren';
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
