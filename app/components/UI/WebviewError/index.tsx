@@ -1,10 +1,11 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { Image, StyleSheet, View, Text, Platform } from 'react-native';
 import StyledButton from '../StyledButton';
+import foxImage from '../../../images/branding/fox.png';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors, Theme } from '../../../util/theme/models';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import {
   ERROR_PAGE_MESSAGE,
@@ -12,7 +13,22 @@ import {
   ERROR_PAGE_TITLE,
 } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
 
-const createStyles = (colors) =>
+interface WebviewErrorInfo {
+  description?: string;
+}
+
+interface WebviewErrorProps {
+  /**
+   * error info
+   */
+  error?: WebviewErrorInfo | boolean;
+  /**
+   * Function that reloads the page
+   */
+  returnHome?: () => void;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       ...StyleSheet.absoluteFillObject,
@@ -65,36 +81,26 @@ const createStyles = (colors) =>
 /**
  * View that renders custom error page for the browser
  */
-export default class WebviewError extends PureComponent {
-  static propTypes = {
-    /**
-     * error info
-     */
-    error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-    /**
-     * Function that reloads the page
-     */
-    returnHome: PropTypes.func,
-  };
-
+export default class WebviewError extends PureComponent<WebviewErrorProps> {
   static defaultProps = {
     error: false,
   };
 
   returnHome = () => {
-    this.props.returnHome();
+    this.props.returnHome?.();
   };
 
   render() {
     const { error } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return error ? (
       <View style={styles.wrapper}>
         <View style={styles.foxWrapper}>
           <Image
-            source={require('../../../images/branding/fox.png')}
+            source={foxImage}
             style={styles.image}
             resizeMethod={'auto'}
           />
@@ -112,7 +118,7 @@ export default class WebviewError extends PureComponent {
           >
             {strings('webview_error.message')}
           </Text>
-          {error.description ? (
+          {typeof error === 'object' && error.description ? (
             <Text style={styles.errorInfo}>{error.description}</Text>
           ) : null}
         </View>
