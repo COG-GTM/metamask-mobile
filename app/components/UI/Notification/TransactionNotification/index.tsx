@@ -396,8 +396,16 @@ function TransactionNotification(props: TransactionNotificationProps) {
                 />
               </View>
               <TransactionDetails
-                transactionObject={tx}
-                transactionDetails={transactionDetails}
+                transactionObject={
+                  tx as unknown as React.ComponentProps<
+                    typeof TransactionDetails
+                  >['transactionObject']
+                }
+                transactionDetails={
+                  transactionDetails as unknown as React.ComponentProps<
+                    typeof TransactionDetails
+                  >['transactionDetails']
+                }
                 close={onCloseDetails}
                 showSpeedUpModal={onSpeedUpPress}
                 showCancelModal={onCancelPress}

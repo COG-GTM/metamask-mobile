@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { query } from '@metamask/controller-utils';
 import { connect } from 'react-redux';
@@ -19,9 +18,9 @@ import EthereumAddress from '../../EthereumAddress';
 import TransactionSummary from '../../../Views/TransactionSummary';
 import { toDateFormat } from '../../../../util/date';
 import StyledButton from '../../StyledButton';
-import StatusText from '../../../Base/StatusText';
-import Text from '../../../../component-library/components/Texts/Text';
-import DetailsModal from '../../../Base/DetailsModal';
+import StatusTextRaw from '../../../Base/StatusText';
+import TextRaw from '../../../../component-library/components/Texts/Text';
+import DetailsModalRaw from '../../../Base/DetailsModal';
 import { RPC, NO_RPC_BLOCK_EXPLORER } from '../../../../constants/network';
 import { withNavigation } from '@react-navigation/compat';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
@@ -60,9 +59,96 @@ import {
   MAINNET_BLOCK_EXPLORER,
   SEPOLIA_BLOCK_EXPLORER,
 } from '../../../../constants/urls';
-import { CHAIN_IDS } from '@metamask/transaction-controller';
+import {
+  CHAIN_IDS,
+  TransactionMeta,
+  TransactionParams,
+} from '@metamask/transaction-controller';
+import { Hex } from '@metamask/utils';
+import { RootState } from '../../../../reducers';
+import { Theme } from '../../../../util/theme/models';
 
-const createStyles = (colors) =>
+type TxObject = Omit<TransactionMeta, 'status' | 'type'> & {
+  status: string;
+  type?: string;
+  time: number;
+  networkID?: string;
+  txParams: TransactionParams & {
+    nonce?: string;
+    multiLayerL1FeeTotal?: string;
+  };
+};
+
+interface TransactionDetailsInfo {
+  hash?: string;
+  txChainId?: string;
+  renderFrom?: string;
+  renderTo?: string;
+  summaryAmount?: string;
+  summaryFee?: string;
+  summaryTotalAmount?: string;
+  summarySecondaryTotalAmount?: string;
+  transactionType?: string;
+  [key: string]: unknown;
+}
+
+interface OwnProps {
+  navigation?: {
+    push: (route: string, params?: Record<string, unknown>) => void;
+  };
+  transactionObject: TxObject;
+  transactionDetails: TransactionDetailsInfo;
+  close?: () => void;
+  showSpeedUpModal?: () => void;
+  showCancelModal?: () => void;
+}
+
+interface StateProps {
+  chainId: ReturnType<typeof selectChainId>;
+  networkConfigurations: ReturnType<typeof selectNetworkConfigurations>;
+  selectedAddress: ReturnType<
+    typeof selectSelectedInternalAccountFormattedAddress
+  >;
+  transactions: ReturnType<typeof selectTransactions>;
+  ticker: ReturnType<typeof selectEvmTicker>;
+  tokens: ReturnType<typeof selectTokensByAddress>;
+  contractExchangeRates: ReturnType<typeof selectContractExchangeRates>;
+  conversionRate: ReturnType<typeof selectConversionRate>;
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
+  primaryCurrency: ReturnType<typeof selectPrimaryCurrency>;
+  swapsTransactions: ReturnType<typeof selectSwapsTransactions>;
+  swapsTokens: ReturnType<typeof swapsControllerTokens>;
+  shouldUseSmartTransaction: ReturnType<
+    typeof selectShouldUseSmartTransaction
+  >;
+}
+
+type TransactionDetailsProps = OwnProps & StateProps;
+
+interface TransactionDetailsState {
+  rpcBlockExplorer?: string;
+  renderTxActions: boolean;
+  updatedTransactionDetails?: TransactionDetailsInfo;
+}
+
+type LooseFC = React.FC<{
+  children?: React.ReactNode;
+  [key: string]: unknown;
+}>;
+
+const StatusText = StatusTextRaw as unknown as LooseFC;
+const Text = TextRaw as unknown as LooseFC;
+const DetailsModal = DetailsModalRaw as unknown as LooseFC & {
+  Body: LooseFC;
+  Section: LooseFC;
+  Column: LooseFC;
+  SectionTitle: LooseFC;
+  Header: LooseFC;
+  Title: LooseFC;
+  CloseIcon: LooseFC;
+};
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     viewOnEtherscan: {
       fontSize: 16,
@@ -115,63 +201,23 @@ const createStyles = (colors) =>
 /**
  * View that renders a transaction details as part of transactions list
  */
-class TransactionDetails extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Chain Id
-     */
-    chainId: PropTypes.string,
-    /**
-     * Object corresponding to a transaction, containing transaction object, networkId and transaction hash string
-     */
-    transactionObject: PropTypes.object,
-    /**
-     * Object with information to render
-     */
-    transactionDetails: PropTypes.object,
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Callback to close the view
-     */
-    close: PropTypes.func,
-    /**
-     * A string representing the network name
-     */
-    showSpeedUpModal: PropTypes.func,
-    showCancelModal: PropTypes.func,
-    selectedAddress: PropTypes.string,
-    transactions: PropTypes.array,
-    ticker: PropTypes.string,
-    tokens: PropTypes.object,
-    contractExchangeRates: PropTypes.object,
-    conversionRate: PropTypes.number,
-    currentCurrency: PropTypes.string,
-    swapsTransactions: PropTypes.object,
-    swapsTokens: PropTypes.array,
-    primaryCurrency: PropTypes.string,
-
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
-
-  state = {
+class TransactionDetails extends PureComponent<
+  TransactionDetailsProps,
+  TransactionDetailsState
+> {
+  state: TransactionDetailsState = {
     rpcBlockExplorer: undefined,
     renderTxActions: true,
     updatedTransactionDetails: undefined,
   };
 
-  fetchTxReceipt = async (transactionHash) => {
+  fetchTxReceipt = async (
+    transactionHash: string,
+  ): Promise<{ l1Fee?: string }> => {
     const ethQuery = getGlobalEthQuery();
-    return await query(ethQuery, 'getTransactionReceipt', [transactionHash]);
+    return (await query(ethQuery, 'getTransactionReceipt', [
+      transactionHash,
+    ])) as { l1Fee?: string };
   };
 
   /**
@@ -181,11 +227,18 @@ class TransactionDetails extends PureComponent {
    * @param {Object} networkConfigurations - The network configurations object
    * @returns {string} The block explorer URL
    */
-  getBlockExplorerForChain = (chainId, txChainId, networkConfigurations) => {
+  getBlockExplorerForChain = (
+    chainId: string,
+    txChainId: string,
+    networkConfigurations: StateProps['networkConfigurations'],
+  ) => {
     // First check for network configuration block explorer
+    const networkConfig = networkConfigurations?.[txChainId as Hex] as
+      | { blockExplorerUrls?: string[]; defaultBlockExplorerUrlIndex?: number }
+      | undefined;
     let blockExplorer =
-      networkConfigurations?.[txChainId]?.blockExplorerUrls[
-        networkConfigurations[txChainId]?.defaultBlockExplorerUrlIndex
+      networkConfig?.blockExplorerUrls?.[
+        networkConfig?.defaultBlockExplorerUrlIndex as number
       ] || NO_RPC_BLOCK_EXPLORER;
 
     // Check for default block explorers based on chain ID
@@ -257,10 +310,12 @@ class TransactionDetails extends PureComponent {
         primaryCurrency,
         swapsTransactions,
         swapsTokens,
+      } as unknown as Parameters<typeof decodeTransaction>[0]);
+      this.setState({
+        updatedTransactionDetails: decodedTx[1] as TransactionDetailsInfo,
       });
-      this.setState({ updatedTransactionDetails: decodedTx[1] });
     } catch (e) {
-      Logger.error(e);
+      Logger.error(e as Error);
       this.setState({ updatedTransactionDetails: transactionDetails });
     }
   };
@@ -290,15 +345,19 @@ class TransactionDetails extends PureComponent {
     } = this.props;
     const { rpcBlockExplorer } = this.state;
     try {
-      const { url, title } = getBlockExplorerTxUrl(RPC, hash, rpcBlockExplorer);
-      navigation.push('Webview', {
+      const { url, title } = getBlockExplorerTxUrl(
+        RPC,
+        hash as string,
+        rpcBlockExplorer,
+      );
+      navigation?.push('Webview', {
         screen: 'SimpleWebview',
         params: { url, title },
       });
       close && close();
     } catch (e) {
       // eslint-disable-next-line no-console
-      Logger.error(e, {
+      Logger.error(e as Error, {
         message: `can't get a block explorer link for network `,
         networkID,
       });
@@ -306,7 +365,7 @@ class TransactionDetails extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
@@ -314,7 +373,7 @@ class TransactionDetails extends PureComponent {
     const { showSpeedUpModal, close } = this.props;
     if (close) {
       close();
-      showSpeedUpModal();
+      showSpeedUpModal?.();
     }
   };
 
@@ -322,7 +381,7 @@ class TransactionDetails extends PureComponent {
     const { showCancelModal, close } = this.props;
     if (close) {
       close();
-      showCancelModal();
+      showCancelModal?.();
     }
   };
 
@@ -408,8 +467,13 @@ class TransactionDetails extends PureComponent {
                 <View style={styles.accountNameAvatar}>
                   <Avatar
                     variant={AvatarVariant.Account}
-                    type={AvatarAccountType.Jazzicon}
-                    accountAddress={updatedTransactionDetails.renderFrom}
+                    type={
+                      (AvatarAccountType as Record<string, AvatarAccountType>)
+                        .Jazzicon
+                    }
+                    accountAddress={
+                      updatedTransactionDetails.renderFrom as string
+                    }
                     size={AvatarSize.Md}
                     style={styles.accountAvatar}
                   />
@@ -436,8 +500,13 @@ class TransactionDetails extends PureComponent {
                 <View style={styles.accountNameAvatar}>
                   <Avatar
                     variant={AvatarVariant.Account}
-                    type={AvatarAccountType.Jazzicon}
-                    accountAddress={updatedTransactionDetails.renderFrom}
+                    type={
+                      (AvatarAccountType as Record<string, AvatarAccountType>)
+                        .Jazzicon
+                    }
+                    accountAddress={
+                      updatedTransactionDetails.renderFrom as string
+                    }
                     size={AvatarSize.Md}
                     style={styles.accountAvatar}
                   />
@@ -509,7 +578,10 @@ class TransactionDetails extends PureComponent {
   };
 }
 
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (
+  state: RootState,
+  ownProps: OwnProps,
+): StateProps => ({
   chainId: selectChainId(state),
   networkConfigurations: selectNetworkConfigurations(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
@@ -530,4 +602,15 @@ const mapStateToProps = (state, ownProps) => ({
 
 TransactionDetails.contextType = ThemeContext;
 
-export default connect(mapStateToProps)(withNavigation(TransactionDetails));
+const ConnectedTransactionDetails = connect(mapStateToProps)(
+  withNavigation(
+    TransactionDetails as unknown as Parameters<typeof withNavigation>[0],
+  ),
+);
+
+export default ConnectedTransactionDetails as unknown as React.FC<
+  Omit<OwnProps, 'navigation'> & {
+    navigation?: unknown;
+    chainId?: string;
+  }
+>;

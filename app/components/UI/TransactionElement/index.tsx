@@ -223,8 +223,6 @@ class TransactionElement extends PureComponent<
   TransactionElementProps,
   TransactionElementState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   state: TransactionElementState = {
     actionKey: undefined,
     cancelIsOpen: false,
