@@ -316,7 +316,7 @@ function TransactionNotification(props: TransactionNotificationProps) {
         primaryCurrency,
         swapsTransactions,
         swapsTokens,
-      });
+      } as unknown as Parameters<typeof decodeTransaction>[0]);
       const existingGasPrice = new BigNumber(
         foundTx?.txParams?.gasPrice || '0x0',
       );
@@ -329,7 +329,9 @@ function TransactionNotification(props: TransactionNotificationProps) {
       ); // strips decimals if any, coming from the 'times' operation
       setGasFee(gasFeeValue);
       setTx(foundTx);
-      setTransactionElement(decodedElement);
+      setTransactionElement(
+        decodedElement as TransactionElementInfo | undefined,
+      );
       setTransactionDetails(decodedDetails);
     }
     getTransactionInfo();
