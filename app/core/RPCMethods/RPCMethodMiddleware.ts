@@ -52,6 +52,7 @@ import {
   SignatureController,
 } from '@metamask/signature-controller';
 import { createAsyncWalletMiddleware } from './createAsyncWalletMiddleware';
+import { getWalletConnectPermissionSubject } from '../WalletConnect/wc-utils';
 
 
 // TODO: Replace "any" with type
@@ -156,7 +157,11 @@ export const checkActiveAccountAndChainId = async ({
       permissionsController.state,
     );
 
-    const origin = isWalletConnect ? hostname : channelId ?? hostname;
+    // WalletConnect permission subjects are namespaced so they can never inherit
+    // grants from the in-app browser, which keys permissions on the bare hostname.
+    const origin = isWalletConnect
+      ? getWalletConnectPermissionSubject(hostname)
+      : channelId ?? hostname;
     const accounts = getPermittedAccounts(origin);
 
     const normalizedAccounts = accounts.map(safeToChecksumAddress);
@@ -395,7 +400,11 @@ export const getRpcMethodMiddleware = ({
 }: RPCMethodsMiddleParameters) => {
   // Make sure to always have the correct origin
   hostname = hostname.replace(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN, '');
-  const origin = isWalletConnect ? hostname : channelId ?? hostname;
+  // WalletConnect permission subjects are namespaced so they can never inherit
+  // grants from the in-app browser, which keys permissions on the bare hostname.
+  const origin = isWalletConnect
+    ? getWalletConnectPermissionSubject(hostname)
+    : channelId ?? hostname;
   const hooks = getRpcMethodMiddlewareHooks(origin);
 
   DevLogger.log(

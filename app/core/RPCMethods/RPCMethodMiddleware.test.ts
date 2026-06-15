@@ -538,11 +538,15 @@ describe('getRpcMethodMiddleware', () => {
       });
 
       describe('WalletConnect', () => {
-        it('returns the selected account', async () => {
+        it('returns the selected account from the namespaced WalletConnect subject', async () => {
           const mockAddress1 = '0x0000000000000000000000000000000000000001';
           const mockAddress2 = '0x0000000000000000000000000000000000000001';
           setupGlobalState({
-            permittedAccounts: { 'example.metamask.io': [mockAddress1] },
+            // WalletConnect permissions are namespaced and must never be read
+            // from the bare hostname used by the in-app browser.
+            permittedAccounts: {
+              'walletconnect://example.metamask.io': [mockAddress1],
+            },
             selectedAddress: mockAddress2,
             selectedNetworkClientId: 'testNetworkClientId',
           });
@@ -1143,7 +1147,11 @@ describe('getRpcMethodMiddleware', () => {
         const mockTransactionParameters = { from: mockAddress, chainId: '0x1' };
         setupGlobalState({
           addTransactionResult: Promise.resolve('fake-hash'),
-          permittedAccounts: { 'example.metamask.io': [mockAddress] },
+          // WalletConnect permissions are namespaced and must never be read
+          // from the bare hostname used by the in-app browser.
+          permittedAccounts: {
+            'walletconnect://example.metamask.io': [mockAddress],
+          },
           // Set minimal network controller state to support validation
           selectedNetworkClientId: 'mainnet',
           networksMetadata: {},

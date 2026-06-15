@@ -63,6 +63,73 @@ export const getHostname = (uri: string): string => {
   }
 };
 
+/**
+ * Scheme used to namespace WalletConnect permission subjects.
+ *
+ * A WalletConnect dApp identity comes from the self-asserted, attacker
+ * controllable `session.peer.metadata.url`. Keying permissions on the bare
+ * hostname (e.g. `app.uniswap.org`) lets a malicious WalletConnect dApp reuse
+ * the exact same permission subject as the in-app browser, inheriting any
+ * account/chain grants the user trusts in the browser. Prefixing the subject
+ * keeps WalletConnect grants in a namespace that can never collide with
+ * in-app-browser origins.
+ */
+export const WALLET_CONNECT_ORIGIN_PREFIX = 'walletconnect://';
+
+/**
+ * Derive the permission subject used for a WalletConnect session.
+ *
+ * The result is namespaced with {@link WALLET_CONNECT_ORIGIN_PREFIX} so that
+ * WalletConnect permissions are stored and looked up in a dedicated namespace,
+ * isolated from the in-app browser which keys permissions on the bare hostname.
+ * The function is idempotent: passing an already-namespaced origin returns the
+ * same subject.
+ *
+ * @param origin - The dApp origin (typically `session.peer.metadata.url`).
+ * @returns The namespaced permission subject, or an empty string if no hostname
+ * can be derived.
+ */
+export const getWalletConnectPermissionSubject = (origin: string): string => {
+  const hostname = getHostname(origin);
+  if (!hostname) return '';
+  return `${WALLET_CONNECT_ORIGIN_PREFIX}${hostname}`;
+};
+
+/**
+ * Result of the WalletConnect Verify API for a given session/request.
+ * Mirrors the relevant fields of `verifyContext.verified`.
+ */
+export interface WalletConnectVerifiedContext {
+  validation?: string;
+  isScam?: boolean;
+  origin?: string;
+}
+
+export const WC_VERIFY_VALIDATION = {
+  VALID: 'VALID',
+  INVALID: 'INVALID',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+/**
+ * Determine whether a WalletConnect Verify API result must not be trusted.
+ *
+ * The `peer.metadata.url` is self-asserted and spoofable, so before granting or
+ * exercising permissions we consult the Verify API result. An origin flagged as
+ * a scam or whose attestation failed validation (`INVALID`) is rejected.
+ *
+ * @param verified - The `verifyContext.verified` object from a proposal/request.
+ * @returns `true` when the origin is a known scam or failed validation.
+ */
+export const isUntrustedWalletConnectOrigin = (
+  verified?: WalletConnectVerifiedContext | null,
+): boolean =>
+  Boolean(
+    verified &&
+      (verified.isScam === true ||
+        verified.validation === WC_VERIFY_VALIDATION.INVALID),
+  );
+
 export const parseWalletConnectUri = (uri: string): WCMultiVersionParams => {
   // Handle wc:{} and wc://{} format
   const str = uri.startsWith('wc://') ? uri.replace('wc://', 'wc:') : uri;
@@ -200,9 +267,11 @@ export const getApprovedSessionMethods = (_: { origin: string }): string[] => {
 };
 
 export const getScopedPermissions = async ({ origin }: { origin: string }) => {
-  const hostname = getHostname(origin);
-  const approvedAccounts = getPermittedAccounts(hostname);
-  const chains = await getPermittedChains(hostname);
+  // Namespace the subject so WalletConnect permissions can never inherit grants
+  // from the in-app browser, which keys permissions on the bare hostname.
+  const subject = getWalletConnectPermissionSubject(origin);
+  const approvedAccounts = getPermittedAccounts(subject);
+  const chains = await getPermittedChains(subject);
 
   DevLogger.log(
     `WC::getScopedPermissions for ${origin}, found accounts:`,
@@ -271,8 +340,10 @@ export const checkWCPermissions = async ({
     });
   }
 
-  const hostname = getHostname(origin);
-  const permittedChains = await getPermittedChains(hostname);
+  // Namespace the subject so WalletConnect chain permissions can never inherit
+  // grants from the in-app browser, which keys permissions on the bare hostname.
+  const subject = getWalletConnectPermissionSubject(origin);
+  const permittedChains = await getPermittedChains(subject);
   const isAllowedChainId = permittedChains.includes(caip2ChainId);
 
   DevLogger.log(`WC::checkWCPermissions permittedChains: ${permittedChains}`);
@@ -306,8 +377,8 @@ export const checkWCPermissions = async ({
       if (!isAllowedChainId && allowSwitchingToNewChain) {
         // Preemptively add the chain to the permitted chains
         // This is to prevent a race condition where WalletConnect is told about the chain switch before permissions are updated
-        DevLogger.log(`WC::checkWCPermissions adding permitted chain for ${hostname}:`, hexChainIdString);
-        updatePermittedChains(hostname, [hexChainIdString]);
+        DevLogger.log(`WC::checkWCPermissions adding permitted chain for ${subject}:`, hexChainIdString);
+        updatePermittedChains(subject, [hexChainIdString]);
       }
 
       await switchToNetwork({
@@ -328,8 +399,8 @@ export const checkWCPermissions = async ({
       if (!isAllowedChainId && allowSwitchingToNewChain) {
         // If we failed to switch to the network, remove the chain from the permitted chains
         // This is so we don't leave any dangling permissions if the user rejects the switch
-        DevLogger.log(`WC::checkWCPermissions removing permitted chain for ${hostname}:`, hexChainIdString);
-        removePermittedChain(hostname, hexChainIdString);
+        DevLogger.log(`WC::checkWCPermissions removing permitted chain for ${subject}:`, hexChainIdString);
+        removePermittedChain(subject, hexChainIdString);
       }
 
       return false;
