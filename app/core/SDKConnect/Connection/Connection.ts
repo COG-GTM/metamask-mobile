@@ -43,6 +43,13 @@ export interface ConnectionProps {
   initialConnection?: boolean;
   navigation?: NavigationContainerRef;
   originatorInfo?: OriginatorInfo;
+  /**
+   * Whether the originatorInfo was received over the established encrypted
+   * channel (verified) or supplied as an unauthenticated, spoofable deeplink
+   * parameter (unverified). When false/undefined the connection identity
+   * (url/title/icon) must not be presented as an authoritative dApp identity.
+   */
+  originatorInfoVerified?: boolean;
   connected?: boolean;
   validUntil?: number;
   scheme?: string;

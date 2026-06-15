@@ -19,9 +19,13 @@ function updateOriginatorInfos({
   }
 
   // update originatorInfo
+  // This is only invoked when originatorInfo is received over the established
+  // encrypted channel (clients_ready), so the identity is considered verified
+  // here, unlike the spoofable deeplink-supplied originatorInfo.
   instance.state.connections[channelId] = {
     ...instance.state.connections[channelId],
     originatorInfo,
+    originatorInfoVerified: true,
     connected: true,
   };
 
