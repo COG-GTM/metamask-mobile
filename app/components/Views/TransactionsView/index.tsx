@@ -4,7 +4,10 @@ import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { connect, useSelector } from 'react-redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { AnyAction } from 'redux';
-import { TransactionMeta } from '@metamask/transaction-controller';
+import {
+  TransactionMeta,
+  CHAIN_IDS,
+} from '@metamask/transaction-controller';
 import { withNavigation, CompatNavigationProp } from '@react-navigation/compat';
 import { showAlert } from '../../../actions/alert';
 import Transactions from '../../UI/Transactions';
@@ -37,7 +40,6 @@ import { selectSelectedInternalAccount } from '../../../selectors/accountsContro
 import { selectSortedTransactions } from '../../../selectors/transactionController';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectTokenNetworkFilter } from '../../../selectors/preferencesController';
-import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { PopularList } from '../../../util/networks/customNetworks';
 import { RootState } from '../../../reducers';
 
@@ -101,8 +103,8 @@ const TransactionsView = ({
       let accountAddedTimeInsertPointFound = false;
       const addedAccountTime = selectedInternalAccount?.metadata.importTime;
 
-      const submittedTxs: TransactionMeta[] = [];
-      const confirmedTxs: TransactionMeta[] = [];
+      const collectedSubmittedTxs: TransactionMeta[] = [];
+      const collectedConfirmedTxs: TransactionMeta[] = [];
       const submittedNonces: (string | undefined)[] = [];
 
       const allTransactionsSorted = sortTransactions(transactions).filter(
@@ -110,7 +112,7 @@ const TransactionsView = ({
           self.findIndex((_tx) => _tx.id === tx.id) === index,
       );
 
-      const allTransactions = allTransactionsSorted.filter((tx) => {
+      const collectedTransactions = allTransactionsSorted.filter((tx) => {
         const filter = filterByAddressAndNetwork(
           tx,
           tokens,
@@ -136,10 +138,10 @@ const TransactionsView = ({
           case TX_SIGNED:
           case TX_UNAPPROVED:
           case TX_PENDING:
-            submittedTxs.push(tx);
+            collectedSubmittedTxs.push(tx);
             return false;
           case TX_CONFIRMED:
-            confirmedTxs.push(tx);
+            collectedConfirmedTxs.push(tx);
             break;
         }
 
@@ -147,21 +149,21 @@ const TransactionsView = ({
       });
 
       const allTransactionsFiltered = isPopularNetwork
-        ? allTransactions.filter(
+        ? collectedTransactions.filter(
             (tx) =>
               tx.chainId === CHAIN_IDS.MAINNET ||
               tx.chainId === CHAIN_IDS.LINEA_MAINNET ||
               PopularList.some((network) => network.chainId === tx.chainId),
           )
-        : allTransactions.filter((tx) => tx.chainId === chainId);
+        : collectedTransactions.filter((tx) => tx.chainId === chainId);
 
-      const submittedTxsFiltered = submittedTxs.filter(({ txParams }) => {
+      const submittedTxsFiltered = collectedSubmittedTxs.filter(({ txParams }) => {
         const { from, nonce } = txParams;
         if (!toLowerCaseEquals(from, selectedAddress)) {
           return false;
         }
         const alreadySubmitted = submittedNonces.includes(nonce);
-        const alreadyConfirmed = confirmedTxs.find(
+        const alreadyConfirmed = collectedConfirmedTxs.find(
           (tx) =>
             toLowerCaseEquals(
               safeToChecksumAddress(tx.txParams.from),
@@ -178,8 +180,7 @@ const TransactionsView = ({
       // If the account added insert point is not found, add it to the last transaction
       if (
         !accountAddedTimeInsertPointFound &&
-        allTransactionsFiltered &&
-        allTransactionsFiltered.length
+        allTransactionsFiltered?.length
       ) {
         allTransactionsFiltered[
           allTransactionsFiltered.length - 1
@@ -188,7 +189,7 @@ const TransactionsView = ({
 
       setAllTransactions(allTransactionsFiltered);
       setSubmittedTxs(submittedTxsFiltered);
-      setConfirmedTxs(confirmedTxs);
+      setConfirmedTxs(collectedConfirmedTxs);
       setLoading(false);
     },
     [

@@ -17,6 +17,7 @@ import { connect } from 'react-redux';
 import { getInfuraBlockedSelector } from '../../../reducers/infuraAvailability';
 import { useTheme } from '../../../util/theme';
 import { RootState } from '../../../reducers';
+import astronautImage from '../../../images/astronaut.png';
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -51,8 +52,6 @@ const createStyles = (colors: Theme['colors']) =>
       marginHorizontal: 18,
     },
   });
-
-const astronautImage = require('../../../images/astronaut.png'); // eslint-disable-line import/no-commonjs
 
 interface OfflineModeProps {
   /**

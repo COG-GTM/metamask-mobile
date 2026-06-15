@@ -91,10 +91,10 @@ const ManualBackupStep1 = ({
     );
   }, [colors, navigation, route]);
 
-  const tryExportSeedPhrase = async (password: string) => {
+  const tryExportSeedPhrase = async (passwordToExport: string) => {
     const { KeyringController } = Engine.context;
     const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(
-      password,
+      passwordToExport,
     );
     return uint8ArrayToMnemonic(uint8ArrayMnemonic, wordlist).split(' ');
   };
