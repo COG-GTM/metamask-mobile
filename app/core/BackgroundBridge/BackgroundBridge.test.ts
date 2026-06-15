@@ -1,10 +1,13 @@
 import getDefaultBridgeParams from '../SDKConnect/AndroidSDK/getDefaultBridgeParams';
-import BackgroundBridge from './BackgroundBridge';
+import { BackgroundBridge } from './BackgroundBridge';
 import Engine from '../Engine';
 import { createEip1193MethodMiddleware } from '../RPCMethods/createEip1193MethodMiddleware';
 import createEthAccountsMethodMiddleware from '../RPCMethods/createEthAccountsMethodMiddleware';
 import { getPermittedAccounts } from '../Permissions';
 import { getCaip25PermissionFromLegacyPermissions } from '../../util/permissions';
+import type { DappClient } from '../SDKConnect/AndroidSDK/dapp-sdk-types';
+
+const MockEngine = jest.mocked(Engine);
 
 jest.mock('../../util/permissions', () => ({
   getCaip25PermissionFromLegacyPermissions: jest.fn(),
@@ -45,8 +48,6 @@ jest.mock('../../store', () => ({
 
 jest.mock('../RPCMethods/createEthAccountsMethodMiddleware');
 
-createEthAccountsMethodMiddleware;
-
 jest.mock('@metamask/eth-json-rpc-filters');
 jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   events: {
@@ -54,37 +55,41 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+function setupBackgroundBridge(url: string) {
   // Arrange
   const {
     AccountsController,
     PermissionController,
     SelectedNetworkController,
     NetworkController,
-  } = Engine.context;
+  } = MockEngine.context;
 
-  AccountsController.getSelectedAccount.mockReturnValue({
+  (AccountsController.getSelectedAccount as jest.Mock).mockReturnValue({
     address: '0x0',
   });
-  PermissionController.getPermissions.mockReturnValue({
+  (PermissionController.getPermissions as jest.Mock).mockReturnValue({
     bind: jest.fn(),
   });
-  PermissionController.getPermissions.mockReturnValue({
+  (PermissionController.getPermissions as jest.Mock).mockReturnValue({
     bind: jest.fn(),
   });
-  PermissionController.hasPermissions.mockReturnValue({
+  (PermissionController.hasPermissions as jest.Mock).mockReturnValue({
     bind: jest.fn(),
   });
-  NetworkController.getNetworkConfigurationByChainId.mockReturnValue({
+  (
+    NetworkController.getNetworkConfigurationByChainId as jest.Mock
+  ).mockReturnValue({
     bind: jest.fn(),
   });
-  PermissionController.executeRestrictedMethod.mockReturnValue({
+  (PermissionController.executeRestrictedMethod as jest.Mock).mockReturnValue({
     bind: jest.fn(),
   });
-  SelectedNetworkController.getProviderAndBlockTracker.mockReturnValue({
+  (
+    SelectedNetworkController.getProviderAndBlockTracker as jest.Mock
+  ).mockReturnValue({
     provider: {},
   });
-  PermissionController.updateCaveat.mockReturnValue(jest.fn());
+  (PermissionController.updateCaveat as jest.Mock).mockReturnValue(jest.fn());
 
   const defaultBridgeParams = getDefaultBridgeParams({
     originatorInfo: {
@@ -95,7 +100,7 @@ function setupBackgroundBridge(url) {
     },
     clientId: 'clientId',
     connected: true,
-  });
+  } as unknown as DappClient);
 
   // Act
   return new BackgroundBridge({
@@ -110,18 +115,21 @@ function setupBackgroundBridge(url) {
 describe('BackgroundBridge', () => {
   beforeEach(() => jest.clearAllMocks());
   describe('constructor', () => {
-    const { KeyringController, PermissionController } = Engine.context;
+    const { KeyringController, PermissionController } = MockEngine.context;
 
     it('creates Eip1193MethodMiddleware with expected hooks', async () => {
       const url = 'https:www.mock.io';
       const origin = new URL(url).hostname;
       const bridge = setupBackgroundBridge(url);
-      const eip1193MethodMiddlewareHooks =
-        createEip1193MethodMiddleware.mock.calls[0][0];
+      const eip1193MethodMiddlewareHooks = jest.mocked(
+        createEip1193MethodMiddleware,
+      ).mock.calls[0][0] as Record<string, (...args: unknown[]) => unknown>;
 
       // Assert getAccounts
       eip1193MethodMiddlewareHooks.getAccounts();
-      expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
+      expect(getPermittedAccounts).toHaveBeenCalledWith(
+        (bridge as unknown as { channelId?: string }).channelId,
+      );
 
       // Assert getCaip25PermissionFromLegacyPermissionsForOrigin
       const requestedPermissions = { somePermission: true };
@@ -183,12 +191,15 @@ describe('BackgroundBridge', () => {
     it('creates EthAccountsMethodMiddleware with expected hooks', async () => {
       const url = 'https:www.mock.io';
       const bridge = setupBackgroundBridge(url);
-      const ethAccountsMethodMiddlewareHooks =
-        createEthAccountsMethodMiddleware.mock.calls[0][0];
+      const ethAccountsMethodMiddlewareHooks = jest.mocked(
+        createEthAccountsMethodMiddleware,
+      ).mock.calls[0][0] as Record<string, (...args: unknown[]) => unknown>;
 
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
-      expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
+      expect(getPermittedAccounts).toHaveBeenCalledWith(
+        (bridge as unknown as { channelId?: string }).channelId,
+      );
     });
   });
 });
