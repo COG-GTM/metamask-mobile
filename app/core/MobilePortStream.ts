@@ -1,7 +1,6 @@
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
-// eslint-disable-next-line import/no-nodejs-modules
-import { Duplex } from 'stream';
+import { Duplex } from 'readable-stream';
 
 // eslint-disable-next-line no-empty-function
 const noop = () => undefined;

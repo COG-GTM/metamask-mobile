@@ -11,6 +11,14 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+// `readable-stream` ships no type declarations; it mirrors the Node `stream`
+// API, so reuse the `@types/node` stream typings for it.
+declare module 'readable-stream' {
+  // eslint-disable-next-line import/no-nodejs-modules, @typescript-eslint/no-require-imports
+  import stream = require('stream');
+  export = stream;
+}
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
