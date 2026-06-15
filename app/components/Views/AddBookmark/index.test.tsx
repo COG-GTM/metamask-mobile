@@ -21,8 +21,16 @@ describe('AddBookmark', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <AddBookmark
-          navigation={{ setOptions: () => null }}
-          route={{ params: {} }}
+          navigation={
+            { setOptions: () => null } as unknown as React.ComponentProps<
+              typeof AddBookmark
+            >['navigation']
+          }
+          route={
+            { params: {} } as unknown as React.ComponentProps<
+              typeof AddBookmark
+            >['route']
+          }
         />
       </ThemeContext.Provider>,
     );

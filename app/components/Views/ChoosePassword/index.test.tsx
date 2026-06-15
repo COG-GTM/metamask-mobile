@@ -7,6 +7,8 @@ import { Provider } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
 
+type ChoosePasswordProps = React.ComponentProps<typeof ChoosePassword>;
+
 const mockStore = configureMockStore();
 const initialState = {
   user: {
@@ -26,7 +28,11 @@ describe('ChoosePassword', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ChoosePassword route={{ params: [ONBOARDING, PROTECT] }} />
+        <ChoosePassword
+          {...({
+            route: { params: [ONBOARDING, PROTECT] },
+          } as unknown as ChoosePasswordProps)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

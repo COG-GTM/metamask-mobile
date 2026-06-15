@@ -1,8 +1,20 @@
 import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TextProps,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  NavigationProp,
+  ParamListBase,
+} from '@react-navigation/native';
 import { isNonEvmAddress } from '../../../core/Multichain/utils';
 import { getHasOrders } from '../../../reducers/fiatOrders';
 import { getTransactionsNavbarOptions } from '../../UI/Navbar';
@@ -39,21 +51,26 @@ import {
   getFontFamily,
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 
-const createStyles = (params) => {
+const createStyles = (params: {
+  theme: Theme;
+  vars: { style: ViewStyle };
+}) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
     wrapper: {
       flex: 1,
-    },
+    } as ViewStyle,
     controlButtonOuterWrapper: {
       flexDirection: 'row',
       width: '100%',
       justifyContent: 'space-between',
       paddingVertical: 16,
       paddingHorizontal: 8,
-    },
+    } as ViewStyle,
     controlButton: {
       backgroundColor: colors.background.default,
       borderColor: colors.border.muted,
@@ -63,7 +80,7 @@ const createStyles = (params) => {
       marginRight: 5,
       maxWidth: '60%',
       borderRadius: 20,
-    },
+    } as ViewStyle,
     controlButtonDisabled: {
       backgroundColor: colors.background.default,
       borderColor: colors.border.muted,
@@ -74,24 +91,35 @@ const createStyles = (params) => {
       maxWidth: '60%',
       opacity: 0.5,
       borderRadius: 20,
-    },
+    } as ViewStyle,
     header: {
       backgroundColor: colors.background.default,
       flexDirection: 'row',
       paddingHorizontal: 16,
-    },
+    } as ViewStyle,
     title: {
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
       ...typography.sHeadingMD,
       fontFamily: getFontFamily(TextVariant.HeadingMD),
-    },
+    } as TextStyle,
     titleText: {
       color: colors.text.default,
-    },
+    } as TextStyle,
   });
 };
+
+const HeaderTitleText = Text as unknown as React.ComponentType<
+  TextProps & { variant?: TextVariant }
+>;
+const TransactionsViewTab =
+  TransactionsView as unknown as React.ComponentType<{ tabLabel: string }>;
+const MultichainTransactionsViewTab =
+  MultichainTransactionsView as unknown as React.ComponentType<{
+    tabLabel: string;
+  }>;
+const RampOrdersListTab =
+  RampOrdersList as unknown as React.ComponentType<{ tabLabel: string }>;
 
 const ActivityView = () => {
   const { colors } = useTheme();
@@ -102,7 +130,7 @@ const ActivityView = () => {
   });
 
   const { trackEvent, createEventBuilder } = useMetrics();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const selectedAddress = useSelector(
     selectSelectedInternalAccountFormattedAddress,
   );
@@ -111,10 +139,12 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector(
+    (state: RootState) => getHasOrders(state) || false,
+  );
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<ScrollableTabView>(null);
+  const params = useParams<{ redirectToOrders?: boolean }>();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
@@ -128,7 +158,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            accountsByChainId[selectedAddress ?? ''] ?? {},
           ).length,
         })
         .build(),
@@ -169,7 +199,11 @@ const ActivityView = () => {
     useCallback(() => {
       if (hasOrders && params.redirectToOrders) {
         navigation.setParams({ redirectToOrders: false });
-        tabViewRef.current?.goToPage(1);
+        (
+          tabViewRef.current as unknown as {
+            goToPage: (page: number) => void;
+          } | null
+        )?.goToPage(1);
       }
     }, [hasOrders, navigation, params.redirectToOrders]),
   );
@@ -177,12 +211,12 @@ const ActivityView = () => {
   return (
     <ErrorBoundary navigation={navigation} view="ActivityView">
       <View style={[styles.header, { marginTop: insets.top }]}>
-        <Text
+        <HeaderTitleText
           style={styles.title}
           variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT}
         >
           {strings('transactions_view.title')}
-        </Text>
+        </HeaderTitleText>
       </View>
       <View style={styles.wrapper}>
         <View style={styles.controlButtonOuterWrapper}>
@@ -212,14 +246,16 @@ const ActivityView = () => {
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
+            <MultichainTransactionsViewTab
               tabLabel={strings('transactions_view.title')}
             />
           ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title')} />
+            <TransactionsViewTab
+              tabLabel={strings('transactions_view.title')}
+            />
           )}
           {hasOrders && (
-            <RampOrdersList
+            <RampOrdersListTab
               tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}

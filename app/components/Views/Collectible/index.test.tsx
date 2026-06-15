@@ -63,7 +63,11 @@ describe('Collectible', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <Collectible route={{ params: { address: '0x1' } }} />
+        <Collectible
+          {...({
+            route: { params: { address: '0x1' } },
+          } as unknown as React.ComponentProps<typeof Collectible>)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
@@ -81,8 +85,18 @@ describe('Collectible', () => {
       <Provider store={storeMocked}>
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
-            navigation={navigationMock}
-            route={{ params: defaultCollectibleContract }}
+            navigation={
+              navigationMock as unknown as React.ComponentProps<
+                typeof Collectible
+              >['navigation']
+            }
+            route={
+              {
+                params: defaultCollectibleContract,
+              } as unknown as React.ComponentProps<
+                typeof Collectible
+              >['route']
+            }
           />
         </ThemeContext.Provider>
       </Provider>,
@@ -98,8 +112,18 @@ describe('Collectible', () => {
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
-            navigation={navigationMock}
-            route={{ params: defaultCollectibleContract }}
+            navigation={
+              navigationMock as unknown as React.ComponentProps<
+                typeof Collectible
+              >['navigation']
+            }
+            route={
+              {
+                params: defaultCollectibleContract,
+              } as unknown as React.ComponentProps<
+                typeof Collectible
+              >['route']
+            }
           />
         </ThemeContext.Provider>
       </Provider>,

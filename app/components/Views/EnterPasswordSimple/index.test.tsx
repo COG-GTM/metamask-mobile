@@ -1,7 +1,12 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
 import EnterPasswordSimple from './';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { ThemeContext } from '../../../util/theme';
 
 const mockTheme = {
@@ -33,7 +38,19 @@ describe('EnterPasswordSimple', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <NavigationContainer>
-          <EnterPasswordSimple navigation={mockNavigation} />
+          <EnterPasswordSimple
+            navigation={
+              mockNavigation as unknown as StackNavigationProp<ParamListBase>
+            }
+            route={
+              {
+                params: { onPasswordSet: jest.fn() },
+              } as unknown as RouteProp<
+                { params: { onPasswordSet: (password: string) => void } },
+                'params'
+              >
+            }
+          />
         </NavigationContainer>
       </ThemeContext.Provider>,
     );
