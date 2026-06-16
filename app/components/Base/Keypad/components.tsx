@@ -117,7 +117,7 @@ const KeypadDeleteButton: React.FC<KeypadDeleteButtonProps> = ({
   );
 };
 
-const Keypad: KeypadComponent = KeypadContainer;
+const Keypad = KeypadContainer as KeypadComponent;
 Keypad.Row = KeypadRow;
 Keypad.Button = KeypadButton;
 Keypad.DeleteButton = KeypadDeleteButton;
