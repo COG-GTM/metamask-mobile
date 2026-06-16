@@ -2,6 +2,7 @@
 import React, { useCallback, useRef, useMemo } from 'react';
 import {
   Alert,
+  FlatList as RNFlatList,
   InteractionManager,
   ListRenderItem,
   View,
@@ -58,9 +59,7 @@ const AccountSelectorList = ({
   ...props
 }: AccountSelectorListProps) => {
   const { navigate } = useNavigation();
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const accountListRef = useRef<any>(null);
+  const accountListRef = useRef<RNFlatList<Account>>(null);
   const accountsLengthRef = useRef<number>(0);
   const { styles } = useStyles(styleSheet, {});
 
@@ -318,7 +317,7 @@ const AccountSelectorList = ({
       }
 
       accountListRef?.current?.scrollToOffset({
-        offset: selectedAccount?.yOffset,
+        offset: selectedAccount?.yOffset ?? 0,
         animated: false,
       });
 

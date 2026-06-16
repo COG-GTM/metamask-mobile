@@ -77,8 +77,8 @@ const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
   useDispatch: () => mockDispatch,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  useSelector: (selector: any) => selector(mockInitialState),
+  useSelector: (selector: (state: typeof mockInitialState) => unknown) =>
+    selector(mockInitialState),
 }));
 
 jest.mock('../../../components/hooks/useAccounts', () => ({
