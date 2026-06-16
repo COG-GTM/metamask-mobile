@@ -1,4 +1,5 @@
 import { preventJavaScriptFileAdditions } from './javascript-additions';
+import { preventDebugStatementsRule } from './prevent-debug-statements';
 import { preventCodeBlocksRule } from './prevent-code-blocks';
 
 const RULES: IRule[] = [
@@ -10,6 +11,11 @@ const RULES: IRule[] = [
   {
     name: 'Check for js or jsx file being added',
     fn: preventJavaScriptFileAdditions,
+    docURL: '[WIP] No documentation exists for this rule yet.',
+  },
+  {
+    name: 'Check for debug statements being introduced in app source files',
+    fn: preventDebugStatementsRule,
     docURL: '[WIP] No documentation exists for this rule yet.',
   },
 ];
@@ -38,5 +44,10 @@ function runFitnessFunctionRule(rule: IRule, diff: string): void {
   }
 }
 
-export { RULES, runFitnessFunctionRule, preventJavaScriptFileAdditions };
+export {
+  RULES,
+  runFitnessFunctionRule,
+  preventJavaScriptFileAdditions,
+  preventDebugStatementsRule,
+};
 export type { IRule };
