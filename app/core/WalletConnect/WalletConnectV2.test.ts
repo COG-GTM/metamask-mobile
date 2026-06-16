@@ -514,7 +514,9 @@ describe('WC2Manager', () => {
         },
         topic: 'test-topic',
       });
-      expect(revokeAllPermissionsSpy).toHaveBeenCalledWith('test-topic');
+      // Permissions are granted under the hostname subject, so disconnecting
+      // must revoke by hostname (not the relay topic) to actually remove them.
+      expect(revokeAllPermissionsSpy).toHaveBeenCalledWith('example.com');
     });
   });
 

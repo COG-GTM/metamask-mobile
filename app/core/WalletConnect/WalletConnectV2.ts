@@ -325,11 +325,14 @@ export class WC2Manager {
           PermissionController: PermissionController<any, any>;
         }
       ).PermissionController;
+      // Permissions are granted under the hostname subject (see onSessionProposal),
+      // not the relay topic, so revoke using the same normalized hostname.
+      const hostname = getHostname(session.peer.metadata.url);
       DevLogger.log(
-        `WC2::removeSession revokeAllPermissions for ${session.topic}`,
+        `WC2::removeSession revokeAllPermissions for ${hostname}`,
         permissionsController.state,
       );
-      permissionsController.revokeAllPermissions(session.topic);
+      permissionsController.revokeAllPermissions(hostname);
     } catch (err) {
       DevLogger.log(`WC2::removeSession error while disconnecting`, err);
     }
