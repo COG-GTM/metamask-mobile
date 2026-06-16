@@ -1,11 +1,12 @@
 import React, { PureComponent } from 'react';
-import { SafeAreaView, StyleSheet } from 'react-native';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 import PropTypes from 'prop-types';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import { connect } from 'react-redux';
 import AddressList from '../../confirmations/legacy/SendFlow/AddressList';
 import StyledButton from '../../../UI/StyledButton';
+import TextFieldSearch from '../../../../component-library/components/Form/TextFieldSearch';
 import Engine from '../../../../core/Engine';
 import ActionSheet from '@metamask/react-native-actionsheet';
 import { mockTheme, ThemeContext } from '../../../../util/theme';
@@ -25,6 +26,10 @@ const createStyles = (colors) =>
     addContact: {
       marginHorizontal: 24,
       marginBottom: 16,
+    },
+    searchInputWrapper: {
+      marginHorizontal: 16,
+      marginBottom: 8,
     },
   });
 
@@ -52,6 +57,7 @@ class Contacts extends PureComponent {
 
   state = {
     reloadAddressList: false,
+    searchQuery: '',
   };
 
   actionSheet;
@@ -122,6 +128,14 @@ class Contacts extends PureComponent {
     this.actionSheet = ref;
   };
 
+  onSearch = (searchQuery) => {
+    this.setState({ searchQuery });
+  };
+
+  clearSearch = () => {
+    this.setState({ searchQuery: '' });
+  };
+
   onIconPress = () => {
     const { navigation } = this.props;
     navigation.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
@@ -130,7 +144,7 @@ class Contacts extends PureComponent {
   };
 
   render = () => {
-    const { reloadAddressList } = this.state;
+    const { reloadAddressList, searchQuery } = this.state;
     const colors = this.context.colors || mockTheme.colors;
     const themeAppearance = this.context.themeAppearance;
     const styles = createStyles(colors);
@@ -141,8 +155,20 @@ class Contacts extends PureComponent {
         style={styles.wrapper}
         testID={ContactsViewSelectorIDs.CONTAINER}
       >
+        <View style={styles.searchInputWrapper}>
+          <TextFieldSearch
+            value={searchQuery}
+            onChangeText={this.onSearch}
+            onPressClearButton={this.clearSearch}
+            showClearButton={Boolean(searchQuery)}
+            placeholder={strings('add_asset.search_token')}
+            testID={ContactsViewSelectorIDs.SEARCH_INPUT}
+            accessibilityLabel={ContactsViewSelectorIDs.SEARCH_INPUT}
+          />
+        </View>
         <AddressList
           chainId={chainId}
+          inputSearch={searchQuery}
           onlyRenderAddressBook
           reloadAddressList={reloadAddressList}
           onAccountPress={this.onAddressPress}

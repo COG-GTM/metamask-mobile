@@ -14,6 +14,10 @@ class ContactsView {
       : Matchers.getElementByLabel(ContactsViewSelectorIDs.ADD_BUTTON);
   }
 
+  get searchInput() {
+    return Matchers.getElementByID(ContactsViewSelectorIDs.SEARCH_INPUT);
+  }
+
   async tapOnAlias(alias) {
     const contactAlias = Matchers.getElementByText(alias);
     await Gestures.waitAndTap(contactAlias);
@@ -21,6 +25,14 @@ class ContactsView {
 
   async tapAddContactButton() {
     await Gestures.waitAndTap(this.addButton);
+  }
+
+  async searchForContact(alias) {
+    await Gestures.replaceTextInField(this.searchInput, alias);
+  }
+
+  async clearSearch() {
+    await Gestures.clearField(this.searchInput);
   }
 
   async isContactAliasVisible(alias) {
