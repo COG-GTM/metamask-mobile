@@ -28,6 +28,7 @@ import {
   sortAssets,
   removeEvmToken,
   goToAddEvmToken,
+  filterTokensBySearch,
 } from './util';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -78,6 +79,7 @@ const Tokens = memo(() => {
   const [tokenToRemove, setTokenToRemove] = useState<TokenI>();
   const [refreshing, setRefreshing] = useState(false);
   const [isAddTokenEnabled, setIsAddTokenEnabled] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const selectedAccount = useSelector(selectSelectedInternalAccount);
 
   // non-evm
@@ -105,17 +107,24 @@ const Tokens = memo(() => {
     }));
 
     const tokensSorted = sortAssets(tokensWithBalances, tokenSortConfig);
+    const filteredTokens = filterTokensBySearch(tokensSorted, searchQuery);
 
     endTrace({ name: TraceName.Tokens });
 
-    return tokensSorted
+    return filteredTokens
       .filter(({ address, chainId }) => address && chainId)
       .map(({ address, chainId, isStaked }) => ({
         address,
         chainId,
         isStaked,
       }));
-  }, [tokenListData, tokenFiatBalances, isEvmSelected, tokenSortConfig]);
+  }, [
+    tokenListData,
+    tokenFiatBalances,
+    isEvmSelected,
+    searchQuery,
+    tokenSortConfig,
+  ]);
 
   const showRemoveMenu = useCallback(
     (token: TokenI) => {
@@ -199,16 +208,30 @@ const Tokens = memo(() => {
     setShowScamWarningModal(!showScamWarningModal);
   };
 
+  const handleSearchQueryChange = useCallback((value: string) => {
+    setSearchQuery(value);
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+  }, []);
+
   return (
     <View
       style={styles.wrapper}
       testID={WalletViewSelectorsIDs.TOKENS_CONTAINER}
     >
       <AssetPollingProvider />
-      <TokenListControlBar goToAddToken={goToAddToken} />
+      <TokenListControlBar
+        goToAddToken={goToAddToken}
+        searchQuery={searchQuery}
+        onSearchQueryChange={handleSearchQueryChange}
+        onClearSearch={handleClearSearch}
+      />
       {sortedTokenKeys && (
         <TokenList
           tokenKeys={sortedTokenKeys}
+          searchQuery={searchQuery}
           refreshing={refreshing}
           isAddTokenEnabled={isAddTokenEnabled}
           onRefresh={onRefresh}

@@ -163,17 +163,20 @@ const createStyles = (colors: Colors) =>
       marginTop: 4,
     },
     actionBarWrapper: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
       paddingLeft: 8,
       paddingRight: 8,
       paddingBottom: 16,
       paddingTop: 8,
+      gap: 12,
     },
     controlButtonOuterWrapper: {
       flexDirection: 'row',
       width: '100%',
       justifyContent: 'space-between',
+    },
+    searchBarWrapper: {
+      marginLeft: 5,
+      marginRight: 5,
     },
     controlButtonInnerWrapper: {
       flexDirection: 'row',

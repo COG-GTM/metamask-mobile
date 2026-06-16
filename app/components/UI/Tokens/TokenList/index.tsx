@@ -27,6 +27,7 @@ export interface FlashListAssetKey {
 
 interface TokenListProps {
   tokenKeys: FlashListAssetKey[];
+  searchQuery: string;
   refreshing: boolean;
   isAddTokenEnabled: boolean;
   onRefresh: () => void;
@@ -38,6 +39,7 @@ interface TokenListProps {
 
 export const TokenList = ({
   tokenKeys,
+  searchQuery,
   refreshing,
   isAddTokenEnabled,
   onRefresh,
@@ -73,6 +75,8 @@ export const TokenList = ({
       screen: Routes.ONBOARDING.GENERAL_SETTINGS,
     });
   };
+
+  const trimmedSearchQuery = searchQuery.trim();
 
   const renderTokenListItem = useCallback(
     ({ item }: { item: FlashListAssetKey }) => (
@@ -132,15 +136,21 @@ export const TokenList = ({
     <View style={styles.emptyView}>
       <View style={styles.emptyTokensView}>
         <Text style={styles.emptyTokensViewText}>
-          {strings('wallet.no_tokens')}
+          {trimmedSearchQuery
+            ? strings('swaps.no_tokens_result', {
+                searchString: trimmedSearchQuery,
+              })
+            : strings('wallet.no_tokens')}
         </Text>
-        <Text
-          style={styles.emptyTokensViewText}
-          color={TextColor.Info}
-          onPress={handleLink}
-        >
-          {strings('wallet.show_tokens_without_balance')}
-        </Text>
+        {!trimmedSearchQuery && (
+          <Text
+            style={styles.emptyTokensViewText}
+            color={TextColor.Info}
+            onPress={handleLink}
+          >
+            {strings('wallet.show_tokens_without_balance')}
+          </Text>
+        )}
       </View>
     </View>
   );

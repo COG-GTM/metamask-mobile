@@ -303,6 +303,47 @@ describe('Tokens', () => {
     });
   });
 
+  it('filters tokens from the wallet search input and clears the query', async () => {
+    const { getByTestId, queryByTestId } = renderComponent(initialState);
+
+    fireEvent.changeText(
+      getByTestId(WalletViewSelectorsIDs.TOKEN_SEARCH_INPUT),
+      'bat',
+    );
+
+    await waitFor(() => {
+      expect(queryByTestId('asset-BAT')).toBeDefined();
+      expect(queryByTestId('asset-ETH')).toBeNull();
+    });
+
+    fireEvent.press(
+      getByTestId(WalletViewSelectorsIDs.TOKEN_SEARCH_CLEAR_BUTTON),
+    );
+
+    await waitFor(() => {
+      expect(queryByTestId('asset-ETH')).toBeDefined();
+      expect(queryByTestId('asset-BAT')).toBeDefined();
+    });
+  });
+
+  it('shows an empty search state when no tokens match the query', async () => {
+    const { getByTestId, findByText, queryByText } = renderComponent(
+      initialState,
+    );
+
+    fireEvent.changeText(
+      getByTestId(WalletViewSelectorsIDs.TOKEN_SEARCH_INPUT),
+      'does-not-exist',
+    );
+
+    expect(
+      await findByText(
+        strings('swaps.no_tokens_result', { searchString: 'does-not-exist' }),
+      ),
+    ).toBeDefined();
+    expect(queryByText(strings('wallet.show_tokens_without_balance'))).toBeNull();
+  });
+
   it('navigates to Asset screen when token is pressed', () => {
     const { getByTestId } = renderComponent(initialState);
     fireEvent.press(getByTestId('asset-ETH'));

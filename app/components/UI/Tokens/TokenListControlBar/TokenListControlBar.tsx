@@ -16,6 +16,7 @@ import { selectIsEvmNetworkSelected } from '../../../../selectors/multichainNetw
 import { selectNetworkName } from '../../../../selectors/networkInfos';
 import { IconName } from '../../../../component-library/components/Icons/Icon';
 import ButtonIcon from '../../../../component-library/components/Buttons/ButtonIcon';
+import TextFieldSearch from '../../../../component-library/components/Form/TextFieldSearch';
 import {
   createTokenBottomSheetFilterNavDetails,
   createTokensBottomSheetNavDetails,
@@ -30,10 +31,16 @@ interface TokenListNavigationParamList {
 
 interface TokenListControlBarProps {
   goToAddToken: () => void;
+  searchQuery: string;
+  onSearchQueryChange: (value: string) => void;
+  onClearSearch: () => void;
 }
 
 export const TokenListControlBar = ({
   goToAddToken,
+  searchQuery,
+  onSearchQueryChange,
+  onClearSearch,
 }: TokenListControlBarProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -58,6 +65,13 @@ export const TokenListControlBar = ({
   const showSortControls = useCallback(() => {
     navigation.navigate(...createTokensBottomSheetNavDetails({}));
   }, [navigation]);
+
+  const searchFieldProps = searchQuery
+    ? {
+        showClearButton: true as const,
+        onPressClearButton: onClearSearch,
+      }
+    : {};
 
   return (
     <View style={styles.actionBarWrapper}>
@@ -98,6 +112,21 @@ export const TokenListControlBar = ({
             disabled={!isEvmSelected}
           />
         </View>
+      </View>
+      <View style={styles.searchBarWrapper}>
+        <TextFieldSearch
+          value={searchQuery}
+          onChangeText={onSearchQueryChange}
+          placeholder={strings('token.search_tokens_placeholder')}
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="search"
+          testID={WalletViewSelectorsIDs.TOKEN_SEARCH_INPUT}
+          clearButtonProps={{
+            testID: WalletViewSelectorsIDs.TOKEN_SEARCH_CLEAR_BUTTON,
+          }}
+          {...searchFieldProps}
+        />
       </View>
     </View>
   );
