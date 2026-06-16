@@ -4,6 +4,7 @@ import { backgroundState } from '../../../../../../../util/test/initial-root-sta
 import renderWithProvider, {
   renderHookWithProvider,
 } from '../../../../../../../util/test/renderWithProvider';
+import { RootState } from '../../../../../../../reducers';
 
 const initialState = {
   settings: {},
@@ -47,7 +48,7 @@ const initialState = {
       },
     },
   },
-};
+} as unknown as RootState;
 
 const transactionReview = {
   primaryCurrency: 'USD',
