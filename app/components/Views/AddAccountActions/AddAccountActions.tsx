@@ -103,10 +103,11 @@ const AddAccountActions = ({ onBack }: AddAccountActionsProps) => {
           MetaMetricsEvents.ACCOUNTS_ADDED_NEW_ACCOUNT,
         ).build(),
       );
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      Logger.error(e, 'error while trying to add a new account');
+    } catch (e: unknown) {
+      Logger.error(
+        e instanceof Error ? e : new Error(String(e)),
+        'error while trying to add a new account',
+      );
     } finally {
       onBack();
 
