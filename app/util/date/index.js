@@ -1,5 +1,25 @@
 import { strings } from '../../../locales/i18n';
-import { MINUTE, HOUR, DAY } from '../../constants/time';
+import { SECOND, MINUTE, HOUR, DAY, WEEK } from '../../constants/time';
+
+// Approximations used only for human-friendly relative-time display.
+const RELATIVE_MONTH = DAY * 30;
+const RELATIVE_YEAR = DAY * 365;
+
+// Differences smaller than this are rendered as "just now".
+const JUST_NOW_THRESHOLD = SECOND * 30;
+
+/**
+ * Ordered (largest first) list of units used to pick the most significant
+ * unit when building a relative-time string.
+ */
+const RELATIVE_TIME_UNITS = [
+  { unit: 'year', ms: RELATIVE_YEAR },
+  { unit: 'month', ms: RELATIVE_MONTH },
+  { unit: 'week', ms: WEEK },
+  { unit: 'day', ms: DAY },
+  { unit: 'hour', ms: HOUR },
+  { unit: 'minute', ms: MINUTE },
+];
 
 export function toLocaleDateTime(timestamp) {
   const dateObj = new Date(timestamp);
@@ -85,4 +105,47 @@ export const getTimeDifferenceFromNow = (timestamp) => {
   const minutes = Math.floor((differenceInMilliseconds % HOUR) / MINUTE);
 
   return { days, hours, minutes };
+};
+
+/**
+ * Formats a timestamp into a localized, human-friendly relative-time string,
+ * e.g. "Just now", "5 minutes ago" or "in 2 hours".
+ *
+ * The most significant unit is used (years, months, weeks, days, hours or
+ * minutes). Differences smaller than 30 seconds are rendered as "Just now".
+ * Future timestamps produce forward-looking strings (e.g. "in 3 days").
+ *
+ * @param {number|Date} timestamp - Timestamp in milliseconds or a Date object.
+ * @param {object} [options] - Optional configuration.
+ * @param {number} [options.now] - Reference "now" in milliseconds. Defaults to Date.now().
+ * @returns {string} Localized relative-time string.
+ */
+export const toRelativeTime = (timestamp, options = {}) => {
+  const time =
+    timestamp instanceof Date ? timestamp.getTime() : Number(timestamp);
+
+  if (!Number.isFinite(time)) {
+    return strings('date.relative.unknown');
+  }
+
+  const now = Number.isFinite(options.now) ? options.now : Date.now();
+  const difference = now - time;
+  const isPast = difference >= 0;
+  const absoluteDifference = Math.abs(difference);
+
+  if (absoluteDifference < JUST_NOW_THRESHOLD) {
+    return strings('date.relative.just_now');
+  }
+
+  const tense = isPast ? 'past' : 'future';
+
+  for (const { unit, ms } of RELATIVE_TIME_UNITS) {
+    if (absoluteDifference >= ms) {
+      const count = Math.floor(absoluteDifference / ms);
+      const plural = count === 1 ? 'one' : 'other';
+      return strings(`date.relative.${tense}.${unit}_${plural}`, { count });
+    }
+  }
+
+  return strings('date.relative.just_now');
 };

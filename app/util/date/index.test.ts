@@ -4,7 +4,9 @@ import {
   toDateFormat,
   formatTimestampToYYYYMMDD,
   getTimeDifferenceFromNow,
+  toRelativeTime,
 } from '.';
+import { SECOND, MINUTE, HOUR, DAY, WEEK } from '../../constants/time';
 
 const TZ = 'America/Toronto';
 
@@ -128,5 +130,97 @@ describe('Date util :: getDaysAndHoursRemaining', () => {
     expect(days).toBe(0);
     expect(hours).toBe(0);
     expect(minutes).toBe(0);
+  });
+});
+
+describe('Date util :: toRelativeTime', () => {
+  const RELATIVE_MONTH = DAY * 30;
+  const RELATIVE_YEAR = DAY * 365;
+  const NOW = 1727205581107;
+
+  const relative = (offsetMs: number) =>
+    toRelativeTime(NOW - offsetMs, { now: NOW });
+
+  it('renders "Just now" for very recent timestamps', () => {
+    expect(relative(0)).toBe('Just now');
+    expect(relative(SECOND * 5)).toBe('Just now');
+    // Anything under the 30s threshold is "Just now".
+    expect(relative(SECOND * 29)).toBe('Just now');
+  });
+
+  it('renders "Just now" for near-future timestamps within the threshold', () => {
+    expect(relative(-SECOND * 10)).toBe('Just now');
+  });
+
+  describe('past timestamps', () => {
+    it('renders minutes', () => {
+      expect(relative(MINUTE)).toBe('1 minute ago');
+      expect(relative(MINUTE * 5)).toBe('5 minutes ago');
+      expect(relative(MINUTE * 59)).toBe('59 minutes ago');
+    });
+
+    it('renders hours', () => {
+      expect(relative(HOUR)).toBe('1 hour ago');
+      expect(relative(HOUR * 2)).toBe('2 hours ago');
+      expect(relative(HOUR * 23)).toBe('23 hours ago');
+    });
+
+    it('renders days', () => {
+      expect(relative(DAY)).toBe('1 day ago');
+      expect(relative(DAY * 6)).toBe('6 days ago');
+    });
+
+    it('renders weeks', () => {
+      expect(relative(WEEK)).toBe('1 week ago');
+      expect(relative(WEEK * 3)).toBe('3 weeks ago');
+    });
+
+    it('renders months', () => {
+      expect(relative(RELATIVE_MONTH)).toBe('1 month ago');
+      expect(relative(RELATIVE_MONTH * 6)).toBe('6 months ago');
+    });
+
+    it('renders years', () => {
+      expect(relative(RELATIVE_YEAR)).toBe('1 year ago');
+      expect(relative(RELATIVE_YEAR * 2)).toBe('2 years ago');
+    });
+  });
+
+  describe('future timestamps', () => {
+    it('renders minutes', () => {
+      expect(relative(-MINUTE)).toBe('in 1 minute');
+      expect(relative(-MINUTE * 10)).toBe('in 10 minutes');
+    });
+
+    it('renders hours', () => {
+      expect(relative(-HOUR * 3)).toBe('in 3 hours');
+    });
+
+    it('renders days', () => {
+      expect(relative(-DAY * 2)).toBe('in 2 days');
+    });
+
+    it('renders years', () => {
+      expect(relative(-RELATIVE_YEAR)).toBe('in 1 year');
+    });
+  });
+
+  it('accepts a Date object as input', () => {
+    expect(toRelativeTime(new Date(NOW - HOUR * 4), { now: NOW })).toBe(
+      '4 hours ago',
+    );
+  });
+
+  it('uses Date.now() when no reference time is provided', () => {
+    const spy = jest.spyOn(Date, 'now').mockImplementation(() => NOW);
+    expect(toRelativeTime(NOW - DAY * 3)).toBe('3 days ago');
+    spy.mockRestore();
+  });
+
+  it('returns the unknown string for invalid input', () => {
+    expect(toRelativeTime(NaN, { now: NOW })).toBe('Unknown');
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(toRelativeTime('not-a-date' as any, { now: NOW })).toBe('Unknown');
   });
 });
