@@ -1,15 +1,20 @@
-import { GasFeeOptions } from '../../../../../../core/GasPolling/types';
+import BigNumber from 'bignumber.js';
 
-export interface RenderInputProps {
-  updateOption:
-    | {
-        isCancel: boolean;
-        maxFeeThreshold: string;
-        maxPriortyFeeThreshold: string;
-        showAdvanced: boolean | undefined;
-      }
-    | undefined;
+export interface UpdateOption {
+  isCancel: boolean;
+  maxFeeThreshold: string | BigNumber;
+  maxPriortyFeeThreshold: string | BigNumber;
+  showAdvanced?: boolean;
 }
+
+export interface GasOption {
+  suggestedMaxFeePerGas?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedGasLimit?: string;
+}
+
+export type GasOptions = Record<string, GasOption | undefined>;
+
 export interface EditGasFee1559UpdateProps {
   /**
    * The selected gas value (low, medium, high)
@@ -18,7 +23,7 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Gas fee options.
    */
-  gasOptions: GasFeeOptions;
+  gasOptions: GasOptions;
   /**
    * Primary currency, either ETH or Fiat
    */
@@ -26,7 +31,7 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Option to display speed up/cancel view
    */
-  updateOption: RenderInputProps;
+  updateOption?: UpdateOption;
   /**
    * If the values should animate upon update or not
    */
@@ -58,45 +63,45 @@ export interface EditGasFee1559UpdateProps {
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: any;
+  error?: any;
   /**
    * Warning message to show
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warning: any;
+  warning?: any;
   /**
    * Boolean that specifies if the gas price was suggested by the dapp
    */
-  dappSuggestedGas: boolean | undefined;
+  dappSuggestedGas?: boolean;
   /**
    * An array of selected gas value and lower that should be ignored.
    */
-  ignoreOptions: string[] | undefined;
+  ignoreOptions?: string[];
   /**
    * Extend options object. Object has option keys and properties will be spread
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extendOptions: any;
+  extendOptions?: any;
   /**
    * Recommended object with type and render function
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  recommended: any;
+  recommended?: any;
   /**
    * Estimate option to compare with for too low warning
    */
-  warningMinimumEstimateOption: string;
+  warningMinimumEstimateOption?: string;
   /**
    * Suggested estimate option to show recommended values
    */
-  suggestedEstimateOption: string;
+  suggestedEstimateOption?: string;
   /**
    * Boolean to determine if the animation is happening
    */
-  isAnimating: boolean;
+  isAnimating?: boolean;
   /**
    * Extra analytics params to be send with the gas analytics
    */
@@ -104,7 +109,7 @@ export interface EditGasFee1559UpdateProps {
     chain_id: string;
     gas_estimate_type: string;
     gas_mode: string;
-    speed_set: string;
+    speed_set?: string;
     view: string;
   };
   /**
