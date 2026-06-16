@@ -2,7 +2,7 @@ import { toHex } from '@metamask/controller-utils';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { CaipChainId, KnownCaipNamespace } from '@metamask/utils';
 import { NavigationContainerRef } from '@react-navigation/native';
-import { RelayerTypes } from '@walletconnect/types';
+import { RelayerTypes, Verify } from '@walletconnect/types';
 import { parseRelayParams } from '@walletconnect/utils';
 import qs from 'qs';
 import Routes from '../../../app/constants/navigation/Routes';
@@ -199,8 +199,82 @@ export const getApprovedSessionMethods = (_: { origin: string }): string[] => {
   return allEIP155Methods;
 };
 
-export const getScopedPermissions = async ({ origin }: { origin: string }) => {
-  const hostname = getHostname(origin);
+/**
+ * Resolves the hostname that authorization decisions (permitted accounts,
+ * chains, methods) should be keyed on for a WalletConnect peer.
+ *
+ * The dapp-supplied `metadata.url` is self-asserted and trivially spoofable, so
+ * two distinct dapps can present the same hostname and become indistinguishable
+ * for authorization. Where the WalletConnect verify API has attested the
+ * connection (`verifyContext.verified`), prefer the attested origin over the
+ * self-asserted one and treat origins the verify API flagged as invalid or as a
+ * scam conservatively by refusing to expose any previously-granted permissions.
+ *
+ * @returns the hostname to scope permissions to, or `null` when the origin must
+ * not be trusted with any previously-granted accounts/chains.
+ */
+export const getPermissionScopeHostname = ({
+  origin,
+  verifyContext,
+}: {
+  origin: string;
+  verifyContext?: Verify.Context;
+}): string | null => {
+  const selfAssertedHostname = getHostname(origin);
+  const verified = verifyContext?.verified;
+
+  // No attestation available (e.g. restored sessions): fall back to the
+  // self-asserted hostname, the only identity signal we have.
+  if (!verified?.origin) {
+    return selfAssertedHostname;
+  }
+
+  // The verify API positively flagged the origin as malicious or as not
+  // matching the dapp's declared domain. Never expose accounts/chains that may
+  // have been granted to an impersonated hostname.
+  if (verified.validation === 'INVALID' || verified.isScam) {
+    DevLogger.log(
+      `WC::getPermissionScopeHostname refusing permissions for origin=${origin} validation=${verified.validation} isScam=${verified.isScam}`,
+    );
+    return null;
+  }
+
+  const verifiedHostname = getHostname(verified.origin);
+
+  if (verifiedHostname && verifiedHostname !== selfAssertedHostname) {
+    DevLogger.log(
+      `WC::getPermissionScopeHostname self-asserted hostname=${selfAssertedHostname} does not match verified origin hostname=${verifiedHostname}; scoping to verified origin`,
+    );
+  }
+
+  // Prefer the attested origin for permission scoping so impersonated metadata
+  // cannot reuse permissions granted to the genuine hostname.
+  return verifiedHostname || selfAssertedHostname;
+};
+
+export const getScopedPermissions = async ({
+  origin,
+  verifyContext,
+}: {
+  origin: string;
+  verifyContext?: Verify.Context;
+}) => {
+  const hostname = getPermissionScopeHostname({ origin, verifyContext });
+
+  if (!hostname) {
+    DevLogger.log(
+      `WC::getScopedPermissions denying permissions for ${origin}: origin failed verify-API cross-check`,
+    );
+    return {
+      [KnownCaipNamespace.Eip155]: {
+        chains: [],
+        methods: [],
+        events: ['chainChanged', 'accountsChanged'],
+        accounts: [],
+      },
+    };
+  }
+
   const approvedAccounts = getPermittedAccounts(hostname);
   const chains = await getPermittedChains(hostname);
 
@@ -254,7 +328,8 @@ export const checkWCPermissions = async ({
   origin,
   caip2ChainId,
   allowSwitchingToNewChain = false,
-}: { origin: string; caip2ChainId: CaipChainId; allowSwitchingToNewChain?: boolean }) => {
+  verifyContext,
+}: { origin: string; caip2ChainId: CaipChainId; allowSwitchingToNewChain?: boolean; verifyContext?: Verify.Context }) => {
   const networkConfigurations = selectNetworkConfigurations(store.getState());
   const decimalChainId = caip2ChainId.split(':')[1];
   const hexChainIdString = toHex(`0x${parseInt(decimalChainId, 10).toString(16)}`);
@@ -271,7 +346,17 @@ export const checkWCPermissions = async ({
     });
   }
 
-  const hostname = getHostname(origin);
+  const hostname = getPermissionScopeHostname({ origin, verifyContext });
+
+  if (!hostname) {
+    DevLogger.log(
+      `WC::checkWCPermissions denying for ${origin}: origin failed verify-API cross-check`,
+    );
+    throw rpcErrors.invalidParams({
+      message: `Invalid parameters: active chainId is different than the one provided.`,
+    });
+  }
+
   const permittedChains = await getPermittedChains(hostname);
   const isAllowedChainId = permittedChains.includes(caip2ChainId);
 

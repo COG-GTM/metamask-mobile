@@ -1,7 +1,7 @@
 import { WalletDevice } from '@metamask/transaction-controller';
 import { NavigationContainerRef } from '@react-navigation/native';
 import { IWalletKit, WalletKitTypes } from '@reown/walletkit';
-import { SessionTypes } from '@walletconnect/types';
+import { SessionTypes, Verify } from '@walletconnect/types';
 import { ImageSourcePropType, Linking, Platform } from 'react-native';
 
 import { CaipChainId } from '@metamask/utils';
@@ -55,6 +55,11 @@ class WalletConnect2Session {
   private lastChainId: string;
   private isHandlingChainChange = false;
   private _isHandlingRequest = false;
+  // Origin attestation from the WalletConnect verify API captured at session
+  // approval time. Used to cross-check the dapp self-asserted metadata.url when
+  // scoping permissions so an impersonated hostname cannot reuse permissions
+  // granted to a genuine dapp.
+  private verifyContext?: Verify.Context;
 
   public session: SessionTypes.Struct;
 
@@ -64,6 +69,7 @@ class WalletConnect2Session {
     navigation,
     channelId,
     deeplink,
+    verifyContext,
     backgroundBridgeFactory = {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       create: (options: any) => new BackgroundBridge(options),
@@ -74,12 +80,14 @@ class WalletConnect2Session {
     session: SessionTypes.Struct;
     deeplink: boolean;
     navigation?: NavigationContainerRef;
+    verifyContext?: Verify.Context;
     backgroundBridgeFactory?: BackgroundBridgeFactory;
   }) {
     this.web3Wallet = web3Wallet;
     this.deeplink = deeplink;
     this.session = session;
     this.navigation = navigation;
+    this.verifyContext = verifyContext;
 
     DevLogger.log(
       `WalletConnect2Session::constructor channelId=${channelId} deeplink=${deeplink}`,
@@ -423,7 +431,10 @@ class WalletConnect2Session {
         );
       }
 
-      const namespaces = await getScopedPermissions({ origin });
+      const namespaces = await getScopedPermissions({
+        origin,
+        verifyContext: this.verifyContext,
+      });
       DevLogger.log(
         `🔴🔴 WC2::updateSession updating with namespaces`,
         namespaces,
@@ -474,7 +485,12 @@ class WalletConnect2Session {
     );
 
     try {
-      const allowed = await checkWCPermissions({ origin, caip2ChainId, allowSwitchingToNewChain: isSwitchingChain });
+      const allowed = await checkWCPermissions({
+        origin,
+        caip2ChainId,
+        allowSwitchingToNewChain: isSwitchingChain,
+        verifyContext: requestEvent.verifyContext,
+      });
       DevLogger.log(
         `WC2::handleRequest caip2ChainId=${caip2ChainId} is allowed=${allowed}`,
       );

@@ -491,8 +491,13 @@ export class WC2Manager {
         walletChainIdDecimal,
       });
 
-      // Use getScopedPermissions to get properly formatted namespaces
-      const namespaces = await getScopedPermissions({ origin });
+      // Use getScopedPermissions to get properly formatted namespaces.
+      // Pass the verify API attestation so permission scoping cross-checks the
+      // self-asserted metadata.url against the attested origin.
+      const namespaces = await getScopedPermissions({
+        origin,
+        verifyContext: proposal.verifyContext,
+      });
 
       DevLogger.log(`WC2::session_proposal namespaces`, namespaces);
 
@@ -508,6 +513,7 @@ export class WC2Manager {
         deeplink,
         web3Wallet: this.web3Wallet,
         navigation: this.navigation,
+        verifyContext: proposal.verifyContext,
       });
 
       this.sessions[activeSession.topic] = session;
