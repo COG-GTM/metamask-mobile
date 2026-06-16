@@ -1,8 +1,16 @@
 diff --git a/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java b/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
-index b68b858..3376547 100644
+index b68b858..69c47a5 100644
 --- a/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
 +++ b/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
-@@ -64,6 +64,16 @@ public class ClipboardModule extends NativeClipboardModuleSpec {
+@@ -16,6 +16,7 @@ import android.content.Context;
+ import android.graphics.Bitmap;
+ import android.net.Uri;
+ import android.os.Build;
++import android.os.PersistableBundle;
+ import android.provider.MediaStore;
+ import android.util.Base64;
+ import android.util.Log;
+@@ -64,6 +65,16 @@ public class ClipboardModule extends NativeClipboardModuleSpec {
      return (ClipboardManager) reactContext.getSystemService(Context.CLIPBOARD_SERVICE);
    }
  
@@ -19,11 +27,36 @@ index b68b858..3376547 100644
    @ReactMethod
    public void getString(Promise promise) {
      try {
+@@ -111,6 +122,24 @@ public class ClipboardModule extends NativeClipboardModuleSpec {
+     }
+   }
+ 
++  @ReactMethod
++  public void setStringSensitive(String text) {
++    try {
++      ClipData clipdata = ClipData.newPlainText(null, text);
++      // On Android 13+ (API 33) flag the content as sensitive so the OS does
++      // not render a clipboard preview that could leak the secret on screen.
++      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
++        PersistableBundle extras = new PersistableBundle();
++        extras.putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true);
++        clipdata.getDescription().setExtras(extras);
++      }
++      ClipboardManager clipboard = getClipboardService();
++      clipboard.setPrimaryClip(clipdata);
++    } catch (Exception e) {
++      e.printStackTrace();
++    }
++  }
++
+   @Override
+   public void setStrings(ReadableArray content) {
+ 
 diff --git a/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.d.ts b/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.d.ts
-index 6c85195..3a9302e 100644
+index 6c85195..0ab3376 100644
 --- a/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.d.ts
 +++ b/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.d.ts
-@@ -90,6 +90,25 @@ export declare const Clipboard: {
+@@ -90,6 +90,36 @@ export declare const Clipboard: {
       * }
       * ```
       */
@@ -46,14 +79,25 @@ index 6c85195..3a9302e 100644
 +     * ```
 +     */
 +	clearString(): void;
++	/**
++     * [ANDROID ONLY] Set content of string type and flag it as sensitive so the
++     * OS hides the clipboard preview (Android 13+/API 33).
++     * ```javascript
++     * _setContent() {
++     *   Clipboard.setStringSensitive('hello world');
++     * }
++     * ```
++     * @param the content to be stored in the clipboard.
++     */
++	setStringSensitive(content: string): void;
      hasString(): Promise<boolean>;
      /**
       * Returns whether the clipboard has an image or is empty.
 diff --git a/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.js b/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.js
-index ccdf309..3eb6120 100644
+index ccdf309..f81e1ad 100644
 --- a/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.js
 +++ b/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.js
-@@ -127,6 +127,29 @@ exports.Clipboard = {
+@@ -127,6 +127,43 @@ exports.Clipboard = {
      setStrings(content) {
          NativeClipboardModule_1.default.setStrings(content);
      },
@@ -80,6 +124,20 @@ index ccdf309..3eb6120 100644
 +	clearString: function () {
 +		NativeClipboard_1.default.clearString();
 +	},
++	/**
++     * [ANDROID ONLY] Set content of string type and flag it as sensitive so the
++     * OS hides the clipboard preview (Android 13+/API 33). Falls back to a plain
++     * write on older versions.
++     * ```javascript
++     * _setContent() {
++     *   Clipboard.setStringSensitive('hello world');
++     * }
++     * ```
++     * @param the content to be stored in the clipboard.
++     */
++	setStringSensitive: function (content) {
++		NativeClipboard_1.default.setStringSensitive(content);
++	},
      /**
       * Returns whether the clipboard has content or is empty.
       * This method returns a `Promise`, so you can use following code to get clipboard content
@@ -95,7 +153,7 @@ index 3ee5caa..f6bd6f3 100644
  
  @implementation RNCClipboard {
      BOOL isObserving;
-@@ -51,6 +52,16 @@ - (void) listener:(NSNotification *) notification
+@@ -51,6 +52,16 @@ NSString *const CLIPBOARD_TEXT_CHANGED = @"RNCClipboard_TEXT_CHANGED";
      }
  }
  

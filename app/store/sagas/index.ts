@@ -20,6 +20,7 @@ import {
 } from './xmlHttpRequestOverride';
 import EngineService from '../../core/EngineService';
 import { AppStateEventProcessor } from '../../core/AppStateEventListener';
+import ClipboardManager from '../../core/ClipboardManager';
 
 export function* appLockStateMachine() {
   let biometricsListenerTask: Task<void> | undefined;
@@ -141,6 +142,10 @@ export function* startAppServices() {
 
   // Start AppStateEventProcessor
   AppStateEventProcessor.start();
+
+  // Clear any secret left on the clipboard if the app was killed before the
+  // in-process expiry timer could run (Android durable clearing fallback).
+  yield call([ClipboardManager, ClipboardManager.handleStartup]);
 
   // Unblock the ControllersGate
   yield put(setAppServicesReady());
