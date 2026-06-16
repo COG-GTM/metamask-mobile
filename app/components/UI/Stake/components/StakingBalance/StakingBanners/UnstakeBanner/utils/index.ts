@@ -39,6 +39,15 @@ export const renderUnstakingTimeRemaining = (
     ? `${hours} ${strings('stake.hour', { count: hours })}`
     : '';
 
+  const minutesWithApproximationString = minutes
+    ? `${strings('stake.banner_text.approximately')} ${minutes} ${strings(
+        'stake.minute',
+        {
+          count: minutes,
+        },
+      )}`
+    : '';
+
   const andString =
     days && hours
       ? ` ${strings('stake.banner_text.unstaking_in_progress.and')} `
@@ -50,6 +59,12 @@ export const renderUnstakingTimeRemaining = (
 
   if (!days && !hours && minutes) {
     return `${baseCopy} ${minuteString} ${toClaimString}`.trim();
+  }
+
+  if (!days && hours && minutes) {
+    return `${baseCopy} ${hourString} ${strings(
+      'stake.banner_text.unstaking_in_progress.and',
+    )} ${minutesWithApproximationString} ${toClaimString}`.trim();
   }
 
   return `${baseCopy} ${dayString}${andString}${hourString} ${toClaimString}`.trim();

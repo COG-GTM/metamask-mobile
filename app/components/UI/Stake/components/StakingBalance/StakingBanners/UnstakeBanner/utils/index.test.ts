@@ -102,5 +102,27 @@ describe('Unstake Banner Utils', () => {
         `Unstaking ${MOCK_ETH_AMOUNT} ETH in progress. Come back in approximately 1 minute to claim it.`,
       );
     });
+
+    it('returns "hours and approximately minutes" when days = 0 and hours and minutes > 0', () => {
+      const result = renderUnstakingTimeRemaining(
+        { days: 0, hours: 2, minutes: 35 },
+        MOCK_ETH_AMOUNT,
+      );
+
+      expect(result).toBe(
+        `Unstaking ${MOCK_ETH_AMOUNT} ETH in progress. Come back in 2 hours and approximately 35 minutes to claim it.`,
+      );
+    });
+
+    it('returns singular units for "hour and approximately minute"', () => {
+      const result = renderUnstakingTimeRemaining(
+        { days: 0, hours: 1, minutes: 1 },
+        MOCK_ETH_AMOUNT,
+      );
+
+      expect(result).toBe(
+        `Unstaking ${MOCK_ETH_AMOUNT} ETH in progress. Come back in 1 hour and approximately 1 minute to claim it.`,
+      );
+    });
   });
 });
