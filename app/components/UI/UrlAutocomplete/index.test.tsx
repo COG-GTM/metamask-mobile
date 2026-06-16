@@ -1,9 +1,13 @@
 import React from 'react';
 import UrlAutocomplete, { UrlAutocompleteRef } from './';
-import { deleteFavoriteTestId } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/UrlAutocomplete.testIds';
+import {
+  deleteFavoriteTestId,
+  deleteRecentTestId,
+} from '../../../../wdio/screen-objects/testIDs/BrowserScreen/UrlAutocomplete.testIds';
 import { act, fireEvent, screen } from '@testing-library/react-native';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { removeBookmark } from '../../../actions/bookmarks';
+import { removeFromHistory } from '../../../actions/browser';
 import { noop } from 'lodash';
 import { createStackNavigator } from '@react-navigation/stack';
 import { TokenSearchResponseItem } from '@metamask/token-search-discovery-controller';
@@ -188,6 +192,26 @@ describe('UrlAutocomplete', () => {
     const deleteFavorite = await screen.findByTestId(deleteFavoriteTestId(defaultState.bookmarks[0].url), {includeHiddenElements: true});
     fireEvent.press(deleteFavorite);
     expect(store.dispatch).toHaveBeenCalledWith(removeBookmark({...defaultState.bookmarks[0], category: 'favorites'}));
+  });
+
+  it('should delete a recent history entry when pressing the trash icon', async () => {
+    const ref = React.createRef<UrlAutocompleteRef>();
+    const { store } = render(<UrlAutocomplete ref={ref} onSelect={noop} onDismiss={noop} />, {state: defaultState});
+    store.dispatch = jest.fn();
+
+    act(() => {
+      ref.current?.search('Goog');
+      jest.runAllTimers();
+    });
+
+    const deleteRecent = await screen.findByTestId(
+      deleteRecentTestId(defaultState.browser.history[0].url),
+      {includeHiddenElements: true},
+    );
+    fireEvent.press(deleteRecent);
+    expect(store.dispatch).toHaveBeenCalledWith(
+      removeFromHistory(defaultState.browser.history[0].url),
+    );
   });
 
   it('should show a loading indicator when searching tokens', async () => {

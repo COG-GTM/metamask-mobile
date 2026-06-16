@@ -4,12 +4,20 @@ import { useTheme } from '../../../util/theme';
 import { getHost } from '../../../util/browser';
 import WebsiteIcon from '../WebsiteIcon';
 import ButtonIcon from '../../../component-library/components/Buttons/ButtonIcon';
-import { deleteFavoriteTestId } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/UrlAutocomplete.testIds';
+import {
+  deleteFavoriteTestId,
+  deleteRecentTestId,
+} from '../../../../wdio/screen-objects/testIDs/BrowserScreen/UrlAutocomplete.testIds';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import { useDispatch, useSelector } from 'react-redux';
 import { removeBookmark } from '../../../actions/bookmarks';
+import { removeFromHistory } from '../../../actions/browser';
 import stylesheet from './styles';
-import { AutocompleteSearchResult, TokenSearchResult, UrlAutocompleteCategory } from './types';
+import {
+  AutocompleteSearchResult,
+  TokenSearchResult,
+  UrlAutocompleteCategory,
+} from './types';
 import BadgeWrapper from '../../../component-library/components/Badges/BadgeWrapper';
 import Badge, { BadgeVariant } from '../../../component-library/components/Badges/Badge';
 import { NetworkBadgeSource } from '../AssetOverview/Balance/Balance';
@@ -35,7 +43,11 @@ export const Result: React.FC<ResultProps> = memo(({ result, onPress, onSwapPres
     const dispatch = useDispatch();
 
     const onPressRemove = useCallback(() => {
-        dispatch(removeBookmark(result));
+        if (result.category === UrlAutocompleteCategory.Favorites) {
+          dispatch(removeBookmark(result));
+        } else if (result.category === UrlAutocompleteCategory.Recents) {
+          dispatch(removeFromHistory(result.url));
+        }
     }, [dispatch, result]);
 
     const swapsEnabled = result.category === UrlAutocompleteCategory.Tokens && isSwapsAllowed(result.chainId) && AppConstants.SWAPS.ACTIVE;
@@ -79,9 +91,13 @@ export const Result: React.FC<ResultProps> = memo(({ result, onPress, onSwapPres
             </Text>
           </View>
           {
-            result.category === UrlAutocompleteCategory.Favorites && (
+            (result.category === UrlAutocompleteCategory.Favorites || result.category === UrlAutocompleteCategory.Recents) && (
               <ButtonIcon
-                testID={deleteFavoriteTestId(result.url)}
+                testID={
+                  result.category === UrlAutocompleteCategory.Favorites
+                    ? deleteFavoriteTestId(result.url)
+                    : deleteRecentTestId(result.url)
+                }
                 style={styles.resultActionButton}
                 iconName={IconName.Trash}
                 onPress={onPressRemove}

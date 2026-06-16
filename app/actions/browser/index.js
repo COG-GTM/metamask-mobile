@@ -34,6 +34,18 @@ export function addToHistory({ url, name }) {
 }
 
 /**
+ * Removes an entry from the browser history
+ *
+ * @param {string} url - The website's url
+ */
+export function removeFromHistory(url) {
+  return {
+    type: 'REMOVE_FROM_BROWSER_HISTORY',
+    url,
+  };
+}
+
+/**
  * Clears the entire browser history
  */
 export function clearHistory(metricsEnabled, marketingEnabled) {

@@ -31,6 +31,11 @@ const browserReducer = (state = initialState, action) => {
         history: [...state.history, { url, name }].slice(-50),
       };
     }
+    case 'REMOVE_FROM_BROWSER_HISTORY':
+      return {
+        ...state,
+        history: state.history.filter((item) => item.url !== action.url),
+      };
     case 'ADD_TO_BROWSER_WHITELIST':
       return {
         ...state,
