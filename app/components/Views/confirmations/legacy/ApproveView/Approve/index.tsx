@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+// TODO: Replace "any" with type
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { PureComponent } from 'react';
 import { Alert, AppState, View } from 'react-native';
 import { getApproveNavbar } from '../../../../../UI/Navbar';
@@ -47,7 +50,6 @@ import {
   selectEvmNetworkConfigurationsByChainId,
   selectProviderTypeByChainId,
   selectRpcUrlByChainId,
-  selectEvmChainId,
 } from '../../../../../../selectors/networkController';
 import {
   selectConversionRateByChainId,
@@ -169,7 +171,6 @@ interface ApproveState {
   advancedGasInserted?: boolean;
   transactionHandled?: boolean;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 class Approve extends PureComponent<ApproveProps, ApproveState> {
   static contextType = ThemeContext;
@@ -487,7 +488,7 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onLedgerConfirmation = (approve: boolean, transactionId: any, gaParams: any) => {
+  onLedgerConfirmation = (approve: boolean, _transactionId: any, gaParams: any) => {
     const { metrics } = this.props;
 
     try {
@@ -1047,7 +1048,6 @@ const mapDispatchToProps = (dispatch: any) => ({
   setNonce: (nonce: any) => dispatch(setNonce(nonce)),
   setProposedNonce: (nonce: any) => dispatch(setProposedNonce(nonce)),
 });
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export default connect(
   mapStateToProps,

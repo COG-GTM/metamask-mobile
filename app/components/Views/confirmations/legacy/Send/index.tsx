@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import React, { PureComponent } from 'react';
 import {
   InteractionManager,
@@ -205,8 +206,7 @@ class Send extends PureComponent<SendProps, SendState> {
       toggleDappTransactionModal,
     } = this.props;
     this.updateNavBar();
-    navigation &&
-      navigation.setParams({
+    navigation?.setParams({
         mode: REVIEW,
         dispatch: this.onModeChange,
         disableModeChange:
@@ -245,8 +245,7 @@ class Send extends PureComponent<SendProps, SendState> {
       const prevTxMeta = prevRoute.params?.txMeta;
       const currentTxMeta = route.params?.txMeta;
       if (
-        currentTxMeta &&
-        currentTxMeta.source &&
+        currentTxMeta?.source &&
         (!prevTxMeta.source || prevTxMeta.source !== currentTxMeta.source)
       ) {
         this.handleNewTxMeta(currentTxMeta);
@@ -260,8 +259,7 @@ class Send extends PureComponent<SendProps, SendState> {
     const assetTypeDefined =
       prevProps.transaction.assetType === undefined && assetType === 'ERC20';
     if (assetTypeDefined || erc20ContractBalanceChanged) {
-      navigation &&
-        navigation.setParams({
+      navigation?.setParams({
           disableModeChange: contractBalance === undefined,
         });
     }
@@ -318,7 +316,7 @@ class Send extends PureComponent<SendProps, SendState> {
           ...txRecipient,
         };
 
-        if (parameters && parameters.value) {
+        if (parameters?.value) {
           newTxMeta.value = BNToHex(toBN(parameters.value));
           newTxMeta.transactionValue = newTxMeta.value;
           newTxMeta.readableValue = fromWei(newTxMeta.value);
@@ -596,8 +594,7 @@ class Send extends PureComponent<SendProps, SendState> {
         }
       }
       const existingContact =
-        addressBook[globalChainId as string] &&
-        addressBook[globalChainId as string][checksummedAddress as string];
+        addressBook[globalChainId as string]?.[checksummedAddress as string];
       if (!existingContact) {
         AddressBookController.set(
           checksummedAddress as string,
@@ -746,7 +743,7 @@ class Send extends PureComponent<SendProps, SendState> {
    */
   onModeChange = (mode: string) => {
     const { navigation } = this.props;
-    navigation && navigation.setParams({ mode });
+    navigation?.setParams({ mode });
     this.mounted && this.setState({ mode });
     InteractionManager.runAfterInteractions(() => {
       mode === REVIEW && this.trackConfirmScreen();
@@ -832,7 +829,6 @@ const mapDispatchToProps = (dispatch: any) => ({
   showAlert: (config: any) => dispatch(showAlert(config)),
   toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal()),
 });
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export default connect(
   mapStateToProps,

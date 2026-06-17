@@ -1,3 +1,5 @@
+// TODO: Replace "any" with type
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { PureComponent } from 'react';
 import { TransactionEnvelopeType } from '@metamask/transaction-controller';
 import { StyleSheet, AppState, Alert, InteractionManager } from 'react-native';
@@ -103,7 +105,6 @@ interface ApprovalState {
   transactionConfirmed: boolean;
   isChangeInSimulationModalOpen: boolean;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * PureComponent that manages transaction approval from the dapp browser
@@ -227,8 +228,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
       'change',
       this.handleAppStateChange,
     );
-    navigation &&
-      navigation.setParams({ mode: REVIEW, dispatch: this.onModeChange });
+    navigation?.setParams({ mode: REVIEW, dispatch: this.onModeChange });
     this.initialise();
   };
 
@@ -413,8 +413,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
   showWalletConnectNotification = (confirmation = false) => {
     const { transaction } = this.props;
     InteractionManager.runAfterInteractions(() => {
-      transaction.origin &&
-        transaction.origin.startsWith(WALLET_CONNECT_ORIGIN) &&
+      transaction.origin?.startsWith(WALLET_CONNECT_ORIGIN) &&
         NotificationManager.showSimpleNotification({
           status: `simple_notification${!confirmation ? '_rejected' : ''}`,
           duration: 5000,
@@ -444,7 +443,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onLedgerConfirmation = (approve: boolean, transactionId: any, gaParams: any) => {
+  onLedgerConfirmation = (approve: boolean, _transactionId: any, gaParams: any) => {
     try {
       //manual cancel from UI when transaction is awaiting from ledger confirmation
       if (!approve) {
@@ -653,7 +652,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
    */
   onModeChange = (mode: string) => {
     const { navigation } = this.props;
-    navigation && navigation.setParams({ mode });
+    navigation?.setParams({ mode });
     this.setState({ mode });
     InteractionManager.runAfterInteractions(() => {
       mode === REVIEW && this.trackConfirmScreen();

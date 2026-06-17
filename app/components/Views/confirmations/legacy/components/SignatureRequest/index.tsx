@@ -1,3 +1,5 @@
+// TODO: Replace "any" with type
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { PureComponent } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Theme } from '@metamask/design-tokens';
@@ -145,7 +147,6 @@ interface SignatureRequestProps {
   navigation?: any;
   domain?: any;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * PureComponent that renders scrollable content inside signature request user interface

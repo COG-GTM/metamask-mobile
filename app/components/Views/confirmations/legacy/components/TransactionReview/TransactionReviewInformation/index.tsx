@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+// TODO: Replace "any" with type
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { PureComponent } from 'react';
 import { Theme } from '@metamask/design-tokens';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -166,7 +169,6 @@ interface TransactionReviewInformationProps {
   metrics?: any;
   shouldUseSmartTransaction?: boolean;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 interface TransactionReviewInformationState {
   toFocused: boolean;
@@ -227,13 +229,12 @@ class TransactionReviewInformation extends PureComponent<
   getTotalFiat = (
     // TODO: Replace "any" with type
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    asset: any,
+    _asset: any,
     totalGas: any,
     conversionRate: any,
     exchangeRate: any,
     currentCurrency: any,
     amountToken: any,
-    /* eslint-enable @typescript-eslint/no-explicit-any */
   ) => {
     let total = 0;
     const gasFeeFiat = weiToFiatNumber(totalGas, conversionRate);
@@ -352,7 +353,6 @@ class TransactionReviewInformation extends PureComponent<
     gasFeeMinConversion: any;
     gasFeeMaxNative: any;
     gasFeeMaxConversion: any;
-    /* eslint-enable @typescript-eslint/no-explicit-any */
   }) => {
     const {
       transaction: { value, selectedAsset, assetType },

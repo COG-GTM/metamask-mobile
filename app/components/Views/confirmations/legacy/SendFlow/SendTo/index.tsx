@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import React, { Fragment, PureComponent } from 'react';
 import { View, ScrollView, Alert, Platform, BackHandler } from 'react-native';
 import { Theme } from '@metamask/design-tokens';
@@ -172,9 +173,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
     const networkAddressBook = addressBook[globalChainId] || {};
     if (!Object.keys(networkAddressBook).length) {
       setTimeout(() => {
-        this.addressToInputRef &&
-          this.addressToInputRef.current &&
-          this.addressToInputRef.current.focus();
+        this.addressToInputRef?.current?.focus();
       }, 500);
     }
     //Fills in to address and sets the transaction if coming from QR code scan
@@ -315,10 +314,6 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
   };
 
   renderBuyEth = () => {
-    const colors =
-      (this.context as unknown as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
-
     if (!this.props.isNativeTokenBuySupported) {
       return null;
     }
@@ -434,8 +429,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onToSelectedAddressChange = (toAccount: any) => {
     const currentChain =
-      this.props.ambiguousAddressEntries &&
-      this.props.ambiguousAddressEntries[this.props.globalChainId];
+      this.props.ambiguousAddressEntries?.[this.props.globalChainId];
     const isAmbiguousAddress = includes(currentChain, toAccount);
     if (isAmbiguousAddress) {
       this.setState({ showAmbiguousAcountWarning: isAmbiguousAddress });
@@ -513,13 +507,11 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
     );
     const existingContact =
       checksummedAddress &&
-      addressBook[globalChainId] &&
-      addressBook[globalChainId][checksummedAddress];
+      addressBook[globalChainId]?.[checksummedAddress];
     const displayConfusableWarning =
-      !existingContact && confusableCollection && !!confusableCollection.length;
+      !existingContact && !!confusableCollection?.length;
     const displayAsWarning = Boolean(
-      confusableCollection &&
-        confusableCollection.length &&
+      confusableCollection?.length &&
         !confusableCollection.some(hasZeroWidthPoints),
     );
     const explanations =

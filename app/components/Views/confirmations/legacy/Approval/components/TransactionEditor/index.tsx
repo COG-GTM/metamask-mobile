@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+// TODO: Replace "any" with type
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { PureComponent } from 'react';
 import { StyleSheet, View } from 'react-native';
 import AnimatedTransactionModal from '../../../../../../UI/AnimatedTransactionModal';
@@ -114,7 +117,6 @@ interface TransactionEditorState {
   stopUpdateGas?: boolean;
   isAnimating?: boolean;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * PureComponent that supports editing and reviewing a transaction
@@ -326,20 +328,20 @@ class TransactionEditor extends PureComponent<
       );
     }
 
-    if (transaction && transaction.value) {
+    if (transaction?.value) {
       this.handleUpdateAmount(transaction.value, true);
     }
     if (transaction && transaction.assetType === 'ETH') {
       this.handleUpdateReadableValue(fromWei(transaction.value));
     }
-    if (transaction && transaction.data) {
+    if (transaction?.data) {
       this.setState({ data: transaction.data });
     }
   };
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  parseTransactionDataEIP1559 = (gasFee: any, options?: any) => {
+  parseTransactionDataEIP1559 = (gasFee: any, _options?: any) => {
     const { ticker } = this.props;
 
     // TODO: Replace "any" with type
@@ -367,7 +369,7 @@ class TransactionEditor extends PureComponent<
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  parseTransactionDataLegacy = (gasFee: any, options?: any) => {
+  parseTransactionDataLegacy = (gasFee: any, _options?: any) => {
     const { ticker } = this.props;
 
     // TODO: Replace "any" with type
@@ -532,7 +534,7 @@ class TransactionEditor extends PureComponent<
           return transaction.data;
         }
 
-        const tokenAmountToSend = selectedAsset && value && value.toString(16);
+        const tokenAmountToSend = selectedAsset && value?.toString(16);
         return to && tokenAmountToSend
           ? generateTransferData('transfer', {
             toAddress: to,

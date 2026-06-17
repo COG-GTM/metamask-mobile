@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import React, { useState, useCallback } from 'react';
 import { TouchableOpacity, View, StyleSheet, Linking } from 'react-native';
 import SummaryBase from '../../../../../../Base/Summary';
