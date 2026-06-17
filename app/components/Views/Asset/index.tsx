@@ -182,7 +182,6 @@ interface AssetState {
 }
 
 class Asset extends PureComponent<AssetProps, AssetState> {
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: AssetState = {
     refreshing: false,

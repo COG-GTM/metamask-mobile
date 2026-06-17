@@ -158,7 +158,6 @@ class ContactForm extends PureComponent<
   ContactFormProps,
   ContactFormState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: ContactFormState = {
     name: null,

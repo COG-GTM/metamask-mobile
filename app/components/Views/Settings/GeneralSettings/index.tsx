@@ -202,7 +202,6 @@ class Settings extends PureComponent<
   GeneralSettingsProps,
   GeneralSettingsState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
 
   languageOptions: SelectOption[] = [];
   searchEngineOptions: SelectOption[] = [];

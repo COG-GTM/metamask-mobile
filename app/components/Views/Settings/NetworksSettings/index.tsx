@@ -163,7 +163,6 @@ class NetworksSettings extends PureComponent<
   NetworksSettingsProps,
   NetworksSettingsState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
 
   actionSheet: { show: () => void } | null = null;
   networkToRemove: string | null = null;

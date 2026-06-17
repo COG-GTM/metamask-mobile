@@ -162,7 +162,6 @@ interface OnboardingState {
  * View that is displayed to first time (new) users
  */
 class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
-  declare context: React.ContextType<typeof ThemeContext>;
 
   notificationAnimated = new Animated.Value(100);
   detailsYAnimated = new Animated.Value(0);

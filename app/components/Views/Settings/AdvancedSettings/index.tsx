@@ -176,7 +176,6 @@ class AdvancedSettings extends PureComponent<
   AdvancedSettingsProps,
   AdvancedSettingsState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
 
   scrollView = React.createRef<KeyboardAwareScrollViewType>();
 

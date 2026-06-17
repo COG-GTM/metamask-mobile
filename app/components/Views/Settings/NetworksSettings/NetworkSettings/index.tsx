@@ -425,7 +425,6 @@ export class NetworkSettings extends PureComponent<
   NetworkSettingsProps,
   NetworkSettingsState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: NetworkSettingsState = {
     rpcUrl: undefined,

@@ -48,7 +48,6 @@ interface ContactsState {
  * View that contains app information
  */
 class Contacts extends PureComponent<ContactsProps, ContactsState> {
-  declare context: React.ContextType<typeof ThemeContext>;
 
   state: ContactsState = {
     reloadAddressList: false,
