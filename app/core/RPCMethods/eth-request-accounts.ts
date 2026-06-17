@@ -110,12 +110,12 @@ async function requestEthereumAccountsHandler(
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  (
-    trackDappViewedEvent as unknown as (
-      hostname: string,
-      numberOfConnectedAccounts: number,
-    ) => void
-  )(origin, ethAccounts.length);
+  // NOTE: trackDappViewedEvent expects a single object argument
+  // ({ hostname, numberOfConnectedAccounts }), but this call site passes two
+  // positional arguments. This is a pre-existing mismatch preserved as-is by
+  // this type-only migration; fixing it is a behavioral change tracked separately.
+  // @ts-expect-error Pre-existing positional-argument call; see note above.
+  trackDappViewedEvent(origin, ethAccounts.length);
 
   res.result = ethAccounts;
   return end();
