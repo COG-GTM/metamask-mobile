@@ -1,3 +1,4 @@
+// @ts-expect-error - resolved at runtime via platform-specific index files
 import StyledButton from './StyledButton'; // eslint-disable-line import/no-unresolved
 /**
  * @deprecated The `<StyledButton>` component has been deprecated in favor of the new `<Button>` component from the component-library.

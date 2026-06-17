@@ -1,7 +1,16 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, View, Text, Image } from 'react-native';
+import React, { ComponentClass, PureComponent } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  ImageStyle,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import FadeIn from 'react-native-fade-in-image';
+import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../styles/common';
 import { getHost } from '../../../util/browser';
 import { ThemeContext, mockTheme } from '../../../util/theme';
@@ -10,7 +19,7 @@ import { isNumber } from 'lodash';
 import { isFaviconSVG } from '../../../util/favicon';
 import { SvgUri } from 'react-native-svg';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     fallback: {
       alignContent: 'center',
@@ -36,46 +45,50 @@ const createStyles = (colors) =>
  * @deprecated This `<WebsiteIcon>` component has been deprecated, any new usage of it should use Avatar with the favicon variant instead:
  * https://github.com/MetaMask/metamask-mobile/blob/34f9da127435053a32e5f4e9c69ce8aa1e37c394/app/component-library/components/Avatars/Avatar/README.md#L1
  */
-class WebsiteIcon extends PureComponent {
-  static propTypes = {
-    /**
-     * Style object for image
-     */
-    style: PropTypes.object,
-    /**
-     * Style object for main view
-     */
-    viewStyle: PropTypes.object,
-    /**
-     * Style object for text in case url not found
-     */
-    textStyle: PropTypes.object,
-    /**
-     * String corresponding to website title
-     */
-    title: PropTypes.string,
-    /**
-     * String corresponding to website url
-     */
-    url: PropTypes.string,
-    /**
-     * Flag that determines if the background
-     * should be transaparent or not
-     */
-    transparent: PropTypes.bool,
-    /**
-     * Icon image to use, this substitutes getting the icon from the url
-     */
-    icon: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+interface WebsiteIconProps {
+  /**
+   * Style object for image
+   */
+  style?: ImageStyle;
+  /**
+   * Style object for main view
+   */
+  viewStyle?: StyleProp<ViewStyle>;
+  /**
+   * Style object for text in case url not found
+   */
+  textStyle?: StyleProp<TextStyle>;
+  /**
+   * String corresponding to website title
+   */
+  title?: string;
+  /**
+   * String corresponding to website url
+   */
+  url?: string;
+  /**
+   * Flag that determines if the background
+   * should be transaparent or not
+   */
+  transparent?: boolean;
+  /**
+   * Icon image to use, this substitutes getting the icon from the url
+   */
+  icon?: string | { uri?: string };
 
-    /**
-     * Favicon source to use, this substitutes getting the icon from the url
-     * This is populated by the withFaviconAwareness HOC
-     */
-    faviconSource: PropTypes.string,
-  };
+  /**
+   * Favicon source to use, this substitutes getting the icon from the url
+   * This is populated by the withFaviconAwareness HOC
+   */
+  faviconSource?: string;
+}
 
-  state = {
+interface WebsiteIconState {
+  renderIconUrlError: boolean;
+}
+
+class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
+  state: WebsiteIconState = {
     renderIconUrlError: false,
   };
 
@@ -97,7 +110,8 @@ class WebsiteIcon extends PureComponent {
       icon,
       faviconSource,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     // apiLogoUrl is the url of the icon to be rendered, but it's populated
     // from the icon prop, if it exists, or from the faviconSource prop
@@ -113,7 +127,7 @@ class WebsiteIcon extends PureComponent {
       title =
         typeof this.props.title === 'string'
           ? this.props.title.substring(0, 1)
-          : getHost(url).substring(0, 1);
+          : getHost(url ?? '').substring(0, 1);
     }
 
     if (title && (!apiLogoUrl?.uri || renderIconUrlError)) {
@@ -137,8 +151,8 @@ class WebsiteIcon extends PureComponent {
         {imageSVG ? (
           <SvgUri
             uri={imageSVG}
-            width={style.width}
-            height={style.height}
+            width={style?.width as string | number}
+            height={style?.height as string | number}
             style={style}
             onError={this.onRenderIconUrlError}
           />
@@ -146,7 +160,8 @@ class WebsiteIcon extends PureComponent {
           <FadeIn
             placeholderStyle={{
               backgroundColor: transparent
-                ? colors.transparent
+                ? (colors as Theme['colors'] & { transparent?: string })
+                    .transparent
                 : colors.background.alternative,
             }}
           >
@@ -164,4 +179,6 @@ class WebsiteIcon extends PureComponent {
 
 WebsiteIcon.contextType = ThemeContext;
 
-export default withFaviconAwareness(WebsiteIcon);
+export default withFaviconAwareness(
+  WebsiteIcon as unknown as ComponentClass<{ url: string }>,
+);
