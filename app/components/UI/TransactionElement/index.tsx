@@ -250,6 +250,19 @@ interface TransactionElementProps {
    * Navigation object for routing
    */
   navigation?: NavigationProp<ParamListBase>;
+  /**
+   * Pass-through props consumed by decodeTransaction
+   */
+  selectedAddress?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokens?: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  collectibleContracts?: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contractExchangeRates?: Record<string, any>;
+  exchangeRate?: number;
+  conversionRate?: number;
+  currentCurrency?: string;
 }
 
 interface TransactionElementState {
