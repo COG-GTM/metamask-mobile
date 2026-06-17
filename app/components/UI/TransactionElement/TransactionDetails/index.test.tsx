@@ -125,7 +125,7 @@ const renderComponent = ({
               ...(hash ? { hash } : {}),
             }}
             navigation={navigationMock}
-            chainId={networkId}
+            chainId={networkId as `0x${string}`}
           />
         )}
       </Stack.Screen>
