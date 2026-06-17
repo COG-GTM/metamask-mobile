@@ -98,6 +98,10 @@ interface TransactionReviewDataProps {
    */
   customGasHeight?: number;
   /**
+   * Saves the height of TransactionReviewData
+   */
+  saveTransactionReviewDataHeight?: () => void;
+  /**
    * Triggers global alert
    */
   // TODO: Replace "any" with type
