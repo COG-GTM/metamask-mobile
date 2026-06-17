@@ -1,12 +1,9 @@
 import { StyleSheet } from 'react-native';
 
-const createStyles = (colors) =>
-  StyleSheet.create({
-    overview: (noMargin) => ({
-      marginHorizontal: noMargin ? 0 : 24,
-      paddingTop: 10,
-      paddingBottom: 10,
-    }),
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) => ({
+  ...StyleSheet.create({
     valuesContainer: {
       flex: 1,
       flexDirection: 'row',
@@ -15,9 +12,6 @@ const createStyles = (colors) =>
     gasInfoContainer: {
       paddingLeft: 2,
     },
-    gasInfoIcon: (hasOrigin) => ({
-      color: hasOrigin ? colors.warning.default : colors.icon.muted,
-    }),
     amountContainer: {
       flex: 1,
       paddingRight: 10,
@@ -47,6 +41,15 @@ const createStyles = (colors) =>
     flex: {
       flex: 1,
     },
-  });
+  }),
+  overview: (noMargin?: boolean) => ({
+    marginHorizontal: noMargin ? 0 : 24,
+    paddingTop: 10,
+    paddingBottom: 10,
+  }),
+  gasInfoIcon: (hasOrigin?: boolean) => ({
+    color: hasOrigin ? colors.warning.default : colors.icon.muted,
+  }),
+});
 
 export default createStyles;

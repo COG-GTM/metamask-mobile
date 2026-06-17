@@ -41,6 +41,26 @@ import StyledButton from '../../../../../UI/StyledButton';
 import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import createStyles from './styles';
 
+interface EditGasFeeLegacyProps {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  // TODO: Replace "any" with type
+  onCancel: () => void;
+  onSave: (gasTransaction: any, gasPriceObject: any) => void;
+  error?: any;
+  warning?: any;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  analyticsParams?: any;
+  view?: string;
+  onlyGas?: boolean;
+  selectedGasObject: any;
+  hasDappSuggestedGas?: boolean;
+  chainId?: any;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
+
 const EditGasFeeLegacy = ({
   onCancel,
   onSave,
@@ -56,7 +76,7 @@ const EditGasFeeLegacy = ({
   selectedGasObject,
   hasDappSuggestedGas,
   chainId,
-}) => {
+}: EditGasFeeLegacyProps) => {
   const { trackEvent, createEventBuilder } = useMetrics();
   const [showRangeInfoModal, setShowRangeInfoModal] = useState(false);
   const [infoText, setInfoText] = useState('');
@@ -71,7 +91,9 @@ const EditGasFeeLegacy = ({
 
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const gasFeeEstimate = useSelector(selectGasFeeEstimates);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const gasFeeEstimate = useSelector(selectGasFeeEstimates) as any;
 
   const primaryCurrency = useSelector(selectPrimaryCurrency);
 
@@ -81,7 +103,9 @@ const EditGasFeeLegacy = ({
     onlyGas,
     legacy: true,
     gasObjectLegacy,
-  });
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }) as any;
 
   const save = useCallback(() => {
     trackEvent(
@@ -111,7 +135,9 @@ const EditGasFeeLegacy = ({
     createEventBuilder,
   ]);
 
-  const changeGas = useCallback((gas) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const changeGas = useCallback((gas: any) => {
     updateGasObjectLegacy({
       legacyGasLimit: gas.suggestedGasLimit,
       suggestedGasPrice: gas.suggestedGasPrice,
@@ -119,7 +145,7 @@ const EditGasFeeLegacy = ({
   }, []);
 
   const changedGasPrice = useCallback(
-    (value) => {
+    (value: string) => {
       let newGas;
 
       const lowerValue = new BigNumber(
@@ -155,7 +181,7 @@ const EditGasFeeLegacy = ({
   );
 
   const changedGasLimit = useCallback(
-    (value) => {
+    (value: string) => {
       const newGas =
         typeof gasTransaction === 'object'
           ? { ...gasTransaction, suggestedGasLimit: value }
@@ -243,7 +269,7 @@ const EditGasFeeLegacy = ({
 
   const valueToWatch = transactionFee;
 
-  const handleInfoModalPress = (text) => {
+  const handleInfoModalPress = (text: string) => {
     setShowRangeInfoModal(true);
     setInfoText(text);
   };

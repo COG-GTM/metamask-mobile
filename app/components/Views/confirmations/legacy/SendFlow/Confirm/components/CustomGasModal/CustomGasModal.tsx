@@ -8,7 +8,26 @@ import { selectPrimaryCurrency } from '../../../../../../../../selectors/setting
 import { useAppThemeFromContext } from '../../../../../../../../util/theme';
 import EditGasFee1559 from '../../../../components/EditGasFee1559Update';
 import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
+import { RootState } from '../../../../../../../../reducers';
 import createStyles from './CustomGasModal.styles';
+
+interface CustomGasModalProps {
+  // TODO: Replace "any" with type
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  gasSelected?: any;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  onlyGas?: boolean;
+  validateAmount: (args: { transaction: any; total: any }) => any;
+  legacy?: boolean;
+  legacyGasData?: any;
+  EIP1559GasData?: any;
+  EIP1559GasTxn?: any;
+  onGasChanged: (gasValue: any) => void;
+  onGasCanceled: (gasValue: any) => void;
+  updateGasState: (args: any) => void;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
 
 const CustomGasModal = ({
   gasSelected,
@@ -23,16 +42,18 @@ const CustomGasModal = ({
   onGasChanged,
   onGasCanceled,
   updateGasState,
-}) => {
+}: CustomGasModalProps) => {
   const { colors } = useAppThemeFromContext();
   const styles = createStyles();
 
-  const transaction = useSelector((state) => state.transaction);
-  const gasFeeEstimate = useSelector(selectGasFeeEstimates);
-  const primaryCurrency = useSelector(selectPrimaryCurrency);
+  const transaction = useSelector((state: RootState) => state.transaction);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const gasFeeEstimate = useSelector(selectGasFeeEstimates) as any;
+  const primaryCurrency = useSelector(selectPrimaryCurrency) as string;
   const chainId = transaction?.chainId;
   const selectedAsset = useSelector(
-    (state) => state.transaction.selectedAsset,
+    (state: RootState) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
@@ -44,7 +65,7 @@ const CustomGasModal = ({
   const [error, setError] = useState('');
 
   useEffect(() => {
-    setIsViewAnimating(isAnimating);
+    setIsViewAnimating(Boolean(isAnimating));
   }, [isAnimating]);
 
   const onGasAnimationStart = useCallback(() => setIsViewAnimating(true), []);
@@ -55,7 +76,9 @@ const CustomGasModal = ({
     gas_estimate_type: gasEstimateType,
   });
 
-  const onChangeGas = (gasValue) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onChangeGas = (gasValue: any) => {
     setSelectedGas(gasValue);
     onGasChanged(selectedGas);
   };
@@ -74,7 +97,9 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
-    (gasTxn, gasObj) => {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (gasTxn: any, gasObj: any) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalHex,
@@ -87,7 +112,9 @@ const CustomGasModal = ({
   );
 
   const onSaveEIP1559GasOption = useCallback(
-    (gasTxn, gasObj) => {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (gasTxn: any, gasObj: any) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalMaxHex,

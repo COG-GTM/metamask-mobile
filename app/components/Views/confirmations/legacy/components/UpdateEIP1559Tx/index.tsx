@@ -25,6 +25,24 @@ import {
 import { getTicker } from '../../../../../../util/transactions';
 import EditGasFee1559Update from '../EditGasFee1559Update';
 
+interface UpdateEIP1559TxProps {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  // TODO: Replace "any" with type
+  gas: any;
+  accounts: any;
+  selectedAddress?: string;
+  ticker?: string;
+  existingGas: any;
+  gasFeeEstimates?: any;
+  gasEstimateType?: string;
+  primaryCurrency?: string;
+  isCancel?: boolean;
+  chainId?: any;
+  onCancel: () => void;
+  onSave: (gasTxn: any) => void;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
+
 const UpdateEIP1559Tx = ({
   gas,
   accounts,
@@ -38,9 +56,9 @@ const UpdateEIP1559Tx = ({
   chainId,
   onCancel,
   onSave,
-}) => {
+}: UpdateEIP1559TxProps) => {
   const [animateOnGasChange, setAnimateOnGasChange] = useState(false);
-  const [gasSelected, setGasSelected] = useState(
+  const [gasSelected, setGasSelected] = useState<string | null>(
     AppConstants.GAS_OPTIONS.MEDIUM,
   );
   const stopUpdateGas = useRef(false);
@@ -51,8 +69,11 @@ const UpdateEIP1559Tx = ({
   /**
    * Options
    */
-  const updateTx1559Options = useRef();
-  const pollToken = useRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const updateTx1559Options = useRef<any>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pollToken = useRef<any>();
   const firstTime = useRef(true);
 
   const suggestedGasLimit = fromWei(gas, 'wei');
@@ -73,7 +94,7 @@ const UpdateEIP1559Tx = ({
   }, []);
 
   const isMaxFeePerGasMoreThanLegacy = useCallback(
-    (maxFeePerGas) => {
+    (maxFeePerGas: BigNumber) => {
       const newDecMaxFeePerGas = new BigNumber(existingGas.maxFeePerGas).times(
         new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE),
       );
@@ -86,7 +107,7 @@ const UpdateEIP1559Tx = ({
   );
 
   const isMaxPriorityFeePerGasMoreThanLegacy = useCallback(
-    (maxPriorityFeePerGas) => {
+    (maxPriorityFeePerGas: BigNumber) => {
       const newDecMaxPriorityFeePerGas = new BigNumber(
         existingGas.maxPriorityFeePerGas,
       ).times(new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE));
@@ -99,7 +120,9 @@ const UpdateEIP1559Tx = ({
   );
 
   const validateAmount = useCallback(
-    (updateTx) => {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (updateTx: any) => {
       let error;
       const totalMaxHexPrefixed = addHexPrefix(updateTx.totalMaxHex);
 
@@ -107,7 +130,9 @@ const UpdateEIP1559Tx = ({
         return strings('transaction.invalid_amount');
       }
       const updateTxCost = hexToBN(totalMaxHexPrefixed);
-      const accountBalance = hexToBN(accounts[selectedAddress].balance);
+      const accountBalance = hexToBN(
+        accounts[selectedAddress as string].balance,
+      );
       const isMaxFeePerGasMoreThanLegacyResult = isMaxFeePerGasMoreThanLegacy(
         new BigNumber(updateTx.suggestedMaxFeePerGas),
       );
@@ -211,12 +236,14 @@ const UpdateEIP1559Tx = ({
     isMaxPriorityFeePerGasMoreThanLegacy,
   ]);
 
-  const update1559TempGasValue = (selected) => {
+  const update1559TempGasValue = (selected: string | null) => {
     stopUpdateGas.current = !selected;
     setGasSelected(selected);
   };
 
-  const onSaveTxnWithError = (gasTxn) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onSaveTxnWithError = (gasTxn: any) => {
     gasTxn.error = validateAmount(gasTxn);
     onSave(gasTxn);
   };
@@ -257,7 +284,9 @@ const UpdateEIP1559Tx = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any, ownProps: any) => ({
   accounts: selectAccounts(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   ticker: selectNativeCurrencyByChainId(state, ownProps.chainId),

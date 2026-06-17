@@ -1,8 +1,8 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
+import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../../../../../styles/common';
 import { strings } from '../../../../../../../../locales/i18n';
 import { connect } from 'react-redux';
@@ -11,12 +11,15 @@ import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
 import ClipboardManager from '../../../../../../../core/ClipboardManager';
 import { showAlert } from '../../../../../../../actions/alert';
 import GlobalAlert from '../../../../../../UI/GlobalAlert';
+import { RootState } from '../../../../../../../reducers';
 import {
   selectConversionRateByChainId,
   selectCurrentCurrency,
 } from '../../../../../../../selectors/currencyRateController';
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     root: {
       paddingHorizontal: 24,
@@ -75,32 +78,46 @@ const createStyles = (colors) =>
     },
   });
 
+interface TransactionReviewDataProps {
+  /**
+   * Transaction object associated with this transaction
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction: any;
+  /**
+   * Transaction corresponding action key
+   */
+  actionKey?: string;
+  /**
+   * Hides or shows transaction data
+   */
+  toggleDataView?: () => void;
+  /**
+   * Height of custom gas and data modal
+   */
+  customGasHeight?: number;
+  /**
+   * Triggers global alert
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showAlert: (config: any) => void;
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate?: number | null;
+  /**
+   * Currency code of the currently-active currency
+   */
+  currentCurrency?: string;
+}
+
 /**
  * PureComponent that supports reviewing transaction data
  */
-class TransactionReviewData extends PureComponent {
-  static propTypes = {
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Transaction corresponding action key
-     */
-    actionKey: PropTypes.string,
-    /**
-     * Hides or shows transaction data
-     */
-    toggleDataView: PropTypes.func,
-    /**
-     * Height of custom gas and data modal
-     */
-    customGasHeight: PropTypes.number,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-  };
+class TransactionReviewData extends PureComponent<TransactionReviewDataProps> {
+  static contextType = ThemeContext;
 
   applyRootHeight = () => ({ height: this.props.customGasHeight });
 
@@ -127,7 +144,8 @@ class TransactionReviewData extends PureComponent {
       actionKey,
       toggleDataView,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -182,17 +200,22 @@ class TransactionReviewData extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
-  conversionRate: selectConversionRateByChainId(state, state.transaction.chainId),
+const mapStateToProps = (state: RootState) => ({
+  conversionRate: selectConversionRateByChainId(
+    state,
+    state.transaction.chainId,
+  ),
   currentCurrency: selectCurrentCurrency(state),
   transaction: state.transaction,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showAlert: (config: any) => dispatch(showAlert(config)),
 });
-
-TransactionReviewData.contextType = ThemeContext;
 
 export default connect(
   mapStateToProps,

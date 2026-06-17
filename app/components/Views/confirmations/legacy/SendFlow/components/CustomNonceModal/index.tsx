@@ -13,13 +13,14 @@ import ModalDragger from '../../../../../../Base/ModalDragger';
 import Text from '../../../../../../Base/Text';
 import StyledButton from '../../../../../../UI/StyledButton';
 import Modal from 'react-native-modal';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import { useTheme } from '../../../../../../../util/theme';
 import { isNumber } from '../../../../../../../util/number';
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     bottomModal: {
       justifyContent: 'flex-end',
@@ -116,12 +117,24 @@ const createStyles = (colors) =>
     },
   });
 
-const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }) => {
-  const [nonce, onChangeText] = React.useState(nonceValue);
+interface CustomModalNonceProps {
+  proposedNonce: number;
+  nonceValue: number;
+  save: (nonce: number) => void;
+  close: () => void;
+}
+
+const CustomModalNonce = ({
+  proposedNonce,
+  nonceValue,
+  close,
+  save,
+}: CustomModalNonceProps) => {
+  const [nonce, onChangeText] = React.useState<string | number>(nonceValue);
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
-  const incrementDecrementNonce = (isDecrement) => {
+  const incrementDecrementNonce = (isDecrement: boolean) => {
     const currentNonce = Number(nonce);
     const updatedValue = isDecrement ? currentNonce - 1 : currentNonce + 1;
     const clampedValue = Math.max(updatedValue, 0);
@@ -246,7 +259,7 @@ const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }) => {
             </StyledButton>
             <StyledButton
               type={'blue'}
-              onPress={() => saveAndClose(nonce)}
+              onPress={() => saveAndClose()}
               containerStyle={styles.actionButton}
             >
               {strings('transaction.save')}
@@ -256,13 +269,6 @@ const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }) => {
       </KeyboardAwareScrollView>
     </Modal>
   );
-};
-
-CustomModalNonce.propTypes = {
-  proposedNonce: PropTypes.number.isRequired,
-  nonceValue: PropTypes.number.isRequired,
-  save: PropTypes.func.isRequired,
-  close: PropTypes.func.isRequired,
 };
 
 export default CustomModalNonce;

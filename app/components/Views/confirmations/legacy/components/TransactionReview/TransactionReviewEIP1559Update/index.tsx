@@ -12,13 +12,42 @@ import {
   useAppThemeFromContext,
 } from '../../../../../../../util/theme';
 import useModalHandler from '../../../../../../Base/hooks/useModalHandler';
-import Summary from '../../../../../../Base/Summary';
+import SummaryBase from '../../../../../../Base/Summary';
 import Text from '../../../../../../Base/Text';
 import FadeAnimationView from '../../../../../../UI/FadeAnimationView';
 import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
+
+// Summary lacks children typing under React 18 FC; alias to allow children.
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Summary = SummaryBase as any;
+
+interface TransactionReviewEIP1559UpdateProps {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  // TODO: Replace "any" with type
+  primaryCurrency?: string;
+  chainId?: any;
+  onEdit?: () => void;
+  hideTotal?: boolean;
+  noMargin?: boolean;
+  originWarning?: boolean;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  gasEstimationReady?: boolean;
+  legacy?: boolean;
+  gasSelected?: string | null;
+  gasObject?: any;
+  gasObjectLegacy?: any;
+  onlyGas?: boolean;
+  updateTransactionState?: (gasTransaction: any) => void;
+  multiLayerL1FeeTotal?: any;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
 
 const TransactionReviewEIP1559Update = ({
   primaryCurrency,
@@ -39,7 +68,7 @@ const TransactionReviewEIP1559Update = ({
   onlyGas,
   updateTransactionState,
   multiLayerL1FeeTotal,
-}) => {
+}: TransactionReviewEIP1559UpdateProps) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -63,7 +92,9 @@ const TransactionReviewEIP1559Update = ({
     gasObject,
     gasObjectLegacy,
     multiLayerL1FeeTotal,
-  });
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }) as any;
 
   const {
     gasFeeMaxNative,
@@ -86,7 +117,7 @@ const TransactionReviewEIP1559Update = ({
 
   useEffect(() => {
     if (gasEstimationReady) {
-      updateTransactionState(gasTransaction);
+      updateTransactionState?.(gasTransaction);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -102,13 +133,19 @@ const TransactionReviewEIP1559Update = ({
   );
 
   const edit = useCallback(() => {
-    if (!isAnimating) onEdit();
+    if (!isAnimating) onEdit?.();
   }, [isAnimating, onEdit]);
 
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
-  const switchNativeCurrencyDisplayOptions = (nativeValue, fiatValue) => {
+  const switchNativeCurrencyDisplayOptions = (
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    nativeValue: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fiatValue: any,
+  ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
   };
