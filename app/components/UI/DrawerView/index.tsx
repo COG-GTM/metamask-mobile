@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable jsdoc/check-indentation */
 import React, { PureComponent } from 'react';
 import {
   Alert,
@@ -10,6 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import PropTypes from 'prop-types';
+import { RootState } from '../../../reducers';
 import { connect } from 'react-redux';
 import Share from 'react-native-share';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -89,7 +93,7 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import safePromiseHandler from './utils';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -331,7 +335,7 @@ const ICON_IMAGES = {
  * View component that displays the MetaMask fox
  * in the middle of the screen
  */
-class DrawerView extends PureComponent {
+class DrawerView extends PureComponent<any, any> {
   static propTypes = {
     /**
     /* navigation object required to push new views
@@ -463,8 +467,8 @@ class DrawerView extends PureComponent {
 
   browserSectionRef = React.createRef();
 
-  currentBalance = null;
-  previousBalance = null;
+  currentBalance: any = null;
+  previousBalance: any = null;
   processedNewBalance = false;
   animatingNetworksModal = false;
   selectedChecksummedAddress = toChecksumHexAddress(
@@ -475,7 +479,7 @@ class DrawerView extends PureComponent {
     let ret = false;
     const { keyrings } = this.props;
     const allKeyrings =
-      keyrings && keyrings.length
+      keyrings?.length
         ? keyrings
         : Engine.context.KeyringController.state.keyrings;
     for (const keyring of allKeyrings) {
@@ -489,7 +493,7 @@ class DrawerView extends PureComponent {
   }
 
   renderTag() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const label = getLabelTextByAddress(this.selectedChecksummedAddress);
 
@@ -527,7 +531,7 @@ class DrawerView extends PureComponent {
       }
       let tokenFound = false;
 
-      this.props.tokens.forEach((token) => {
+      this.props.tokens.forEach((token: any) => {
         if (
           this.props.tokenBalances[token.address] &&
           !isZero(this.props.tokenBalances[token.address])
@@ -579,7 +583,7 @@ class DrawerView extends PureComponent {
   }
 
   updateAccountInfo = async () => {
-    const { providerConfig, selectedInternalAccount, chainId } = this.props;
+    const { selectedInternalAccount, chainId } = this.props;
     const { currentChainId, address, name } = this.state.account;
     const accountName = selectedInternalAccount.metadata.name;
     if (
@@ -591,7 +595,7 @@ class DrawerView extends PureComponent {
         this.selectedChecksummedAddress,
         chainId,
       );
-      this.setState((state) => ({
+      this.setState(() => ({
         account: {
           ens,
           name: accountName,
@@ -771,7 +775,7 @@ class DrawerView extends PureComponent {
     this.hideDrawer();
   };
 
-  goToBrowserUrl(url, title) {
+  goToBrowserUrl(url: any, title: any) {
     this.props.navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
@@ -786,7 +790,7 @@ class DrawerView extends PureComponent {
     this.props.onCloseDrawer();
   };
 
-  hasBlockExplorer = (providerType) => {
+  hasBlockExplorer = (providerType: any) => {
     const { networkConfigurations } = this.props;
     if (providerType === RPC) {
       const {
@@ -803,16 +807,16 @@ class DrawerView extends PureComponent {
     return hasBlockExplorer(providerType);
   };
 
-  getIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getIcon(name: any, size?: any) {
+    const colors = (this.context as any).colors || mockTheme.colors;
 
     return (
       <Icon name={name} size={size || 24} color={colors.icon.alternative} />
     );
   }
 
-  getFeatherIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getFeatherIcon(name: any, size?: any) {
+    const colors = (this.context as any).colors || mockTheme.colors;
 
     return (
       <FeatherIcon
@@ -823,8 +827,8 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getMaterialIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getMaterialIcon(name: any, size?: any) {
+    const colors = (this.context as any).colors || mockTheme.colors;
 
     return (
       <MaterialIcon
@@ -835,25 +839,28 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getImageIcon(name) {
-    const colors = this.context.colors || mockTheme.colors;
+  getImageIcon(name: any) {
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
-      <Image source={ICON_IMAGES[name]} style={styles.menuItemIconImage} />
+      <Image
+        source={(ICON_IMAGES as any)[name]}
+        style={styles.menuItemIconImage}
+      />
     );
   }
 
-  getSelectedIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getSelectedIcon(name: any, size?: any) {
+    const colors = (this.context as any).colors || mockTheme.colors;
 
     return (
       <Icon name={name} size={size || 24} color={colors.primary.default} />
     );
   }
 
-  getSelectedMaterialIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getSelectedMaterialIcon(name: any, size?: any) {
+    const colors = (this.context as any).colors || mockTheme.colors;
 
     return (
       <MaterialIcon
@@ -864,13 +871,13 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getSelectedImageIcon(name) {
-    const colors = this.context.colors || mockTheme.colors;
+  getSelectedImageIcon(name: any) {
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
       <Image
-        source={ICON_IMAGES[`selected-${name}`]}
+        source={(ICON_IMAGES as any)[`selected-${name}`]}
         style={styles.selectedMenuItemIconImage}
       />
     );
@@ -926,7 +933,7 @@ class DrawerView extends PureComponent {
 
   copyAccountToClipboard = async () => {
     await ClipboardManager.setString(this.selectedChecksummedAddress);
-    this.toggleReceiveModal();
+    (this as any).toggleReceiveModal();
     InteractionManager.runAfterInteractions(() => {
       this.props.showAlert({
         isVisible: true,
@@ -991,7 +998,7 @@ class DrawerView extends PureComponent {
   };
 
   renderProtectModal = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1045,7 +1052,7 @@ class DrawerView extends PureComponent {
       navigation,
       infoNetworkModalVisible,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const {
       account: { name: nameFromState, ens: ensFromState },
@@ -1104,7 +1111,7 @@ class DrawerView extends PureComponent {
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.accountInfo}
+                style={(styles as any).accountInfo}
                 onPress={this.openAccountSelector}
                 testID={'navbar-account-button'}
               >
@@ -1164,7 +1171,7 @@ class DrawerView extends PureComponent {
           </View>
           <View style={styles.menu}>
             {this.getSections().map(
-              (section, i) =>
+              (section: any, i: number) =>
                 section?.length > 0 && (
                   <View
                     key={`section_${i}`}
@@ -1174,7 +1181,7 @@ class DrawerView extends PureComponent {
                     ]}
                   >
                     {section
-                      .filter((item) => {
+                      .filter((item: any) => {
                         if (!item) return undefined;
                         const { name = undefined } = item;
                         if (
@@ -1188,25 +1195,23 @@ class DrawerView extends PureComponent {
                         }
                         return true;
                       })
-                      .map((item, j) => (
+                      .map((item: any, j: number) => (
                         <TouchableOpacity
                           key={`item_${i}_${j}`}
                           style={[
                             styles.menuItem,
-                            item.routeNames &&
-                            item.routeNames.includes(currentRoute)
+                            item.routeNames?.includes(currentRoute)
                               ? styles.selectedRoute
                               : null,
                           ]}
                           ref={
-                            item.name === strings('drawer.browser') &&
-                            this.browserSectionRef
+                            (item.name === strings('drawer.browser') &&
+                              this.browserSectionRef) as any
                           }
                           onPress={() => item.action()} // eslint-disable-line
                         >
                           {item.icon
-                            ? item.routeNames &&
-                              item.routeNames.includes(currentRoute)
+                            ? item.routeNames?.includes(currentRoute)
                               ? item.selectedIcon
                               : item.icon
                             : null}
@@ -1214,8 +1219,7 @@ class DrawerView extends PureComponent {
                             style={[
                               styles.menuItemName,
                               !item.icon ? styles.noIcon : null,
-                              item.routeNames &&
-                              item.routeNames.includes(currentRoute)
+                              item.routeNames?.includes(currentRoute)
                                 ? styles.selectedName
                                 : null,
                             ]}
@@ -1258,7 +1262,7 @@ class DrawerView extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   providerConfig: selectProviderConfig(state),
   chainId: selectChainId(state),
   accounts: selectAccounts(state),
@@ -1279,14 +1283,14 @@ const mapStateToProps = (state) => ({
   switchedNetwork: state.networkOnboarded.switchedNetwork,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: any) => ({
   toggleNetworkModal: () => dispatch(toggleNetworkModal()),
-  showAlert: (config) => dispatch(showAlert(config)),
-  newAssetTransaction: (selectedAsset) =>
+  showAlert: (config: any) => dispatch(showAlert(config)),
+  newAssetTransaction: (selectedAsset: any) =>
     dispatch(newAssetTransaction(selectedAsset)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
-  onboardNetworkAction: (chainId) => dispatch(onboardNetworkAction(chainId)),
-  networkSwitched: ({ networkUrl, networkStatus }) =>
+  onboardNetworkAction: (chainId: any) => dispatch(onboardNetworkAction(chainId)),
+  networkSwitched: ({ networkUrl, networkStatus }: any) =>
     dispatch(networkSwitched({ networkUrl, networkStatus })),
   toggleInfoNetworkModal: () => dispatch(toggleInfoNetworkModal(false)),
 });
@@ -1296,4 +1300,4 @@ DrawerView.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(DrawerView));
+)(withMetricsAwareness(DrawerView as any));

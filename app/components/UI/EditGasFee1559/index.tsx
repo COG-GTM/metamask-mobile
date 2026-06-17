@@ -1,4 +1,6 @@
 /* eslint-disable react/display-name */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-shadow */
 import React, { useState } from 'react';
 import {
   View,
@@ -35,7 +37,7 @@ import {
 } from '../../../util/gasUtils';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -183,11 +185,11 @@ const EditGasFee1559 = ({
   onUpdatingValuesEnd,
   analyticsParams,
   view,
-}) => {
-  const [showInfoModal, setShowInfoModal] = useState(false);
+}: any) => {
+  const [showInfoModal, setShowInfoModal] = useState<any>(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(!selected);
-  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState(null);
-  const [maxFeeError, setMaxFeeError] = useState(null);
+  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<any>(null);
+  const [maxFeeError, setMaxFeeError] = useState<any>(null);
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState(selected);
   const [showInputs, setShowInputs] = useState(!dappSuggestedGas);
@@ -241,12 +243,12 @@ const EditGasFee1559 = ({
     onSave(selectedOption);
   };
 
-  const changeGas = (gas, selectedOption) => {
+  const changeGas = (gas: any, selectedOption: any) => {
     setSelectedOption(selectedOption);
     onChange(gas, selectedOption);
   };
 
-  const changedMaxPriorityFee = (value) => {
+  const changedMaxPriorityFee = (value: any) => {
     const lowerValue = new BigNumber(
       gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxPriorityFeePerGas,
     );
@@ -284,7 +286,7 @@ const EditGasFee1559 = ({
     changeGas(newGas, null);
   };
 
-  const changedMaxFeePerGas = (value) => {
+  const changedMaxFeePerGas = (value: any) => {
     const lowerValue = new BigNumber(
       gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxFeePerGas,
     );
@@ -317,22 +319,22 @@ const EditGasFee1559 = ({
     changeGas(newGas, null);
   };
 
-  const changedGasLimit = (value) => {
+  const changedGasLimit = (value: any) => {
     const newGas = { ...gasFee, suggestedGasLimit: value };
     changeGas(newGas, null);
   };
 
-  const selectOption = (option) => {
+  const selectOption = (option: any) => {
     setSelectedOption(option);
     setMaxFeeError('');
     setMaxPriorityFeeError('');
     changeGas({ ...gasOptions[option] }, option);
   };
 
-  const shouldIgnore = (option) =>
-    ignoreOptions.find((item) => item === option);
+  const shouldIgnore = (option: any) =>
+    ignoreOptions.find((item: any) => item === option);
 
-  const renderLabel = (selected, disabled, label) => (
+  const renderLabel = (selected: any, disabled: any, label: any) => (
     <Text bold primary={selected && !disabled}>
       {label}
     </Text>
@@ -396,14 +398,16 @@ const EditGasFee1559 = ({
         <View>
           {/* TODO(eip1559) hook with strings i18n */}
           <HorizontalSelector
-            selected={selectedOption}
-            onPress={selectOption}
-            options={renderOptions()}
+            {...({
+              selected: selectedOption,
+              onPress: selectOption,
+              options: renderOptions(),
+            } as any)}
           />
         </View>
         <View style={styles.advancedOptionsContainer}>
           <TouchableOpacity
-            disable={updateOption?.showAdvanced}
+            {...({ disable: updateOption?.showAdvanced } as any)}
             onPress={toggleAdvancedOptions}
             style={styles.advancedOptionsButton}
           >
@@ -644,7 +648,7 @@ const EditGasFee1559 = ({
                   />
                 </TouchableOpacity>
                 <Text bold black>
-                  {renderDisplayTitle}
+                  {renderDisplayTitle as unknown as React.ReactNode}
                 </Text>
                 <Icon
                   name={'arrow-back'}
@@ -671,8 +675,8 @@ const EditGasFee1559 = ({
                 </View>
               )}
             </View>
-            {renderWarning}
-            {renderError}
+            {renderWarning as unknown as React.ReactNode}
+            {renderError as unknown as React.ReactNode}
             <FadeAnimationView
               style={styles.headerContainer}
               valueToWatch={valueToWatch}
@@ -759,8 +763,7 @@ const EditGasFee1559 = ({
                     {showInfoModal === 'max_fee' &&
                       strings('edit_gas_fee_eip1559.learn_more_max_fee')}
                     {showInfoModal === 'new_gas_fee' &&
-                    updateOption &&
-                    updateOption.isCancel
+                    updateOption?.isCancel
                       ? strings(
                           'edit_gas_fee_eip1559.learn_more_cancel_gas_fee',
                         )

@@ -24,7 +24,8 @@ const createStyles = (colors: Colors) =>
     },
   });
 
-const foxImage = require('../../../images/branding/fox.png'); // eslint-disable-line import/no-commonjs
+// eslint-disable-next-line import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const foxImage = require('../../../images/branding/fox.png');
 
 /**
  * View component that displays the MetaMask fox

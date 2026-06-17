@@ -35,11 +35,11 @@ const mockNetworkName = 'Ethereum Main Network';
 
 describe('ManageNetworks', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as jest.Mock).mockImplementation((selector: unknown) => {
       if (selector === selectNetworkName) return mockNetworkName;
     });
     const { toJSON } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
+      <ManageNetworks {...({ navigation: useNavigation() } as Record<string, unknown>)} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
@@ -56,11 +56,11 @@ describe('ManageNetworks', () => {
       },
     ],
   ])('opens link %link', ({ link, testId }) => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as jest.Mock).mockImplementation((selector: unknown) => {
       if (selector === selectNetworkName) return mockNetworkName;
     });
     const { getByTestId } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
+      <ManageNetworks {...({ navigation: useNavigation() } as Record<string, unknown>)} />,
     );
     const button = getByTestId(testId);
     fireEvent.press(button);

@@ -2,7 +2,11 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
-import NavbarTitle from './';
+import NavbarTitleComponent from './';
+
+const NavbarTitle = NavbarTitleComponent as unknown as React.ComponentType<{
+  title?: string;
+}>;
 
 const mockStore = configureMockStore();
 const store = mockStore({});

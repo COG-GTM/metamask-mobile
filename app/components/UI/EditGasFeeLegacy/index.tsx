@@ -1,4 +1,6 @@
 /* eslint-disable react/display-name */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-shadow */
 import React, { useState } from 'react';
 import {
   View,
@@ -34,7 +36,7 @@ import {
 } from '../../../util/gasUtils';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -139,14 +141,14 @@ const EditGasFeeLegacy = ({
   isAnimating,
   analyticsParams,
   view,
-}) => {
+}: any) => {
   const onlyAdvanced = gasEstimateType !== GAS_ESTIMATE_TYPES.LEGACY;
-  const [showRangeInfoModal, setShowRangeInfoModal] = useState(false);
+  const [showRangeInfoModal, setShowRangeInfoModal] = useState<any>(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(
     !selected || onlyAdvanced,
   );
   const [selectedOption, setSelectedOption] = useState(selected);
-  const [gasPriceError, setGasPriceError] = useState();
+  const [gasPriceError, setGasPriceError] = useState<any>();
   const { colors } = useTheme();
   const { trackEvent, createEventBuilder } = useMetrics();
   const styles = createStyles(colors);
@@ -186,12 +188,12 @@ const EditGasFeeLegacy = ({
     onSave(selectedOption);
   };
 
-  const changeGas = (gas, selectedOption) => {
+  const changeGas = (gas: any, selectedOption: any) => {
     setSelectedOption(selectedOption);
     onChange(gas, selectedOption);
   };
 
-  const changedGasPrice = (value) => {
+  const changedGasPrice = (value: any) => {
     const lowerValue = new BigNumber(
       gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
         ? gasOptions?.[warningMinimumEstimateOption]
@@ -218,22 +220,22 @@ const EditGasFeeLegacy = ({
     changeGas(newGas, null);
   };
 
-  const changedGasLimit = (value) => {
+  const changedGasLimit = (value: any) => {
     const newGas = { ...gasFee, suggestedGasLimit: value };
 
     changeGas(newGas, null);
   };
 
-  const selectOption = (option) => {
+  const selectOption = (option: any) => {
     setGasPriceError('');
     setSelectedOption(option);
     changeGas({ ...gasFee, suggestedGasPrice: gasOptions[option] }, option);
   };
 
-  const shouldIgnore = (option) =>
-    ignoreOptions.find((item) => item === option);
+  const shouldIgnore = (option: any) =>
+    ignoreOptions.find((item: any) => item === option);
 
-  const renderLabel = (selected, disabled, label) => (
+  const renderLabel = (selected: any, disabled: any, label: any) => (
     <Text bold primary={selected && !disabled}>
       {label}
     </Text>
@@ -277,7 +279,7 @@ const EditGasFeeLegacy = ({
               color={colors.warning.default}
             />
           )}
-          style={styles.warningContainer}
+          style={(styles as any).warningContainer}
         >
           {() => (
             <View style={styles.warningTextContainer}>
@@ -306,7 +308,7 @@ const EditGasFeeLegacy = ({
               color={colors.error.default}
             />
           )}
-          style={styles.warningContainer}
+          style={(styles as any).warningContainer}
         >
           {() => (
             <View style={styles.warningTextContainer}>
@@ -358,8 +360,8 @@ const EditGasFeeLegacy = ({
                 />
               </View>
             </View>
-            {renderWarning}
-            {renderError}
+            {renderWarning as unknown as React.ReactNode}
+            {renderError as unknown as React.ReactNode}
             <FadeAnimationView
               valueToWatch={valueToWatch}
               animateOnChange={animateOnChange}
@@ -387,9 +389,11 @@ const EditGasFeeLegacy = ({
               {!onlyAdvanced && (
                 <View>
                   <HorizontalSelector
-                    selected={selectedOption}
-                    onPress={selectOption}
-                    options={renderOptions}
+                    {...({
+                      selected: selectedOption,
+                      onPress: selectOption,
+                      options: renderOptions,
+                    } as any)}
                   />
                 </View>
               )}
