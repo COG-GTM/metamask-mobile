@@ -122,7 +122,7 @@ const FadeAnimationView = ({
         ...style,
         opacity: fadeAnim, // Bind opacity to animated value
       }}
-      pointerEvents={isAnimating ? 'none' : 'auto'}
+      pointerEvents={isAnimating ? 'none' : (null as unknown as 'auto')}
     >
       {isAnimating ? lastChildren : children}
     </Animated.View>

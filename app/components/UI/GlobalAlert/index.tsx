@@ -12,31 +12,36 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import { Colors } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 
-const createStyles = (colors: Colors) =>
-  StyleSheet.create({
+const createStyles = (colors: Colors) => {
+  const styles = StyleSheet.create({
     modal: {
       margin: 0,
-      width: '100%',
-    },
-    copyAlert: {
-      backgroundColor: colors.overlay.alternative,
-      padding: 20,
-      paddingTop: 30,
-      alignSelf: 'center',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: 8,
+      width: '100%' as const,
     },
     copyAlertIcon: {
       marginBottom: 20,
     },
     copyAlertText: {
-      textAlign: 'center',
+      textAlign: 'center' as const,
       color: colors.overlay.inverse,
       fontSize: 16,
       ...fontStyles.normal,
     },
   });
+  return {
+    ...styles,
+    copyAlert: (width?: number) => ({
+      width: width || 180,
+      backgroundColor: colors.overlay.alternative,
+      padding: 20,
+      paddingTop: 30,
+      alignSelf: 'center' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      borderRadius: 8,
+    }),
+  };
+};
 
 interface AlertData {
   width?: number;
@@ -117,7 +122,7 @@ class GlobalAlert extends PureComponent<GlobalAlertProps> {
 
     return (
       <ElevatedView
-        style={[styles.copyAlert, { width: this.props.data?.width || 180 }]}
+        style={styles.copyAlert(this.props.data?.width)}
         elevation={5}
       >
         <View style={styles.copyAlertIcon}>
