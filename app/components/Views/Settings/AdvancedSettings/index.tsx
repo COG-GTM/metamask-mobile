@@ -379,6 +379,7 @@ class AdvancedSettings extends PureComponent<
                 )}{' '}
                 <Text
                   color={TextColor.Primary}
+                  {...({ link: true } as object)}
                   onPress={this.openLinkAboutStx}
                 >
                   {strings('app_settings.smart_transactions_learn_more')}

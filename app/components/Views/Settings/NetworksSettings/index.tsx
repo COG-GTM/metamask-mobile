@@ -132,10 +132,6 @@ const createStyles = (colors: Colors) =>
       fontSize: 10,
       marginTop: 4,
     },
-    mainnetHeader: {},
-    networkInfo: {},
-    networksWrapper: {},
-    syncConfirm: {},
   });
 
 /**
@@ -429,7 +425,7 @@ class NetworksSettings extends PureComponent<
     const styles = createStyles(colors);
 
     return (
-      <View style={styles.mainnetHeader}>
+      <View>
         <TouchableOpacity
           style={styles.network}
           key={`network-${MAINNET}`}
@@ -437,7 +433,7 @@ class NetworksSettings extends PureComponent<
         >
           <View style={styles.networkWrapper}>
             <ImageIcons image="ETHEREUM" style={styles.networkIcon} />
-            <View style={styles.networkInfo}>
+            <View>
               <Text style={styles.networkLabel}>{mainnetName}</Text>
             </View>
           </View>
@@ -458,7 +454,7 @@ class NetworksSettings extends PureComponent<
     const styles = createStyles(colors);
 
     return (
-      <View style={styles.mainnetHeader}>
+      <View>
         <TouchableOpacity
           style={styles.network}
           key={`network-${LINEA_MAINNET}`}
@@ -466,7 +462,7 @@ class NetworksSettings extends PureComponent<
         >
           <View style={styles.networkWrapper}>
             <ImageIcons image="LINEA-MAINNET" style={styles.networkIcon} />
-            <View style={styles.networkInfo}>
+            <View>
               <Text style={styles.networkLabel}>{lineaMainnetName}</Text>
             </View>
           </View>
@@ -492,7 +488,7 @@ class NetworksSettings extends PureComponent<
     const styles = createStyles(colors);
 
     return (
-      <View style={styles.mainnetHeader}>
+      <View>
         <TouchableOpacity
           style={{ ...styles.network, ...styles.networkDisabled }}
           key={`network-${solanaMainnetName}`}
@@ -501,7 +497,7 @@ class NetworksSettings extends PureComponent<
         >
           <View style={styles.networkWrapper}>
             <ImageIcons image={'SOLANA'} style={styles.networkIcon} />
-            <View style={styles.networkInfo}>
+            <View>
               <Text style={styles.networkLabel}>{solanaMainnetName}</Text>
             </View>
           </View>
@@ -616,7 +612,7 @@ class NetworksSettings extends PureComponent<
             testIdCloseIcon={NetworksViewSelectorsIDs.CLOSE_ICON}
           />
         }
-        <ScrollView style={styles.networksWrapper}>
+        <ScrollView>
           {this.state.searchString.length > 0 ? (
             this.filteredResult()
           ) : (
@@ -642,7 +638,6 @@ class NetworksSettings extends PureComponent<
         <StyledButton
           type="confirm"
           onPress={this.onAddNetwork}
-          containerStyle={styles.syncConfirm}
           testID={ADD_NETWORK_BUTTON}
         >
           {strings('app_settings.network_add_network')}

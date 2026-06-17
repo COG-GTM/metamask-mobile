@@ -260,6 +260,7 @@ const ImportFromSecretRecoveryPhrase = ({
         } catch (err) {
           // retry faceID if the user cancels the
           if (
+            // @ts-expect-error Device.isIos is referenced (not called) in the original JS; preserved as-is for type-only migration
             Device.isIos &&
             (err as Error).toString() === IOS_REJECTED_BIOMETRICS_ERROR
           )

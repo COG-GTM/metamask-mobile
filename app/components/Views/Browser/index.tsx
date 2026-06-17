@@ -9,11 +9,15 @@ import { View } from 'react-native';
 import { captureScreen, CaptureOptions } from 'react-native-view-shot';
 import { connect, useSelector } from 'react-redux';
 import { Dispatch } from 'redux';
-import {
+import type {
   NavigationProp,
   ParamListBase,
   RouteProp,
- useFocusEffect } from '@react-navigation/native';
+} from '@react-navigation/native';
+///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+// eslint-disable-next-line no-duplicate-imports
+import { useFocusEffect } from '@react-navigation/native';
+///: END:ONLY_INCLUDE_IF
 import { strings } from '../../../../locales/i18n';
 import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/BrowserView.selectors';
 import {

@@ -320,6 +320,7 @@ const createStyles = (colors: Colors) =>
     },
     messageWarning: {
       paddingVertical: 2,
+      fontSize: 14,
       color: colors.warning.default,
       ...(typography.sBodyMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.BodyMD),
@@ -332,6 +333,7 @@ const createStyles = (colors: Colors) =>
     },
     inlineWarning: {
       paddingVertical: 2,
+      fontSize: 14,
       color: colors.text.default,
       ...(typography.sBodyMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.BodyMD),
@@ -2588,4 +2590,4 @@ export default compose(
   withMetricsAwareness(
     NetworkSettings as unknown as React.ComponentType<any>,
   ),
-);
+) as React.ComponentType;
