@@ -433,7 +433,7 @@ export default class Coachmark extends PureComponent<
             <ButtonIcon
               iconName={IconName.Close}
               size={ButtonIconSizes.Sm}
-              onPress={() => onClose?.()}
+              onPress={onClose as () => void}
               iconColor={IconColor.Inverse}
             />
           </View>
