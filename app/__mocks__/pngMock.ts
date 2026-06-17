@@ -1,2 +1,4 @@
 // When required, assets in React Native returns a number
-export default 1;
+// eslint-disable-next-line import/no-commonjs
+module.exports = 1;
+export {};
