@@ -212,6 +212,7 @@ describe('swaps reducer', () => {
         swaps: cloneDeep(initialState),
       };
 
+      // @ts-ignore
       rootState.swaps = {
         // @ts-ignore
         featureFlags: {
@@ -267,6 +268,7 @@ describe('swaps reducer', () => {
         swaps: cloneDeep(initialState),
       };
 
+      // @ts-ignore
       rootState.swaps = {
         // @ts-ignore
         featureFlags: {
@@ -368,7 +370,7 @@ describe('swaps reducer', () => {
           globalSetting: true,
         },
       };
-      
+
       const chainFlags = {
         '0x1': {
           fallbackToV1: false,
@@ -378,12 +380,12 @@ describe('swaps reducer', () => {
           },
         },
       };
-      
+
       const rootState = createTestState({
         globalFeatureFlags: globalFlags,
         chainFeatureFlags: chainFlags,
       });
-      
+
       const result = selectSwapsChainFeatureFlags(rootState);
       expect(result).toEqual({
         fallbackToV1: false,
