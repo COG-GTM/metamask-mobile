@@ -402,7 +402,9 @@ export async function switchToNetwork({
     }
   }
 
-  if (!shouldShowRequestModal && !ethChainIds?.includes(chainId)) {
+  // Preserve original runtime behavior: ethChainIds is assumed defined here.
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  if (!shouldShowRequestModal && !ethChainIds!.includes(chainId)) {
     await requestPermittedChainsPermissionIncrementalForOrigin({
       origin,
       chainId,
