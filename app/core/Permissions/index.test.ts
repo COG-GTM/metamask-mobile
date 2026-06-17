@@ -816,7 +816,7 @@ describe('Permission Utility Functions', () => {
       expect(result[0]).toBe('0x3'); // The one with highest lastSelected should be first
     });
 
-    it('should throw error if account is missing from identities', () => {
+    it('should throw error if account is missing from identities', async () => {
       const accounts: Hex[] = ['0x1', '0x2', '0x3'];
       const internalAccounts = [
         {
@@ -838,7 +838,14 @@ describe('Permission Utility Functions', () => {
       expect(() => sortAccountsByLastSelected(accounts)).toThrow(
         'Missing identity for address: "0x2".',
       );
+
+      // The diagnostic capture runs asynchronously; flush pending microtasks.
+      await new Promise(process.nextTick);
+
       expect(captureException).toHaveBeenCalled();
+      expect(
+        Engine.context.KeyringController.getAccountKeyringType,
+      ).toHaveBeenCalledWith('0x2');
     });
 
     it('should handle case insensitive address comparison', () => {
