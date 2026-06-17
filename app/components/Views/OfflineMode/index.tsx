@@ -2,7 +2,7 @@
 import React from 'react';
 import { SafeAreaView, Image, View, StyleSheet } from 'react-native';
 import Text from '../../Base/Text';
-import { useNetInfo } from '@react-native-community/netinfo';
+import NetInfo from '@react-native-community/netinfo';
 import { ParamListBase } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { baseStyles, fontStyles } from '../../../styles/common';
@@ -70,7 +70,7 @@ const OfflineMode = ({ navigation, infuraBlocked }: OfflineModeProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const netinfo = useNetInfo();
+  const netinfo = NetInfo.useNetInfo();
 
   const tryAgain = () => {
     if (netinfo?.isConnected) {
