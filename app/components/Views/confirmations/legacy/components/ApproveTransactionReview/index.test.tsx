@@ -6,6 +6,10 @@ import { backgroundState } from '../../../../../../util/test/initial-root-state'
 import { renderScreen } from '../../../../../../util/test/renderWithProvider';
 import { SET_APPROVAL_FOR_ALL_SIGNATURE } from '../../../../../../util/transactions';
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ApproveTransactionModalTyped = ApproveTransactionModal as any;
+
 jest.mock('../../../../../../util/address', () => ({
   ...jest.requireActual('../../../../../../util/address'),
   getTokenDetails: jest.fn(),
@@ -108,19 +112,26 @@ describe('ApproveTransactionModal', () => {
     const { toJSON } = renderScreen(
       ApproveTransactionModal,
       { name: 'Approve' },
-      { state: initialState },
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      { state: initialState as any },
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('Approve button is enabled when standard is defined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = getTokenDetails as jest.Mock;
     mockGetTokenDetails.mockReturnValue({
       standard: 'ERC20',
     });
     const state = cloneDeep(initialState);
-    state.engine.backgroundState.AccountTrackerController.accounts = [];
-    state.engine.backgroundState.TokenListController = {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (state.engine.backgroundState as any).AccountTrackerController.accounts =
+      [];
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (state.engine.backgroundState as any).TokenListController = {
       tokensChainsCache: {
         '0x1': {
           data: [{
@@ -161,10 +172,12 @@ describe('ApproveTransactionModal', () => {
     const { getByTestId } = renderScreen(
       () => (
         // eslint-disable-next-line react/react-in-jsx-scope
-        <ApproveTransactionModal onConfirm={mockOnConfirm} />
+        <ApproveTransactionModalTyped onConfirm={mockOnConfirm} />
       ),
       { name: 'Approve' },
-      { state },
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      { state: state as any },
     );
 
     expect(mockGetTokenDetails).toHaveBeenCalled();
@@ -178,11 +191,16 @@ describe('ApproveTransactionModal', () => {
   });
 
   it('Approve button is disabled when standard is undefined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = getTokenDetails as jest.Mock;
     mockGetTokenDetails.mockReturnValue({});
     const state = cloneDeep(initialState);
-    state.engine.backgroundState.AccountTrackerController.accounts = [];
-    state.engine.backgroundState.TokenListController = {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (state.engine.backgroundState as any).AccountTrackerController.accounts =
+      [];
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (state.engine.backgroundState as any).TokenListController = {
       tokensChainsCache: {
         '0x1': {
           data: [{
@@ -222,10 +240,12 @@ describe('ApproveTransactionModal', () => {
     const { getByTestId } = renderScreen(
       () => (
         // eslint-disable-next-line react/react-in-jsx-scope
-        <ApproveTransactionModal onConfirm={mockOnConfirm} />
+        <ApproveTransactionModalTyped onConfirm={mockOnConfirm} />
       ),
       { name: 'Approve' },
-      { state },
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      { state: state as any },
     );
 
     expect(mockGetTokenDetails).toHaveBeenCalled();
