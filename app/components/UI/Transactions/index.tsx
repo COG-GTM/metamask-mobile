@@ -343,9 +343,9 @@ class Transactions extends PureComponent<
       this.props.onRefSet && this.props.onRefSet(this.flatList);
     }, 100);
     this.setState({
-      isQRHardwareAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress as string),
-      ),
+      isQRHardwareAccount: isHardwareAccount(
+        this.props.selectedAddress as string,
+      ) as boolean,
     });
   };
 
@@ -371,16 +371,12 @@ class Transactions extends PureComponent<
 
     this.setState({ rpcBlockExplorer: blockExplorer });
     this.setState({
-      isQRHardwareAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress as string, [
-          ExtendedKeyringTypes.qr,
-        ]),
-      ),
-      isLedgerAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress as string, [
-          ExtendedKeyringTypes.ledger,
-        ]),
-      ),
+      isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress as string, [
+        ExtendedKeyringTypes.qr,
+      ]) as boolean,
+      isLedgerAccount: isHardwareAccount(this.props.selectedAddress as string, [
+        ExtendedKeyringTypes.ledger,
+      ]) as boolean,
     });
   };
 
@@ -965,7 +961,7 @@ class Transactions extends PureComponent<
             confirmText={strings('transaction.lets_try')}
             confirmButtonMode={'confirm'}
             cancelText={strings('transaction.nevermind')}
-            feeText={renderCancelGas() ?? undefined}
+            feeText={renderCancelGas() as string}
             titleText={strings('transaction.cancel_tx_title')}
             gasTitleText={strings('transaction.gas_cancel_fee')}
             descriptionText={strings('transaction.cancel_tx_message')}
@@ -980,7 +976,7 @@ class Transactions extends PureComponent<
             confirmText={strings('transaction.lets_try')}
             confirmButtonMode={'confirm'}
             cancelText={strings('transaction.nevermind')}
-            feeText={renderSpeedUpGas() ?? undefined}
+            feeText={renderSpeedUpGas() as string}
             titleText={strings('transaction.speedup_tx_title')}
             gasTitleText={strings('transaction.gas_speedup_fee')}
             descriptionText={strings('transaction.speedup_tx_message')}

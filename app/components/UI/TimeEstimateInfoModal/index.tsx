@@ -27,7 +27,7 @@ const TimeEstimateInfoModal = ({
 }: TimeEstimateInfoModalProps) => (
   <InfoModal
     isVisible={isVisible}
-    toggleModal={onHideModal ?? (() => undefined)}
+    toggleModal={onHideModal as () => void}
     title={
       timeEstimateId === AppConstants.GAS_TIMES.MAYBE
         ? strings('times_eip1559.warning_low_title')

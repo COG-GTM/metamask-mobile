@@ -669,7 +669,7 @@ class OptinMetrics extends PureComponent<
                 activeOpacity={1}
               >
                 <Checkbox
-                  isChecked={Boolean(isDataCollectionForMarketingEnabled)}
+                  isChecked={isDataCollectionForMarketingEnabled as boolean}
                   accessibilityRole={'checkbox'}
                   accessible
                   onPress={() =>
