@@ -591,7 +591,7 @@ class TransactionReview extends PureComponent<
                         onCancelPress={this.props.onCancel}
                         gasEstimateType={gasEstimateType}
                         EIP1559GasData={EIP1559GasData}
-                        origin={dappSuggestedGas ? url : undefined}
+                        origin={dappSuggestedGas ? url : null}
                         gasSelected={gasSelected}
                         originWarning={dappSuggestedGasWarning}
                         onUpdatingValuesStart={onUpdatingValuesStart}

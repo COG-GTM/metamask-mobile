@@ -244,7 +244,9 @@ class SignatureRequest extends PureComponent<SignatureRequestProps> {
         </View>
         <TouchableOpacity
           style={styles.children}
-          onPress={truncateMessage ? toggleExpandedMessage : undefined}
+          onPress={
+            truncateMessage ? toggleExpandedMessage : (null as unknown as undefined)
+          }
         >
           <WebsiteIcon
             style={styles.domainLogo}

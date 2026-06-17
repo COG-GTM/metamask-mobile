@@ -282,7 +282,9 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
         <View
           style={messageWrapperStyles}
           onLayout={
-            truncateMessage ? undefined : this.updateShouldTruncateMessage
+            truncateMessage
+              ? (null as unknown as undefined)
+              : this.updateShouldTruncateMessage
           }
         >
           {this.renderTypedMessage()}
