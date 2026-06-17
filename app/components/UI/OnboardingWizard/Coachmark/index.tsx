@@ -7,7 +7,7 @@ import {
   ViewStyle,
   StyleProp,
 } from 'react-native';
-import { Theme } from '@metamask/design-tokens';
+import { Theme, typography } from '@metamask/design-tokens';
 import {
   colors as importedColors,
   fontStyles,
@@ -22,7 +22,6 @@ import {
   IconName,
   IconColor,
 } from '../../../../component-library/components/Icons/Icon';
-import { typography } from '@metamask/design-tokens';
 import {
   ButtonSize,
   ButtonVariants,
@@ -450,5 +449,7 @@ export default class Coachmark extends PureComponent<
     );
   }
 }
+
+Coachmark.contextType = ThemeContext;
 
 
