@@ -249,7 +249,7 @@ interface TransactionElementProps {
   /**
    * Navigation object for routing
    */
-  navigation: NavigationProp<ParamListBase>;
+  navigation?: NavigationProp<ParamListBase>;
 }
 
 interface TransactionElementState {
@@ -328,9 +328,12 @@ class TransactionElement extends PureComponent<
     const { tx, i, onPressItem } = this.props;
     onPressItem?.(tx.id, i);
     if (tx.type === 'bridge') {
-      this.props.navigation.navigate(Routes.BRIDGE.BRIDGE_TRANSACTION_DETAILS, {
-        evmTxMeta: tx,
-      });
+      this.props.navigation?.navigate(
+        Routes.BRIDGE.BRIDGE_TRANSACTION_DETAILS,
+        {
+          evmTxMeta: tx,
+        },
+      );
     } else {
       this.setState({ detailsModalVisible: true });
     }
@@ -755,7 +758,8 @@ class TransactionElement extends PureComponent<
               </DetailsModal.Header>
               <TransactionDetails
                 transactionObject={tx}
-                transactionDetails={transactionDetails}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                transactionDetails={transactionDetails as any}
                 showSpeedUpModal={this.showSpeedUpModal}
                 showCancelModal={this.showCancelModal}
                 close={this.onCloseDetailsModal}
