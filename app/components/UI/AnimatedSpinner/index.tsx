@@ -1,16 +1,27 @@
-/* eslint-disable react/prop-types */
 import React, { PureComponent } from 'react';
 import { View, Animated, Easing, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 
 export const SpinnerSize = {
   MD: 'MD',
   SM: 'SM',
 };
 
-const measures = {
+interface SpinnerMeasure {
+  Android: { height: number; width: number };
+  iOS: { height: number; width: number };
+  static: {
+    borderRadius: number;
+    width: number;
+    height: number;
+    iconSize: number;
+  };
+}
+
+const measures: Record<string, SpinnerMeasure> = {
   [SpinnerSize.SM]: {
     Android: {
       height: 30.5,
@@ -45,7 +56,7 @@ const measures = {
   },
 };
 
-const createStyles = (colors, measures) =>
+const createStyles = (colors: Colors, measures: SpinnerMeasure) =>
   StyleSheet.create({
     view: {
       position: 'relative',
@@ -65,7 +76,23 @@ const createStyles = (colors, measures) =>
     },
   });
 
-export default class AnimatedSpinner extends PureComponent {
+interface AnimatedSpinnerProps {
+  size?: string;
+  testID?: string;
+}
+
+interface AnimatedSpinnerState {
+  spinning: boolean;
+}
+
+export default class AnimatedSpinner extends PureComponent<
+  AnimatedSpinnerProps,
+  AnimatedSpinnerState
+> {
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  mounted = false;
+
   spinValue = new Animated.Value(0);
 
   state = {
