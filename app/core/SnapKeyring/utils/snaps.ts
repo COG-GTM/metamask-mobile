@@ -1,6 +1,5 @@
 import { SnapId } from '@metamask/snaps-sdk';
 import PREINSTALLED_SNAPS from '../../../lib/snaps/preinstalled-snaps';
-import { BITCOIN_WALLET_SNAP_ID } from '../BitcoinWalletSnap';
 import { SOLANA_WALLET_SNAP_ID } from '../SolanaWalletSnap';
 import {
   getLocalizedSnapManifest,
@@ -27,7 +26,8 @@ export function isSnapPreinstalled(snapId: SnapId) {
  * @constant
  * @type {SnapId[]}
  */
-const ALLOW_LISTED_SNAPS = [BITCOIN_WALLET_SNAP_ID, SOLANA_WALLET_SNAP_ID];
+// Bitcoin is now handled natively by BitcoinController; only Solana uses the snap path.
+const ALLOW_LISTED_SNAPS = [SOLANA_WALLET_SNAP_ID];
 
 /**
  * Checks if the given Snap ID corresponds to a multichain wallet Snap.
