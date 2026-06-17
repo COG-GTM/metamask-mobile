@@ -4,6 +4,7 @@ import {
 } from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import LockScreen from './';
+import { ComponentType } from 'react';
 import Routes from '../../../constants/navigation/Routes';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
 import { RootState } from '../../../reducers';
@@ -24,7 +25,7 @@ const mockInitialState: DeepPartial<RootState> = {
 describe('LockScreen', () => {
   it('should render correctly', () => {
     const { toJSON } = renderScreen(
-      LockScreen,
+      LockScreen as unknown as ComponentType,
       { name: Routes.LOCK_SCREEN },
       { state: mockInitialState },
       { bioStateMachineId: '' },

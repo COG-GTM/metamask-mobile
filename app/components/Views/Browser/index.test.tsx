@@ -90,14 +90,14 @@ const mockStore = configureMockStore();
 
 const routeMock = {
   params: {},
-};
+} as unknown as React.ComponentProps<typeof Browser>['route'];
 
 const mockNavigation = {
   setOptions: jest.fn(),
   setParams: jest.fn(),
   navigate: jest.fn(),
   goBack: jest.fn(),
-};
+} as unknown as React.ComponentProps<typeof Browser>['navigation'];
 
 describe('Browser', () => {
   it('should render correctly', () => {
@@ -169,8 +169,8 @@ describe('Browser', () => {
               {() => (
                 <Browser
                   route={{
-                    params: { newTabUrl: 'about:blank', timestamp: '987' },
-                  }}
+                    params: { newTabUrl: 'about:blank', timestamp: 987 },
+                  } as unknown as React.ComponentProps<typeof Browser>['route']}
                   tabs={mockTabs}
                   activeTab={1}
                   navigation={mockNavigation}
@@ -211,7 +211,7 @@ describe('Browser', () => {
             <Stack.Screen name="Browser">
               {() => (
                 <Browser
-                  route={{ params: {} }}
+                  route={{ params: {} } as unknown as React.ComponentProps<typeof Browser>['route']}
                   tabs={mockTabsForIdling}
                   activeTab={1}
                   navigation={mockNavigation}

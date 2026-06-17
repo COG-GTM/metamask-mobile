@@ -59,11 +59,16 @@ jest.mock('../../hooks/useNftDetectionChainIds', () => ({
   useNftDetectionChainIds: jest.fn().mockReturnValue(['0x1']),
 }));
 
+const CollectibleComponent = Collectible as unknown as React.ComponentType<{
+  navigation?: typeof navigationMock;
+  route?: { params: { address: string; name?: string; logo?: string } };
+}>;
+
 describe('Collectible', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <Collectible route={{ params: { address: '0x1' } }} />
+        <CollectibleComponent route={{ params: { address: '0x1' } }} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
@@ -80,7 +85,7 @@ describe('Collectible', () => {
     const container = render(
       <Provider store={storeMocked}>
         <ThemeContext.Provider value={mockTheme}>
-          <Collectible
+          <CollectibleComponent
             navigation={navigationMock}
             route={{ params: defaultCollectibleContract }}
           />
@@ -97,7 +102,7 @@ describe('Collectible', () => {
     const { getByTestId } = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <Collectible
+          <CollectibleComponent
             navigation={navigationMock}
             route={{ params: defaultCollectibleContract }}
           />

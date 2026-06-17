@@ -12,7 +12,8 @@ describe('ManualBackupStep3', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ManualBackupStep3 />
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <ManualBackupStep3 {...({} as any)} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

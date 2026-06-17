@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import { RpcEndpointType } from '@metamask/network-controller';
-import { NetworkSettings } from './'; // Import the undecorated component
+import { NetworkSettings as NetworkSettingsClass } from './'; // Import the undecorated component
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { ThemeContext, mockTheme } from '../../../../../../app/util/theme';
@@ -15,6 +15,13 @@ import Engine from '../../../../../core/Engine';
 // eslint-disable-next-line import/no-namespace
 import * as networks from '../../../../../util/networks';
 const { PreferencesController } = Engine.context;
+
+// The undecorated component requires connect/HOC-injected props at the type
+// level; cast to a permissive component type so tests can render it directly.
+const NetworkSettings =
+  NetworkSettingsClass as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
 
 // Mock the entire module
 jest.mock('../../../../../util/networks/isNetworkUiRedesignEnabled', () => ({
@@ -332,7 +339,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapper2.instance() as NetworkSettings;
+    const instance = wrapper2.instance() as NetworkSettingsClass;
     instance.componentDidMount();
 
     expect(wrapper2.state('blockExplorerUrl')).toBe('https://etherscan.io');
@@ -378,7 +385,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapperComponent.instance() as NetworkSettings;
+    const instance = wrapperComponent.instance() as NetworkSettingsClass;
     instance.componentDidMount();
 
     expect(wrapperComponent.state('blockExplorerUrl')).toBe(
@@ -428,7 +435,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapper2.instance() as NetworkSettings;
+    const instance = wrapper2.instance() as NetworkSettingsClass;
     instance.componentDidMount();
 
     expect(wrapper2.state('blockExplorerUrl')).toBe('https://etherscan.io');
@@ -1803,7 +1810,8 @@ describe('NetworkSettings', () => {
     it('should not call setTokenNetworkFilter when portfolio view is disabled', async () => {
       jest.spyOn(networks, 'isPortfolioViewEnabled').mockReturnValue(false);
       const tokenNetworkFilterSpy = jest.spyOn(
-        PreferencesController,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        PreferencesController as any,
         'setTokenNetworkFilter',
       );
 
@@ -1822,7 +1830,8 @@ describe('NetworkSettings', () => {
     it('should call setTokenNetworkFilter when portfolio view is enabled', async () => {
       jest.spyOn(networks, 'isPortfolioViewEnabled').mockReturnValue(true);
       const tokenNetworkFilterSpy = jest.spyOn(
-        PreferencesController,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        PreferencesController as any,
         'setTokenNetworkFilter',
       );
 

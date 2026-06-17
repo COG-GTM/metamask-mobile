@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ComponentProps } from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
 import CollectibleView from '.';
@@ -35,7 +35,9 @@ describe('CollectibleView Snapshot', () => {
     const { toJSON } = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <CollectibleView
+            {...(props as unknown as ComponentProps<typeof CollectibleView>)}
+          />
         </ThemeContext.Provider>
       </Provider>,
     );
@@ -60,7 +62,9 @@ describe('CollectibleView Snapshot', () => {
     const wrapper = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <CollectibleView
+            {...(props as unknown as ComponentProps<typeof CollectibleView>)}
+          />
         </ThemeContext.Provider>
       </Provider>,
     );

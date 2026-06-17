@@ -26,7 +26,8 @@ describe('ChoosePassword', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ChoosePassword route={{ params: [ONBOARDING, PROTECT] }} />
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <ChoosePassword {...({ route: { params: [ONBOARDING, PROTECT] } } as any)} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

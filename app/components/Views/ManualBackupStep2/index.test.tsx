@@ -18,7 +18,9 @@ describe('ManualBackupStep2', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <ManualBackupStep2
-          route={{
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          {...({
+            route: {
             params: {
               words: [
                 'abstract',
@@ -36,7 +38,9 @@ describe('ManualBackupStep2', () => {
               ],
               steps: ['one', 'two', 'three'],
             },
-          }}
+            },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any)}
         />
       </Provider>,
     );
