@@ -1,8 +1,14 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, SafeAreaView, View } from 'react-native';
+import {
+  StyleSheet,
+  SafeAreaView,
+  View,
+  StyleProp,
+  TextStyle,
+} from 'react-native';
 import Modal from 'react-native-modal';
 import FAIcon from 'react-native-vector-icons/FontAwesome5';
+import { Theme } from '@metamask/design-tokens';
 import ModalDragger from '../../../Base/ModalDragger';
 import Text from '../../../Base/Text';
 import Alert, { AlertType } from '../../../Base/Alert';
@@ -11,7 +17,7 @@ import StyledButton from '../../StyledButton';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -56,7 +62,27 @@ const createStyles = (colors) =>
     },
   });
 
-function TokenImportModal({ isVisible, dismiss, token, onPressImport }) {
+interface ImportToken {
+  address?: string;
+  name?: string;
+  symbol?: string;
+  decimals?: number;
+  iconUrl?: string;
+}
+
+interface TokenImportModalProps {
+  isVisible?: boolean;
+  dismiss?: () => void;
+  token: ImportToken;
+  onPressImport?: () => void;
+}
+
+function TokenImportModal({
+  isVisible,
+  dismiss,
+  token,
+  onPressImport,
+}: TokenImportModalProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -86,7 +112,7 @@ function TokenImportModal({ isVisible, dismiss, token, onPressImport }) {
               />
             )}
           >
-            {(textStyle) => (
+            {(textStyle: StyleProp<TextStyle>) => (
               <Text style={textStyle}>{strings('swaps.add_warning')}</Text>
             )}
           </Alert>
@@ -118,16 +144,4 @@ function TokenImportModal({ isVisible, dismiss, token, onPressImport }) {
   );
 }
 
-TokenImportModal.propTypes = {
-  isVisible: PropTypes.bool,
-  dismiss: PropTypes.func,
-  token: PropTypes.shape({
-    address: PropTypes.string,
-    name: PropTypes.string,
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-    iconUrl: PropTypes.string,
-  }),
-  onPressImport: PropTypes.func,
-};
 export default TokenImportModal;
