@@ -260,7 +260,7 @@ const ImportFromSecretRecoveryPhrase = ({
         } catch (err) {
           // retry faceID if the user cancels the
           if (
-            Device.isIos() &&
+            Device.isIos &&
             (err as Error).toString() === IOS_REJECTED_BIOMETRICS_ERROR
           )
             await handleRejectedOsBiometricPrompt(parsedSeed);
