@@ -4,6 +4,8 @@ import {
   endowmentCaveatSpecifications as snapsEndowmentCaveatSpecifications,
 } from '@metamask/snaps-rpc-methods';
 ///: END:ONLY_INCLUDE_IF
+import { Hex } from '@metamask/utils';
+import { InternalAccount } from '@metamask/keyring-internal-api';
 import {  RestrictedMethods } from './constants';
 import { caip25CaveatBuilder, Caip25CaveatType, caip25EndowmentBuilder, createCaip25Caveat } from '@metamask/chain-agnostic-permission';
 
@@ -41,22 +43,27 @@ export const CaveatFactories = Object.freeze({
  */
 
 /**
+ * Options bag for {@link getCaveatSpecifications}.
+ */
+export interface GetCaveatSpecificationsOptions {
+  listAccounts: () => InternalAccount[];
+  findNetworkClientIdByChainId: (chainId: Hex) => string;
+}
+
+/**
  * Gets the specifications for all caveats that will be recognized by the
  * PermissionController.
  *
- * @param {{
- * listAccounts: () => import('@metamask/keyring-api').InternalAccount[],
- * findNetworkClientIdByChainId: (chainId: `0x${string}`) => string,
- * }} options - Options bag.
+ * @param options - Options bag.
  */
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
-}) => ({
+}: Partial<GetCaveatSpecificationsOptions> = {}) => ({
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
-  }),
+  } as unknown as Parameters<typeof caip25CaveatBuilder>[0]),
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   ...snapsCaveatsSpecifications,
   ...snapsEndowmentCaveatSpecifications,

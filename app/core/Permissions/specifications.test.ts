@@ -78,7 +78,11 @@ describe('PermissionController specifications', () => {
           })[Caip25CaveatType];
 
           [null, 'foo', {}, []].forEach((invalidValue) => {
-            expect(() => validator({ value: invalidValue })).toThrow(
+            expect(() =>
+              validator({
+                value: invalidValue,
+              } as Parameters<typeof validator>[0]),
+            ).toThrow(
               `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
             );
           });
@@ -93,7 +97,11 @@ describe('PermissionController specifications', () => {
           })[Caip25CaveatType];
 
           [[{}], [[]], [null], ['']].forEach((invalidValue) => {
-            expect(() => validator({ value: invalidValue })).toThrow(
+            expect(() =>
+              validator({
+                value: invalidValue,
+              } as Parameters<typeof validator>[0]),
+            ).toThrow(
               `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
             );
           });
@@ -134,7 +142,11 @@ describe('PermissionController specifications', () => {
             findNetworkClientIdByChainId,
           })[Caip25CaveatType];
 
-          expect(() => validator({ value: caveatValues })).toThrow(
+          expect(() =>
+            validator({
+              value: caveatValues,
+            } as Parameters<typeof validator>[0]),
+          ).toThrow(
             `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
           );
         });
@@ -144,7 +156,7 @@ describe('PermissionController specifications', () => {
 
   describe('permission specifications', () => {
     it('getPermissionSpecifications returns the expected specifications object', () => {
-      const permissionSpecifications = getPermissionSpecifications({});
+      const permissionSpecifications = getPermissionSpecifications();
       expect(Object.keys(permissionSpecifications)).toHaveLength(1);
       expect(
         permissionSpecifications[Caip25EndowmentPermissionName].targetName,
