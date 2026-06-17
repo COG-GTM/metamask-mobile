@@ -1,3 +1,5 @@
+// TODO: Replace "any" with type
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { fireEvent } from '@testing-library/react-native';
 import { shallow } from 'enzyme';
 import React from 'react';
@@ -5,6 +7,7 @@ import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import TransactionReview from '.';
 import { TESTID_ACCORDION_CONTENT } from '../../../../../../component-library/components/Accordions/Accordion/Accordion.constants';
+// eslint-disable-next-line import/no-namespace
 import * as BlockaidUtils from '../../../../../../util/blockaid';
 import { createMockAccountsControllerState } from '../../../../../../util/test/accountsControllerTestUtils';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
@@ -38,7 +41,7 @@ jest.mock('react-native-keyboard-aware-scroll-view', () => {
 
 jest.mock(
   '../../../../../UI/QRHardware/withQRHardwareAwareness',
-  () => (obj) => obj,
+  () => (obj: any) => obj,
 );
 
 jest.mock('../../../../../../selectors/smartTransactionsController', () => ({
@@ -108,12 +111,12 @@ jest.mock('@react-navigation/compat', () => {
   const actualNav = jest.requireActual('@react-navigation/compat');
   return {
     actualNav,
-    withNavigation: (obj) => obj,
+    withNavigation: (obj: any) => obj,
   };
 });
 
 jest.mock('react-native-gzip', () => ({
-  deflate: (val) => val,
+  deflate: (val: any) => val,
 }));
 
 const mockState = {
@@ -178,7 +181,7 @@ jest.mock('react-redux', () => {
   };
   return {
     ...jest.requireActual('react-redux'),
-    useSelector: (fn) =>
+    useSelector: (fn: any) =>
       fn({
         ...mockState,
         transaction: {
@@ -194,13 +197,15 @@ jest.mock('react-redux', () => {
 
 const generateTransform = jest.fn();
 
+const TransactionReviewTyped = TransactionReview as any;
+
 describe('TransactionReview', () => {
   it('should render correctly', () => {
     const mockStore = configureMockStore();
     const store = mockStore(mockState);
     const wrapper = shallow(
       <Provider store={store}>
-        <TransactionReview
+        <TransactionReviewTyped
           generateTransform={generateTransform}
         />
       </Provider>,
@@ -210,11 +215,11 @@ describe('TransactionReview', () => {
 
   it('should match snapshot', () => {
     const container = renderWithProvider(
-      <TransactionReview
+      <TransactionReviewTyped
         EIP1559GasData={{}}
         generateTransform={generateTransform}
       />,
-      { state: mockState },
+      { state: mockState as any },
     );
     expect(container).toMatchSnapshot();
   });
@@ -233,14 +238,14 @@ describe('TransactionReview', () => {
     const blockaidMetricsParamsSpy = jest
       .spyOn(BlockaidUtils, 'getBlockaidMetricsParams')
       .mockImplementation(
-        ({ result_type, reason, providerRequestsCount }) => ({
+        ({ result_type, reason, providerRequestsCount }: any) => ({
           security_alert_response: result_type,
           security_alert_reason: reason,
           security_alert_provider_requests_count: providerRequestsCount,
         }),
       );
     const { queryByText, queryByTestId, getByText } = renderWithProvider(
-      <TransactionReview
+      <TransactionReviewTyped
         EIP1559GasData={{}}
         generateTransform={generateTransform}
       />,
@@ -255,7 +260,7 @@ describe('TransactionReview', () => {
               123: securityAlertResponse,
             },
           },
-        },
+        } as any,
       },
     );
     expect(await queryByText('See details')).toBeDefined();
@@ -285,16 +290,16 @@ describe('TransactionReview', () => {
   it('should have enabled confirm button if from account has balance', async () => {
     jest
       .spyOn(TransactionUtils, 'getTransactionReviewActionKey')
-      .mockReturnValue(Promise.resolve(undefined));
+      .mockReturnValue(Promise.resolve(undefined) as any);
     const { queryByRole } = renderWithProvider(
-      <TransactionReview
+      <TransactionReviewTyped
         EIP1559GasData={{}}
         generateTransform={generateTransform}
       />,
-      { state: mockState },
+      { state: mockState as any },
     );
     const confirmButton = await queryByRole('button', { name: 'Confirm' });
-    expect(confirmButton.props.disabled).not.toBe(true);
+    expect(confirmButton?.props.disabled).not.toBe(true);
   });
 
   it('should not have confirm button disabled if from account has no balance and also if there is no error', async () => {
@@ -319,14 +324,14 @@ describe('TransactionReview', () => {
     };
     jest.mock('react-redux', () => ({
       ...jest.requireActual('react-redux'),
-      useSelector: (fn) => fn(mockNewState),
+      useSelector: (fn: any) => fn(mockNewState),
     }));
     const { getByRole } = renderWithProvider(
-      <TransactionReview
+      <TransactionReviewTyped
         EIP1559GasData={{}}
         generateTransform={generateTransform}
       />,
-      { state: mockState },
+      { state: mockState as any },
     );
     const confirmButton = getByRole('button', { name: 'Confirm' });
     expect(confirmButton.props.disabled).toBe(false);
@@ -335,15 +340,15 @@ describe('TransactionReview', () => {
   it('should have confirm button disabled if error is defined', async () => {
     jest.mock('react-redux', () => ({
       ...jest.requireActual('react-redux'),
-      useSelector: (fn) => fn(mockState),
+      useSelector: (fn: any) => fn(mockState),
     }));
     const { getByRole } = renderWithProvider(
-      <TransactionReview
+      <TransactionReviewTyped
         EIP1559GasData={{}}
         generateTransform={generateTransform}
         error="You need 1 more ETH to complete the transaction"
       />,
-      { state: mockState },
+      { state: mockState as any },
     );
     const confirmButton = getByRole('button', { name: 'Confirm' });
     expect(confirmButton.props.disabled).toBe(true);

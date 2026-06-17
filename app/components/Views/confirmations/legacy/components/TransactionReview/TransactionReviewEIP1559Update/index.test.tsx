@@ -1,3 +1,5 @@
+// TODO: Replace "any" with type
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import TransactionReviewEIP1559 from '.';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
@@ -73,11 +75,13 @@ const transactionReview = {
   onlyGas: false,
 };
 
+const TransactionReviewEIP1559Typed = TransactionReviewEIP1559 as any;
+
 describe('TransactionReviewEIP1559', () => {
   it('should render correctly', () => {
     const wrapper = renderWithProvider(
-      <TransactionReviewEIP1559 {...transactionReview} />,
-      { state: initialState },
+      <TransactionReviewEIP1559Typed {...transactionReview} />,
+      { state: initialState as any },
     );
 
     expect(wrapper).toMatchSnapshot();
@@ -88,13 +92,13 @@ describe('TransactionReviewEIP1559', () => {
 
     renderHookWithProvider(
       () =>
-        TransactionReviewEIP1559({
+        (TransactionReviewEIP1559 as any)({
           ...transactionReview,
           gasEstimationReady: true,
           updateTransactionState: updateTransactionStateMock,
         }),
       {
-        state: initialState,
+        state: initialState as any,
       },
     );
 
