@@ -13,7 +13,7 @@ import {
 } from '../constants/storage';
 import Device from '../util/device';
 
-const privates = new WeakMap();
+const privates = new WeakMap<SecureKeychain, { code: string }>();
 const encryptor = new Encryptor({
   keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
 });
@@ -37,9 +37,10 @@ import { MetricsEventBuilder } from './Analytics/MetricsEventBuilder';
  * the phone's keychain
  */
 class SecureKeychain {
+  static instance: SecureKeychain;
   isAuthenticating = false;
 
-  constructor(code) {
+  constructor(code: string) {
     if (!SecureKeychain.instance) {
       privates.set(this, { code });
       SecureKeychain.instance = this;
@@ -48,21 +49,24 @@ class SecureKeychain {
     return SecureKeychain.instance;
   }
 
-  encryptPassword(password) {
-    return encryptor.encrypt(privates.get(this).code, { password });
+  encryptPassword(password: string): Promise<string> {
+    return encryptor.encrypt(privates.get(this)?.code as string, { password });
   }
 
-  decryptPassword(str) {
-    return encryptor.decrypt(privates.get(this).code, str);
+  decryptPassword(str: string): Promise<{ password: string }> {
+    return encryptor.decrypt(
+      privates.get(this)?.code as string,
+      str,
+    ) as Promise<{ password: string }>;
   }
 }
-let instance;
+let instance: SecureKeychain;
 
 export default {
-  init(salt) {
+  init(salt: string) {
     instance = new SecureKeychain(salt);
 
-    if (Device.isAndroid && Keychain.SECURITY_LEVEL?.SECURE_HARDWARE)
+    if (Device.isAndroid() && Keychain.SECURITY_LEVEL?.SECURE_HARDWARE)
       MetaMetrics.getInstance().trackEvent(
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.ANDROID_HARDWARE_KEYSTORE,
@@ -99,7 +103,7 @@ export default {
         const keychainObject = await Keychain.getGenericPassword(
           defaultOptions,
         );
-        if (keychainObject.password) {
+        if (keychainObject && keychainObject.password) {
           const encryptedPassword = keychainObject.password;
           const decrypted = await instance.decryptPassword(encryptedPassword);
           keychainObject.password = decrypted.password;
@@ -109,14 +113,19 @@ export default {
         instance.isAuthenticating = false;
       } catch (error) {
         instance.isAuthenticating = false;
-        throw new Error(error.message);
+        throw new Error(
+          error instanceof Error ? error.message : String(error),
+        );
       }
     }
     return null;
   },
 
-  async setGenericPassword(password, type) {
-    const authOptions = {
+  async setGenericPassword(password: string, type?: string) {
+    const authOptions: {
+      accessible: Keychain.ACCESSIBLE;
+      accessControl?: Keychain.ACCESS_CONTROL;
+    } = {
       accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     };
 
@@ -163,12 +172,16 @@ export default {
           await this.getGenericPassword();
         } catch (error) {
           // Specifically check for user cancellation
-          if (error.message === 'User canceled the operation.') {
+          if (
+            error instanceof Error &&
+            error.message === 'User canceled the operation.'
+          ) {
             // Store password without biometrics
-            const encryptedPassword = await instance.encryptPassword(password);
+            const fallbackEncryptedPassword =
+              await instance.encryptPassword(password);
             await Keychain.setGenericPassword(
               'metamask-user',
-              encryptedPassword,
+              fallbackEncryptedPassword,
               {
                 ...defaultOptions,
               },
