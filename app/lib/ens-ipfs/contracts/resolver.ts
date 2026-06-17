@@ -1,4 +1,4 @@
-export default [
+const abi = [
   {
     constant: false,
     inputs: [
@@ -232,4 +232,5 @@ export default [
     name: 'ContenthashChanged',
     type: 'event',
   },
-];
+] as const;
+export default abi;
