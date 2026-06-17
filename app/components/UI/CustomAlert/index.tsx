@@ -76,10 +76,9 @@ interface CustomAlertProps extends Partial<ModalProps> {
 }
 
 export default class CustomAlert extends PureComponent<CustomAlertProps> {
-  declare context: React.ContextType<typeof ThemeContext>;
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as React.ContextType<typeof ThemeContext>).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

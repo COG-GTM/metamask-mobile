@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   ScrollView,
   TouchableOpacity,
@@ -17,8 +16,10 @@ import { connect } from 'react-redux';
 import { isMainNet } from '../../../util/networks';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { selectChainId } from '../../../selectors/networkController';
+import { Colors } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -112,36 +113,34 @@ const openSeaLogo = require('../../../images/opensea-logo-flat-colored-blue.png'
 /**
  * View that contains a collectible contract information as description, total supply and address
  */
-class CollectibleContractInformation extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * An function to handle the close event
-     */
-    onClose: PropTypes.func,
-    /**
-     * Collectible contract object
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string.isRequired,
+interface CollectibleContract {
+  name?: string;
+  symbol?: string;
+  description?: string;
+  totalSupply?: number;
+  address?: string;
+}
+
+interface CollectibleContractInformationProps {
+  navigation?: {
+    push: (...args: unknown[]) => void;
   };
+  onClose?: (value: boolean) => void;
+  collectibleContract: CollectibleContract;
+  chainId: string;
+}
+
+class CollectibleContractInformation extends PureComponent<CollectibleContractInformationProps> {
 
   closeModal = () => {
-    this.props.onClose(true);
+    this.props.onClose?.(true);
   };
 
   goToOpenSea = () => {
     const openSeaUrl = 'https://opensea.io/';
     InteractionManager.runAfterInteractions(() => {
       this.closeModal();
-      this.props.navigation.push('Webview', {
+      this.props.navigation?.push('Webview', {
         screen: 'SimpleWebview',
         params: {
           url: openSeaUrl,
@@ -156,7 +155,7 @@ class CollectibleContractInformation extends PureComponent {
       collectibleContract: { name, description, totalSupply, address },
       chainId,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as React.ContextType<typeof ThemeContext>).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const is_main_net = isMainNet(chainId);
 
@@ -227,7 +226,7 @@ class CollectibleContractInformation extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   chainId: selectChainId(state),
 });
 

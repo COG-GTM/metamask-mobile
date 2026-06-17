@@ -126,8 +126,8 @@ const RemoteImage = (props: RemoteImageProps) => {
       : source.uri);
 
   const onError = ({
-    nativeEvent: { error },
-  }: NativeSyntheticEvent<ImageErrorEventData>) => setError(error);
+    nativeEvent: { error: errorMessage },
+  }: NativeSyntheticEvent<ImageErrorEventData>) => setError(errorMessage);
 
   const [dimensions, setDimensions] = useState<{
     width: number;
@@ -218,8 +218,7 @@ const RemoteImage = (props: RemoteImageProps) => {
 
   const isSVG = Boolean(
     source &&
-      source.uri &&
-      source.uri.match('.svg') &&
+      source.uri?.match('.svg') &&
       (isImageUrl || resolvedIpfsUrl),
   );
 

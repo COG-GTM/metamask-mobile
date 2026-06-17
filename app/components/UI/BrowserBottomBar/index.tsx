@@ -94,7 +94,6 @@ interface BrowserBottomBarProps extends IWithMetricsAwarenessProps {
  * tab management, url change and other options
  */
 class BrowserBottomBar extends PureComponent<BrowserBottomBarProps> {
-  declare context: React.ContextType<typeof ThemeContext>;
 
   trackSearchEvent = () => {
     this.props.metrics.trackEvent(
@@ -131,7 +130,7 @@ class BrowserBottomBar extends PureComponent<BrowserBottomBarProps> {
       showUrlModal,
       toggleOptions,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as React.ContextType<typeof ThemeContext>).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const onSearchPress = () => {
