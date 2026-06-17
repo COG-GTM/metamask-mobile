@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import { Alert, AppState, View } from 'react-native';
-import PropTypes from 'prop-types';
 import { getApproveNavbar } from '../../../../UI/Navbar';
 import { connect } from 'react-redux';
 import {
@@ -85,111 +84,112 @@ import { selectAddressBook } from '../../../../../selectors/addressBookControlle
 import { buildTransactionParams } from '../../../../../util/confirmation/transactions';
 import Routes from '../../../../../constants/navigation/Routes';
 import { isNonEvmChainId } from '../../../../../core/Multichain/utils';
+import { Theme } from '@metamask/design-tokens';
+import { RootState } from '../../../../../reducers';
 
 const EDIT = 'edit';
 const REVIEW = 'review';
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ApproveTransactionReviewTyped =
+  ApproveTransactionReview as unknown as React.ComponentType<any>;
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const EditGasFee1559Typed = EditGasFee1559 as unknown as React.ComponentType<any>;
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const EditGasFeeLegacyTyped =
+  EditGasFeeLegacy as unknown as React.ComponentType<any>;
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AddNicknameTyped = AddNickname as unknown as React.ComponentType<any>;
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ShowBlockExplorerTyped =
+  ShowBlockExplorer as unknown as React.ComponentType<any>;
+
 /**
  * PureComponent that manages ERC20 approve from the dapp browser
  */
-class Approve extends PureComponent {
-  appStateListener;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// TODO: Replace "any" with type
+interface ApproveProps {
+  accounts?: any;
+  transaction: any;
+  setTransactionObject: (transaction: any) => void;
+  transactions?: any[];
+  providerType?: string;
+  modalVisible?: boolean;
+  hideModal?: () => void;
+  ticker?: string;
+  gasFeeEstimates?: any;
+  gasEstimateType?: string;
+  primaryCurrency?: string;
+  chainId?: string;
+  networkClientId?: string;
+  addressBook?: any;
+  networkConfigurations?: any;
+  providerRpcTarget?: string;
+  setNonce?: (nonce: any) => void;
+  setProposedNonce?: (nonce: any) => void;
+  showCustomNonce?: boolean;
+  navigation?: any;
+  metrics?: any;
+  shouldUseSmartTransaction?: boolean;
+  simulationData?: any;
+}
 
-  #transactionFinishedSubscription;
+interface ApproveState {
+  approved: boolean;
+  gasError?: any;
+  ready: boolean;
+  mode: string;
+  over: boolean;
+  analyticsParams: any;
+  gasSelected: any;
+  gasSelectedTemp: any;
+  transactionConfirmed: boolean;
+  shouldAddNickname: boolean;
+  shouldVerifyContractDetails: boolean;
+  suggestedGasLimit?: any;
+  eip1559GasObject: any;
+  eip1559GasTransaction: any;
+  legacyGasObject: any;
+  legacyGasTransaction: any;
+  isBlockExplorerVisible: boolean;
+  address: string;
+  tokenAllowanceState?: any;
+  isGasEstimateStatusIn: boolean;
+  isChangeInSimulationModalOpen: boolean;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  pollToken?: any;
+  stopUpdateGas?: boolean;
+  advancedGasInserted?: boolean;
+  transactionHandled?: boolean;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
-  static navigationOptions = ({ navigation }) =>
-    getApproveNavbar('approve.title', navigation);
+class Approve extends PureComponent<ApproveProps, ApproveState> {
+  static contextType = ThemeContext;
 
-  static propTypes = {
-    /**
-     * List of accounts from the AccountTrackerController
-     */
-    accounts: PropTypes.object,
-    /**
-     * Transaction state
-     */
-    transaction: PropTypes.object.isRequired,
-    /**
-     * Action that sets transaction attributes from object to a transaction
-     */
-    setTransactionObject: PropTypes.func.isRequired,
-    /**
-     * List of transactions
-     */
-    transactions: PropTypes.array,
-    /**
-     * A string representing the network name
-     */
-    providerType: PropTypes.string,
-    /**
-     * Whether the modal is visible
-     */
-    modalVisible: PropTypes.bool,
-    /**
-    /* Hide modal visible or not
-    */
-    hideModal: PropTypes.func,
-    /**
-     * Current selected ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Gas fee estimates returned by the gas fee controller
-     */
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * Estimate type returned by the gas fee controller, can be market-fee, legacy or eth_gasPrice
-     */
-    gasEstimateType: PropTypes.string,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * A string representing the network chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * ID of the global network client
-     */
-    networkClientId: PropTypes.string,
-    /**
-     * An object of all saved addresses
-     */
-    addressBook: PropTypes.object,
-    networkConfigurations: PropTypes.object,
-    providerRpcTarget: PropTypes.string,
-    /**
-     * Set transaction nonce
-     */
-    setNonce: PropTypes.func,
-    /**
-     * Set proposed nonce (from network)
-     */
-    setProposedNonce: PropTypes.func,
-    /**
-     * Indicates whether custom nonce should be shown in transaction editor
-     */
-    showCustomNonce: PropTypes.bool,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-    /**
-     * Object containing simulation data
-     */
-    simulationData: PropTypes.object,
-  };
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  appStateListener: any;
 
-  state = {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  #transactionFinishedSubscription: any;
+
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static navigationOptions = ({ navigation }: any) =>
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (getApproveNavbar as any)('approve.title', navigation);
+
+  state: ApproveState = {
     approved: false,
     gasError: undefined,
     ready: false,
@@ -213,7 +213,9 @@ class Approve extends PureComponent {
     isChangeInSimulationModalOpen: false,
   };
 
-  computeGasEstimates = (overrideGasLimit, gasEstimateTypeChanged) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  computeGasEstimates = (overrideGasLimit?: any, gasEstimateTypeChanged?: any) => {
     const { transaction, gasEstimateType } = this.props;
 
     const gasSelected = gasEstimateTypeChanged
@@ -269,7 +271,9 @@ class Approve extends PureComponent {
   closeVerifyContractDetails = () =>
     this.setState({ shouldVerifyContractDetails: false });
 
-  toggleModal = (val) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  toggleModal = (val: any) => {
     this.setState({
       shouldAddNickname: !this.state.shouldAddNickname,
       address: val,
@@ -284,15 +288,18 @@ class Approve extends PureComponent {
   setNetworkNonce = async () => {
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
-    const proposedNonce = await getNetworkNonce(transaction, networkClientId);
-    setNonce(proposedNonce);
-    setProposedNonce(proposedNonce);
+    const proposedNonce = await getNetworkNonce(
+      transaction,
+      networkClientId as string,
+    );
+    setNonce?.(proposedNonce);
+    setProposedNonce?.(proposedNonce);
   };
 
   componentDidMount = async () => {
     const { showCustomNonce } = this.props;
     if (!this.props?.transaction?.id) {
-      this.props.hideModal();
+      this.props.hideModal?.();
       return null;
     }
     if (!this.props?.transaction?.gas) this.handleGetGasLimit();
@@ -314,12 +321,12 @@ class Approve extends PureComponent {
     const estimation = await getGasLimit(
       { ...transaction, gas: undefined },
       false,
-      networkClientId,
+      networkClientId as string,
     );
     setTransactionObject({ gas: estimation.gas });
   };
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate = (prevProps: ApproveProps) => {
     const { transaction } = this.props;
 
     const gasEstimateTypeChanged =
@@ -336,7 +343,9 @@ class Approve extends PureComponent {
           !transaction.gas.eq(prevProps?.transaction?.gas) ||
           !this.state.ready)
       ) {
-        this.computeGasEstimates(null, null, gasEstimateTypeChanged);
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (this.computeGasEstimates as any)(null, null, gasEstimateTypeChanged);
       }
     }
   };
@@ -345,7 +354,9 @@ class Approve extends PureComponent {
     const { approved } = this.state;
     const { transaction } = this.props;
 
-    await stopGasPolling(this.state.pollToken);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (stopGasPolling as any)(this.state.pollToken);
 
     const isLedgerAccount = isHardwareAccount(transaction.from, [
       ExtendedKeyringTypes.ledger,
@@ -370,7 +381,7 @@ class Approve extends PureComponent {
     }
   };
 
-  handleAppStateChange = (appState) => {
+  handleAppStateChange = (appState: string) => {
     if (appState !== 'active') {
       const { transaction } = this.props;
       Engine.rejectPendingApproval(
@@ -382,7 +393,7 @@ class Approve extends PureComponent {
         },
       );
 
-      this.props.hideModal();
+      this.props.hideModal?.();
     }
   };
 
@@ -393,7 +404,9 @@ class Approve extends PureComponent {
     this.review();
   };
 
-  saveGasEditionLegacy = (legacyGasTransaction, legacyGasObject) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  saveGasEditionLegacy = (legacyGasTransaction: any, legacyGasObject: any) => {
     legacyGasTransaction.error = this.validateGas(
       legacyGasTransaction.totalHex,
     );
@@ -405,12 +418,16 @@ class Approve extends PureComponent {
     this.review();
   };
 
-  saveGasEdition = (eip1559GasTransaction, eip1559GasObject) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  saveGasEdition = (eip1559GasTransaction: any, eip1559GasObject: any) => {
     this.setState({ eip1559GasTransaction, eip1559GasObject });
     this.review();
   };
 
-  validateGas = (total) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  validateGas = (total: any) => {
     let error;
     const {
       ticker,
@@ -418,7 +435,7 @@ class Approve extends PureComponent {
       accounts,
     } = this.props;
 
-    const fromAccount = accounts[safeToChecksumAddress(from)];
+    const fromAccount = accounts[safeToChecksumAddress(from) as string];
 
     const weiBalance = hexToBN(fromAccount.balance);
     const totalTransactionValue = hexToBN(total);
@@ -445,8 +462,10 @@ class Approve extends PureComponent {
     return buildTransactionParams({
       gasDataEIP1559,
       gasDataLegacy,
-      gasEstimateType,
-      showCustomNonce,
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      gasEstimateType: gasEstimateType as any,
+      showCustomNonce: Boolean(showCustomNonce),
       transaction,
     });
   };
@@ -466,7 +485,9 @@ class Approve extends PureComponent {
     }
   };
 
-  onLedgerConfirmation = (approve, transactionId, gaParams) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onLedgerConfirmation = (approve: boolean, transactionId: any, gaParams: any) => {
     const { metrics } = this.props;
     try {
       //manual cancel from UI when transaction is awaiting from ledger confirmation
@@ -546,7 +567,9 @@ class Approve extends PureComponent {
     this.setState({ transactionConfirmed: true });
 
     try {
-      const transaction = this.prepareTransaction();
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const transaction: any = this.prepareTransaction();
       const isLedgerAccount = isHardwareAccount(transaction.from, [
         ExtendedKeyringTypes.ledger,
       ]);
@@ -554,11 +577,11 @@ class Approve extends PureComponent {
       this.#transactionFinishedSubscription =
         Engine.controllerMessenger.subscribeOnceIf(
           'TransactionController:transactionFinished',
-          (transactionMeta) => {
+          (transactionMeta: any) => {
             if (transactionMeta.status === 'submitted') {
               if (!isLedgerAccount) {
                 this.setState({ approved: true });
-                this.props.hideModal();
+                this.props.hideModal?.();
               }
               NotificationManager.watchSubmittedTransaction({
                 ...transactionMeta,
@@ -566,15 +589,17 @@ class Approve extends PureComponent {
               });
             } else {
               Logger.error(
-                transactionMeta.error,
+                transactionMeta.error as Error,
                 'error while trying to finish a transaction (Approve)',
               );
             }
           },
-          (transactionMeta) => transactionMeta.id === transaction.id,
+          (transactionMeta: any) => transactionMeta.id === transaction.id,
         );
 
-      const fullTx = transactions.find(({ id }) => id === transaction.id);
+      const fullTx = (transactions as any[]).find(
+        ({ id }) => id === transaction.id,
+      );
 
       const updatedTx = {
         ...fullTx,
@@ -584,7 +609,7 @@ class Approve extends PureComponent {
           chainId,
         },
       };
-      await updateTransaction(updatedTx);
+      await updateTransaction(updatedTx, undefined as unknown as string);
       await KeyringController.resetQRKeyringState();
 
       // For Ledger Accounts we handover the signing to the confirmation flow
@@ -597,16 +622,18 @@ class Approve extends PureComponent {
           ...createLedgerTransactionModalNavDetails({
             transactionId: transaction.id,
             deviceId,
-            onConfirmationComplete: (approve) =>
+            onConfirmationComplete: (approve: boolean) =>
               this.onLedgerConfirmation(
                 approve,
                 transaction.id,
                 this.getAnalyticsParams(),
               ),
             type: 'signTransaction',
-          }),
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any),
         );
-        this.props.hideModal();
+        this.props.hideModal?.();
         return;
       }
 
@@ -614,7 +641,7 @@ class Approve extends PureComponent {
         waitForResult: !shouldUseSmartTransaction,
       });
       if (shouldUseSmartTransaction) {
-        this.props.hideModal();
+        this.props.hideModal?.();
       }
       metrics.trackEvent(
         metrics
@@ -624,17 +651,20 @@ class Approve extends PureComponent {
       );
     } catch (error) {
       if (
-        !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
-        !error?.message.startsWith(STX_NO_HASH_ERROR)
+        !(error as Error)?.message.startsWith(KEYSTONE_TX_CANCELED) &&
+        !(error as Error)?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error ? (error as Error).message : undefined,
           [{ text: 'OK' }],
         );
-        Logger.error(error, 'error while trying to send transaction (Approve)');
+        Logger.error(
+          error as Error,
+          'error while trying to send transaction (Approve)',
+        );
         this.setState({ transactionHandled: true });
-        this.props.hideModal();
+        this.props.hideModal?.();
       } else {
         metrics.trackEvent(
           metrics
@@ -665,7 +695,7 @@ class Approve extends PureComponent {
         .addProperties(this.getAnalyticsParams())
         .build(),
     );
-    hideModal();
+    hideModal?.();
 
     NotificationManager.showSimpleNotification({
       status: `simple_notification_rejected`,
@@ -679,7 +709,7 @@ class Approve extends PureComponent {
     this.onModeChange(REVIEW);
   };
 
-  onModeChange = (mode) => {
+  onModeChange = (mode: string) => {
     const { metrics } = this.props;
     this.setState({ mode });
     if (mode === EDIT) {
@@ -693,7 +723,9 @@ class Approve extends PureComponent {
     }
   };
 
-  setAnalyticsParams = (analyticsParams) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setAnalyticsParams = (analyticsParams: any) => {
     this.setState({ analyticsParams });
   };
 
@@ -714,7 +746,9 @@ class Approve extends PureComponent {
     }
   };
 
-  updateGasSelected = (selected) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateGasSelected = (selected: any) => {
     this.setState({
       stopUpdateGas: !selected,
       gasSelectedTemp: selected,
@@ -729,7 +763,9 @@ class Approve extends PureComponent {
     this.setState({ isAnimating: false });
   };
 
-  updateTransactionState = (gas) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateTransactionState = (gas: any) => {
     const gasError = this.validateGas(gas.totalMaxHex || gas.totalHex);
 
     this.setState({
@@ -746,12 +782,15 @@ class Approve extends PureComponent {
     });
   };
 
-  updateTokenAllowanceState = (value) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateTokenAllowanceState = (value: any) => {
     this.setState({ tokenAllowanceState: value });
   };
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const {
@@ -805,18 +844,24 @@ class Approve extends PureComponent {
 
     const savedContactList = checkIfAddressIsSaved(
       addressBook,
-      chainId,
+      chainId as string,
       transaction,
     );
 
-    const savedContactListToArray = Object.values(addressBook).flatMap(
-      (value) => Object.values(value),
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const savedContactListToArray: any[] = Object.values(addressBook).flatMap(
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (value: any) => Object.values(value),
     );
 
     let addressNickname = '';
 
     const filteredSavedContactList = savedContactListToArray.filter(
-      (contact) => contact.address === safeToChecksumAddress(address),
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (contact: any) => contact.address === safeToChecksumAddress(address),
     );
 
     if (filteredSavedContactList.length > 0) {
@@ -845,7 +890,7 @@ class Approve extends PureComponent {
         propagateSwipe
       >
         {shouldAddNickname ? (
-          <AddNickname
+          <AddNicknameTyped
             closeModal={this.toggleModal}
             address={address}
             savedContactListToArray={savedContactListToArray}
@@ -855,8 +900,9 @@ class Approve extends PureComponent {
             providerRpcTarget={providerRpcTarget}
             networkConfigurations={networkConfigurations}
           />
-        ) : this.state.isBlockExplorerVisible && !isNonEvmChainId(chainId) ? (
-          <ShowBlockExplorer
+        ) : this.state.isBlockExplorerVisible &&
+          !isNonEvmChainId(chainId as string) ? (
+          <ShowBlockExplorerTyped
             setIsBlockExplorerVisible={this.setIsBlockExplorerVisible}
             type={providerType}
             address={transaction.to}
@@ -876,7 +922,7 @@ class Approve extends PureComponent {
                 ready={ready}
                 review={this.review}
               >
-                <ApproveTransactionReview
+                <ApproveTransactionReviewTyped
                   gasError={gasError}
                   onCancel={this.onCancel}
                   onConfirm={this.onConfirm}
@@ -919,7 +965,7 @@ class Approve extends PureComponent {
 
             {mode !== 'review' &&
               (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET ? (
-                <EditGasFee1559
+                <EditGasFee1559Typed
                   selectedGasValue={gasSelected}
                   initialSuggestedGasLimit={this.state.suggestedGasLimit}
                   gasOptions={gasFeeEstimates}
@@ -936,7 +982,7 @@ class Approve extends PureComponent {
                   selectedGasObject={selectedGasObject}
                 />
               ) : (
-                <EditGasFeeLegacy
+                <EditGasFeeLegacyTyped
                   onCancel={this.cancelGasEdition}
                   onSave={this.saveGasEditionLegacy}
                   animateOnChange={animateOnChange}
@@ -959,7 +1005,7 @@ class Approve extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
   const networkClientId = transaction?.networkId;
@@ -988,16 +1034,19 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  setTransactionObject: (transaction) =>
+// TODO: Replace "any" with type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const mapDispatchToProps = (dispatch: any) => ({
+  setTransactionObject: (transaction: any) =>
     dispatch(setTransactionObject(transaction)),
-  setNonce: (nonce) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
+  setNonce: (nonce: any) => dispatch(setNonce(nonce)),
+  setProposedNonce: (nonce: any) => dispatch(setProposedNonce(nonce)),
 });
-
-Approve.contextType = ThemeContext;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Approve));
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+)(withMetricsAwareness(Approve as any));
