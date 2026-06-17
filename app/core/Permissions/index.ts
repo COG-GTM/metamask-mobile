@@ -1,18 +1,16 @@
-import ImportedEngine from '../Engine';
+import Engine from '../Engine';
 import Logger from '../../util/Logger';
 import TransactionTypes from '../TransactionTypes';
 import { CaipChainId, Hex, KnownCaipNamespace } from '@metamask/utils';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { Caip25CaveatType, Caip25CaveatValue, Caip25EndowmentPermissionName, getEthAccounts, getPermittedEthChainIds, setEthAccounts, setPermittedEthChainIds } from '@metamask/chain-agnostic-permission';
-import { CaveatConstraint, PermissionDoesNotExistError } from '@metamask/permission-controller';
+import { Caveat, CaveatConstraint, PermissionDoesNotExistError } from '@metamask/permission-controller';
 import { captureException } from '@sentry/react-native';
 import { toHex } from '@metamask/controller-utils';
 
 const INTERNAL_ORIGINS = [process.env.MM_FOX_CODE, TransactionTypes.MMM];
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Engine = ImportedEngine as any;
+type Caip25Caveat = Caveat<typeof Caip25CaveatType, Caip25CaveatValue>;
 
 /**
  * Checks that all accounts referenced have a matching InternalAccount. Sends
@@ -38,9 +36,12 @@ const captureKeyringTypesWithMissingIdentities = (
 
   const internalAccountCount = internalAccounts.length;
 
-  const accountTrackerCount = Object.keys(
-    Engine.context.AccountTrackerController.state.accounts || {},
-  ).length;
+  const { accountsByChainId } = Engine.context.AccountTrackerController.state;
+  const accountTrackerCount = new Set(
+    Object.values(accountsByChainId || {}).flatMap((chainAccounts) =>
+      Object.keys(chainAccounts),
+    ),
+  ).size;
 
   captureException(
     new Error(
@@ -197,14 +198,16 @@ export const getDefaultCaip25CaveatValue = (): Caip25CaveatValue => ({
 });
 
 // Returns the CAIP-25 caveat or undefined if it does not exist
-export const getCaip25Caveat = (origin: string) => {
-  let caip25Caveat;
+export const getCaip25Caveat = (
+  origin: string,
+): Caip25Caveat | undefined => {
+  let caip25Caveat: Caip25Caveat | undefined;
   try {
     caip25Caveat = Engine.context.PermissionController.getCaveat(
       origin,
       Caip25EndowmentPermissionName,
       Caip25CaveatType,
-    );
+    ) as Caip25Caveat | undefined;
   } catch (err) {
     if (err instanceof PermissionDoesNotExistError) {
       // suppress expected error in case that the origin
@@ -361,14 +364,7 @@ export const removePermittedChain = (hostname: string, chainId: string) => {
       `Cannot remove chain permissions for origin "${hostname}": no permission currently exists for this origin.`,
     );
   }
-  const { PermissionController } = Engine.context;
-  const caveat = PermissionController.getCaveat(
-    hostname,
-    Caip25EndowmentPermissionName,
-    Caip25CaveatType,
-  );
-
-  const permittedChainIds = getPermittedEthChainIds(caveat);
+  const permittedChainIds = getPermittedEthChainIds(caip25Caveat.value);
   const newPermittedChains = permittedChainIds.filter((chain: string) => chain !== chainId);
   updatePermittedChains(hostname, newPermittedChains, true);
 };
@@ -393,7 +389,7 @@ export const getPermittedAccounts = (
   const { AccountsController, PermissionController, KeyringController } =
     Engine.context;
 
-  let caveat;
+  let caveat: Caip25Caveat | undefined;
   try {
     if (INTERNAL_ORIGINS.includes(origin)) {
       const selectedAccountAddress =
@@ -406,7 +402,7 @@ export const getPermittedAccounts = (
       origin,
       Caip25EndowmentPermissionName,
       Caip25CaveatType,
-    );
+    ) as Caip25Caveat | undefined;
   } catch (err) {
     if (err instanceof PermissionDoesNotExistError) {
       // suppress expected error in case that the origin
@@ -417,6 +413,10 @@ export const getPermittedAccounts = (
   }
 
   if (!KeyringController.isUnlocked() && !ignoreLock) {
+    return [];
+  }
+
+  if (!caveat) {
     return [];
   }
 
@@ -437,8 +437,8 @@ export const getPermittedChains = async (
   const caveat = PermissionController.getCaveat(
     hostname,
     Caip25EndowmentPermissionName,
-    Caip25CaveatType
-  );
+    Caip25CaveatType,
+  ) as Caip25Caveat | undefined;
 
   if (caveat) {
     const chains = getPermittedEthChainIds(caveat.value).map(
