@@ -1,6 +1,6 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Theme } from '@metamask/design-tokens';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { connect } from 'react-redux';
 import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selectors/Browser/SigningBottomSheet.selectors';
@@ -21,8 +21,9 @@ import withQRHardwareAwareness from '../../../../../UI/QRHardware/withQRHardware
 import WebsiteIcon from '../../../../../UI/WebsiteIcon';
 import BlockaidBanner from '../BlockaidBanner/BlockaidBanner';
 import { ResultType } from '../BlockaidBanner/BlockaidBanner.types';
+import { RootState } from '../../../../../../reducers';
 
-const getCleanUrl = (url) => {
+const getCleanUrl = (url: string) => {
   try {
     const urlObject = new URL(url);
 
@@ -32,7 +33,9 @@ const getCleanUrl = (url) => {
   }
 };
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -122,62 +125,39 @@ const createStyles = (colors) =>
     },
   });
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// TODO: Replace "any" with type
+interface SignatureRequestProps {
+  onReject?: () => void;
+  onConfirm?: () => void;
+  children?: React.ReactNode;
+  currentPageInformation?: any;
+  type?: string;
+  networkType?: string;
+  truncateMessage?: boolean;
+  toggleExpandedMessage?: () => void;
+  fromAddress?: string;
+  isSigningQRObject?: boolean;
+  QRState?: any;
+  testID?: string;
+  securityAlertResponse?: any;
+  metrics?: any;
+  navigation?: any;
+  domain?: any;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 /**
  * PureComponent that renders scrollable content inside signature request user interface
  */
-class SignatureRequest extends PureComponent {
-  static propTypes = {
-    /**
-     * Callback triggered when this message signature is rejected
-     */
-    onReject: PropTypes.func,
-    /**
-     * Callback triggered when this message signature is approved
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Content to display above the action buttons
-     */
-    children: PropTypes.node,
-    /**
-     * Object containing current page title and url
-     */
-    currentPageInformation: PropTypes.object,
-    /**
-     * String representing signature type
-     */
-    type: PropTypes.string,
-    /**
-     * String representing the associated network
-     */
-    networkType: PropTypes.string,
-    /**
-     * Whether it should render the expand arrow icon
-     */
-    truncateMessage: PropTypes.bool,
-    /**
-     * Expands the message box on press.
-     */
-    toggleExpandedMessage: PropTypes.func,
-    /**
-     * Active address of account that triggered signing.
-     */
-    fromAddress: PropTypes.string,
-    isSigningQRObject: PropTypes.bool,
-    QRState: PropTypes.object,
-    testID: PropTypes.string,
-    securityAlertResponse: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class SignatureRequest extends PureComponent<SignatureRequestProps> {
+  static contextType = ThemeContext;
 
   /**
    * Calls trackCancelSignature and onReject callback
    */
   onReject = () => {
-    this.props.onReject();
+    this.props.onReject?.();
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CANCEL_SIGNATURE)
@@ -190,7 +170,7 @@ class SignatureRequest extends PureComponent {
    * Calls trackConfirmSignature and onConfirm callback
    */
   onConfirm = () => {
-    this.props.onConfirm();
+    this.props.onConfirm?.();
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_SIGNATURE)
@@ -213,7 +193,8 @@ class SignatureRequest extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     return createStyles(colors);
   };
 
@@ -256,13 +237,13 @@ class SignatureRequest extends PureComponent {
         <View style={styles.accountInfoCardWrapper}>
           <AccountInfoCard
             operation="signing"
-            fromAddress={fromAddress}
+            fromAddress={fromAddress as string}
             origin={title}
           />
         </View>
         <TouchableOpacity
           style={styles.children}
-          onPress={truncateMessage ? toggleExpandedMessage : null}
+          onPress={truncateMessage ? toggleExpandedMessage : undefined}
         >
           <WebsiteIcon
             style={styles.domainLogo}
@@ -324,7 +305,7 @@ class SignatureRequest extends PureComponent {
     const { securityAlertResponse, fromAddress } = this.props;
     let expandedHeight;
     const styles = this.getStyles();
-    const isLedgerAccount = isHardwareAccount(fromAddress, [
+    const isLedgerAccount = isHardwareAccount(fromAddress as string, [
       ExtendedKeyringTypes.ledger,
     ]);
 
@@ -385,7 +366,7 @@ class SignatureRequest extends PureComponent {
           showCancelButton
           showHint={false}
           bypassAndroidCameraAccessCheck={false}
-          fromAddress={fromAddress}
+          fromAddress={fromAddress as string}
         />
       </View>
     );
@@ -399,13 +380,15 @@ class SignatureRequest extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   securityAlertResponse: state.signatureRequest.securityAlertResponse,
 });
 
-SignatureRequest.contextType = ThemeContext;
-
 export default connect(mapStateToProps)(
-  withQRHardwareAwareness(withMetricsAwareness(SignatureRequest)),
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  withQRHardwareAwareness(
+    withMetricsAwareness(SignatureRequest as any) as any,
+  ),
 );
