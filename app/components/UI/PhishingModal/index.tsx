@@ -11,7 +11,6 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
-import URL from 'url-parse';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import Button from '../../../component-library/components/Buttons/Button/Button';
 import {
@@ -123,10 +122,6 @@ interface PhishingModalProps {
 }
 
 export default class PhishingModal extends PureComponent<PhishingModalProps> {
-  goBackToSafety = () => {
-    this.props.goBackToSafety?.();
-  };
-
   shareToTwitter = () => {
     const tweetText =
       'MetaMask just protected me from a phishing attack! Remember to always stay vigilant when clicking on links. Learn more at https://metamask.io';
@@ -144,8 +139,6 @@ export default class PhishingModal extends PureComponent<PhishingModalProps> {
     const colors =
       (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const urlObj = new URL(this.props.fullUrl ?? '');
-    const host = urlObj.hostname;
 
     return (
       <View style={styles.phishingModalWrapper}>
@@ -186,7 +179,7 @@ export default class PhishingModal extends PureComponent<PhishingModalProps> {
         <Button
           variant={ButtonVariants.Primary}
           label={strings('phishing.back_to_safety')}
-          onPress={this.goBackToSafety}
+          onPress={this.props.goBackToSafety as () => void}
           style={styles.buttonWrapper}
           width={ButtonWidthTypes.Full}
         />

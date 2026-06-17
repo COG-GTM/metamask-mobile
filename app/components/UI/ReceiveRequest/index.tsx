@@ -268,7 +268,9 @@ class ReceiveRequest extends PureComponent<
             />
           </View>
 
-          <QRAccountDisplay accountAddress={this.props.selectedAddress ?? ''} />
+          <QRAccountDisplay
+            accountAddress={this.props.selectedAddress as string}
+          />
 
           <View style={styles.actionRow}>
             <StyledButton
