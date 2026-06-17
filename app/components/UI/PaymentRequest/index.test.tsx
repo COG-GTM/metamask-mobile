@@ -129,8 +129,10 @@ const renderComponent = (props = {}) =>
     <Provider store={store}>
       <ThemeContext.Provider value={mockTheme}>
         <PaymentRequest
-          navigation={mockNavigation}
-          route={mockRoute}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          navigation={mockNavigation as any}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          route={mockRoute as any}
           {...props}
         />
       </ThemeContext.Provider>
