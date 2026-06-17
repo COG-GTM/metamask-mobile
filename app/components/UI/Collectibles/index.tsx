@@ -96,8 +96,7 @@ export default class Collectibles extends PureComponent<
 
   actionSheet: typeof ActionSheet = null;
 
-  longPressedCollectible: (Collectible & { current?: Collectible }) | null =
-    null;
+  longPressedCollectible: Collectible | null = null;
 
   renderEmpty = () => {
     const colors = (this.context as React.ContextType<typeof ThemeContext>).colors || mockTheme.colors;
@@ -143,10 +142,12 @@ export default class Collectibles extends PureComponent<
   refreshMetadata = () => {
     const { NftController } = Engine.context;
 
-    if (!this.longPressedCollectible?.current) return;
+    const longPressedCollectible = this.longPressedCollectible as Collectible & {
+      current: Collectible;
+    };
     NftController.addNft(
-      this.longPressedCollectible.current.address,
-      this.longPressedCollectible.current.tokenId,
+      longPressedCollectible.current.address,
+      longPressedCollectible.current.tokenId,
     );
   };
 
