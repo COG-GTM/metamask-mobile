@@ -61,7 +61,9 @@ describe('isDefaultAccountName', () => {
   });
   const accountNameUndefined = undefined;
   it('should not match RegEx if name is undefined', () => {
-    expect(isDefaultAccountName(accountNameUndefined)).toEqual(false);
+    expect(
+      isDefaultAccountName(accountNameUndefined as unknown as string),
+    ).toEqual(false);
   });
   const accountNameNotDefault = 'Johns Wallet';
   it('should not match RegEx if name does not has default pattern', () => {

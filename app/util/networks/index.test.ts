@@ -567,7 +567,11 @@ describe('network-utils', () => {
         scopes: ['unknown:network'],
         address: 'invalidAddress123',
       };
-      const url = findBlockExplorerForNonEvmAccount(MOCK_INVALID_ACCOUNT);
+      const url = findBlockExplorerForNonEvmAccount(
+        MOCK_INVALID_ACCOUNT as unknown as Parameters<
+          typeof findBlockExplorerForNonEvmAccount
+        >[0],
+      );
       expect(url).toBe(undefined);
     });
 

@@ -37,12 +37,20 @@ describe('CustomGas utils :: parseWaitTime', () => {
 
 describe('CustomGas Util:: GetGasLimit', () => {
   it('should return passed gas value', async () => {
-    const estimate = await getGasLimit({ gas: '0x9fd2', gasPrice: '12' });
+    const estimate = await getGasLimit({
+      gas: '0x9fd2',
+      gasPrice: '12',
+    } as unknown as Parameters<typeof getGasLimit>[0]);
     expect(estimate.gas.toNumber()).toEqual(40914);
   });
 
   it('should fetch new estimated gas value', async () => {
-    const estimate = await getGasLimit({ gas: '0x9fd2', gasPrice: '12' }, true);
+    const estimate = await getGasLimit(
+      { gas: '0x9fd2', gasPrice: '12' } as unknown as Parameters<
+        typeof getGasLimit
+      >[0],
+      true,
+    );
     expect(estimate.gas.toNumber()).toEqual(21000);
   });
 });

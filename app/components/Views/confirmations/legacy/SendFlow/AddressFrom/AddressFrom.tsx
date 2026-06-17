@@ -113,7 +113,10 @@ const SendFlowAddressFrom = ({
     const balance = `${renderFromWei(accounts[address].balance)} ${getTicker(
       ticker,
     )}`;
-    const ens = await doENSReverseLookup(address);
+    const ens = await doENSReverseLookup(
+      address,
+      undefined as unknown as string,
+    );
     const accName = ens || name;
     const balanceIsZero = hexToBN(accounts[address].balance).isZero();
     selectedAssetAction(getEther(ticker as string));

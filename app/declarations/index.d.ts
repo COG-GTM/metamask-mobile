@@ -296,6 +296,24 @@ declare module '@metamask/react-native-actionsheet' {
 
 declare module '@metamask/react-native-search-api';
 
+declare module 'unicode-confusables' {
+  export function confusables(
+    input: string,
+  ): { point: string; similarTo?: string }[];
+  export function remove(input: string): string;
+  export function isConfusing(input: string): boolean;
+}
+
+declare module '@metamask/ethjs-unit';
+
+declare module 'number-to-bn';
+
+declare module 'ethereumjs-abi';
+
+declare module 'humanize-duration';
+
+declare module 'ethjs-ens';
+
 /**
  * @sentry/react-native types for v^6.10.0
  * Types are overridden to ensure captureException receives an Error type for more reliable stack traces
@@ -408,3 +426,6 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'enzyme-adapter-react-16';
+declare module '@react-native-clipboard/clipboard/jest/clipboard-mock.js';

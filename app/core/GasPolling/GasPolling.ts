@@ -140,7 +140,7 @@ export const getEIP1559TransactionData = ({
           ...gas,
           estimatedBaseFee: gasFeeEstimates.estimatedBaseFee,
         },
-      },
+      } as unknown as Parameters<typeof parseTransactionEIP1559>[0],
       { onlyGas },
     );
 

@@ -627,7 +627,9 @@ const Wallet = ({
   const getNftDetectionAnalyticsParams = useCallback((nft: Nft) => {
     try {
       return {
-        chain_id: getDecimalChainId(nft.chainId),
+        chain_id: getDecimalChainId(
+          nft.chainId as unknown as string,
+        ) as unknown as number,
         source: 'detected' as const,
       };
     } catch (error) {

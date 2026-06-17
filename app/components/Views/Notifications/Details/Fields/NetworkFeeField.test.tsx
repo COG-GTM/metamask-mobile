@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import NetworkFeeField from './NetworkFeeField';
 import { ModalFieldType } from '../../../../../util/notifications';
+import { ModalFieldNetworkFee } from '../../../../../util/notifications/notification-states/types/NotificationModalDetails';
 import { processNotification } from '@metamask/notification-services-controller/notification-services';
 import { createMockNotificationEthReceived } from '@metamask/notification-services-controller/notification-services/mocks';
 import NetworkFeeFieldSkeleton from './Skeletons/NetworkFeeField';
@@ -66,7 +67,9 @@ describe('NetworkFeeField', () => {
             transactionFeeInEth: '0',
             transactionFeeInUsd: '0',
             chainId: '0x1',
-          })
+          } as unknown as Awaited<
+            ReturnType<ModalFieldNetworkFee['getNetworkFees']>
+          >)
         }
         notification={MOCK_NOTIFICATION}
       />,
@@ -100,7 +103,9 @@ describe('NetworkFeeField', () => {
             transactionFeeInEth: '0',
             transactionFeeInUsd: '0',
             chainId: '0x1',
-          })
+          } as unknown as Awaited<
+            ReturnType<ModalFieldNetworkFee['getNetworkFees']>
+          >)
         }
         notification={MOCK_NOTIFICATION}
       />,

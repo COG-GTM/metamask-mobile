@@ -1,4 +1,7 @@
-/* eslint-disable import/no-commonjs, import/no-nodejs-modules */
+/* eslint-disable */
+// @ts-nocheck
+// Jest asset transformer. Loaded directly by Jest's runtime (not through the
+// babel transform pipeline), so it must remain plain CommonJS without TS syntax.
 const path = require('path');
 
 module.exports = {

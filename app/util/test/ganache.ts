@@ -13,14 +13,18 @@ const defaultOptions = {
 };
 
 export default class Ganache {
-  async start(opts) {
+  _server?: ReturnType<typeof ganache.server>;
+
+  async start(opts: { mnemonic?: string; [key: string]: unknown }) {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
     const options = { ...defaultOptions, ...opts, port: getGanachePort() };
     const { port } = options;
     try {
-      this._server = ganache.server(options);
+      this._server = ganache.server(
+        options as unknown as Parameters<typeof ganache.server>[0],
+      );
       await this._server.listen(port);
     } catch (error) {
       console.error(error);

@@ -23,7 +23,9 @@ const getBalance = async (address: string, ethQuery: EthQuery): Promise<Hex> =>
         reject(error);
         Logger.error(error);
       } else {
-        const balanceHex = BNToHex(balance);
+        const balanceHex = BNToHex(
+          balance as unknown as Parameters<typeof BNToHex>[0],
+        );
         resolve(balanceHex || ZERO_BALANCE);
       }
     });

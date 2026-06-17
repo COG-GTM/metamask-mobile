@@ -580,7 +580,10 @@ export async function validateAddressOrENS(
     }
     const checksummedAddress = toChecksumAddress(toAccount);
     addressReady = true;
-    const ens = await doENSReverseLookup(checksummedAddress);
+    const ens = await doENSReverseLookup(
+      checksummedAddress,
+      undefined as unknown as string,
+    );
     if (ens) {
       toAddressName = ens;
       if (!contactAlreadySaved) {
@@ -626,7 +629,7 @@ export async function validateAddressOrENS(
     confusableCollection = collectConfusables(toEnsName);
     const resolvedAddress = await doENSLookup(toAccount, chainId);
     const contactAlreadySaved = checkIfAddressAlreadySaved(
-      resolvedAddress,
+      resolvedAddress as string,
       addressBook,
       chainId,
       internalAccounts,
@@ -700,7 +703,7 @@ export async function getAddress(
   chainId: string,
 ): Promise<string | null> {
   if (isENS(toAccount)) {
-    return await doENSLookup(toAccount, chainId);
+    return (await doENSLookup(toAccount, chainId)) as string | null;
   }
   if (isValidHexAddress(toAccount, { mixedCaseUseChecksum: true })) {
     return toAccount;

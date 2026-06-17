@@ -7,7 +7,11 @@ import ContractAddressRegistry from './contract-address-registry';
  * Ganache seeder is used to seed initial smart contract or set initial blockchain state.
  */
 class GanacheSeeder {
-  constructor(ganacheProvider) {
+  smartContractRegistry: ContractAddressRegistry;
+
+  ganacheProvider: ConstructorParameters<typeof Web3Provider>[0];
+
+  constructor(ganacheProvider: ConstructorParameters<typeof Web3Provider>[0]) {
     this.smartContractRegistry = new ContractAddressRegistry();
     this.ganacheProvider = ganacheProvider;
   }
@@ -18,7 +22,7 @@ class GanacheSeeder {
    * @param contractName
    */
 
-  async deploySmartContract(contractName) {
+  async deploySmartContract(contractName: string) {
     const ethersProvider = new Web3Provider(this.ganacheProvider, 'any');
     const signer = ethersProvider.getSigner();
     const fromAddress = await signer.getAddress();
@@ -31,11 +35,17 @@ class GanacheSeeder {
     let contract;
 
     if (contractName === SMART_CONTRACTS.HST) {
+      const hstConfig = contractConfiguration[SMART_CONTRACTS.HST] as {
+        initialAmount: number;
+        tokenName: string;
+        decimalUnits: number;
+        tokenSymbol: string;
+      };
       contract = await contractFactory.deploy(
-        contractConfiguration[SMART_CONTRACTS.HST].initialAmount,
-        contractConfiguration[SMART_CONTRACTS.HST].tokenName,
-        contractConfiguration[SMART_CONTRACTS.HST].decimalUnits,
-        contractConfiguration[SMART_CONTRACTS.HST].tokenSymbol,
+        hstConfig.initialAmount,
+        hstConfig.tokenName,
+        hstConfig.decimalUnits,
+        hstConfig.tokenSymbol,
       );
     } else {
       contract = await contractFactory.deploy();
@@ -69,7 +79,7 @@ class GanacheSeeder {
    * @param contractName
    * @param contractAddress
    */
-  storeSmartContractAddress(contractName, contractAddress) {
+  storeSmartContractAddress(contractName: string, contractAddress: string) {
     this.smartContractRegistry.storeNewContractAddress(
       contractName,
       contractAddress,

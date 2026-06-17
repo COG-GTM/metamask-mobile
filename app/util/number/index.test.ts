@@ -41,7 +41,7 @@ import {
 
 describe('Number utils :: BNToHex', () => {
   it('BNToHex', () => {
-    expect(BNToHex(new BN5('1337'))).toEqual('0x539');
+    expect(BNToHex(new BN5('1337') as unknown as BN4)).toEqual('0x539');
   });
 });
 
@@ -419,7 +419,7 @@ describe('Number utils :: renderFromWei', () => {
 });
 
 describe('Number utils :: localizeLargeNumber', () => {
-  let i18n: { t: unknown };
+  let i18n: { t: jest.Mock };
 
   beforeEach(() => {
     i18n = {
@@ -922,8 +922,8 @@ describe('Number utils :: isNumber', () => {
     expect(isNumber('.')).toBe(false);
     expect(isNumber('a¡1')).toBe(false);
     expect(isNumber('.01')).toBe(false);
-    expect(isNumber(undefined)).toBe(false);
-    expect(isNumber(null)).toBe(false);
+    expect(isNumber(undefined as unknown as string)).toBe(false);
+    expect(isNumber(null as unknown as string)).toBe(false);
   });
 });
 
@@ -1073,13 +1073,19 @@ describe('Number utils :: formatValueToMatchTokenDecimals', () => {
     expect(formatValueToMatchTokenDecimals(null, 18)).toBe(null);
   });
   it('should return the value if the decimal is undefined', () => {
-    expect(formatValueToMatchTokenDecimals('1', undefined)).toBe('1');
+    expect(
+      formatValueToMatchTokenDecimals('1', undefined as unknown as number),
+    ).toBe('1');
   });
   it('should return a formatted value if the decimal is null', () => {
-    expect(formatValueToMatchTokenDecimals('1', null)).toBe('1');
+    expect(
+      formatValueToMatchTokenDecimals('1', null as unknown as number),
+    ).toBe('1');
   });
   it('should return the value if the decimal is not a number', () => {
-    expect(formatValueToMatchTokenDecimals('1', 'a')).toBe('1');
+    expect(
+      formatValueToMatchTokenDecimals('1', 'a' as unknown as number),
+    ).toBe('1');
   });
   it('should return the value if the value decimal is equal to or less than the submitted decimal', () => {
     expect(formatValueToMatchTokenDecimals('1.2348', 4)).toBe('1.2348');

@@ -1,11 +1,8 @@
-(function (global, factory) {
-  exports && typeof exports === 'object' && typeof module !== 'undefined'
-    ? factory(exports)
-    : typeof define === 'function' && define.amd
-    ? define(['exports'], factory)
-    : factory((global.blockies = {}));
-})(this, (exports) => {
-  'use strict';
+/* eslint-disable */
+// @ts-nocheck
+// Vendored library (Blockies identicon / PNG generator by Robert Eisele, BSD).
+// Migrated from a UMD wrapper to an ES module; algorithm code left untyped.
+'use strict';
 
   /**
    * A handy class to calculate color values.
@@ -408,10 +405,7 @@
     return ret;
   }
 
-  exports.toDataUrl = toDataUrl;
-
-  Object.defineProperty(exports, '__esModule', { value: true });
-});
+export { toDataUrl };
 
 /**
  * Utility class with the single responsibility
