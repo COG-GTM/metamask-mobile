@@ -120,9 +120,10 @@ const OfflineMode = ({ navigation, infuraBlocked }: OfflineModeProps) => {
 
 (
   OfflineMode as React.FC<OfflineModeProps> & {
-    navigationOptions: () => unknown;
+    navigationOptions: (props: { navigation: unknown }) => unknown;
   }
-).navigationOptions = () => getOfflineModalNavbar();
+).navigationOptions = ({ navigation }) =>
+  (getOfflineModalNavbar as (navigation: unknown) => unknown)(navigation);
 
 const mapStateToProps = (state: RootState) => ({
   infuraBlocked: getInfuraBlockedSelector(state),
