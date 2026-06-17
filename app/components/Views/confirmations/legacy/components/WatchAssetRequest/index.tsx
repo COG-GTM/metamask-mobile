@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, Text, InteractionManager } from 'react-native';
 import URL from 'url-parse';
 import { useSelector } from 'react-redux';
@@ -22,8 +21,11 @@ import { AssetWatcherSelectorsIDs } from '../../../../../../../e2e/selectors/Tra
 import { getDecimalChainId } from '../../../../../../util/networks';
 import { useMetrics } from '../../../../../../components/hooks/useMetrics';
 import Logger from '../../../../../../util/Logger';
+import type BN from 'bnjs4';
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -96,12 +98,22 @@ const createStyles = (colors) =>
     },
   });
 
+interface WatchAssetRequestProps {
+  onCancel?: () => void;
+  onConfirm?: () => Promise<void> | void;
+  // TODO: Replace "any" with type
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  suggestedAssetMeta: any;
+  currentPageInformation?: any;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
+
 const WatchAssetRequest = ({
   suggestedAssetMeta,
   currentPageInformation,
   onCancel,
   onConfirm,
-}) => {
+}: WatchAssetRequestProps) => {
   const { asset, interactingAddress } = suggestedAssetMeta;
   // TODO - Once TokensController is updated, interactingAddress should always be defined
   const { colors } = useTheme();
@@ -111,7 +123,10 @@ const WatchAssetRequest = ({
   const chainId = useSelector(selectEvmChainId);
   const balanceWithSymbol = error
     ? strings('transaction.failed')
-    : `${renderFromTokenMinimalUnit(balance, asset.decimals)} ${asset.symbol}`;
+    : `${renderFromTokenMinimalUnit(
+        balance as BN,
+        asset.decimals,
+      )} ${asset.symbol}`;
 
   const activeTabUrl = useSelector(getActiveTabUrl, isEqual);
 
@@ -127,13 +142,16 @@ const WatchAssetRequest = ({
         source: 'Dapp suggested (watchAsset)',
       };
     } catch (error) {
-      Logger.error(error, 'WatchAssetRequest.getTokenAddedAnalyticsParams');
+      Logger.error(
+        error as Error,
+        'WatchAssetRequest.getTokenAddedAnalyticsParams',
+      );
       return undefined;
     }
   };
 
   const onConfirmPress = async () => {
-    await onConfirm();
+    await onConfirm?.();
     InteractionManager.runAfterInteractions(() => {
       const analyticsParams = getTokenAddedAnalyticsParams();
 
@@ -174,8 +192,20 @@ const WatchAssetRequest = ({
           dontWatchAsset
         />
       </View>
-      <View style={styles.titleWrapper}>
-        <Text style={styles.title} onPress={this.cancelSignature}>
+      <View
+        // styles.titleWrapper is undefined at runtime in the original JS;
+        // preserved as-is during type-only migration.
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        style={(styles as any).titleWrapper}
+      >
+        <Text
+          style={styles.title}
+          onPress={
+            (this as unknown as { cancelSignature?: () => void })
+              ?.cancelSignature
+          }
+        >
           {strings('watch_asset_request.title')}
         </Text>
       </View>
@@ -228,25 +258,6 @@ const WatchAssetRequest = ({
       </ActionView>
     </View>
   );
-};
-
-WatchAssetRequest.propTypes = {
-  /**
-   * Callback triggered when this message signature is rejected
-   */
-  onCancel: PropTypes.func,
-  /**
-   * Callback triggered when this message signature is approved
-   */
-  onConfirm: PropTypes.func,
-  /**
-   * Token object
-   */
-  suggestedAssetMeta: PropTypes.object,
-  /**
-   * Object containing current page title, url, and icon href
-   */
-  currentPageInformation: PropTypes.object,
 };
 
 export default WatchAssetRequest;
