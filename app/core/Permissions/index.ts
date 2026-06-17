@@ -433,12 +433,7 @@ export const getPermittedAccounts = (
 export const getPermittedChains = async (
   hostname: string,
 ): Promise<CaipChainId[]> => {
-  const { PermissionController } = Engine.context;
-  const caveat = PermissionController.getCaveat(
-    hostname,
-    Caip25EndowmentPermissionName,
-    Caip25CaveatType,
-  ) as Caip25Caveat | undefined;
+  const caveat = getCaip25Caveat(hostname);
 
   if (caveat) {
     const chains = getPermittedEthChainIds(caveat.value).map(
