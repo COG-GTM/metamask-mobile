@@ -12,10 +12,12 @@ describe('SelectComponent', () => {
   it('should render correctly', () => {
     const { toJSON } = renderWithProvider(
       <SelectComponent
-        options={[
-          { key: 'key 1', val: 'val 1', label: 'option 1' },
-          { key: 'key 2', val: 'val 2', label: 'option 2' },
-        ]}
+        options={
+          [
+            { key: 'key 1', val: 'val 1', label: 'option 1' },
+            { key: 'key 2', val: 'val 2', label: 'option 2' },
+          ] as { key: string; val: string; label: string }[]
+        }
         selectedValue={'val 2'}
         label={'Choose an option'}
       />,

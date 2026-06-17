@@ -21,12 +21,14 @@ describe('TokenImage', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <TokenImage
-          asset={{
-            address: '0x123',
-            symbol: 'ABC',
-            decimals: 18,
-            image: 'invalid-uri',
-          }}
+          asset={
+            {
+              address: '0x123',
+              symbol: 'ABC',
+              decimals: 18,
+              image: 'invalid-uri',
+            } as { address: string; image: string }
+          }
         />
       </Provider>,
     );

@@ -3,25 +3,23 @@ import {
   View,
   Text,
   StyleSheet,
-  Platform,
   Linking,
   TouchableOpacity,
+  FlexAlignType,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import URL from 'url-parse';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import generateTestId from '../../../../wdio/utils/generateTestId';
-import { ETHEREUM_DETECTION_TITLE } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
 import Button from '../../../component-library/components/Buttons/Button/Button';
 import {
   ButtonVariants,
   ButtonWidthTypes,
 } from '../../../component-library/components/Buttons/Button/Button.types';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     warningIcon: {
       color: colors.error.default,
@@ -89,7 +87,7 @@ const createStyles = (colors) =>
       color: colors.primary.default,
     },
     warningContainer: {
-      alignItems: 'left',
+      alignItems: 'left' as unknown as FlexAlignType,
     },
     buttonWrapper: {
       marginTop: 32,
@@ -97,27 +95,36 @@ const createStyles = (colors) =>
     },
   });
 
-export default class PhishingModal extends PureComponent {
-  static propTypes = {
-    /**
-     * name of the blacklisted url
-     */
-    fullUrl: PropTypes.string,
-    /**
-     * Called to the user decides to proceed to the phishing site
-     */
-    continueToPhishingSite: PropTypes.func,
-    /**
-     * Called to the user decides to report an issue
-     */
-    goToFilePhishingIssue: PropTypes.func,
-    /**
-     * Called when the user takes the recommended action
-     */
-    goBackToSafety: PropTypes.func,
-    /**
-     * Called to the user decides to share on Twitter
-     */
+interface PhishingModalProps {
+  /**
+   * name of the blacklisted url
+   */
+  fullUrl?: string;
+  /**
+   * Called when the user navigates to the ETH phishing detector
+   */
+  goToETHPhishingDetector?: () => void;
+  /**
+   * Called when the user navigates to etherscam
+   */
+  goToEtherscam?: () => void;
+  /**
+   * Called to the user decides to proceed to the phishing site
+   */
+  continueToPhishingSite?: () => void;
+  /**
+   * Called to the user decides to report an issue
+   */
+  goToFilePhishingIssue?: () => void;
+  /**
+   * Called when the user takes the recommended action
+   */
+  goBackToSafety?: () => void;
+}
+
+export default class PhishingModal extends PureComponent<PhishingModalProps> {
+  goBackToSafety = () => {
+    this.props.goBackToSafety?.();
   };
 
   shareToTwitter = () => {
@@ -134,9 +141,10 @@ export default class PhishingModal extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const urlObj = new URL(this.props.fullUrl);
+    const urlObj = new URL(this.props.fullUrl ?? '');
     const host = urlObj.hostname;
 
     return (
@@ -144,10 +152,7 @@ export default class PhishingModal extends PureComponent {
         <View style={styles.warningContainer}>
           <Icon name="warning" style={styles.warningIcon} />
         </View>
-        <Text
-          style={styles.phishingModalTitle}
-          {...generateTestId(Platform, ETHEREUM_DETECTION_TITLE)}
-        >
+        <Text style={styles.phishingModalTitle}>
           {strings('phishing.site_might_be_harmful')}
         </Text>
         <Text style={styles.phishingText}>
@@ -181,7 +186,7 @@ export default class PhishingModal extends PureComponent {
         <Button
           variant={ButtonVariants.Primary}
           label={strings('phishing.back_to_safety')}
-          onPress={this.props.goBackToSafety}
+          onPress={this.goBackToSafety}
           style={styles.buttonWrapper}
           width={ButtonWidthTypes.Full}
         />
