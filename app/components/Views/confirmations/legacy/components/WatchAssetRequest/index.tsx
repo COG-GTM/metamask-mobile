@@ -204,7 +204,7 @@ const WatchAssetRequest = ({
           style={styles.title}
           onPress={
             (this as unknown as { cancelSignature?: () => void })
-              ?.cancelSignature
+              .cancelSignature
           }
         >
           {strings('watch_asset_request.title')}
