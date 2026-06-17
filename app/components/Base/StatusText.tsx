@@ -109,4 +109,8 @@ function StatusText({
   }
 }
 
+(StatusText as React.FC<StatusTextProps>).defaultProps = {
+  context: 'transaction',
+};
+
 export default StatusText;

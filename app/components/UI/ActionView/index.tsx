@@ -166,4 +166,16 @@ export default function ActionView({
   );
 }
 
+(ActionView as React.FC<ActionViewProps>).defaultProps = {
+  cancelText: '',
+  confirmButtonMode: 'normal',
+  confirmText: '',
+  confirmTestID: '',
+  confirmed: false,
+  cancelTestID: '',
+  showCancelButton: true,
+  showConfirmButton: true,
+  contentContainerStyle: undefined,
+};
+
 

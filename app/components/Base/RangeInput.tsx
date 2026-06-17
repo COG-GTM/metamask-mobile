@@ -296,5 +296,8 @@ const RangeInput = ({
 };
 
 
+(RangeInput as React.FC<RangeInputProps>).defaultProps = {
+  increment: new BigNumber(1),
+};
 
 export default RangeInput;

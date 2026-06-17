@@ -138,4 +138,20 @@ export default function ActionContent({
   );
 }
 
+(ActionContent as React.FC<ActionContentProps>).defaultProps = {
+  cancelButtonMode: 'neutral',
+  cancelButtonDisabled: false,
+  confirmButtonMode: 'warning',
+  confirmTestID: '',
+  cancelTestID: '',
+  cancelText: strings('action_view.cancel'),
+  confirmText: strings('action_view.confirm'),
+  confirmDisabled: false,
+  displayCancelButton: true,
+  displayConfirmButton: true,
+  viewWrapperStyle: null,
+  viewContainerStyle: null,
+  childrenContainerStyle: null,
+};
+
 
