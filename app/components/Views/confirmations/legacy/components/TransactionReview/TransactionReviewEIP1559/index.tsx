@@ -91,6 +91,15 @@ const Skeleton = ({
 };
 
 interface TransactionReviewEIP1559Props {
+  // Extra props passed by TransactionReviewInformation; not used internally.
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  totalNative?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  totalConversion?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  totalMaxNative?: any;
+  over?: boolean;
   gasFeeNative?: string;
   gasFeeConversion?: string;
   gasFeeMaxNative?: string;

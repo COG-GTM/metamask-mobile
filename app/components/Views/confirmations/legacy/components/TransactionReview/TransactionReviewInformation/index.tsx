@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
+import { Theme } from '@metamask/design-tokens';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   Text,
@@ -60,8 +60,11 @@ import { selectShouldUseSmartTransaction } from '../../../../../../../selectors/
 import { getNetworkNonce } from '../../../../../../../util/transaction-controller';
 import { selectNativeCurrencyByChainId } from '../../../../../../../selectors/networkController';
 import { selectContractExchangeRatesByChainId } from '../../../../../../../selectors/tokenRatesController';
+import { RootState } from '../../../../../../../reducers';
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     overviewAlert: {
       alignItems: 'center',
@@ -128,123 +131,60 @@ const createStyles = (colors) =>
     },
   });
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// TODO: Replace "any" with type
+interface TransactionReviewInformationProps {
+  conversionRate?: number;
+  currentCurrency?: string;
+  transaction?: any;
+  contractExchangeRates?: any;
+  edit?: () => void;
+  ticker?: string;
+  primaryCurrency?: string;
+  toggleDataView?: () => void;
+  ready?: boolean;
+  error?: string | boolean;
+  over?: boolean;
+  navigation?: any;
+  onCancelPress?: () => void;
+  chainId?: string;
+  networkClientId?: string;
+  showCustomNonce?: boolean;
+  setNonce?: (nonce: any) => void;
+  setProposedNonce?: (nonce: any) => void;
+  gasEstimateType?: string;
+  EIP1559GasData?: any;
+  origin?: string;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  originWarning?: boolean;
+  gasSelected?: string;
+  multiLayerL1FeeTotal?: string;
+  isNativeTokenBuySupported?: boolean;
+  metrics?: any;
+  shouldUseSmartTransaction?: boolean;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+interface TransactionReviewInformationState {
+  toFocused: boolean;
+  amountError: string;
+  actionKey: string;
+  nonceModalVisible: boolean;
+}
+
 /**
  * PureComponent that supports reviewing a transaction information
  */
-class TransactionReviewInformation extends PureComponent {
-  static propTypes = {
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Callback for transaction edition
-     */
-    edit: PropTypes.func,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Hides or shows transaction data
-     */
-    toggleDataView: PropTypes.func,
-    /**
-     * Whether or not basic gas estimates have been fetched
-     */
-    ready: PropTypes.bool,
-    /**
-     * Transaction error
-     */
-    error: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-    /**
-     * True if transaction is over the available funds
-     */
-    over: PropTypes.bool,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Called when the cancel button is clicked
-     */
-    onCancelPress: PropTypes.func,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string,
-    /**
-     * ID of the global network client
-     */
-    networkClientId: PropTypes.string,
-    /**
-     * Indicates whether custom nonce should be shown in transaction editor
-     */
-    showCustomNonce: PropTypes.bool,
-    /**
-     * Set transaction nonce
-     */
-    setNonce: PropTypes.func,
-    /**
-     * Set proposed nonce (from network)
-     */
-    setProposedNonce: PropTypes.func,
-    gasEstimateType: PropTypes.string,
-    EIP1559GasData: PropTypes.object,
-    origin: PropTypes.string,
-    /**
-     * Function to call when update animation starts
-     */
-    onUpdatingValuesStart: PropTypes.func,
-    /**
-     * Function to call when update animation ends
-     */
-    onUpdatingValuesEnd: PropTypes.func,
-    /**
-     * If the values should animate upon update or not
-     */
-    animateOnChange: PropTypes.bool,
-    /**
-     * Boolean to determine if the animation is happening
-     */
-    isAnimating: PropTypes.bool,
-    /**
-     * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
-     */
-    originWarning: PropTypes.bool,
-    gasSelected: PropTypes.string,
-    multiLayerL1FeeTotal: PropTypes.string,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNativeTokenBuySupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
+class TransactionReviewInformation extends PureComponent<
+  TransactionReviewInformationProps,
+  TransactionReviewInformationState
+> {
+  static contextType = ThemeContext;
 
-  state = {
+  state: TransactionReviewInformationState = {
     toFocused: false,
     amountError: '',
     actionKey: strings('transactions.tx_review_confirm'),
@@ -257,8 +197,10 @@ class TransactionReviewInformation extends PureComponent {
   };
 
   setNetworkNonce = async () => {
-    const { networkClientId, setNonce, setProposedNonce, transaction } =
-      this.props;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { networkClientId, setNonce, setProposedNonce, transaction } = this
+      .props as any;
     const proposedNonce = await getNetworkNonce(transaction, networkClientId);
     setNonce(proposedNonce);
     setProposedNonce(proposedNonce);
@@ -268,7 +210,9 @@ class TransactionReviewInformation extends PureComponent {
     this.setState((state) => ({ nonceModalVisible: !state.nonceModalVisible }));
 
   renderCustomNonceModal = () => {
-    const { setNonce } = this.props;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { setNonce } = this.props as any;
     const { proposedNonce, nonce } = this.props.transaction;
     return (
       <CustomNonceModal
@@ -281,12 +225,15 @@ class TransactionReviewInformation extends PureComponent {
   };
 
   getTotalFiat = (
-    asset,
-    totalGas,
-    conversionRate,
-    exchangeRate,
-    currentCurrency,
-    amountToken,
+    // TODO: Replace "any" with type
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    asset: any,
+    totalGas: any,
+    conversionRate: any,
+    exchangeRate: any,
+    currentCurrency: any,
+    amountToken: any,
+    /* eslint-enable @typescript-eslint/no-explicit-any */
   ) => {
     let total = 0;
     const gasFeeFiat = weiToFiatNumber(totalGas, conversionRate);
@@ -296,7 +243,10 @@ class TransactionReviewInformation extends PureComponent {
       exchangeRate,
     );
     const base = Math.pow(10, 5);
-    total = ((parseFloat(gasFeeFiat) + parseFloat(balanceFiat)) * base) / base;
+    total =
+      ((parseFloat(String(gasFeeFiat)) + parseFloat(String(balanceFiat))) *
+        base) /
+      base;
     return `${total} ${currentCurrency}`;
   };
 
@@ -307,7 +257,10 @@ class TransactionReviewInformation extends PureComponent {
     try {
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
-      Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
+      Logger.error(
+        error as Error,
+        'Navigation: Error when navigating to buy ETH.',
+      );
     }
 
     this.props.metrics.trackEvent(
@@ -322,16 +275,22 @@ class TransactionReviewInformation extends PureComponent {
     edit && edit();
   };
 
-  getRenderTotals = (totalGas, totalGasFiat) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getRenderTotals = (totalGas: any, totalGasFiat: any) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
       conversionRate,
       contractExchangeRates,
       ticker,
-    } = this.props;
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } = this.props as any;
 
-    const totals = {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const totals: Record<string, () => any[]> = {
       ETH: () => {
         const totalEth = isBN(value) ? value.add(totalGas) : totalGas;
         const totalFiat = `${weiToFiat(
@@ -378,7 +337,7 @@ class TransactionReviewInformation extends PureComponent {
 
   isTestNetwork = () => {
     const { chainId } = this.props;
-    return isTestNet(chainId);
+    return isTestNet(chainId as string);
   };
 
   getRenderTotalsEIP1559 = ({
@@ -386,6 +345,14 @@ class TransactionReviewInformation extends PureComponent {
     gasFeeMinConversion,
     gasFeeMaxNative,
     gasFeeMaxConversion,
+  }: {
+    // TODO: Replace "any" with type
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    gasFeeMinNative: any;
+    gasFeeMinConversion: any;
+    gasFeeMaxNative: any;
+    gasFeeMaxConversion: any;
+    /* eslint-enable @typescript-eslint/no-explicit-any */
   }) => {
     const {
       transaction: { value, selectedAsset, assetType },
@@ -393,14 +360,18 @@ class TransactionReviewInformation extends PureComponent {
       conversionRate,
       contractExchangeRates,
       ticker,
-    } = this.props;
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } = this.props as any;
 
     let renderableTotalMinNative,
       renderableTotalMinConversion,
       renderableTotalMaxNative,
       renderableTotalMaxConversion;
 
-    const totals = {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const totals: Record<string, () => any[]> = {
       ETH: () => {
         const {
           totalMinNative,
@@ -416,7 +387,9 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-        });
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
 
         [
           renderableTotalMinNative,
@@ -454,7 +427,9 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-        });
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
 
         const tokenAmount = renderFromTokenMinimalUnit(
           value,
@@ -502,7 +477,9 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-        });
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
 
         [
           renderableTotalMinNative,
@@ -549,7 +526,9 @@ class TransactionReviewInformation extends PureComponent {
       this.onCancelPress();
       this.props.navigation.navigate(
         ...createBrowserNavDetails({
-          newTabUrl: TESTNET_FAUCETS[chainId],
+          newTabUrl: (TESTNET_FAUCETS as Record<string, string>)[
+            chainId as string
+          ],
           timestamp: Date.now(),
         }),
       );
@@ -568,7 +547,9 @@ class TransactionReviewInformation extends PureComponent {
       isAnimating,
       ready,
       chainId,
-    } = this.props;
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } = this.props as any;
     let host;
     if (origin) {
       host = new URL(origin).hostname;
@@ -619,7 +600,9 @@ class TransactionReviewInformation extends PureComponent {
       isAnimating,
       multiLayerL1FeeTotal,
       chainId,
-    } = this.props;
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } = this.props as any;
 
     let totalGas =
       isBN(gas) && isBN(gasPrice) ? gas.mul(gasPrice) : hexToBN('0x0');
@@ -668,7 +651,8 @@ class TransactionReviewInformation extends PureComponent {
       shouldUseSmartTransaction,
     } = this.props;
     const { nonce } = this.props.transaction;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const errorPress = this.isTestNetwork() ? this.goToFaucet : this.buyEth;
@@ -747,9 +731,9 @@ class TransactionReviewInformation extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const chainId = transaction?.chainId as `0x${string}`;
   const networkClientId = transaction?.networkClientId;
 
   return {
@@ -770,14 +754,20 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  setNonce: (nonce) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setNonce: (nonce: any) => dispatch(setNonce(nonce)),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setProposedNonce: (nonce: any) => dispatch(setProposedNonce(nonce)),
 });
-
-TransactionReviewInformation.contextType = ThemeContext;
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(TransactionReviewInformation));
+)(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  withMetricsAwareness(TransactionReviewInformation as any),
+);
