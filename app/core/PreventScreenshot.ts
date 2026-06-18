@@ -1,5 +1,10 @@
 import { NativeModules, Platform } from 'react-native';
 
+interface PreventScreenshotModule {
+  forbid: () => Promise<boolean>;
+  allow: () => Promise<boolean>;
+}
+
 // eslint-disable-next-line dot-notation
 const METAMASK_ENVIRONMENT = process.env['METAMASK_ENVIRONMENT'];
 
@@ -10,11 +15,11 @@ export default {
   forbid: isQa
     ? () => true
     : isAndroid
-    ? NativeModules.PreventScreenshot.forbid
+    ? (NativeModules as Record<string, PreventScreenshotModule>).PreventScreenshot.forbid
     : () => true,
   allow: isQa
     ? () => true
     : isAndroid
-    ? NativeModules.PreventScreenshot.allow
+    ? (NativeModules as Record<string, PreventScreenshotModule>).PreventScreenshot.allow
     : () => true,
 };

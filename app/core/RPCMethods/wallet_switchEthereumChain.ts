@@ -8,6 +8,26 @@ import {
   switchToNetwork,
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
+import { Hex, Json, PendingJsonRpcResponse } from '@metamask/utils';
+
+interface SwitchEthereumChainRequest {
+  origin: string;
+  params?: { chainId: string; [key: string]: unknown }[];
+}
+
+interface SwitchEthereumChainHooks {
+  getCurrentChainIdForDomain: (origin: string) => Hex;
+  getNetworkConfigurationByChainId: (chainId: string) => unknown;
+  getCaveat: (params: { target: string; caveatType: string }) => { value: unknown } | undefined;
+  requestPermittedChainsPermissionIncrementalForOrigin: (params: {
+    origin: string;
+    chainId: Hex;
+    autoApprove: boolean;
+  }) => Promise<void>;
+  hasApprovalRequestsForOrigin?: () => boolean;
+  rejectApprovalRequestsForOrigin?: () => void;
+  setTokenNetworkFilter?: (filter: unknown) => void;
+}
 
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
@@ -25,10 +45,22 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: {
+  req: SwitchEthereumChainRequest;
+  res: PendingJsonRpcResponse<Json>;
+  requestUserApproval: (params: {
+    type?: string;
+    origin?: string;
+    requestData: Record<string, unknown>;
+  }) => Promise<void>;
+  analytics: Record<string, string | boolean | undefined>;
+  hooks: SwitchEthereumChainHooks;
+}): Promise<void> => {
   const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     CurrencyRateController,
     NetworkController,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     MultichainNetworkController,
     SelectedNetworkController,
   } = Engine.context;
@@ -42,7 +74,7 @@ export const wallet_switchEthereumChain = async ({
     });
   }
   const { chainId } = params;
-  const allowedKeys = {
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
@@ -84,11 +116,6 @@ export const wallet_switchEthereumChain = async ({
     await switchToNetwork({
       network: existingNetwork,
       chainId: _chainId,
-      controllers: {
-        CurrencyRateController,
-        MultichainNetworkController,
-        SelectedNetworkController,
-      },
       requestUserApproval,
       analytics,
       origin,
