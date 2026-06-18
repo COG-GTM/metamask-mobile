@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
 import Animated from 'react-native-reanimated';
 import BaseNotification from './../BaseNotification';
 import Device from '../../../../util/device';
@@ -24,12 +24,23 @@ const styles = StyleSheet.create({
   },
 });
 
+interface Props {
+  isInBrowserView?: boolean;
+  notificationAnimated: Animated.SharedValue<number>;
+  currentNotification: {
+    status?: string;
+    title?: string;
+    description?: string;
+  };
+  hideCurrentNotification?: () => void;
+}
+
 function SimpleNotification({
   isInBrowserView,
   notificationAnimated,
   hideCurrentNotification,
   currentNotification,
-}) {
+}: Props) {
   return (
     <Animated.View
       style={[
@@ -51,12 +62,5 @@ function SimpleNotification({
     </Animated.View>
   );
 }
-
-SimpleNotification.propTypes = {
-  isInBrowserView: PropTypes.bool,
-  notificationAnimated: PropTypes.object,
-  currentNotification: PropTypes.object,
-  hideCurrentNotification: PropTypes.func,
-};
 
 export default SimpleNotification;

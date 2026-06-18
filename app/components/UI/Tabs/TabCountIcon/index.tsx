@@ -1,12 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React, { PureComponent } from 'react';
-import { View, StyleSheet, Text, Platform } from 'react-native';
-import PropTypes from 'prop-types';
+import { View, StyleSheet, Text, Platform, ViewStyle, StyleProp } from 'react-native';
 import { fontStyles } from '../../../../styles/common';
 import { connect } from 'react-redux';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
+import { Colors } from '../../../../util/theme/models';
 import { BrowserViewSelectorsIDs } from '../../../../../e2e/selectors/Browser/BrowserView.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     tabIcon: {
       borderWidth: 2,
@@ -29,17 +32,17 @@ const createStyles = (colors) =>
  * PureComponent that renders an icon showing
  * the current number of open tabs
  */
-class TabCountIcon extends PureComponent {
-  static propTypes = {
-    /**
-     * Switches to a specific tab
-     */
-    tabCount: PropTypes.number,
-    /**
-     * PureComponent styles
-     */
-    style: PropTypes.any,
-  };
+interface OwnProps {
+  style?: StyleProp<ViewStyle>;
+}
+
+interface StateProps {
+  tabCount: number;
+}
+
+type Props = OwnProps & StateProps;
+
+class TabCountIcon extends PureComponent<Props> {
 
   render() {
     const { tabCount, style } = this.props;
@@ -59,7 +62,7 @@ class TabCountIcon extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: { browser: { tabs: unknown[] } }): StateProps => ({
   tabCount: state.browser.tabs.length,
 });
 

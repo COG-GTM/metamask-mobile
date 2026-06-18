@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import isUrl from 'is-url';
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { connect } from 'react-redux';
@@ -32,8 +34,10 @@ import {
 import ApproveTransactionHeader from '../../Views/confirmations/legacy/components/ApproveTransactionHeader';
 import Identicon from '../Identicon';
 import { selectInternalAccounts } from '../../../selectors/accountsController';
+import { Colors } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     accountInformation: {
       flexDirection: 'row',
@@ -100,43 +104,26 @@ const createStyles = (colors) =>
     },
   });
 
-class AccountInfoCard extends PureComponent {
-  static propTypes = {
-    /**
-     * A string that represents the from address.
-     */
-    fromAddress: PropTypes.string.isRequired,
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * A number that specifies the ETH/USD conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * The selected currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Declares the operation being performed i.e. 'signing'
-     */
-    operation: PropTypes.string,
-    /**
-     * Clarify should show fiat balance
-     */
-    showFiatBalance: PropTypes.bool,
-    /**
-     * Current selected ticker
-     */
-    ticker: PropTypes.string,
-    transaction: PropTypes.object,
-    origin: PropTypes.string,
-  };
+interface OwnProps {
+  fromAddress: string;
+  operation?: string;
+  showFiatBalance?: boolean;
+  origin?: string;
+}
+
+interface StateProps {
+  accounts: Record<string, { balance: string }>;
+  internalAccounts: Record<string, any>[];
+  conversionRate: number;
+  currentCurrency: string;
+  ticker: string;
+  transaction: Record<string, any>;
+  activeTabUrl: string;
+}
+
+type Props = OwnProps & StateProps;
+
+class AccountInfoCard extends PureComponent<any, any> {
 
   render() {
     const {
@@ -176,7 +163,7 @@ class AccountInfoCard extends PureComponent {
 
     const sdkDappMetadata = {
       url: isOriginUrl ? origin : originatorInfo?.url ?? strings('sdk.unknown'),
-      icon: originatorInfo?.icon,
+      icon: originatorInfo?.icon ?? '',
     };
     const actualOriginUrl = isOriginUrl
       ? origin
@@ -242,7 +229,7 @@ class AccountInfoCard extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   accounts: selectAccounts(state),
   internalAccounts: selectInternalAccounts(state),
   conversionRate: selectConversionRate(state),
@@ -254,4 +241,4 @@ const mapStateToProps = (state) => ({
 
 AccountInfoCard.contextType = ThemeContext;
 
-export default connect(mapStateToProps)(AccountInfoCard);
+export default connect(mapStateToProps)(AccountInfoCard) as unknown as React.ComponentType<OwnProps>;

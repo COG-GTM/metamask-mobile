@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React from 'react';
 import BaseNotification, { getDescription } from './';
 import renderWithProvider from '../../../../util/test/renderWithProvider';

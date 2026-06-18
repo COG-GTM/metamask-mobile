@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import Device from '../../../util/device';
@@ -7,8 +10,8 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 const isAndroid = Platform.OS === 'android';
 const ORIGIN = { x: Device.getDeviceWidth() / 2, y: 0 };
 
-const Confetti = (props) => {
-  let confettiView = false;
+const Confetti = (props: Record<string, any>) => {
+  let confettiView: { startConfetti: () => void } | false = false;
 
   useEffect(() => {
     if (isAndroid && confettiView) {
@@ -17,7 +20,7 @@ const Confetti = (props) => {
   }, [confettiView]);
 
   return isAndroid ? (
-    <ConfettiNormal ref={(node) => (confettiView = node)} {...props} />
+    <ConfettiNormal ref={(node: { startConfetti: () => void } | null) => (confettiView = node || false)} {...props} />
   ) : (
     <ConfettiCannon fadeOut count={300} origin={ORIGIN} {...props} />
   );

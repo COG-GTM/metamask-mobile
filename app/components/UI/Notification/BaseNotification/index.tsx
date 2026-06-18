@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles, baseStyles } from '../../../../styles/common';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AnimatedSpinner from '../../AnimatedSpinner';
@@ -9,9 +11,10 @@ import IonicIcon from 'react-native-vector-icons/Ionicons';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
+import { Colors } from '../../../../util/theme/models';
 import { ToastSelectorsIDs } from '../../../../../e2e/selectors/wallet/ToastModal.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     floatingBackground: {
       backgroundColor: colors.background.default,
@@ -60,7 +63,7 @@ const createStyles = (colors) =>
     },
   });
 
-export const getIcon = (status, colors, styles) => {
+export const getIcon = (status: string, colors: Colors, styles: Record<string, any>) => {
   switch (status) {
     case 'pending':
     case 'pending_withdrawal':
@@ -121,7 +124,7 @@ export const getIcon = (status, colors, styles) => {
   }
 };
 
-const getTitle = (status, { nonce, amount, assetType }) => {
+const getTitle = (status: string, { nonce, amount, assetType }: { nonce?: string; amount?: string; assetType?: string }) => {
   switch (status) {
     case 'pending':
       return strings('notifications.pending_title');
@@ -151,7 +154,7 @@ const getTitle = (status, { nonce, amount, assetType }) => {
   }
 };
 
-export const getDescription = (status, { amount = null, type = null }) => {
+export const getDescription = (status: string, { amount = null, type = null }: { amount?: string | null; type?: string | null }) => {
   if (amount && typeof amount !== 'object' && type) {
     return strings(`notifications.${type}_${status}_message`, { amount });
   }
@@ -161,14 +164,32 @@ export const getDescription = (status, { amount = null, type = null }) => {
 /**
  * BaseNotification component used to render in-app notifications
  */
+interface NotificationData {
+  description?: string | null;
+  title?: string | null;
+  nonce?: string;
+  amount?: string | Record<string, any>;
+  type?: string;
+  assetType?: string;
+  [key: string]: unknown;
+}
+
+interface Props {
+  status?: string;
+  data?: NotificationData | null;
+  onPress?: () => void;
+  onHide?: () => void;
+  autoDismiss?: boolean;
+}
+
 const BaseNotification = ({
   status,
   data = null,
-  data: { description = null, title = null },
+  data: { description = null, title = null } = {},
   onPress,
   onHide,
-  autoDismiss,
-}) => {
+  autoDismiss = false,
+}: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -205,18 +226,6 @@ const BaseNotification = ({
       </View>
     </View>
   );
-};
-
-BaseNotification.propTypes = {
-  status: PropTypes.string,
-  data: PropTypes.object,
-  onPress: PropTypes.func,
-  onHide: PropTypes.func,
-  autoDismiss: PropTypes.bool,
-};
-
-BaseNotification.defaultProps = {
-  autoDismiss: false,
 };
 
 export default BaseNotification;

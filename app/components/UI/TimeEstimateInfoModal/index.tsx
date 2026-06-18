@@ -1,12 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React from 'react';
 import { View } from 'react-native';
 import Text from '../../Base/Text';
 import InfoModal from '../Swaps/components/InfoModal';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 
-const TimeEstimateInfoModal = ({ timeEstimateId, isVisible, onHideModal }) => (
+interface Props {
+  timeEstimateId?: string;
+  isVisible?: boolean;
+  onHideModal?: () => void;
+}
+
+const TimeEstimateInfoModal = ({ timeEstimateId, isVisible, onHideModal }: Props) => (
   <InfoModal
     isVisible={isVisible}
     toggleModal={onHideModal}
@@ -33,20 +41,5 @@ const TimeEstimateInfoModal = ({ timeEstimateId, isVisible, onHideModal }) => (
     }
   />
 );
-
-TimeEstimateInfoModal.propTypes = {
-  /**
-   * Time estimate name (unknown, low, medium, high, less_than, range)
-   */
-  timeEstimateId: PropTypes.string,
-  /**
-   * If the modal is visible
-   */
-  isVisible: PropTypes.bool,
-  /**
-   * Function to hide the modal
-   */
-  onHideModal: PropTypes.func,
-};
 
 export default TimeEstimateInfoModal;

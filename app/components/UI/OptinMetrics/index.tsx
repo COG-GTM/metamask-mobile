@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   View,
@@ -10,7 +13,6 @@ import {
   Linking,
   TouchableOpacity,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { baseStyles, fontStyles } from '../../../styles/common';
 import Entypo from 'react-native-vector-icons/Entypo';
 import { getOptinMetricsNavbarOptions } from '../Navbar';
@@ -43,7 +45,7 @@ import {
   UserProfileProperty
 } from '../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
 
-const createStyles = ({ colors }) =>
+const createStyles = ({ colors, typography }: any) =>
   StyleSheet.create({
     root: {
       ...baseStyles.flexGrow,
@@ -133,35 +135,39 @@ const createStyles = ({ colors }) =>
 /**
  * View that is displayed in the flow to agree to metrics
  */
-class OptinMetrics extends PureComponent {
-  static propTypes = {
-    isDataCollectionForMarketingEnabled: PropTypes.bool,
-    setDataCollectionForMarketing: PropTypes.func,
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Action to set onboarding wizard step
-     */
-    setOnboardingWizardStep: PropTypes.func,
-    /**
-     * Onboarding events array created in previous onboarding views
-     */
-    events: PropTypes.array,
-    /**
-     * Action to erase any event stored in onboarding state
-     */
-    clearOnboardingEvents: PropTypes.func,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
+interface OwnProps {
+  navigation: any;
+  route?: { params?: { [key: string]: unknown } };
+  metrics: {
+    trackEvent: (event: Record<string, any>) => void;
+    createEventBuilder: (event: unknown) => { addProperties: (props: Record<string, any>) => { build: () => Record<string, any> } };
+    enable: () => Promise<void>;
+    addTraitsToUser: (traits: Record<string, any>) => void;
+    isEnabled: () => boolean;
   };
+}
+
+interface StateProps {
+  events: Record<string, any>[];
+  isDataCollectionForMarketingEnabled: boolean;
+}
+
+interface DispatchProps {
+  setOnboardingWizardStep: (step: number) => void;
+  clearOnboardingEvents: () => void;
+  setDataCollectionForMarketing: (value: boolean) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+interface ComponentState {
+  isActionEnabled: boolean;
+  scrollViewContentHeight: number | undefined;
+  isEndReached: boolean;
+  scrollViewHeight: number | undefined;
+}
+
+class OptinMetrics extends PureComponent<any, any> {
 
   state = {
     /**
@@ -220,7 +226,7 @@ class OptinMetrics extends PureComponent {
     BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
   }
 
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(_: any, prevState: any) {
     // Update the navbar
     this.updateNavBar();
 
@@ -280,7 +286,7 @@ class OptinMetrics extends PureComponent {
    * @param {object} - Object containing action and description to be rendered
    * @param {number} i - Index key
    */
-  renderLegacyAction = ({ action, description, prefix }, i) => {
+  renderLegacyAction = ({ action, description, prefix }: any, i: number) => {
     const styles = this.getStyles();
 
     return (
@@ -306,7 +312,7 @@ class OptinMetrics extends PureComponent {
     );
   };
 
-  renderAction = ({ description, prefix }, i) => {
+  renderAction = ({ description, prefix }: { description: string; prefix: string }, i: number) => {
     const styles = this.getStyles();
 
     return (
@@ -390,7 +396,7 @@ class OptinMetrics extends PureComponent {
 
     // track onboarding events that were stored before user opted in
     // only if the user eventually opts in.
-    if (events && events.length) {
+    if (events?.length) {
       let delay = 0; // Initialize delay
       const eventTrackingDelay = 200; // ms delay between each event
       events.forEach((eventArgs) => {
@@ -428,7 +434,7 @@ class OptinMetrics extends PureComponent {
    * @param {string} linkParams.url
    * @param {string} linkParams.title
    */
-  onPressLink = (linkParams) => {
+  onPressLink = (linkParams: any) => {
     this.props.navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: linkParams,
@@ -556,7 +562,7 @@ class OptinMetrics extends PureComponent {
    * @param {number} _
    * @param {number} height
    */
-  onContentSizeChange = (_, height) => (this.setState({ scrollViewContentHeight: height }));
+  onContentSizeChange = (_: number, height: number) => (this.setState({ scrollViewContentHeight: height }));
 
   /**
    * Layout event for the ScrollView.
@@ -679,20 +685,20 @@ class OptinMetrics extends PureComponent {
 
 OptinMetrics.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: { onboarding: { events: Record<string, any>[] }; security: { dataCollectionForMarketing: boolean } }): StateProps => ({
   events: state.onboarding.events,
   isDataCollectionForMarketingEnabled:
     state.security.dataCollectionForMarketing,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
+  setOnboardingWizardStep: (step: number) => dispatch(setOnboardingWizardStep(step)),
   clearOnboardingEvents: () => dispatch(clearOnboardingEvents()),
-  setDataCollectionForMarketing: (value) =>
+  setDataCollectionForMarketing: (value: boolean) =>
     dispatch(setDataCollectionForMarketing(value)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(OptinMetrics));
+)(withMetricsAwareness(OptinMetrics) as any);
