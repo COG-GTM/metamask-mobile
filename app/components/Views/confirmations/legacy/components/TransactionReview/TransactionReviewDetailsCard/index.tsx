@@ -89,14 +89,14 @@ const createStyles = (colors: any) =>
     },
   });
 
-export default // TODO: Replace "any" with type
+// TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
-class TransactionReviewDetailsCard extends Component<Props> {
+export default class TransactionReviewDetailsCard extends Component<Props> {
 
   render() {
     const {

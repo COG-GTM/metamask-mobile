@@ -27,6 +27,6 @@ exports[`TransactionReviewDetailsCard should render correctly 1`] = `
     }
   }
 >
-  <[object Object] />
+  <TransactionReviewDetailsCard />
 </ContextProvider>
 `;

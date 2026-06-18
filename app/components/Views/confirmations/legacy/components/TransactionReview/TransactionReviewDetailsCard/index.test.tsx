@@ -17,7 +17,6 @@ describe('TransactionReviewDetailsCard', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        {/* @ts-expect-error Legacy JS migration - TS2693 */}
         <TransactionReviewDetailsCard />
       </Provider>,
     );

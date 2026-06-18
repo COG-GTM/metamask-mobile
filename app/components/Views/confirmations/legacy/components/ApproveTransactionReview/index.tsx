@@ -1092,7 +1092,6 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
       transaction: { to, data },
     } = this.props;
     return (
-      // @ts-expect-error Legacy JS migration - TS2693
       <TransactionReviewDetailsCard
         toggleViewDetails={this.toggleViewDetails}
         toggleViewData={this.toggleViewData}
