@@ -33,6 +33,7 @@ import etherscanLink from '@metamask/etherscan-link';
 import {
   addFavoriteCollectible,
   removeFavoriteCollectible,
+  CollectibleIdentifier,
 } from '../../../actions/collectibles';
 import { isCollectibleInFavoritesSelector } from '../../../reducers/collectibles';
 import Share from 'react-native-share';
@@ -277,7 +278,7 @@ const CollectibleOverview = ({
       value:
         collectible?.lastSale?.event_timestamp &&
         toLocaleDate(
-          new Date(collectible?.lastSale?.event_timestamp),
+          new Date(collectible?.lastSale?.event_timestamp).getTime(),
         ).toString(),
       type: FieldType.Text,
     }),
@@ -457,7 +458,7 @@ const CollectibleOverview = ({
             </Text>
             <Text primary noMargin big>
               {strings('unit.token_id')}
-              {renderShortText(collectible.tokenId, 8)}
+              {renderShortText(collectible.tokenId ?? '', 8)}
             </Text>
           </View>
 
@@ -548,14 +549,29 @@ const CollectibleOverview = ({
 const mapStateToProps = (state: RootState, props: OwnProps): StateProps => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state) ?? '',
-  isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
+  isInFavorites: isCollectibleInFavoritesSelector(
+    state,
+    props.collectible as CollectibleIdentifier,
+  ),
 });
 
 const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   addFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Collectible) =>
-    dispatch(addFavoriteCollectible(selectedAddress, chainId, collectible)),
+    dispatch(
+      addFavoriteCollectible(
+        selectedAddress,
+        chainId,
+        collectible as CollectibleIdentifier,
+      ),
+    ),
   removeFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Collectible) =>
-    dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
+    dispatch(
+      removeFavoriteCollectible(
+        selectedAddress,
+        chainId,
+        collectible as CollectibleIdentifier,
+      ),
+    ),
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -254,7 +254,7 @@ class TransactionReview extends PureComponent<Props, State> {
         );
       }
       const symbol = (contract?.symbol) || 'ERC20';
-      assetAmount = `${decodeTransferData('transfer', data)[1]} ${symbol}`;
+      assetAmount = `${decodeTransferData('transfer', data)?.[1]} ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();
     }
@@ -277,7 +277,7 @@ class TransactionReview extends PureComponent<Props, State> {
         .build(),
     );
 
-    if (isMultiLayerFeeNetwork(chainId)) {
+    if (chainId && isMultiLayerFeeNetwork(chainId)) {
       this.fetchEstimatedL1Fee();
       intervalIdForEstimatedL1Fee = setInterval(
         this.fetchEstimatedL1Fee,
