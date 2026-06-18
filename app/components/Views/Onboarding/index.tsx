@@ -21,7 +21,6 @@ import {
   colors as importedColors,
 } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
-import Button from '@metamask/react-native-button';
 import { connect } from 'react-redux';
 import FadeOutOverlay from '../../UI/FadeOutOverlay';
 import {
@@ -39,8 +38,10 @@ import { PREVIOUS_SCREEN, ONBOARDING } from '../../../constants/navigation';
 import { EXISTING_USER } from '../../../constants/storage';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { withMetricsAwareness } from '../../hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
 import { Authentication } from '../../../core';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import { OnboardingSelectorIDs } from '../../../../e2e/selectors/Onboarding/Onboarding.selectors';
 
@@ -49,6 +50,9 @@ import { selectAccounts } from '../../../selectors/accountTrackerController';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { trace, TraceName, TraceOperation } from '../../../util/trace';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const Button = require('@metamask/react-native-button');
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -138,21 +142,16 @@ const createStyles = (colors: Theme['colors']) =>
  * View that is displayed to first time (new) users
  */
 interface OwnProps {
-  navigation: Record<string, unknown> & {
-    setOptions: (options: Record<string, unknown>) => void;
-    navigate: (route: string, params?: Record<string, unknown>) => void;
-    reset: (state: Record<string, unknown>) => void;
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
   route: {
     params?: {
       delete?: boolean;
       [key: string]: unknown;
     };
   };
-  metrics: {
-    trackEvent: (event: Record<string, unknown>) => void;
-    createEventBuilder: (event: Record<string, unknown>) => { addProperties: (props: Record<string, unknown>) => { build: () => Record<string, unknown> } };
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metrics: any;
 }
 
 interface StateProps {
@@ -224,11 +223,11 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
 
   updateNavBar = () => {
     const { route, navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     navigation.setOptions(
-      route.params?.delete
+      (route.params?.delete
         ? getTransparentOnboardingNavbarOptions(colors)
-        : getTransparentBackOnboardingNavbarOptions(colors),
+        : getTransparentBackOnboardingNavbarOptions(colors)) as Record<string, unknown>,
     );
   };
 
@@ -278,7 +277,8 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
     }
   };
 
-  handleExistingUser = (action) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handleExistingUser = (action: any) => {
     if (this.state.existingUser) {
       this.alertExistingUser(action);
     } else {
@@ -331,14 +331,17 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
     this.handleExistingUser(action);
   };
 
-  track = (event) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  track = (event: any) => {
     trackOnboarding(MetricsEventBuilder.createEventBuilder(event).build());
   };
 
-  alertExistingUser = (callback) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  alertExistingUser = (callback: any) => {
     this.warningCallback = () => {
       callback();
       this.toggleWarningModal();
+      return true;
     };
     this.toggleWarningModal();
   };
@@ -349,7 +352,7 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
   };
 
   renderLoader = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -363,7 +366,7 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
   };
 
   renderContent() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -415,7 +418,7 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
   }
 
   handleSimpleNotification = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!this.props.route.params?.delete) return;
@@ -428,7 +431,7 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
       >
         <ElevatedView style={styles.modalTypeView} elevation={100}>
           <BaseNotification
-            closeButtonDisabled
+            {...{ closeButtonDisabled: true }}
             status="success"
             data={{
               title: strings('onboarding.success'),
@@ -443,7 +446,7 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
   render() {
     const { loading } = this.props;
     const { existingUser } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -507,7 +510,7 @@ const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps 
     dispatch(storePrivacyPolicyClickedOrClosedAction()),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(withMetricsAwareness(Onboarding));
+const OnboardingWithMetrics = withMetricsAwareness(Onboarding as unknown as React.ComponentType<IWithMetricsAwarenessProps>);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const connected = (connect as any)(mapStateToProps, mapDispatchToProps)(OnboardingWithMetrics);
+export default connected;

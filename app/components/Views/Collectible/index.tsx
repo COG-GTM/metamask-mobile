@@ -10,7 +10,8 @@ import CollectibleContractInformation from '../../UI/CollectibleContractInformat
 import { toggleCollectibleContractModal } from '../../../actions/modals';
 import { toLowerCaseEquals } from '../../../util/general';
 import { collectiblesSelector } from '../../../reducers/collectibles';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
 
@@ -40,12 +41,12 @@ interface OwnProps {
 }
 
 interface StateProps {
-  collectibles: Array<{
+  collectibles: {
     address: string;
     name?: string;
     image?: string;
     [key: string]: unknown;
-  }>;
+  }[];
   collectibleContractModalVisible: boolean;
 }
 
@@ -57,7 +58,7 @@ type Props = OwnProps & StateProps & DispatchProps;
 
 interface ComponentState {
   refreshing: boolean;
-  collectibles: Array<Record<string, unknown>>;
+  collectibles: Record<string, unknown>[];
 }
 
 class Collectible extends PureComponent<Props, ComponentState> {
@@ -68,7 +69,7 @@ class Collectible extends PureComponent<Props, ComponentState> {
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.name ?? '',
       false,
@@ -106,10 +107,12 @@ class Collectible extends PureComponent<Props, ComponentState> {
       navigation,
       collectibleContractModalVisible,
     } = this.props;
-    const collectibleContract = params;
-    const address = params.address;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const collectibleContract = params!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const address = params!.address;
     const { collectibles } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const filteredCollectibles = collectibles.filter((collectible) =>
       toLowerCaseEquals(collectible.address, address),
@@ -141,7 +144,7 @@ class Collectible extends PureComponent<Props, ComponentState> {
           style={styles.wrapper}
         >
           <View>
-            <View style={styles.assetOverviewWrapper}>
+            <View>
               <CollectibleContractOverview
                 navigation={navigation}
                 collectibleContract={collectibleContract}
@@ -189,4 +192,6 @@ const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps 
 
 Collectible.contextType = ThemeContext;
 
-export default connect(mapStateToProps, mapDispatchToProps)(Collectible);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const connected = (connect as any)(mapStateToProps, mapDispatchToProps)(Collectible);
+export default connected;

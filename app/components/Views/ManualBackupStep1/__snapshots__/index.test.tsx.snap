@@ -28,6 +28,12 @@ exports[`ManualBackupStep1 should render correctly 1`] = `
   }
 >
   <Component
+    navigation={
+      {
+        "navigate": [MockFunction],
+        "setOptions": [MockFunction],
+      }
+    }
     route={
       {
         "params": {

@@ -27,6 +27,23 @@ exports[`ManualBackupStep3 should render correctly 1`] = `
     }
   }
 >
-  <Component />
+  <Component
+    navigation={
+      {
+        "dangerouslyGetParent": [Function],
+        "navigate": [MockFunction],
+        "pop": [MockFunction],
+        "reset": [MockFunction],
+        "setOptions": [MockFunction],
+      }
+    }
+    route={
+      {
+        "params": {
+          "steps": [],
+        },
+      }
+    }
+  />
 </ContextProvider>
 `;

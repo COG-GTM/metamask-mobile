@@ -151,6 +151,7 @@ exports[`AddBookmark should render correctly 1`] = `
             <TextInput
               keyboardAppearance="light"
               onChangeText={[Function]}
+              onSubmitEditing={[Function]}
               placeholder=""
               returnKeyType="done"
               style={

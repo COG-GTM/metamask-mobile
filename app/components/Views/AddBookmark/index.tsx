@@ -4,7 +4,8 @@ import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import ActionView from '../../UI/ActionView';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
 import { AddBookmarkViewSelectorsIDs } from '../../../../e2e/selectors/Browser/AddBookmarkView.selectors';
 
@@ -67,7 +68,7 @@ export default class AddBookmark extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
 
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -75,7 +76,7 @@ export default class AddBookmark extends PureComponent<Props, State> {
         navigation,
         false,
         colors,
-      ),
+      ) as Record<string, unknown>,
     );
   };
 
@@ -99,7 +100,7 @@ export default class AddBookmark extends PureComponent<Props, State> {
   addBookmark = () => {
     const { title, url } = this.state;
     if (title === '' || url === '') return false;
-    this.props.route.params.onAddBookmark({ name: title, url });
+    this.props.route.params?.onAddBookmark?.({ name: title, url });
     this.props.navigation.pop();
   };
 
@@ -123,8 +124,8 @@ export default class AddBookmark extends PureComponent<Props, State> {
   };
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = (this.context as any).colors || mockTheme.colors;
+    const themeAppearance = ((this.context as any).themeAppearance || 'light') as 'default' | 'light' | 'dark';
     const styles = createStyles(colors);
 
     return (
@@ -169,7 +170,7 @@ export default class AddBookmark extends PureComponent<Props, State> {
                 onChangeText={this.onUrlChange}
                 testID={AddBookmarkViewSelectorsIDs.URL_TEXT}
                 ref={this.urlInput}
-                onSubmitEditing={this.addToken}
+                onSubmitEditing={this.addBookmark}
                 returnKeyType={'done'}
                 placeholderTextColor={colors.text.muted}
                 keyboardAppearance={themeAppearance}

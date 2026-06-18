@@ -24,7 +24,8 @@ import {
 import FA5Icon from 'react-native-vector-icons/FontAwesome5';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import { baseStyles, colors as importedColors } from '../../../styles/common';
-import { useTheme, Theme } from '../../../util/theme';
+import { useTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
 interface TextTrackItem {
   title: string;
@@ -308,7 +309,8 @@ export default function VideoPlayer({
   );
 
   const updateSeekerPosition = useCallback(
-    (position) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (position: any) => {
       if (!position) return;
       position = constrainToSeekerMinMax(position);
       setSeekerFillWidth(position);
@@ -344,20 +346,23 @@ export default function VideoPlayer({
     setLoading(true);
   };
 
-  const onLoad = (data = {}) => {
-    propsOnLoad();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onLoad = (data: any = {}) => {
+    propsOnLoad?.();
     setDuration(data.duration);
     setLoading(false);
   };
 
-  const onProgress = (data = {}) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onProgress = (data: any = {}) => {
     if (!scrubbing && !seeking && data?.seekableDuration > 0) {
       const position = data.currentTime / data.seekableDuration;
       updateSeekerPosition(position * seekerWidth);
     }
   };
 
-  const onSeek = (data = {}) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onSeek = (data: any = {}) => {
     if (scrubbing) {
       if (!seeking) {
         setPaused(originallyPaused);
@@ -380,7 +385,8 @@ export default function VideoPlayer({
   }, [seekerPosition, seekerWidth, duration]);
 
   const seekTo = (time = 0) => {
-    videoRef.current.seek(time);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (videoRef.current as any)?.seek(time);
   };
 
   const seekPanResponder = useMemo(
@@ -452,7 +458,8 @@ export default function VideoPlayer({
   );
 
   const renderControl = useCallback(
-    (children, callback, style = {}) => (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (children: any, callback: any, style: any = {}) => (
       <TouchableHighlight
         underlayColor="transparent"
         onPress={callback}
@@ -631,8 +638,9 @@ export default function VideoPlayer({
       style={[styles.playerContainer, style]}
     >
       <View style={baseStyles.flexGrow}>
+        {/* eslint-disable @typescript-eslint/no-explicit-any */}
         <Video
-          ref={videoRef}
+          ref={videoRef as any}
           paused={paused}
           muted={muted}
           onLoad={onLoad}
@@ -641,12 +649,13 @@ export default function VideoPlayer({
           onLoadStart={onLoadStart}
           onProgress={onProgress}
           style={styles.playerVideo}
-          textTracks={textTracks}
-          selectedTextTrack={selectedTextTrack}
-          source={source}
+          textTracks={textTracks as any}
+          selectedTextTrack={selectedTextTrack as any}
+          source={source as any}
           resizeMode="contain"
           repeat
         />
+        {/* eslint-enable @typescript-eslint/no-explicit-any */}
         {renderError()}
         {renderLoader()}
         {onClose && displayTopControls && renderTopControls()}

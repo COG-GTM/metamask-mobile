@@ -109,7 +109,8 @@ export const Browser = (props: Props) => {
     activeTab: activeTabId,
     tabs,
   } = props;
-  const previousTabs = useRef(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const previousTabs = useRef<any>(null);
   const { top: topInset } = useSafeAreaInsets();
   const { styles } = useStyles(styleSheet, { topInset });
   const { trackEvent, createEventBuilder, isEnabled } = useMetrics();
@@ -118,14 +119,16 @@ export const Browser = (props: Props) => {
   const linkType = props.route?.params?.linkType;
   const prevSiteHostname = useRef(browserUrl);
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
-  const [_tabIdleTimes, setTabIdleTimes] = useState({});
-  const accountAvatarType = useSelector((state) =>
+  const [_tabIdleTimes, setTabIdleTimes] = useState<Record<number, number>>({});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const accountAvatarType = useSelector((state: any) =>
     state.settings.useBlockieIcon
       ? AvatarAccountType.Blockies
       : AvatarAccountType.JazzIcon,
   );
   const isDataCollectionForMarketingEnabled = useSelector(
-    (state) => state.security.dataCollectionForMarketing,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (state: any) => state.security.dataCollectionForMarketing,
   );
 
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
@@ -145,8 +148,10 @@ export const Browser = (props: Props) => {
   // TODO remove after we release Solana dapp connectivity
   useFocusEffect(
     useCallback(() => {
-      if (isSolanaAccount(currentSelectedAccount)) {
-        toastRef?.current?.showToast({
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      if (isSolanaAccount(currentSelectedAccount!)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (toastRef?.current?.showToast as any)({
           variant: ToastVariants.Network,
           networkImageSource: require('../../../images/solana-logo.png'),
           labelOptions: [
@@ -169,7 +174,7 @@ export const Browser = (props: Props) => {
   ///: END:ONLY_INCLUDE_IF
 
   const newTab = useCallback(
-    (url, linkType) => {
+    (url: string, linkType: string) => {
       // if tabs.length > MAX_BROWSER_TABS, show the max browser tabs modal
       if (tabs.length >= MAX_BROWSER_TABS) {
         navigation.navigate(Routes.MODAL.MAX_BROWSER_TABS_MODAL);
@@ -182,13 +187,13 @@ export const Browser = (props: Props) => {
   );
 
   const updateTabInfo = useCallback(
-    (tabID, info) => {
+    (tabID: number, info: Record<string, unknown>) => {
       updateTab(tabID, info);
     },
     [updateTab],
   );
 
-  const hideTabsAndUpdateUrl = (url) => {
+  const hideTabsAndUpdateUrl = (url: string) => {
     navigation.setParams({
       ...route.params,
       showTabs: false,
@@ -196,7 +201,8 @@ export const Browser = (props: Props) => {
     });
   };
 
-  const switchToTab = (tab) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const switchToTab = (tab: any) => {
     trackEvent(
       createEventBuilder(MetaMetricsEvents.BROWSER_SWITCH_TAB).build(),
     );
@@ -249,7 +255,7 @@ export const Browser = (props: Props) => {
 
   useEffect(() => {
     const checkIfActiveAccountChanged = () => {
-      const hostname = new URL(browserUrl).hostname;
+      const hostname = new URL(browserUrl ?? '').hostname;
       const permittedAccounts = getPermittedAccounts(hostname);
       const activeAccountAddress = permittedAccounts?.[0];
 
@@ -260,7 +266,8 @@ export const Browser = (props: Props) => {
           ensByAccountAddress,
         });
         // Show active account toast
-        toastRef?.current?.showToast({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (toastRef?.current?.showToast as any)({
           variant: ToastVariants.Account,
           labelOptions: [
             {
@@ -304,12 +311,13 @@ export const Browser = (props: Props) => {
             switchToTab(tabs[0]);
           } else {
             // No tabs. Create a new one.
-            newTab();
+            newTab('', '');
           }
         }
       }
       // Initialize previous tabs. This prevents the next useEffect block from running the first time.
-      previousTabs.current = tabs || [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      previousTabs.current = tabs || [] as any;
     },
     /* eslint-disable-next-line */
     [],
@@ -337,7 +345,7 @@ export const Browser = (props: Props) => {
       const existingTabId = route.params?.existingTabId;
       if (newTabUrl && deeplinkTimestamp) {
         // Open url from link.
-        newTab(newTabUrl, linkType);
+        newTab(newTabUrl, linkType ?? '');
       } else if (existingTabId) {
         const existingTab = tabs.find((tab) => tab.id === existingTabId);
         if (existingTab) {
@@ -354,14 +362,16 @@ export const Browser = (props: Props) => {
   );
 
   const takeScreenshot = useCallback(
-    (url, tabID) =>
+    (url: string, tabID: number) =>
       new Promise((resolve, reject) => {
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         captureScreen({
           format: 'jpg',
           quality: 0.2,
           THUMB_WIDTH,
           THUMB_HEIGHT,
-        }).then(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any).then(
           (uri) => {
             updateTab(tabID, {
               url,
@@ -381,9 +391,11 @@ export const Browser = (props: Props) => {
   const showTabs = useCallback(async () => {
     try {
       const activeTab = tabs.find((tab) => tab.id === activeTabId);
-      await takeScreenshot(activeTab.url, activeTab.id);
+      if (activeTab) {
+        await takeScreenshot(activeTab.url, activeTab.id);
+      }
     } catch (e) {
-      Logger.error(e);
+      Logger.error(e as Error);
     }
 
     navigation.setParams({
@@ -402,7 +414,8 @@ export const Browser = (props: Props) => {
     }
   };
 
-  const closeTab = (tab) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const closeTab = (tab: any) => {
     // If the tab was selected we have to select
     // the next one, and if there's no next one,
     // we select the previous one.
@@ -463,19 +476,19 @@ export const Browser = (props: Props) => {
     () =>
       tabs
         .filter((tab) => !tab.isArchived)
-        .map((tab) => (
-          <BrowserTab
-            id={tab.id}
-            key={`tab_${tab.id}`}
-            initialUrl={tab.url}
-            linkType={tab.linkType}
-            updateTabInfo={updateTabInfo}
-            showTabs={showTabs}
-            newTab={newTab}
-            isInTabsView={route.params?.showTabs}
-            homePageUrl={homePageUrl()}
-          />
-        )),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((tab) => React.createElement(BrowserTab as any, {
+            id: tab.id,
+            key: `tab_${tab.id}`,
+            initialUrl: tab.url,
+            linkType: tab.linkType,
+            updateTabInfo,
+            showTabs,
+            newTab,
+            isInTabsView: route.params?.showTabs ?? false,
+            homePageUrl: homePageUrl(),
+          }),
+        ),
     [
       tabs,
       route.params?.showTabs,
@@ -503,7 +516,7 @@ const mapStateToProps = (state: RootState): StateProps => ({
 });
 
 const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
-  createNewTab: (url, linkType) => dispatch(createNewTab(url, linkType)),
+  createNewTab: (url, linkType) => dispatch(createNewTab(url, linkType ?? '')),
   closeAllTabs: () => dispatch(closeAllTabs()),
   closeTab: (id) => dispatch(closeTab(id)),
   setActiveTab: (id) => dispatch(setActiveTab(id)),
@@ -512,4 +525,6 @@ const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps 
 
 export { default as createBrowserNavDetails } from './Browser.types';
 
-export default connect(mapStateToProps, mapDispatchToProps)(Browser);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const connected = (connect as any)(mapStateToProps, mapDispatchToProps)(Browser);
+export default connected;

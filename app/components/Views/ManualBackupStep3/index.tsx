@@ -17,7 +17,8 @@ import {
   SEED_PHRASE_HINTS,
 } from '../../../constants/storage';
 import { MetaMetricsEvents } from '../../../core/Analytics';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import OnboardingSuccess from '../OnboardingSuccess';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
@@ -68,7 +69,7 @@ const createStyles = (colors: Theme['colors']) =>
     },
   });
 
-const hardwareBackPress = () => ({});
+const hardwareBackPress = () => true;
 const HARDWARE_BACK_PRESS = 'hardwareBackPress';
 
 /**
@@ -76,13 +77,8 @@ const HARDWARE_BACK_PRESS = 'hardwareBackPress';
  * the backup seed phrase flow
  */
 interface Props {
-  navigation: {
-    setOptions: (options: Record<string, unknown>) => void;
-    navigate: (route: string, params?: Record<string, unknown>) => void;
-    dangerouslyGetParent: () => {
-      pop: (count: number) => void;
-    };
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
   route: {
     params?: {
       steps?: string[];
@@ -116,8 +112,8 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(getTransparentOnboardingNavbarOptions(colors));
+    const colors = (this.context as any).colors || mockTheme.colors;
+    navigation.setOptions(getTransparentOnboardingNavbarOptions(colors) as Record<string, unknown>);
   };
 
   componentWillUnmount = () => {
@@ -202,7 +198,7 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
     }
   };
 
-  handleChangeText = (text) => this.setState({ hintText: text });
+  handleChangeText = (text: string) => this.setState({ hintText: text });
 
   renderHint = () => {
     const { showHint, hintText } = this.state;
@@ -219,7 +215,7 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -246,8 +242,11 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
 ManualBackupStep3.contextType = ThemeContext;
 
 const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showAlert: (config: any) => dispatch(showAlert(config)),
+  setOnboardingWizardStep: (step: number) => dispatch(setOnboardingWizardStep(step)),
 });
 
-export default connect(null, mapDispatchToProps)(ManualBackupStep3);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const connected = (connect as any)(null, mapDispatchToProps)(ManualBackupStep3);
+export default connected;

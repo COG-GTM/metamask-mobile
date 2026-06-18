@@ -15,7 +15,8 @@ import { baseStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import { passwordRequirementsMet } from '../../../util/password';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -76,14 +77,14 @@ export default class EnterPasswordSimple extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('enter_password.title'),
         navigation,
         false,
         colors,
-      ),
+      ) as Record<string, unknown>,
     );
   };
 
@@ -107,7 +108,7 @@ export default class EnterPasswordSimple extends PureComponent<Props, State> {
         strings('choose_password.password_length_error'),
       );
     } else {
-      this.props.route.params.onPasswordSet(this.state.password);
+      this.props.route.params?.onPasswordSet?.(this.state.password);
       this.props.navigation.pop();
       return;
     }
@@ -118,8 +119,8 @@ export default class EnterPasswordSimple extends PureComponent<Props, State> {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = (this.context as any).colors || mockTheme.colors;
+    const themeAppearance = ((this.context as any).themeAppearance || 'light') as 'default' | 'light' | 'dark';
     const styles = createStyles(colors);
 
     return (

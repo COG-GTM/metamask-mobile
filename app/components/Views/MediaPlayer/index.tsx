@@ -129,30 +129,36 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }: Med
           onLoad={onLoad}
           onError={onError}
           onClose={onClose}
-          source={source}
-          textTracks={textTracks}
-          selectedTextTrack={selectedTextTrack}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          source={source as any}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          textTracks={textTracks as any}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          selectedTextTrack={selectedTextTrack as any}
         />
       ) : (
         <>
+          {/* eslint-disable @typescript-eslint/no-explicit-any */}
           <Video
             onLoad={onLoad}
             onError={onError}
             style={style}
             muted={isMuted}
             paused={!isPlaying}
-            source={source}
+            source={source as any}
             controls={false}
             fullscreen={false}
-            textTracks={textTracks}
-            selectedTextTrack={selectedTextTrack}
+            textTracks={textTracks as any}
+            selectedTextTrack={selectedTextTrack as any}
             ignoreSilentSwitch="ignore"
-            ref={videoRef}
+            ref={videoRef as any}
           />
+          {/* eslint-enable @typescript-eslint/no-explicit-any */}
           {/**
            * Use custom controls for iOS since iOS 17.2+ begins crashing. https://github.com/react-native-video/react-native-video/issues/3329
            */}
-          <TapGestureHandler onEnded={onPressVideoControls}>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <TapGestureHandler onEnded={onPressVideoControls} {...{} as any}>
             <Animated.View style={videoControlsStyle}>
               <View style={styles.playButtonCircle}>
                 <Ionicons

@@ -3,7 +3,8 @@ import { Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { TERMS_AND_CONDITIONS_BUTTON_ID } from '../../../../wdio/screen-objects/testIDs/Components/TermsAndConditions.testIds';
 
@@ -43,7 +44,7 @@ export default class TermsAndConditions extends PureComponent<Props> {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

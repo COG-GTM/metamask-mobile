@@ -48,25 +48,20 @@ interface OwnProps {
 }
 
 interface StateProps {
-  conversionRate: number;
+  conversionRate: number | null | undefined;
   currentCurrency: string;
-  tokens: Array<{ address: string; [key: string]: unknown }>;
-  selectedInternalAccount: {
-    address: string;
-    metadata: {
-      importTime?: number;
-      [key: string]: unknown;
-    };
-    [key: string]: unknown;
-  };
-  transactions: Array<Record<string, unknown>>;
+  tokens: { address: string; [key: string]: unknown }[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectedInternalAccount: any;
+  transactions: Record<string, unknown>[];
   networkType: string;
   chainId: string;
   tokenNetworkFilter: Record<string, unknown>;
 }
 
 interface DispatchProps {
-  showAlert: (config: Record<string, unknown>) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showAlert: (config: any) => void;
 }
 
 type Props = OwnProps & StateProps & DispatchProps;
@@ -82,10 +77,13 @@ const TransactionsView = ({
   tokens,
   tokenNetworkFilter,
 }: Props) => {
-  const [allTransactions, setAllTransactions] = useState([]);
-  const [submittedTxs, setSubmittedTxs] = useState([]);
-  const [confirmedTxs, setConfirmedTxs] = useState([]);
-  const [loading, setLoading] = useState();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [allTransactions, setAllTransactions] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [submittedTxs, setSubmittedTxs] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [confirmedTxs, setConfirmedTxs] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
   const selectedAddress = toChecksumHexAddress(
@@ -95,13 +93,17 @@ const TransactionsView = ({
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
 
   const filterTransactions = useCallback(
-    (networkId) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (networkId: any) => {
       let accountAddedTimeInsertPointFound = false;
       const addedAccountTime = selectedInternalAccount?.metadata.importTime;
 
-      const submittedTxs = [];
-      const confirmedTxs = [];
-      const submittedNonces = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const submittedTxs: any[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const confirmedTxs: any[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const submittedNonces: any[] = [];
 
       const allTransactionsSorted = sortTransactions(transactions).filter(
         (tx, index, self) =>
@@ -115,15 +117,15 @@ const TransactionsView = ({
           selectedAddress,
           networkId,
           chainId,
-          tokenNetworkFilter,
+          tokenNetworkFilter as unknown as { [key: string]: boolean }[],
         );
 
         if (!filter) return false;
 
-        tx.insertImportTime = addAccountTimeFlagFilter(
+        (tx as Record<string, unknown>).insertImportTime = addAccountTimeFlagFilter(
           tx,
-          addedAccountTime,
-          accountAddedTimeInsertPointFound,
+          addedAccountTime as unknown as object,
+          accountAddedTimeInsertPointFound as unknown as object,
         );
         if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
 
@@ -174,8 +176,7 @@ const TransactionsView = ({
       // If the account added insert point is not found, add it to the last transaction
       if (
         !accountAddedTimeInsertPointFound &&
-        allTransactionsFiltered &&
-        allTransactionsFiltered.length
+        allTransactionsFiltered?.length
       ) {
         allTransactionsFiltered[
           allTransactionsFiltered.length - 1
@@ -242,7 +243,6 @@ const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps 
   showAlert: (config) => dispatch(showAlert(config)),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(withNavigation(TransactionsView));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const connected = (connect as any)(mapStateToProps, mapDispatchToProps)((withNavigation as any)(TransactionsView));
+export default connected;

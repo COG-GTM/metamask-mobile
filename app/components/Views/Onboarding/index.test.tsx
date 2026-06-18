@@ -1,3 +1,4 @@
+import React from 'react';
 import { renderScreen } from '../../../util/test/renderWithProvider';
 import Onboarding from './';
 import { backgroundState } from '../../../util/test/initial-root-state';
@@ -13,7 +14,7 @@ const mockInitialState = {
 describe('Onboarding', () => {
   it('should render correctly', () => {
     const { toJSON } = renderScreen(
-      Onboarding,
+      Onboarding as unknown as React.ComponentType,
       { name: 'Onboarding' },
       {
         state: mockInitialState,

@@ -12,7 +12,7 @@ describe('ManualBackupStep3', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ManualBackupStep3 />
+        <ManualBackupStep3 navigation={{ setOptions: jest.fn(), navigate: jest.fn(), reset: jest.fn(), pop: jest.fn(), dangerouslyGetParent: () => ({ pop: jest.fn() }) }} route={{ params: { steps: [] } }} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

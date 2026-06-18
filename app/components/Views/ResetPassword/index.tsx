@@ -30,7 +30,6 @@ import { strings } from '../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AppConstants from '../../../core/AppConstants';
-import zxcvbn from 'zxcvbn';
 import { ONBOARDING, PREVIOUS_SCREEN } from '../../../constants/navigation';
 import {
   TRUE,
@@ -48,13 +47,17 @@ import {
 } from '../../../util/authentication';
 import { Authentication } from '../../../core';
 import AUTHENTICATION_TYPE from '../../../constants/userProperties';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import { LoginOptionsSwitch } from '../../UI/LoginOptionsSwitch';
 import { recreateVaultWithNewPassword } from '../../../core/Vault';
 import Logger from '../../../util/Logger';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
 import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ChoosePassword.selectors';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const zxcvbn = require('zxcvbn');
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -240,6 +243,14 @@ const createStyles = (colors: Theme['colors']) =>
       flexDirection: 'row',
       alignSelf: 'center',
     },
+    loader: {
+      marginTop: 180,
+      justifyContent: 'center' as const,
+      textAlign: 'center' as const,
+    },
+    button: {
+      marginTop: 20,
+    },
   });
 
 const PASSCODE_NOT_SET_ERROR = 'Error: Passcode not set.';
@@ -250,11 +261,8 @@ const CONFIRM_PASSWORD = 'confirm_password';
  * View where users can set their password for the first time
  */
 interface OwnProps {
-  navigation: {
-    setOptions: (options: Record<string, unknown>) => void;
-    navigate: (route: string, params?: Record<string, unknown>) => void;
-    push: (route: string, params?: Record<string, unknown>) => void;
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
   route: {
     params?: {
       [key: string]: unknown;
@@ -276,7 +284,7 @@ type Props = OwnProps & StateProps & DispatchProps;
 
 interface ResetPasswordState {
   isSelected: boolean;
-  password: string | null;
+  password: string;
   confirmPassword: string;
   secureTextEntry: boolean;
   biometryType: string | null;
@@ -284,7 +292,7 @@ interface ResetPasswordState {
   rememberMe: boolean;
   loading: boolean;
   error: string | null;
-  inputWidth: { width: string };
+  inputWidth: { width: '99%' | '100%' };
   view: string;
   originalPassword: string | null;
   ready: boolean;
@@ -315,14 +323,14 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('password_reset.change_password'),
         navigation,
         false,
         colors,
-      ),
+      ) as Record<string, unknown>,
     );
   };
 
@@ -359,7 +367,8 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
     }, 100);
   }
 
-  componentDidUpdate(_, prevState) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  componentDidUpdate(_: any, prevState: any) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
     const { loading } = this.state;
@@ -409,7 +418,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
         );
         await Authentication.storePassword(password, authData.currentAuthType);
       } catch (error) {
-        Logger.error(error);
+        Logger.error(error as Error);
       }
 
       this.props.setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT);
@@ -426,14 +435,14 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
       });
     } catch (error) {
       // Should we force people to enable passcode / biometrics?
-      if (error.toString() === PASSCODE_NOT_SET_ERROR) {
+      if ((error as Error).toString() === PASSCODE_NOT_SET_ERROR) {
         Alert.alert(
           strings('choose_password.security_alert_title'),
           strings('choose_password.security_alert_message'),
         );
         this.setState({ loading: false });
       } else {
-        this.setState({ loading: false, error: error.toString() });
+        this.setState({ loading: false, error: (error as Error).toString() });
       }
     }
   };
@@ -464,7 +473,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
 
   renderSwitch = () => {
     const { biometryType, biometryChoice } = this.state;
-    const handleUpdateRememberMe = (rememberMe) => {
+    const handleUpdateRememberMe = (rememberMe: boolean) => {
       this.setState({ rememberMe });
     };
     return (
@@ -488,7 +497,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
       // Just try
       await this.tryExportSeedPhrase(password);
       this.setState({
-        password: null,
+        password: '',
         originalPassword: password,
         ready: true,
         view: RESET_PASSWORD,
@@ -528,7 +537,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
   };
 
   renderLoader = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -542,8 +551,8 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
 
   renderConfirmPassword() {
     const { warningIncorrectPassword } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = (this.context as any).colors || mockTheme.colors;
+    const themeAppearance = ((this.context as any).themeAppearance || 'light') as 'default' | 'light' | 'dark';
     const styles = createStyles(colors);
 
     return (
@@ -611,13 +620,13 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
       error,
       loading,
     } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = (this.context as any).colors || mockTheme.colors;
+    const themeAppearance = ((this.context as any).themeAppearance || 'light') as 'default' | 'light' | 'dark';
     const styles = createStyles(colors);
     const passwordsMatch = password !== '' && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
     const previousScreen = this.props.route.params?.[PREVIOUS_SCREEN];
-    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength);
+    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength ?? 0);
 
     return (
       <SafeAreaView style={styles.mainWrapper}>
@@ -706,7 +715,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
                     <Text
                       variant={TextVariant.BodySM}
                       style={styles.hintLabel}
-                    />
+                    >{''}</Text>
                   )}
                 </View>
                 <View style={styles.field}>
@@ -724,7 +733,6 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
                     testID={
                       ChoosePasswordSelectorsIDs.CONFIRM_PASSWORD_INPUT_ID
                     }
-                    zasdfasfasf
                     onSubmitEditing={this.onPressCreate}
                     returnKeyType={'done'}
                     autoCapitalize="none"
@@ -799,7 +807,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
 
   render() {
     const { view, ready } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as any).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!ready) return this.renderLoader();
@@ -822,7 +830,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
 ResetPassword.contextType = ThemeContext;
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) ?? '',
 });
 
 const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
@@ -831,4 +839,6 @@ const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps 
   seedphraseNotBackedUp: () => dispatch(seedphraseNotBackedUp()),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ResetPassword);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const connected = (connect as any)(mapStateToProps, mapDispatchToProps)(ResetPassword);
+export default connected;

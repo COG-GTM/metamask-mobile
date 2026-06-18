@@ -65,12 +65,12 @@ type Props = OwnProps & StateProps;
 const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
   const [seedPhraseHidden, setSeedPhraseHidden] = useState(true);
 
-  const [password, setPassword] = useState(undefined);
+  const [password, setPassword] = useState<string | undefined>(undefined);
   const [warningIncorrectPassword, setWarningIncorrectPassword] =
-    useState(undefined);
+    useState<string | undefined>(undefined);
   const [ready, setReady] = useState(false);
-  const [view, setView] = useState(SEED_PHRASE);
-  const [words, setWords] = useState([]);
+  const [view, setView] = useState<string>(SEED_PHRASE);
+  const [words, setWords] = useState<string[]>([]);
 
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
@@ -79,10 +79,11 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
   const steps = MANUAL_BACKUP_STEPS;
 
   const updateNavBar = useCallback(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation.setOptions(getOnboardingNavbarOptions(route, { headerLeft: undefined } as { headerLeft: unknown }, colors) as Record<string, unknown>);
   }, [colors, navigation, route]);
 
-  const tryExportSeedPhrase = async (password) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tryExportSeedPhrase = async (password: any) => {
     const { KeyringController } = Engine.context;
     const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(
       password,
@@ -140,7 +141,8 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
     );
   };
 
-  const tryUnlockWithPassword = async (password) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tryUnlockWithPassword = async (password: any) => {
     setReady(false);
     try {
       const seedPhrase = await tryExportSeedPhrase(password);
@@ -149,7 +151,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
       setReady(true);
     } catch (e) {
       let msg = strings('reveal_credential.warning_incorrect_password');
-      if (e.toString().toLowerCase() !== WRONG_PASSWORD_ERROR.toLowerCase()) {
+      if ((e as Error).toString().toLowerCase() !== WRONG_PASSWORD_ERROR.toLowerCase()) {
         msg = strings('reveal_credential.unknown_error');
       }
       setWarningIncorrectPassword(msg);
@@ -171,7 +173,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
         blurType = 'dark';
         break;
       case 'os':
-        blurType = Appearance.getColorScheme();
+        blurType = Appearance.getColorScheme() ?? 'light';
         break;
       default:
         blurType = 'light';
@@ -184,7 +186,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
 
     return (
       <View style={styles.seedPhraseConcealerContainer}>
-        <BlurView blurType={blurType} blurAmount={5} style={styles.blurView} />
+        <BlurView blurType={blurType as 'light' | 'dark'} blurAmount={5} style={styles.blurView} />
         <View style={styles.seedPhraseConcealer}>
           <FeatherIcons name="eye-off" size={24} style={styles.icon} />
           <Text style={styles.reveal}>
@@ -193,7 +195,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
           <Text style={styles.watching}>
             {strings('manual_backup_step_1.watching')}
           </Text>
-          <View style={styles.viewButtonWrapper}>
+          <View style={styles.buttonWrapper}>
             <StyledButton
               type={'onOverlay'}
               onPress={revealSeedPhrase}
@@ -243,7 +245,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
           </View>
           <View style={styles.buttonWrapper}>
             <StyledButton
-              containerStyle={styles.button}
+              containerStyle={styles.buttonWrapper}
               type={'confirm'}
               onPress={tryUnlock}
               testID={ManualBackUpStepsSelectorsIDs.SUBMIT_BUTTON}

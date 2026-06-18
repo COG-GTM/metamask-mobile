@@ -17,7 +17,8 @@ import OnboardingScreenWithBg from '../../UI/OnboardingScreenWithBg';
 import Text from '../../Base/Text';
 import { connect } from 'react-redux';
 import Device from '../../../util/device';
-import { useTheme, Theme } from '../../../util/theme';
+import { useTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import AppConstants from '../../../core/AppConstants';
@@ -155,7 +156,7 @@ interface OwnProps {
 }
 
 interface StateProps {
-  conversionRate: number;
+  conversionRate: number | null | undefined;
   currentCurrency: string;
   ticker: string;
 }
@@ -170,13 +171,13 @@ const GasEducationCarousel = ({
   ticker,
 }: Props) => {
   const [currentTab, setCurrentTab] = useState(1);
-  const [gasFiat, setGasFiat] = useState(null);
+  const [gasFiat, setGasFiat] = useState<string | null>(null);
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    navigation.setOptions(getTransparentOnboardingNavbarOptions(colors));
+    navigation.setOptions(getTransparentOnboardingNavbarOptions(colors) as Record<string, unknown>);
   }, [navigation, colors]);
 
   useEffect(() => {
@@ -202,12 +203,14 @@ const GasEducationCarousel = ({
             gasFeeEstimates.suggestedMaxFeePerGas,
           );
           const gasLimitHex = BNToHex(gas);
+          /* eslint-disable @typescript-eslint/no-explicit-any */
           const gasHexes = calculateEIP1559GasFeeHexes({
             gasLimitHex,
             estimatedBaseFeeHex,
             suggestedMaxFeePerGasHex,
             suggestedMaxPriorityFeePerGasHex,
-          });
+          } as any);
+          /* eslint-enable @typescript-eslint/no-explicit-any */
           estimatedTotalGas = hexToBN(gasHexes.gasFeeMaxHex);
         } else if (gasEstimates.gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
           const gasPrice = hexToBN(
@@ -234,7 +237,7 @@ const GasEducationCarousel = ({
         const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
         setGasFiat(gasFiat);
       } catch (e) {
-        Logger.error(e);
+        Logger.error(e as Error);
       }
       setIsLoading(false);
     };
@@ -348,11 +351,12 @@ const GasEducationCarousel = ({
         >
           <View style={styles.wrapper}>
             <ScrollableTabView
-              style={styles.scrollTabs}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              style={(styles as any).scrollTabs}
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
             >
-              {['one', 'two', 'three'].map((value, index) => {
+              {['one', 'two', 'three'].map((_value, index) => {
                 const key = index + 1;
                 const imgStyleKey = `carouselImage${key}`;
                 return (
@@ -360,7 +364,8 @@ const GasEducationCarousel = ({
                     <View style={styles.carouselImageWrapper}>
                       <Image
                         source={carousel_images[index]}
-                        style={[styles.carouselImage, styles[imgStyleKey]]}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        style={[styles.carouselImage, (styles as any)[imgStyleKey]]}
                         resizeMethod={'auto'}
                       />
                     </View>

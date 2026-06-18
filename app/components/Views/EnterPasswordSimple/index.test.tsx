@@ -33,7 +33,7 @@ describe('EnterPasswordSimple', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <NavigationContainer>
-          <EnterPasswordSimple navigation={mockNavigation} />
+          <EnterPasswordSimple navigation={{ ...mockNavigation, pop: jest.fn() }} route={{ params: {} }} />
         </NavigationContainer>
       </ThemeContext.Provider>,
     );
