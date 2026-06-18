@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { getNetworkNavbarOptions } from '.';
-import { SolScope } from '@metamask/keyring-api';
+import { mockTheme } from '../../../util/theme';
 
 describe('getNetworkNavbarOptions', () => {
   const Stack = createStackNavigator();
@@ -13,7 +13,7 @@ describe('getNetworkNavbarOptions', () => {
     pop: jest.fn(),
   };
 
-  const TestNavigator = ({ options }) => (
+  const TestNavigator = ({ options }: { options: { header: () => React.ReactElement } }) => (
     <Stack.Navigator>
       <Stack.Screen name="TestScreen" component={() => options.header()} />
     </Stack.Navigator>
@@ -27,10 +27,12 @@ describe('getNetworkNavbarOptions', () => {
     const options = getNetworkNavbarOptions(
       'Test Title',
       false,
-      mockNavigation,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockNavigation as any,
+      mockTheme.colors,
     );
 
-    const { getByText, getByRole } = renderWithProvider(
+    const { getByText } = renderWithProvider(
       <TestNavigator options={options} />,
       {
         state: {

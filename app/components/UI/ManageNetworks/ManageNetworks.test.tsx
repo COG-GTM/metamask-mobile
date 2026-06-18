@@ -31,15 +31,17 @@ jest.mock('react-redux', () => ({
   useSelector: jest.fn(),
 }));
 
+const mockUseSelector = useSelector as jest.MockedFunction<typeof useSelector>;
 const mockNetworkName = 'Ethereum Main Network';
 
 describe('ManageNetworks', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
+    mockUseSelector.mockImplementation((selector) => {
       if (selector === selectNetworkName) return mockNetworkName;
     });
     const { toJSON } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      <ManageNetworks {...{ navigation: useNavigation() } as any} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
@@ -56,11 +58,12 @@ describe('ManageNetworks', () => {
       },
     ],
   ])('opens link %link', ({ link, testId }) => {
-    useSelector.mockImplementation((selector) => {
+    mockUseSelector.mockImplementation((selector) => {
       if (selector === selectNetworkName) return mockNetworkName;
     });
     const { getByTestId } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      <ManageNetworks {...{ navigation: useNavigation() } as any} />,
     );
     const button = getByTestId(testId);
     fireEvent.press(button);

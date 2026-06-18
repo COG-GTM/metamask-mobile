@@ -1,6 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import Modal from 'react-native-modal';
 import { strings } from '../../../../locales/i18n';
 import ActionContent from './ActionContent';
@@ -12,6 +11,31 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
+
+interface ActionModalProps {
+  cancelButtonDisabled?: boolean;
+  cancelTestID?: string;
+  confirmTestID?: string;
+  cancelText?: string;
+  children?: React.ReactNode;
+  cancelButtonMode?: string;
+  confirmButtonMode?: string;
+  confirmDisabled?: boolean;
+  confirmText?: string;
+  displayCancelButton?: boolean;
+  displayConfirmButton?: boolean;
+  onCancelPress?: () => void;
+  onConfirmPress?: () => void;
+  onRequestClose?: () => void;
+  modalVisible?: boolean;
+  modalStyle?: StyleProp<ViewStyle>;
+  viewWrapperStyle?: StyleProp<ViewStyle>;
+  viewContainerStyle?: StyleProp<ViewStyle>;
+  actionContainerStyle?: StyleProp<ViewStyle>;
+  childrenContainerStyle?: StyleProp<ViewStyle>;
+  verticalButtons?: boolean;
+  propagateSwipe?: boolean;
+}
 
 /**
  * View that renders an action modal
@@ -39,7 +63,7 @@ export default function ActionModal({
   verticalButtons,
   propagateSwipe,
   cancelButtonDisabled,
-}) {
+}: ActionModalProps) {
   const { colors } = useTheme();
 
   return (
@@ -91,92 +115,4 @@ ActionModal.defaultProps = {
   confirmDisabled: false,
   displayCancelButton: true,
   displayConfirmButton: true,
-};
-
-ActionModal.propTypes = {
-  cancelButtonDisabled: PropTypes.bool,
-  /**
-   * TestID for the cancel button
-   */
-  cancelTestID: PropTypes.string,
-  /**
-   * TestID for the confirm button
-   */
-  confirmTestID: PropTypes.string,
-  /**
-   * Text to show in the cancel button
-   */
-  cancelText: PropTypes.string,
-  /**
-   * Content to display above the action buttons
-   */
-  children: PropTypes.node,
-  /**
-   * Type of button to show as the cancel button
-   */
-  cancelButtonMode: PropTypes.string,
-  /**
-   * Type of button to show as the confirm button
-   */
-  confirmButtonMode: PropTypes.string,
-  /**
-   * Whether confirm button is disabled
-   */
-  confirmDisabled: PropTypes.bool,
-  /**
-   * Text to show in the confirm button
-   */
-  confirmText: PropTypes.string,
-  /**
-   * Whether cancel button should be displayed
-   */
-  displayCancelButton: PropTypes.bool,
-  /**
-   * Whether confirm button should be displayed
-   */
-  displayConfirmButton: PropTypes.bool,
-  /**
-   * Called when the cancel button is clicked
-   */
-  onCancelPress: PropTypes.func,
-  /**
-   * Called when the confirm button is clicked
-   */
-  onConfirmPress: PropTypes.func,
-  /**
-   * Called when hardware back button on Android is clicked
-   */
-  onRequestClose: PropTypes.func,
-  /**
-   * Whether modal is shown
-   */
-  modalVisible: PropTypes.bool,
-  /**
-   * Modal style
-   */
-  modalStyle: PropTypes.object,
-  /**
-   * View wrapper style
-   */
-  viewWrapperStyle: PropTypes.object,
-  /**
-   * View container style
-   */
-  viewContainerStyle: PropTypes.object,
-  /**
-   * Action container style
-   */
-  actionContainerStyle: PropTypes.object,
-  /**
-   * Whether buttons are rendered vertically
-   */
-  verticalButtons: PropTypes.bool,
-  /**
-   * Children container style
-   */
-  childrenContainerStyle: PropTypes.object,
-  /**
-   * Allows swipe events to propagate to children components (eg a ScrollView inside a modal)
-   */
-  propagateSwipe: PropTypes.bool,
 };
