@@ -25,7 +25,7 @@ export const restoreQRKeyring = async (serializedQrKeyring: unknown): Promise<vo
  */
 export const restoreLedgerKeyring = async (serializedLedgerKeyring: unknown): Promise<void> => {
   try {
-    await withLedgerKeyring(async ({ keyring }) => {
+    await withLedgerKeyring(async (keyring) => {
       await (keyring as unknown as { deserialize: (data: unknown) => Promise<void> }).deserialize(serializedLedgerKeyring);
     });
   } catch (e) {

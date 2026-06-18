@@ -78,7 +78,7 @@ const HARDWARE_BACK_PRESS = 'hardwareBackPress';
  * the backup seed phrase flow
  */
 interface Props {
-  navigation: {
+  navigation?: {
     setOptions: (options: Record<string, unknown>) => void;
     navigate: (route: string, params?: Record<string, unknown>) => void;
     reset: (state: { routes: { name: string }[] }) => void;
@@ -87,7 +87,7 @@ interface Props {
       pop: (count: number) => void;
     };
   };
-  route: {
+  route?: {
     params?: {
       steps?: string[];
       words?: string[];
@@ -111,7 +111,7 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this.steps = props.route.params?.steps;
+    this.steps = props.route?.params?.steps;
   }
 
   state: State = {
@@ -123,7 +123,7 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
   updateNavBar = () => {
     const { navigation } = this.props;
     const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(getTransparentOnboardingNavbarOptions(colors));
+    navigation?.setOptions(getTransparentOnboardingNavbarOptions(colors));
   };
 
   componentWillUnmount = () => {
@@ -158,7 +158,7 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
   };
 
   learnMore = () =>
-    this.props.navigation.navigate('Webview', {
+    this.props.navigation?.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: 'https://support.metamask.io',
@@ -167,7 +167,7 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
     });
 
   isHintSeedPhrase = (hintText: string) => {
-    const words = this.props.route.params?.words;
+    const words = this.props.route?.params?.words;
     if (words) {
       const lower = (str: string) => String(str).toLowerCase();
       return lower(hintText) === lower(words.join(' '));
@@ -201,10 +201,10 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
   done = async () => {
     const onboardingWizard = await StorageWrapper.getItem(ONBOARDING_WIZARD);
     if (onboardingWizard) {
-      this.props.navigation.reset({ routes: [{ name: 'HomeNav' }] });
+      this.props.navigation?.reset({ routes: [{ name: 'HomeNav' }] });
     } else {
       this.props.setOnboardingWizardStep(1);
-      this.props.navigation.reset({ routes: [{ name: 'HomeNav' }] });
+      this.props.navigation?.reset({ routes: [{ name: 'HomeNav' }] });
     }
   };
 
@@ -241,7 +241,7 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
         ) : null}
         <OnboardingSuccess onDone={this.done} backedUpSRP />
         {Device.isAndroid() && (
-          <AndroidBackHandler customBackPress={this.props.navigation.pop} />
+          <AndroidBackHandler customBackPress={this.props.navigation?.pop} />
         )}
         {this.renderHint()}
       </View>

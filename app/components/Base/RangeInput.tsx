@@ -183,7 +183,12 @@ const RangeInput = ({
         {renderLabelComponent(rightLabelComponent)}
       </View>
 
-      <View style={[styles.rangeInputContainer, { borderColor: error ? colors.error.default : colors.border.default }]}>
+      <View
+        style={{
+          ...styles.rangeInputContainer,
+          borderColor: error ? colors.error.default : colors.border.default,
+        }}
+      >
         <View style={styles.buttonContainerLeft}>
           <TouchableOpacity
             style={styles.button}
@@ -195,7 +200,10 @@ const RangeInput = ({
         </View>
         <View style={styles.inputContainer}>
           <TextInput
-            style={[styles.input, { color: error ? colors.error.default : colors.text.default }]}
+            style={{
+              ...styles.input,
+              color: error ? colors.error.default : colors.text.default,
+            }}
             onChangeText={changeValue}
             onBlur={checkLimits}
             value={value}

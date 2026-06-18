@@ -163,7 +163,10 @@ const createStyles = (colors: Theme['colors']) =>
       alignSelf: 'center',
     },
     stepCounter: {
-      ...(typography.sBodyMD as Record<string, unknown>),
+      ...((typography as Record<string, unknown>).BodyMD as Record<
+        string,
+        unknown
+      >),
       fontFamily: getFontFamily(TextVariant.BodyMD),
       color: colors.info.inverse,
     } as TextStyle,

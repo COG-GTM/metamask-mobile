@@ -322,7 +322,6 @@ const createStyles = (colors: Theme['colors']) =>
       color: colors.text.default,
     },
     protectWalletButtonWrapper: { marginVertical: 8 },
-    accountInfo: {},
   });
 
 const metamask_name = require('../../../images/branding/metamask-name.png'); // eslint-disable-line
@@ -1067,7 +1066,6 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.accountInfo}
                 onPress={this.openAccountSelector}
                 testID={'navbar-account-button'}
               >

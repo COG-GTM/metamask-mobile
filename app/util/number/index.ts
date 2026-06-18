@@ -949,9 +949,11 @@ export const formatValueToMatchTokenDecimals = (value: string | null | undefined
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const safeBNToHex = (value: any): string | undefined => {
+export const safeBNToHex = (
+  value: any,
+): string | null | undefined => {
   if (value === null || value === undefined) {
-    return undefined;
+    return value;
   }
 
   return BNToHex(value);

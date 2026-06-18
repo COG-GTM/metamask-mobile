@@ -45,11 +45,11 @@ import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder
  * the backup seed phrase flow
  */
 interface OwnProps {
-  navigation: {
+  navigation?: {
     setOptions: (options: Record<string, unknown>) => void;
     navigate: (route: string, params?: Record<string, unknown>) => void;
   };
-  route: {
+  route?: {
     params?: {
       words?: string[];
       [key: string]: unknown;
@@ -81,7 +81,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
   const steps = MANUAL_BACKUP_STEPS;
 
   const updateNavBar = useCallback(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation?.setOptions(getOnboardingNavbarOptions(route ?? {}, {}, colors));
   }, [colors, navigation, route]);
 
   const tryExportSeedPhrase = async (passwordInput: string) => {
@@ -113,7 +113,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
     };
 
     getSeedphrase();
-    setWords(route.params?.words ?? []);
+    setWords(route?.params?.words ?? []);
     setReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -127,7 +127,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
   };
 
   const goNext = () => {
-    navigation.navigate('ManualBackupStep2', {
+    navigation?.navigate('ManualBackupStep2', {
       words,
       steps,
     });

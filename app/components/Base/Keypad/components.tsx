@@ -95,6 +95,8 @@ interface KeypadDeleteButtonProps {
   onLongPress?: () => void;
   accessibilityRole?: AccessibilityRole;
   accessible?: boolean;
+  testID?: string;
+  delayLongPress?: number;
 }
 
 const KeypadDeleteButton = ({ style, icon, ...props }: KeypadDeleteButtonProps) => {

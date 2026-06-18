@@ -913,7 +913,7 @@ export function getWalletNavbarOptions(
 ) {
   const innerStyles = StyleSheet.create({
     headerStyle: {
-      backgroundColor: themeColors.background.default,
+      backgroundColor: themeColors.background as unknown as string,
       shadowColor: importedColors.transparent,
       elevation: 0,
     },
@@ -1974,7 +1974,7 @@ export function getStakingNavbar(
     headerStyle: {
       backgroundColor:
         (navBarOptions?.backgroundColor as string) ?? themeColors.background.default,
-      shadowOffset: undefined,
+      shadowOffset: null as unknown as { width: number; height: number },
     },
     headerLeft: {
       marginHorizontal: 16,

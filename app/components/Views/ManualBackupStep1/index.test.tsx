@@ -16,10 +16,6 @@ describe('ManualBackupStep1', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <ManualBackupStep1
-          navigation={{
-            setOptions: jest.fn(),
-            navigate: jest.fn(),
-          }}
           route={{
             params: {
               words: [

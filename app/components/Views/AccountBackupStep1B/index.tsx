@@ -194,8 +194,6 @@ const createStyles = (colors: Theme['colors']) =>
       lineHeight: 20,
       color: colors.text.default,
     },
-    button: {},
-    remindLaterButton: {},
   });
 
 /**
@@ -333,7 +331,6 @@ const AccountBackupStep1B = (props: Props) => {
             </Text>
 
             <StyledButton
-              containerStyle={styles.button}
               type={'confirm'}
               onPress={goNext}
             >
@@ -378,7 +375,6 @@ const AccountBackupStep1B = (props: Props) => {
               </Text>
             </Text>
             <TouchableOpacity
-              style={styles.remindLaterButton}
               onPress={learnMore}
               hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
             >

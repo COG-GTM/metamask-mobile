@@ -198,8 +198,6 @@ function KeypadComponent({
           style={periodButtonStyle}
           textStyle={periodTextStyle}
           onPress={handleKeypadPressPeriod}
-          accessibilityRole="button"
-          accessible
         >
           {decimalSeparator}
         </Keypad.Button>
@@ -213,12 +211,12 @@ function KeypadComponent({
           0
         </Keypad.Button>
         <Keypad.DeleteButton
+          testID="keypad-delete-button"
           style={deleteButtonStyle}
           icon={deleteIcon}
           onPress={handleKeypadPressBack}
           onLongPress={handleKeypadLongPressBack}
-          accessibilityRole="button"
-          accessible
+          delayLongPress={500}
         />
       </Keypad.Row>
     </Keypad>

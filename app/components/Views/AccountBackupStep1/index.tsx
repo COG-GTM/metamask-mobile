@@ -138,9 +138,6 @@ const createStyles = (colors: Colors) =>
     ctaContainer: {
       marginBottom: 30,
     },
-    button: {
-      marginBottom: 16,
-    },
     srpDesign: {
       width: 200,
       height: 225,
@@ -292,7 +289,6 @@ const AccountBackupStep1 = (props: Props) => {
             )}
             <View style={styles.ctaContainer}>
               <StyledButton
-                containerStyle={styles.button}
                 type={'confirm'}
                 onPress={goNext}
               >

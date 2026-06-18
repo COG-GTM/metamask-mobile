@@ -128,7 +128,6 @@ const createStyles = (colors: Theme['colors']) =>
     tab: {
       margin: 32,
     },
-    scrollTabs: {},
   });
 
 const gas_education_carousel_1 = require('../../../images/gas-education-carousel-1.png'); // eslint-disable-line
@@ -353,7 +352,6 @@ const GasEducationCarousel = ({
         >
           <View style={styles.wrapper}>
             <ScrollableTabView
-              style={styles.scrollTabs}
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
             >

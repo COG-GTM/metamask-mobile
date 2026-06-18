@@ -129,13 +129,13 @@ export const selectSwapsChainFeatureFlags = createSelector(
     const ss = swapsState as Record<string, unknown>;
     return {
       ...(ss[chainId] as { featureFlags?: Record<string, unknown> })
-        ?.featureFlags,
+        .featureFlags,
       smartTransactions: {
         ...((
           ss[chainId] as {
             featureFlags?: { smartTransactions?: Record<string, unknown> };
           }
-        )?.featureFlags?.smartTransactions || ({} as Record<string, unknown>)),
+        ).featureFlags?.smartTransactions || ({} as Record<string, unknown>)),
         ...((ss.featureFlags as { smartTransactions?: Record<string, unknown> })
           ?.smartTransactions || ({} as Record<string, unknown>)),
       },
