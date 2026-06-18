@@ -1,12 +1,14 @@
+// @ts-expect-error unicode-confusables has no type declarations
 import { confusables } from 'unicode-confusables';
 import { strings } from '../../../locales/i18n';
-import confusablesMap from 'unicode-confusables/data/confusables.json';
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports, import/no-commonjs
+const confusablesMap: Record<string, string> = require('unicode-confusables/data/confusables.json');
 
-export const collectConfusables = (ensName) => {
+export const collectConfusables = (ensName: string): string[] => {
   const key = 'similarTo';
   const collection = confusables(ensName).reduce(
-    (total, current) => (key in current ? [...total, current.point] : total),
-    [],
+    (total: string[], current: { point: string; [key: string]: string }) => (key in current ? [...total, current.point] : total),
+    [] as string[],
   );
   return collection;
 };
@@ -20,9 +22,9 @@ const zeroWidthPoints = new Set([
   '\u2029', // paragraph separator,
 ]);
 
-export const hasZeroWidthPoints = (char) => zeroWidthPoints.has(char);
+export const hasZeroWidthPoints = (char: string): boolean => zeroWidthPoints.has(char);
 
-export const getConfusablesExplanations = (confusableCollection) => [
+export const getConfusablesExplanations = (confusableCollection: string[]): string[] => [
   ...new Set(
     confusableCollection.map((key) => {
       const value = confusablesMap[key];

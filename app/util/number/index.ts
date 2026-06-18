@@ -4,12 +4,15 @@
 import { stripHexPrefix } from 'ethereumjs-util';
 import BN4 from 'bnjs4';
 import { utils as ethersUtils } from 'ethers';
+// @ts-expect-error no type declarations for @metamask/ethjs-unit
 import convert from '@metamask/ethjs-unit';
 import { add0x, remove0x } from '@metamask/utils';
+// @ts-expect-error no type declarations for number-to-bn
 import numberToBN from 'number-to-bn';
 import BigNumber from 'bignumber.js';
 
-import currencySymbols from '../currency-symbols.json';
+import currencySymbolsData from '../currency-symbols.json';
+const currencySymbols: Record<string, string> = currencySymbolsData;
 import { isZero } from '../lodash';
 import { regex } from '../regex';
 
@@ -28,9 +31,10 @@ const BIG_NUMBER_ETH_MULTIPLIER = new BigNumber('1');
  * @param inputHex - Number represented as a hex string.
  * @returns A BN instance.
  */
-export const hexToBN = (inputHex) =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const hexToBN = (inputHex: any) =>
   typeof inputHex !== 'string'
-    ? new BN4(inputHex, 16)
+    ? inputHex instanceof BN4 ? inputHex : new BN4(inputHex, 16)
     : (inputHex ? new BN4(remove0x(inputHex), 16) : new BN4(0));
 
 /**
@@ -41,22 +45,23 @@ export const hexToBN = (inputHex) =>
  */
 // TODO: Either fix this lint violation or explain why it's necessary to ignore.
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function BNToHex(inputBn) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function BNToHex(inputBn: any) {
   return add0x(inputBn.toString(16));
 }
 
 // Setter Maps
-export const toBigNumber = {
-  hex: (n) => new BigNumber(stripHexPrefix(n), 16),
+export const toBigNumber: Record<string, (n: string | number | BN4 | BigNumber) => BigNumber> = {
+  hex: (n) => new BigNumber(stripHexPrefix(String(n)), 16),
   dec: (n) => new BigNumber(String(n), 10),
   BN: (n) => new BigNumber(n.toString(16), 16),
 };
-const toNormalizedDenomination = {
+const toNormalizedDenomination: Record<string, (bigNumber: BigNumber) => BigNumber> = {
   WEI: (bigNumber) => bigNumber.div(BIG_NUMBER_WEI_MULTIPLIER),
   GWEI: (bigNumber) => bigNumber.div(BIG_NUMBER_GWEI_MULTIPLIER),
   ETH: (bigNumber) => bigNumber.div(BIG_NUMBER_ETH_MULTIPLIER),
 };
-const toSpecifiedDenomination = {
+const toSpecifiedDenomination: Record<string, (bigNumber: BigNumber) => BigNumber> = {
   WEI: (bigNumber) =>
     bigNumber.times(BIG_NUMBER_WEI_MULTIPLIER).decimalPlaces(0),
   GWEI: (bigNumber) =>
@@ -64,7 +69,8 @@ const toSpecifiedDenomination = {
   ETH: (bigNumber) =>
     bigNumber.times(BIG_NUMBER_ETH_MULTIPLIER).decimalPlaces(9),
 };
-const baseChange = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const baseChange: Record<string, (n: BigNumber) => any> = {
   hex: (n) => n.toString(16),
   dec: (n) => new BigNumber(n).toString(10),
   BN: (n) => new BN4(n.toString(16)),
@@ -76,7 +82,7 @@ const baseChange = {
  * @param {string} str - The string to prefix.
  * @returns {string} The prefixed string.
  */
-export const addHexPrefix = (str) => {
+export const addHexPrefix = (str: string): string => {
   if (typeof str !== 'string' || str.match(regex.hexPrefix)) {
     return str;
   }
@@ -99,7 +105,8 @@ export const addHexPrefix = (str) => {
  * @param {string} unit - Unit to convert to, ether by default
  * @returns {string} - String containing the new number
  */
-export function fromWei(value = 0, unit = 'ether') {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function fromWei(value: any = 0, unit = 'ether'): string {
   return convert.fromWei(value, unit);
 }
 
@@ -112,10 +119,11 @@ export function fromWei(value = 0, unit = 'ether') {
  * @returns {string} - String containing the new number
  */
 export function fromTokenMinimalUnit(
-  minimalInput,
-  decimals,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  minimalInput: any,
+  decimals: number,
   isRounding = true,
-) {
+): string {
   minimalInput = isRounding ? Number(minimalInput) : minimalInput;
   const prefixedInput = addHexPrefix(minimalInput.toString(16));
   let minimal = safeNumberToBN(prefixedInput);
@@ -123,13 +131,13 @@ export function fromTokenMinimalUnit(
   const base = toBN(Math.pow(10, decimals).toString());
 
   if (negative) {
-    minimal = minimal.mul(negative);
+    minimal = minimal.mul(new BN4(-1));
   }
   let fraction = minimal.mod(base).toString(10);
   while (fraction.length < decimals) {
     fraction = '0' + fraction;
   }
-  fraction = fraction.match(regex.fractions)[1];
+  fraction = fraction.match(regex.fractions)?.[1] ?? fraction;
   const whole = minimal.div(base).toString(10);
   let value = '' + whole + (fraction === '0' ? '' : '.' + fraction);
   if (negative) {
@@ -145,7 +153,7 @@ export function fromTokenMinimalUnit(
  * @param {number} decimals - Token decimals to convert
  * @returns {string} - String containing the new number
  */
-export function fromTokenMinimalUnitString(minimalInput, decimals) {
+export function fromTokenMinimalUnitString(minimalInput: string, decimals: number): string {
   if (typeof minimalInput !== 'string') {
     throw new TypeError('minimalInput must be a string');
   }
@@ -167,7 +175,8 @@ export function fromTokenMinimalUnitString(minimalInput, decimals) {
  * @param {number} decimals - Unit to convert from, ether by default
  * @returns {BN} - BN instance containing the new number
  */
-export function toTokenMinimalUnit(tokenValue, decimals) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toTokenMinimalUnit(tokenValue: string | number | BN4, decimals: number): BN4 {
   const base = toBN(Math.pow(10, decimals).toString());
   let value = convert.numberToString(tokenValue);
   const negative = value.substring(0, 1) === '-';
@@ -227,10 +236,11 @@ export function toTokenMinimalUnit(tokenValue, decimals) {
  * If value is less than 5 precision decimals will show '< 0.00001'
  */
 export function renderFromTokenMinimalUnit(
-  tokenValue,
-  decimals,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokenValue: any,
+  decimals: number,
   decimalsToShow = 5,
-) {
+): string {
   const minimalUnit = fromTokenMinimalUnit(tokenValue || 0, decimals);
   const minimalUnitNumber = parseFloat(minimalUnit);
   let renderMinimalUnit;
@@ -256,11 +266,11 @@ export function renderFromTokenMinimalUnit(
  * If value is less than 5 precision decimals will show '< 0.00001'
  */
 export function renderFiatAddition(
-  transferFiat,
-  feeFiat,
-  currentCurrency,
+  transferFiat: number,
+  feeFiat: number,
+  currentCurrency: string,
   decimalsToShow = 5,
-) {
+): string {
   const addition = transferFiat + feeFiat;
   let renderMinimalUnit;
   if (addition < 0.00001 && addition > 0) {
@@ -281,7 +291,8 @@ export function renderFiatAddition(
  * @param {number} maxDecimalPlaces
  * @returns {string}
  */
-export function limitToMaximumDecimalPlaces(num, maxDecimalPlaces = 5) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function limitToMaximumDecimalPlaces(num: any, maxDecimalPlaces = 5): string {
   if (isNaN(num) || isNaN(maxDecimalPlaces)) {
     return num;
   }
@@ -299,17 +310,17 @@ export function limitToMaximumDecimalPlaces(num, maxDecimalPlaces = 5) {
  * @returns {Object} - The converted balance as BN instance
  */
 export function fiatNumberToTokenMinimalUnit(
-  fiat,
-  conversionRate,
-  exchangeRate,
-  decimals,
-) {
-  const floatFiatConverted = parseFloat(fiat) / (conversionRate * exchangeRate);
+  fiat: string | number,
+  conversionRate: number,
+  exchangeRate: number,
+  decimals: number,
+): BN4 {
+  const floatFiatConverted = parseFloat(String(fiat)) / (conversionRate * exchangeRate);
   const base = Math.pow(10, decimals);
-  let weiNumber = floatFiatConverted * base;
+  const weiNumber = floatFiatConverted * base;
   // avoid decimals
-  weiNumber = weiNumber.toLocaleString('fullwide', { useGrouping: false });
-  const weiBN = safeNumberToBN(weiNumber);
+  const weiString = weiNumber.toLocaleString('fullwide', { useGrouping: false });
+  const weiBN = safeNumberToBN(weiString);
   return weiBN;
 }
 
@@ -321,7 +332,9 @@ export function fiatNumberToTokenMinimalUnit(
  * @returns {String} - Number of token minimal unit, in render format
  * If value is less than 5 precision decimals will show '< 0.00001'
  */
-export function renderFromWei(value, decimalsToShow = 5) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function renderFromWei(value: any, decimalsToShow = 5): string {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   let renderWei = '0';
   // avoid undefined
   if (value) {
@@ -344,7 +357,8 @@ export function renderFromWei(value, decimalsToShow = 5) {
  * @param {number} decimals - Decimals to be considered on the conversion
  * @returns {string} - String of the hex token value
  */
-export function calcTokenValueToSend(value, decimals) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function calcTokenValueToSend(value: any, decimals: number): string | number {
   return value ? (value * Math.pow(10, decimals)).toString(16) : 0;
 }
 
@@ -354,7 +368,8 @@ export function calcTokenValueToSend(value, decimals) {
  * @param {object|string} value - Value to check
  * @returns {boolean} - True if the value is a BN instance
  */
-export function isBN(value) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isBN(value: any): boolean {
   return BN4.isBN(value);
 }
 
@@ -364,10 +379,10 @@ export function isBN(value) {
  * @param {number | string} value - String to check
  * @returns {boolean} - True if the string is a valid decimal
  */
-export function isDecimal(value) {
+export function isDecimal(value: number | string): boolean {
   return (
-    Number.isFinite(parseFloat(value)) &&
-    !Number.isNaN(parseFloat(value)) &&
+    Number.isFinite(parseFloat(String(value))) &&
+    !Number.isNaN(parseFloat(String(value))) &&
     !isNaN(+value)
   );
 }
@@ -378,7 +393,7 @@ export function isDecimal(value) {
  * @param {string} value - Some numeric value represented as a string
  * @returns {Object} - BN instance
  */
-export function toBN(value) {
+export function toBN(value: string | number): BN4 {
   return new BN4(value);
 }
 
@@ -388,7 +403,8 @@ export function toBN(value) {
  * @param {*} str - Number string
  * @returns {boolean} - True if the string  is a valid number
  */
-export function isNumber(str) {
+export function isNumber(str: string | null | undefined): boolean {
+  if (str === null || str === undefined) return false;
   return regex.number.test(str);
 }
 
@@ -398,7 +414,7 @@ export function isNumber(str) {
  * @param {number | string | null | undefined} value - Value to check
  * @returns {boolean} - True if the value is a valid number
  */
-export function isNumberValue(value) {
+export function isNumberValue(value: number | string | null | undefined): boolean {
   if (value === null || value === undefined) { return false; }
 
   if (typeof value === 'number') {
@@ -408,7 +424,7 @@ export function isNumberValue(value) {
   return isDecimal(value);
 }
 
-export const dotAndCommaDecimalFormatter = (value) => {
+export const dotAndCommaDecimalFormatter = (value: string | number): string => {
   const valueStr = String(value);
 
   const formattedValue = valueStr.replace(',', '.');
@@ -425,7 +441,7 @@ export const dotAndCommaDecimalFormatter = (value) => {
  * @see https://262.ecma-international.org/5.1/#sec-9.8.1
  */
 
-export const isNumberScientificNotationWhenString = (value) => {
+export const isNumberScientificNotationWhenString = (value: number | string): boolean => {
   if (typeof value !== 'number') {
     return false;
   }
@@ -440,7 +456,8 @@ export const isNumberScientificNotationWhenString = (value) => {
  * @param {string} unit - Unit to convert from, ether by default
  * @returns {BN4} - BN instance containing the new number
  */
-export function toWei(value, unit = 'ether') {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toWei(value: any, unit = 'ether'): BN4 {
   // check the posibilty to convert to BN
   // directly on the swaps screen
   if (isNumberScientificNotationWhenString(value)) {
@@ -456,8 +473,9 @@ export function toWei(value, unit = 'ether') {
  * @param {string} unit - Unit to convert from, ether by default
  * @returns {Object} - BN instance containing the new number
  */
-export function toGwei(value, unit = 'ether') {
-  return fromWei(value, unit) * 1000000000;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toGwei(value: any, unit = 'ether'): number {
+  return Number(fromWei(value, unit)) * 1000000000;
 }
 
 /**
@@ -467,9 +485,10 @@ export function toGwei(value, unit = 'ether') {
  * @param {string} unit - Unit to convert from, ether by default
  * @returns {string} - String instance containing the renderable number
  */
-export function renderToGwei(value, unit = 'ether') {
-  const gwei = fromWei(value, unit) * 1000000000;
-  let gweiFixed = parseFloat(Math.round(gwei));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function renderToGwei(value: any, unit = 'ether'): number {
+  const gwei = Number(fromWei(value, unit)) * 1000000000;
+  let gweiFixed = parseFloat(String(Math.round(gwei)));
   gweiFixed = isNaN(gweiFixed) ? 0 : gweiFixed;
   return gweiFixed;
 }
@@ -484,16 +503,18 @@ export function renderToGwei(value, unit = 'ether') {
  * @returns {string} - Currency-formatted string
  */
 export function weiToFiat(
-  wei,
-  conversionRate = null,
-  currencyCode,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  wei: any,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
+  conversionRate: number | null = null,
+  currencyCode: string,
   decimalsToShow = 5,
-) {
+): string | undefined {
   if (!conversionRate) return undefined;
   if (!wei || !isBN(wei) || !conversionRate) {
     return addCurrencySymbol(0, currencyCode);
   }
-  decimalsToShow = (currencyCode === 'usd' && 2) || undefined;
+  decimalsToShow = (currencyCode === 'usd' && 2) || 5;
   const value = weiToFiatNumber(wei, conversionRate, decimalsToShow);
   return addCurrencySymbol(value, currencyCode);
 }
@@ -506,10 +527,11 @@ export function weiToFiat(
  * @returns {string} - Currency-formatted string
  */
 export function addCurrencySymbol(
-  amount,
-  currencyCode,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  amount: any,
+  currencyCode: string,
   extendDecimals = false,
-) {
+): string {
   const prefix = parseFloat(amount) < 0 ? '-' : '';
   if (extendDecimals) {
     if (isNumberScientificNotationWhenString(amount)) {
@@ -567,10 +589,11 @@ export function addCurrencySymbol(
  * @param {Number} decimalsToShow - Decimals to 5
  * @returns {Number} - The converted balance
  */
-export function weiToFiatNumber(wei, conversionRate, decimalsToShow = 5) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function weiToFiatNumber(wei: any, conversionRate: number, decimalsToShow = 5): number {
   const base = Math.pow(10, decimalsToShow);
-  const eth = fromWei(wei).toString();
-  let value = parseFloat(Math.floor(eth * conversionRate * base) / base);
+  const eth = Number(fromWei(wei));
+  let value = parseFloat(String(Math.floor(eth * conversionRate * base) / base));
   value = isNaN(value) ? 0.0 : value;
   return value;
 }
@@ -581,7 +604,7 @@ export function weiToFiatNumber(wei, conversionRate, decimalsToShow = 5) {
  * @param {string} wei - Amount in decimal notation
  * @returns {string} - Number string with less or equal 18 decimals
  */
-export function handleWeiNumber(wei) {
+export function handleWeiNumber(wei: string): string {
   const comps = wei.split('.');
   let fraction = comps[1];
   if (fraction && fraction.length > 18) fraction = fraction.substring(0, 18);
@@ -596,8 +619,8 @@ export function handleWeiNumber(wei) {
  * @param {number} conversionRate - ETH to current currency conversion rate
  * @returns {Object} - The converted balance as BN instance
  */
-export function fiatNumberToWei(fiat, conversionRate) {
-  const floatFiatConverted = parseFloat(fiat) / conversionRate;
+export function fiatNumberToWei(fiat: string | number, conversionRate: number): string | BN4 {
+  const floatFiatConverted = parseFloat(String(fiat)) / conversionRate;
   if (
     !floatFiatConverted ||
     isNaN(floatFiatConverted) ||
@@ -606,10 +629,10 @@ export function fiatNumberToWei(fiat, conversionRate) {
     return '0x0';
   }
   const base = Math.pow(10, 18);
-  let weiNumber = Math.trunc(base * floatFiatConverted);
+  const weiNumber = Math.trunc(base * floatFiatConverted);
   // avoid decimals
-  weiNumber = weiNumber.toLocaleString('fullwide', { useGrouping: false });
-  const weiBN = safeNumberToBN(weiNumber);
+  const weiString = weiNumber.toLocaleString('fullwide', { useGrouping: false });
+  const weiBN = safeNumberToBN(weiString);
   return weiBN;
 }
 
@@ -619,7 +642,8 @@ export function fiatNumberToWei(fiat, conversionRate) {
  * @param {number|string} value -  number
  * @returns {Object} - The converted value as BN instance
  */
-export function safeNumberToBN(value) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function safeNumberToBN(value: any): BN4 {
   try {
     const safeValue = fastSplit(value?.toString()) || '0';
     return numberToBN(safeValue);
@@ -636,7 +660,7 @@ export function safeNumberToBN(value) {
  * @returns {string} - the selected splitted element
  */
 
-export function fastSplit(value, divider = '.') {
+export function fastSplit(value: string, divider = '.'): string {
   const [from, to] = [value.indexOf(divider), 0];
   return value.substring(from, to) || value;
 }
@@ -651,16 +675,17 @@ export function fastSplit(value, divider = '.') {
  * @returns {string} - Currency-formatted string
  */
 export function balanceToFiat(
-  balance,
-  conversionRate,
-  exchangeRate,
-  currencyCode,
-) {
+  balance: string | number | undefined | null,
+  conversionRate: number | undefined | null,
+  exchangeRate: number | undefined,
+  currencyCode: string,
+): string | undefined {
   if (
     balance === undefined ||
     balance === null ||
     exchangeRate === undefined ||
     conversionRate === undefined ||
+    conversionRate === null ||
     exchangeRate === 0
   ) {
     return undefined;
@@ -679,20 +704,20 @@ export function balanceToFiat(
  * @returns {Number} - The converted balance
  */
 export function balanceToFiatNumber(
-  balance,
-  conversionRate,
-  exchangeRate,
+  balance: string | number,
+  conversionRate: number,
+  exchangeRate: number,
   decimalsToShow = 5,
-) {
+): number {
   const base = Math.pow(10, decimalsToShow);
   let fiatFixed = parseFloat(
-    Math.floor(balance * conversionRate * exchangeRate * base) / base,
+    String(Math.floor(Number(balance) * conversionRate * exchangeRate * base) / base),
   );
   fiatFixed = isNaN(fiatFixed) ? 0.0 : fiatFixed;
   return fiatFixed;
 }
 
-export function getCurrencySymbol(currencyCode) {
+export function getCurrencySymbol(currencyCode: string): string {
   if (currencySymbols[currencyCode]) {
     return `${currencySymbols[currencyCode]}`;
   }
@@ -707,9 +732,9 @@ export function getCurrencySymbol(currencyCode) {
  * @param {number} decimalsToShow - Decimals to 5
  * @returns {string} - The converted balance
  */
-export function renderFiat(value, currencyCode, decimalsToShow = 5) {
+export function renderFiat(value: number, currencyCode: string, decimalsToShow = 5): string {
   const base = Math.pow(10, decimalsToShow);
-  let fiatFixed = parseFloat(Math.round(value * base) / base);
+  let fiatFixed = parseFloat(String(Math.round(value * base) / base));
   fiatFixed = isNaN(fiatFixed) ? 0.0 : fiatFixed;
   if (currencySymbols[currencyCode]) {
     return `${currencySymbols[currencyCode]}${fiatFixed}`;
@@ -723,10 +748,12 @@ export function renderFiat(value, currencyCode, decimalsToShow = 5) {
  * @param {object} value - Object containing wei value in BN format
  * @returns {string} - Corresponding wei value
  */
-export function renderWei(value) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function renderWei(value: any): string {
   if (!value) return '0';
   const wei = fromWei(value);
-  const renderWei = wei * Math.pow(10, 18);
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  const renderWei = Number(wei) * Math.pow(10, 18);
   return renderWei.toString();
 }
 /**
@@ -735,7 +762,7 @@ export function renderWei(value) {
  * @param {string} number - String containing a number
  * @returns {string} - String number with none or at most 5 decimal places
  */
-export function renderNumber(number) {
+export function renderNumber(number: string): string {
   const index = number.indexOf('.');
   if (index === 0) return number;
   return number.substring(0, index + 6);
@@ -749,13 +776,14 @@ export function renderNumber(number) {
  * @returns {boolean} True if the value is a correctly formatted hex string,
  * false otherwise.
  */
-export function isPrefixedFormattedHexString(value) {
+export function isPrefixedFormattedHexString(value: string): boolean {
   if (typeof value !== 'string') {
     return false;
   }
   return regex.prefixedFormattedHexString.test(value);
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const converter = ({
   value,
   fromNumericBase,
@@ -768,7 +796,19 @@ const converter = ({
   conversionRate,
   invertConversionRate,
   roundDown,
-}) => {
+}: {
+  value?: any;
+  fromNumericBase?: string;
+  fromDenomination?: string;
+  fromCurrency?: string | null;
+  toNumericBase?: string;
+  toDenomination?: string;
+  toCurrency?: string | null;
+  numberOfDecimals?: number;
+  conversionRate?: number;
+  invertConversionRate?: boolean;
+  roundDown?: number;
+}): any => {
   let convertedValue = fromNumericBase
     ? toBigNumber[fromNumericBase](value)
     : value;
@@ -815,7 +855,7 @@ const converter = ({
 };
 
 export const conversionUtil = (
-  value,
+  value: any,
   {
     fromCurrency = null,
     toCurrency = fromCurrency,
@@ -826,8 +866,18 @@ export const conversionUtil = (
     numberOfDecimals,
     conversionRate,
     invertConversionRate,
+  }: {
+    fromCurrency?: string | null;
+    toCurrency?: string | null;
+    fromNumericBase?: string;
+    toNumericBase?: string;
+    fromDenomination?: string;
+    toDenomination?: string;
+    numberOfDecimals?: number;
+    conversionRate?: number;
+    invertConversionRate?: boolean;
   },
-) =>
+): any =>
   converter({
     fromCurrency,
     toCurrency,
@@ -840,20 +890,22 @@ export const conversionUtil = (
     invertConversionRate,
     value: value || '0',
   });
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
-export const toHexadecimal = (decimal) => {
-  if (!decimal) return decimal;
-  if (decimal !== typeof 'string') {
-    decimal = String(decimal);
-  }
-  if (decimal.startsWith('0x')) return decimal;
-  return toBigNumber.dec(decimal).toString(16);
+export const toHexadecimal = (decimal?: string | number): string | undefined => {
+  if (!decimal) return decimal as undefined;
+  const str = String(decimal);
+  if (str.startsWith('0x')) return str;
+  return toBigNumber.dec(str).toString(16);
 };
 
 export const calculateEthFeeForMultiLayer = ({
   multiLayerL1FeeTotal,
   ethFee = 0,
-}) => {
+}: {
+  multiLayerL1FeeTotal?: string;
+  ethFee?: string | number;
+}): string | number => {
   if (!multiLayerL1FeeTotal) {
     return ethFee;
   }
@@ -873,14 +925,16 @@ export const calculateEthFeeForMultiLayer = ({
  * @param {number|string|object} value - Value to check
  * @returns {boolean} - true if value is zero
  */
-export const isZeroValue = (value) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const isZeroValue = (value: any): boolean => {
   if (value === null || value === undefined) {
     return false;
   }
   return value === '0x0' || (isBN(value) && value.isZero()) || isZero(value);
 };
 
-export const formatValueToMatchTokenDecimals = (value, decimal) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const formatValueToMatchTokenDecimals = (value: string | null | undefined, decimal: any): string | null | undefined => {
   if (value === null || value === undefined) {
     return value;
   }
@@ -894,9 +948,10 @@ export const formatValueToMatchTokenDecimals = (value, decimal) => {
   return value;
 };
 
-export const safeBNToHex = (value) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const safeBNToHex = (value: any): string | undefined => {
   if (value === null || value === undefined) {
-    return value;
+    return undefined;
   }
 
   return BNToHex(value);
@@ -910,7 +965,8 @@ export const safeBNToHex = (value) => {
  * @param number - The number to format.
  * @returns A localized string of the formatted number + unit.
  */
-export const localizeLargeNumber = (i18n, number) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const localizeLargeNumber = (i18n: any, number: number): string => {
   const oneTrillion = 1000000000000;
   const oneBillion = 1000000000;
   const oneMillion = 1000000;
@@ -931,7 +987,7 @@ export const localizeLargeNumber = (i18n, number) => {
   return number.toFixed(2);
 };
 
-export const convertDecimalToPercentage = (decimal) => {
+export const convertDecimalToPercentage = (decimal: number): string => {
   if (typeof decimal !== 'number' || isNaN(decimal)) {
     throw new Error('Input must be a valid number');
   }

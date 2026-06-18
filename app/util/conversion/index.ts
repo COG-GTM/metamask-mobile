@@ -26,23 +26,43 @@ import BN from 'bnjs4';
 
 import { stripHexPrefix } from 'ethereumjs-util';
 
+type NumericBase = 'hex' | 'dec' | 'BN';
+type EthDenomination = 'WEI' | 'GWEI' | 'ETH';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ConversionValue = string | number | BigNumber | BN | any;
+
+interface ConverterOptions {
+  value?: ConversionValue;
+  fromNumericBase?: NumericBase;
+  fromDenomination?: EthDenomination;
+  fromCurrency?: string | null;
+  toNumericBase?: NumericBase;
+  toDenomination?: EthDenomination;
+  toCurrency?: string | null;
+  numberOfDecimals?: number;
+  conversionRate?: number;
+  invertConversionRate?: boolean;
+  roundDown?: number;
+}
+
 // Big Number Constants
 const BIG_NUMBER_WEI_MULTIPLIER = new BigNumber('1000000000000000000');
 const BIG_NUMBER_GWEI_MULTIPLIER = new BigNumber('1000000000');
 const BIG_NUMBER_ETH_MULTIPLIER = new BigNumber('1');
 
 // Setter Maps
-const toBigNumber = {
+const toBigNumber: Record<string, (n: ConversionValue) => BigNumber> = {
   hex: (n) => new BigNumber(stripHexPrefix(n), 16),
   dec: (n) => new BigNumber(String(n), 10),
   BN: (n) => new BigNumber(n.toString(16), 16),
 };
-const toNormalizedDenomination = {
+const toNormalizedDenomination: Record<string, (bigNumber: BigNumber) => BigNumber> = {
   WEI: (bigNumber) => bigNumber.div(BIG_NUMBER_WEI_MULTIPLIER),
   GWEI: (bigNumber) => bigNumber.div(BIG_NUMBER_GWEI_MULTIPLIER),
   ETH: (bigNumber) => bigNumber.div(BIG_NUMBER_ETH_MULTIPLIER),
 };
-const toSpecifiedDenomination = {
+const toSpecifiedDenomination: Record<string, (bigNumber: BigNumber) => BigNumber> = {
   WEI: (bigNumber) =>
     bigNumber.times(BIG_NUMBER_WEI_MULTIPLIER).decimalPlaces(0),
   GWEI: (bigNumber) =>
@@ -50,14 +70,14 @@ const toSpecifiedDenomination = {
   ETH: (bigNumber) =>
     bigNumber.times(BIG_NUMBER_ETH_MULTIPLIER).decimalPlaces(9),
 };
-const baseChange = {
+const baseChange: Record<string, (n: BigNumber) => ConversionValue> = {
   hex: (n) => n.toString(16),
   dec: (n) => new BigNumber(n).toString(10),
   BN: (n) => new BN(n.toString(16)),
 };
 
 // Utility function for checking base types
-const isValidBase = (base) => Number.isInteger(base) && base > 1;
+const isValidBase = (base: unknown): base is number => Number.isInteger(base) && (base as number) > 1;
 
 /**
  * Defines the base type of numeric value
@@ -96,8 +116,8 @@ const converter = ({
   conversionRate,
   invertConversionRate,
   roundDown,
-}) => {
-  let convertedValue = fromNumericBase
+}: ConverterOptions): ConversionValue => {
+  let convertedValue: BigNumber = fromNumericBase
     ? toBigNumber[fromNumericBase](value)
     : value;
 
@@ -137,13 +157,13 @@ const converter = ({
   }
 
   if (toNumericBase) {
-    convertedValue = baseChange[toNumericBase](convertedValue);
+    return baseChange[toNumericBase](convertedValue);
   }
   return convertedValue;
 };
 
 const conversionUtil = (
-  value,
+  value: ConversionValue,
   {
     fromCurrency = null,
     toCurrency = fromCurrency,
@@ -154,8 +174,18 @@ const conversionUtil = (
     numberOfDecimals,
     conversionRate,
     invertConversionRate,
+  }: {
+    fromCurrency?: string | null;
+    toCurrency?: string | null;
+    fromNumericBase?: NumericBase;
+    toNumericBase?: NumericBase;
+    fromDenomination?: EthDenomination;
+    toDenomination?: EthDenomination;
+    numberOfDecimals?: number;
+    conversionRate?: number;
+    invertConversionRate?: boolean;
   },
-) => {
+): ConversionValue => {
   if (fromCurrency !== toCurrency && !conversionRate) {
     return 0;
   }
@@ -173,7 +203,24 @@ const conversionUtil = (
   });
 };
 
-const getBigNumber = (value, base) => {
+interface CurrencyOptions {
+  aBase?: number;
+  bBase?: number;
+  fromDenomination?: EthDenomination;
+  toDenomination?: EthDenomination;
+  fromNumericBase?: NumericBase;
+  toNumericBase?: NumericBase;
+  numberOfDecimals?: number;
+  conversionRate?: number;
+  invertConversionRate?: boolean;
+  fromCurrency?: string | null;
+  toCurrency?: string | null;
+  roundDown?: number;
+  multiplicandBase?: number;
+  multiplierBase?: number;
+}
+
+const getBigNumber = (value: ConversionValue, base: number): BigNumber => {
   if (!isValidBase(base)) {
     throw new Error('Must specify valid base');
   }
@@ -187,7 +234,7 @@ const getBigNumber = (value, base) => {
   return new BigNumber(String(value), base);
 };
 
-const addCurrencies = (a, b, options = {}) => {
+const addCurrencies = (a: ConversionValue, b: ConversionValue, options: CurrencyOptions = {}): ConversionValue => {
   const { aBase, bBase, ...conversionOptions } = options;
 
   if (!isValidBase(aBase) || !isValidBase(bBase)) {
@@ -201,7 +248,7 @@ const addCurrencies = (a, b, options = {}) => {
   });
 };
 
-const subtractCurrencies = (a, b, options = {}) => {
+const subtractCurrencies = (a: ConversionValue, b: ConversionValue, options: CurrencyOptions = {}): ConversionValue => {
   const { aBase, bBase, ...conversionOptions } = options;
 
   if (!isValidBase(aBase) || !isValidBase(bBase)) {
@@ -216,7 +263,7 @@ const subtractCurrencies = (a, b, options = {}) => {
   });
 };
 
-const multiplyCurrencies = (a, b, options = {}) => {
+const multiplyCurrencies = (a: ConversionValue, b: ConversionValue, options: CurrencyOptions = {}): ConversionValue => {
   const { multiplicandBase, multiplierBase, ...conversionOptions } = options;
 
   if (!isValidBase(multiplicandBase) || !isValidBase(multiplierBase)) {
@@ -233,21 +280,21 @@ const multiplyCurrencies = (a, b, options = {}) => {
   });
 };
 
-const conversionGreaterThan = ({ ...firstProps }, { ...secondProps }) => {
+const conversionGreaterThan = ({ ...firstProps }: ConverterOptions, { ...secondProps }: ConverterOptions): boolean => {
   const firstValue = converter({ ...firstProps });
   const secondValue = converter({ ...secondProps });
 
   return firstValue.gt(secondValue);
 };
 
-const conversionLessThan = ({ ...firstProps }, { ...secondProps }) => {
+const conversionLessThan = ({ ...firstProps }: ConverterOptions, { ...secondProps }: ConverterOptions): boolean => {
   const firstValue = converter({ ...firstProps });
   const secondValue = converter({ ...secondProps });
 
   return firstValue.lt(secondValue);
 };
 
-const conversionMax = ({ ...firstProps }, { ...secondProps }) => {
+const conversionMax = ({ ...firstProps }: ConverterOptions, { ...secondProps }: ConverterOptions): ConversionValue => {
   const firstIsGreater = conversionGreaterThan(
     { ...firstProps },
     { ...secondProps },
@@ -256,19 +303,19 @@ const conversionMax = ({ ...firstProps }, { ...secondProps }) => {
   return firstIsGreater ? firstProps.value : secondProps.value;
 };
 
-const conversionGTE = ({ ...firstProps }, { ...secondProps }) => {
+const conversionGTE = ({ ...firstProps }: ConverterOptions, { ...secondProps }: ConverterOptions): boolean => {
   const firstValue = converter({ ...firstProps });
   const secondValue = converter({ ...secondProps });
   return firstValue.greaterThanOrEqualTo(secondValue);
 };
 
-const conversionLTE = ({ ...firstProps }, { ...secondProps }) => {
+const conversionLTE = ({ ...firstProps }: ConverterOptions, { ...secondProps }: ConverterOptions): boolean => {
   const firstValue = converter({ ...firstProps });
   const secondValue = converter({ ...secondProps });
   return firstValue.lessThanOrEqualTo(secondValue);
 };
 
-const toNegative = (n, options = {}) => multiplyCurrencies(n, -1, options);
+const toNegative = (n: ConversionValue, options: CurrencyOptions = {}): ConversionValue => multiplyCurrencies(n, -1, options);
 
 export {
   conversionUtil,
