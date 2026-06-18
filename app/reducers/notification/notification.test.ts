@@ -2,9 +2,9 @@ import reducer, { ACTIONS, initialState } from './index';
 import { NotificationTypes } from '../../util/notifications';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-const emptyAction = { type: null };
+const emptyAction = { type: 'UNKNOWN_ACTION' };
 
-const simpleNotification = (number) => ({
+const simpleNotification = (number: number) => ({
   id: `simple${number}`,
   status: `simple${number} status`,
   duration: 5000,
@@ -12,7 +12,7 @@ const simpleNotification = (number) => ({
   description: `Simple Notification ${number} description}`,
 });
 
-const txNotification = (number) => ({
+const txNotification = (number: number) => ({
   transaction: { id: `tx${number}` },
   status: `tx${number} status`,
   duration: 5000,
@@ -105,41 +105,44 @@ describe('notifications reducer', () => {
   });
 
   describe('actions', () => {
-    let stateWithNotifications;
+    let stateWithNotifications: ReturnType<typeof reducer>;
 
     beforeEach(() => {
       stateWithNotifications = [
-        (state) =>
+        (state: ReturnType<typeof reducer> | undefined) =>
           reducer(state, {
             type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
             ...simpleNotification(0),
           }),
-        (state) =>
+        (state: ReturnType<typeof reducer> | undefined) =>
           reducer(state, {
             type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
             ...txNotification(1),
           }),
-        (state) =>
+        (state: ReturnType<typeof reducer> | undefined) =>
           reducer(state, {
             type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
             ...simpleNotification(1),
           }),
-        (state) =>
+        (state: ReturnType<typeof reducer> | undefined) =>
           reducer(state, {
             type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
             ...txNotification(2),
           }),
-        (state) =>
+        (state: ReturnType<typeof reducer> | undefined) =>
           reducer(state, {
             type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
             ...simpleNotification(2),
           }),
-        (state) =>
+        (state: ReturnType<typeof reducer> | undefined) =>
           reducer(state, {
             type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
             ...simpleNotification(3),
           }),
-      ].reduce((acc, current) => current(acc), undefined);
+      ].reduce(
+        (acc, current) => current(acc),
+        undefined as ReturnType<typeof reducer> | undefined,
+      ) as ReturnType<typeof reducer>;
     });
 
     it('should hide current notification', () => {
@@ -158,7 +161,7 @@ describe('notifications reducer', () => {
       const notification = state.notifications.find(
         (notification) => notification.id === id,
       );
-      expect(notification.isVisible).toBe(false);
+      expect(notification?.isVisible).toBe(false);
     });
 
     it('should modify or show transaction notification', () => {
@@ -198,8 +201,8 @@ describe('notifications reducer', () => {
       const description = 'Description from modify action test';
       const state = reducer(stateWithNotifications, {
         type: ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION,
-        id: notificationId,
         ...{ ...simpleNotification(1), description },
+        id: notificationId,
       });
       expect(state.notifications.length).toBe(currentCount);
       expect(
@@ -228,6 +231,9 @@ describe('notifications reducer', () => {
         ...txNotification(2),
         description: 'Replaced notification',
         id: notificationId,
+        isVisible: true,
+        autodismiss: 5000,
+        type: 'transaction',
       };
       const state = reducer(stateWithNotifications, {
         type: ACTIONS.REPLACE_NOTIFICATION_BY_ID,
@@ -239,7 +245,9 @@ describe('notifications reducer', () => {
         (notification) => notification.id === notificationId,
       );
       expect(state.notifications.length).toBe(currentCount);
-      expect(replacedNotification.description).toEqual('Replaced notification');
+      expect(replacedNotification?.description).toEqual(
+        'Replaced notification',
+      );
     });
 
     it('should remove notification by id', () => {
