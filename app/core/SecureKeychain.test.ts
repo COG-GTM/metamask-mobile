@@ -200,3 +200,131 @@ describe('SecureKeychain - setGenericPassword', () => {
     });
   });
 });
+
+describe('SecureKeychain - per-device encryption key', () => {
+  const DEVICE_KEY_SERVICE = 'com.metamask.device-encryption-key';
+  const GENERATED_DEVICE_KEY = 'random-device-key';
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let FreshKeychain: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let FreshSecureKeychain: any;
+  let mockEncrypt: jest.Mock;
+  let mockDecrypt: jest.Mock;
+
+  const loadFresh = () => {
+    jest.resetModules();
+    mockEncrypt = jest.fn().mockResolvedValue('cipher');
+    mockDecrypt = jest.fn();
+    jest.doMock('./Encryptor', () => ({
+      Encryptor: jest.fn().mockImplementation(() => ({
+        encrypt: mockEncrypt,
+        decrypt: mockDecrypt,
+        generateSalt: jest.fn(() => GENERATED_DEVICE_KEY),
+      })),
+      LEGACY_DERIVATION_OPTIONS: {},
+    }));
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    FreshKeychain = require('react-native-keychain');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    FreshSecureKeychain = require('./SecureKeychain').default;
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.dontMock('./Encryptor');
+  });
+
+  it('wraps the password with the per-device key, not the static build code', async () => {
+    loadFresh();
+    FreshKeychain.getGenericPassword.mockResolvedValue(false);
+    FreshSecureKeychain.init('static-fox-code');
+
+    await FreshSecureKeychain.setGenericPassword(
+      'wallet-password',
+      FreshSecureKeychain.TYPES.REMEMBER_ME,
+    );
+
+    expect(mockEncrypt).toHaveBeenCalledWith(GENERATED_DEVICE_KEY, {
+      password: 'wallet-password',
+    });
+    expect(mockEncrypt).not.toHaveBeenCalledWith(
+      'static-fox-code',
+      expect.anything(),
+    );
+  });
+
+  it('generates and persists a per-device key on first use', async () => {
+    loadFresh();
+    FreshKeychain.getGenericPassword.mockResolvedValue(false);
+    FreshSecureKeychain.init('static-fox-code');
+
+    await FreshSecureKeychain.setGenericPassword(
+      'wallet-password',
+      FreshSecureKeychain.TYPES.REMEMBER_ME,
+    );
+
+    expect(FreshKeychain.setGenericPassword).toHaveBeenCalledWith(
+      'metamask-device',
+      GENERATED_DEVICE_KEY,
+      expect.objectContaining({
+        service: DEVICE_KEY_SERVICE,
+        accessible: FreshKeychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+      }),
+    );
+  });
+
+  it('reuses an existing per-device key instead of generating a new one', async () => {
+    loadFresh();
+    FreshKeychain.getGenericPassword.mockResolvedValue({
+      password: 'existing-device-key',
+    });
+    FreshSecureKeychain.init('static-fox-code');
+
+    await FreshSecureKeychain.setGenericPassword(
+      'wallet-password',
+      FreshSecureKeychain.TYPES.REMEMBER_ME,
+    );
+
+    expect(mockEncrypt).toHaveBeenCalledWith('existing-device-key', {
+      password: 'wallet-password',
+    });
+    const persistedDeviceKey = FreshKeychain.setGenericPassword.mock.calls.find(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (call: any[]) => call[0] === 'metamask-device',
+    );
+    expect(persistedDeviceKey).toBeUndefined();
+  });
+
+  it('falls back to the legacy build code to decrypt pre-migration passwords', async () => {
+    loadFresh();
+    mockDecrypt
+      .mockRejectedValueOnce(new Error('unable to decrypt with device key'))
+      .mockResolvedValueOnce({ password: 'wallet-password' });
+
+    FreshKeychain.getGenericPassword.mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      async (options: any) => {
+        if (options?.service === DEVICE_KEY_SERVICE) {
+          return { password: 'device-key' };
+        }
+        return { password: 'legacy-blob' };
+      },
+    );
+
+    FreshSecureKeychain.init('static-fox-code');
+
+    const result = await FreshSecureKeychain.getGenericPassword();
+
+    expect(mockDecrypt).toHaveBeenNthCalledWith(1, 'device-key', 'legacy-blob');
+    expect(mockDecrypt).toHaveBeenNthCalledWith(
+      2,
+      'static-fox-code',
+      'legacy-blob',
+    );
+    expect(result.password).toBe('wallet-password');
+  });
+});
