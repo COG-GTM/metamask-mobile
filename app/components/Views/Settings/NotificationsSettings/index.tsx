@@ -51,8 +51,8 @@ const NotificationsSettings = ({ navigation, route }: Props) => {
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.notifications_title'),
-        navigation,
-        isFullScreenModal,
+        navigation as unknown as Parameters<typeof getNavigationOptionsTitle>[1],
+        isFullScreenModal as boolean,
         colors,
         null,
       ),

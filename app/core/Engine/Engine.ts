@@ -1608,13 +1608,13 @@ export class Engine {
         0;
 
       const { accountsByChainId } = AccountTrackerController.state;
-      const chainIdHex = toHexadecimal(chainId);
+      const chainIdHex = toHexadecimal(chainId) as `0x${string}`;
       const tokens =
         TokensController.state.allTokens?.[chainIdHex]?.[
         selectedInternalAccount.address
         ] || [];
       const { marketData } = TokenRatesController.state;
-      const tokenExchangeRates = marketData?.[toHexadecimal(chainId)];
+      const tokenExchangeRates = marketData?.[chainIdHex];
 
       let ethFiat = 0;
       let ethFiat1dAgo = 0;
@@ -1623,12 +1623,12 @@ export class Engine {
       let totalNativeTokenBalance = '0';
       const decimalsToShow = (currentCurrency === 'usd' && 2) || undefined;
       if (
-        accountsByChainId?.[toHexadecimal(chainId)]?.[
+        accountsByChainId?.[chainIdHex]?.[
         selectedInternalAccountFormattedAddress
         ]
       ) {
         const balanceHex =
-          accountsByChainId[toHexadecimal(chainId)][
+          accountsByChainId[chainIdHex][
             selectedInternalAccountFormattedAddress
           ].balance;
 
@@ -1637,7 +1637,7 @@ export class Engine {
 
         // TODO - Non EVM accounts like BTC do not use hex formatted balances. We will need to modify this to use CAIP-2 identifiers in the future.
         const stakedBalanceBN = hexToBN(
-          accountsByChainId[toHexadecimal(chainId)][
+          accountsByChainId[chainIdHex][
             selectedInternalAccountFormattedAddress
           ].stakedBalance || '0x00',
         );
