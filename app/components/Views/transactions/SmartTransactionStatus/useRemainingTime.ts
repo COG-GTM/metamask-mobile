@@ -16,11 +16,12 @@ const useRemainingTime = ({ creationTime, isStxPending }: Props) => {
   const [isStxPastEstimatedDeadline, setIsStxPastEstimatedDeadline] =
     useState(false);
 
-  const stxEstimatedDeadlineSec =
-    swapFeatureFlags?.smartTransactions?.expectedDeadline ||
-    FALLBACK_STX_ESTIMATED_DEADLINE_SEC;
-  const stxMaxDeadlineSec =
-    swapFeatureFlags?.smartTransactions?.maxDeadline ||
+  const stxEstimatedDeadlineSec: number =
+    (swapFeatureFlags?.smartTransactions?.expectedDeadline as
+      | number
+      | undefined) || FALLBACK_STX_ESTIMATED_DEADLINE_SEC;
+  const stxMaxDeadlineSec: number =
+    (swapFeatureFlags?.smartTransactions?.maxDeadline as number | undefined) ||
     FALLBACK_STX_MAX_DEADLINE_SEC;
 
   // Calc time left for progress bar and timer display

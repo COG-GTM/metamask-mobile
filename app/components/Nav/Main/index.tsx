@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { connect, useSelector } from 'react-redux';
+import { Dispatch } from 'redux';
 import { RootState } from '../../../reducers';
 import GlobalAlert from '../../UI/GlobalAlert';
 import BackgroundTimer from 'react-native-background-timer';
@@ -399,7 +400,7 @@ const Main = (props: MainProps) => {
         hideCurrentNotification: props.hideCurrentNotification,
         showSimpleNotification: props.showSimpleNotification,
         removeNotificationById: props.removeNotificationById,
-      });
+      } as unknown as Parameters<typeof NotificationManager.init>[0]);
       checkInfuraAvailability();
       removeConnectionStatusListener.current = NetInfo.addEventListener(
         connectionChangeHandler as Parameters<typeof NetInfo.addEventListener>[0],
@@ -500,7 +501,7 @@ const mapStateToProps = (state: RootState) => ({
   networkConfigurations: selectNetworkConfigurations(state),
 });
 
-const mapDispatchToProps = (dispatch: (action: Record<string, unknown>) => void) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   showTransactionNotification: (args: Record<string, unknown>) =>
     dispatch(showTransactionNotification(args as Parameters<typeof showTransactionNotification>[0])),
   showSimpleNotification: (args: Record<string, unknown>) => dispatch(showSimpleNotification(args as Parameters<typeof showSimpleNotification>[0])),
@@ -513,7 +514,6 @@ const mapDispatchToProps = (dispatch: (action: Record<string, unknown>) => void)
     dispatch(removeNotVisibleNotifications()),
 });
 
-// @ts-expect-error connect overload inference with complex component
 const ConnectedMain = connect(mapStateToProps, mapDispatchToProps)(Main);
 
 const MainFlow = () => (

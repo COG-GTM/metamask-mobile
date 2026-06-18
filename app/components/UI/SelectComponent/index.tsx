@@ -200,7 +200,7 @@ export default class SelectComponent extends PureComponent<SelectComponentProps,
                 {this.props.options?.map((option) => (
                   <TouchableOpacity
                     // eslint-disable-next-line react/jsx-no-bind
-                    onPress={() => this.onValueChange(option.value)}
+                    onPress={() => this.onValueChange(option.value as string)}
                     style={styles.optionButton}
                     key={option.key}
                   >

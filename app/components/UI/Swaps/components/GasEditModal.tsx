@@ -409,7 +409,7 @@ function GasEditModal({
         {gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET ? (
           <>
             <EditGasFee1559
-              selected={gasSelected}
+              selected={gasSelected ?? undefined}
               ignoreOptions={[GAS_OPTIONS.LOW]}
               extendOptions={{ [GAS_OPTIONS.MEDIUM]: { error: true } }}
               warningMinimumEstimateOption={GAS_OPTIONS.MEDIUM}
@@ -425,8 +425,16 @@ function GasEditModal({
               }
               suggestedEstimateOption={defaultGasFeeOptionFeeMarket}
               gasFee={EIP1559TransactionDataTemp}
-              gasOptions={gasFeeEstimates}
-              onChange={calculateTempGasFee}
+              gasOptions={
+                gasFeeEstimates as React.ComponentProps<
+                  typeof EditGasFee1559
+                >['gasOptions']
+              }
+              onChange={
+                calculateTempGasFee as React.ComponentProps<
+                  typeof EditGasFee1559
+                >['onChange']
+              }
               gasFeeNative={
                 EIP1559TransactionDataTemp.renderableGasFeeMinNative
               }
@@ -457,7 +465,11 @@ function GasEditModal({
               timeEstimateColor={EIP1559TransactionDataTemp.timeEstimateColor}
               timeEstimateId={EIP1559TransactionDataTemp.timeEstimateId}
               onCancel={cancelGasEdition}
-              onSave={saveGasEdition}
+              onSave={
+                saveGasEdition as React.ComponentProps<
+                  typeof EditGasFee1559
+                >['onSave']
+              }
               recommended={{
                 name: GAS_OPTIONS.HIGH,
                 // eslint-disable-next-line react/display-name
