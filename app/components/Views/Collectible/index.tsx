@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { RefreshControl, ScrollView, View, StyleSheet } from 'react-native';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import Collectibles from '../../UI/Collectibles';
 import CollectibleContractOverview from '../../UI/CollectibleContractOverview';
 import Engine from '../../../core/Engine';
@@ -10,7 +11,8 @@ import CollectibleContractInformation from '../../UI/CollectibleContractInformat
 import { toggleCollectibleContractModal } from '../../../actions/modals';
 import { toLowerCaseEquals } from '../../../util/general';
 import { collectiblesSelector } from '../../../reducers/collectibles';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
 
@@ -20,6 +22,7 @@ const createStyles = (colors: Theme['colors']) =>
       backgroundColor: colors.background.default,
       flex: 1,
     },
+    assetOverviewWrapper: {},
   });
 
 /**
@@ -27,25 +30,27 @@ const createStyles = (colors: Theme['colors']) =>
  * including the overview (name, address, symbol, logo, description, total supply)
  * and also individual collectibles list
  */
+interface NavigationProp {
+  navigate: (route: string, params?: Record<string, unknown>) => void;
+  push: (route: string, params?: Record<string, unknown>) => void;
+}
+
+interface CollectibleContractParam {
+  name?: string;
+  address?: string;
+  logo?: string;
+  [key: string]: unknown;
+}
+
 interface OwnProps {
-  navigation: Record<string, unknown>;
+  navigation?: NavigationProp;
   route: {
-    params?: {
-      name?: string;
-      address?: string;
-      logo?: string;
-      [key: string]: unknown;
-    };
+    params: CollectibleContractParam;
   };
 }
 
 interface StateProps {
-  collectibles: Array<{
-    address: string;
-    name?: string;
-    image?: string;
-    [key: string]: unknown;
-  }>;
+  collectibles: ReturnType<typeof collectiblesSelector>;
   collectibleContractModalVisible: boolean;
 }
 
@@ -57,10 +62,12 @@ type Props = OwnProps & StateProps & DispatchProps;
 
 interface ComponentState {
   refreshing: boolean;
-  collectibles: Array<Record<string, unknown>>;
+  collectibles: Record<string, unknown>[];
 }
 
 class Collectible extends PureComponent<Props, ComponentState> {
+  declare context: React.ContextType<typeof ThemeContext>;
+
   state: ComponentState = {
     refreshing: false,
     collectibles: [],
@@ -72,7 +79,7 @@ class Collectible extends PureComponent<Props, ComponentState> {
     getNetworkNavbarOptions(
       route.params?.name ?? '',
       false,
-      navigation,
+      navigation as unknown as Parameters<typeof getNetworkNavbarOptions>[2],
       colors,
     );
   };
@@ -116,7 +123,7 @@ class Collectible extends PureComponent<Props, ComponentState> {
     );
     filteredCollectibles.map((collectible) => {
       if (!collectible.name || collectible.name === '') {
-        collectible.name = collectibleContract.name;
+        collectible.name = collectibleContract.name as string;
       }
       if (!collectible.image && collectibleContract.logo) {
         collectible.image = collectibleContract.logo;
@@ -144,15 +151,27 @@ class Collectible extends PureComponent<Props, ComponentState> {
             <View style={styles.assetOverviewWrapper}>
               <CollectibleContractOverview
                 navigation={navigation}
-                collectibleContract={collectibleContract}
+                collectibleContract={
+                  collectibleContract as React.ComponentProps<
+                    typeof CollectibleContractOverview
+                  >['collectibleContract']
+                }
                 ownerOf={ownerOf}
               />
             </View>
             <View style={styles.wrapper}>
               <Collectibles
                 navigation={navigation}
-                collectibles={filteredCollectibles}
-                collectibleContract={collectibleContract}
+                collectibles={
+                  filteredCollectibles as unknown as React.ComponentProps<
+                    typeof Collectibles
+                  >['collectibles']
+                }
+                collectibleContract={
+                  collectibleContract as React.ComponentProps<
+                    typeof Collectibles
+                  >['collectibleContract']
+                }
               />
             </View>
           </View>
@@ -167,9 +186,17 @@ class Collectible extends PureComponent<Props, ComponentState> {
           backdropOpacity={1}
         >
           <CollectibleContractInformation
-            navigation={navigation}
+            navigation={
+              navigation as React.ComponentProps<
+                typeof CollectibleContractInformation
+              >['navigation']
+            }
             onClose={this.hideCollectibleContractModal}
-            collectibleContract={collectibleContract}
+            collectibleContract={
+              collectibleContract as React.ComponentProps<
+                typeof CollectibleContractInformation
+              >['collectibleContract']
+            }
           />
         </Modal>
       </View>
@@ -182,7 +209,7 @@ const mapStateToProps = (state: RootState): StateProps => ({
   collectibleContractModalVisible: state.modals.collectibleContractModalVisible,
 });
 
-const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),
 });

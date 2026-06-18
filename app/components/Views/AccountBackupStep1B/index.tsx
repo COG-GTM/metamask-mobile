@@ -22,7 +22,8 @@ import { getOnboardingNavbarOptions } from '../../UI/Navbar';
 import { CHOOSE_PASSWORD_STEPS } from '../../../constants/onboarding';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 
-import { useTheme, Theme } from '../../../util/theme';
+import { useTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ManualBackUpSteps.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
@@ -193,6 +194,8 @@ const createStyles = (colors: Theme['colors']) =>
       lineHeight: 20,
       color: colors.text.default,
     },
+    button: {},
+    remindLaterButton: {},
   });
 
 /**

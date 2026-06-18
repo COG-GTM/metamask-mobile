@@ -114,7 +114,6 @@ const WatchAssetRequest = ({
   const chainId = useSelector(selectEvmChainId);
   const balanceWithSymbol = error
     ? strings('transaction.failed')
-    // @ts-expect-error Legacy JS migration - TS2345
     : `${renderFromTokenMinimalUnit(balance, asset.decimals)} ${asset.symbol}`;
 
   const activeTabUrl = useSelector(getActiveTabUrl, isEqual);
@@ -169,8 +168,8 @@ const WatchAssetRequest = ({
       <View style={styles.approveTransactionHeaderWrapper}>
         <ApproveTransactionHeader
           origin={currentPageInformation?.url}
-          url={activeTabUrl}
-          from={suggestedAssetMeta.interactingAddress}
+          url={activeTabUrl ?? ''}
+          from={suggestedAssetMeta.interactingAddress ?? ''}
           asset={{
             address,
             symbol,

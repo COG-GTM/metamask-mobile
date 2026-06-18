@@ -100,8 +100,8 @@ function ApprovalTransactionEditionModal({
         swapsUtils.getSwapsContractAddress(chainId as `0x${string}`),
         customApprovalTransaction as Transaction,
       );
-      setCustomApprovalTransaction(newApprovalTransaction);
-      setApprovalTransaction(newApprovalTransaction);
+      setCustomApprovalTransaction(newApprovalTransaction as Transaction);
+      setApprovalTransaction(newApprovalTransaction as Transaction);
       onCancelEditQuoteTransactions();
     } catch (err) {
       Logger.log('Failed to setTransactionObject', err);
@@ -181,7 +181,9 @@ function ApprovalTransactionEditionModal({
 }
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  originalApprovalTransaction: selectSwapsApprovalTransaction(state),
+  originalApprovalTransaction: selectSwapsApprovalTransaction(
+    state,
+  ) as unknown as Transaction | null,
 });
 
 export default connect(mapStateToProps)(ApprovalTransactionEditionModal) as React.ComponentType<OwnProps>;

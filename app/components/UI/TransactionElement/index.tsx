@@ -191,7 +191,7 @@ interface StateProps {
   selectedInternalAccount: any;
   primaryCurrency: string;
   swapsTransactions: any;
-  swapsTokens: any[];
+  swapsTokens: ReturnType<typeof swapsControllerTokens>;
 }
 
 type Props = OwnProps & StateProps;
