@@ -78,16 +78,17 @@ export default function useBalance(asset?: Asset) {
   ///: END:ONLY_INCLUDE_IF
   if (!balance && asset.address === NATIVE_ADDRESS) {
     // Chain id should exist in accountsByChainId in AccountTrackerController at this point in time
-    if (!accountsByChainId[toHexadecimal(chainId)]) {
+    const chainIdHex = toHexadecimal(chainId);
+    if (!chainIdHex || !accountsByChainId[chainIdHex]) {
       return defaultReturn;
     }
 
     balance = renderFromWei(
-      accountsByChainId[toHexadecimal(chainId)][selectedAddress]?.balance,
+      accountsByChainId[chainIdHex][selectedAddress]?.balance,
     );
 
     balanceBN = hexToBN(
-      accountsByChainId[toHexadecimal(chainId)][selectedAddress]?.balance,
+      accountsByChainId[chainIdHex][selectedAddress]?.balance,
     );
 
     balanceFiat = weiToFiat(balanceBN, conversionRate, currentCurrency);

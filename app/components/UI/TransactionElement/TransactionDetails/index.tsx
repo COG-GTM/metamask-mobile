@@ -140,7 +140,7 @@ interface StateProps {
   conversionRate: number;
   currentCurrency: string;
   swapsTransactions: any;
-  swapsTokens: any[];
+  swapsTokens: ReturnType<typeof swapsControllerTokens>;
   primaryCurrency: string;
   shouldUseSmartTransaction: boolean;
 }

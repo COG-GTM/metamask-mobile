@@ -110,7 +110,9 @@ describe('deriveSentryEnvironment', () => {
   });
 
   it('returns performance event null if empty', async () => {
-    const eventExcluded = excludeEvents(null);
+    const eventExcluded = excludeEvents(
+      null as unknown as Parameters<typeof excludeEvents>[0],
+    );
     expect(eventExcluded).toBe(null);
   });
 });
