@@ -3,6 +3,8 @@ import { QuickCryptoLib } from './lib';
 import {
   ENCRYPTION_LIBRARY,
   LEGACY_DERIVATION_OPTIONS,
+  DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+  KeyDerivationIteration,
 } from './constants';
 
 describe('Encryptor', () => {
@@ -77,6 +79,74 @@ describe('Encryptor', () => {
           }),
         ),
       ).toBe(false);
+    });
+  });
+
+  describe('with OWASP2023 default derivation options (vault encryptor)', () => {
+    let owaspEncryptor: Encryptor;
+
+    beforeEach(() => {
+      owaspEncryptor = new Encryptor({
+        keyDerivationOptions: DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+      });
+    });
+
+    it('encrypts using the OWASP-2023 number of iterations', async () => {
+      const encryptedString = await owaspEncryptor.encrypt('testPassword', {
+        key: 'value',
+      });
+      const encryptedObject = JSON.parse(encryptedString);
+
+      expect(encryptedObject.keyMetadata).toStrictEqual(
+        DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+      );
+      expect(encryptedObject.keyMetadata.params.iterations).toBe(
+        KeyDerivationIteration.OWASP2023Default,
+      );
+    });
+
+    it('treats a legacy 5000-iteration vault as not updated so it gets re-encrypted', () => {
+      expect(
+        owaspEncryptor.isVaultUpdated(
+          JSON.stringify({
+            cipher: 'mockedCipher',
+            iv: 'mockedIV',
+            salt: 'mockedSalt',
+            lib: 'original',
+            keyMetadata: LEGACY_DERIVATION_OPTIONS,
+          }),
+        ),
+      ).toBe(false);
+    });
+
+    it('treats an OWASP-2023 vault as updated', () => {
+      expect(
+        owaspEncryptor.isVaultUpdated(
+          JSON.stringify({
+            cipher: 'mockedCipher',
+            iv: 'mockedIV',
+            salt: 'mockedSalt',
+            lib: 'original',
+            keyMetadata: DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+          }),
+        ),
+      ).toBe(true);
+    });
+
+    it('still decrypts a legacy vault without keyMetadata', async () => {
+      const mockVault = {
+        cipher: 'mockedCipher',
+        iv: 'mockedIV',
+        salt: 'mockedSalt',
+        lib: ENCRYPTION_LIBRARY.original,
+      };
+
+      const decryptedObject = await owaspEncryptor.decrypt(
+        'testPassword',
+        JSON.stringify(mockVault),
+      );
+
+      expect(decryptedObject).toEqual({ test: 'data' });
     });
   });
 
