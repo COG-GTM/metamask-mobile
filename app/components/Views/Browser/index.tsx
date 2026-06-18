@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, {
   useCallback,
   useContext,
@@ -9,6 +8,7 @@ import React, {
 import { View } from 'react-native';
 import { captureScreen } from 'react-native-view-shot';
 import { connect, useSelector } from 'react-redux';
+import { RootState } from '../../../reducers';
 import { strings } from '../../../../locales/i18n';
 import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/BrowserView.selectors';
 import {
@@ -56,7 +56,48 @@ const MAX_BROWSER_TABS = 5;
  * Component that wraps all the browser
  * individual tabs and the tabs view
  */
-export const Browser = (props) => {
+interface BrowserTab {
+  id: number;
+  url: string;
+  image?: string;
+  linkType?: string;
+  isArchived?: boolean;
+}
+
+interface OwnProps {
+  navigation: Record<string, unknown> & {
+    setParams: (params: Record<string, unknown>) => void;
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+  };
+  route: {
+    params?: {
+      url?: string;
+      linkType?: string;
+      showTabs?: boolean;
+      newTabUrl?: string;
+      timestamp?: number;
+      existingTabId?: number;
+      [key: string]: unknown;
+    };
+  };
+}
+
+interface StateProps {
+  tabs: BrowserTab[];
+  activeTab: number;
+}
+
+interface DispatchProps {
+  createNewTab: (url: string, linkType?: string) => void;
+  closeAllTabs: () => void;
+  closeTab: (id: number) => void;
+  setActiveTab: (id: number) => void;
+  updateTab: (id: number, data: Record<string, unknown>) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+export const Browser = (props: Props) => {
   const {
     route,
     navigation,
@@ -456,57 +497,18 @@ export const Browser = (props) => {
   );
 };
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   tabs: state.browser.tabs,
   activeTab: state.browser.activeTab,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   createNewTab: (url, linkType) => dispatch(createNewTab(url, linkType)),
   closeAllTabs: () => dispatch(closeAllTabs()),
   closeTab: (id) => dispatch(closeTab(id)),
   setActiveTab: (id) => dispatch(setActiveTab(id)),
   updateTab: (id, url) => dispatch(updateTab(id, url)),
 });
-
-Browser.propTypes = {
-  /**
-   * react-navigation object used to switch between screens
-   */
-  navigation: PropTypes.object,
-  /**
-   * Function to create a new tab
-   */
-  createNewTab: PropTypes.func,
-  /**
-   * Function to close all the existing tabs
-   */
-  closeAllTabs: PropTypes.func,
-  /**
-   * Function to close a specific tab
-   */
-  closeTab: PropTypes.func,
-  /**
-   * Function to set the active tab
-   */
-  setActiveTab: PropTypes.func,
-  /**
-   * Function to set the update the url of a tab
-   */
-  updateTab: PropTypes.func,
-  /**
-   * Array of tabs
-   */
-  tabs: PropTypes.array,
-  /**
-   * ID of the active tab
-   */
-  activeTab: PropTypes.number,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-};
 
 export { default as createBrowserNavDetails } from './Browser.types';
 

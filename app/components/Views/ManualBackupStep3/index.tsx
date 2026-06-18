@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Alert, BackHandler, View, StyleSheet, Keyboard } from 'react-native';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import StorageWrapper from '../../../store/storage-wrapper';
 import OnboardingProgress from '../../UI/OnboardingProgress';
@@ -18,12 +17,12 @@ import {
   SEED_PHRASE_HINTS,
 } from '../../../constants/storage';
 import { MetaMetricsEvents } from '../../../core/Analytics';
-import { ThemeContext, mockTheme } from '../../../util/theme';
+import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import OnboardingSuccess from '../OnboardingSuccess';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -76,31 +75,43 @@ const HARDWARE_BACK_PRESS = 'hardwareBackPress';
  * View that's shown during the last step of
  * the backup seed phrase flow
  */
-class ManualBackupStep3 extends PureComponent {
-  constructor(props) {
+interface Props {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    dangerouslyGetParent: () => {
+      pop: (count: number) => void;
+    };
+  };
+  route: {
+    params?: {
+      steps?: string[];
+      words?: string[];
+      [key: string]: unknown;
+    };
+  };
+  setOnboardingWizardStep: (step: number) => void;
+  showAlert: (config: { isVisible: boolean; autodismiss: number; content: string; data: { msg: string } }) => void;
+}
+
+interface State {
+  currentStep: number;
+  showHint: boolean;
+  hintText: string;
+}
+
+class ManualBackupStep3 extends PureComponent<Props, State> {
+  steps: string[] | undefined;
+
+  constructor(props: Props) {
     super(props);
     this.steps = props.route.params?.steps;
   }
 
-  state = {
+  state: State = {
     currentStep: 4,
     showHint: false,
     hintText: '',
-  };
-
-  static propTypes = {
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Action to set onboarding wizard step
-     */
-    setOnboardingWizardStep: PropTypes.func,
   };
 
   updateNavBar = () => {
@@ -149,10 +160,10 @@ class ManualBackupStep3 extends PureComponent {
       },
     });
 
-  isHintSeedPhrase = (hintText) => {
+  isHintSeedPhrase = (hintText: string) => {
     const words = this.props.route.params?.words;
     if (words) {
-      const lower = (string) => String(string).toLowerCase();
+      const lower = (str: string) => String(str).toLowerCase();
       return lower(hintText) === lower(words.join(' '));
     }
     return false;
@@ -234,7 +245,7 @@ class ManualBackupStep3 extends PureComponent {
 
 ManualBackupStep3.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
   showAlert: (config) => dispatch(showAlert(config)),
   setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
 });

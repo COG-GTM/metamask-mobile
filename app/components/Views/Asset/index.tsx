@@ -1,5 +1,4 @@
 import { swapsUtils } from '@metamask/swaps-controller/';
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   ActivityIndicator,
@@ -39,7 +38,8 @@ import {
   isMainnetByChainId,
   isPortfolioViewEnabled,
 } from '../../../util/networks';
-import { mockTheme, ThemeContext } from '../../../util/theme';
+import { mockTheme, ThemeContext, Theme } from '../../../util/theme';
+import { RootState } from '../../../reducers';
 import { addAccountTimeFlagFilter } from '../../../util/transactions';
 import AssetOverview from '../../UI/AssetOverview';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
@@ -72,7 +72,7 @@ import { isNonEvmChainId } from '../../../core/Multichain/utils';
 import { isBridgeAllowed } from '../../UI/Bridge/utils';
 import { getIsSwapsAssetAllowed, getSwapsIsLive } from './utils';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -130,62 +130,68 @@ const createStyles = (colors) =>
  * including the overview (Amount, Balance, Symbol, Logo)
  * and also the transaction list
  */
-class Asset extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-    /* conversion rate of ETH - FIAT
-    */
-    conversionRate: PropTypes.any,
-    /**
-    /* Selected currency
-    */
-    currentCurrency: PropTypes.string,
-    /**
-    /* InternalAccount object required to get account name
-    */
-    selectedInternalAccount: PropTypes.object,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string,
-    /**
-     * An array that represents the user transactions
-     */
-    transactions: PropTypes.array,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    swapsIsLive: PropTypes.bool,
-    swapsTokens: PropTypes.object,
-    searchDiscoverySwapsTokens: PropTypes.array,
-    swapsTransactions: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    rpcUrl: PropTypes.string,
-    networkConfigurations: PropTypes.object,
-    /**
-     * Boolean that indicates if network is supported to buy
-     */
-    isNetworkRampSupported: PropTypes.bool,
-    /**
-     * Boolean that indicates if native token is supported to buy
-     */
-    isNetworkBuyNativeTokenSupported: PropTypes.bool,
-    /**
-     * Function to set the swaps liveness
-     */
-    setLiveness: PropTypes.func,
+interface OwnProps {
+  navigation: Record<string, unknown> & {
+    setOptions: (options: Record<string, unknown>) => void;
+    navigate: (route: string, params?: Record<string, unknown>) => void;
   };
+  route: {
+    params: {
+      symbol?: string;
+      address?: string;
+      isETH?: boolean;
+      chainId?: string;
+      [key: string]: unknown;
+    };
+  };
+  metrics: {
+    trackEvent: (event: Record<string, unknown>) => void;
+    createEventBuilder: (event: Record<string, unknown>) => { addProperties: (props: Record<string, unknown>) => { build: () => Record<string, unknown> } };
+  };
+}
 
-  state = {
+interface StateProps {
+  conversionRate: number;
+  currentCurrency: string;
+  selectedInternalAccount: {
+    address: string;
+    metadata: {
+      importTime?: number;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  chainId: string;
+  transactions: Array<Record<string, unknown>>;
+  tokens: Array<{ address: string; [key: string]: unknown }>;
+  swapsIsLive: boolean;
+  swapsTokens: Record<string, unknown>;
+  searchDiscoverySwapsTokens: string[];
+  swapsTransactions: Record<string, Record<string, unknown>>;
+  rpcUrl: string;
+  networkConfigurations: Record<string, { name?: string; [key: string]: unknown }>;
+  isNetworkRampSupported: boolean;
+  isNetworkBuyNativeTokenSupported: boolean;
+  networkClientId: string;
+}
+
+interface DispatchProps {
+  setLiveness: (chainId: string, featureFlags: Record<string, unknown>) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+interface ComponentState {
+  refreshing: boolean;
+  loading: boolean;
+  transactionsUpdated: boolean;
+  transactions: Array<Record<string, unknown>>;
+  submittedTxs: Array<Record<string, unknown>>;
+  confirmedTxs: Array<Record<string, unknown>>;
+}
+
+class Asset extends PureComponent<Props, ComponentState> {
+  state: ComponentState = {
     refreshing: false,
     loading: false,
     transactionsUpdated: false,
@@ -580,7 +586,7 @@ class Asset extends PureComponent {
 
 Asset.contextType = ThemeContext;
 
-const mapStateToProps = (state, { route }) => ({
+const mapStateToProps = (state: RootState, { route }: OwnProps): StateProps => ({
   swapsIsLive: getSwapsIsLive(state, route.params.chainId),
   swapsTokens: isPortfolioViewEnabled()
     ? swapsTokensMultiChainObjectSelector(state)
@@ -609,7 +615,7 @@ const mapStateToProps = (state, { route }) => ({
   networkClientId: selectNetworkClientId(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   setLiveness: (chainId, featureFlags) =>
     dispatch(setSwapsLiveness(chainId, featureFlags)),
 });

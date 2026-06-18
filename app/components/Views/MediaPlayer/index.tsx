@@ -1,9 +1,10 @@
 import React, { useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   TouchableOpacity,
   View,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import AndroidMediaPlayer from './AndroidMediaPlayer';
 import Video from 'react-native-video';
@@ -19,9 +20,28 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useStyles } from '../../../component-library/hooks';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
-const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
+interface TextTrack {
+  title: string;
+  language: string;
+  type: string;
+  uri: string;
+}
+
+interface SelectedTextTrack {
+  type: string;
+  value?: string;
+}
+
+interface MediaPlayerProps {
+  uri: string | number;
+  style?: StyleProp<ViewStyle>;
+  onClose?: () => void;
+  textTracks?: TextTrack[];
+  selectedTextTrack?: SelectedTextTrack;
+}
+
+const styleSheet = ({ theme: { colors }, vars: { isPlaying } }: { theme: { colors: Record<string, Record<string, string>> }; vars: { isPlaying: boolean } }) =>
   StyleSheet.create({
     loaderContainer: {
       position: 'absolute',
@@ -56,10 +76,10 @@ const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
     },
   });
 
-function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
+function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }: MediaPlayerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const videoRef = useRef();
+  const videoRef = useRef<typeof Video>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const videoControlsOpacity = useSharedValue(0);
@@ -162,34 +182,5 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
     </View>
   );
 }
-
-MediaPlayer.propTypes = {
-  /**
-   * Media URI
-   * Can be a number returned by import for bundled files
-   * or a string for remote files (http://...)
-   */
-  uri: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  /**
-   * Custom style object
-   */
-  style: ViewPropTypes.style,
-  /**
-   * On close callback
-   */
-  onClose: PropTypes.func,
-  /**
-   * Array of remote possible text tracks to display
-   */
-  textTracks: PropTypes.arrayOf(PropTypes.object),
-  /**
-   * The selected text track to display by id, language, title, index
-   */
-  selectedTextTrack: PropTypes.object,
-};
-
-MediaPlayer.defaultProps = {
-  onError: () => null,
-};
 
 export default MediaPlayer;
