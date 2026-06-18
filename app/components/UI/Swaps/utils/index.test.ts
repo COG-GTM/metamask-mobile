@@ -4,7 +4,12 @@ import {
   isSwapsAllowed,
 } from './index';
 import { swapsUtils } from '@metamask/swaps-controller';
-import { SolScope } from '@metamask/keyring-api';
+
+// eslint-disable-next-line @typescript-eslint/no-namespace, @typescript-eslint/no-shadow
+declare namespace global {
+  // eslint-disable-next-line no-var, @typescript-eslint/no-shadow
+  var __DEV__: boolean;
+}
 
 // Mock AppConstants
 const mockSwapsConstantsGetter = jest.fn(() => ({
@@ -118,11 +123,13 @@ describe('shouldShowMaxBalanceLink', () => {
   const nativeToken = {
     symbol: 'ETH',
     address: '0x0000000000000000000000000000000000000000', // NATIVE_SWAPS_TOKEN_ADDRESS
+    decimals: 18,
   };
 
   const erc20Token = {
     symbol: 'DAI',
     address: '0x123456789abcdef',
+    decimals: 18,
   };
 
   it('should show max balance link when all conditions are met for ERC20 token', () => {
@@ -169,7 +176,7 @@ describe('shouldShowMaxBalanceLink', () => {
   });
 
   it('should not show max balance link when source token is missing symbol', () => {
-    const sourceToken = { ...erc20Token, symbol: null };
+    const sourceToken = { ...erc20Token, symbol: null as unknown as string };
     const result = shouldShowMaxBalanceLink({
       sourceToken,
       shouldUseSmartTransaction: true,
