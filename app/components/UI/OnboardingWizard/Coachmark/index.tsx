@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, TextStyle, View, StyleProp, ViewStyle } from 'react-native';
 import {
   colors as importedColors,
   fontStyles,
@@ -15,7 +14,7 @@ import {
   IconName,
   IconColor,
 } from '../../../../component-library/components/Icons/Icon';
-import { typography } from '@metamask/design-tokens';
+import { typography , Theme } from '@metamask/design-tokens';
 import {
   ButtonSize,
   ButtonVariants,
@@ -28,7 +27,7 @@ import {
   TextVariant,
 } from '../../../../component-library/components/Texts/Text';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     coachmark: {
       backgroundColor: colors.primary.default,
@@ -164,10 +163,10 @@ const createStyles = (colors) =>
       alignSelf: 'center',
     },
     stepCounter: {
-      ...typography.BodyMD,
+      ...(typography.sBodyMD as Record<string, unknown>),
       fontFamily: getFontFamily(TextVariant.BodyMD),
       color: colors.info.inverse,
-    },
+    } as TextStyle,
     titleContainer: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -175,68 +174,31 @@ const createStyles = (colors) =>
     },
   });
 
-export default class Coachmark extends PureComponent {
-  static propTypes = {
-    /**
-     * Custom coachmark style to apply
-     */
-    coachmarkStyle: PropTypes.object,
-    /**
-     * Custom animated view style to apply
-     */
-    style: PropTypes.object,
-    /**
-     * Content object
-     */
-    content: PropTypes.object,
-    /**
-     * Title text
-     */
-    title: PropTypes.string,
-    /**
-     * Current onboarding wizard step
-     */
-    currentStep: PropTypes.number,
-    /**
-     * Callback to be called when next is pressed
-     */
-    onNext: PropTypes.func,
-    /**
-     * Callback to be called when back is pressed
-     */
-    onBack: PropTypes.func,
-    /**
-     * Whether action buttons have to be rendered
-     */
-    action: PropTypes.bool,
-    /**
-     * Top indicator position
-     */
-    topIndicatorPosition: PropTypes.oneOf([
-      false,
-      'topCenter',
-      'topLeft',
-      'topLeftCorner',
-      'topRight',
-      'topRightCorner',
-    ]),
-    /**
-     * Bottom indicator position
-     */
-    bottomIndicatorPosition: PropTypes.oneOf([
-      false,
-      'bottomCenter',
-      'bottomLeft',
-      'bottomLeftCorner',
-      'bottomRight',
-    ]),
-    /**
-     * Callback called when closing on boarding wizard
-     */
-    onClose: PropTypes.func,
-  };
+type TopIndicatorPosition = false | 'topCenter' | 'topLeft' | 'topLeftCorner' | 'topRight' | 'topRightCorner';
+type BottomIndicatorPosition = false | 'bottomCenter' | 'bottomLeft' | 'bottomLeftCorner' | 'bottomRight';
 
-  state = {
+interface CoachmarkProps {
+  coachmarkStyle?: StyleProp<ViewStyle>;
+  style?: StyleProp<ViewStyle>;
+  content?: React.ReactNode;
+  title?: string;
+  currentStep?: number;
+  onNext?: () => void;
+  onBack?: () => void;
+  action?: boolean;
+  topIndicatorPosition?: TopIndicatorPosition;
+  bottomIndicatorPosition?: BottomIndicatorPosition;
+  onClose?: () => void;
+}
+
+interface CoachmarkState {
+  ready: boolean;
+}
+
+export default class Coachmark extends PureComponent<CoachmarkProps, CoachmarkState> {
+  declare context: React.ContextType<typeof ThemeContext>;
+
+  state: CoachmarkState = {
     ready: false,
   };
 
@@ -260,17 +222,11 @@ export default class Coachmark extends PureComponent {
     }).start();
   };
 
-  /**
-   * Calls props onNext
-   */
   onNext = () => {
     const { onNext } = this.props;
     onNext && onNext();
   };
 
-  /**
-   * Calls props onBack
-   */
   onBack = () => {
     const { onBack } = this.props;
     onBack && onBack();
@@ -281,50 +237,33 @@ export default class Coachmark extends PureComponent {
     return createStyles(colors);
   };
 
-  /**
-   * Gets top indicator style according to 'topIndicatorPosition'
-   *
-   * @param {string} topIndicatorPosition - Indicator position
-   * @returns {Object} - Corresponding style object
-   */
-  getIndicatorStyle = (topIndicatorPosition) => {
+  getIndicatorStyle = (topIndicatorPosition: TopIndicatorPosition) => {
     const styles = this.getStyles();
 
-    const positions = {
+    const positions: Record<string, ViewStyle> = {
       topCenter: styles.topCenter,
       topLeft: styles.topLeft,
       topRight: styles.topRight,
       topLeftCorner: styles.topLeftCorner,
       topRightCorner: styles.topRightCorner,
-      [undefined]: styles.topCenter,
+      [String(undefined)]: styles.topCenter,
     };
-    return positions[topIndicatorPosition];
+    return positions[String(topIndicatorPosition)];
   };
 
-  /**
-   * Gets top indicator style according to 'bottomIndicatorPosition'
-   *
-   * @param {string} bottomIndicatorPosition - Indicator position
-   * @returns {Object} - Corresponding style object
-   */
-  getBotttomIndicatorStyle = (bottomIndicatorPosition) => {
+  getBotttomIndicatorStyle = (bottomIndicatorPosition: BottomIndicatorPosition) => {
     const styles = this.getStyles();
 
-    const positions = {
+    const positions: Record<string, ViewStyle> = {
       bottomCenter: styles.bottomCenter,
       bottomLeft: styles.bottomLeft,
       bottomLeftCorner: styles.bottomLeftCorner,
       bottomRight: styles.bottomRight,
-      [undefined]: styles.bottomCenter,
+      [String(undefined)]: styles.bottomCenter,
     };
-    return positions[bottomIndicatorPosition];
+    return positions[String(bottomIndicatorPosition)];
   };
 
-  /**
-   * Returns progress bar, back and next buttons. According to currentStep
-   *
-   * @returns {Object} - Corresponding view object
-   */
   renderProgressButtons = () => {
     const { currentStep } = this.props;
     const styles = this.getStyles();
@@ -348,11 +287,6 @@ export default class Coachmark extends PureComponent {
     );
   };
 
-  /**
-   * Returns horizontal action buttons
-   *
-   * @returns {Object} - Corresponding view object
-   */
   renderActionButtons = () => {
     const styles = this.getStyles();
 

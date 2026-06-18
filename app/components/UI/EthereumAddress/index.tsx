@@ -1,43 +1,44 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { Platform, Text } from 'react-native';
+import { Platform, Text, StyleProp, TextStyle } from 'react-native';
 import { formatAddress } from '../../../util/address';
 import generateTestId from '../../../../wdio/utils/generateTestId';
+// @ts-expect-error - Export exists at runtime via WDIO test ID generation
 import { WALLET_ACCOUNT_ADDRESS_LABEL } from '../../../../wdio/screen-objects/testIDs/Screens/WalletView.testIds';
+
+interface EthereumAddressProps {
+  style?: StyleProp<TextStyle>;
+  address?: string;
+  type?: 'short' | 'mid' | 'full';
+}
+
+interface EthereumAddressState {
+  ensName: string | null;
+  address: string;
+}
 
 /**
  * View that renders an ethereum address
  * or its ENS name when supports reverse lookup
  */
-class EthereumAddress extends PureComponent {
-  static propTypes = {
-    /**
-     * Styles to be applied to the text component
-     */
-    style: PropTypes.any,
-    /**
-     * Address to be rendered and resolved
-     */
-    address: PropTypes.string,
-    /**
-     * Type of formatting for the address
-     * can be "short", "mid" or "full"
-     */
-    type: PropTypes.string,
+class EthereumAddress extends PureComponent<EthereumAddressProps, EthereumAddressState> {
+  static defaultProps = {
+    style: null,
+    type: 'full',
   };
 
-  ens = null;
-  constructor(props) {
+  ens: string | null = null;
+
+  constructor(props: EthereumAddressProps) {
     super(props);
     const { address, type } = props;
 
     this.state = {
       ensName: null,
-      address: formatAddress(address, type),
+      address: formatAddress(address ?? '', type ?? 'full'),
     };
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: EthereumAddressProps) {
     if (this.props.address && prevProps.address !== this.props.address) {
       requestAnimationFrame(() => {
         this.formatAndResolveIfNeeded();
@@ -47,7 +48,7 @@ class EthereumAddress extends PureComponent {
 
   formatAndResolveIfNeeded() {
     const { address, type } = this.props;
-    const formattedAddress = formatAddress(address, type);
+    const formattedAddress = formatAddress(address ?? '', type ?? 'full');
     this.setState({ address: formattedAddress, ensName: null });
   }
 
@@ -63,10 +64,5 @@ class EthereumAddress extends PureComponent {
     );
   }
 }
-
-EthereumAddress.defaultProps = {
-  style: null,
-  type: 'full',
-};
 
 export default EthereumAddress;

@@ -13,7 +13,6 @@ import {
 import { connect } from 'react-redux';
 import { fontStyles } from '../../../styles/common';
 import { getPaymentRequestSuccessOptionsTitle } from '../../UI/Navbar';
-import PropTypes from 'prop-types';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import StyledButton from '../StyledButton';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -34,7 +33,17 @@ import { SendLinkViewSelectorsIDs } from '../../../../e2e/selectors/Receive/Send
 
 const isIos = Device.isIos();
 
-const createStyles = (theme) =>
+interface ThemeColors {
+  colors: {
+    background: { default: string };
+    text: { default: string };
+    primary: { default: string; inverse: string };
+    overlay: { default: string };
+  };
+  brandColors: { white: string };
+}
+
+const createStyles = (theme: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: theme.colors.background.default,
@@ -158,30 +167,48 @@ const createStyles = (theme) =>
     },
   });
 
+interface OwnProps {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    pop: () => void;
+  };
+  route?: {
+    params?: {
+      link?: string;
+      qrLink?: string;
+      amount?: string;
+      symbol?: string;
+    };
+  };
+}
+
+interface DispatchProps {
+  showAlert: (config: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: { msg: string };
+  }) => void;
+  protectWalletModalVisible: () => void;
+}
+
+type Props = OwnProps & DispatchProps;
+
+interface PaymentRequestSuccessState {
+  link: string;
+  qrLink: string;
+  amount: string;
+  symbol: string;
+  qrModalVisible: boolean;
+}
+
 /**
  * View to interact with a previously generated payment request link
  */
-class PaymentRequestSuccess extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-    /* Triggers global alert
-    */
-    showAlert: PropTypes.func,
-    /**
-    /* Prompts protect wallet modal
-    */
-    protectWalletModalVisible: PropTypes.func,
-  };
+class PaymentRequestSuccess extends PureComponent<Props, PaymentRequestSuccessState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: PaymentRequestSuccessState = {
     link: '',
     qrLink: '',
     amount: '',
@@ -193,13 +220,11 @@ class PaymentRequestSuccess extends PureComponent {
     const { navigation } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
-      getPaymentRequestSuccessOptionsTitle(navigation, colors),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getPaymentRequestSuccessOptionsTitle(navigation as any, colors),
     );
   };
 
-  /**
-   * Sets payment request link, amount and symbol of the asset to state
-   */
   componentDidMount = () => {
     const { route } = this.props;
     this.updateNavBar();
@@ -218,9 +243,6 @@ class PaymentRequestSuccess extends PureComponent {
     this.props.protectWalletModalVisible();
   };
 
-  /**
-   * Copies payment request link to clipboard
-   */
   copyAccountToClipboard = async () => {
     const { link } = this.state;
     await ClipboardManager.setString(link);
@@ -234,28 +256,19 @@ class PaymentRequestSuccess extends PureComponent {
     });
   };
 
-  /**
-   * Shows share native UI
-   */
   onShare = () => {
     const { link } = this.state;
     Share.open({
       message: link,
-    }).catch((err) => {
+    }).catch((err: Error) => {
       Logger.log('Error while trying to share payment request', err);
     });
   };
 
-  /**
-   * Toggles payment request QR code modal on top
-   */
   showQRModal = () => {
     this.setState({ qrModalVisible: true });
   };
 
-  /**
-   * Closes payment request QR code modal
-   */
   closeQRModal = () => {
     this.setState({ qrModalVisible: false });
   };
@@ -413,9 +426,11 @@ class PaymentRequestSuccess extends PureComponent {
 
 PaymentRequestSuccess.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 
-export default connect(null, mapDispatchToProps)(PaymentRequestSuccess);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const connected = (connect as any)(null, mapDispatchToProps)(PaymentRequestSuccess);
+export default connected as React.ComponentType<OwnProps & { store?: unknown }>;

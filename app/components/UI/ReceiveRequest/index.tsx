@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   SafeAreaView,
   Dimensions,
@@ -33,10 +32,20 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { getDecimalChainId } from '../../../util/networks';
 import QRAccountDisplay from '../../Views/QRAccountDisplay';
 import PNG_MM_LOGO_PATH from '../../../images/branding/fox.png';
+import { RootState } from '../../../reducers';
 
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
-const createStyles = (theme) =>
+interface ThemeObj {
+  colors: {
+    background: { default: string; alternative: string };
+    text: { default: string };
+    primary: { default: string };
+  };
+  brandColors: { white: string };
+}
+
+const createStyles = (theme: ThemeObj) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: theme.colors.background.default,
@@ -106,72 +115,64 @@ const createStyles = (theme) =>
     },
   });
 
+interface OwnProps {
+  navigation: {
+    navigate: (...args: unknown[]) => void;
+  };
+  receiveAsset?: Record<string, unknown>;
+  hideModal?: () => void;
+  metrics: {
+    trackEvent: (event: unknown) => void;
+    createEventBuilder: (event: unknown) => { addProperties: (props: Record<string, unknown>) => { build: () => unknown }; build: () => unknown };
+  };
+}
+
+interface StateProps {
+  chainId: string;
+  selectedAddress: string;
+  receiveAsset: Record<string, unknown>;
+  seedphraseBackedUp: boolean;
+  isNetworkBuySupported: boolean;
+}
+
+interface DispatchProps {
+  showAlert: (config: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: { msg: string };
+  }) => void;
+  protectWalletModalVisible: () => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+interface ReceiveRequestState {
+  qrModalVisible: boolean;
+  buyModalVisible: boolean;
+}
+
 /**
  * PureComponent that renders receive options
  */
-class ReceiveRequest extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Asset to receive, could be not defined
-     */
-    receiveAsset: PropTypes.object,
-    /**
-     /* Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Network provider chain id
-     */
-    chainId: PropTypes.string,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * Hides the modal that contains the component
-     */
-    hideModal: PropTypes.func,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNetworkBuySupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class ReceiveRequest extends PureComponent<Props, ReceiveRequestState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: ReceiveRequestState = {
     qrModalVisible: false,
     buyModalVisible: false,
   };
 
-  /**
-   * Share current account public address
-   */
   onShare = () => {
     const { selectedAddress } = this.props;
     Share.open({
       message: generateUniversalLinkAddress(selectedAddress),
     })
       .then(() => {
-        this.props.hideModal();
+        this.props.hideModal?.();
         setTimeout(() => this.props.protectWalletModalVisible(), 1000);
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         Logger.log('Error while trying to share address', err);
       });
 
@@ -182,9 +183,6 @@ class ReceiveRequest extends PureComponent {
     );
   };
 
-  /**
-   * Shows an alert message with a coming soon message
-   */
   onBuy = async () => {
     const { navigation, isNetworkBuySupported } = this.props;
     if (!isNetworkBuySupported) {
@@ -218,7 +216,7 @@ class ReceiveRequest extends PureComponent {
       data: { msg: strings('account_details.account_copied_to_clipboard') },
     });
     if (!this.props.seedphraseBackedUp) {
-      setTimeout(() => this.props.hideModal(), 1000);
+      setTimeout(() => this.props.hideModal?.(), 1000);
       setTimeout(() => this.props.protectWalletModalVisible(), 1500);
     }
   };
@@ -275,9 +273,9 @@ class ReceiveRequest extends PureComponent {
 
 ReceiveRequest.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   chainId: selectChainId(state),
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) as string,
   receiveAsset: state.modals.receiveAsset,
   seedphraseBackedUp: state.user.seedphraseBackedUp,
   isNetworkBuySupported: isNetworkRampSupported(
@@ -286,12 +284,12 @@ const mapStateToProps = (state) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(withMetricsAwareness(ReceiveRequest));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const connected = (connect as any)(mapStateToProps, mapDispatchToProps)(withMetricsAwareness(ReceiveRequest as any));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default connected as any;
