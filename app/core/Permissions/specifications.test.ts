@@ -78,7 +78,7 @@ describe('PermissionController specifications', () => {
           })[Caip25CaveatType];
 
           [null, 'foo', {}, []].forEach((invalidValue) => {
-            expect(() => validator({ value: invalidValue })).toThrow(
+            expect(() => validator({ value: invalidValue } as { type: string; value: unknown })).toThrow(
               `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
             );
           });
@@ -93,7 +93,7 @@ describe('PermissionController specifications', () => {
           })[Caip25CaveatType];
 
           [[{}], [[]], [null], ['']].forEach((invalidValue) => {
-            expect(() => validator({ value: invalidValue })).toThrow(
+            expect(() => validator({ value: invalidValue } as { type: string; value: unknown })).toThrow(
               `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
             );
           });
@@ -134,7 +134,7 @@ describe('PermissionController specifications', () => {
             findNetworkClientIdByChainId,
           })[Caip25CaveatType];
 
-          expect(() => validator({ value: caveatValues })).toThrow(
+          expect(() => validator({ value: caveatValues } as { type: string; value: unknown })).toThrow(
             `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
           );
         });
