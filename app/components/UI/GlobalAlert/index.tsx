@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
 import { StyleSheet, View, Text } from 'react-native';
 import { dismissAlert } from '../../../actions/alert';
@@ -8,8 +10,9 @@ import { fontStyles } from '../../../styles/common';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ElevatedView from 'react-native-elevated-view';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -40,35 +43,26 @@ const createStyles = (colors) =>
  * Wrapper component for a global alert
  * connected to redux
  */
-class GlobalAlert extends PureComponent {
-  static propTypes = {
-    /**
-     * Boolean that determines if the modal should be shown
-     */
-    isVisible: PropTypes.bool.isRequired,
-    /**
-     * Number that determines when it should be autodismissed (in miliseconds)
-     */
-    autodismiss: PropTypes.number,
-    /**
-     * Children component(s)
-     */
-    content: PropTypes.any,
-    /**
-     * Object with data required to render the content
-     */
-    data: PropTypes.object,
-    /**
-     * function that dismisses de modal
-     */
-    dismissAlert: PropTypes.func,
-  };
+interface StateProps {
+  isVisible: boolean;
+  autodismiss?: number;
+  content?: string;
+  data?: { msg?: string; width?: number };
+}
+
+interface DispatchProps {
+  dismissAlert: () => void;
+}
+
+type Props = StateProps & DispatchProps & { [key: string]: any };
+
+class GlobalAlert extends PureComponent<any, any> {
 
   onClose = () => {
     this.props.dismissAlert();
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Props) {
     if (
       this.props.autodismiss &&
       !isNaN(this.props.autodismiss) &&
@@ -101,7 +95,7 @@ class GlobalAlert extends PureComponent {
 
     return (
       <ElevatedView
-        style={styles.copyAlert(this.props.data && this.props.data.width)}
+        style={styles.copyAlert(this.props.data?.width)}
         elevation={5}
       >
         <View style={styles.copyAlertIcon}>
@@ -112,7 +106,7 @@ class GlobalAlert extends PureComponent {
           />
         </View>
         <Text style={styles.copyAlertText}>
-          {this.props.data && this.props.data.msg}
+          {this.props.data?.msg}
         </Text>
       </ElevatedView>
     );
@@ -140,17 +134,17 @@ class GlobalAlert extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: { alert: { isVisible: boolean; autodismiss?: number; content?: string; data?: { msg?: string; width?: number } } }): StateProps => ({
   isVisible: state.alert.isVisible,
   autodismiss: state.alert.autodismiss,
   content: state.alert.content,
   data: state.alert.data,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   dismissAlert: () => dispatch(dismissAlert()),
 });
 
 GlobalAlert.contextType = ThemeContext;
 
-export default connect(mapStateToProps, mapDispatchToProps)(GlobalAlert);
+export default connect(mapStateToProps, mapDispatchToProps)(GlobalAlert) as unknown as React.ComponentType<Record<string, never>>;

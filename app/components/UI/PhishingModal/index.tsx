@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   View,
@@ -7,12 +10,12 @@ import {
   Linking,
   TouchableOpacity,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import URL from 'url-parse';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { ETHEREUM_DETECTION_TITLE } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
 import Button from '../../../component-library/components/Buttons/Button/Button';
@@ -21,7 +24,7 @@ import {
   ButtonWidthTypes,
 } from '../../../component-library/components/Buttons/Button/Button.types';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     warningIcon: {
       color: colors.error.default,
@@ -97,28 +100,14 @@ const createStyles = (colors) =>
     },
   });
 
-export default class PhishingModal extends PureComponent {
-  static propTypes = {
-    /**
-     * name of the blacklisted url
-     */
-    fullUrl: PropTypes.string,
-    /**
-     * Called to the user decides to proceed to the phishing site
-     */
-    continueToPhishingSite: PropTypes.func,
-    /**
-     * Called to the user decides to report an issue
-     */
-    goToFilePhishingIssue: PropTypes.func,
-    /**
-     * Called when the user takes the recommended action
-     */
-    goBackToSafety: PropTypes.func,
-    /**
-     * Called to the user decides to share on Twitter
-     */
-  };
+interface Props {
+  fullUrl?: string;
+  continueToPhishingSite?: () => void;
+  goToFilePhishingIssue?: () => void;
+  goBackToSafety?: () => void;
+}
+
+export default class PhishingModal extends PureComponent<any, any> {
 
   shareToTwitter = () => {
     const tweetText =

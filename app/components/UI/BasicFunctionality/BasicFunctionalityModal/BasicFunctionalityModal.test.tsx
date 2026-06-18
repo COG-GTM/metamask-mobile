@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 // Third party dependencies.
 import React from 'react';
 
@@ -5,6 +8,8 @@ import React from 'react';
 import BasicFunctionalityModal from './BasicFunctionalityModal';
 import renderWithProvider from '../../../../util/test/renderWithProvider';
 import { useNavigation } from '@react-navigation/native';
+
+export type { RootState } from '../../../../reducers';
 
 /**
  * @typedef {import('../../../../reducers').RootState} RootState

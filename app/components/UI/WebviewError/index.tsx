@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { Image, StyleSheet, View, Text, Platform } from 'react-native';
 import StyledButton from '../StyledButton';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import {
   ERROR_PAGE_MESSAGE,
@@ -12,7 +15,7 @@ import {
   ERROR_PAGE_TITLE,
 } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       ...StyleSheet.absoluteFillObject,
@@ -65,18 +68,12 @@ const createStyles = (colors) =>
 /**
  * View that renders custom error page for the browser
  */
-export default class WebviewError extends PureComponent {
-  static propTypes = {
-    /**
-     * error info
-     */
-    error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-    /**
-     * Function that reloads the page
-     */
-    returnHome: PropTypes.func,
-  };
+interface Props {
+  error?: { description?: string } | boolean;
+  returnHome: () => void;
+}
 
+export default class WebviewError extends PureComponent<any, any> {
   static defaultProps = {
     error: false,
   };

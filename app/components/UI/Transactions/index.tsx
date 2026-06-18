@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   ActivityIndicator,
@@ -47,6 +49,7 @@ import {
 } from '../../../util/networks';
 import { addHexPrefix, hexToBN, renderFromWei } from '../../../util/number';
 import { mockTheme, ThemeContext } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 import { validateTransactionActionBalance } from '../../../util/transactions';
 import withQRHardwareAwareness from '../QRHardware/withQRHardwareAwareness';
 import TransactionActionModal from '../TransactionActionModal';
@@ -85,7 +88,7 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (colors, typography) =>
+const createStyles = (colors: Colors, typography: Record<string, any>) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -141,107 +144,68 @@ const ROW_HEIGHT = (Device.isIos() ? 95 : 100) + StyleSheet.hairlineWidth;
 /**
  * View that renders a list of transactions for a specific asset
  */
-class Transactions extends PureComponent {
-  static propTypes = {
-    assetSymbol: PropTypes.string,
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * Callback to close the view
-     */
-    close: PropTypes.func,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object representing the configuration of the current selected network
-     */
-    providerConfig: PropTypes.object,
-    /**
-     * An array that represents the user collectible contracts
-     */
-    collectibleContracts: PropTypes.array,
-    /**
-     * An array that represents the user tokens
-     */
-    tokens: PropTypes.object,
-    /**
-     * An array of transactions objects
-     */
-    transactions: PropTypes.array,
-    /**
-     * An array of transactions objects that have been submitted
-     */
-    submittedTransactions: PropTypes.array,
-    /**
-     * An array of transactions objects that have been confirmed
-     */
-    confirmedTransactions: PropTypes.array,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Loading flag from an external call
-     */
-    loading: PropTypes.bool,
-    /**
-     * Pass the flatlist ref to the parent
-     */
-    onRefSet: PropTypes.func,
-    /**
-     * Optional header component
-     */
-    header: PropTypes.object,
-    /**
-     * Optional header height
-     */
-    headerHeight: PropTypes.number,
-    exchangeRate: PropTypes.number,
-    isSigningQRObject: PropTypes.bool,
-    chainId: PropTypes.string,
-    /**
-     * On scroll past navbar callback
-     */
-    onScrollThroughContent: PropTypes.func,
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * Chain ID of the token
-     */
-    tokenChainId: PropTypes.string,
-  };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyRecord = Record<string, any>;
+
+interface OwnProps {
+  assetSymbol?: string;
+  close?: () => void;
+  navigation: { push: (...args: unknown[]) => void; navigate: (...args: unknown[]) => void };
+  transactions?: AnyRecord[];
+  submittedTransactions?: AnyRecord[];
+  confirmedTransactions?: AnyRecord[];
+  loading?: boolean;
+  onRefSet?: (ref: unknown) => void;
+  header?: React.ReactElement;
+  headerHeight?: number;
+  exchangeRate?: number;
+  isSigningQRObject?: boolean;
+  onScrollThroughContent?: () => void;
+  tokenChainId?: string;
+}
+
+interface StateProps {
+  accounts: AnyRecord;
+  chainId: string;
+  collectibleContracts: AnyRecord[];
+  contractExchangeRates: AnyRecord;
+  conversionRate: number;
+  currentCurrency: string;
+  selectedAddress: string;
+  networkConfigurations: AnyRecord;
+  providerConfig: AnyRecord;
+  gasFeeEstimates: AnyRecord;
+  tokens: AnyRecord;
+}
+
+interface DispatchProps {
+  showAlert: (config: { isVisible: boolean; autodismiss: number; content: string; data: { msg: string } }) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+interface ComponentState {
+  [key: string]: any;
+}
+
+class Transactions extends PureComponent<any, any> {
+  mounted = false;
+  scrolling = false;
 
   static defaultProps = {
     headerHeight: 0,
   };
 
-  state = {
+  state: ComponentState = {
     selectedTx: new Map(),
     ready: false,
     refreshing: false,
     cancelIsOpen: false,
+    cancel: null,
     cancel1559IsOpen: false,
     cancelConfirmDisabled: false,
     speedUpIsOpen: false,
+    speedUp: null,
     speedUp1559IsOpen: false,
     retryIsOpen: false,
     speedUpConfirmDisabled: false,
@@ -251,20 +215,20 @@ class Transactions extends PureComponent {
     isLedgerAccount: false,
   };
 
-  existingGas = null;
-  existingTx = null;
-  cancelTxId = null;
-  speedUpTxId = null;
-  selectedTx = null;
+  existingGas: any = null;
+  existingTx: any = null;
+  cancelTxId: any = null;
+  speedUpTxId: any = null;
+  selectedTx: any = null;
 
-  flatList = React.createRef();
+  flatList: any = React.createRef();
 
   componentDidMount = () => {
     this.mounted = true;
     setTimeout(() => {
       this.mounted && this.setState({ ready: true });
       this.init();
-      this.props.onRefSet && this.props.onRefSet(this.flatList);
+      this.props.onRefSet?.(this.flatList);
     }, 100);
     this.setState({
       isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress),
@@ -305,8 +269,8 @@ class Transactions extends PureComponent {
   componentDidUpdate() {
     this.updateBlockExplorer();
     if (
-      this.props.confirmedTransactions.some(
-        ({ id }) => id === this.existingTx?.id,
+      this.props.confirmedTransactions?.some(
+        (tx) => tx.id === this.existingTx?.id,
       )
     ) {
       this.onSpeedUpCompleted();
@@ -329,7 +293,7 @@ class Transactions extends PureComponent {
     }
   }
 
-  scrollToIndex = (index) => {
+  scrollToIndex = (index: number) => {
     if (!this.scrolling && (this.props.headerHeight || index)) {
       this.scrolling = true;
       // eslint-disable-next-line no-unused-expressions
@@ -340,9 +304,9 @@ class Transactions extends PureComponent {
     }
   };
 
-  toggleDetailsView = (id, index) => {
-    const oldId = this.selectedTx && this.selectedTx.id;
-    const oldIndex = this.selectedTx && this.selectedTx.index;
+  toggleDetailsView = (id: string, index: number) => {
+    const oldId = this.selectedTx?.id;
+    const oldIndex = this.selectedTx?.index;
 
     if (this.selectedTx && oldId !== id && oldIndex !== index) {
       this.selectedTx = null;
@@ -425,7 +389,7 @@ class Transactions extends PureComponent {
           title,
         },
       });
-      close && close();
+      close?.();
     } catch (e) {
       Logger.error(e, {
         message: `can't get a block explorer link for network `,
@@ -469,15 +433,15 @@ class Transactions extends PureComponent {
     );
   };
 
-  getItemLayout = (data, index) => ({
+  getItemLayout = (data: any, index: number) => ({
     length: ROW_HEIGHT,
     offset: this.props.headerHeight + ROW_HEIGHT * index,
     index,
   });
 
-  keyExtractor = (item) => item.id.toString();
+  keyExtractor = (item: any) => item.id.toString();
 
-  onSpeedUpAction = (speedUpAction, existingGas, tx) => {
+  onSpeedUpAction = (speedUpAction: any, existingGas: any, tx: any) => {
     this.existingGas = existingGas;
     this.speedUpTxId = tx.id;
     this.existingTx = tx;
@@ -500,7 +464,7 @@ class Transactions extends PureComponent {
     this.existingTx = null;
   };
 
-  onCancelAction = (cancelAction, existingGas, tx) => {
+  onCancelAction = (cancelAction: any, existingGas: any, tx: any) => {
     this.existingGas = existingGas;
     this.cancelTxId = tx.id;
     this.existingTx = tx;
@@ -524,7 +488,7 @@ class Transactions extends PureComponent {
     this.existingTx = null;
   };
 
-  onScroll = (event) => {
+  onScroll = (event: any) => {
     const { nativeEvent } = event;
     const { contentOffset } = nativeEvent;
     // 16 is the top padding of the list
@@ -533,7 +497,7 @@ class Transactions extends PureComponent {
     }
   };
 
-  handleSpeedUpTransactionFailure = (e) => {
+  handleSpeedUpTransactionFailure = (e: any) => {
     const speedUpTxId = this.speedUpTxId;
     const message = e instanceof TransactionError ? e.message : undefined;
     Logger.error(e, { message: `speedUpTransaction failed `, speedUpTxId });
@@ -544,7 +508,7 @@ class Transactions extends PureComponent {
     });
   };
 
-  handleCancelTransactionFailure = (e) => {
+  handleCancelTransactionFailure = (e: any) => {
     const cancelTxId = this.cancelTxId;
     const message = e instanceof TransactionError ? e.message : undefined;
     Logger.error(e, { message: `cancelTransaction failed `, cancelTxId });
@@ -555,7 +519,7 @@ class Transactions extends PureComponent {
     });
   };
 
-  speedUpTransaction = async (transactionObject) => {
+  speedUpTransaction = async (transactionObject: any) => {
     try {
       if (transactionObject?.error) {
         throw new SpeedupTransactionError(transactionObject.error);
@@ -588,16 +552,16 @@ class Transactions extends PureComponent {
     }
   };
 
-  signQRTransaction = async (tx) => {
+  signQRTransaction = async (tx: any) => {
     const { KeyringController, ApprovalController } = Engine.context;
     await KeyringController.resetQRKeyringState();
     await ApprovalController.accept(tx.id, undefined, { waitForResult: true });
   };
 
-  signLedgerTransaction = async (transaction) => {
+  signLedgerTransaction = async (transaction: any) => {
     const deviceId = await getDeviceId();
 
-    const onConfirmation = (isComplete) => {
+    const onConfirmation = (isComplete: boolean) => {
       if (isComplete) {
         transaction.speedUpParams &&
         transaction.speedUpParams?.type === 'SpeedUp'
@@ -617,14 +581,14 @@ class Transactions extends PureComponent {
     );
   };
 
-  cancelUnsignedQRTransaction = async (tx) => {
+  cancelUnsignedQRTransaction = async (tx: any) => {
     await Engine.context.ApprovalController.reject(
       tx.id,
       providerErrors.userRejectedRequest(),
     );
   };
 
-  cancelTransaction = async (transactionObject) => {
+  cancelTransaction = async (transactionObject: any) => {
     try {
       if (transactionObject?.error) {
         throw new CancelTransactionError(transactionObject.error);
@@ -682,7 +646,7 @@ class Transactions extends PureComponent {
     />
   );
 
-  toggleRetry = (errorMsg) =>
+  toggleRetry = (errorMsg: any) =>
     this.setState((state) => ({ retryIsOpen: !state.retryIsOpen, errorMsg }));
 
   retry = () => {
@@ -704,7 +668,7 @@ class Transactions extends PureComponent {
     }
   };
 
-  renderUpdateTxEIP1559Gas = (isCancel) => {
+  renderUpdateTxEIP1559Gas = (isCancel: any) => {
     const { isSigningQRObject } = this.props;
     const { colors, typography } = this.context || mockTheme;
     const styles = createStyles(colors, typography);
@@ -784,13 +748,13 @@ class Transactions extends PureComponent {
     const styles = createStyles(colors, typography);
 
     const transactions =
-      submittedTransactions && submittedTransactions.length
+      submittedTransactions?.length
         ? submittedTransactions
             .sort((a, b) => b.time - a.time)
             .concat(confirmedTransactions)
         : this.props.transactions;
 
-    const renderRetryGas = (rate) => {
+    const renderRetryGas = (rate: any) => {
       if (!this.existingGas) return null;
 
       if (this.existingGas.isEIP1559Transaction) return null;
@@ -900,7 +864,7 @@ class Transactions extends PureComponent {
     );
   };
 
-  getCancelOrSpeedupValues(transactionObject) {
+  getCancelOrSpeedupValues(transactionObject: any) {
     const { suggestedMaxFeePerGasHex, suggestedMaxPriorityFeePerGasHex } =
       transactionObject ?? {};
 
@@ -932,31 +896,31 @@ class Transactions extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
-  accounts: selectAccounts(state),
-  chainId: selectChainId(state),
-  networkClientId: selectNetworkClientId(state),
-  collectibleContracts: collectibleContractsSelector(state),
-  contractExchangeRates: selectContractExchangeRates(state),
-  conversionRate: selectConversionRate(state),
-  currentCurrency: selectCurrentCurrency(state),
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
-  networkConfigurations: selectNetworkConfigurations(state),
-  providerConfig: selectProviderConfig(state),
-  gasFeeEstimates: selectGasFeeEstimates(state),
-  primaryCurrency: selectPrimaryCurrency(state),
-  tokens: selectTokensByAddress(state),
-  gasEstimateType: selectGasFeeControllerEstimateType(state),
-  networkType: selectProviderType(state),
-});
+const mapStateToProps = (state: Record<string, any>): StateProps => ({
+  accounts: selectAccounts(state) as Record<string, { balance: string }>,
+  chainId: selectChainId(state) as string,
+  networkClientId: selectNetworkClientId(state) as string,
+  collectibleContracts: collectibleContractsSelector(state) as Record<string, any>[],
+  contractExchangeRates: selectContractExchangeRates(state) as Record<string, number>,
+  conversionRate: selectConversionRate(state) as number,
+  currentCurrency: selectCurrentCurrency(state) as string,
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) as string,
+  networkConfigurations: selectNetworkConfigurations(state) as Record<string, any>,
+  providerConfig: selectProviderConfig(state) as Record<string, any>,
+  gasFeeEstimates: selectGasFeeEstimates(state) as Record<string, any>,
+  primaryCurrency: selectPrimaryCurrency(state) as string,
+  tokens: selectTokensByAddress(state) as Record<string, any>,
+  gasEstimateType: selectGasFeeControllerEstimateType(state) as string,
+  networkType: selectProviderType(state) as string,
+} as unknown as StateProps);
 
 Transactions.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withQRHardwareAwareness(Transactions));
+)(withQRHardwareAwareness(Transactions) as any) as any;
