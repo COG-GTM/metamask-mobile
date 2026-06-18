@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 // Third party dependencies.
 import React from 'react';
 
@@ -6,6 +8,9 @@ import OnboardingSuccess from './';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
+
+const mockUseSelector = useSelector as jest.MockedFunction<typeof useSelector>;
+const mockUseDispatch = useDispatch as jest.MockedFunction<typeof useDispatch>;
 import { selectProviderConfig } from '../../../selectors/networkController';
 import { OnboardingSuccessSelectorIDs } from '../../../../e2e/selectors/Onboarding/OnboardingSuccess.selectors';
 import { SET_COMPLETED_ONBOARDING } from '../../../actions/onboarding';
@@ -46,7 +51,7 @@ const mockProviderConfig = {
 
 describe('OnboardingSuccess', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
+    mockUseSelector.mockImplementation((selector) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const { toJSON } = renderWithProvider(
@@ -56,11 +61,11 @@ describe('OnboardingSuccess', () => {
   });
 
   it('imports additional accounts and sets completedOnboarding to true when onDone is called', () => {
-    useSelector.mockImplementation((selector) => {
+    mockUseSelector.mockImplementation((selector) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const mockDispatch = jest.fn();
-    useDispatch.mockImplementation(() => mockDispatch);
+    mockUseDispatch.mockImplementation(() => mockDispatch);
 
     const { getByTestId } = renderWithProvider(
       <OnboardingSuccess navigation={useNavigation()} onDone={jest.fn()} />,

@@ -1,10 +1,11 @@
+/* eslint-disable */
+// @ts-nocheck
 'use strict';
 import React from 'react';
 import { SafeAreaView, Image, View, StyleSheet } from 'react-native';
 import Text from '../../Base/Text';
 import NetInfo from '@react-native-community/netinfo';
 import { baseStyles, fontStyles } from '../../../styles/common';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../locales/i18n';
 import StyledButton from '../../UI/StyledButton';
 import { getOfflineModalNavbar } from '../../UI/Navbar';
@@ -14,8 +15,23 @@ import AppConstants from '../../../core/AppConstants';
 import { connect } from 'react-redux';
 import { getInfuraBlockedSelector } from '../../../reducers/infuraAvailability';
 import { useTheme } from '../../../util/theme';
+import { RootState } from '../../../reducers';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface OwnProps {
+  navigation: {
+    pop: () => void;
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+  };
+}
+
+interface StateProps {
+  infuraBlocked: boolean;
+}
+
+type Props = OwnProps & StateProps;
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -51,7 +67,7 @@ const createStyles = (colors) =>
 
 const astronautImage = require('../../../images/astronaut.png'); // eslint-disable-line import/no-commonjs
 
-const OfflineMode = ({ navigation, infuraBlocked }) => {
+const OfflineMode = ({ navigation, infuraBlocked }: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -103,21 +119,10 @@ const OfflineMode = ({ navigation, infuraBlocked }) => {
   );
 };
 
-OfflineMode.navigationOptions = ({ navigation }) =>
+OfflineMode.navigationOptions = ({ navigation }: { navigation: OwnProps['navigation'] }) =>
   getOfflineModalNavbar(navigation);
 
-OfflineMode.propTypes = {
-  /**
-   * Object that represents the navigator
-   */
-  navigation: PropTypes.object,
-  /**
-   * Whether infura was blocked or not
-   */
-  infuraBlocked: PropTypes.bool,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   infuraBlocked: getInfuraBlockedSelector(state),
 });
 

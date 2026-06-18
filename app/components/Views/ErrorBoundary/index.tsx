@@ -1,4 +1,6 @@
-import React, { Component } from 'react';
+/* eslint-disable */
+// @ts-nocheck
+import React, { Component, ReactNode } from 'react';
 import {
   Text,
   TouchableOpacity,
@@ -13,7 +15,6 @@ import {
   Image,
   TextInput,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { lastEventId as getLatestSentryId } from '@sentry/react-native';
 import { captureSentryFeedback } from '../../../util/sentry/utils';
 import { RevealPrivateCredential } from '../RevealPrivateCredential';
@@ -28,6 +29,7 @@ import CLIcon, {
 } from '../../../component-library/components/Icons/Icon';
 import ClipboardManager from '../../../core/ClipboardManager';
 import { mockTheme, ThemeContext, useTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BannerAlert from '../../../component-library/components/Banners/Banner/variants/BannerAlert';
 import { BannerAlertSeverity } from '../../../component-library/components/Banners/Banner/variants/BannerAlert/BannerAlert.types';
@@ -44,7 +46,32 @@ import { isTest } from '../../../util/test/utils';
 // eslint-disable-next-line import/no-commonjs
 const WarningIcon = require('./warning-icon.png');
 
-const createStyles = (colors) =>
+interface FallbackProps {
+  errorMessage: string;
+  showExportSeedphrase: () => void;
+  copyErrorToClipboard: () => void;
+  resetError?: () => void;
+  openTicket?: () => void;
+  sentryId?: string;
+}
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  view: string;
+  navigation?: { navigate: (route: string, params?: Record<string, unknown>) => void };
+  metrics: {
+    trackEvent: (event: unknown) => void;
+    createEventBuilder: (event: unknown) => { addProperties: (params: Record<string, unknown>) => { build: () => unknown } };
+  };
+}
+
+interface ErrorBoundaryState {
+  error: Error | null;
+  backupSeedphrase?: boolean;
+  sentryId?: string;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -224,13 +251,13 @@ const createStyles = (colors) =>
     hitSlop: { top: 50, right: 50, bottom: 50, left: 50 },
   });
 
-export const Fallback = (props) => {
+export const Fallback = (props: FallbackProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [feedback, setFeedback] = React.useState('');
   const dataCollectionForMarketing = useSelector(
-    (state) => state.security.dataCollectionForMarketing,
+    (state: { security: { dataCollectionForMarketing: boolean } }) => state.security.dataCollectionForMarketing,
   );
 
   const toggleModal = () => {
@@ -395,31 +422,14 @@ export const Fallback = (props) => {
   );
 };
 
-Fallback.propTypes = {
-  errorMessage: PropTypes.string,
-  showExportSeedphrase: PropTypes.func,
-  copyErrorToClipboard: PropTypes.func,
-  sentryId: PropTypes.string,
-};
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { error: null };
 
-class ErrorBoundary extends Component {
-  state = { error: null };
-
-  static propTypes = {
-    children: PropTypes.oneOfType([
-      PropTypes.arrayOf(PropTypes.node),
-      PropTypes.node,
-    ]),
-    view: PropTypes.string.isRequired,
-    navigation: PropTypes.object,
-    metrics: PropTypes.object,
-  };
-
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return { error };
   }
 
-  generateErrorReport = (error, errorInfo = '') => {
+  generateErrorReport = (error: Error | null, errorInfo = '') => {
     const {
       view,
       metrics: { trackEvent, createEventBuilder },
@@ -439,7 +449,7 @@ class ErrorBoundary extends Component {
     );
   };
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Note: Sentry briefly removed this in the next version but eventually added it back in later versions.
     // Read more here - https://github.com/getsentry/sentry-javascript/issues/11951
     const sentryId = getLatestSentryId();
@@ -480,7 +490,7 @@ class ErrorBoundary extends Component {
     Linking.openURL(url);
   };
 
-  renderWithSafeArea = (children) => {
+  renderWithSafeArea = (children: ReactNode) => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 

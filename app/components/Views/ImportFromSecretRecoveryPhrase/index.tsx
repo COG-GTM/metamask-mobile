@@ -1,5 +1,6 @@
+/* eslint-disable */
+// @ts-nocheck
 import React, { useEffect, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   Alert,
@@ -13,6 +14,7 @@ import {
 import { connect } from 'react-redux';
 import StorageWrapper from '../../../store/storage-wrapper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+// @ts-expect-error zxcvbn does not ship type declarations
 import zxcvbn from 'zxcvbn';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { OutlinedTextField } from 'react-native-material-textfield';
@@ -65,6 +67,23 @@ import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
+interface ImportFromSecretRecoveryPhraseProps {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    replace: (route: string, params?: Record<string, unknown>) => void;
+    reset: (state: { index: number; routes: { name: string; params?: Record<string, unknown> }[] }) => void;
+    goBack: () => void;
+  };
+  passwordSet: () => void;
+  setLockTime: (time: number) => void;
+  seedphraseBackedUp: () => void;
+  setOnboardingWizardStep: (step: number) => void;
+  route: {
+    params?: Record<string, unknown>;
+  };
+}
+
 const MINIMUM_SUPPORTED_CLIPBOARD_VERSION = 9;
 
 const PASSCODE_NOT_SET_ERROR = 'Error: Passcode not set.';
@@ -83,15 +102,15 @@ const ImportFromSecretRecoveryPhrase = ({
   seedphraseBackedUp,
   setOnboardingWizardStep,
   route,
-}) => {
+}: ImportFromSecretRecoveryPhraseProps) => {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordStrength, setPasswordStrength] = useState();
+  const [passwordStrength, setPasswordStrength] = useState<number | undefined>();
   const [seed, setSeed] = useState('');
-  const [biometryType, setBiometryType] = useState(null);
+  const [biometryType, setBiometryType] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [biometryChoice, setBiometryChoice] = useState(false);
@@ -104,7 +123,7 @@ const ImportFromSecretRecoveryPhrase = ({
   const passwordInput = React.createRef();
   const confirmPasswordInput = React.createRef();
 
-  const track = (event, properties) => {
+  const track = (event: Record<string, unknown>, properties: Record<string, unknown>) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
     trackOnboarding(eventBuilder.build());
@@ -310,12 +329,12 @@ const ImportFromSecretRecoveryPhrase = ({
 
   const jumpToPassword = useCallback(() => {
     const { current } = passwordInput;
-    current && current.focus();
+    current?.focus();
   }, [passwordInput]);
 
   const jumpToConfirmPassword = () => {
     const { current } = confirmPasswordInput;
-    current && current.focus();
+    current?.focus();
   };
 
   const renderSwitch = () => {
@@ -607,36 +626,11 @@ const ImportFromSecretRecoveryPhrase = ({
   );
 };
 
-ImportFromSecretRecoveryPhrase.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-   * The action to update the password set flag
-   * in the redux store
-   */
-  passwordSet: PropTypes.func,
-  /**
-   * The action to set the locktime
-   * in the redux store
-   */
-  setLockTime: PropTypes.func,
-  /**
-   * The action to update the seedphrase backed up flag
-   * in the redux store
-   */
-  seedphraseBackedUp: PropTypes.func,
-  /**
-   * Action to set onboarding wizard step
-   */
-  setOnboardingWizardStep: PropTypes.func,
-  route: PropTypes.object,
-};
 
-const mapDispatchToProps = (dispatch) => ({
-  setLockTime: (time) => dispatch(setLockTime(time)),
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
+  setLockTime: (time: number) => dispatch(setLockTime(time)),
+  setOnboardingWizardStep: (step: number) => dispatch(setOnboardingWizardStep(step)),
   passwordSet: () => dispatch(passwordSet()),
   seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
 });

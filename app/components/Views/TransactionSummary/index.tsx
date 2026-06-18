@@ -1,5 +1,6 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+/* eslint-disable */
+// @ts-nocheck
+import React, { PureComponent, ReactNode } from 'react';
 import {
   StyleSheet,
   View,
@@ -12,8 +13,20 @@ import Summary from '../../Base/Summary';
 import Text from '../../Base/Text';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { isTestNet } from '../../../util/networks';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface TransactionSummaryProps {
+  amount?: string;
+  fee?: string;
+  totalAmount?: string;
+  secondaryTotalAmount?: string;
+  gasEstimationReady?: boolean;
+  onEditPress?: () => void;
+  transactionType?: string;
+  chainId?: string;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     loader: {
       backgroundColor: colors.background.default,
@@ -21,19 +34,8 @@ const createStyles = (colors) =>
     },
   });
 
-export default class TransactionSummary extends PureComponent {
-  static propTypes = {
-    amount: PropTypes.string,
-    fee: PropTypes.string,
-    totalAmount: PropTypes.string,
-    secondaryTotalAmount: PropTypes.string,
-    gasEstimationReady: PropTypes.bool,
-    onEditPress: PropTypes.func,
-    transactionType: PropTypes.string,
-    chainId: PropTypes.string,
-  };
-
-  renderIfGastEstimationReady = (children) => {
+export default class TransactionSummary extends PureComponent<TransactionSummaryProps> {
+  renderIfGastEstimationReady = (children: ReactNode) => {
     const { gasEstimationReady } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);

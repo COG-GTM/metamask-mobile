@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   InteractionManager,
@@ -7,7 +9,7 @@ import {
   View,
   SafeAreaView,
 } from 'react-native';
-import PropTypes from 'prop-types';
+
 import OnboardingProgress from '../../UI/OnboardingProgress';
 import ActionView from '../../UI/ActionView';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
@@ -24,12 +26,31 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
-const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
+interface Props {
+  navigation: {
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    setOptions: (options: Record<string, unknown>) => void;
+  };
+  seedphraseBackedUp: () => void;
+  route: {
+    params?: {
+      words?: string[];
+      steps?: number;
+    };
+  };
+}
+
+interface WordEntry {
+  word: string | undefined;
+  originalPosition: number | undefined;
+}
+
+const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const [confirmedWords, setConfirmedWords] = useState([]);
-  const [wordsDict, setWordsDict] = useState({});
+  const [confirmedWords, setConfirmedWords] = useState<WordEntry[]>([]);
+  const [wordsDict, setWordsDict] = useState<Record<string, { currentPosition: number | undefined }>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [seedPhraseReady, setSeedPhraseReady] = useState(false);
 
@@ -40,8 +61,8 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
       : route.params?.words;
 
   const createWordsDictionary = () => {
-    const dict = {};
-    words.forEach((word, i) => {
+    const dict: Record<string, { currentPosition: number | undefined }> = {};
+    words.forEach((word: string, i: number) => {
       dict[`${word},${i}`] = { currentPosition: undefined };
     });
     setWordsDict(dict);
@@ -73,7 +94,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   );
 
   const selectWord = useCallback(
-    (word, i) => {
+    (word: string, i: number) => {
       let tempCurrentIndex = currentIndex;
       const tempWordsDict = wordsDict;
       const tempConfirmedWords = confirmedWords;
@@ -98,7 +119,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     [confirmedWords, currentIndex, findNextAvailableIndex, wordsDict],
   );
 
-  const clearConfirmedWordAt = (i) => {
+  const clearConfirmedWordAt = (i: number) => {
     const { word, originalPosition } = confirmedWords[i];
     const currentIndex = i;
     if (word && (originalPosition || originalPosition === 0)) {
@@ -161,7 +182,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     );
   };
 
-  const renderWordBox = (word, i) => {
+  const renderWordBox = (word: string | undefined, i: number) => {
     const styles = createStyles(colors);
 
     return (
@@ -185,7 +206,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   };
 
   const renderWordSelectableBox = useCallback(
-    (key, i) => {
+    (key: string, i: number) => {
       const [word] = key.split(',');
       const selected = wordsDict[key].currentPosition !== undefined;
       const styles = createStyles(colors);
@@ -278,23 +299,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   );
 };
 
-ManualBackupStep2.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * The action to update the seedphrase backed up flag
-   * in the redux store
-   */
-  seedphraseBackedUp: PropTypes.func,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-};
-
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
   seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
 });
 

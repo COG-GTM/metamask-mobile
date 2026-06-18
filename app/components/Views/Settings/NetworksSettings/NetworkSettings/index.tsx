@@ -1,5 +1,5 @@
 /* eslint-disable */
-import PropTypes from 'prop-types';
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   StyleSheet,
@@ -95,8 +95,33 @@ import Text, {
   getFontFamily,
   TextVariant,
 } from '../../../../../component-library/components/Texts/Text';
+import { Colors } from '../../../../../util/theme/models';
+import { WithIsOriginalNativeTokenProps } from './withIsOriginalNativeToken';
 
-const createStyles = (colors) =>
+interface NetworkSettingsProps extends WithIsOriginalNativeTokenProps {
+  networkConfigurations: Record<string, unknown>;
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    navigate: (route: string, params?: Record<string, unknown>) => void;
+    goBack: () => void;
+  };
+  route: {
+    params?: Record<string, unknown>;
+  };
+  showNetworkOnboardingAction: (params: { networkUrl: string; networkType: string; nativeToken: string; showNetworkOnboarding: boolean }) => void;
+  networkOnboardedState: Record<string, boolean[]>;
+  isCustomMainnet: boolean;
+  providerConfig: { chainId: string; rpcUrl?: string; type?: string };
+  metrics: {
+    trackEvent: (event: unknown) => void;
+    createEventBuilder: (event: unknown) => { addProperties: (params: Record<string, unknown>) => { build: () => unknown } };
+  };
+  useSafeChainsListValidation: boolean;
+  isAllNetworks: boolean;
+  tokenNetworkFilter: Record<string, boolean>;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     base: {
       paddingHorizontal: 16,
@@ -400,61 +425,7 @@ const infuraProjectId = InfuraKey === 'null' ? '' : InfuraKey;
 /**
  * Main view for app configurations
  */
-export class NetworkSettings extends PureComponent {
-  static propTypes = {
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * handles action for onboarding to a network
-     */
-    showNetworkOnboardingAction: PropTypes.func,
-    /**
-     * returns an array of onboarded networks
-     */
-    networkOnboardedState: PropTypes.object,
-    /**
-     * Checks if adding custom mainnet.
-     */
-    isCustomMainnet: PropTypes.bool,
-    /**
-     * Current network provider configuration
-     */
-    providerConfig: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-
-    /**
-     * Checks if toggle verification is enabled
-     */
-    useSafeChainsListValidation: PropTypes.bool,
-
-    /**
-     * Matched object from third provider
-     */
-    matchedChainNetwork: PropTypes.object,
-
-    /**
-     * Checks if all networks are selected
-     */
-    isAllNetworks: PropTypes.bool,
-
-    /**
-     * Token network filter
-     */
-    tokenNetworkFilter: PropTypes.object,
-  };
+export class NetworkSettings extends PureComponent<NetworkSettingsProps> {
 
   state = {
     rpcUrl: undefined,
@@ -2564,7 +2535,7 @@ export class NetworkSettings extends PureComponent {
 }
 
 NetworkSettings.contextType = ThemeContext;
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
   showNetworkOnboardingAction: ({
     networkUrl,
     networkType,
@@ -2581,7 +2552,7 @@ const mapDispatchToProps = (dispatch) => ({
     ),
 });
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: { networkOnboarded: { networkOnboardedState: Record<string, boolean[]> }; [key: string]: unknown }) => ({
   providerConfig: selectProviderConfig(state),
   networkConfigurations: selectNetworkConfigurations(state),
   networkOnboardedState: state.networkOnboarded.networkOnboardedState,

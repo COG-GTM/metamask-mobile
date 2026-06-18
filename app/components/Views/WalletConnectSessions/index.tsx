@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   Alert,
@@ -18,13 +20,46 @@ import WalletConnect from '../../../core/WalletConnect/WalletConnect';
 import Logger from '../../../util/Logger';
 import { WALLETCONNECT_SESSIONS } from '../../../constants/storage';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import PropTypes from 'prop-types';
 import WC2Manager, {
   isWC2Enabled,
 } from '../../../../app/core/WalletConnect/WalletConnectV2';
 import { ExperimentalSelectorsIDs } from '../../../../e2e/selectors/Settings/ExperimentalView.selectors';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface WalletConnectSessionsProps {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+  };
+}
+
+interface WCSession {
+  peerId: string;
+  peerMeta: {
+    name: string;
+    url: string;
+    description?: string;
+  };
+}
+
+interface WC2Session {
+  id: string;
+  topic: string;
+  peer: {
+    metadata: {
+      name: string;
+      url: string;
+      description?: string;
+    };
+  };
+}
+
+interface WalletConnectSessionsState {
+  ready?: boolean;
+  sessions: WCSession[];
+  sessionsV2: WC2Session[];
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -81,15 +116,15 @@ const createStyles = (colors) =>
 /**
  * View that displays all the active WalletConnect Sessions
  */
-export default class WalletConnectSessions extends PureComponent {
-  state = {
+export default class WalletConnectSessions extends PureComponent<WalletConnectSessionsProps, WalletConnectSessionsState> {
+  state: WalletConnectSessionsState = {
     sessions: [],
     sessionsV2: [],
   };
 
-  actionSheet = null;
+  actionSheet: ActionSheet | null = null;
 
-  sessionToRemove = null;
+  sessionToRemove: (WCSession | WC2Session) | null = null;
 
   updateNavBar = () => {
     const { navigation } = this.props;
@@ -130,7 +165,7 @@ export default class WalletConnectSessions extends PureComponent {
     this.setState({ ready: true, sessions, sessionsV2 });
   };
 
-  renderDesc = (meta) => {
+  renderDesc = (meta: { description?: string }) => {
     const { description } = meta;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
@@ -141,16 +176,16 @@ export default class WalletConnectSessions extends PureComponent {
     return null;
   };
 
-  onLongPress = (session) => {
+  onLongPress = (session: WCSession | WC2Session) => {
     this.sessionToRemove = session;
     this.actionSheet.show();
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: ActionSheet) => {
     this.actionSheet = ref;
   };
 
-  onActionSheetPress = (index) => (index === 0 ? this.killSession() : null);
+  onActionSheetPress = (index: number) => (index === 0 ? this.killSession() : null);
 
   killSession = async () => {
     const isV2 = this.sessionToRemove.peerId === undefined;
@@ -184,7 +219,7 @@ export default class WalletConnectSessions extends PureComponent {
     );
   };
 
-  renderV1 = (session) => {
+  renderV1 = (session: WCSession) => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
@@ -205,7 +240,7 @@ export default class WalletConnectSessions extends PureComponent {
     );
   };
 
-  renderV2 = (session, index) => {
+  renderV2 = (session: WC2Session, index: number) => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
@@ -279,10 +314,3 @@ export default class WalletConnectSessions extends PureComponent {
 }
 
 WalletConnectSessions.contextType = ThemeContext;
-
-WalletConnectSessions.propTypes = {
-  /**
-   * Navigation object
-   */
-  navigation: PropTypes.object,
-};

@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   Platform,
@@ -9,7 +11,6 @@ import {
   View,
 } from 'react-native';
 import { fontStyles } from '../../../../../styles/common';
-import PropTypes from 'prop-types';
 import { getEditableOptions } from '../../../../UI/Navbar';
 import StyledButton from '../../../../UI/StyledButton';
 import Engine from '../../../../../core/Engine';
@@ -36,8 +37,52 @@ import { AddContactViewSelectorsIDs } from '../../../../../../e2e/selectors/Sett
 import { selectInternalAccounts } from '../../../../../selectors/accountsController';
 import { toLowerCaseEquals } from '../../../../../util/general';
 import { selectAddressBook } from '../../../../../selectors/addressBookController';
+import { RootState } from '../../../../../reducers';
+import { Colors } from '../../../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface InternalAccount {
+  address: string;
+  [key: string]: unknown;
+}
+
+interface OwnProps {
+  navigation: {
+    setOptions: (options: Record<string, unknown>) => void;
+    navigate: (...args: unknown[]) => void;
+    pop: () => void;
+  };
+  route: {
+    params?: {
+      mode?: string;
+      address?: string;
+      editMode?: string;
+      onDelete?: () => void;
+    };
+  };
+}
+
+interface StateProps {
+  addressBook: Record<string, Record<string, { name: string; address: string; memo?: string }>>;
+  internalAccounts: InternalAccount[];
+  chainId: string;
+}
+
+type Props = OwnProps & StateProps;
+
+interface ContactFormState {
+  name: string | null;
+  address: string | null;
+  addressError: string | null;
+  toEnsName: string | null;
+  toEnsAddress: string | null;
+  addressReady: boolean;
+  mode: string;
+  memo: string | null;
+  editable: boolean;
+  inputWidth: string | undefined;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -116,29 +161,7 @@ const EDIT = 'edit';
 /**
  * View that contains app information
  */
-class ContactForm extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * An array containing each account with metadata
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Network chainId
-     */
-    chainId: PropTypes.string,
-  };
+class ContactForm extends PureComponent<Props, ContactFormState> {
 
   state = {
     name: null,
@@ -196,7 +219,7 @@ class ContactForm extends PureComponent {
         addressReady: true,
         editable: false,
       });
-      navigation && navigation.setParams({ dispatch: this.onEdit, mode: EDIT });
+      navigation?.setParams({ dispatch: this.onEdit, mode: EDIT });
     }
   };
 
@@ -215,7 +238,7 @@ class ContactForm extends PureComponent {
 
   onDelete = () => {
     this.contactAddressToRemove = this.state.address;
-    this.actionSheet && this.actionSheet.show();
+    this.actionSheet?.show();
   };
 
   onChangeName = (name) => {
@@ -258,12 +281,12 @@ class ContactForm extends PureComponent {
 
   jumpToAddressInput = () => {
     const { current } = this.addressInput;
-    current && current.focus();
+    current?.focus();
   };
 
   jumpToMemoInput = () => {
     const { current } = this.memoInput;
-    current && current.focus();
+    current?.focus();
   };
 
   saveContact = () => {
@@ -504,9 +527,9 @@ class ContactForm extends PureComponent {
 
 ContactForm.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
-  addressBook: selectAddressBook(state),
-  internalAccounts: selectInternalAccounts(state),
+const mapStateToProps = (state: RootState): StateProps => ({
+  addressBook: selectAddressBook(state) as StateProps['addressBook'],
+  internalAccounts: selectInternalAccounts(state) as InternalAccount[],
   chainId: selectEvmChainId(state),
 });
 

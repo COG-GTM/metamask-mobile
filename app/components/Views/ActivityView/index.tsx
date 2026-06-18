@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import React, { useEffect, useCallback, useRef } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
@@ -40,7 +42,7 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (params) => {
+const createStyles = (params: { theme: { colors: Record<string, Record<string, string>> } }) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({

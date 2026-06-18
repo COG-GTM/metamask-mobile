@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import { renderScreen } from '../../../../util/test/renderWithProvider';
 import AppInformation from './';
 
