@@ -25,9 +25,9 @@ export function addBookmark(bookmark: Bookmark): AddBookmarkAction {
   };
 }
 
-export function removeBookmark(bookmark: Bookmark): RemoveBookmarkAction {
+export function removeBookmark(bookmark: { url?: string; name?: string; [key: string]: unknown }): RemoveBookmarkAction {
   return {
     type: REMOVE_BOOKMARK,
-    bookmark,
+    bookmark: bookmark as Bookmark,
   };
 }

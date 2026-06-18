@@ -20,7 +20,7 @@ interface ClearHostsAction {
 
 interface RecordSRPRevealTimestampAction {
   type: typeof RECORD_SRP_REVEAL_TIMESTAMP;
-  timestamp: number;
+  timestamp: string | number;
 }
 
 export type PrivacyAction =
@@ -44,7 +44,7 @@ export function rejectHost(hostname: string): RejectHostAction {
 }
 
 export function recordSRPRevealTimestamp(
-  timestamp: number,
+  timestamp: string | number,
 ): RecordSRPRevealTimestampAction {
   return {
     type: RECORD_SRP_REVEAL_TIMESTAMP,

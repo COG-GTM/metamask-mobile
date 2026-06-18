@@ -26,9 +26,13 @@ export interface SelectedAsset {
   symbol?: string;
   address?: string;
   decimals?: number;
-  image?: string;
-  name?: string;
-  [key: string]: unknown;
+  image?: string | null;
+  name?: string | null;
+  logo?: string;
+  standard?: string | null;
+  favorite?: boolean;
+  contractName?: string | null;
+  isCurrentlyOwned?: boolean;
 }
 
 export interface TransactionData {
@@ -40,7 +44,6 @@ export interface TransactionData {
   value?: string;
   maxFeePerGas?: string;
   maxPriorityFeePerGas?: string;
-  [key: string]: unknown;
 }
 
 type AssetType = typeof ETH | typeof ERC20 | typeof ERC721;
@@ -77,7 +80,7 @@ interface PrepareTransactionAction {
 
 interface SetTransactionSecurityAlertResponseAction {
   type: typeof SET_TRANSACTION_SECURITY_ALERT_RESPONSE;
-  transactionId: string;
+  transactionId: string | undefined;
   securityAlertResponse: unknown;
 }
 
@@ -225,7 +228,7 @@ export function prepareTransaction(
 }
 
 export function setTransactionSecurityAlertResponse(
-  transactionId: string,
+  transactionId: string | undefined,
   securityAlertResponse: unknown,
 ): SetTransactionSecurityAlertResponseAction {
   return {

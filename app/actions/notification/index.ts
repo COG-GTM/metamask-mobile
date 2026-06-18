@@ -24,14 +24,14 @@ interface HideNotificationByIdAction {
 
 interface ModifyOrShowTransactionNotificationAction {
   type: typeof ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION;
-  autodismiss: number;
+  autodismiss: number | boolean;
   transaction: TransactionPayload;
   status: string;
 }
 
 interface ModifyOrShowSimpleNotificationAction {
   type: typeof ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION;
-  autodismiss: number;
+  autodismiss: number | boolean;
   title: string;
   description: string;
   status: string;
@@ -55,7 +55,7 @@ interface RemoveCurrentNotificationAction {
 interface ShowSimpleNotificationAction {
   type: typeof ACTIONS.SHOW_SIMPLE_NOTIFICATION;
   id: string;
-  autodismiss: number;
+  autodismiss: number | boolean;
   title: string;
   description: string;
   status: string;
@@ -63,7 +63,7 @@ interface ShowSimpleNotificationAction {
 
 interface ShowTransactionNotificationAction {
   type: typeof ACTIONS.SHOW_TRANSACTION_NOTIFICATION;
-  autodismiss: number;
+  autodismiss: number | boolean;
   transaction: TransactionPayload;
   status: string;
 }
@@ -104,7 +104,7 @@ export function modifyOrShowTransactionNotificationById({
   transaction,
   status,
 }: {
-  autodismiss: number;
+  autodismiss: number | boolean;
   transaction: TransactionPayload;
   status: string;
 }): ModifyOrShowTransactionNotificationAction {
@@ -122,7 +122,7 @@ export function modifyOrShowSimpleNotificationById({
   description,
   status,
 }: {
-  autodismiss: number;
+  autodismiss: number | boolean;
   title: string;
   description: string;
   status: string;
@@ -168,7 +168,7 @@ export function showSimpleNotification({
   status,
   id,
 }: {
-  autodismiss: number;
+  autodismiss: number | boolean;
   title: string;
   description: string;
   status: string;
@@ -189,7 +189,7 @@ export function showTransactionNotification({
   transaction,
   status,
 }: {
-  autodismiss: number;
+  autodismiss: number | boolean;
   transaction: TransactionPayload;
   status: string;
 }): ShowTransactionNotificationAction {

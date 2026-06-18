@@ -159,7 +159,7 @@ describe('notifications reducer', () => {
         id,
       });
       const notification = state.notifications.find(
-        (notification) => notification.id === id,
+        (n) => n.id === id,
       );
       expect(notification?.isVisible).toBe(false);
     });
@@ -242,7 +242,7 @@ describe('notifications reducer', () => {
       });
 
       const replacedNotification = state.notifications.find(
-        (notification) => notification.id === notificationId,
+        (n) => n.id === notificationId,
       );
       expect(state.notifications.length).toBe(currentCount);
       expect(replacedNotification?.description).toEqual(

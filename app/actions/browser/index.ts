@@ -30,7 +30,7 @@ interface ClearHistoryAction {
   type: typeof CLEAR_BROWSER_HISTORY;
   id: number;
   metricsEnabled: boolean;
-  marketingEnabled: boolean;
+  marketingEnabled: boolean | null;
 }
 
 interface AddToWhitelistAction {
@@ -127,7 +127,7 @@ export function addToHistory({
  */
 export function clearHistory(
   metricsEnabled: boolean,
-  marketingEnabled: boolean,
+  marketingEnabled: boolean | null,
 ): ClearHistoryAction {
   return {
     type: CLEAR_BROWSER_HISTORY,

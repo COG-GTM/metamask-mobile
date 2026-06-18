@@ -10,15 +10,15 @@ export interface CollectibleIdentifier {
 
 interface AddFavoriteCollectibleAction {
   type: typeof ADD_FAVORITE_COLLECTIBLE;
-  selectedAddress: string;
-  chainId: string;
+  selectedAddress: string | undefined;
+  chainId: string | undefined;
   collectible: CollectibleIdentifier;
 }
 
 interface RemoveFavoriteCollectibleAction {
   type: typeof REMOVE_FAVORITE_COLLECTIBLE;
-  selectedAddress: string;
-  chainId: string;
+  selectedAddress: string | undefined;
+  chainId: string | undefined;
   collectible: CollectibleIdentifier;
 }
 
@@ -27,8 +27,8 @@ export type CollectibleAction =
   | RemoveFavoriteCollectibleAction;
 
 export const addFavoriteCollectible = (
-  selectedAddress: string,
-  chainId: string,
+  selectedAddress: string | undefined,
+  chainId: string | undefined,
   collectible: CollectibleIdentifier,
 ): AddFavoriteCollectibleAction => ({
   type: ADD_FAVORITE_COLLECTIBLE,
@@ -38,8 +38,8 @@ export const addFavoriteCollectible = (
 });
 
 export const removeFavoriteCollectible = (
-  selectedAddress: string,
-  chainId: string,
+  selectedAddress: string | undefined,
+  chainId: string | undefined,
   collectible: CollectibleIdentifier,
 ): RemoveFavoriteCollectibleAction => ({
   type: REMOVE_FAVORITE_COLLECTIBLE,

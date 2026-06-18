@@ -7,7 +7,7 @@ const { TRANSACTION, SIMPLE } = NotificationTypes;
 export interface NotificationItem {
   id: string;
   isVisible: boolean;
-  autodismiss: number;
+  autodismiss: number | boolean;
   type: string;
   title?: string;
   description?: string;
@@ -106,9 +106,9 @@ const notificationReducer = (
             {
               ...notifications[index],
               ...{
-                id: action.transaction!.id,
+                id: action.transaction?.id ?? '',
                 isVisible: true,
-                autodismiss: action.autodismiss!,
+                autodismiss: action.autodismiss ?? 5000,
                 transaction: action.transaction,
                 status: action.status,
                 type: TRANSACTION,
@@ -121,9 +121,9 @@ const notificationReducer = (
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.transaction!.id,
+          id: action.transaction?.id ?? '',
           isVisible: true,
-          autodismiss: action.autodismiss!,
+          autodismiss: action.autodismiss ?? 5000,
           transaction: action.transaction,
           status: action.status,
           type: TRANSACTION,
@@ -140,9 +140,9 @@ const notificationReducer = (
             {
               ...notifications[index],
               ...{
-                id: action.id!,
+                id: action.id ?? '',
                 isVisible: true,
-                autodismiss: action.autodismiss!,
+                autodismiss: action.autodismiss ?? 5000,
                 title: action.title,
                 description: action.description,
                 status: action.status,
@@ -156,9 +156,9 @@ const notificationReducer = (
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.id!,
+          id: action.id ?? '',
           isVisible: true,
-          autodismiss: action.autodismiss!,
+          autodismiss: action.autodismiss ?? 5000,
           title: action.title,
           description: action.description,
           status: action.status,
@@ -175,7 +175,7 @@ const notificationReducer = (
         ...state,
         notifications: [
           ...notifications.slice(0, index),
-          action.notification!,
+          action.notification ?? { id: '', isVisible: false, autodismiss: 0, type: '' },
           ...notifications.slice(index + 1),
         ],
       };
@@ -196,7 +196,7 @@ const notificationReducer = (
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.id!,
+          id: action.id ?? '',
           isVisible: true,
           autodismiss: action.autodismiss || 5000,
           title: action.title,
@@ -210,7 +210,7 @@ const notificationReducer = (
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.transaction!.id,
+          id: action.transaction?.id ?? '',
           isVisible: true,
           autodismiss: action.autodismiss || 5000,
           transaction: action.transaction,

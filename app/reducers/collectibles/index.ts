@@ -28,40 +28,40 @@ export const collectibleContractsSelector = createSelector(
   selectSelectedInternalAccountAddress,
   selectChainId,
   selectAllNftContracts,
-  (address: string, chainId: string, allNftContracts: Record<string, Record<string, unknown[]>>) =>
-    allNftContracts[address]?.[chainId] || [],
+  (address, chainId, allNftContracts) =>
+    (address ? allNftContracts[address]?.[chainId as `0x${string}`] : undefined) || [],
 );
 
 export const multichainCollectibleContractsSelector = createSelector(
   selectSelectedInternalAccountAddress,
   selectAllNftContracts,
-  (address: string, allNftContracts: Record<string, Record<string, unknown[]>>) => allNftContracts[address] || {},
+  (address, allNftContracts) => (address ? allNftContracts[address] : undefined) || {},
 );
 
 export const collectiblesSelector = createDeepEqualSelector(
   selectSelectedInternalAccountAddress,
   selectChainId,
   selectAllNfts,
-  (address: string, chainId: string, allNfts: Record<string, Record<string, unknown[]>>) => allNfts[address]?.[chainId] || [],
+  (address, chainId, allNfts) => (address ? allNfts[address]?.[chainId as `0x${string}`] : undefined) || [],
 );
 
 export const multichainCollectiblesSelector = createDeepEqualSelector(
   selectSelectedInternalAccountAddress,
   selectAllNfts,
-  (address: string, allNfts: Record<string, Record<string, unknown[]>>) => allNfts[address] || {},
+  (address, allNfts) => (address ? allNfts[address] : undefined) || {},
 );
 
 export const favoritesCollectiblesSelector = createSelector(
   selectSelectedInternalAccountAddress,
   selectChainId,
   favoritesSelector,
-  (address: string, chainId: string, favorites: Record<string, Record<string, CollectibleIdentifier[]>>) => favorites[address]?.[chainId] || [],
+  (address, chainId, favorites) => (address ? favorites[address]?.[chainId] : undefined) || [],
 );
 
 export const isCollectibleInFavoritesSelector = createSelector(
   favoritesCollectiblesSelector,
-  (state: RootState, collectible: CollectibleIdentifier) => collectible,
-  (favoriteCollectibles: CollectibleIdentifier[], collectible: CollectibleIdentifier) =>
+  (_state: RootState, collectible: CollectibleIdentifier) => collectible,
+  (favoriteCollectibles, collectible) =>
     Boolean(
       favoriteCollectibles.find(
         ({ tokenId, address }: CollectibleIdentifier) =>
@@ -74,10 +74,10 @@ export const isCollectibleInFavoritesSelector = createSelector(
 
 const getFavoritesCollectibles = (
   favoriteCollectibles: Record<string, Record<string, CollectibleIdentifier[]>>,
-  selectedAddress: string,
-  chainId: string,
+  selectedAddress: string | undefined,
+  chainId: string | undefined,
 ): CollectibleIdentifier[] =>
-  favoriteCollectibles[selectedAddress]?.[chainId] || [];
+  (selectedAddress && chainId ? favoriteCollectibles[selectedAddress]?.[chainId] : undefined) || [];
 
 export const ADD_FAVORITE_COLLECTIBLE = 'ADD_FAVORITE_COLLECTIBLE' as const;
 export const REMOVE_FAVORITE_COLLECTIBLE =
@@ -126,6 +126,7 @@ const collectiblesFavoritesReducer = (
   switch (action.type) {
     case ADD_FAVORITE_COLLECTIBLE: {
       const { selectedAddress, chainId, collectible } = action;
+      if (!selectedAddress || !chainId) return state;
       const collectibles = getFavoritesCollectibles(
         state.favorites,
         selectedAddress,
@@ -150,6 +151,7 @@ const collectiblesFavoritesReducer = (
     }
     case REMOVE_FAVORITE_COLLECTIBLE: {
       const { selectedAddress, chainId, collectible } = action;
+      if (!selectedAddress || !chainId) return state;
       const collectibles = getFavoritesCollectibles(
         state.favorites,
         selectedAddress,

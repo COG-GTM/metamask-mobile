@@ -1,6 +1,5 @@
-import browserReducer from './index';
+import browserReducer, { type BrowserState } from './index';
 import AppConstants from '../../core/AppConstants';
-import type { BrowserState } from './index';
 import type { BrowserAction } from '../../actions/browser';
 
 describe('browserReducer STORE_FAVICON_URL', () => {

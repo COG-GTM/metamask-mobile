@@ -75,7 +75,7 @@ const browserReducer = (
           {
             url: appendURLParams(AppConstants.HOMEPAGE_URL, {
               metricsEnabled: action.metricsEnabled,
-              marketingEnabled: action.marketingEnabled,
+              marketingEnabled: action.marketingEnabled ?? false,
             }).href,
             id: action.id,
           },

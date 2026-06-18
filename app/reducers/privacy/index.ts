@@ -3,7 +3,7 @@ import { PrivacyAction } from '../../actions/privacy';
 
 export interface PrivacyState {
   approvedHosts: Record<string, boolean>;
-  revealSRPTimestamps: number[];
+  revealSRPTimestamps: (string | number)[];
 }
 
 const initialState: PrivacyState = {

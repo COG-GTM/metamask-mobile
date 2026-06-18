@@ -26,7 +26,7 @@ const onboardingWizardReducer = (
     case 'SET_ONBOARDING_WIZARD_STEP':
       return {
         ...state,
-        step: action.step!,
+        step: action.step ?? 0,
       };
     default:
       return state;
