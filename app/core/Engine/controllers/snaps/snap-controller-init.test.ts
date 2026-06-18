@@ -11,6 +11,10 @@ import { buildControllerInitRequestMock } from '../../utils/test-utils';
 import { ExtendedControllerMessenger } from '../../../ExtendedControllerMessenger';
 import { KeyringControllerGetKeyringsByTypeAction } from '@metamask/keyring-controller';
 import { store } from '../../../../store';
+import {
+  DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+  LEGACY_DERIVATION_OPTIONS,
+} from '../../../Encryptor';
 
 jest.mock('@metamask/snaps-controllers');
 
@@ -69,6 +73,36 @@ describe('SnapControllerInit', () => {
       maxIdleTime: expect.any(Number),
       preinstalledSnaps: expect.any(Array),
     });
+  });
+
+  it('configures the encryptor with OWASP 2023 key derivation options', () => {
+    snapControllerInit(getInitRequestMock());
+
+    const controllerMock = jest.mocked(SnapController);
+    const { encryptor } = controllerMock.mock.calls[0][0];
+
+    // `isVaultUpdated` compares a vault's `keyMetadata` against the encryptor's
+    // configured derivation options, so it reflects which options the encryptor
+    // was constructed with. An OWASP-configured encryptor must treat an
+    // OWASP vault as up-to-date and a legacy (5000 iterations) vault as
+    // requiring re-encryption.
+    const owaspVault = JSON.stringify({
+      cipher: 'cipher',
+      iv: 'iv',
+      salt: 'salt',
+      lib: 'original',
+      keyMetadata: DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+    });
+    const legacyVault = JSON.stringify({
+      cipher: 'cipher',
+      iv: 'iv',
+      salt: 'salt',
+      lib: 'original',
+      keyMetadata: LEGACY_DERIVATION_OPTIONS,
+    });
+
+    expect(encryptor.isVaultUpdated?.(owaspVault)).toBe(true);
+    expect(encryptor.isVaultUpdated?.(legacyVault)).toBe(false);
   });
 
   describe('getMnemonicSeed', () => {

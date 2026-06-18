@@ -3,6 +3,8 @@ import { QuickCryptoLib } from './lib';
 import {
   ENCRYPTION_LIBRARY,
   LEGACY_DERIVATION_OPTIONS,
+  DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+  KeyDerivationIteration,
 } from './constants';
 
 describe('Encryptor', () => {
@@ -74,6 +76,56 @@ describe('Encryptor', () => {
             iv: 'mockedIV',
             salt: 'mockedSalt',
             lib: 'original',
+          }),
+        ),
+      ).toBe(false);
+    });
+  });
+
+  describe('OWASP 2023 derivation options', () => {
+    let owaspEncryptor: Encryptor;
+
+    beforeEach(() => {
+      owaspEncryptor = new Encryptor({
+        keyDerivationOptions: DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+      });
+    });
+
+    it('uses 900,000 iterations as the default OWASP 2023 work factor', () => {
+      expect(DERIVATION_OPTIONS_DEFAULT_OWASP2023.params.iterations).toBe(
+        KeyDerivationIteration.OWASP2023Default,
+      );
+      expect(DERIVATION_OPTIONS_DEFAULT_OWASP2023.params.iterations).toBe(
+        900_000,
+      );
+    });
+
+    it('treats an OWASP-encrypted vault as up-to-date', () => {
+      expect(
+        owaspEncryptor.isVaultUpdated(
+          JSON.stringify({
+            cipher: 'mockedCipher',
+            iv: 'mockedIV',
+            salt: 'mockedSalt',
+            lib: 'original',
+            keyMetadata: DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+          }),
+        ),
+      ).toBe(true);
+    });
+
+    it('flags a legacy (5000 iterations) vault for re-encryption on next unlock', () => {
+      // KeyringController upgrades the vault when `isVaultUpdated` returns
+      // false, so this is what drives transparent migration of existing
+      // legacy vaults to the stronger work factor.
+      expect(
+        owaspEncryptor.isVaultUpdated(
+          JSON.stringify({
+            cipher: 'mockedCipher',
+            iv: 'mockedIV',
+            salt: 'mockedSalt',
+            lib: 'original',
+            keyMetadata: LEGACY_DERIVATION_OPTIONS,
           }),
         ),
       ).toBe(false);
