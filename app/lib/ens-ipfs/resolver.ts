@@ -1,18 +1,39 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error eth-ens-namehash has no type declarations
 import namehash from 'eth-ens-namehash';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error @metamask/ethjs-query has no type declarations
 import Eth from '@metamask/ethjs-query';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error @metamask/ethjs-contract has no type declarations
 import EthContract from '@metamask/ethjs-contract';
 import registryAbi from './contracts/registry';
 import resolverAbi from './contracts/resolver';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error content-hash has no type declarations
 import contentHash from 'content-hash';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error multihashes has no type declarations
 import multihash from 'multihashes';
 import Engine from '../../core/Engine';
 import { IPFS_GATEWAY_DISABLED_ERROR } from '../../components/Views/BrowserTab/constants';
+
+interface ResolveEnsParams {
+  provider: unknown;
+  name: string;
+  chainId: string;
+}
+
+interface ResolveResult {
+  type: string;
+  hash: string;
+}
 
 export default async function resolveEnsToIpfsContentId({
   provider,
   name,
   chainId,
-}) {
+}: ResolveEnsParams): Promise<ResolveResult> {
   const eth = new Eth(provider);
   const hash = namehash.hash(name);
   const contract = new EthContract(eth);
@@ -70,7 +91,7 @@ export default async function resolveEnsToIpfsContentId({
   );
 }
 
-function hexValueIsEmpty(value) {
+function hexValueIsEmpty(value: string | undefined | null): boolean {
   return [
     undefined,
     null,
@@ -80,7 +101,7 @@ function hexValueIsEmpty(value) {
   ].includes(value);
 }
 
-function getRegistryForChainId(chainId) {
+function getRegistryForChainId(chainId: string): string | null {
   switch (chainId) {
     // mainnet
     case '0x1':
@@ -93,7 +114,7 @@ function getRegistryForChainId(chainId) {
   }
 }
 
-export function isGatewayUrl(urlObj) {
+export function isGatewayUrl(urlObj: { pathname: string }): boolean {
   // All IPFS gateway urls start with the path /ipfs/
   if (urlObj.pathname.substr(0, 6) === '/ipfs/') return true;
   // All Swarm gateway urls start with the path /bzz:/
