@@ -21,13 +21,14 @@ const StakeEarningsHistoryView = () => {
         strings('stake.earnings_history_title', {
           ticker: asset.ticker,
         }),
-        navigation,
+        navigation as unknown as Parameters<typeof getStakingNavbar>[1],
         theme.colors,
         {
           backgroundColor: theme.colors.background.default,
           hasCancelButton: false,
           hasBackButton: true,
         },
+        {},
       ),
     );
   }, [navigation, theme.colors, asset.ticker]);

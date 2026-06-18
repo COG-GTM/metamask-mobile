@@ -434,7 +434,7 @@ class SendFlow extends PureComponent<Props, State> {
       toSelectedAddressName: toAddressName,
       errorContinue,
       isOnlyWarning,
-      confusableCollection,
+      confusableCollection: confusableCollection ?? [],
     });
   };
 

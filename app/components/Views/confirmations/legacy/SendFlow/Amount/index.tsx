@@ -534,7 +534,6 @@ class Amount extends PureComponent<Props, State> {
         mediumGasFeeEstimates.suggestedMaxFeePerGas,
       );
       const gasLimitHex = BNToHex(gas);
-      // @ts-expect-error Legacy JS migration - TS2345
       const gasHexes = calculateEIP1559GasFeeHexes({
         gasLimitHex,
         estimatedBaseFeeHex,
@@ -634,7 +633,6 @@ class Amount extends PureComponent<Props, State> {
       value = inputValueConversion;
       if (maxFiatInput) {
         value = `${renderFromWei(
-          // @ts-expect-error Legacy JS migration - TS2345
           fiatNumberToWei(
             handleWeiNumber(maxFiatInput),
             // @ts-expect-error Legacy JS migration - TS2345
@@ -776,7 +774,9 @@ class Amount extends PureComponent<Props, State> {
       const tokenAmount = toTokenMinimalUnit(value, selectedAsset.decimals);
       transaction.data = generateTransferData('transfer', {
         toAddress: transactionTo,
-        amount: BNToHex(tokenAmount),
+        amount: BNToHex(
+          tokenAmount as unknown as Parameters<typeof BNToHex>[0],
+        ),
       });
       transaction.to = selectedAsset.address;
       transaction.value = '0x0';
@@ -992,7 +992,6 @@ class Amount extends PureComponent<Props, State> {
         )}`;
       } else {
         inputValueConversion = `${renderFromTokenMinimalUnit(
-          // @ts-expect-error Legacy JS migration - TS2345
           fiatNumberToTokenMinimalUnit(
             processedInputValue,
             // @ts-expect-error Legacy JS migration - TS2345
@@ -1333,7 +1332,7 @@ class Amount extends PureComponent<Props, State> {
           <View style={styles.inputContainer}>
             {!internalPrimaryCurrencyIsCrypto && !!inputValue && (
               <Text style={styles.inputCurrencyText}>{`${getCurrencySymbol(
-                currentCurrency,
+                currentCurrency as string,
               )} `}</Text>
             )}
             {/* @ts-expect-error Legacy JS migration - TS2769 */}

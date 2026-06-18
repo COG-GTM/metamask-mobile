@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { connect, useSelector } from 'react-redux';
+import type { Dispatch } from 'redux';
 import { RootState } from '../../../reducers';
-import { withNavigation } from '@react-navigation/compat';
+import {
+  withNavigation,
+  type CompatNavigationProp,
+} from '@react-navigation/compat';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { showAlert } from '../../../actions/alert';
 import Transactions from '../../UI/Transactions';
 import {
@@ -43,14 +48,24 @@ const styles = StyleSheet.create({
   },
 });
 
+interface TransactionEntry {
+  id?: string;
+  status?: string;
+  chainId?: string;
+  time?: number;
+  insertImportTime?: boolean;
+  txParams: { from: string; nonce?: unknown; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
 interface OwnProps {
-  navigation: Record<string, unknown>;
+  navigation: CompatNavigationProp<NavigationProp<ParamListBase>>;
 }
 
 interface StateProps {
   conversionRate: number;
   currentCurrency: string;
-  tokens: Array<{ address: string; [key: string]: unknown }>;
+  tokens: { address: string; [key: string]: unknown }[];
   selectedInternalAccount: {
     address: string;
     metadata: {
@@ -59,7 +74,7 @@ interface StateProps {
     };
     [key: string]: unknown;
   };
-  transactions: Array<Record<string, unknown>>;
+  transactions: Record<string, unknown>[];
   networkType: string;
   chainId: string;
   tokenNetworkFilter: Record<string, unknown>;
@@ -82,10 +97,10 @@ const TransactionsView = ({
   tokens,
   tokenNetworkFilter,
 }: Props) => {
-  const [allTransactions, setAllTransactions] = useState([]);
-  const [submittedTxs, setSubmittedTxs] = useState([]);
-  const [confirmedTxs, setConfirmedTxs] = useState([]);
-  const [loading, setLoading] = useState();
+  const [allTransactions, setAllTransactions] = useState<TransactionEntry[]>([]);
+  const [submittedTxs, setSubmittedTxs] = useState<TransactionEntry[]>([]);
+  const [confirmedTxs, setConfirmedTxs] = useState<TransactionEntry[]>([]);
+  const [loading, setLoading] = useState<boolean | undefined>();
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
   const selectedAddress = toChecksumHexAddress(
@@ -95,34 +110,36 @@ const TransactionsView = ({
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
 
   const filterTransactions = useCallback(
-    (networkId) => {
+    (networkId: string) => {
       let accountAddedTimeInsertPointFound = false;
       const addedAccountTime = selectedInternalAccount?.metadata.importTime;
 
-      const submittedTxs = [];
-      const confirmedTxs = [];
-      const submittedNonces = [];
+      const localSubmittedTxs: TransactionEntry[] = [];
+      const localConfirmedTxs: TransactionEntry[] = [];
+      const submittedNonces: unknown[] = [];
 
-      const allTransactionsSorted = sortTransactions(transactions).filter(
+      const allTransactionsSorted = (
+        sortTransactions(transactions) as TransactionEntry[]
+      ).filter(
         (tx, index, self) =>
           self.findIndex((_tx) => _tx.id === tx.id) === index,
       );
 
-      const allTransactions = allTransactionsSorted.filter((tx) => {
+      const localAllTransactions = allTransactionsSorted.filter((tx) => {
         const filter = filterByAddressAndNetwork(
           tx,
           tokens,
           selectedAddress,
           networkId,
           chainId,
-          tokenNetworkFilter,
+          tokenNetworkFilter as unknown as { [key: string]: boolean }[],
         );
 
         if (!filter) return false;
 
         tx.insertImportTime = addAccountTimeFlagFilter(
           tx,
-          addedAccountTime,
+          addedAccountTime as number,
           accountAddedTimeInsertPointFound,
         );
         if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
@@ -132,10 +149,10 @@ const TransactionsView = ({
           case TX_SIGNED:
           case TX_UNAPPROVED:
           case TX_PENDING:
-            submittedTxs.push(tx);
+            localSubmittedTxs.push(tx);
             return false;
           case TX_CONFIRMED:
-            confirmedTxs.push(tx);
+            localConfirmedTxs.push(tx);
             break;
         }
 
@@ -143,21 +160,21 @@ const TransactionsView = ({
       });
 
       const allTransactionsFiltered = isPopularNetwork
-        ? allTransactions.filter(
+        ? localAllTransactions.filter(
             (tx) =>
               tx.chainId === CHAIN_IDS.MAINNET ||
               tx.chainId === CHAIN_IDS.LINEA_MAINNET ||
               PopularList.some((network) => network.chainId === tx.chainId),
           )
-        : allTransactions.filter((tx) => tx.chainId === chainId);
+        : localAllTransactions.filter((tx) => tx.chainId === chainId);
 
-      const submittedTxsFiltered = submittedTxs.filter(({ txParams }) => {
+      const submittedTxsFiltered = localSubmittedTxs.filter(({ txParams }) => {
         const { from, nonce } = txParams;
         if (!toLowerCaseEquals(from, selectedAddress)) {
           return false;
         }
         const alreadySubmitted = submittedNonces.includes(nonce);
-        const alreadyConfirmed = confirmedTxs.find(
+        const alreadyConfirmed = localConfirmedTxs.find(
           (tx) =>
             toLowerCaseEquals(
               safeToChecksumAddress(tx.txParams.from),
@@ -174,8 +191,7 @@ const TransactionsView = ({
       // If the account added insert point is not found, add it to the last transaction
       if (
         !accountAddedTimeInsertPointFound &&
-        allTransactionsFiltered &&
-        allTransactionsFiltered.length
+        allTransactionsFiltered?.length
       ) {
         allTransactionsFiltered[
           allTransactionsFiltered.length - 1
@@ -184,7 +200,7 @@ const TransactionsView = ({
 
       setAllTransactions(allTransactionsFiltered);
       setSubmittedTxs(submittedTxsFiltered);
-      setConfirmedTxs(confirmedTxs);
+      setConfirmedTxs(localConfirmedTxs);
       setLoading(false);
     },
     [
@@ -227,10 +243,12 @@ const mapStateToProps = (state: RootState): StateProps => {
   const chainId = selectChainId(state);
 
   return {
-    conversionRate: selectConversionRate(state),
+    conversionRate: selectConversionRate(state) as number,
     currentCurrency: selectCurrentCurrency(state),
     tokens: selectTokens(state),
-    selectedInternalAccount: selectSelectedInternalAccount(state),
+    selectedInternalAccount: selectSelectedInternalAccount(
+      state,
+    ) as unknown as StateProps['selectedInternalAccount'],
     transactions: selectSortedTransactions(state),
     networkType: selectProviderType(state),
     chainId,
@@ -238,11 +256,18 @@ const mapStateToProps = (state: RootState): StateProps => {
   };
 };
 
-const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  showAlert: (config) =>
+    dispatch(showAlert(config as unknown as Parameters<typeof showAlert>[0])),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withNavigation(TransactionsView));
+)(
+  withNavigation<
+    NavigationProp<ParamListBase>,
+    Props,
+    React.ComponentType<Props>
+  >(TransactionsView),
+);

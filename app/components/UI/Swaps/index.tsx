@@ -186,7 +186,7 @@ interface OwnProps {}
 
 interface StateProps {
   swapsTokens: SwapsToken[];
-  swapsControllerTokens: SwapsToken[];
+  swapsControllerTokens: SwapsToken[] | null;
   accountsByChainId: Record<string, Record<string, { balance: string }>>;
   selectedAddress: string;
   chainId: string;
@@ -287,14 +287,20 @@ function SwapsAmountView({
   ] = useModalHandler(false);
 
   useEffect(() => {
-    navigation.setOptions(getSwapsAmountNavbar(navigation, route, colors));
+    navigation.setOptions(
+      getSwapsAmountNavbar(
+        navigation as unknown as Parameters<typeof getSwapsAmountNavbar>[0],
+        route,
+        colors,
+      ),
+    );
   }, [navigation, route, colors]);
 
   useEffect(() => {
     (async () => {
       try {
         const featureFlags = await swapsUtils.fetchSwapsFeatureFlags(
-          getFeatureFlagChainId(chainId),
+          getFeatureFlagChainId(chainId as `0x${string}`) as `0x${string}`,
           AppConstants.SWAPS.CLIENT_ID,
         );
 
@@ -440,7 +446,9 @@ function SwapsAmountView({
             sourceToken.address,
             selectedAddress,
           );
-          setContractBalanceAsUnits(balance);
+          setContractBalanceAsUnits(
+            balance as unknown as ReturnType<typeof safeNumberToBN>,
+          );
           setContractBalance(
             renderFromTokenMinimalUnit(balance as unknown as string, sourceToken.decimals),
           );
@@ -523,7 +531,12 @@ function SwapsAmountView({
     }
 
     // TODO: Cannot call .gte on balanceAsUnits since it isn't always guaranteed to be type BN. Should consolidate into one type.
-    return gte(balanceAsUnits as number, amountAsUnits) ?? false;
+    return (
+      gte(
+        balanceAsUnits as unknown as number,
+        amountAsUnits as unknown as number,
+      ) ?? false
+    );
   }, [amountAsUnits, balanceAsUnits, hasBalance, hasInvalidDecimals]);
 
   const currencyAmount = useMemo(() => {
@@ -1008,7 +1021,7 @@ function SwapsAmountView({
 }
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  swapsTokens: swapsTokensSelector(state),
+  swapsTokens: swapsTokensSelector(state) as unknown as SwapsToken[],
   swapsControllerTokens: swapsControllerTokens(state),
   accountsByChainId: selectAccountsByChainId(state),
   balances: selectContractBalances(state),
@@ -1019,8 +1032,10 @@ const mapStateToProps = (state: RootState): StateProps => ({
   networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
   chainId: selectEvmChainId(state),
   selectedNetworkClientId: selectSelectedNetworkClientId(state),
-  tokensWithBalance: swapsTokensWithBalanceSelector(state),
-  tokensTopAssets: swapsTopAssetsSelector(state),
+  tokensWithBalance: swapsTokensWithBalanceSelector(
+    state,
+  ) as unknown as SwapsToken[],
+  tokensTopAssets: swapsTopAssetsSelector(state) as unknown as SwapsToken[],
   shouldUseSmartTransaction: selectShouldUseSmartTransaction(
     state,
     selectEvmChainId(state),

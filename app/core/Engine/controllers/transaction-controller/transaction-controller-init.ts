@@ -172,7 +172,7 @@ function publishHook({
     approvalController,
     controllerMessenger:
       initMessenger as unknown as SubmitSmartTransactionRequest['controllerMessenger'],
-    featureFlags,
+    featureFlags: featureFlags as SubmitSmartTransactionRequest['featureFlags'],
     signedTransactionInHex,
   });
 }
@@ -233,7 +233,7 @@ function publishBatchSmartTransactionHook({
       initMessenger as unknown as SubmitSmartTransactionRequest['controllerMessenger'],
     shouldUseSmartTransaction,
     approvalController,
-    featureFlags,
+    featureFlags: featureFlags as SubmitSmartTransactionRequest['featureFlags'],
     transactionMeta
   });
 }

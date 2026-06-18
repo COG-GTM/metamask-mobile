@@ -47,6 +47,11 @@ const navigationMock = {
   push: jest.fn(),
 };
 
+const CollectibleView = Collectible as unknown as React.ComponentType<{
+  navigation?: Record<string, unknown>;
+  route: { params?: Record<string, unknown> };
+}>;
+
 const defaultCollectibleContract = {
   address: '0x1',
   name: 'Default Collectible',
@@ -63,7 +68,7 @@ describe('Collectible', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <Collectible route={{ params: { address: '0x1' } }} />
+        <CollectibleView route={{ params: { address: '0x1' } }} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
@@ -80,7 +85,7 @@ describe('Collectible', () => {
     const container = render(
       <Provider store={storeMocked}>
         <ThemeContext.Provider value={mockTheme}>
-          <Collectible
+          <CollectibleView
             navigation={navigationMock}
             route={{ params: defaultCollectibleContract }}
           />
@@ -97,7 +102,7 @@ describe('Collectible', () => {
     const { getByTestId } = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <Collectible
+          <CollectibleView
             navigation={navigationMock}
             route={{ params: defaultCollectibleContract }}
           />
