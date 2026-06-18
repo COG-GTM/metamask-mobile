@@ -53,6 +53,9 @@ function useBlockExplorer(
       providerConfigTokenExplorer ?? providerConfig;
     if (definitiveProviderConfig.type === RPC) {
       try {
+        if (!definitiveProviderConfig.rpcUrl) {
+          throw new Error('No block explorer url');
+        }
         const blockExplorer = findBlockExplorerForRpc(
           definitiveProviderConfig.rpcUrl,
           networkConfigurations,

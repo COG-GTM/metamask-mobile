@@ -618,7 +618,7 @@ class Send extends PureComponent<Props, State> {
             // @ts-expect-error Legacy JS migration - TS2339
             transactionMeta.transaction.data,
           );
-          const addressTo = data[1];
+          const addressTo = data?.[1];
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);
           }
@@ -860,7 +860,7 @@ const mapDispatchToProps = (dispatch: any) => ({
     dispatch(setTransactionObject(transaction)),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showAlert: (config: any) => dispatch(showAlert(config)),
-  toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal()),
+  toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal(undefined)),
 });
 
 Send.contextType = ThemeContext;

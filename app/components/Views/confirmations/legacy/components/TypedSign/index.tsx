@@ -89,7 +89,11 @@ class TypedSign extends PureComponent<Props, State> {
       MetricsEventBuilder.createEventBuilder(
         MetaMetricsEvents.SIGNATURE_REQUESTED,
       )
-        .addProperties(getAnalyticsParams(messageParams, 'typed_sign'))
+        .addProperties(
+          getAnalyticsParams(messageParams, 'typed_sign') as Parameters<
+            ReturnType<typeof MetricsEventBuilder.createEventBuilder>['addProperties']
+          >[0],
+        )
         .build(),
     );
     addSignatureErrorListener(metamaskId, this.onSignatureError);
@@ -110,7 +114,14 @@ class TypedSign extends PureComponent<Props, State> {
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.QR_HARDWARE_TRANSACTION_CANCELED,
         )
-          .addProperties(getAnalyticsParams())
+          .addProperties(
+            getAnalyticsParams(
+              this.props.messageParams,
+              'typed_sign',
+            ) as Parameters<
+              ReturnType<typeof MetricsEventBuilder.createEventBuilder>['addProperties']
+            >[0],
+          )
           .build(),
       );
     }
@@ -248,7 +259,7 @@ class TypedSign extends PureComponent<Props, State> {
     }
 
     const rootView = showExpandedMessage ? (
-      // @ts-expect-error Legacy JS migration - TS2693
+      // @ts-expect-error ExpandedMessage default export is the Props type, not the class (broken by JS->TS migration in a file outside this task's scope) - TS2693
       <ExpandedMessage
         currentPageInformation={currentPageInformation}
         renderMessage={this.renderTypedMessage}

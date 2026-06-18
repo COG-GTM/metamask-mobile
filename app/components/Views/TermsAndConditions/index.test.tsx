@@ -5,7 +5,7 @@ import TermsAndConditions from './';
 describe('TermsAndConditions', () => {
   it('should render correctly', () => {
     const { toJSON } = renderWithProvider(
-      <TermsAndConditions action="import" />,
+      <TermsAndConditions navigation={{ navigate: jest.fn() }} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
