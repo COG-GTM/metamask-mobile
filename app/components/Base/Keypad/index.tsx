@@ -1,9 +1,28 @@
 import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
 import Keypad from './components';
 import { KEYS } from './constants';
 import useCurrency from './useCurrency';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import { StyleProp, ViewStyle, TextStyle } from 'react-native';
+
+interface KeypadChangeEvent {
+  value: string;
+  valueAsNumber: number;
+  pressedKey: string;
+}
+
+interface KeypadComponentProps {
+  onChange: (event: KeypadChangeEvent) => void;
+  value?: string;
+  currency?: string;
+  decimals?: number;
+  style?: StyleProp<ViewStyle>;
+  digitButtonStyle?: StyleProp<ViewStyle>;
+  digitTextStyle?: StyleProp<TextStyle>;
+  periodButtonStyle?: StyleProp<ViewStyle>;
+  periodTextStyle?: StyleProp<TextStyle>;
+  deleteButtonStyle?: StyleProp<ViewStyle>;
+  deleteIcon?: React.ReactNode;
+}
 
 function KeypadComponent({
   onChange,
@@ -17,14 +36,14 @@ function KeypadComponent({
   periodTextStyle,
   deleteButtonStyle,
   deleteIcon,
-}) {
+}: KeypadComponentProps) {
   const { handler, decimalSeparator } = useCurrency(currency, decimals);
   const handleKeypadPress = useCallback(
-    (pressedKey) => {
-      const newValue = handler(value, pressedKey);
+    (pressedKey: string) => {
+      const newValue = handler(value || '', pressedKey);
       let valueAsNumber = 0;
       try {
-        valueAsNumber = Number(newValue.replace(decimalSeparator, '.'));
+        valueAsNumber = Number(newValue.replace(decimalSeparator || '.', '.'));
       } catch (error) {
         console.error(error);
       }
@@ -179,6 +198,8 @@ function KeypadComponent({
           style={periodButtonStyle}
           textStyle={periodTextStyle}
           onPress={handleKeypadPressPeriod}
+          accessibilityRole="button"
+          accessible
         >
           {decimalSeparator}
         </Keypad.Button>
@@ -192,65 +213,16 @@ function KeypadComponent({
           0
         </Keypad.Button>
         <Keypad.DeleteButton
-          testID="keypad-delete-button"
           style={deleteButtonStyle}
           icon={deleteIcon}
           onPress={handleKeypadPressBack}
           onLongPress={handleKeypadLongPressBack}
-          delayLongPress={500}
+          accessibilityRole="button"
+          accessible
         />
       </Keypad.Row>
     </Keypad>
   );
 }
 
-KeypadComponent.propTypes = {
-  /**
-   * Function that will be called when a key is pressed with arguments `(value, key)`
-   */
-  onChange: PropTypes.func,
-  /**
-   * Currency code for the keypad rules and symbols. Defaults to
-   * currency without decimals (CURRENCIES[default])
-   */
-  currency: PropTypes.string,
-  /**
-   * Currency decimals
-   */
-  decimals: PropTypes.number,
-  /**
-   * Current value used to create new value when a key is pressed.
-   */
-  value: PropTypes.string,
-  /**
-   * Custom style for container
-   */
-  style: ViewPropTypes.style,
-  /**
-   * Custom style for digit buttons
-   */
-  digitButtonStyle: ViewPropTypes.style,
-  /**
-   * Custom style for digit text
-   */
-  digitTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  /**
-   * Custom style for period button
-   */
-  periodButtonStyle: ViewPropTypes.style,
-  /**
-   * Custom style for period text
-   */
-  periodTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  /**
-   * Custom style for delete button
-   */
-  deleteButtonStyle: ViewPropTypes.style,
-  /**
-   * Custom icon for delete button
-   */
-  deleteIcon: PropTypes.node,
-};
-
-export { KEYS };
 export default KeypadComponent;
