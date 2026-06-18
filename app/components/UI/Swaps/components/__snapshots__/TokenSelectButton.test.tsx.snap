@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`TokenSelectButton component should Render correctly 1`] = `
-<SelectorButton>
+<SelectorButton
+  onPress={[Function]}
+>
   <View
     style={
       {
@@ -20,7 +22,9 @@ exports[`TokenSelectButton component should Render correctly 1`] = `
 `;
 
 exports[`TokenSelectButton component should Render correctly 2`] = `
-<SelectorButton>
+<SelectorButton
+  onPress={[Function]}
+>
   <View
     style={
       {
@@ -41,7 +45,9 @@ exports[`TokenSelectButton component should Render correctly 2`] = `
 `;
 
 exports[`TokenSelectButton component should Render correctly 3`] = `
-<SelectorButton>
+<SelectorButton
+  onPress={[Function]}
+>
   <View
     style={
       {
@@ -62,7 +68,9 @@ exports[`TokenSelectButton component should Render correctly 3`] = `
 `;
 
 exports[`TokenSelectButton component should Render correctly 4`] = `
-<SelectorButton>
+<SelectorButton
+  onPress={[Function]}
+>
   <View
     style={
       {

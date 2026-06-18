@@ -1,39 +1,52 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios, { CancelTokenSource } from 'axios';
 import { swapsUtils } from '@metamask/swaps-controller';
 
-const defaultTokenMetadata = {
+interface TokenMetadataState {
+  valid: boolean | null;
+  error: boolean;
+  metadata: Record<string, unknown> | null;
+}
+
+const defaultTokenMetadata: TokenMetadataState = {
   valid: null,
   error: false,
   metadata: null,
 };
 
-function useFetchTokenMetadata(address, chainId) {
+function useFetchTokenMetadata(
+  address: string | undefined,
+  chainId: string,
+): [boolean, TokenMetadataState] {
   const [isLoading, setIsLoading] = useState(false);
-  const [tokenMetadata, setTokenMetadata] = useState(defaultTokenMetadata);
+  const [tokenMetadata, setTokenMetadata] =
+    useState<TokenMetadataState>(defaultTokenMetadata);
 
   useEffect(() => {
     if (!address) {
       return;
     }
 
-    let cancelTokenSource;
+    let cancelTokenSource: CancelTokenSource;
     async function fetchTokenMetadata() {
       try {
         cancelTokenSource = axios.CancelToken.source();
         setTokenMetadata(defaultTokenMetadata);
         setIsLoading(true);
         const { data } = await axios.request({
-          url: swapsUtils.getTokenMetadataURL(chainId),
+          url: swapsUtils.getTokenMetadataURL(chainId as `0x${string}`),
           params: {
             address,
           },
           cancelToken: cancelTokenSource.token,
         });
         setTokenMetadata({ error: false, valid: true, metadata: data });
-      } catch (error) {
+      } catch (error: unknown) {
         // Address is not an ERC20
-        if (error?.response?.status === 422) {
+        if (
+          axios.isAxiosError(error) &&
+          error?.response?.status === 422
+        ) {
           setTokenMetadata({ error: false, valid: false, metadata: null });
         } else {
           setTokenMetadata({ ...defaultTokenMetadata, error: true });
@@ -51,7 +64,7 @@ function useFetchTokenMetadata(address, chainId) {
     };
   }, [address, chainId]);
 
-  return [isLoading, tokenMetadata];
+  return [isLoading, tokenMetadata] as [boolean, TokenMetadataState];
 }
 
 export default useFetchTokenMetadata;
