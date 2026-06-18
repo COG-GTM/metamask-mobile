@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unused-vars, import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { Animated, StyleSheet } from 'react-native';
+import { Animated, StyleSheet, ViewStyle } from 'react-native';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     view: {
       backgroundColor: colors.background.default,
@@ -19,13 +20,22 @@ const createStyles = (colors) =>
 /**
  * View that is displayed to first time (new) users
  */
-export default class FadeOutOverlay extends PureComponent {
-  static propTypes = {
-    style: PropTypes.any,
-    duration: PropTypes.number,
+interface Props {
+  style?: ViewStyle;
+  duration?: number;
+}
+
+interface State {
+  done: boolean;
+}
+
+export default class FadeOutOverlay extends PureComponent<Props, State> {
+  static defaultProps = {
+    style: null,
+    duration: Device.isAndroid() ? 300 : 300,
   };
 
-  state = {
+  state: State = {
     done: false,
   };
 
@@ -43,7 +53,7 @@ export default class FadeOutOverlay extends PureComponent {
   }
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = ((this.context as any)?.colors) || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (this.state.done) return null;
@@ -56,8 +66,3 @@ export default class FadeOutOverlay extends PureComponent {
 }
 
 FadeOutOverlay.contextType = ThemeContext;
-
-FadeOutOverlay.defaultProps = {
-  style: null,
-  duration: Device.isAndroid() ? 300 : 300,
-};

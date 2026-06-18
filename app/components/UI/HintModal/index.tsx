@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unused-vars, import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import {
   View,
   StyleSheet,
@@ -9,6 +9,7 @@ import React from 'react';
 import ActionModal from '../../UI/ActionModal';
 import { strings } from '../../../../locales/i18n';
 import { useTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 import Text, {
   TextVariant,
   TextColor,
@@ -18,7 +19,7 @@ import ButtonIcon, {
 } from '../../../component-library/components/Buttons/ButtonIcon';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     hintWrapper: {
       flex: 1,
@@ -55,6 +56,15 @@ const createStyles = (colors) =>
     },
   });
 
+interface Props {
+  onCancel: () => void;
+  onConfirm: () => void;
+  modalVisible: boolean;
+  onRequestClose: () => void;
+  value?: string;
+  onChangeText: (text: string) => void;
+}
+
 const HintModal = ({
   onCancel,
   onConfirm,
@@ -62,7 +72,7 @@ const HintModal = ({
   onRequestClose,
   value,
   onChangeText,
-}) => {
+}: Props) => {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
@@ -113,20 +123,5 @@ const HintModal = ({
     </ActionModal>
   );
 };
-
-const propTypes = {
-  onCancel: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  onRequestClose: PropTypes.func.isRequired,
-  value: PropTypes.string,
-  onChangeText: PropTypes.func.isRequired,
-};
-const defaultProps = {
-  modalVisible: false,
-};
-
-HintModal.propTypes = propTypes;
-HintModal.defaultProps = defaultProps;
 
 export default HintModal;

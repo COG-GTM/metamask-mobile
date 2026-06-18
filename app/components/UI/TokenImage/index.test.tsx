@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unused-vars, import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import React from 'react';
 import { shallow } from 'enzyme';
 import TokenImage from './';
@@ -26,7 +27,7 @@ describe('TokenImage', () => {
             symbol: 'ABC',
             decimals: 18,
             image: 'invalid-uri',
-          }}
+          } as any}
         />
       </Provider>,
     );

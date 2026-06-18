@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unused-vars, import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import ActionModal from '../ActionModal';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import { protectWalletModalNotVisible } from '../../../actions/user';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { strings } from '../../../../locales/i18n';
@@ -11,12 +12,14 @@ import scaling from '../../../util/scaling';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 import { ProtectWalletModalSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ProtectWalletModal.selectors';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import { RootState } from '../../../reducers';
 
 const protectWalletImage = require('../../../images/explain-backup-seedphrase.png'); // eslint-disable-line
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       marginTop: 24,
@@ -74,26 +77,30 @@ const createStyles = (colors) =>
 /**
  * View that renders an action modal
  */
-class ProtectYourWalletModal extends PureComponent {
-  static propTypes = {
-    navigation: PropTypes.object,
-    /**
-     * Hide this modal
-     */
-    protectWalletModalNotVisible: PropTypes.func,
-    /**
-     * Whether this modal is visible
-     */
-    protectWalletModalVisible: PropTypes.bool,
-    /**
-     * Boolean that determines if the user has set a password before
-     */
-    passwordSet: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
+interface OwnProps {
+  navigation: { navigate: (route: string, params?: Record<string, unknown>) => void };
+  metrics: {
+    trackEvent: (event: Record<string, unknown>) => void;
+    createEventBuilder: (event: string) => {
+      addProperties: (props: Record<string, unknown>) => {
+        build: () => Record<string, unknown>;
+      };
+    };
   };
+}
+
+interface StateProps {
+  protectWalletModalVisible: boolean;
+  passwordSet: boolean;
+}
+
+interface DispatchProps {
+  protectWalletModalNotVisible: () => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+class ProtectYourWalletModal extends PureComponent<Props> {
 
   goToBackupFlow = () => {
     this.props.protectWalletModalNotVisible();
@@ -103,7 +110,7 @@ class ProtectYourWalletModal extends PureComponent {
     );
     this.props.metrics.trackEvent(
       this.props.metrics
-        .createEventBuilder(MetaMetricsEvents.WALLET_SECURITY_PROTECT_ENGAGED)
+        .createEventBuilder(MetaMetricsEvents.WALLET_SECURITY_PROTECT_ENGAGED as any)
         .addProperties({
           wallet_protection_required: false,
           source: 'Modal',
@@ -127,7 +134,7 @@ class ProtectYourWalletModal extends PureComponent {
     this.props.protectWalletModalNotVisible();
     this.props.metrics.trackEvent(
       this.props.metrics
-        .createEventBuilder(MetaMetricsEvents.WALLET_SECURITY_PROTECT_DISMISSED)
+        .createEventBuilder(MetaMetricsEvents.WALLET_SECURITY_PROTECT_DISMISSED as any)
         .addProperties({
           wallet_protection_required: false,
           source: 'Modal',
@@ -137,7 +144,7 @@ class ProtectYourWalletModal extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = ((this.context as any)?.colors) || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -191,13 +198,13 @@ class ProtectYourWalletModal extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   protectWalletModalVisible: state.user.protectWalletModalVisible,
   passwordSet: state.user.passwordSet,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  protectWalletModalNotVisible: (enable) =>
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  protectWalletModalNotVisible: () =>
     dispatch(protectWalletModalNotVisible()),
 });
 
@@ -206,4 +213,4 @@ ProtectYourWalletModal.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(ProtectYourWalletModal));
+)(withMetricsAwareness(ProtectYourWalletModal as any));

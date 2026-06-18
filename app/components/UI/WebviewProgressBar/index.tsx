@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unused-vars, import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+// @ts-expect-error No declaration file for react-native-progress
 import ProgressBar from 'react-native-progress/Bar';
 import FadeView from '../FadeView';
 import { ThemeContext, mockTheme } from '../../../util/theme';
@@ -9,21 +10,23 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
  * and allows to fade it in / out
  * via the boolean prop visible
  */
-export default class WebviewProgressBar extends PureComponent {
-  state = {
+interface Props {
+  progress: number;
+}
+
+interface State {
+  visible: boolean;
+}
+
+export default class WebviewProgressBar extends PureComponent<Props, State> {
+  mounted = false;
+
+  state: State = {
     visible: true,
   };
 
-  static propTypes = {
-    /**
-     * Float that represents the progress complete
-     * between 0 and 1
-     */
-    progress: PropTypes.any,
-  };
-
   componentDidMount() {
-    this.mounted = true;
+    this.mounted = true; // eslint-disable-line @typescript-eslint/no-this-alias
   }
 
   componentWillUnmount() {
@@ -49,7 +52,7 @@ export default class WebviewProgressBar extends PureComponent {
   }
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = ((this.context as any)?.colors) || mockTheme.colors;
 
     return (
       <FadeView visible={this.state.visible}>

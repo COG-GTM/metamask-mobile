@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unused-vars, import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import {
   CONTRACT_CREATION_SIGNATURE,
   TRANSACTION_TYPES,
@@ -87,7 +88,7 @@ describe('Utils', () => {
 
       // Act
       const [transactionElement, transactionDetails] =
-        decodeIncomingTransfer(args);
+        decodeIncomingTransfer(args as any);
 
       // Assert
       expect(transactionElement).toEqual({
@@ -147,7 +148,7 @@ describe('Utils', () => {
 
       // Act
       const [transactionElement, transactionDetails] =
-        decodeIncomingTransfer(args);
+        decodeIncomingTransfer(args as any);
 
       // Assert
       expect(transactionElement).toEqual({
@@ -222,7 +223,7 @@ describe('Utils', () => {
         },
       };
 
-      const result = await decodeTransaction(args);
+      const result = await decodeTransaction(args as any);
 
       expect(result).toEqual([
         {
@@ -265,7 +266,7 @@ describe('Utils', () => {
         },
       };
 
-      const result = await decodeTransaction(args);
+      const result = await decodeTransaction(args as any);
 
       expect(result).toEqual([
         {
@@ -307,7 +308,7 @@ describe('Utils', () => {
         },
       };
 
-      const result = await decodeTransaction(args);
+      const result = await decodeTransaction(args as any);
 
       expect(result).toEqual([
         {
