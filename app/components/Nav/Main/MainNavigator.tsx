@@ -1,11 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { RouteProp } from '@react-navigation/native';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { BottomTabBarProps , createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { RootState } from '../../../reducers';
 import { Image, StyleSheet, Keyboard, Platform } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSelector } from 'react-redux';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Browser from '../../Views/Browser';
 import { ChainId } from '@metamask/controller-utils';
 import AddBookmark from '../../Views/AddBookmark';
@@ -476,7 +475,7 @@ const HomeTabs = () => {
   /* activeTab: state.browser.activeTab, */
   const activeConnectedDapp = useSelector((state: RootState) => {
     const activeTabUrl = getActiveTabUrl(state);
-    if (!isUrl(activeTabUrl)) return [];
+    if (!activeTabUrl || !isUrl(activeTabUrl)) return [];
     try {
       const permissionsControllerState = selectPermissionControllerState(state);
       const hostname = new URL(activeTabUrl).hostname;

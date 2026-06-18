@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { Alert, BackHandler, View, StyleSheet, Keyboard } from 'react-native';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import { fontStyles } from '../../../styles/common';
 import StorageWrapper from '../../../store/storage-wrapper';
 import OnboardingProgress from '../../UI/OnboardingProgress';
@@ -17,7 +18,8 @@ import {
   SEED_PHRASE_HINTS,
 } from '../../../constants/storage';
 import { MetaMetricsEvents } from '../../../core/Analytics';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import OnboardingSuccess from '../OnboardingSuccess';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
@@ -68,7 +70,7 @@ const createStyles = (colors: Theme['colors']) =>
     },
   });
 
-const hardwareBackPress = () => ({});
+const hardwareBackPress = (): boolean => true;
 const HARDWARE_BACK_PRESS = 'hardwareBackPress';
 
 /**
@@ -79,6 +81,8 @@ interface Props {
   navigation: {
     setOptions: (options: Record<string, unknown>) => void;
     navigate: (route: string, params?: Record<string, unknown>) => void;
+    reset: (state: { routes: { name: string }[] }) => void;
+    pop: () => void;
     dangerouslyGetParent: () => {
       pop: (count: number) => void;
     };
@@ -101,6 +105,8 @@ interface State {
 }
 
 class ManualBackupStep3 extends PureComponent<Props, State> {
+  declare context: React.ContextType<typeof ThemeContext>;
+
   steps: string[] | undefined;
 
   constructor(props: Props) {
@@ -202,7 +208,7 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
     }
   };
 
-  handleChangeText = (text) => this.setState({ hintText: text });
+  handleChangeText = (text: string) => this.setState({ hintText: text });
 
   renderHint = () => {
     const { showHint, hintText } = this.state;
@@ -245,9 +251,11 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
 
 ManualBackupStep3.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch: (action: unknown) => void) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  showAlert: (config: Parameters<typeof showAlert>[0]) =>
+    dispatch(showAlert(config)),
+  setOnboardingWizardStep: (step: number) =>
+    dispatch(setOnboardingWizardStep(step)),
 });
 
 export default connect(null, mapDispatchToProps)(ManualBackupStep3);

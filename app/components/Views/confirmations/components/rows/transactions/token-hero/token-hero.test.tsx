@@ -35,7 +35,7 @@ describe('TokenHero', () => {
           backgroundState: {
             TransactionController: {
               transactions: [
-                { txParams: { value: `0x${decGWEIToHexWEI(12345678.9)}` } },
+                { txParams: { value: `0x${decGWEIToHexWEI('12345678.9')}` } },
               ],
             },
           },

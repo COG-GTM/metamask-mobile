@@ -358,7 +358,6 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
-        // @ts-expect-error Legacy JS migration - TS2345
         } = calculateAmountsEIP1559({
           value: value && BNToHex(value),
           nativeCurrency: ticker,
@@ -397,7 +396,6 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
-        // @ts-expect-error Legacy JS migration - TS2345
         } = calculateAmountsEIP1559({
           value: '0x0',
           nativeCurrency: ticker,
@@ -446,7 +444,6 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
-        // @ts-expect-error Legacy JS migration - TS2345
         } = calculateAmountsEIP1559({
           value: '0x0',
           nativeCurrency: ticker,
@@ -668,7 +665,8 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
         )}
         {!!error && (
           <View style={styles.errorWrapper}>
-            {isTestNetworkWithFaucet(chainId) || isNativeTokenBuySupported ? (
+            {(!!chainId && isTestNetworkWithFaucet(chainId)) ||
+            isNativeTokenBuySupported ? (
               <TouchableOpacity onPress={errorPress}>
                 <Text style={styles.error}>{error}</Text>
                 {over && (

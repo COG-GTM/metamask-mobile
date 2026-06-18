@@ -17,7 +17,8 @@ import OnboardingScreenWithBg from '../../UI/OnboardingScreenWithBg';
 import Text from '../../Base/Text';
 import { connect } from 'react-redux';
 import Device from '../../../util/device';
-import { useTheme, Theme } from '../../../util/theme';
+import { useTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import AppConstants from '../../../core/AppConstants';
@@ -127,6 +128,7 @@ const createStyles = (colors: Theme['colors']) =>
     tab: {
       margin: 32,
     },
+    scrollTabs: {},
   });
 
 const gas_education_carousel_1 = require('../../../images/gas-education-carousel-1.png'); // eslint-disable-line
@@ -170,7 +172,7 @@ const GasEducationCarousel = ({
   ticker,
 }: Props) => {
   const [currentTab, setCurrentTab] = useState(1);
-  const [gasFiat, setGasFiat] = useState(null);
+  const [gasFiat, setGasFiat] = useState<string | null>(null);
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [isLoading, setIsLoading] = useState(true);
@@ -224,17 +226,20 @@ const GasEducationCarousel = ({
         }
 
         const maxFeePerGasConversion = getTransactionFee({
-          value: estimatedTotalGas,
+          value: estimatedTotalGas as unknown as string,
           fromCurrency: ticker,
           toCurrency: currentCurrency,
           numberOfDecimals: 2,
           conversionRate,
         });
 
-        const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
-        setGasFiat(gasFiat);
+        const gasFiatValue = formatCurrency(
+          maxFeePerGasConversion,
+          currentCurrency,
+        );
+        setGasFiat(gasFiatValue);
       } catch (e) {
-        Logger.error(e);
+        Logger.error(e as Error);
       }
       setIsLoading(false);
     };
@@ -352,9 +357,10 @@ const GasEducationCarousel = ({
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
             >
-              {['one', 'two', 'three'].map((value, index) => {
+              {['one', 'two', 'three'].map((_value, index) => {
                 const key = index + 1;
-                const imgStyleKey = `carouselImage${key}`;
+                const imgStyleKey =
+                  `carouselImage${key}` as keyof ReturnType<typeof createStyles>;
                 return (
                   <View key={key} style={baseStyles.flexGrow}>
                     <View style={styles.carouselImageWrapper}>
@@ -409,7 +415,7 @@ const GasEducationCarousel = ({
 };
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  conversionRate: selectConversionRate(state),
+  conversionRate: selectConversionRate(state) as number,
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),
 });

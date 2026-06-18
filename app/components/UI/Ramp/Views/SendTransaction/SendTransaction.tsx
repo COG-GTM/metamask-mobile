@@ -86,7 +86,7 @@ function SendTransaction() {
   useEffect(() => {
     navigation.setOptions(
       getFiatOnRampAggNavbar(
-        navigation,
+        navigation as unknown as Parameters<typeof getFiatOnRampAggNavbar>[0],
         {
           title: strings(
             'fiat_on_ramp_aggregator.send_transaction.sell_crypto',
@@ -94,6 +94,7 @@ function SendTransaction() {
           showCancel: false,
         },
         colors,
+        () => undefined,
       ),
     );
   }, [colors, navigation]);

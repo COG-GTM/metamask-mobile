@@ -98,7 +98,7 @@ describe('useNftCollectionsMetadata', () => {
       mockGetTokenDetails.mockReset().mockResolvedValueOnce({
         name: 'TEST',
         symbol: 'TST',
-        standard: SimulationTokenStandard.erc20,
+        standard: SimulationTokenStandard.erc20 as unknown as 'ERC721',
       });
 
       renderHook(() =>
