@@ -186,7 +186,7 @@ class ManualBackupStep3 extends PureComponent<Props, State> {
     const currentSeedphraseHints = await StorageWrapper.getItem(
       SEED_PHRASE_HINTS,
     );
-    const parsedHints = JSON.parse(currentSeedphraseHints);
+    const parsedHints = JSON.parse(currentSeedphraseHints ?? '{}');
     await StorageWrapper.setItem(
       SEED_PHRASE_HINTS,
       JSON.stringify({ ...parsedHints, manualBackup: hintText }),
