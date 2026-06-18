@@ -68,7 +68,11 @@ import {
   LedgerMobileBridge,
   LedgerTransportMiddleware,
 } from '@metamask/eth-ledger-bridge-keyring';
-import { Encryptor, LEGACY_DERIVATION_OPTIONS, pbkdf2 } from '../Encryptor';
+import {
+  Encryptor,
+  DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+  pbkdf2,
+} from '../Encryptor';
 import { getDecimalChainId, isTestNet } from '../../util/networks';
 import {
   fetchEstimatedMultiLayerL1Fee,
@@ -208,8 +212,13 @@ import { toFormattedAddress } from '../../util/address';
 
 const NON_EMPTY = 'NON_EMPTY';
 
+// The vault encryptor derives the key for the SRP/private-key vault using
+// OWASP-2023 recommended PBKDF2 parameters. Legacy vaults remain decryptable
+// because Encryptor.decrypt reads the KDF parameters from the payload, and the
+// KeyringController re-encrypts older vaults with these parameters on unlock
+// (via Encryptor.isVaultUpdated).
 const encryptor = new Encryptor({
-  keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
+  keyDerivationOptions: DERIVATION_OPTIONS_DEFAULT_OWASP2023,
 });
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
