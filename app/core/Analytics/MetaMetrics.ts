@@ -203,15 +203,15 @@ class MetaMetrics implements IMetaMetrics {
    * Retrieve the analytics deletion request date from the preference
    * @private
    */
-  #getDeleteRegulationDateFromPrefs = async (): Promise<string> =>
-    (await StorageWrapper.getItem(ANALYTICS_DATA_DELETION_DATE)) ?? '';
+  #getDeleteRegulationDateFromPrefs = async (): Promise<DataDeleteDate> =>
+    (await StorageWrapper.getItem(ANALYTICS_DATA_DELETION_DATE)) ?? undefined;
 
   /**
    * Retrieve the analytics deletion regulation ID from the preference
    * @private
    */
-  #getDeleteRegulationIdFromPrefs = async (): Promise<string> =>
-    (await StorageWrapper.getItem(METAMETRICS_DELETION_REGULATION_ID)) ?? '';
+  #getDeleteRegulationIdFromPrefs = async (): Promise<DataDeleteRegulationId> =>
+    (await StorageWrapper.getItem(METAMETRICS_DELETION_REGULATION_ID)) ?? undefined;
 
   /**
    * Persist the analytics recording status

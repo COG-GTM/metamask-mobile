@@ -27,7 +27,7 @@ import {
   setHideZeroBalanceTokens,
 } from '../../../../actions/settings';
 import PickComponent from '../../PickComponent';
-import { toDataUrl } from '../../../../util/blockies.js';
+import { toDataUrl } from '../../../../util/blockies';
 import Jazzicon from 'react-native-jazzicon';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { selectCurrentCurrency } from '../../../../selectors/currencyRateController';
