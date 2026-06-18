@@ -86,7 +86,7 @@ interface SwitchToNetworkHooks {
 }
 
 export function validateChainId(chainId: string): Hex {
-  const _chainId = typeof chainId === 'string' && chainId.toLowerCase();
+  const _chainId = typeof chainId === 'string' ? chainId.toLowerCase() : chainId;
 
   if (!isPrefixedFormattedHexString(_chainId)) {
     throw rpcErrors.invalidParams(

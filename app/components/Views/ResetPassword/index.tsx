@@ -11,6 +11,7 @@ import {
   ScrollView,
   Image,
   InteractionManager,
+  DimensionValue,
 } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -30,6 +31,7 @@ import { strings } from '../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AppConstants from '../../../core/AppConstants';
+// @ts-expect-error zxcvbn does not ship type declarations
 import zxcvbn from 'zxcvbn';
 import { ONBOARDING, PREVIOUS_SCREEN } from '../../../constants/navigation';
 import {
@@ -48,13 +50,16 @@ import {
 } from '../../../util/authentication';
 import { Authentication } from '../../../core';
 import AUTHENTICATION_TYPE from '../../../constants/userProperties';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
+import { Dispatch } from 'redux';
 import { LoginOptionsSwitch } from '../../UI/LoginOptionsSwitch';
 import { recreateVaultWithNewPassword } from '../../../core/Vault';
 import Logger from '../../../util/Logger';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
 import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ChoosePassword.selectors';
+import foxImage from '../../../images/branding/fox.png';
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -240,6 +245,8 @@ const createStyles = (colors: Theme['colors']) =>
       flexDirection: 'row',
       alignSelf: 'center',
     },
+    loader: {},
+    button: {},
   });
 
 const PASSCODE_NOT_SET_ERROR = 'Error: Passcode not set.';
@@ -254,6 +261,7 @@ interface OwnProps {
     setOptions: (options: Record<string, unknown>) => void;
     navigate: (route: string, params?: Record<string, unknown>) => void;
     push: (route: string, params?: Record<string, unknown>) => void;
+    setParams: (params: Record<string, unknown>) => void;
   };
   route: {
     params?: {
@@ -284,7 +292,7 @@ interface ResetPasswordState {
   rememberMe: boolean;
   loading: boolean;
   error: string | null;
-  inputWidth: { width: string };
+  inputWidth: { width: DimensionValue };
   view: string;
   originalPassword: string | null;
   ready: boolean;
@@ -293,6 +301,8 @@ interface ResetPasswordState {
 }
 
 class ResetPassword extends PureComponent<Props, ResetPasswordState> {
+  declare context: React.ContextType<typeof ThemeContext>;
+
   state: ResetPasswordState = {
     isSelected: false,
     password: '',
@@ -319,7 +329,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('password_reset.change_password'),
-        navigation,
+        navigation as unknown as Parameters<typeof getNavigationOptionsTitle>[1],
         false,
         colors,
       ),
@@ -359,7 +369,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
     }, 100);
   }
 
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(_prevProps: Props, prevState: ResetPasswordState) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
     const { loading } = this.state;
@@ -409,7 +419,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
         );
         await Authentication.storePassword(password, authData.currentAuthType);
       } catch (error) {
-        Logger.error(error);
+        Logger.error(error as Error);
       }
 
       this.props.setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT);
@@ -426,14 +436,14 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
       });
     } catch (error) {
       // Should we force people to enable passcode / biometrics?
-      if (error.toString() === PASSCODE_NOT_SET_ERROR) {
+      if ((error as Error).toString() === PASSCODE_NOT_SET_ERROR) {
         Alert.alert(
           strings('choose_password.security_alert_title'),
           strings('choose_password.security_alert_message'),
         );
         this.setState({ loading: false });
       } else {
-        this.setState({ loading: false, error: error.toString() });
+        this.setState({ loading: false, error: (error as Error).toString() });
       }
     }
   };
@@ -446,8 +456,8 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
     const { originalPassword, password: newPassword } = this.state;
     // Recreate keyring with password
     await recreateVaultWithNewPassword(
-      originalPassword,
-      newPassword,
+      originalPassword ?? '',
+      newPassword ?? '',
       this.props.selectedAddress,
     );
   };
@@ -464,7 +474,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
 
   renderSwitch = () => {
     const { biometryType, biometryChoice } = this.state;
-    const handleUpdateRememberMe = (rememberMe) => {
+    const handleUpdateRememberMe = (rememberMe: boolean) => {
       this.setState({ rememberMe });
     };
     return (
@@ -504,7 +514,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
 
   tryUnlock = () => {
     const { password } = this.state;
-    this.tryUnlockWithPassword(password);
+    this.tryUnlockWithPassword(password ?? '');
   };
 
   onPasswordChange = (val: string) => {
@@ -617,7 +627,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
     const passwordsMatch = password !== '' && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
     const previousScreen = this.props.route.params?.[PREVIOUS_SCREEN];
-    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength);
+    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength ?? 0);
 
     return (
       <SafeAreaView style={styles.mainWrapper}>
@@ -625,7 +635,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
           <View style={styles.loadingWrapper}>
             <View style={styles.foxWrapper}>
               <Image
-                source={require('../../../images/branding/fox.png')}
+                source={foxImage}
                 style={styles.image}
                 resizeMethod={'auto'}
               />
@@ -678,7 +688,7 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
                   </Text>
                   <TextInput
                     style={[styles.input, inputWidth]}
-                    value={password}
+                    value={password ?? ''}
                     onChangeText={this.onPasswordChange}
                     secureTextEntry={secureTextEntry}
                     placeholder=""
@@ -706,7 +716,9 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
                     <Text
                       variant={TextVariant.BodySM}
                       style={styles.hintLabel}
-                    />
+                    >
+                      {''}
+                    </Text>
                   )}
                 </View>
                 <View style={styles.field}>
@@ -724,7 +736,6 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
                     testID={
                       ChoosePasswordSelectorsIDs.CONFIRM_PASSWORD_INPUT_ID
                     }
-                    zasdfasfasf
                     onSubmitEditing={this.onPressCreate}
                     returnKeyType={'done'}
                     autoCapitalize="none"
@@ -822,10 +833,10 @@ class ResetPassword extends PureComponent<Props, ResetPasswordState> {
 ResetPassword.contextType = ThemeContext;
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) ?? '',
 });
 
-const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   passwordSet: () => dispatch(passwordSet()),
   setLockTime: (time) => dispatch(setLockTime(time)),
   seedphraseNotBackedUp: () => dispatch(seedphraseNotBackedUp()),

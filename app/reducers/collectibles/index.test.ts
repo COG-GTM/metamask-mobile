@@ -2,10 +2,11 @@ import { ChainId } from '@metamask/controller-utils';
 import reducer, {
   ADD_FAVORITE_COLLECTIBLE,
   REMOVE_FAVORITE_COLLECTIBLE,
+  CollectiblesAction,
 } from './index';
 import mockedEngine from '../../core/__mocks__/MockedEngine';
 
-const emptyAction = { type: null };
+const emptyAction = { type: null } as unknown as CollectiblesAction;
 
 const collectibleA1 = { tokenId: '101', address: '0xA' };
 const collectibleA2 = { tokenId: '102', address: '0xA' };

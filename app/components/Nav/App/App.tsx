@@ -284,7 +284,7 @@ const AddNetworkFlow = () => {
     <Stack.Navigator>
       <Stack.Screen
         name="AddNetwork"
-        component={NetworkSettings}
+        component={NetworkSettings as React.ComponentType}
         initialParams={route?.params}
       />
     </Stack.Navigator>

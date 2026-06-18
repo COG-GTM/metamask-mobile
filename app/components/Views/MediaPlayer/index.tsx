@@ -7,11 +7,14 @@ import {
   ViewStyle,
 } from 'react-native';
 import AndroidMediaPlayer from './AndroidMediaPlayer';
-import Video from 'react-native-video';
+import Video, { VideoRef } from 'react-native-video';
 import Device from '../../../util/device';
 import Loader from './Loader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { TapGestureHandler } from 'react-native-gesture-handler';
+import {
+  TapGestureHandler,
+  TapGestureHandlerProps,
+} from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -20,6 +23,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useStyles } from '../../../component-library/hooks';
+
+const TapGestureHandlerWithChildren =
+  TapGestureHandler as React.ComponentType<
+    React.PropsWithChildren<TapGestureHandlerProps>
+  >;
 
 interface TextTrack {
   title: string;
@@ -79,7 +87,7 @@ const styleSheet = ({ theme: { colors }, vars: { isPlaying } }: { theme: { color
 function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }: MediaPlayerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const videoRef = useRef<typeof Video>(null);
+  const videoRef = useRef<VideoRef>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const videoControlsOpacity = useSharedValue(0);
@@ -100,7 +108,9 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }: Med
 
   // Video source can be either a number returned by import for bundled files
   // or an object of the form { uri: 'http://...' } for remote files
-  const source = Number.isInteger(uri) ? uri : { uri };
+  const source: { uri: string } | number = Number.isInteger(uri)
+    ? (uri as number)
+    : { uri: uri as string };
 
   const videoControlsStyle = useAnimatedStyle(() => ({
     ...styles.videoControlsStyle,
@@ -141,18 +151,24 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }: Med
             style={style}
             muted={isMuted}
             paused={!isPlaying}
-            source={source}
+            source={source as React.ComponentProps<typeof Video>['source']}
             controls={false}
             fullscreen={false}
-            textTracks={textTracks}
-            selectedTextTrack={selectedTextTrack}
+            textTracks={
+              textTracks as React.ComponentProps<typeof Video>['textTracks']
+            }
+            selectedTextTrack={
+              selectedTextTrack as React.ComponentProps<
+                typeof Video
+              >['selectedTextTrack']
+            }
             ignoreSilentSwitch="ignore"
             ref={videoRef}
           />
           {/**
            * Use custom controls for iOS since iOS 17.2+ begins crashing. https://github.com/react-native-video/react-native-video/issues/3329
            */}
-          <TapGestureHandler onEnded={onPressVideoControls}>
+          <TapGestureHandlerWithChildren onEnded={onPressVideoControls}>
             <Animated.View style={videoControlsStyle}>
               <View style={styles.playButtonCircle}>
                 <Ionicons
@@ -163,7 +179,7 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }: Med
                 />
               </View>
             </Animated.View>
-          </TapGestureHandler>
+          </TapGestureHandlerWithChildren>
           {isPlaying ? (
             <TouchableOpacity
               activeOpacity={1}

@@ -30,7 +30,7 @@ function useBalance(
         // Controller stores balances in hex for ETH
         return safeNumberToBN(
           (accounts[selectedAddress] && accounts[selectedAddress].balance) || 0,
-        ) as BN;
+        ) as unknown as BN;
       }
       return renderFromWei(
         accounts[selectedAddress] && accounts[selectedAddress].balance,
@@ -47,7 +47,7 @@ function useBalance(
         sourceToken.decimals,
       );
     }
-    return safeNumberToBN(0) as BN;
+    return safeNumberToBN(0) as unknown as BN;
   }, [accounts, asUnits, balances, selectedAddress, sourceToken]);
 
   return balance;
