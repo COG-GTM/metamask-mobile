@@ -86,7 +86,7 @@ const Price = ({
     : Number(multichainAssetRates.rate);
 
   const date: string | undefined = distributedPriceData[activeChartIndex]?.[0]
-    ? toDateFormat(distributedPriceData[activeChartIndex]?.[0])
+    ? toDateFormat(Number(distributedPriceData[activeChartIndex]?.[0]))
     : timePeriodTextDict[timePeriod];
 
   const diff: number | undefined = distributedPriceData[activeChartIndex]?.[1]
