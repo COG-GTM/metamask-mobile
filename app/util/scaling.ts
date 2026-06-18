@@ -12,7 +12,7 @@ const IPHONE_11_PRO_HEIGHT = 812;
 const IPHONE_11_PRO_MAX_WIDTH = 414;
 const IPHONE_11_PRO_MAX_HEIGHT = 896;
 
-const getBaseModel = (baseModel) => {
+const getBaseModel = (baseModel: number): { width: number; height: number } => {
   if (baseModel === 1) {
     return { width: IPHONE_11_PRO_WIDTH, height: IPHONE_11_PRO_HEIGHT };
   } else if (baseModel === 2) {
@@ -22,32 +22,38 @@ const getBaseModel = (baseModel) => {
   return { width: IPHONE_6_WIDTH, height: IPHONE_6_HEIGHT };
 };
 
-const _getSizes = (scaleVertical, baseModel) => {
+const _getSizes = (scaleVertical: boolean, baseModel?: number): { currSize: number; baseScreenSize: number } => {
   const { width, height } = Dimensions.get('window');
   const CURR_WIDTH = width < height ? width : height;
   const CURR_HEIGHT = height > width ? height : width;
 
   let currSize = CURR_WIDTH;
-  let baseScreenSize = getBaseModel(baseModel).width;
+  let baseScreenSize = getBaseModel(baseModel ?? 0).width;
 
   if (scaleVertical) {
     currSize = CURR_HEIGHT;
-    baseScreenSize = getBaseModel(baseModel).height;
+    baseScreenSize = getBaseModel(baseModel ?? 0).height;
   }
 
   return { currSize, baseScreenSize };
 };
 
 const scale = (
-  size,
+  size: number,
   {
     factor = 1,
     scaleVertical = false,
     scaleUp = false,
     baseSize = undefined,
     baseModel,
+  }: {
+    factor?: number;
+    scaleVertical?: boolean;
+    scaleUp?: boolean;
+    baseSize?: number;
+    baseModel?: number;
   } = {},
-) => {
+): number => {
   const { currSize, baseScreenSize } = _getSizes(scaleVertical, baseModel);
   const sizeScaled = ((baseSize || currSize) / baseScreenSize) * size;
 
@@ -58,7 +64,7 @@ const scale = (
   return size;
 };
 
-const scaleVertical = (size, options) =>
+const scaleVertical = (size: number, options?: { factor?: number; scaleUp?: boolean; baseSize?: number; baseModel?: number }): number =>
   scale(size, { scaleVertical: true, ...options });
 
 export default { scale, scaleVertical, IPHONE_6_WIDTH, IPHONE_6_HEIGHT };

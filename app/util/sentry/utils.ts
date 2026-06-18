@@ -274,7 +274,7 @@ const ERROR_URL_ALLOWLIST = [
  * @param options.sentryId - ID of captured exception
  * @param options.comments - User's feedback/comments
  */
-export const captureSentryFeedback = ({ sentryId, comments }) => {
+export const captureSentryFeedback = ({ sentryId, comments }: { sentryId: string; comments: string }): void => {
   const userFeedback = {
     event_id: sentryId,
     name: '',
@@ -284,11 +284,11 @@ export const captureSentryFeedback = ({ sentryId, comments }) => {
   Sentry.captureUserFeedback(userFeedback);
 };
 
-function getProtocolFromURL(url) {
+function getProtocolFromURL(url: string): string {
   return new URL(url).protocol;
 }
 
-function rewriteBreadcrumb(breadcrumb) {
+function rewriteBreadcrumb(breadcrumb: Sentry.Breadcrumb): Sentry.Breadcrumb {
   if (breadcrumb.data?.url) {
     breadcrumb.data.url = getProtocolFromURL(breadcrumb.data.url);
   }
@@ -302,14 +302,14 @@ function rewriteBreadcrumb(breadcrumb) {
   return breadcrumb;
 }
 
-function rewriteErrorMessages(report, rewriteFn) {
+function rewriteErrorMessages(report: Sentry.Event, rewriteFn: (msg: string) => string): void {
   // rewrite top level message
   if (typeof report.message === 'string') {
     /** @todo parse and remove/replace URL(s) found in report.message  */
     report.message = rewriteFn(report.message);
   }
   // rewrite each exception message
-  if (report.exception && report.exception.values) {
+  if (report.exception?.values) {
     report.exception.values.forEach((item) => {
       if (typeof item.value === 'string') {
         item.value = rewriteFn(item.value);
@@ -318,7 +318,7 @@ function rewriteErrorMessages(report, rewriteFn) {
   }
 }
 
-function simplifyErrorMessages(report) {
+function simplifyErrorMessages(report: Sentry.Event): void {
   rewriteErrorMessages(report, (errorMessage) => {
     // simplify ethjs error messages
     let simplifiedErrorMessage = extractEthJsErrorMessage(errorMessage);
@@ -335,14 +335,14 @@ function simplifyErrorMessages(report) {
   });
 }
 
-function removeDeviceTimezone(report) {
-  if (report.contexts && report.contexts.device)
-    report.contexts.device.timezone = null;
+function removeDeviceTimezone(report: Sentry.Event): void {
+  if (report.contexts?.device)
+    report.contexts.device.timezone = undefined;
 }
 
-function removeDeviceName(report) {
-  if (report.contexts && report.contexts.device)
-    report.contexts.device.name = null;
+function removeDeviceName(report: Sentry.Event): void {
+  if (report.contexts?.device)
+    report.contexts.device.name = undefined;
 }
 
 /**
@@ -352,9 +352,9 @@ function removeDeviceName(report) {
  * since the 'context_line' is rather verbose.
  * @param {*} report - the error event
  */
-function removeSES(report) {
-  const stacktraceFrames = report?.exception?.values[0]?.stacktrace?.frames;
-  if (stacktraceFrames) {
+function removeSES(report: Sentry.Event): void {
+  const stacktraceFrames = report?.exception?.values?.[0]?.stacktrace?.frames;
+  if (stacktraceFrames && report.exception?.values?.[0]?.stacktrace) {
     const filteredFrames = stacktraceFrames.filter(
       (frame) => frame.filename !== 'app:///ses.cjs',
     );
@@ -380,7 +380,7 @@ function removeSES(report) {
  * @param {{[key: string]: object | boolean}} mask - The mask to apply to the object
  * @returns {object} - The masked object
  */
-export function maskObject(objectToMask, mask = {}) {
+export function maskObject(objectToMask: Record<string, unknown>, mask: Record<string | symbol, unknown> = {}): Record<string, unknown> {
   if (!objectToMask) return {};
 
   // Include both string and symbol keys.
@@ -389,7 +389,7 @@ export function maskObject(objectToMask, mask = {}) {
     ? mask[AllProperties]
     : undefined;
 
-  return Object.keys(objectToMask).reduce((maskedObject, key) => {
+  return Object.keys(objectToMask).reduce((maskedObject: Record<string, unknown>, key) => {
     // Start with the AllProperties mask if available
     let maskKey = allPropertiesMask;
 
@@ -402,13 +402,13 @@ export function maskObject(objectToMask, mask = {}) {
     const shouldIterateSubMask =
       Boolean(maskKey) &&
       typeof maskKey === 'object' &&
-      maskKey !== AllProperties;
+      maskKey !== (AllProperties as unknown);
     const shouldPrintType = maskKey === undefined || maskKey === false;
 
     if (shouldPrintValue) {
       maskedObject[key] = objectToMask[key];
     } else if (shouldIterateSubMask) {
-      maskedObject[key] = maskObject(objectToMask[key], maskKey);
+      maskedObject[key] = maskObject(objectToMask[key] as Record<string, unknown>, maskKey as Record<string | symbol, unknown>);
     } else if (shouldPrintType) {
       // For excluded fields, return their type or a placeholder
       maskedObject[key] =
@@ -416,10 +416,10 @@ export function maskObject(objectToMask, mask = {}) {
     }
 
     return maskedObject;
-  }, {});
+  }, {} as Record<string, unknown>);
 }
 
-function rewriteReport(report) {
+function rewriteReport(report: Sentry.Event): Sentry.Event {
   try {
     // filter out SES from error stack trace
     removeSES(report);
@@ -438,8 +438,10 @@ function rewriteReport(report) {
     removeDeviceName(report);
 
     const appState = store?.getState();
-    const maskedState = maskObject(appState, sentryStateMask);
-    report.contexts.appState = maskedState;
+    const maskedState = maskObject(appState as unknown as Record<string, unknown>, sentryStateMask as unknown as Record<string | symbol, unknown>);
+    if (report.contexts) {
+      report.contexts.appState = maskedState;
+    }
   } catch (err) {
     console.error('ENTER ERROR OF REPORT ', err);
     throw err;
@@ -453,7 +455,7 @@ function rewriteReport(report) {
  * @param {*} event - to be logged
  * @returns {(event|null)}
  */
-export function excludeEvents(event) {
+export function excludeEvents(event: Sentry.Event): Sentry.Event | null {
   // This is needed because store starts to initialise before performance observers completes to measure app start time
   if (event?.transaction === TraceName.UIStartup) {
     event.tags = getTraceTags(store.getState());
@@ -480,7 +482,7 @@ export function excludeEvents(event) {
   return event;
 }
 
-function sanitizeUrlsFromErrorMessages(report) {
+function sanitizeUrlsFromErrorMessages(report: Sentry.Event): void {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
 
@@ -493,7 +495,7 @@ function sanitizeUrlsFromErrorMessages(report) {
   });
 }
 
-function sanitizeAddressesFromErrorMessages(report) {
+function sanitizeAddressesFromErrorMessages(report: Sentry.Event): void {
   rewriteErrorMessages(report, (errorMessage) => {
     const newErrorMessage = errorMessage.replace(
       regex.replaceNetworkErrorSentry,
@@ -509,20 +511,16 @@ function sanitizeAddressesFromErrorMessages(report) {
  * - https://github.com/MetaMask/metamask-extension/blob/34375a57e558853aab95fe35d5f278aa52b66636/app/scripts/lib/setupSentry.js#L91
  *
  * @param {boolean} isDev - Represents if the current environment is development (__DEV__ global variable).
- * @param {string} [metamaskEnvironment='local'] - The environment MetaMask is running in
- *                                                  (process.env.METAMASK_ENVIRONMENT).
- *                                                  It defaults to 'local' if not provided.
- * @param {string} [metamaskBuildType='main'] - The build type of MetaMask
- *                                              (process.env.METAMASK_BUILD_TYPE).
- *                                              It defaults to 'main' if not provided.
+ * @param {string} [metamaskEnvironment='local'] - The environment MetaMask is running in (process.env.METAMASK_ENVIRONMENT). It defaults to 'local' if not provided.
+ * @param {string} [metamaskBuildType='main'] - The build type of MetaMask (process.env.METAMASK_BUILD_TYPE). It defaults to 'main' if not provided.
  *
  * @returns {string} - "metamaskEnvironment-metamaskBuildType" or just "metamaskEnvironment" if the build type is "main".
  */
 export function deriveSentryEnvironment(
-  isDev,
+  isDev: boolean,
   metamaskEnvironment = 'local',
   metamaskBuildType = 'main',
-) {
+): string {
   if (isDev || !metamaskEnvironment) {
     return 'development';
   }
@@ -535,7 +533,7 @@ export function deriveSentryEnvironment(
 }
 
 // Setup sentry remote error reporting
-export function setupSentry() {
+export function setupSentry(): void {
   const dsn = process.env.MM_SENTRY_DSN;
 
   // Disable Sentry for E2E tests or when DSN is not provided
@@ -564,8 +562,10 @@ export function setupSentry() {
       // Set tracesSampleRate to 1.0, as that ensures that every transaction will be sent to Sentry for development builds.
       tracesSampleRate: isDev || isQa ? 1.0 : 0.03,
       profilesSampleRate: 1.0,
+      // @ts-expect-error rewriteReport returns compatible Event type
       beforeSend: (report) => rewriteReport(report),
       beforeBreadcrumb: (breadcrumb) => rewriteBreadcrumb(breadcrumb),
+      // @ts-expect-error excludeEvents returns compatible Event type
       beforeSendTransaction: (event) => excludeEvents(event),
       enabled: metricsOptIn === AGREED,
       // Use tracePropagationTargets from v5 SDK as default
@@ -576,4 +576,4 @@ export function setupSentry() {
 }
 
 // eslint-disable-next-line no-empty-function
-export function deleteSentryData() {}
+export function deleteSentryData(): void {}
