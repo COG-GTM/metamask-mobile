@@ -466,7 +466,9 @@ const EditGasFeeLegacy = ({
                           </View>
                         }
                         value={gasFee.suggestedGasLimit}
-                        onChangeValue={changedGasLimit}
+                        onChangeValue={
+                          changedGasLimit as (value: string | undefined) => void
+                        }
                         min={GAS_LIMIT_MIN}
                         name={strings('edit_gas_fee_eip1559.gas_limit')}
                         increment={GAS_LIMIT_INCREMENT}
@@ -500,8 +502,10 @@ const EditGasFeeLegacy = ({
                         inputInsideLabel={
                           gasFeeConversion && `≈ ${gasFeeConversion}`
                         }
-                        onChangeValue={changedGasPrice}
-                        error={gasPriceError}
+                        onChangeValue={
+                          changedGasPrice as (value: string | undefined) => void
+                        }
+                        error={gasPriceError ?? undefined}
                       />
                     </View>
                   </View>

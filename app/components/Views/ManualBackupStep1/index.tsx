@@ -7,6 +7,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Appearance,
+  ViewStyle,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { RootState } from '../../../reducers';
@@ -65,12 +66,13 @@ type Props = OwnProps & StateProps;
 const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
   const [seedPhraseHidden, setSeedPhraseHidden] = useState(true);
 
-  const [password, setPassword] = useState(undefined);
-  const [warningIncorrectPassword, setWarningIncorrectPassword] =
-    useState(undefined);
+  const [password, setPassword] = useState<string | undefined>(undefined);
+  const [warningIncorrectPassword, setWarningIncorrectPassword] = useState<
+    string | undefined
+  >(undefined);
   const [ready, setReady] = useState(false);
-  const [view, setView] = useState(SEED_PHRASE);
-  const [words, setWords] = useState([]);
+  const [view, setView] = useState<string>(SEED_PHRASE);
+  const [words, setWords] = useState<string[]>([]);
 
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
@@ -82,7 +84,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
     navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
   }, [colors, navigation, route]);
 
-  const tryExportSeedPhrase = async (password) => {
+  const tryExportSeedPhrase = async (password: string) => {
     const { KeyringController } = Engine.context;
     const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(
       password,
@@ -140,16 +142,19 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
     );
   };
 
-  const tryUnlockWithPassword = async (password) => {
+  const tryUnlockWithPassword = async (password: string | undefined) => {
     setReady(false);
     try {
-      const seedPhrase = await tryExportSeedPhrase(password);
+      const seedPhrase = await tryExportSeedPhrase(password as string);
       setWords(seedPhrase);
       setView(SEED_PHRASE);
       setReady(true);
     } catch (e) {
       let msg = strings('reveal_credential.warning_incorrect_password');
-      if (e.toString().toLowerCase() !== WRONG_PASSWORD_ERROR.toLowerCase()) {
+      if (
+        (e as Error).toString().toLowerCase() !==
+        WRONG_PASSWORD_ERROR.toLowerCase()
+      ) {
         msg = strings('reveal_credential.unknown_error');
       }
       setWarningIncorrectPassword(msg);
@@ -161,8 +166,8 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
     tryUnlockWithPassword(password);
   };
 
-  const getBlurType = (): string => {
-    let blurType = 'light';
+  const getBlurType = (): 'light' | 'dark' => {
+    let blurType: 'light' | 'dark' = 'light';
     switch (appTheme) {
       case 'light':
         blurType = 'light';
@@ -171,7 +176,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
         blurType = 'dark';
         break;
       case 'os':
-        blurType = Appearance.getColorScheme();
+        blurType = Appearance.getColorScheme() ?? 'light';
         break;
       default:
         blurType = 'light';
@@ -193,7 +198,9 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
           <Text style={styles.watching}>
             {strings('manual_backup_step_1.watching')}
           </Text>
-          <View style={styles.viewButtonWrapper}>
+          <View
+            style={(styles as { viewButtonWrapper?: ViewStyle }).viewButtonWrapper}
+          >
             <StyledButton
               type={'onOverlay'}
               onPress={revealSeedPhrase}
@@ -243,7 +250,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
           </View>
           <View style={styles.buttonWrapper}>
             <StyledButton
-              containerStyle={styles.button}
+              containerStyle={(styles as { button?: ViewStyle }).button}
               type={'confirm'}
               onPress={tryUnlock}
               testID={ManualBackUpStepsSelectorsIDs.SUBMIT_BUTTON}

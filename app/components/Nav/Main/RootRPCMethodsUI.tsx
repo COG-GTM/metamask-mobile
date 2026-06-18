@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
 import { Alert } from 'react-native';
 import { connect, useSelector } from 'react-redux';
+import { Dispatch } from 'redux';
 import { ethers } from 'ethers';
 // @ts-expect-error human-standard-token-abi has no type declarations
 import abi from 'human-standard-token-abi';
@@ -377,7 +378,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
         ) {
           Alert.alert(
             strings('transactions.transaction_error'),
-            err && err.message,
+            err?.message,
             [{ text: strings('navigation.ok') }],
           );
           Logger.error(err as Error, 'error while trying to send transaction (Main)');
@@ -592,7 +593,7 @@ const mapStateToProps = (state: RootState) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch: (action: Record<string, unknown>) => void) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   setEtherTransaction: (transaction: Record<string, unknown>) =>
     dispatch(setEtherTransaction(transaction)),
   setTransactionObject: (transaction: Record<string, unknown>) =>

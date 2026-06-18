@@ -389,7 +389,7 @@ class Confirm extends PureComponent<Props, State> {
         navigation,
         route,
         colors,
-        resetTransaction,
+        resetTransaction as () => void,
         transaction,
       ),
     );
@@ -500,7 +500,7 @@ class Confirm extends PureComponent<Props, State> {
     showCustomNonce && (await this.setNetworkNonce());
     navigation.setParams({ providerType, isPaymentRequest });
     this.parseTransactionDataHeader();
-    if (isMultiLayerFeeNetwork(chainId)) {
+    if (isMultiLayerFeeNetwork(chainId as string)) {
       this.fetchEstimatedL1Fee();
       intervalIdForEstimatedL1Fee = setInterval(
         this.fetchEstimatedL1Fee,
@@ -1496,7 +1496,7 @@ class Confirm extends PureComponent<Props, State> {
               >
                 {transactionValue}
               </Text>
-              {isMainnetByChainId(chainId) && (
+              {isMainnetByChainId(chainId as string) && (
                 <Text style={styles.textAmountLabel}>
                   {transactionValueFiat}
                 </Text>
@@ -1567,7 +1567,8 @@ class Confirm extends PureComponent<Props, State> {
 
           {errorMessage && (
             <View style={styles.errorWrapper}>
-              {isTestNetworkWithFaucet(chainId) || isNativeTokenBuySupported ? (
+              {isTestNetworkWithFaucet(chainId as string) ||
+              isNativeTokenBuySupported ? (
                 <TouchableOpacity onPress={errorPress}>
                   <Text style={styles.error}>{errorMessage}</Text>
                   <Text style={[styles.error, styles.underline]}>

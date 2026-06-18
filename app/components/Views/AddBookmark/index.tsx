@@ -4,7 +4,8 @@ import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import ActionView from '../../UI/ActionView';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
 import { AddBookmarkViewSelectorsIDs } from '../../../../e2e/selectors/Browser/AddBookmarkView.selectors';
 
@@ -60,6 +61,8 @@ interface State {
 }
 
 export default class AddBookmark extends PureComponent<Props, State> {
+  declare context: React.ContextType<typeof ThemeContext>;
+
   state: State = {
     title: '',
     url: '',
@@ -72,7 +75,7 @@ export default class AddBookmark extends PureComponent<Props, State> {
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('add_favorite.title'),
-        navigation,
+        navigation as Parameters<typeof getNavigationOptionsTitle>[1],
         false,
         colors,
       ),
@@ -99,7 +102,7 @@ export default class AddBookmark extends PureComponent<Props, State> {
   addBookmark = () => {
     const { title, url } = this.state;
     if (title === '' || url === '') return false;
-    this.props.route.params.onAddBookmark({ name: title, url });
+    this.props.route.params?.onAddBookmark?.({ name: title, url });
     this.props.navigation.pop();
   };
 
@@ -169,7 +172,7 @@ export default class AddBookmark extends PureComponent<Props, State> {
                 onChangeText={this.onUrlChange}
                 testID={AddBookmarkViewSelectorsIDs.URL_TEXT}
                 ref={this.urlInput}
-                onSubmitEditing={this.addToken}
+                onSubmitEditing={(this as { addToken?: () => void }).addToken}
                 returnKeyType={'done'}
                 placeholderTextColor={colors.text.muted}
                 keyboardAppearance={themeAppearance}
