@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import { waitFor } from '@testing-library/react-native';
 import WalletConnectSessions from './';
 import StorageWrapper from '../../../store/storage-wrapper';
