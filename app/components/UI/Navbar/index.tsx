@@ -73,7 +73,11 @@ import { BridgeViewMode } from '../Bridge/types';
 import { Theme } from '@metamask/design-tokens';
 
 type NavColors = Theme['colors'];
-type NavType = Record<string, (...args: unknown[]) => unknown> & { navigate: (...args: unknown[]) => void; pop: (...args: unknown[]) => void; goBack: (...args: unknown[]) => void; setOptions: (opts: Record<string, unknown>) => void; push: (...args: unknown[]) => void; dispatch: (...args: unknown[]) => void };
+// These navbar helpers are shared across stack/tab navigators whose navigation
+// objects expose different method sets (e.g. `pop`/`push` are stack-only), so the
+// navigation param is intentionally typed loosely.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type NavType = any;
 interface RouteType { params?: Record<string, unknown>; name?: string }
 
 const trackEvent = (event: IMetaMetricsEvent | ITrackingEvent, _params: Record<string, unknown> = {}) => {
