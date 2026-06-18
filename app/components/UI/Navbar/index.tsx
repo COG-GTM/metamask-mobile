@@ -657,6 +657,7 @@ export function getModalNavbarOptions(title: string) {
  */
 export function getOnboardingNavbarOptions(
   route: RouteType,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
   { headerLeft }: { headerLeft?: unknown } = {},
   themeColors: NavColors,
 ) {
@@ -1306,10 +1307,10 @@ export function getNetworkNavbarOptions(
   title: string,
   translate: boolean,
   navigation: NavType,
-  themeColors: NavColors,
+  _themeColors: NavColors,
   onRightPress: (() => void) | undefined = undefined,
   disableNetwork = false,
-  contentOffset = 0,
+  _contentOffset = 0,
   networkName = '',
 ) {
   return {
@@ -1815,6 +1816,7 @@ export function getBridgeTransactionDetailsNavbar(navigation: NavType) {
 
 export function getFiatOnRampAggNavbar(
   navigation: NavType,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
   { title = 'Buy', showBack = true, showCancel = true }: { title?: string; showBack?: boolean; showCancel?: boolean } = {},
   themeColors: NavColors,
   onCancel: () => void,

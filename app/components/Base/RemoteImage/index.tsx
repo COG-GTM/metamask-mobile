@@ -186,9 +186,7 @@ const RemoteImage = (props: RemoteImageProps) => {
   }, [chainId]);
 
   const isSVG =
-    source &&
-    source.uri &&
-    source.uri.match('.svg') &&
+    source?.uri?.match('.svg') &&
     (isImageUrl || resolvedIpfsUrl);
 
   const viewbox = useSvgUriViewBox(uri as string, isSVG);

@@ -66,7 +66,7 @@ interface NavigationUnitTestProps {
   secondRoute?: string;
 }
 
-const NavigationUnitTest = ({ firstRoute, secondRoute }: NavigationUnitTestProps) => (
+const NavigationUnitTest = ({ firstRoute }: NavigationUnitTestProps) => (
   <NavigationContainer>
     <Stack.Navigator initialRouteName={firstRoute || 'TestStack'}>
       <Stack.Screen name="TestStack" component={TestStack} />

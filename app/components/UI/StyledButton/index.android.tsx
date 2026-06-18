@@ -56,13 +56,13 @@ export default class StyledButton extends PureComponent<StyledButtonProps> {
 
     const children = coalesceNonElementChildren(
       this.props.children,
-      (children: React.ReactNode, index: number) => (
+      (child: React.ReactNode, index: number) => (
         <Text
           key={index}
           style={style}
           allowFontScaling={this.props.allowFontScaling}
         >
-          {children}
+          {child}
         </Text>
       ),
     );

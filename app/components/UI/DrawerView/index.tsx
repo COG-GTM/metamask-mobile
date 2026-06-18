@@ -28,7 +28,7 @@ import { renderFromWei, renderFiat } from '../../../util/number';
 import { strings } from '../../../../locales/i18n';
 import Modal from 'react-native-modal';
 import {
-  toggleInfoNetworkModal,
+  toggleInfoNetworkModal as toggleInfoNetworkModalCreator,
   toggleNetworkModal,
 } from '../../../actions/modals';
 import { showAlert } from '../../../actions/alert';
@@ -41,6 +41,7 @@ import Logger from '../../../util/Logger';
 import Device from '../../../util/device';
 import AppConstants from '../../../core/AppConstants';
 import { MetaMetricsEvents } from '../../../core/Analytics';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import EthereumAddress from '../EthereumAddress';
 import { getEther } from '../../../util/transactions';
@@ -63,8 +64,8 @@ import { Authentication } from '../../../core/';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { getLabelTextByAddress } from '../../../util/address';
 import {
-  onboardNetworkAction,
-  networkSwitched,
+  onboardNetworkAction as onboardNetworkActionCreator,
+  networkSwitched as networkSwitchedCreator,
 } from '../../../actions/onboardNetwork';
 import Routes from '../../../constants/navigation/Routes';
 import { scale } from 'react-native-size-matters';
@@ -536,7 +537,7 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
   }
 
   updateAccountInfo = async () => {
-    const { providerConfig, selectedInternalAccount, chainId } = this.props;
+    const { selectedInternalAccount, chainId } = this.props;
     const { currentChainId, address, name } = this.state.account;
     const accountName = selectedInternalAccount?.metadata?.name;
     if (
@@ -1138,10 +1139,10 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
                     {section
                       .filter((item) => {
                         if (!item) return undefined;
-                        const { name = undefined } = item;
+                        const { name: itemName = undefined } = item;
                         if (
-                          name &&
-                          name.toLowerCase().indexOf('etherscan') !== -1
+                          itemName &&
+                          itemName.toLowerCase().indexOf('etherscan') !== -1
                         ) {
                           const type = providerConfig?.type;
                           return (
@@ -1245,10 +1246,11 @@ const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps 
   newAssetTransaction: (selectedAsset) =>
     dispatch(newAssetTransaction(selectedAsset as object)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
-  onboardNetworkAction: (chainId) => dispatch(onboardNetworkAction(chainId)),
+  onboardNetworkAction: (chainId) =>
+    dispatch(onboardNetworkActionCreator(chainId)),
   networkSwitched: ({ networkUrl, networkStatus }) =>
-    dispatch(networkSwitched({ networkUrl, networkStatus })),
-  toggleInfoNetworkModal: () => dispatch(toggleInfoNetworkModal(false)),
+    dispatch(networkSwitchedCreator({ networkUrl, networkStatus })),
+  toggleInfoNetworkModal: () => dispatch(toggleInfoNetworkModalCreator(false)),
 });
 
 DrawerView.contextType = ThemeContext;

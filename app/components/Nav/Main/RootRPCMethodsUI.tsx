@@ -12,8 +12,8 @@ import Engine from '../../../core/Engine';
 import { strings } from '../../../../locales/i18n';
 import { hexToBN, fromWei, isZeroValue } from '../../../util/number';
 import {
-  setEtherTransaction,
-  setTransactionObject,
+  setEtherTransaction as setEtherTransactionAction,
+  setTransactionObject as setTransactionObjectAction,
 } from '../../../actions/transaction';
 import WalletConnect from '../../../core/WalletConnect/WalletConnect';
 import {
@@ -101,8 +101,8 @@ export const useSwapConfirmedEvent = ({ trackSwaps }: UseSwapConfirmedEventParam
     useState<string[]>([]);
 
   const addTransactionMetaIdForListening = useCallback((txMetaId: string) => {
-    setTransactionMetaIdsForListening((transactionMetaIdsForListening) => [
-      ...transactionMetaIdsForListening,
+    setTransactionMetaIdsForListening((prevIds) => [
+      ...prevIds,
       txMetaId,
     ]);
   }, []);
@@ -324,24 +324,24 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
       try {
         Engine.controllerMessenger.subscribeOnceIf(
           'TransactionController:transactionFinished',
-          (transactionMeta) => {
-            if (transactionMeta.status === 'submitted') {
+          (finishedMeta) => {
+            if (finishedMeta.status === 'submitted') {
               NotificationManager.watchSubmittedTransaction({
-                ...transactionMeta,
-                assetType: (transactionMeta.txParams as Record<string, unknown>).assetType as string,
+                ...finishedMeta,
+                assetType: (finishedMeta.txParams as Record<string, unknown>).assetType as string,
               });
             } else {
-              if (swapsTransactions[transactionMeta.id]?.analytics) {
+              if (swapsTransactions[finishedMeta.id]?.analytics) {
                 trackSwaps(
                   MetaMetricsEvents.SWAP_FAILED,
-                  transactionMeta,
+                  finishedMeta,
                   swapsTransactions,
                 );
               }
-              throw transactionMeta.error;
+              throw finishedMeta.error;
             }
           },
-          (transactionMeta) => transactionMeta.id === transactionId,
+          (finishedMeta) => finishedMeta.id === transactionId,
         );
 
         // Queue txMetaId to listen for confirmation event
@@ -423,7 +423,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
         const {
           chainId,
           networkClientId,
-          txParams: { value, gas, gasPrice, data },
+          txParams: { value, gas, gasPrice },
         } = transactionMeta;
         const { AssetsContractController } = Engine.context;
         const txParams = transactionMeta.txParams as Record<string, unknown>;
@@ -595,9 +595,9 @@ const mapStateToProps = (state: RootState) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   setEtherTransaction: (transaction: Record<string, unknown>) =>
-    dispatch(setEtherTransaction(transaction)),
+    dispatch(setEtherTransactionAction(transaction)),
   setTransactionObject: (transaction: Record<string, unknown>) =>
-    dispatch(setTransactionObject(transaction)),
+    dispatch(setTransactionObjectAction(transaction)),
 });
 
 // @ts-expect-error connect overload inference with complex component

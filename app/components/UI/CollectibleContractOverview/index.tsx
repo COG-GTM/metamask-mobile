@@ -101,8 +101,8 @@ class CollectibleContractOverview extends PureComponent<Props> {
 
   onSend = () => {
     const { collectibleContract, collectibles } = this.props;
-    const collectible = collectibles.find((collectible) =>
-      toLowerCaseEquals(collectible.address, collectibleContract.address),
+    const collectible = collectibles.find((item) =>
+      toLowerCaseEquals(item.address, collectibleContract.address),
     );
     if (collectible) {
       this.props.newAssetTransaction(collectible);

@@ -32,7 +32,7 @@ import {
   hideCurrentNotification,
   showSimpleNotification,
   removeNotificationById,
-  removeNotVisibleNotifications,
+  removeNotVisibleNotifications as removeNotVisibleNotificationsAction,
 } from '../../../actions/notification';
 
 import ProtectYourWalletModal from '../../UI/ProtectYourWalletModal';
@@ -271,13 +271,13 @@ const Main = (props: MainProps) => {
   const tokenNetworkFilter = useSelector(selectTokenNetworkFilter);
 
   const hasNetworkChanged = useCallback(
-    (chainId: string, previousConfig: Record<string, unknown> | undefined, isEvmSelected: boolean) => {
+    (currentChainId: string, previousConfig: Record<string, unknown> | undefined, evmSelected: boolean) => {
       if (!previousConfig) return false;
 
-      return isEvmSelected
-        ? chainId !== previousConfig.chainId ||
+      return evmSelected
+        ? currentChainId !== previousConfig.chainId ||
             providerConfig.type !== previousConfig.type
-        : chainId !== previousConfig.chainId;
+        : currentChainId !== previousConfig.chainId;
     },
     [providerConfig.type],
   );
@@ -429,9 +429,9 @@ const Main = (props: MainProps) => {
     Linking.openURL(GOERLI_DEPRECATED_ARTICLE);
   };
 
-  const renderDeprecatedNetworkAlert = (chainId: string, backUpSeedphraseVisible: boolean) => {
-    if (DEPRECATED_NETWORKS.includes(chainId as typeof DEPRECATED_NETWORKS[number]) && showDeprecatedAlert) {
-      if (NETWORKS_CHAIN_ID.MUMBAI === chainId) {
+  const renderDeprecatedNetworkAlert = (currentChainId: string, backUpSeedphraseVisible: boolean) => {
+    if (DEPRECATED_NETWORKS.includes(currentChainId as typeof DEPRECATED_NETWORKS[number]) && showDeprecatedAlert) {
+      if (NETWORKS_CHAIN_ID.MUMBAI === currentChainId) {
         return (
           <WarningAlert
             text={strings('networks.network_deprecated_title')}
@@ -511,7 +511,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   setInfuraAvailabilityNotBlocked: () =>
     dispatch(setInfuraAvailabilityNotBlocked()),
   removeNotVisibleNotifications: () =>
-    dispatch(removeNotVisibleNotifications()),
+    dispatch(removeNotVisibleNotificationsAction()),
 });
 
 const ConnectedMain = connect(mapStateToProps, mapDispatchToProps)(Main);

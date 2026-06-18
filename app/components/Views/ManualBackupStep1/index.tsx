@@ -84,10 +84,10 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
     navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
   }, [colors, navigation, route]);
 
-  const tryExportSeedPhrase = async (password: string) => {
+  const tryExportSeedPhrase = async (passwordInput: string) => {
     const { KeyringController } = Engine.context;
     const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(
-      password,
+      passwordInput,
     );
     return uint8ArrayToMnemonic(uint8ArrayMnemonic, wordlist).split(' ');
   };
@@ -122,8 +122,8 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
     updateNavBar();
   }, [updateNavBar]);
 
-  const onPasswordChange = (password: string) => {
-    setPassword(password);
+  const onPasswordChange = (value: string) => {
+    setPassword(value);
   };
 
   const goNext = () => {
@@ -142,10 +142,10 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
     );
   };
 
-  const tryUnlockWithPassword = async (password: string | undefined) => {
+  const tryUnlockWithPassword = async (passwordInput: string | undefined) => {
     setReady(false);
     try {
-      const seedPhrase = await tryExportSeedPhrase(password as string);
+      const seedPhrase = await tryExportSeedPhrase(passwordInput as string);
       setWords(seedPhrase);
       setView(SEED_PHRASE);
       setReady(true);

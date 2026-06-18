@@ -365,7 +365,7 @@ export default function VideoPlayer({
     }
   };
 
-  const onSeek = (data = {}) => {
+  const onSeek = (_data = {}) => {
     if (scrubbing) {
       if (!seeking) {
         setPaused(originallyPaused);
@@ -395,15 +395,15 @@ export default function VideoPlayer({
     () =>
       PanResponder.create({
         // Ask to be the responder.
-        onStartShouldSetPanResponder: (evt, gestureState) => true,
-        onMoveShouldSetPanResponder: (evt, gestureState) => true,
+        onStartShouldSetPanResponder: (_evt, _gestureState) => true,
+        onMoveShouldSetPanResponder: (_evt, _gestureState) => true,
 
         /**
          * When we start the pan tell the machine that we're
          * seeking. This stops it from updating the seekbar
          * position in the onProgress listener.
          */
-        onPanResponderGrant: (evt, gestureState) => {
+        onPanResponderGrant: (evt, _gestureState) => {
           const position = evt.nativeEvent.locationX;
           updateSeekerPosition(position);
           setPaused(false);
@@ -415,7 +415,7 @@ export default function VideoPlayer({
         /**
          * When panning, update the seekbar position, duh.
          */
-        onPanResponderMove: (evt, gestureState) => {
+        onPanResponderMove: (_evt, gestureState) => {
           const position = seekerOffset + gestureState.dx;
           updateSeekerPosition(position);
 
@@ -434,7 +434,7 @@ export default function VideoPlayer({
         /**
          * On release we update the time and seek to it in the video.
          */
-        onPanResponderRelease: (evt, gestureState) => {
+        onPanResponderRelease: (_evt, _gestureState) => {
           const time = calculateTimeFromSeekerPosition();
           if (time >= duration && !loading) {
             setPaused(true);
@@ -463,12 +463,12 @@ export default function VideoPlayer({
     (
       children: React.ReactNode,
       callback?: () => void,
-      style: StyleProp<ViewStyle> = {},
+      controlStyle: StyleProp<ViewStyle> = {},
     ) => (
       <TouchableHighlight
         underlayColor="transparent"
         onPress={callback}
-        style={[styles.controlsControl, style]}
+        style={[styles.controlsControl, controlStyle]}
       >
         {children}
       </TouchableHighlight>
