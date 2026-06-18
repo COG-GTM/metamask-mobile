@@ -11,6 +11,8 @@ const store = mockStore(initialState);
 const navigation = {
   setOptions: jest.fn(),
   navigate: jest.fn(),
+  reset: jest.fn(),
+  pop: jest.fn(),
   dangerouslyGetParent: () => ({ pop: jest.fn() }),
 };
 const route = { params: {} };

@@ -603,7 +603,7 @@ class Send extends PureComponent<Props, State> {
             'transfer',
             // @ts-expect-error Legacy JS migration - TS2339
             transactionMeta.transaction.data,
-          );
+          ) as string[];
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);
           }

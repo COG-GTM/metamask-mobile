@@ -259,7 +259,6 @@ class TypedSign extends PureComponent<Props, State> {
     }
 
     const rootView = showExpandedMessage ? (
-      // @ts-expect-error ExpandedMessage default export is the Props type, not the class (broken by JS->TS migration in a file outside this task's scope) - TS2693
       <ExpandedMessage
         currentPageInformation={currentPageInformation}
         renderMessage={this.renderTypedMessage}

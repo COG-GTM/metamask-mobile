@@ -73,7 +73,7 @@ const createStyles = (colors: any) =>
 /**
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
-export default // TODO: Replace "any" with type
+// TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -130,3 +130,5 @@ class ExpandedMessage extends PureComponent<Props> {
 }
 
 ExpandedMessage.contextType = ThemeContext;
+
+export default ExpandedMessage;

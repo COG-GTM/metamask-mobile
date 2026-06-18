@@ -797,7 +797,7 @@ class Confirm extends PureComponent<Props, State> {
         });
       }
 
-      const [, , rawAmount] = decodeTransferData('transfer', data);
+      const [, , rawAmount] = decodeTransferData('transfer', data) as string[];
       const rawAmountString = parseInt(rawAmount, 16).toLocaleString(
         'fullwide',
         { useGrouping: false },
