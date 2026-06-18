@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unused-vars, import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   ScrollView,
   TouchableOpacity,
@@ -16,9 +16,11 @@ import Device from '../../../util/device';
 import { connect } from 'react-redux';
 import { isMainNet } from '../../../util/networks';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 import { selectChainId } from '../../../selectors/networkController';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -112,26 +114,26 @@ const openSeaLogo = require('../../../images/opensea-logo-flat-colored-blue.png'
 /**
  * View that contains a collectible contract information as description, total supply and address
  */
-class CollectibleContractInformation extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * An function to handle the close event
-     */
-    onClose: PropTypes.func,
-    /**
-     * Collectible contract object
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string.isRequired,
-  };
+interface CollectibleContract {
+  name: string;
+  description?: string;
+  totalSupply?: string;
+  address: string;
+}
+
+interface OwnProps {
+  navigation: { push: (route: string, params: Record<string, unknown>) => void };
+  onClose: (value: boolean) => void;
+  collectibleContract: CollectibleContract;
+}
+
+interface StateProps {
+  chainId: string;
+}
+
+type Props = OwnProps & StateProps;
+
+class CollectibleContractInformation extends PureComponent<Props> {
 
   closeModal = () => {
     this.props.onClose(true);
@@ -156,7 +158,8 @@ class CollectibleContractInformation extends PureComponent {
       collectibleContract: { name, description, totalSupply, address },
       chainId,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const colors = (this.context as any)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const is_main_net = isMainNet(chainId);
 
@@ -227,7 +230,7 @@ class CollectibleContractInformation extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   chainId: selectChainId(state),
 });
 

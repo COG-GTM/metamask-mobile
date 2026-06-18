@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unused-vars, import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { query } from '@metamask/controller-utils';
 import { connect } from 'react-redux';
@@ -19,12 +19,16 @@ import EthereumAddress from '../../EthereumAddress';
 import TransactionSummary from '../../../Views/TransactionSummary';
 import { toDateFormat } from '../../../../util/date';
 import StyledButton from '../../StyledButton';
-import StatusText from '../../../Base/StatusText';
-import Text from '../../../../component-library/components/Texts/Text';
-import DetailsModal from '../../../Base/DetailsModal';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const StatusText: any = require('../../../Base/StatusText').default;
+import Text from '../../../Base/Text/Text';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const DetailsModal: any = require('../../../Base/DetailsModal').default;
 import { RPC, NO_RPC_BLOCK_EXPLORER } from '../../../../constants/network';
 import { withNavigation } from '@react-navigation/compat';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
+import { Colors } from '../../../../util/theme/models';
+import { RootState } from '../../../../reducers';
 import decodeTransaction from '../../TransactionElement/utils';
 import {
   selectChainId,
@@ -62,7 +66,7 @@ import {
 } from '../../../../constants/urls';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     viewOnEtherscan: {
       fontSize: 16,
@@ -115,61 +119,50 @@ const createStyles = (colors) =>
 /**
  * View that renders a transaction details as part of transactions list
  */
-class TransactionDetails extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Chain Id
-     */
-    chainId: PropTypes.string,
-    /**
-     * Object corresponding to a transaction, containing transaction object, networkId and transaction hash string
-     */
-    transactionObject: PropTypes.object,
-    /**
-     * Object with information to render
-     */
-    transactionDetails: PropTypes.object,
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Callback to close the view
-     */
-    close: PropTypes.func,
-    /**
-     * A string representing the network name
-     */
-    showSpeedUpModal: PropTypes.func,
-    showCancelModal: PropTypes.func,
-    selectedAddress: PropTypes.string,
-    transactions: PropTypes.array,
-    ticker: PropTypes.string,
-    tokens: PropTypes.object,
-    contractExchangeRates: PropTypes.object,
-    conversionRate: PropTypes.number,
-    currentCurrency: PropTypes.string,
-    swapsTransactions: PropTypes.object,
-    swapsTokens: PropTypes.array,
-    primaryCurrency: PropTypes.string,
+/* eslint-disable @typescript-eslint/no-explicit-any */
+interface OwnProps {
+  navigation: { push: (route: string, params?: any) => void };
+  transactionObject: any;
+  transactionDetails: any;
+  close: () => void;
+  showSpeedUpModal: (...args: any[]) => void;
+  showCancelModal: (...args: any[]) => void;
+}
 
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
+interface StateProps {
+  chainId: string;
+  networkConfigurations: any;
+  selectedAddress: string;
+  transactions: any[];
+  ticker: string;
+  tokens: any;
+  contractExchangeRates: any;
+  conversionRate: number;
+  currentCurrency: string;
+  swapsTransactions: any;
+  swapsTokens: any[];
+  primaryCurrency: string;
+  shouldUseSmartTransaction: boolean;
+}
 
-  state = {
+type Props = OwnProps & StateProps;
+
+interface ComponentState {
+  rpcBlockExplorer: string | undefined;
+  renderTxActions: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updatedTransactionDetails: any;
+}
+
+class TransactionDetails extends PureComponent<Props, ComponentState> {
+
+  state: ComponentState = {
     rpcBlockExplorer: undefined,
     renderTxActions: true,
     updatedTransactionDetails: undefined,
   };
 
-  fetchTxReceipt = async (transactionHash) => {
+  fetchTxReceipt = async (transactionHash: string) => {
     const ethQuery = getGlobalEthQuery();
     return await query(ethQuery, 'getTransactionReceipt', [transactionHash]);
   };
@@ -181,7 +174,8 @@ class TransactionDetails extends PureComponent {
    * @param {Object} networkConfigurations - The network configurations object
    * @returns {string} The block explorer URL
    */
-  getBlockExplorerForChain = (chainId, txChainId, networkConfigurations) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getBlockExplorerForChain = (chainId: string, txChainId: string, networkConfigurations: any) => {
     // First check for network configuration block explorer
     let blockExplorer =
       networkConfigurations?.[txChainId]?.blockExplorerUrls[
@@ -244,6 +238,7 @@ class TransactionDetails extends PureComponent {
         multiLayerL1FeeTotal = '0x0'; // Sets it to 0 if it's not available in a txReceipt yet.
       }
       transactionObject.txParams.multiLayerL1FeeTotal = multiLayerL1FeeTotal;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const decodedTx = await decodeTransaction({
         tx: transactionObject,
         selectedAddress,
@@ -257,10 +252,10 @@ class TransactionDetails extends PureComponent {
         primaryCurrency,
         swapsTransactions,
         swapsTokens,
-      });
+      } as any);
       this.setState({ updatedTransactionDetails: decodedTx[1] });
     } catch (e) {
-      Logger.error(e);
+      Logger.error(e as Error);
       this.setState({ updatedTransactionDetails: transactionDetails });
     }
   };
@@ -298,7 +293,7 @@ class TransactionDetails extends PureComponent {
       close && close();
     } catch (e) {
       // eslint-disable-next-line no-console
-      Logger.error(e, {
+      Logger.error(e as Error, {
         message: `can't get a block explorer link for network `,
         networkID,
       });
@@ -306,7 +301,8 @@ class TransactionDetails extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const themeCtx = (this.context as { colors?: typeof mockTheme.colors }) || {};
+    const colors = themeCtx.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
@@ -408,7 +404,7 @@ class TransactionDetails extends PureComponent {
                 <View style={styles.accountNameAvatar}>
                   <Avatar
                     variant={AvatarVariant.Account}
-                    type={AvatarAccountType.Jazzicon}
+                    type={AvatarAccountType.JazzIcon}
                     accountAddress={updatedTransactionDetails.renderFrom}
                     size={AvatarSize.Md}
                     style={styles.accountAvatar}
@@ -436,7 +432,7 @@ class TransactionDetails extends PureComponent {
                 <View style={styles.accountNameAvatar}>
                   <Avatar
                     variant={AvatarVariant.Account}
-                    type={AvatarAccountType.Jazzicon}
+                    type={AvatarAccountType.JazzIcon}
                     accountAddress={updatedTransactionDetails.renderFrom}
                     size={AvatarSize.Md}
                     style={styles.accountAvatar}
@@ -509,17 +505,17 @@ class TransactionDetails extends PureComponent {
   };
 }
 
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => ({
   chainId: selectChainId(state),
   networkConfigurations: selectNetworkConfigurations(state),
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) ?? '',
   transactions: selectTransactions(state),
   ticker: selectEvmTicker(state),
   tokens: selectTokensByAddress(state),
   contractExchangeRates: selectContractExchangeRates(state),
-  conversionRate: selectConversionRate(state),
+  conversionRate: selectConversionRate(state) ?? 0,
   currentCurrency: selectCurrentCurrency(state),
-  primaryCurrency: selectPrimaryCurrency(state),
+  primaryCurrency: selectPrimaryCurrency(state) as string,
   swapsTransactions: selectSwapsTransactions(state),
   swapsTokens: swapsControllerTokens(state),
   shouldUseSmartTransaction: selectShouldUseSmartTransaction(
@@ -530,4 +526,4 @@ const mapStateToProps = (state, ownProps) => ({
 
 TransactionDetails.contextType = ThemeContext;
 
-export default connect(mapStateToProps)(withNavigation(TransactionDetails));
+export default connect(mapStateToProps)(withNavigation(TransactionDetails as any));

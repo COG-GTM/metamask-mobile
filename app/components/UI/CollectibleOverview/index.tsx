@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unused-vars, import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import React, {
   useCallback,
   useEffect,
@@ -14,7 +15,6 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import RemoteImage from '../../Base/RemoteImage';
-import PropTypes from 'prop-types';
 import { connect, useSelector } from 'react-redux';
 import { baseStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
@@ -37,12 +37,16 @@ import {
 import { isCollectibleInFavoritesSelector } from '../../../reducers/collectibles';
 import Share from 'react-native-share';
 import {
-  PanGestureHandler,
+  PanGestureHandler as _PanGestureHandler,
   gestureHandlerRootHOC,
   ScrollView,
 } from 'react-native-gesture-handler';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const PanGestureHandler = _PanGestureHandler as any;
 import AppConstants from '../../../core/AppConstants';
 import { useTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import { selectChainId } from '../../../selectors/networkController';
 import {
   selectDisplayNftMedia,
@@ -58,7 +62,7 @@ const VERTICAL_ALIGNMENT = IS_SMALL_DEVICE ? 12 : 16;
 
 const THRESHOLD = 50;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       flex: 0,
@@ -148,6 +152,49 @@ const FieldType = {
 /**
  * View that displays the information of a specific ERC-721 Token
  */
+interface Collectible {
+  name?: string;
+  description?: string;
+  image?: string;
+  imageOriginal?: string;
+  imagePreview?: string;
+  imageThumbnail?: string;
+  externalLink?: string;
+  standard?: string;
+  tokenId?: string;
+  address?: string;
+  lastSale?: { event_timestamp?: string; total_price?: string };
+  backgroundColor?: string;
+  collection?: { name?: string };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  creator?: any;
+  logo?: string;
+  contractName?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+interface OwnProps {
+  collectible: Collectible;
+  tradable?: boolean;
+  onSend: () => void;
+  openLink: (url?: string) => void;
+  onTranslation?: (animating: boolean) => void;
+}
+
+interface StateProps {
+  chainId: string;
+  selectedAddress: string;
+  isInFavorites: boolean;
+}
+
+interface DispatchProps {
+  addFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Collectible) => void;
+  removeFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Collectible) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
 const CollectibleOverview = ({
   chainId,
   collectible,
@@ -159,7 +206,7 @@ const CollectibleOverview = ({
   isInFavorites,
   openLink,
   onTranslation,
-}) => {
+}: Props) => {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [prevWrapperHeight, setPrevWrapperHeight] = useState(0);
   const [wrapperHeight, setWrapperHeight] = useState(0);
@@ -180,11 +227,11 @@ const CollectibleOverview = ({
 
   const renderScrollableDescription = useMemo(() => {
     const maxLength = IS_SMALL_DEVICE ? 150 : 300;
-    return collectible?.description?.length > maxLength;
+    return (collectible?.description?.length ?? 0) > maxLength;
   }, [collectible.description]);
 
   const renderCollectibleInfoRow = useCallback(
-    ({ key, value, onPress, type }) => {
+    ({ key, value, onPress, type }: { key: string; value?: string; onPress?: () => void; type: string }) => {
       if (!value) return null;
       if (type === FieldType.Link) {
         if (!isLinkSafe(value)) return null;
@@ -255,11 +302,11 @@ const CollectibleOverview = ({
     }),
     renderCollectibleInfoRow({
       key: strings('collectible.collectible_asset_contract'),
-      value: renderShortAddress(collectible?.address),
+      value: renderShortAddress(collectible?.address ?? ''),
       onPress: () => {
         if (isMainNet(chainId))
           openLink(
-            etherscanLink.createTokenTrackerLink(collectible?.address, chainId),
+            etherscanLink.createTokenTrackerLink(collectible?.address ?? '', chainId),
           );
       },
       type: FieldType.Text,
@@ -292,20 +339,14 @@ const CollectibleOverview = ({
   }, [collectible.externalLink]);
 
   const onHeaderLayout = useCallback(
-    ({
-      nativeEvent: {
-        layout: { height },
-      },
-    }) => setHeaderHeight(height),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({ nativeEvent: { layout: { height } } }: any) => setHeaderHeight(height),
     [],
   );
 
   const onWrapperLayout = useCallback(
-    ({
-      nativeEvent: {
-        layout: { height },
-      },
-    }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({ nativeEvent: { layout: { height } } }: any) => {
       //This condition is needed to prevent bouncing when the component is rendered
       if (Math.abs(height - prevWrapperHeight) > THRESHOLD) {
         setWrapperHeight(height);
@@ -316,7 +357,7 @@ const CollectibleOverview = ({
   );
 
   const animateViewPosition = useCallback(
-    (toValue, duration) => {
+    (toValue: number, duration: number) => {
       animating.current = true;
       Animated.timing(positionAnimated, {
         toValue,
@@ -332,12 +373,13 @@ const CollectibleOverview = ({
   );
 
   const handleGesture = useCallback(
-    (evt) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (evt: any) => {
       // we don't want to trigger the animation again when the view is being animated
       if (evt.nativeEvent.velocityY === 0 || animating.current) return;
       const toValue = evt.nativeEvent.velocityY > 0 ? translationHeight : 0;
       if (toValue !== position) {
-        onTranslation(toValue !== 0);
+        onTranslation?.(toValue !== 0);
         animateViewPosition(toValue, ANIMATION_VELOCITY);
       }
     },
@@ -345,7 +387,8 @@ const CollectibleOverview = ({
   );
 
   const gestureHandlerWrapper = useCallback(
-    (child) => (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (child: any) => (
       <PanGestureHandler
         waitFor={scrollViewRef}
         activeOffsetY={[0, 0]}
@@ -396,6 +439,7 @@ const CollectibleOverview = ({
                     style={styles.userImage}
                   />
                 )}
+                {/* @ts-expect-error numberOfLines is not a View prop but exists in original code */}
                 <View numberOfLines={1} style={styles.userInfoContainer}>
                   {collectible.creator.user?.username && (
                     <Text black bold noMargin big={!IS_SMALL_DEVICE}>
@@ -501,63 +545,21 @@ const CollectibleOverview = ({
   );
 };
 
-CollectibleOverview.propTypes = {
-  /**
-   * Chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Object that represents the collectible to be displayed
-   */
-  collectible: PropTypes.object,
-  /**
-   * Represents if the collectible is tradable (can be sent)
-   */
-  tradable: PropTypes.bool,
-  /**
-   * Function called when user presses the Send button
-   */
-  onSend: PropTypes.func,
-  /**
-   * Selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Dispatch add collectible to favorites action
-   */
-  addFavoriteCollectible: PropTypes.func,
-  /**
-   * Dispatch remove collectible from favorites action
-   */
-  removeFavoriteCollectible: PropTypes.func,
-  /**
-   * Whether the current collectible is favorited
-   */
-  isInFavorites: PropTypes.bool,
-  /**
-   * Function to open a link on a webview
-   */
-  openLink: PropTypes.func.isRequired,
-  /**
-   * callback to trigger when modal is being animated
-   */
-  onTranslation: PropTypes.func,
-};
-
-const mapStateToProps = (state, props) => ({
+const mapStateToProps = (state: RootState, props: OwnProps): StateProps => ({
   chainId: selectChainId(state),
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) ?? '',
   isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  addFavoriteCollectible: (selectedAddress, chainId, collectible) =>
+const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
+  addFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Collectible) =>
     dispatch(addFavoriteCollectible(selectedAddress, chainId, collectible)),
-  removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
+  removeFavoriteCollectible: (selectedAddress: string, chainId: string, collectible: Collectible) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
 });
 
-export default connect(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default (connect as any)(
   mapStateToProps,
   mapDispatchToProps,
 )(

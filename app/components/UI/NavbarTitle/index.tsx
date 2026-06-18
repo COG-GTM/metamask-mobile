@@ -1,10 +1,11 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unused-vars, import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
+import React, { PureComponent, ReactNode } from 'react';
 import { connect } from 'react-redux';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import Networks, { getDecimalChainId } from '../../../util/networks';
 import { strings } from '../../../../locales/i18n';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 import Routes from '../../../constants/navigation/Routes';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { withNavigation } from '@react-navigation/compat';
@@ -18,8 +19,9 @@ import Text, {
   TextColor,
 } from '../../../component-library/components/Texts/Text';
 import { selectNetworkName } from '../../../selectors/networkInfos';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       justifyContent: 'center',
@@ -35,54 +37,33 @@ const createStyles = (colors) =>
  * UI PureComponent that renders inside the navbar
  * showing the view title and the selected network
  */
-class NavbarTitle extends PureComponent {
-  static propTypes = {
-    /**
-     * Object representing the configuration of the current selected network
-     */
-    providerConfig: PropTypes.object.isRequired,
-    /**
-     * Name of the current view
-     */
-    title: PropTypes.string,
-    /**
-     * Boolean that specifies if the title needs translation
-     */
-    translate: PropTypes.bool,
-    /**
-     * Boolean that specifies if the network can be changed
-     */
-    disableNetwork: PropTypes.bool,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that specifies if the network selected is displayed
-     */
-    showSelectedNetwork: PropTypes.bool,
-    /**
-     * Name of the network to display
-     */
-    networkName: PropTypes.string,
-    /**
-     * Content to display inside text element
-     */
-    children: PropTypes.node,
-    /**
-     * Selected multichain chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Selected network name
-     */
-    selectedNetworkName: PropTypes.string,
+interface OwnProps {
+  title?: string;
+  translate?: boolean;
+  disableNetwork?: boolean;
+  navigation: { navigate: (route: string, params?: Record<string, unknown>) => void };
+  metrics: {
+    trackEvent: (event: Record<string, unknown>) => void;
+    createEventBuilder: (event: string) => {
+      addProperties: (props: Record<string, unknown>) => {
+        build: () => Record<string, unknown>;
+      };
+    };
   };
+  showSelectedNetwork?: boolean;
+  networkName?: string;
+  children?: ReactNode;
+}
 
+interface StateProps {
+  providerConfig: { nickname?: string; type: string };
+  chainId: string;
+  selectedNetworkName: string;
+}
+
+type Props = OwnProps & StateProps;
+
+class NavbarTitle extends PureComponent<Props> {
   static defaultProps = {
     translate: true,
     showSelectedNetwork: true,
@@ -100,7 +81,7 @@ class NavbarTitle extends PureComponent {
 
         this.props.metrics.trackEvent(
           this.props.metrics
-            .createEventBuilder(MetaMetricsEvents.NETWORK_SELECTOR_PRESSED)
+            .createEventBuilder(MetaMetricsEvents.NETWORK_SELECTOR_PRESSED as any)
             .addProperties({
               chain_id: getDecimalChainId(this.props.chainId),
             })
@@ -125,7 +106,7 @@ class NavbarTitle extends PureComponent {
     } = this.props;
     let name = null;
 
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = ((this.context as any)?.colors) || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (selectedNetworkName || networkName) {
@@ -135,7 +116,7 @@ class NavbarTitle extends PureComponent {
       name = providerConfig.nickname;
     } else {
       name =
-        (Networks[providerConfig.type] && Networks[providerConfig.type].name) ||
+        ((Networks as any)[providerConfig.type]?.name) ||
         { ...Networks.rpc, color: null }.name;
     }
 
@@ -174,12 +155,13 @@ class NavbarTitle extends PureComponent {
 
 NavbarTitle.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
-  providerConfig: selectProviderConfig(state),
+const mapStateToProps = (state: RootState): StateProps => ({
+  providerConfig: selectProviderConfig(state) as unknown as StateProps['providerConfig'],
   chainId: selectChainId(state),
   selectedNetworkName: selectNetworkName(state),
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default withNavigation(
-  connect(mapStateToProps)(withMetricsAwareness(NavbarTitle)),
+  connect(mapStateToProps)(withMetricsAwareness(NavbarTitle as any)) as any,
 );
