@@ -25,7 +25,9 @@ describe('useStakingDetails', () => {
             TransactionController: {
               transactions: [
                 {
-                  txParams: { value: `0x${decGWEIToHexWEI(10 ** 8)}` },
+                  txParams: {
+                    value: `0x${decGWEIToHexWEI(10 ** 8 as unknown as string)}`,
+                  },
                 },
               ],
             },

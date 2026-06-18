@@ -21,8 +21,10 @@ import {
   colors as importedColors,
 } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
+// @ts-expect-error - no type declarations published for @metamask/react-native-button
 import Button from '@metamask/react-native-button';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import FadeOutOverlay from '../../UI/FadeOutOverlay';
 import {
   getTransparentBackOnboardingNavbarOptions,
@@ -39,8 +41,12 @@ import { PREVIOUS_SCREEN, ONBOARDING } from '../../../constants/navigation';
 import { EXISTING_USER } from '../../../constants/storage';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { withMetricsAwareness } from '../../hooks/useMetrics';
+import { IUseMetricsHook } from '../../hooks/useMetrics/useMetrics.types';
+import { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
 import { Authentication } from '../../../core';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
+import { IMetaMetricsEvent } from '../../../core/Analytics/MetaMetrics.types';
 import { RootState } from '../../../reducers';
 import { OnboardingSelectorIDs } from '../../../../e2e/selectors/Onboarding/Onboarding.selectors';
 
@@ -142,6 +148,8 @@ interface OwnProps {
     setOptions: (options: Record<string, unknown>) => void;
     navigate: (route: string, params?: Record<string, unknown>) => void;
     reset: (state: Record<string, unknown>) => void;
+    replace: (route: string, params?: Record<string, unknown>) => void;
+    push: (route: string, params?: Record<string, unknown>) => void;
   };
   route: {
     params?: {
@@ -149,10 +157,7 @@ interface OwnProps {
       [key: string]: unknown;
     };
   };
-  metrics: {
-    trackEvent: (event: Record<string, unknown>) => void;
-    createEventBuilder: (event: Record<string, unknown>) => { addProperties: (props: Record<string, unknown>) => { build: () => Record<string, unknown> } };
-  };
+  metrics: IUseMetricsHook;
 }
 
 interface StateProps {
@@ -177,6 +182,8 @@ interface OnboardingState {
 }
 
 class Onboarding extends PureComponent<Props, OnboardingState> {
+  declare context: Theme;
+
   notificationAnimated = new Animated.Value(100);
   detailsYAnimated = new Animated.Value(0);
   actionXAnimated = new Animated.Value(0);
@@ -204,7 +211,7 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
   dataToSync = null;
   mounted = false;
 
-  warningCallback = () => true;
+  warningCallback: () => void = () => true;
 
   showNotification = () => {
     // show notification
@@ -278,7 +285,7 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
     }
   };
 
-  handleExistingUser = (action) => {
+  handleExistingUser = (action: () => void) => {
     if (this.state.existingUser) {
       this.alertExistingUser(action);
     } else {
@@ -331,11 +338,11 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
     this.handleExistingUser(action);
   };
 
-  track = (event) => {
+  track = (event: IMetaMetricsEvent) => {
     trackOnboarding(MetricsEventBuilder.createEventBuilder(event).build());
   };
 
-  alertExistingUser = (callback) => {
+  alertExistingUser = (callback: () => void) => {
     this.warningCallback = () => {
       callback();
       this.toggleWarningModal();
@@ -428,12 +435,14 @@ class Onboarding extends PureComponent<Props, OnboardingState> {
       >
         <ElevatedView style={styles.modalTypeView} elevation={100}>
           <BaseNotification
-            closeButtonDisabled
             status="success"
             data={{
               title: strings('onboarding.success'),
               description: strings('onboarding.your_wallet'),
             }}
+            {...({ closeButtonDisabled: true } as Partial<
+              React.ComponentProps<typeof BaseNotification>
+            >)}
           />
         </ElevatedView>
       </Animated.View>
@@ -500,7 +509,7 @@ const mapStateToProps = (state: RootState): StateProps => ({
   loadingMsg: state.user.loadingMsg,
 });
 
-const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   setLoading: (msg) => dispatch(loadingSet(msg)),
   unsetLoading: () => dispatch(loadingUnset()),
   disableNewPrivacyPolicyToast: () =>
@@ -510,4 +519,8 @@ const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Onboarding));
+)(
+  withMetricsAwareness(
+    Onboarding as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);

@@ -171,7 +171,11 @@ export class BackgroundBridge extends EventEmitter {
 
     const portStream = new MobilePortStream(this.port as ConstructorParameters<typeof MobilePortStream>[0], url);
     // setup multiplexing
-    const mux = setupMultiplex(portStream);
+    const mux = setupMultiplex(portStream) as ReturnType<
+      typeof setupMultiplex
+    > & {
+      createStream: (name: string) => ReturnType<typeof setupMultiplex>;
+    };
     // connect features
     this.setupProviderConnection(
       mux.createStream(

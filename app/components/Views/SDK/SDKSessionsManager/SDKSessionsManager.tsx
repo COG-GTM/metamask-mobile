@@ -92,10 +92,10 @@ const SDKSessionsManager = (props: SDKSessionsManagerProps) => {
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.manage_sdk_connections_title'),
-        navigation,
+        navigation as unknown as Parameters<typeof getNavigationOptionsTitle>[1],
         false,
         colors,
-      ),
+      ) as unknown as Parameters<typeof navigation.setOptions>[0],
     );
   }, [props, colors]);
 
