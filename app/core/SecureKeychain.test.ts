@@ -11,6 +11,7 @@ import {
 } from '../constants/storage';
 import { UserProfileProperty } from '../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
 import AUTHENTICATION_TYPE from '../constants/userProperties';
+import { KeyDerivationIteration } from './Encryptor/constants';
 
 jest.mock('../../locales/i18n', () => ({
   strings: jest.fn((key) => key),
@@ -87,6 +88,20 @@ describe('SecureKeychain - setGenericPassword', () => {
         [UserProfileProperty.AUTHENTICATION_TYPE]:
           AUTHENTICATION_TYPE.BIOMETRIC,
       }),
+    );
+  });
+
+  it('should encrypt the stored password with the OWASP 2023 KDF iterations', async () => {
+    await SecureKeychain.setGenericPassword(
+      mockPassword,
+      SecureKeychain.TYPES.BIOMETRICS,
+    );
+
+    const encryptedPassword = (Keychain.setGenericPassword as jest.Mock).mock
+      .calls[0][1];
+    const { keyMetadata } = JSON.parse(encryptedPassword);
+    expect(keyMetadata.params.iterations).toBe(
+      KeyDerivationIteration.OWASP2023Default,
     );
   });
 
