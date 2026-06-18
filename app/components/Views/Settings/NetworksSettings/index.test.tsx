@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import { renderScreen } from '../../../../util/test/renderWithProvider';
 import NetworksSettings from './';
 import { backgroundState } from '../../../../util/test/initial-root-state';

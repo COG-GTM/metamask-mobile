@@ -122,13 +122,13 @@ function useHandleSuccessfulOrder() {
             chain_id_destination: selectedChainId,
             has_zero_currency_destination_balance: false,
             has_zero_native_balance: accountsByChainId[
-              toHexadecimal(chainIdFromProvider)
+              toHexadecimal(chainIdFromProvider) as string
             ][selectedAddress]?.balance
               ? (
                   hexToBN(
-                    accountsByChainId[toHexadecimal(chainIdFromProvider)][
-                      selectedAddress
-                    ].balance,
+                    accountsByChainId[
+                      toHexadecimal(chainIdFromProvider) as string
+                    ][selectedAddress].balance,
                     // TODO: Replace "any" with type
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   ) as any

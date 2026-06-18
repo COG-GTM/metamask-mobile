@@ -482,7 +482,7 @@ const Wallet = ({
         networkName,
         networkImageSource,
         onTitlePress,
-        navigation,
+        navigation as unknown as Parameters<typeof getWalletNavbarOptions>[7],
         colors,
         isNotificationEnabled,
         isBackupAndSyncEnabled,
@@ -627,7 +627,7 @@ const Wallet = ({
   const getNftDetectionAnalyticsParams = useCallback((nft: Nft) => {
     try {
       return {
-        chain_id: getDecimalChainId(nft.chainId),
+        chain_id: getDecimalChainId(nft.chainId as unknown as string),
         source: 'detected' as const,
       };
     } catch (error) {
@@ -667,7 +667,9 @@ const Wallet = ({
         const eventParams = prepareNftDetectionEvents(
           previousNfts,
           newNfts,
-          getNftDetectionAnalyticsParams,
+          getNftDetectionAnalyticsParams as unknown as Parameters<
+            typeof prepareNftDetectionEvents
+          >[2],
         );
         eventParams.forEach((params) => {
           trackEvent(

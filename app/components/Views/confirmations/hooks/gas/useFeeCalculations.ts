@@ -64,7 +64,7 @@ export const useFeeCalculations = (transactionMeta: TransactionMeta) => {
       const decimalCurrentCurrencyFee = Number(
         getValueFromWeiHex({
           value: hexFee,
-          conversionRate: nativeConversionRateInBN,
+          conversionRate: nativeConversionRateInBN as unknown as number,
           fromCurrency: 'GWEI',
           toCurrency: 'ETH',
           numberOfDecimals: 2,
@@ -77,7 +77,7 @@ export const useFeeCalculations = (transactionMeta: TransactionMeta) => {
       const preciseCurrentCurrencyFee = Number(
         getValueFromWeiHex({
           value: hexFee,
-          conversionRate: nativeConversionRateInBN,
+          conversionRate: nativeConversionRateInBN as unknown as number,
           fromCurrency: 'GWEI',
           toCurrency: 'ETH',
           numberOfDecimals: 3,

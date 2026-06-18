@@ -108,7 +108,7 @@ const MultichainTransactionListItem = ({
         <ListItem>
           <ListItem.Date style={style.listItemDate}>
             {transaction.timestamp &&
-              toDateFormat(new Date(transaction.timestamp * 1000))}
+              toDateFormat(transaction.timestamp * 1000)}
           </ListItem.Date>
           <ListItem.Content style={style.listItemContent}>
             <ListItem.Icon>

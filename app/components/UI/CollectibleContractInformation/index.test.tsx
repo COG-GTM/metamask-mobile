@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unused-vars, import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import React from 'react';
 import { shallow } from 'enzyme';
-import CollectibleContractInformation from './';
+const CollectibleContractInformation: any = require('./').default;
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';
@@ -45,7 +46,7 @@ describe('CollectibleContractInformation', () => {
             description: 'description',
             address: '0x123',
             totalSupply: 1,
-          }}
+          } as any}
         />
       </Provider>,
     );
@@ -67,7 +68,7 @@ describe('CollectibleContractInformation', () => {
           <CollectibleContractInformation
             navigation={navigationMock}
             onClose={onCloseMock}
-            collectibleContract={collectibleContract}
+            collectibleContract={collectibleContract as any}
           />
         </ThemeContext.Provider>
       </Provider>,
@@ -94,7 +95,7 @@ describe('CollectibleContractInformation', () => {
           <CollectibleContractInformation
             navigation={navigationMock}
             onClose={onCloseMock}
-            collectibleContract={collectibleContract}
+            collectibleContract={collectibleContract as any}
           />
         </ThemeContext.Provider>
       </Provider>,

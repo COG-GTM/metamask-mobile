@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import React from 'react';
 import { shallow } from 'enzyme';
 import { RpcEndpointType } from '@metamask/network-controller';

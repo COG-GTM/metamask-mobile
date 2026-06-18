@@ -19,12 +19,12 @@ const mockTheme = {
 
 const mockNavigation = {
   setOptions: jest.fn(),
-  goBack: jest.fn(),
-  navigate: jest.fn(),
-  route: {
-    params: {
-      accountAddress: '0x123',
-    },
+  pop: jest.fn(),
+};
+
+const mockRoute = {
+  params: {
+    onPasswordSet: jest.fn(),
   },
 };
 
@@ -33,7 +33,10 @@ describe('EnterPasswordSimple', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <NavigationContainer>
-          <EnterPasswordSimple navigation={mockNavigation} />
+          <EnterPasswordSimple
+            navigation={mockNavigation}
+            route={mockRoute}
+          />
         </NavigationContainer>
       </ThemeContext.Provider>,
     );

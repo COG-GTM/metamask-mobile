@@ -3,6 +3,9 @@ module.exports = {
   ignore: [/\/ses\.cjs$/, /\/ses-hermes\.cjs$/],
   presets: ['babel-preset-expo'],
   plugins: [
+    // Must run before @react-native/babel-preset's flow-strip-types pass, which
+    // otherwise rejects TypeScript `declare` class fields (e.g. `declare context`).
+    ['@babel/plugin-transform-flow-strip-types', { allowDeclareFields: true }],
     'transform-inline-environment-variables',
     'react-native-reanimated/plugin',
   ],

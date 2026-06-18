@@ -106,21 +106,17 @@ export const useGetTotalFiatBalanceCrossChains = (
         const conversionRate =
           currencyRates?.[matchedChainSymbol]?.conversionRate ?? 0;
         let ethFiat = 0;
-        if (
-          account &&
-          accountsByChainId?.[
-            toHexadecimal(singleChainTokenBalances.chainId)
-          ]?.[toChecksumHexAddress(account.address)]
-        ) {
-          const balanceBN = hexToBN(
-            accountsByChainId[toHexadecimal(singleChainTokenBalances.chainId)][
-              toChecksumHexAddress(account.address)
-            ].balance,
-          );
+        const chainIdHex = toHexadecimal(singleChainTokenBalances.chainId);
+        const accountBalanceData =
+          account && chainIdHex
+            ? accountsByChainId?.[chainIdHex]?.[
+                toChecksumHexAddress(account.address)
+              ]
+            : undefined;
+        if (accountBalanceData) {
+          const balanceBN = hexToBN(accountBalanceData.balance);
           const stakedBalanceBN = hexToBN(
-            accountsByChainId[toHexadecimal(singleChainTokenBalances.chainId)][
-              toChecksumHexAddress(account.address)
-            ].stakedBalance || '0x00',
+            accountBalanceData.stakedBalance || '0x00',
           );
           const totalAccountBalance = balanceBN
             .add(stakedBalanceBN)

@@ -1,0 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+// Third party dependencies.
+import React from 'react';
+
+// Internal dependencies.
+import BasicFunctionality from './BasicFunctionality';
+import renderWithProvider from '../../../util/test/renderWithProvider';
+
+describe('BasicFunctionality', () => {
+  it('should render correctly', () => {
+    const { toJSON } = renderWithProvider(<BasicFunctionality />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+});

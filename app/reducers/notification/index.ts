@@ -1,0 +1,236 @@
+import { createSelector } from 'reselect';
+import { NotificationTypes } from '../../util/notifications';
+import type { RootState } from '../../reducers';
+
+const { TRANSACTION, SIMPLE } = NotificationTypes;
+
+export interface NotificationItem {
+  id: string;
+  isVisible: boolean;
+  autodismiss: number | boolean;
+  type: string;
+  title?: string;
+  description?: string;
+  transaction?: { id: string; [key: string]: unknown };
+  status?: string;
+  [key: string]: unknown;
+}
+
+export interface NotificationState {
+  notifications: NotificationItem[];
+}
+
+export const initialState: NotificationState = {
+  notifications: [],
+};
+
+export const ACTIONS = {
+  HIDE_CURRENT_NOTIFICATION: 'HIDE_CURRENT_NOTIFICATION',
+  HIDE_NOTIFICATION_BY_ID: 'HIDE_NOTIFICATION_BY_ID',
+  MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION:
+    'MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION',
+  MODIFY_OR_SHOW_SIMPLE_NOTIFICATION: 'MODIFY_OR_SHOW_SIMPLE_NOTIFICATION',
+  REPLACE_NOTIFICATION_BY_ID: 'REPLACE_NOTIFICATION_BY_ID',
+  REMOVE_NOTIFICATION_BY_ID: 'REMOVE_NOTIFICATION_BY_ID',
+  REMOVE_CURRENT_NOTIFICATION: 'REMOVE_CURRENT_NOTIFICATION',
+  REMOVE_NOT_VISIBLE_NOTIFICATIONS: 'REMOVE_NOT_VISIBLE_NOTIFICATIONS',
+  SHOW_SIMPLE_NOTIFICATION: 'SHOW_SIMPLE_NOTIFICATION',
+  SHOW_TRANSACTION_NOTIFICATION: 'SHOW_TRANSACTION_NOTIFICATION',
+  UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
+} as const;
+
+interface NotificationActionBase {
+  type: string;
+  id?: string;
+  autodismiss?: number;
+  transaction?: { id: string; [key: string]: unknown };
+  status?: string;
+  title?: string;
+  description?: string;
+  notification?: NotificationItem;
+}
+
+const enqueue = (
+  notifications: NotificationItem[],
+  notification: NotificationItem,
+): NotificationItem[] => [...notifications, notification];
+const dequeue = (notifications: NotificationItem[]): NotificationItem[] =>
+  notifications.slice(1);
+
+export const currentNotificationSelector = createSelector(
+  (state: RootState) => state?.notification?.notifications,
+  (notifications: NotificationItem[]) => notifications[0] || {},
+);
+
+/* eslint-disable @typescript-eslint/default-param-last */
+const notificationReducer = (
+  state: NotificationState = initialState,
+  action: NotificationActionBase,
+): NotificationState => {
+  const { notifications } = state;
+  switch (action.type) {
+    // make current notification isVisible props false
+    case ACTIONS.HIDE_CURRENT_NOTIFICATION: {
+      if (notifications[0]) {
+        return {
+          ...state,
+          notifications: [
+            { ...notifications[0], isVisible: false },
+            ...notifications.slice(1),
+          ],
+        };
+      }
+      return state;
+    }
+    case ACTIONS.HIDE_NOTIFICATION_BY_ID: {
+      const index = notifications.findIndex(({ id }) => id === action.id);
+      if (index === -1) {
+        return state;
+      }
+      return {
+        ...state,
+        notifications: [
+          ...notifications.slice(0, index),
+          { ...notifications[index], isVisible: false },
+          ...notifications.slice(index + 1),
+        ],
+      };
+    }
+    case ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION: {
+      const index = notifications.findIndex(({ id }) => id === action.id);
+      if (index >= 0) {
+        return {
+          ...state,
+          notifications: [
+            ...notifications.slice(0, index),
+            {
+              ...notifications[index],
+              ...{
+                id: action.transaction?.id ?? '',
+                isVisible: true,
+                autodismiss: action.autodismiss ?? 5000,
+                transaction: action.transaction,
+                status: action.status,
+                type: TRANSACTION,
+              },
+            },
+            ...notifications.slice(index + 1),
+          ],
+        };
+      }
+      return {
+        ...state,
+        notifications: enqueue(notifications, {
+          id: action.transaction?.id ?? '',
+          isVisible: true,
+          autodismiss: action.autodismiss ?? 5000,
+          transaction: action.transaction,
+          status: action.status,
+          type: TRANSACTION,
+        }),
+      };
+    }
+    case ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION: {
+      const index = notifications.findIndex(({ id }) => id === action.id);
+      if (index >= 0) {
+        return {
+          ...state,
+          notifications: [
+            ...notifications.slice(0, index),
+            {
+              ...notifications[index],
+              ...{
+                id: action.id ?? '',
+                isVisible: true,
+                autodismiss: action.autodismiss ?? 5000,
+                title: action.title,
+                description: action.description,
+                status: action.status,
+                type: SIMPLE,
+              },
+            },
+            ...notifications.slice(index + 1),
+          ],
+        };
+      }
+      return {
+        ...state,
+        notifications: enqueue(notifications, {
+          id: action.id ?? '',
+          isVisible: true,
+          autodismiss: action.autodismiss ?? 5000,
+          title: action.title,
+          description: action.description,
+          status: action.status,
+          type: SIMPLE,
+        }),
+      };
+    }
+    case ACTIONS.REPLACE_NOTIFICATION_BY_ID: {
+      const index = notifications.findIndex(({ id }) => id === action.id);
+      if (index === -1) {
+        return state;
+      }
+      return {
+        ...state,
+        notifications: [
+          ...notifications.slice(0, index),
+          action.notification ?? { id: '', isVisible: false, autodismiss: 0, type: '' },
+          ...notifications.slice(index + 1),
+        ],
+      };
+    }
+    case ACTIONS.REMOVE_NOTIFICATION_BY_ID: {
+      return {
+        ...state,
+        notifications: notifications.filter(({ id }) => id !== action.id),
+      };
+    }
+    case ACTIONS.REMOVE_CURRENT_NOTIFICATION: {
+      return {
+        ...state,
+        notifications: dequeue(notifications),
+      };
+    }
+    case ACTIONS.SHOW_SIMPLE_NOTIFICATION: {
+      return {
+        ...state,
+        notifications: enqueue(notifications, {
+          id: action.id ?? '',
+          isVisible: true,
+          autodismiss: action.autodismiss || 5000,
+          title: action.title,
+          description: action.description,
+          status: action.status,
+          type: SIMPLE,
+        }),
+      };
+    }
+    case ACTIONS.SHOW_TRANSACTION_NOTIFICATION: {
+      return {
+        ...state,
+        notifications: enqueue(notifications, {
+          id: action.transaction?.id ?? '',
+          isVisible: true,
+          autodismiss: action.autodismiss || 5000,
+          transaction: action.transaction,
+          status: action.status,
+          type: TRANSACTION,
+        }),
+      };
+    }
+    case ACTIONS.REMOVE_NOT_VISIBLE_NOTIFICATIONS: {
+      const visibleNotifications =
+        notifications?.filter(
+          (notification: NotificationItem) => notification.isVisible,
+        ) || [];
+      return {
+        ...state,
+        notifications: visibleNotifications,
+      };
+    }
+    default:
+      return state;
+  }
+};
+export default notificationReducer;

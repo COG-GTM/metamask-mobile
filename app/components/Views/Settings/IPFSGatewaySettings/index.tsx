@@ -121,7 +121,11 @@ const IPFSGatewaySettings = () => {
                 defaultValue={strings('app_settings.ipfs_gateway_down')}
                 onValueChange={setIpfsGateway}
                 label={strings('app_settings.ipfs_gateway')}
-                options={onlineIpfsGateways}
+                options={
+                  onlineIpfsGateways as unknown as React.ComponentProps<
+                    typeof SelectComponent
+                  >['options']
+                }
               />
             ) : (
               <View>

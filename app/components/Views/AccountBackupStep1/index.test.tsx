@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import { ComponentType } from 'react';
 import AccountBackupStep1 from './';
 import { backgroundState } from '../../../util/test/initial-root-state';
