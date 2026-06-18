@@ -278,7 +278,11 @@ const SmartTransactionStatus = ({
   } = useRemainingTime({
     creationTime,
     isStxPending,
-  });
+  }) as {
+    timeLeftForPendingStxInSec: number;
+    stxDeadlineSec: number;
+    isStxPastEstimatedDeadline: boolean;
+  };
 
   const viewActivity = () => {
     onConfirm();

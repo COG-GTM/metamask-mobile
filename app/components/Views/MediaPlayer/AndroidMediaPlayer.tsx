@@ -5,7 +5,14 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import Video from 'react-native-video';
+import Video, {
+  VideoRef,
+  OnLoadData,
+  OnProgressData,
+  TextTracks,
+  SelectedTrack,
+  ReactVideoSource,
+} from 'react-native-video';
 import {
   PanResponder,
   StyleSheet,
@@ -24,7 +31,8 @@ import {
 import FA5Icon from 'react-native-vector-icons/FontAwesome5';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import { baseStyles, colors as importedColors } from '../../../styles/common';
-import { useTheme, Theme } from '../../../util/theme';
+import { useTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
 interface TextTrackItem {
   title: string;
@@ -208,7 +216,7 @@ export default function VideoPlayer({
   const [showControls, setShowControls] = useState(true);
   const [seekerWidth, setSeekerWidth] = useState(0);
 
-  const videoRef = useRef<typeof Video>(null);
+  const videoRef = useRef<VideoRef>(null);
 
   const controlsTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -308,7 +316,7 @@ export default function VideoPlayer({
   );
 
   const updateSeekerPosition = useCallback(
-    (position) => {
+    (position: number) => {
       if (!position) return;
       position = constrainToSeekerMinMax(position);
       setSeekerFillWidth(position);
@@ -344,13 +352,13 @@ export default function VideoPlayer({
     setLoading(true);
   };
 
-  const onLoad = (data = {}) => {
-    propsOnLoad();
+  const onLoad = (data: OnLoadData) => {
+    propsOnLoad?.();
     setDuration(data.duration);
     setLoading(false);
   };
 
-  const onProgress = (data = {}) => {
+  const onProgress = (data: OnProgressData) => {
     if (!scrubbing && !seeking && data?.seekableDuration > 0) {
       const position = data.currentTime / data.seekableDuration;
       updateSeekerPosition(position * seekerWidth);
@@ -380,7 +388,7 @@ export default function VideoPlayer({
   }, [seekerPosition, seekerWidth, duration]);
 
   const seekTo = (time = 0) => {
-    videoRef.current.seek(time);
+    videoRef.current?.seek(time);
   };
 
   const seekPanResponder = useMemo(
@@ -452,7 +460,11 @@ export default function VideoPlayer({
   );
 
   const renderControl = useCallback(
-    (children, callback, style = {}) => (
+    (
+      children: React.ReactNode,
+      callback?: () => void,
+      style: StyleProp<ViewStyle> = {},
+    ) => (
       <TouchableHighlight
         underlayColor="transparent"
         onPress={callback}
@@ -641,9 +653,11 @@ export default function VideoPlayer({
           onLoadStart={onLoadStart}
           onProgress={onProgress}
           style={styles.playerVideo}
-          textTracks={textTracks}
-          selectedTextTrack={selectedTextTrack}
-          source={source}
+          textTracks={textTracks as unknown as TextTracks}
+          selectedTextTrack={
+            selectedTextTrack as unknown as SelectedTrack
+          }
+          source={source as unknown as ReactVideoSource}
           resizeMode="contain"
           repeat
         />

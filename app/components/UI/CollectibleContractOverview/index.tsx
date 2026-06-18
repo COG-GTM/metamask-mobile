@@ -171,7 +171,7 @@ class CollectibleContractOverview extends PureComponent<Props> {
 }
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  collectibles: collectiblesSelector(state),
+  collectibles: collectiblesSelector(state) as unknown as CollectibleItem[],
 });
 
 const mapDispatchToProps = (dispatch: (action: unknown) => void): DispatchProps => ({
