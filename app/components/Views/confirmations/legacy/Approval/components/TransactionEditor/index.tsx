@@ -364,7 +364,6 @@ class TransactionEditor extends PureComponent<Props, State> {
     const { ticker } = this.props;
 
     const parsedTransactionEIP1559 = parseTransactionEIP1559(
-      // @ts-expect-error Legacy JS migration - TS2345
       {
         ...this.props,
         nativeCurrency: ticker,
@@ -376,7 +375,6 @@ class TransactionEditor extends PureComponent<Props, State> {
       { onlyGas: true },
     );
 
-    // @ts-expect-error Legacy JS migration - TS2339
     parsedTransactionEIP1559.error = this.validateTotal(
       parsedTransactionEIP1559.totalMaxHex,
     );
@@ -391,14 +389,12 @@ class TransactionEditor extends PureComponent<Props, State> {
     const parsedTransactionLegacy = parseTransactionLegacy(
       {
         ...this.props,
-        // @ts-expect-error Legacy JS migration - TS2353
         nativeCurrency: ticker,
         selectedGasFee: gasFee,
       },
       { onlyGas: true },
     );
 
-    // @ts-expect-error Legacy JS migration - TS2339
     parsedTransactionLegacy.error = this.validateTotal(
       parsedTransactionLegacy.totalHex,
     );

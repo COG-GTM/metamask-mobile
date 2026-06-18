@@ -151,8 +151,8 @@ export const selectNativeTokensAcrossChainsForAddress = createSelector(
         nativeTokenInfoByChainId?.stakedBalance,
       );
 
-      let balanceFiat = '';
-      let stakedBalanceFiat = '';
+      let balanceFiat: string | undefined = '';
+      let stakedBalanceFiat: string | undefined = '';
 
       const conversionRate =
         currencyRates?.[token.nativeCurrency]?.conversionRate ?? 0;

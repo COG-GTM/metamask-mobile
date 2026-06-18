@@ -512,7 +512,10 @@ function QuotesModal({
 const mapStateToProps = (state: RootState): StateProps => ({
   conversionRate: selectConversionRate(state) ?? 0,
   currentCurrency: selectCurrentCurrency(state),
-  quoteValues: selectSwapsQuoteValues(state),
+  quoteValues: selectSwapsQuoteValues(state) as unknown as Record<
+    string,
+    QuoteValue
+  >,
 });
 
 export default connect(mapStateToProps)(QuotesModal) as React.ComponentType<OwnProps>;

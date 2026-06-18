@@ -138,7 +138,7 @@ const MultichainTransactionDetailsModal: React.FC<TransactionDetailsProps> = ({
         <View style={style.header}>
           <Text style={style.title}>{strings(`transactions.${type}`)}</Text>
           <Text style={style.date}>
-            {timestamp && toDateFormat(new Date(timestamp * 1000))}
+            {timestamp && toDateFormat(timestamp * 1000)}
           </Text>
           <TouchableOpacity
             style={style.closeButton}

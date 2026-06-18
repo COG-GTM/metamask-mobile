@@ -14,7 +14,8 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { strings } from '../../../../locales/i18n';
 import Device from '../../../util/device';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
-import { ThemeContext, mockTheme, Theme } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import { SuccessImportAccountIDs } from '../../../../e2e/selectors/ImportAccount/SuccessImportAccount.selectors';
 
 const createStyles = (colors: Theme['colors']) =>
@@ -99,8 +100,9 @@ class ImportPrivateKeySuccess extends PureComponent<Props> {
     });
   };
 
-  handleBackPress = () => {
+  handleBackPress = (): boolean | undefined => {
     this.props.navigation.popToTop();
+    return undefined;
   };
 
   dismiss = () => {
@@ -110,7 +112,8 @@ class ImportPrivateKeySuccess extends PureComponent<Props> {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

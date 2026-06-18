@@ -354,9 +354,8 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
           tokenStandard = standard;
           tokenName = name;
           tokenBalance = renderFromTokenMinimalUnit(
-            // @ts-expect-error Legacy JS migration - TS2345
             erc20TokenBalance,
-            decimals,
+            decimals as unknown as number,
           );
           unroundedAccountBalance = fromTokenMinimalUnit(
             erc20TokenBalance || 0,
@@ -376,7 +375,6 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
       false,
     );
 
-    // @ts-expect-error Legacy JS migration - TS2554
     const { name: method } = await getMethodData(data);
     const minTokenAllowance = minimumTokenAllowance(tokenDecimals);
 
@@ -434,7 +432,7 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
         );
       },
     );
-    if (isMultiLayerFeeNetwork(chainId)) {
+    if (isMultiLayerFeeNetwork(chainId as string)) {
       this.fetchEstimatedL1Fee();
       intervalIdForEstimatedL1Fee = setInterval(
         this.fetchEstimatedL1Fee,
@@ -465,7 +463,6 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
       setTransactionObject({
         ...newApprovalTransaction,
         transaction: {
-          // @ts-expect-error Legacy JS migration - TS2339
           ...newApprovalTransaction.transaction,
           data: newApprovalTransaction.data,
         },
@@ -655,7 +652,7 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
     this.setState((state) => ({ showGasTooltip: !state.showGasTooltip }));
 
   renderGasTooltip = () => {
-    const isMainnet = isMainnetByChainId(this.props.chainId);
+    const isMainnet = isMainnetByChainId(this.props.chainId as string);
     return (
       <InfoModal
         isVisible={this.state.showGasTooltip}
@@ -1023,7 +1020,7 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
                         )}
                         {gasError && (
                           <View style={styles.errorWrapper}>
-                            {isTestNetworkWithFaucet(chainId) ||
+                            {isTestNetworkWithFaucet(chainId as string) ||
                             isNativeTokenBuySupported ? (
                               <TouchableOpacity onPress={errorPress}>
                                 {/* @ts-expect-error Legacy JS migration - TS2322 */}
@@ -1281,12 +1278,16 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
     return (
       <View style={styles.actionViewQRObject}>
         <TransactionHeader
-          currentPageInformation={{
-            origin,
-            spenderAddress,
-            title: host,
-            url: activeTabUrl,
-          }}
+          currentPageInformation={
+            {
+              origin,
+              spenderAddress,
+              title: host,
+              url: activeTabUrl,
+            } as React.ComponentProps<
+              typeof TransactionHeader
+            >['currentPageInformation']
+          }
         />
         <QRSigningDetails
           QRState={QRState}

@@ -16,7 +16,8 @@ import { escapeSpecialUnicode } from '../../../../../../util/string';
 import { useTheme } from '../../../../../../util/theme';
 import { WALLET_CONNECT_ORIGIN } from '../../../../../../util/walletconnect';
 import SignatureRequest from '../SignatureRequest';
-import ExpandedMessage from '../SignatureRequest/ExpandedMessage';
+// eslint-disable-next-line import/no-namespace
+import * as ExpandedMessageModule from '../SignatureRequest/ExpandedMessage';
 import createStyles from './styles';
 import { PersonalSignProps } from './types';
 
@@ -31,6 +32,15 @@ import { selectSignatureRequestById } from '../../../../../../selectors/signatur
 import { selectProviderTypeByChainId } from '../../../../../../selectors/networkController';
 import { RootState } from '../../../../../../reducers';
 import { Hex } from '@metamask/utils';
+
+// The default export of ExpandedMessage is incorrectly typed as an interface in
+// its (unmodified, out-of-scope) source module, so cast the module's default
+// export to the component type here.
+const ExpandedMessage = (
+  ExpandedMessageModule as unknown as {
+    default: React.ComponentType<Record<string, unknown>>;
+  }
+).default;
 
 /**
  * Converts a hexadecimal string to a utf8 string.
