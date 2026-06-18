@@ -1,17 +1,47 @@
-import { BrowserActionTypes } from '../../actions/browser';
+/* eslint-disable @typescript-eslint/default-param-last */
+import { BrowserActionTypes, BrowserAction } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
 
-const initialState = {
+export interface BrowserHistoryEntry {
+  url: string;
+  name: string;
+}
+
+export interface BrowserTab {
+  url: string;
+  id: number;
+  linkType?: string;
+  image?: string;
+  isArchived?: boolean;
+}
+
+export interface Favicon {
+  origin: string;
+  url: string;
+}
+
+export interface BrowserState {
+  history: BrowserHistoryEntry[];
+  whitelist: string[];
+  tabs: BrowserTab[];
+  favicons: Favicon[];
+  activeTab: number | null;
+  visitedDappsByHostname: Record<string, boolean>;
+}
+
+const initialState: BrowserState = {
   history: [],
   whitelist: [],
   tabs: [],
   favicons: [],
   activeTab: null,
-  // Keep track of viewed Dapps, which is used for MetaMetricsEvents.DAPP_VIEWED event
   visitedDappsByHostname: {},
 };
-const browserReducer = (state = initialState, action) => {
+const browserReducer = (
+  state: BrowserState = initialState,
+  action: BrowserAction,
+): BrowserState => {
   switch (action.type) {
     case BrowserActionTypes.ADD_TO_VIEWED_DAPP: {
       const { hostname } = action;
@@ -45,7 +75,7 @@ const browserReducer = (state = initialState, action) => {
           {
             url: appendURLParams(AppConstants.HOMEPAGE_URL, {
               metricsEnabled: action.metricsEnabled,
-              marketingEnabled: action.marketingEnabled,
+              marketingEnabled: action.marketingEnabled ?? false,
             }).href,
             id: action.id,
           },
