@@ -287,8 +287,14 @@ const ImportNewSecretRecoveryPhrase = () => {
                   'import_new_secret_recovery_phrase.srp_number_of_words_option_title',
                 )}
                 selectedValue={String(selectedDropdownValue)}
-                onValueChange={handleSrpNumberChange}
-                options={srpOptions}
+                onValueChange={
+                  handleSrpNumberChange as unknown as (val: string) => void
+                }
+                options={
+                  srpOptions as unknown as React.ComponentProps<
+                    typeof SelectComponent
+                  >['options']
+                }
                 testID={ImportSRPIDs.SRP_SELECTION_DROPDOWN}
               />
             </View>

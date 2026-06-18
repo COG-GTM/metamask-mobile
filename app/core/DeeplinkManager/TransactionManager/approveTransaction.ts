@@ -59,7 +59,7 @@ async function approveTransaction({
     to: target_address.toString(),
     from: toChecksumHexAddress(selectedAccount.address),
     value: '0x0',
-    data: generateApprovalData({ spender: spenderAddress, value }),
+    data: generateApprovalData({ spender: spenderAddress as string, value }),
   };
 
   const networkClientId = NetworkController.findNetworkClientIdByChainId(
