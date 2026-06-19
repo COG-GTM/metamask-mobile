@@ -23,4 +23,8 @@ describe('getSecureRandomInt', () => {
     expect(() => getSecureRandomInt(10, 1)).toThrow();
     expect(() => getSecureRandomInt(1.5, 10)).toThrow();
   });
+
+  it('throws when the range exceeds 2^32 instead of looping forever', () => {
+    expect(() => getSecureRandomInt(0, 0x100000000)).toThrow();
+  });
 });

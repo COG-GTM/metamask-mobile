@@ -36,13 +36,6 @@ GHSA-378v-28hj-76wf
 GHSA-2w8x-224x-785m
 
 # ===========================================================================
-# RUNTIME HTTP redirect handling — follow-redirects, via axios / on-ramp-sdk.
-# Installed copies are already 1.15.9 / 1.16.0 (patched); advisory is retained
-# only because a deduped lockfile range still references it. MODERATE.
-# ===========================================================================
-GHSA-r4q5-vmmm-2653
-
-# ===========================================================================
 # RUNTIME Ledger BLE transport — @xmldom/xmldom, via
 # @ledgerhq/react-native-hw-transport-ble. Consolidated to the latest 0.8.x
 # (0.8.10) by resolution; the remaining advisories are only patched in the 0.9.x

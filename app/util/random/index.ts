@@ -20,6 +20,12 @@ export const getSecureRandomInt = (min: number, max: number): number => {
   }
 
   const range = max - min + 1;
+  // A single uint32 only carries enough entropy for ranges up to 2^32. Beyond
+  // that `limit` would underflow to 0 and the rejection loop could never exit.
+  if (range > MAX_UINT32_PLUS_ONE) {
+    throw new Error('getSecureRandomInt range must not exceed 2^32');
+  }
+
   // Largest multiple of `range` that fits in a uint32; values at or above this
   // threshold are rejected to keep the distribution uniform.
   const limit = MAX_UINT32_PLUS_ONE - (MAX_UINT32_PLUS_ONE % range);
