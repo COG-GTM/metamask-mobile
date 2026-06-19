@@ -37,6 +37,12 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'error',
         // Under discussion
         '@typescript-eslint/no-duplicate-enum-values': 'off',
+        // `no-parameter-properties` was removed in @typescript-eslint v6
+        // (renamed to `parameter-properties`), but the pinned
+        // @metamask/eslint-config-typescript still references the old name,
+        // which makes eslint fail to load with "Definition for rule ... was not
+        // found" on every TS file. Disable the stale reference.
+        '@typescript-eslint/no-parameter-properties': 'off',
       },
     },
     {
