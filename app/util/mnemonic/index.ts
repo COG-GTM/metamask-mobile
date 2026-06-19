@@ -1,8 +1,10 @@
+import { getSecureRandomInt } from '../random';
+
 /**
  * Method to shuffles an array of string.
  *
- * The previous method was replaced according to the following tutorial.
- * https://javascript.info/array-methods#shuffle-an-array
+ * Uses a cryptographically secure RNG for the Fisher-Yates swaps since this is
+ * used to shuffle SRP words.
  *
  * @param array - Array of string.
  * @returns Array of string.
@@ -11,7 +13,7 @@
 export const shuffle = (array: string[]): string[] => {
   const shuffledArray = [...array];
   for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = getSecureRandomInt(0, i);
 
     // Swap elements.
     [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
