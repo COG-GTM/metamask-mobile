@@ -38,6 +38,20 @@ jest.mock('react-native-keychain', () => ({
   resetGenericPassword: jest.fn(),
 }));
 
+const DEVICE_ENCRYPTION_KEY_SERVICE = 'com.metamask.deviceEncryptionKey';
+
+// By default, return an existing device encryption key for the dedicated
+// device-key service and nothing for the secret (`com.metamask`) service.
+const mockGetGenericPassword = (
+  secret: { password: string } | null | Promise<never> = null,
+) =>
+  (Keychain.getGenericPassword as jest.Mock).mockImplementation((options) => {
+    if (options?.service === DEVICE_ENCRYPTION_KEY_SERVICE) {
+      return Promise.resolve({ password: 'device-encryption-key' });
+    }
+    return secret instanceof Promise ? secret : Promise.resolve(secret);
+  });
+
 jest.mock('../store/storage-wrapper', () => ({
   __esModule: true,
   default: {
@@ -61,6 +75,7 @@ describe('SecureKeychain - setGenericPassword', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetGenericPassword();
     SecureKeychain.init('test_salt');
   });
 
@@ -147,8 +162,8 @@ describe('SecureKeychain - setGenericPassword', () => {
     });
 
     it('should handle user cancellation of biometric prompt', async () => {
-      (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
-        new Error('User canceled the operation.'),
+      mockGetGenericPassword(
+        Promise.reject(new Error('User canceled the operation.')),
       );
 
       await SecureKeychain.setGenericPassword(
@@ -170,9 +185,7 @@ describe('SecureKeychain - setGenericPassword', () => {
     });
 
     it('should successfully set up biometric authentication', async () => {
-      (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce({
-        password: 'encrypted_password',
-      });
+      mockGetGenericPassword({ password: 'encrypted_password' });
 
       await SecureKeychain.setGenericPassword(
         mockPassword,
@@ -198,5 +211,52 @@ describe('SecureKeychain - setGenericPassword', () => {
         }),
       );
     });
+  });
+});
+
+describe('SecureKeychain - device encryption key', () => {
+  const mockPassword = 'test_password';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    SecureKeychain.init('test_salt');
+  });
+
+  it('generates and persists a per-device random wrapping key when none exists', async () => {
+    (Keychain.getGenericPassword as jest.Mock).mockResolvedValue(null);
+
+    await SecureKeychain.setGenericPassword(
+      mockPassword,
+      SecureKeychain.TYPES.REMEMBER_ME,
+    );
+
+    // The wrapping key is fetched from a dedicated keychain entry, not the
+    // binary-embedded constant passed to init().
+    expect(Keychain.getGenericPassword).toHaveBeenCalledWith(
+      expect.objectContaining({ service: DEVICE_ENCRYPTION_KEY_SERVICE }),
+    );
+    expect(Keychain.setGenericPassword).toHaveBeenCalledWith(
+      'metamask-device-key',
+      expect.any(String),
+      expect.objectContaining({
+        service: DEVICE_ENCRYPTION_KEY_SERVICE,
+        accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+      }),
+    );
+  });
+
+  it('reuses an existing device key without generating a new one', async () => {
+    mockGetGenericPassword();
+
+    await SecureKeychain.setGenericPassword(
+      mockPassword,
+      SecureKeychain.TYPES.REMEMBER_ME,
+    );
+
+    expect(Keychain.setGenericPassword).not.toHaveBeenCalledWith(
+      'metamask-device-key',
+      expect.anything(),
+      expect.anything(),
+    );
   });
 });
