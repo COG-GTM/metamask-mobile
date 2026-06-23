@@ -5,7 +5,7 @@ import privacyReducer from './privacy';
 import modalsReducer from './modals';
 import settingsReducer from './settings';
 import alertReducer from './alert';
-import transactionReducer from './transaction';
+import transactionReducer, { TransactionState } from './transaction';
 import legalNoticesReducer from './legalNotices';
 import userReducer, { UserState } from './user';
 import wizardReducer from './wizard';
@@ -79,9 +79,7 @@ export interface RootState {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   alert: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  transaction: any;
+  transaction: TransactionState;
   user: UserState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
