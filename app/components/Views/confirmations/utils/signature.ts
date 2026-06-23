@@ -143,15 +143,179 @@ export const sanitizeParsedMessage = (
 };
 
 
-const REGEX_MESSAGE_VALUE_LARGE =
-  /"message"\s*:\s*\{[^}]*"value"\s*:\s*(\d{15,})/u;
+const JSON_WHITESPACE = /\s/u;
 
-/** Returns the value of the message if it is a digit greater than 15 digits */
+interface RawJsonValue {
+  text: string;
+  isNumber: boolean;
+}
+
+/**
+ * Walks the raw JSON string, descending through the given object-key path, and
+ * returns the raw source text of the value at that path (plus whether that value
+ * is a JSON number).
+ *
+ * Unlike a regex, the scanner is string- and nesting-aware: keys are only matched
+ * at the depth of the object currently being descended into, so a nested field
+ * sharing the targeted name (e.g. a decoy `message.<x>.value`) can never be
+ * mistaken for the real top-level field. Returns undefined when the path does not
+ * resolve to a value.
+ */
+function getRawJsonValueAtPath(
+  raw: string,
+  path: string[],
+): RawJsonValue | undefined {
+  let i = 0;
+  const len = raw.length;
+
+  const skipWhitespace = () => {
+    while (i < len && JSON_WHITESPACE.test(raw[i])) {
+      i++;
+    }
+  };
+
+  // Reads a JSON string token starting at the opening quote and returns its
+  // decoded value, leaving `i` just past the closing quote.
+  const readString = (): string => {
+    i++; // opening quote
+    let out = '';
+    while (i < len) {
+      const ch = raw[i++];
+      if (ch === '\\') {
+        const esc = raw[i++];
+        if (esc === 'u') {
+          out += String.fromCharCode(parseInt(raw.slice(i, i + 4), 16));
+          i += 4;
+        } else {
+          const escapes: Record<string, string> = {
+            n: '\n',
+            t: '\t',
+            r: '\r',
+            b: '\b',
+            f: '\f',
+          };
+          out += escapes[esc] ?? esc;
+        }
+      } else if (ch === '"') {
+        break;
+      } else {
+        out += ch;
+      }
+    }
+    return out;
+  };
+
+  // Advances `i` past the JSON value that starts at the current position.
+  const skipValue = () => {
+    skipWhitespace();
+    const ch = raw[i];
+    if (ch === '"') {
+      readString();
+      return;
+    }
+    if (ch === '{' || ch === '[') {
+      let depth = 0;
+      while (i < len) {
+        const c = raw[i];
+        if (c === '"') {
+          readString();
+          continue;
+        }
+        if (c === '{' || c === '[') {
+          depth++;
+        } else if (c === '}' || c === ']') {
+          depth--;
+          if (depth === 0) {
+            i++;
+            return;
+          }
+        }
+        i++;
+      }
+      return;
+    }
+    // primitive: number / true / false / null
+    while (
+      i < len &&
+      raw[i] !== ',' &&
+      raw[i] !== '}' &&
+      raw[i] !== ']' &&
+      !JSON_WHITESPACE.test(raw[i])
+    ) {
+      i++;
+    }
+  };
+
+  for (let p = 0; p < path.length; p++) {
+    const targetKey = path[p];
+    const isLastSegment = p === path.length - 1;
+    skipWhitespace();
+    if (raw[i] !== '{') {
+      return undefined;
+    }
+    i++; // enter object
+    let descended = false;
+    while (i < len) {
+      skipWhitespace();
+      if (raw[i] === '}') {
+        i++;
+        break;
+      }
+      if (raw[i] !== '"') {
+        return undefined;
+      }
+      const key = readString();
+      skipWhitespace();
+      if (raw[i] !== ':') {
+        return undefined;
+      }
+      i++; // colon
+      skipWhitespace();
+      if (key === targetKey) {
+        if (isLastSegment) {
+          const start = i;
+          const firstChar = raw[i];
+          const isNumber =
+            firstChar === '-' || (firstChar >= '0' && firstChar <= '9');
+          skipValue();
+          return { text: raw.slice(start, i).trim(), isNumber };
+        }
+        descended = true;
+        break;
+      }
+      skipValue();
+      skipWhitespace();
+      if (raw[i] === ',') {
+        i++;
+      }
+    }
+    if (!descended) {
+      return undefined;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Returns the canonical numeric string of the top-level `message.value` field,
+ * preserving full integer precision, or undefined when `message.value` is absent
+ * or is not a JSON number.
+ *
+ * This reads the value directly from its exact location in the raw request so the
+ * displayed amount always corresponds to the field that is EIP-712 hashed and
+ * signed. A previous regex-based implementation could be tricked by a decoy
+ * nested `value` field into displaying a different (smaller) amount than the one
+ * actually signed.
+ */
 function extractLargeMessageValue(messageParamsData: string): string | undefined {
   if (typeof messageParamsData !== 'string') {
     return undefined;
   }
-  return messageParamsData.match(REGEX_MESSAGE_VALUE_LARGE)?.[1];
+  const rawValue = getRawJsonValueAtPath(messageParamsData, ['message', 'value']);
+  if (rawValue?.isNumber) {
+    return rawValue.text;
+  }
+  return undefined;
 }
 
 /**
@@ -165,8 +329,10 @@ function extractLargeMessageValue(messageParamsData: string): string | undefined
  * Note that using JSON.parse reviver cannot help since the value will be coerced by the time it
  * reaches the reviver function.
  *
- * This function has a workaround to extract the large value from the message and replace
- * the message value with the string value.
+ * This function reads the canonical `message.value` literal straight from the raw
+ * request (see {@link extractLargeMessageValue}) so the value shown to the user
+ * matches the value that is actually signed, while still preserving precision for
+ * large integers.
  */
 export const parseAndNormalizeSignTypedData = (messageParamsData: string) => {
   const result = JSON.parse(messageParamsData);
