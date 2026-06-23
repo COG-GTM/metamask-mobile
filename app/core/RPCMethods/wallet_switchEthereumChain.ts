@@ -7,6 +7,7 @@ import {
   PendingJsonRpcResponse,
 } from '@metamask/utils';
 import { NetworkConfiguration } from '@metamask/network-controller';
+import { Caip25CaveatValue } from '@metamask/chain-agnostic-permission';
 import { selectEvmNetworkConfigurationsByChainId } from '../../selectors/networkController';
 import { store } from '../../store';
 import {
@@ -21,6 +22,17 @@ interface SwitchEthereumChainHooks {
   getNetworkConfigurationByChainId: (
     chainId: Hex,
   ) => NetworkConfiguration | undefined;
+  getCaveat: (opts: {
+    target: string;
+    caveatType: string;
+  }) => { value: Caip25CaveatValue } | null | undefined;
+  requestPermittedChainsPermissionIncrementalForOrigin: (opts: {
+    origin: string;
+    chainId: Hex;
+    autoApprove: boolean;
+  }) => Promise<void>;
+  hasApprovalRequestsForOrigin?: () => boolean;
+  rejectApprovalRequestsForOrigin?: () => void;
 }
 
 interface WalletSwitchEthereumChainParams {
@@ -28,9 +40,9 @@ interface WalletSwitchEthereumChainParams {
   res: PendingJsonRpcResponse<Json>;
   requestUserApproval: (opts: {
     type?: string;
-    requestData?: Record<string, Json>;
+    requestData?: Record<string, unknown>;
   }) => Promise<unknown>;
-  analytics: Record<string, string | undefined>;
+  analytics: Record<string, string | boolean | undefined>;
   hooks: SwitchEthereumChainHooks;
 }
 
