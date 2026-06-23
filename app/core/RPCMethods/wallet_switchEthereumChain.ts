@@ -1,13 +1,32 @@
 import Engine from '../Engine';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
+import { Hex, Json, PendingJsonRpcResponse } from '@metamask/utils';
 import { selectEvmNetworkConfigurationsByChainId } from '../../selectors/networkController';
 import { store } from '../../store';
 import {
   validateChainId,
   findExistingNetwork,
   switchToNetwork,
+  RequestUserApproval,
+  SwitchToNetworkHooks,
 } from './lib/ethereum-chain-utils';
+import { JsonMap } from '../Analytics/MetaMetrics.types';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
+
+interface SwitchEthereumChainParam {
+  chainId?: string;
+  [key: string]: unknown;
+}
+
+interface SwitchEthereumChainRequest {
+  params?: SwitchEthereumChainParam[] | null;
+  origin?: string;
+}
+
+export interface SwitchEthereumChainHooks extends SwitchToNetworkHooks {
+  getCurrentChainIdForDomain: (origin: string) => Hex;
+  getNetworkConfigurationByChainId: (chainId?: string) => unknown;
+}
 
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
@@ -25,6 +44,12 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
+}: {
+  req: SwitchEthereumChainRequest;
+  res: PendingJsonRpcResponse<Json>;
+  requestUserApproval: RequestUserApproval;
+  analytics?: JsonMap;
+  hooks: SwitchEthereumChainHooks;
 }) => {
   const {
     CurrencyRateController,
@@ -33,7 +58,7 @@ export const wallet_switchEthereumChain = async ({
     SelectedNetworkController,
   } = Engine.context;
   const params = req.params?.[0];
-  const { origin } = req;
+  const origin = req.origin as string;
   if (!params || typeof params !== 'object') {
     throw rpcErrors.invalidParams({
       message: `Expected single, object parameter. Received:\n${JSON.stringify(
@@ -42,7 +67,7 @@ export const wallet_switchEthereumChain = async ({
     });
   }
   const { chainId } = params;
-  const allowedKeys = {
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
