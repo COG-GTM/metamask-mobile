@@ -1,6 +1,18 @@
-export default function migrate(state) {
-  const allTokens = state.engine.backgroundState.TokensController.allTokens;
-  const newAllTokens = {};
+type ChainBuckets = Record<string, unknown>;
+
+export default function migrate(state: unknown): Record<string, unknown> {
+  // Expected shape: TokensController.allTokens is keyed by account address then
+  // chainId; ignoredTokens is an array shared across accounts.
+  const { backgroundState } = (
+    state as {
+      engine: { backgroundState: Record<string, Record<string, unknown>> };
+    }
+  ).engine;
+  const allTokens = backgroundState.TokensController.allTokens as Record<
+    string,
+    Record<string, unknown>
+  >;
+  const newAllTokens: Record<string, ChainBuckets> = {};
   if (allTokens) {
     Object.keys(allTokens).forEach((accountAddress) => {
       Object.keys(allTokens[accountAddress]).forEach((chainId) => {
@@ -17,9 +29,8 @@ export default function migrate(state) {
     });
   }
 
-  const ignoredTokens =
-    state.engine.backgroundState.TokensController.ignoredTokens;
-  const newAllIgnoredTokens = {};
+  const ignoredTokens = backgroundState.TokensController.ignoredTokens;
+  const newAllIgnoredTokens: Record<string, ChainBuckets> = {};
   Object.keys(allTokens).forEach((accountAddress) => {
     Object.keys(allTokens[accountAddress]).forEach((chainId) => {
       if (newAllIgnoredTokens[chainId] === undefined) {
@@ -35,10 +46,10 @@ export default function migrate(state) {
     });
   });
 
-  state.engine.backgroundState.TokensController = {
+  backgroundState.TokensController = {
     allTokens: newAllTokens,
     allIgnoredTokens: newAllIgnoredTokens,
   };
 
-  return state;
+  return state as Record<string, unknown>;
 }
