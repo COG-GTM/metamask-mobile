@@ -73,6 +73,7 @@ describe('getSwapsIsLive', () => {
       const result = getSwapsIsLive(
         {
           ...mockState,
+          // @ts-expect-error testing null chain state
           swaps: { ...mockState.swaps, '0x1': null },
         },
         mockChainId,
