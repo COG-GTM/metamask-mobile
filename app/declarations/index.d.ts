@@ -11,6 +11,26 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module '@metamask/ethjs-unit' {
+  import BN from 'bnjs4';
+
+  type NumericInput = number | string | BN;
+
+  const convert: {
+    fromWei(value: NumericInput, unit: string): string;
+    toWei(value: NumericInput, unit: string): BN;
+    numberToString(value: NumericInput): string;
+  };
+  export default convert;
+}
+
+declare module 'number-to-bn' {
+  import BN from 'bnjs4';
+
+  export default function numberToBN(value: number | string): BN;
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
