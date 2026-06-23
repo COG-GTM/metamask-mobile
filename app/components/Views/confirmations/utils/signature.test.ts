@@ -84,6 +84,29 @@ describe('Signature Utils', () => {
       expect(result.message.value).toBe(largeValue);
     });
 
+    it('reads the genuine top-level message.value when a nested decoy "value" field precedes it', () => {
+      const maxUint256 =
+        '115792089237316195423570985008687907853269984665640564039457584007913129639935';
+      const data = `{"primaryType":"Permit","message":{"value":${maxUint256},"decoy":{"value":100000000000000},"nonce":0}}`;
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe(maxUint256);
+    });
+
+    it('reads the genuine top-level message.value when a nested decoy "value" field follows it', () => {
+      const maxUint256 =
+        '115792089237316195423570985008687907853269984665640564039457584007913129639935';
+      const data = `{"message":{"details":{"value":100000000000000},"value":${maxUint256}}}`;
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe(maxUint256);
+    });
+
+    it('preserves precision for large integer message values', () => {
+      const largeValue = '123456789012345678901234567890';
+      const data = `{"message":{"value":${largeValue}}}`;
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe(largeValue);
+    });
+
     it('throws an error for invalid typedDataMessage', () => {
       expect(() => {
         parseAndNormalizeSignTypedData('');

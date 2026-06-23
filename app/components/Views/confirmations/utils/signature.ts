@@ -143,37 +143,182 @@ export const sanitizeParsedMessage = (
 };
 
 
-const REGEX_MESSAGE_VALUE_LARGE =
-  /"message"\s*:\s*\{[^}]*"value"\s*:\s*(\d{15,})/u;
-
-/** Returns the value of the message if it is a digit greater than 15 digits */
-function extractLargeMessageValue(messageParamsData: string): string | undefined {
-  if (typeof messageParamsData !== 'string') {
-    return undefined;
+const skipWhitespace = (raw: string, index: number): number => {
+  let i = index;
+  while (i < raw.length && /\s/u.test(raw[i])) {
+    i++;
   }
-  return messageParamsData.match(REGEX_MESSAGE_VALUE_LARGE)?.[1];
-}
+  return i;
+};
+
+/** Returns the index just after the string literal that starts at `raw[index]` (a `"`). */
+const endOfString = (raw: string, index: number): number => {
+  let i = index + 1;
+  while (i < raw.length) {
+    const char = raw[i];
+    if (char === '\\') {
+      i += 2;
+      continue;
+    }
+    if (char === '"') {
+      return i + 1;
+    }
+    i++;
+  }
+  throw new Error('Unterminated string in typed data');
+};
+
+/** Returns the index just after the JSON value that starts at `raw[index]`. */
+const endOfValue = (raw: string, index: number): number => {
+  const char = raw[index];
+
+  if (char === '"') {
+    return endOfString(raw, index);
+  }
+
+  if (char === '{' || char === '[') {
+    const close = char === '{' ? '}' : ']';
+    let i = index + 1;
+    while (i < raw.length) {
+      i = skipWhitespace(raw, i);
+      const current = raw[i];
+      if (current === close) {
+        return i + 1;
+      }
+      if (current === '"') {
+        i = endOfString(raw, i);
+        continue;
+      }
+      if (current === '{' || current === '[') {
+        i = endOfValue(raw, i);
+        continue;
+      }
+      i++;
+    }
+    throw new Error('Unterminated object or array in typed data');
+  }
+
+  // Primitive value (number, true, false, null).
+  let i = index;
+  while (i < raw.length && !/[,}\]\s]/u.test(raw[i])) {
+    i++;
+  }
+  return i;
+};
 
 /**
- * JSON.parse has a limitation which coerces values to scientific notation if numbers are greater than
- * Number.MAX_SAFE_INTEGER. This can cause a loss in precision.
+ * Returns the raw, unparsed source token of a value addressed by `path` within the
+ * JSON string `raw`, or undefined if it cannot be resolved.
  *
- * Aside from precision concerns, if the value returned was a large number greater than 15 digits,
- * e.g. 3.000123123123121e+26, passing the value to BigNumber will throw the error:
- * Error: new BigNumber() number type has more than 15 significant digits
- *
- * Note that using JSON.parse reviver cannot help since the value will be coerced by the time it
- * reaches the reviver function.
- *
- * This function has a workaround to extract the large value from the message and replace
- * the message value with the string value.
+ * The scan is string/brace/bracket aware and only descends into the value that is a
+ * direct member of each object on the path. This means it returns the genuine
+ * top-level `message.value` and never a nested (e.g. attacker-controlled decoy)
+ * field that happens to share the same key.
  */
+const getRawValueAtPath = (
+  raw: string,
+  path: string[],
+): string | undefined => {
+  let objectStart = skipWhitespace(raw, 0);
+
+  for (let depth = 0; depth < path.length; depth++) {
+    const key = path[depth];
+    if (raw[objectStart] !== '{') {
+      return undefined;
+    }
+
+    let i = objectStart + 1;
+    let valueSpan: { start: number; end: number } | undefined;
+
+    while (i < raw.length) {
+      i = skipWhitespace(raw, i);
+      if (raw[i] === '}') {
+        break;
+      }
+      if (raw[i] !== '"') {
+        return undefined;
+      }
+
+      const keyEnd = endOfString(raw, i);
+      const memberKey = JSON.parse(raw.slice(i, keyEnd));
+
+      i = skipWhitespace(raw, keyEnd);
+      if (raw[i] !== ':') {
+        return undefined;
+      }
+
+      const valueStart = skipWhitespace(raw, i + 1);
+      const valueEnd = endOfValue(raw, valueStart);
+
+      if (memberKey === key) {
+        valueSpan = { start: valueStart, end: valueEnd };
+        break;
+      }
+
+      i = skipWhitespace(raw, valueEnd);
+      if (raw[i] === ',') {
+        i++;
+        continue;
+      }
+      break;
+    }
+
+    if (!valueSpan) {
+      return undefined;
+    }
+
+    if (depth === path.length - 1) {
+      return raw.slice(valueSpan.start, valueSpan.end).trim();
+    }
+
+    objectStart = skipWhitespace(raw, valueSpan.start);
+  }
+
+  return undefined;
+};
+
+/**
+ * JSON.parse coerces integers greater than Number.MAX_SAFE_INTEGER to scientific
+ * notation, losing precision. A JSON.parse reviver cannot recover this because the
+ * value is already coerced by the time the reviver runs.
+ *
+ * To display the genuine value with full precision, the raw source token of the
+ * top-level `message.value` is read directly from the JSON string. The token is
+ * only used when it is a plain integer that round-trips to the parsed number, which
+ * guarantees the displayed value is the same field that is actually signed. This
+ * prevents a spoofing attack where a nested decoy `value` field could otherwise be
+ * substituted for the real one.
+ */
+const normalizeMessageValue = (
+  messageParamsData: string,
+  parsedValue: unknown,
+): unknown => {
+  // Precision loss only affects numeric literals; other types are already exact.
+  if (typeof parsedValue !== 'number') {
+    return String(parsedValue);
+  }
+
+  const rawValue = getRawValueAtPath(messageParamsData, ['message', 'value']);
+
+  if (
+    rawValue &&
+    /^\d+$/u.test(rawValue) &&
+    Number(rawValue) === parsedValue
+  ) {
+    return rawValue;
+  }
+
+  return String(parsedValue);
+};
+
 export const parseAndNormalizeSignTypedData = (messageParamsData: string) => {
   const result = JSON.parse(messageParamsData);
 
-  const largeMessageValue = extractLargeMessageValue(messageParamsData);
   if (result.message?.value) {
-    result.message.value = largeMessageValue || String(result.message.value);
+    result.message.value = normalizeMessageValue(
+      messageParamsData,
+      result.message.value,
+    );
   }
 
   return result;
