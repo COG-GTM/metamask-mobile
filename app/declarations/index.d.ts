@@ -408,3 +408,16 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'ethereumjs-abi' {
+  export function rawEncode(types: string[], values: unknown[]): Buffer;
+  export function rawDecode(types: string[], data: Buffer): unknown[];
+}
+
+declare module 'humanize-duration' {
+  const humanizeDuration: (
+    ms: number,
+    options?: Record<string, unknown>,
+  ) => string;
+  export default humanizeDuration;
+}
