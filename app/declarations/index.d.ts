@@ -51,6 +51,37 @@ declare module '@react-native-community/checkbox' {
   export default CheckBox;
 }
 
+declare module '@metamask/eth-json-rpc-filters' {
+  import { JsonRpcMiddleware } from '@metamask/json-rpc-engine';
+  import { Json, JsonRpcParams } from '@metamask/utils';
+
+  const createFilterMiddleware: (
+    provider: unknown,
+  ) => JsonRpcMiddleware<JsonRpcParams, Json>;
+  export default createFilterMiddleware;
+}
+
+declare module '@metamask/eth-json-rpc-filters/subscriptionManager' {
+  import { JsonRpcMiddleware } from '@metamask/json-rpc-engine';
+  import { Json, JsonRpcParams } from '@metamask/utils';
+
+  const createSubscriptionManager: (provider: unknown) => {
+    events: {
+      on: (event: string, handler: (message: unknown) => void) => void;
+    };
+    middleware: JsonRpcMiddleware<JsonRpcParams, Json>;
+  };
+  export default createSubscriptionManager;
+}
+
+declare module 'pump' {
+  import { Stream } from 'stream';
+
+  type PumpCallback = (error?: Error) => void;
+  const pump: (...streams: (Stream | PumpCallback)[]) => Stream;
+  export default pump;
+}
+
 declare module 'react-native-vector-icons/Ionicons' {
   import { IconProps } from 'react-native-vector-icons/Ionicons';
 
