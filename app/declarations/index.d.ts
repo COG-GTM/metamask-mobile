@@ -408,3 +408,29 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module '@metamask/eth-json-rpc-filters' {
+  export default function createFilterMiddleware(
+    provider: unknown,
+  ): import('@metamask/json-rpc-engine').JsonRpcMiddleware<
+    import('@metamask/utils').JsonRpcParams,
+    import('@metamask/utils').Json
+  >;
+}
+
+declare module '@metamask/eth-json-rpc-filters/subscriptionManager' {
+  export default function createSubscriptionManager(provider: unknown): {
+    events: {
+      on(event: string, listener: (...args: unknown[]) => void): void;
+    };
+    middleware: import('@metamask/json-rpc-engine').JsonRpcMiddleware<
+      import('@metamask/utils').JsonRpcParams,
+      import('@metamask/utils').Json
+    >;
+    destroy?: () => void;
+  };
+}
+
+declare module 'pump' {
+  export default function pump(...args: unknown[]): unknown;
+}

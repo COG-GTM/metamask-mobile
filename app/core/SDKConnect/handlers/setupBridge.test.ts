@@ -32,6 +32,7 @@ describe('setupBridge', () => {
   });
 
   it('should returns existing backgroundBridge if it already exists', () => {
+    // @ts-expect-error mocked constructor invoked without required options in test
     const existingBridge = new BackgroundBridge();
     connection.backgroundBridge = existingBridge;
 
