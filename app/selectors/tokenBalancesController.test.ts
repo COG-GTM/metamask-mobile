@@ -1,5 +1,6 @@
 import { Hex } from '@metamask/utils';
 import { RootState } from '../reducers';
+import { SettingsState } from '../reducers/settings';
 import {
   selectContractBalances,
   selectAllTokenBalances,
@@ -143,7 +144,7 @@ describe('TokenBalancesController Selectors', () => {
     const arrange = () => {
       // Deep clone for isolated test
       const mockState: RootState = JSON.parse(JSON.stringify(mockRootState));
-      mockState.settings = { showFiatOnTestnets: true };
+      mockState.settings = { showFiatOnTestnets: true } as SettingsState;
 
       return { mockState };
     };
