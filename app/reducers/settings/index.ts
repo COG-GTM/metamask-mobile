@@ -1,6 +1,33 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import AppConstants from '../../core/AppConstants';
+import {
+  SettingsAction,
+  SET_SEARCH_ENGINE,
+  SET_LOCK_TIME,
+  SET_SHOW_HEX_DATA,
+  SET_SHOW_CUSTOM_NONCE,
+  SET_HIDE_ZERO_BALANCE_TOKENS,
+  SET_USE_BLOCKIE_ICON,
+  SET_PRIMARY_CURRENCY,
+  SET_SHOW_FIAT_ON_TESTNETS,
+  TOGGLE_BASIC_FUNCTIONALITY,
+  TOGGLE_DEVICE_NOTIFICATIONS,
+} from '../../actions/settings';
 
-const initialState = {
+export interface SettingsState {
+  searchEngine: string;
+  primaryCurrency: string;
+  lockTime: number;
+  useBlockieIcon: boolean;
+  hideZeroBalanceTokens: boolean;
+  basicFunctionalityEnabled: boolean;
+  showHexData?: boolean;
+  showCustomNonce?: boolean;
+  showFiatOnTestnets?: boolean;
+  deviceNotificationEnabled?: boolean;
+}
+
+export const initialState: SettingsState = {
   searchEngine: AppConstants.DEFAULT_SEARCH_ENGINE,
   primaryCurrency: 'ETH',
   lockTime: -1, // Disabled by default
@@ -9,55 +36,58 @@ const initialState = {
   basicFunctionalityEnabled: true,
 };
 
-const settingsReducer = (state = initialState, action) => {
+const settingsReducer = (
+  state: SettingsState = initialState,
+  action: SettingsAction,
+): SettingsState => {
   switch (action.type) {
-    case 'SET_SEARCH_ENGINE':
+    case SET_SEARCH_ENGINE:
       return {
         ...state,
         searchEngine: action.searchEngine,
       };
-    case 'SET_LOCK_TIME':
+    case SET_LOCK_TIME:
       return {
         ...state,
         lockTime: action.lockTime,
       };
-    case 'SET_SHOW_HEX_DATA':
+    case SET_SHOW_HEX_DATA:
       return {
         ...state,
         showHexData: action.showHexData,
       };
-    case 'SET_SHOW_CUSTOM_NONCE':
+    case SET_SHOW_CUSTOM_NONCE:
       return {
         ...state,
         showCustomNonce: action.showCustomNonce,
       };
-    case 'SET_HIDE_ZERO_BALANCE_TOKENS':
+    case SET_HIDE_ZERO_BALANCE_TOKENS:
       return {
         ...state,
         hideZeroBalanceTokens: action.hideZeroBalanceTokens,
       };
-    case 'SET_USE_BLOCKIE_ICON':
+    case SET_USE_BLOCKIE_ICON:
       return {
         ...state,
         useBlockieIcon: action.useBlockieIcon,
       };
-    case 'SET_PRIMARY_CURRENCY':
+    case SET_PRIMARY_CURRENCY:
       return {
         ...state,
         primaryCurrency: action.primaryCurrency,
       };
-    case 'SET_SHOW_FIAT_ON_TESTNETS':
+    case SET_SHOW_FIAT_ON_TESTNETS:
       return {
         ...state,
         showFiatOnTestnets: action.showFiatOnTestnets,
       };
-    case 'TOGGLE_BASIC_FUNCTIONALITY':
+    case TOGGLE_BASIC_FUNCTIONALITY:
       return {
         ...state,
         basicFunctionalityEnabled: action.basicFunctionalityEnabled,
       };
 
-    case 'TOGGLE_DEVICE_NOTIFICATIONS':
+    case TOGGLE_DEVICE_NOTIFICATIONS:
       return {
         ...state,
         deviceNotificationEnabled: action.deviceNotificationEnabled,
