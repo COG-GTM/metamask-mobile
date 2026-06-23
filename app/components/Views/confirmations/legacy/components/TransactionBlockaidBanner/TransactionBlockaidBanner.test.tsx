@@ -43,7 +43,7 @@ const mockState: DeepPartial<RootState> = {
         chainId: '0x1',
       },
     },
-  },
+  } as unknown as DeepPartial<RootState>['transaction'],
 };
 
 describe('TransactionBlockaidBanner', () => {
