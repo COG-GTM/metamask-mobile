@@ -2,6 +2,7 @@ import type { RootState } from '../../reducers';
 import type { EngineState } from '../../core/Engine';
 import { initialState as initialFiatOrdersState } from '../../reducers/fiatOrders';
 import { initialState as initialSecurityState } from '../../reducers/security';
+import { initialState as initialInfuraAvailabilityState } from '../../reducers/infuraAvailability';
 import { initialState as initialInpageProvider } from '../../core/redux/slices/inpageProvider';
 import { initialState as confirmationMetrics } from '../../core/redux/slices/confirmationMetrics';
 import { initialState as originThrottling } from '../../core/redux/slices/originThrottling';
@@ -34,7 +35,7 @@ const initialRootState: RootState = {
   notification: undefined,
   swaps: undefined,
   fiatOrders: initialFiatOrdersState,
-  infuraAvailability: undefined,
+  infuraAvailability: initialInfuraAvailabilityState,
   navigation: initialNavigationState,
   networkOnboarded: undefined,
   security: initialSecurityState,
