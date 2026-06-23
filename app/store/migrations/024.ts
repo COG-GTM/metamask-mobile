@@ -16,8 +16,12 @@ import { NetworkStatus } from '@metamask/network-controller';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
-  const networkControllerState = state.engine.backgroundState.NetworkController;
+export default function migrate(state: unknown): Record<string, unknown> {
+  const networkControllerState = (
+    state as {
+      engine: { backgroundState: { NetworkController: unknown } };
+    }
+  ).engine.backgroundState.NetworkController;
 
   if (!isObject(networkControllerState)) {
     captureException(
@@ -25,14 +29,14 @@ export default function migrate(state) {
         `Migration 24: Invalid network controller state: '${typeof networkControllerState}'`,
       ),
     );
-    return state;
+    return state as Record<string, unknown>;
   } else if (typeof networkControllerState.network !== 'string') {
     captureException(
       new Error(
         `Migration 24: Invalid network state: '${typeof networkControllerState.network}'`,
       ),
     );
-    return state;
+    return state as Record<string, unknown>;
   }
 
   if (networkControllerState.network === 'loading') {
@@ -44,5 +48,5 @@ export default function migrate(state) {
   }
   delete networkControllerState.network;
 
-  return state;
+  return state as Record<string, unknown>;
 }
