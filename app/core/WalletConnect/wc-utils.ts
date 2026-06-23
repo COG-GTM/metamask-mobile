@@ -1,3 +1,4 @@
+import { AddApprovalOptions } from '@metamask/approval-controller';
 import { toHex } from '@metamask/controller-utils';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { CaipChainId, KnownCaipNamespace } from '@metamask/utils';
@@ -237,18 +238,19 @@ export const getScopedPermissions = async ({ origin }: { origin: string }) => {
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const onRequestUserApproval = (origin: string) => async (args: any) => {
-  Engine.context.ApprovalController.clear(
-    providerErrors.userRejectedRequest(),
-  );
-  const responseData = await Engine.context.ApprovalController.add({
-    origin,
-    type: args.type,
-    requestData: args.requestData,
-  });
-  return responseData;
-};
+export const onRequestUserApproval =
+  (origin: string) =>
+  async (args: Pick<AddApprovalOptions, 'type' | 'requestData'>) => {
+    Engine.context.ApprovalController.clear(
+      providerErrors.userRejectedRequest(),
+    );
+    const responseData = await Engine.context.ApprovalController.add({
+      origin,
+      type: args.type,
+      requestData: args.requestData,
+    });
+    return responseData;
+  };
 
 export const checkWCPermissions = async ({
   origin,
