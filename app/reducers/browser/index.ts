@@ -1,8 +1,103 @@
-import { BrowserActionTypes } from '../../actions/browser';
+/* eslint-disable @typescript-eslint/default-param-last */
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
 
-const initialState = {
+export interface BrowserHistoryEntry {
+  url: string;
+  name: string;
+}
+
+export interface BrowserFavicon {
+  origin: string;
+  url: string;
+}
+
+export interface BrowserTab {
+  id: string | number;
+  url: string;
+  image?: string;
+  linkType?: string;
+  isArchived?: boolean;
+}
+
+export interface BrowserState {
+  history: BrowserHistoryEntry[];
+  whitelist: string[];
+  tabs: BrowserTab[];
+  favicons: BrowserFavicon[];
+  activeTab: string | number | null;
+  visitedDappsByHostname: { [hostname: string]: boolean };
+}
+
+interface AddToViewedDappAction {
+  type: 'ADD_TO_VIEWED_DAPP';
+  hostname: string;
+}
+
+interface AddToBrowserHistoryAction {
+  type: 'ADD_TO_BROWSER_HISTORY';
+  url: string;
+  name: string;
+}
+
+interface AddToBrowserWhitelistAction {
+  type: 'ADD_TO_BROWSER_WHITELIST';
+  url: string;
+}
+
+interface ClearBrowserHistoryAction {
+  type: 'CLEAR_BROWSER_HISTORY';
+  id: string | number;
+  metricsEnabled: boolean;
+  marketingEnabled: boolean;
+}
+
+interface CloseAllTabsAction {
+  type: 'CLOSE_ALL_TABS';
+}
+
+interface CreateNewTabAction {
+  type: 'CREATE_NEW_TAB';
+  url: string;
+  linkType?: string;
+  id: string | number;
+}
+
+interface CloseTabAction {
+  type: 'CLOSE_TAB';
+  id: string | number;
+}
+
+interface SetActiveTabAction {
+  type: 'SET_ACTIVE_TAB';
+  id: string | number;
+}
+
+interface UpdateTabAction {
+  type: 'UPDATE_TAB';
+  id: string | number;
+  data: Partial<BrowserTab>;
+}
+
+interface StoreFaviconAction {
+  type: 'STORE_FAVICON_URL';
+  origin: string;
+  url: string;
+}
+
+export type BrowserAction =
+  | AddToViewedDappAction
+  | AddToBrowserHistoryAction
+  | AddToBrowserWhitelistAction
+  | ClearBrowserHistoryAction
+  | CloseAllTabsAction
+  | CreateNewTabAction
+  | CloseTabAction
+  | SetActiveTabAction
+  | UpdateTabAction
+  | StoreFaviconAction;
+
+export const initialState: BrowserState = {
   history: [],
   whitelist: [],
   tabs: [],
@@ -11,9 +106,13 @@ const initialState = {
   // Keep track of viewed Dapps, which is used for MetaMetricsEvents.DAPP_VIEWED event
   visitedDappsByHostname: {},
 };
-const browserReducer = (state = initialState, action) => {
+
+const browserReducer = (
+  state: BrowserState = initialState,
+  action: BrowserAction | { type: null },
+): BrowserState => {
   switch (action.type) {
-    case BrowserActionTypes.ADD_TO_VIEWED_DAPP: {
+    case 'ADD_TO_VIEWED_DAPP': {
       const { hostname } = action;
       return {
         ...state,
