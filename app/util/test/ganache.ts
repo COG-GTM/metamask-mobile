@@ -14,7 +14,7 @@ interface GanacheOptions {
 }
 
 interface GanacheProvider {
-  request: (args: { method: string; params: unknown[] }) => Promise<never>;
+  request: (args: { method: string; params: unknown[] }) => Promise<unknown>;
 }
 
 interface GanacheServer {
@@ -55,18 +55,19 @@ export default class Ganache {
   }
 
   async getAccounts(): Promise<string[]> {
-    return await this.getProvider()!.request({
+    const accounts = await this.getProvider()!.request({
       method: 'eth_accounts',
       params: [],
     });
+    return accounts as string[];
   }
 
   async getBalance(): Promise<number | string> {
     const accounts = await this.getAccounts();
-    const balanceHex: string = await this.getProvider()!.request({
+    const balanceHex = (await this.getProvider()!.request({
       method: 'eth_getBalance',
       params: [accounts[0], 'latest'],
-    });
+    })) as string;
     const balanceInt = parseInt(balanceHex, 16) / 10 ** 18;
 
     const balanceFormatted =
