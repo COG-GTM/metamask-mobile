@@ -1,13 +1,20 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, View } from 'react-native';
-import AssetIcon from '../AssetIcon';
-import Identicon from '../Identicon';
+import {
+  ImageStyle,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from 'react-native';
 import isUrl from 'is-url';
 import { connect, useSelector } from 'react-redux';
+import AssetIcon from '../AssetIcon';
+import Identicon from '../Identicon';
 import { selectTokenList } from '../../../selectors/tokenListController';
 import { selectIsIpfsGatewayEnabled } from '../../../selectors/preferencesController';
 import { isIPFSUri } from '../../../util/general';
+import { TokenI } from '../Tokens/types';
+import { RootState } from '../../../reducers';
 
 const styles = StyleSheet.create({
   itemLogoWrapper: {
@@ -20,14 +27,31 @@ const styles = StyleSheet.create({
   },
 });
 
-const TokenImage = ({ asset, containerStyle, iconStyle, tokenList }) => {
+const mapStateToProps = (state: RootState) => ({
+  tokenList: selectTokenList(state),
+});
+
+interface TokenImageOwnProps {
+  asset?: Partial<TokenI>;
+  containerStyle?: StyleProp<ViewStyle>;
+  iconStyle?: ImageStyle;
+}
+
+type TokenImageProps = ReturnType<typeof mapStateToProps> & TokenImageOwnProps;
+
+const TokenImage = ({
+  asset,
+  containerStyle,
+  iconStyle,
+  tokenList,
+}: TokenImageProps) => {
   const isIpfsGatewayEnabled = useSelector(selectIsIpfsGatewayEnabled);
 
-  const assetImage = isUrl(asset?.image) ? asset.image : null;
+  const assetImage = asset?.image && isUrl(asset.image) ? asset.image : null;
   const iconUrl =
     assetImage ||
-    tokenList[asset?.address]?.iconUrl ||
-    tokenList[asset?.address?.toLowerCase()]?.iconUrl ||
+    tokenList[asset?.address ?? '']?.iconUrl ||
+    tokenList[asset?.address?.toLowerCase() ?? '']?.iconUrl ||
     '';
 
   const isIpfsDisabledAndUriIsIpfs =
@@ -47,16 +71,5 @@ const TokenImage = ({ asset, containerStyle, iconStyle, tokenList }) => {
     </View>
   );
 };
-
-TokenImage.propTypes = {
-  asset: PropTypes.object,
-  containerStyle: PropTypes.object,
-  iconStyle: PropTypes.object,
-  tokenList: PropTypes.object,
-};
-
-const mapStateToProps = (state) => ({
-  tokenList: selectTokenList(state),
-});
 
 export default connect(mapStateToProps)(TokenImage);
