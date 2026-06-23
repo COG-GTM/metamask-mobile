@@ -899,7 +899,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       backgroundBridgeRef.current?.onDisconnect();
       backgroundBridgeRef.current = undefined;
 
-      //@ts-expect-error - We should type bacgkround bridge js file
       const newBridge = new BackgroundBridge({
         webview: webviewRef,
         url: urlBridge,
@@ -934,7 +933,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
           }),
         isMainFrame,
       });
-      backgroundBridgeRef.current = newBridge;
+      backgroundBridgeRef.current =
+        newBridge as unknown as typeof backgroundBridgeRef.current;
     },
     [navigation, isHomepage, toggleUrlModal, tabId, injectHomePageScripts],
   );
