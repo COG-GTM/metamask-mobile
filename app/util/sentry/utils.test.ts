@@ -99,13 +99,17 @@ describe('deriveSentryEnvironment', () => {
 
   it('returns performance event Route Change', async () => {
     const event = { transaction: 'Route Change' };
-    const eventExcluded = excludeEvents(event);
+    const eventExcluded = excludeEvents(
+      event as unknown as Parameters<typeof excludeEvents>[0],
+    );
     expect(eventExcluded).toBe(null);
   });
 
   it('returns performance event anything', async () => {
     const event = { transaction: 'Login' };
-    const eventExcluded = excludeEvents(event);
+    const eventExcluded = excludeEvents(
+      event as unknown as Parameters<typeof excludeEvents>[0],
+    );
     expect(eventExcluded).toBe(event);
   });
 
