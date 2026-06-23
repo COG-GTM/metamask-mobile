@@ -1,4 +1,5 @@
 import { toHex } from '@metamask/controller-utils';
+import { NetworkConfiguration } from '@metamask/network-controller';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { CaipChainId, KnownCaipNamespace } from '@metamask/utils';
 import { NavigationContainerRef } from '@react-navigation/native';
@@ -261,7 +262,7 @@ export const checkWCPermissions = async ({
 
   const existingNetwork = findExistingNetwork(
     hexChainIdString,
-    networkConfigurations,
+    networkConfigurations as unknown as Record<string, NetworkConfiguration>,
   );
 
   if (!existingNetwork) {
