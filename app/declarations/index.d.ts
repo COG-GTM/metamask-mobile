@@ -11,6 +11,43 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'through2' {
+  type Through2Callback = (error?: Error | null, data?: unknown) => void;
+  type Through2Transform = (
+    this: import('stream').Transform,
+    chunk: unknown,
+    encoding: string,
+    callback: Through2Callback,
+  ) => void;
+  interface Through2 {
+    (transform?: Through2Transform): import('stream').Transform;
+    obj(transform?: Through2Transform): import('stream').Transform;
+  }
+  const through2: Through2;
+  export = through2;
+}
+
+declare module 'pump' {
+  type PumpCallback = (error?: Error | null) => void;
+  function pump(
+    ...streams: (import('stream').Stream | PumpCallback)[]
+  ): import('stream').Stream;
+  export = pump;
+}
+
+declare module 'ethjs-ens' {
+  interface ENSOptions {
+    provider: unknown;
+    network: string;
+  }
+  export default class ENS {
+    constructor(opts: ENSOptions);
+    reverse(address: string): Promise<string>;
+    lookup(name: string): Promise<string>;
+  }
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
