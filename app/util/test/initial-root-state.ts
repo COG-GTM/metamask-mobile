@@ -2,6 +2,7 @@ import type { RootState } from '../../reducers';
 import type { EngineState } from '../../core/Engine';
 import { initialState as initialFiatOrdersState } from '../../reducers/fiatOrders';
 import { initialState as initialSecurityState } from '../../reducers/security';
+import { initialState as initialBrowserState } from '../../reducers/browser';
 import { initialState as initialInpageProvider } from '../../core/redux/slices/inpageProvider';
 import { initialState as confirmationMetrics } from '../../core/redux/slices/confirmationMetrics';
 import { initialState as originThrottling } from '../../core/redux/slices/originThrottling';
@@ -23,7 +24,7 @@ const initialRootState: RootState = {
   engine: { backgroundState },
   privacy: undefined,
   bookmarks: undefined,
-  browser: undefined,
+  browser: initialBrowserState,
   modals: undefined,
   settings: undefined,
   alert: undefined,
