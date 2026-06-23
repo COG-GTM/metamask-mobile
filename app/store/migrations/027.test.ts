@@ -68,7 +68,11 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as {
+      engine: {
+        backgroundState: { TransactionController: { submitHistory: unknown } };
+      };
+    };
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
@@ -136,7 +140,11 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as {
+      engine: {
+        backgroundState: { TransactionController: { submitHistory: unknown } };
+      };
+    };
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
@@ -226,7 +234,11 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as {
+      engine: {
+        backgroundState: { TransactionController: { submitHistory: unknown } };
+      };
+    };
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
