@@ -1,9 +1,62 @@
-import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
+import React, { ReactNode, useCallback } from 'react';
+import { StyleProp, ViewStyle, TextStyle } from 'react-native';
 import Keypad from './components';
 import { KEYS } from './constants';
 import useCurrency from './useCurrency';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+
+interface KeypadChangeData {
+  value: string;
+  valueAsNumber: number;
+  pressedKey: string;
+}
+
+interface KeypadComponentProps {
+  /**
+   * Function that will be called when a key is pressed with arguments `(value, key)`
+   */
+  onChange?: (data: KeypadChangeData) => void;
+  /**
+   * Currency code for the keypad rules and symbols. Defaults to
+   * currency without decimals (CURRENCIES[default])
+   */
+  currency?: string;
+  /**
+   * Currency decimals
+   */
+  decimals?: number;
+  /**
+   * Current value used to create new value when a key is pressed.
+   */
+  value?: string;
+  /**
+   * Custom style for container
+   */
+  style?: StyleProp<ViewStyle>;
+  /**
+   * Custom style for digit buttons
+   */
+  digitButtonStyle?: StyleProp<ViewStyle>;
+  /**
+   * Custom style for digit text
+   */
+  digitTextStyle?: StyleProp<TextStyle>;
+  /**
+   * Custom style for period button
+   */
+  periodButtonStyle?: StyleProp<ViewStyle>;
+  /**
+   * Custom style for period text
+   */
+  periodTextStyle?: StyleProp<TextStyle>;
+  /**
+   * Custom style for delete button
+   */
+  deleteButtonStyle?: StyleProp<ViewStyle>;
+  /**
+   * Custom icon for delete button
+   */
+  deleteIcon?: ReactNode;
+}
 
 function KeypadComponent({
   onChange,
@@ -17,18 +70,20 @@ function KeypadComponent({
   periodTextStyle,
   deleteButtonStyle,
   deleteIcon,
-}) {
+}: KeypadComponentProps) {
   const { handler, decimalSeparator } = useCurrency(currency, decimals);
   const handleKeypadPress = useCallback(
-    (pressedKey) => {
+    (pressedKey: string) => {
       const newValue = handler(value, pressedKey);
       let valueAsNumber = 0;
       try {
-        valueAsNumber = Number(newValue.replace(decimalSeparator, '.'));
+        valueAsNumber = Number(
+          newValue.replace(decimalSeparator as string, '.'),
+        );
       } catch (error) {
         console.error(error);
       }
-      onChange({ value: newValue, valueAsNumber, pressedKey });
+      onChange?.({ value: newValue, valueAsNumber, pressedKey });
     },
     [decimalSeparator, handler, onChange, value],
   );
@@ -203,54 +258,6 @@ function KeypadComponent({
     </Keypad>
   );
 }
-
-KeypadComponent.propTypes = {
-  /**
-   * Function that will be called when a key is pressed with arguments `(value, key)`
-   */
-  onChange: PropTypes.func,
-  /**
-   * Currency code for the keypad rules and symbols. Defaults to
-   * currency without decimals (CURRENCIES[default])
-   */
-  currency: PropTypes.string,
-  /**
-   * Currency decimals
-   */
-  decimals: PropTypes.number,
-  /**
-   * Current value used to create new value when a key is pressed.
-   */
-  value: PropTypes.string,
-  /**
-   * Custom style for container
-   */
-  style: ViewPropTypes.style,
-  /**
-   * Custom style for digit buttons
-   */
-  digitButtonStyle: ViewPropTypes.style,
-  /**
-   * Custom style for digit text
-   */
-  digitTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  /**
-   * Custom style for period button
-   */
-  periodButtonStyle: ViewPropTypes.style,
-  /**
-   * Custom style for period text
-   */
-  periodTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  /**
-   * Custom style for delete button
-   */
-  deleteButtonStyle: ViewPropTypes.style,
-  /**
-   * Custom icon for delete button
-   */
-  deleteIcon: PropTypes.node,
-};
 
 export { KEYS };
 export default KeypadComponent;
