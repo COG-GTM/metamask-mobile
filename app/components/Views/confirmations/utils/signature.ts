@@ -214,6 +214,9 @@ const endOfValue = (raw: string, index: number): number => {
  * direct member of each object on the path. This means it returns the genuine
  * top-level `message.value` and never a nested (e.g. attacker-controlled decoy)
  * field that happens to share the same key.
+ *
+ * Duplicate keys are resolved last-wins to match `JSON.parse`, so the returned token
+ * always corresponds to the value the parsed object actually represents.
  */
 const getRawValueAtPath = (
   raw: string,
@@ -250,9 +253,10 @@ const getRawValueAtPath = (
       const valueStart = skipWhitespace(raw, i + 1);
       const valueEnd = endOfValue(raw, valueStart);
 
+      // Keep scanning rather than stopping at the first match: JSON.parse resolves
+      // duplicate keys last-wins, so the last matching member is the genuine value.
       if (memberKey === key) {
         valueSpan = { start: valueStart, end: valueEnd };
-        break;
       }
 
       i = skipWhitespace(raw, valueEnd);

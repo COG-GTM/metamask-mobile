@@ -107,6 +107,16 @@ describe('Signature Utils', () => {
       expect(result.message.value).toBe(largeValue);
     });
 
+    it('resolves duplicate top-level message.value keys last-wins, matching JSON.parse', () => {
+      const maxUint256 =
+        '115792089237316195423570985008687907853269984665640564039457584007913129639935';
+      const data = `{"message":{"value":100000000000000,"value":${maxUint256}}}`;
+      const result = parseAndNormalizeSignTypedData(data);
+      // JSON.parse resolves the duplicate key to the last value, and the displayed
+      // value must match that same (signed) value.
+      expect(result.message.value).toBe(maxUint256);
+    });
+
     it('throws an error for invalid typedDataMessage', () => {
       expect(() => {
         parseAndNormalizeSignTypedData('');
