@@ -11,6 +11,33 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'through2' {
+  // eslint-disable-next-line import/no-nodejs-modules
+  import { Transform, TransformOptions } from 'stream';
+
+  type TransformCallback = (error?: Error | null, data?: unknown) => void;
+  type TransformFunction = (
+    this: Transform,
+    chunk: string,
+    encoding: BufferEncoding,
+    callback: TransformCallback,
+  ) => void;
+  type FlushFunction = (this: Transform, callback: TransformCallback) => void;
+
+  interface Through2 {
+    (options?: TransformOptions, transform?: TransformFunction): Transform;
+    obj(transform?: TransformFunction, flush?: FlushFunction): Transform;
+  }
+
+  const through2: Through2;
+  export default through2;
+}
+
+declare module 'pump' {
+  const pump: (...streams: unknown[]) => NodeJS.ReadWriteStream;
+  export default pump;
+}
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
