@@ -408,3 +408,38 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'through2' {
+  // eslint-disable-next-line import/no-nodejs-modules
+  import { Transform } from 'stream';
+
+  type Through2Callback = (error?: Error | null, data?: unknown) => void;
+
+  interface Through2 {
+    obj<TChunk = unknown>(
+      transform?: (
+        this: Transform,
+        chunk: TChunk,
+        encoding: BufferEncoding,
+        callback: Through2Callback,
+      ) => void,
+    ): Transform;
+  }
+
+  const through2: Through2;
+  export default through2;
+}
+
+declare module 'pump' {
+  type PumpCallback = (error?: Error | null) => void;
+  type PumpStream =
+    | NodeJS.ReadableStream
+    | NodeJS.WritableStream
+    | NodeJS.ReadWriteStream;
+
+  function pump<T extends PumpStream>(
+    ...streams: (PumpStream | PumpCallback)[]
+  ): T;
+
+  export default pump;
+}
