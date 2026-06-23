@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import PropTypes from 'prop-types';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
@@ -8,7 +9,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { TERMS_AND_CONDITIONS_BUTTON_ID } from '../../../../wdio/screen-objects/testIDs/Components/TermsAndConditions.testIds';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     text: {
       ...fontStyles.normal,
@@ -21,20 +22,26 @@ const createStyles = (colors) =>
     },
   });
 
+interface TermsAndConditionsProps {
+  /**
+   * navigation object required to push and pop other views
+   */
+  navigation?: NavigationProp<ParamListBase>;
+  /**
+   * Action label describing the onboarding flow the terms are shown in
+   */
+  action?: string;
+}
+
 /**
  * View that is displayed in the flow to agree terms and conditions
  */
-export default class TermsAndConditions extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
-  };
+export default class TermsAndConditions extends PureComponent<TermsAndConditionsProps> {
+  static contextType = ThemeContext;
 
   press = () => {
     const { navigation } = this.props;
-    navigation.navigate('Webview', {
+    navigation?.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: AppConstants.URLS.TERMS_AND_CONDITIONS,
@@ -44,7 +51,8 @@ export default class TermsAndConditions extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -63,5 +71,3 @@ export default class TermsAndConditions extends PureComponent {
     );
   }
 }
-
-TermsAndConditions.contextType = ThemeContext;
