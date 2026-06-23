@@ -31,7 +31,7 @@ const mockInitialState = {
     },
   },
   transaction: {
-    selectedAsset: '',
+    selectedAsset: {},
   },
 };
 
