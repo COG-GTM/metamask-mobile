@@ -7,11 +7,13 @@ import {
   EXPLORED,
 } from '../../constants/storage';
 
-export default function migrate(state) {
-  state.analytics?.enabled
+export default function migrate(state: unknown): Record<string, unknown> {
+  // Expected shape: state.analytics?.enabled is an optional boolean flag.
+  const { analytics } = state as { analytics?: { enabled?: boolean } };
+  analytics?.enabled
     ? DefaultPreference.set(METRICS_OPT_IN, AGREED)
     : DefaultPreference.set(METRICS_OPT_IN, DENIED);
   DefaultPreference.set(ONBOARDING_WIZARD, EXPLORED);
 
-  return state;
+  return state as Record<string, unknown>;
 }
