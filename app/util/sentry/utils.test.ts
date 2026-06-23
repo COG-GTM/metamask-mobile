@@ -408,7 +408,7 @@ describe('captureSentryFeedback', () => {
           notificationsSettings: {},
         },
         notifications: [],
-      },
+      } as DeepPartial<RootState>['notification'],
       swaps: {
         '0x1': {
           isLive: true,
