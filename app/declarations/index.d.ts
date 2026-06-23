@@ -294,6 +294,25 @@ declare module '@metamask/react-native-actionsheet' {
   export default ActionSheet;
 }
 
+declare module 'react-native-progress/Bar' {
+  interface ProgressBarProps extends import('react-native').ViewProps {
+    progress?: number;
+    color?: string;
+    unfilledColor?: string;
+    borderWidth?: number;
+    borderColor?: string;
+    width?: number | null;
+    height?: number;
+    borderRadius?: number;
+    useNativeDriver?: boolean;
+    indeterminate?: boolean;
+    animationType?: 'decay' | 'timing' | 'spring';
+  }
+
+  const ProgressBar: React.FC<ProgressBarProps>;
+  export default ProgressBar;
+}
+
 declare module '@metamask/react-native-search-api';
 
 /**
