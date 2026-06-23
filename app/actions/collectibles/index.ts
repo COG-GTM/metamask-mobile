@@ -1,13 +1,16 @@
 import {
   ADD_FAVORITE_COLLECTIBLE,
   REMOVE_FAVORITE_COLLECTIBLE,
+  AddFavoriteCollectibleAction,
+  RemoveFavoriteCollectibleAction,
+  FavoriteCollectible,
 } from '../../reducers/collectibles';
 
 export const addFavoriteCollectible = (
-  selectedAddress,
-  chainId,
-  collectible,
-) => ({
+  selectedAddress: string,
+  chainId: string,
+  collectible: FavoriteCollectible,
+): AddFavoriteCollectibleAction => ({
   type: ADD_FAVORITE_COLLECTIBLE,
   selectedAddress,
   chainId,
@@ -15,10 +18,10 @@ export const addFavoriteCollectible = (
 });
 
 export const removeFavoriteCollectible = (
-  selectedAddress,
-  chainId,
-  collectible,
-) => ({
+  selectedAddress: string,
+  chainId: string,
+  collectible: FavoriteCollectible,
+): RemoveFavoriteCollectibleAction => ({
   type: REMOVE_FAVORITE_COLLECTIBLE,
   selectedAddress,
   chainId,
