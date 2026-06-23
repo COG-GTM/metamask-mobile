@@ -11,6 +11,17 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'react-native-confetti' {
+  import { Component } from 'react';
+  import { ExplosionProps } from 'react-native-confetti-cannon';
+
+  export default class Confetti extends Component<Partial<ExplosionProps>> {
+    startConfetti(): void;
+    stopConfetti(): void;
+  }
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
