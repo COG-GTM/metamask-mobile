@@ -2,7 +2,7 @@ import { mockNetworkState } from '../../../util/test/network';
 import MetaMetrics from '../../Analytics/MetaMetrics';
 import { MetricsEventBuilder } from '../../Analytics/MetricsEventBuilder';
 import { MetaMetricsEvents } from '../../Analytics';
-import { switchToNetwork } from './ethereum-chain-utils';
+import { switchToNetwork, SwitchToNetworkHooks } from './ethereum-chain-utils';
 import { getDefaultCaip25CaveatValue } from '../../Permissions';
 
 jest.mock('../../Analytics/MetaMetrics');
@@ -74,7 +74,7 @@ describe('switchToNetwork', () => {
       analytics,
       origin,
       isAddNetworkFlow,
-      hooks: mockHooks,
+      hooks: mockHooks as unknown as SwitchToNetworkHooks,
     });
 
     expect(MetricsEventBuilder.createEventBuilder).toHaveBeenCalledWith(
