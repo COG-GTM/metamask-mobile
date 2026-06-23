@@ -29,6 +29,8 @@ import {
   IMetaMetrics,
   ISegmentClient,
   ITrackingEvent,
+  SegmentDeleteRegulationResponse,
+  SegmentRegulationStatusResponse,
 } from './MetaMetrics.types';
 import { v4 as uuidv4 } from 'uuid';
 import { Config } from '@segment/analytics-react-native/lib/typescript/src/types';
@@ -301,10 +303,8 @@ class MetaMetrics implements IMetaMetrics {
     try {
       await StorageWrapper.setItem(METAMETRICS_ID, '');
       this.metametricsId = await this.#getMetaMetricsId();
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      Logger.error(error, 'Error resetting MetaMetrics ID');
+    } catch (error) {
+      Logger.error(error as Error, 'Error resetting MetaMetrics ID');
     }
   };
 
@@ -375,10 +375,8 @@ class MetaMetrics implements IMetaMetrics {
   #storeMetricsOptInPreference = async (enabled: boolean) => {
     try {
       await StorageWrapper.setItem(METRICS_OPT_IN, enabled ? AGREED : DENIED);
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      Logger.error(error, 'Error storing MetaMetrics enable state');
+    } catch (error) {
+      Logger.error(error as Error, 'Error storing MetaMetrics enable state');
     }
   };
 
@@ -411,7 +409,7 @@ class MetaMetrics implements IMetaMetrics {
     const regulationType = 'DELETE_ONLY';
 
     try {
-      const response = await axios({
+      const response = await axios<SegmentDeleteRegulationResponse>({
         url: `${segmentRegulationEndpoint}/regulations/sources/${segmentSourceId}`,
         method: 'POST',
         headers: this.#getSegmentApiHeaders(),
@@ -421,19 +419,15 @@ class MetaMetrics implements IMetaMetrics {
           subjectIds: [this.metametricsId],
         }),
       });
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = response as any;
+      const { data } = response;
 
-      await this.#setDeleteRegulationId(data?.data?.regulateId);
+      await this.#setDeleteRegulationId(data?.data?.regulateId as string);
       await this.#setDeleteRegulationCreationDate(); // set to current date
       await this.#setIsDataRecorded(false); // indicate no data recorded since request
 
       return { status: DataDeleteResponseStatus.ok };
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      Logger.error(error, 'Analytics Deletion Task Error');
+    } catch (error) {
+      Logger.error(error as Error, 'Analytics Deletion Task Error');
       return {
         status: DataDeleteResponseStatus.error,
         error: 'Analytics Deletion Task Error',
@@ -463,15 +457,13 @@ class MetaMetrics implements IMetaMetrics {
       }
 
       try {
-        const response = await axios({
+        const response = await axios<SegmentRegulationStatusResponse>({
           url: `${segmentRegulationEndpoint}/regulations/${this.deleteRegulationId}`,
           method: 'GET',
           headers: this.#getSegmentApiHeaders(),
         });
 
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data } = response as any;
+        const { data } = response;
         const status = data?.data?.regulation?.overallStatus;
 
         return {
@@ -480,8 +472,8 @@ class MetaMetrics implements IMetaMetrics {
         };
         // TODO: Replace "any" with type
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        Logger.error(error, 'Analytics Deletion Task Check Error');
+      } catch (error) {
+        Logger.error(error as Error, 'Analytics Deletion Task Check Error');
         return {
           status: DataDeleteResponseStatus.error,
           dataDeleteStatus: DataDeleteStatus.unknown,
@@ -576,10 +568,8 @@ class MetaMetrics implements IMetaMetrics {
 
       if (__DEV__)
         Logger.log(`MetaMetrics configured with ID: ${this.metametricsId}`);
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      Logger.error(error, 'Error initializing MetaMetrics');
+    } catch (error) {
+      Logger.error(error as Error, 'Error initializing MetaMetrics');
     }
     return this.#isConfigured;
   };
@@ -765,7 +755,7 @@ class MetaMetrics implements IMetaMetrics {
           dataDeletionTaskStatus.dataDeleteStatus;
         // TODO: Replace "any" with type
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
+      } catch (error) {
         Logger.log('Error checkDataDeleteStatus -', error);
         status.dataDeletionRequestStatus = DataDeleteStatus.unknown;
       }
