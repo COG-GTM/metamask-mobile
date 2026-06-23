@@ -4,7 +4,7 @@ import engineReducer from '../core/redux/slices/engine';
 import privacyReducer from './privacy';
 import modalsReducer from './modals';
 import settingsReducer from './settings';
-import alertReducer from './alert';
+import alertReducer, { AlertState } from './alert';
 import transactionReducer from './transaction';
 import legalNoticesReducer from './legalNotices';
 import userReducer, { UserState } from './user';
@@ -76,9 +76,7 @@ export interface RootState {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   settings: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  alert: any;
+  alert: AlertState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transaction: any;
