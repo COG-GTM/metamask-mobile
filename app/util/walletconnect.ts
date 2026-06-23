@@ -3,7 +3,7 @@ export const CLIENT_OPTIONS = {
     // Required
     description: 'MetaMask Mobile app',
     url: 'https://metamask.io',
-    icons: [],
+    icons: [] as string[],
     name: 'MetaMask',
     ssl: true,
   },
