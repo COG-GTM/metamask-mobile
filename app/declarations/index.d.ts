@@ -279,6 +279,12 @@ declare module '@metamask/contract-metadata' {
   export default content;
 }
 
+declare module 'human-standard-token-abi' {
+  import { ethers } from 'ethers';
+  const abi: ConstructorParameters<typeof ethers.utils.Interface>[0];
+  export default abi;
+}
+
 declare module './util/termsOfUse/termsOfUseContent.ts' {
   const content: string;
   export default content;
