@@ -65,7 +65,9 @@ export interface iEventGroup {
 /**
  * Initial state of the RPC event flow
  */
-const initialState: Readonly<iEventGroup> = {
+export type RpcEventsState = iEventGroup;
+
+export const initialState: Readonly<RpcEventsState> = {
   signingEvent: {
     eventStage: RPCStageTypes.IDLE,
     rpcName: '',
