@@ -1,36 +1,48 @@
 import Engine from './Engine';
 import Logger from '../util/Logger';
-import { KeyringTypes } from '@metamask/keyring-controller';
+import {
+  AccountImportStrategy,
+  KeyringTypes,
+  KeyringControllerState,
+} from '@metamask/keyring-controller';
 import { withLedgerKeyring } from './Ledger/Ledger';
 
 /**
  * Restore the given serialized QR keyring.
  *
- * @param {unknown} serializedQrKeyring - A serialized QR keyring.
+ * @param serializedQrKeyring - A serialized QR keyring.
  */
-export const restoreQRKeyring = async (serializedQrKeyring) => {
+export const restoreQRKeyring = async (
+  serializedQrKeyring: unknown,
+): Promise<void> => {
   const { KeyringController } = Engine.context;
 
   try {
     await KeyringController.restoreQRKeyring(serializedQrKeyring);
   } catch (e) {
-    Logger.error(e, 'error while trying to get qr accounts on recreate vault');
+    Logger.error(e as Error, 'error while trying to get qr accounts on recreate vault');
   }
 };
 
 /**
  * Restore the given serialized Ledger keyring.
  *
- * @param {unknown} serializedLedgerKeyring - A serialized Ledger keyring.
+ * @param serializedLedgerKeyring - A serialized Ledger keyring.
  */
-export const restoreLedgerKeyring = async (serializedLedgerKeyring) => {
+export const restoreLedgerKeyring = async (
+  serializedLedgerKeyring: unknown,
+): Promise<void> => {
   try {
     await withLedgerKeyring(async (keyring) => {
-      await keyring.deserialize(serializedLedgerKeyring);
+      await (
+        keyring as unknown as {
+          deserialize: (serialized: unknown) => Promise<void>;
+        }
+      ).deserialize(serializedLedgerKeyring);
     });
   } catch (e) {
     Logger.error(
-      e,
+      e as Error,
       'error while trying to restore Ledger accounts on recreate vault',
     );
   }
@@ -41,7 +53,7 @@ export const restoreLedgerKeyring = async (serializedLedgerKeyring) => {
  * It does it using an empty password or a password set by the user
  * depending on the state the app is currently in
  */
-export const getSeedPhrase = async (password = '') => {
+export const getSeedPhrase = async (password = ''): Promise<Uint8Array> => {
   const { KeyringController } = Engine.context;
   return await KeyringController.exportSeedPhrase(password);
 };
@@ -54,21 +66,20 @@ export const getSeedPhrase = async (password = '') => {
  * @param selectedAddress
  */
 export const recreateVaultWithNewPassword = async (
-  password,
-  newPassword,
-  selectedAddress,
-) => {
+  password: string,
+  newPassword: string,
+  selectedAddress: string,
+): Promise<void> => {
   const { KeyringController } = Engine.context;
   const seedPhrase = await getSeedPhrase(password);
 
-  let importedAccounts = [];
+  let importedAccounts: string[] = [];
   try {
     // Get imported accounts
     const simpleKeyrings = KeyringController.state.keyrings.filter(
       (keyring) => keyring.type === KeyringTypes.simple,
     );
-    for (let i = 0; i < simpleKeyrings.length; i++) {
-      const simpleKeyring = simpleKeyrings[i];
+    for (const simpleKeyring of simpleKeyrings) {
       const simpleKeyringAccounts = await Promise.all(
         simpleKeyring.accounts.map((account) =>
           KeyringController.exportAccount(password, account),
@@ -78,7 +89,7 @@ export const recreateVaultWithNewPassword = async (
     }
   } catch (e) {
     Logger.error(
-      e,
+      e as Error,
       'error while trying to get imported accounts on recreate vault',
     );
   }
@@ -117,13 +128,14 @@ export const recreateVaultWithNewPassword = async (
 
   try {
     // Import imported accounts again
-    for (let i = 0; i < importedAccounts.length; i++) {
-      await KeyringController.importAccountWithStrategy('privateKey', [
-        importedAccounts[i],
-      ]);
+    for (const importedAccount of importedAccounts) {
+      await KeyringController.importAccountWithStrategy(
+        AccountImportStrategy.privateKey,
+        [importedAccount],
+      );
     }
   } catch (e) {
-    Logger.error(e, 'error while trying to import accounts on recreate vault');
+    Logger.error(e as Error, 'error while trying to import accounts on recreate vault');
   }
   const recreatedKeyrings = KeyringController.state.keyrings;
   // Reselect previous selected account if still available
@@ -141,28 +153,32 @@ export const recreateVaultWithNewPassword = async (
  * @param password - Password to recreate and set the vault with
  */
 export const recreateVaultWithSamePassword = async (
-  password = '',
-  selectedAddress,
-) => recreateVaultWithNewPassword(password, password, selectedAddress);
+  password: string,
+  selectedAddress: string,
+): Promise<void> =>
+  recreateVaultWithNewPassword(password, password, selectedAddress);
 
 /**
  * Checks whether the given keyring type exists in the given state.
  *
- * @param {KeyringControllerState} state - The KeyringController state.
- * @param {KeyringTypes} type - The keyring type to check for.
+ * @param state - The KeyringController state.
+ * @param type - The keyring type to check for.
  * @returns Whether the type was found in state.
  */
-function hasKeyringType(state, type) {
-  return state?.keyrings?.some((keyring) => keyring.type === type);
+function hasKeyringType(
+  state: KeyringControllerState,
+  type: KeyringTypes,
+): boolean {
+  return Boolean(state?.keyrings?.some((keyring) => keyring.type === type));
 }
 
 /**
  * Get the serialized state from the first keyring found of the given type.
  *
- * @param {KeyringTypes} type - The type of keyring to serialize.
+ * @param type - The type of keyring to serialize.
  * @returns The serialized state for the first keyring found of the given type.
  */
-async function getSerializedKeyring(type) {
+async function getSerializedKeyring(type: KeyringTypes) {
   const { KeyringController } = Engine.context;
   return await KeyringController.withKeyring({ type }, ({ keyring }) =>
     keyring.serialize(),
