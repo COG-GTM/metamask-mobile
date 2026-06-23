@@ -105,4 +105,4 @@ export default [
     name: 'NewTTL',
     type: 'event',
   },
-];
+] as const;
