@@ -150,6 +150,26 @@ export interface IDeleteRegulationStatusResponse {
   dataDeleteStatus: DataDeleteStatus;
 }
 
+/**
+ * Body of the Segment "create deletion regulation" API response.
+ */
+export interface SegmentDeleteRegulationResponse {
+  data?: {
+    regulateId?: string;
+  };
+}
+
+/**
+ * Body of the Segment "get deletion regulation status" API response.
+ */
+export interface SegmentRegulationStatusResponse {
+  data?: {
+    regulation?: {
+      overallStatus?: DataDeleteStatus;
+    };
+  };
+}
+
 export type DataDeleteDate = string | undefined;
 export type DataDeleteRegulationId = string | undefined;
 
