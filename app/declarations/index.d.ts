@@ -11,6 +11,16 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+declare module 'react-native-progress/Bar' {
+  import { ComponentType } from 'react';
+  import { BarPropTypes } from 'react-native-progress';
+
+  const Bar: ComponentType<
+    Omit<BarPropTypes, 'width'> & { width?: number | null }
+  >;
+  export default Bar;
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
