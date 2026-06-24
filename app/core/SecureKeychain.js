@@ -134,11 +134,17 @@ export default {
         [UserProfileProperty.AUTHENTICATION_TYPE]: AUTHENTICATION_TYPE.PASSCODE,
       });
     } else if (type === this.TYPES.REMEMBER_ME) {
+      // REMEMBER_ME stores the real vault password, so it must be gated by a
+      // genuine OS access control rather than relying on the application-layer
+      // AES wrap (keyed by the static, app-bundle-derivable foxCode). Remember
+      // Me avoids biometrics by design, so gate reads behind the device
+      // passcode to prevent a device-local/forensic attacker from recovering
+      // the password offline.
+      authOptions.accessControl = Keychain.ACCESS_CONTROL.DEVICE_PASSCODE;
       await metrics.addTraitsToUser({
         [UserProfileProperty.AUTHENTICATION_TYPE]:
           AUTHENTICATION_TYPE.REMEMBER_ME,
       });
-      //Don't need to add any parameter
     } else {
       // Setting a password without a type does not save it
       return await this.resetGenericPassword();
