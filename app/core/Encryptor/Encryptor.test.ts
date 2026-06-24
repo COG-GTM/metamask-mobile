@@ -3,6 +3,8 @@ import { QuickCryptoLib } from './lib';
 import {
   ENCRYPTION_LIBRARY,
   LEGACY_DERIVATION_OPTIONS,
+  DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+  KeyDerivationIteration,
 } from './constants';
 
 describe('Encryptor', () => {
@@ -318,6 +320,52 @@ describe('Encryptor', () => {
 
       const importedKey = await encryptor.importKey(result.exportedKeyString);
       expect(importedKey.keyMetadata).toEqual(LEGACY_DERIVATION_OPTIONS);
+    });
+  });
+
+  describe('OWASP2023 key derivation', () => {
+    let owaspEncryptor: Encryptor;
+
+    beforeEach(() => {
+      owaspEncryptor = new Encryptor({
+        keyDerivationOptions: DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+      });
+    });
+
+    it('encrypts new vaults with the OWASP 2023 iteration count', async () => {
+      const encryptedString = await owaspEncryptor.encrypt('testPassword', {
+        key: 'value',
+      });
+      const { keyMetadata } = JSON.parse(encryptedString);
+
+      expect(keyMetadata).toEqual(DERIVATION_OPTIONS_DEFAULT_OWASP2023);
+      expect(keyMetadata.params.iterations).toBe(
+        KeyDerivationIteration.OWASP2023Default,
+      );
+    });
+
+    it('flags a legacy 5,000-iteration vault for upgrade on unlock', () => {
+      const legacyVault = JSON.stringify({
+        cipher: 'mockedCipher',
+        iv: 'mockedIV',
+        salt: 'mockedSalt',
+        lib: 'original',
+        keyMetadata: LEGACY_DERIVATION_OPTIONS,
+      });
+
+      expect(owaspEncryptor.isVaultUpdated(legacyVault)).toBe(false);
+    });
+
+    it('treats an OWASP 2023 vault as already up to date', () => {
+      const owaspVault = JSON.stringify({
+        cipher: 'mockedCipher',
+        iv: 'mockedIV',
+        salt: 'mockedSalt',
+        lib: 'original',
+        keyMetadata: DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+      });
+
+      expect(owaspEncryptor.isVaultUpdated(owaspVault)).toBe(true);
     });
   });
 });
