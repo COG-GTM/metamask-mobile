@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import Modal from 'react-native-modal';
@@ -15,6 +14,35 @@ import {
 import { useTheme } from '../../../../util/theme';
 import Logger from '../../../../util/Logger';
 import { selectSwapsApprovalTransaction } from '../../../../reducers/swaps';
+import { RootState } from '../../../../reducers';
+
+interface ApprovalTransaction {
+  data?: string;
+  [key: string]: unknown;
+}
+
+interface SourceToken {
+  decimals: number;
+  symbol: string;
+}
+
+interface OwnProps {
+  approvalTransaction?: ApprovalTransaction;
+  editQuoteTransactionsVisible?: boolean;
+  minimumSpendLimit: string;
+  onCancelEditQuoteTransactions: () => void;
+  setApprovalTransaction: (transaction: unknown) => void;
+  sourceToken: SourceToken;
+  chainId?: string;
+}
+
+interface StateProps {
+  originalApprovalTransaction: ReturnType<
+    typeof selectSwapsApprovalTransaction
+  >;
+}
+
+type Props = OwnProps & StateProps;
 
 const styles = StyleSheet.create({
   keyboardAwareWrapper: {
@@ -36,10 +64,11 @@ function ApprovalTransactionEditionModal({
   sourceToken,
   minimumSpendLimit,
   chainId,
-}) {
+}: Props) {
   /* Approval transaction if any */
-  const [customApprovalTransaction, setCustomApprovalTransaction] =
-    useState(approvalTransaction);
+  const [customApprovalTransaction, setCustomApprovalTransaction] = useState<
+    ApprovalTransaction | undefined
+  >(approvalTransaction);
   const [approvalTransactionAmount, setApprovalTransactionAmount] =
     useState('');
   const [approvalCustomValue, setApprovalCustomValue] =
@@ -49,7 +78,8 @@ function ApprovalTransactionEditionModal({
   const { colors } = useTheme();
 
   const onSpendLimitCustomValueChange = useCallback(
-    (approvalCustomValue) => setApprovalCustomValue(approvalCustomValue),
+    (newApprovalCustomValue: string) =>
+      setApprovalCustomValue(newApprovalCustomValue),
     [],
   );
 
@@ -70,8 +100,8 @@ function ApprovalTransactionEditionModal({
           ? approvalTransactionAmount
           : approvalCustomValue,
         sourceToken.decimals,
-        swapsUtils.getSwapsContractAddress(chainId),
-        customApprovalTransaction,
+        swapsUtils.getSwapsContractAddress(chainId as `0x${string}`),
+        customApprovalTransaction as object,
       );
       setCustomApprovalTransaction(newApprovalTransaction);
       setApprovalTransaction(newApprovalTransaction);
@@ -96,10 +126,10 @@ function ApprovalTransactionEditionModal({
       : customApprovalTransaction;
     setApprovalTransaction(newApprovalTx);
     if (newApprovalTx) {
-      const approvalTransactionAmount = decodeApproveData(
-        newApprovalTx.data,
+      const decodedAmount = decodeApproveData(
+        (newApprovalTx as ApprovalTransaction).data,
       ).encodedAmount;
-      const amountDec = hexToBN(approvalTransactionAmount).toString(10);
+      const amountDec = hexToBN(decodedAmount).toString(10);
       setApprovalTransactionAmount(
         fromTokenMinimalUnitString(amountDec, sourceToken.decimals),
       );
@@ -153,18 +183,7 @@ function ApprovalTransactionEditionModal({
   );
 }
 
-ApprovalTransactionEditionModal.propTypes = {
-  approvalTransaction: PropTypes.object,
-  originalApprovalTransaction: PropTypes.object,
-  editQuoteTransactionsVisible: PropTypes.bool,
-  minimumSpendLimit: PropTypes.string.isRequired,
-  onCancelEditQuoteTransactions: PropTypes.func,
-  setApprovalTransaction: PropTypes.func,
-  sourceToken: PropTypes.object,
-  chainId: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   originalApprovalTransaction: selectSwapsApprovalTransaction(state),
 });
 
