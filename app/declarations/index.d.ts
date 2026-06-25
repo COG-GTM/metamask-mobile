@@ -1,5 +1,12 @@
 // This file contains type declarations for asset types.
 // Ex. This makes it so that when you import CloseIcon from './close-icon.svg, CloseIcon, will be detected as a React.FC component.
+
+// The build target is `esnext`, so `String.prototype.replaceAll` is available
+// at runtime even though the configured `lib` (es2017) does not declare it.
+interface String {
+  replaceAll(searchValue: string | RegExp, replaceValue: string): string;
+}
+
 declare module '*.mp4';
 
 declare module '@metamask/react-native-payments/lib/js/__mocks__';
@@ -408,3 +415,80 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module '@metamask/ethjs-unit' {
+  import BN from 'bnjs4';
+
+  type EthjsUnitValue = number | string | BN;
+
+  const convert: {
+    fromWei: (value: EthjsUnitValue, unit: string) => string;
+    toWei: (value: EthjsUnitValue, unit: string) => BN;
+    numberToString: (value: EthjsUnitValue) => string;
+  };
+  export default convert;
+}
+
+declare module 'number-to-bn' {
+  // eslint-disable-next-line no-duplicate-imports
+  import BN from 'bnjs4';
+
+  const numberToBN: (value: number | string | BN) => BN;
+  export default numberToBN;
+}
+
+declare module 'unicode-confusables' {
+  export interface ConfusablePoint {
+    point: string;
+    similarTo?: string;
+  }
+  export const confusables: (input: string) => ConfusablePoint[];
+  export const isConfusing: (input: string) => boolean;
+  export const removeConfusables: (input: string) => string;
+}
+
+declare module 'ethereumjs-abi' {
+  export function rawEncode(
+    types: string[],
+    values: readonly unknown[],
+  ): Buffer;
+  export function rawDecode(types: string[], data: Buffer): string[];
+  export function soliditySHA3(
+    types: string[],
+    values: readonly unknown[],
+  ): Buffer;
+  export function methodID(name: string, types: string[]): Buffer;
+}
+
+declare module 'humanize-duration' {
+  interface HumanizeDurationOptions {
+    language?: string;
+    largest?: number;
+    units?: string[];
+    round?: boolean;
+    delimiter?: string;
+    spacer?: string;
+    [key: string]: unknown;
+  }
+  const humanizeDuration: (
+    ms: number,
+    options?: HumanizeDurationOptions,
+  ) => string;
+  export default humanizeDuration;
+}
+
+declare module 'ethjs-ens' {
+  interface ENSOptions {
+    provider?: unknown;
+    network?: string;
+  }
+  export default class ENS {
+    constructor(options: ENSOptions);
+    reverse(address: string): Promise<string>;
+    lookup(ensName: string): Promise<string>;
+  }
+}
+
+declare module '@react-native-clipboard/clipboard/jest/clipboard-mock.js';
+
+declare module 'enzyme-adapter-react-16';

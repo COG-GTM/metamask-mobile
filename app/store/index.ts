@@ -55,7 +55,7 @@ const createStoreAndPersistor = async () => {
   store = configureStore({
     reducer: pReducer,
     middleware: middlewares,
-    preloadedState: initialState,
+    preloadedState: initialState as never,
   });
   // Set the store in the Redux class
   ReduxService.store = store;

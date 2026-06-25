@@ -6,8 +6,20 @@ import {
   addCurrencies,
   multiplyCurrencies,
   conversionGreaterThan,
+  ConversionValue,
+  EthDenomination,
 } from './conversion';
 import I18n from '../../locales/i18n';
+
+interface CurrencyConversionOptions {
+  value: ConversionValue;
+  fromCurrency?: string;
+  toCurrency?: string;
+  conversionRate?: number | null;
+  numberOfDecimals?: number;
+  toDenomination?: EthDenomination;
+  contractExchangeRate?: number;
+}
 
 const NON_ISO4217_CRYPTO_CODES = [
   '1ST',
@@ -27,34 +39,40 @@ const NON_ISO4217_CRYPTO_CODES = [
   'ZEC',
 ];
 
-export function increaseLastGasPrice(lastGasPrice) {
+export function increaseLastGasPrice(lastGasPrice: ConversionValue) {
   return addHexPrefix(
     multiplyCurrencies(lastGasPrice || '0x0', 1.1, {
       multiplicandBase: 16,
       multiplierBase: 10,
       toNumericBase: 'hex',
-    }),
+    }) as string,
   );
 }
 
-export function hexGreaterThan(a, b) {
+export function hexGreaterThan(a: ConversionValue, b: ConversionValue) {
   return conversionGreaterThan(
     { value: a, fromNumericBase: 'hex' },
     { value: b, fromNumericBase: 'hex' },
   );
 }
 
-export function getHexGasTotal({ gasLimit, gasPrice }) {
+export function getHexGasTotal({
+  gasLimit,
+  gasPrice,
+}: {
+  gasLimit?: ConversionValue;
+  gasPrice?: ConversionValue;
+}) {
   return addHexPrefix(
     multiplyCurrencies(gasLimit || '0x0', gasPrice || '0x0', {
       toNumericBase: 'hex',
       multiplicandBase: 16,
       multiplierBase: 16,
-    }),
+    }) as string,
   );
 }
 
-export function addEth(...args) {
+export function addEth(...args: ConversionValue[]) {
   return args.reduce((acc, ethAmount) =>
     addCurrencies(acc, ethAmount, {
       toNumericBase: 'dec',
@@ -65,7 +83,7 @@ export function addEth(...args) {
   );
 }
 
-export function addFiat(...args) {
+export function addFiat(...args: ConversionValue[]) {
   return args.reduce((acc, fiatAmount) =>
     addCurrencies(acc, fiatAmount, {
       toNumericBase: 'dec',
@@ -83,7 +101,7 @@ export function getValueFromWeiHex({
   conversionRate,
   numberOfDecimals,
   toDenomination,
-}) {
+}: CurrencyConversionOptions) {
   return conversionUtil(value, {
     fromNumericBase: 'hex',
     toNumericBase: 'dec',
@@ -102,7 +120,7 @@ export function getTransactionFee({
   toCurrency,
   conversionRate,
   numberOfDecimals,
-}) {
+}: CurrencyConversionOptions) {
   return conversionUtil(value, {
     fromNumericBase: 'BN',
     toNumericBase: 'dec',
@@ -114,7 +132,7 @@ export function getTransactionFee({
   });
 }
 
-export function formatCurrency(value, currencyCode) {
+export function formatCurrency(value: ConversionValue, currencyCode: string) {
   const upperCaseCurrencyCode = currencyCode.toUpperCase();
 
   const formatedCurrency = NON_ISO4217_CRYPTO_CODES.includes(
@@ -135,9 +153,9 @@ export function convertTokenToFiat({
   toCurrency,
   conversionRate,
   contractExchangeRate,
-}) {
+}: CurrencyConversionOptions) {
   if (!contractExchangeRate) return 0;
-  const totalExchangeRate = conversionRate * contractExchangeRate;
+  const totalExchangeRate = (conversionRate ?? 0) * contractExchangeRate;
 
   return conversionUtil(value, {
     fromNumericBase: 'dec',
@@ -156,12 +174,12 @@ export function convertTokenToFiat({
  * @returns {string} The rounded number, or the original number if no
  * rounding was necessary.
  */
-export function roundExponential(decimalString) {
+export function roundExponential(decimalString: ConversionValue) {
   const PRECISION = 4;
-  const bigNumberValue = new BigNumber(decimalString);
+  const bigNumberValue = new BigNumber(String(decimalString));
 
   // In JS, numbers with exponentials greater than 20 get displayed as an exponential.
-  return bigNumberValue.e > 20
+  return (bigNumberValue.e ?? 0) > 20
     ? bigNumberValue.toPrecision(PRECISION)
     : decimalString;
 }
