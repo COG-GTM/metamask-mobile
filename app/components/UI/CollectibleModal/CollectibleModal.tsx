@@ -143,10 +143,18 @@ const CollectibleModal = () => {
         >
           <CollectibleOverview
             navigation={navigation}
-            collectible={collectibleData}
+            collectible={
+              collectibleData as React.ComponentProps<
+                typeof CollectibleOverview
+              >['collectible']
+            }
             tradable={isTradable()}
             onSend={onSend}
-            openLink={openLink}
+            openLink={
+              openLink as React.ComponentProps<
+                typeof CollectibleOverview
+              >['openLink']
+            }
             onTranslation={onCollectibleOverviewTranslation}
           />
         </View>

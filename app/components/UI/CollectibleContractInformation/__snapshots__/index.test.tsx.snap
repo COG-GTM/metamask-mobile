@@ -37,6 +37,13 @@ exports[`CollectibleContractInformation should render correctly 1`] = `
         "totalSupply": 1,
       }
     }
+    navigation={
+      {
+        "navigate": [MockFunction],
+        "push": [MockFunction],
+      }
+    }
+    onClose={[MockFunction]}
   />
 </ContextProvider>
 `;
