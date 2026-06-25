@@ -1,3 +1,28 @@
+/**
+ * Escapes a string for safe interpolation inside an HTML `<script>` context.
+ *
+ * `JSON.stringify` alone does NOT escape `<`, `>`, `&`, U+2028 or U+2029, so a
+ * value such as a bookmark titled `</script>` could break out of the
+ * surrounding `<script>`/injected-script context. We JSON-stringify and then
+ * escape those characters to their unicode escape sequences, which are parsed
+ * back to the original characters by `JSON.parse`/the JS engine while remaining
+ * inert as markup.
+ */
+export const escapeForScriptContext = (jsonString: string): string =>
+  jsonString
+    .replace(/</g, '\\u003C')
+    .replace(/>/g, '\\u003E')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+
+/**
+ * Serializes a value to JSON that is safe to interpolate into an injected
+ * `<script>` / `injectJavaScript` context (see `escapeForScriptContext`).
+ */
+export const safeStringifyForScript = (value: unknown): string =>
+  escapeForScriptContext(JSON.stringify(value));
+
 const getWindowInformation = `
   const shortcutIcon = window.document.querySelector('head > link[rel="shortcut icon"]');
   const icon = shortcutIcon || Array.from(window.document.querySelectorAll('head > link[rel="icon"]')).find((icon) => Boolean(icon.href));
