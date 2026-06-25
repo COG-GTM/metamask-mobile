@@ -4,6 +4,12 @@ declare module '*.mp4';
 
 declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
+declare module '@metamask/ethjs-query' {
+  export default class Eth {
+    constructor(provider: unknown);
+  }
+}
+
 declare module 'react-native-fade-in-image';
 
 declare module 'react-native-fast-crypto';

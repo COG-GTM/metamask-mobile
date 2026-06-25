@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, SafeAreaView, View } from 'react-native';
 import Modal from 'react-native-modal';
 
@@ -8,8 +7,9 @@ import Text from '../../../Base/Text';
 import SlippageSlider from '../../SlippageSlider';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
+import { Colors } from '../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -38,7 +38,19 @@ const createStyles = (colors) =>
     },
   });
 
-function SlippageModal({ isVisible, dismiss, onChange, slippage }) {
+interface SlippageModalProps {
+  isVisible?: boolean;
+  dismiss?: () => void;
+  onChange?: (value: number) => void;
+  slippage?: number;
+}
+
+function SlippageModal({
+  isVisible,
+  dismiss,
+  onChange,
+  slippage,
+}: SlippageModalProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -63,7 +75,7 @@ function SlippageModal({ isVisible, dismiss, onChange, slippage }) {
 
           <View style={styles.slippageWrapper}>
             <View style={styles.warningTextWrapper}>
-              {slippage >= 5 && (
+              {(slippage as number) >= 5 && (
                 <Text style={styles.warningText}>
                   {strings('swaps.slippage_warning')}
                 </Text>
@@ -74,7 +86,7 @@ function SlippageModal({ isVisible, dismiss, onChange, slippage }) {
               increment={1}
               onChange={onChange}
               value={slippage}
-              formatTooltipText={(text) => `${text}%`}
+              formatTooltipText={(text: string) => `${text}%`}
             />
           </View>
 
@@ -87,10 +99,4 @@ function SlippageModal({ isVisible, dismiss, onChange, slippage }) {
   );
 }
 
-SlippageModal.propTypes = {
-  isVisible: PropTypes.bool,
-  dismiss: PropTypes.func,
-  onChange: PropTypes.func,
-  slippage: PropTypes.number,
-};
 export default SlippageModal;

@@ -570,7 +570,7 @@ const OrderDetails: React.FC<Props> = ({ order }: Props) => {
           {Boolean(order.state === OrderStatusEnum.Completed && txHash) && (
             <Group>
               <TouchableOpacity
-                onPress={() => handleExplorerLinkPress(explorer.tx(txHash))}
+                onPress={() => handleExplorerLinkPress(explorer.tx(txHash as string))}
               >
                 <Text
                   variant={TextVariant.BodySM}
