@@ -110,6 +110,29 @@ export class SnapsExecutionWebView extends Component {
     return (
       <View style={styles.container}>
         {Object.entries(this.webViews).map(([key, { props }]) => (
+          // Security note: this WebView is the sandboxed Snaps execution
+          // environment, NOT a general-purpose / dapp browser.
+          //
+          // - `source` is fixed, locally-bundled HTML
+          //   (`@metamask/snaps-execution-environments` shipped inside the app),
+          //   loaded via `html` rather than a remote `uri`. There is no remote
+          //   navigation: the WebView never loads attacker-controlled origins,
+          //   it only hosts the trusted, app-shipped execution sandbox that in
+          //   turn runs Snap code inside its own iframe/Compartment isolation.
+          // - `javaScriptEnabled` is required: the whole purpose of this WebView
+          //   is to execute the Snaps JS runtime that evaluates installed Snaps.
+          // - `originWhitelist={['*']}` does NOT widen the attack surface here.
+          //   Because the content is local bundled HTML with no remote
+          //   navigation, the whitelist only governs which URLs the WebView is
+          //   permitted to navigate to; the bundled environment performs all
+          //   I/O over the `postMessage` bridge (`onMessage`) back to the
+          //   native controller rather than by navigating. Restricting the
+          //   whitelist would break legitimate internal navigations performed
+          //   by the bundled sandbox without adding protection, so it is left
+          //   permissive intentionally.
+          //
+          // Do NOT repurpose this component for loading remote/untrusted
+          // content; doing so would make `originWhitelist={['*']}` unsafe.
           <WebView
             testID={key}
             key={key}

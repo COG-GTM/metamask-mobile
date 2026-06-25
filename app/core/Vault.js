@@ -37,9 +37,19 @@ export const restoreLedgerKeyring = async (serializedLedgerKeyring) => {
 };
 
 /**
- * Returns current vault seed phrase
- * It does it using an empty password or a password set by the user
- * depending on the state the app is currently in
+ * Returns current vault seed phrase.
+ *
+ * The default empty-string password only succeeds while the vault is still
+ * encrypted with an empty password, i.e. the pre-password onboarding state
+ * (`ChoosePassword` exports with `''` only while
+ * `keyringControllerPasswordSet === false`). Once a real password has been
+ * set, this empty password cannot be used to export secrets: the underlying
+ * `KeyringController.exportSeedPhrase` calls `verifyPassword(password)` first
+ * and throws on a wrong/empty password, so the SRP is never returned.
+ *
+ * @param password - The keyring password. Defaults to `''` for the
+ * pre-password onboarding state; callers that already have a password set
+ * must pass it explicitly.
  */
 export const getSeedPhrase = async (password = '') => {
   const { KeyringController } = Engine.context;
@@ -137,6 +147,12 @@ export const recreateVaultWithNewPassword = async (
 
 /**
  * Recreates a vault with the same password for the purpose of using the newest encryption methods
+ *
+ * The default empty-string password is only valid in the pre-password
+ * onboarding state (vault still encrypted with `''`); once a password is set
+ * it must be passed explicitly. `getSeedPhrase`/`exportAccount` run through
+ * `KeyringController.verifyPassword`, so an empty password cannot export
+ * secrets after a real password has been configured.
  *
  * @param password - Password to recreate and set the vault with
  */
