@@ -1,17 +1,21 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  ViewProps,
+  TouchableOpacityProps,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import Device from '../../../util/device';
 import Text from '../Text';
 import { useTheme } from '../../../util/theme';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     keypad: {
       paddingHorizontal: 25,
@@ -42,27 +46,45 @@ const createStyles = (colors) =>
     },
   });
 
-const KeypadContainer = ({ style, ...props }) => {
+interface KeypadContainerProps extends ViewProps {
+  /**
+   * Custom style for digit buttons
+   */
+  style?: StyleProp<ViewStyle>;
+}
+
+const KeypadContainer = ({ style, ...props }: KeypadContainerProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return <View style={[styles.keypad, style]} {...props} />;
 };
 
-KeypadContainer.propTypes = {
-  /**
-   * Custom style for digit buttons
-   */
-  style: ViewPropTypes.style,
-};
-
-const KeypadRow = (props) => {
+const KeypadRow = (props: ViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return <View style={styles.keypadRow} {...props} />;
 };
-const KeypadButton = ({ style, textStyle, children, ...props }) => {
+
+interface KeypadButtonProps extends TouchableOpacityProps {
+  children?: React.ReactNode;
+  /**
+   * Custom style for digit buttons
+   */
+  style?: StyleProp<ViewStyle>;
+  /**
+   * Custom style for digit text
+   */
+  textStyle?: StyleProp<TextStyle>;
+}
+
+const KeypadButton = ({
+  style,
+  textStyle,
+  children,
+  ...props
+}: KeypadButtonProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -73,19 +95,19 @@ const KeypadButton = ({ style, textStyle, children, ...props }) => {
   );
 };
 
-KeypadButton.propTypes = {
-  children: PropTypes.node,
+interface KeypadDeleteButtonProps extends TouchableOpacityProps {
   /**
    * Custom style for digit buttons
    */
-  style: ViewPropTypes.style,
-  /**
-   * Custom style for digit text
-   */
-  textStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-};
+  style?: StyleProp<ViewStyle>;
+  icon?: React.ReactNode;
+}
 
-const KeypadDeleteButton = ({ style, icon, ...props }) => {
+const KeypadDeleteButton = ({
+  style,
+  icon,
+  ...props
+}: KeypadDeleteButtonProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -101,15 +123,14 @@ const KeypadDeleteButton = ({ style, icon, ...props }) => {
   );
 };
 
-KeypadDeleteButton.propTypes = {
-  /**
-   * Custom style for digit buttons
-   */
-  style: ViewPropTypes.style,
-  icon: PropTypes.node,
-};
+interface KeypadComponent {
+  (props: KeypadContainerProps): React.ReactElement;
+  Row: typeof KeypadRow;
+  Button: typeof KeypadButton;
+  DeleteButton: typeof KeypadDeleteButton;
+}
 
-const Keypad = KeypadContainer;
+const Keypad = KeypadContainer as KeypadComponent;
 Keypad.Row = KeypadRow;
 Keypad.Button = KeypadButton;
 Keypad.DeleteButton = KeypadDeleteButton;
