@@ -134,12 +134,27 @@ class AuthenticationService {
   };
 
   /**
-   * This method is used for password memory obfuscation
-   * It simply returns an empty string so we can reset all the sensitive params like passwords and SRPs.
-   * Since we cannot control memory in JS the best we can do is remove the pointer to sensitive information in memory
-   * - see this thread for more details: https://security.stackexchange.com/questions/192387/how-to-securely-erase-javascript-parameters-after-use
-   * [Future improvement] to fully remove these values from memory we can convert these params to Buffers or UInt8Array as is done in extension
+   * Best-effort obfuscation of sensitive in-memory values (passwords, SRPs).
+   *
+   * IMPORTANT LIMITATION: this returns `''` so a caller can reassign its local
+   * secret variable (e.g. `password = this.wipeSensitiveData()`). That only
+   * drops the reference to the original string; it does NOT zero the original
+   * value in memory. JavaScript strings are immutable and garbage-collected,
+   * so the underlying bytes remain on the heap until the GC reclaims them and
+   * cannot be overwritten in place.
+   * - background: https://security.stackexchange.com/questions/192387/how-to-securely-erase-javascript-parameters-after-use
+   *
+   * To actually erase a secret it must be held in a mutable byte buffer
+   * (`Buffer`/`Uint8Array`) and overwritten in place (e.g. `buf.fill(0)`), as
+   * the extension does:
    * - see: https://github.com/MetaMask/metamask-extension/commit/98f187c301176152a7f697e62e2ba6d78b018b68
+   * Doing that here would require threading `Uint8Array`-typed secrets through
+   * every authentication entry point (`newWalletAndKeychain`,
+   * `newWalletAndRestore`, `userEntryAuth`, `appTriggeredAuth`, etc.) and all
+   * of their UI callers, a large cross-cutting refactor. Until then these call
+   * sites pass strings and only benefit from reference removal.
+   *
+   * @returns An empty string, for reassigning string-typed secret locals.
    */
   private wipeSensitiveData = () => '';
 
