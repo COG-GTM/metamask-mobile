@@ -137,7 +137,14 @@ class SmartTransactionHook {
       isSwapApproveTx,
       isSwapTransaction,
       isNativeTokenTransferred,
-    } = getTransactionType(this.#transactionMeta, this.#chainId);
+    } = getTransactionType(this.#transactionMeta, this.#chainId) as {
+      isDapp: boolean;
+      isSend: boolean;
+      isInSwapFlow: boolean;
+      isSwapApproveTx: boolean;
+      isSwapTransaction: boolean;
+      isNativeTokenTransferred: boolean;
+    };
     this.#isDapp = isDapp;
     this.#isSend = isSend;
     this.#isInSwapFlow = isInSwapFlow;
@@ -261,7 +268,7 @@ class SmartTransactionHook {
         `${LOG_PREFIX}: A list of transactions are required for batch submissions`,
       );
     }
-  }
+  };
 
   async submitBatch() {
     this.#validateSubmitBatch();

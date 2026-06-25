@@ -29,7 +29,7 @@ const SignatureBlockaidBanner = () => {
         {
           from: fromAddress,
         },
-        type,
+        type as string,
       ),
       external_link_clicked: 'security_alert_support_link',
     };
