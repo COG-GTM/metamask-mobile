@@ -171,7 +171,7 @@ function HorizontalSelector({
                 ) : typeof option.topLabel === 'function' ? (
                   option.topLabel(
                     option.name === selected,
-                    option.disabled ?? disabled,
+                    (option.disabled ?? disabled) ?? false,
                   )
                 ) : (
                   option.topLabel
@@ -244,7 +244,7 @@ function HorizontalSelector({
             ) : typeof option.label === 'function' ? (
               option.label(
                 option.name === selected,
-                option.disabled ?? disabled,
+                (option.disabled ?? disabled) ?? false,
               )
             ) : (
               option.label
@@ -319,7 +319,7 @@ interface HorizontalSelectorProps {
   /**
    * Boolean value to determine whether the options are disabled or not.
    */
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 export default HorizontalSelector;
