@@ -13,6 +13,7 @@ import {
 } from '../../Permissions';
 import { Connection } from '../Connection';
 import DevLogger from '../utils/DevLogger';
+import { isUUID } from '../utils/isUUID';
 import {
   wait,
   waitForCondition,
@@ -41,6 +42,20 @@ export const checkPermissions = async ({
       `checkPermissions initialConnection=${connection.initialConnection} method=${message?.method} lastAuthorized=${lastAuthorized}`,
       connection.originatorInfo,
     );
+
+    // The channelId is used directly as the permission subject (origin) below.
+    // It originates from an attacker-controllable deeplink, so it must be a
+    // genuine MetaMask-generated SDK channel id (a UUID). Any other value could
+    // collide with an existing permission subject - e.g. a web origin hostname
+    // the user already authorized, or an internal origin such as
+    // 'MetaMask Mobile' - and silently alias its permitted accounts without any
+    // user consent. Reject anything that is not a UUID before it is ever used
+    // as a permission origin.
+    if (!isUUID(connection.channelId)) {
+      throw new Error(
+        `Invalid SDK channelId - refusing to evaluate permissions for a non-UUID origin`,
+      );
+    }
 
     const permittedAccounts = getPermittedAccounts(connection.channelId);
     DevLogger.log(`checkPermissions permittedAccounts`, permittedAccounts);
