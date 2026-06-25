@@ -4,6 +4,71 @@ declare module '*.mp4';
 
 declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
+declare module '@metamask/react-native-button' {
+  interface ButtonProps {
+    testID?: string;
+    accessibilityRole?: string;
+    disabled?: boolean;
+    onPress?: () => void;
+    onPressOut?: () => void;
+    style?: import('react-native').StyleProp<
+      import('react-native').TextStyle | import('react-native').ViewStyle
+    >;
+    containerStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    childGroupStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    styleDisabled?: import('react-native').StyleProp<
+      import('react-native').TextStyle
+    >;
+    disabledContainerStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    allowFontScaling?: boolean;
+    children?: import('react').ReactNode;
+  }
+
+  const Button: import('react').ComponentType<ButtonProps>;
+  export default Button;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  const coalesceNonElementChildren: (
+    children: import('react').ReactNode,
+    coalesceNodes: (
+      nodes: import('react').ReactNode[],
+      index: number,
+    ) => import('react').ReactNode,
+  ) => import('react').ReactNode[];
+  export default coalesceNonElementChildren;
+}
+
+declare module 'react-native-progress/Bar' {
+  interface ProgressBarProps {
+    progress?: number;
+    color?: string;
+    borderRadius?: number;
+    borderWidth?: number;
+    height?: number;
+    width?: number | null;
+    useNativeDriver?: boolean;
+    indeterminate?: boolean;
+    style?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+  }
+
+  const ProgressBar: import('react').ComponentType<ProgressBarProps>;
+  export default ProgressBar;
+}
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
 declare module 'react-native-fade-in-image';
 
 declare module 'react-native-fast-crypto';
