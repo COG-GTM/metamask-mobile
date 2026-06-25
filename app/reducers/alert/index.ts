@@ -1,11 +1,24 @@
-const initialState = {
+/* eslint-disable @typescript-eslint/default-param-last */
+import { AlertAction } from '../../actions/alert';
+
+export interface AlertState {
+  isVisible: boolean;
+  autodismiss?: number | null;
+  content?: string | null;
+  data?: Record<string, unknown> | null;
+}
+
+const initialState: AlertState = {
   isVisible: false,
   autodismiss: null,
   content: null,
   data: null,
 };
 
-const alertReducer = (state = initialState, action) => {
+const alertReducer = (
+  state: AlertState = initialState,
+  action: AlertAction,
+): AlertState => {
   switch (action.type) {
     case 'SHOW_ALERT':
       return {

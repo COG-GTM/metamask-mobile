@@ -1,7 +1,36 @@
+/* eslint-disable @typescript-eslint/default-param-last */
+import { SecurityAlertResponse } from '@metamask/transaction-controller';
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import {
+  TransactionAction,
+  TransactionAsset,
+  TransactionPayload,
+} from '../../actions/transaction';
 
-const initialState = {
+export interface TransactionState {
+  ensRecipient?: string;
+  assetType?: string;
+  selectedAsset: TransactionAsset;
+  transaction: TransactionPayload;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  symbol?: string;
+  paymentRequest?: boolean;
+  readableValue?: string;
+  id?: string;
+  type?: string;
+  proposedNonce?: number;
+  nonce?: number;
+  securityAlertResponses: Record<string, SecurityAlertResponse>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,7 +61,9 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+const getAssetType = (
+  selectedAsset?: TransactionAsset,
+): string | undefined => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,7 +77,10 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction | { type: typeof REHYDRATE },
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
@@ -102,12 +136,14 @@ const transactionReducer = (state = initialState, action) => {
         const assetType = getAssetType(selectedAsset);
         action.transaction.assetType = assetType;
       }
-      const txMeta = getTxMeta(action.transaction);
+      const txMeta = getTxMeta(
+        action.transaction as Parameters<typeof getTxMeta>[0],
+      );
       return {
         ...state,
         transaction: {
           ...state.transaction,
-          ...getTxData(action.transaction),
+          ...getTxData(action.transaction as Parameters<typeof getTxData>[0]),
         },
         ...txMeta,
         // Retain the securityAlertResponses from the old state
@@ -129,8 +165,10 @@ const transactionReducer = (state = initialState, action) => {
         symbol: 'ETH',
         assetType: 'ETH',
         selectedAsset: { isETH: true, symbol: 'ETH' },
-        ...getTxMeta(action.transaction),
-        transaction: getTxData(action.transaction),
+        ...getTxMeta(action.transaction as Parameters<typeof getTxMeta>[0]),
+        transaction: getTxData(
+          action.transaction as Parameters<typeof getTxData>[0],
+        ),
       };
     case 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE': {
       const { transactionId, securityAlertResponse } = action;
@@ -138,7 +176,7 @@ const transactionReducer = (state = initialState, action) => {
         ...state,
         securityAlertResponses: {
           ...state.securityAlertResponses,
-          [transactionId]: securityAlertResponse,
+          [transactionId as string]: securityAlertResponse,
         },
       };
     }
