@@ -31,6 +31,11 @@ jest.mock('../../../core/Engine', () => ({
   },
 }));
 
+// Mock the BitcoinWalletSnap module
+jest.mock('../BitcoinWalletSnap', () => ({
+  BITCOIN_WALLET_SNAP_ID: 'npm:@metamask/bitcoin-wallet-snap',
+}));
+
 // Mock the SolanaWalletSnap module
 jest.mock('../SolanaWalletSnap', () => ({
   SOLANA_WALLET_SNAP_ID: 'npm:@metamask/solana-wallet-snap',
@@ -66,8 +71,8 @@ describe('snaps utility functions', () => {
   });
 
   describe('isMultichainWalletSnap', () => {
-    it('should return false for Bitcoin wallet snap (now handled natively)', () => {
-      expect(isMultichainWalletSnap(MOCK_BITCOIN_WALLET_SNAP_ID)).toBe(false);
+    it('should return true for Bitcoin wallet snap', () => {
+      expect(isMultichainWalletSnap(MOCK_BITCOIN_WALLET_SNAP_ID)).toBe(true);
     });
 
     it('should return true for Solana wallet snap', () => {

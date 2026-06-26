@@ -65,11 +65,15 @@ const TESTNET_BASE_URL = 'https://mempool.space/testnet/api';
  * Network client for Bitcoin RPC/API communication.
  * Uses mempool.space REST API for UTXO-based queries.
  */
+const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
+
 export class BitcoinNetworkClient {
   private readonly baseUrl: string;
+  private readonly requestTimeoutMs: number;
 
   constructor(config?: BitcoinNetworkClientConfig) {
     this.baseUrl = config?.baseUrl ?? MAINNET_BASE_URL;
+    this.requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS;
   }
 
   static mainnet(): BitcoinNetworkClient {
@@ -147,23 +151,38 @@ export class BitcoinNetworkClient {
    */
   async broadcastTransaction(rawTxHex: string): Promise<string> {
     const url = `${this.baseUrl}/tx`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: rawTxHex,
-    });
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Failed to broadcast transaction: ${response.status} ${errorText}`,
-      );
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      this.requestTimeoutMs,
+    );
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: rawTxHex,
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to broadcast transaction: ${response.status} ${errorText}`,
+        );
+      }
+      return response.text();
+    } finally {
+      clearTimeout(timeoutId);
     }
-    return response.text();
   }
 
   private async fetchJson<T>(url: string): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      this.requestTimeoutMs,
+    );
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: controller.signal });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -174,6 +193,8 @@ export class BitcoinNetworkClient {
         `BitcoinNetworkClient: Failed to fetch ${url}`,
       );
       throw error;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 }
