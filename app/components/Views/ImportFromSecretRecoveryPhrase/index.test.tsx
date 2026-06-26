@@ -12,7 +12,9 @@ const initialState = {
 describe('ImportFromSecretRecoveryPhrase', () => {
   it('should render correctly', () => {
     const { toJSON } = renderScreen(
-      ImportFromSecretRecoveryPhrase,
+      ImportFromSecretRecoveryPhrase as unknown as Parameters<
+        typeof renderScreen
+      >[0],
       { name: Routes.ONBOARDING.IMPORT_FROM_SECRET_RECOVERY_PHRASE },
       { state: initialState },
     );

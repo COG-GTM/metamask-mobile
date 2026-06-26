@@ -4,7 +4,11 @@ import OfflineMode from './';
 
 describe('OfflineMode', () => {
   it('should render correctly', () => {
-    const { toJSON } = renderWithProvider(<OfflineMode />);
+    const { toJSON } = renderWithProvider(
+      <OfflineMode
+        {...({} as React.ComponentProps<typeof OfflineMode>)}
+      />,
+    );
     expect(toJSON()).toMatchSnapshot();
   });
 });

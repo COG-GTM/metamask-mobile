@@ -88,16 +88,18 @@ jest.mock('../../../util/phishingDetection', () => ({
 const Stack = createStackNavigator();
 const mockStore = configureMockStore();
 
+type BrowserProps = React.ComponentProps<typeof Browser>;
+
 const routeMock = {
   params: {},
-};
+} as unknown as BrowserProps['route'];
 
 const mockNavigation = {
   setOptions: jest.fn(),
   setParams: jest.fn(),
   navigate: jest.fn(),
   goBack: jest.fn(),
-};
+} as unknown as BrowserProps['navigation'];
 
 describe('Browser', () => {
   it('should render correctly', () => {
@@ -168,9 +170,14 @@ describe('Browser', () => {
             <Stack.Screen name={Routes.BROWSER.VIEW}>
               {() => (
                 <Browser
-                  route={{
-                    params: { newTabUrl: 'about:blank', timestamp: '987' },
-                  }}
+                  route={
+                    {
+                      params: {
+                        newTabUrl: 'about:blank',
+                        timestamp: '987',
+                      },
+                    } as unknown as BrowserProps['route']
+                  }
                   tabs={mockTabs}
                   activeTab={1}
                   navigation={mockNavigation}
@@ -211,7 +218,7 @@ describe('Browser', () => {
             <Stack.Screen name="Browser">
               {() => (
                 <Browser
-                  route={{ params: {} }}
+                  route={{ params: {} } as unknown as BrowserProps['route']}
                   tabs={mockTabsForIdling}
                   activeTab={1}
                   navigation={mockNavigation}

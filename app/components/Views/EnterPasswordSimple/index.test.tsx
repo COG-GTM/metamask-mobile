@@ -33,7 +33,11 @@ describe('EnterPasswordSimple', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <NavigationContainer>
-          <EnterPasswordSimple navigation={mockNavigation} />
+          <EnterPasswordSimple
+            {...({ navigation: mockNavigation } as unknown as React.ComponentProps<
+              typeof EnterPasswordSimple
+            >)}
+          />
         </NavigationContainer>
       </ThemeContext.Provider>,
     );
