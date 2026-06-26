@@ -27,6 +27,7 @@ interface TextProps extends React.ComponentPropsWithoutRef<typeof RNText> {
   link?: boolean;
   strikethrough?: boolean;
   underline?: boolean;
+  italic?: boolean;
 }
 
 /**
