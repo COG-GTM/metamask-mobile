@@ -208,6 +208,14 @@ export class BitcoinController extends BaseController<
       );
 
       this.update((draft) => {
+        // Prune accounts that no longer exist
+        const currentAddresses = new Set(btcAccounts.map((a) => a.address));
+        for (const address of Object.keys(draft.accounts)) {
+          if (!currentAddresses.has(address)) {
+            delete draft.accounts[address];
+          }
+        }
+
         for (const result of results) {
           if (result.status === 'fulfilled') {
             const { address, balanceInfo, utxos } = result.value;
@@ -235,6 +243,10 @@ export class BitcoinController extends BaseController<
    * Update recommended fee estimates from the network.
    */
   async updateFeeEstimates(): Promise<void> {
+    if (this.getBitcoinAccounts().length === 0) {
+      return;
+    }
+
     try {
       const feeEstimates = await this.networkClient.getFeeEstimates();
       this.update((draft) => {

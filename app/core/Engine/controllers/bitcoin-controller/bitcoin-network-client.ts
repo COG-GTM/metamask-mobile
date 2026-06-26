@@ -87,7 +87,7 @@ export class BitcoinNetworkClient {
    * @returns Array of UTXOs.
    */
   async getUtxos(address: string): Promise<BitcoinUtxo[]> {
-    const url = `${this.baseUrl}/address/${address}/utxo`;
+    const url = `${this.baseUrl}/address/${encodeURIComponent(address)}/utxo`;
     return this.fetchJson<BitcoinUtxo[]>(url);
   }
 
@@ -98,7 +98,7 @@ export class BitcoinNetworkClient {
    * @returns Address balance information.
    */
   async getBalance(address: string): Promise<BitcoinAddressBalance> {
-    const url = `${this.baseUrl}/address/${address}`;
+    const url = `${this.baseUrl}/address/${encodeURIComponent(address)}`;
     const data = await this.fetchJson<{
       address: string;
       chain_stats: { funded_txo_sum: number; spent_txo_sum: number };
@@ -125,7 +125,7 @@ export class BitcoinNetworkClient {
    * @returns Array of transactions.
    */
   async getTransactions(address: string): Promise<BitcoinTransaction[]> {
-    const url = `${this.baseUrl}/address/${address}/txs`;
+    const url = `${this.baseUrl}/address/${encodeURIComponent(address)}/txs`;
     return this.fetchJson<BitcoinTransaction[]>(url);
   }
 
