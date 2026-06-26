@@ -50,6 +50,67 @@ const captureKeyringTypesWithMissingIdentities = (
 };
 
 /**
+ * Generic function to extract values from a subject's CAIP-25 caveat.
+ *
+ * @param subject - The subject object containing permissions.
+ * @param extractor - Function to extract the desired value from the caveat value.
+ * @returns Array of extracted values, or empty array if no caveat exists.
+ */
+function extractFromCaveat<T>(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  subject: any,
+  extractor: (caveatValue: Caip25CaveatValue) => T[],
+): T[] {
+  const caveats =
+    subject.permissions?.[Caip25EndowmentPermissionName]?.caveats;
+  if (!caveats) {
+    return [];
+  }
+
+  const caveat = caveats.find(
+    ({ type }: CaveatConstraint) => type === Caip25CaveatType,
+  );
+  if (caveat) {
+    return extractor(caveat.value);
+  }
+
+  return [];
+}
+
+/**
+ * Generic function to get permitted items by hostname from state.
+ *
+ * @param state - The state object containing subjects.
+ * @param hostname - The hostname to look up.
+ * @param extractor - Function to extract items from a subject.
+ * @returns Array of permitted items for the hostname, or empty array.
+ */
+function getPermittedByHostname<T>(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  state: any,
+  hostname: string,
+  extractor: (subject: any) => T[],
+): T[] {
+  const { subjects } = state;
+  const itemsByHostname = Object.keys(subjects).reduce(
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (acc: any, subjectKey) => {
+      const items = extractor(subjects[subjectKey]);
+      if (items.length > 0) {
+        acc[subjectKey] = items;
+      }
+      return acc;
+    },
+    {},
+  );
+
+  return itemsByHostname?.[hostname] || [];
+}
+
+/**
  * Sorts a list of evm account addresses by most recently selected by using
  * the lastSelected value for the matching InternalAccount object stored in state.
  *
@@ -60,7 +121,7 @@ export const sortAccountsByLastSelected = (accounts: Hex[]) => {
   const internalAccounts: InternalAccount[] =
     Engine.context.AccountsController.listAccounts();
 
-  return accounts.sort((firstAddress, secondAddress) => {
+  return [...accounts].sort((firstAddress, secondAddress) => {
     const firstAccount = internalAccounts.find(
       (internalAccount) =>
         internalAccount.address.toLowerCase() === firstAddress.toLowerCase(),
@@ -93,27 +154,16 @@ export const sortAccountsByLastSelected = (accounts: Hex[]) => {
   });
 };
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getAccountsFromSubject(subject: any) {
-  const caveats =
-    subject.permissions?.[Caip25EndowmentPermissionName]?.caveats;
-  if (!caveats) {
-    return [];
-  }
-
-  const caveat = caveats.find(
-    ({ type }: CaveatConstraint) => type === Caip25CaveatType,
-  );
-  if (caveat) {
-    const ethAccounts = getEthAccounts(caveat.value);
-    const lowercasedEthAccounts = ethAccounts.map((address: string) =>
-      toHex(address.toLowerCase()),
-    );
-    return sortAccountsByLastSelected(lowercasedEthAccounts);
-  }
-
-  return [];
+function getAccountsFromSubject(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  subject: any,
+): string[] {
+  const accounts = extractFromCaveat(subject, (caveatValue) => {
+    const ethAccounts = getEthAccounts(caveatValue);
+    return ethAccounts.map((address: string) => toHex(address.toLowerCase()));
+  });
+  return sortAccountsByLastSelected(accounts);
 }
 
 export const getPermittedAccountsByHostname = (
@@ -122,40 +172,15 @@ export const getPermittedAccountsByHostname = (
   state: any,
   hostname: string,
 ): string[] => {
-  const { subjects } = state;
-  const accountsByHostname = Object.keys(subjects).reduce(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (acc: any, subjectKey) => {
-      const accounts = getAccountsFromSubject(subjects[subjectKey]);
-      if (accounts.length > 0) {
-        acc[subjectKey] = accounts;
-      }
-      return acc;
-    },
-    {},
-  );
-
-  return accountsByHostname?.[hostname] || [];
+  return getPermittedByHostname(state, hostname, getAccountsFromSubject);
 };
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getPermittedChainIdsFromSubject(subject: any) {
-  const caveats =
-    subject.permissions?.[Caip25EndowmentPermissionName]?.caveats;
-  if (!caveats) {
-    return [];
-  }
-
-  const caveat = caveats.find(
-    ({ type }: CaveatConstraint) => type === Caip25CaveatType,
-  );
-  if (caveat) {
-    return getPermittedEthChainIds(caveat.value);
-  }
-
-  return [];
+function getPermittedChainIdsFromSubject(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  subject: any,
+): string[] {
+  return extractFromCaveat(subject, getPermittedEthChainIds);
 }
 
 export const getPermittedChainIdsByHostname = (
@@ -164,21 +189,7 @@ export const getPermittedChainIdsByHostname = (
   state: any,
   hostname: string,
 ): string[] => {
-  const { subjects } = state;
-  const chainIdsByHostname = Object.keys(subjects).reduce(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (acc: any, subjectKey) => {
-      const chainIds = getPermittedChainIdsFromSubject(subjects[subjectKey]);
-      if (chainIds.length > 0) {
-        acc[subjectKey] = chainIds;
-      }
-      return acc;
-    },
-    {},
-  );
-
-  return chainIdsByHostname?.[hostname] || [];
+  return getPermittedByHostname(state, hostname, getPermittedChainIdsFromSubject);
 };
 
 /**

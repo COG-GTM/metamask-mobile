@@ -27,6 +27,8 @@ export function isSnapPreinstalled(snapId: SnapId) {
  * @constant
  * @type {SnapId[]}
  */
+// Bitcoin is kept in the allow-list so existing snap-keyring accounts can still
+// use the snap-based send flow until a native Bitcoin send UI is wired up.
 const ALLOW_LISTED_SNAPS = [BITCOIN_WALLET_SNAP_ID, SOLANA_WALLET_SNAP_ID];
 
 /**
