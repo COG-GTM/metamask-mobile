@@ -3,7 +3,6 @@ import { shallow } from 'enzyme';
 import ExpandedMessage from '.';
 
 const renderMessageMock = jest.fn();
-const toggleExpandedMessageMock = jest.fn();
 
 describe('ExpandedMessage', () => {
   it('should render correctly', () => {
@@ -11,7 +10,6 @@ describe('ExpandedMessage', () => {
       <ExpandedMessage
         currentPageInformation={{ title: 'title', url: 'url' }}
         renderMessage={renderMessageMock}
-        toggleExpandedMessageMock={toggleExpandedMessageMock}
       />,
     );
     expect(wrapper).toMatchSnapshot();
