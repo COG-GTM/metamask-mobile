@@ -10,6 +10,8 @@ import {
 } from './backupVault';
 import { KeyringControllerState } from '@metamask/keyring-controller';
 import {
+  ACCESS_CONTROL,
+  ACCESSIBLE,
   getInternetCredentials,
   Options,
   resetInternetCredentials,
@@ -179,6 +181,29 @@ describe('backupVault file', () => {
       const response = await backupVault(keyringState);
 
       expect(response).toEqual(mockedSuccessResponse);
+    });
+
+    it('should write the vault backup with a biometric/passcode access control gate', async () => {
+      const keyringState: KeyringControllerState = {
+        vault: 'encrypted-vault',
+        keyrings: [],
+        isUnlocked: false,
+        keyringsMetadata: [],
+      };
+
+      await backupVault(keyringState);
+
+      const backupCall = (setInternetCredentials as jest.Mock).mock.calls.find(
+        ([server]) => server === VAULT_BACKUP_KEY,
+      );
+
+      expect(backupCall).toBeDefined();
+      const optionsArg = backupCall?.[3] as Options;
+      expect(optionsArg).toMatchObject({
+        accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+        accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
+      });
+      expect(optionsArg.authenticationPrompt).toBeDefined();
     });
 
     it('should reset vault before backup', async () => {
