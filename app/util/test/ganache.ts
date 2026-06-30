@@ -7,7 +7,6 @@ interface GanacheStartOptions {
   mnemonic: string;
   blockTime?: number;
   network_id?: number;
-  port?: number;
   vmErrorsOnRPCResponse?: boolean;
   hardfork?: string;
   quiet?: boolean;
