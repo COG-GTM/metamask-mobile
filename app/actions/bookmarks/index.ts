@@ -1,13 +1,35 @@
-export function addBookmark(bookmark) {
+export const ADD_BOOKMARK = 'ADD_BOOKMARK' as const;
+export const REMOVE_BOOKMARK = 'REMOVE_BOOKMARK' as const;
+
+export interface Bookmark {
+  url: string;
+  name: string;
+}
+
+export interface AddBookmarkAction {
+  type: typeof ADD_BOOKMARK;
+  bookmark: Bookmark;
+}
+
+export interface RemoveBookmarkAction {
+  type: typeof REMOVE_BOOKMARK;
+  bookmark: Partial<Bookmark> & Record<string, unknown>;
+}
+
+export type BookmarksAction = AddBookmarkAction | RemoveBookmarkAction;
+
+export function addBookmark(bookmark: Bookmark): AddBookmarkAction {
   return {
-    type: 'ADD_BOOKMARK',
+    type: ADD_BOOKMARK,
     bookmark,
   };
 }
 
-export function removeBookmark(bookmark) {
+export function removeBookmark(
+  bookmark: Partial<Bookmark> & Record<string, unknown>,
+): RemoveBookmarkAction {
   return {
-    type: 'REMOVE_BOOKMARK',
+    type: REMOVE_BOOKMARK,
     bookmark,
   };
 }
