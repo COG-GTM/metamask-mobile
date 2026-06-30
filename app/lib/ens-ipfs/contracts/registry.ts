@@ -1,4 +1,21 @@
-export default [
+interface EnsAbiParameter {
+  name: string;
+  type: string;
+  indexed?: boolean;
+}
+
+interface EnsAbiFragment {
+  constant?: boolean;
+  anonymous?: boolean;
+  inputs?: EnsAbiParameter[];
+  name?: string;
+  outputs?: EnsAbiParameter[];
+  payable?: boolean;
+  stateMutability?: string;
+  type: string;
+}
+
+const registryAbi: EnsAbiFragment[] = [
   {
     constant: true,
     inputs: [{ name: 'node', type: 'bytes32' }],
@@ -106,3 +123,5 @@ export default [
     type: 'event',
   },
 ];
+
+export default registryAbi;
