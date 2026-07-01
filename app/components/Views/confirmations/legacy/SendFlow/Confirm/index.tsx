@@ -836,7 +836,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
               .build(),
           );
           stopGasPolling();
-          resetTransaction();
+          resetTransactionAction();
         });
       }
     } finally {
