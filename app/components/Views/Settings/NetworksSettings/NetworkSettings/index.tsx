@@ -544,7 +544,7 @@ export class NetworkSettings extends PureComponent<
     isSymbolFieldFocused: false,
     isRpcUrlFieldFocused: false,
     isChainIdFieldFocused: false,
-    networkList: null,
+    networkList: [] as unknown as SafeChain,
     showMultiRpcAddModal: {
       isVisible: false,
     },
