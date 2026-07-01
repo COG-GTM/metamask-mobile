@@ -296,6 +296,55 @@ declare module '@metamask/react-native-actionsheet' {
 
 declare module '@metamask/react-native-search-api';
 
+declare module 'eth-ens-namehash' {
+  const namehash: {
+    hash(name: string): string;
+    normalize(name: string): string;
+  };
+  export default namehash;
+}
+
+declare module '@metamask/ethjs-query' {
+  export default class Eth {
+    constructor(provider: unknown);
+  }
+}
+
+declare module '@metamask/ethjs-contract' {
+  type ContractMethod = (...args: unknown[]) => Promise<unknown[]>;
+  interface ContractInstance {
+    [method: string]: ContractMethod;
+  }
+  type ContractFactory = (abi: unknown) => {
+    at(address: string): ContractInstance;
+  };
+  const EthContract: new (eth: unknown) => ContractFactory;
+  export default EthContract;
+}
+
+declare module 'content-hash' {
+  const contentHash: {
+    decode(hash: string): string;
+    getCodec(hash: string): string;
+    encode(codec: string, value: string): string;
+    fromIpfs(ipfsHash: string): string;
+    toB58String(hash: string): string;
+  };
+  export default contentHash;
+}
+
+declare module 'multihashes' {
+  const multihash: {
+    fromHexString(hex: string): Uint8Array;
+    toHexString(buf: Uint8Array): string;
+    toB58String(buf: Uint8Array): string;
+    fromB58String(str: string): Uint8Array;
+    encode(buf: Uint8Array, name: string | number, length?: number): Uint8Array;
+    decode(buf: Uint8Array): { code: number; name: string; length: number; digest: Uint8Array };
+  };
+  export default multihash;
+}
+
 /**
  * @sentry/react-native types for v^6.10.0
  * Types are overridden to ensure captureException receives an Error type for more reliable stack traces
