@@ -11,6 +11,65 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
+declare module '@metamask/react-native-button' {
+  import { ComponentType, ReactNode } from 'react';
+  import { StyleProp, ViewStyle, TextStyle } from 'react-native';
+
+  interface ButtonProps {
+    testID?: string;
+    accessibilityRole?: string;
+    disabled?: boolean;
+    styleDisabled?: StyleProp<TextStyle> | null;
+    disabledContainerStyle?: StyleProp<ViewStyle> | null;
+    onPress?: () => void;
+    onPressOut?: () => void;
+    style?: StyleProp<TextStyle>;
+    containerStyle?: StyleProp<ViewStyle>;
+    children?: ReactNode;
+  }
+
+  const Button: ComponentType<ButtonProps>;
+  export default Button;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  import { ReactNode } from 'react';
+
+  const coalesceNonElementChildren: (
+    children: ReactNode,
+    render: (child: ReactNode, index: number) => ReactNode,
+  ) => ReactNode[];
+  export default coalesceNonElementChildren;
+}
+
+declare module 'react-native-progress/Bar' {
+  import { ComponentType } from 'react';
+  import { ViewProps } from 'react-native';
+
+  interface ProgressBarProps extends ViewProps {
+    animated?: boolean;
+    indeterminate?: boolean;
+    progress?: number;
+    color?: string;
+    unfilledColor?: string;
+    borderWidth?: number;
+    borderColor?: string;
+    width?: number | null;
+    height?: number;
+    borderRadius?: number;
+    useNativeDriver?: boolean;
+  }
+
+  const Bar: ComponentType<ProgressBarProps>;
+  export default Bar;
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
