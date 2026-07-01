@@ -2,7 +2,7 @@
 // 1. if tabs.length > 4, show the max browser tabs modal
 // 2. if tabs.length <= 4, create a new tab
 
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import { Browser } from './index';
 import Routes from '../../../constants/navigation/Routes';
 import renderWithProvider from '../../../util/test/renderWithProvider';
@@ -90,14 +90,14 @@ const mockStore = configureMockStore();
 
 const routeMock = {
   params: {},
-};
+} as unknown as ComponentProps<typeof Browser>['route'];
 
 const mockNavigation = {
   setOptions: jest.fn(),
   setParams: jest.fn(),
   navigate: jest.fn(),
   goBack: jest.fn(),
-};
+} as unknown as ComponentProps<typeof Browser>['navigation'];
 
 describe('Browser', () => {
   it('should render correctly', () => {
@@ -168,9 +168,11 @@ describe('Browser', () => {
             <Stack.Screen name={Routes.BROWSER.VIEW}>
               {() => (
                 <Browser
-                  route={{
-                    params: { newTabUrl: 'about:blank', timestamp: '987' },
-                  }}
+                  route={
+                    {
+                      params: { newTabUrl: 'about:blank', timestamp: '987' },
+                    } as unknown as ComponentProps<typeof Browser>['route']
+                  }
                   tabs={mockTabs}
                   activeTab={1}
                   navigation={mockNavigation}
@@ -211,7 +213,7 @@ describe('Browser', () => {
             <Stack.Screen name="Browser">
               {() => (
                 <Browser
-                  route={{ params: {} }}
+                  route={routeMock}
                   tabs={mockTabsForIdling}
                   activeTab={1}
                   navigation={mockNavigation}

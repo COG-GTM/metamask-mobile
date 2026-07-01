@@ -1,8 +1,15 @@
 import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, TextStyle } from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  ParamListBase,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import { isNonEvmAddress } from '../../../core/Multichain/utils';
 import { getHasOrders } from '../../../reducers/fiatOrders';
 import { getTransactionsNavbarOptions } from '../../UI/Navbar';
@@ -32,7 +39,6 @@ import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetwork
 import { selectNetworkName } from '../../../selectors/networkInfos';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DEFAULT_HEADERBASE_TITLE_TEXTVARIANT } from '../../../component-library/components/HeaderBase/HeaderBase.constants';
 import { typography } from '@metamask/design-tokens';
 import { useStyles } from '../../hooks/useStyles';
 import {
@@ -40,7 +46,7 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (params) => {
+const createStyles = (params: { theme: Theme }) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -82,9 +88,8 @@ const createStyles = (params) => {
     },
     title: {
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
-      ...typography.sHeadingMD,
+      ...(typography.sHeadingMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.HeadingMD),
     },
     titleText: {
@@ -92,6 +97,15 @@ const createStyles = (params) => {
     },
   });
 };
+
+const TransactionsViewTab =
+  TransactionsView as unknown as React.ComponentType<{ tabLabel: string }>;
+const MultichainTransactionsViewTab =
+  MultichainTransactionsView as unknown as React.ComponentType<{
+    tabLabel: string;
+  }>;
+const RampOrdersListTab =
+  RampOrdersList as unknown as React.ComponentType<{ tabLabel: string }>;
 
 const ActivityView = () => {
   const { colors } = useTheme();
@@ -102,7 +116,7 @@ const ActivityView = () => {
   });
 
   const { trackEvent, createEventBuilder } = useMetrics();
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   const selectedAddress = useSelector(
     selectSelectedInternalAccountFormattedAddress,
   );
@@ -111,10 +125,12 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector(
+    (state: RootState) => getHasOrders(state) || false,
+  );
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<ScrollableTabView>(null);
+  const params = useParams<{ redirectToOrders?: boolean }>();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
@@ -128,7 +144,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            accountsByChainId[selectedAddress ?? ''] ?? {},
           ).length,
         })
         .build(),
@@ -169,7 +185,11 @@ const ActivityView = () => {
     useCallback(() => {
       if (hasOrders && params.redirectToOrders) {
         navigation.setParams({ redirectToOrders: false });
-        tabViewRef.current?.goToPage(1);
+        (
+          tabViewRef.current as unknown as {
+            goToPage: (pageNumber: number) => void;
+          } | null
+        )?.goToPage(1);
       }
     }, [hasOrders, navigation, params.redirectToOrders]),
   );
@@ -177,12 +197,7 @@ const ActivityView = () => {
   return (
     <ErrorBoundary navigation={navigation} view="ActivityView">
       <View style={[styles.header, { marginTop: insets.top }]}>
-        <Text
-          style={styles.title}
-          variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT}
-        >
-          {strings('transactions_view.title')}
-        </Text>
+        <Text style={styles.title}>{strings('transactions_view.title')}</Text>
       </View>
       <View style={styles.wrapper}>
         <View style={styles.controlButtonOuterWrapper}>
@@ -212,14 +227,16 @@ const ActivityView = () => {
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
+            <MultichainTransactionsViewTab
               tabLabel={strings('transactions_view.title')}
             />
           ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title')} />
+            <TransactionsViewTab
+              tabLabel={strings('transactions_view.title')}
+            />
           )}
           {hasOrders && (
-            <RampOrdersList
+            <RampOrdersListTab
               tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import { shallow } from 'enzyme';
 import Collectible from '.';
 import configureMockStore from 'redux-mock-store';
@@ -63,7 +63,11 @@ describe('Collectible', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <Collectible route={{ params: { address: '0x1' } }} />
+        <Collectible
+          {...({
+            route: { params: { address: '0x1' } },
+          } as unknown as ComponentProps<typeof Collectible>)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
@@ -81,8 +85,10 @@ describe('Collectible', () => {
       <Provider store={storeMocked}>
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
-            navigation={navigationMock}
-            route={{ params: defaultCollectibleContract }}
+            {...({
+              navigation: navigationMock,
+              route: { params: defaultCollectibleContract },
+            } as unknown as ComponentProps<typeof Collectible>)}
           />
         </ThemeContext.Provider>
       </Provider>,
@@ -98,8 +104,10 @@ describe('Collectible', () => {
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
-            navigation={navigationMock}
-            route={{ params: defaultCollectibleContract }}
+            {...({
+              navigation: navigationMock,
+              route: { params: defaultCollectibleContract },
+            } as unknown as ComponentProps<typeof Collectible>)}
           />
         </ThemeContext.Provider>
       </Provider>,

@@ -7,13 +7,12 @@ import {
   View,
   SafeAreaView,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import OnboardingProgress from '../../UI/OnboardingProgress';
 import ActionView from '../../UI/ActionView';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
 import { strings } from '../../../../locales/i18n';
 import { connect } from 'react-redux';
-import { seedphraseBackedUp } from '../../../actions/user';
+import { seedphraseBackedUp as seedphraseBackedUpAction } from '../../../actions/user';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getOnboardingNavbarOptions } from '../../UI/Navbar';
 import { shuffle, compareMnemonics } from '../../../util/mnemonic';
@@ -23,38 +22,73 @@ import createStyles from './styles';
 import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ManualBackUpSteps.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ParamListBase, RouteProp } from '@react-navigation/native';
+import { Dispatch } from 'redux';
 
-const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
+interface ConfirmedWord {
+  word?: string;
+  originalPosition?: number;
+}
+
+type WordsDict = Record<string, { currentPosition?: number }>;
+
+interface ManualBackupStep2Props {
+  /**
+   * navigation object required to push and pop other views
+   */
+  navigation: StackNavigationProp<ParamListBase>;
+  /**
+   * The action to update the seedphrase backed up flag
+   * in the redux store
+   */
+  seedphraseBackedUp: () => void;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: RouteProp<
+    { params: { words?: string[]; steps?: string[] } },
+    'params'
+  >;
+}
+
+const ManualBackupStep2 = ({
+  navigation,
+  seedphraseBackedUp,
+  route,
+}: ManualBackupStep2Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const [confirmedWords, setConfirmedWords] = useState([]);
-  const [wordsDict, setWordsDict] = useState({});
+  const [confirmedWords, setConfirmedWords] = useState<ConfirmedWord[]>([]);
+  const [wordsDict, setWordsDict] = useState<WordsDict>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [seedPhraseReady, setSeedPhraseReady] = useState(false);
 
   const currentStep = 2;
   const words =
     process.env.JEST_WORKER_ID === undefined
-      ? shuffle(route.params?.words)
-      : route.params?.words;
+      ? shuffle(route.params?.words ?? [])
+      : route.params?.words ?? [];
 
   const createWordsDictionary = () => {
-    const dict = {};
-    words.forEach((word, i) => {
+    const dict: WordsDict = {};
+    words.forEach((word: string, i: number) => {
       dict[`${word},${i}`] = { currentPosition: undefined };
     });
     setWordsDict(dict);
   };
 
   const updateNavBar = useCallback(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation.setOptions(
+      getOnboardingNavbarOptions(route, { headerLeft: undefined }, colors),
+    );
   }, [colors, navigation, route]);
 
   useEffect(() => {
     const wordsFromRoute = route.params?.words ?? [];
     setConfirmedWords(
-      new Array(wordsFromRoute.length).fill({
+      new Array<ConfirmedWord>(wordsFromRoute.length).fill({
         word: undefined,
         originalPosition: undefined,
       }),
@@ -73,12 +107,13 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   );
 
   const selectWord = useCallback(
-    (word, i) => {
+    (word: string, i: number) => {
       let tempCurrentIndex = currentIndex;
       const tempWordsDict = wordsDict;
       const tempConfirmedWords = confirmedWords;
       if (wordsDict[`${word},${i}`].currentPosition !== undefined) {
-        tempCurrentIndex = wordsDict[`${word},${i}`].currentPosition;
+        tempCurrentIndex =
+          wordsDict[`${word},${i}`].currentPosition ?? tempCurrentIndex;
         tempWordsDict[`${word},${i}`].currentPosition = undefined;
         tempConfirmedWords[currentIndex] = {
           word: undefined,
@@ -98,15 +133,14 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     [confirmedWords, currentIndex, findNextAvailableIndex, wordsDict],
   );
 
-  const clearConfirmedWordAt = (i) => {
+  const clearConfirmedWordAt = (i: number) => {
     const { word, originalPosition } = confirmedWords[i];
-    const currentIndex = i;
     if (word && (originalPosition || originalPosition === 0)) {
-      wordsDict[[word, originalPosition]].currentPosition = undefined;
+      wordsDict[`${word},${originalPosition}`].currentPosition = undefined;
       confirmedWords[i] = { word: undefined, originalPosition: undefined };
     }
 
-    setCurrentIndex(currentIndex);
+    setCurrentIndex(i);
     setWordsDict(wordsDict);
     setConfirmedWords(confirmedWords);
     setSeedPhraseReady(findNextAvailableIndex() === -1);
@@ -115,7 +149,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   const validateWords = useCallback(() => {
     const validWords = route.params?.words ?? [];
     const proposedWords = confirmedWords.map(
-      (confirmedWord) => confirmedWord.word,
+      (confirmedWord) => confirmedWord.word ?? '',
     );
 
     return compareMnemonics(validWords, proposedWords);
@@ -125,10 +159,10 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     if (validateWords()) {
       seedphraseBackedUp();
       InteractionManager.runAfterInteractions(async () => {
-        const words = route.params?.words;
+        const selectedWords = route.params?.words;
         navigation.navigate('ManualBackupStep3', {
           steps: route.params?.steps,
-          words,
+          words: selectedWords,
         });
         trackOnboarding(
           MetricsEventBuilder.createEventBuilder(
@@ -144,27 +178,20 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     }
   };
 
-  const renderSuccess = () => {
-    const styles = createStyles(colors);
-
-    return (
-      <View style={styles.successRow}>
+  const renderSuccess = () => (
+    <View style={styles.successRow}>
         <MaterialIcon
           name="check-circle"
           size={15}
           color={colors.success.default}
         />
-        <Text style={styles.successText}>
-          {strings('manual_backup_step_2.success')}
-        </Text>
-      </View>
-    );
-  };
+      <Text style={styles.successText}>
+        {strings('manual_backup_step_2.success')}
+      </Text>
+    </View>
+  );
 
-  const renderWordBox = (word, i) => {
-    const styles = createStyles(colors);
-
-    return (
+  const renderWordBox = (word: string | undefined, i: number) => (
       <View key={`word_${i}`} style={styles.wordBoxWrapper}>
         <Text style={styles.wordBoxIndex}>{i + 1}.</Text>
         <TouchableOpacity
@@ -182,12 +209,12 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
         </TouchableOpacity>
       </View>
     );
-  };
 
   const renderWordSelectableBox = useCallback(
-    (key, i) => {
+    (key: string, i: number) => {
       const [word] = key.split(',');
       const selected = wordsDict[key].currentPosition !== undefined;
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const styles = createStyles(colors);
 
       return (
@@ -227,7 +254,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
       <View style={styles.onBoardingWrapper}>
         <OnboardingProgress
           currentStep={currentStep}
-          steps={route.params?.steps}
+          steps={route.params?.steps ?? []}
         />
       </View>
       <ActionView
@@ -278,24 +305,8 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   );
 };
 
-ManualBackupStep2.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * The action to update the seedphrase backed up flag
-   * in the redux store
-   */
-  seedphraseBackedUp: PropTypes.func,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-};
-
-const mapDispatchToProps = (dispatch) => ({
-  seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  seedphraseBackedUp: () => dispatch(seedphraseBackedUpAction()),
 });
 
 export default connect(null, mapDispatchToProps)(ManualBackupStep2);

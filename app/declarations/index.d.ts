@@ -10,6 +10,8 @@ declare module 'react-native-fast-crypto';
 
 declare module 'react-native-minimizer';
 
+declare module 'zxcvbn';
+
 declare module 'xhr2';
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
