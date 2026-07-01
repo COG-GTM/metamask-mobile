@@ -3,6 +3,8 @@ import {
   requestPermissionsHandler,
   revokePermissionsHandler,
 } from '@metamask/eip1193-permission-middleware';
+import { PermittedHandlerExport } from '@metamask/permission-controller';
+import { Json, JsonRpcParams } from '@metamask/utils';
 import { makeMethodMiddlewareMaker } from '../utils';
 import { eip1193OnlyHandlers } from '../handlers';
 
@@ -14,4 +16,8 @@ export const createEip1193MethodMiddleware = makeMethodMiddlewareMaker([
   getPermissionsHandler,
   requestPermissionsHandler,
   revokePermissionsHandler,
-]);
+  // The handlers have heterogeneous hook shapes, so the middleware maker's
+  // shared hook generic cannot be inferred across them.
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+] as PermittedHandlerExport<any, JsonRpcParams, Json>[]);
