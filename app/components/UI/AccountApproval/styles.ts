@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TextStyle } from 'react-native';
 import Device from '../../../util/device';
 import type { ThemeColors, ThemeTypography } from '@metamask/design-tokens';
 import {
@@ -26,7 +26,7 @@ const createStyles = (colors: ThemeColors, typography: ThemeTypography) =>
       color: colors.text.default,
       marginBottom: 8,
       marginTop: 16,
-    },
+    } as TextStyle,
     intro_reconnect: {
       ...typography.sHeadingMD,
       fontFamily: getFontFamily(TextVariant.HeadingMD),
@@ -36,7 +36,7 @@ const createStyles = (colors: ThemeColors, typography: ThemeTypography) =>
       marginTop: 16,
       marginLeft: 16,
       marginRight: 16,
-    },
+    } as TextStyle,
     otpContainer: {},
     selectOtp: {
       marginTop: 0,
@@ -52,7 +52,7 @@ const createStyles = (colors: ThemeColors, typography: ThemeTypography) =>
       marginBottom: 16,
       width: '100%',
       textAlign: 'center',
-    },
+    } as TextStyle,
     actionContainer: {
       flex: 0,
       flexDirection: 'row',
@@ -121,7 +121,7 @@ const createStyles = (colors: ThemeColors, typography: ThemeTypography) =>
       fontFamily: getFontFamily(TextVariant.BodyMD),
       color: colors.text.default,
       marginHorizontal: 1,
-    },
+    } as TextStyle,
     selectedCircle: {
       width: 12,
       height: 12,
