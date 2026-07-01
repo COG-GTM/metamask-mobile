@@ -136,7 +136,10 @@ describe('Migration #23', () => {
 
   for (const { errorMessage, scenario, state } of invalidBackgroundStates) {
     it(`should capture exception if ${scenario}`, () => {
-      const newState = migrate(state);
+      const newState = migrate(state) as {
+      user: unknown;
+      engine: { backgroundState: unknown };
+    };
 
       expect(newState).toStrictEqual(state);
       expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
@@ -155,7 +158,10 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = migrate(state) as {
+      user: unknown;
+      engine: { backgroundState: unknown };
+    };
 
     expect(newState).toStrictEqual(state);
   });
@@ -181,7 +187,10 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = migrate(state) as {
+      user: unknown;
+      engine: { backgroundState: unknown };
+    };
 
     expect(newState).toStrictEqual(state);
   });
@@ -229,7 +238,10 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = migrate(state) as {
+      user: unknown;
+      engine: { backgroundState: unknown };
+    };
 
     expect(newState.user).toStrictEqual(userInitialState);
     expect(newState.engine.backgroundState).toStrictEqual(
@@ -315,7 +327,10 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = migrate(state) as {
+      user: unknown;
+      engine: { backgroundState: unknown };
+    };
 
     expect(newState.user).toStrictEqual(
       merge({}, userInitialState, {
@@ -402,7 +417,10 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = migrate(state) as {
+      user: unknown;
+      engine: { backgroundState: unknown };
+    };
 
     expect(newState.user).toStrictEqual(userInitialState);
     expect(newState.engine.backgroundState).toStrictEqual(

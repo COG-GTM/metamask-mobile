@@ -1,6 +1,16 @@
-export default function migrate(state) {
-  const allTokens = state.engine.backgroundState.TokensController.allTokens;
-  const newAllTokens = {};
+type NestedTokens = Record<string, Record<string, unknown>>;
+
+export default function migrate(state: unknown): Record<string, unknown> {
+  const typedState = state as {
+    engine: {
+      backgroundState: {
+        TokensController: Record<string, unknown>;
+      };
+    };
+  };
+  const allTokens = typedState.engine.backgroundState.TokensController
+    .allTokens as NestedTokens;
+  const newAllTokens: NestedTokens = {};
   if (allTokens) {
     Object.keys(allTokens).forEach((accountAddress) => {
       Object.keys(allTokens[accountAddress]).forEach((chainId) => {
@@ -18,8 +28,8 @@ export default function migrate(state) {
   }
 
   const ignoredTokens =
-    state.engine.backgroundState.TokensController.ignoredTokens;
-  const newAllIgnoredTokens = {};
+    typedState.engine.backgroundState.TokensController.ignoredTokens;
+  const newAllIgnoredTokens: NestedTokens = {};
   Object.keys(allTokens).forEach((accountAddress) => {
     Object.keys(allTokens[accountAddress]).forEach((chainId) => {
       if (newAllIgnoredTokens[chainId] === undefined) {
@@ -35,10 +45,10 @@ export default function migrate(state) {
     });
   });
 
-  state.engine.backgroundState.TokensController = {
+  typedState.engine.backgroundState.TokensController = {
     allTokens: newAllTokens,
     allIgnoredTokens: newAllIgnoredTokens,
   };
 
-  return state;
+  return typedState;
 }
