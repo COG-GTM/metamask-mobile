@@ -140,7 +140,7 @@ const TransactionReviewEIP1559Update = ({
   const valueToWatchAnimation = `${renderableGasFeeMinNative}${renderableGasFeeMaxNative}`;
 
   return (
-    <Summary style={styles.overview(noMargin)}>
+    <Summary style={styles.overview(Boolean(noMargin))}>
       <Summary.Row>
         <View style={styles.gasRowContainer}>
           <View style={styles.gasRowContainer}>
