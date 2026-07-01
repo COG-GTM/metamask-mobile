@@ -6,9 +6,70 @@ import { selectGasFeeEstimates } from '../../../../../../../../selectors/confirm
 import { selectGasFeeControllerEstimateType } from '../../../../../../../../selectors/gasFeeController';
 import { selectPrimaryCurrency } from '../../../../../../../../selectors/settings';
 import { useAppThemeFromContext } from '../../../../../../../../util/theme';
+import { RootState } from '../../../../../../../../reducers';
 import EditGasFee1559 from '../../../../components/EditGasFee1559Update';
 import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
 import createStyles from './CustomGasModal.styles';
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GasData = any;
+
+interface ValidateAmountArgs {
+  transaction: GasData;
+  total: string;
+}
+
+interface CustomGasModalProps {
+  /**
+   * Selected gas option (low, medium, high)
+   */
+  gasSelected: string;
+  /**
+   * If the values should animate upon update or not
+   */
+  animateOnChange?: boolean;
+  /**
+   * Boolean to determine if the animation is happening
+   */
+  isAnimating: boolean;
+  /**
+   * Whether only the gas view should be displayed
+   */
+  onlyGas?: boolean;
+  /**
+   * Function to validate the amount for the given transaction/total
+   */
+  validateAmount: (args: ValidateAmountArgs) => string | undefined;
+  /**
+   * Whether the transaction is legacy (non EIP1559)
+   */
+  legacy: boolean;
+  /**
+   * Legacy gas data object
+   */
+  legacyGasData: GasData;
+  /**
+   * EIP1559 gas data object
+   */
+  EIP1559GasData: GasData;
+  /**
+   * EIP1559 gas transaction object
+   */
+  EIP1559GasTxn: GasData;
+  /**
+   * Function called when the gas selection changes
+   */
+  onGasChanged: (gasValue: string) => void;
+  /**
+   * Function called when the gas selection is canceled
+   */
+  onGasCanceled: (gasValue: string) => void;
+  /**
+   * Function to update the gas state on the parent
+   */
+  updateGasState: (args: GasData) => void;
+}
 
 const CustomGasModal = ({
   gasSelected,
@@ -23,16 +84,16 @@ const CustomGasModal = ({
   onGasChanged,
   onGasCanceled,
   updateGasState,
-}) => {
+}: CustomGasModalProps) => {
   const { colors } = useAppThemeFromContext();
   const styles = createStyles();
 
-  const transaction = useSelector((state) => state.transaction);
+  const transaction = useSelector((state: RootState) => state.transaction);
   const gasFeeEstimate = useSelector(selectGasFeeEstimates);
   const primaryCurrency = useSelector(selectPrimaryCurrency);
   const chainId = transaction?.chainId;
   const selectedAsset = useSelector(
-    (state) => state.transaction.selectedAsset,
+    (state: RootState) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
@@ -55,7 +116,7 @@ const CustomGasModal = ({
     gas_estimate_type: gasEstimateType,
   });
 
-  const onChangeGas = (gasValue) => {
+  const onChangeGas = (gasValue: string) => {
     setSelectedGas(gasValue);
     onGasChanged(selectedGas);
   };
@@ -74,7 +135,7 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: GasData, gasObj: GasData) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalHex,
@@ -87,7 +148,7 @@ const CustomGasModal = ({
   );
 
   const onSaveEIP1559GasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: GasData, gasObj: GasData) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalMaxHex,
@@ -123,7 +184,7 @@ const CustomGasModal = ({
       eip1559GasObj?.[selectedGas]?.suggestedMaxFeePerGas,
     suggestedMaxPriorityFeePerGas:
       eip1559GasObj?.suggestedMaxPriorityFeePerGas ||
-      gasFeeEstimate[selectedGas]?.suggestedMaxPriorityFeePerGas,
+      (gasFeeEstimate as GasData)[selectedGas]?.suggestedMaxPriorityFeePerGas,
     suggestedGasLimit:
       eip1559GasObj?.suggestedGasLimit || eip1559Txn?.suggestedGasLimit,
   };
@@ -167,7 +228,7 @@ const CustomGasModal = ({
             selectedGasValue={selectedGas}
             gasOptions={gasFeeEstimate}
             onChange={onChangeGas}
-            primaryCurrency={primaryCurrency}
+            primaryCurrency={primaryCurrency as string}
             chainId={chainId}
             onCancel={onCancelGas}
             onSave={onSaveEIP1559GasOption}

@@ -1,9 +1,11 @@
-/* eslint-disable react/prop-types */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 import Fuse from 'fuse.js';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Hex } from '@metamask/utils';
+import { AddressBookEntry } from '@metamask/address-book-controller';
+import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { isSmartContractAddress } from '../../../../../../util/transactions';
 import { strings } from '../../../../../../../locales/i18n';
 import AddressElement from '../AddressElement';
@@ -13,11 +15,49 @@ import { TextVariant } from '../../../../../../component-library/components/Text
 import { regex } from '../../../../../../util/regex';
 import { SendViewSelectorsIDs } from '../../../../../../../e2e/selectors/SendFlow/SendView.selectors';
 import { selectInternalAccounts } from '../../../../../../selectors/accountsController';
-import styleSheet from './AddressList.styles';
-import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { RootState } from '../../../../../../reducers';
+import styleSheet from './AddressList.styles';
 
-const LabelElement = (styles, label) => (
+interface AddressListContact extends AddressBookEntry {
+  isSmartContract?: boolean;
+  isAmbiguousAddress?: boolean;
+}
+
+type AddressListElement = string | AddressListContact;
+
+interface AddressListProps {
+  /**
+   * Network id
+   */
+  chainId: Hex;
+  /**
+   * Search input for filtering contacts
+   */
+  inputSearch?: string;
+  /**
+   * Callback on account press
+   */
+  onAccountPress: (address: string) => void;
+  /**
+   * Callback on account long press
+   */
+  onAccountLongPress: (address: string) => void;
+  /**
+   * Callback for icon press
+   */
+  onIconPress: () => void;
+  /**
+   * Whether to only render the address book
+   */
+  onlyRenderAddressBook?: boolean;
+  /**
+   * Value used to trigger a reload of the address list
+   */
+  reloadAddressList?: boolean;
+}
+
+const LabelElement = (styles: ReturnType<typeof styleSheet>, label: string) => (
   <View key={label} style={styles.labelElementWrapper}>
     <Text variant={TextVariant.BodyMD} style={styles.contactLabel}>
       {label.toUpperCase()}
@@ -33,33 +73,41 @@ const AddressList = ({
   onIconPress,
   onlyRenderAddressBook = false,
   reloadAddressList,
-}) => {
+}: AddressListProps) => {
   const { colors } = useTheme();
   const styles = styleSheet(colors);
-  const [contactElements, setContactElements] = useState([]);
-  const [fuse, setFuse] = useState(undefined);
+  const [contactElements, setContactElements] = useState<AddressListElement[]>(
+    [],
+  );
+  const [fuse, setFuse] = useState<Fuse<AddressListContact> | undefined>(
+    undefined,
+  );
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
-    (state) => state.user.ambiguousAddressEntries,
+    (state: RootState) =>
+      state.user.ambiguousAddressEntries as Record<string, string[]>,
   );
 
-  const networkAddressBook = useMemo(
+  const networkAddressBook = useMemo<Record<string, AddressBookEntry>>(
     () => addressBook[chainId] || {},
     [addressBook, chainId],
   );
   const parseAddressBook = useCallback(
-    (networkAddressBookList) => {
-      const contacts = networkAddressBookList.map((contact) => {
-        const isAmbiguousAddress =
-          chainId &&
-          ambiguousAddressEntries?.[chainId]?.includes(contact.address);
-        return {
-          ...contact,
-          ...(isAmbiguousAddress && { isAmbiguousAddress }),
-          isSmartContract: false,
-        };
-      });
+    (networkAddressBookList: AddressBookEntry[]) => {
+      const contacts: AddressListContact[] = networkAddressBookList.map(
+        (contact) => {
+          const isAmbiguousAddress = Boolean(
+            chainId &&
+              ambiguousAddressEntries?.[chainId]?.includes(contact.address),
+          );
+          return {
+            ...contact,
+            ...(isAmbiguousAddress && { isAmbiguousAddress }),
+            isSmartContract: false,
+          };
+        },
+      );
 
       Promise.all(
         contacts.map((contact) =>
@@ -73,8 +121,8 @@ const AddressList = ({
             .catch(() => contact),
         ),
       ).then((updatedContacts) => {
-        const newContactElements = [];
-        const addressBookTree = {};
+        const newContactElements: AddressListElement[] = [];
+        const addressBookTree: Record<string, AddressListContact[]> = {};
 
         updatedContacts.forEach((contact) => {
           const contactNameInitial = contact?.name?.[0];
@@ -92,7 +140,9 @@ const AddressList = ({
         });
 
         Object.keys(addressBookTree)
-          .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+          .sort((a: string, b: string) =>
+            a.toLowerCase().localeCompare(b.toLowerCase()),
+          )
           .forEach((initial) => {
             newContactElements.push(initial);
             addressBookTree[initial].forEach((contact) => {
@@ -175,7 +225,7 @@ const AddressList = ({
     );
   };
 
-  const renderElement = (addressElement) => {
+  const renderElement = (addressElement: AddressListElement) => {
     if (typeof addressElement === 'string') {
       return LabelElement(styles, addressElement);
     }
@@ -198,7 +248,7 @@ const AddressList = ({
   };
 
   const renderContent = () => {
-    const sendFlowContacts = [];
+    const sendFlowContacts: AddressListElement[] = [];
 
     contactElements.forEach((contractElement) => {
       if (

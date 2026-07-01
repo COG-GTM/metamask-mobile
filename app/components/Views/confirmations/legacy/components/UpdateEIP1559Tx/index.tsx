@@ -23,7 +23,68 @@ import {
   renderFromWei,
 } from '../../../../../../util/number';
 import { getTicker } from '../../../../../../util/transactions';
+import { RootState } from '../../../../../../reducers';
 import EditGasFee1559Update from '../EditGasFee1559Update';
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GasAny = any;
+
+interface ExistingGas {
+  maxFeePerGas: string;
+  maxPriorityFeePerGas: string;
+}
+
+interface UpdateEIP1559TxProps {
+  /**
+   * Gas limit in wei
+   */
+  gas: string;
+  /**
+   * Map of accounts to information objects including balances
+   */
+  accounts: GasAny;
+  /**
+   * The currently selected account address
+   */
+  selectedAddress?: string;
+  /**
+   * The native token ticker
+   */
+  ticker: GasAny;
+  /**
+   * The existing gas data of the transaction being updated
+   */
+  existingGas: ExistingGas;
+  /**
+   * Gas fee estimates
+   */
+  gasFeeEstimates: GasAny;
+  /**
+   * The gas estimate type
+   */
+  gasEstimateType: GasAny;
+  /**
+   * Primary currency, either ETH or Fiat
+   */
+  primaryCurrency: string;
+  /**
+   * Whether this is a cancel (true) or speed up (false) transaction
+   */
+  isCancel: boolean;
+  /**
+   * A string representing the network chainId
+   */
+  chainId: string;
+  /**
+   * Function called when the user cancels
+   */
+  onCancel: () => void;
+  /**
+   * Function called when the user saves the new gas data
+   */
+  onSave: (gasTxn: GasAny) => void;
+}
 
 const UpdateEIP1559Tx = ({
   gas,
@@ -38,9 +99,9 @@ const UpdateEIP1559Tx = ({
   chainId,
   onCancel,
   onSave,
-}) => {
+}: UpdateEIP1559TxProps) => {
   const [animateOnGasChange, setAnimateOnGasChange] = useState(false);
-  const [gasSelected, setGasSelected] = useState(
+  const [gasSelected, setGasSelected] = useState<string>(
     AppConstants.GAS_OPTIONS.MEDIUM,
   );
   const stopUpdateGas = useRef(false);
@@ -51,8 +112,8 @@ const UpdateEIP1559Tx = ({
   /**
    * Options
    */
-  const updateTx1559Options = useRef();
-  const pollToken = useRef();
+  const updateTx1559Options = useRef<GasAny>();
+  const pollToken = useRef<GasAny>();
   const firstTime = useRef(true);
 
   const suggestedGasLimit = fromWei(gas, 'wei');
@@ -73,7 +134,7 @@ const UpdateEIP1559Tx = ({
   }, []);
 
   const isMaxFeePerGasMoreThanLegacy = useCallback(
-    (maxFeePerGas) => {
+    (maxFeePerGas: BigNumber) => {
       const newDecMaxFeePerGas = new BigNumber(existingGas.maxFeePerGas).times(
         new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE),
       );
@@ -86,7 +147,7 @@ const UpdateEIP1559Tx = ({
   );
 
   const isMaxPriorityFeePerGasMoreThanLegacy = useCallback(
-    (maxPriorityFeePerGas) => {
+    (maxPriorityFeePerGas: BigNumber) => {
       const newDecMaxPriorityFeePerGas = new BigNumber(
         existingGas.maxPriorityFeePerGas,
       ).times(new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE));
@@ -99,15 +160,15 @@ const UpdateEIP1559Tx = ({
   );
 
   const validateAmount = useCallback(
-    (updateTx) => {
-      let error;
+    (updateTx: GasAny) => {
+      let error: string | undefined;
       const totalMaxHexPrefixed = addHexPrefix(updateTx.totalMaxHex);
 
       if (!isHexString(totalMaxHexPrefixed)) {
         return strings('transaction.invalid_amount');
       }
       const updateTxCost = hexToBN(totalMaxHexPrefixed);
-      const accountBalance = hexToBN(accounts[selectedAddress].balance);
+      const accountBalance = hexToBN(accounts[selectedAddress ?? ''].balance);
       const isMaxFeePerGasMoreThanLegacyResult = isMaxFeePerGasMoreThanLegacy(
         new BigNumber(updateTx.suggestedMaxFeePerGas),
       );
@@ -211,12 +272,12 @@ const UpdateEIP1559Tx = ({
     isMaxPriorityFeePerGasMoreThanLegacy,
   ]);
 
-  const update1559TempGasValue = (selected) => {
+  const update1559TempGasValue = (selected: string) => {
     stopUpdateGas.current = !selected;
     setGasSelected(selected);
   };
 
-  const onSaveTxnWithError = (gasTxn) => {
+  const onSaveTxnWithError = (gasTxn: GasAny) => {
     gasTxn.error = validateAmount(gasTxn);
     onSave(gasTxn);
   };
@@ -257,7 +318,7 @@ const UpdateEIP1559Tx = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (state: RootState, ownProps: { chainId: string }) => ({
   accounts: selectAccounts(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   ticker: selectNativeCurrencyByChainId(state, ownProps.chainId),

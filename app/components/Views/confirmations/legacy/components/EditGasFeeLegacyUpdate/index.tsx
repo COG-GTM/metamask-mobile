@@ -1,7 +1,7 @@
 /* eslint-disable react/display-name */
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import BigNumber from 'bignumber.js';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { ReactNode, useCallback, useMemo, useState } from 'react';
 import {
   ScrollView,
   TouchableOpacity,
@@ -41,6 +41,75 @@ import StyledButton from '../../../../../UI/StyledButton';
 import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import createStyles from './styles';
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GasAny = any;
+
+interface LegacySelectedGasObject {
+  legacyGasLimit?: string;
+  suggestedGasPrice?: string;
+  suggestedMaxFeePerGas?: string;
+}
+
+interface EditGasFeeLegacyUpdateProps {
+  /**
+   * Function called when user cancels
+   */
+  onCancel: () => void;
+  /**
+   * Function called when user saves the new gas data
+   */
+  onSave: (gasTransaction: GasAny, gasObject: GasAny) => void;
+  /**
+   * Error message to show
+   */
+  error?: ReactNode;
+  /**
+   * Warning message to show
+   */
+  warning?: ReactNode;
+  /**
+   * Function called when the animated values start updating
+   */
+  onUpdatingValuesStart?: () => void;
+  /**
+   * Function called when the animated values end updating
+   */
+  onUpdatingValuesEnd?: () => void;
+  /**
+   * If the values should animate upon update or not
+   */
+  animateOnChange?: boolean;
+  /**
+   * Boolean to determine if the animation is happening
+   */
+  isAnimating: boolean;
+  /**
+   * Extra analytics params to be sent with the gas analytics
+   */
+  analyticsParams?: Record<string, unknown>;
+  /**
+   * Analytics view name
+   */
+  view?: string;
+  /**
+   * Whether only the gas view should be displayed
+   */
+  onlyGas?: boolean;
+  /**
+   * Selected gas object with gas limit and price
+   */
+  selectedGasObject: LegacySelectedGasObject;
+  /**
+   * Whether the gas price was suggested by the dapp
+   */
+  hasDappSuggestedGas?: boolean;
+  /**
+   * A string representing the network chainId
+   */
+  chainId: string;
+}
+
 const EditGasFeeLegacy = ({
   onCancel,
   onSave,
@@ -56,7 +125,7 @@ const EditGasFeeLegacy = ({
   selectedGasObject,
   hasDappSuggestedGas,
   chainId,
-}) => {
+}: EditGasFeeLegacyUpdateProps) => {
   const { trackEvent, createEventBuilder } = useMetrics();
   const [showRangeInfoModal, setShowRangeInfoModal] = useState(false);
   const [infoText, setInfoText] = useState('');
@@ -77,11 +146,11 @@ const EditGasFeeLegacy = ({
 
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
-  const gasTransaction = useGasTransaction({
+  const gasTransaction: GasAny = useGasTransaction({
     onlyGas,
     legacy: true,
     gasObjectLegacy,
-  });
+  } as GasAny);
 
   const save = useCallback(() => {
     trackEvent(
@@ -111,7 +180,7 @@ const EditGasFeeLegacy = ({
     createEventBuilder,
   ]);
 
-  const changeGas = useCallback((gas) => {
+  const changeGas = useCallback((gas: GasAny) => {
     updateGasObjectLegacy({
       legacyGasLimit: gas.suggestedGasLimit,
       suggestedGasPrice: gas.suggestedGasPrice,
@@ -119,18 +188,18 @@ const EditGasFeeLegacy = ({
   }, []);
 
   const changedGasPrice = useCallback(
-    (value) => {
+    (value: string) => {
       let newGas;
 
       const lowerValue = new BigNumber(
         gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-          ? gasFeeEstimate?.low
-          : gasFeeEstimate?.gasPrice,
+          ? (gasFeeEstimate as GasAny)?.low
+          : (gasFeeEstimate as GasAny)?.gasPrice,
       );
       const higherValue = new BigNumber(
         gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-          ? gasFeeEstimate?.high
-          : gasFeeEstimate?.gasPrice,
+          ? (gasFeeEstimate as GasAny)?.high
+          : (gasFeeEstimate as GasAny)?.gasPrice,
       ).multipliedBy(new BigNumber(1.5));
 
       const valueBN = new BigNumber(value);
@@ -155,7 +224,7 @@ const EditGasFeeLegacy = ({
   );
 
   const changedGasLimit = useCallback(
-    (value) => {
+    (value: string) => {
       const newGas =
         typeof gasTransaction === 'object'
           ? { ...gasTransaction, suggestedGasLimit: value }
@@ -231,8 +300,7 @@ const EditGasFeeLegacy = ({
 
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
-  let gasFeePrimary,
-    gasFeeSecondary;
+  let gasFeePrimary, gasFeeSecondary;
   if (nativeCurrencySelected) {
     gasFeePrimary = transactionFee;
     gasFeeSecondary = transactionFeeFiat;
@@ -243,7 +311,7 @@ const EditGasFeeLegacy = ({
 
   const valueToWatch = transactionFee;
 
-  const handleInfoModalPress = (text) => {
+  const handleInfoModalPress = (text: string) => {
     setShowRangeInfoModal(true);
     setInfoText(text);
   };
