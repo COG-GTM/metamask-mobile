@@ -1,5 +1,8 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { ComponentType, PureComponent } from 'react';
+import { Dispatch } from 'redux';
+import { Theme } from '@metamask/design-tokens';
+import { RootState } from '../../../../../reducers';
+import { IWithMetricsAwarenessProps } from '../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import {
   InteractionManager,
   ActivityIndicator,
@@ -22,12 +25,12 @@ import { strings } from '../../../../../../locales/i18n';
 import { getTransactionOptionsTitle } from '../../../../UI/Navbar';
 import { connect } from 'react-redux';
 import {
-  resetTransaction,
-  setTransactionObject,
+  resetTransaction as resetTransactionAction,
+  setTransactionObject as setTransactionObjectAction,
 } from '../../../../../actions/transaction';
-import { toggleDappTransactionModal } from '../../../../../actions/modals';
+import { toggleDappTransactionModal as toggleDappTransactionModalAction } from '../../../../../actions/modals';
 import NotificationManager from '../../../../../core/NotificationManager';
-import { showAlert } from '../../../../../actions/alert';
+import { showAlert as showAlertAction } from '../../../../../actions/alert';
 import { MetaMetricsEvents } from '../../../../../core/Analytics';
 import {
   getTransactionReviewActionKey,
@@ -76,7 +79,11 @@ const REVIEW = 'review';
 const EDIT = 'edit';
 const SEND = 'Send';
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SendAny = any;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -90,90 +97,19 @@ const createStyles = (colors) =>
     },
   });
 
+interface SendProps {
+  [key: string]: SendAny;
+}
+
+interface SendState {
+  [key: string]: SendAny;
+}
+
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Send extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Action that cleans transaction state
-     */
-    resetTransaction: PropTypes.func.isRequired,
-    /**
-     * A string representing the network name
-     */
-    networkType: PropTypes.string,
-    /**
-     * Action that sets transaction attributes from object to a transaction
-     */
-    setTransactionObject: PropTypes.func.isRequired,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * Transaction state
-     */
-    transaction: PropTypes.object.isRequired,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     * ID of the global network client
-     */
-    globalNetworkClientId: PropTypes.string,
-    /**
-     * ID of the global chain
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Object containing token balances in the format address => balance
-     */
-    contractBalances: PropTypes.object,
-    /**
-     * Hides or shows dApp transaction modal
-     */
-    toggleDappTransactionModal: PropTypes.func,
-    /**
-     * dApp transaction modal visible or not
-     */
-    dappTransactionModalVisible: PropTypes.bool,
-    /**
-     * List of tokens from TokenListController
-     */
-    tokenList: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
-
-  state = {
+class Send extends PureComponent<SendProps, SendState> {
+  state: SendState = {
     mode: REVIEW,
     transactionKey: undefined,
     ready: false,
@@ -189,10 +125,10 @@ class Send extends PureComponent {
    */
   async reset() {
     const { globalNetworkClientId, transaction } = this.props;
-    const { gas, gasPrice } = await estimateGas(
+    const { gas, gasPrice } = (await estimateGas(
       transaction,
       globalNetworkClientId,
-    );
+    )) as SendAny;
     this.props.setTransactionObject({
       gas: hexToBN(gas),
       gasPrice: hexToBN(gasPrice),
@@ -221,7 +157,8 @@ class Send extends PureComponent {
   }
 
   updateNavBar = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const { navigation, route } = this.props;
     navigation.setOptions(
       getTransactionOptionsTitle('send.confirm', navigation, route, colors),
@@ -240,8 +177,7 @@ class Send extends PureComponent {
       toggleDappTransactionModal,
     } = this.props;
     this.updateNavBar();
-    navigation &&
-      navigation.setParams({
+    navigation?.setParams({
         mode: REVIEW,
         dispatch: this.onModeChange,
         disableModeChange:
@@ -267,7 +203,7 @@ class Send extends PureComponent {
     this.mounted = false;
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: SendProps) {
     const prevRoute = prevProps.route;
     const {
       route,
@@ -280,8 +216,7 @@ class Send extends PureComponent {
       const prevTxMeta = prevRoute.params?.txMeta;
       const currentTxMeta = route.params?.txMeta;
       if (
-        currentTxMeta &&
-        currentTxMeta.source &&
+        currentTxMeta?.source &&
         (!prevTxMeta.source || prevTxMeta.source !== currentTxMeta.source)
       ) {
         this.handleNewTxMeta(currentTxMeta);
@@ -295,8 +230,7 @@ class Send extends PureComponent {
     const assetTypeDefined =
       prevProps.transaction.assetType === undefined && assetType === 'ERC20';
     if (assetTypeDefined || erc20ContractBalanceChanged) {
-      navigation &&
-        navigation.setParams({
+      navigation?.setParams({
           disableModeChange: contractBalance === undefined,
         });
     }
@@ -305,7 +239,7 @@ class Send extends PureComponent {
   /**
    * Handle deeplink txMeta recipient
    */
-  handleNewTxMetaRecipient = async (recipient) => {
+  handleNewTxMetaRecipient = async (recipient: SendAny) => {
     const to = await getAddress(recipient, this.props.globalChainId);
 
     if (!to) {
@@ -323,11 +257,15 @@ class Send extends PureComponent {
   /**
    * Handle txMeta object, setting neccesary state to make a transaction
    */
-  handleNewTxMeta = async ({ target_address, action, parameters = null }) => {
+  handleNewTxMeta = async ({
+    target_address,
+    action,
+    parameters = null,
+  }: SendAny) => {
     const { addressBook, globalChainId, internalAccounts, selectedAddress } =
       this.props;
 
-    let newTxMeta = {};
+    let newTxMeta: SendAny = {};
     let txRecipient;
     switch (action) {
       case 'send-eth':
@@ -341,7 +279,7 @@ class Send extends PureComponent {
           ...txRecipient,
         };
 
-        if (parameters && parameters.value) {
+        if (parameters?.value) {
           newTxMeta.value = BNToHex(toBN(parameters.value));
           newTxMeta.transactionValue = newTxMeta.value;
           newTxMeta.readableValue = fromWei(newTxMeta.value);
@@ -360,9 +298,9 @@ class Send extends PureComponent {
       case 'send-token': {
         const selectedAsset = await this.handleTokenDeeplink(target_address);
 
-        const { ensRecipient, to } = await this.handleNewTxMetaRecipient(
+        const { ensRecipient, to } = (await this.handleNewTxMetaRecipient(
           parameters.address,
-        );
+        )) as SendAny;
         if (!to) return;
         const tokenAmount =
           (parameters.uint256 &&
@@ -408,14 +346,15 @@ class Send extends PureComponent {
 
       // if gas and gasPrice is not defined in the deeplink, we should define them
       if (!gas && !gasPrice) {
-        const { gas, gasPrice } = await estimateGas(
-          this.props.transaction,
-          this.props.globalNetworkClientId,
-        );
+        const { gas: estimatedGas, gasPrice: estimatedGasPrice } =
+          (await estimateGas(
+            this.props.transaction,
+            this.props.globalNetworkClientId,
+          )) as SendAny;
         newTxMeta = {
           ...newTxMeta,
-          gas,
-          gasPrice,
+          gas: estimatedGas,
+          gasPrice: estimatedGasPrice,
         };
       }
       // TODO: We should add here support for sending tokens
@@ -423,11 +362,11 @@ class Send extends PureComponent {
     }
 
     if (!newTxMeta.value) {
-      newTxMeta.value = toBN(0);
+      newTxMeta.value = (toBN as SendAny)(0);
     }
 
     newTxMeta.from = selectedAddress;
-    const fromAccount = internalAccounts.find((account) =>
+    const fromAccount = internalAccounts.find((account: SendAny) =>
       toLowerCaseEquals(account.address, selectedAddress),
     );
     newTxMeta.transactionFromName = fromAccount.metadata.name;
@@ -442,7 +381,7 @@ class Send extends PureComponent {
    *
    * @returns ERC20 asset, containing address, symbol and decimals
    */
-  handleTokenDeeplink = async (address) => {
+  handleTokenDeeplink = async (address: SendAny) => {
     const { tokens, tokenList } = this.props;
     address = toChecksumAddress(address);
     // First check if we have token information in token list
@@ -450,13 +389,15 @@ class Send extends PureComponent {
       return tokenList[address];
     }
     // Then check if the token is already in state
-    const stateToken = tokens.find((token) => token.address === address);
+    const stateToken = tokens.find(
+      (token: SendAny) => token.address === address,
+    );
     if (stateToken) {
       return stateToken;
     }
     // Finally try to query the contract
     const { AssetsContractController } = Engine.context;
-    const token = { address };
+    const token: SendAny = { address };
     try {
       const decimals = await AssetsContractController.getERC20TokenDecimals(
         address,
@@ -487,7 +428,7 @@ class Send extends PureComponent {
    *
    * @param {object} transaction - Transaction object
    */
-  prepareTransaction = (transaction) => ({
+  prepareTransaction = (transaction: SendAny) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -501,7 +442,7 @@ class Send extends PureComponent {
    * @param {object} transaction - Transaction object
    * @param {object} selectedAsset - Asset object
    */
-  prepareAssetTransaction = (transaction, selectedAsset) => ({
+  prepareAssetTransaction = (transaction: SendAny, selectedAsset: SendAny) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -514,7 +455,7 @@ class Send extends PureComponent {
    *
    * @param transaction - Transaction object
    */
-  sanitizeTransaction = (transaction) => ({
+  sanitizeTransaction = (transaction: SendAny) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -536,7 +477,7 @@ class Send extends PureComponent {
    *
    * @param if - Transaction id
    */
-  onCancel = (id) => {
+  onCancel = (id?: SendAny) => {
     Engine.context.ApprovalController.reject(
       id,
       providerErrors.userRejectedRequest(),
@@ -569,18 +510,18 @@ class Send extends PureComponent {
       } else {
         transaction = this.prepareAssetTransaction(transaction, selectedAsset);
       }
-      const { result, transactionMeta } = await addTransaction(transaction, {
+      const { result, transactionMeta } = (await addTransaction(transaction, {
         deviceConfirmedOn: WalletDevice.MM_MOBILE,
         networkClientId: globalNetworkClientId,
         origin: TransactionTypes.MMM,
-      });
+      })) as SendAny;
       await KeyringController.resetQRKeyringState();
       await ApprovalController.accept(transactionMeta.id, undefined, {
         waitForResult: true,
       });
 
       // Add to the AddressBook if it's an unkonwn address
-      let checksummedAddress = null;
+      let checksummedAddress: SendAny = null;
 
       if (assetType === 'ETH') {
         checksummedAddress = toChecksumAddress(transactionMeta.transaction.to);
@@ -611,8 +552,7 @@ class Send extends PureComponent {
         }
       }
       const existingContact =
-        addressBook[globalChainId] &&
-        addressBook[globalChainId][checksummedAddress];
+        addressBook[globalChainId]?.[checksummedAddress];
       if (!existingContact) {
         AddressBookController.set(checksummedAddress, '', globalChainId);
       }
@@ -636,15 +576,18 @@ class Send extends PureComponent {
       });
     } catch (error) {
       if (
-        !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
-        !error?.message.startsWith(STX_NO_HASH_ERROR)
+        !(error as Error)?.message.startsWith(KEYSTONE_TX_CANCELED) &&
+        !(error as Error)?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          (error as Error)?.message,
           [{ text: strings('navigation.ok') }],
         );
-        Logger.error(error, 'error while trying to send transaction (Send)');
+        Logger.error(
+          error as Error,
+          'error while trying to send transaction (Send)',
+        );
       } else {
         this.props.metrics.trackEvent(
           this.props.metrics
@@ -679,7 +622,9 @@ class Send extends PureComponent {
    */
   trackEditScreen = async () => {
     const { transaction } = this.props;
-    const actionKey = await getTransactionReviewActionKey({ transaction });
+    const actionKey = await (getTransactionReviewActionKey as SendAny)({
+      transaction,
+    });
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)
@@ -749,9 +694,9 @@ class Send extends PureComponent {
    *
    * @param mode - Transaction mode, review or edit
    */
-  onModeChange = (mode) => {
+  onModeChange = (mode: SendAny) => {
     const { navigation } = this.props;
-    navigation && navigation.setParams({ mode });
+    navigation?.setParams({ mode });
     this.mounted && this.setState({ mode });
     InteractionManager.runAfterInteractions(() => {
       mode === REVIEW && this.trackConfirmScreen();
@@ -762,7 +707,8 @@ class Send extends PureComponent {
   changeToReviewMode = () => this.onModeChange(REVIEW);
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
@@ -804,7 +750,7 @@ class Send extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const globalChainId = selectEvmChainId(state);
 
   return {
@@ -827,12 +773,13 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  resetTransaction: () => dispatch(resetTransaction()),
-  setTransactionObject: (transaction) =>
-    dispatch(setTransactionObject(transaction)),
-  showAlert: (config) => dispatch(showAlert(config)),
-  toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal()),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  resetTransaction: () => dispatch(resetTransactionAction()),
+  setTransactionObject: (transaction: SendAny) =>
+    dispatch(setTransactionObjectAction(transaction)),
+  showAlert: (config: SendAny) => dispatch(showAlertAction(config)),
+  toggleDappTransactionModal: () =>
+    dispatch(toggleDappTransactionModalAction()),
 });
 
 Send.contextType = ThemeContext;
@@ -840,4 +787,8 @@ Send.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Send));
+)(
+  withMetricsAwareness(
+    Send as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);
