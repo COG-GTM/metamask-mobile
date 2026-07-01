@@ -10,6 +10,7 @@ import reducer, {
   selectSwapsChainFeatureFlags,
 } from './index';
 import { NetworkClientType } from '@metamask/network-controller';
+import type { RootState } from '..';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
 
@@ -210,7 +211,7 @@ describe('swaps reducer', () => {
           },
         },
         swaps: cloneDeep(initialState),
-      };
+      } as unknown as RootState;
 
       rootState.swaps = {
         // @ts-ignore
@@ -265,7 +266,7 @@ describe('swaps reducer', () => {
           },
         },
         swaps: cloneDeep(initialState),
-      };
+      } as unknown as RootState;
 
       rootState.swaps = {
         // @ts-ignore
@@ -320,7 +321,7 @@ describe('swaps reducer', () => {
           },
         },
         swaps: initialState,
-      };
+      } as unknown as RootState;
 
       const enabled = swapsSmartTxFlagEnabled(rootState);
       expect(enabled).toEqual(false);
@@ -358,7 +359,7 @@ describe('swaps reducer', () => {
           {}
         ),
       },
-    });
+    } as unknown as RootState);
 
     it('should return chain feature flags with merged smartTransactions from global flags', () => {
       const globalFlags = {
@@ -502,7 +503,7 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({
+      expect(swapsTokensObjectSelector(state as unknown as RootState)).toStrictEqual({
         '0x0000000000000000000000000000000000000000': undefined,
         '0x0000000000000000000000000000000000000001': undefined,
         '0x0000000000000000000000000000000000000010': undefined,
@@ -521,7 +522,7 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({});
+      expect(swapsTokensObjectSelector(state as unknown as RootState)).toStrictEqual({});
     });
   });
 
