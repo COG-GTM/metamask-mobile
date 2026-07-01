@@ -9,6 +9,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
       tabs: [],
       favicons: [],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const action = {
@@ -23,6 +24,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
       tabs: [],
       favicons: [{ origin: 'testOrigin', url: 'testUrl' }],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const newState = browserReducer(initialState, action);
@@ -40,6 +42,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
         url: 'oldUrl',
       }),
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const action = {
@@ -60,6 +63,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
         }),
       ],
       activeTab: null,
+      visitedDappsByHostname: {},
     };
 
     const newState = browserReducer(initialState, action);
