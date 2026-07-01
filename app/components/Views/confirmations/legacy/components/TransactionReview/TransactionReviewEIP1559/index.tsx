@@ -73,7 +73,7 @@ const createStyles = (colors: Theme['colors']) => ({
   }),
 });
 
-type SummaryStyleProps = { style?: StyleProp<ViewStyle> };
+interface SummaryStyleProps { style?: StyleProp<ViewStyle> }
 type SummaryWithChildren = React.FC<
   React.PropsWithChildren<SummaryStyleProps>
 > & {

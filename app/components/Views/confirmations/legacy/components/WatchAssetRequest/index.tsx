@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, InteractionManager } from 'react-native';
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import { useSelector } from 'react-redux';
 import { fontStyles } from '../../../../../../styles/common';
 import { strings } from '../../../../../../../locales/i18n';
@@ -143,7 +143,7 @@ const WatchAssetRequest = ({
 
   const getTokenAddedAnalyticsParams = () => {
     try {
-      const url = new URL(currentPageInformation?.url as string);
+      const url = new URLParse(currentPageInformation?.url as string);
 
       return {
         token_address: asset?.address,
@@ -152,9 +152,9 @@ const WatchAssetRequest = ({
         chain_id: getDecimalChainId(chainId),
         source: 'Dapp suggested (watchAsset)',
       };
-    } catch (error) {
+    } catch (e) {
       Logger.error(
-        error as Error,
+        e as Error,
         'WatchAssetRequest.getTokenAddedAnalyticsParams',
       );
       return undefined;

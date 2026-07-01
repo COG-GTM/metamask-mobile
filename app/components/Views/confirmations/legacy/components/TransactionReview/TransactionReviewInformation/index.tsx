@@ -40,8 +40,8 @@ import {
 } from '../../../../../../../util/networks';
 import CustomNonceModal from '../../../SendFlow/components/CustomNonceModal';
 import {
-  setNonce,
-  setProposedNonce,
+  setNonce as setNonceAction,
+  setProposedNonce as setProposedNonceAction,
 } from '../../../../../../../actions/transaction';
 import TransactionReviewEIP1559 from '../TransactionReviewEIP1559';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
@@ -223,7 +223,7 @@ class TransactionReviewInformation extends PureComponent<
   };
 
   getTotalFiat = (
-    asset: TxAny,
+    _asset: TxAny,
     totalGas: TxAny,
     conversionRate: number,
     exchangeRate: number,
@@ -726,8 +726,8 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setNonce: (nonce: TxAny) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce: TxAny) => dispatch(setProposedNonce(nonce)),
+  setNonce: (nonce: TxAny) => dispatch(setNonceAction(nonce)),
+  setProposedNonce: (nonce: TxAny) => dispatch(setProposedNonceAction(nonce)),
 });
 
 TransactionReviewInformation.contextType = ThemeContext;

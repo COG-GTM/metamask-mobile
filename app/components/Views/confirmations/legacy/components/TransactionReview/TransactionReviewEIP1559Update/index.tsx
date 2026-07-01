@@ -31,7 +31,7 @@ import { TransactionEIP1559UpdateProps } from './types';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ReviewAny = any;
 
-type SummaryStyleProps = { style?: StyleProp<ViewStyle> };
+interface SummaryStyleProps { style?: StyleProp<ViewStyle> }
 type SummaryWithChildren = React.FC<
   React.PropsWithChildren<SummaryStyleProps>
 > & {

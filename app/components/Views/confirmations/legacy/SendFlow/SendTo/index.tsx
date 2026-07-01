@@ -27,11 +27,11 @@ import {
   hasZeroWidthPoints,
 } from '../../../../../../util/confusables';
 import { mockTheme, ThemeContext } from '../../../../../../util/theme';
-import { showAlert } from '../../../../../../actions/alert';
+import { showAlert as showAlertAction } from '../../../../../../actions/alert';
 import {
   newAssetTransaction,
-  resetTransaction,
-  setRecipient,
+  resetTransaction as resetTransactionAction,
+  setRecipient as setRecipientAction,
   setSelectedAsset,
 } from '../../../../../../actions/transaction';
 import ErrorMessage from '../ErrorMessage';
@@ -152,9 +152,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
     const networkAddressBook = addressBook[globalChainId as string] || {};
     if (!Object.keys(networkAddressBook).length) {
       setTimeout(() => {
-        this.addressToInputRef &&
-          this.addressToInputRef.current &&
-          this.addressToInputRef.current.focus();
+        this.addressToInputRef?.current?.focus();
       }, 500);
     }
     //Fills in to address and sets the transaction if coming from QR code scan
@@ -291,10 +289,6 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
   };
 
   renderBuyEth = () => {
-    const colors =
-      (this.context as unknown as Theme)?.colors || mockTheme.colors;
-    const styles = createStyles(colors);
-
     if (!this.props.isNativeTokenBuySupported) {
       return null;
     }
@@ -388,8 +382,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
 
   onToSelectedAddressChange = (toAccount: SendAny) => {
     const currentChain =
-      this.props.ambiguousAddressEntries &&
-      this.props.ambiguousAddressEntries[this.props.globalChainId as string];
+      this.props.ambiguousAddressEntries?.[this.props.globalChainId as string];
     const isAmbiguousAddress = includes(currentChain, toAccount);
     if (isAmbiguousAddress) {
       this.setState({ showAmbiguousAcountWarning: isAmbiguousAddress });
@@ -467,13 +460,11 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
     );
     const existingContact =
       checksummedAddress &&
-      addressBook[globalChainId as string] &&
-      addressBook[globalChainId as string][checksummedAddress];
+      addressBook[globalChainId as string]?.[checksummedAddress];
     const displayConfusableWarning =
       !existingContact && confusableCollection && !!confusableCollection.length;
     const displayAsWarning =
-      confusableCollection &&
-      confusableCollection.length &&
+      confusableCollection?.length &&
       !confusableCollection.some(hasZeroWidthPoints);
     const explanations =
       displayConfusableWarning &&
@@ -574,8 +565,8 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
                 </View>
               )}
               <AddToAddressBookWrapper
-                setToAddressName={(toSelectedAddressName) =>
-                  this.setState({ toSelectedAddressName })
+                setToAddressName={(name: SendAny) =>
+                  this.setState({ toSelectedAddressName: name })
                 }
                 address={toEnsAddressResolved || toAccount}
                 defaultNull
@@ -678,7 +669,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     transactionFromName: SendAny,
   ) =>
     dispatch(
-      setRecipient(
+      setRecipientAction(
         from,
         to,
         ensRecipient,
@@ -690,8 +681,8 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch(newAssetTransaction(selectedAsset)),
   setSelectedAsset: (selectedAsset: SendAny) =>
     dispatch(setSelectedAsset(selectedAsset)),
-  showAlert: (config: SendAny) => dispatch(showAlert(config)),
-  resetTransaction: () => dispatch(resetTransaction()),
+  showAlert: (config: SendAny) => dispatch(showAlertAction(config)),
+  resetTransaction: () => dispatch(resetTransactionAction()),
 });
 
 export default connect(
