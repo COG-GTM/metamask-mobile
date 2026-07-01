@@ -5,8 +5,15 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import Video from 'react-native-video';
-import PropTypes from 'prop-types';
+import Video, {
+  OnLoadData,
+  OnProgressData,
+  OnVideoErrorData,
+  ReactVideoSource,
+  SelectedTrack,
+  TextTracks,
+  VideoRef,
+} from 'react-native-video';
 import {
   PanResponder,
   StyleSheet,
@@ -14,18 +21,24 @@ import {
   SafeAreaView,
   Easing,
   Image,
+  ImageSourcePropType,
   View,
   Text,
   TouchableNativeFeedback,
   TouchableHighlight,
+  StyleProp,
+  ViewStyle,
+  GestureResponderEvent,
+  PanResponderGestureState,
+  LayoutChangeEvent,
 } from 'react-native';
 import FA5Icon from 'react-native-vector-icons/FontAwesome5';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import { baseStyles, colors as importedColors } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (theme) =>
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     playerContainer: {
       flex: 0,
@@ -154,6 +167,22 @@ const createStyles = (theme) =>
     },
   });
 
+interface VideoPlayerProps {
+  controlsAnimationTiming?: number;
+  controlsToggleTiming?: number;
+  // source can be a uri object for remote files
+  // or a number returned by import for bundled files
+  source?: ReactVideoSource;
+  displayTopControls?: boolean;
+  displayBottomControls?: boolean;
+  onClose?: () => void;
+  onLoad?: () => void;
+  onError?: (e: OnVideoErrorData) => void;
+  selectedTextTrack?: SelectedTrack;
+  textTracks?: TextTracks;
+  style?: StyleProp<ViewStyle>;
+}
+
 export default function VideoPlayer({
   controlsAnimationTiming,
   controlsToggleTiming,
@@ -166,7 +195,7 @@ export default function VideoPlayer({
   selectedTextTrack,
   onLoad: propsOnLoad,
   style,
-}) {
+}: VideoPlayerProps) {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
   const [seekerFillWidth, setSeekerFillWidth] = useState(0);
@@ -181,9 +210,9 @@ export default function VideoPlayer({
   const [showControls, setShowControls] = useState(true);
   const [seekerWidth, setSeekerWidth] = useState(0);
 
-  const videoRef = useRef();
+  const videoRef = useRef<VideoRef>(null);
 
-  const controlsTimeout = useRef();
+  const controlsTimeout = useRef<ReturnType<typeof setTimeout>>();
 
   const theme = useTheme();
   const styles = createStyles(theme);
@@ -281,7 +310,7 @@ export default function VideoPlayer({
   );
 
   const updateSeekerPosition = useCallback(
-    (position) => {
+    (position: number) => {
       if (!position) return;
       position = constrainToSeekerMinMax(position);
       setSeekerFillWidth(position);
@@ -317,20 +346,20 @@ export default function VideoPlayer({
     setLoading(true);
   };
 
-  const onLoad = (data = {}) => {
-    propsOnLoad();
+  const onLoad = (data: OnLoadData) => {
+    propsOnLoad?.();
     setDuration(data.duration);
     setLoading(false);
   };
 
-  const onProgress = (data = {}) => {
+  const onProgress = (data: OnProgressData) => {
     if (!scrubbing && !seeking && data?.seekableDuration > 0) {
       const position = data.currentTime / data.seekableDuration;
       updateSeekerPosition(position * seekerWidth);
     }
   };
 
-  const onSeek = (data = {}) => {
+  const onSeek = () => {
     if (scrubbing) {
       if (!seeking) {
         setPaused(originallyPaused);
@@ -353,22 +382,31 @@ export default function VideoPlayer({
   }, [seekerPosition, seekerWidth, duration]);
 
   const seekTo = (time = 0) => {
-    videoRef.current.seek(time);
+    videoRef.current?.seek(time);
   };
 
   const seekPanResponder = useMemo(
     () =>
       PanResponder.create({
         // Ask to be the responder.
-        onStartShouldSetPanResponder: (evt, gestureState) => true,
-        onMoveShouldSetPanResponder: (evt, gestureState) => true,
+        onStartShouldSetPanResponder: (
+          _evt: GestureResponderEvent,
+          _gestureState: PanResponderGestureState,
+        ) => true,
+        onMoveShouldSetPanResponder: (
+          _evt: GestureResponderEvent,
+          _gestureState: PanResponderGestureState,
+        ) => true,
 
         /**
          * When we start the pan tell the machine that we're
          * seeking. This stops it from updating the seekbar
          * position in the onProgress listener.
          */
-        onPanResponderGrant: (evt, gestureState) => {
+        onPanResponderGrant: (
+          evt: GestureResponderEvent,
+          _gestureState: PanResponderGestureState,
+        ) => {
           const position = evt.nativeEvent.locationX;
           updateSeekerPosition(position);
           setPaused(false);
@@ -380,7 +418,10 @@ export default function VideoPlayer({
         /**
          * When panning, update the seekbar position, duh.
          */
-        onPanResponderMove: (evt, gestureState) => {
+        onPanResponderMove: (
+          _evt: GestureResponderEvent,
+          gestureState: PanResponderGestureState,
+        ) => {
           const position = seekerOffset + gestureState.dx;
           updateSeekerPosition(position);
 
@@ -399,7 +440,10 @@ export default function VideoPlayer({
         /**
          * On release we update the time and seek to it in the video.
          */
-        onPanResponderRelease: (evt, gestureState) => {
+        onPanResponderRelease: (
+          _evt: GestureResponderEvent,
+          _gestureState: PanResponderGestureState,
+        ) => {
           const time = calculateTimeFromSeekerPosition();
           if (time >= duration && !loading) {
             setPaused(true);
@@ -425,11 +469,15 @@ export default function VideoPlayer({
   );
 
   const renderControl = useCallback(
-    (children, callback, style = {}) => (
+    (
+      children: React.ReactNode,
+      callback: (() => void) | undefined,
+      controlStyle: StyleProp<ViewStyle> = {},
+    ) => (
       <TouchableHighlight
         underlayColor="transparent"
         onPress={callback}
-        style={[styles.controlsControl, style]}
+        style={[styles.controlsControl, controlStyle]}
       >
         {children}
       </TouchableHighlight>
@@ -452,7 +500,7 @@ export default function VideoPlayer({
   );
 
   const onLayoutSeekerWidth = useCallback(
-    (event) => setSeekerWidth(event.nativeEvent.layout.width),
+    (event: LayoutChangeEvent) => setSeekerWidth(event.nativeEvent.layout.width),
     [],
   );
 
@@ -520,6 +568,7 @@ export default function VideoPlayer({
     return (
       <View style={styles.loaderContainer}>
         <Animated.Image
+          source={undefined as unknown as ImageSourcePropType}
           style={{
             transform: [
               {
@@ -628,22 +677,6 @@ export default function VideoPlayer({
     </TouchableNativeFeedback>
   );
 }
-
-VideoPlayer.propTypes = {
-  controlsAnimationTiming: PropTypes.number,
-  controlsToggleTiming: PropTypes.number,
-  // source can be a uri object for remote files
-  // or a number returned by import for bundled files
-  source: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
-  displayTopControls: PropTypes.bool,
-  displayBottomControls: PropTypes.bool,
-  onClose: PropTypes.func,
-  onLoad: PropTypes.func,
-  onError: PropTypes.func,
-  selectedTextTrack: PropTypes.object,
-  textTracks: PropTypes.arrayOf(PropTypes.object),
-  style: ViewPropTypes.style,
-};
 
 VideoPlayer.defaultProps = {
   doubleTapTime: 100,
