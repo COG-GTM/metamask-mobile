@@ -1,6 +1,5 @@
 import type { SecurityAlertResponse } from '@metamask/transaction-controller';
-import { InteractionManager } from 'react-native';
-import type { LayoutChangeEvent } from 'react-native';
+import { InteractionManager, type LayoutChangeEvent } from 'react-native';
 import Engine from '../../core/Engine';
 import { MetaMetrics, MetaMetricsEvents } from '../../core/Analytics';
 import { getAddressAccountType } from '../address';
@@ -98,12 +97,12 @@ export const showWalletConnectNotification = (
      */
     const origin = (messageParams.origin as string)
       .toLowerCase()
-      .replaceAll(':', '');
+      .replace(/:/g, '');
     const isWCOrigin = origin.startsWith(
-      WALLET_CONNECT_ORIGIN.replaceAll(':', '').toLowerCase(),
+      WALLET_CONNECT_ORIGIN.replace(/:/g, '').toLowerCase(),
     );
     const isSDKOrigin = origin.startsWith(
-      AppConstants.MM_SDK.SDK_REMOTE_ORIGIN.replaceAll(':', '').toLowerCase(),
+      AppConstants.MM_SDK.SDK_REMOTE_ORIGIN.replace(/:/g, '').toLowerCase(),
     );
 
     if (isWCOrigin || isSDKOrigin) {

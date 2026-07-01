@@ -56,7 +56,16 @@ const SMART_CONTRACTS = {
   MULTISIG: 'multisig',
 };
 
-const contractConfiguration = {
+interface ContractFactoryConfig {
+  bytecode: string;
+  abi: unknown;
+  initialAmount?: number;
+  tokenName?: string;
+  decimalUnits?: number;
+  tokenSymbol?: string;
+}
+
+const contractConfiguration: Record<string, ContractFactoryConfig> = {
   [SMART_CONTRACTS.HST]: hstFactory,
   [SMART_CONTRACTS.NFTS]: nftsFactory,
   [SMART_CONTRACTS.ERC1155]: erc1155Factory,

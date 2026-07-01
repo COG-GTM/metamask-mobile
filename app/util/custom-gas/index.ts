@@ -78,7 +78,7 @@ export function getRenderableFiatGasFee(
   gasLimit = 21000,
 ): string {
   const wei = getWeiGasFee(estimate, gasLimit);
-  return weiToFiat(wei, conversionRate, currencyCode);
+  return weiToFiat(wei, conversionRate, currencyCode) as string;
 }
 
 /**
@@ -118,15 +118,18 @@ export function parseWaitTime(min: number): string {
 export async function getGasLimit(
   transaction: TransactionParams,
   resetGas = false,
-  networkClientId: NetworkClientId,
-): Promise<{ gas: BN }> {
+  networkClientId?: NetworkClientId,
+): Promise<{ gas: ReturnType<typeof hexToBN> }> {
   let estimation: { gas: string };
   try {
     const newTransactionObj = resetGas
       ? { ...transaction, gas: undefined, gasPrice: undefined }
       : transaction;
 
-    estimation = await estimateGas(newTransactionObj, networkClientId);
+    estimation = await estimateGas(
+      newTransactionObj,
+      networkClientId as NetworkClientId,
+    );
   } catch (error) {
     estimation = {
       gas: TransactionTypes.CUSTOM_GAS.DEFAULT_GAS_LIMIT,
@@ -159,7 +162,7 @@ export function getValueFromWeiHex({
     toCurrency,
     numberOfDecimals,
     fromDenomination: WEI,
-    toDenomination,
+    toDenomination: toDenomination as 'WEI' | 'GWEI' | 'ETH' | undefined,
     conversionRate,
   });
 }

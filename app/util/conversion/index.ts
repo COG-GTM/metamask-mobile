@@ -304,12 +304,17 @@ const conversionMax = (
   return firstIsGreater ? firstProps.value : secondProps.value;
 };
 
+interface ComparableBigNumber {
+  greaterThanOrEqualTo(n: BigNumber.Value): boolean;
+  lessThanOrEqualTo(n: BigNumber.Value): boolean;
+}
+
 const conversionGTE = (
   firstProps: ConverterInput,
   secondProps: ConverterInput,
 ): boolean => {
-  const firstValue = converter({ ...firstProps }) as BigNumber;
-  const secondValue = converter({ ...secondProps }) as BigNumber;
+  const firstValue = converter({ ...firstProps }) as unknown as ComparableBigNumber;
+  const secondValue = converter({ ...secondProps }) as BigNumber.Value;
   return firstValue.greaterThanOrEqualTo(secondValue);
 };
 
@@ -317,8 +322,8 @@ const conversionLTE = (
   firstProps: ConverterInput,
   secondProps: ConverterInput,
 ): boolean => {
-  const firstValue = converter({ ...firstProps }) as BigNumber;
-  const secondValue = converter({ ...secondProps }) as BigNumber;
+  const firstValue = converter({ ...firstProps }) as unknown as ComparableBigNumber;
+  const secondValue = converter({ ...secondProps }) as BigNumber.Value;
   return firstValue.lessThanOrEqualTo(secondValue);
 };
 

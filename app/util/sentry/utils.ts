@@ -2,7 +2,7 @@
 import * as Sentry from '@sentry/react-native';
 import type {
   Breadcrumb,
-  Event,
+  Event as SentryEvent,
   ErrorEvent,
   TransactionEvent,
   UserFeedback,
@@ -323,7 +323,7 @@ function rewriteBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb {
 }
 
 function rewriteErrorMessages(
-  report: Event,
+  report: SentryEvent,
   rewriteFn: (errorMessage: string) => string,
 ): void {
   // rewrite top level message
@@ -332,7 +332,7 @@ function rewriteErrorMessages(
     report.message = rewriteFn(report.message);
   }
   // rewrite each exception message
-  if (report.exception && report.exception.values) {
+  if (report.exception?.values) {
     report.exception.values.forEach((item) => {
       if (typeof item.value === 'string') {
         item.value = rewriteFn(item.value);
@@ -341,7 +341,7 @@ function rewriteErrorMessages(
   }
 }
 
-function simplifyErrorMessages(report: Event): void {
+function simplifyErrorMessages(report: SentryEvent): void {
   rewriteErrorMessages(report, (errorMessage) => {
     // simplify ethjs error messages
     let simplifiedErrorMessage = extractEthJsErrorMessage(errorMessage);
@@ -358,13 +358,13 @@ function simplifyErrorMessages(report: Event): void {
   });
 }
 
-function removeDeviceTimezone(report: Event): void {
-  if (report.contexts && report.contexts.device)
+function removeDeviceTimezone(report: SentryEvent): void {
+  if (report.contexts?.device)
     (report.contexts.device as Record<string, unknown>).timezone = null;
 }
 
-function removeDeviceName(report: Event): void {
-  if (report.contexts && report.contexts.device)
+function removeDeviceName(report: SentryEvent): void {
+  if (report.contexts?.device)
     (report.contexts.device as Record<string, unknown>).name = null;
 }
 
@@ -431,7 +431,7 @@ export function maskObject(
       const shouldIterateSubMask =
         Boolean(maskKey) &&
         typeof maskKey === 'object' &&
-        maskKey !== AllProperties;
+        (maskKey as unknown) !== AllProperties;
       const shouldPrintType = maskKey === undefined || maskKey === false;
 
       if (shouldPrintValue) {
@@ -483,7 +483,7 @@ function rewriteReport(report: ErrorEvent): ErrorEvent {
  * @param {*} event - to be logged
  * @returns {(event|null)}
  */
-export function excludeEvents(event: Event | null): Event | null {
+export function excludeEvents(event: SentryEvent | null): SentryEvent | null {
   // This is needed because store starts to initialise before performance observers completes to measure app start time
   if (event?.transaction === TraceName.UIStartup) {
     event.tags = getTraceTags(store.getState());
@@ -510,7 +510,7 @@ export function excludeEvents(event: Event | null): Event | null {
   return event;
 }
 
-function sanitizeUrlsFromErrorMessages(report: Event): void {
+function sanitizeUrlsFromErrorMessages(report: SentryEvent): void {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
 
@@ -523,7 +523,7 @@ function sanitizeUrlsFromErrorMessages(report: Event): void {
   });
 }
 
-function sanitizeAddressesFromErrorMessages(report: Event): void {
+function sanitizeAddressesFromErrorMessages(report: SentryEvent): void {
   rewriteErrorMessages(report, (errorMessage) => {
     const newErrorMessage = errorMessage.replace(
       regex.replaceNetworkErrorSentry,
@@ -539,12 +539,8 @@ function sanitizeAddressesFromErrorMessages(report: Event): void {
  * - https://github.com/MetaMask/metamask-extension/blob/34375a57e558853aab95fe35d5f278aa52b66636/app/scripts/lib/setupSentry.js#L91
  *
  * @param {boolean} isDev - Represents if the current environment is development (__DEV__ global variable).
- * @param {string} [metamaskEnvironment='local'] - The environment MetaMask is running in
- *                                                  (process.env.METAMASK_ENVIRONMENT).
- *                                                  It defaults to 'local' if not provided.
- * @param {string} [metamaskBuildType='main'] - The build type of MetaMask
- *                                              (process.env.METAMASK_BUILD_TYPE).
- *                                              It defaults to 'main' if not provided.
+ * @param {string} [metamaskEnvironment='local'] - The environment MetaMask is running in (process.env.METAMASK_ENVIRONMENT). It defaults to 'local' if not provided.
+ * @param {string} [metamaskBuildType='main'] - The build type of MetaMask (process.env.METAMASK_BUILD_TYPE). It defaults to 'main' if not provided.
  *
  * @returns {string} - "metamaskEnvironment-metamaskBuildType" or just "metamaskEnvironment" if the build type is "main".
  */

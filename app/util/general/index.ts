@@ -1,7 +1,7 @@
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 
-export const tlc = (str?: string | null): string | undefined =>
-  str?.toLowerCase?.();
+export const tlc = (str?: unknown): string | undefined =>
+  (str as string | undefined)?.toLowerCase?.();
 
 /**
  * Fetch that fails after timeout
@@ -39,7 +39,7 @@ export function findRouteNameFromNavigatorState(
   if (route?.state) {
     route = route.state;
   }
-  while (route !== undefined && route.index !== undefined) {
+  while (route?.index !== undefined) {
     route = route?.routes?.[route.index];
     if (route?.state) {
       route = route.state;
@@ -58,10 +58,7 @@ export function findRouteNameFromNavigatorState(
 export const capitalize = (str?: string | null): string | false =>
   (str && str.charAt(0).toUpperCase() + str.slice(1)) || false;
 
-export const toLowerCaseEquals = (
-  a?: string | null,
-  b?: string | null,
-): boolean => {
+export const toLowerCaseEquals = (a?: unknown, b?: unknown): boolean => {
   if (!a && !b) return false;
   return tlc(a) === tlc(b);
 };
@@ -110,7 +107,7 @@ export const renderShortText = (text: string, chars = 4): string => {
  */
 export const getURLProtocol = (url: string): string | undefined => {
   try {
-    const { protocol } = new URL(url);
+    const { protocol } = new URLParse(url);
     return protocol.replace(':', '');
   } catch {
     return;

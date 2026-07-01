@@ -108,7 +108,7 @@ export function createLoggerMiddleware(opts: OriginMiddlewareOptions) {
               error.message ?? '',
             );
           } else {
-            /**
+            /*
              * Example of a rpc error:
              * { "code":-32603,
              *   "message":"Internal JSON-RPC error.",
