@@ -2,8 +2,10 @@ import React from 'react';
 import TransactionReviewEIP1559 from '.';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
 import renderWithProvider, {
+  DeepPartial,
   renderHookWithProvider,
 } from '../../../../../../../util/test/renderWithProvider';
+import { RootState } from '../../../../../../../reducers';
 
 const initialState = {
   settings: {},
@@ -47,7 +49,7 @@ const initialState = {
       },
     },
   },
-};
+} as unknown as DeepPartial<RootState>;
 
 const transactionReview = {
   primaryCurrency: 'USD',

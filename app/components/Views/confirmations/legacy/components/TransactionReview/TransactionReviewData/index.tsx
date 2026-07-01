@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { Theme } from '@metamask/design-tokens';
+import { Dispatch } from 'redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import { fontStyles } from '../../../../../../../styles/common';
@@ -15,8 +16,36 @@ import {
   selectConversionRateByChainId,
   selectCurrentCurrency,
 } from '../../../../../../../selectors/currencyRateController';
+import { RootState } from '../../../../../../../reducers';
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ReviewAny = any;
+
+interface TransactionReviewDataProps {
+  /**
+   * Transaction object associated with this transaction
+   */
+  transaction: ReviewAny;
+  /**
+   * Transaction corresponding action key
+   */
+  actionKey?: string;
+  /**
+   * Hides or shows transaction data
+   */
+  toggleDataView?: () => void;
+  /**
+   * Height of custom gas and data modal
+   */
+  customGasHeight?: number;
+  /**
+   * Triggers global alert
+   */
+  showAlert: (config: ReviewAny) => void;
+}
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     root: {
       paddingHorizontal: 24,
@@ -78,30 +107,7 @@ const createStyles = (colors) =>
 /**
  * PureComponent that supports reviewing transaction data
  */
-class TransactionReviewData extends PureComponent {
-  static propTypes = {
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Transaction corresponding action key
-     */
-    actionKey: PropTypes.string,
-    /**
-     * Hides or shows transaction data
-     */
-    toggleDataView: PropTypes.func,
-    /**
-     * Height of custom gas and data modal
-     */
-    customGasHeight: PropTypes.number,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-  };
-
+class TransactionReviewData extends PureComponent<TransactionReviewDataProps> {
   applyRootHeight = () => ({ height: this.props.customGasHeight });
 
   handleCopyHex = () => {
@@ -127,7 +133,8 @@ class TransactionReviewData extends PureComponent {
       actionKey,
       toggleDataView,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -182,14 +189,14 @@ class TransactionReviewData extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   conversionRate: selectConversionRateByChainId(state, state.transaction.chainId),
   currentCurrency: selectCurrentCurrency(state),
   transaction: state.transaction,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  showAlert: (config: ReviewAny) => dispatch(showAlert(config)),
 });
 
 TransactionReviewData.contextType = ThemeContext;
