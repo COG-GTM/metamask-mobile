@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
+import { Theme } from '@metamask/design-tokens';
+import { Dispatch } from 'redux';
 import Eth from '@metamask/ethjs-query';
 import {
   View,
@@ -7,13 +8,22 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Linking,
+  ScrollViewProps,
 } from 'react-native';
 import { connect, useSelector } from 'react-redux';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import BigNumber from 'bignumber.js';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { swapsUtils } from '@metamask/swaps-controller';
+import {
+  useNavigation,
+  useRoute,
+  NavigationProp,
+  ParamListBase,
+} from '@react-navigation/native';
+import {
+  swapsUtils,
+  type SwapsControllerState,
+} from '@metamask/swaps-controller';
 import {
   WalletDevice,
   TransactionStatus,
@@ -44,6 +54,7 @@ import {
   getFetchParams,
   getQuotesNavigationsParams,
   isSwapsNativeAsset,
+  SwapsViewToken,
 } from './utils';
 import { strings } from '../../../../locales/i18n';
 
@@ -52,7 +63,7 @@ import AppConstants from '../../../core/AppConstants';
 import Device from '../../../util/device';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { getSwapsQuotesNavbar } from '../Navbar';
-import ScreenView from '../../Base/ScreenView';
+import ScreenViewBase from '../../Base/ScreenView';
 import Text from '../../Base/Text';
 import Alert, { AlertType } from '../../Base/Alert';
 import StyledButton from '../StyledButton';
@@ -85,7 +96,7 @@ import {
   selectSwapsUsedGasEstimate,
   swapsTokensSelector,
 } from '../../../reducers/swaps';
-import { decGWEIToHexWEI, hexToDecimal } from '../../../util/conversions';
+import { decGWEIToHexWEI } from '../../../util/conversions';
 import FadeAnimationView from '../FadeAnimationView';
 import Logger from '../../../util/Logger';
 import { useTheme } from '../../../util/theme';
@@ -106,7 +117,10 @@ import {
 import { selectAccounts } from '../../../selectors/accountTrackerController';
 import { selectContractBalances } from '../../../selectors/tokenBalancesController';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
-import { resetTransaction, setRecipient } from '../../../actions/transaction';
+import {
+  resetTransaction as resetTransactionAction,
+  setRecipient as setRecipientAction,
+} from '../../../actions/transaction';
 import { createBuyNavigationDetails } from '../Ramp/routes/utils';
 import { SwapsViewSelectors } from '../../../../e2e/selectors/swaps/SwapsView.selectors';
 import { useMetrics } from '../../../components/hooks/useMetrics';
@@ -127,9 +141,45 @@ import { useSwapsSmartTransaction } from './utils/useSwapsSmartTransaction';
 import Routes from '../../../constants/navigation/Routes';
 import { ApprovalTypes } from '../../../core/RPCMethods/RPCMethodMiddleware';
 import { SmartTransactionStatuses } from '@metamask/smart-transactions-controller/dist/types';
-import { getTradeTxTokenFee } from '../../../util/smart-transactions';
+import {
+  getTradeTxTokenFee,
+  type GasIncludedQuote,
+} from '../../../util/smart-transactions';
 import { useFiatConversionRates } from './utils/useFiatConversionRates';
 import { useGasTokenFiatAmount } from './utils/useGasTokenFiatAmount';
+import { RootState } from '../../../reducers';
+import type { Quote } from '@metamask/swaps-controller/dist/types';
+
+interface QuotePriceSlippage {
+  bucket?: string;
+  calculationError?: string;
+  ratio?: string | number;
+  sourceAmountInETH?: string;
+  destinationAmountInETH?: string;
+}
+
+type SwapQuote = Quote &
+  Partial<GasIncludedQuote> & {
+    priceSlippage?: QuotePriceSlippage;
+    gasMultiplier?: number;
+  };
+
+type CustomGasEstimate = NonNullable<
+  SwapsControllerState['usedGasEstimate']
+> & {
+  selected?: string;
+  estimatedBaseFee?: string;
+  gasPrice?: string;
+};
+
+type ResolvedSwapsToken = SwapsViewToken & {
+  symbol: string;
+  decimals: number;
+};
+
+const ScreenView = ScreenViewBase as React.ComponentType<
+  ScrollViewProps & { children?: React.ReactNode }
+>;
 
 const LOG_PREFIX = 'Swaps';
 const POLLING_INTERVAL = 30000;
@@ -138,7 +188,7 @@ const SLIPPAGE_BUCKETS = {
   HIGH: AppConstants.GAS_OPTIONS.HIGH,
 };
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     screen: {
       flexGrow: 1,
@@ -314,6 +364,16 @@ const createStyles = (colors) =>
     },
   });
 
+interface ResetAndStartPollingOptions {
+  slippage: string | number;
+  sourceToken?: SwapsViewToken;
+  destinationToken?: SwapsViewToken;
+  sourceAmount?: string;
+  walletAddress?: string;
+  networkClientId: string;
+  enableGasIncludedQuotes: boolean;
+}
+
 async function resetAndStartPolling({
   slippage,
   sourceToken,
@@ -322,7 +382,7 @@ async function resetAndStartPolling({
   walletAddress,
   networkClientId,
   enableGasIncludedQuotes,
-}) {
+}: ResetAndStartPollingOptions) {
   if (!sourceToken || !destinationToken) {
     return;
   }
@@ -332,15 +392,19 @@ async function resetAndStartPolling({
     slippage,
     sourceToken,
     destinationToken,
-    sourceAmount,
-    walletAddress,
+    sourceAmount: sourceAmount as string,
+    walletAddress: walletAddress as string,
     networkClientId,
     enableGasIncludedQuotes,
   });
   await SwapsController.stopPollingAndResetState();
   await SwapsController.startFetchAndSetQuotes(
-    fetchParams,
-    fetchParams.metaData,
+    fetchParams as unknown as Parameters<
+      typeof SwapsController.startFetchAndSetQuotes
+    >[0],
+    fetchParams.metaData as unknown as Parameters<
+      typeof SwapsController.startFetchAndSetQuotes
+    >[1],
   );
 }
 
@@ -349,12 +413,19 @@ async function resetAndStartPolling({
  * @param {string} gasLimit
  * @param {number} multiplier
  */
-const gasLimitWithMultiplier = (gasLimit, multiplier) => {
+const gasLimitWithMultiplier = (
+  gasLimit?: string | number,
+  multiplier?: number,
+) => {
   if (!gasLimit || !multiplier) return;
   return new BigNumber(gasLimit).times(multiplier).integerValue();
 };
 
-async function addTokenToAssetsController(newToken, chainId, networkClientId) {
+async function addTokenToAssetsController(
+  newToken: SwapsViewToken,
+  chainId: `0x${string}`,
+  networkClientId: string,
+) {
   const { TokensController } = Engine.context;
 
   const allTokens = TokensController.state.allTokens?.[chainId]
@@ -362,26 +433,70 @@ async function addTokenToAssetsController(newToken, chainId, networkClientId) {
     : [];
   if (
     !isSwapsNativeAsset(newToken) &&
-    !allTokens.includes((token) =>
-      toLowerCaseEquals(token.address, newToken.address),
+    !allTokens.includes(
+      ((token: (typeof allTokens)[number]) =>
+        toLowerCaseEquals(
+          token.address,
+          newToken.address,
+        )) as unknown as (typeof allTokens)[number],
     )
   ) {
     const { address, symbol, decimals, name } = newToken;
     await TokensController.addToken({
       address,
-      symbol,
-      decimals,
+      symbol: symbol as string,
+      decimals: decimals as number,
       name,
       networkClientId,
     });
   }
 }
 
+interface QuotesViewStateProps {
+  swapsTokens: SwapsViewToken[];
+  accounts: ReturnType<typeof selectAccounts>;
+  balances: ReturnType<typeof selectContractBalances>;
+  selectedAddress: ReturnType<
+    typeof selectSelectedInternalAccountFormattedAddress
+  >;
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
+  conversionRate: ReturnType<typeof selectConversionRate>;
+  chainId: ReturnType<typeof selectEvmChainId>;
+  networkClientId: ReturnType<typeof selectSelectedNetworkClientId>;
+  ticker: ReturnType<typeof selectEvmTicker>;
+  primaryCurrency: string;
+  isInPolling: SwapsControllerState['isInPolling'];
+  quotesLastFetched: SwapsControllerState['quotesLastFetched'];
+  pollingCyclesLeft: SwapsControllerState['pollingCyclesLeft'];
+  topAggId: SwapsControllerState['topAggId'];
+  aggregatorMetadata: SwapsControllerState['aggregatorMetadata'];
+  quotes: { [key: string]: SwapQuote };
+  quoteValues: SwapsControllerState['quoteValues'];
+  approvalTransaction: SwapsControllerState['approvalTransaction'];
+  error: SwapsControllerState['error'];
+  quoteRefreshSeconds: SwapsControllerState['quoteRefreshSeconds'];
+  gasEstimateType: ReturnType<typeof selectGasFeeControllerEstimateType>;
+  gasFeeEstimates: ReturnType<typeof selectGasFeeEstimates>;
+  usedGasEstimate: SwapsControllerState['usedGasEstimate'];
+  usedCustomGas: SwapsControllerState['usedCustomGas'];
+  shouldUseSmartTransaction: ReturnType<
+    typeof selectShouldUseSmartTransaction
+  >;
+  isEIP1559Network: ReturnType<typeof selectIsEIP1559Network>;
+}
+
+interface QuotesViewDispatchProps {
+  setRecipient: (from: string) => void;
+  resetTransaction: () => void;
+}
+
+type QuotesViewProps = QuotesViewStateProps & QuotesViewDispatchProps;
+
 function SwapsQuotesView({
   swapsTokens,
   accounts,
   balances,
-  selectedAddress,
+  selectedAddress: selectedAddressProp,
   currentCurrency,
   conversionRate,
   chainId,
@@ -406,10 +521,12 @@ function SwapsQuotesView({
   resetTransaction,
   shouldUseSmartTransaction,
   isEIP1559Network,
-}) {
-  const navigation = useNavigation();
+}: QuotesViewProps) {
+  const navigation =
+    useNavigation<NavigationProp<ParamListBase> & { pop: () => void }>();
   /* Get params from navigation */
   const route = useRoute();
+  const selectedAddress = selectedAddressProp as string;
   const { trackEvent, createEventBuilder } = useMetrics();
 
   const { colors } = useTheme();
@@ -418,18 +535,19 @@ function SwapsQuotesView({
   const {
     sourceTokenAddress,
     destinationTokenAddress,
-    sourceAmount,
+    sourceAmount: sourceAmountParam,
     slippage,
     tokens,
   } = useMemo(() => getQuotesNavigationsParams(route), [route]);
+  const sourceAmount = sourceAmountParam as string;
 
   /* Get tokens from the tokens list */
-  const sourceToken = [...swapsTokens, ...tokens].find((token) =>
+  const sourceToken = [...swapsTokens, ...(tokens ?? [])].find((token) =>
     toLowerCaseEquals(token.address, sourceTokenAddress),
-  );
-  const destinationToken = [...swapsTokens, ...tokens].find((token) =>
+  ) as ResolvedSwapsToken;
+  const destinationToken = [...swapsTokens, ...(tokens ?? [])].find((token) =>
     toLowerCaseEquals(token.address, destinationTokenAddress),
-  );
+  ) as ResolvedSwapsToken;
 
   /* State */
   const isMainnet = isMainnetByChainId(chainId);
@@ -439,7 +557,9 @@ function SwapsQuotesView({
   const [shouldFinishFirstLoad, setShouldFinishFirstLoad] = useState(false);
   const [remainingTime, setRemainingTime] = useState(POLLING_INTERVAL);
 
-  const [allQuotesFetchTime, setAllQuotesFetchTime] = useState(null);
+  const [allQuotesFetchTime, setAllQuotesFetchTime] = useState<number | null>(
+    null,
+  );
   const [trackedRequestedQuotes, setTrackedRequestedQuotes] = useState(false);
   const [trackedReceivedQuotes, setTrackedReceivedQuotes] = useState(false);
   const [trackedError, setTrackedError] = useState(false);
@@ -447,20 +567,22 @@ function SwapsQuotesView({
   const [isAnimating, setIsAnimating] = useState(false);
   const [isHandlingSwap, setIsHandlingSwap] = useState(false);
   const [multiLayerL1ApprovalFeeTotal, setMultiLayerL1ApprovalFeeTotal] =
-    useState(null);
+    useState<string | null>(null);
 
   /* Selected quote, initially topAggId (see effects) */
-  const [selectedQuoteId, setSelectedQuoteId] = useState(null);
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
 
   /* Slippage alert dismissed, values: false, 'high', medium, 'low' */
-  const [hasDismissedSlippageAlert, setHasDismissedSlippageAlert] =
-    useState(false);
+  const [hasDismissedSlippageAlert, setHasDismissedSlippageAlert] = useState<
+    string | boolean
+  >(false);
 
   const [editQuoteTransactionsVisible, setEditQuoteTransactionsVisible] =
     useState(false);
 
-  const [customGasEstimate, setCustomGasEstimate] = useState(null);
-  const [customGasLimit, setCustomGasLimit] = useState(null);
+  const [customGasEstimate, setCustomGasEstimate] =
+    useState<CustomGasEstimate | null>(null);
+  const [customGasLimit, setCustomGasLimit] = useState<string | null>(null);
 
   // TODO: use this variable in the future when calculating savings
   const [isSaving] = useState(false);
@@ -517,11 +639,14 @@ function SwapsQuotesView({
 
   /* Get the selected quote, by default is topAggId */
   const selectedQuote = useMemo(
-    () => allQuotes.find((quote) => quote?.aggregator === selectedQuoteId),
+    () =>
+      allQuotes.find(
+        (quote) => quote?.aggregator === selectedQuoteId,
+      ) as SwapQuote,
     [allQuotes, selectedQuoteId],
   );
   const tradeTxTokenFee = useMemo(
-    () => getTradeTxTokenFee(selectedQuote),
+    () => getTradeTxTokenFee(selectedQuote as unknown as GasIncludedQuote),
     [selectedQuote],
   );
   const isGasIncludedTrade = useMemo(
@@ -533,30 +658,28 @@ function SwapsQuotesView({
     [isGasIncludedTrade, tradeTxTokenFee],
   );
   const selectedQuoteValue = useMemo(() => {
-    if (!quoteValues[selectedQuoteId] || !multiLayerL1ApprovalFeeTotal) {
-      return quoteValues[selectedQuoteId];
+    if (!quoteValues || selectedQuoteId === null) {
+      return undefined;
+    }
+    const quoteValue = quoteValues[selectedQuoteId];
+    if (!quoteValue || !multiLayerL1ApprovalFeeTotal) {
+      return quoteValue;
     }
     const fees = {
       ethFee: calculateEthFeeForMultiLayer({
         multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
-        ethFee: quoteValues[selectedQuoteId].ethFee,
+        ethFee: quoteValue.ethFee as unknown as number,
       }),
       maxEthFee: calculateEthFeeForMultiLayer({
         multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
-        ethFee: quoteValues[selectedQuoteId].maxEthFee,
+        ethFee: quoteValue.maxEthFee as unknown as number,
       }),
     };
     return {
-      ...quoteValues[selectedQuoteId],
+      ...quoteValue,
       ...fees,
     };
-  }, [
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    quoteValues[selectedQuoteId],
-    multiLayerL1ApprovalFeeTotal,
-    quoteValues,
-    selectedQuoteId,
-  ]);
+  }, [multiLayerL1ApprovalFeeTotal, quoteValues, selectedQuoteId]);
 
   const gasEstimates = useMemo(
     () => customGasEstimate || usedGasEstimate,
@@ -565,7 +688,10 @@ function SwapsQuotesView({
 
   const { submitSwapsSmartTransaction } = useSwapsSmartTransaction({
     quote: selectedQuote,
-    gasEstimates,
+    gasEstimates: gasEstimates as unknown as {
+      gasPrice: string;
+      medium: string;
+    },
   });
 
   const initialGasLimit = useMemo(() => {
@@ -575,7 +701,7 @@ function SwapsQuotesView({
     return (
       selectedQuoteValue?.tradeMaxGasLimit ||
       gasLimitWithMultiplier(
-        selectedQuote?.gasEstimate,
+        selectedQuote?.gasEstimate ?? undefined,
         selectedQuote?.gasMultiplier,
       )?.toString(10) ||
       selectedQuote?.maxGas?.toString(10)
@@ -587,12 +713,14 @@ function SwapsQuotesView({
   );
   /* Balance */
   const checkEnoughEthBalance = useCallback(
-    (gasAmountHex) => {
+    (gasAmountHex: string) => {
       const gasBN = new BigNumber(gasAmountHex || '0', 16);
       const ethAmountBN = isSwapsNativeAsset(sourceToken)
-        ? new BigNumber(sourceAmount)
+        ? new BigNumber(sourceAmount as string)
         : new BigNumber(0);
-      const ethBalanceBN = new BigNumber(accounts[selectedAddress].balance);
+      const ethBalanceBN = new BigNumber(
+        accounts[selectedAddress as string].balance,
+      );
       const hasEnoughEthBalance =
         isGasIncludedTrade && tradeTxTokenFee
           ? true
@@ -609,9 +737,15 @@ function SwapsQuotesView({
     ],
   );
 
-  const balance = useBalance(accounts, balances, selectedAddress, sourceToken, {
-    asUnits: true,
-  });
+  const balance = useBalance(
+    accounts,
+    balances,
+    selectedAddress as string,
+    sourceToken,
+    {
+      asUnits: true,
+    },
+  );
   const [
     hasEnoughTokenBalance,
     missingTokenBalance,
@@ -619,30 +753,34 @@ function SwapsQuotesView({
     missingEthBalance,
   ] = useMemo(() => {
     // Token
-    const sourceBN = new BigNumber(sourceAmount);
-    const tokenBalanceBN = new BigNumber(balance.toString(10));
-    const hasEnoughTokenBalance = tokenBalanceBN.gte(sourceBN);
-    const missingTokenBalance = hasEnoughTokenBalance
+    const sourceBN = new BigNumber(sourceAmount as string);
+    const tokenBalanceBN = new BigNumber(balance?.toString() ?? '0');
+    const enoughTokenBalance = tokenBalanceBN.gte(sourceBN);
+    const missingTokenBalanceValue = enoughTokenBalance
       ? null
       : sourceBN.minus(tokenBalanceBN);
 
     const ethAmountBN = isSwapsNativeAsset(sourceToken)
       ? sourceBN
       : new BigNumber(0);
-    const ethBalanceBN = new BigNumber(accounts[selectedAddress].balance);
-    const gasBN = toWei(selectedQuoteValue?.maxEthFee || '0');
-    const hasEnoughEthBalance = canUseGasIncludedSwap
+    const ethBalanceBN = new BigNumber(
+      accounts[selectedAddress as string].balance,
+    );
+    const gasBN = toWei(
+      selectedQuoteValue?.maxEthFee || '0',
+    ) as unknown as BigNumber.Value;
+    const enoughEthBalance = canUseGasIncludedSwap
       ? true
       : ethBalanceBN.gte(ethAmountBN.plus(gasBN));
-    const missingEthBalance = hasEnoughEthBalance
+    const missingEthBalanceValue = enoughEthBalance
       ? null
       : ethAmountBN.plus(gasBN).minus(ethBalanceBN);
 
     return [
-      hasEnoughTokenBalance,
-      missingTokenBalance,
-      hasEnoughEthBalance,
-      missingEthBalance,
+      enoughTokenBalance,
+      missingTokenBalanceValue,
+      enoughEthBalance,
+      missingEthBalanceValue,
     ];
   }, [
     accounts,
@@ -658,10 +796,10 @@ function SwapsQuotesView({
   const shouldDisplaySlippage = useMemo(
     () =>
       (selectedQuote &&
-        [SLIPPAGE_BUCKETS.MEDIUM, SLIPPAGE_BUCKETS.HIGH].includes(
-          selectedQuote?.priceSlippage?.bucket,
+        ([SLIPPAGE_BUCKETS.MEDIUM, SLIPPAGE_BUCKETS.HIGH] as string[]).includes(
+          selectedQuote?.priceSlippage?.bucket as string,
         )) ||
-      selectedQuote?.priceSlippage?.calculationError?.length > 0,
+      (selectedQuote?.priceSlippage?.calculationError?.length ?? 0) > 0,
     [selectedQuote],
   );
 
@@ -672,7 +810,6 @@ function SwapsQuotesView({
           .minus(1, 10)
           .times(100, 10)
           .toFixed(2),
-        10,
       ),
     [selectedQuote],
   );
@@ -744,10 +881,14 @@ function SwapsQuotesView({
   ] = useModalHandler(false);
 
   const handleGasFeeUpdate = useCallback(
-    (changedGasEstimate, changedGasLimit) => {
+    (changedGasEstimate: CustomGasEstimate, changedGasLimit: string) => {
       const { SwapsController } = Engine.context;
       setCustomGasEstimate(changedGasEstimate);
-      SwapsController.updateQuotesWithGasPrice(changedGasEstimate);
+      SwapsController.updateQuotesWithGasPrice(
+        changedGasEstimate as unknown as Parameters<
+          typeof SwapsController.updateQuotesWithGasPrice
+        >[0],
+      );
       if (changedGasLimit && changedGasLimit !== gasLimit) {
         setCustomGasLimit(changedGasLimit);
         SwapsController.updateSelectedQuoteWithGasLimit(
@@ -759,19 +900,21 @@ function SwapsQuotesView({
         speed_set: changedGasEstimate?.selected,
         gas_mode: changedGasEstimate?.selected ? 'Basic' : 'Advanced',
         // TODO: how should we track EIP1559 values?
-        gas_fees: [
-          GAS_ESTIMATE_TYPES.LEGACY,
-          GAS_ESTIMATE_TYPES.ETH_GASPRICE,
-        ].includes(gasEstimateType)
+        gas_fees: (
+          [
+            GAS_ESTIMATE_TYPES.LEGACY,
+            GAS_ESTIMATE_TYPES.ETH_GASPRICE,
+          ] as string[]
+        ).includes(gasEstimateType)
           ? weiToFiat(
               toWei(
                 swapsUtils.calcTokenAmount(
                   new BigNumber(changedGasLimit, 10).times(
-                    decGWEIToHexWEI(changedGasEstimate.gasPrice),
+                    decGWEIToHexWEI(changedGasEstimate.gasPrice as string),
                     16,
                   ),
                   18,
-                ),
+                ) as unknown as string,
               ),
               conversionRate,
               currentCurrency,
@@ -841,7 +984,10 @@ function SwapsQuotesView({
   ]);
 
   const updateSwapsTransactions = useCallback(
-    async (transactionMetaId, approvalTransactionMetaId) => {
+    async (
+      transactionMetaId: string,
+      approvalTransactionMetaId?: string,
+    ) => {
       const ethQuery = getGlobalEthQuery();
       const blockNumber = await query(ethQuery, 'blockNumber', []);
       const currentBlock = await query(ethQuery, 'getBlockByNumber', [
@@ -862,7 +1008,7 @@ function SwapsQuotesView({
         sourceAmount,
         destinationAmount: selectedQuote.destinationAmount,
         sourceAmountInFiat: weiToFiat(
-          toWei(selectedQuote.priceSlippage?.sourceAmountInETH),
+          toWei(selectedQuote.priceSlippage?.sourceAmountInETH as string),
           conversionRate,
           currentCurrency,
         ),
@@ -874,7 +1020,7 @@ function SwapsQuotesView({
           ),
           token_to: destinationToken.symbol,
           token_to_amount: fromTokenMinimalUnitString(
-            selectedQuote.destinationAmount,
+            selectedQuote.destinationAmount as unknown as string,
             destinationToken.decimals,
           ),
           request_type: hasEnoughTokenBalance ? 'Order' : 'Quote',
@@ -882,12 +1028,12 @@ function SwapsQuotesView({
           best_quote_source: selectedQuote.aggregator,
           available_quotes: allQuotes.length,
           network_fees_USD: weiToFiat(
-            toWei(selectedQuoteValue?.ethFee),
+            toWei(selectedQuoteValue?.ethFee as string),
             conversionRate,
             currentCurrency,
           ),
-          network_fees_ETH: renderFromWei(toWei(selectedQuoteValue?.ethFee)),
-          other_quote_selected: allQuotes[selectedQuoteId] === selectedQuote,
+          network_fees_ETH: renderFromWei(toWei(selectedQuoteValue?.ethFee as string)),
+          other_quote_selected: allQuotes[selectedQuoteId as unknown as number] === selectedQuote,
           chain_id: getDecimalChainId(chainId),
           is_smart_transaction: shouldUseSmartTransaction,
           gas_included: canUseGasIncludedSwap,
@@ -921,23 +1067,24 @@ function SwapsQuotesView({
   );
 
   const startSwapAnalytics = useCallback(
-    (selectedQuote, selectedAddress) => {
+    (quote: SwapQuote, address: string) => {
       const parameters = {
-        account_type: getAddressAccountType(selectedAddress),
+        account_type: getAddressAccountType(address),
         token_from: sourceToken.symbol,
         token_to: destinationToken.symbol,
         request_type: hasEnoughTokenBalance ? 'Order' : 'Quote',
         slippage,
         custom_slippage: slippage !== AppConstants.SWAPS.DEFAULT_SLIPPAGE,
-        best_quote_source: selectedQuote.aggregator,
+        best_quote_source: quote.aggregator,
         available_quotes: allQuotes.length,
-        other_quote_selected: allQuotes[selectedQuoteId] === selectedQuote,
+        other_quote_selected:
+          allQuotes[selectedQuoteId as unknown as number] === quote,
         network_fees_USD: weiToFiat(
-          toWei(selectedQuoteValue?.ethFee),
+          toWei(selectedQuoteValue?.ethFee as string),
           conversionRate,
           'usd',
         ),
-        network_fees_ETH: renderFromWei(toWei(selectedQuoteValue?.ethFee)),
+        network_fees_ETH: renderFromWei(toWei(selectedQuoteValue?.ethFee as string)),
         chain_id: getDecimalChainId(chainId),
         is_smart_transaction: shouldUseSmartTransaction,
         gas_included: canUseGasIncludedSwap,
@@ -948,7 +1095,7 @@ function SwapsQuotesView({
           sourceToken.decimals,
         ),
         token_to_amount: fromTokenMinimalUnitString(
-          selectedQuote.destinationAmount,
+          quote.destinationAmount as unknown as string,
           destinationToken.decimals,
         ),
       };
@@ -975,7 +1122,7 @@ function SwapsQuotesView({
   );
 
   const handleSwapTransaction = useCallback(
-    async (approvalTransactionMetaId) => {
+    async (approvalTransactionMetaId?: string) => {
       if (!selectedQuote) {
         return;
       }
@@ -985,8 +1132,12 @@ function SwapsQuotesView({
         const tradeTransaction = selectedQuote.trade;
 
         const tradeGasFeeEstimates = await getGasFeeEstimatesForTransaction(
-          tradeTransaction,
-          gasEstimates,
+          tradeTransaction as unknown as Parameters<
+            typeof getGasFeeEstimatesForTransaction
+          >[0],
+          gasEstimates as unknown as Parameters<
+            typeof getGasFeeEstimatesForTransaction
+          >[1],
           { chainId, isEIP1559Network },
         );
 
@@ -994,7 +1145,7 @@ function SwapsQuotesView({
           {
             ...tradeTransaction,
             ...tradeGasFeeEstimates,
-          },
+          } as unknown as Parameters<typeof addTransaction>[0],
           {
             deviceConfirmedOn: WalletDevice.MM_MOBILE,
             networkClientId,
@@ -1042,13 +1193,21 @@ function SwapsQuotesView({
   );
 
   const handleApprovalTransaction = useCallback(
-    async (isHardwareAddress) => {
+    async (isHardwareAddress: boolean) => {
       try {
         resetTransaction();
 
+        if (!approvalTransaction) {
+          return undefined;
+        }
+
         const approvalGasFeeEstimates = await getGasFeeEstimatesForTransaction(
-          approvalTransaction,
-          gasEstimates,
+          approvalTransaction as unknown as Parameters<
+            typeof getGasFeeEstimatesForTransaction
+          >[0],
+          gasEstimates as unknown as Parameters<
+            typeof getGasFeeEstimatesForTransaction
+          >[1],
           { chainId, isEIP1559Network },
         );
 
@@ -1056,7 +1215,7 @@ function SwapsQuotesView({
           {
             ...approvalTransaction,
             ...approvalGasFeeEstimates,
-          },
+          } as unknown as Parameters<typeof addTransaction>[0],
           {
             deviceConfirmedOn: WalletDevice.MM_MOBILE,
             networkClientId,
@@ -1080,11 +1239,13 @@ function SwapsQuotesView({
 
         // TODO: remove this when linea swaps issue is resolved with better transaction awaiting
         if (
-          [
-            CHAIN_IDS.LINEA_MAINNET,
-            CHAIN_IDS.LINEA_GOERLI,
-            CHAIN_IDS.LINEA_SEPOLIA,
-          ].includes(chainId)
+          (
+            [
+              CHAIN_IDS.LINEA_MAINNET,
+              CHAIN_IDS.LINEA_GOERLI,
+              CHAIN_IDS.LINEA_SEPOLIA,
+            ] as string[]
+          ).includes(chainId)
         ) {
           Logger.log(
             'Delaying submitting trade tx to make Linea confirmation more likely',
@@ -1107,7 +1268,7 @@ function SwapsQuotesView({
           },
           destinationToken: { swaps: 'swaps' },
           upTo: new BigNumber(
-            decodeApproveData(approvalTransaction.data).encodedAmount,
+            decodeApproveData(approvalTransaction.data as string).encodedAmount,
             16,
           ).toString(10),
         });
@@ -1117,12 +1278,12 @@ function SwapsQuotesView({
 
           Engine.controllerMessenger.subscribeOnceIf(
             'TransactionController:transactionConfirmed',
-            (transactionMeta) => {
-              if (transactionMeta.status === TransactionStatus.confirmed) {
+            (confirmedTx) => {
+              if (confirmedTx.status === TransactionStatus.confirmed) {
                 handleSwapTransaction(approvalTransactionMetaId);
               }
             },
-            (transactionMeta) => transactionMeta.id === transactionId,
+            (confirmedTx) => confirmedTx.id === transactionId,
           );
         }
 
@@ -1154,11 +1315,11 @@ function SwapsQuotesView({
       return;
     }
 
-    const isHardwareAddress = isHardwareAccount(selectedAddress);
+    const isHardwareAddress = Boolean(isHardwareAccount(selectedAddress));
 
     startSwapAnalytics(selectedQuote, selectedAddress);
 
-    let approvalTransactionMetaId;
+    let approvalTransactionMetaId: string | undefined;
 
     if (shouldUseSmartTransaction) {
       try {
@@ -1177,19 +1338,20 @@ function SwapsQuotesView({
             },
             destinationToken: { swaps: 'swaps' },
             upTo: new BigNumber(
-              decodeApproveData(approvalTransaction.data).encodedAmount,
+              decodeApproveData(approvalTransaction?.data as string)
+                .encodedAmount,
               16,
             ).toString(10),
           });
         }
 
         // Trade tx info
-        updateSwapsTransactions(tradeTxUuid, approvalTxUuid);
+        updateSwapsTransactions(tradeTxUuid as string, approvalTxUuid);
 
         // Route to TransactionsView and show Swaps STX modal
         navigation.navigate(Routes.TRANSACTIONS_VIEW);
         Engine.context.ApprovalController.addAndShowApprovalRequest({
-          id: tradeTxUuid, // Doesn't really matter what this is, as long as it's unique, we will just read it from latest STX in SmartTransactionStatus
+          id: tradeTxUuid as string, // Doesn't really matter what this is, as long as it's unique, we will just read it from latest STX in SmartTransactionStatus
           origin: ORIGIN_METAMASK,
           type: ApprovalTypes.SMART_TRANSACTION_STATUS,
           // requestState gets passed to app/components/Views/confirmations/components/Approval/TemplateConfirmation/Templates/SmartTransactionStatus.ts
@@ -1201,7 +1363,9 @@ function SwapsQuotesView({
               uuid: tradeTxUuid,
             },
             isInSwapFlow: true,
-          },
+          } as unknown as Parameters<
+            typeof Engine.context.ApprovalController.addAndShowApprovalRequest
+          >[0]['requestState'],
         });
       } catch (e) {
         Logger.log(LOG_PREFIX, 'Failed to submit smart transaction', e);
@@ -1215,7 +1379,7 @@ function SwapsQuotesView({
 
         if (isHardwareAddress) {
           setIsHandlingSwap(false);
-          navigation.dangerouslyGetParent()?.pop();
+          (navigation.dangerouslyGetParent() as ({ pop: () => void } | undefined))?.pop();
           return;
         }
       }
@@ -1223,7 +1387,7 @@ function SwapsQuotesView({
       await handleSwapTransaction(approvalTransactionMetaId);
 
       setIsHandlingSwap(false);
-      navigation.dangerouslyGetParent()?.pop();
+      (navigation.dangerouslyGetParent() as ({ pop: () => void } | undefined))?.pop();
     }
   }, [
     selectedQuote,
@@ -1273,9 +1437,9 @@ function SwapsQuotesView({
       custom_slippage: slippage !== AppConstants.SWAPS.DEFAULT_SLIPPAGE,
       available_quotes: allQuotes.length,
       best_quote_source: selectedQuote.aggregator,
-      other_quote_selected: allQuotes[selectedQuoteId] === selectedQuote,
+      other_quote_selected: allQuotes[selectedQuoteId as unknown as number] === selectedQuote,
       gas_fees: weiToFiat(
-        toWei(selectedQuoteValue?.ethFee),
+        toWei(selectedQuoteValue?.ethFee as string),
         conversionRate,
         currentCurrency,
       ),
@@ -1291,7 +1455,7 @@ function SwapsQuotesView({
         sourceToken.decimals,
       ),
       token_to_amount: fromTokenMinimalUnitString(
-        selectedQuote.destinationAmount,
+        selectedQuote.destinationAmount as unknown as string,
         destinationToken.decimals,
       ),
     };
@@ -1333,11 +1497,11 @@ function SwapsQuotesView({
       response_time: allQuotesFetchTime,
       best_quote_source: selectedQuote.aggregator,
       network_fees_USD: weiToFiat(
-        toWei(selectedQuoteValue.ethFee),
+        toWei(selectedQuoteValue.ethFee as string),
         conversionRate,
         'usd',
       ),
-      network_fees_ETH: renderFromWei(toWei(selectedQuoteValue.ethFee)),
+      network_fees_ETH: renderFromWei(toWei(selectedQuoteValue.ethFee as string)),
       available_quotes: allQuotes.length,
       chain_id: getDecimalChainId(chainId),
     };
@@ -1347,7 +1511,7 @@ function SwapsQuotesView({
         sourceToken.decimals,
       ),
       token_to_amount: fromTokenMinimalUnitString(
-        selectedQuote.destinationAmount,
+        selectedQuote.destinationAmount as unknown as string,
         destinationToken.decimals,
       ),
     };
@@ -1385,11 +1549,11 @@ function SwapsQuotesView({
       response_time: allQuotesFetchTime,
       best_quote_source: selectedQuote.aggregator,
       network_fees_USD: weiToFiat(
-        toWei(selectedQuoteValue.ethFee),
+        toWei(selectedQuoteValue.ethFee as string),
         conversionRate,
         'usd',
       ),
-      network_fees_ETH: renderFromWei(toWei(selectedQuoteValue.ethFee)),
+      network_fees_ETH: renderFromWei(toWei(selectedQuoteValue.ethFee as string)),
       available_quotes: allQuotes.length,
       chain_id: getDecimalChainId(chainId),
     };
@@ -1399,7 +1563,7 @@ function SwapsQuotesView({
         sourceToken.decimals,
       ),
       token_to_amount: fromTokenMinimalUnitString(
-        selectedQuote.destinationAmount,
+        selectedQuote.destinationAmount as unknown as string,
         destinationToken.decimals,
       ),
     };
@@ -1428,7 +1592,7 @@ function SwapsQuotesView({
   ]);
 
   const handleQuotesErrorMetric = useCallback(
-    (error) => {
+    (quotesError: { key?: string | null; description?: string | null }) => {
       const data = {
         token_from: sourceToken.symbol,
         token_to: destinationToken.symbol,
@@ -1443,7 +1607,7 @@ function SwapsQuotesView({
           sourceToken.decimals,
         ),
       };
-      if (error?.key === swapsUtils.SwapsError.QUOTES_EXPIRED_ERROR) {
+      if (quotesError?.key === swapsUtils.SwapsError.QUOTES_EXPIRED_ERROR) {
         const parameters = {
           ...data,
           gas_fees: '',
@@ -1456,7 +1620,7 @@ function SwapsQuotesView({
             .build(),
         );
       } else if (
-        error?.key === swapsUtils.SwapsError.QUOTES_NOT_AVAILABLE_ERROR
+        quotesError?.key === swapsUtils.SwapsError.QUOTES_NOT_AVAILABLE_ERROR
       ) {
         const parameters = { ...data };
         trackEvent(
@@ -1466,7 +1630,10 @@ function SwapsQuotesView({
             .build(),
         );
       } else {
-        trackErrorAsAnalytics(`Swaps: ${error?.key}`, error?.description);
+        trackErrorAsAnalytics(
+          `Swaps: ${quotesError?.key}`,
+          quotesError?.description as string,
+        );
       }
     },
     [
@@ -1491,8 +1658,11 @@ function SwapsQuotesView({
   const buyEth = useCallback(() => {
     try {
       navigation.navigate(...createBuyNavigationDetails());
-    } catch (error) {
-      Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
+    } catch (navError) {
+      Logger.error(
+        navError as Error,
+        'Navigation: Error when navigating to buy ETH.',
+      );
     }
 
     trackEvent(
@@ -1558,7 +1728,7 @@ function SwapsQuotesView({
   /* First load effect: handle initial animation */
   useEffect(() => {
     if (isFirstLoad && !shouldFinishFirstLoad) {
-      if (firstLoadTime < quotesLastFetched || error) {
+      if (firstLoadTime < (quotesLastFetched ?? 0) || error) {
         setShouldFinishFirstLoad(true);
         if (!error) {
           navigation.setParams({ leftAction: strings('swaps.edit') });
@@ -1577,7 +1747,7 @@ function SwapsQuotesView({
   useEffect(() => {
     let maxFetchTime = 0;
     allQuotes.forEach((quote) => {
-      maxFetchTime = Math.max(maxFetchTime, quote?.fetchTime);
+      maxFetchTime = Math.max(maxFetchTime, quote?.fetchTime ?? 0);
     });
     setAllQuotesFetchTime(maxFetchTime);
   }, [allQuotes]);
@@ -1589,7 +1759,10 @@ function SwapsQuotesView({
   useEffect(() => {
     const tick = setInterval(() => {
       const newRemainingTime =
-        quotesLastFetched + quoteRefreshSeconds * 1000 - Date.now() + 1000;
+        (quotesLastFetched ?? 0) +
+        (quoteRefreshSeconds ?? 0) * 1000 -
+        Date.now() +
+        1000;
       // If newRemainingTime > remainingTime means that a new set of quotes were fetched
       if (newRemainingTime > remainingTime) {
         hideFeeModal();
@@ -1649,19 +1822,23 @@ function SwapsQuotesView({
 
   /** Gas Effects */
 
-  const [pollToken, setPollToken] = useState(null);
+  const [pollToken, setPollToken] = useState<string | null>(null);
 
   useEffect(() => {
     const { GasFeeController } = Engine.context;
     async function polling() {
       const newPollToken =
-        await GasFeeController.getGasFeeEstimatesAndStartPolling(pollToken);
+        await GasFeeController.getGasFeeEstimatesAndStartPolling(
+          pollToken ?? undefined,
+        );
       setPollToken(newPollToken);
     }
     if (isInPolling) {
       polling();
       return () => {
-        GasFeeController.stopPolling(pollToken);
+        (GasFeeController.stopPolling as (token?: string) => void)(
+          pollToken ?? undefined,
+        );
         setPollToken(null);
       };
     }
@@ -1672,37 +1849,49 @@ function SwapsQuotesView({
     () => {
       if (selectedQuote) {
         const { SwapsController } = Engine.context;
-        let gasEstimate = null;
+        const legacyFeeEstimates = gasFeeEstimates as unknown as {
+          gasPrice: string;
+          estimatedBaseFee: string;
+        } & Record<string, string>;
+        const marketFeeEstimates = gasFeeEstimates as unknown as Record<
+          string,
+          { suggestedMaxFeePerGas: string; suggestedMaxPriorityFeePerGas: string }
+        > & { estimatedBaseFee: string };
+        let gasEstimate: CustomGasEstimate | null = null;
         let customGasAreIncompatible = false;
         if (gasEstimateType === GAS_ESTIMATE_TYPES.ETH_GASPRICE) {
           // Added a selected property because for ETH_GASPRICE any user change will lead
           // to stop updating the estimates, unless there is an option selected.
-          customGasAreIncompatible =
-            Boolean(customGasEstimate) &&
-            'estimatedBaseFee' in customGasEstimate;
+          customGasAreIncompatible = Boolean(
+            customGasEstimate && 'estimatedBaseFee' in customGasEstimate,
+          );
           gasEstimate = {
-            gasPrice: gasFeeEstimates.gasPrice,
+            gasPrice: legacyFeeEstimates.gasPrice,
             selected: DEFAULT_GAS_FEE_OPTION_LEGACY,
-          };
+          } as unknown as CustomGasEstimate;
         } else if (gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
-          customGasAreIncompatible =
-            Boolean(customGasEstimate) &&
-            'estimatedBaseFee' in customGasEstimate;
+          customGasAreIncompatible = Boolean(
+            customGasEstimate && 'estimatedBaseFee' in customGasEstimate,
+          );
           const selected =
             customGasEstimate?.selected || DEFAULT_GAS_FEE_OPTION_LEGACY;
-          gasEstimate = { gasPrice: gasFeeEstimates[selected], selected };
+          gasEstimate = {
+            gasPrice: legacyFeeEstimates[selected],
+            selected,
+          } as unknown as CustomGasEstimate;
         } else if (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
-          customGasAreIncompatible =
-            Boolean(customGasEstimate) && 'gasPrice' in customGasEstimate;
+          customGasAreIncompatible = Boolean(
+            customGasEstimate && 'gasPrice' in customGasEstimate,
+          );
           const selected =
             customGasEstimate?.selected || DEFAULT_GAS_FEE_OPTION_FEE_MARKET;
           gasEstimate = {
-            maxFeePerGas: gasFeeEstimates[selected].suggestedMaxFeePerGas,
+            maxFeePerGas: marketFeeEstimates[selected].suggestedMaxFeePerGas,
             maxPriorityFeePerGas:
-              gasFeeEstimates[selected].suggestedMaxPriorityFeePerGas,
-            estimatedBaseFee: gasFeeEstimates.estimatedBaseFee,
+              marketFeeEstimates[selected].suggestedMaxPriorityFeePerGas,
+            estimatedBaseFee: marketFeeEstimates.estimatedBaseFee,
             selected,
-          };
+          } as unknown as CustomGasEstimate;
         }
         if (
           gasEstimate &&
@@ -1712,7 +1901,11 @@ function SwapsQuotesView({
         ) {
           setAnimateOnGasChange(true);
           setCustomGasEstimate(gasEstimate);
-          SwapsController.updateQuotesWithGasPrice(gasEstimate);
+          SwapsController.updateQuotesWithGasPrice(
+            gasEstimate as unknown as Parameters<
+              typeof SwapsController.updateQuotesWithGasPrice
+            >[0],
+          );
         }
       }
     },
@@ -1807,17 +2000,17 @@ function SwapsQuotesView({
         );
         let l1ApprovalFeeTotal = '0x0';
         if (approvalTransaction) {
-          l1ApprovalFeeTotal = await fetchEstimatedMultiLayerL1Fee(eth, {
+          l1ApprovalFeeTotal = (await fetchEstimatedMultiLayerL1Fee(eth, {
             txParams: {
               ...approvalTransaction,
               value: '0x0', // For approval txs we need to use "0x0" here.
             },
             chainId,
-          });
+          })) as string;
           setMultiLayerL1ApprovalFeeTotal(l1ApprovalFeeTotal);
         }
       } catch (e) {
-        Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
+        Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
         setMultiLayerL1ApprovalFeeTotal(null);
       }
     };
@@ -1857,7 +2050,11 @@ function SwapsQuotesView({
         <LoadingAnimation
           finish={shouldFinishFirstLoad}
           onAnimationEnd={handleAnimationEnd}
-          aggregatorMetadata={aggregatorMetadata}
+          aggregatorMetadata={
+            (aggregatorMetadata ?? undefined) as React.ComponentProps<
+              typeof LoadingAnimation
+            >['aggregatorMetadata']
+          }
           headPan={false}
         />
       </ScreenView>
@@ -1927,10 +2124,12 @@ function SwapsQuotesView({
               <Text reset bold>
                 {!hasEnoughTokenBalance && !isSwapsNativeAsset(sourceToken)
                   ? `${renderFromTokenMinimalUnit(
-                      missingTokenBalance,
+                      missingTokenBalance as unknown as string,
                       sourceToken.decimals,
                     )} ${sourceToken.symbol} `
-                  : `${renderFromWei(missingEthBalance)} ${getTicker(ticker)} `}
+                  : `${renderFromWei(
+                      missingEthBalance as unknown as string,
+                    )} ${getTicker(ticker)} `}
               </Text>
               {!hasEnoughTokenBalance
                 ? `${strings('swaps.more_to_complete')} `
@@ -1962,13 +2161,13 @@ function SwapsQuotesView({
                 }
                 onPress={handleSlippageAlertPress}
                 onInfoPress={
-                  selectedQuote.priceSlippage?.calculationError?.length > 0
+                  (selectedQuote.priceSlippage?.calculationError?.length ?? 0) > 0
                     ? togglePriceImpactModal
                     : togglePriceDifferenceModal
                 }
               >
                 {(textStyle) =>
-                  selectedQuote.priceSlippage?.calculationError?.length > 0 ? (
+                  (selectedQuote.priceSlippage?.calculationError?.length ?? 0) > 0 ? (
                     <>
                       <Text style={textStyle} bold centered>
                         {strings('swaps.market_price_unavailable_title')}
@@ -2112,7 +2311,9 @@ function SwapsQuotesView({
               <Ratio
                 sourceAmount={selectedQuote.sourceAmount}
                 sourceToken={sourceToken}
-                destinationAmount={selectedQuote.destinationAmount}
+                destinationAmount={
+                  selectedQuote.destinationAmount as unknown as string
+                }
                 destinationToken={destinationToken}
               />
             </View>
@@ -2171,16 +2372,16 @@ function SwapsQuotesView({
                       </TouchableOpacity>
                     </View>
                   </View>
-                  {usedGasEstimate.gasPrice ? (
+                  {(usedGasEstimate as { gasPrice?: string } | null)?.gasPrice ? (
                     <View style={styles.quotesFiatColumn}>
                       <Text primary bold>
-                        {renderFromWei(toWei(selectedQuoteValue?.ethFee))}{' '}
+                        {renderFromWei(toWei(selectedQuoteValue?.ethFee as string))}{' '}
                         {getTicker(ticker)}
                       </Text>
                       <Text primary bold upper>
                         {`  ${
                           weiToFiat(
-                            toWei(selectedQuoteValue?.ethFee),
+                            toWei(selectedQuoteValue?.ethFee as string),
                             conversionRate,
                             currentCurrency,
                           ) || ''
@@ -2231,16 +2432,16 @@ function SwapsQuotesView({
                       </View>
                     </View>
 
-                    {usedGasEstimate.gasPrice ? (
+                    {(usedGasEstimate as { gasPrice?: string } | null)?.gasPrice ? (
                       <View style={styles.quotesFiatColumn}>
                         <Text primary bold>
-                          {renderFromWei(toWei(selectedQuoteValue?.ethFee))}{' '}
+                          {renderFromWei(toWei(selectedQuoteValue?.ethFee as string))}{' '}
                           {getTicker(ticker)}
                         </Text>
                         <Text primary bold upper>
                           {`  ${
                             weiToFiat(
-                              toWei(selectedQuoteValue?.ethFee),
+                              toWei(selectedQuoteValue?.ethFee as string),
                               conversionRate,
                               currentCurrency,
                             ) || ''
@@ -2260,7 +2461,7 @@ function SwapsQuotesView({
                             <Text>
                               {`${
                                 weiToFiat(
-                                  toWei(selectedQuoteValue?.ethFee),
+                                  toWei(selectedQuoteValue?.ethFee as string),
                                   conversionRate,
                                   currentCurrency,
                                 ) || ''
@@ -2281,7 +2482,7 @@ function SwapsQuotesView({
                                 underline={!unableToSwap}
                               >
                                 {renderFromWei(
-                                  toWei(selectedQuoteValue?.ethFee),
+                                  toWei(selectedQuoteValue?.ethFee as string),
                                 )}{' '}
                                 {getTicker(ticker)}
                               </Text>
@@ -2303,7 +2504,7 @@ function SwapsQuotesView({
                                 underline={!unableToSwap}
                               >
                                 {renderFromWei(
-                                  toWei(selectedQuoteValue?.ethFee),
+                                  toWei(selectedQuoteValue?.ethFee as string),
                                 )}{' '}
                                 {getTicker(ticker)}
                               </Text>
@@ -2311,7 +2512,7 @@ function SwapsQuotesView({
                             <Text primary bold>
                               {` ${
                                 weiToFiat(
-                                  toWei(selectedQuoteValue?.ethFee),
+                                  toWei(selectedQuoteValue?.ethFee as string),
                                   conversionRate,
                                   currentCurrency,
                                 ) || ''
@@ -2324,7 +2525,7 @@ function SwapsQuotesView({
                   </View>
 
                   <View style={styles.quotesRow}>
-                    {usedGasEstimate.gasPrice ? (
+                    {(usedGasEstimate as { gasPrice?: string } | null)?.gasPrice ? (
                       <>
                         <View style={styles.quotesDescription}>
                           <View style={styles.quotesLegend}>
@@ -2334,14 +2535,14 @@ function SwapsQuotesView({
                         <View style={styles.quotesFiatColumn}>
                           <Text>
                             {renderFromWei(
-                              toWei(selectedQuoteValue?.maxEthFee || '0x0'),
+                              toWei((selectedQuoteValue?.maxEthFee || '0x0') as string),
                             )}{' '}
                             {getTicker(ticker)}
                           </Text>
                           <Text upper>
                             {`  ${
                               weiToFiat(
-                                toWei(selectedQuoteValue?.maxEthFee),
+                                toWei(selectedQuoteValue?.maxEthFee as string),
                                 conversionRate,
                                 currentCurrency,
                               ) || ''
@@ -2363,11 +2564,11 @@ function SwapsQuotesView({
                           <Text small primary>
                             {primaryCurrency === 'ETH'
                               ? ` ${renderFromWei(
-                                  toWei(selectedQuoteValue?.maxEthFee || '0x0'),
+                                  toWei((selectedQuoteValue?.maxEthFee || '0x0') as string),
                                 )} ${getTicker(ticker)}` // eslint-disable-line
                               : ` ${
                                   weiToFiat(
-                                    toWei(selectedQuoteValue?.maxEthFee),
+                                    toWei(selectedQuoteValue?.maxEthFee as string),
                                     conversionRate,
                                     currentCurrency,
                                   ) || '' // eslint-disable-next-line
@@ -2533,21 +2734,33 @@ function SwapsQuotesView({
       <QuotesModal
         isVisible={isQuotesModalVisible}
         toggleModal={toggleQuotesModal}
-        quotes={allQuotes}
+        quotes={
+          allQuotes as unknown as React.ComponentProps<
+            typeof QuotesModal
+          >['quotes']
+        }
         sourceToken={sourceToken}
         destinationToken={destinationToken}
-        selectedQuote={selectedQuoteId}
+        selectedQuote={selectedQuoteId ?? undefined}
         showOverallValue={hasConversionRate}
         ticker={getTicker(ticker)}
-        multiLayerL1ApprovalFeeTotal={multiLayerL1ApprovalFeeTotal}
+        multiLayerL1ApprovalFeeTotal={multiLayerL1ApprovalFeeTotal ?? undefined}
       />
 
       <ApprovalTransactionEditionModal
-        approvalTransaction={approvalTransaction}
+        approvalTransaction={
+          approvalTransaction as unknown as React.ComponentProps<
+            typeof ApprovalTransactionEditionModal
+          >['approvalTransaction']
+        }
         editQuoteTransactionsVisible={editQuoteTransactionsVisible}
         minimumSpendLimit={approvalMinimumSpendLimit}
         onCancelEditQuoteTransactions={onCancelEditQuoteTransactions}
-        setApprovalTransaction={setApprovalTransaction}
+        setApprovalTransaction={
+          setApprovalTransaction as unknown as React.ComponentProps<
+            typeof ApprovalTransactionEditionModal
+          >['setApprovalTransaction']
+        }
         sourceToken={sourceToken}
         chainId={chainId}
       />
@@ -2555,10 +2768,18 @@ function SwapsQuotesView({
       <GasEditModal
         isVisible={isEditingGas}
         gasEstimateType={gasEstimateType}
-        gasFeeEstimates={gasFeeEstimates}
+        gasFeeEstimates={
+          gasFeeEstimates as unknown as React.ComponentProps<
+            typeof GasEditModal
+          >['gasFeeEstimates']
+        }
         defaultGasFeeOptionFeeMarket={DEFAULT_GAS_FEE_OPTION_FEE_MARKET}
-        defaultGasFeeOptionFeeLegacy={DEFAULT_GAS_FEE_OPTION_LEGACY}
-        onGasUpdate={handleGasFeeUpdate}
+        defaultGasFeeOptionLegacy={DEFAULT_GAS_FEE_OPTION_LEGACY}
+        onGasUpdate={
+          handleGasFeeUpdate as unknown as React.ComponentProps<
+            typeof GasEditModal
+          >['onGasUpdate']
+        }
         dismiss={hideEditingGas}
         customGasFee={usedCustomGas}
         gasLimit={gasLimit}
@@ -2568,75 +2789,18 @@ function SwapsQuotesView({
         isNativeAsset={isSwapsNativeAsset(sourceToken)}
         tradeValue={selectedQuote?.trade?.value || '0x0'}
         sourceAmount={sourceAmount}
-        checkEnoughEthBalance={checkEnoughEthBalance}
+        checkEnoughEthBalance={
+          checkEnoughEthBalance as unknown as React.ComponentProps<
+            typeof GasEditModal
+          >['checkEnoughEthBalance']
+        }
         animateOnChange={animateOnGasChange}
       />
     </ScreenView>
   );
 }
 
-SwapsQuotesView.propTypes = {
-  swapsTokens: PropTypes.arrayOf(PropTypes.object),
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * An object containing token balances for current account and network in the format address => balance
-   */
-  balances: PropTypes.object,
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * A string that represents the selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * ID of the global network client
-   */
-  networkClientId: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-  isInPolling: PropTypes.bool,
-  quotesLastFetched: PropTypes.number,
-  topAggId: PropTypes.string,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  pollingCyclesLeft: PropTypes.number,
-  quotes: PropTypes.object,
-  quoteValues: PropTypes.object,
-  approvalTransaction: PropTypes.object,
-  error: PropTypes.object,
-  quoteRefreshSeconds: PropTypes.number,
-  gasEstimateType: PropTypes.string,
-  gasFeeEstimates: PropTypes.object,
-  usedGasEstimate: PropTypes.object,
-  usedCustomGas: PropTypes.object,
-  setRecipient: PropTypes.func,
-  resetTransaction: PropTypes.func,
-  shouldUseSmartTransaction: PropTypes.bool,
-  isEIP1559Network: PropTypes.bool,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): QuotesViewStateProps => ({
   accounts: selectAccounts(state),
   chainId: selectEvmChainId(state),
   networkClientId: selectSelectedNetworkClientId(state),
@@ -2645,22 +2809,38 @@ const mapStateToProps = (state) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
-  isInPolling: selectSwapsIsInPolling(state),
-  quotesLastFetched: selectSwapsQuotesLastFetched(state),
-  pollingCyclesLeft: selectSwapsPollingCyclesLeft(state),
-  topAggId: selectSwapsTopAggId(state),
-  aggregatorMetadata: selectSwapsAggregatorMetadata(state),
-  quotes: selectSwapsQuotes(state),
-  quoteValues: selectSwapsQuoteValues(state),
-  approvalTransaction: selectSwapsApprovalTransaction(state),
-  error: selectSwapsError(state),
-  quoteRefreshSeconds: selectSwapsQuoteRefreshSeconds(state),
+  isInPolling: selectSwapsIsInPolling(state) as SwapsControllerState['isInPolling'],
+  quotesLastFetched: selectSwapsQuotesLastFetched(
+    state,
+  ) as SwapsControllerState['quotesLastFetched'],
+  pollingCyclesLeft: selectSwapsPollingCyclesLeft(
+    state,
+  ) as SwapsControllerState['pollingCyclesLeft'],
+  topAggId: selectSwapsTopAggId(state) as SwapsControllerState['topAggId'],
+  aggregatorMetadata: selectSwapsAggregatorMetadata(
+    state,
+  ) as SwapsControllerState['aggregatorMetadata'],
+  quotes: selectSwapsQuotes(state) as { [key: string]: SwapQuote },
+  quoteValues: selectSwapsQuoteValues(
+    state,
+  ) as SwapsControllerState['quoteValues'],
+  approvalTransaction: selectSwapsApprovalTransaction(
+    state,
+  ) as SwapsControllerState['approvalTransaction'],
+  error: selectSwapsError(state) as SwapsControllerState['error'],
+  quoteRefreshSeconds: selectSwapsQuoteRefreshSeconds(
+    state,
+  ) as SwapsControllerState['quoteRefreshSeconds'],
   gasEstimateType: selectGasFeeControllerEstimateType(state),
   gasFeeEstimates: selectGasFeeEstimates(state),
-  usedGasEstimate: selectSwapsUsedGasEstimate(state),
-  usedCustomGas: selectSwapsUsedCustomGas(state),
+  usedGasEstimate: selectSwapsUsedGasEstimate(
+    state,
+  ) as SwapsControllerState['usedGasEstimate'],
+  usedCustomGas: selectSwapsUsedCustomGas(
+    state,
+  ) as SwapsControllerState['usedCustomGas'],
   primaryCurrency: state.settings.primaryCurrency,
-  swapsTokens: swapsTokensSelector(state),
+  swapsTokens: swapsTokensSelector(state) as SwapsViewToken[],
   shouldUseSmartTransaction: selectShouldUseSmartTransaction(
     state,
     selectEvmChainId(state),
@@ -2668,9 +2848,12 @@ const mapStateToProps = (state) => ({
   isEIP1559Network: selectIsEIP1559Network(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setRecipient: (from) => dispatch(setRecipient(from, '', '', '', '')),
-  resetTransaction: () => dispatch(resetTransaction()),
+const mapDispatchToProps = (
+  dispatch: Dispatch,
+): QuotesViewDispatchProps => ({
+  setRecipient: (from: string) =>
+    dispatch(setRecipientAction(from, '', '', '', '')),
+  resetTransaction: () => dispatch(resetTransactionAction()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SwapsQuotesView);
