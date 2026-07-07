@@ -39,27 +39,31 @@ export const getHostname = (uri: string): string => {
     // Handle empty or invalid URIs
     if (!uri) return '';
 
-    // For standard URLs, use URL API
-    if (uri.includes('://')) {
-      try {
-        const url = new URL(uri);
-        return url.hostname;
-      } catch (e) {
-        // If URL parsing fails, continue with manual parsing
-      }
+    // Normalize by parsing through the URL API. This is the only source of a
+    // trustworthy value: an attacker-controlled dapp string is never used
+    // verbatim as a permission subject.
+    let parsed: URL;
+    try {
+      parsed = new URL(uri);
+    } catch (e) {
+      // Not a parseable URI (e.g. a bare, scheme-less string such as
+      // "MetaMask Mobile"). Return an empty, non-matching sentinel instead of
+      // the raw input so it can never collide with a trusted/internal origin.
+      return '';
     }
 
-    // For protocol-based URIs like wc: or ethereum:
-    const pathStart: number = uri.indexOf(':');
-    if (pathStart !== -1) {
-      return uri.substring(0, pathStart);
+    // Standard web origins expose a hostname (e.g. https://app.example.com).
+    if (parsed.hostname) {
+      return parsed.hostname;
     }
 
-    // If no protocol separator found, return the original string
-    return uri;
+    // Protocol-only URIs (wc:, ethereum:, metamask:) have no hostname. The
+    // scheme is validated by the URL parser, so it cannot contain spaces or
+    // otherwise be crafted to equal an internal origin value.
+    return parsed.protocol.replace(/:$/, '');
   } catch (error) {
     DevLogger.log('Error in getHostname:', error);
-    return uri;
+    return '';
   }
 };
 
