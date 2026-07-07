@@ -3,6 +3,8 @@ import {
   requestPermissionsHandler,
   revokePermissionsHandler,
 } from '@metamask/eip1193-permission-middleware';
+import type { PermittedHandlerExport } from '@metamask/permission-controller';
+import type { Json, JsonRpcParams } from '@metamask/utils';
 import { makeMethodMiddlewareMaker } from '../utils';
 import { eip1193OnlyHandlers } from '../handlers';
 
@@ -14,4 +16,7 @@ export const createEip1193MethodMiddleware = makeMethodMiddlewareMaker([
   getPermissionsHandler,
   requestPermissionsHandler,
   revokePermissionsHandler,
-]);
+  // The handlers above each declare their own hook shape; the maker is invoked
+  // with the union of all of them at runtime.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+] as PermittedHandlerExport<any, JsonRpcParams, Json>[]);
