@@ -6,7 +6,7 @@ import { Duplex } from 'readable-stream';
  * The subset of the port objects (`Port`, `RemotePort`, `WalletConnectPort`)
  * that `PortDuplexStream` interacts with.
  */
-interface MobilePort {
+export interface MobilePort {
   addListener(event: string, listener: (...args: unknown[]) => void): void;
   postMessage(msg: unknown, origin?: string): void;
 }
