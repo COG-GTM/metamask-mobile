@@ -1,23 +1,52 @@
 import Engine from '../Engine';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
+import type {
+  Hex,
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
+import type { NetworkConfiguration } from '@metamask/network-controller';
 import { selectEvmNetworkConfigurationsByChainId } from '../../selectors/networkController';
 import { store } from '../../store';
 import {
   validateChainId,
   findExistingNetwork,
   switchToNetwork,
+  type RequestUserApproval,
+  type SwitchToNetworkHooks,
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 
 /**
+ * Method hooks passed to the `wallet_switchEthereumChain` implementation.
+ */
+export interface SwitchEthereumChainHooks extends SwitchToNetworkHooks {
+  getCurrentChainIdForDomain: (domain: string) => Hex;
+  getNetworkConfigurationByChainId: (
+    chainId: Hex,
+  ) => NetworkConfiguration | undefined;
+}
+
+interface WalletSwitchEthereumChainOptions {
+  req: JsonRpcRequest<JsonRpcParams> & { origin: string };
+  res: PendingJsonRpcResponse<Json>;
+  requestUserApproval: RequestUserApproval;
+  analytics: Record<string, unknown>;
+  hooks: SwitchEthereumChainHooks;
+}
+
+/**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
  *
- * @param params.req - The JsonRpcEngine request.
- * @param params.res - The JsonRpcEngine result object.
- * @param params.requestUserApproval - The callback to trigger user approval flow.
- * @param params.analytics - Analytics parameters to be passed when tracking event via `MetaMetrics`.
- * @param params.hooks - Method hooks passed to the method implementation.
- * @returns {void}.
+ * @param options - The options object.
+ * @param options.req - The JsonRpcEngine request.
+ * @param options.res - The JsonRpcEngine result object.
+ * @param options.requestUserApproval - The callback to trigger user approval flow.
+ * @param options.analytics - Analytics parameters to be passed when tracking event via `MetaMetrics`.
+ * @param options.hooks - Method hooks passed to the method implementation.
+ * @returns Nothing.
  */
 export const wallet_switchEthereumChain = async ({
   req,
@@ -25,14 +54,10 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
-  const {
-    CurrencyRateController,
-    NetworkController,
-    MultichainNetworkController,
-    SelectedNetworkController,
-  } = Engine.context;
-  const params = req.params?.[0];
+}: WalletSwitchEthereumChainOptions): Promise<void> => {
+  const { NetworkController, SelectedNetworkController } = Engine.context;
+  const requestParams = req.params as unknown;
+  const params = Array.isArray(requestParams) ? requestParams[0] : undefined;
   const { origin } = req;
   if (!params || typeof params !== 'object') {
     throw rpcErrors.invalidParams({
@@ -41,8 +66,8 @@ export const wallet_switchEthereumChain = async ({
       )}`,
     });
   }
-  const { chainId } = params;
-  const allowedKeys = {
+  const { chainId } = params as { chainId?: unknown };
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
@@ -61,11 +86,9 @@ export const wallet_switchEthereumChain = async ({
   if (existingNetwork) {
     const currentDomainSelectedNetworkClientId =
       SelectedNetworkController.getNetworkClientIdForDomain(origin);
-    const {
-      configuration: { chainId: currentDomainSelectedChainId },
-    } = NetworkController.getNetworkClientById(
+    const currentDomainSelectedChainId = NetworkController.getNetworkClientById(
       currentDomainSelectedNetworkClientId,
-    ) || { configuration: {} };
+    )?.configuration?.chainId;
 
     if (currentDomainSelectedChainId === _chainId) {
       res.result = null;
@@ -79,16 +102,11 @@ export const wallet_switchEthereumChain = async ({
     );
 
     const toNetworkConfiguration =
-      hooks.getNetworkConfigurationByChainId(chainId);
+      hooks.getNetworkConfigurationByChainId(chainId as Hex);
 
     await switchToNetwork({
       network: existingNetwork,
       chainId: _chainId,
-      controllers: {
-        CurrencyRateController,
-        MultichainNetworkController,
-        SelectedNetworkController,
-      },
       requestUserApproval,
       analytics,
       origin,
