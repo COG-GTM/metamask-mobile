@@ -10,7 +10,10 @@ import {
 } from '@metamask/utils';
 import I18n, { strings } from '../../../../locales/i18n';
 import { TokenOverviewSelectorsIDs } from '../../../../e2e/selectors/wallet/TokenOverview.selectors';
-import { newAssetTransaction } from '../../../actions/transaction';
+import {
+  newAssetTransaction,
+  TransactionAsset,
+} from '../../../actions/transaction';
 import AppConstants from '../../../core/AppConstants';
 import Engine from '../../../core/Engine';
 import {
@@ -209,7 +212,7 @@ const AssetOverview: React.FC<AssetOverviewProps> = ({
     }
 
     if ((asset.isETH || asset.isNative) && ticker) {
-      dispatch(newAssetTransaction(getEther(ticker)));
+      dispatch(newAssetTransaction(getEther(ticker) as TransactionAsset));
     } else {
       dispatch(newAssetTransaction(asset));
     }

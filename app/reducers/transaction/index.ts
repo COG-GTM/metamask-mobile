@@ -1,7 +1,50 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import { SecurityAlertResponse } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
+import {
+  Transaction,
+  TransactionAsset,
+  TransactionAction,
+  RESET_TRANSACTION,
+  NEW_ASSET_TRANSACTION,
+  SET_NONCE,
+  SET_PROPOSED_NONCE,
+  SET_RECIPIENT,
+  SET_SELECTED_ASSET,
+  PREPARE_TRANSACTION,
+  SET_TRANSACTION_OBJECT,
+  SET_TOKENS_TRANSACTION,
+  SET_ETHER_TRANSACTION,
+  SET_TRANSACTION_SECURITY_ALERT_RESPONSE,
+  SET_TRANSACTION_ID,
+  SET_MAX_VALUE_MODE,
+  SET_TRANSACTION_VALUE,
+} from '../../actions/transaction';
 
-const initialState = {
+export interface TransactionState {
+  ensRecipient?: string;
+  assetType?: string;
+  selectedAsset: TransactionAsset;
+  transaction: Transaction;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  symbol?: string;
+  paymentRequest?: boolean;
+  readableValue?: string;
+  id?: string;
+  type?: string;
+  proposedNonce?: number;
+  nonce?: number;
+  securityAlertResponses: Record<string, SecurityAlertResponse>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,7 +75,12 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+const toTxMeta = (transaction: Transaction) =>
+  transaction as unknown as Parameters<typeof getTxData>[0];
+
+const getAssetType = (
+  selectedAsset?: TransactionAsset,
+): string | undefined => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,34 +94,37 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction | { type: typeof REHYDRATE },
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
         ...initialState,
       };
-    case 'RESET_TRANSACTION':
+    case RESET_TRANSACTION:
       return {
         ...initialState,
       };
-    case 'NEW_ASSET_TRANSACTION':
+    case NEW_ASSET_TRANSACTION:
       return {
         ...state,
         ...initialState,
         selectedAsset: action.selectedAsset,
         assetType: action.assetType,
       };
-    case 'SET_NONCE':
+    case SET_NONCE:
       return {
         ...state,
         nonce: action.nonce,
       };
-    case 'SET_PROPOSED_NONCE':
+    case SET_PROPOSED_NONCE:
       return {
         ...state,
         proposedNonce: action.proposedNonce,
       };
-    case 'SET_RECIPIENT':
+    case SET_RECIPIENT:
       return {
         ...state,
         transaction: { ...state.transaction, from: action.from },
@@ -82,7 +133,7 @@ const transactionReducer = (state = initialState, action) => {
         transactionToName: action.transactionToName,
         transactionFromName: action.transactionFromName,
       };
-    case 'SET_SELECTED_ASSET': {
+    case SET_SELECTED_ASSET: {
       const selectedAsset = action.selectedAsset;
       const assetType = action.assetType || getAssetType(selectedAsset);
       return {
@@ -91,30 +142,30 @@ const transactionReducer = (state = initialState, action) => {
         assetType,
       };
     }
-    case 'PREPARE_TRANSACTION':
+    case PREPARE_TRANSACTION:
       return {
         ...state,
         transaction: action.transaction,
       };
-    case 'SET_TRANSACTION_OBJECT': {
+    case SET_TRANSACTION_OBJECT: {
       const selectedAsset = action.transaction.selectedAsset;
       if (selectedAsset) {
         const assetType = getAssetType(selectedAsset);
         action.transaction.assetType = assetType;
       }
-      const txMeta = getTxMeta(action.transaction);
+      const txMeta = getTxMeta(toTxMeta(action.transaction));
       return {
         ...state,
         transaction: {
           ...state.transaction,
-          ...getTxData(action.transaction),
-        },
+          ...getTxData(toTxMeta(action.transaction)),
+        } as Transaction,
         ...txMeta,
         // Retain the securityAlertResponses from the old state
         securityAlertResponses: state.securityAlertResponses,
       };
     }
-    case 'SET_TOKENS_TRANSACTION': {
+    case SET_TOKENS_TRANSACTION: {
       const selectedAsset = action.asset;
       const assetType = getAssetType(selectedAsset);
       return {
@@ -123,16 +174,16 @@ const transactionReducer = (state = initialState, action) => {
         assetType,
       };
     }
-    case 'SET_ETHER_TRANSACTION':
+    case SET_ETHER_TRANSACTION:
       return {
         ...state,
         symbol: 'ETH',
         assetType: 'ETH',
         selectedAsset: { isETH: true, symbol: 'ETH' },
-        ...getTxMeta(action.transaction),
-        transaction: getTxData(action.transaction),
+        ...getTxMeta(toTxMeta(action.transaction)),
+        transaction: getTxData(toTxMeta(action.transaction)) as unknown as Transaction,
       };
-    case 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE': {
+    case SET_TRANSACTION_SECURITY_ALERT_RESPONSE: {
       const { transactionId, securityAlertResponse } = action;
       return {
         ...state,
@@ -142,20 +193,20 @@ const transactionReducer = (state = initialState, action) => {
         },
       };
     }
-    case 'SET_TRANSACTION_ID': {
+    case SET_TRANSACTION_ID: {
       const { transactionId } = action;
       return {
         ...state,
         id: transactionId,
       };
     }
-    case 'SET_MAX_VALUE_MODE': {
+    case SET_MAX_VALUE_MODE: {
       return {
         ...state,
         maxValueMode: action.maxValueMode,
       };
     }
-    case 'SET_TRANSACTION_VALUE': {
+    case SET_TRANSACTION_VALUE: {
       return {
         ...state,
         transaction: { ...state.transaction, value: action.value },
