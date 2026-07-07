@@ -11,6 +11,14 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'readable-stream' {
+  // readable-stream mirrors Node's `stream` module API.
+  // eslint-disable-next-line import/no-nodejs-modules
+  import { Duplex, Readable, Writable, Transform, PassThrough } from 'stream';
+
+  export { Duplex, Readable, Writable, Transform, PassThrough };
+}
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

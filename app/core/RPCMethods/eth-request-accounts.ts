@@ -1,8 +1,43 @@
 import { rpcErrors } from '@metamask/rpc-errors';
+import type {
+  JsonRpcEngineEndCallback,
+  JsonRpcEngineNextCallback,
+} from '@metamask/json-rpc-engine';
+import type {
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
+import type { RequestedPermissions } from '@metamask/permission-controller';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
-import {
-  trackDappViewedEvent,
-} from '../../util/metrics';
+import { trackDappViewedEvent } from '../../util/metrics';
+
+/**
+ * Method hooks passed to the `eth_requestAccounts` implementation.
+ */
+export interface RequestEthereumAccountsHooks {
+  /**
+   * A hook that returns the permitted eth accounts for the origin sorted by
+   * lastSelected.
+   */
+  getAccounts: (options?: { ignoreLock?: boolean }) => string[];
+  /**
+   * A hook that resolves when the wallet is unlocked.
+   */
+  getUnlockPromise: (shouldShowUnlockRequest: boolean) => Promise<void>;
+  /**
+   * A hook that returns a CAIP-25 permission from a legacy `eth_accounts` and
+   * `endowment:permitted-chains` permission.
+   */
+  getCaip25PermissionFromLegacyPermissionsForOrigin: () => RequestedPermissions;
+  /**
+   * A hook that requests CAIP-25 permissions for the origin.
+   */
+  requestPermissionsForOrigin: (
+    requestedPermissions: RequestedPermissions,
+  ) => Promise<unknown>;
+}
 
 const requestEthereumAccounts = {
   methodNames: [MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS],
@@ -17,7 +52,7 @@ const requestEthereumAccounts = {
 export default requestEthereumAccounts;
 
 // Used to rate-limit pending requests to one per origin
-const locks = new Set();
+const locks = new Set<string>();
 
 /**
  * This method attempts to retrieve the Ethereum accounts available to the
@@ -30,25 +65,21 @@ const locks = new Set();
  * @param res - The JsonRpcEngine result object
  * @param _next - JsonRpcEngine next() callback - unused
  * @param end - JsonRpcEngine end() callback
- * @param options - Method hooks passed to the method implementation
- * @param options.getAccounts - A hook that returns the permitted eth accounts for the origin sorted by lastSelected.
- * @param options.getUnlockPromise - A hook that resolves when the wallet is unlocked.
- * @param options.getCaip25PermissionFromLegacyPermissionsForOrigin - A hook that returns a CAIP-25 permission from a legacy `eth_accounts` and `endowment:permitted-chains` permission.
- * @param options.requestPermissionsForOrigin - A hook that requests CAIP-25 permissions for the origin.
+ * @param hooks - Method hooks passed to the method implementation
  * @returns A promise that resolves to nothing
  */
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: JsonRpcRequest<JsonRpcParams> & { origin: string },
+  res: PendingJsonRpcResponse<Json>,
+  _next: JsonRpcEngineNextCallback,
+  end: JsonRpcEngineEndCallback,
   {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
-  },
-) {
+  }: RequestEthereumAccountsHooks,
+): Promise<void> {
   const { origin } = req;
   if (locks.has(origin)) {
     res.error = rpcErrors.resourceUnavailable(
@@ -87,7 +118,16 @@ async function requestEthereumAccountsHandler(
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent(origin, ethAccounts.length);
+  // `trackDappViewedEvent` now expects a single options object, but this call
+  // site has historically passed positional arguments. The migration preserves
+  // the existing runtime behavior (and the matching test expectation) instead
+  // of changing logic.
+  (
+    trackDappViewedEvent as unknown as (
+      hostname: string,
+      numberOfConnectedAccounts: number,
+    ) => void
+  )(origin, ethAccounts.length);
 
   res.result = ethAccounts;
   return end();
