@@ -26,6 +26,7 @@ export interface SelectedAsset {
   isNative?: boolean;
   tokenId?: string | number;
   contractName?: string | null;
+  symbol?: string;
 }
 
 export type Transaction = Record<string, unknown>;
