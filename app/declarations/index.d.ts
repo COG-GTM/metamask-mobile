@@ -2,6 +2,17 @@
 // Ex. This makes it so that when you import CloseIcon from './close-icon.svg, CloseIcon, will be detected as a React.FC component.
 declare module '*.mp4';
 
+declare module 'ethereumjs-abi';
+
+declare module 'humanize-duration';
+
+interface String {
+  replaceAll(
+    searchValue: string | RegExp,
+    replaceValue: string,
+  ): string;
+}
+
 declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
 declare module 'react-native-fade-in-image';
@@ -11,6 +22,77 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'through2' {
+  // eslint-disable-next-line import/no-nodejs-modules
+  import { Transform, TransformOptions } from 'stream';
+
+  type TransformFunction = (
+    this: Transform,
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    chunk: any,
+    encoding: BufferEncoding,
+    callback: (error?: Error | null, data?: unknown) => void,
+  ) => void;
+
+  interface Through2 {
+    (options?: TransformOptions, transform?: TransformFunction): Transform;
+    (transform?: TransformFunction): Transform;
+    obj(options?: TransformOptions, transform?: TransformFunction): Transform;
+    obj(transform?: TransformFunction): Transform;
+  }
+
+  const through2: Through2;
+  export default through2;
+}
+
+declare module '@metamask/ethjs-unit' {
+  import BN from 'bnjs4';
+  interface EthjsUnit {
+    fromWei(value: number | string | BN, unit?: string): string;
+    toWei(value: number | string | BN, unit?: string): BN;
+    numberToString(value: number | string | BN): string;
+    getValueOfUnit(unit: string): BN;
+    unitMap: Record<string, string>;
+  }
+  const convert: EthjsUnit;
+  export default convert;
+}
+
+declare module 'number-to-bn' {
+  // eslint-disable-next-line no-duplicate-imports
+  import BN from 'bnjs4';
+  export default function numberToBN(value: string | number): BN;
+}
+
+declare module 'ethjs-ens' {
+  export default class ENS {
+    constructor(options: { provider: unknown; network: string });
+    reverse(address: string): Promise<string>;
+    lookup(name: string): Promise<string>;
+  }
+}
+
+// The package ships its declarations in a misnamed `index.ts.d` file,
+// so TypeScript cannot resolve them automatically.
+declare module 'unicode-confusables' {
+  export interface ConfusablePoint {
+    point: string;
+    similarTo?: string;
+  }
+  export const isConfusing: (input: string) => boolean;
+  export const confusables: (input: string) => ConfusablePoint[];
+  export const rectifyConfusion: (input: string) => string;
+}
+
+declare module 'pump' {
+  // eslint-disable-next-line import/no-nodejs-modules, no-duplicate-imports
+  import { Stream } from 'stream';
+
+  function pump(...streams: unknown[]): Stream;
+  export default pump;
+}
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -402,9 +484,8 @@ declare module '@sentry/react-native' {
 
   // Enforce exception to be of type Error for more reliable stack traces - https://docs.sentry.io/platforms/javascript/usage/#capturing-errors
   import { ExclusiveEventHintOrCaptureContext } from '@sentry/core/build/types/utils/prepareEvent';
-  const captureException: (
+  export const captureException: (
     exception: Error,
     hint?: ExclusiveEventHintOrCaptureContext,
   ) => string;
-  export { captureException };
 }

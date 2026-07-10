@@ -154,7 +154,10 @@ const AccountConnect = (props: AccountConnectProps) => {
   const { toastRef } = useContext(ToastContext);
 
   // origin is set to the last active tab url in the browser which can conflict with sdk
-  const inappBrowserOrigin: string = useSelector(getActiveTabUrl, isEqual);
+  const inappBrowserOrigin: string = useSelector(
+    getActiveTabUrl,
+    isEqual,
+  ) as string;
   const accountsLength = useSelector(selectAccountsLength);
   const { wc2Metadata } = useSelector((state: RootState) => state.sdk);
 

@@ -12,7 +12,10 @@ import {
 import {
   isEIP1559Transaction,
   TransactionType,
+  type TransactionMeta,
+  type TransactionParams,
 } from '@metamask/transaction-controller';
+import type { Hex } from '@metamask/utils';
 import { swapsUtils } from '@metamask/swaps-controller';
 import Engine from '../../core/Engine';
 import I18n, { strings } from '../../../locales/i18n';
@@ -108,13 +111,13 @@ const { getSwapsContractAddress } = swapsUtils;
  * of caching CollectibleAddresses
  */
 class CollectibleAddresses {
-  static cache = {};
+  static cache: Record<string, boolean> = {};
 }
 
 /**
  * Object containing all known action keys, to be used in transaction review
  */
-const reviewActionKeys = {
+const reviewActionKeys: Record<string, string> = {
   [SEND_TOKEN_ACTION_KEY]: strings('transactions.tx_review_transfer'),
   [SEND_ETHER_ACTION_KEY]: strings('transactions.tx_review_confirm'),
   [DEPLOY_CONTRACT_ACTION_KEY]: strings(
@@ -145,7 +148,7 @@ const reviewActionKeys = {
 /**
  * Object containing all known action keys, to be used in transactions list
  */
-const actionKeys = {
+const actionKeys: Record<string, string> = {
   [SEND_TOKEN_ACTION_KEY]: strings('transactions.sent_tokens'),
   [TRANSFER_FROM_ACTION_KEY]: strings('transactions.sent_collectible'),
   [DEPLOY_CONTRACT_ACTION_KEY]: strings('transactions.contract_deploy'),
@@ -177,7 +180,17 @@ const actionKeys = {
  * @param {Object} opts - Optional asset parameters
  * @returns {String} - String containing the generated transfer data
  */
-export function generateTransferData(type = undefined, opts = {}) {
+interface TransferDataOptions {
+  toAddress?: string;
+  amount?: string | number;
+  fromAddress?: string;
+  tokenId?: string;
+}
+
+export function generateTransferData(
+  type: string | undefined = undefined,
+  opts: TransferDataOptions = {},
+): string | undefined {
   if (!type) {
     throw new TypeError('[transactions] type must be defined');
   }
@@ -194,7 +207,7 @@ export function generateTransferData(type = undefined, opts = {}) {
           .call(
             rawEncode(
               ['address', 'uint256'],
-              [opts.toAddress, addHexPrefix(opts.amount)],
+              [opts.toAddress, addHexPrefix(opts.amount as string)],
             ),
             (x) => ('00' + x.toString(16)).slice(-2),
           )
@@ -207,7 +220,11 @@ export function generateTransferData(type = undefined, opts = {}) {
           .call(
             rawEncode(
               ['address', 'address', 'uint256'],
-              [opts.fromAddress, opts.toAddress, addHexPrefix(opts.tokenId)],
+              [
+                opts.fromAddress,
+                opts.toAddress,
+                addHexPrefix(opts.tokenId as string),
+              ],
             ),
             (x) => ('00' + x.toString(16)).slice(-2),
           )
@@ -221,7 +238,9 @@ export function generateTransferData(type = undefined, opts = {}) {
  * @param {string | undefined} data The transaction data.
  * @returns {string | undefined} The four-byte signature if data is provided, otherwise undefined.
  */
-export function getFourByteSignature(data) {
+export function getFourByteSignature(
+  data: string | undefined,
+): string | undefined {
   return data?.substring(0, 10);
 }
 
@@ -230,13 +249,13 @@ export function getFourByteSignature(data) {
  * @param {string} data The transaction data.
  * @returns {boolean} True if the transaction is an "approve" or "increase allowance" call, false otherwise.
  */
-export function isApprovalTransaction(data) {
+export function isApprovalTransaction(data: string): boolean {
   const fourByteSignature = getFourByteSignature(data);
   return [
     APPROVE_FUNCTION_SIGNATURE,
     INCREASE_ALLOWANCE_SIGNATURE,
     SET_APPROVAL_FOR_ALL_SIGNATURE,
-  ].includes(fourByteSignature);
+  ].includes(fourByteSignature as string);
 }
 
 /**
@@ -248,7 +267,11 @@ export function isApprovalTransaction(data) {
  * @param {string} [opts.data] - The data of the transaction
  * @returns {String} - String containing the generated data, by default for approve method
  */
-export function generateApprovalData(opts) {
+export function generateApprovalData(opts: {
+  spender: string | null;
+  value: string;
+  data?: string;
+}): string {
   const { spender, value, data } = opts;
 
   if (!spender || !value) {
@@ -271,7 +294,10 @@ export function generateApprovalData(opts) {
   );
 }
 
-export function decodeApproveData(data) {
+export function decodeApproveData(data: string): {
+  spenderAddress: string;
+  encodedAmount: string;
+} {
   return {
     spenderAddress: addHexPrefix(data.substr(34, 40)),
     encodedAmount: data.substr(74, 138),
@@ -287,7 +313,10 @@ const BASE = 4 * 16;
  * @param {String} data - Data to decode
  * @returns {Array} - Object containing the decoded transfer data
  */
-export function decodeTransferData(type, data) {
+export function decodeTransferData(
+  type: string,
+  data: string,
+): string[] | undefined {
   switch (type) {
     case 'transfer': {
       const encodedAddress = data.substring(10, BASE + 10);
@@ -334,7 +363,10 @@ export function decodeTransferData(type, data) {
  * @param {string} data - Transaction data
  * @returns {MethodData} - Method data object containing the name if is valid
  */
-export async function getMethodData(data, networkClientId) {
+export async function getMethodData(
+  data: string,
+  networkClientId?: string,
+): Promise<{ name?: string }> {
   if (data.length < 10) return {};
   const fourByteSignature = getFourByteSignature(data);
   if (fourByteSignature === TRANSFER_FUNCTION_SIGNATURE) {
@@ -353,8 +385,8 @@ export async function getMethodData(data, networkClientId) {
   // If it's a new method, use on-chain method registry
   try {
     const registryObject = await handleMethodData(
-      fourByteSignature,
-      networkClientId,
+      fourByteSignature as string,
+      networkClientId as string,
     );
     if (registryObject) {
       return registryObject.parsedRegistryMethod;
@@ -374,10 +406,10 @@ export async function getMethodData(data, networkClientId) {
  * @returns {Promise<boolean>} - Whether the given address is a contract
  */
 export async function isSmartContractAddress(
-  address,
-  chainId,
-  networkClientId = undefined,
-) {
+  address: string,
+  chainId: string,
+  networkClientId: string | undefined = undefined,
+): Promise<boolean> {
   if (!address) return false;
 
   address = toChecksumAddress(address);
@@ -385,15 +417,17 @@ export async function isSmartContractAddress(
   // If in contract map we don't need to cache it
   if (
     isMainnetByChainId(chainId) &&
-    Engine.context.TokenListController.state.tokensChainsCache?.[chainId]
-      ?.data?.[address]
+    Engine.context.TokenListController.state.tokensChainsCache?.[
+      chainId as Hex
+    ]?.data?.[address]
   ) {
     return Promise.resolve(true);
   }
 
   const { NetworkController } = Engine.context;
   const finalNetworkClientId =
-    networkClientId ?? NetworkController.findNetworkClientIdByChainId(chainId);
+    networkClientId ??
+    NetworkController.findNetworkClientIdByChainId(chainId as Hex);
   const ethQuery = new EthQuery(
     NetworkController.getNetworkClientById(finalNetworkClientId).provider,
   );
@@ -412,7 +446,10 @@ export async function isSmartContractAddress(
  * @param {string} tokenId - A possible collectible id
  * @returns {boolean} - Wether the given address is an ERC721 contract
  */
-export async function isCollectibleAddress(address, tokenId) {
+export async function isCollectibleAddress(
+  address: string,
+  tokenId: string,
+): Promise<boolean> {
   const cache = CollectibleAddresses.cache[address];
   if (cache) {
     return Promise.resolve(cache);
@@ -424,9 +461,9 @@ export async function isCollectibleAddress(address, tokenId) {
     address,
     tokenId,
   );
-  const isCollectibleAddress = ownerOf && ownerOf !== '0x';
-  CollectibleAddresses.cache[address] = isCollectibleAddress;
-  return isCollectibleAddress;
+  const isCollectible = Boolean(ownerOf) && ownerOf !== '0x';
+  CollectibleAddresses.cache[address] = isCollectible;
+  return isCollectible;
 }
 
 /**
@@ -436,7 +473,20 @@ export async function isCollectibleAddress(address, tokenId) {
  * @param {string} chainId - Current chainId
  * @returns {string} - Corresponding transaction action key
  */
-export async function getTransactionActionKey(transaction, chainId) {
+interface TransactionLike {
+  networkClientId?: string;
+  type?: TransactionType | string;
+  txParams?: Partial<TransactionParams>;
+  transaction?: Partial<TransactionParams>;
+  toSmartContract?: boolean;
+  isTransfer?: boolean;
+  transferInformation?: { contractAddress?: string; symbol?: string };
+}
+
+export async function getTransactionActionKey(
+  transaction: TransactionLike,
+  chainId: string,
+): Promise<string> {
   const { networkClientId, type } = transaction ?? {};
   const txParams = transaction.txParams ?? transaction.transaction ?? {};
   const { data, to } = txParams;
@@ -446,16 +496,16 @@ export async function getTransactionActionKey(transaction, chainId) {
       TransactionType.stakingClaim,
       TransactionType.stakingDeposit,
       TransactionType.stakingUnstake,
-    ].includes(type)
+    ].includes(type as TransactionType)
   ) {
-    return type;
+    return type as string;
   }
 
   if (!to) {
     return CONTRACT_METHOD_DEPLOY;
   }
 
-  if (to === getSwapsContractAddress(chainId)) {
+  if (to === getSwapsContractAddress(chainId as Hex)) {
     return SWAPS_TRANSACTION_ACTION_KEY;
   }
 
@@ -488,7 +538,12 @@ export async function getTransactionActionKey(transaction, chainId) {
  * @param {string} selectedAddress - Current account public address
  * @returns {string} - Transaction type message
  */
-export async function getActionKey(tx, selectedAddress, ticker, chainId) {
+export async function getActionKey(
+  tx: TransactionLike,
+  selectedAddress: string,
+  ticker: string | undefined,
+  chainId: string,
+): Promise<string> {
   const actionKey = await getTransactionActionKey(tx, chainId);
   if (actionKey === SEND_ETHER_ACTION_KEY) {
     let currencySymbol = ticker;
@@ -496,16 +551,20 @@ export async function getActionKey(tx, selectedAddress, ticker, chainId) {
     if (tx?.isTransfer) {
       // Third party sending wrong token symbol
       if (
-        tx.transferInformation.contractAddress === SAI_ADDRESS.toLowerCase()
+        tx.transferInformation?.contractAddress === SAI_ADDRESS.toLowerCase()
       ) {
-        tx.transferInformation.symbol = 'SAI';
+        (
+          tx.transferInformation as { contractAddress?: string; symbol?: string }
+        ).symbol = 'SAI';
       }
-      currencySymbol = tx.transferInformation.symbol;
+      currencySymbol = tx.transferInformation?.symbol;
     }
 
-    const incoming = safeToChecksumAddress(tx.txParams.to) === selectedAddress;
+    const incoming =
+      safeToChecksumAddress(tx.txParams?.to as string) === selectedAddress;
     const selfSent =
-      incoming && safeToChecksumAddress(tx.txParams.from) === selectedAddress;
+      incoming &&
+      safeToChecksumAddress(tx.txParams?.from as string) === selectedAddress;
     return incoming
       ? selfSent
         ? currencySymbol
@@ -534,7 +593,10 @@ export async function getActionKey(tx, selectedAddress, ticker, chainId) {
  * @param {string} chainId - Current chainId
  * @returns {string} - Transaction function type
  */
-export async function getTransactionReviewActionKey(transaction, chainId) {
+export async function getTransactionReviewActionKey(
+  transaction: TransactionLike,
+  chainId: string,
+): Promise<string> {
   const actionKey = await getTransactionActionKey(transaction, chainId);
   const transactionReviewActionKey = reviewActionKeys[actionKey];
   if (transactionReviewActionKey) {
@@ -549,7 +611,7 @@ export async function getTransactionReviewActionKey(transaction, chainId) {
  * @param {string} - Ticker
  * @returns {string} - Corresponding ticker or ETH
  */
-export function getTicker(ticker) {
+export function getTicker(ticker?: string): string {
   return ticker || strings('unit.eth');
 }
 
@@ -559,7 +621,13 @@ export function getTicker(ticker) {
  * @param {string} ticker - Ticker
  * @returns {object} - ETH object
  */
-export function getEther(ticker) {
+export function getEther(ticker?: string): {
+  name: string;
+  address: string;
+  symbol: string;
+  logo: string;
+  isETH: boolean;
+} {
   return {
     name: 'Ether',
     address: '',
@@ -586,7 +654,13 @@ export function getTransactionToName({
   toAddress,
   internalAccounts,
   ensRecipient,
-}) {
+}: {
+  addressBook: Record<string, Record<string, { name?: string }>>;
+  chainId: string;
+  toAddress: string;
+  internalAccounts: { address: string; metadata: { name?: string } }[];
+  ensRecipient?: string;
+}): string | undefined {
   if (ensRecipient) {
     return ensRecipient;
   }
@@ -595,7 +669,9 @@ export function getTransactionToName({
   const checksummedToAddress = toChecksumAddress(toAddress);
 
   // Convert internalAccounts array to a map for quick lookup
-  const internalAccountsMap = internalAccounts.reduce((acc, account) => {
+  const internalAccountsMap = internalAccounts.reduce<
+    Record<string, { address: string; metadata: { name?: string } }>
+  >((acc, account) => {
     acc[toChecksumAddress(account.address)] = account;
     return acc;
   }, {});
@@ -603,10 +679,8 @@ export function getTransactionToName({
   const matchingAccount = internalAccountsMap[checksummedToAddress];
 
   const transactionToName =
-    (networkAddressBook &&
-      networkAddressBook[checksummedToAddress] &&
-      networkAddressBook[checksummedToAddress].name) ||
-    (matchingAccount && matchingAccount.metadata.name);
+    networkAddressBook?.[checksummedToAddress]?.name ||
+    matchingAccount?.metadata.name;
 
   return transactionToName;
 }
@@ -619,26 +693,39 @@ export function getTransactionToName({
  * @param {object} accountAddedTimeInsertPointFound - Flag to see if the import time was already found
  */
 export function addAccountTimeFlagFilter(
-  transaction,
-  addedAccountTime,
-  accountAddedTimeInsertPointFound,
-) {
+  transaction: { time: number },
+  addedAccountTime: number,
+  accountAddedTimeInsertPointFound: boolean,
+): boolean {
   return (
     transaction.time <= addedAccountTime && !accountAddedTimeInsertPointFound
   );
 }
 
 //Leaving here a comment to re-visit this function since it's probably be possible to deprecate
-export function getNormalizedTxState(state) {
+export function getNormalizedTxState(state: {
+  transaction?: Record<string, unknown> & {
+    transaction?: Record<string, unknown>;
+  };
+}): Record<string, unknown> | undefined {
   return state.transaction
     ? { ...state.transaction, ...state.transaction.transaction }
     : undefined;
 }
 
-export const getActiveTabUrl = ({ browser = {} }) =>
-  browser.tabs &&
-  browser.activeTab &&
-  browser.tabs.find(({ id }) => id === browser.activeTab)?.url;
+export const getActiveTabUrl = ({
+  browser = {},
+}: {
+  browser?: {
+    tabs?: { id: number | string; url?: string }[];
+    activeTab?: number | string;
+  };
+}): string | undefined =>
+  (browser.tabs &&
+    browser.activeTab &&
+    browser.tabs.find(({ id }) => id === browser.activeTab)?.url) as
+    | string
+    | undefined;
 
 export const calculateAmountsEIP1559 = ({
   value,
@@ -651,6 +738,17 @@ export const calculateAmountsEIP1559 = ({
   gasFeeMaxConversion,
   gasFeeMaxHex,
   gasFeeMinHex,
+}: {
+  value: string;
+  nativeCurrency?: string;
+  currentCurrency?: string;
+  conversionRate?: number;
+  gasFeeMinConversion: string;
+  gasFeeMinNative: string;
+  gasFeeMaxNative: string;
+  gasFeeMaxConversion: string;
+  gasFeeMaxHex: string;
+  gasFeeMinHex: string;
 }) => {
   // amount numbers
   const amountConversion = getValueFromWeiHex({
@@ -703,7 +801,14 @@ export const calculateEthEIP1559 = ({
   totalMinConversion,
   totalMaxNative,
   totalMaxConversion,
-}) => {
+}: {
+  nativeCurrency?: string;
+  currentCurrency: string;
+  totalMinNative: string;
+  totalMinConversion: string;
+  totalMaxNative: string;
+  totalMaxConversion: string;
+}): string[] => {
   const renderableTotalMinNative = formatETHFee(totalMinNative, nativeCurrency);
   const renderableTotalMinConversion = formatCurrency(
     totalMinConversion,
@@ -734,19 +839,30 @@ export const calculateERC20EIP1559 = ({
   symbol,
   totalMinNative,
   totalMaxNative,
-}) => {
+}: {
+  currentCurrency: string;
+  nativeCurrency?: string;
+  conversionRate?: number;
+  exchangeRate?: number;
+  tokenAmount: string;
+  totalMinConversion: string;
+  totalMaxConversion: string;
+  symbol: string;
+  totalMinNative: string;
+  totalMaxNative: string;
+}): string[] => {
   const tokenAmountConversion = convertTokenToFiat({
     value: tokenAmount,
     toCurrency: currentCurrency,
-    conversionRate,
-    contractExchangeRate: exchangeRate,
+    conversionRate: conversionRate as number,
+    contractExchangeRate: exchangeRate as number,
   });
 
   const tokenTotalMinConversion = roundExponential(
-    addFiat(tokenAmountConversion, totalMinConversion),
+    addFiat(tokenAmountConversion as string, totalMinConversion),
   );
   const tokenTotalMaxConversion = roundExponential(
-    addFiat(tokenAmountConversion, totalMaxConversion),
+    addFiat(tokenAmountConversion as string, totalMaxConversion),
   );
 
   const renderableTotalMinConversion = formatCurrency(
@@ -774,13 +890,33 @@ export const calculateERC20EIP1559 = ({
   ];
 };
 
+interface GasFeeEstimateLevel {
+  maxWaitTimeEstimate?: number;
+  minWaitTimeEstimate?: number;
+  suggestedMaxPriorityFeePerGas?: string;
+}
+
 export const calculateEIP1559Times = ({
   suggestedMaxPriorityFeePerGas,
   suggestedMaxFeePerGas,
   selectedOption,
   recommended,
-  gasFeeEstimates,
-}) => {
+  gasFeeEstimates: gasFeeEstimatesParam,
+}: {
+  suggestedMaxPriorityFeePerGas: string | number;
+  suggestedMaxFeePerGas: string | number;
+  selectedOption?: string | null;
+  recommended?: string;
+  gasFeeEstimates?: unknown;
+}): {
+  timeEstimate: string;
+  timeEstimateColor: string;
+  timeEstimateId: string | undefined;
+} => {
+  const gasFeeEstimates = gasFeeEstimatesParam as Record<
+    string,
+    GasFeeEstimateLevel
+  >;
   let timeEstimate = strings('times_eip1559.unknown');
   let timeEstimateColor = 'grey';
   let timeEstimateId;
@@ -812,8 +948,7 @@ export const calculateEIP1559Times = ({
 
     if (
       selectedOption &&
-      gasFeeEstimates &&
-      gasFeeEstimates[LOW] &&
+      gasFeeEstimates?.[LOW] &&
       gasFeeEstimates[MEDIUM] &&
       gasFeeEstimates[HIGH]
     ) {
@@ -870,13 +1005,13 @@ export const calculateEIP1559Times = ({
 
     const { GasFeeController } = Engine.context;
     const times = GasFeeController.getTimeEstimate(
-      suggestedMaxPriorityFeePerGas,
-      suggestedMaxFeePerGas,
+      suggestedMaxPriorityFeePerGas as string,
+      suggestedMaxFeePerGas as string,
     );
 
     if (
       !times ||
-      times === 'unknown' ||
+      (times as unknown as string) === 'unknown' ||
       Object.keys(times).length < 2 ||
       times.upperTimeBound === 'unknown'
     ) {
@@ -937,6 +1072,12 @@ export const calculateEIP1559GasFeeHexes = ({
   estimatedBaseFeeHex,
   suggestedMaxFeePerGasHex,
   suggestedMaxPriorityFeePerGasHex,
+}: {
+  gasLimitHex: string;
+  estimatedGasLimitHex?: string;
+  estimatedBaseFeeHex: string;
+  suggestedMaxFeePerGasHex: string;
+  suggestedMaxPriorityFeePerGasHex: string;
 }) => {
   // Hex calculations
   const estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex = addCurrencies(
@@ -947,7 +1088,7 @@ export const calculateEIP1559GasFeeHexes = ({
       aBase: MULTIPLIER_HEX,
       bBase: MULTIPLIER_HEX,
     },
-  );
+  ) as string;
 
   const maxPriorityFeePerGasTimesGasLimitHex = multiplyCurrencies(
     suggestedMaxPriorityFeePerGasHex,
@@ -957,7 +1098,7 @@ export const calculateEIP1559GasFeeHexes = ({
       multiplicandBase: MULTIPLIER_HEX,
       multiplierBase: MULTIPLIER_HEX,
     },
-  );
+  ) as string;
 
   const gasFeeMinHex = multiplyCurrencies(
     estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex,
@@ -967,7 +1108,7 @@ export const calculateEIP1559GasFeeHexes = ({
       multiplicandBase: MULTIPLIER_HEX,
       multiplierBase: MULTIPLIER_HEX,
     },
-  );
+  ) as string;
   const gasFeeMaxHex = multiplyCurrencies(
     suggestedMaxFeePerGasHex,
     gasLimitHex,
@@ -976,7 +1117,7 @@ export const calculateEIP1559GasFeeHexes = ({
       multiplicandBase: MULTIPLIER_HEX,
       multiplierBase: MULTIPLIER_HEX,
     },
-  );
+  ) as string;
 
   return {
     estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex,
@@ -985,6 +1126,26 @@ export const calculateEIP1559GasFeeHexes = ({
     gasFeeMaxHex,
   };
 };
+
+export interface SelectedGasFee {
+  suggestedMaxPriorityFeePerGas?: string | number;
+  suggestedMaxFeePerGas?: string | number;
+  estimatedBaseFee?: string;
+  suggestedGasLimit?: string | number;
+  suggestedEstimatedGasLimit?: string | number;
+  suggestedGasPrice?: string | number;
+  selectedOption?: string | null;
+  recommended?: string;
+  [key: string]: unknown;
+}
+
+interface SelectedAsset {
+  isETH?: boolean;
+  tokenId?: string;
+  address?: string;
+  symbol?: string;
+  decimals?: number;
+}
 
 export const parseTransactionEIP1559 = (
   {
@@ -999,8 +1160,24 @@ export const parseTransactionEIP1559 = (
       transaction: {},
     },
     gasFeeEstimates,
+  }: {
+    selectedGasFee: SelectedGasFee;
+    swapsParams?: {
+      tradeValue?: string;
+      isNativeAsset?: boolean;
+      sourceAmount?: string;
+    };
+    contractExchangeRates: Record<string, unknown>;
+    conversionRate?: number;
+    currentCurrency?: string;
+    nativeCurrency?: string;
+    transactionState?: {
+      selectedAsset: SelectedAsset;
+      transaction: { value?: string; data?: string };
+    };
+    gasFeeEstimates?: unknown;
   },
-  { onlyGas } = {},
+  { onlyGas }: { onlyGas?: boolean } = {},
 ) => {
   value = value || '0x0';
 
@@ -1016,10 +1193,13 @@ export const parseTransactionEIP1559 = (
     suggestedMaxPriorityFeePerGas,
   );
   const suggestedMaxFeePerGasHex = decGWEIToHexWEI(suggestedMaxFeePerGas);
-  const gasLimitHex = BNToHex(new BN(selectedGasFee.suggestedGasLimit));
-  const estimatedGasLimitHex =
-    selectedGasFee.suggestedEstimatedGasLimit &&
-    BNToHex(new BN(selectedGasFee.suggestedEstimatedGasLimit));
+  const gasLimitHex = BNToHex(
+    new BN(selectedGasFee.suggestedGasLimit as string | number),
+  );
+  const estimatedGasLimitHex = (selectedGasFee.suggestedEstimatedGasLimit &&
+    BNToHex(new BN(selectedGasFee.suggestedEstimatedGasLimit))) as
+    | string
+    | undefined;
 
   const { timeEstimate, timeEstimateColor, timeEstimateId } =
     calculateEIP1559Times({
@@ -1042,28 +1222,28 @@ export const parseTransactionEIP1559 = (
 
   if (swapsParams) {
     const { tradeValue, isNativeAsset, sourceAmount } = swapsParams;
-    gasFeeMinHex = addCurrencies(gasFeeMinHex, tradeValue, {
+    gasFeeMinHex = addCurrencies(gasFeeMinHex, tradeValue as string, {
       toNumericBase: 'hex',
       aBase: MULTIPLIER_HEX,
       bBase: MULTIPLIER_HEX,
-    });
-    gasFeeMaxHex = addCurrencies(gasFeeMaxHex, tradeValue, {
+    }) as string;
+    gasFeeMaxHex = addCurrencies(gasFeeMaxHex, tradeValue as string, {
       toNumericBase: 'hex',
       aBase: MULTIPLIER_HEX,
       bBase: MULTIPLIER_HEX,
-    });
+    }) as string;
 
     if (isNativeAsset) {
-      gasFeeMinHex = subtractCurrencies(gasFeeMinHex, sourceAmount, {
+      gasFeeMinHex = subtractCurrencies(gasFeeMinHex, sourceAmount as string, {
         toNumericBase: 'hex',
         aBase: MULTIPLIER_HEX,
         bBase: 10,
-      });
-      gasFeeMaxHex = subtractCurrencies(gasFeeMaxHex, sourceAmount, {
+      }) as string;
+      gasFeeMaxHex = subtractCurrencies(gasFeeMaxHex, sourceAmount as string, {
         toNumericBase: 'hex',
         aBase: MULTIPLIER_HEX,
         bBase: 10,
-      });
+      }) as string;
     }
   }
 
@@ -1073,14 +1253,14 @@ export const parseTransactionEIP1559 = (
     toCurrency: nativeCurrency,
     numberOfDecimals: 6,
     conversionRate,
-  });
+  }) as string;
   const maxPriorityFeeConversion = getTransactionFee({
     value: maxPriorityFeePerGasTimesGasLimitHex,
     fromCurrency: nativeCurrency,
     toCurrency: currentCurrency,
     numberOfDecimals: 2,
     conversionRate,
-  });
+  }) as string;
 
   const renderableMaxPriorityFeeNative = formatETHFee(
     maxPriorityFeeNative,
@@ -1090,7 +1270,7 @@ export const parseTransactionEIP1559 = (
   );
   const renderableMaxPriorityFeeConversion = formatCurrency(
     maxPriorityFeeConversion,
-    currentCurrency,
+    currentCurrency as string,
   );
 
   const maxFeePerGasNative = getTransactionFee({
@@ -1099,14 +1279,14 @@ export const parseTransactionEIP1559 = (
     toCurrency: nativeCurrency,
     numberOfDecimals: 6,
     conversionRate,
-  });
+  }) as string;
   const maxFeePerGasConversion = getTransactionFee({
     value: gasFeeMaxHex,
     fromCurrency: nativeCurrency,
     toCurrency: currentCurrency,
     numberOfDecimals: 2,
     conversionRate,
-  });
+  }) as string;
   const renderableMaxFeePerGasNative = formatETHFee(
     maxFeePerGasNative,
     nativeCurrency,
@@ -1114,7 +1294,7 @@ export const parseTransactionEIP1559 = (
   );
   const renderableMaxFeePerGasConversion = formatCurrency(
     maxFeePerGasConversion,
-    currentCurrency,
+    currentCurrency as string,
   );
 
   // Gas fee min numbers
@@ -1124,14 +1304,14 @@ export const parseTransactionEIP1559 = (
     toCurrency: nativeCurrency,
     numberOfDecimals: 6,
     conversionRate,
-  });
+  }) as string;
   const gasFeeMinConversion = getTransactionFee({
     value: gasFeeMinHex,
     fromCurrency: nativeCurrency,
     toCurrency: currentCurrency,
     numberOfDecimals: 2,
     conversionRate,
-  });
+  }) as string;
 
   // Gas fee max numbers
   const gasFeeMaxNative = getTransactionFee({
@@ -1140,14 +1320,14 @@ export const parseTransactionEIP1559 = (
     toCurrency: nativeCurrency,
     numberOfDecimals: 6,
     conversionRate,
-  });
+  }) as string;
   const gasFeeMaxConversion = getTransactionFee({
     value: gasFeeMaxHex,
     fromCurrency: nativeCurrency,
     toCurrency: currentCurrency,
     numberOfDecimals: 2,
     conversionRate,
-  });
+  }) as string;
 
   const renderableGasFeeMinNative = formatETHFee(
     gasFeeMinNative,
@@ -1156,7 +1336,7 @@ export const parseTransactionEIP1559 = (
   );
   const renderableGasFeeMinConversion = formatCurrency(
     gasFeeMinConversion,
-    currentCurrency,
+    currentCurrency as string,
   );
   const renderableGasFeeMaxNative = formatETHFee(
     gasFeeMaxNative,
@@ -1165,7 +1345,7 @@ export const parseTransactionEIP1559 = (
   );
   const renderableGasFeeMaxConversion = formatCurrency(
     gasFeeMaxConversion,
-    currentCurrency,
+    currentCurrency as string,
   );
 
   // This is the total transaction value for comparing with account balance
@@ -1241,7 +1421,7 @@ export const parseTransactionEIP1559 = (
       renderableTotalMaxConversion,
     ] = calculateEthEIP1559({
       nativeCurrency,
-      currentCurrency,
+      currentCurrency: currentCurrency as string,
       totalMinNative,
       totalMinConversion,
       totalMaxNative,
@@ -1250,13 +1430,21 @@ export const parseTransactionEIP1559 = (
   } else {
     const { address, symbol = 'ERC20', decimals } = selectedAsset;
 
-    const [, , rawAmount] = decodeTransferData('transfer', data);
+    const [, , rawAmount] = decodeTransferData(
+      'transfer',
+      data as string,
+    ) as string[];
     const rawAmountString = parseInt(rawAmount, 16).toLocaleString('fullwide', {
       useGrouping: false,
     });
-    const tokenAmount = renderFromTokenMinimalUnit(rawAmountString, decimals);
+    const tokenAmount = renderFromTokenMinimalUnit(
+      rawAmountString,
+      decimals as number,
+    );
 
-    const exchangeRate = contractExchangeRates[address]?.price;
+    const exchangeRate = (
+      contractExchangeRates[address as string] as { price?: number } | undefined
+    )?.price;
 
     [
       renderableTotalMinNative,
@@ -1264,7 +1452,7 @@ export const parseTransactionEIP1559 = (
       renderableTotalMaxNative,
       renderableTotalMaxConversion,
     ] = calculateERC20EIP1559({
-      currentCurrency,
+      currentCurrency: currentCurrency as string,
       nativeCurrency,
       conversionRate,
       exchangeRate,
@@ -1323,21 +1511,34 @@ export const parseTransactionLegacy = (
     conversionRate,
     currentCurrency,
     transactionState: { selectedAsset, transaction: { value, data } } = {
-      selectedAsset: '',
+      selectedAsset: {},
       transaction: {},
     },
     ticker,
     selectedGasFee,
     multiLayerL1FeeTotal,
+  }: {
+    contractExchangeRates?: Record<string, unknown>;
+    conversionRate?: number;
+    currentCurrency?: string;
+    transactionState?: {
+      selectedAsset: SelectedAsset;
+      transaction: { value?: string; data?: string };
+    };
+    ticker?: string;
+    selectedGasFee: SelectedGasFee;
+    multiLayerL1FeeTotal?: string;
   },
-  { onlyGas } = {},
+  { onlyGas }: { onlyGas?: boolean } = {},
 ) => {
-  const gasLimit = new BN(selectedGasFee.suggestedGasLimit);
-  const gasLimitHex = BNToHex(new BN(selectedGasFee.suggestedGasLimit));
+  const gasLimit = new BN(selectedGasFee.suggestedGasLimit as string | number);
+  const gasLimitHex = BNToHex(
+    new BN(selectedGasFee.suggestedGasLimit as string | number),
+  );
 
-  let weiTransactionFee =
-    gasLimit &&
-    gasLimit.mul(hexToBN(decGWEIToHexWEI(selectedGasFee.suggestedGasPrice)));
+  let weiTransactionFee = gasLimit?.mul(
+    hexToBN(decGWEIToHexWEI(selectedGasFee.suggestedGasPrice as string)),
+  );
   if (multiLayerL1FeeTotal) {
     weiTransactionFee = hexToBN(
       sumHexWEIs([BNToHex(weiTransactionFee), multiLayerL1FeeTotal]),
@@ -1345,14 +1546,14 @@ export const parseTransactionLegacy = (
   }
 
   const suggestedGasPriceHex = decGWEIToHexWEI(
-    selectedGasFee.suggestedGasPrice,
+    selectedGasFee.suggestedGasPrice as string,
   );
 
   const valueBN = value ? hexToBN(value) : hexToBN('0x0');
   const transactionFeeFiat = weiToFiat(
     weiTransactionFee,
     conversionRate,
-    currentCurrency,
+    currentCurrency as string,
   );
   const parsedTicker = getTicker(ticker);
   const transactionFee = `${renderFromWei(weiTransactionFee)} ${parsedTicker}`;
@@ -1374,19 +1575,17 @@ export const parseTransactionLegacy = (
   let transactionTotalAmount, transactionTotalAmountFiat;
 
   if (selectedAsset.isETH) {
-    const transactionTotalAmountBN =
-      weiTransactionFee && weiTransactionFee.add(valueBN);
+    const transactionTotalAmountBN = weiTransactionFee?.add(valueBN);
     transactionTotalAmount = `${renderFromWei(
       transactionTotalAmountBN,
     )} ${parsedTicker}`;
     transactionTotalAmountFiat = weiToFiat(
       transactionTotalAmountBN,
       conversionRate,
-      currentCurrency,
+      currentCurrency as string,
     );
   } else if (selectedAsset.tokenId) {
-    const transactionTotalAmountBN =
-      weiTransactionFee && weiTransactionFee.add(valueBN);
+    const transactionTotalAmountBN = weiTransactionFee?.add(valueBN);
     transactionTotalAmount = `${renderFromWei(
       weiTransactionFee,
     )} ${parsedTicker}`;
@@ -1394,26 +1593,33 @@ export const parseTransactionLegacy = (
     transactionTotalAmountFiat = weiToFiat(
       transactionTotalAmountBN,
       conversionRate,
-      currentCurrency,
+      currentCurrency as string,
     );
   } else if (data) {
     const { address, symbol = 'ERC20', decimals } = selectedAsset;
-    const [, , rawAmount] = decodeTransferData('transfer', data);
+    const [, , rawAmount] = decodeTransferData('transfer', data) as string[];
     const rawAmountString = parseInt(rawAmount, 16).toLocaleString('fullwide', {
       useGrouping: false,
     });
-    const transferValue = renderFromTokenMinimalUnit(rawAmountString, decimals);
+    const transferValue = renderFromTokenMinimalUnit(
+      rawAmountString,
+      decimals as number,
+    );
     const transactionValue = `${transferValue} ${symbol}`;
-    const exchangeRate = contractExchangeRates?.[address]?.price;
+    const exchangeRate = (
+      contractExchangeRates?.[address as string] as
+        | { price?: number }
+        | undefined
+    )?.price;
     const transactionFeeFiatNumber = weiToFiatNumber(
       weiTransactionFee,
-      conversionRate,
+      conversionRate as number,
     );
 
     const transactionValueFiatNumber = balanceToFiatNumber(
       transferValue,
-      conversionRate,
-      exchangeRate,
+      conversionRate as number,
+      exchangeRate as number,
     );
     transactionTotalAmount = `${transactionValue} + ${renderFromWei(
       weiTransactionFee,
@@ -1421,7 +1627,7 @@ export const parseTransactionLegacy = (
     transactionTotalAmountFiat = renderFiatAddition(
       transactionValueFiatNumber,
       transactionFeeFiatNumber,
-      currentCurrency,
+      currentCurrency as string,
     );
   }
 
@@ -1446,10 +1652,14 @@ export const parseTransactionLegacy = (
  * @param {string} accounts - Map of accounts to information objects including balances
  * @returns {string} - Whether the balance is validated or not
  */
-export function validateTransactionActionBalance(transaction, rate, accounts) {
+export function validateTransactionActionBalance(
+  transaction: { transaction: TransactionParams },
+  rate: number,
+  accounts: Record<string, { balance: string }>,
+): boolean {
   try {
     const checksummedFrom = safeToChecksumAddress(transaction.transaction.from);
-    const balance = accounts[checksummedFrom].balance;
+    const balance = accounts[checksummedFrom as string].balance;
 
     let gasPrice = transaction.transaction.gasPrice;
     const transactionToCheck = transaction.transaction;
@@ -1472,15 +1682,21 @@ export function validateTransactionActionBalance(transaction, rate, accounts) {
 
 /**
  * @param {number|string|BigNumber} value
- * @param {number=} decimals
+ * @param {number} [decimals]
  * @returns {BigNumber}
  */
-export function calcTokenAmount(value, decimals) {
+export function calcTokenAmount(
+  value: number | string | BigNumber,
+  decimals?: number,
+): BigNumber {
   const divisor = new BigNumber(10).pow(decimals ?? 0);
   return new BigNumber(String(value)).div(divisor);
 }
 
-export function calcTokenValue(value, decimals) {
+export function calcTokenValue(
+  value: number | string | BigNumber,
+  decimals?: number | string,
+): BigNumber {
   const multiplier = Math.pow(10, Number(decimals || 0));
   return new BigNumber(String(value)).times(multiplier);
 }
@@ -1488,14 +1704,22 @@ export function calcTokenValue(value, decimals) {
 /**
  * Attempts to get the address parameter of the given token transaction data
  * (i.e. function call) per the Human Standard Token ABI, in the following
- * order:
- *   - The '_to' parameter, if present
- *   - The first parameter, if present
+ * order: the '_to' parameter, if present, otherwise the first parameter.
  *
  * @param {Object} tokenData - ethers Interface token data.
  * @returns {string | undefined} A lowercase address string.
  */
-export function getTokenAddressParam(tokenData = {}) {
+interface TokenData {
+  name?: string;
+  args?: {
+    _to?: { toString(): string } | string;
+    _value?: { _hex?: string; toString(): string };
+  } & Record<number, { _hex?: string; toString(): string }>;
+}
+
+export function getTokenAddressParam(
+  tokenData: TokenData = {},
+): string | undefined {
   const value = tokenData?.args?._to || tokenData?.args?.[0];
   return value?.toString().toLowerCase();
 }
@@ -1507,7 +1731,9 @@ export function getTokenAddressParam(tokenData = {}) {
  * @param {Object} tokenData - ethers Interface token data.
  * @returns {string | undefined} A hex string value.
  */
-export function getTokenValueParamAsHex(tokenData = {}) {
+export function getTokenValueParamAsHex(
+  tokenData: TokenData = {},
+): string | undefined {
   const value = tokenData?.args?._value?._hex || tokenData?.args?.[1]._hex;
   return value?.toLowerCase();
 }
@@ -1519,13 +1745,17 @@ export function getTokenValueParamAsHex(tokenData = {}) {
  * @param {Object} tokenData - ethers Interface token data.
  * @returns {string | undefined} A decimal string value.
  */
-export function getTokenValueParam(tokenData = {}) {
+export function getTokenValueParam(
+  tokenData: TokenData = {},
+): string | undefined {
   return tokenData?.args?._value?.toString();
 }
 
-export function getTokenValue(tokenParams = []) {
+export function getTokenValue(
+  tokenParams: { name?: string; value?: string }[] = [],
+): string | undefined {
   const valueData = tokenParams.find((param) => param.name === '_value');
-  return valueData && valueData.value;
+  return valueData?.value;
 }
 
 /**
@@ -1537,10 +1767,10 @@ export function getTokenValue(tokenParams = []) {
  * @returns A new transaction object with the token allowance encoded
  */
 export const generateTxWithNewTokenAllowance = (
-  tokenValue,
-  tokenDecimals,
-  spenderAddress,
-  transaction,
+  tokenValue: number | string | BN,
+  tokenDecimals: number,
+  spenderAddress: string,
+  transaction: { data?: string } & Record<string, unknown>,
 ) => {
   const uint = toTokenMinimalUnit(tokenValue, tokenDecimals);
   const approvalData = generateApprovalData({
@@ -1562,44 +1792,47 @@ export const generateTxWithNewTokenAllowance = (
  * @param {Number} tokenDecimals - Token decimal
  * @returns String indicating the minimum token allowance
  */
-export const minimumTokenAllowance = (tokenDecimals) => {
+export const minimumTokenAllowance = (tokenDecimals: number): string => {
   if (tokenDecimals < 0) {
     throw new Error(NEGATIVE_TOKEN_DECIMALS);
   }
   return Math.pow(10, -1 * tokenDecimals)
     .toFixed(tokenDecimals)
-    .toString(10);
+    .toString();
 };
 
 /**
  * For a MM Swap tx: Determines if the transaction is an ERC20 approve tx OR the actual swap tx where tokens are transferred
  */
 export const getIsSwapApproveOrSwapTransaction = (
-  data,
-  origin,
-  to,
-  chainId,
-) => {
+  data: string | undefined,
+  origin: string | undefined,
+  to: string | undefined,
+  chainId: string,
+): boolean => {
   if (!data) {
     return false;
   }
 
   // if approval data includes metaswap contract
   // if destination address is metaswap contract
-  return (
-    origin === process.env.MM_FOX_CODE &&
+  return (origin === process.env.MM_FOX_CODE &&
     to &&
-    (swapsUtils.isValidContractAddress(chainId, to) ||
+    (swapsUtils.isValidContractAddress(chainId as Hex, to) ||
       (data?.startsWith(APPROVE_FUNCTION_SIGNATURE) &&
         decodeApproveData(data).spenderAddress?.toLowerCase() ===
-          swapsUtils.getSwapsContractAddress(chainId)))
-  );
+          swapsUtils.getSwapsContractAddress(chainId as Hex)))) as boolean;
 };
 
 /**
  * For a MM Swap tx: Determines if the transaction is an ERC20 approve tx
  */
-export const getIsSwapApproveTransaction = (data, origin, to, chainId) => {
+export const getIsSwapApproveTransaction = (
+  data: string | undefined,
+  origin: string | undefined,
+  to: string | undefined,
+  chainId: string,
+) => {
   if (!data) {
     return false;
   }
@@ -1609,15 +1842,23 @@ export const getIsSwapApproveTransaction = (data, origin, to, chainId) => {
     data && getFourByteSignature(data) === APPROVE_FUNCTION_SIGNATURE;
   const isSpenderSwapsContract =
     decodeApproveData(data).spenderAddress?.toLowerCase() ===
-    swapsUtils.getSwapsContractAddress(chainId);
+    swapsUtils.getSwapsContractAddress(chainId as Hex);
 
-  return isFromSwaps && to && isApproveFunction && isSpenderSwapsContract;
+  return (isFromSwaps &&
+    to &&
+    isApproveFunction &&
+    isSpenderSwapsContract) as boolean;
 };
 
 /**
  * For a MM Swap tx: Determines if the transaction is the actual swap tx where tokens are transferred
  */
-export const getIsSwapTransaction = (data, origin, to, chainId) => {
+export const getIsSwapTransaction = (
+  data: string | undefined,
+  origin: string | undefined,
+  to: string | undefined,
+  chainId: string,
+) => {
   const isSwapApproveOrSwapTransaction = getIsSwapApproveOrSwapTransaction(
     data,
     origin,
@@ -1632,7 +1873,9 @@ export const getIsSwapTransaction = (data, origin, to, chainId) => {
 /**
  * For a MM Swap tx: Determines if the transaction is a native swap
  */
-export const getIsNativeTokenTransferred = (txParams) =>
+export const getIsNativeTokenTransferred = (txParams: {
+  value?: string;
+}): boolean =>
   txParams?.value !== '0x0';
 
 /**
@@ -1641,7 +1884,7 @@ export const getIsNativeTokenTransferred = (txParams) =>
  * @param {string} tokenStandard - The token standard to check.
  * @returns {boolean} - True if the token standard is ERC721 or ERC1155, otherwise false.
  */
-export function isNFTTokenStandard(tokenStandard) {
+export function isNFTTokenStandard(tokenStandard: string): boolean {
   return [ERC721, ERC1155].includes(tokenStandard);
 }
 
@@ -1651,8 +1894,11 @@ export function isNFTTokenStandard(tokenStandard) {
  * @param {TransactionController} transactionController - The transaction controller
  * @returns {TransactionMeta} The transaction meta object
  */
-export function getTransactionById(transactionId, transactionController) {
+export function getTransactionById(
+  transactionId: string,
+  transactionController: { state: { transactions: { id: string }[] } },
+): TransactionMeta | undefined {
   return transactionController.state.transactions.find(
     (tx) => tx.id === transactionId,
-  );
+  ) as TransactionMeta | undefined;
 }
