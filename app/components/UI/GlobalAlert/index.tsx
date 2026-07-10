@@ -11,7 +11,7 @@ import ElevatedView, {
 } from 'react-native-elevated-view';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { RootState } from '../../../reducers';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) => ({
   ...StyleSheet.create({
@@ -74,8 +74,6 @@ interface DispatchProps {
 type Props = StateProps & DispatchProps;
 
 class GlobalAlert extends PureComponent<Props> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   onClose = () => {
     this.props.dismissAlert();
   };
@@ -103,12 +101,12 @@ class GlobalAlert extends PureComponent<Props> {
   }
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     return createStyles(colors);
   };
 
   renderClipboardAlert = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = this.getStyles();
 
     return (

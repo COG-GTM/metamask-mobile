@@ -41,6 +41,7 @@ import { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAw
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import { getPhishingTestResultAsync } from '../../../util/phishingDetection';
 import { RootState } from '../../../reducers';
+import type { Theme } from '../../../util/theme/models';
 
 interface CurrentPageInformation {
   title?: string;
@@ -124,8 +125,6 @@ interface State {
  * Account access approval component
  */
 class AccountApproval extends PureComponent<Props, State> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   private _isMounted = false;
 
   state: State = {
@@ -346,7 +345,7 @@ class AccountApproval extends PureComponent<Props, State> {
   render = () => {
     const { currentPageInformation, selectedAddress } = this.props;
     const { isUrlFlaggedAsPhishing } = this.state;
-    const { colors, typography } = this.context || mockTheme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
     const hasRememberMe =
       !currentPageInformation.reconnect &&

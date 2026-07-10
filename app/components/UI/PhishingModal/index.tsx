@@ -20,7 +20,7 @@ import {
   ButtonVariants,
   ButtonWidthTypes,
 } from '../../../component-library/components/Buttons/Button/Button.types';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -126,8 +126,6 @@ interface PhishingModalProps {
 }
 
 export default class PhishingModal extends PureComponent<PhishingModalProps> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   shareToTwitter = () => {
     const tweetText =
       'MetaMask just protected me from a phishing attack! Remember to always stay vigilant when clicking on links. Learn more at https://metamask.io';
@@ -142,7 +140,7 @@ export default class PhishingModal extends PureComponent<PhishingModalProps> {
   };
 
   render() {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

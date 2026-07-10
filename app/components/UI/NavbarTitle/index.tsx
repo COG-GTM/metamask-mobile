@@ -23,7 +23,7 @@ import Text, {
 import { selectNetworkName } from '../../../selectors/networkInfos';
 import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { RootState } from '../../../reducers';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const createStyles = (colors: Colors) =>
@@ -95,8 +95,6 @@ type Props = OwnProps & StateProps;
  * showing the view title and the selected network
  */
 class NavbarTitle extends PureComponent<Props> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   static defaultProps = {
     translate: true,
     showSelectedNetwork: true,
@@ -139,7 +137,7 @@ class NavbarTitle extends PureComponent<Props> {
     } = this.props;
     let name = null;
 
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (selectedNetworkName || networkName) {

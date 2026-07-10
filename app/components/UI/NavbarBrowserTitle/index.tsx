@@ -9,7 +9,7 @@ import { mockTheme, ThemeContext } from '../../../util/theme';
 import { selectProviderConfig } from '../../../selectors/networkController';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
 import { RootState } from '../../../reducers';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 type ProviderConfig = ReturnType<typeof selectProviderConfig>;
 
@@ -101,8 +101,6 @@ type Props = OwnProps & StateProps;
  * showing the view title and the selected network
  */
 class NavbarBrowserTitle extends PureComponent<Props> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   onTitlePress = () => {
     this.props.route?.params?.showUrlModal?.();
   };
@@ -127,7 +125,7 @@ class NavbarBrowserTitle extends PureComponent<Props> {
 
   render = () => {
     const { https, providerConfig, hostname, error, icon } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const networkKey = providerConfig.type as keyof typeof Networks;
     const color =

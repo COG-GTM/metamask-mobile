@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { BrowserViewSelectorsIDs } from '../../../../../e2e/selectors/Browser/BrowserView.selectors';
 import { RootState } from '../../../../reducers';
-import type { Colors } from '../../../../util/theme/models';
+import type { Colors, Theme } from '../../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -53,11 +53,9 @@ interface StateProps {
 type Props = OwnProps & StateProps;
 
 class TabCountIcon extends PureComponent<Props> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   render() {
     const { tabCount, style } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

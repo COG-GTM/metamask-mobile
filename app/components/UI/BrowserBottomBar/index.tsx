@@ -16,7 +16,7 @@ import {
   type IUseMetricsHook,
 } from '../../../components/hooks/useMetrics';
 import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 // NOTE: not needed anymore. The use of BottomTabBar already accomodates the home indicator height
 // TODO: test on an android device
@@ -101,8 +101,6 @@ interface BrowserBottomBarProps {
  * tab management, url change and other options
  */
 class BrowserBottomBar extends PureComponent<BrowserBottomBarProps> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   trackSearchEvent = () => {
     this.props.metrics.trackEvent(
       this.props.metrics
@@ -138,7 +136,7 @@ class BrowserBottomBar extends PureComponent<BrowserBottomBarProps> {
       showUrlModal,
       toggleOptions,
     } = this.props;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const onSearchPress = () => {

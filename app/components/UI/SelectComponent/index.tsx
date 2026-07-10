@@ -14,7 +14,7 @@ import dismissKeyboard from 'react-native/Libraries/Utilities/dismissKeyboard';
 import IconCheck from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 const ROW_HEIGHT = 35;
 const createStyles = (colors: Colors) =>
@@ -130,8 +130,6 @@ export default class SelectComponent extends PureComponent<
   SelectComponentProps,
   SelectComponentState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   state = {
     pickerVisible: false,
   };
@@ -185,7 +183,7 @@ export default class SelectComponent extends PureComponent<
   };
 
   renderDropdownSelector = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

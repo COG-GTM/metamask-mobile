@@ -32,7 +32,7 @@ import ApproveTransactionHeader from '../../Views/confirmations/legacy/component
 import Identicon from '../Identicon';
 import { selectInternalAccounts } from '../../../selectors/accountsController';
 import { RootState } from '../../../reducers';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -145,8 +145,6 @@ interface StateProps {
 type Props = OwnProps & StateProps;
 
 class AccountInfoCard extends PureComponent<Props> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   render() {
     const {
       accounts,
@@ -163,7 +161,7 @@ class AccountInfoCard extends PureComponent<Props> {
 
     const fromAddress = safeToChecksumAddress(rawFromAddress) as string;
     const accountLabelTag = getLabelTextByAddress(fromAddress);
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const weiBalance = accounts?.[fromAddress]?.balance
       ? hexToBN(accounts[fromAddress].balance)

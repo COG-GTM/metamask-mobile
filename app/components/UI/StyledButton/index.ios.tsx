@@ -3,6 +3,7 @@ import { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import Button from '@metamask/react-native-button';
 import getStyles from './styledButtonStyles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { Theme } from '../../../util/theme/models';
 
 export interface StyledButtonProps {
   /**
@@ -58,8 +59,6 @@ export interface StyledButtonProps {
  * {@link https://github.com/MetaMask/metamask-mobile/issues/8106}
  */
 export default class StyledButton extends PureComponent<StyledButtonProps> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   static defaultProps = {
     styleDisabled: { opacity: 0.6 },
     disabledContainerStyle: { opacity: 0.6 },
@@ -77,7 +76,7 @@ export default class StyledButton extends PureComponent<StyledButtonProps> {
       testID,
       disabledContainerStyle,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const { fontStyle, containerStyle } = getStyles(type, colors);
 
     return (

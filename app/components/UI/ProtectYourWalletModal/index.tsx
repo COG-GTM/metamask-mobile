@@ -19,7 +19,7 @@ import {
 } from '../../../components/hooks/useMetrics';
 import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { RootState } from '../../../reducers';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 const protectWalletImage = require('../../../images/explain-backup-seedphrase.png'); // eslint-disable-line
 
@@ -110,8 +110,6 @@ type Props = OwnProps & StateProps & DispatchProps;
  * View that renders an action modal
  */
 class ProtectYourWalletModal extends PureComponent<Props> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   goToBackupFlow = () => {
     this.props.protectWalletModalNotVisible();
     this.props.navigation.navigate(
@@ -154,7 +152,7 @@ class ProtectYourWalletModal extends PureComponent<Props> {
   };
 
   render() {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

@@ -17,7 +17,7 @@ import withFaviconAwareness from '../../hooks/useFavicon/withFaviconAwareness';
 import { isNumber } from 'lodash';
 import { isFaviconSVG } from '../../../util/favicon';
 import { SvgUri } from 'react-native-svg';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -87,8 +87,6 @@ interface WebsiteIconState {
 }
 
 class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   state = {
     renderIconUrlError: false,
   };
@@ -111,7 +109,7 @@ class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
       icon,
       faviconSource,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     // apiLogoUrl is the url of the icon to be rendered, but it's populated
     // from the icon prop, if it exists, or from the faviconSource prop
@@ -160,7 +158,7 @@ class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
           <FadeIn
             placeholderStyle={{
               backgroundColor: transparent
-                ? colors.transparent
+                ? (colors as Colors & { transparent?: string }).transparent
                 : colors.background.alternative,
             }}
           >
