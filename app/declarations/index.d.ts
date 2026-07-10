@@ -296,6 +296,18 @@ declare module '@metamask/react-native-actionsheet' {
 
 declare module '@metamask/react-native-search-api';
 
+declare module 'eth-ens-namehash';
+
+declare module '@metamask/ethjs-query';
+
+declare module '@metamask/ethjs-contract';
+
+declare module 'content-hash';
+
+declare module 'multihashes';
+
+declare module 'human-standard-token-abi';
+
 /**
  * @sentry/react-native types for v^6.10.0
  * Types are overridden to ensure captureException receives an Error type for more reliable stack traces
