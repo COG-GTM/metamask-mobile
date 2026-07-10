@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { fontStyles } from '../../../styles/common';
@@ -9,8 +8,12 @@ import Device from '../../../util/device';
 import { mockTheme, ThemeContext } from '../../../util/theme';
 import { selectProviderConfig } from '../../../selectors/networkController';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
+import { RootState } from '../../../reducers';
+import type { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+type ProviderConfig = ReturnType<typeof selectProviderConfig>;
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       alignItems: 'center',
@@ -61,50 +64,58 @@ const createStyles = (colors) =>
     },
   });
 
+interface OwnProps {
+  /**
+   * hostname of the current webview
+   */
+  hostname: string;
+  /**
+   * Boolean that specifies if it is a secure website
+   */
+  https?: boolean;
+  /**
+   * Boolean that specifies if there is an error
+   */
+  error?: boolean;
+  /**
+   * Website icon
+   */
+  icon?: string;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route?: { params?: { showUrlModal?: () => void } };
+}
+
+interface StateProps {
+  /**
+   * Object representing the configuration for the selected network
+   */
+  providerConfig: ProviderConfig;
+}
+
+type Props = OwnProps & StateProps;
+
 /**
  * UI PureComponent that renders inside the navbar
  * showing the view title and the selected network
  */
-class NavbarBrowserTitle extends PureComponent {
-  static propTypes = {
-    /**
-     * Object representing the configuration for the selected network
-     */
-    providerConfig: PropTypes.object.isRequired,
-    /**
-     * hostname of the current webview
-     */
-    hostname: PropTypes.string.isRequired,
-    /**
-     * Boolean that specifies if it is a secure website
-     */
-    https: PropTypes.bool,
-    /**
-     * Boolean that specifies if there is an error
-     */
-    error: PropTypes.bool,
-    /**
-     * Website icon
-     */
-    icon: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+class NavbarBrowserTitle extends PureComponent<Props> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
   onTitlePress = () => {
-    this.props.route.params?.showUrlModal?.();
+    this.props.route?.params?.showUrlModal?.();
   };
 
-  getNetworkName(providerConfig) {
+  getNetworkName(providerConfig: ProviderConfig) {
     let name = { ...Networks.rpc, color: null }.name;
 
     if (providerConfig) {
       if (providerConfig.nickname) {
         name = providerConfig.nickname;
       } else if (providerConfig.type) {
-        const currentNetwork = Networks[providerConfig.type];
+        const currentNetwork =
+          Networks[providerConfig.type as keyof typeof Networks];
         if (currentNetwork && currentNetwork.name) {
           name = currentNetwork.name;
         }
@@ -116,10 +127,12 @@ class NavbarBrowserTitle extends PureComponent {
 
   render = () => {
     const { https, providerConfig, hostname, error, icon } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
+    const networkKey = providerConfig.type as keyof typeof Networks;
     const color =
-      (Networks[providerConfig.type] && Networks[providerConfig.type].color) ||
+      (Networks[networkKey] &&
+        (Networks[networkKey] as { color?: string }).color) ||
       null;
     const name = this.getNetworkName(providerConfig);
 
@@ -163,7 +176,7 @@ class NavbarBrowserTitle extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   providerConfig: selectProviderConfig(state),
 });
 
