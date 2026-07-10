@@ -311,7 +311,9 @@ export const checkWCPermissions = async ({
       }
 
       await switchToNetwork({
-        network: existingNetwork,
+        network: existingNetwork as unknown as Parameters<
+          typeof switchToNetwork
+        >[0]['network'],
         chainId: hexChainIdString,
         requestUserApproval: onRequestUserApproval(origin),
         analytics: {},

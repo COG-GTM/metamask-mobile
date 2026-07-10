@@ -1,8 +1,28 @@
 import { rpcErrors } from '@metamask/rpc-errors';
+import type {
+  JsonRpcEngineEndCallback,
+  JsonRpcEngineNextCallback,
+} from '@metamask/json-rpc-engine';
+import type {
+  Json,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
+import type { RequestedPermissions } from '@metamask/permission-controller';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
-import {
-  trackDappViewedEvent,
-} from '../../util/metrics';
+import { trackDappViewedEvent } from '../../util/metrics';
+
+/**
+ * The hooks required by the eth_requestAccounts handler.
+ */
+export interface RequestEthereumAccountsHooks {
+  getAccounts: (options?: { ignoreLock?: boolean }) => string[];
+  getUnlockPromise: (shouldShowUnlockRequest: boolean) => Promise<void>;
+  getCaip25PermissionFromLegacyPermissionsForOrigin: () => RequestedPermissions;
+  requestPermissionsForOrigin: (
+    requestedPermissions: RequestedPermissions,
+  ) => Promise<unknown>;
+}
 
 const requestEthereumAccounts = {
   methodNames: [MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS],
@@ -17,7 +37,7 @@ const requestEthereumAccounts = {
 export default requestEthereumAccounts;
 
 // Used to rate-limit pending requests to one per origin
-const locks = new Set();
+const locks = new Set<string>();
 
 /**
  * This method attempts to retrieve the Ethereum accounts available to the
@@ -38,17 +58,17 @@ const locks = new Set();
  * @returns A promise that resolves to nothing
  */
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: JsonRpcRequest & { origin: string },
+  res: PendingJsonRpcResponse<Json>,
+  _next: JsonRpcEngineNextCallback,
+  end: JsonRpcEngineEndCallback,
   {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
-  },
-) {
+  }: RequestEthereumAccountsHooks,
+): Promise<void> {
   const { origin } = req;
   if (locks.has(origin)) {
     res.error = rpcErrors.resourceUnavailable(
@@ -87,7 +107,12 @@ async function requestEthereumAccountsHandler(
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent(origin, ethAccounts.length);
+  (
+    trackDappViewedEvent as unknown as (
+      origin: string,
+      numberOfConnectedAccounts: number,
+    ) => void
+  )(origin, ethAccounts.length);
 
   res.result = ethAccounts;
   return end();
