@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { ImageStyle, StyleProp } from 'react-native';
 import { ChainId } from '@metamask/controller-utils';
 import { connect } from 'react-redux';
 import TokenIcon from '../Swaps/components/TokenIcon';
@@ -7,6 +7,21 @@ import {
   selectChainId,
   selectEvmTicker,
 } from '../../../selectors/networkController';
+import { RootState } from '../../../reducers';
+
+interface OwnProps {
+  style?: StyleProp<ImageStyle>;
+  big?: boolean;
+  biggest?: boolean;
+  testID?: string;
+}
+
+interface StateProps {
+  chainId?: string;
+  ticker?: string;
+}
+
+type Props = OwnProps & StateProps;
 
 function NetworkMainAssetLogo({
   chainId,
@@ -15,7 +30,7 @@ function NetworkMainAssetLogo({
   big,
   biggest,
   testID,
-}) {
+}: Props) {
   if (chainId === ChainId.mainnet) {
     return (
       <TokenIcon
@@ -38,18 +53,9 @@ function NetworkMainAssetLogo({
   );
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   chainId: selectChainId(state),
   ticker: selectEvmTicker(state),
 });
-
-NetworkMainAssetLogo.propTypes = {
-  chainId: PropTypes.string,
-  ticker: PropTypes.string,
-  style: PropTypes.object,
-  big: PropTypes.bool,
-  biggest: PropTypes.bool,
-  testID: PropTypes.string,
-};
 
 export default connect(mapStateToProps)(NetworkMainAssetLogo);
