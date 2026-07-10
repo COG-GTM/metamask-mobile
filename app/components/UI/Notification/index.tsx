@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
+import { Dispatch } from 'redux';
 import { useNavigationState } from '@react-navigation/native';
 import {
   removeCurrentNotification,
@@ -9,7 +9,11 @@ import {
 import { NotificationTypes } from '../../../util/notifications';
 import TransactionNotification from './TransactionNotification';
 import SimpleNotification from './SimpleNotification';
-import { currentNotificationSelector } from '../../../reducers/notification';
+import {
+  currentNotificationSelector,
+  InAppNotification,
+} from '../../../reducers/notification';
+import { RootState } from '../../../reducers';
 
 import { findRouteNameFromNavigatorState } from '../../../util/general';
 import usePrevious from '../../hooks/usePrevious';
@@ -18,30 +22,50 @@ import {
   withTiming,
   Easing,
   runOnJS,
+  SharedValue,
 } from 'react-native-reanimated';
 
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
 const BROWSER_ROUTE = 'BrowserView';
 
+interface StateProps {
+  currentNotification: InAppNotification;
+  currentNotificationIsVisible: boolean;
+}
+
+interface DispatchProps {
+  hideCurrentNotification: () => void;
+  removeCurrentNotification: () => void;
+}
+
+type Props = StateProps & DispatchProps;
+
 function Notification({
   currentNotification,
   currentNotificationIsVisible,
   hideCurrentNotification,
   removeCurrentNotification,
-}) {
+}: Props) {
   const notificationAnimated = useSharedValue(200);
   const routes = useNavigationState((state) => state.routes);
 
   const prevNotificationIsVisible = usePrevious(currentNotificationIsVisible);
 
-  const animatedTimingStart = useCallback((animatedRef, toValue, callback) => {
-    animatedRef.value = withTiming(
-      toValue,
-      { duration: 500, easing: Easing.linear },
-      () => callback && runOnJS(callback)(),
-    );
-  }, []);
+  const animatedTimingStart = useCallback(
+    (
+      animatedRef: SharedValue<number>,
+      toValue: number,
+      callback?: () => void,
+    ) => {
+      animatedRef.value = withTiming(
+        toValue,
+        { duration: 500, easing: Easing.linear },
+        () => callback && runOnJS(callback)(),
+      );
+    },
+    [],
+  );
 
   const isInBrowserView = useMemo(
     () => findRouteNameFromNavigatorState(routes) === BROWSER_ROUTE,
@@ -71,7 +95,7 @@ function Notification({
           200,
           removeCurrentNotification,
         );
-      }, currentNotification.autodismiss || 5000);
+      }, (currentNotification.autodismiss as number) || 5000);
     }
   }, [
     animatedTimingStart,
@@ -105,14 +129,7 @@ function Notification({
   return null;
 }
 
-Notification.propTypes = {
-  currentNotification: PropTypes.object,
-  currentNotificationIsVisible: PropTypes.bool,
-  hideCurrentNotification: PropTypes.func,
-  removeCurrentNotification: PropTypes.func,
-};
-
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState): StateProps => {
   const currentNotification = currentNotificationSelector(state.notification);
   return {
     currentNotification,
@@ -120,7 +137,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   removeCurrentNotification: () => dispatch(removeCurrentNotification()),
   hideCurrentNotification: () => dispatch(hideCurrentNotification()),
 });
