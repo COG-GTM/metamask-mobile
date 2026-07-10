@@ -11,8 +11,10 @@ import { MetaMetricsEvents } from '../../../core/Analytics';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/BrowserView.selectors';
-import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
-import type { IUseMetricsHook } from '../../../components/hooks/useMetrics';
+import {
+  withMetricsAwareness,
+  type IUseMetricsHook,
+} from '../../../components/hooks/useMetrics';
 import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import type { Colors } from '../../../util/theme/models';
 

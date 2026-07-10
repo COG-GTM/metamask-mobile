@@ -13,7 +13,7 @@ import { MetaMetricsEvents } from '../../../core/Analytics';
 
 import CheckBox from '@react-native-community/checkbox';
 import { shuffle } from 'lodash';
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import AppConstants from '../../../../app/core/AppConstants';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
 import { ConnectAccountBottomSheetSelectorsIDs } from '../../../../e2e/selectors/Browser/ConnectAccountBottomSheet.selectors';
@@ -149,7 +149,7 @@ class AccountApproval extends PureComponent<Props, State> {
 
     try {
       if (currentPageInformation?.url) {
-        const url = new URL(currentPageInformation.url);
+        const url = new URLParse(currentPageInformation.url);
         urlHostName = url.host;
       }
     } catch (error) {
@@ -201,7 +201,7 @@ class AccountApproval extends PureComponent<Props, State> {
     const prefixedUrl = prefixUrlWithProtocol(
       currentPageInformation?.url as string,
     );
-    const { hostname } = new URL(prefixedUrl);
+    const { hostname } = new URLParse(prefixedUrl);
     this.checkUrlFlaggedAsPhishing(hostname);
 
     this.props.metrics.trackEvent(

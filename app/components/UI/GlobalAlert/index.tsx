@@ -124,7 +124,7 @@ class GlobalAlert extends PureComponent<Props> {
           />
         </View>
         <Text style={styles.copyAlertText}>
-          {this.props.data && this.props.data.msg}
+          {this.props.data?.msg}
         </Text>
       </ElevatedView>
     );

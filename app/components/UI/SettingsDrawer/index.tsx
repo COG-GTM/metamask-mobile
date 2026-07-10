@@ -18,7 +18,7 @@ import Text, {
 } from '../../../component-library/components/Texts/Text';
 import type { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors: Colors, titleColor: string) =>
+const createStyles = (colors: Colors, _titleColor: TextColor | string) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,

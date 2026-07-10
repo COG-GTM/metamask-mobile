@@ -13,8 +13,10 @@ import { MetaMetricsEvents } from '../../../core/Analytics';
 
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { ProtectWalletModalSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ProtectWalletModal.selectors';
-import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
-import type { IUseMetricsHook } from '../../../components/hooks/useMetrics';
+import {
+  withMetricsAwareness,
+  type IUseMetricsHook,
+} from '../../../components/hooks/useMetrics';
 import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { RootState } from '../../../reducers';
 import type { Colors } from '../../../util/theme/models';

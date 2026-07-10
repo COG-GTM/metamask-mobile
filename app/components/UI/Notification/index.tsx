@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import { useNavigationState } from '@react-navigation/native';
 import {
-  removeCurrentNotification,
-  hideCurrentNotification,
+  removeCurrentNotification as removeCurrentNotificationAction,
+  hideCurrentNotification as hideCurrentNotificationAction,
 } from '../../../actions/notification';
 import { NotificationTypes } from '../../../util/notifications';
 import TransactionNotification from './TransactionNotification';
@@ -138,8 +138,8 @@ const mapStateToProps = (state: RootState): StateProps => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
-  removeCurrentNotification: () => dispatch(removeCurrentNotification()),
-  hideCurrentNotification: () => dispatch(hideCurrentNotification()),
+  removeCurrentNotification: () => dispatch(removeCurrentNotificationAction()),
+  hideCurrentNotification: () => dispatch(hideCurrentNotificationAction()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Notification);

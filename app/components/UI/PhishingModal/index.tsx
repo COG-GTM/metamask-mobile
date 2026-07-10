@@ -10,9 +10,10 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
-import URL from 'url-parse';
+
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
+// eslint-disable-next-line import/no-namespace
 import * as ExternalWebsitesTestIds from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
 import Button from '../../../component-library/components/Buttons/Button/Button';
 import {
@@ -143,8 +144,6 @@ export default class PhishingModal extends PureComponent<PhishingModalProps> {
   render() {
     const colors = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const urlObj = new URL(this.props.fullUrl as string);
-    const host = urlObj.hostname;
 
     return (
       <View style={styles.phishingModalWrapper}>

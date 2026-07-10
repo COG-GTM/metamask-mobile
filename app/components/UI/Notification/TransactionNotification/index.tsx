@@ -235,15 +235,13 @@ function TransactionNotification(props: Props) {
   }, [onCloseDetails, onClose]);
 
   const onSpeedUpPress = useCallback(() => {
-    const transactionActionDisabled = validateTransactionActionBalance(
+    const actionDisabled = validateTransactionActionBalance(
       tx,
       SPEED_UP_RATE as unknown as string,
       accounts as unknown as string,
     );
     setTransactionAction(ACTION_SPEEDUP);
-    setTransactionActionDisabled(
-      transactionActionDisabled as unknown as boolean,
-    );
+    setTransactionActionDisabled(actionDisabled as unknown as boolean);
     animateActionTo(-WINDOW_WIDTH);
   }, [
     setTransactionAction,
@@ -254,15 +252,13 @@ function TransactionNotification(props: Props) {
   ]);
 
   const onCancelPress = useCallback(() => {
-    const transactionActionDisabled = validateTransactionActionBalance(
+    const actionDisabled = validateTransactionActionBalance(
       tx,
       CANCEL_RATE as unknown as string,
       accounts as unknown as string,
     );
     setTransactionAction(ACTION_CANCEL);
-    setTransactionActionDisabled(
-      transactionActionDisabled as unknown as boolean,
-    );
+    setTransactionActionDisabled(actionDisabled as unknown as boolean);
     animateActionTo(-WINDOW_WIDTH);
   }, [
     setTransactionAction,
@@ -301,10 +297,10 @@ function TransactionNotification(props: Props) {
 
   useEffect(() => {
     async function getTransactionInfo() {
-      const tx = transactions.find(
+      const foundTx = transactions.find(
         ({ id }: { id: string }) => id === currentNotification.transaction?.id,
       );
-      if (!tx) return;
+      if (!foundTx) return;
       const {
         selectedAddress,
         ticker,
@@ -319,9 +315,9 @@ function TransactionNotification(props: Props) {
         swapsTransactions,
         swapsTokens,
       } = props;
-      const [transactionElement, transactionDetails] = await decodeTransaction({
+      const [decodedElement, decodedDetails] = await decodeTransaction({
         ...props,
-        tx,
+        tx: foundTx,
         selectedAddress,
         ticker,
         chainId,
@@ -335,7 +331,9 @@ function TransactionNotification(props: Props) {
         swapsTransactions,
         swapsTokens,
       });
-      const existingGasPrice = new BigNumber(tx?.txParams?.gasPrice || '0x0');
+      const existingGasPrice = new BigNumber(
+        foundTx?.txParams?.gasPrice || '0x0',
+      );
       const gasFeeValue = fastSplit(
         existingGasPrice
           .times(
@@ -344,9 +342,9 @@ function TransactionNotification(props: Props) {
           .toString(),
       ); // strips decimals if any, coming from the 'times' operation
       setGasFee(gasFeeValue);
-      setTx(tx);
-      setTransactionElement(transactionElement);
-      setTransactionDetails(transactionDetails);
+      setTx(foundTx);
+      setTransactionElement(decodedElement);
+      setTransactionDetails(decodedDetails);
     }
     getTransactionInfo();
   }, [

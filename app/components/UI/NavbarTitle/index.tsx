@@ -12,13 +12,15 @@ import {
   selectChainId,
   selectProviderConfig,
 } from '../../../selectors/networkController';
-import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import {
+  withMetricsAwareness,
+  type IUseMetricsHook,
+} from '../../../components/hooks/useMetrics';
 import Text, {
   TextVariant,
   TextColor,
 } from '../../../component-library/components/Texts/Text';
 import { selectNetworkName } from '../../../selectors/networkInfos';
-import type { IUseMetricsHook } from '../../../components/hooks/useMetrics';
 import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { RootState } from '../../../reducers';
 import type { Colors } from '../../../util/theme/models';
@@ -148,8 +150,7 @@ class NavbarTitle extends PureComponent<Props> {
     } else {
       const networkKey = providerConfig.type as keyof typeof Networks;
       name =
-        (Networks[networkKey] && Networks[networkKey].name) ||
-        { ...Networks.rpc, color: null }.name;
+        Networks[networkKey]?.name || { ...Networks.rpc, color: null }.name;
     }
 
     const realTitle = translate ? strings(title as string) : title;

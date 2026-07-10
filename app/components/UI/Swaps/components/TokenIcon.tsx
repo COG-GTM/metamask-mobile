@@ -17,6 +17,7 @@ import type { Colors } from '../../../../util/theme/models';
 type ImageIconKey = keyof typeof imageIcons;
 
 /* eslint-disable import/no-commonjs */
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const ethLogo = require('../../../../images/eth-logo-new.png');
 /* eslint-enable import/no-commonjs */
 
