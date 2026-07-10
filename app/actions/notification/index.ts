@@ -47,11 +47,13 @@ export interface HideNotificationByIdAction {
 export interface ModifyOrShowTransactionNotificationAction
   extends TransactionNotificationPayload {
   type: typeof MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION;
+  id?: string;
 }
 
 export interface ModifyOrShowSimpleNotificationAction
   extends SimpleNotificationPayload {
   type: typeof MODIFY_OR_SHOW_SIMPLE_NOTIFICATION;
+  id?: string;
 }
 
 export interface ReplaceNotificationByIdAction {

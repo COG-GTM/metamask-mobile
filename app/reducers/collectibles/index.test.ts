@@ -4,13 +4,15 @@ import reducer, {
   REMOVE_FAVORITE_COLLECTIBLE,
 } from './index';
 import mockedEngine from '../../core/__mocks__/MockedEngine';
+import type { CollectiblesAction } from '../../actions/collectibles';
+import type { Collectible } from '../../components/UI/CollectibleMedia/CollectibleMedia.types';
 
-const emptyAction = { type: null };
+const emptyAction = { type: null } as unknown as CollectiblesAction;
 
-const collectibleA1 = { tokenId: '101', address: '0xA' };
-const collectibleA2 = { tokenId: '102', address: '0xA' };
-const collectibleB1 = { tokenId: '101', address: '0xB' };
-const collectibleB2 = { tokenId: '102', address: '0xB' };
+const collectibleA1 = { tokenId: '101', address: '0xA' } as Collectible;
+const collectibleA2 = { tokenId: '102', address: '0xA' } as Collectible;
+const collectibleB1 = { tokenId: '101', address: '0xB' } as Collectible;
+const collectibleB2 = { tokenId: '102', address: '0xB' } as Collectible;
 const selectedAddressA = '0x0A';
 const selectedAddressB = '0x0B';
 
