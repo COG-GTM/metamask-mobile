@@ -1,4 +1,6 @@
-export default [
+import { AbiItem } from './types';
+
+const registryAbi: AbiItem[] = [
   {
     constant: true,
     inputs: [{ name: 'node', type: 'bytes32' }],
@@ -106,3 +108,5 @@ export default [
     type: 'event',
   },
 ];
+
+export default registryAbi;
