@@ -199,4 +199,5 @@ export default withNavigation(
     ),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) as unknown as ComponentType<any>,
-);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as unknown as ComponentType<any>;

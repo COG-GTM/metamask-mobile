@@ -41,7 +41,7 @@ import Logger from '../../../util/Logger';
 import Device from '../../../util/device';
 import AppConstants from '../../../core/AppConstants';
 import { MetaMetricsEvents } from '../../../core/Analytics';
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import EthereumAddress from '../EthereumAddress';
 import { getEther } from '../../../util/transactions';
 import { newAssetTransaction } from '../../../actions/transaction';
@@ -451,10 +451,9 @@ class DrawerView extends PureComponent<Props, DrawerViewState> {
   isCurrentAccountImported() {
     let ret = false;
     const { keyrings } = this.props;
-    const allKeyrings =
-      keyrings && keyrings.length
-        ? keyrings
-        : Engine.context.KeyringController.state.keyrings;
+    const allKeyrings = keyrings?.length
+      ? keyrings
+      : Engine.context.KeyringController.state.keyrings;
     for (const keyring of allKeyrings) {
       if (keyring.accounts.includes(this.selectedChecksummedAddress)) {
         ret = keyring.type !== 'HD Key Tree';
@@ -556,7 +555,7 @@ class DrawerView extends PureComponent<Props, DrawerViewState> {
   }
 
   updateAccountInfo = async () => {
-    const { providerConfig, selectedInternalAccount, chainId } = this.props;
+    const { selectedInternalAccount, chainId } = this.props;
     const { currentChainId, address, name } = this.state.account;
     const accountName = selectedInternalAccount?.metadata.name;
     if (
@@ -700,7 +699,7 @@ class DrawerView extends PureComponent<Props, DrawerViewState> {
         networkConfigurations,
       );
       const url = `${blockExplorer}/address/${this.selectedChecksummedAddress}`;
-      const title = new URL(blockExplorer).hostname;
+      const title = new URLParse(blockExplorer).hostname;
       this.goToBrowserUrl(url, title);
     } else {
       const url = getEtherscanAddressUrl(
@@ -960,16 +959,19 @@ class DrawerView extends PureComponent<Props, DrawerViewState> {
   onInfoNetworksModalClose = () => {
     const {
       chainId,
-      onboardNetworkAction,
-      networkSwitched,
-      toggleInfoNetworkModal,
+      onboardNetworkAction: onboardNetworkActionProp,
+      networkSwitched: networkSwitchedProp,
+      toggleInfoNetworkModal: toggleInfoNetworkModalProp,
     } = this.props;
 
-    onboardNetworkAction(chainId);
-    networkSwitched({ networkUrl: '', networkStatus: false });
+    onboardNetworkActionProp(chainId);
+    networkSwitchedProp({ networkUrl: '', networkStatus: false });
 
     // Wrap the toggle call in a setTimeout to avoid awaiting a non-promise function.
-    safePromiseHandler(toggleInfoNetworkModal() as unknown as () => void, 100);
+    safePromiseHandler(
+      toggleInfoNetworkModalProp() as unknown as () => void,
+      100,
+    );
   };
 
   renderProtectModal = () => {
@@ -1159,10 +1161,10 @@ class DrawerView extends PureComponent<Props, DrawerViewState> {
                     {section
                       .filter((item) => {
                         if (!item) return undefined;
-                        const { name = undefined } = item;
+                        const { name: itemName = undefined } = item;
                         if (
-                          name &&
-                          name.toLowerCase().indexOf('etherscan') !== -1
+                          itemName &&
+                          itemName.toLowerCase().indexOf('etherscan') !== -1
                         ) {
                           const type = providerConfig?.type;
                           return (
@@ -1176,8 +1178,7 @@ class DrawerView extends PureComponent<Props, DrawerViewState> {
                           key={`item_${i}_${j}`}
                           style={[
                             styles.menuItem,
-                            item.routeNames &&
-                            item.routeNames.includes(currentRoute)
+                            item.routeNames?.includes(currentRoute)
                               ? styles.selectedRoute
                               : null,
                           ]}
@@ -1189,8 +1190,7 @@ class DrawerView extends PureComponent<Props, DrawerViewState> {
                           onPress={() => item.action()} // eslint-disable-line
                         >
                           {item.icon
-                            ? item.routeNames &&
-                              item.routeNames.includes(currentRoute)
+                            ? item.routeNames?.includes(currentRoute)
                               ? item.selectedIcon
                               : item.icon
                             : null}
@@ -1198,8 +1198,7 @@ class DrawerView extends PureComponent<Props, DrawerViewState> {
                             style={[
                               styles.menuItemName,
                               !item.icon ? styles.noIcon : null,
-                              item.routeNames &&
-                              item.routeNames.includes(currentRoute)
+                              item.routeNames?.includes(currentRoute)
                                 ? styles.selectedName
                                 : null,
                             ]}

@@ -32,7 +32,7 @@ import { MetaMetricsEvents } from '../../../core/Analytics';
 import {
   getFeatureFlagChainId,
   setSwapsLiveness,
-  swapsControllerTokens,
+  swapsControllerTokens as swapsControllerTokensSelector,
   swapsTokensSelector,
   swapsTokensWithBalanceSelector,
   swapsTopAssetsSelector,
@@ -189,7 +189,7 @@ const MAX_TOP_ASSETS = 20;
 
 interface StateProps {
   swapsTokens: ReturnType<typeof swapsTokensSelector>;
-  swapsControllerTokens: ReturnType<typeof swapsControllerTokens>;
+  swapsControllerTokens: ReturnType<typeof swapsControllerTokensSelector>;
   accountsByChainId: ReturnType<typeof selectAccountsByChainId>;
   balances: ReturnType<typeof selectContractBalances>;
   selectedAddress: ReturnType<
@@ -1061,7 +1061,7 @@ function SwapsAmountView({
 
 const mapStateToProps = (state: RootState): StateProps => ({
   swapsTokens: swapsTokensSelector(state),
-  swapsControllerTokens: swapsControllerTokens(state),
+  swapsControllerTokens: swapsControllerTokensSelector(state),
   accountsByChainId: selectAccountsByChainId(state),
   balances: selectContractBalances(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
