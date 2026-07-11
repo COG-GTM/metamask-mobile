@@ -173,6 +173,7 @@ function CollectibleContractElement({
   onPress,
   chainId,
   selectedAddress,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   removeFavoriteCollectible,
 }: Props) {
   const [collectiblesGrid, setCollectiblesGrid] = useState<
@@ -250,6 +251,7 @@ function CollectibleContractElement({
   const renderCollectible = useCallback(
     (collectible: CollectibleElement, index: number) => {
       if (!collectible) return null;
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const onPress = () => onPressCollectible({ ...collectible });
       const onLongPress = () =>
         !asset.favorites ? onLongPressCollectible({ ...collectible }) : null;
