@@ -160,7 +160,7 @@ const Browser = (props: any) => {
   // TODO remove after we release Solana dapp connectivity
   useFocusEffect(
     useCallback(() => {
-      if (isSolanaAccount(currentSelectedAccount)) {
+      if (isSolanaAccount(currentSelectedAccount as any)) {
         toastRef?.current?.showToast({
           variant: ToastVariants.Network,
           networkImageSource: require('../../../images/solana-logo.png'),

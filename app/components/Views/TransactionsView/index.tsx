@@ -136,7 +136,7 @@ const TransactionsView = ({
           tokens,
           selectedAddress,
           networkId,
-          chainId,
+          chainId as any,
           tokenNetworkFilter,
         );
 
@@ -145,7 +145,7 @@ const TransactionsView = ({
         tx.insertImportTime = addAccountTimeFlagFilter(
           tx,
           addedAccountTime,
-          accountAddedTimeInsertPointFound,
+          accountAddedTimeInsertPointFound as any,
         );
         if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
 
@@ -204,10 +204,10 @@ const TransactionsView = ({
         ].insertImportTime = true;
       }
 
-      setAllTransactions(allTransactionsFiltered);
-      setSubmittedTxs(submittedTxsFiltered);
-      setConfirmedTxs(confirmedTxs);
-      setLoading(false);
+      setAllTransactions(allTransactionsFiltered as any);
+      setSubmittedTxs(submittedTxsFiltered as any);
+      setConfirmedTxs(confirmedTxs as any);
+      setLoading(false as any);
     },
     [
       transactions,
@@ -221,7 +221,7 @@ const TransactionsView = ({
   );
 
   useEffect(() => {
-    setLoading(true);
+    setLoading(true as any);
 
     if (selectedNetworkClientId) {
       filterTransactions(selectedNetworkClientId);

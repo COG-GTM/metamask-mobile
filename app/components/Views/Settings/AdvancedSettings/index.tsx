@@ -212,7 +212,9 @@ class AdvancedSettings extends PureComponent<
   mounted: any;
 
 
-  scrollView = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  scrollView: any = React.createRef();
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -223,7 +225,9 @@ class AdvancedSettings extends PureComponent<
 
   getStyles = () => {
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
     return { styles, colors };
   };
 
@@ -563,4 +567,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(AdvancedSettings));
+)(withMetricsAwareness(AdvancedSettings as any));

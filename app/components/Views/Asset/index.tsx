@@ -253,7 +253,7 @@ class Asset extends PureComponent<
     const colors = (this.context as Theme).colors || mockTheme.colors;
     const isNativeToken = route.params.isNative ?? route.params.isETH;
     const isMainnet = isMainnetByChainId(chainId);
-    const blockExplorer = isNonEvmChainId(chainId)
+    const blockExplorer = isNonEvmChainId(chainId as any)
       ? findBlockExplorerForNonEvmChainId(chainId)
       : findBlockExplorerForRpc(rpcUrl, networkConfigurations);
 
@@ -269,7 +269,7 @@ class Asset extends PureComponent<
         navigation,
         colors,
         // TODO: remove !isNonEvmChainId check once bottom sheet options are fixed for non-EVM chains
-        shouldShowMoreOptionsInNavBar && !isNonEvmChainId(chainId)
+        shouldShowMoreOptionsInNavBar && !isNonEvmChainId(chainId as any)
           ? () =>
               navigation.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
                 screen: 'AssetOptions',
@@ -404,7 +404,7 @@ class Asset extends PureComponent<
         );
       if (
         swapsTransactions[tx.id] &&
-        (to?.toLowerCase() === swapsUtils.getSwapsContractAddress(chainId) ||
+        (to?.toLowerCase() === swapsUtils.getSwapsContractAddress(chainId as any) ||
           to?.toLowerCase() === this.navAddress)
       ) {
         const { destinationToken, sourceToken } = swapsTransactions[tx.id];
@@ -441,7 +441,7 @@ class Asset extends PureComponent<
           tx.insertImportTime = addAccountTimeFlagFilter(
             tx,
             addedAccountTime,
-            accountAddedTimeInsertPointFound,
+            accountAddedTimeInsertPointFound as any,
           );
           if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
           switch (tx.status) {
@@ -555,7 +555,7 @@ class Asset extends PureComponent<
     const isSwapsFeatureLive = this.props.swapsIsLive;
     const isSwapsNetworkAllowed = isPortfolioViewEnabled()
       ? isSwapsAllowed(asset.chainId)
-      : isSwapsAllowed(chainId);
+      : isSwapsAllowed(chainId as any);
 
     const isSwapsAssetAllowed = getIsSwapsAssetAllowed({
       asset,
@@ -568,7 +568,7 @@ class Asset extends PureComponent<
 
     const displayBridgeButton = isPortfolioViewEnabled()
       ? isBridgeAllowed(asset.chainId)
-      : isBridgeAllowed(chainId);
+      : isBridgeAllowed(chainId as any);
 
     const displayBuyButton = asset.isETH
       ? this.props.isNetworkBuyNativeTokenSupported
@@ -655,4 +655,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Asset));
+)(withMetricsAwareness(Asset as any));

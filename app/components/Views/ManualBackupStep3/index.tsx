@@ -129,7 +129,7 @@ class ManualBackupStep3 extends PureComponent<
   };
 
   componentWillUnmount = () => {
-    BackHandler.removeEventListener(HARDWARE_BACK_PRESS, hardwareBackPress);
+    BackHandler.removeEventListener(HARDWARE_BACK_PRESS, hardwareBackPress as any);
   };
 
   componentDidMount = async () => {
@@ -148,7 +148,7 @@ class ManualBackupStep3 extends PureComponent<
         MetaMetricsEvents.WALLET_SECURITY_COMPLETED,
       ).build(),
     );
-    BackHandler.addEventListener(HARDWARE_BACK_PRESS, hardwareBackPress);
+    BackHandler.addEventListener(HARDWARE_BACK_PRESS, hardwareBackPress as any);
   };
 
   componentDidUpdate = () => {

@@ -222,7 +222,9 @@ const AccountBackupStep1B = (props: any) => {
   const [showWhySecureWalletModal, setWhySecureWalletModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const styles: any = createStyles(colors);
 
   useEffect(() => {
     navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));

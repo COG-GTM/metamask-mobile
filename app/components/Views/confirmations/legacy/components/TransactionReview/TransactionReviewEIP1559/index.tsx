@@ -227,7 +227,7 @@ const TransactionReviewEIP1559 = ({
   }
 
   const valueToWatchAnimation = `${gasFeeNative}${gasFeeMaxNative}`;
-  const isTestNetwork = isTestNet(chainId);
+  const isTestNetwork = isTestNet(chainId as any);
 
   return (
     <Summary style={styles.overview(noMargin)}>

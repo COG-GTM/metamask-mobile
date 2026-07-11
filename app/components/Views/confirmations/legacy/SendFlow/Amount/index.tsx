@@ -558,7 +558,9 @@ class Amount extends PureComponent<
     isRedesignedTransferTransactionLoading: false,
   };
 
-  amountInput = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  amountInput: any = React.createRef();
   tokens = [];
   collectibles = [];
 
@@ -592,7 +594,7 @@ class Amount extends PureComponent<
     this.updateNavBar();
     navigation.setParams({ providerType, isPaymentRequest });
 
-    this.tokens = [getEther(ticker), ...tokens];
+    this.tokens = [getEther(ticker as any), ...tokens];
     this.collectibles = this.processCollectibles();
     // Wait until navigation finishes to focus
     InteractionManager.runAfterInteractions(() =>
@@ -629,10 +631,10 @@ class Amount extends PureComponent<
       const gasPrice = hexToBN(
         decGWEIToHexWEI(gasFeeEstimates[AppConstants.GAS_OPTIONS.MEDIUM]),
       );
-      this.setState({ estimatedTotalGas: gas.mul(gasPrice) });
+      this.setState({ estimatedTotalGas: gas.mul(gasPrice as any) });
     } else {
       const gasPrice = hexToBN(decGWEIToHexWEI(gasFeeEstimates.gasPrice));
-      this.setState({ estimatedTotalGas: gas.mul(gasPrice) });
+      this.setState({ estimatedTotalGas: gas.mul(gasPrice as any) });
     }
 
     const hasExchangeRate = this.hasExchangeRate();
@@ -680,7 +682,7 @@ class Amount extends PureComponent<
       selectedAddress,
     } = this.props;
     try {
-      return await NftController.isNftOwner(selectedAddress, address, tokenId);
+      return await NftController.isNftOwner(selectedAddress as any, address, tokenId);
     } catch (e: any) {
       return false;
     }
@@ -713,7 +715,7 @@ class Amount extends PureComponent<
         value = `${renderFromWei(
           fiatNumberToWei(
             handleWeiNumber(maxFiatInput),
-            this.props.conversionRate,
+            this.props.conversionRate as any,
           ),
           18,
         )}`;
@@ -880,14 +882,14 @@ class Amount extends PureComponent<
 
       if (!amountError) {
         if (isNativeToken(selectedAsset)) {
-          weiBalance = hexToBN(accounts[selectedAddress].balance);
+          weiBalance = hexToBN(accounts[selectedAddress as any].balance);
           weiInput = weiValue.add(estimatedTotalGas);
         } else {
           weiBalance = hexToBN(contractBalances[selectedAsset.address]);
           weiInput = toTokenMinimalUnit(value, selectedAsset.decimals);
         }
         // TODO: weiBalance is not always guaranteed to be type BN. Need to consolidate type.
-        amountError = gte(weiBalance, weiInput)
+        amountError = gte(weiBalance as any, weiInput)
           ? undefined
           : strings('transaction.insufficient');
       }
@@ -935,16 +937,16 @@ class Amount extends PureComponent<
     const tokenBalance = contractBalances[selectedAsset.address] || '0x0';
     let input;
     if (isNativeToken(selectedAsset)) {
-      const balanceBN = hexToBN(accounts[selectedAddress].balance);
+      const balanceBN = hexToBN(accounts[selectedAddress as any].balance);
       const realMaxValue = balanceBN.sub(estimatedTotalGas);
       const maxValue =
         balanceBN.isZero() || realMaxValue.isNeg() ? hexToBN('0x0') : realMaxValue;
       if (internalPrimaryCurrencyIsCrypto) {
         input = fromWei(maxValue);
       } else {
-        input = `${weiToFiatNumber(maxValue, conversionRate)}`;
+        input = `${weiToFiatNumber(maxValue, conversionRate as any)}`;
         this.setState({
-          maxFiatInput: `${weiToFiatNumber(maxValue, conversionRate, 12)}`,
+          maxFiatInput: `${weiToFiatNumber(maxValue, conversionRate as any, 12)}`,
         });
       }
     } else {
@@ -959,7 +961,7 @@ class Amount extends PureComponent<
       } else {
         input = `${balanceToFiatNumber(
           fromTokenMinimalUnitString(tokenBalance, selectedAsset.decimals),
-          conversionRate,
+          conversionRate as any,
           exchangeRate,
         )}`;
       }
@@ -1007,15 +1009,15 @@ class Amount extends PureComponent<
 
       hasExchangeRate = !!conversionRate;
       if (internalPrimaryCurrencyIsCrypto) {
-        inputValueConversion = `${weiToFiatNumber(weiValue, conversionRate)}`;
+        inputValueConversion = `${weiToFiatNumber(weiValue, conversionRate as any)}`;
         renderableInputValueConversion = `${weiToFiat(
           weiValue,
           conversionRate,
-          currentCurrency,
+          currentCurrency as any,
         )}`;
       } else {
         inputValueConversion = `${renderFromWei(
-          fiatNumberToWei(processedInputValue, conversionRate),
+          fiatNumberToWei(processedInputValue, conversionRate as any),
         )}`;
         renderableInputValueConversion = `${inputValueConversion} ${processedTicker}`;
       }
@@ -1027,20 +1029,20 @@ class Amount extends PureComponent<
       if (internalPrimaryCurrencyIsCrypto) {
         inputValueConversion = `${balanceToFiatNumber(
           processedInputValue,
-          conversionRate,
+          conversionRate as any,
           exchangeRate,
         )}`;
         renderableInputValueConversion = `${balanceToFiat(
           processedInputValue,
           conversionRate,
           exchangeRate,
-          currentCurrency,
+          currentCurrency as any,
         )}`;
       } else {
         inputValueConversion = `${renderFromTokenMinimalUnit(
           fiatNumberToTokenMinimalUnit(
             processedInputValue,
-            conversionRate,
+            conversionRate as any,
             exchangeRate,
             selectedAsset.decimals,
           ),
@@ -1073,7 +1075,7 @@ class Amount extends PureComponent<
     if (renderableBalance) {
       currentBalance = `${renderableBalance} ${selectedAsset.symbol}`;
     } else if (isNativeToken(selectedAsset)) {
-      currentBalance = `${renderFromWei(accounts[selectedAddress].balance)} ${
+      currentBalance = `${renderFromWei(accounts[selectedAddress as any].balance)} ${
         selectedAsset.symbol
       }`;
     } else {
@@ -1121,14 +1123,16 @@ class Amount extends PureComponent<
     let balance, balanceFiat;
     const { address, decimals, symbol } = token;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     if (isNativeToken(token)) {
-      balance = renderFromWei(accounts[selectedAddress].balance);
+      balance = renderFromWei(accounts[selectedAddress as any].balance);
       balanceFiat = weiToFiat(
-        hexToBN(accounts[selectedAddress].balance),
+        hexToBN(accounts[selectedAddress as any].balance),
         conversionRate,
-        currentCurrency,
+        currentCurrency as any,
       );
     } else {
       balance = renderFromTokenMinimalUnit(contractBalances[address], decimals);
@@ -1139,7 +1143,7 @@ class Amount extends PureComponent<
         balance,
         conversionRate,
         exchangeRate,
-        currentCurrency,
+        currentCurrency as any,
       );
     }
 
@@ -1177,7 +1181,9 @@ class Amount extends PureComponent<
   renderCollectible = (collectible: any, index: any) => {
     const { name } = collectible;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     return (
       <TouchableOpacity
@@ -1239,7 +1245,9 @@ class Amount extends PureComponent<
       ({ standard }) => standard === 'ERC721',
     );
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     return (
       <Modal
@@ -1300,7 +1308,9 @@ class Amount extends PureComponent<
     } = this.props;
     const colors = (this.context as Theme).colors || mockTheme.colors;
     const themeAppearance = (this.context as Theme).themeAppearance || 'light';
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
     const navigateToSwap = () => {
       navigation.replace('Swaps', {
         screen: 'SwapsAmountView',
@@ -1316,7 +1326,7 @@ class Amount extends PureComponent<
       !isNativeToken(selectedAsset) &&
       AppConstants.SWAPS.ACTIVE &&
       swapsIsLive &&
-      isSwapsAllowed(globalChainId) &&
+      isSwapsAllowed(globalChainId as any) &&
       amountError === strings('transaction.insufficient');
 
     const navigateToBuyOrSwaps = () => {
@@ -1446,7 +1456,9 @@ class Amount extends PureComponent<
     const { amountError } = this.state;
     const { selectedAsset } = this.props;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     return (
       <View style={styles.collectibleInputWrapper}>
@@ -1488,7 +1500,9 @@ class Amount extends PureComponent<
       transactionState: { isPaymentRequest },
     } = this.props;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     return (
       <SafeAreaView
@@ -1645,4 +1659,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Amount));
+)(withMetricsAwareness(Amount as any));

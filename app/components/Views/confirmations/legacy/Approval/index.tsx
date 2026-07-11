@@ -200,7 +200,7 @@ class Approval extends PureComponent<
       const { KeyringController } = Engine.context;
 
       if (!transactionHandled) {
-        if (isQRHardwareAccount(selectedAddress)) {
+        if (isQRHardwareAccount(selectedAddress as any)) {
           KeyringController.cancelQRSignRequest();
         } else {
           Engine.rejectPendingApproval(
@@ -425,7 +425,7 @@ class Approval extends PureComponent<
 
       return {
         ...baseParams,
-        account_type: getAddressAccountType(selectedAddress),
+        account_type: getAddressAccountType(selectedAddress as any),
         chain_id: getDecimalChainId(chainId),
         active_currency: { value: selectedAsset?.symbol, anonymous: true },
         gas_estimate_type: gasEstimateType,
@@ -581,7 +581,7 @@ class Approval extends PureComponent<
               });
             } else {
               Logger.error(
-                transactionMeta.error,
+                transactionMeta.error as any,
                 'error while trying to finish a transaction (Approval)',
               );
             }
@@ -722,7 +722,7 @@ class Approval extends PureComponent<
       gasDataEIP1559: EIP1559GasData,
       gasDataLegacy,
       gasEstimateType,
-      showCustomNonce,
+      showCustomNonce: showCustomNonce as any,
       transaction,
     });
   };
@@ -803,4 +803,4 @@ Approval.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Approval));
+)(withMetricsAwareness(Approval as any));

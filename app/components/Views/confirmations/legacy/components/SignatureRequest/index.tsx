@@ -344,7 +344,7 @@ class SignatureRequest extends PureComponent<SignatureRequestProps> {
     const { securityAlertResponse, fromAddress } = this.props;
     let expandedHeight;
     const styles = this.getStyles();
-    const isLedgerAccount = isHardwareAccount(fromAddress, [
+    const isLedgerAccount = isHardwareAccount(fromAddress as any, [
       ExtendedKeyringTypes.ledger,
     ]);
 
@@ -427,5 +427,5 @@ const mapStateToProps = (state: RootState) => ({
 SignatureRequest.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(
-  withQRHardwareAwareness(withMetricsAwareness(SignatureRequest)),
+  withQRHardwareAwareness(withMetricsAwareness(SignatureRequest as any)),
 );

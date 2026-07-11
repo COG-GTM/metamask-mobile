@@ -183,7 +183,9 @@ const GasEducationCarousel = ({
   const [currentTab, setCurrentTab] = useState(1);
   const [gasFiat, setGasFiat] = useState(null);
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const styles: any = createStyles(colors);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -243,7 +245,7 @@ const GasEducationCarousel = ({
         });
 
         const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
-        setGasFiat(gasFiat);
+        setGasFiat(gasFiat as any);
       } catch (e: any) {
         Logger.error(e);
       }

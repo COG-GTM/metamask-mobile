@@ -338,4 +338,4 @@ const mapStateToProps = (state: any, ownProps: any) => {
   };
 };
 
-export default connect(mapStateToProps)(withMetricsAwareness(TypedSign));
+export default connect(mapStateToProps)(withMetricsAwareness(TypedSign as any));

@@ -176,9 +176,15 @@ class ContactForm extends PureComponent<
     inputWidth: Platform.OS === 'android' ? '99%' : undefined,
   };
 
-  actionSheet = React.createRef();
-  addressInput = React.createRef();
-  memoInput = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  actionSheet: any = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addressInput: any = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  memoInput: any = React.createRef();
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
@@ -204,7 +210,7 @@ class ContactForm extends PureComponent<
       }, 100);
     if (mode === EDIT) {
       const { addressBook, chainId, internalAccounts } = this.props;
-      const networkAddressBook = addressBook[chainId] || {};
+      const networkAddressBook = addressBook[chainId as any] || {};
       const address = this.props.route.params?.address ?? '';
       const contact =
         networkAddressBook[address] ||
@@ -258,7 +264,7 @@ class ContactForm extends PureComponent<
       address,
       addressBook,
       internalAccounts,
-      chainId,
+      chainId as any,
     );
 
     this.setState({
@@ -297,7 +303,7 @@ class ContactForm extends PureComponent<
     AddressBookController.set(
       toChecksumAddress(toEnsAddress || address),
       name,
-      chainId,
+      chainId as any,
       memo,
     );
     navigation.pop();
@@ -306,7 +312,7 @@ class ContactForm extends PureComponent<
   deleteContact = () => {
     const { AddressBookController } = Engine.context;
     const { chainId, navigation, route } = this.props;
-    AddressBookController.delete(chainId, this.contactAddressToRemove);
+    AddressBookController.delete(chainId as any, this.contactAddressToRemove);
     route.params.onDelete();
     navigation.pop();
   };

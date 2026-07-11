@@ -228,7 +228,7 @@ class Send extends PureComponent<
     const { globalNetworkClientId, transaction } = this.props;
     const { gas, gasPrice } = await estimateGas(
       transaction,
-      globalNetworkClientId,
+      globalNetworkClientId as any,
     );
     this.props.setTransactionObject({
       gas: hexToBN(gas),
@@ -343,7 +343,7 @@ class Send extends PureComponent<
    * Handle deeplink txMeta recipient
    */
   handleNewTxMetaRecipient = async (recipient: any) => {
-    const to = await getAddress(recipient, this.props.globalChainId);
+    const to = await getAddress(recipient, this.props.globalChainId as any);
 
     if (!to) {
       NotificationManager.showSimpleNotification({
@@ -447,7 +447,7 @@ class Send extends PureComponent<
       if (!gas && !gasPrice) {
         const { gas, gasPrice } = await estimateGas(
           this.props.transaction,
-          this.props.globalNetworkClientId,
+          this.props.globalNetworkClientId as any,
         );
         newTxMeta = {
           ...newTxMeta,
@@ -648,10 +648,10 @@ class Send extends PureComponent<
         }
       }
       const existingContact =
-        addressBook[globalChainId] &&
-        addressBook[globalChainId][checksummedAddress];
+        addressBook[globalChainId as any] &&
+        addressBook[globalChainId as any][checksummedAddress];
       if (!existingContact) {
-        AddressBookController.set(checksummedAddress, '', globalChainId);
+        AddressBookController.set(checksummedAddress as any, '', globalChainId);
       }
       await new Promise((resolve) => {
         resolve(result);
@@ -879,4 +879,4 @@ Send.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Send));
+)(withMetricsAwareness(Send as any));

@@ -320,7 +320,7 @@ class Approve extends PureComponent<
   setNetworkNonce = async () => {
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
-    const proposedNonce = await getNetworkNonce(transaction, networkClientId);
+    const proposedNonce = await getNetworkNonce(transaction, networkClientId as any);
     setNonce(proposedNonce);
     setProposedNonce(proposedNonce);
   };
@@ -481,8 +481,8 @@ class Approve extends PureComponent<
     return buildTransactionParams({
       gasDataEIP1559,
       gasDataLegacy,
-      gasEstimateType,
-      showCustomNonce,
+      gasEstimateType: gasEstimateType as any,
+      showCustomNonce: showCustomNonce as any,
       transaction,
     });
   };
@@ -602,7 +602,7 @@ class Approve extends PureComponent<
               });
             } else {
               Logger.error(
-                transactionMeta.error,
+                transactionMeta.error as any,
                 'error while trying to finish a transaction (Approve)',
               );
             }
@@ -841,7 +841,7 @@ class Approve extends PureComponent<
 
     const savedContactList = checkIfAddressIsSaved(
       addressBook,
-      chainId,
+      chainId as any,
       transaction,
     );
 
@@ -891,7 +891,7 @@ class Approve extends PureComponent<
             providerRpcTarget={providerRpcTarget}
             networkConfigurations={networkConfigurations}
           />
-        ) : this.state.isBlockExplorerVisible && !isNonEvmChainId(chainId) ? (
+        ) : this.state.isBlockExplorerVisible && !isNonEvmChainId(chainId as any) ? (
           <ShowBlockExplorer
             setIsBlockExplorerVisible={this.setIsBlockExplorerVisible}
             type={providerType}
@@ -1038,4 +1038,4 @@ Approve.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Approve));
+)(withMetricsAwareness(Approve as any));

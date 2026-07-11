@@ -1,3 +1,5 @@
+// TODO: Remove once all "any" types are replaced
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { Component } from 'react';
 
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
@@ -161,7 +163,7 @@ export default class TransactionReviewDetailsCard extends Component<TransactionR
                 </Text>
               ) : (
                 <Text style={styles.address}>
-                  {renderShortAddress(address)}
+                  {renderShortAddress(address as any)}
                 </Text>
               )}
               <Feather

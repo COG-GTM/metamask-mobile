@@ -171,7 +171,7 @@ const ImportFromSecretRecoveryPhrase = ({
           !(passcodePreviouslyDisabled && passcodePreviouslyDisabled === TRUE),
         );
       } else if (authData.availableBiometryType) {
-        setBiometryType(authData.availableBiometryType);
+        setBiometryType(authData.availableBiometryType as any);
         setBiometryChoice(!(previouslyDisabled && previouslyDisabled === TRUE));
       }
     };
@@ -218,7 +218,7 @@ const ImportFromSecretRecoveryPhrase = ({
     } catch (err: any) {
       this.setState({ loading: false, error: err.toString() });
     }
-    setBiometryType(newAuthData.availableBiometryType);
+    setBiometryType(newAuthData.availableBiometryType as any);
     updateBiometryChoice(false);
   };
 
@@ -407,7 +407,7 @@ const ImportFromSecretRecoveryPhrase = ({
     });
   }, [hideSeedPhraseInput, navigation]);
 
-  const passwordStrengthWord = getPasswordStrengthWord(passwordStrength);
+  const passwordStrengthWord = getPasswordStrengthWord(passwordStrength as any);
 
   const hiddenSRPInput = useCallback(
     () => (

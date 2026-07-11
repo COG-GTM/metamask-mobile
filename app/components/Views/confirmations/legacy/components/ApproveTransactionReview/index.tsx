@@ -379,7 +379,9 @@ class ApproveTransactionReview extends PureComponent<
     unroundedAccountBalance: null,
   };
 
-  customSpendLimitInput = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  customSpendLimitInput: any = React.createRef();
   channelIdOrHostname = this.props.transaction.origin;
 
   sdkConnection = SDKConnect.getInstance().getConnection({
@@ -398,7 +400,7 @@ class ApproveTransactionReview extends PureComponent<
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
         txParams: transaction.transaction,
-        chainId,
+        chainId: chainId as any,
       });
       this.setState({
         multiLayerL1FeeTotal: result,
@@ -492,12 +494,12 @@ class ApproveTransactionReview extends PureComponent<
           tokenStandard = standard;
           tokenName = name;
           tokenBalance = renderFromTokenMinimalUnit(
-            erc20TokenBalance,
+            erc20TokenBalance as any,
             decimals,
           );
           unroundedAccountBalance = fromTokenMinimalUnit(
             erc20TokenBalance || 0,
-            decimals,
+            decimals as any,
           );
         }
       } catch (e: any) {
@@ -911,7 +913,7 @@ class ApproveTransactionReview extends PureComponent<
     } = this.props;
 
     const styles = this.getStyles();
-    const isTestNetwork = isTestNet(chainId);
+    const isTestNetwork = isTestNet(chainId as any);
 
     const originIsDeeplink =
       origin === ORIGIN_DEEPLINK || origin === ORIGIN_QR_CODE;
@@ -926,10 +928,10 @@ class ApproveTransactionReview extends PureComponent<
       gasEstimateType === GAS_ESTIMATE_TYPES.NONE;
 
     // TODO: [SOLANA] - before ship make sure block explorer supports Solana
-    const hasBlockExplorer = isNonEvmChainId(chainId)
+    const hasBlockExplorer = isNonEvmChainId(chainId as any)
       ? false
       : shouldShowBlockExplorer(
-          providerType,
+          providerType as any,
           providerRpcTarget,
           networkConfigurations,
         );
@@ -1355,7 +1357,7 @@ class ApproveTransactionReview extends PureComponent<
     InteractionManager.runAfterInteractions(() => {
       this.onCancelPress();
       this.props.navigation.navigate(Routes.BROWSER.VIEW, {
-        newTabUrl: TESTNET_FAUCETS[chainId],
+        newTabUrl: TESTNET_FAUCETS[chainId as any],
         timestamp: Date.now(),
       });
     });
@@ -1453,6 +1455,6 @@ export default connect(
   mapDispatchToProps,
 )(
   withNavigation(
-    withQRHardwareAwareness(withMetricsAwareness(ApproveTransactionReview)),
+    withQRHardwareAwareness(withMetricsAwareness(ApproveTransactionReview as any)),
   ),
 );

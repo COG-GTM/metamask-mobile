@@ -171,7 +171,7 @@ class WalletConnectSessions extends PureComponent {
       if (isV2 && isWC2Enabled) {
         await (
           await WC2Manager.getInstance()
-        )?.removeSession(this.sessionToRemove);
+        )?.removeSession(this.sessionToRemove as any);
       } else {
         await WalletConnect.killSession(this.sessionToRemove.peerId);
       }

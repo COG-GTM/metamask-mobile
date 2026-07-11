@@ -124,7 +124,7 @@ class AddressQRCode extends PureComponent<AddressQRCodeProps> {
 
   copyAccountToClipboard = async () => {
     const { selectedAddress } = this.props;
-    await ClipboardManager.setString(selectedAddress);
+    await ClipboardManager.setString(selectedAddress as any);
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,

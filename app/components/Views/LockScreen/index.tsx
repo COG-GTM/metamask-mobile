@@ -100,9 +100,15 @@ class LockScreen extends PureComponent<
 
   locked = true;
   timedOut = false;
-  firstAnimation = React.createRef();
-  secondAnimation = React.createRef();
-  animationName = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  firstAnimation: any = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  secondAnimation: any = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  animationName: any = React.createRef();
   opacity = new Animated.Value(1);
   appStateListener;
 
@@ -185,7 +191,7 @@ class LockScreen extends PureComponent<
     const { appTheme } = this.props;
     const osColorScheme = Appearance.getColorScheme();
     const wordmark = getAssetFromTheme(
-      appTheme,
+      appTheme as any,
       osColorScheme,
       wordmarkLight,
       wordmarkDark,

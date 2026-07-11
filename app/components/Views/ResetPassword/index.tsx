@@ -312,7 +312,9 @@ class ResetPassword extends PureComponent<
 
   mounted = true;
 
-  confirmPasswordInput = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  confirmPasswordInput: any = React.createRef();
 
   updateNavBar = () => {
     const { navigation } = this.props;
@@ -449,7 +451,7 @@ class ResetPassword extends PureComponent<
     await recreateVaultWithNewPassword(
       originalPassword,
       newPassword,
-      this.props.selectedAddress,
+      this.props.selectedAddress as any,
     );
   };
 
@@ -530,7 +532,9 @@ class ResetPassword extends PureComponent<
 
   renderLoader = () => {
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     return (
       <View style={styles.loader}>
@@ -545,7 +549,9 @@ class ResetPassword extends PureComponent<
     const { warningIncorrectPassword } = this.state;
     const colors = (this.context as Theme).colors || mockTheme.colors;
     const themeAppearance = (this.context as Theme).themeAppearance || 'light';
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     return (
       <KeyboardAvoidingView
@@ -614,7 +620,9 @@ class ResetPassword extends PureComponent<
     } = this.state;
     const colors = (this.context as Theme).colors || mockTheme.colors;
     const themeAppearance = (this.context as Theme).themeAppearance || 'light';
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
     const passwordsMatch = password !== '' && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
     const previousScreen = this.props.route.params?.[PREVIOUS_SCREEN];
@@ -801,7 +809,9 @@ class ResetPassword extends PureComponent<
   render() {
     const { view, ready } = this.state;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     if (!ready) return this.renderLoader();
     return (

@@ -113,7 +113,7 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector((state) => getHasOrders(state as any) || false);
   const accountsByChainId = useSelector(selectAccountsByChainId);
   const tabViewRef = useRef();
   const params = useParams();
@@ -130,7 +130,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            accountsByChainId[selectedAddress as any] ?? {},
           ).length,
         })
         .build(),

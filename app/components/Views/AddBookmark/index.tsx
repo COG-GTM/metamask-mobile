@@ -123,7 +123,9 @@ export default class AddBookmark extends PureComponent<
     this.setState({ url });
   };
 
-  urlInput = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  urlInput: any = React.createRef();
 
   jumpToUrl = () => {
     const { current } = this.urlInput;

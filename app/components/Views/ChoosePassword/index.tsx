@@ -273,7 +273,9 @@ class ChoosePassword extends PureComponent<
 
   mounted = true;
 
-  confirmPasswordInput = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  confirmPasswordInput: any = React.createRef();
   // Flag to know if password in keyring was set or not
   keyringControllerPasswordSet = false;
 
@@ -483,7 +485,7 @@ class ChoosePassword extends PureComponent<
     await Authentication.newWalletAndRestore(
       password,
       authType,
-      seedPhrase,
+      seedPhrase as any,
       true,
     );
     // Keyring is set with empty password or not

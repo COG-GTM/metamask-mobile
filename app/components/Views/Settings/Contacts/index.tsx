@@ -95,8 +95,8 @@ class Contacts extends PureComponent<
     if (
       prevProps.addressBook &&
       this.props.addressBook &&
-      JSON.stringify(prevProps.addressBook[chainId]) !==
-        JSON.stringify(this.props.addressBook[chainId])
+      JSON.stringify(prevProps.addressBook[chainId as any]) !==
+        JSON.stringify(this.props.addressBook[chainId as any])
     )
       this.updateAddressList();
   };
@@ -116,7 +116,7 @@ class Contacts extends PureComponent<
   deleteContact = () => {
     const { AddressBookController } = Engine.context;
     const { chainId } = this.props;
-    AddressBookController.delete(chainId, this.contactAddressToRemove);
+    AddressBookController.delete(chainId as any, this.contactAddressToRemove);
     this.updateAddressList();
   };
 

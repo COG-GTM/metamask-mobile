@@ -296,7 +296,7 @@ class TransactionReviewInformation extends PureComponent<
   setNetworkNonce = async () => {
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
-    const proposedNonce = await getNetworkNonce(transaction, networkClientId);
+    const proposedNonce = await getNetworkNonce(transaction, networkClientId as any);
     setNonce(proposedNonce);
     setProposedNonce(proposedNonce);
   };
@@ -333,7 +333,7 @@ class TransactionReviewInformation extends PureComponent<
       exchangeRate,
     );
     const base = Math.pow(10, 5);
-    total = ((parseFloat(gasFeeFiat) + parseFloat(balanceFiat)) * base) / base;
+    total = ((parseFloat(gasFeeFiat as any) + parseFloat(balanceFiat as any)) * base) / base;
     return `${total} ${currentCurrency}`;
   };
 
@@ -374,7 +374,7 @@ class TransactionReviewInformation extends PureComponent<
         const totalFiat = `${weiToFiat(
           totalEth,
           conversionRate,
-          currentCurrency,
+          currentCurrency as any,
         )}`;
 
         const totalValue = `${renderFromWei(totalEth)} ${getTicker(ticker)}`;
@@ -415,7 +415,7 @@ class TransactionReviewInformation extends PureComponent<
 
   isTestNetwork = () => {
     const { chainId } = this.props;
-    return isTestNet(chainId);
+    return isTestNet(chainId as any);
   };
 
   getRenderTotalsEIP1559 = ({
@@ -586,7 +586,7 @@ class TransactionReviewInformation extends PureComponent<
       this.onCancelPress();
       this.props.navigation.navigate(
         ...createBrowserNavDetails({
-          newTabUrl: TESTNET_FAUCETS[chainId],
+          newTabUrl: TESTNET_FAUCETS[chainId as any],
           timestamp: Date.now(),
         }),
       );
@@ -664,7 +664,7 @@ class TransactionReviewInformation extends PureComponent<
       totalGas = hexToBN(sumHexWEIs([BNToHex(totalGas), multiLayerL1FeeTotal]));
     }
 
-    const totalGasFiat = weiToFiat(totalGas, conversionRate, currentCurrency);
+    const totalGasFiat = weiToFiat(totalGas, conversionRate, currentCurrency as any);
     const totalGasEth = `${renderFromWei(totalGas)} ${getTicker(ticker)}`;
     const [totalFiat, totalValue] = this.getRenderTotals(
       totalGas,
@@ -819,4 +819,4 @@ TransactionReviewInformation.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(TransactionReviewInformation));
+)(withMetricsAwareness(TransactionReviewInformation as any));

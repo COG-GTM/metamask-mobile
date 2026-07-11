@@ -530,4 +530,4 @@ class ErrorBoundary extends Component<
 
 ErrorBoundary.contextType = ThemeContext;
 
-export default withMetricsAwareness(ErrorBoundary);
+export default withMetricsAwareness(ErrorBoundary as any);

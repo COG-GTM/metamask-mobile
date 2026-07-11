@@ -183,7 +183,9 @@ class SendFlow extends PureComponent<
   hardwareBackPress: any;
 
 
-  addressToInputRef = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addressToInputRef: any = React.createRef();
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -228,7 +230,7 @@ class SendFlow extends PureComponent<
     this.updateNavBar();
     // For analytics
     navigation.setParams({ providerType, isPaymentRequest });
-    const networkAddressBook = addressBook[globalChainId] || {};
+    const networkAddressBook = addressBook[globalChainId as any] || {};
     if (!Object.keys(networkAddressBook).length) {
       setTimeout(() => {
         this.addressToInputRef &&
@@ -239,7 +241,7 @@ class SendFlow extends PureComponent<
     //Fills in to address and sets the transaction if coming from QR code scan
     const targetAddress = route.params?.txMeta?.target_address;
     if (targetAddress) {
-      this.props.newAssetTransaction(getEther(ticker));
+      this.props.newAssetTransaction(getEther(ticker as any));
       this.onToSelectedAddressChange(targetAddress);
     }
 
@@ -262,7 +264,7 @@ class SendFlow extends PureComponent<
   isAddressSaved = () => {
     const { toAccount } = this.state;
     const { addressBook, globalChainId, internalAccounts } = this.props;
-    const networkAddressBook = addressBook[globalChainId] || {};
+    const networkAddressBook = addressBook[globalChainId as any] || {};
     const checksummedAddress = toChecksumAddress(toAccount);
     return !!(
       networkAddressBook[checksummedAddress] ||
@@ -418,7 +420,7 @@ class SendFlow extends PureComponent<
     const { addressBook, internalAccounts, globalChainId } = this.props;
     if (!toAccount) return;
 
-    const networkAddressBook = addressBook[globalChainId] || {};
+    const networkAddressBook = addressBook[globalChainId as any] || {};
 
     const checksummedAddress = toChecksumAddress(toAccount);
     const matchingAccount = internalAccounts.find((account: any) =>
@@ -448,7 +450,7 @@ class SendFlow extends PureComponent<
       toAccount,
       addressBook,
       internalAccounts,
-      globalChainId,
+      globalChainId as any,
     );
 
     this.setState({
@@ -467,7 +469,7 @@ class SendFlow extends PureComponent<
   onToSelectedAddressChange = (toAccount: any) => {
     const currentChain =
       this.props.ambiguousAddressEntries &&
-      this.props.ambiguousAddressEntries[this.props.globalChainId];
+      this.props.ambiguousAddressEntries[this.props.globalChainId as any];
     const isAmbiguousAddress = includes(currentChain, toAccount);
     if (isAmbiguousAddress) {
       this.setState({ showAmbiguousAcountWarning: isAmbiguousAddress });
@@ -544,8 +546,8 @@ class SendFlow extends PureComponent<
     );
     const existingContact =
       checksummedAddress &&
-      addressBook[globalChainId] &&
-      addressBook[globalChainId][checksummedAddress];
+      addressBook[globalChainId as any] &&
+      addressBook[globalChainId as any][checksummedAddress];
     const displayConfusableWarning =
       !existingContact && confusableCollection && !!confusableCollection.length;
     const displayAsWarning =
@@ -776,4 +778,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(SendFlow));
+)(withMetricsAwareness(SendFlow as any));

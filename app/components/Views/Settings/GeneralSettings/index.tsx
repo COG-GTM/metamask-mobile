@@ -575,4 +575,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Settings));
+)(withMetricsAwareness(Settings as any));

@@ -669,7 +669,7 @@ class TransactionEditor extends PureComponent<
       assetType,
       address,
       tokenId,
-      selectedAddress,
+      selectedAddress as any,
       transaction,
       contractBalances,
       false,
@@ -917,7 +917,7 @@ class TransactionEditor extends PureComponent<
               analyticsParams={getGasAnalyticsParams(
                 transaction,
                 '',
-                gasEstimateType,
+                gasEstimateType as any,
               )}
               isAnimating={isAnimating}
               onCancel={this.cancelGasEditionLegacy}

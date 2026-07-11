@@ -185,7 +185,7 @@ const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }: CustomModa
                 autoCorrect={false}
                 onChangeText={(text) => {
                   if (isNumber(text)) {
-                    onChangeText(text);
+                    onChangeText(text as any);
                   }
                 }}
                 placeholder={String(proposedNonce)}

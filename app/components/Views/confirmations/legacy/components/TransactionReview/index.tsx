@@ -352,7 +352,7 @@ class TransactionReview extends PureComponent<
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
         txParams: transaction.transaction,
-        chainId,
+        chainId: chainId as any,
         networkClientId,
       });
       this.setState({
@@ -389,7 +389,7 @@ class TransactionReview extends PureComponent<
         transaction,
         txParams: undefined,
       },
-      chainId,
+      chainId as any,
     );
 
     if (approveTransaction) {
@@ -462,7 +462,7 @@ class TransactionReview extends PureComponent<
       ETH: () => {
         const assetAmount = `${renderFromWei(value)} ${getTicker(ticker)}`;
         const conversionRate = this.props.conversionRate;
-        const fiatValue = weiToFiat(value, conversionRate, currentCurrency);
+        const fiatValue = weiToFiat(value, conversionRate, currentCurrency as any);
         return [assetAmount, conversionRate, fiatValue];
       },
       ERC20: () => {
@@ -477,7 +477,7 @@ class TransactionReview extends PureComponent<
           (value && fromTokenMinimalUnit(value, selectedAsset.decimals)) || 0,
           this.props.conversionRate,
           conversionRate,
-          currentCurrency,
+          currentCurrency as any,
         );
         return [assetAmount, conversionRate, fiatValue];
       },
@@ -797,6 +797,6 @@ TransactionReview.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(
   withNavigation(
-    withQRHardwareAwareness(withMetricsAwareness(TransactionReview)),
+    withQRHardwareAwareness(withMetricsAwareness(TransactionReview as any)),
   ),
 );

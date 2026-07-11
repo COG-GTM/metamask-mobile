@@ -392,7 +392,7 @@ class Confirm extends PureComponent<
       this.props;
     const proposedNonce = await getNetworkNonce(
       transaction,
-      globalNetworkClientId,
+      globalNetworkClientId as any,
     );
     setNonce(proposedNonce);
     setProposedNonce(proposedNonce);
@@ -475,7 +475,7 @@ class Confirm extends PureComponent<
     await stopGasPolling(this.state.pollToken);
     clearInterval(intervalIdForEstimatedL1Fee);
 
-    Engine.rejectPendingApproval(transactionMeta.id, undefined, {
+    Engine.rejectPendingApproval(transactionMeta.id, undefined as any, {
       ignoreMissing: true,
       logErrors: false,
     });
@@ -496,7 +496,7 @@ class Confirm extends PureComponent<
     if (weiBalance?.isZero()) {
       await TokensController.ignoreTokens(
         [selectedAsset.address],
-        this.props.networkClientId,
+        this.props.networkClientId as any,
       );
     }
   };
@@ -512,7 +512,7 @@ class Confirm extends PureComponent<
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
         txParams: transaction.transaction,
-        chainId,
+        chainId: chainId as any,
       });
       this.setState({
         multiLayerL1FeeTotal: result,
@@ -817,13 +817,13 @@ class Confirm extends PureComponent<
       transactionValueFiat = weiToFiat(
         valueBN,
         conversionRate,
-        currentCurrency,
+        currentCurrency as any,
       );
     } else if (selectedAsset.tokenId) {
       transactionValueFiat = weiToFiat(
         valueBN,
         conversionRate,
-        currentCurrency,
+        currentCurrency as any,
       );
     } else {
       const {
@@ -864,7 +864,7 @@ class Confirm extends PureComponent<
           transferValue,
           conversionRate,
           exchangeRate,
-          currentCurrency,
+          currentCurrency as any,
         ) || `0 ${currentCurrency}`;
     }
     this.setState({
@@ -894,8 +894,8 @@ class Confirm extends PureComponent<
     return buildTransactionParams({
       gasDataEIP1559,
       gasDataLegacy,
-      gasEstimateType,
-      showCustomNonce,
+      gasEstimateType: gasEstimateType as any,
+      showCustomNonce: showCustomNonce as any,
       transaction,
     });
   };
@@ -911,7 +911,7 @@ class Confirm extends PureComponent<
     const { fromSelectedAddress } = this.state;
     if (assetType === 'ERC721' && chainId !== ChainId.mainnet) {
       const { NftController } = Engine.context;
-      removeFavoriteCollectible(fromSelectedAddress, chainId, selectedAsset);
+      removeFavoriteCollectible(fromSelectedAddress, chainId as any, selectedAsset);
       NftController.removeNft(selectedAsset.address, selectedAsset.tokenId);
     }
   };
@@ -953,7 +953,7 @@ class Confirm extends PureComponent<
     }
 
     const insufficientBalanceMessage = validateSufficientBalance(
-      weiBalance,
+      weiBalance as any,
       totalTransactionValue,
       ticker,
     );
@@ -1099,7 +1099,7 @@ class Confirm extends PureComponent<
                 assetType,
                 {
                   ...this.getAnalyticsParams(),
-                  ...getBlockaidTransactionMetricsParams(transaction),
+                  ...getBlockaidTransactionMetricsParams(transaction as any),
                   ...this.getTransactionMetrics(),
                 },
               ),
@@ -1139,7 +1139,7 @@ class Confirm extends PureComponent<
             .createEventBuilder(MetaMetricsEvents.SEND_TRANSACTION_COMPLETED)
             .addProperties({
               ...this.getAnalyticsParams(transactionMeta),
-              ...getBlockaidTransactionMetricsParams(transaction),
+              ...getBlockaidTransactionMetricsParams(transaction as any),
               ...this.getTransactionMetrics(),
             })
             .build(),
@@ -1252,7 +1252,9 @@ class Confirm extends PureComponent<
     const { hexDataModalVisible } = this.state;
     const { data } = this.props.transactionState.transaction;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
     return (
       <Modal
         isVisible={hexDataModalVisible}
@@ -1314,7 +1316,7 @@ class Confirm extends PureComponent<
     const { chainId } = this.props;
     InteractionManager.runAfterInteractions(() => {
       this.props.navigation.navigate(Routes.BROWSER.VIEW, {
-        newTabUrl: TESTNET_FAUCETS[chainId],
+        newTabUrl: TESTNET_FAUCETS[chainId as any],
         timestamp: Date.now(),
       });
     });
@@ -1383,7 +1385,9 @@ class Confirm extends PureComponent<
   getConfirmButtonStyles() {
     const { securityAlertResponse } = this.props;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     let confirmButtonStyle: any = {};
     if (securityAlertResponse) {
@@ -1455,7 +1459,9 @@ class Confirm extends PureComponent<
       transactionMeta,
     } = this.state;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
     const showFeeMarket =
       !gasEstimateType ||
       gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET ||
@@ -1465,7 +1471,7 @@ class Confirm extends PureComponent<
       ExtendedKeyringTypes.ledger,
     ]);
 
-    const isTestNetwork = isTestNet(chainId);
+    const isTestNetwork = isTestNet(chainId as any);
 
     const errorPress = isTestNetwork ? this.goToFaucet : this.buyEth;
     const errorLinkText = isTestNetwork
@@ -1711,4 +1717,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Confirm));
+)(withMetricsAwareness(Confirm as any));

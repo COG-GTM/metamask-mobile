@@ -1,3 +1,5 @@
+// TODO: Remove once all "any" types are replaced
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { StyleSheet, View, Text, InteractionManager } from 'react-native';
 import URL from 'url-parse';
@@ -138,7 +140,7 @@ const WatchAssetRequest = ({
   const chainId = useSelector(selectEvmChainId);
   const balanceWithSymbol = error
     ? strings('transaction.failed')
-    : `${renderFromTokenMinimalUnit(balance, asset.decimals)} ${asset.symbol}`;
+    : `${renderFromTokenMinimalUnit(balance as any, asset.decimals)} ${asset.symbol}`;
 
   const activeTabUrl = useSelector(getActiveTabUrl, isEqual);
 

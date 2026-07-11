@@ -230,7 +230,7 @@ class NetworksSettings extends PureComponent<
     // Check if it's the selected network and then switch to mainnet first
     const { providerConfig } = this.props;
     if (
-      compareSanitizedUrl(providerConfig.rpcUrl, this.networkToRemove) &&
+      compareSanitizedUrl(providerConfig.rpcUrl, this.networkToRemove as any) &&
       providerConfig.type === RPC
     ) {
       this.switchToMainnet();
@@ -261,7 +261,7 @@ class NetworksSettings extends PureComponent<
       await MultichainNetworkController.setActiveNetwork('mainnet');
     }
 
-    NetworkController.removeNetwork(chainId);
+    NetworkController.removeNetwork(chainId as any);
     this.setState({ filteredNetworks: [] });
   };
 
@@ -273,7 +273,9 @@ class NetworksSettings extends PureComponent<
 
   networkElement(name: any, image: any, i: any, networkTypeOrRpcUrl: any, isCustomRPC: any, color: any) {
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
     return (
       <View key={`network-${networkTypeOrRpcUrl}`}>
         {
@@ -395,7 +397,9 @@ class NetworksSettings extends PureComponent<
     );
 
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     if (Object.keys(filteredChain).length > 0) {
       return (
@@ -412,7 +416,9 @@ class NetworksSettings extends PureComponent<
   renderMainnet() {
     const { name: mainnetName } = Networks.mainnet;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     return (
       <View style={styles.mainnetHeader}>
@@ -441,7 +447,9 @@ class NetworksSettings extends PureComponent<
   renderLineaMainnet() {
     const { name: lineaMainnetName } = Networks['linea-mainnet'];
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     return (
       <View style={styles.mainnetHeader}>
@@ -474,7 +482,9 @@ class NetworksSettings extends PureComponent<
       this.props.nonEvmNetworkConfigurations,
     ).find((network) => network.chainId === SolScope.Mainnet);
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     return (
       <View style={styles.mainnetHeader}>
@@ -548,7 +558,9 @@ class NetworksSettings extends PureComponent<
 
   filteredResult = () => {
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
     if (this.state.filteredNetworks.length > 0) {
       return this.state.filteredNetworks.map((data, i) => {
         const { networkTypeOrRpcUrl, chainId, name, color, isCustomRPC } = data;
@@ -576,7 +588,9 @@ class NetworksSettings extends PureComponent<
   render() {
     const colors = (this.context as Theme).colors || mockTheme.colors;
     const themeAppearance = (this.context as Theme).themeAppearance;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
 
     return (
       <View

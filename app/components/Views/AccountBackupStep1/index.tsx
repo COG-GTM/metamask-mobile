@@ -157,9 +157,11 @@ const AccountBackupStep1 = (props: any) => {
   const [skipCheckbox, setToggleSkipCheckbox] = useState(false);
   const [hasFunds, setHasFunds] = useState(false);
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const styles: any = createStyles(colors);
 
-  const track = (event: any, properties: any) => {
+  const track = (event: any, properties?: any) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
     trackOnboarding(eventBuilder.build());

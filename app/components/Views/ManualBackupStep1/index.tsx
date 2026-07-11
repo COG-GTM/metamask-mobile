@@ -75,7 +75,9 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: ManualBackupStep1Pro
   const [words, setWords] = useState([]);
 
   const { colors, themeAppearance } = useTheme();
-  const styles = createStyles(colors);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const styles: any = createStyles(colors);
 
   const currentStep = 1;
   const steps = MANUAL_BACKUP_STEPS;
@@ -146,7 +148,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: ManualBackupStep1Pro
     setReady(false);
     try {
       const seedPhrase = await tryExportSeedPhrase(password);
-      setWords(seedPhrase);
+      setWords(seedPhrase as any);
       setView(SEED_PHRASE);
       setReady(true);
     } catch (e: any) {

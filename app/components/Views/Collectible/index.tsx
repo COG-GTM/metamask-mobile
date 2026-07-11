@@ -120,7 +120,9 @@ class Collectible extends PureComponent<
     const address = params.address;
     const { collectibles } = this.props;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const styles: any = createStyles(colors);
     const filteredCollectibles = collectibles.filter((collectible: any) =>
       toLowerCaseEquals(collectible.address, address),
     );
