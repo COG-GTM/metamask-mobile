@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import { fontStyles } from '../../../styles/common';
 import CollectibleMedia from '../CollectibleMedia';
 import Device from '../../../util/device';
@@ -11,6 +11,12 @@ import { strings } from '../../../../locales/i18n';
 import Engine from '../../../core/Engine';
 import { removeFavoriteCollectible } from '../../../actions/collectibles';
 import { useTheme } from '../../../util/theme';
+import type { Theme } from '../../../util/theme/models';
+import type { RootState } from '../../../reducers';
+import type {
+  Collectible,
+  CollectibleMediaProps,
+} from '../CollectibleMedia/CollectibleMedia.types';
 import { selectChainId } from '../../../selectors/networkController';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
 import Icon, {
@@ -27,7 +33,10 @@ import { getDecimalChainId } from '../../../util/networks';
 const DEVICE_WIDTH = Device.getDeviceWidth();
 const COLLECTIBLE_WIDTH = (DEVICE_WIDTH - 30 - 16) / 3;
 
-const createStyles = (colors, brandColors) =>
+const createStyles = (
+  colors: Theme['colors'],
+  brandColors: Theme['brandColors'],
+) =>
   StyleSheet.create({
     itemWrapper: {
       paddingHorizontal: 15,
@@ -76,13 +85,83 @@ const createStyles = (colors, brandColors) =>
     },
   });
 
-const splitIntoSubArrays = (array, count) => {
+const splitIntoSubArrays = <T,>(array: T[], count: number): T[][] => {
   const newArray = [];
   while (array.length > 0) {
     newArray.push(array.splice(0, count));
   }
   return newArray;
 };
+
+interface CollectibleElement {
+  address: string;
+  tokenId: string;
+  name?: string;
+  logo?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+interface AssetElementType {
+  address?: string;
+  name?: string;
+  logo?: string;
+  favorites?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+interface OwnProps {
+  /**
+   * Object being rendered
+   */
+  asset: AssetElementType;
+  /**
+   * Array of collectibles
+   */
+  contractCollectibles: CollectibleElement[];
+  /**
+   * Whether the collectibles are visible or not
+   */
+  collectiblesVisible: boolean;
+  /**
+   * Called when the collectible is pressed
+   */
+  onPress: (collectible: CollectibleElement) => void;
+  /**
+   * Dispatch remove collectible from favorites action
+   * (allows override in tests)
+   */
+  removeFavoriteCollectible?: (
+    selectedAddress: string | undefined,
+    chainId: string,
+    collectible: Collectible,
+  ) => void;
+}
+
+interface StateProps {
+  /**
+   * Selected address
+   */
+  selectedAddress?: string;
+  /**
+   * Chain id
+   */
+  chainId: string;
+}
+
+interface DispatchProps {
+  /**
+   * Dispatch remove collectible from favorites action
+   */
+  removeFavoriteCollectible: (
+    selectedAddress: string | undefined,
+    chainId: string,
+    collectible: Collectible,
+  ) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
 
 /**
  * Customizable view to render assets in lists
@@ -95,13 +174,15 @@ function CollectibleContractElement({
   chainId,
   selectedAddress,
   removeFavoriteCollectible,
-}) {
-  const [collectiblesGrid, setCollectiblesGrid] = useState([]);
+}: Props) {
+  const [collectiblesGrid, setCollectiblesGrid] = useState<
+    CollectibleElement[][]
+  >([]);
   const [collectiblesVisible, setCollectiblesVisible] = useState(
     propsCollectiblesVisible,
   );
-  const actionSheetRef = useRef();
-  const longPressedCollectible = useRef(null);
+  const actionSheetRef = useRef<typeof ActionSheet | null>(null);
+  const longPressedCollectible = useRef<CollectibleElement | null>(null);
   const { colors, themeAppearance, brandColors } = useTheme();
   const styles = createStyles(colors, brandColors);
   const { trackEvent, createEventBuilder } = useMetrics();
@@ -111,27 +192,30 @@ function CollectibleContractElement({
   }, [collectiblesVisible, setCollectiblesVisible]);
 
   const onPressCollectible = useCallback(
-    (collectible) => {
+    (collectible: CollectibleElement) => {
       onPress(collectible);
     },
     [onPress],
   );
 
-  const onLongPressCollectible = useCallback((collectible) => {
-    actionSheetRef.current.show();
-    longPressedCollectible.current = collectible;
-  }, []);
+  const onLongPressCollectible = useCallback(
+    (collectible: CollectibleElement) => {
+      (actionSheetRef.current as unknown as { show: () => void })?.show();
+      longPressedCollectible.current = collectible;
+    },
+    [],
+  );
 
   const removeNft = () => {
     const { NftController } = Engine.context;
     removeFavoriteCollectible(
       selectedAddress,
       chainId,
-      longPressedCollectible.current,
+      longPressedCollectible.current as Collectible,
     );
     NftController.removeAndIgnoreNft(
-      longPressedCollectible.current.address,
-      longPressedCollectible.current.tokenId,
+      longPressedCollectible.current?.address as string,
+      longPressedCollectible.current?.tokenId as string,
     );
     trackEvent(
       createEventBuilder(MetaMetricsEvents.COLLECTIBLE_REMOVED)
@@ -150,12 +234,12 @@ function CollectibleContractElement({
     const { NftController } = Engine.context;
 
     NftController.addNft(
-      longPressedCollectible.current.address,
-      longPressedCollectible.current.tokenId,
+      longPressedCollectible.current?.address as string,
+      longPressedCollectible.current?.tokenId as string,
     );
   };
 
-  const handleMenuAction = (index) => {
+  const handleMenuAction = (index: number) => {
     if (index === 1) {
       removeNft();
     } else if (index === 0) {
@@ -164,7 +248,7 @@ function CollectibleContractElement({
   };
 
   const renderCollectible = useCallback(
-    (collectible, index) => {
+    (collectible: CollectibleElement, index: number) => {
       if (!collectible) return null;
       const onPress = () => onPressCollectible({ ...collectible });
       const onLongPress = () =>
@@ -172,7 +256,7 @@ function CollectibleContractElement({
       return (
         <View
           key={collectible.address + collectible.tokenId}
-          styles={styles.collectibleBox}
+          {...({ styles: styles.collectibleBox } as Record<string, unknown>)}
           testID={`collectible-${collectible.name}-${collectible.tokenId}`}
         >
           <TouchableOpacity
@@ -183,7 +267,9 @@ function CollectibleContractElement({
             <View style={index === 1 ? styles.collectibleInTheMiddle : {}}>
               <CollectibleMedia
                 style={styles.collectibleIcon}
-                collectible={{ ...collectible }}
+                collectible={
+                  { ...collectible } as CollectibleMediaProps['collectible']
+                }
                 onPressColectible={onPress}
                 isTokenImage
               />
@@ -219,12 +305,16 @@ function CollectibleContractElement({
         <View style={styles.collectibleContractIconContainer}>
           {!asset.favorites ? (
             <CollectibleMedia
-              iconStyle={styles.collectibleContractIcon}
-              collectible={{
-                name: strings('collectible.untitled_collection'),
-                ...asset,
-                image: asset.logo,
-              }}
+              {...({
+                iconStyle: styles.collectibleContractIcon,
+              } as Record<string, unknown>)}
+              collectible={
+                {
+                  name: strings('collectible.untitled_collection'),
+                  ...asset,
+                  image: asset.logo,
+                } as CollectibleMediaProps['collectible']
+              }
               tiny
             />
           ) : (
@@ -244,7 +334,9 @@ function CollectibleContractElement({
         </View>
       </TouchableOpacity>
       {collectiblesVisible && (
-        <View style={styles.grid}>
+        <View
+          style={(styles as unknown as Record<string, undefined>).grid}
+        >
           {collectiblesGrid.map((row, i) => (
             <View key={i} style={styles.collectiblesRowContainer}>
               {row.map((collectible, index) =>
@@ -272,44 +364,17 @@ function CollectibleContractElement({
   );
 }
 
-CollectibleContractElement.propTypes = {
-  /**
-   * Object being rendered
-   */
-  asset: PropTypes.object,
-  /**
-   * Array of collectibles
-   */
-  contractCollectibles: PropTypes.array,
-  /**
-   * Whether the collectibles are visible or not
-   */
-  collectiblesVisible: PropTypes.bool,
-  /**
-   * Called when the collectible is pressed
-   */
-  onPress: PropTypes.func,
-  /**
-   * Selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Dispatch remove collectible from favorites action
-   */
-  removeFavoriteCollectible: PropTypes.func,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  removeFavoriteCollectible: (
+    selectedAddress: string | undefined,
+    chainId: string,
+    collectible: Collectible,
+  ) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
 });
 
