@@ -565,7 +565,8 @@ function TokenSelectModal({
           </View>
         ) : (
           <FlatList
-            ref={list as unknown as React.LegacyRef<FlatList<TokenType>>}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ref={list as unknown as React.RefObject<FlatList<any>>}
             style={styles.resultsView}
             keyboardDismissMode="none"
             keyboardShouldPersistTaps="always"
