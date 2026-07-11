@@ -21,7 +21,7 @@ import {
   multichainCollectibleContractsSelector,
   multichainCollectiblesSelector,
 } from '../../../reducers/collectibles';
-import { removeFavoriteCollectible } from '../../../actions/collectibles';
+import { removeFavoriteCollectible as removeFavoriteCollectibleAction } from '../../../actions/collectibles';
 import AppConstants from '../../../core/AppConstants';
 import { toLowerCaseEquals } from '../../../util/general';
 import { compareTokenIds } from '../../../util/tokens';
@@ -43,7 +43,7 @@ import { selectSelectedInternalAccountFormattedAddress } from '../../../selector
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 import { RefreshTestId, SpinnerTestId } from './constants';
-import { debounce, cloneDeep, isEqual } from 'lodash';
+import { debounce, cloneDeep } from 'lodash';
 import ButtonBase from '../../../component-library/components/Buttons/Button/foundation/ButtonBase';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
@@ -153,11 +153,14 @@ const createStyles = (colors: Colors) =>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Collectible = Record<string, any>;
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const debouncedNavigation = debounce((navigation: any, collectible: Collectible) => {
-  navigation.navigate('NftDetails', { collectible });
-}, 200);
+const debouncedNavigation = debounce(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (navigation: any, collectible: Collectible) => {
+    navigation.navigate('NftDetails', { collectible });
+  },
+  200,
+);
 
 interface OwnProps {
   /**
@@ -297,10 +300,10 @@ const CollectibleContracts = ({
   );
 
   /**
-   *  Method that checks if the collectible is inside the collectibles array. If it is not it means the
-   *  collectible has been ignored, hence we should not call the updateMetadata which executes the addNft fct
+   * Method that checks if the collectible is inside the collectibles array. If it is not it means the
+   * collectible has been ignored, hence we should not call the updateMetadata which executes the addNft fct
    *
-   *  @returns Boolean indicating if the collectible is ignored or not.
+   * @returns Boolean indicating if the collectible is ignored or not.
    */
   const isCollectibleIgnored = useCallback(
     (collectible: Collectible) => {
@@ -316,7 +319,7 @@ const CollectibleContracts = ({
   );
 
   /**
-   *  Method to check the token id data type of the current collectibles.
+   * Method to check the token id data type of the current collectibles.
    *
    * @param collectible - Collectible object.
    * @returns Boolean indicating if the collectible should be updated.
@@ -356,9 +359,7 @@ const CollectibleContracts = ({
         await NftController.updateNftMetadata({
           nfts: updatable,
           userAddress: selectedAddress,
-        } as unknown as Parameters<
-          typeof NftController.updateNftMetadata
-        >[0]);
+        } as unknown as Parameters<typeof NftController.updateNftMetadata>[0]);
       }
     },
     [isCollectibleIgnored, removeFavoriteCollectible, chainId, selectedAddress],
@@ -444,6 +445,7 @@ const CollectibleContracts = ({
   );
 
   const renderFavoriteCollectibles = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const filteredCollectibles = favoriteCollectibles.map(
       (collectible: Collectible) =>
         collectibles.find(
@@ -539,6 +541,7 @@ const CollectibleContracts = ({
       <View style={styles.emptyContainer}>
         <Image
           style={styles.emptyImageContainer}
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={require('../../../images/no-nfts-placeholder.png')}
           resizeMode={'contain'}
         />
@@ -652,10 +655,10 @@ const mapStateToProps = (state: RootState): StateProps => ({
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
     dispatch(
-      removeFavoriteCollectible(
+      removeFavoriteCollectibleAction(
         selectedAddress,
         chainId,
-        collectible as Parameters<typeof removeFavoriteCollectible>[2],
+        collectible as Parameters<typeof removeFavoriteCollectibleAction>[2],
       ),
     ),
 });

@@ -16,8 +16,8 @@ import { getOptinMetricsNavbarOptions } from '../Navbar';
 import { strings } from '../../../../locales/i18n';
 import setOnboardingWizardStep from '../../../actions/wizard';
 import { connect } from 'react-redux';
-import { clearOnboardingEvents } from '../../../actions/onboarding';
-import { setDataCollectionForMarketing } from '../../../actions/security';
+import { clearOnboardingEvents as clearOnboardingEventsAction } from '../../../actions/onboarding';
+import { setDataCollectionForMarketing as setDataCollectionForMarketingAction } from '../../../actions/security';
 import { ONBOARDING_WIZARD } from '../../../constants/storage';
 import AppConstants from '../../../core/AppConstants';
 import {
@@ -38,9 +38,7 @@ import Routes from '../../../constants/navigation/Routes';
 import generateDeviceAnalyticsMetaData, {
   UserSettingsAnalyticsMetaData as generateUserSettingsAnalyticsMetaData,
 } from '../../../util/metrics';
-import {
-  UserProfileProperty
-} from '../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
+import { UserProfileProperty } from '../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
 import type { Dispatch } from 'redux';
 import type { Theme, Colors } from '../../../util/theme/models';
 import type { RootState } from '../../../reducers';
@@ -211,7 +209,7 @@ class OptinMetrics extends PureComponent<Props, OptinMetricsState> {
     /**
      * Tracks the scroll view's height.
      */
-    scrollViewHeight: undefined
+    scrollViewHeight: undefined,
   };
 
   getStyles = () => {
@@ -221,24 +219,24 @@ class OptinMetrics extends PureComponent<Props, OptinMetricsState> {
 
   actionsList = isPastPrivacyPolicyDate
     ? [1, 2, 3].map((value) => ({
-      action: value,
-      prefix: strings(`privacy_policy.action_description_${value}_prefix`),
-      description: strings(
-        `privacy_policy.action_description_${value}_description`,
-      ),
-    }))
-    : [1, 2, 3, 4, 5].map((value) => {
-      const actionVal = value <= 2 ? 0 : 1;
-      return {
-        action: actionVal,
-        prefix: actionVal
-          ? `${strings('privacy_policy.action_description_never_legacy')} `
-          : '',
+        action: value,
+        prefix: strings(`privacy_policy.action_description_${value}_prefix`),
         description: strings(
-          `privacy_policy.action_description_${value}_legacy`,
+          `privacy_policy.action_description_${value}_description`,
         ),
-      };
-    });
+      }))
+    : [1, 2, 3, 4, 5].map((value) => {
+        const actionVal = value <= 2 ? 0 : 1;
+        return {
+          action: actionVal,
+          prefix: actionVal
+            ? `${strings('privacy_policy.action_description_never_legacy')} `
+            : '',
+          description: strings(
+            `privacy_policy.action_description_${value}_legacy`,
+          ),
+        };
+      });
 
   updateNavBar = () => {
     const { navigation } = this.props;
@@ -258,7 +256,8 @@ class OptinMetrics extends PureComponent<Props, OptinMetricsState> {
     // Update the navbar
     this.updateNavBar();
 
-    const { scrollViewContentHeight, isEndReached, scrollViewHeight } = this.state;
+    const { scrollViewContentHeight, isEndReached, scrollViewHeight } =
+      this.state;
 
     // Only run this check if any of the relevant values have changed
     if (
@@ -317,7 +316,10 @@ class OptinMetrics extends PureComponent<Props, OptinMetricsState> {
    * @param {object} - Object containing action and description to be rendered
    * @param {number} i - Index key
    */
-  renderLegacyAction = ({ action, description, prefix }: ActionItem, i: number) => {
+  renderLegacyAction = (
+    { action, description, prefix }: ActionItem,
+    i: number,
+  ) => {
     const styles = this.getStyles();
 
     return (
@@ -343,7 +345,10 @@ class OptinMetrics extends PureComponent<Props, OptinMetricsState> {
     );
   };
 
-  renderAction = ({ description, prefix }: Omit<ActionItem, 'action'>, i: number) => {
+  renderAction = (
+    { description, prefix }: Omit<ActionItem, 'action'>,
+    i: number,
+  ) => {
     const styles = this.getStyles();
 
     return (
@@ -412,7 +417,9 @@ class OptinMetrics extends PureComponent<Props, OptinMetricsState> {
       metrics
         .createEventBuilder(MetaMetricsEvents.ANALYTICS_PREFERENCE_SELECTED)
         .addProperties({
-          [UserProfileProperty.HAS_MARKETING_CONSENT]: Boolean(isDataCollectionForMarketingEnabled),
+          [UserProfileProperty.HAS_MARKETING_CONSENT]: Boolean(
+            isDataCollectionForMarketingEnabled,
+          ),
           is_metrics_opted_in: true,
           location: 'onboarding_metametrics',
           updated_after_onboarding: false,
@@ -427,7 +434,7 @@ class OptinMetrics extends PureComponent<Props, OptinMetricsState> {
 
     // track onboarding events that were stored before user opted in
     // only if the user eventually opts in.
-    if (events && events.length) {
+    if (events?.length) {
       let delay = 0; // Initialize delay
       const eventTrackingDelay = 200; // ms delay between each event
       events.forEach((eventArgs) => {
@@ -738,9 +745,9 @@ const mapStateToProps = (state: RootState): StateProps => ({
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   setOnboardingWizardStep: (step: number) =>
     dispatch(setOnboardingWizardStep(step)),
-  clearOnboardingEvents: () => dispatch(clearOnboardingEvents()),
+  clearOnboardingEvents: () => dispatch(clearOnboardingEventsAction()),
   setDataCollectionForMarketing: (value: boolean) =>
-    dispatch(setDataCollectionForMarketing(value)),
+    dispatch(setDataCollectionForMarketingAction(value)),
 });
 
 export default connect(

@@ -378,8 +378,7 @@ class PaymentRequest extends PureComponent<Props, PaymentRequestState> {
    */
   goToAssetSelection = () => {
     const { navigation } = this.props;
-    navigation &&
-      navigation.setParams({ mode: MODE_SELECT, dispatch: undefined });
+    navigation?.setParams({ mode: MODE_SELECT, dispatch: undefined });
     this.setState({
       mode: MODE_SELECT,
       amount: undefined,
@@ -398,11 +397,10 @@ class PaymentRequest extends PureComponent<Props, PaymentRequestState> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   goToAmountInput = async (selectedAsset: any) => {
     const { navigation } = this.props;
-    navigation &&
-      navigation.setParams({
-        mode: MODE_AMOUNT,
-        dispatch: this.goToAssetSelection,
-      });
+    navigation?.setParams({
+      mode: MODE_AMOUNT,
+      dispatch: this.goToAssetSelection,
+    });
     await this.setState({ selectedAsset, mode: MODE_AMOUNT });
     this.updateAmount();
   };
@@ -443,8 +441,7 @@ class PaymentRequest extends PureComponent<Props, PaymentRequestState> {
     const { inputWidth } = this.state;
     let results;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const themeAppearance =
-      (this.context as Theme).themeAppearance || 'light';
+    const themeAppearance = (this.context as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);
     const isTDSupportedForNetwork = isTokenDetectionSupportedForNetwork(
       chainId as Parameters<typeof isTokenDetectionSupportedForNetwork>[0],
@@ -572,8 +569,7 @@ class PaymentRequest extends PureComponent<Props, PaymentRequestState> {
         : 0;
     const cryptoAmount = amount;
     const exchangeRate =
-      selectedAsset &&
-      selectedAsset.address &&
+      selectedAsset?.address &&
       contractExchangeRates?.[selectedAsset.address]?.price;
     if (selectedAsset.symbol !== 'ETH') {
       secondaryAmount = exchangeRate
@@ -606,10 +602,8 @@ class PaymentRequest extends PureComponent<Props, PaymentRequestState> {
     const { selectedAsset } = this.state;
     const symbol = currentCurrency;
     const exchangeRate =
-      selectedAsset &&
-      selectedAsset.address &&
-      contractExchangeRates &&
-      contractExchangeRates[selectedAsset.address]?.price;
+      selectedAsset?.address &&
+      contractExchangeRates?.[selectedAsset.address]?.price;
     const undefAmount = (isDecimal(amount as string) && amount) || 0;
     let secondaryAmount, cryptoAmount;
     if (selectedAsset.symbol !== 'ETH' && exchangeRate && exchangeRate !== 0) {
@@ -662,10 +656,8 @@ class PaymentRequest extends PureComponent<Props, PaymentRequestState> {
     const currencySymbol =
       currencySymbols[currentCurrency as keyof typeof currencySymbols];
     const exchangeRate =
-      selectedAsset &&
-      selectedAsset.address &&
-      contractExchangeRates &&
-      contractExchangeRates[selectedAsset.address as `0x${string}`]?.price;
+      selectedAsset?.address &&
+      contractExchangeRates?.[selectedAsset.address as `0x${string}`]?.price;
     let res;
     // If primary currency is not crypo we need to know if there are conversion and exchange rates to handle0,
     // fiat conversion for the payment request
@@ -751,13 +743,12 @@ class PaymentRequest extends PureComponent<Props, PaymentRequestState> {
         // Convert to universal link / app link
         const link = generateUniversalLinkRequest(eth_link);
 
-        navigation &&
-          navigation.replace('PaymentRequestSuccess', {
-            link,
-            qrLink: eth_link,
-            amount: cryptoAmount,
-            symbol: selectedAsset.symbol,
-          });
+        navigation?.replace('PaymentRequestSuccess', {
+          link,
+          qrLink: eth_link,
+          amount: cryptoAmount,
+          symbol: selectedAsset.symbol,
+        });
       } else {
         this.setState({ showError: true });
       }
@@ -785,14 +776,11 @@ class PaymentRequest extends PureComponent<Props, PaymentRequestState> {
     const currencySymbol =
       currencySymbols[currentCurrency as keyof typeof currencySymbols];
     const exchangeRate =
-      selectedAsset &&
-      selectedAsset.address &&
-      contractExchangeRates &&
-      contractExchangeRates[selectedAsset.address as `0x${string}`]?.price;
+      selectedAsset?.address &&
+      contractExchangeRates?.[selectedAsset.address as `0x${string}`]?.price;
     let switchable = true;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const themeAppearance =
-      (this.context as Theme).themeAppearance || 'light';
+    const themeAppearance = (this.context as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);
 
     if (!conversionRate) {

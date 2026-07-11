@@ -269,6 +269,7 @@ const EditGasFeeLegacy = ({
         gas_mode: selectedOption ? 'Basic' : 'Advanced',
         speed_set: selectedOption || undefined,
       };
+      // eslint-disable-next-line @typescript-eslint/no-shadow
     } catch (error) {
       return {};
     }
@@ -282,6 +283,7 @@ const EditGasFeeLegacy = ({
           .build(),
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     setShowAdvancedOptions((showAdvancedOptions) => !showAdvancedOptions);
   };
 
@@ -520,9 +522,7 @@ const EditGasFeeLegacy = ({
                     </Text>
                     <Text noMargin link bold style={styles.advancedOptionsIcon}>
                       <Icon
-                        name={`arrow-${
-                          showAdvancedOptions ? 'up' : 'down'
-                        }`}
+                        name={`arrow-${showAdvancedOptions ? 'up' : 'down'}`}
                       />
                     </Text>
                   </TouchableOpacity>

@@ -22,7 +22,6 @@ import { sumHexWEIs } from '../../../util/conversions';
 import {
   decodeTransferData,
   isCollectibleAddress,
-  getTicker,
   getActionKey,
   TRANSACTION_TYPES,
   calculateEIP1559GasFeeHexes,
@@ -129,7 +128,9 @@ function getTokenTransfer(args: DecodeArgs) {
   const [, , encodedAmount] = decodeTransferData('transfer', data);
   const amount = hexToBN(encodedAmount);
   const userHasToken = (safeToChecksumAddress(to) as string) in tokens;
-  const token = userHasToken ? tokens[safeToChecksumAddress(to) as string] : null;
+  const token = userHasToken
+    ? tokens[safeToChecksumAddress(to) as string]
+    : null;
   const renderActionKey = token
     ? `${strings('transactions.sent')} ${token.symbol}`
     : actionKey;
@@ -426,9 +427,9 @@ async function decodeTransferTx(args: DecodeArgs) {
   const renderGasPrice = renderGwei(txParams);
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let [transactionElement, transactionDetails]: [any, any] = (isCollectible
+  let [transactionElement, transactionDetails]: any[] = isCollectible
     ? getCollectibleTransfer({ ...args, totalGas })
-    : getTokenTransfer({ ...args, totalGas })) as [any, any];
+    : getTokenTransfer({ ...args, totalGas });
   transactionElement = { ...transactionElement, renderTo: addressTo };
   transactionDetails = {
     ...transactionDetails,
@@ -758,7 +759,8 @@ function decodeSwapsTx(args: DecodeArgs) {
   const destinationToken =
     swapTransaction?.destinationToken?.swaps ||
     swapsTokens?.find(
-      ({ address }: Tx) => address === swapTransaction?.destinationToken?.address,
+      ({ address }: Tx) =>
+        address === swapTransaction?.destinationToken?.address,
     );
   if (!sourceToken || !destinationToken) return [undefined, undefined];
 
@@ -831,7 +833,9 @@ function decodeSwapsTx(args: DecodeArgs) {
 
   const sourceExchangeRate = isSwapsNativeAsset(sourceToken)
     ? 1
-    : contractExchangeRates?.[safeToChecksumAddress(sourceToken.address) as string]?.price;
+    : contractExchangeRates?.[
+        safeToChecksumAddress(sourceToken.address) as string
+      ]?.price;
   const renderSourceTokenFiatNumber = balanceToFiatNumber(
     decimalSourceAmount,
     conversionRate,
@@ -951,13 +955,13 @@ export default async function decodeTransaction(args: DecodeArgs) {
     tx.txParams.to?.toLowerCase() === getSwapsContractAddress(chainIdToUse) ||
     swapsTransactions[tx.id]
   ) {
-    const [transactionElement, transactionDetails] = decodeSwapsTx({
+    const [swapsTransactionElement, swapsTransactionDetails] = decodeSwapsTx({
       ...args,
       actionKey,
     });
 
-    if (transactionElement && transactionDetails)
-      return [transactionElement, transactionDetails];
+    if (swapsTransactionElement && swapsTransactionDetails)
+      return [swapsTransactionElement, swapsTransactionDetails];
   }
   if (isTransfer) {
     [transactionElement, transactionDetails] = decodeIncomingTransfer({

@@ -31,8 +31,8 @@ import { isMainNet } from '../../../util/networks';
 import { isLinkSafe } from '../../../util/linkCheck';
 import etherscanLink from '@metamask/etherscan-link';
 import {
-  addFavoriteCollectible,
-  removeFavoriteCollectible,
+  addFavoriteCollectible as addFavoriteCollectibleAction,
+  removeFavoriteCollectible as removeFavoriteCollectibleAction,
 } from '../../../actions/collectibles';
 import { isCollectibleInFavoritesSelector } from '../../../reducers/collectibles';
 import Share from 'react-native-share';
@@ -610,18 +610,18 @@ const mapStateToProps = (state: RootState, props: OwnProps): StateProps => ({
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   addFavoriteCollectible: (selectedAddress, chainId, collectible) =>
     dispatch(
-      addFavoriteCollectible(
+      addFavoriteCollectibleAction(
         selectedAddress,
         chainId,
-        collectible as Parameters<typeof addFavoriteCollectible>[2],
+        collectible as Parameters<typeof addFavoriteCollectibleAction>[2],
       ),
     ),
   removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
     dispatch(
-      removeFavoriteCollectible(
+      removeFavoriteCollectibleAction(
         selectedAddress,
         chainId,
-        collectible as Parameters<typeof removeFavoriteCollectible>[2],
+        collectible as Parameters<typeof removeFavoriteCollectibleAction>[2],
       ),
     ),
 });

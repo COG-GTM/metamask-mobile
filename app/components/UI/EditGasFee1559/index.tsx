@@ -341,9 +341,9 @@ const EditGasFee1559 = ({
     false,
   );
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(!selected);
-  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<
-    string | null
-  >(null);
+  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<string | null>(
+    null,
+  );
   const [maxFeeError, setMaxFeeError] = useState<string | null>(null);
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState<
@@ -370,6 +370,7 @@ const EditGasFee1559 = ({
         gas_mode: selectedOption ? 'Basic' : 'Advanced',
         speed_set: selectedOption || undefined,
       };
+      // eslint-disable-next-line @typescript-eslint/no-shadow
     } catch (error) {
       return {};
     }
@@ -383,10 +384,12 @@ const EditGasFee1559 = ({
           .build(),
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     setShowAdvancedOptions((showAdvancedOptions) => !showAdvancedOptions);
   };
 
   const toggleLearnMoreModal = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     setShowLearnMoreModal((showLearnMoreModal) => !showLearnMoreModal);
   };
 
@@ -925,9 +928,7 @@ const EditGasFee1559 = ({
                       )}
                     {showInfoModal === 'max_fee' &&
                       strings('edit_gas_fee_eip1559.learn_more_max_fee')}
-                    {showInfoModal === 'new_gas_fee' &&
-                    updateOption &&
-                    updateOption.isCancel
+                    {showInfoModal === 'new_gas_fee' && updateOption?.isCancel
                       ? strings(
                           'edit_gas_fee_eip1559.learn_more_cancel_gas_fee',
                         )

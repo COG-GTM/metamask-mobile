@@ -78,7 +78,6 @@ import { selectGasFeeEstimates } from '../../../selectors/confirmTransaction';
 import { decGWEIToHexWEI } from '../../../util/conversions';
 import { ActivitiesViewSelectorsIDs } from '../../../../e2e/selectors/Transactions/ActivitiesView.selectors';
 import { isNonEvmChainId } from '../../../core/Multichain/utils';
-import { isEqual } from 'lodash';
 import {
   getFontFamily,
   TextVariant,
@@ -145,9 +144,7 @@ const createStyles = (colors: Colors, typography: Typography) =>
 const ROW_HEIGHT = (Device.isIos() ? 95 : 100) + StyleSheet.hairlineWidth;
 
 const TransactionElementComponent =
-  TransactionElement as unknown as React.ComponentType<
-    Record<string, unknown>
-  >;
+  TransactionElement as unknown as React.ComponentType<Record<string, unknown>>;
 
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -335,10 +332,9 @@ class Transactions extends PureComponent<Props, TransactionsState> {
         this.props.selectedAddress as string,
         [ExtendedKeyringTypes.qr],
       ) as boolean,
-      isLedgerAccount: isHardwareAccount(
-        this.props.selectedAddress as string,
-        [ExtendedKeyringTypes.ledger],
-      ) as boolean,
+      isLedgerAccount: isHardwareAccount(this.props.selectedAddress as string, [
+        ExtendedKeyringTypes.ledger,
+      ]) as boolean,
     });
   };
 
@@ -381,8 +377,8 @@ class Transactions extends PureComponent<Props, TransactionsState> {
   };
 
   toggleDetailsView = (id: string, index?: number) => {
-    const oldId = this.selectedTx && this.selectedTx.id;
-    const oldIndex = this.selectedTx && this.selectedTx.index;
+    const oldId = this.selectedTx?.id;
+    const oldIndex = this.selectedTx?.index;
 
     if (this.selectedTx && oldId !== id && oldIndex !== index) {
       this.selectedTx = null;
@@ -511,7 +507,7 @@ class Transactions extends PureComponent<Props, TransactionsState> {
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getItemLayout = (data: any, index: number) => ({
+  getItemLayout = (_data: any, index: number) => ({
     length: ROW_HEIGHT,
     offset: (this.props.headerHeight as number) + ROW_HEIGHT * index,
     index,
@@ -670,9 +666,7 @@ class Transactions extends PureComponent<Props, TransactionsState> {
         onConfirmationComplete: onConfirmation,
         type: 'signTransaction',
         replacementParams: transaction?.replacementParams,
-      } as unknown as Parameters<
-        typeof createLedgerTransactionModalNavDetails
-      >[0]),
+      } as unknown as Parameters<typeof createLedgerTransactionModalNavDetails>[0]),
     );
   };
 
@@ -756,12 +750,20 @@ class Transactions extends PureComponent<Props, TransactionsState> {
     //If the exitsing TX id true then it is a speed up retry
     if (this.speedUpTxId) {
       InteractionManager.runAfterInteractions(() => {
-        this.onSpeedUpAction(true, this.existingGas, this.existingTx ?? undefined);
+        this.onSpeedUpAction(
+          true,
+          this.existingGas,
+          this.existingTx ?? undefined,
+        );
       });
     }
     if (this.cancelTxId) {
       InteractionManager.runAfterInteractions(() => {
-        this.onCancelAction(true, this.existingGas, this.existingTx ?? undefined);
+        this.onCancelAction(
+          true,
+          this.existingGas,
+          this.existingTx ?? undefined,
+        );
       });
     }
   };
@@ -845,12 +847,11 @@ class Transactions extends PureComponent<Props, TransactionsState> {
     const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
-    const transactions =
-      submittedTransactions && submittedTransactions.length
-        ? submittedTransactions
-            .sort((a, b) => b.time - a.time)
-            .concat(confirmedTransactions ?? [])
-        : this.props.transactions;
+    const transactions = submittedTransactions?.length
+      ? submittedTransactions
+          .sort((a, b) => b.time - a.time)
+          .concat(confirmedTransactions ?? [])
+      : this.props.transactions;
 
     const renderRetryGas = (rate: number) => {
       if (!this.existingGas) return null;
