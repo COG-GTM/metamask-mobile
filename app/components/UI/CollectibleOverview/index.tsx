@@ -14,8 +14,8 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import RemoteImage from '../../Base/RemoteImage';
-import PropTypes from 'prop-types';
 import { connect, useSelector } from 'react-redux';
+import type { Dispatch } from 'redux';
 import { baseStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import Text from '../../Base/Text';
@@ -49,6 +49,8 @@ import {
   selectIsIpfsGatewayEnabled,
 } from '../../../selectors/preferencesController';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
+import type { Colors } from '../../../util/theme/models';
+import type { RootState } from '../../../reducers';
 
 const ANIMATION_VELOCITY = 250;
 const HAS_NOTCH = Device.hasNotch();
@@ -58,7 +60,14 @@ const VERTICAL_ALIGNMENT = IS_SMALL_DEVICE ? 12 : 16;
 
 const THRESHOLD = 50;
 
-const createStyles = (colors) =>
+const PanGestureHandlerComponent =
+  PanGestureHandler as unknown as React.ComponentType<
+    React.ComponentProps<typeof PanGestureHandler> & {
+      children?: React.ReactNode;
+    }
+  >;
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       flex: 0,
@@ -145,6 +154,85 @@ const FieldType = {
   Link: 'Link',
   Text: 'Text',
 };
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Collectible = Record<string, any>;
+
+interface OwnProps {
+  /**
+   * navigation object
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation?: any;
+  /**
+   * Object that represents the collectible to be displayed
+   */
+  collectible: Collectible;
+  /**
+   * Represents if the collectible is tradable (can be sent)
+   */
+  tradable?: boolean;
+  /**
+   * Function called when user presses the Send button
+   */
+  onSend?: () => void;
+  /**
+   * Function to open a link on a webview
+   */
+  openLink?: (url: string) => void;
+  /**
+   * callback to trigger when modal is being animated
+   */
+  onTranslation?: (isTranslated: boolean) => void;
+}
+
+interface StateProps {
+  /**
+   * Chain id
+   */
+  chainId: ReturnType<typeof selectChainId>;
+  /**
+   * Selected address
+   */
+  selectedAddress: ReturnType<
+    typeof selectSelectedInternalAccountFormattedAddress
+  >;
+  /**
+   * Whether the current collectible is favorited
+   */
+  isInFavorites: boolean;
+}
+
+interface DispatchProps {
+  /**
+   * Dispatch add collectible to favorites action
+   */
+  addFavoriteCollectible: (
+    selectedAddress: string | undefined,
+    chainId: string,
+    collectible: Collectible,
+  ) => void;
+  /**
+   * Dispatch remove collectible from favorites action
+   */
+  removeFavoriteCollectible: (
+    selectedAddress: string | undefined,
+    chainId: string,
+    collectible: Collectible,
+  ) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+interface CollectibleInfoRow {
+  key: string;
+  value?: string | false;
+  onPress?: () => void;
+  type: string;
+}
+
 /**
  * View that displays the information of a specific ERC-721 Token
  */
@@ -159,13 +247,13 @@ const CollectibleOverview = ({
   isInFavorites,
   openLink,
   onTranslation,
-}) => {
+}: Props) => {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [prevWrapperHeight, setPrevWrapperHeight] = useState(0);
   const [wrapperHeight, setWrapperHeight] = useState(0);
   const [position, setPosition] = useState(0);
   const positionAnimated = useRef(new Animated.Value(0)).current;
-  const scrollViewRef = useRef(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -184,7 +272,7 @@ const CollectibleOverview = ({
   }, [collectible.description]);
 
   const renderCollectibleInfoRow = useCallback(
-    ({ key, value, onPress, type }) => {
+    ({ key, value, onPress, type }: CollectibleInfoRow) => {
       if (!value) return null;
       if (type === FieldType.Link) {
         if (!isLinkSafe(value)) return null;
@@ -244,13 +332,13 @@ const CollectibleOverview = ({
     renderCollectibleInfoRow({
       key: strings('collectible.collectible_source'),
       value: collectible?.imageOriginal,
-      onPress: () => openLink(collectible?.imageOriginal),
+      onPress: () => openLink?.(collectible?.imageOriginal),
       type: FieldType.Link,
     }),
     renderCollectibleInfoRow({
       key: strings('collectible.collectible_link'),
       value: collectible?.externalLink,
-      onPress: () => openLink(collectible?.externalLink),
+      onPress: () => openLink?.(collectible?.externalLink),
       type: FieldType.Link,
     }),
     renderCollectibleInfoRow({
@@ -258,7 +346,7 @@ const CollectibleOverview = ({
       value: renderShortAddress(collectible?.address),
       onPress: () => {
         if (isMainNet(chainId))
-          openLink(
+          openLink?.(
             etherscanLink.createTokenTrackerLink(collectible?.address, chainId),
           );
       },
@@ -296,6 +384,8 @@ const CollectibleOverview = ({
       nativeEvent: {
         layout: { height },
       },
+    }: {
+      nativeEvent: { layout: { height: number } };
     }) => setHeaderHeight(height),
     [],
   );
@@ -305,6 +395,8 @@ const CollectibleOverview = ({
       nativeEvent: {
         layout: { height },
       },
+    }: {
+      nativeEvent: { layout: { height: number } };
     }) => {
       //This condition is needed to prevent bouncing when the component is rendered
       if (Math.abs(height - prevWrapperHeight) > THRESHOLD) {
@@ -316,7 +408,7 @@ const CollectibleOverview = ({
   );
 
   const animateViewPosition = useCallback(
-    (toValue, duration) => {
+    (toValue: number, duration: number) => {
       animating.current = true;
       Animated.timing(positionAnimated, {
         toValue,
@@ -332,12 +424,14 @@ const CollectibleOverview = ({
   );
 
   const handleGesture = useCallback(
-    (evt) => {
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (evt: any) => {
       // we don't want to trigger the animation again when the view is being animated
       if (evt.nativeEvent.velocityY === 0 || animating.current) return;
       const toValue = evt.nativeEvent.velocityY > 0 ? translationHeight : 0;
       if (toValue !== position) {
-        onTranslation(toValue !== 0);
+        onTranslation?.(toValue !== 0);
         animateViewPosition(toValue, ANIMATION_VELOCITY);
       }
     },
@@ -345,15 +439,15 @@ const CollectibleOverview = ({
   );
 
   const gestureHandlerWrapper = useCallback(
-    (child) => (
-      <PanGestureHandler
-        waitFor={scrollViewRef}
+    (child: React.ReactNode) => (
+      <PanGestureHandlerComponent
+        waitFor={scrollViewRef as unknown as React.Ref<unknown>}
         activeOffsetY={[0, 0]}
         activeOffsetX={[0, 0]}
         onGestureEvent={handleGesture}
       >
         {child}
-      </PanGestureHandler>
+      </PanGestureHandlerComponent>
     ),
     [handleGesture, scrollViewRef],
   );
@@ -396,7 +490,10 @@ const CollectibleOverview = ({
                     style={styles.userImage}
                   />
                 )}
-                <View numberOfLines={1} style={styles.userInfoContainer}>
+                <View
+                  {...({ numberOfLines: 1 } as unknown as object)}
+                  style={styles.userInfoContainer}
+                >
                   {collectible.creator.user?.username && (
                     <Text black bold noMargin big={!IS_SMALL_DEVICE}>
                       {collectible.creator.user.username}
@@ -501,60 +598,32 @@ const CollectibleOverview = ({
   );
 };
 
-CollectibleOverview.propTypes = {
-  /**
-   * Chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Object that represents the collectible to be displayed
-   */
-  collectible: PropTypes.object,
-  /**
-   * Represents if the collectible is tradable (can be sent)
-   */
-  tradable: PropTypes.bool,
-  /**
-   * Function called when user presses the Send button
-   */
-  onSend: PropTypes.func,
-  /**
-   * Selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Dispatch add collectible to favorites action
-   */
-  addFavoriteCollectible: PropTypes.func,
-  /**
-   * Dispatch remove collectible from favorites action
-   */
-  removeFavoriteCollectible: PropTypes.func,
-  /**
-   * Whether the current collectible is favorited
-   */
-  isInFavorites: PropTypes.bool,
-  /**
-   * Function to open a link on a webview
-   */
-  openLink: PropTypes.func.isRequired,
-  /**
-   * callback to trigger when modal is being animated
-   */
-  onTranslation: PropTypes.func,
-};
-
-const mapStateToProps = (state, props) => ({
+const mapStateToProps = (state: RootState, props: OwnProps): StateProps => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
-  isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
+  isInFavorites: isCollectibleInFavoritesSelector(
+    state,
+    props.collectible as Parameters<typeof isCollectibleInFavoritesSelector>[1],
+  ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   addFavoriteCollectible: (selectedAddress, chainId, collectible) =>
-    dispatch(addFavoriteCollectible(selectedAddress, chainId, collectible)),
+    dispatch(
+      addFavoriteCollectible(
+        selectedAddress,
+        chainId,
+        collectible as Parameters<typeof addFavoriteCollectible>[2],
+      ),
+    ),
   removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
-    dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
+    dispatch(
+      removeFavoriteCollectible(
+        selectedAddress,
+        chainId,
+        collectible as Parameters<typeof removeFavoriteCollectible>[2],
+      ),
+    ),
 });
 
 export default connect(
