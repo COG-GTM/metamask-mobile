@@ -1,5 +1,5 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { ComponentType, PureComponent } from 'react';
+import { Dispatch } from 'redux';
 import {
   SafeAreaView,
   Dimensions,
@@ -23,6 +23,10 @@ import GlobalAlert from '../GlobalAlert';
 import StyledButton from '../StyledButton';
 import ClipboardManager from '../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { Theme } from '../../../util/theme/models';
+import type { RootState } from '../../../reducers';
+import type { IUseMetricsHook } from '../../hooks/useMetrics/useMetrics.types';
+import type { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
 import { selectChainId } from '../../../selectors/networkController';
 import { isNetworkRampSupported } from '../Ramp/utils';
 import { createBuyNavigationDetails } from '../Ramp/routes/utils';
@@ -36,7 +40,7 @@ import PNG_MM_LOGO_PATH from '../../../images/branding/fox.png';
 
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
-const createStyles = (theme) =>
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: theme.colors.background.default,
@@ -106,54 +110,76 @@ const createStyles = (theme) =>
     },
   });
 
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface OwnProps {
+  /**
+   * The navigator object
+   */
+  navigation: {
+    navigate: (...args: [string, Record<string, unknown>?]) => void;
+  };
+  /**
+   * Hides the modal that contains the component
+   */
+  hideModal: () => void;
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  metrics: IUseMetricsHook;
+}
+
+interface StateProps {
+  /**
+   * Selected address as string
+   */
+  selectedAddress?: string;
+  /**
+   * Asset to receive, could be not defined
+   */
+  receiveAsset?: Record<string, unknown>;
+  /**
+   * Network provider chain id
+   */
+  chainId: string;
+  /**
+   * redux flag that indicates if the user
+   * completed the seed phrase backup flow
+   */
+  seedphraseBackedUp: boolean;
+  /**
+   * Boolean that indicates if the network supports buy
+   */
+  isNetworkBuySupported: boolean;
+}
+
+interface DispatchProps {
+  /**
+   * Triggers global alert
+   */
+  showAlert: (config: AlertConfig) => void;
+  /**
+   * Prompts protect wallet modal
+   */
+  protectWalletModalVisible: () => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+interface ReceiveRequestState {
+  qrModalVisible: boolean;
+  buyModalVisible: boolean;
+}
+
 /**
  * PureComponent that renders receive options
  */
-class ReceiveRequest extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Asset to receive, could be not defined
-     */
-    receiveAsset: PropTypes.object,
-    /**
-     /* Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Network provider chain id
-     */
-    chainId: PropTypes.string,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * Hides the modal that contains the component
-     */
-    hideModal: PropTypes.func,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNetworkBuySupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
-
+class ReceiveRequest extends PureComponent<Props, ReceiveRequestState> {
   state = {
     qrModalVisible: false,
     buyModalVisible: false,
@@ -165,7 +191,7 @@ class ReceiveRequest extends PureComponent {
   onShare = () => {
     const { selectedAddress } = this.props;
     Share.open({
-      message: generateUniversalLinkAddress(selectedAddress),
+      message: generateUniversalLinkAddress(selectedAddress as string),
     })
       .then(() => {
         this.props.hideModal();
@@ -193,7 +219,12 @@ class ReceiveRequest extends PureComponent {
         strings('fiat_on_ramp.switch_network'),
       );
     } else {
-      navigation.navigate(...createBuyNavigationDetails());
+      navigation.navigate(
+        ...(createBuyNavigationDetails() as unknown as [
+          string,
+          Record<string, unknown>?,
+        ]),
+      );
 
       this.props.metrics.trackEvent(
         this.props.metrics
@@ -210,7 +241,7 @@ class ReceiveRequest extends PureComponent {
 
   copyAccountToClipboard = async () => {
     const { selectedAddress } = this.props;
-    ClipboardManager.setString(selectedAddress);
+    ClipboardManager.setString(selectedAddress as string);
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -237,7 +268,7 @@ class ReceiveRequest extends PureComponent {
   };
 
   render() {
-    const theme = this.context || mockTheme;
+    const theme = (this.context as Theme) || mockTheme;
     const styles = createStyles(theme);
 
     return (
@@ -253,7 +284,9 @@ class ReceiveRequest extends PureComponent {
             />
           </View>
 
-          <QRAccountDisplay accountAddress={this.props.selectedAddress} />
+          <QRAccountDisplay
+            accountAddress={this.props.selectedAddress as string}
+          />
 
           <View style={styles.actionRow}>
             <StyledButton
@@ -275,7 +308,7 @@ class ReceiveRequest extends PureComponent {
 
 ReceiveRequest.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   receiveAsset: state.modals.receiveAsset,
@@ -286,12 +319,16 @@ const mapStateToProps = (state) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(ReceiveRequest));
+)(
+  withMetricsAwareness(
+    ReceiveRequest as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);
