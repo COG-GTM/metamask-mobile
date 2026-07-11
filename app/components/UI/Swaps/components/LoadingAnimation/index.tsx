@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import { useSelector } from 'react-redux';
 import { Animated, View, StyleSheet, Image } from 'react-native';
-import PropTypes from 'prop-types';
 import { selectSelectedNetworkClientId } from '../../../../../selectors/networkController';
 import Engine from '../../../../../core/Engine';
 import Logger from '../../../../../util/Logger';
@@ -17,6 +16,7 @@ import { strings } from '../../../../../../locales/i18n';
 import Text from '../../../../Base/Text';
 import Title from '../../../../Base/Title';
 import { useTheme } from '../../../../../util/theme';
+import type { Colors, Shadows } from '../../../../../util/theme/models';
 import foxImage from '../../../../../images/branding/fox.png';
 import ShapesBackgroundAnimation from './ShapesBackgroundAnimation';
 
@@ -36,7 +36,7 @@ const PAN_RADIO = STAGE_SIZE * 0.6;
 // "finalizing" animationg
 const FINALIZING_PERCENTAGE = 80;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Colors, shadows: Shadows) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -108,8 +108,39 @@ const createStyles = (colors, shadows) =>
     },
   });
 
-function round(value, decimals) {
-  return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+function round(value: number, decimals: number) {
+  return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
+}
+
+interface AggregatorMetadata {
+  title?: string;
+  color?: string;
+  iconPng?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+interface AggregatorMetadataWithKey extends AggregatorMetadata {
+  key: string;
+}
+
+interface LoadingAnimationProps {
+  /**
+   * Wether to execute the "Finalizing" animation after the main sequence
+   */
+  finish?: boolean;
+  /**
+   * Function callback executed once both the main sequence and the finalizing animation ends
+   */
+  onAnimationEnd?: () => void;
+  /**
+   * Aggregator metada from Swaps controller API
+   */
+  aggregatorMetadata?: Record<string, AggregatorMetadata> | null;
+  /**
+   * Wether to show head panning animation with aggregators logos
+   */
+  headPan?: boolean;
 }
 
 function LoadingAnimation({
@@ -117,8 +148,8 @@ function LoadingAnimation({
   onAnimationEnd,
   aggregatorMetadata,
   headPan = true,
-}) {
-  const [metadata, setMetadata] = useState([]);
+}: LoadingAnimationProps) {
+  const [metadata, setMetadata] = useState<AggregatorMetadataWithKey[]>([]);
   const [shouldStart, setShouldStart] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [hasFinished, setHasFinished] = useState(false);
@@ -129,8 +160,12 @@ function LoadingAnimation({
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
   /* References */
-  const foxRef = useRef();
-  const foxHeadPan = useRef(new Animated.ValueXY(0, 0)).current;
+  const foxRef =
+    useRef<{
+      injectJavaScript?: (js: string) => void;
+      reload?: () => void;
+    }>();
+  const foxHeadPan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const currentQuoteIndexValue = useRef(new Animated.Value(0)).current;
   const progressValue = useRef(new Animated.Value(0)).current;
   const progressWidth = progressValue.interpolate({
@@ -152,7 +187,7 @@ function LoadingAnimation({
   const positions = useMemo(
     () =>
       headPan
-        ? metadata.reduce((acc, curr, index) => {
+        ? metadata.reduce<Record<string, number[]>>((acc, curr, index) => {
             // Vertical position is random and is in range [-0.6, 0.6]
             // making the head not look so steep up/down
             const y = Math.random() * 0.6 * (Math.random() < 0.5 ? -1 : 1);
@@ -192,7 +227,7 @@ function LoadingAnimation({
   const opacities = useMemo(
     () =>
       headPan
-        ? metadata.reduce(
+        ? metadata.reduce<Record<string, Animated.Value>>(
             (acc, curr) => ({
               ...acc,
               [curr.key]: new Animated.Value(0),
@@ -210,7 +245,7 @@ function LoadingAnimation({
       headPan
         ? [
             // Animated.delay(INITIAL_DELAY),
-            ...metadata.reduce(
+            ...metadata.reduce<(Animated.CompositeAnimation | boolean)[]>(
               (acc, cur, index, array) => [
                 ...acc,
                 // Time to delay next iteration, this is the amount of time the head looks at the icon
@@ -223,12 +258,12 @@ function LoadingAnimation({
                 }),
                 Animated.parallel([
                   // If is not the first aggregator, reduce previous aggregator opacity to 1
-                  index > 0 &&
+                  (index > 0 &&
                     Animated.timing(opacities[array[index - 1].key], {
                       toValue: 0,
                       duration: PAN_DURATION,
                       useNativeDriver: true,
-                    }),
+                    })) as Animated.CompositeAnimation,
                   // Set current aggregator opacity to 1
                   Animated.timing(opacities[cur.key], {
                     toValue: 1,
@@ -243,7 +278,7 @@ function LoadingAnimation({
                     useNativeDriver: false,
                   }),
                   // Make the fox head pan to the aggregator position
-                  !Device.isAndroid() &&
+                  (!Device.isAndroid() &&
                     Animated.timing(foxHeadPan, {
                       toValue: {
                         x: positions[cur.key][0],
@@ -251,7 +286,7 @@ function LoadingAnimation({
                       },
                       duration: PAN_DURATION,
                       useNativeDriver: true,
-                    }),
+                    })) as Animated.CompositeAnimation,
                 ]),
               ],
               [],
@@ -260,18 +295,18 @@ function LoadingAnimation({
             Animated.delay(DELAY),
             Animated.parallel([
               // Set last aggregator icon opacity to 0
-              Animated.timing(opacities[[...metadata].pop()?.key], {
+              Animated.timing(opacities[[...metadata].pop()?.key as string], {
                 toValue: 0,
                 duration: PAN_DURATION,
                 useNativeDriver: true,
               }),
               // Reset to fox head to origing
-              !Device.isAndroid() &&
+              (!Device.isAndroid() &&
                 Animated.timing(foxHeadPan, {
                   toValue: { x: 0, y: 0 },
                   duration: PAN_DURATION,
                   useNativeDriver: true,
-                }),
+                })) as Animated.CompositeAnimation,
             ]),
             // eslint-disable-next-line no-mixed-spaces-and-tabs
           ]
@@ -289,7 +324,9 @@ function LoadingAnimation({
 
   const startAnimation = useCallback(() => {
     setHasStarted(true);
-    Animated.sequence(animationSequence).start(() => {
+    Animated.sequence(
+      animationSequence as Animated.CompositeAnimation[],
+    ).start(() => {
       setHasFinished(true);
     });
   }, [animationSequence]);
@@ -323,18 +360,18 @@ function LoadingAnimation({
           });
         } catch (error) {
           Logger.error(
-            error,
+            error as Error,
             'Swaps: Error fetching agg metadata in animation',
           );
         }
       } else {
-        const metadata = Object.entries(aggregatorMetadata).map(
+        const newMetadata = Object.entries(aggregatorMetadata).map(
           ([key, value]) => ({
             key,
             ...value,
           }),
         );
-        setMetadata(metadata);
+        setMetadata(newMetadata);
         setShouldStart(true);
       }
     })();
@@ -498,24 +535,5 @@ function LoadingAnimation({
     </View>
   );
 }
-
-LoadingAnimation.propTypes = {
-  /**
-   * Wether to execute the "Finalizing" animation after the main sequence
-   */
-  finish: PropTypes.bool,
-  /**
-   * Function callback executed once both the main sequence and the finalizing animation ends
-   */
-  onAnimationEnd: PropTypes.func,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  /**
-   * Wether to show head panning animation with aggregators logos
-   */
-  headPan: PropTypes.bool,
-};
 
 export default LoadingAnimation;
