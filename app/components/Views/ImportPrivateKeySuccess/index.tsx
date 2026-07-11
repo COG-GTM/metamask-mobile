@@ -8,7 +8,6 @@ import {
   InteractionManager,
   BackHandler,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -16,9 +15,10 @@ import { strings } from '../../../../locales/i18n';
 import Device from '../../../util/device';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { Colors, Theme } from '../../../util/theme/models';
 import { SuccessImportAccountIDs } from '../../../../e2e/selectors/ImportAccount/SuccessImportAccount.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -75,13 +75,16 @@ const createStyles = (colors) =>
 /**
  * View that's displayed the first time imports account
  */
-class ImportPrivateKeySuccess extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
-  };
+interface ImportPrivateKeySuccessProps {
+  /**
+   * navigation object required to push and pop other views
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation?: any;
+}
+
+class ImportPrivateKeySuccess extends PureComponent<ImportPrivateKeySuccessProps> {
 
   componentDidMount = () => {
     InteractionManager.runAfterInteractions(() => {
@@ -100,6 +103,7 @@ class ImportPrivateKeySuccess extends PureComponent {
 
   handleBackPress = () => {
     this.props.navigation.popToTop();
+    return false;
   };
 
   dismiss = () => {
@@ -109,7 +113,7 @@ class ImportPrivateKeySuccess extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

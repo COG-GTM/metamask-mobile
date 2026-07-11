@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -11,9 +10,10 @@ import { TRANSACTION_TYPES } from '../../../util/transactions';
 import Summary from '../../Base/Summary';
 import Text from '../../Base/Text';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { Colors, Theme } from '../../../util/theme/models';
 import { isTestNet } from '../../../util/networks';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     loader: {
       backgroundColor: colors.background.default,
@@ -21,21 +21,21 @@ const createStyles = (colors) =>
     },
   });
 
-export default class TransactionSummary extends PureComponent {
-  static propTypes = {
-    amount: PropTypes.string,
-    fee: PropTypes.string,
-    totalAmount: PropTypes.string,
-    secondaryTotalAmount: PropTypes.string,
-    gasEstimationReady: PropTypes.bool,
-    onEditPress: PropTypes.func,
-    transactionType: PropTypes.string,
-    chainId: PropTypes.string,
-  };
+interface TransactionSummaryProps {
+  amount?: string;
+  fee?: string;
+  totalAmount?: string;
+  secondaryTotalAmount?: string;
+  gasEstimationReady?: boolean;
+  onEditPress?: () => void;
+  transactionType?: string;
+  chainId?: string;
+}
 
-  renderIfGastEstimationReady = (children) => {
+export default class TransactionSummary extends PureComponent<TransactionSummaryProps> {
+  renderIfGastEstimationReady = (children: React.ReactNode) => {
     const { gasEstimationReady } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return !gasEstimationReady ? (
@@ -69,7 +69,7 @@ export default class TransactionSummary extends PureComponent {
       chainId,
     } = this.props;
 
-    const isTestNetResult = isTestNet(chainId);
+    const isTestNetResult = isTestNet(chainId as string);
 
     if (
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED_TOKEN ||
