@@ -565,7 +565,7 @@ function TokenSelectModal({
           </View>
         ) : (
           <FlatList
-            ref={list as React.RefObject<FlatList<TokenType>>}
+            ref={list as unknown as React.LegacyRef<FlatList<TokenType>>}
             style={styles.resultsView}
             keyboardDismissMode="none"
             keyboardShouldPersistTaps="always"
