@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TextStyle } from 'react-native';
 import Device from '../../../util/device';
 import type { ThemeColors, ThemeTypography } from '@metamask/design-tokens';
 import {
@@ -20,7 +20,7 @@ const createStyles = (colors: ThemeColors, typography: ThemeTypography) =>
       paddingHorizontal: 24,
     },
     intro: {
-      ...typography.sHeadingMD,
+      ...(typography.sHeadingMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.HeadingMD),
       textAlign: 'center',
       color: colors.text.default,
@@ -28,7 +28,7 @@ const createStyles = (colors: ThemeColors, typography: ThemeTypography) =>
       marginTop: 16,
     },
     intro_reconnect: {
-      ...typography.sHeadingMD,
+      ...(typography.sHeadingMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.HeadingMD),
       textAlign: 'center',
       color: colors.text.default,
@@ -45,7 +45,7 @@ const createStyles = (colors: ThemeColors, typography: ThemeTypography) =>
       marginRight: 20,
     },
     warning: {
-      ...typography.sHeadingSMRegular,
+      ...(typography.sHeadingSMRegular as TextStyle),
       fontFamily: getFontFamily(TextVariant.HeadingSMRegular),
       color: colors.text.default,
       paddingHorizontal: 24,
@@ -117,7 +117,7 @@ const createStyles = (colors: ThemeColors, typography: ThemeTypography) =>
       borderColor: colors.primary.default,
     },
     optionText: {
-      ...typography.sBodyMD,
+      ...(typography.sBodyMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.BodyMD),
       color: colors.text.default,
       marginHorizontal: 1,

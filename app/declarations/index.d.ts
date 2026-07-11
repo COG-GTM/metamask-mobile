@@ -6,6 +6,10 @@ declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
 declare module 'react-native-fade-in-image';
 
+declare module '@metamask/react-native-button';
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren';
+
 declare module 'react-native-fast-crypto';
 
 declare module 'react-native-confetti';
@@ -13,6 +17,8 @@ declare module 'react-native-confetti';
 declare module 'react-native-progress/Bar';
 
 declare module 'react-native/Libraries/Image/resolveAssetSource';
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard';
 
 declare module 'react-native-minimizer';
 

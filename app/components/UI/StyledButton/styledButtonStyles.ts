@@ -139,7 +139,7 @@ const createStyles = (colors: Theme['colors']) =>
     },
   });
 
-function getStyles(type: string, colors: Theme['colors']) {
+function getStyles(type: string | undefined, colors: Theme['colors']) {
   const styles = createStyles(colors);
 
   let fontStyle, containerStyle;
