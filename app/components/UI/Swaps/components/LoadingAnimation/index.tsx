@@ -507,8 +507,7 @@ function LoadingAnimation({
         </View>
         {renderLogos &&
           headPan &&
-          metadata &&
-          metadata.map((agg) => (
+          metadata?.map((agg) => (
             <Animated.View
               key={agg.key}
               style={[
