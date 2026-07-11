@@ -144,7 +144,7 @@ class AddressQRCode extends PureComponent<AddressQRCodeProps> {
 
   render() {
     const theme = this.context || mockTheme;
-    const colors = theme.colors;
+    const colors: any = theme.colors;
     const styles = createStyles(theme);
 
     return (

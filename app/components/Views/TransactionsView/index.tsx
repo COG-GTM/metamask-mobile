@@ -104,10 +104,10 @@ const TransactionsView = ({
   tokens,
   tokenNetworkFilter,
 }: TransactionsViewProps) => {
-  const [allTransactions, setAllTransactions] = useState([]);
-  const [submittedTxs, setSubmittedTxs] = useState([]);
-  const [confirmedTxs, setConfirmedTxs] = useState([]);
-  const [loading, setLoading] = useState();
+  const [allTransactions, setAllTransactions] = useState<any[]>([]);
+  const [submittedTxs, setSubmittedTxs] = useState<any[]>([]);
+  const [confirmedTxs, setConfirmedTxs] = useState<any[]>([]);
+  const [loading, setLoading] = useState<any>();
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
   const selectedAddress = toChecksumHexAddress(

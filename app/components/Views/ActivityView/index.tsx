@@ -115,8 +115,8 @@ const ActivityView = () => {
   const networkName = useSelector(selectNetworkName);
   const hasOrders = useSelector((state) => getHasOrders(state as any) || false);
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<any>();
+  const params: any = useParams();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
@@ -215,14 +215,14 @@ const ActivityView = () => {
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
             <MultichainTransactionsView
-              tabLabel={strings('transactions_view.title')}
+              tabLabel={strings('transactions_view.title') as any}
             />
           ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title')} />
+            <TransactionsView tabLabel={strings('transactions_view.title') as any} />
           )}
           {hasOrders && (
             <RampOrdersList
-              tabLabel={strings('fiat_on_ramp_aggregator.orders')}
+              tabLabel={strings('fiat_on_ramp_aggregator.orders') as any}
             />
           )}
         </ScrollableTabView>

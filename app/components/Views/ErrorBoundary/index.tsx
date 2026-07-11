@@ -243,7 +243,7 @@ const Fallback = (props: any) => {
   const [modalVisible, setModalVisible] = React.useState(false);
   const [feedback, setFeedback] = React.useState('');
   const dataCollectionForMarketing = useSelector(
-    (state) => state.security.dataCollectionForMarketing,
+    (state: any) => state.security.dataCollectionForMarketing,
   );
 
   const toggleModal = () => {
@@ -367,7 +367,7 @@ const Fallback = (props: any) => {
                     name={IconName.Close}
                     size={IconSize.Md}
                     color={IconColor.Default}
-                    onPress={toggleModal}
+                    onPress={toggleModal as any}
                   />
                 </TouchableOpacity>
               </View>

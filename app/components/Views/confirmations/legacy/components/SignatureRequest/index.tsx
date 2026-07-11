@@ -276,7 +276,7 @@ class SignatureRequest extends PureComponent<SignatureRequestProps> {
         <View style={styles.accountInfoCardWrapper}>
           <AccountInfoCard
             operation="signing"
-            fromAddress={fromAddress}
+            fromAddress={fromAddress as any}
             origin={title}
           />
         </View>
@@ -405,7 +405,7 @@ class SignatureRequest extends PureComponent<SignatureRequestProps> {
           showCancelButton
           showHint={false}
           bypassAndroidCameraAccessCheck={false}
-          fromAddress={fromAddress}
+          fromAddress={fromAddress as any}
         />
       </View>
     );

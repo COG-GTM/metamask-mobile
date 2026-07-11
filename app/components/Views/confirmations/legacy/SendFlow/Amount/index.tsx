@@ -860,7 +860,7 @@ class Amount extends PureComponent<
     const { accounts, selectedAddress, selectedAsset, contractBalances } =
       this.props;
     const { estimatedTotalGas, inputValueConversion } = this.state;
-    let value = inputValue;
+    let value: any = inputValue;
 
     if (!internalPrimaryCurrencyIsCrypto) {
       value = inputValueConversion;
@@ -1196,7 +1196,7 @@ class Amount extends PureComponent<
           <CollectibleMedia
             small
             collectible={collectible}
-            iconStyle={styles.tokenImage}
+            iconStyle={styles.tokenImage as any}
             containerStyle={styles.tokenImage}
           />
           <View style={styles.assetInformationWrapper}>
@@ -1465,7 +1465,7 @@ class Amount extends PureComponent<
         <View style={styles.collectibleInputImageWrapper}>
           <CollectibleMedia
             small
-            containerStyle={styles.CollectibleMedia}
+            containerStyle={styles.CollectibleMedia as any}
             iconStyle={styles.CollectibleMedia}
             collectible={selectedAsset}
           />

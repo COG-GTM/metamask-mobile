@@ -410,7 +410,7 @@ class TransactionReviewInformation extends PureComponent<
       },
       default: () => [undefined, undefined],
     };
-    return totals[assetType] || totals.default;
+    return totals[assetType as any] || totals.default;
   };
 
   isTestNetwork = () => {
@@ -572,7 +572,7 @@ class TransactionReviewInformation extends PureComponent<
       },
       default: () => [undefined, undefined],
     };
-    return totals[assetType] || totals.default;
+    return totals[assetType as any] || totals.default;
   };
 
   onCancelPress = () => {
@@ -586,7 +586,7 @@ class TransactionReviewInformation extends PureComponent<
       this.onCancelPress();
       this.props.navigation.navigate(
         ...createBrowserNavDetails({
-          newTabUrl: TESTNET_FAUCETS[chainId as any],
+          newTabUrl: TESTNET_FAUCETS[chainId as any as any],
           timestamp: Date.now(),
         }),
       );
@@ -617,7 +617,7 @@ class TransactionReviewInformation extends PureComponent<
     ] = this.getRenderTotalsEIP1559(EIP1559GasData)();
     return (
       <TransactionReviewEIP1559
-        totalNative={renderableTotalMinNative}
+        totalNative={renderableTotalMinNative as any}
         totalConversion={renderableTotalMinConversion}
         totalMaxNative={renderableTotalMaxNative}
         gasFeeNative={EIP1559GasData.renderableGasFeeMinNative}
@@ -672,7 +672,7 @@ class TransactionReviewInformation extends PureComponent<
     )();
     return (
       <TransactionReviewEIP1559
-        totalNative={totalValue}
+        totalNative={totalValue as any}
         totalConversion={totalFiat}
         gasFeeNative={totalGasEth}
         gasFeeConversion={totalGasFiat}

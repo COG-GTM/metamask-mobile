@@ -212,9 +212,9 @@ function VideoPlayer({
   const [showControls, setShowControls] = useState(true);
   const [seekerWidth, setSeekerWidth] = useState(0);
 
-  const videoRef = useRef();
+  const videoRef = useRef<any>();
 
-  const controlsTimeout = useRef();
+  const controlsTimeout = useRef<any>();
 
   const theme = useTheme();
   const styles = createStyles(theme);

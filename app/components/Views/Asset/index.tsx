@@ -234,9 +234,15 @@ class Asset extends PureComponent<
   txsPending = [];
   isNormalizing = false;
   chainId = '';
-  filter = undefined;
-  navSymbol = undefined;
-  navAddress = undefined;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  filter: any = undefined;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navSymbol: any = undefined;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navAddress: any = undefined;
   selectedAddress = toChecksumHexAddress(
     this.props.selectedInternalAccount?.address,
   );
@@ -368,7 +374,7 @@ class Asset extends PureComponent<
       (chainId === tx.chainId || (!tx.chainId && networkId === tx.networkID)) &&
       tx.status !== 'unapproved'
     ) {
-      if (TOKEN_CATEGORY_HASH[type]) {
+      if (TOKEN_CATEGORY_HASH[type as any]) {
         return false;
       }
       if (isTransfer) {
@@ -461,7 +467,7 @@ class Asset extends PureComponent<
         return filterResult;
       });
 
-      submittedTxs = submittedTxs.filter(({ txParams: { from, nonce } }) => {
+      submittedTxs = submittedTxs.filter(({ txParams: { from, nonce } }: any) => {
         if (!toLowerCaseEquals(from, this.selectedAddress)) {
           return false;
         }

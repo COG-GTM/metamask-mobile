@@ -67,12 +67,12 @@ interface ManualBackupStep1Props {
 const ManualBackupStep1 = ({ route, navigation, appTheme }: ManualBackupStep1Props) => {
   const [seedPhraseHidden, setSeedPhraseHidden] = useState(true);
 
-  const [password, setPassword] = useState(undefined);
+  const [password, setPassword] = useState<any>(undefined);
   const [warningIncorrectPassword, setWarningIncorrectPassword] =
-    useState(undefined);
+    useState<any>(undefined);
   const [ready, setReady] = useState(false);
   const [view, setView] = useState(SEED_PHRASE);
-  const [words, setWords] = useState([]);
+  const [words, setWords] = useState<any[]>([]);
 
   const { colors, themeAppearance } = useTheme();
   // TODO: Replace "any" with type

@@ -489,7 +489,7 @@ class TransactionReview extends PureComponent<
       },
       default: () => [undefined, undefined, undefined],
     };
-    return values[assetType] || values.default;
+    return values[assetType as any] || values.default;
   };
 
   edit = () => {
@@ -597,7 +597,7 @@ class TransactionReview extends PureComponent<
 
     const sdkConnections = SDKConnect.getInstance().getConnections();
 
-    const currentConnection = sdkConnections[channelIdOrHostname ?? ''];
+    const currentConnection: any = sdkConnections[channelIdOrHostname ?? ''];
 
     let url = '';
     if (currentConnection) {
@@ -644,7 +644,7 @@ class TransactionReview extends PureComponent<
                       currentEnsName={ensRecipient}
                       from={from}
                       origin={origin}
-                      sdkDappMetadata={sdkDappMetadata}
+                      sdkDappMetadata={sdkDappMetadata as any}
                       url={url}
                     />
                     <View style={styles.blockaidBannerContainer}>
@@ -724,7 +724,7 @@ class TransactionReview extends PureComponent<
           <TransactionReviewData
             actionKey={actionKey}
             toggleDataView={this.toggleDataView}
-            saveTransactionReviewDataHeight={saveTransactionReviewDataHeight}
+            saveTransactionReviewDataHeight={saveTransactionReviewDataHeight as any}
             customGasHeight={customGasHeight}
           />
         </Animated.View>

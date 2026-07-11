@@ -93,7 +93,7 @@ interface MediaPlayerProps {
 function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }: any) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const videoRef = useRef();
+  const videoRef = useRef<any>();
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const videoControlsOpacity = useSharedValue(0);

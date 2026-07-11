@@ -495,7 +495,7 @@ class Send extends PureComponent<
     const { AssetsContractController } = Engine.context;
     const token = { address };
     try {
-      const decimals = await AssetsContractController.getERC20TokenDecimals(
+      const decimals: any = await AssetsContractController.getERC20TokenDecimals(
         address,
       );
       token.decimals = parseInt(String(decimals));
@@ -635,7 +635,7 @@ class Send extends PureComponent<
         }
       } else if (assetType === 'ERC721') {
         try {
-          const data = decodeTransferData(
+          const data: any = decodeTransferData(
             'transferFrom',
             transactionMeta.transaction.data,
           );
@@ -649,9 +649,9 @@ class Send extends PureComponent<
       }
       const existingContact =
         addressBook[globalChainId as any] &&
-        addressBook[globalChainId as any][checksummedAddress];
+        addressBook[globalChainId as any][checksummedAddress as any];
       if (!existingContact) {
-        AddressBookController.set(checksummedAddress as any, '', globalChainId);
+        AddressBookController.set(checksummedAddress as any, '', globalChainId as any);
       }
       await new Promise((resolve) => {
         resolve(result);

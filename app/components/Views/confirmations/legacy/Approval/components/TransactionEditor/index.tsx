@@ -586,7 +586,7 @@ class TransactionEditor extends PureComponent<
   };
 
   validateTotal = (totalGas: any) => {
-    let error = '';
+    let error: any = '';
     const {
       ticker,
       transaction: { value, from, assetType },
@@ -881,19 +881,19 @@ class TransactionEditor extends PureComponent<
               review={this.review}
             >
               <TransactionReview
-                onCancel={this.onCancel}
-                onConfirm={this.onConfirm}
-                ready={ready}
-                error={error}
-                gasSelected={gasSelected}
-                transactionConfirmed={transactionConfirmed}
-                over={over}
-                gasEstimateType={gasEstimateType}
-                EIP1559GasData={EIP1559GasData}
-                onUpdatingValuesStart={this.onUpdatingValuesStart}
-                onUpdatingValuesEnd={this.onUpdatingValuesEnd}
-                animateOnChange={animateOnChange}
-                isAnimating={isAnimating}
+                onCancel={this.onCancel as any}
+                onConfirm={this.onConfirm as any}
+                ready={ready as any}
+                error={error as any}
+                gasSelected={gasSelected as any}
+                transactionConfirmed={transactionConfirmed as any}
+                over={over as any}
+                gasEstimateType={gasEstimateType as any}
+                EIP1559GasData={EIP1559GasData as any}
+                onUpdatingValuesStart={this.onUpdatingValuesStart as any}
+                onUpdatingValuesEnd={this.onUpdatingValuesEnd as any}
+                animateOnChange={animateOnChange as any}
+                isAnimating={isAnimating as any}
                 dappSuggestedGas={
                   Boolean(dappSuggestedGasPrice) ||
                   Boolean(dappSuggestedEIP1559Gas)
@@ -972,7 +972,7 @@ class TransactionEditor extends PureComponent<
               }
               warning={this.renderWarning()}
               error={EIP1559GasDataTemp.error}
-              over={over}
+              over={over as any}
               onUpdatingValuesStart={this.onUpdatingValuesStart}
               onUpdatingValuesEnd={this.onUpdatingValuesEnd}
               animateOnChange={animateOnChange}

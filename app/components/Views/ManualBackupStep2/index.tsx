@@ -51,7 +51,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: ManualBack
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const [confirmedWords, setConfirmedWords] = useState([]);
+  const [confirmedWords, setConfirmedWords] = useState<any[]>([]);
   const [wordsDict, setWordsDict] = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [seedPhraseReady, setSeedPhraseReady] = useState(false);
@@ -65,7 +65,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: ManualBack
   const createWordsDictionary = () => {
     const dict = {};
     words.forEach((word: any, i: any) => {
-      dict[`${word},${i}`] = { currentPosition: undefined };
+      dict[`${word},${i}` as any] = { currentPosition: undefined };
     });
     setWordsDict(dict);
   };
@@ -100,15 +100,15 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: ManualBack
       let tempCurrentIndex = currentIndex;
       const tempWordsDict = wordsDict;
       const tempConfirmedWords = confirmedWords;
-      if (wordsDict[`${word},${i}`].currentPosition !== undefined) {
-        tempCurrentIndex = wordsDict[`${word},${i}`].currentPosition;
-        tempWordsDict[`${word},${i}`].currentPosition = undefined;
+      if (wordsDict[`${word},${i}` as any].currentPosition !== undefined) {
+        tempCurrentIndex = wordsDict[`${word},${i}` as any].currentPosition;
+        tempWordsDict[`${word},${i}` as any].currentPosition = undefined;
         tempConfirmedWords[currentIndex] = {
           word: undefined,
           originalPosition: undefined,
         };
       } else {
-        tempWordsDict[`${word},${i}`].currentPosition = currentIndex;
+        tempWordsDict[`${word},${i}` as any].currentPosition = currentIndex;
         tempConfirmedWords[currentIndex] = { word, originalPosition: i };
         tempCurrentIndex = findNextAvailableIndex();
       }
@@ -210,7 +210,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: ManualBack
   const renderWordSelectableBox = useCallback(
     (key: any, i: any) => {
       const [word] = key.split(',');
-      const selected = wordsDict[key].currentPosition !== undefined;
+      const selected = wordsDict[key as any].currentPosition !== undefined;
       const styles = createStyles(colors);
 
       return (

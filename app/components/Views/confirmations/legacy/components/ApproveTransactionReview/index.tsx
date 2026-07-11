@@ -495,7 +495,7 @@ class ApproveTransactionReview extends PureComponent<
           tokenName = name;
           tokenBalance = renderFromTokenMinimalUnit(
             erc20TokenBalance as any,
-            decimals,
+            decimals as any,
           );
           unroundedAccountBalance = fromTokenMinimalUnit(
             erc20TokenBalance || 0,
@@ -531,7 +531,7 @@ class ApproveTransactionReview extends PureComponent<
     });
 
     const token = Object.values(tokenList).filter(
-      (token) => token.address === to,
+      (token: any) => token.address === to,
     );
 
     this.setState(
@@ -932,7 +932,7 @@ class ApproveTransactionReview extends PureComponent<
       ? false
       : shouldShowBlockExplorer(
           providerType as any,
-          providerRpcTarget,
+          providerRpcTarget as any,
           networkConfigurations,
         );
 
@@ -968,7 +968,7 @@ class ApproveTransactionReview extends PureComponent<
             <ApproveTransactionHeader
               dontWatchAsset
               origin={origin}
-              url={activeTabUrl}
+              url={activeTabUrl as any}
               from={from}
               asset={{
                 address: to,
@@ -1067,7 +1067,7 @@ class ApproveTransactionReview extends PureComponent<
                       </Text>
                     )}
                     <ButtonLink
-                      variant={TextVariant.BodyMD}
+                      variant={TextVariant.BodyMD as any}
                       onPress={showVerifyContractDetails}
                       style={styles.verifyContractLink}
                       label={strings(
@@ -1256,9 +1256,9 @@ class ApproveTransactionReview extends PureComponent<
         showNickname={showNickname}
         savedContactListToArray={savedContactListToArray}
         copyAddress={this.copyContractAddress}
-        providerType={providerType}
+        providerType={providerType as any}
         tokenSymbol={tokenSymbol}
-        providerRpcTarget={providerRpcTarget}
+        providerRpcTarget={providerRpcTarget as any}
         networkConfigurations={networkConfigurations}
         tokenStandard={this.state.token?.tokenStandard}
       />
@@ -1286,7 +1286,7 @@ class ApproveTransactionReview extends PureComponent<
     return (
       <ShowBlockExplorer
         setIsBlockExplorerVisible={closeModal}
-        type={providerType}
+        type={providerType as any}
         address={address}
         headerWrapperStyle={styles.headerWrapper}
         headerTextStyle={styles.headerText}
@@ -1357,7 +1357,7 @@ class ApproveTransactionReview extends PureComponent<
     InteractionManager.runAfterInteractions(() => {
       this.onCancelPress();
       this.props.navigation.navigate(Routes.BROWSER.VIEW, {
-        newTabUrl: TESTNET_FAUCETS[chainId as any],
+        newTabUrl: TESTNET_FAUCETS[chainId as any as any],
         timestamp: Date.now(),
       });
     });
@@ -1416,7 +1416,7 @@ class ApproveTransactionReview extends PureComponent<
 }
 
 const mapStateToProps = (state: RootState) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction: any = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
 
   return {
@@ -1457,4 +1457,6 @@ export default connect(
   withNavigation(
     withQRHardwareAwareness(withMetricsAwareness(ApproveTransactionReview as any)),
   ),
-);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as any;

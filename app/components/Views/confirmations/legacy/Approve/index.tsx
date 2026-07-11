@@ -31,8 +31,14 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import NotificationManager from '../../../../../core/NotificationManager';
 import { MetaMetricsEvents } from '../../../../../core/Analytics';
 import Logger from '../../../../../util/Logger';
-import EditGasFee1559 from '../components/EditGasFee1559Update';
-import EditGasFeeLegacy from '../components/EditGasFeeLegacyUpdate';
+import EditGasFee1559Component from '../components/EditGasFee1559Update';
+import EditGasFeeLegacyComponent from '../components/EditGasFeeLegacyUpdate';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const EditGasFee1559: any = EditGasFee1559Component;
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const EditGasFeeLegacy: any = EditGasFeeLegacyComponent;
 import AppConstants from '../../../../../core/AppConstants';
 import { shallowEqual } from '../../../../../util/general';
 import { KEYSTONE_TX_CANCELED } from '../../../../../constants/error';
@@ -216,12 +222,16 @@ class Approve extends PureComponent<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any
 > {
-  appStateListener;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  appStateListener: any;
 
-  #transactionFinishedSubscription;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  #transactionFinishedSubscription: any;
 
   static navigationOptions = ({ navigation }: any) =>
-    getApproveNavbar('approve.title', navigation);
+    getApproveNavbar('approve.title');
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -249,7 +259,11 @@ class Approve extends PureComponent<
     isChangeInSimulationModalOpen: false,
   };
 
-  computeGasEstimates = (overrideGasLimit: any, gasEstimateTypeChanged: any) => {
+  computeGasEstimates = (
+    overrideGasLimit: any,
+    gasEstimateTypeChanged: any,
+    _gasEstimateTypeChanged?: any,
+  ) => {
     const { transaction, gasEstimateType } = this.props;
 
     const gasSelected = gasEstimateTypeChanged
@@ -381,7 +395,7 @@ class Approve extends PureComponent<
     const { approved } = this.state;
     const { transaction } = this.props;
 
-    await stopGasPolling(this.state.pollToken);
+    await stopGasPolling();
 
     const isLedgerAccount = isHardwareAccount(transaction.from, [
       ExtendedKeyringTypes.ledger,
@@ -454,7 +468,7 @@ class Approve extends PureComponent<
       accounts,
     } = this.props;
 
-    const fromAccount = accounts[safeToChecksumAddress(from)];
+    const fromAccount = accounts[safeToChecksumAddress(from) as string];
 
     const weiBalance = hexToBN(fromAccount.balance);
     const totalTransactionValue = hexToBN(total);
@@ -582,7 +596,7 @@ class Approve extends PureComponent<
     this.setState({ transactionConfirmed: true });
 
     try {
-      const transaction = this.prepareTransaction();
+      const transaction: any = this.prepareTransaction();
       const isLedgerAccount = isHardwareAccount(transaction.from, [
         ExtendedKeyringTypes.ledger,
       ]);
@@ -620,7 +634,7 @@ class Approve extends PureComponent<
           chainId,
         },
       };
-      await updateTransaction(updatedTx);
+      await (updateTransaction as any)(updatedTx);
       await KeyringController.resetQRKeyringState();
 
       // For Ledger Accounts we handover the signing to the confirmation flow
@@ -633,14 +647,14 @@ class Approve extends PureComponent<
           ...createLedgerTransactionModalNavDetails({
             transactionId: transaction.id,
             deviceId,
-            onConfirmationComplete: (approve) =>
+            onConfirmationComplete: (approve: any) =>
               this.onLedgerConfirmation(
                 approve,
                 transaction.id,
                 this.getAnalyticsParams(),
               ),
             type: 'signTransaction',
-          }),
+          } as any),
         );
         this.props.hideModal();
         return;
@@ -845,14 +859,14 @@ class Approve extends PureComponent<
       transaction,
     );
 
-    const savedContactListToArray = Object.values(addressBook).flatMap(
-      (value) => Object.values(value),
+    const savedContactListToArray: any[] = Object.values(addressBook).flatMap(
+      (value: any) => Object.values(value),
     );
 
     let addressNickname = '';
 
     const filteredSavedContactList = savedContactListToArray.filter(
-      (contact) => contact.address === safeToChecksumAddress(address),
+      (contact: any) => contact.address === safeToChecksumAddress(address),
     );
 
     if (filteredSavedContactList.length > 0) {
@@ -882,20 +896,20 @@ class Approve extends PureComponent<
       >
         {shouldAddNickname ? (
           <AddNickname
-            closeModal={this.toggleModal}
+            closeModal={this.toggleModal as any}
             address={address}
-            savedContactListToArray={savedContactListToArray}
+            savedContactListToArray={savedContactListToArray as any}
             addressNickname={addressNickname}
-            providerType={providerType}
-            providerChainId={chainId}
+            providerType={providerType as any}
+            providerChainId={chainId as any}
             providerRpcTarget={providerRpcTarget}
             networkConfigurations={networkConfigurations}
           />
         ) : this.state.isBlockExplorerVisible && !isNonEvmChainId(chainId as any) ? (
           <ShowBlockExplorer
-            setIsBlockExplorerVisible={this.setIsBlockExplorerVisible}
-            type={providerType}
-            address={transaction.to}
+            setIsBlockExplorerVisible={this.setIsBlockExplorerVisible as any}
+            type={providerType as any}
+            address={transaction.to as any}
             headerWrapperStyle={styles.headerWrapper}
             headerTextStyle={styles.headerText}
             iconStyle={styles.icon}

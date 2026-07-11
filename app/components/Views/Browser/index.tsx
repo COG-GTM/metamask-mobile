@@ -124,7 +124,7 @@ const Browser = (props: any) => {
     activeTab: activeTabId,
     tabs,
   } = props;
-  const previousTabs = useRef(null);
+  const previousTabs = useRef<any>(null);
   const { top: topInset } = useSafeAreaInsets();
   const { styles } = useStyles(styleSheet, { topInset });
   const { trackEvent, createEventBuilder, isEnabled } = useMetrics();
@@ -140,7 +140,7 @@ const Browser = (props: any) => {
       : AvatarAccountType.JazzIcon,
   );
   const isDataCollectionForMarketingEnabled = useSelector(
-    (state) => state.security.dataCollectionForMarketing,
+    (state: any) => state.security.dataCollectionForMarketing,
   );
 
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
@@ -235,10 +235,10 @@ const Browser = (props: any) => {
           // if it isn't the active tab
           if (tab.id !== activeTabId) {
             // add idle time for each non-active tab
-            newIdleTimes[tab.id] =
-              (newIdleTimes[tab.id] || 0) + IDLE_TIME_CALC_INTERVAL;
+            newIdleTimes[tab.id as any] =
+              (newIdleTimes[tab.id as any] || 0) + IDLE_TIME_CALC_INTERVAL;
             // if the tab has surpassed the maximum
-            if (newIdleTimes[tab.id] > IDLE_TIME_MAX) {
+            if (newIdleTimes[tab.id as any] > IDLE_TIME_MAX) {
               // then "archive" it
               updateTab(tab.id, {
                 isArchived: true,
@@ -252,7 +252,7 @@ const Browser = (props: any) => {
               isArchived: false,
             });
             // also set new tab idle time back to zero
-            newIdleTimes[tab.id] = 0;
+            newIdleTimes[tab.id as any] = 0;
           }
         });
         return newIdleTimes;
@@ -486,7 +486,7 @@ const Browser = (props: any) => {
             linkType={tab.linkType}
             updateTabInfo={updateTabInfo}
             showTabs={showTabs}
-            newTab={newTab}
+            newTab={newTab as any}
             isInTabsView={route.params?.showTabs}
             homePageUrl={homePageUrl()}
           />

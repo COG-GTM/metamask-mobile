@@ -248,7 +248,7 @@ const TransactionReviewEIP1559 = ({
                 onPress={() =>
                   originWarning ? showLegacyLearnMore() : toggleLearnMoreModal()
                 }
-                hitSlop={styles.hitSlop}
+                hitSlop={styles.hitSlop as any}
               >
                 <MaterialCommunityIcons
                   name="information"
@@ -335,7 +335,7 @@ const TransactionReviewEIP1559 = ({
                       <TouchableOpacity
                         style={styles.gasInfoContainer}
                         onPress={showTimeEstimateInfoModal}
-                        hitSlop={styles.hitSlop}
+                        hitSlop={styles.hitSlop as any}
                       >
                         <MaterialCommunityIcons
                           name="information"
@@ -368,7 +368,7 @@ const TransactionReviewEIP1559 = ({
                       <TouchableOpacity
                         style={styles.gasInfoContainer}
                         onPress={showTimeEstimateInfoModal}
-                        hitSlop={styles.hitSlop}
+                        hitSlop={styles.hitSlop as any}
                       >
                         <MaterialCommunityIcons
                           name="alert"

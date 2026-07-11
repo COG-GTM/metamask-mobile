@@ -285,7 +285,7 @@ class Settings extends PureComponent<
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = (this.context as Theme).colors || mockTheme.colors;
+    const colors: any = (this.context as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.general_title'),
@@ -302,7 +302,7 @@ class Settings extends PureComponent<
     this.setState({ languages });
     this.languageOptions = Object.keys(languages).map((key) => ({
       value: key,
-      label: languages[key],
+      label: languages[key as any],
       key,
     }));
     this.searchEngineOptions = [

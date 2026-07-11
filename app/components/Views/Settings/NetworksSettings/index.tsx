@@ -295,7 +295,7 @@ class NetworksSettings extends PureComponent<
               <View style={styles.network}>
                 {isCustomRPC ? (
                   <AvatarNetwork
-                    variant={AvatarVariant.Network}
+                    variant={AvatarVariant.Network as any}
                     name={name}
                     imageSource={image}
                     style={styles.networkIcon}
@@ -334,7 +334,7 @@ class NetworksSettings extends PureComponent<
 
   renderOtherNetworks() {
     return this.getOtherNetworks().map((networkType, i) => {
-      const { name, imageSource, color } = Networks[networkType];
+      const { name, imageSource, color } = Networks[networkType as any];
       return this.networkElement(
         name,
         imageSource,
@@ -365,7 +365,7 @@ class NetworksSettings extends PureComponent<
         }
         const rpcName = rpcEndpoints[defaultRpcEndpointIndex].name ?? '';
         const rpcUrl = rpcEndpoints[defaultRpcEndpointIndex].networkClientId;
-        const name = nickname || rpcName;
+        const name: any = nickname || rpcName;
         const image = getNetworkImageSource({ chainId });
         return this.networkElement(name, image, i, rpcUrl, true);
       },
@@ -389,7 +389,7 @@ class NetworksSettings extends PureComponent<
         const network = networkConfigurations[key];
         // If the chainId is not in the excludedChainIds, add it to the result
         if (!excludedChainIds.includes(network.chainId)) {
-          filtered[key] = network;
+          filtered[key as any] = network;
         }
         return filtered;
       },
@@ -480,7 +480,7 @@ class NetworksSettings extends PureComponent<
     // TODO: [SOLANA] - Please revisit this since it's supported on a constant array in mobile and should come from multichain network controller
     const { name: solanaMainnetName } = Object.values(
       this.props.nonEvmNetworkConfigurations,
-    ).find((network) => network.chainId === SolScope.Mainnet);
+    ).find((network: any) => network.chainId === SolScope.Mainnet);
     const colors = (this.context as Theme).colors || mockTheme.colors;
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -514,7 +514,7 @@ class NetworksSettings extends PureComponent<
   handleSearchTextChange = (text: any) => {
     this.setState({ searchString: text });
     const defaultNetwork = getAllNetworks().map((networkType, i) => {
-      const { color, name, chainId } = Networks[networkType];
+      const { color, name, chainId } = Networks[networkType as any];
       return {
         name,
         color,
@@ -562,7 +562,7 @@ class NetworksSettings extends PureComponent<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const styles: any = createStyles(colors);
     if (this.state.filteredNetworks.length > 0) {
-      return this.state.filteredNetworks.map((data, i) => {
+      return this.state.filteredNetworks.map((data: any, i: any) => {
         const { networkTypeOrRpcUrl, chainId, name, color, isCustomRPC } = data;
         const image = getNetworkImageSource({ chainId });
         return (

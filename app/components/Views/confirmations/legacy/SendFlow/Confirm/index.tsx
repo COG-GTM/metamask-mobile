@@ -954,8 +954,8 @@ class Confirm extends PureComponent<
 
     const insufficientBalanceMessage = validateSufficientBalance(
       weiBalance as any,
-      totalTransactionValue,
-      ticker,
+      totalTransactionValue as any,
+      ticker as any,
     );
 
     if (insufficientBalanceMessage) {
@@ -1316,7 +1316,7 @@ class Confirm extends PureComponent<
     const { chainId } = this.props;
     InteractionManager.runAfterInteractions(() => {
       this.props.navigation.navigate(Routes.BROWSER.VIEW, {
-        newTabUrl: TESTNET_FAUCETS[chainId as any],
+        newTabUrl: TESTNET_FAUCETS[chainId as any as any],
         timestamp: Date.now(),
       });
     });
@@ -1405,7 +1405,7 @@ class Confirm extends PureComponent<
     const { transactionMeta } = this.state;
     const { id: transactionId } = transactionMeta;
 
-    const controllerTransactionMeta =
+    const controllerTransactionMeta: any =
       TransactionController.state.transactions.find(
         (tx) => tx.id === transactionId,
       );
@@ -1529,7 +1529,7 @@ class Confirm extends PureComponent<
               <View style={styles.CollectibleMediaWrapper}>
                 <CollectibleMedia
                   small
-                  iconStyle={styles.CollectibleMedia}
+                  iconStyle={styles.CollectibleMedia as any}
                   containerStyle={styles.CollectibleMedia}
                   collectible={selectedAsset}
                 />

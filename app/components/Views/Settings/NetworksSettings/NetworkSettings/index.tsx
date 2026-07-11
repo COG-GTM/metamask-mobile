@@ -591,7 +591,7 @@ export class NetworkSettings extends PureComponent<
     // If no navigation param, user clicked on add network
     if (networkTypeOrRpcUrl) {
       if (allNetworks.find((net) => networkTypeOrRpcUrl === net)) {
-        const networkInformation = Networks[networkTypeOrRpcUrl];
+        const networkInformation = Networks[networkTypeOrRpcUrl as any];
         chainId = networkInformation.chainId.toString();
 
         nickname = networkConfigurations?.[chainId]?.name;
@@ -851,7 +851,7 @@ export class NetworkSettings extends PureComponent<
 
       return checkCustomNetworks;
     }
-    const defaultNetworks = getAllNetworks().map((item) => Networks[item]);
+    const defaultNetworks = getAllNetworks().map((item) => Networks[item as any]);
     const checkDefaultNetworks = defaultNetworks.filter(
       (item) => Number(item.rpcUrl) === rpcUrl,
     );
@@ -863,7 +863,7 @@ export class NetworkSettings extends PureComponent<
 
   checkIfNetworkNotExistsByChainId = async (chainId: any) =>
     Object.values(this.props.networkConfigurations).filter(
-      (item) => item.chainId !== chainId,
+      (item: any) => item.chainId !== chainId,
     );
 
   handleNetworkUpdate = async ({
@@ -988,7 +988,7 @@ export class NetworkSettings extends PureComponent<
     const formChainId = stateChainId.trim().toLowerCase();
 
     // Ensure chainId is a 0x-prefixed, lowercase hex string
-    let chainId = formChainId;
+    let chainId: any = formChainId;
     if (!chainId.startsWith('0x')) {
       chainId = `0x${parseInt(chainId, 10).toString(16)}`;
     }
@@ -1236,7 +1236,7 @@ export class NetworkSettings extends PureComponent<
     }
 
     // Get the name either from chainToMatch or networkList
-    const name = chainToMatch?.name || networkList?.name || null;
+    const name: any = chainToMatch?.name || networkList?.name || null;
 
     // Determine nameToUse based on chainId and nickname comparison
     const nameToUse = isValidNetworkName(chainId, name, nickname) ? undefined : name;
@@ -1835,7 +1835,7 @@ export class NetworkSettings extends PureComponent<
         if (validatedSymbol) {
           return (
             <View>
-              <Text style={styles.inlineWarning}>
+              <Text style={styles.inlineWarning as any}>
                 {strings('wallet.suggested_token_symbol')}{' '}
                 <Text
                   style={styles.link}
@@ -1846,7 +1846,7 @@ export class NetworkSettings extends PureComponent<
                   {warningSymbol}
                 </Text>
               </Text>
-              <Text style={styles.inlineWarningMessage}>
+              <Text style={styles.inlineWarningMessage as any}>
                 {strings('wallet.chain_list_returned_different_ticker_symbol')}
               </Text>
             </View>
@@ -1854,7 +1854,7 @@ export class NetworkSettings extends PureComponent<
         }
         return (
           <View>
-            <Text style={styles.inlineWarning}>
+            <Text style={styles.inlineWarning as any}>
               {strings('wallet.suggested_token_symbol')}{' '}
               <Text
                 style={styles.link}
@@ -1981,10 +1981,10 @@ export class NetworkSettings extends PureComponent<
             />
             {warningName ? (
               <View>
-                <Text style={styles.messageWarning}>
+                <Text style={styles.messageWarning as any}>
                   {strings('wallet.incorrect_network_name_warning')}
                 </Text>
-                <Text style={styles.inlineWarning}>
+                <Text style={styles.inlineWarning as any}>
                   {strings('wallet.suggested_name')}{' '}
                   <Text
                     style={styles.link}
@@ -2350,7 +2350,7 @@ export class NetworkSettings extends PureComponent<
               <ScrollView contentContainerStyle={styles.scrollViewContent}>
                 {blockExplorerUrls.length > 0 ? (
                   <View>
-                    {blockExplorerUrls.map((url) => (
+                    {blockExplorerUrls.map((url: any) => (
                       <Cell
                         key={url}
                         variant={CellVariant.SelectWithMenu}
@@ -2417,7 +2417,7 @@ export class NetworkSettings extends PureComponent<
               <ScrollView contentContainerStyle={styles.scrollViewContent}>
                 {rpcUrls.length > 0 ? (
                   <View>
-                    {rpcUrls.map(({ url, name, type }) => (
+                    {rpcUrls.map(({ url, name, type }: any) => (
                       <Cell
                         key={`${url}-${name}`}
                         variant={CellVariant.SelectWithMenu}

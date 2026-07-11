@@ -566,7 +566,7 @@ class SendFlow extends PureComponent<
       >
         <View style={styles.imputWrapper}>
           <SendFlowAddressFrom
-            chainId={globalChainId}
+            chainId={globalChainId as any}
             fromAccountBalanceState={this.fromAccountBalanceState}
             setFromAddress={this.setFromAddress}
           />

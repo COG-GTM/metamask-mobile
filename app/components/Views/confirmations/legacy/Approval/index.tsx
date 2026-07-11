@@ -765,7 +765,7 @@ class Approval extends PureComponent<
           onCancel={this.onCancel}
           onConfirm={this.onConfirm}
           onModeChange={this.onModeChange}
-          dappTransactionModalVisible={dappTransactionModalVisible}
+          dappTransactionModalVisible={dappTransactionModalVisible as any}
           transactionConfirmed={transactionConfirmed}
         />
       </Modal>

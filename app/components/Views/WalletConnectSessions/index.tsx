@@ -191,8 +191,8 @@ class WalletConnectSessions extends PureComponent {
 
     return (
       <>
-        {sessions.map((session) => this.renderV1(session))}
-        {sessionsV2.map((session, index) => this.renderV2(session, index))}
+        {sessions.map((session: any) => this.renderV1(session))}
+        {sessionsV2.map((session: any, index: any) => this.renderV2(session, index))}
       </>
     );
   };
