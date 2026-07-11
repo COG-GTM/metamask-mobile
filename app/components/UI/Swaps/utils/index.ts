@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import BigNumber from 'bignumber.js';
+import type { RouteProp, ParamListBase } from '@react-navigation/native';
 import { swapsUtils } from '@metamask/swaps-controller';
 import { strings } from '../../../../../locales/i18n';
 import AppConstants from '../../../../core/AppConstants';
@@ -43,7 +44,15 @@ if (__DEV__) {
   allowedChainIds.push(...allowedTestnetChainIds);
 }
 
-export function isSwapsAllowed(chainId) {
+interface SwapsToken {
+  address?: string;
+  symbol?: string;
+  decimals?: number;
+  occurrences?: number;
+  aggregators?: string[];
+}
+
+export function isSwapsAllowed(chainId: string) {
   if (!AppConstants.SWAPS.ACTIVE) {
     return false;
   }
@@ -57,20 +66,20 @@ export function isSwapsAllowed(chainId) {
   }
   ///: END:ONLY_INCLUDE_IF(keyring-snaps)
 
-  return allowedChainIds.includes(chainId);
+  return allowedChainIds.includes(chainId as (typeof allowedChainIds)[number]);
 }
 
-export function isSwapsNativeAsset(token) {
+export function isSwapsNativeAsset(token?: SwapsToken | null) {
   return (
     Boolean(token) && token?.address === swapsUtils.NATIVE_SWAPS_TOKEN_ADDRESS
   );
 }
 
-export function isDynamicToken(token) {
+export function isDynamicToken(token?: SwapsToken | null) {
   return (
     Boolean(token) &&
-    token.occurrences === 1 &&
-    token?.aggregators.length === 1 &&
+    token?.occurrences === 1 &&
+    token?.aggregators?.length === 1 &&
     token.aggregators[0] === 'dynamic'
   );
 }
@@ -85,11 +94,11 @@ export function isDynamicToken(token) {
  * @return {object} Object containing sourceTokenAddress, destinationTokenAddress, sourceAmount and slippage
  */
 export function setQuotesNavigationsParams(
-  sourceTokenAddress,
-  destinationTokenAddress,
-  sourceAmount,
-  slippage,
-  tokens = [],
+  sourceTokenAddress: string,
+  destinationTokenAddress: string,
+  sourceAmount: string,
+  slippage: string | number,
+  tokens: SwapsToken[] = [],
 ) {
   return {
     sourceTokenAddress,
@@ -104,12 +113,21 @@ export function setQuotesNavigationsParams(
  * Gets required parameters for Swaps Quotes View
  * @return {object} Object containing sourceTokenAddress, destinationTokenAddress, sourceAmount and slippage
  */
-export function getQuotesNavigationsParams(route) {
-  const slippage = route.params?.slippage ?? 1;
-  const sourceTokenAddress = route.params?.sourceTokenAddress ?? '';
-  const destinationTokenAddress = route.params?.destinationTokenAddress ?? '';
-  const sourceAmount = route.params?.sourceAmount;
-  const tokens = route.params?.tokens;
+export function getQuotesNavigationsParams(
+  route: RouteProp<ParamListBase, string>,
+) {
+  const params = (route.params ?? {}) as {
+    slippage?: string | number;
+    sourceTokenAddress?: string;
+    destinationTokenAddress?: string;
+    sourceAmount?: string;
+    tokens?: SwapsToken[];
+  };
+  const slippage = params.slippage ?? 1;
+  const sourceTokenAddress = params.sourceTokenAddress ?? '';
+  const destinationTokenAddress = params.destinationTokenAddress ?? '';
+  const sourceAmount = params.sourceAmount;
+  const tokens = params.tokens;
 
   return {
     sourceTokenAddress,
@@ -139,6 +157,14 @@ export function getFetchParams({
   walletAddress,
   networkClientId,
   enableGasIncludedQuotes,
+}: {
+  slippage?: string | number;
+  sourceToken: SwapsToken;
+  destinationToken: SwapsToken;
+  sourceAmount?: string;
+  walletAddress: string;
+  networkClientId: string;
+  enableGasIncludedQuotes: boolean;
 }) {
   return {
     slippage,
@@ -156,10 +182,10 @@ export function getFetchParams({
 }
 
 export function useRatio(
-  numeratorAmount,
-  numeratorDecimals,
-  denominatorAmount,
-  denominatorDecimals,
+  numeratorAmount: BigNumber.Value,
+  numeratorDecimals: number,
+  denominatorAmount: BigNumber.Value,
+  denominatorDecimals: number,
 ) {
   const ratio = useMemo(
     () =>
@@ -179,7 +205,7 @@ export function useRatio(
   return ratio;
 }
 
-export function getErrorMessage(errorKey) {
+export function getErrorMessage(errorKey?: string) {
   const { SwapsError } = swapsUtils;
   const errorAction =
     errorKey === SwapsError.QUOTES_EXPIRED_ERROR
@@ -212,7 +238,7 @@ export function getErrorMessage(errorKey) {
   }
 }
 
-export function getQuotesSourceMessage(type) {
+export function getQuotesSourceMessage(type: string) {
   switch (type) {
     case 'DEX': {
       return [
@@ -259,6 +285,10 @@ export function shouldShowMaxBalanceLink({
   sourceToken,
   shouldUseSmartTransaction,
   hasBalance,
+}: {
+  sourceToken?: SwapsToken;
+  shouldUseSmartTransaction: boolean;
+  hasBalance: boolean;
 }) {
   if (!sourceToken?.symbol || !hasBalance) {
     return false;
