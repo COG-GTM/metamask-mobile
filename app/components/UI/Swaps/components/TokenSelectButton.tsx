@@ -15,7 +15,7 @@ interface TokenSelectButtonProps {
   icon?: string;
   symbol?: string;
   label?: string;
-  onPress: () => void;
+  onPress?: () => void;
   disabled?: boolean;
 }
 
@@ -27,7 +27,7 @@ function TokenSelectButton({
   label,
 }: TokenSelectButtonProps) {
   return (
-    <SelectorButton onPress={onPress} disabled={disabled}>
+    <SelectorButton onPress={onPress as () => void} disabled={disabled}>
       <View style={styles.icon}>
         <TokenIcon icon={icon} symbol={symbol} />
       </View>

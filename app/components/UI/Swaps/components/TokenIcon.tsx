@@ -4,6 +4,7 @@ import {
   ImageStyle,
   StyleProp,
   StyleSheet,
+  TextStyle,
   View,
   ViewProps,
 } from 'react-native';
@@ -81,7 +82,13 @@ interface EmptyIconProps extends ViewProps {
   testID?: string;
 }
 
-const EmptyIcon = ({ medium, big, biggest, style, ...props }: EmptyIconProps) => {
+const EmptyIcon = ({
+  medium,
+  big,
+  biggest,
+  style,
+  ...props
+}: EmptyIconProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -176,6 +183,7 @@ function TokenIcon({
             styles.tokenSymbol,
             medium && styles.tokenSymbolMedium,
             (big || biggest) && styles.tokenSymbolBig,
+            biggest && (styles as Record<string, TextStyle>).tokenSymbolBiggest,
           ]}
         >
           {symbol[0].toUpperCase()}

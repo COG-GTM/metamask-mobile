@@ -4,6 +4,7 @@ import {
   isSwapsAllowed,
 } from './index';
 import { swapsUtils } from '@metamask/swaps-controller';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { SolScope } from '@metamask/keyring-api';
 
 // Mock AppConstants
@@ -169,7 +170,10 @@ describe('shouldShowMaxBalanceLink', () => {
   });
 
   it('should not show max balance link when source token is missing symbol', () => {
-    const sourceToken = { ...erc20Token, symbol: null };
+    const sourceToken = {
+      ...erc20Token,
+      symbol: null,
+    } as unknown as typeof erc20Token;
     const result = shouldShowMaxBalanceLink({
       sourceToken,
       shouldUseSmartTransaction: true,
@@ -227,7 +231,7 @@ describe('isSwapsAllowed', () => {
 
   describe('testnet chain IDs', () => {
     it('should return true for testnet chain IDs in development when ONLY_MAINNET is true', () => {
-      global.__DEV__ = true;
+      (global as { __DEV__?: boolean }).__DEV__ = true;
       mockSwapsConstantsGetter.mockReturnValue({
         ...mockSwapsConstantsGetter(),
         ONLY_MAINNET: true,
@@ -236,7 +240,7 @@ describe('isSwapsAllowed', () => {
     });
 
     it('should return true for testnet chain IDs when ONLY_MAINNET is false', () => {
-      global.__DEV__ = false;
+      (global as { __DEV__?: boolean }).__DEV__ = false;
       mockSwapsConstantsGetter.mockReturnValue({
         ...mockSwapsConstantsGetter(),
         ONLY_MAINNET: false,
