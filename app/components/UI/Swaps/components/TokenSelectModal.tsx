@@ -7,6 +7,7 @@ import {
   View,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  FlatList as RNFlatList,
 } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
@@ -216,7 +217,7 @@ function TokenSelectModal({
   const { trackEvent, createEventBuilder } = useMetrics();
 
   const searchInput = useRef<TextInput>(null);
-  const list = useRef<FlatList<TokenType>>(null);
+  const list = useRef<RNFlatList<TokenType>>(null);
   const [searchString, setSearchString] = useState('');
   const explorer = useBlockExplorer(networkConfigurations);
   const [isTokenImportVisible, , showTokenImportModal, hideTokenImportModal] =
@@ -565,8 +566,7 @@ function TokenSelectModal({
           </View>
         ) : (
           <FlatList
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ref={list as unknown as React.RefObject<FlatList<any>>}
+            ref={list}
             style={styles.resultsView}
             keyboardDismissMode="none"
             keyboardShouldPersistTaps="always"
