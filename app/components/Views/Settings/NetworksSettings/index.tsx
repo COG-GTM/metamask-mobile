@@ -162,8 +162,8 @@ class NetworksSettings extends PureComponent<
   any
 > {
 
-  actionSheet = null;
-  networkToRemove = null;
+  actionSheet: any = null;
+  networkToRemove: any = null;
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -239,7 +239,7 @@ class NetworksSettings extends PureComponent<
 
     const { networkConfigurations } = this.props;
     const entry = Object.entries(networkConfigurations).find(
-      ([, networkConfiguration]) =>
+      ([, networkConfiguration]: any) =>
         networkConfiguration.rpcEndpoints.some(
           (rpcEndpoint: any) => rpcEndpoint.networkClientId === this.networkToRemove,
         ),
@@ -271,7 +271,7 @@ class NetworksSettings extends PureComponent<
 
   onActionSheetPress = (index: any) => (index === 0 ? this.removeNetwork() : null);
 
-  networkElement(name: any, image: any, i: any, networkTypeOrRpcUrl: any, isCustomRPC: any, color: any) {
+  networkElement(name: any, image: any, i: any, networkTypeOrRpcUrl: any, isCustomRPC: any, color?: any) {
     const colors = (this.context as Theme).colors || mockTheme.colors;
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -295,9 +295,10 @@ class NetworksSettings extends PureComponent<
               <View style={styles.network}>
                 {isCustomRPC ? (
                   <AvatarNetwork
+                    // @ts-expect-error legacy prop preserved from JS
                     variant={AvatarVariant.Network as any}
                     name={name}
-                    imageSource={image}
+                    imageSource={image as any}
                     style={styles.networkIcon}
                     size={AvatarSize.Xs}
                   />
@@ -334,7 +335,7 @@ class NetworksSettings extends PureComponent<
 
   renderOtherNetworks() {
     return this.getOtherNetworks().map((networkType, i) => {
-      const { name, imageSource, color } = Networks[networkType as any];
+      const { name, imageSource, color } = (Networks as any)[networkType];
       return this.networkElement(
         name,
         imageSource,
@@ -350,8 +351,8 @@ class NetworksSettings extends PureComponent<
     const { networkConfigurations } = this.props;
     return Object.values(networkConfigurations).map(
       (
-        { rpcEndpoints, name: nickname, chainId, defaultRpcEndpointIndex },
-        i,
+        { rpcEndpoints, name: nickname, chainId, defaultRpcEndpointIndex }: any,
+        i: any,
       ) => {
         if (
           !chainId ||
@@ -386,10 +387,10 @@ class NetworksSettings extends PureComponent<
 
     const filteredChain = Object.keys(networkConfigurations).reduce(
       (filtered, key) => {
-        const network = networkConfigurations[key];
+        const network = (networkConfigurations as any)[key];
         // If the chainId is not in the excludedChainIds, add it to the result
         if (!excludedChainIds.includes(network.chainId)) {
-          filtered[key as any] = network;
+          (filtered as any)[key] = network;
         }
         return filtered;
       },
@@ -480,7 +481,7 @@ class NetworksSettings extends PureComponent<
     // TODO: [SOLANA] - Please revisit this since it's supported on a constant array in mobile and should come from multichain network controller
     const { name: solanaMainnetName } = Object.values(
       this.props.nonEvmNetworkConfigurations,
-    ).find((network: any) => network.chainId === SolScope.Mainnet);
+    ).find((network: any) => network.chainId === SolScope.Mainnet) as any;
     const colors = (this.context as Theme).colors || mockTheme.colors;
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -513,8 +514,9 @@ class NetworksSettings extends PureComponent<
   ///: END:ONLY_INCLUDE_IF
   handleSearchTextChange = (text: any) => {
     this.setState({ searchString: text });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const defaultNetwork = getAllNetworks().map((networkType, i) => {
-      const { color, name, chainId } = Networks[networkType as any];
+      const { color, name, chainId } = (Networks as any)[networkType];
       return {
         name,
         color,
@@ -524,7 +526,7 @@ class NetworksSettings extends PureComponent<
       };
     });
     const customRPC = Object.values(this.props.networkConfigurations).map(
-      (networkConfiguration, i) => {
+      (networkConfiguration: any, i: any) => {
         const defaultRpcEndpoint =
           networkConfiguration.rpcEndpoints[
             networkConfiguration.defaultRpcEndpointIndex

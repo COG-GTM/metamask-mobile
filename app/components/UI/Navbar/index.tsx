@@ -565,7 +565,7 @@ export function getSendFlowTitle(
   route: NavbarParam,
   themeColors: NavbarParam,
   resetTransaction: NavbarParam,
-  transaction: NavbarParam,
+  transaction?: NavbarParam,
 ): NavbarParam {
   const innerStyles = StyleSheet.create({
     headerButtonText: {

@@ -279,7 +279,7 @@ class ChoosePassword extends PureComponent<
   // Flag to know if password in keyring was set or not
   keyringControllerPasswordSet = false;
 
-  track = (event: any, properties: any) => {
+  track = (event: any, properties?: any) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
     trackOnboarding(eventBuilder.build());
@@ -327,6 +327,7 @@ class ChoosePassword extends PureComponent<
     this.termsOfUse();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentDidUpdate(prevProps: any, prevState: any) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
@@ -378,6 +379,7 @@ class ChoosePassword extends PureComponent<
         try {
           await Authentication.newWalletAndKeychain(password, authType);
         } catch (error: any) {
+          // @ts-expect-error legacy truthiness check preserved from JS
           if (Device.isIos) await this.handleRejectedOsBiometricPrompt();
         }
         this.keyringControllerPasswordSet = true;
@@ -453,7 +455,7 @@ class ChoosePassword extends PureComponent<
    *
    * @param password - Password to recreate and set the vault with
    */
-  recreateVault = async (password: any, authType: any) => {
+  recreateVault = async (password: any, authType?: any) => {
     const { KeyringController } = Engine.context;
     const seedPhrase = await this.getSeedPhrase();
     let importedAccounts: any = [];
@@ -465,6 +467,7 @@ class ChoosePassword extends PureComponent<
       const simpleKeyrings = KeyringController.state.keyrings.filter(
         (keyring) => keyring.type === 'Simple Key Pair',
       );
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < simpleKeyrings.length; i++) {
         const simpleKeyring = simpleKeyrings[i];
         const simpleKeyringAccounts = await Promise.all(
@@ -502,8 +505,9 @@ class ChoosePassword extends PureComponent<
 
     try {
       // Import imported accounts again
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < importedAccounts.length; i++) {
-        await KeyringController.importAccountWithStrategy('privateKey', [
+        await KeyringController.importAccountWithStrategy('privateKey' as any, [
           importedAccounts[i],
         ]);
       }
@@ -529,7 +533,7 @@ class ChoosePassword extends PureComponent<
 
   jumpToConfirmPassword = () => {
     const { current } = this.confirmPasswordInput;
-    current && current.focus();
+    current?.focus();
   };
 
   updateBiometryChoice = async (biometryChoice: any) => {
@@ -599,6 +603,7 @@ class ChoosePassword extends PureComponent<
           <View style={styles.loadingWrapper}>
             <View style={styles.foxWrapper}>
               <Image
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
                 source={require('../../../images/branding/fox.png')}
                 style={styles.image}
                 resizeMethod={'auto'}
@@ -684,6 +689,7 @@ class ChoosePassword extends PureComponent<
                       </Text>
                     </Text>
                   )) || (
+                    // @ts-expect-error children intentionally empty, preserved from JS
                     <Text
                       variant={TextVariant.BodySM}
                       style={styles.passwordStrengthLabel}

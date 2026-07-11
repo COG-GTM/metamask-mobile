@@ -83,7 +83,7 @@ const createStyles = (colors: Colors) =>
 /**
  * View that displays all the active WalletConnect Sessions
  */
-export default interface WalletConnectSessionsProps {
+interface WalletConnectSessionsProps {
   /**
   * Navigation object
   */
@@ -92,7 +92,7 @@ export default interface WalletConnectSessionsProps {
   navigation?: any;
 }
 
-class WalletConnectSessions extends PureComponent {
+class WalletConnectSessions extends PureComponent<WalletConnectSessionsProps> {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   state: any = {
@@ -100,9 +100,9 @@ class WalletConnectSessions extends PureComponent {
     sessionsV2: [],
   };
 
-  actionSheet = null;
+  actionSheet: any = null;
 
-  sessionToRemove = null;
+  sessionToRemove: any = null;
 
   updateNavBar = () => {
     const { navigation } = this.props;
@@ -127,7 +127,7 @@ class WalletConnectSessions extends PureComponent {
   };
 
   loadSessions = async () => {
-    let sessions = [];
+    let sessions: any = [];
     let sessionsV2: any = [];
 
     const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
@@ -291,5 +291,7 @@ class WalletConnectSessions extends PureComponent {
   };
 }
 
-WalletConnectSessions.contextType = ThemeContext;
+(WalletConnectSessions as any).contextType = ThemeContext;
+
+export default WalletConnectSessions;
 

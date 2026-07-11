@@ -34,7 +34,7 @@ export default class SimpleWebview extends PureComponent<SimpleWebviewProps> {
   componentDidMount = () => {
     const { navigation } = this.props;
     this.updateNavBar();
-    navigation && navigation.setParams({ dispatch: this.share });
+    navigation?.setParams({ dispatch: this.share });
   };
 
   componentDidUpdate = () => {

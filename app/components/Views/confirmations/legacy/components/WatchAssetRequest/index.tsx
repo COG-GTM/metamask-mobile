@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { StyleSheet, View, Text, InteractionManager } from 'react-native';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import { useSelector } from 'react-redux';
 import { fontStyles } from '../../../../../../styles/common';
@@ -155,6 +156,7 @@ const WatchAssetRequest = ({
         chain_id: getDecimalChainId(chainId),
         source: 'Dapp suggested (watchAsset)',
       };
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     } catch (error: any) {
       Logger.error(error, 'WatchAssetRequest.getTokenAddedAnalyticsParams');
       return undefined;
@@ -203,8 +205,8 @@ const WatchAssetRequest = ({
           dontWatchAsset
         />
       </View>
-      <View style={styles.titleWrapper}>
-        <Text style={styles.title} onPress={this.cancelSignature}>
+      <View style={(styles as any).titleWrapper}>
+        <Text style={styles.title} onPress={(this as any)?.cancelSignature}>
           {strings('watch_asset_request.title')}
         </Text>
       </View>

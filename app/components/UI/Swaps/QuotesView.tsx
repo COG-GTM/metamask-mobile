@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-// @ts-expect-error - @metamask/ethjs-query has no TypeScript declarations
 import Eth from '@metamask/ethjs-query';
 import {
   View,

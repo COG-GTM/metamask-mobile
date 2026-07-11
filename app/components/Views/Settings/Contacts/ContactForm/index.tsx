@@ -106,7 +106,7 @@ const createStyles = (colors: Colors) =>
       flexDirection: 'column',
     },
     textInputDisaled: {
-      borderColor: colors.transparent,
+      borderColor: (colors as any).transparent,
     },
     actionButton: {
       marginVertical: 4,
@@ -225,7 +225,7 @@ class ContactForm extends PureComponent<
         addressReady: true,
         editable: false,
       });
-      navigation && navigation.setParams({ dispatch: this.onEdit, mode: EDIT });
+      navigation?.setParams({ dispatch: this.onEdit, mode: EDIT });
     }
   };
 
@@ -244,7 +244,7 @@ class ContactForm extends PureComponent<
 
   onDelete = () => {
     this.contactAddressToRemove = this.state.address;
-    this.actionSheet && this.actionSheet.show();
+    this.actionSheet?.show();
   };
 
   onChangeName = (name: any) => {
@@ -287,12 +287,12 @@ class ContactForm extends PureComponent<
 
   jumpToAddressInput = () => {
     const { current } = this.addressInput;
-    current && current.focus();
+    current?.focus();
   };
 
   jumpToMemoInput = () => {
     const { current } = this.memoInput;
-    current && current.focus();
+    current?.focus();
   };
 
   saveContact = () => {

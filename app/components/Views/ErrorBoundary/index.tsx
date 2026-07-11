@@ -43,7 +43,7 @@ import {
 import AppConstants from '../../../core/AppConstants';
 import { useSelector } from 'react-redux';
 import { isTest } from '../../../util/test/utils';
-// eslint-disable-next-line import/no-commonjs
+// eslint-disable-next-line import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const WarningIcon = require('./warning-icon.png');
 
 const createStyles = (colors: Colors) =>
@@ -367,6 +367,7 @@ const Fallback = (props: any) => {
                     name={IconName.Close}
                     size={IconSize.Md}
                     color={IconColor.Default}
+                    // @ts-expect-error legacy invalid prop preserved from JS
                     onPress={toggleModal as any}
                   />
                 </TouchableOpacity>
@@ -441,7 +442,7 @@ class ErrorBoundary extends Component<
       view,
       metrics: { trackEvent, createEventBuilder },
     } = this.props;
-    const analyticsParams = { error: error?.toString(), boundary: view };
+    const analyticsParams: any = { error: error?.toString(), boundary: view };
     // Organize stack trace
     const stackList = (errorInfo.split('\n') || []).map((stack) =>
       stack.trim(),

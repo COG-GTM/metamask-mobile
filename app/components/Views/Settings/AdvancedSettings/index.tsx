@@ -316,14 +316,19 @@ class AdvancedSettings extends PureComponent<
       showHexData,
       showCustomNonce,
       showFiatOnTestnets,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setShowHexData,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setShowCustomNonce,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setShowFiatOnTestnets,
       smartTransactionsOptInStatus,
     } = this.props;
     const { resetModalVisible } = this.state;
     const { styles, colors } = this.getStyles();
-    const theme = this.context || mockTheme;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const theme: any = this.context || mockTheme;
 
     return (
       <SafeAreaView style={baseStyles.flexGrow}>
@@ -409,6 +414,7 @@ class AdvancedSettings extends PureComponent<
                 )}{' '}
                 <Text
                   color={TextColor.Primary}
+                  // @ts-expect-error legacy prop preserved from JS
                   link
                   onPress={this.openLinkAboutStx}
                 >
@@ -481,6 +487,7 @@ class AdvancedSettings extends PureComponent<
                   <Switch
                     testID={AdvancedViewSelectorsIDs.SHOW_FIAT_ON_TESTNETS}
                     value={showFiatOnTestnets}
+                    // eslint-disable-next-line @typescript-eslint/no-shadow
                     onValueChange={(showFiatOnTestnets) => {
                       if (showFiatOnTestnets) {
                         this.props.navigation.navigate(
@@ -550,7 +557,9 @@ const mapStateToProps = (state: RootState) => ({
   smartTransactionsOptInStatus: selectSmartTransactionsOptInStatus(state),
   smartTransactionsEnabled: selectSmartTransactionsEnabled(
     state,
-    selectChainId(state),
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    selectChainId(state) as any,
   ),
 });
 

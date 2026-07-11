@@ -17,6 +17,7 @@ import { connect } from 'react-redux';
 import {
   setSelectedAsset,
   prepareTransaction,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setTransactionObject,
   resetTransaction,
   setMaxValueMode,
@@ -58,8 +59,8 @@ import { BNToHex } from '@metamask/controller-utils';
 import ErrorMessage from '../ErrorMessage';
 import { getGasLimit } from '../../../../../../util/custom-gas';
 import Engine from '../../../../../../core/Engine';
-import CollectibleMedia from '../../../../../UI/CollectibleMedia';
-import collectiblesTransferInformation from '../../../../../../util/collectibles-transfer';
+import CollectibleMediaImport from '../../../../../UI/CollectibleMedia';
+import collectiblesTransferInformation from '../../../../../../util/collectibles-transfer.json';
 import { strings } from '../../../../../../../locales/i18n';
 import Device from '../../../../../../util/device';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
@@ -112,6 +113,10 @@ import { selectContractExchangeRatesByChainId } from '../../../../../../selector
 import { isNativeToken } from '../../../utils/generic';
 import { selectConfirmationRedesignFlags } from '../../../../../../selectors/featureFlagController/confirmations';
 import { MMM_ORIGIN } from '../../../constants/confirmations';
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CollectibleMedia: any = CollectibleMediaImport;
 
 const KEYBOARD_OFFSET = Device.isSmallDevice() ? 80 : 120;
 
@@ -561,10 +566,11 @@ class Amount extends PureComponent<
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   amountInput: any = React.createRef();
-  tokens = [];
-  collectibles = [];
+  tokens: any[] = [];
+  collectibles: any[] = [];
 
   updateNavBar = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { navigation, route, resetTransaction } = this.props;
     const colors = (this.context as Theme).colors || mockTheme.colors;
     navigation.setOptions(
@@ -623,7 +629,7 @@ class Amount extends PureComponent<
         estimatedBaseFeeHex,
         suggestedMaxFeePerGasHex,
         suggestedMaxPriorityFeePerGasHex,
-      });
+      } as any);
       this.setState({
         estimatedTotalGas: hexToBN(gasHexes.gasFeeMaxHex),
       });
@@ -692,6 +698,7 @@ class Amount extends PureComponent<
     const {
       navigation,
       selectedAsset,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setSelectedAsset,
       transactionState: { transaction },
       providerType,
@@ -714,14 +721,14 @@ class Amount extends PureComponent<
       if (maxFiatInput) {
         value = `${renderFromWei(
           fiatNumberToWei(
-            handleWeiNumber(maxFiatInput),
+            handleWeiNumber(maxFiatInput) as any,
             this.props.conversionRate as any,
-          ),
+          ) as any,
           18,
         )}`;
       }
     }
-    if (value && value.includes(',')) {
+    if (value?.includes(',')) {
       value = inputValue.replace(',', '.');
     }
 
@@ -769,7 +776,7 @@ class Amount extends PureComponent<
 
         await addTransaction(transactionParams, {
           origin: MMM_ORIGIN,
-          networkClientId: globalNetworkClientId,
+          networkClientId: globalNetworkClientId as any,
         });
         this.setState({ isRedesignedTransferTransactionLoading: false });
         navigation.navigate('SendFlowView', {
@@ -786,10 +793,12 @@ class Amount extends PureComponent<
       transactionState: { transaction, transactionTo },
     } = this.props;
 
-    const collectibleTransferTransactionProperties = {};
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const collectibleTransferTransactionProperties: any = {};
 
     const collectibleTransferInformation =
-      collectiblesTransferInformation[selectedAsset.address.toLowerCase()];
+      (collectiblesTransferInformation as any)[selectedAsset.address.toLowerCase()];
     if (
       !collectibleTransferInformation ||
       (collectibleTransferInformation.tradable &&
@@ -823,6 +832,7 @@ class Amount extends PureComponent<
 
   prepareTransaction = async (value: any) => {
     const {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       prepareTransaction,
       selectedAsset,
       transactionState: { transaction, transactionTo },
@@ -831,7 +841,7 @@ class Amount extends PureComponent<
     if (isNativeToken(selectedAsset)) {
       transaction.data = '0x';
       transaction.to = transactionTo;
-      transaction.value = BNToHex(toWei(value));
+      transaction.value = BNToHex(toWei(value) as any);
     } else if (selectedAsset.tokenId) {
       const collectibleTransferTransactionProperties =
         this.getCollectibleTranferTransactionProperties();
@@ -869,7 +879,7 @@ class Amount extends PureComponent<
     let weiBalance, weiInput, amountError;
     if (isDecimal(value)) {
       // toWei can throw error if input is not a number: Error: while converting number to string, invalid number value
-      let weiValue = 0;
+      let weiValue: any = 0;
       try {
         weiValue = toWei(value);
       } catch (error: any) {
@@ -969,12 +979,13 @@ class Amount extends PureComponent<
     this.onInputChange(input, undefined, true);
   };
 
-  onInputChange = (inputValue: any, selectedAsset: any, useMax: any) => {
+  onInputChange = (inputValue: any, selectedAsset?: any, useMax?: any) => {
     const {
       contractExchangeRates,
       conversionRate,
       currentCurrency,
       ticker,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setMaxValueMode,
     } = this.props;
     const { internalPrimaryCurrencyIsCrypto } = this.state;
@@ -986,9 +997,9 @@ class Amount extends PureComponent<
       hasExchangeRate,
       comma;
     // Remove spaces from input
-    inputValue = inputValue && inputValue.replace(regex.whiteSpaces, '');
+    inputValue = inputValue?.replace(regex.whiteSpaces, '');
     // Handle semicolon for other languages
-    if (inputValue && inputValue.includes(',')) {
+    if (inputValue?.includes(',')) {
       comma = true;
       inputValue = inputValue.replace(',', '.');
     }
@@ -999,7 +1010,7 @@ class Amount extends PureComponent<
     selectedAsset = selectedAsset || this.props.selectedAsset;
     if (isNativeToken(selectedAsset)) {
       // toWei can throw error if input is not a number: Error: while converting number to string, invalid number value
-      let weiValue = 0;
+      let weiValue: any = 0;
 
       try {
         weiValue = toWei(processedInputValue);
@@ -1017,7 +1028,7 @@ class Amount extends PureComponent<
         )}`;
       } else {
         inputValueConversion = `${renderFromWei(
-          fiatNumberToWei(processedInputValue, conversionRate as any),
+          fiatNumberToWei(processedInputValue as any, conversionRate as any) as any,
         )}`;
         renderableInputValueConversion = `${inputValueConversion} ${processedTicker}`;
       }
@@ -1041,17 +1052,17 @@ class Amount extends PureComponent<
       } else {
         inputValueConversion = `${renderFromTokenMinimalUnit(
           fiatNumberToTokenMinimalUnit(
-            processedInputValue,
+            processedInputValue as any,
             conversionRate as any,
             exchangeRate,
             selectedAsset.decimals,
-          ),
+          ) as any,
           selectedAsset.decimals,
         )}`;
         renderableInputValueConversion = `${inputValueConversion} ${selectedAsset.symbol}`;
       }
     }
-    if (comma) inputValue = inputValue && inputValue.replace('.', ',');
+    if (comma) inputValue = inputValue?.replace('.', ',');
     inputValueConversion =
       inputValueConversion === '0' ? undefined : inputValueConversion;
     this.setState({
@@ -1069,7 +1080,7 @@ class Amount extends PureComponent<
     this.setState({ assetsModalVisible: !assetsModalVisible });
   };
 
-  handleSelectedAssetBalance = (selectedAsset: any, renderableBalance: any) => {
+  handleSelectedAssetBalance = (selectedAsset: any, renderableBalance?: any) => {
     const { accounts, selectedAddress, contractBalances } = this.props;
     let currentBalance;
     if (renderableBalance) {
@@ -1096,9 +1107,7 @@ class Amount extends PureComponent<
       // Wait for input to mount first
       setTimeout(
         () =>
-          this.amountInput &&
-          this.amountInput.current &&
-          this.amountInput.current.focus(),
+          this.amountInput?.current?.focus(),
         500,
       );
     }
@@ -1217,7 +1226,7 @@ class Amount extends PureComponent<
 
   processCollectibles = () => {
     const { collectibleContracts } = this.props;
-    const collectibles = [];
+    const collectibles: any[] = [];
     const sortedCollectibles = [...this.props.collectibles].sort((a, b) => {
       if (a.address < b.address) return -1;
       if (a.address > b.address) return 1;
@@ -1226,8 +1235,8 @@ class Amount extends PureComponent<
     sortedCollectibles.forEach((collectible) => {
       const address = collectible.address.toLowerCase();
       const isTradable =
-        !collectiblesTransferInformation[address] ||
-        collectiblesTransferInformation[address].tradable;
+        !(collectiblesTransferInformation as any)[address] ||
+        (collectiblesTransferInformation as any)[address].tradable;
       if (!isTradable) return;
       const collectibleContract = collectibleContracts.find(
         (contract: any) => contract.address.toLowerCase() === address,
@@ -1397,7 +1406,10 @@ class Amount extends PureComponent<
                 >
                   {renderableInputValueConversion}
                 </Text>
-                <View styles={styles.switchWrapper}>
+                <View
+                  // @ts-expect-error legacy invalid prop preserved from JS
+                  styles={styles.switchWrapper}
+                >
                   <MaterialCommunityIcons
                     name="swap-vertical"
                     size={16}
@@ -1527,6 +1539,7 @@ class Amount extends PureComponent<
               {() => (
                 <View style={styles.warningTextContainer}>
                   <Text
+                    // @ts-expect-error legacy invalid prop preserved from JS
                     red
                     style={styles.warningText}
                     testID={AmountViewSelectorsIDs.FIAT_CONVERSION_WARNING_TEXT}
@@ -1549,7 +1562,10 @@ class Amount extends PureComponent<
                   <Text style={styles.textDropdown}>
                     {selectedAsset.symbol || strings('wallet.collectible')}
                   </Text>
-                  <View styles={styles.arrow}>
+                  <View
+                    // @ts-expect-error legacy invalid prop preserved from JS
+                    styles={styles.arrow}
+                  >
                     <Ionicons
                       name="arrow-down"
                       size={16}

@@ -47,12 +47,13 @@ interface ManualBackupStep2Props {
   route?: any;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-shadow
 const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: ManualBackupStep2Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   const [confirmedWords, setConfirmedWords] = useState<any[]>([]);
-  const [wordsDict, setWordsDict] = useState({});
+  const [wordsDict, setWordsDict] = useState<any>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [seedPhraseReady, setSeedPhraseReady] = useState(false);
 
@@ -63,7 +64,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: ManualBack
       : route.params?.words;
 
   const createWordsDictionary = () => {
-    const dict = {};
+    const dict: any = {};
     words.forEach((word: any, i: any) => {
       dict[`${word},${i}` as any] = { currentPosition: undefined };
     });
@@ -123,9 +124,10 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: ManualBack
 
   const clearConfirmedWordAt = (i: any) => {
     const { word, originalPosition } = confirmedWords[i];
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const currentIndex = i;
     if (word && (originalPosition || originalPosition === 0)) {
-      wordsDict[[word, originalPosition]].currentPosition = undefined;
+      wordsDict[[word, originalPosition] as any].currentPosition = undefined;
       confirmedWords[i] = { word: undefined, originalPosition: undefined };
     }
 
@@ -148,6 +150,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: ManualBack
     if (validateWords()) {
       seedphraseBackedUp();
       InteractionManager.runAfterInteractions(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         const words = route.params?.words;
         navigation.navigate('ManualBackupStep3', {
           steps: route.params?.steps,
@@ -168,6 +171,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: ManualBack
   };
 
   const renderSuccess = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const styles = createStyles(colors);
 
     return (
@@ -185,6 +189,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: ManualBack
   };
 
   const renderWordBox = (word: any, i: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const styles = createStyles(colors);
 
     return (
@@ -211,6 +216,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }: ManualBack
     (key: any, i: any) => {
       const [word] = key.split(',');
       const selected = wordsDict[key as any].currentPosition !== undefined;
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const styles = createStyles(colors);
 
       return (

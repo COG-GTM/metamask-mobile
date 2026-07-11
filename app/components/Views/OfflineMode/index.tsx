@@ -50,6 +50,7 @@ const createStyles = (colors: Colors) =>
     },
   });
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const astronautImage = require('../../../images/astronaut.png'); // eslint-disable-line import/no-commonjs
 
 interface OwnProps {

@@ -86,6 +86,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: ManualBackupStep1Pro
     navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
   }, [colors, navigation, route]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const tryExportSeedPhrase = async (password: any) => {
     const { KeyringController } = Engine.context;
     const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(
@@ -124,6 +125,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: ManualBackupStep1Pro
     updateNavBar();
   }, [updateNavBar]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const onPasswordChange = (password: any) => {
     setPassword(password);
   };
@@ -144,6 +146,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: ManualBackupStep1Pro
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const tryUnlockWithPassword = async (password: any) => {
     setReady(false);
     try {
@@ -166,7 +169,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }: ManualBackupStep1Pro
   };
 
   const getBlurType = () => {
-    let blurType = 'light';
+    let blurType: any = 'light';
     switch (appTheme) {
       case 'light':
         blurType = 'light';

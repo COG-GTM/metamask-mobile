@@ -41,7 +41,10 @@ import {
   setNonce,
   setProposedNonce,
 } from '../../../../../../../actions/transaction';
-import TransactionReviewEIP1559 from '../TransactionReviewEIP1559';
+import TransactionReviewEIP1559Import from '../TransactionReviewEIP1559';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const TransactionReviewEIP1559: any = TransactionReviewEIP1559Import;
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import CustomNonce from '../../CustomNonce';
 import Logger from '../../../../../../../util/Logger';
@@ -294,6 +297,7 @@ class TransactionReviewInformation extends PureComponent<
   };
 
   setNetworkNonce = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(transaction, networkClientId as any);
@@ -305,6 +309,7 @@ class TransactionReviewInformation extends PureComponent<
     this.setState((state: any) => ({ nonceModalVisible: !state.nonceModalVisible }));
 
   renderCustomNonceModal = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { setNonce } = this.props;
     const { proposedNonce, nonce } = this.props.transaction;
     return (
@@ -318,6 +323,7 @@ class TransactionReviewInformation extends PureComponent<
   };
 
   getTotalFiat = (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     asset: any,
     totalGas: any,
     conversionRate: any,
@@ -356,7 +362,7 @@ class TransactionReviewInformation extends PureComponent<
 
   edit = () => {
     const { edit } = this.props;
-    edit && edit();
+    edit?.();
   };
 
   getRenderTotals = (totalGas: any, totalGasFiat: any) => {
@@ -410,7 +416,7 @@ class TransactionReviewInformation extends PureComponent<
       },
       default: () => [undefined, undefined],
     };
-    return totals[assetType as any] || totals.default;
+    return (totals as any)[assetType] || totals.default;
   };
 
   isTestNetwork = () => {
@@ -444,7 +450,7 @@ class TransactionReviewInformation extends PureComponent<
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
-        } = calculateAmountsEIP1559({
+        } = (calculateAmountsEIP1559 as any)({
           value: value && BNToHex(value),
           nativeCurrency: ticker,
           currentCurrency,
@@ -482,7 +488,7 @@ class TransactionReviewInformation extends PureComponent<
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
-        } = calculateAmountsEIP1559({
+        } = (calculateAmountsEIP1559 as any)({
           value: '0x0',
           nativeCurrency: ticker,
           currentCurrency,
@@ -530,7 +536,7 @@ class TransactionReviewInformation extends PureComponent<
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
-        } = calculateAmountsEIP1559({
+        } = (calculateAmountsEIP1559 as any)({
           value: '0x0',
           nativeCurrency: ticker,
           currentCurrency,
@@ -572,12 +578,12 @@ class TransactionReviewInformation extends PureComponent<
       },
       default: () => [undefined, undefined],
     };
-    return totals[assetType as any] || totals.default;
+    return (totals as any)[assetType] || totals.default;
   };
 
   onCancelPress = () => {
     const { onCancelPress } = this.props;
-    onCancelPress && onCancelPress();
+    onCancelPress?.();
   };
 
   goToFaucet = () => {
@@ -586,7 +592,7 @@ class TransactionReviewInformation extends PureComponent<
       this.onCancelPress();
       this.props.navigation.navigate(
         ...createBrowserNavDetails({
-          newTabUrl: TESTNET_FAUCETS[chainId as any as any],
+          newTabUrl: (TESTNET_FAUCETS as any)[chainId as any],
           timestamp: Date.now(),
         }),
       );

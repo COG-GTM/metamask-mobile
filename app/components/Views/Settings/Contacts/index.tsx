@@ -5,7 +5,10 @@ import { SafeAreaView, StyleSheet } from 'react-native';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import { connect } from 'react-redux';
-import AddressList from '../../confirmations/legacy/SendFlow/AddressList';
+import AddressListImport from '../../confirmations/legacy/SendFlow/AddressList';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AddressList: any = AddressListImport;
 import StyledButton from '../../../UI/StyledButton';
 import Engine from '../../../../core/Engine';
 import ActionSheet from '@metamask/react-native-actionsheet';
@@ -69,8 +72,12 @@ class Contacts extends PureComponent<
     reloadAddressList: false,
   };
 
-  actionSheet;
-  contactAddressToRemove;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  actionSheet: any;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contactAddressToRemove: any;
 
   updateNavBar = () => {
     const { navigation } = this.props;
@@ -110,7 +117,7 @@ class Contacts extends PureComponent<
 
   onAddressLongPress = (address: any) => {
     this.contactAddressToRemove = address;
-    this.actionSheet && this.actionSheet.show();
+    this.actionSheet?.show();
   };
 
   deleteContact = () => {

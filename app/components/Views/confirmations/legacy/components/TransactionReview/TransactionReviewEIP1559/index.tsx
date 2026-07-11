@@ -18,6 +18,8 @@ import { useTheme } from '../../../../../../../util/theme';
 import type { Colors } from '../../../../../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   StyleSheet.create({
     overview: (noMargin: any) => ({
       marginHorizontal: noMargin ? 0 : 24,
@@ -64,7 +66,7 @@ const createStyles = (colors: Colors) =>
     flex: {
       flex: 1,
     },
-  });
+  } as any);
 
 // eslint-disable-next-line react/prop-types
 const Skeleton = ({ width, noStyle }: any) => {
@@ -196,6 +198,7 @@ const TransactionReviewEIP1559 = ({
   const [isVisibleLegacyLearnMore, , showLegacyLearnMore, hideLegacyLearnMore] =
     useModalHandler(false);
   const toggleLearnMoreModal = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     setShowLearnMoreModal((showLearnMoreModal) => !showLearnMoreModal);
   }, []);
   const { colors } = useTheme();
@@ -230,7 +233,7 @@ const TransactionReviewEIP1559 = ({
   const isTestNetwork = isTestNet(chainId as any);
 
   return (
-    <Summary style={styles.overview(noMargin)}>
+    <Summary style={(styles as any).overview(noMargin)}>
       <Summary.Row>
         <View style={styles.gasRowContainer}>
           <View style={styles.gasRowContainer}>
@@ -253,7 +256,7 @@ const TransactionReviewEIP1559 = ({
                 <MaterialCommunityIcons
                   name="information"
                   size={13}
-                  style={styles.gasInfoIcon(originWarning)}
+                  style={(styles as any).gasInfoIcon(originWarning)}
                 />
               </TouchableOpacity>
             </Text>

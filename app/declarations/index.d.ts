@@ -420,3 +420,8 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'zxcvbn';
+
+declare module 'deprecated-react-native-prop-types';
+declare module '@metamask/ethjs-query';

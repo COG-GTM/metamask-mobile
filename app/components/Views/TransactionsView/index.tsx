@@ -121,15 +121,18 @@ const TransactionsView = ({
       let accountAddedTimeInsertPointFound = false;
       const addedAccountTime = selectedInternalAccount?.metadata.importTime;
 
-      const submittedTxs = [];
-      const confirmedTxs = [];
-      const submittedNonces = [];
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      const submittedTxs: any[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      const confirmedTxs: any[] = [];
+      const submittedNonces: any[] = [];
 
       const allTransactionsSorted = sortTransactions(transactions).filter(
         (tx, index, self) =>
           self.findIndex((_tx) => _tx.id === tx.id) === index,
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const allTransactions = allTransactionsSorted.filter((tx) => {
         const filter = filterByAddressAndNetwork(
           tx,
@@ -196,6 +199,7 @@ const TransactionsView = ({
       // If the account added insert point is not found, add it to the last transaction
       if (
         !accountAddedTimeInsertPointFound &&
+        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
         allTransactionsFiltered &&
         allTransactionsFiltered.length
       ) {
@@ -246,7 +250,7 @@ const TransactionsView = ({
 };
 
 
-const mapStateToProps = (state: RootState) => {
+const mapStateToProps = (state: any) => {
   const chainId = selectChainId(state);
 
   return {
@@ -270,4 +274,8 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withNavigation(TransactionsView));
+)(
+  withNavigation(TransactionsView),
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as any;

@@ -24,6 +24,7 @@ import FA5Icon from 'react-native-vector-icons/FontAwesome5';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import { baseStyles, colors as importedColors } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
 const createStyles = (theme: any) =>
@@ -155,7 +156,8 @@ const createStyles = (theme: any) =>
     },
   });
 
-export default interface VideoPlayerProps {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+interface VideoPlayerProps {
   controlsAnimationTiming?: number;
   controlsToggleTiming?: number;
   // source can be a uri object for remote files
@@ -348,19 +350,20 @@ function VideoPlayer({
     setLoading(true);
   };
 
-  const onLoad = (data = {}) => {
+  const onLoad = (data: any = {}) => {
     propsOnLoad();
     setDuration(data.duration);
     setLoading(false);
   };
 
-  const onProgress = (data = {}) => {
+  const onProgress = (data: any = {}) => {
     if (!scrubbing && !seeking && data?.seekableDuration > 0) {
       const position = data.currentTime / data.seekableDuration;
       updateSeekerPosition(position * seekerWidth);
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onSeek = (data = {}) => {
     if (scrubbing) {
       if (!seeking) {
@@ -391,7 +394,9 @@ function VideoPlayer({
     () =>
       PanResponder.create({
         // Ask to be the responder.
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onStartShouldSetPanResponder: (evt, gestureState) => true,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onMoveShouldSetPanResponder: (evt, gestureState) => true,
 
         /**
@@ -399,6 +404,7 @@ function VideoPlayer({
          * seeking. This stops it from updating the seekbar
          * position in the onProgress listener.
          */
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onPanResponderGrant: (evt, gestureState) => {
           const position = evt.nativeEvent.locationX;
           updateSeekerPosition(position);
@@ -411,6 +417,7 @@ function VideoPlayer({
         /**
          * When panning, update the seekbar position, duh.
          */
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onPanResponderMove: (evt, gestureState) => {
           const position = seekerOffset + gestureState.dx;
           updateSeekerPosition(position);
@@ -430,6 +437,7 @@ function VideoPlayer({
         /**
          * On release we update the time and seek to it in the video.
          */
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onPanResponderRelease: (evt, gestureState) => {
           const time = calculateTimeFromSeekerPosition();
           if (time >= duration && !loading) {
@@ -456,6 +464,7 @@ function VideoPlayer({
   );
 
   const renderControl = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     (children: any, callback: any, style = {}) => (
       <TouchableHighlight
         underlayColor="transparent"
@@ -668,3 +677,5 @@ VideoPlayer.defaultProps = {
   displayTopControls: true,
   displayBottomControls: true,
 };
+
+export default VideoPlayer;

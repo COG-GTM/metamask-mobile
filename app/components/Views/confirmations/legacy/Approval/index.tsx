@@ -4,7 +4,10 @@ import React, { PureComponent } from 'react';
 import { TransactionEnvelopeType } from '@metamask/transaction-controller';
 import { StyleSheet, AppState, Alert, InteractionManager } from 'react-native';
 import Engine from '../../../../../core/Engine';
-import TransactionEditor from './components/TransactionEditor';
+import TransactionEditorImport from './components/TransactionEditor';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const TransactionEditor: any = TransactionEditorImport;
 import Modal from 'react-native-modal';
 import { safeBNToHex } from '../../../../../util/number';
 import { getTransactionOptionsTitle } from '../../../../UI/Navbar';
@@ -165,9 +168,13 @@ class Approval extends PureComponent<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any
 > {
-  appStateListener;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  appStateListener: any;
 
-  #transactionFinishedListener;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  #transactionFinishedListener: any;
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -276,8 +283,7 @@ class Approval extends PureComponent<
       'change',
       this.handleAppStateChange,
     );
-    navigation &&
-      navigation.setParams({ mode: REVIEW, dispatch: this.onModeChange });
+    navigation?.setParams({ mode: REVIEW, dispatch: this.onModeChange });
     this.initialise();
   };
 
@@ -342,7 +348,9 @@ class Approval extends PureComponent<
    */
   trackEditScreen = async () => {
     const { transaction, metrics } = this.props;
-    const actionKey = await getTransactionReviewActionKey({ transaction });
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const actionKey = await (getTransactionReviewActionKey as any)({ transaction });
     metrics.trackEvent(
       metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)
@@ -393,7 +401,7 @@ class Approval extends PureComponent<
       : {};
   };
 
-  getAnalyticsParams = ({ gasEstimateType, gasSelected } = {}) => {
+  getAnalyticsParams = ({ gasEstimateType, gasSelected }: any = {}) => {
     const { chainId, transaction, selectedAddress, shouldUseSmartTransaction } =
       this.props;
 
@@ -412,13 +420,13 @@ class Approval extends PureComponent<
       const { TransactionController, SmartTransactionsController } =
         Engine.context;
 
-      const transactionMeta = TransactionController.getTransactions({
+      const transactionMeta = (TransactionController as any).getTransactions({
         chainId,
         searchCriteria: { id: transaction.id },
       })?.[0];
 
       const smartTransactionMetricsProperties =
-        getSmartTransactionMetricsProperties(
+        (getSmartTransactionMetricsProperties as any)(
           SmartTransactionsController,
           transactionMeta,
         );
@@ -453,8 +461,7 @@ class Approval extends PureComponent<
   showWalletConnectNotification = (confirmation = false) => {
     const { transaction } = this.props;
     InteractionManager.runAfterInteractions(() => {
-      transaction.origin &&
-        transaction.origin.startsWith(WALLET_CONNECT_ORIGIN) &&
+      transaction.origin?.startsWith(WALLET_CONNECT_ORIGIN) &&
         NotificationManager.showSimpleNotification({
           status: `simple_notification${!confirmation ? '_rejected' : ''}`,
           duration: 5000,
@@ -482,6 +489,7 @@ class Approval extends PureComponent<
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onLedgerConfirmation = (approve: any, transactionId: any, gaParams: any) => {
     try {
       //manual cancel from UI when transaction is awaiting from ledger confirmation
@@ -604,7 +612,7 @@ class Approval extends PureComponent<
         },
       };
 
-      await updateTransaction(updatedTx);
+      await (updateTransaction as any)(updatedTx);
 
       // For Ledger Accounts we handover the signing to the confirmation flow
       if (isLedgerAccount) {
@@ -613,10 +621,10 @@ class Approval extends PureComponent<
         this.setState({ transactionConfirmed: false });
 
         this.props.navigation.navigate(
-          ...createLedgerTransactionModalNavDetails({
+          ...(createLedgerTransactionModalNavDetails as any)({
             transactionId: transaction.id,
             deviceId,
-            onConfirmationComplete: (approve) =>
+            onConfirmationComplete: (approve: any) =>
               this.onLedgerConfirmation(approve, transaction.id, {
                 ...this.getAnalyticsParams({ gasEstimateType, gasSelected }),
                 ...this.getTransactionMetrics(),
@@ -640,7 +648,7 @@ class Approval extends PureComponent<
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: strings('navigation.ok') }],
         );
         Logger.error(
@@ -685,7 +693,7 @@ class Approval extends PureComponent<
    */
   onModeChange = (mode: any) => {
     const { navigation } = this.props;
-    navigation && navigation.setParams({ mode });
+    navigation?.setParams({ mode });
     this.setState({ mode });
     InteractionManager.runAfterInteractions(() => {
       mode === REVIEW && this.trackConfirmScreen();

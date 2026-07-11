@@ -9,7 +9,10 @@ import Video from 'react-native-video';
 import Device from '../../../util/device';
 import Loader from './Loader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { TapGestureHandler } from 'react-native-gesture-handler';
+import { TapGestureHandler as TapGestureHandlerImport } from 'react-native-gesture-handler';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const TapGestureHandler: any = TapGestureHandlerImport;
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -18,8 +21,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useStyles } from '../../../component-library/hooks';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const styleSheet = ({ theme: { colors }, vars: { isPlaying } }: any) =>
   StyleSheet.create({
     loaderContainer: {
@@ -55,6 +61,7 @@ const styleSheet = ({ theme: { colors }, vars: { isPlaying } }: any) =>
     },
   });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface MediaPlayerProps {
   /**
   * Media URI
@@ -90,9 +97,13 @@ interface MediaPlayerProps {
   selectedTextTrack?: any;
 }
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }: any) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const videoRef = useRef<any>();
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);

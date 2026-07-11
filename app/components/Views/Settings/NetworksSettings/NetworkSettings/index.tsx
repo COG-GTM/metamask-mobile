@@ -300,7 +300,6 @@ const createStyles = (colors: Colors) =>
     },
     messageWarning: {
       paddingVertical: 2,
-      fontSize: 14,
       color: colors.warning.default,
       ...typography.sBodyMD,
       fontFamily: getFontFamily(TextVariant.BodyMD),
@@ -313,7 +312,6 @@ const createStyles = (colors: Colors) =>
     },
     inlineWarning: {
       paddingVertical: 2,
-      fontSize: 14,
       color: colors.text.default,
       ...typography.sBodyMD,
       fontFamily: getFontFamily(TextVariant.BodyMD),
@@ -591,7 +589,7 @@ export class NetworkSettings extends PureComponent<
     // If no navigation param, user clicked on add network
     if (networkTypeOrRpcUrl) {
       if (allNetworks.find((net) => networkTypeOrRpcUrl === net)) {
-        const networkInformation = Networks[networkTypeOrRpcUrl as any];
+        const networkInformation = (Networks as any)[networkTypeOrRpcUrl];
         chainId = networkInformation.chainId.toString();
 
         nickname = networkConfigurations?.[chainId]?.name;
@@ -616,8 +614,8 @@ export class NetworkSettings extends PureComponent<
 
         ticker = networkConfigurations?.[chainId]?.nativeCurrency;
       } else {
-        const networkConfiguration = Object.values(networkConfigurations).find(
-          ({ rpcEndpoints, defaultRpcEndpointIndex }) =>
+        const networkConfiguration: any = Object.values(networkConfigurations).find(
+          ({ rpcEndpoints, defaultRpcEndpointIndex }: any) =>
             rpcEndpoints[defaultRpcEndpointIndex].url === networkTypeOrRpcUrl ||
             rpcEndpoints[defaultRpcEndpointIndex].networkClientId ===
               networkTypeOrRpcUrl,
@@ -813,7 +811,7 @@ export class NetworkSettings extends PureComponent<
 
     // Check if any network configuration matches the given chainId
     const chainIdExists = Object.values(networkConfigurations).some(
-      (item) => item.chainId === hexChainId,
+      (item: any) => item.chainId === hexChainId,
     );
 
     // Return true if the chainId exists and the UI redesign is enabled, otherwise false
@@ -824,7 +822,7 @@ export class NetworkSettings extends PureComponent<
     // First, check custom networks in networkConfigurationsByChainId
     const checkCustomNetworks = Object.values(
       this.props.networkConfigurations,
-    ).filter((item) =>
+    ).filter((item: any) =>
       item.rpcEndpoints?.some((endpoint: any) => endpoint.url === rpcUrl),
     );
 
@@ -839,7 +837,7 @@ export class NetworkSettings extends PureComponent<
   checkIfNetworkExists = async (rpcUrl: any) => {
     const checkCustomNetworks = Object.values(
       this.props.networkConfigurations,
-    ).filter((item) => item.rpcUrl === rpcUrl);
+    ).filter((item: any) => item.rpcUrl === rpcUrl);
 
     if (checkCustomNetworks.length > 0) {
       if (!isNetworkUiRedesignEnabled()) {
@@ -851,7 +849,7 @@ export class NetworkSettings extends PureComponent<
 
       return checkCustomNetworks;
     }
-    const defaultNetworks = getAllNetworks().map((item) => Networks[item as any]);
+    const defaultNetworks = getAllNetworks().map((item) => (Networks as any)[item]);
     const checkDefaultNetworks = defaultNetworks.filter(
       (item) => Number(item.rpcUrl) === rpcUrl,
     );
@@ -1202,7 +1200,7 @@ export class NetworkSettings extends PureComponent<
   /**
    * Validates that symbol match with the chainId, setting a warningSymbol if is invalid
    */
-  validateSymbol = (chainToMatch = null) => {
+  validateSymbol = (chainToMatch: any = null) => {
     const { ticker, networkList } = this.state;
 
     const { useSafeChainsListValidation } = this.props;
@@ -1227,7 +1225,7 @@ export class NetworkSettings extends PureComponent<
   /**
    * Validates that name match with the chainId, setting a warningName if is invalid
    */
-  validateName = (chainToMatch = null) => {
+  validateName = (chainToMatch: any = null) => {
     const { nickname, networkList, chainId } = this.state;
     const { useSafeChainsListValidation } = this.props;
   
@@ -1615,7 +1613,7 @@ export class NetworkSettings extends PureComponent<
     }
 
     const entry = Object.entries(networkConfigurations).find(
-      ([, networkConfiguration]) =>
+      ([, networkConfiguration]: any) =>
         networkConfiguration.rpcEndpoints[
           networkConfiguration.defaultRpcEndpointIndex
         ].url === rpcUrl,
@@ -1624,7 +1622,7 @@ export class NetworkSettings extends PureComponent<
     if (!entry) {
       throw new Error(`Unable to find network with RPC URL ${rpcUrl}`);
     }
-    const [, networkConfiguration] = entry;
+    const [, networkConfiguration]: any = entry;
     const { NetworkController } = Engine.context;
     NetworkController.removeNetwork(networkConfiguration.chainId);
     navigation.goBack();
@@ -2002,6 +2000,7 @@ export class NetworkSettings extends PureComponent<
             </Text>
             {isNetworkUiRedesignEnabled() ? (
               <View style={styles.dropDownInput}>
+                {/* @ts-expect-error legacy props preserved from JS */}
                 <Cell
                   key={rpcUrl}
                   testID={NetworksViewSelectorsIDs.ICON_BUTTON_RPC}
@@ -2483,7 +2482,7 @@ export class NetworkSettings extends PureComponent<
     const formChainId = stateChainId.trim().toLowerCase();
 
     // Ensure chainId is a 0x-prefixed, lowercase hex string
-    let chainId = formChainId;
+    let chainId: any = formChainId;
     if (!chainId.startsWith('0x')) {
       chainId = `0x${parseInt(chainId, 10).toString(16)}`;
     }
@@ -2551,7 +2550,7 @@ export class NetworkSettings extends PureComponent<
               }}
             >
               <View
-                tabLabel={strings('app_settings.popular')}
+                {...({ tabLabel: strings('app_settings.popular') } as any)}
                 key={AppConstants.ADD_CUSTOM_NETWORK_POPULAR_TAB_ID}
                 style={styles.networksWrapper}
                 testID={NetworksViewSelectorsIDs.POPULAR_NETWORKS_CONTAINER}
@@ -2571,7 +2570,7 @@ export class NetworkSettings extends PureComponent<
               </View>
 
               <View
-                tabLabel={strings('app_settings.custom_network_name')}
+                {...({ tabLabel: strings('app_settings.custom_network_name') } as any)}
                 key={AppConstants.ADD_CUSTOM_NETWORK_CUSTOM_TAB_ID}
                 testID={NetworksViewSelectorsIDs.CUSTOM_NETWORKS_CONTAINER}
               >
@@ -2634,4 +2633,8 @@ const mapStateToProps = (state: RootState) => ({
 export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   withIsOriginalNativeToken,
-)(withMetricsAwareness(NetworkSettings as any));
+)(
+  withMetricsAwareness(NetworkSettings as any),
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as any;

@@ -230,10 +230,10 @@ class Asset extends PureComponent<
     transactions: [],
   };
 
-  txs = [];
-  txsPending = [];
+  txs: any[] = [];
+  txsPending: any[] = [];
   isNormalizing = false;
-  chainId = '';
+  chainId: any = '';
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filter: any = undefined;
@@ -374,7 +374,7 @@ class Asset extends PureComponent<
       (chainId === tx.chainId || (!tx.chainId && networkId === tx.networkID)) &&
       tx.status !== 'unapproved'
     ) {
-      if (TOKEN_CATEGORY_HASH[type as any]) {
+      if ((TOKEN_CATEGORY_HASH as any)[type]) {
         return false;
       }
       if (isTransfer) {
@@ -431,9 +431,9 @@ class Asset extends PureComponent<
     this.isNormalizing = true;
 
     let submittedTxs: any = [];
-    const newPendingTxs = [];
-    const confirmedTxs = [];
-    const submittedNonces = [];
+    const newPendingTxs: any[] = [];
+    const confirmedTxs: any[] = [];
+    const submittedNonces: any[] = [];
 
     const { chainId, transactions } = this.props;
     if (transactions.length) {
@@ -489,6 +489,7 @@ class Asset extends PureComponent<
       // If the account added "Insert Point" is not found add it to the last transaction
       if (
         !accountAddedTimeInsertPointFound &&
+        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
         filteredTransactions &&
         filteredTransactions.length
       ) {

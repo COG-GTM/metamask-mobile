@@ -46,7 +46,10 @@ import { WALLET_CONNECT_ORIGIN } from '../../../../../../util/walletconnect';
 import CustomNonceModal from '../components/CustomNonceModal';
 import NotificationManager from '../../../../../../core/NotificationManager';
 import { strings } from '../../../../../../../locales/i18n';
-import CollectibleMedia from '../../../../../UI/CollectibleMedia';
+import CollectibleMediaImport from '../../../../../UI/CollectibleMedia';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CollectibleMedia: any = CollectibleMediaImport;
 import Modal from 'react-native-modal';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import TransactionTypes from '../../../../../../core/TransactionTypes';
@@ -64,8 +67,14 @@ import { fetchEstimatedMultiLayerL1Fee } from '../../../../../../util/networks/e
 import Text from '../../../../../Base/Text';
 import { removeFavoriteCollectible } from '../../../../../../actions/collectibles';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AccountFromToInfoCard from '../../../../../UI/AccountFromToInfoCard';
-import TransactionReview from '../../components/TransactionReview/TransactionReviewEIP1559Update';
+import AccountFromToInfoCardImport from '../../../../../UI/AccountFromToInfoCard';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AccountFromToInfoCard: any = AccountFromToInfoCardImport;
+import TransactionReviewImport from '../../components/TransactionReview/TransactionReviewEIP1559Update';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const TransactionReview: any = TransactionReviewImport;
 import CustomNonce from '../../components/CustomNonce';
 import AppConstants from '../../../../../../core/AppConstants';
 import {
@@ -388,6 +397,7 @@ class Confirm extends PureComponent<
   );
 
   setNetworkNonce = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { globalNetworkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(
@@ -398,7 +408,7 @@ class Confirm extends PureComponent<
     setProposedNonce(proposedNonce);
   };
 
-  getAnalyticsParams = (transactionMeta: any) => {
+  getAnalyticsParams = (transactionMeta?: any) => {
     const {
       selectedAsset,
       gasEstimateType,
@@ -432,7 +442,7 @@ class Confirm extends PureComponent<
       const { SmartTransactionsController } = Engine.context;
 
       const smartTransactionMetricsProperties =
-        getSmartTransactionMetricsProperties(
+        (getSmartTransactionMetricsProperties as any)(
           SmartTransactionsController,
           transactionMeta,
         );
@@ -450,6 +460,7 @@ class Confirm extends PureComponent<
   };
 
   updateNavBar = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { navigation, route, resetTransaction, transaction } = this.props;
     const colors = (this.context as Theme).colors || mockTheme.colors;
     navigation.setOptions(
@@ -472,7 +483,7 @@ class Confirm extends PureComponent<
 
     const { transactionMeta } = this.state;
     const { TokensController } = Engine.context;
-    await stopGasPolling(this.state.pollToken);
+    await (stopGasPolling as any)(this.state.pollToken);
     clearInterval(intervalIdForEstimatedL1Fee);
 
     Engine.rejectPendingApproval(transactionMeta.id, undefined as any, {
@@ -533,6 +544,7 @@ class Confirm extends PureComponent<
       navigation,
       providerType,
       isPaymentRequest,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setTransactionId,
     } = this.props;
 
@@ -578,7 +590,7 @@ class Confirm extends PureComponent<
         transactionParams,
         {
           deviceConfirmedOn: WalletDevice.MM_MOBILE,
-          networkClientId: globalNetworkClientId,
+          networkClientId: globalNetworkClientId as any,
           origin: TransactionTypes.MMM,
         },
       ));
@@ -587,7 +599,7 @@ class Confirm extends PureComponent<
       navigation.navigate(Routes.WALLET_VIEW);
       Alert.alert(
         strings('transactions.transaction_error'),
-        error && error.message,
+        error?.message,
         [{ text: 'OK' }],
       );
       return;
@@ -786,6 +798,7 @@ class Confirm extends PureComponent<
 
   getGasLimit = async () => {
     const {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       prepareTransaction,
       transactionState: { transaction },
     } = this.props;
@@ -828,6 +841,7 @@ class Confirm extends PureComponent<
     } else {
       const {
         address,
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         symbol = 'ERC20',
         decimals,
         image,
@@ -842,7 +856,7 @@ class Confirm extends PureComponent<
           decimals,
           image,
           name,
-          networkClientId: this.props.networkClientId,
+          networkClientId: this.props.networkClientId as any,
         });
       }
 
@@ -929,6 +943,7 @@ class Confirm extends PureComponent<
       transactionState: {
         transaction: { value },
       },
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       updateConfirmationMetric,
     } = this.props;
     const { EIP1559GasTransaction, legacyGasTransaction, transactionMeta } =
@@ -1025,7 +1040,7 @@ class Confirm extends PureComponent<
       }
     } finally {
       // Error handling derived to LedgerConfirmationModal component
-      navigation && navigation.dangerouslyGetParent()?.popToTop();
+      navigation?.dangerouslyGetParent()?.popToTop();
     }
   };
 
@@ -1034,6 +1049,7 @@ class Confirm extends PureComponent<
     const {
       transactionState: { assetType },
       navigation,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       resetTransaction,
       shouldUseSmartTransaction,
       transactionMetadata,
@@ -1088,10 +1104,10 @@ class Confirm extends PureComponent<
         this.setState({ transactionConfirmed: false });
         // Approve transaction for ledger is called in the Confirmation Flow (modals) after user prompt
         this.props.navigation.navigate(
-          ...createLedgerTransactionModalNavDetails({
+          ...(createLedgerTransactionModalNavDetails as any)({
             transactionId: transactionMeta.id,
             deviceId,
-            onConfirmationComplete: async (approve) =>
+            onConfirmationComplete: async (approve: any) =>
               await this.onLedgerConfirmation(
                 approve,
                 result,
@@ -1158,7 +1174,7 @@ class Confirm extends PureComponent<
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: 'OK' }],
         );
         Logger.error(error, 'error while trying to send transaction (Confirm)');
@@ -1316,7 +1332,7 @@ class Confirm extends PureComponent<
     const { chainId } = this.props;
     InteractionManager.runAfterInteractions(() => {
       this.props.navigation.navigate(Routes.BROWSER.VIEW, {
-        newTabUrl: TESTNET_FAUCETS[chainId as any as any],
+        newTabUrl: (TESTNET_FAUCETS as any)[chainId as any],
         timestamp: Date.now(),
       });
     });
@@ -1371,7 +1387,7 @@ class Confirm extends PureComponent<
     const { transaction } = this.props;
     const analyticsParams = {
       ...this.getAnalyticsParams(),
-      ...getBlockaidTransactionMetricsParams(transaction),
+      ...getBlockaidTransactionMetricsParams(transaction as any),
       external_link_clicked: 'security_alert_support_link',
     };
     this.props.metrics.trackEvent(
@@ -1417,7 +1433,7 @@ class Confirm extends PureComponent<
         chainId: controllerTransactionMeta.chainId,
       },
     };
-    await updateTransaction(updatedTx);
+    await (updateTransaction as any)(updatedTx);
   }
 
   getTransactionMetrics = () => {
@@ -1487,7 +1503,7 @@ class Confirm extends PureComponent<
         <AccountFromToInfoCard
           transactionState={this.props.transactionState}
           onPressFromAddressIcon={
-            !paymentRequest ? null : this.openAccountSelector
+            (!paymentRequest ? null : this.openAccountSelector) as any
           }
           layout="vertical"
         />

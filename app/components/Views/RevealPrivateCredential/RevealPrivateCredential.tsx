@@ -86,7 +86,7 @@ interface IRevealPrivateCredentialProps {
   navigation: any;
   credentialName: string;
   cancel: () => void;
-  route: RevealPrivateCredentialRouteProp;
+  route?: RevealPrivateCredentialRouteProp;
 }
 
 const RevealPrivateCredential = ({
@@ -648,10 +648,18 @@ const RevealPrivateCredential = ({
               renderSRPExplanation()
             )}
           </View>
-          {renderWarning(credentialSlug)}
+          {
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            renderWarning(credentialSlug as any)
+          }
 
           <View style={[styles.rowWrapper, styles.stretch]}>
-            {unlocked ? renderTabView(credentialSlug) : renderPasswordEntry()}
+            {
+              // TODO: Replace "any" with type
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              unlocked ? renderTabView(credentialSlug as any) : renderPasswordEntry()
+            }
           </View>
         </>
       </ActionView>

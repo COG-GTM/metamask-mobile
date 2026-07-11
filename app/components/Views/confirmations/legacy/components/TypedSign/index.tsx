@@ -174,7 +174,7 @@ class TypedSign extends PureComponent<
     await handleSignatureAction(
       onReject,
       messageParams,
-      typedSign[messageParams.version as any],
+      (typedSign as any)[messageParams.version],
       securityAlertResponse,
       false,
     );
@@ -192,7 +192,7 @@ class TypedSign extends PureComponent<
       await handleSignatureAction(
         onConfirm,
         messageParams,
-        typedSign[messageParams.version as any],
+        (typedSign as any)[messageParams.version],
         securityAlertResponse,
         true,
       );
@@ -202,7 +202,7 @@ class TypedSign extends PureComponent<
           onReject,
           onConfirm,
           messageParams,
-          typedSign[messageParams.version as any],
+          (typedSign as any)[messageParams.version],
         )),
       );
     }
@@ -307,14 +307,14 @@ class TypedSign extends PureComponent<
         domain={domain}
         currentPageInformation={currentPageInformation}
         truncateMessage={truncateMessage}
-        type={typedSign[messageParams.version as any]}
+        type={(typedSign as any)[messageParams.version]}
         fromAddress={from}
         testID={SigningBottomSheetSelectorsIDs.TYPED_REQUEST}
         networkType={networkType}
       >
         <View
           style={messageWrapperStyles}
-          onLayout={truncateMessage ? null : this.updateShouldTruncateMessage}
+          onLayout={(truncateMessage ? null : this.updateShouldTruncateMessage) as any}
         >
           {this.renderTypedMessage()}
         </View>
@@ -333,7 +333,7 @@ const mapStateToProps = (state: any, ownProps: any) => {
   );
 
   return {
-    networkType: selectProviderTypeByChainId(state, signatureRequest?.chainId),
+    networkType: selectProviderTypeByChainId(state, signatureRequest?.chainId as any),
     securityAlertResponse: state.signatureRequest.securityAlertResponse,
   };
 };

@@ -123,7 +123,7 @@ class AddressQRCode extends PureComponent<AddressQRCodeProps> {
   };
 
   copyAccountToClipboard = async () => {
-    const { selectedAddress } = this.props;
+    const { selectedAddress }: any = this.props;
     await ClipboardManager.setString(selectedAddress as any);
     this.props.showAlert({
       isVisible: true,
@@ -134,7 +134,7 @@ class AddressQRCode extends PureComponent<AddressQRCodeProps> {
   };
 
   processAddress = () => {
-    const { selectedAddress } = this.props;
+    const { selectedAddress }: any = this.props;
     const processedAddress = `${selectedAddress.slice(0, 2)} ${selectedAddress
       .slice(2)
       .match(/.{1,4}/g)
@@ -143,7 +143,9 @@ class AddressQRCode extends PureComponent<AddressQRCodeProps> {
   };
 
   render() {
-    const theme = this.context || mockTheme;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const theme: any = this.context || mockTheme;
     const colors: any = theme.colors;
     const styles = createStyles(theme);
 

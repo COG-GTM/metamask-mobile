@@ -42,6 +42,15 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
+// TODO: Replace "any" with type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const TransactionsViewComponent: any = TransactionsView;
+const MultichainTransactionsViewComponent: any = MultichainTransactionsView;
+const RampOrdersListComponent: any = RampOrdersList;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const createStyles = (params: any) => {
   const { theme } = params;
   const { colors } = theme;
@@ -84,7 +93,6 @@ const createStyles = (params: any) => {
     },
     title: {
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
       ...typography.sHeadingMD,
       fontFamily: getFontFamily(TextVariant.HeadingMD),
@@ -113,9 +121,15 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hasOrders = useSelector((state) => getHasOrders(state as any) || false);
   const accountsByChainId = useSelector(selectAccountsByChainId);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tabViewRef = useRef<any>();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const params: any = useParams();
 
   const isTestnetOrNotPopularNetwork =
@@ -130,6 +144,8 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             accountsByChainId[selectedAddress as any] ?? {},
           ).length,
         })
@@ -180,8 +196,13 @@ const ActivityView = () => {
     <ErrorBoundary navigation={navigation} view="ActivityView">
       <View style={[styles.header, { marginTop: insets.top }]}>
         <Text
-          style={styles.title}
-          variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT}
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          style={styles.title as any}
+          // @ts-expect-error legacy prop preserved from JS
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT as any}
         >
           {strings('transactions_view.title')}
         </Text>
@@ -214,15 +235,17 @@ const ActivityView = () => {
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
-              tabLabel={strings('transactions_view.title') as any}
+            <MultichainTransactionsViewComponent
+              tabLabel={strings('transactions_view.title')}
             />
           ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title') as any} />
+            <TransactionsViewComponent
+              tabLabel={strings('transactions_view.title')}
+            />
           )}
           {hasOrders && (
-            <RampOrdersList
-              tabLabel={strings('fiat_on_ramp_aggregator.orders') as any}
+            <RampOrdersListComponent
+              tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}
         </ScrollableTabView>

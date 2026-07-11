@@ -66,8 +66,14 @@ import { fetchEstimatedMultiLayerL1Fee } from '../../../../../../util/networks/e
 import CustomSpendCap from '../../../../../../component-library/components-temp/CustomSpendCap';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import Logger from '../../../../../../util/Logger';
-import ButtonLink from '../../../../../../component-library/components/Buttons/Button/variants/ButtonLink';
-import TransactionReview from '../TransactionReview/TransactionReviewEIP1559Update';
+import ButtonLinkImport from '../../../../../../component-library/components/Buttons/Button/variants/ButtonLink';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ButtonLink: any = ButtonLinkImport;
+import TransactionReviewImport from '../TransactionReview/TransactionReviewEIP1559Update';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const TransactionReview: any = TransactionReviewImport;
 import ClipboardManager from '../../../../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
 import type { RootState } from '../../../../../../reducers';
@@ -86,9 +92,12 @@ import { selectTokenList } from '../../../../../../selectors/tokenListController
 import { selectTokensLength } from '../../../../../../selectors/tokensController';
 import { selectAccountsLength } from '../../../../../../selectors/accountTrackerController';
 import { selectCurrentTransactionSecurityAlertResponse } from '../../../../../../selectors/confirmTransaction';
-import Text, {
+import TextImport, {
   TextVariant,
 } from '../../../../../../component-library/components/Texts/Text';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Text: any = TextImport;
 import ApproveTransactionHeader from '../ApproveTransactionHeader';
 import VerifyContractDetails from './VerifyContractDetails/VerifyContractDetails';
 import ShowBlockExplorer from './ShowBlockExplorer';
@@ -353,7 +362,7 @@ class ApproveTransactionReview extends PureComponent<
   originIsWalletConnect: any;
 
   static navigationOptions = ({ navigation }: any) =>
-    getApproveNavbar('approve.title', navigation);
+    (getApproveNavbar as any)('approve.title', navigation);
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -418,6 +427,7 @@ class ApproveTransactionReview extends PureComponent<
     const {
       // We need to extract transaction.transaction here to retrieve up-to-date nonce
       transaction: { origin, to, data, from, transaction },
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setTransactionObject,
       tokenList,
       tokenAllowanceState,
@@ -514,7 +524,7 @@ class ApproveTransactionReview extends PureComponent<
       false,
     );
 
-    const { name: method } = await getMethodData(data);
+    const { name: method } = await (getMethodData as any)(data);
     const minTokenAllowance = minimumTokenAllowance(tokenDecimals);
 
     const approvalData = generateApprovalData({
@@ -530,7 +540,8 @@ class ApproveTransactionReview extends PureComponent<
       },
     });
 
-    const token = Object.values(tokenList).filter(
+    const token: any = Object.values(tokenList).filter(
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       (token: any) => token.address === to,
     );
 
@@ -577,6 +588,7 @@ class ApproveTransactionReview extends PureComponent<
   };
 
   componentDidUpdate = (_: any, prevState: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { transaction, setTransactionObject } = this.props;
     const {
       tokenSpendValue,
@@ -585,7 +597,7 @@ class ApproveTransactionReview extends PureComponent<
     } = this.state;
 
     if (prevState?.tokenSpendValue !== tokenSpendValue) {
-      const newApprovalTransaction = generateTxWithNewTokenAllowance(
+      const newApprovalTransaction: any = generateTxWithNewTokenAllowance(
         tokenSpendValue || '0',
         tokenDecimals,
         spenderAddress,
@@ -642,10 +654,10 @@ class ApproveTransactionReview extends PureComponent<
     } = this.props;
 
     const {
-      token: { tokenSymbol } = {},
+      token: { tokenSymbol } = {} as any,
       originalApproveAmount,
       encodedHexAmount,
-    } = this.state || {};
+    }: any = this.state || {};
 
     const baseParams = {
       account_type: transaction?.from
@@ -768,7 +780,7 @@ class ApproveTransactionReview extends PureComponent<
       tokenDecimals,
       tokenName,
     });
-    onModeChange && onModeChange('edit');
+    onModeChange?.('edit');
   };
 
   openLinkAboutGas = () =>
@@ -852,7 +864,9 @@ class ApproveTransactionReview extends PureComponent<
 
   getConfirmButtonState() {
     const { securityAlertResponse } = this.props;
-    let confirmButtonState = ConfirmButtonState.Normal;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let confirmButtonState: any = ConfirmButtonState.Normal;
 
     if (securityAlertResponse) {
       if (securityAlertResponse.result_type === ResultType.Malicious) {
@@ -997,7 +1011,7 @@ class ApproveTransactionReview extends PureComponent<
                   >
                     <TransactionBlockaidBanner
                       transactionId={transactionId}
-                      style={styles.blockaidWarning}
+                      style={(styles as any).blockaidWarning}
                       onContactUsClicked={this.onContactUsClicked}
                     />
                     <SmartTransactionsMigrationBanner
@@ -1096,7 +1110,7 @@ class ApproveTransactionReview extends PureComponent<
                                 this.handleCustomSpendOnInputChange
                               }
                               isInputValid={
-                                this.handleSetIsCustomSpendInputValid
+                                this.handleSetIsCustomSpendInputValid as any
                               }
                             />
                           )
@@ -1317,7 +1331,7 @@ class ApproveTransactionReview extends PureComponent<
 
   onCancelPress = () => {
     const { onCancel, transaction } = this.props;
-    onCancel && onCancel();
+    onCancel?.();
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.APPROVAL_PERMISSION_UPDATED)
@@ -1349,7 +1363,7 @@ class ApproveTransactionReview extends PureComponent<
       return this.setState({ isReadyToApprove: true });
     }
 
-    return onConfirm && onConfirm();
+    return onConfirm?.();
   };
 
   goToFaucet = () => {
@@ -1357,7 +1371,7 @@ class ApproveTransactionReview extends PureComponent<
     InteractionManager.runAfterInteractions(() => {
       this.onCancelPress();
       this.props.navigation.navigate(Routes.BROWSER.VIEW, {
-        newTabUrl: TESTNET_FAUCETS[chainId as any as any],
+        newTabUrl: (TESTNET_FAUCETS as any)[chainId as any],
         timestamp: Date.now(),
       });
     });
@@ -1455,7 +1469,7 @@ export default connect(
   mapDispatchToProps,
 )(
   withNavigation(
-    withQRHardwareAwareness(withMetricsAwareness(ApproveTransactionReview as any)),
+    (withQRHardwareAwareness as any)(withMetricsAwareness(ApproveTransactionReview as any)),
   ),
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

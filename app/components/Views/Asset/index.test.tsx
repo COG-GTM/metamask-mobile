@@ -5,9 +5,12 @@ import renderWithProvider from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import Asset from './';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { isPortfolioViewEnabled } from '../../../util/networks';
 
-const mockInitialState = {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockInitialState: any = {
   swaps: { '0x1': { isLive: true }, hasOnboarded: false, isLive: true },
   fiatOrders: {
     networks: [
@@ -85,6 +88,7 @@ jest.mock('../../../util/networks', () => ({
 }));
 
 jest.mock('../../../core/Engine', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
   const {
     MOCK_ADDRESS_1,
   } = require('../../../util/test/accountsControllerTestUtils');

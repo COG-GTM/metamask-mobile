@@ -11,7 +11,10 @@ import {
 import Engine from '../../../../../core/Engine';
 import AnimatedTransactionModal from '../../../../UI/AnimatedTransactionModal';
 import ApproveTransactionReview from '../components/ApproveTransactionReview';
-import AddNickname from '../components/ApproveTransactionReview/AddNickname';
+import AddNicknameImport from '../components/ApproveTransactionReview/AddNickname';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AddNickname: any = AddNicknameImport;
 import Modal from 'react-native-modal';
 import { strings } from '../../../../../../locales/i18n';
 
@@ -57,6 +60,7 @@ import {
   selectEvmNetworkConfigurationsByChainId,
   selectProviderTypeByChainId,
   selectRpcUrlByChainId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   selectEvmChainId,
 } from '../../../../../selectors/networkController';
 import {
@@ -230,6 +234,7 @@ class Approve extends PureComponent<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   #transactionFinishedSubscription: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static navigationOptions = ({ navigation }: any) =>
     getApproveNavbar('approve.title');
 
@@ -332,6 +337,7 @@ class Approve extends PureComponent<
   };
 
   setNetworkNonce = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(transaction, networkClientId as any);
@@ -360,6 +366,7 @@ class Approve extends PureComponent<
 
   handleGetGasLimit = async () => {
     const { networkClientId } = this.props;
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { setTransactionObject, transaction } = this.props;
     const estimation = await getGasLimit(
       { ...transaction, gas: undefined },
@@ -516,6 +523,7 @@ class Approve extends PureComponent<
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onLedgerConfirmation = (approve: any, transactionId: any, gaParams: any) => {
     const { metrics } = this.props;
     try {
@@ -679,7 +687,7 @@ class Approve extends PureComponent<
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: 'OK' }],
         );
         Logger.error(error, 'error while trying to send transaction (Approve)');

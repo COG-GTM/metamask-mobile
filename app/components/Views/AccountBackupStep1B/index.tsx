@@ -202,6 +202,7 @@ const createStyles = (colors: Colors) =>
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface AccountBackupStep1BProps {
   /**
   /* navigation object required to push and pop other views

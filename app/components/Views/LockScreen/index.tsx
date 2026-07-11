@@ -20,6 +20,8 @@ import {
   mockTheme,
   ThemeContext,
 } from '../../../util/theme';
+import { Colors, Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import Routes from '../../../constants/navigation/Routes';
 import { CommonActions } from '@react-navigation/native';
 import trackErrorAsAnalytics from '../../../util/metrics/TrackError/trackErrorAsAnalytics';
@@ -64,7 +66,9 @@ const createStyles = (colors: Colors) =>
     },
   });
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const wordmarkLight = require('../../../animations/wordmark-light.json');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const wordmarkDark = require('../../../animations/wordmark-dark.json');
 
 /**
@@ -110,7 +114,9 @@ class LockScreen extends PureComponent<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   animationName: any = React.createRef();
   opacity = new Animated.Value(1);
-  appStateListener;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  appStateListener: any;
 
   componentDidMount() {
     this.appStateListener = AppState.addEventListener(
@@ -206,6 +212,7 @@ class LockScreen extends PureComponent<
             this.firstAnimation = animation;
           }}
           style={styles.animation}
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={require('../../../animations/bounce.json')}
         />
       );
@@ -220,6 +227,7 @@ class LockScreen extends PureComponent<
           }}
           style={styles.animation}
           loop={false}
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={require('../../../animations/fox-in.json')}
           onAnimationFinish={this.onAnimationFinished}
         />
@@ -258,6 +266,7 @@ LockScreen.contextType = ThemeContext;
 const ConnectedLockScreen = connect(mapStateToProps)(LockScreen);
 
 // Wrapper that forces LockScreen to re-render when bioStateMachineId changes.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface LockScreenFCWrapperProps {
   /**
   * Navigation object that holds params including bioStateMachineId.

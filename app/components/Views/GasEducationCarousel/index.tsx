@@ -220,7 +220,7 @@ const GasEducationCarousel = ({
             estimatedBaseFeeHex,
             suggestedMaxFeePerGasHex,
             suggestedMaxPriorityFeePerGasHex,
-          });
+          } as any);
           estimatedTotalGas = hexToBN(gasHexes.gasFeeMaxHex);
         } else if (gasEstimates.gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
           const gasPrice = hexToBN(
@@ -244,6 +244,7 @@ const GasEducationCarousel = ({
           conversionRate,
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
         setGasFiat(gasFiat as any);
       } catch (e: any) {
@@ -365,7 +366,7 @@ const GasEducationCarousel = ({
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
             >
-              {['one', 'two', 'three'].map((value, index) => {
+              {['one', 'two', 'three'].map((_value, index) => {
                 const key = index + 1;
                 const imgStyleKey = `carouselImage${key}`;
                 return (

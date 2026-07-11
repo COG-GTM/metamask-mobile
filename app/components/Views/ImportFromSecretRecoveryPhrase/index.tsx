@@ -16,7 +16,7 @@ import StorageWrapper from '../../../store/storage-wrapper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import zxcvbn from 'zxcvbn';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { OutlinedTextField } from 'react-native-material-textfield';
+import { OutlinedTextField as OutlinedTextFieldImport } from 'react-native-material-textfield';
 import Clipboard from '@react-native-clipboard/clipboard';
 import AppConstants from '../../../core/AppConstants';
 import Device from '../../../util/device';
@@ -65,6 +65,10 @@ import { ImportFromSeedSelectorsIDs } from '../../../../e2e/selectors/Onboarding
 import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ChoosePassword.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const OutlinedTextField: any = OutlinedTextFieldImport;
 
 const MINIMUM_SUPPORTED_CLIPBOARD_VERSION = 9;
 
@@ -118,9 +122,13 @@ interface ImportFromSecretRecoveryPhraseProps {
 
 const ImportFromSecretRecoveryPhrase = ({
   navigation,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   passwordSet,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   setLockTime,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   seedphraseBackedUp,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   setOnboardingWizardStep,
   route,
 }: ImportFromSecretRecoveryPhraseProps) => {
@@ -138,13 +146,15 @@ const ImportFromSecretRecoveryPhrase = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<any>(null);
   const [seedphraseInputFocused, setSeedphraseInputFocused] = useState(false);
-  const [inputWidth, setInputWidth] = useState({ width: '99%' });
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [inputWidth, setInputWidth] = useState<any>({ width: '99%' });
   const [hideSeedPhraseInput, setHideSeedPhraseInput] = useState(true);
 
-  const passwordInput = React.createRef();
-  const confirmPasswordInput = React.createRef();
+  const passwordInput = React.createRef<any>();
+  const confirmPasswordInput = React.createRef<any>();
 
-  const track = (event: any, properties: any) => {
+  const track = (event: any, properties?: any) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
     trackOnboarding(eventBuilder.build());
@@ -194,6 +204,7 @@ const ImportFromSecretRecoveryPhrase = ({
     termsOfUse();
   }, [termsOfUse]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const updateBiometryChoice = async (biometryChoice: any) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     setBiometryChoice(biometryChoice);
@@ -216,7 +227,7 @@ const ImportFromSecretRecoveryPhrase = ({
         true,
       );
     } catch (err: any) {
-      this.setState({ loading: false, error: err.toString() });
+      (this as any).setState({ loading: false, error: err.toString() });
     }
     setBiometryType(newAuthData.availableBiometryType as any);
     updateBiometryChoice(false);
@@ -230,6 +241,7 @@ const ImportFromSecretRecoveryPhrase = ({
 
     if (loading) return;
     track(MetaMetricsEvents.WALLET_IMPORT_ATTEMPTED);
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     let error = null;
     if (!passwordRequirementsMet(password)) {
       error = strings('import_from_seed.password_length_error');
@@ -266,6 +278,7 @@ const ImportFromSecretRecoveryPhrase = ({
           );
         } catch (err: any) {
           // retry faceID if the user cancels the
+          // @ts-expect-error legacy truthiness check preserved from JS
           if (Device.isIos && err.toString() === IOS_REJECTED_BIOMETRICS_ERROR)
             await handleRejectedOsBiometricPrompt(parsedSeed);
         }
@@ -289,6 +302,7 @@ const ImportFromSecretRecoveryPhrase = ({
           index: 1,
           routes: [{ name: Routes.ONBOARDING.SUCCESS_FLOW }],
         });
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       } catch (error: any) {
         // Should we force people to enable passcode / biometrics?
         if (error.toString() === PASSCODE_NOT_SET_ERROR) {
@@ -310,6 +324,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const clearSecretRecoveryPhrase = async (seed: any) => {
     // get clipboard contents
     const clipboardContents = await Clipboard.getString();
@@ -325,11 +340,12 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const onSeedWordsChange = useCallback(async (seed: any) => {
     setSeed(seed);
     // Only clear on android since iOS will notify users when we getString()
     if (Device.isAndroid()) {
-      const androidOSVersion = parseInt(Platform.constants.Release, 10);
+      const androidOSVersion = parseInt((Platform.constants as any).Release, 10);
       // This conditional is necessary to avoid an error in Android 8.1.0 or lower
       if (androidOSVersion >= MINIMUM_SUPPORTED_CLIPBOARD_VERSION) {
         await clearSecretRecoveryPhrase(seed);
@@ -350,15 +366,16 @@ const ImportFromSecretRecoveryPhrase = ({
 
   const jumpToPassword = useCallback(() => {
     const { current } = passwordInput;
-    current && current.focus();
+    current?.focus();
   }, [passwordInput]);
 
   const jumpToConfirmPassword = () => {
     const { current } = confirmPasswordInput;
-    current && current.focus();
+    current?.focus();
   };
 
   const renderSwitch = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const handleUpdateRememberMe = (rememberMe: any) => {
       setRememberMe(rememberMe);
     };
@@ -390,6 +407,7 @@ const ImportFromSecretRecoveryPhrase = ({
     navigation.navigate(Routes.QR_TAB_SWITCHER, {
       initialScreen: QRTabSwitcherScreens.Scanner,
       disableTabber: true,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       onScanSuccess: ({ seed = undefined }) => {
         if (seed) {
           setSeed(seed);
@@ -401,6 +419,7 @@ const ImportFromSecretRecoveryPhrase = ({
         }
         setHideSeedPhraseInput(shouldHideSRP);
       },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-shadow
       onScanError: (error: any) => {
         setHideSeedPhraseInput(shouldHideSRP);
       },

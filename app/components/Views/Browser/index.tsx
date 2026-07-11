@@ -31,7 +31,8 @@ import { getPermittedAccounts } from '../../../core/Permissions';
 import Logger from '../../../util/Logger';
 import getAccountNameWithENS from '../../../util/accounts';
 import Tabs from '../../UI/Tabs';
-import BrowserTab from '../BrowserTab/BrowserTab';
+import BrowserTabImport from '../BrowserTab/BrowserTab';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import { useMetrics } from '../../hooks/useMetrics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -49,6 +50,10 @@ import Routes from '../../../constants/navigation/Routes';
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
 import { isSolanaAccount } from '../../../core/Multichain/utils';
 import { useFocusEffect } from '@react-navigation/native';
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const BrowserTab: any = BrowserTabImport;
 ///: END:ONLY_INCLUDE_IF
 
 const MAX_BROWSER_TABS = 5;
@@ -112,14 +117,17 @@ export interface BrowserProps {
   route?: any;
 }
 
-const Browser = (props: any) => {
+export const Browser = (props: any) => {
   const {
     route,
     navigation,
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     createNewTab,
     closeAllTabs: triggerCloseAllTabs,
     closeTab: triggerCloseTab,
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     setActiveTab,
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     updateTab,
     activeTab: activeTabId,
     tabs,
@@ -133,8 +141,9 @@ const Browser = (props: any) => {
   const linkType = props.route?.params?.linkType;
   const prevSiteHostname = useRef(browserUrl);
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_tabIdleTimes, setTabIdleTimes] = useState({});
-  const accountAvatarType = useSelector((state) =>
+  const accountAvatarType = useSelector((state: any) =>
     state.settings.useBlockieIcon
       ? AvatarAccountType.Blockies
       : AvatarAccountType.JazzIcon,
@@ -163,6 +172,7 @@ const Browser = (props: any) => {
       if (isSolanaAccount(currentSelectedAccount as any)) {
         toastRef?.current?.showToast({
           variant: ToastVariants.Network,
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           networkImageSource: require('../../../images/solana-logo.png'),
           labelOptions: [
             {
@@ -177,14 +187,15 @@ const Browser = (props: any) => {
               )}`,
             },
           ],
-        });
+        } as any);
       }
     }, [toastRef, currentSelectedAccount]),
   );
   ///: END:ONLY_INCLUDE_IF
 
   const newTab = useCallback(
-    (url: any, linkType: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    (url?: any, linkType?: any) => {
       // if tabs.length > MAX_BROWSER_TABS, show the max browser tabs modal
       if (tabs.length >= MAX_BROWSER_TABS) {
         navigation.navigate(Routes.MODAL.MAX_BROWSER_TABS_MODAL);
@@ -229,7 +240,7 @@ const Browser = (props: any) => {
     const interval = setInterval(() => {
       // every so often calc each tab's idle time
       setTabIdleTimes((prevIdleTimes) => {
-        const newIdleTimes = { ...prevIdleTimes };
+        const newIdleTimes: any = { ...prevIdleTimes };
         // for each existing tab
         tabs.forEach((tab: any) => {
           // if it isn't the active tab
@@ -286,7 +297,7 @@ const Browser = (props: any) => {
           ],
           accountAddress: activeAccountAddress,
           accountAvatarType,
-        });
+        } as any);
       }
     };
 
@@ -376,7 +387,7 @@ const Browser = (props: any) => {
           quality: 0.2,
           THUMB_WIDTH,
           THUMB_HEIGHT,
-        }).then(
+        } as any).then(
           (uri) => {
             updateTab(tabID, {
               url,
@@ -407,6 +418,7 @@ const Browser = (props: any) => {
     });
   }, [tabs, activeTabId, route.params, navigation, takeScreenshot]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const closeAllTabs = () => {
     if (tabs.length) {
       triggerCloseAllTabs();
@@ -417,6 +429,7 @@ const Browser = (props: any) => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const closeTab = (tab: any) => {
     // If the tab was selected we have to select
     // the next one, and if there's no next one,
@@ -425,6 +438,7 @@ const Browser = (props: any) => {
       if (tabs.length > 1) {
         tabs.forEach((t: any, i: any) => {
           if (t.id === tab.id) {
+            // eslint-disable-next-line @typescript-eslint/no-shadow
             let newTab = tabs[i - 1];
             if (tabs[i + 1]) {
               newTab = tabs[i + 1];
@@ -457,6 +471,7 @@ const Browser = (props: any) => {
   };
 
   const renderTabList = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const showTabs = route.params?.showTabs;
     if (showTabs) {
       return (
@@ -512,7 +527,7 @@ const Browser = (props: any) => {
   );
 };
 
-const mapStateToProps = (state: RootState) => ({
+const mapStateToProps = (state: any) => ({
   tabs: state.browser.tabs,
   activeTab: state.browser.activeTab,
 });

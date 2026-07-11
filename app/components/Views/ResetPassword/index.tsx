@@ -457,7 +457,7 @@ class ResetPassword extends PureComponent<
 
   jumpToConfirmPassword = () => {
     const { current } = this.confirmPasswordInput;
-    current && current.focus();
+    current?.focus();
   };
 
   updateBiometryChoice = async (biometryChoice: any) => {
@@ -634,6 +634,7 @@ class ResetPassword extends PureComponent<
           <View style={styles.loadingWrapper}>
             <View style={styles.foxWrapper}>
               <Image
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
                 source={require('../../../images/branding/fox.png')}
                 style={styles.image}
                 resizeMethod={'auto'}
@@ -712,6 +713,7 @@ class ResetPassword extends PureComponent<
                       </Text>
                     </Text>
                   )) || (
+                    // @ts-expect-error legacy empty Text preserved from JS
                     <Text
                       variant={TextVariant.BodySM}
                       style={styles.hintLabel}
@@ -733,6 +735,7 @@ class ResetPassword extends PureComponent<
                     testID={
                       ChoosePasswordSelectorsIDs.CONFIRM_PASSWORD_INPUT_ID
                     }
+                    // @ts-expect-error legacy stray prop preserved from JS
                     zasdfasfasf
                     onSubmitEditing={this.onPressCreate}
                     returnKeyType={'done'}

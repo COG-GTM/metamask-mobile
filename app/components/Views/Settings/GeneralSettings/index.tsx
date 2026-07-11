@@ -302,7 +302,7 @@ class Settings extends PureComponent<
     this.setState({ languages });
     this.languageOptions = Object.keys(languages).map((key) => ({
       value: key,
-      label: languages[key as any],
+      label: (languages as any)[key],
       key,
     }));
     this.searchEngineOptions = [
@@ -335,7 +335,7 @@ class Settings extends PureComponent<
 
   // renderThemeSettingsSection = () => {
   //   const { appTheme } = this.props;
-  //   const colors = (this.context as Theme).colors || mockTheme.colors;
+  //   const colors: any = (this.context as Theme).colors || mockTheme.colors;
   //   const styles = createStyles(colors);
 
   //   return (
@@ -360,11 +360,14 @@ class Settings extends PureComponent<
       currentCurrency,
       primaryCurrency,
       useBlockieIcon,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setUseBlockieIcon,
       selectedAddress,
       hideZeroBalanceTokens,
     } = this.props;
-    const themeTokens = this.context || mockTheme;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const themeTokens: any = this.context || mockTheme;
     const { colors } = themeTokens;
     const styles = createStyles(colors);
 
@@ -416,7 +419,7 @@ class Settings extends PureComponent<
                     'app_settings.primary_currency_text_second',
                   )}
                   valueSecond={'Fiat'}
-                  selectedValue={primaryCurrency}
+                  selectedValue={primaryCurrency as any}
                 />
               </View>
             )}

@@ -47,7 +47,10 @@ import {
   getTransactionReviewActionKey,
   isApprovalTransaction,
 } from '../../../../../../util/transactions';
-import AccountFromToInfoCard from '../../../../../UI/AccountFromToInfoCard';
+import AccountFromToInfoCardImport from '../../../../../UI/AccountFromToInfoCard';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AccountFromToInfoCard: any = AccountFromToInfoCardImport;
 import ApprovalTagUrl from '../../../../../UI/ApprovalTagUrl';
 import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
 import QRSigningDetails from '../../../../../UI/QRHardware/QRSigningDetails';
@@ -56,7 +59,10 @@ import SimulationDetails from '../../../../../UI/SimulationDetails/SimulationDet
 import TransactionHeader from '../../../../../UI/TransactionHeader';
 import { ResultType } from '../BlockaidBanner/BlockaidBanner.types';
 import TransactionBlockaidBanner from '../TransactionBlockaidBanner/TransactionBlockaidBanner';
-import TransactionReviewData from './TransactionReviewData';
+import TransactionReviewDataImport from './TransactionReviewData';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const TransactionReviewData: any = TransactionReviewDataImport;
 import TransactionReviewInformation from './TransactionReviewInformation';
 import TransactionReviewSummary from './TransactionReviewSummary';
 import DevLogger from '../../../../../../core/SDKConnect/utils/DevLogger';
@@ -393,13 +399,13 @@ class TransactionReview extends PureComponent<
     );
 
     if (approveTransaction) {
-      let contract = tokenList[safeToChecksumAddress(to)];
+      let contract = tokenList[safeToChecksumAddress(to) as any];
       if (!contract) {
         contract = tokens.find(
           ({ address }: any) => address === safeToChecksumAddress(to),
         );
       }
-      const symbol = (contract && contract.symbol) || 'ERC20';
+      const symbol = (contract?.symbol) || 'ERC20';
       assetAmount = `${decodeTransferData('transfer', data)[1]} ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();
@@ -489,7 +495,7 @@ class TransactionReview extends PureComponent<
       },
       default: () => [undefined, undefined, undefined],
     };
-    return values[assetType as any] || values.default;
+    return (values as any)[assetType] || values.default;
   };
 
   edit = () => {
@@ -499,7 +505,7 @@ class TransactionReview extends PureComponent<
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)
         .build(),
     );
-    onModeChange && onModeChange('edit');
+    onModeChange?.('edit');
   };
 
   getStyles = () => {
@@ -539,7 +545,9 @@ class TransactionReview extends PureComponent<
 
   getConfirmButtonState() {
     const { securityAlertResponse } = this.props;
-    let confirmButtonState = ConfirmButtonState.Normal;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let confirmButtonState: any = ConfirmButtonState.Normal;
 
     if (securityAlertResponse) {
       if (securityAlertResponse?.result_type === ResultType.Malicious) {
@@ -603,7 +611,7 @@ class TransactionReview extends PureComponent<
     if (currentConnection) {
       url = currentConnection.originatorInfo.url;
     } else {
-      url = this.getUrlFromBrowser();
+      url = this.getUrlFromBrowser() as any;
     }
 
     const styles = this.getStyles();
@@ -659,7 +667,7 @@ class TransactionReview extends PureComponent<
                       </View>
                     )}
                     {to && (
-                      <View style={styles.accountWrapper}>
+                      <View style={(styles as any).accountWrapper}>
                         <AccountFromToInfoCard
                           transactionState={transaction}
                           layout="vertical"
@@ -797,6 +805,6 @@ TransactionReview.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(
   withNavigation(
-    withQRHardwareAwareness(withMetricsAwareness(TransactionReview as any)),
+    (withQRHardwareAwareness as any)(withMetricsAwareness(TransactionReview as any)),
   ),
 );

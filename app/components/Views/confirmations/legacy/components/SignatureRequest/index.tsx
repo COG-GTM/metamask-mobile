@@ -352,7 +352,9 @@ class SignatureRequest extends PureComponent<SignatureRequestProps> {
       expandedHeight = styles.expandedHeight2;
     }
 
-    let confirmButtonState = ConfirmButtonState.Normal;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let confirmButtonState: any = ConfirmButtonState.Normal;
     if (securityAlertResponse?.result_type === ResultType.Malicious) {
       confirmButtonState = ConfirmButtonState.Error;
     } else if (securityAlertResponse?.result_type === ResultType.Warning) {
@@ -426,6 +428,8 @@ const mapStateToProps = (state: RootState) => ({
 
 SignatureRequest.contextType = ThemeContext;
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default connect(mapStateToProps)(
-  withQRHardwareAwareness(withMetricsAwareness(SignatureRequest as any)),
-);
+  (withQRHardwareAwareness as any)(withMetricsAwareness(SignatureRequest as any)),
+) as any;

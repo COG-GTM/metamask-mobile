@@ -87,6 +87,7 @@ const createStyles = (colors: Colors) =>
     },
   });
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const foxImage = require('../../../../images/branding/fox.png'); // eslint-disable-line import/no-commonjs
 
 /**
@@ -209,7 +210,7 @@ export default class AppInformation extends PureComponent<
             ) : null}
           </View>
           <Text style={styles.title}>{strings('app_information.links')}</Text>
-          <View style={styles.links}>
+          <View style={(styles as any).links}>
             <TouchableOpacity onPress={this.onPrivacyPolicy}>
               <Text style={styles.link}>
                 {strings('app_information.privacy_policy')}
@@ -227,7 +228,7 @@ export default class AppInformation extends PureComponent<
             </TouchableOpacity>
           </View>
           <View style={styles.division} />
-          <View style={styles.links}>
+          <View style={(styles as any).links}>
             <TouchableOpacity onPress={this.onSupportCenter}>
               <Text style={styles.link}>
                 {strings('app_information.support_center')}

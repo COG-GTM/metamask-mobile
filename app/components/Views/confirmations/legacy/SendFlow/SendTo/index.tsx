@@ -6,7 +6,10 @@ import { connect } from 'react-redux';
 import { toChecksumAddress } from 'ethereumjs-util';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import AddressList from '../AddressList';
+import AddressListImport from '../AddressList';
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AddressList: any = AddressListImport;
 import Text from '../../../../../Base/Text';
 import WarningMessage from '../WarningMessage';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
@@ -204,6 +207,7 @@ class SendFlow extends PureComponent<
   };
 
   updateNavBar = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { navigation, route, resetTransaction } = this.props;
     const colors = (this.context as Theme).colors || mockTheme.colors;
     navigation.setOptions(
@@ -233,9 +237,7 @@ class SendFlow extends PureComponent<
     const networkAddressBook = addressBook[globalChainId as any] || {};
     if (!Object.keys(networkAddressBook).length) {
       setTimeout(() => {
-        this.addressToInputRef &&
-          this.addressToInputRef.current &&
-          this.addressToInputRef.current.focus();
+        this.addressToInputRef?.current?.focus();
       }, 500);
     }
     //Fills in to address and sets the transaction if coming from QR code scan
@@ -290,6 +292,7 @@ class SendFlow extends PureComponent<
 
   handleNetworkSwitch = (globalChainId: any) => {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const { showAlert } = this.props;
       const networkName = handleNetworkSwitch(globalChainId);
 
@@ -319,6 +322,7 @@ class SendFlow extends PureComponent<
   };
 
   onTransactionDirectionSet = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { setRecipient, navigation, providerType } = this.props;
     const {
       fromSelectedAddress,
@@ -373,6 +377,7 @@ class SendFlow extends PureComponent<
 
   renderBuyEth = () => {
     const colors = (this.context as Theme).colors || mockTheme.colors;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const styles = createStyles(colors);
 
     if (!this.props.isNativeTokenBuySupported) {
@@ -446,7 +451,7 @@ class SendFlow extends PureComponent<
       errorContinue,
       isOnlyWarning,
       confusableCollection,
-    } = await validateAddressOrENS(
+    }: any = await validateAddressOrENS(
       toAccount,
       addressBook,
       internalAccounts,
@@ -468,8 +473,7 @@ class SendFlow extends PureComponent<
 
   onToSelectedAddressChange = (toAccount: any) => {
     const currentChain =
-      this.props.ambiguousAddressEntries &&
-      this.props.ambiguousAddressEntries[this.props.globalChainId as any];
+      this.props.ambiguousAddressEntries?.[this.props.globalChainId as any];
     const isAmbiguousAddress = includes(currentChain, toAccount);
     if (isAmbiguousAddress) {
       this.setState({ showAmbiguousAcountWarning: isAmbiguousAddress });
@@ -546,13 +550,11 @@ class SendFlow extends PureComponent<
     );
     const existingContact =
       checksummedAddress &&
-      addressBook[globalChainId as any] &&
-      addressBook[globalChainId as any][checksummedAddress];
+      addressBook[globalChainId as any]?.[checksummedAddress];
     const displayConfusableWarning =
       !existingContact && confusableCollection && !!confusableCollection.length;
     const displayAsWarning =
-      confusableCollection &&
-      confusableCollection.length &&
+      confusableCollection?.length &&
       !confusableCollection.some(hasZeroWidthPoints);
     const explanations =
       displayConfusableWarning &&
@@ -653,6 +655,7 @@ class SendFlow extends PureComponent<
                 </View>
               )}
               <AddToAddressBookWrapper
+                // eslint-disable-next-line @typescript-eslint/no-shadow
                 setToAddressName={(toSelectedAddressName) =>
                   this.setState({ toSelectedAddressName })
                 }
