@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -28,13 +27,15 @@ import Text from '../../../Base/Text';
 import Title from '../../../Base/Title';
 import Ratio from './Ratio';
 import { useTheme } from '../../../../util/theme';
+import type { Colors, Shadows } from '../../../../util/theme/models';
+import type { RootState } from '../../../../reducers';
 import {
   selectConversionRate,
   selectCurrentCurrency,
 } from '../../../../selectors/currencyRateController';
 import { selectSwapsQuoteValues } from '../../../../reducers/swaps';
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Colors, shadows: Shadows) =>
   StyleSheet.create({
     modalView: {
       backgroundColor: colors.background.default,
@@ -127,6 +128,55 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+interface QuoteToken {
+  symbol: string;
+  decimals: number;
+}
+
+interface Quote {
+  aggregator: string;
+  aggType: string;
+  sourceAmount: string;
+  destinationAmount: string;
+  slippage: number;
+  priceSlippage?: {
+    calculationError?: string;
+    destinationAmountInETH?: string | number;
+  };
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+interface OwnProps {
+  isVisible?: boolean;
+  toggleModal: () => void;
+  quotes: Quote[];
+  selectedQuote?: string;
+  destinationToken: QuoteToken;
+  sourceToken: QuoteToken;
+  /**
+   * Native asset ticker
+   */
+  ticker?: string;
+  showOverallValue?: boolean;
+  multiLayerL1ApprovalFeeTotal?: string | null;
+}
+
+interface StateProps {
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate: ReturnType<typeof selectConversionRate>;
+  /**
+   * Currency code of the currently-active currency
+   */
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
+  quoteValues: ReturnType<typeof selectSwapsQuoteValues>;
+}
+
+type Props = OwnProps & StateProps;
+
 function QuotesModal({
   isVisible,
   toggleModal,
@@ -140,12 +190,13 @@ function QuotesModal({
   showOverallValue,
   ticker,
   multiLayerL1ApprovalFeeTotal,
-}) {
+}: Props) {
   const bestOverallValue =
     quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
   const [displayDetails, setDisplayDetails] = useState(false);
-  const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] =
-    useState(null);
+  const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] = useState<
+    number | Quote | null
+  >(null);
   const { colors, shadows } = useTheme();
   const styles = createStyles(colors, shadows);
 
@@ -154,9 +205,9 @@ function QuotesModal({
   const selectedDetailsQuote = useMemo(() => {
     if (
       selectedDetailsQuoteIndex !== null &&
-      quotes?.[selectedDetailsQuoteIndex]
+      quotes?.[selectedDetailsQuoteIndex as number]
     ) {
-      return quotes[selectedDetailsQuoteIndex];
+      return quotes[selectedDetailsQuoteIndex as number];
     }
     return null;
   }, [quotes, selectedDetailsQuoteIndex]);
@@ -181,7 +232,7 @@ function QuotesModal({
 
   // Toggle to the details in case the quote exist
   const handleQuoteDetailsPress = useCallback(
-    (index) => {
+    (index: number) => {
       if (quotes?.[index]) {
         setSelectedDetailsQuoteIndex(index);
         toggleDetails();
@@ -218,11 +269,12 @@ function QuotesModal({
     }
   }, [displayDetails, selectedDetailsQuote]);
 
-  let selectedDetailsQuoteValuesEthFee = selectedDetailsQuoteValues?.ethFee;
+  let selectedDetailsQuoteValuesEthFee: string | number | undefined =
+    selectedDetailsQuoteValues?.ethFee;
   if (multiLayerL1ApprovalFeeTotal) {
     selectedDetailsQuoteValuesEthFee = calculateEthFeeForMultiLayer({
       multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
-      ethFee: selectedDetailsQuoteValuesEthFee,
+      ethFee: selectedDetailsQuoteValuesEthFee as unknown as number,
     });
   }
 
@@ -318,14 +370,16 @@ function QuotesModal({
                   <View style={styles.detailsRow}>
                     <Text small>{strings('swaps.estimated_network_fees')}</Text>
                     <Text primary>
-                      {renderFromWei(toWei(selectedDetailsQuoteValuesEthFee))}{' '}
+                      {renderFromWei(
+                        toWei(selectedDetailsQuoteValuesEthFee as string),
+                      )}{' '}
                       <Text reset bold>
                         {ticker}
                       </Text>{' '}
                       <Text>
                         (~
                         {weiToFiat(
-                          toWei(selectedDetailsQuoteValuesEthFee),
+                          toWei(selectedDetailsQuoteValuesEthFee as string),
                           conversionRate,
                           currentCurrency,
                         )}
@@ -388,12 +442,13 @@ function QuotesModal({
                     quotes.map((quote, index) => {
                       const { aggregator } = quote;
                       const isSelected = aggregator === selectedQuote;
-                      const quoteValue = quoteValues[aggregator];
-                      let quoteEthFee = quoteValue?.ethFee;
+                      const quoteValue = quoteValues?.[aggregator];
+                      let quoteEthFee: string | number | undefined =
+                        quoteValue?.ethFee;
                       if (multiLayerL1ApprovalFeeTotal) {
                         quoteEthFee = calculateEthFeeForMultiLayer({
                           multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
-                          ethFee: quoteEthFee,
+                          ethFee: quoteEthFee as unknown as number,
                         });
                       }
                       return (
@@ -418,7 +473,7 @@ function QuotesModal({
                           <View style={styles.columnFee}>
                             <Text primary bold={isSelected}>
                               {weiToFiat(
-                                toWei(quoteEthFee),
+                                toWei(quoteEthFee as string | number),
                                 conversionRate,
                                 currentCurrency,
                               )}
@@ -431,8 +486,9 @@ function QuotesModal({
                                 {weiToFiat(
                                   toWei(
                                     (
-                                      bestOverallValue -
-                                      (quoteValue?.overallValueOfQuote ?? 0)
+                                      (bestOverallValue as number) -
+                                      ((quoteValue?.overallValueOfQuote ??
+                                        0) as number)
                                     ).toFixed(18),
                                   ),
                                   conversionRate,
@@ -471,37 +527,7 @@ function QuotesModal({
   );
 }
 
-QuotesModal.propTypes = {
-  isVisible: PropTypes.bool,
-  toggleModal: PropTypes.func,
-  quotes: PropTypes.array,
-  selectedQuote: PropTypes.string,
-  destinationToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  sourceToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  quoteValues: PropTypes.object,
-  showOverallValue: PropTypes.bool,
-  multiLayerL1ApprovalFeeTotal: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   quoteValues: selectSwapsQuoteValues(state),
