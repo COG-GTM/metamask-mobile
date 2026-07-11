@@ -18,9 +18,7 @@ import { useTheme } from '../../../util/theme';
 import type { Colors, Shadows } from '../../../util/theme/models';
 import Svg, { Path } from 'react-native-svg';
 
-/* eslint-disable import/no-commonjs */
-const SlippageSliderBgImg = require('../../../images/slippage-slider-bg.png');
-/* eslint-enable import/no-commonjs */
+import SlippageSliderBgImg from '../../../images/slippage-slider-bg.png';
 
 const DIAMETER = 30;
 const TRACK_PADDING = 2;
@@ -211,7 +209,7 @@ const SlippageSlider = ({
          * When the slider is being dragged, this handler will figure out which tick
          * it should snap to
          */
-        onPanResponderMove: (ev, gestureState) => {
+        onPanResponderMove: (_ev, gestureState) => {
           pan.setValue(gestureState.dx);
           const relativeValue = (
             pan.interpolate({
