@@ -6,6 +6,11 @@ import { backgroundState } from '../../util/test/initial-root-state';
 import { RootState } from '../../reducers';
 import { useGetFormattedTokensPerChain } from './useGetFormattedTokensPerChain';
 import { InternalAccount } from '@metamask/keyring-internal-api';
+import { SolScope } from '@metamask/keyring-api';
+
+const solanaAccountId = 'solana-account-id';
+const solanaAccountAddress = '7EcTQ2C5Vv7VZ9z9fC3QpY7RgkZ4fTNn8HfQkYVqkPjM';
+const solanaAssetId = `${SolScope.Mainnet}/slip44:501`;
 
 const mockInitialState: DeepPartial<RootState> = {
   settings: {},
@@ -139,6 +144,60 @@ const mockInitialState: DeepPartial<RootState> = {
           },
         },
       },
+      MultichainNetworkController: {
+        isEvmSelected: true,
+        selectedMultichainNetworkChainId: SolScope.Mainnet,
+        multichainNetworkConfigurationsByChainId: {
+          [SolScope.Mainnet]: {
+            chainId: SolScope.Mainnet,
+            name: 'Solana',
+            nativeCurrency: solanaAssetId,
+            isEvm: false,
+            blockExplorers: {
+              urls: ['https://solscan.io'],
+              defaultIndex: 0,
+            },
+          },
+        },
+      },
+      MultichainBalancesController: {
+        balances: {
+          [solanaAccountId]: {
+            [solanaAssetId]: {
+              amount: '1.25',
+              unit: 'SOL',
+            },
+          },
+        },
+      },
+      MultichainAssetsController: {
+        accountsAssets: {
+          [solanaAccountId]: [solanaAssetId],
+        },
+        assetsMetadata: {
+          [solanaAssetId]: {
+            name: 'Solana',
+            symbol: 'SOL',
+            fungible: true,
+            units: [
+              {
+                name: 'Solana',
+                symbol: 'SOL',
+                decimals: 9,
+              },
+            ],
+          },
+        },
+      },
+      MultichainAssetsRatesController: {
+        conversionRates: {
+          [solanaAssetId]: {
+            rate: '150',
+            conversionTime: 0,
+          },
+        },
+        historicalPrices: {},
+      },
     },
   },
 };
@@ -194,5 +253,39 @@ describe('useGetFormattedTokensPerChain', () => {
 
     // Note, we are currently only aggregating for popular networks
     expect(result.current).toEqual(expectedResult);
+  });
+
+  it('should return formatted Solana token balances', () => {
+    const testAccount = {
+      id: solanaAccountId,
+      address: solanaAccountAddress,
+    };
+
+    const { result } = renderHookWithProvider(
+      () =>
+        useGetFormattedTokensPerChain([testAccount as InternalAccount], true, [
+          SolScope.Mainnet,
+        ]),
+      {
+        state: mockInitialState,
+      },
+    );
+
+    expect(result.current).toEqual({
+      [solanaAccountAddress]: [
+        {
+          chainId: SolScope.Mainnet,
+          tokensWithBalances: [
+            {
+              address: solanaAssetId,
+              symbol: 'SOL',
+              decimals: 9,
+              balance: '1.25',
+              tokenBalanceFiat: 187.5,
+            },
+          ],
+        },
+      ],
+    });
   });
 });

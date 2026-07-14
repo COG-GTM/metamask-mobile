@@ -2,6 +2,7 @@ import { useSelector } from 'react-redux';
 import { useEffect, useMemo, useRef } from 'react';
 import { MarketDataDetails, Token } from '@metamask/assets-controllers';
 import { InternalAccount } from '@metamask/keyring-internal-api';
+import { isCaipChainId, parseCaipAssetType } from '@metamask/utils';
 import { isEqual } from 'lodash';
 import { selectAllTokens } from '../../selectors/tokensController';
 import { selectAllTokenBalances } from '../../selectors/tokenBalancesController';
@@ -21,6 +22,13 @@ import {
 } from '../../selectors/currencyRateController';
 import { isTestNet } from '../../util/networks';
 import { selectShowFiatInTestnets } from '../../selectors/settings';
+import {
+  selectMultichainAssets,
+  selectMultichainAssetsMetadata,
+  selectMultichainAssetsRates,
+  selectMultichainBalances,
+} from '../../selectors/multichain/multichain';
+import { selectNonEvmNetworkConfigurationsByChainId } from '../../selectors/multichainNetworkController';
 interface AllTokens {
   [chainId: string]: {
     [tokenAddress: string]: Token[];
@@ -49,6 +57,12 @@ export interface MarketDataMapping {
   [chainId: string]: {
     [tokenAddress: string]: MarketDataDetails;
   };
+}
+
+interface TokenToFormat {
+  address: string;
+  symbol: string;
+  decimals: number;
 }
 
 /**
@@ -90,7 +104,6 @@ export const useGetFormattedTokensPerChain = (
   const stableAccounts = useStableReference(accounts);
   const stableAllChainIDs = useStableReference(allChainIDs);
 
-  // TODO: [SOLANA] Revisit this before shipping, `selectAllTokenBalances` selector needs to most likely be replaced by a non evm supported version
   const currentChainId = useSelector(selectChainId);
   const importedTokens: AllTokens = useSelector(selectAllTokens);
   const allNetworks: Record<
@@ -102,6 +115,13 @@ export const useGetFormattedTokensPerChain = (
   > = useSelector(selectNetworkConfigurations);
   const currentTokenBalances: TokenBalancesMapping = useSelector(
     selectAllTokenBalances,
+  );
+  const multichainBalances = useSelector(selectMultichainBalances);
+  const multichainAssets = useSelector(selectMultichainAssets);
+  const multichainAssetsMetadata = useSelector(selectMultichainAssetsMetadata);
+  const multichainAssetsRates = useSelector(selectMultichainAssetsRates);
+  const nonEvmNetworks = useSelector(
+    selectNonEvmNetworkConfigurationsByChainId,
   );
 
   const marketData = useSelector(selectTokenMarketPriceData);
@@ -125,15 +145,17 @@ export const useGetFormattedTokensPerChain = (
     function getTokenFiatBalances({
       tokens,
       accountAddress,
+      accountId,
       chainId,
       tokenExchangeRates,
       conversionRate,
       decimalsToShow,
     }: {
-      tokens: Token[];
+      tokens: TokenToFormat[];
       accountAddress: string;
+      accountId: string;
       chainId: string;
-      tokenExchangeRates: {
+      tokenExchangeRates?: {
         [tokenAddress: string]: { price: number };
       };
       conversionRate: number;
@@ -141,6 +163,29 @@ export const useGetFormattedTokensPerChain = (
     }) {
       const formattedTokens = [];
       for (const token of tokens) {
+        if (isCaipChainId(chainId)) {
+          const balance =
+            multichainBalances[accountId]?.[token.address]?.amount ?? '0';
+          const exchangeRate = Number(
+            multichainAssetsRates[token.address]?.rate ?? 0,
+          );
+          const tokenBalanceFiat = balanceToFiatNumber(
+            balance,
+            1,
+            exchangeRate,
+            decimalsToShow,
+          );
+
+          formattedTokens.push({
+            address: token.address,
+            symbol: token.symbol,
+            decimals: token.decimals,
+            balance,
+            tokenBalanceFiat,
+          });
+          continue;
+        }
+
         const hexBalance =
           currentTokenBalances[accountAddress]?.[chainId]?.[token.address] ??
           '0x0';
@@ -179,21 +224,44 @@ export const useGetFormattedTokensPerChain = (
     for (const account of stableAccounts) {
       const formattedPerNetwork = [];
       for (const singleChain of networksToFormat) {
+        const network = allNetworks[singleChain] ?? nonEvmNetworks[singleChain];
+
         // Skip if the network configuration doesn't exist
-        if (!allNetworks[singleChain]) {
+        if (!network) {
           continue;
         }
 
-        const tokens: Token[] =
-          importedTokens?.[singleChain]?.[account?.address] ?? [];
-        const matchedChainSymbol = allNetworks[singleChain].nativeCurrency;
-        const conversionRate =
-          currencyRates?.[matchedChainSymbol]?.conversionRate ?? 0;
-        const tokenExchangeRates = marketData?.[toHexadecimal(singleChain)];
+        const isNonEvmChain = isCaipChainId(singleChain);
+        const tokens: TokenToFormat[] = isNonEvmChain
+          ? (multichainAssets[account.id] ?? []).flatMap((assetId) => {
+              const { chainId } = parseCaipAssetType(assetId);
+              if (chainId !== singleChain) {
+                return [];
+              }
+
+              const balance = multichainBalances[account.id]?.[assetId];
+              const metadata = multichainAssetsMetadata[assetId];
+
+              return [
+                {
+                  address: assetId,
+                  symbol: metadata?.symbol ?? balance?.unit ?? '',
+                  decimals: metadata?.units[0]?.decimals ?? 0,
+                },
+              ];
+            })
+          : importedTokens?.[singleChain]?.[account.address] ?? [];
+        const conversionRate = isNonEvmChain
+          ? 1
+          : currencyRates?.[network.nativeCurrency]?.conversionRate ?? 0;
+        const tokenExchangeRates = isNonEvmChain
+          ? undefined
+          : marketData?.[toHexadecimal(singleChain)];
         const decimalsToShow = (currentCurrency === 'usd' && 2) || undefined;
         const tokensWithBalances = getTokenFiatBalances({
           tokens,
           accountAddress: account.address,
+          accountId: account.id,
           chainId: singleChain,
           tokenExchangeRates,
           conversionRate,
@@ -218,6 +286,11 @@ export const useGetFormattedTokensPerChain = (
     currencyRates,
     importedTokens,
     marketData,
+    multichainAssets,
+    multichainAssetsMetadata,
+    multichainAssetsRates,
+    multichainBalances,
+    nonEvmNetworks,
     shouldAggregateAcrossChains,
     showFiatOnTestnets,
   ]);
