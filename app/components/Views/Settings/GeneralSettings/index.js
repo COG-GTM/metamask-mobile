@@ -29,6 +29,9 @@ import PickComponent from '../../PickComponent';
 import { toDataUrl } from '../../../../util/blockies.js';
 import Jazzicon from 'react-native-jazzicon';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
+import { AppThemeKey } from '../../../../util/theme/models';
+import StyledButton from '../../../UI/StyledButton';
+import { GeneralViewSelectorsIDs } from '../../../../../e2e/selectors/Settings/GeneralView.selectors';
 import { selectCurrentCurrency } from '../../../../selectors/currencyRateController';
 import { withMetricsAwareness } from '../../../../components/hooks/useMetrics';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../../selectors/accountsController';
@@ -157,6 +160,9 @@ const createStyles = (colors) =>
     selected: {
       borderColor: colors.primary.default,
     },
+    marginTop: {
+      marginTop: 16,
+    },
   });
 
 /**
@@ -211,7 +217,7 @@ class Settings extends PureComponent {
     /**
      * App theme
      */
-    // appTheme: PropTypes.string,
+    appTheme: PropTypes.string,
     /**
      * Metrics injected by withMetricsAwareness HOC
      */
@@ -294,33 +300,43 @@ class Settings extends PureComponent {
     this.updateNavBar();
   };
 
-  // TODO - Reintroduce once we enable manual theme settings
-  // goToThemeSettings = () => {
-  //   const { navigation } = this.props;
-  //   navigation.navigate('ThemeSettings');
-  // };
+  goToThemeSettings = () => {
+    const { navigation } = this.props;
+    navigation.navigate('ThemeSettings');
+  };
 
-  // renderThemeSettingsSection = () => {
-  //   const { appTheme } = this.props;
-  //   const colors = this.context.colors || mockTheme.colors;
-  //   const styles = createStyles(colors);
+  renderThemeSettingsSection = () => {
+    const { appTheme } = this.props;
+    const colors = this.context.colors || mockTheme.colors;
+    const styles = createStyles(colors);
 
-  //   return (
-  //     <View style={styles.setting}>
-  //       <View>
-  //         <Text variant={TextVariant.BodyMD} color={TextColor.Alternative}>
-  //           {strings('app_settings.theme_title', {
-  //             theme: strings(`app_settings.theme_${AppThemeKey[appTheme]}`),
-  //           })}
-  //         </Text>
-  //         <Text style={styles.desc}>{strings('app_settings.theme_description')}</Text>
-  //         <StyledButton type="normal" onPress={this.goToThemeSettings} containerStyle={styles.marginTop}>
-  //           {strings('app_settings.theme_button_text')}
-  //         </StyledButton>
-  //       </View>
-  //     </View>
-  //   );
-  // };
+    return (
+      <View style={styles.setting}>
+        <View>
+          <Text variant={TextVariant.BodyLGMedium}>
+            {strings('app_settings.theme_title', {
+              theme: strings(`app_settings.theme_${AppThemeKey[appTheme]}`),
+            })}
+          </Text>
+          <Text
+            variant={TextVariant.BodyMD}
+            color={TextColor.Alternative}
+            style={styles.desc}
+          >
+            {strings('app_settings.theme_description')}
+          </Text>
+          <StyledButton
+            type="normal"
+            onPress={this.goToThemeSettings}
+            containerStyle={styles.marginTop}
+            testID={GeneralViewSelectorsIDs.THEME_SETTINGS_BUTTON}
+          >
+            {strings('app_settings.theme_button_text')}
+          </StyledButton>
+        </View>
+      </View>
+    );
+  };
 
   render() {
     const {
@@ -336,7 +352,10 @@ class Settings extends PureComponent {
     const styles = createStyles(colors);
 
     return (
-      <ScrollView style={styles.wrapper}>
+      <ScrollView
+        style={styles.wrapper}
+        testID={GeneralViewSelectorsIDs.GENERAL_SETTINGS_SCROLL}
+      >
         <View style={styles.inner}>
           <View style={[styles.setting, styles.firstSetting]}>
             <Text variant={TextVariant.BodyLGMedium}>
@@ -508,7 +527,7 @@ class Settings extends PureComponent {
               </View>
             </View>
           </View>
-          {/* {this.renderThemeSettingsSection()} */}
+          {this.renderThemeSettingsSection()}
         </View>
       </ScrollView>
     );
@@ -524,7 +543,7 @@ const mapStateToProps = (state) => ({
   useBlockieIcon: state.settings.useBlockieIcon,
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   hideZeroBalanceTokens: state.settings.hideZeroBalanceTokens,
-  // appTheme: state.user.appTheme,
+  appTheme: state.user.appTheme,
 });
 
 const mapDispatchToProps = (dispatch) => ({
