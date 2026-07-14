@@ -2,7 +2,11 @@ import { useSelector } from 'react-redux';
 import { useEffect, useMemo, useRef } from 'react';
 import { MarketDataDetails, Token } from '@metamask/assets-controllers';
 import { InternalAccount } from '@metamask/keyring-internal-api';
-import { isCaipChainId, parseCaipAssetType } from '@metamask/utils';
+import {
+  CaipAssetType,
+  isCaipChainId,
+  parseCaipAssetType,
+} from '@metamask/utils';
 import { isEqual } from 'lodash';
 import { selectAllTokens } from '../../selectors/tokensController';
 import { selectAllTokenBalances } from '../../selectors/tokenBalancesController';
@@ -167,7 +171,7 @@ export const useGetFormattedTokensPerChain = (
           const balance =
             multichainBalances[accountId]?.[token.address]?.amount ?? '0';
           const exchangeRate = Number(
-            multichainAssetsRates[token.address]?.rate ?? 0,
+            multichainAssetsRates[token.address as CaipAssetType]?.rate ?? 0,
           );
           const tokenBalanceFiat = balanceToFiatNumber(
             balance,
@@ -194,7 +198,7 @@ export const useGetFormattedTokensPerChain = (
           hexBalance,
           token.decimals,
         );
-        const exchangeRate = tokenExchangeRates?.[token.address]?.price;
+        const exchangeRate = tokenExchangeRates?.[token.address]?.price ?? 0;
 
         const tokenBalanceFiat = balanceToFiatNumber(
           decimalBalance,

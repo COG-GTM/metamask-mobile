@@ -153,10 +153,6 @@ const mockInitialState: DeepPartial<RootState> = {
             name: 'Solana',
             nativeCurrency: solanaAssetId,
             isEvm: false,
-            blockExplorers: {
-              urls: ['https://solscan.io'],
-              defaultIndex: 0,
-            },
           },
         },
       },
