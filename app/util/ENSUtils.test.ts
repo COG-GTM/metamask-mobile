@@ -1,4 +1,18 @@
-import { isDefaultAccountName, getCachedENSName, ENSCache } from './ENSUtils';
+import Engine from '../core/Engine';
+import {
+  doENSReverseLookup,
+  isDefaultAccountName,
+  getCachedENSName,
+  ENSCache,
+} from './ENSUtils';
+
+jest.mock('../core/Engine', () => ({
+  context: {
+    NetworkController: {
+      getProviderAndBlockTracker: jest.fn(),
+    },
+  },
+}));
 
 const mockAddress = '0x0000000000000000000000000000000000000001';
 
@@ -43,6 +57,39 @@ describe('getCachedENSName', () => {
     expect(getCachedENSName(mockAddress, chainId)).toBe(
       'cachedname.metamask.eth',
     );
+  });
+});
+
+describe('doENSReverseLookup', () => {
+  beforeEach(() => {
+    originalCacheContents = ENSCache.cache;
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+    ENSCache.cache = originalCacheContents;
+  });
+
+  it('returns a cached ENS name without calling the network', async () => {
+    const networkId = '1';
+    const chainId = '0x1';
+    const cachedName = 'cachedname.metamask.eth';
+    jest.spyOn(Date, 'now').mockReturnValue(123);
+    ENSCache.cache = {
+      [`${networkId}${mockAddress}`]: {
+        name: cachedName,
+        timestamp: Date.now(),
+      },
+    };
+
+    expect(getCachedENSName(mockAddress, chainId)).toBe(cachedName);
+    await expect(doENSReverseLookup(mockAddress, chainId)).resolves.toBe(
+      cachedName,
+    );
+    expect(
+      Engine.context.NetworkController.getProviderAndBlockTracker,
+    ).not.toHaveBeenCalled();
   });
 });
 
