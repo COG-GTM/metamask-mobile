@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
+import { GeneralViewSelectorsIDs } from '../../../../e2e/selectors/Settings/GeneralView.selectors';
 
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,7 +104,10 @@ const ThemeSettings = () => {
 
   return (
     <ReusableModal ref={modalRef} style={styles.screen}>
-      <View style={styles.sheet}>
+      <View
+        style={styles.sheet}
+        testID={GeneralViewSelectorsIDs.THEME_SETTINGS_SCREEN}
+      >
         <View style={styles.notch} />
         {renderThemeOptions()}
       </View>

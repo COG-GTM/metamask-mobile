@@ -9,6 +9,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Linking } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Login from '../../Views/Login';
+import ThemeSettings from '../../Views/ThemeSettings';
 import QRTabSwitcher from '../../Views/QRTabSwitcher';
 import DataCollectionModal from '../../Views/DataCollectionModal';
 import Onboarding from '../../Views/Onboarding';
@@ -722,6 +723,11 @@ const AppFlow = () => {
       <Stack.Screen
         name={Routes.CONFIRMATION_SWITCH_ACCOUNT_TYPE}
         component={ModalSwitchAccountType}
+      />
+      <Stack.Screen
+        name="ThemeSettings"
+        component={ThemeSettings}
+        options={{ animationEnabled: true }}
       />
     </Stack.Navigator>
   );
