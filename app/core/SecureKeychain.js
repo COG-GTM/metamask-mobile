@@ -99,17 +99,19 @@ export default {
         const keychainObject = await Keychain.getGenericPassword(
           defaultOptions,
         );
-        if (keychainObject.password) {
-          const encryptedPassword = keychainObject.password;
-          const decrypted = await instance.decryptPassword(encryptedPassword);
-          keychainObject.password = decrypted.password;
-          instance.isAuthenticating = false;
-          return keychainObject;
+        if (!keychainObject || !keychainObject.password) {
+          return null;
         }
-        instance.isAuthenticating = false;
+        const encryptedPassword = keychainObject.password;
+        const decrypted = await instance.decryptPassword(encryptedPassword);
+        keychainObject.password = decrypted.password;
+        return keychainObject;
       } catch (error) {
-        instance.isAuthenticating = false;
         throw new Error(error.message);
+      } finally {
+        if (instance) {
+          instance.isAuthenticating = false;
+        }
       }
     }
     return null;

@@ -200,3 +200,33 @@ describe('SecureKeychain - setGenericPassword', () => {
     });
   });
 });
+
+describe('SecureKeychain - getGenericPassword', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    SecureKeychain.init('test_salt');
+  });
+
+  it('returns null when Keychain.getGenericPassword returns false', async () => {
+    (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce(false);
+
+    await expect(SecureKeychain.getGenericPassword()).resolves.toBeNull();
+    expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+  });
+
+  it('returns null when Keychain.getGenericPassword returns null', async () => {
+    (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce(null);
+
+    await expect(SecureKeychain.getGenericPassword()).resolves.toBeNull();
+    expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+  });
+
+  it('resets isAuthenticating flag after an error', async () => {
+    (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
+      new Error('boom'),
+    );
+
+    await expect(SecureKeychain.getGenericPassword()).rejects.toThrow('boom');
+    expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+  });
+});
