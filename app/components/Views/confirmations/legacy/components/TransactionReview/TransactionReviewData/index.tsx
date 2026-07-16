@@ -44,6 +44,10 @@ interface OwnProps {
    * Height of custom gas and data modal
    */
   customGasHeight?: number;
+  /**
+   * Saves the height of TransactionReviewData
+   */
+  saveTransactionReviewDataHeight?: () => void;
 }
 
 interface StateProps {
