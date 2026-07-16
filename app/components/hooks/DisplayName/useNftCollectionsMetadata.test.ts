@@ -99,7 +99,7 @@ describe('useNftCollectionsMetadata', () => {
         name: 'TEST',
         symbol: 'TST',
         standard: SimulationTokenStandard.erc20,
-      });
+      } as unknown as Awaited<ReturnType<typeof getTokenDetails>>);
 
       renderHook(() =>
         useNftCollectionsMetadata([
