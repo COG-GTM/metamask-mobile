@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   Dimensions,
@@ -17,8 +16,22 @@ import { MetaMetricsEvents } from '../../../core/Analytics';
 import { fontStyles, colors as importedColors } from '../../../styles/common';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors, Shadows, Theme } from '../../../util/theme/models';
+import { IUseMetricsHook } from '../../hooks/useMetrics/useMetrics.types';
+import { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
 import withMetricsAwareness from '../../hooks/useMetrics/withMetricsAwareness';
 import TabThumbnail from './TabThumbnail';
+import { TabThumbnailProps } from './TabThumbnail/TabThumbnail.types';
+
+interface Tab {
+  url: string;
+  id: number;
+  image: string;
+}
+
+const TabThumbnailComponent = TabThumbnail as unknown as React.ComponentType<
+  TabThumbnailProps & { ref?: React.Ref<unknown> }
+>;
 
 const THUMB_VERTICAL_MARGIN = 15;
 const NAVBAR_SIZE = Device.isIphoneX() ? 88 : 64;
@@ -31,7 +44,7 @@ const ROWS_VISIBLE = Math.floor(
 );
 const TABS_VISIBLE = ROWS_VISIBLE;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Colors, shadows: Shadows) =>
   StyleSheet.create({
     noTabs: {
       flex: 1,
@@ -124,55 +137,59 @@ const createStyles = (colors, shadows) =>
  * PureComponent that wraps all the thumbnails
  * representing all the open tabs
  */
-class Tabs extends PureComponent {
-  static propTypes = {
-    /**
-     * Array of tabs
-     */
-    tabs: PropTypes.array,
-    /**
-     * ID of the active tab
-     */
-    activeTab: PropTypes.number,
-    /**
-     * Opens a new tab
-     */
-    newTab: PropTypes.func,
-    /**
-     * Closes a tab
-     */
-    closeTab: PropTypes.func,
-    /**
-     * Closes all tabs
-     */
-    closeAllTabs: PropTypes.func,
-    /**
-     * Dismiss the entire view
-     */
-    closeTabsView: PropTypes.func,
-    /**
-     * Switches to a specific tab
-     */
-    switchToTab: PropTypes.func,
-    /**
-     * Sets the current tab used for the animation
-     */
-    animateCurrentTab: PropTypes.func, // eslint-disable-line react/no-unused-prop-types
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object
-  };
+interface Props {
+  /**
+   * Array of tabs
+   */
+  tabs: Tab[];
+  /**
+   * ID of the active tab
+   */
+  activeTab?: number;
+  /**
+   * Opens a new tab
+   */
+  newTab: () => void;
+  /**
+   * Closes a tab
+   */
+  closeTab: (tab: Tab) => void;
+  /**
+   * Closes all tabs
+   */
+  closeAllTabs: () => void;
+  /**
+   * Dismiss the entire view
+   */
+  closeTabsView: () => void;
+  /**
+   * Switches to a specific tab
+   */
+  switchToTab: (tab: Tab) => void;
+  /**
+   * Sets the current tab used for the animation
+   */
+  animateCurrentTab?: (url: string, tab: Tab) => void;
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  metrics: IUseMetricsHook;
+}
 
-  thumbnails = {};
+interface State {
+  currentTab: Tab | null;
+}
 
-  state = {
+class Tabs extends PureComponent<Props, State> {
+  thumbnails: Record<number, React.RefObject<unknown>> = {};
+
+  state: State = {
     currentTab: null,
   };
 
-  scrollview = React.createRef();
+  scrollview = React.createRef<ScrollView>();
 
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
     this.createTabsRef(props.tabs);
   }
@@ -181,7 +198,7 @@ class Tabs extends PureComponent {
     if (this.props.tabs.length > TABS_VISIBLE) {
       // Find the selected index
       let index = 0;
-      this.props.tabs.forEach((tab, i) => {
+      this.props.tabs.forEach((tab: Tab, i: number) => {
         if (tab.id === this.props.activeTab) {
           index = i;
         }
@@ -201,25 +218,26 @@ class Tabs extends PureComponent {
     }
   }
 
-  createTabsRef(tabs) {
-    tabs.forEach((tab) => {
+  createTabsRef(tabs: Tab[]) {
+    tabs.forEach((tab: Tab) => {
       this.thumbnails[tab.id] = React.createRef();
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Props) {
     if (prevProps.tabs.length !== Object.keys(this.thumbnails).length) {
       this.createTabsRef(this.props.tabs);
     }
   }
 
-  onSwitch = async (tab) => {
+  onSwitch = async (tab: Tab) => {
     this.props.switchToTab(tab);
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const shadows = this.context.shadows || mockTheme.shadows;
+    const theme = this.context as unknown as Theme;
+    const colors = theme.colors || mockTheme.colors;
+    const shadows = theme.shadows || mockTheme.shadows;
     return createStyles(colors, shadows);
   };
 
@@ -238,7 +256,7 @@ class Tabs extends PureComponent {
       </View>
     );
   }
-  renderTabs(tabs, activeTab) {
+  renderTabs(tabs: Tab[], activeTab?: number) {
     const styles = this.getStyles();
 
     return (
@@ -247,9 +265,9 @@ class Tabs extends PureComponent {
         contentContainerStyle={styles.tabsContent}
         ref={this.scrollview}
       >
-        {tabs.map((tab) => (
+        {tabs.map((tab: Tab) => (
           // eslint-disable-next-line react/jsx-key
-          <TabThumbnail
+          <TabThumbnailComponent
             ref={this.thumbnails[tab.id]}
             key={tab.id}
             tab={tab}
@@ -268,7 +286,7 @@ class Tabs extends PureComponent {
     this.trackNewTabEvent(tabs.length);
   };
 
-  trackNewTabEvent = (tabsNumber) => {
+  trackNewTabEvent = (tabsNumber: number) => {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.BROWSER_NEW_TAB)
@@ -340,7 +358,7 @@ class Tabs extends PureComponent {
     return (
       <SafeAreaInsetsContext.Consumer>
         {(insets) => (
-          <View style={{ ...styles.tabsView, paddingTop: insets.top }}>
+          <View style={{ ...styles.tabsView, paddingTop: insets?.top }}>
             {tabs.length === 0
               ? this.renderNoTabs()
               : this.renderTabs(tabs, activeTab)}
@@ -354,4 +372,6 @@ class Tabs extends PureComponent {
 
 Tabs.contextType = ThemeContext;
 
-export default withMetricsAwareness(Tabs);
+export default withMetricsAwareness(
+  Tabs as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+);

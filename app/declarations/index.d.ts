@@ -8,9 +8,32 @@ declare module 'react-native-fade-in-image';
 
 declare module 'react-native-fast-crypto';
 
+declare module 'is-url';
+
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
+declare module 'react-native-progress/Bar' {
+  interface ProgressBarProps {
+    progress?: number;
+    color?: string;
+    width?: number | null;
+    height?: number;
+    borderRadius?: number;
+    borderWidth?: number;
+    useNativeDriver?: boolean;
+  }
+
+  const ProgressBar: React.ComponentType<ProgressBarProps>;
+  export default ProgressBar;
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -295,6 +318,35 @@ declare module '@metamask/react-native-actionsheet' {
 }
 
 declare module '@metamask/react-native-search-api';
+
+declare module '@metamask/react-native-button' {
+  interface ButtonProps {
+    testID?: string;
+    accessibilityRole?: AccessibilityRole;
+    disabled?: boolean;
+    styleDisabled?: StyleProp<TextStyle> | null;
+    disabledContainerStyle?: StyleProp<ViewStyle> | null;
+    onPress?: (event: GestureResponderEvent) => void;
+    onPressOut?: (event: GestureResponderEvent) => void;
+    style?: StyleProp<TextStyle>;
+    containerStyle?: StyleProp<ViewStyle>;
+    children?: React.ReactNode;
+  }
+
+  const Button: React.ComponentType<ButtonProps>;
+  export default Button;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  const coalesceNonElementChildren: (
+    children: React.ReactNode,
+    coalesceNodes: (
+      nodes: React.ReactNode[],
+      index: number,
+    ) => React.ReactNode,
+  ) => React.ReactNode[];
+  export default coalesceNonElementChildren;
+}
 
 /**
  * @sentry/react-native types for v^6.10.0
