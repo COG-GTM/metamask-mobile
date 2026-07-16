@@ -1,5 +1,6 @@
 import React from 'react';
 import TransactionReviewEIP1559 from '.';
+import { RootState } from '../../../../../../../reducers';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
 import renderWithProvider, {
   renderHookWithProvider,
@@ -77,7 +78,7 @@ describe('TransactionReviewEIP1559', () => {
   it('should render correctly', () => {
     const wrapper = renderWithProvider(
       <TransactionReviewEIP1559 {...transactionReview} />,
-      { state: initialState },
+      { state: initialState as unknown as RootState },
     );
 
     expect(wrapper).toMatchSnapshot();
@@ -94,7 +95,7 @@ describe('TransactionReviewEIP1559', () => {
           updateTransactionState: updateTransactionStateMock,
         }),
       {
-        state: initialState,
+        state: initialState as unknown as RootState,
       },
     );
 

@@ -5,6 +5,10 @@ import { EditGasViewSelectorsIDs } from '../../../../../../../../e2e/selectors/S
 import { strings } from '../../../../../../../../locales/i18n';
 import AppConstants from '../../../../../../../core/AppConstants';
 import { useGasTransaction } from '../../../../../../../core/GasPolling/GasPolling';
+import {
+  GasTransactionProps,
+  UseGasTransactionProps,
+} from '../../../../../../../core/GasPolling/types';
 import Device from '../../../../../../../util/device';
 import { isMainnetByChainId } from '../../../../../../../util/networks';
 import {
@@ -19,6 +23,44 @@ import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
+
+type GasTransaction = GasTransactionProps & {
+  renderableTotalMinNative: string;
+  renderableTotalMinConversion: string;
+  renderableTotalMaxNative: string;
+  transactionFee: string;
+  transactionFeeFiat: string;
+  transactionTotalAmount: string;
+  transactionTotalAmountFiat: string;
+};
+
+interface TransactionReviewEIP1559UpdateProps {
+  primaryCurrency?: string;
+  chainId?: string;
+  onEdit?: () => void;
+  hideTotal?: boolean;
+  noMargin?: boolean;
+  originWarning?: boolean | string;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  gasEstimationReady?: boolean;
+  legacy?: boolean;
+  gasSelected?: string | null;
+  gasObject?: {
+    suggestedMaxFeePerGas?: string;
+    suggestedMaxPriorityFeePerGas?: string;
+    suggestedGasLimit?: string;
+  };
+  gasObjectLegacy?: {
+    legacyGasLimit?: string;
+    suggestedGasPrice?: string;
+  };
+  onlyGas?: boolean;
+  updateTransactionState?: (gasTransaction: GasTransaction) => void;
+  multiLayerL1FeeTotal?: string;
+}
 
 const TransactionReviewEIP1559Update = ({
   primaryCurrency,
@@ -39,7 +81,7 @@ const TransactionReviewEIP1559Update = ({
   onlyGas,
   updateTransactionState,
   multiLayerL1FeeTotal,
-}) => {
+}: TransactionReviewEIP1559UpdateProps) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -60,10 +102,10 @@ const TransactionReviewEIP1559Update = ({
     onlyGas: !!onlyGas,
     gasSelected,
     legacy: !!legacy,
-    gasObject,
+    gasObject: gasObject as UseGasTransactionProps['gasObject'],
     gasObjectLegacy,
     multiLayerL1FeeTotal,
-  });
+  }) as unknown as GasTransaction;
 
   const {
     gasFeeMaxNative,
@@ -86,7 +128,7 @@ const TransactionReviewEIP1559Update = ({
 
   useEffect(() => {
     if (gasEstimationReady) {
-      updateTransactionState(gasTransaction);
+      updateTransactionState?.(gasTransaction);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -102,13 +144,16 @@ const TransactionReviewEIP1559Update = ({
   );
 
   const edit = useCallback(() => {
-    if (!isAnimating) onEdit();
+    if (!isAnimating) onEdit?.();
   }, [isAnimating, onEdit]);
 
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
-  const switchNativeCurrencyDisplayOptions = (nativeValue, fiatValue) => {
+  const switchNativeCurrencyDisplayOptions = (
+    nativeValue: string,
+    fiatValue: string,
+  ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
   };

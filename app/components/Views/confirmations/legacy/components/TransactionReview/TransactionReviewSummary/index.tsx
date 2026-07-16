@@ -1,13 +1,44 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, Text, View } from 'react-native';
 import { fontStyles } from '../../../../../../../styles/common';
 import { strings } from '../../../../../../../../locales/i18n';
 import WarningMessage from '../../../SendFlow/WarningMessage';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
+import { Colors, Theme } from '../../../../../../../util/theme/models';
 import { isTestNet } from '../../../../../../../util/networks';
 
-const createStyles = (colors) =>
+interface TransactionReviewSummaryProps {
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate?: number;
+  /**
+   * Transaction corresponding action key
+   */
+  actionKey?: string;
+  /**
+   * Transaction amount in ETH before gas
+   */
+  assetAmount?: string;
+  /**
+   * Transaction amount in fiat before gas
+   */
+  fiatValue?: string;
+  /**
+   * Approve type transaction or not
+   */
+  approveTransaction?: boolean;
+  /**
+   * ETH or fiat, depending on user setting
+   */
+  primaryCurrency?: string;
+  /**
+   * Network provider chain id
+   */
+  chainId?: string;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     confirmBadge: {
       ...fontStyles.normal,
@@ -62,37 +93,8 @@ const createStyles = (colors) =>
 /**
  * PureComponent that supports reviewing transaction summary
  */
-class TransactionReviewSummary extends PureComponent {
-  static propTypes = {
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Transaction corresponding action key
-     */
-    actionKey: PropTypes.string,
-    /**
-     * Transaction amount in ETH before gas
-     */
-    assetAmount: PropTypes.string,
-    /**
-     * Transaction amount in fiat before gas
-     */
-    fiatValue: PropTypes.string,
-    /**
-     * Approve type transaction or not
-     */
-    approveTransaction: PropTypes.bool,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Network provider chain id
-     */
-    chainId: PropTypes.string,
-  };
+class TransactionReviewSummary extends PureComponent<TransactionReviewSummaryProps> {
+  static contextType = ThemeContext;
 
   renderWarning = () => (
     <Text>{`${strings('transaction.approve_warning')} ${
@@ -110,9 +112,10 @@ class TransactionReviewSummary extends PureComponent {
       primaryCurrency,
       chainId,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const isTestNetResult = isTestNet(chainId);
+    const isTestNetResult = isTestNet(chainId as string);
 
     return (
       <View>
@@ -157,7 +160,5 @@ class TransactionReviewSummary extends PureComponent {
     );
   };
 }
-
-TransactionReviewSummary.contextType = ThemeContext;
 
 export default TransactionReviewSummary;
