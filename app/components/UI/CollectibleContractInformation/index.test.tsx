@@ -7,6 +7,9 @@ import { backgroundState } from '../../../util/test/initial-root-state';
 import { mockTheme, ThemeContext } from '../../../util/theme';
 import { fireEvent, render } from '@testing-library/react-native';
 import { InteractionManager } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ParamListBase } from '@react-navigation/native';
+import { NftContract } from '@metamask/assets-controllers';
 
 jest.mock('react-native', () => ({
   InteractionManager: {
@@ -26,7 +29,7 @@ const initialState = {
 const navigationMock = {
   navigate: jest.fn(),
   push: jest.fn(),
-};
+} as unknown as StackNavigationProp<ParamListBase>;
 
 const onCloseMock = jest.fn();
 
@@ -39,13 +42,15 @@ describe('CollectibleContractInformation', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <CollectibleContractInformation
-          collectibleContract={{
-            name: 'name',
-            symbol: 'symbol',
-            description: 'description',
-            address: '0x123',
-            totalSupply: 1,
-          }}
+          collectibleContract={
+            {
+              name: 'name',
+              symbol: 'symbol',
+              description: 'description',
+              address: '0x123',
+              totalSupply: 1,
+            } as unknown as NftContract
+          }
         />
       </Provider>,
     );
@@ -59,7 +64,7 @@ describe('CollectibleContractInformation', () => {
       description: 'description',
       address: '0x123',
       totalSupply: 1,
-    };
+    } as unknown as NftContract;
 
     const { getByTestId } = render(
       <Provider store={store}>
@@ -86,7 +91,7 @@ describe('CollectibleContractInformation', () => {
       description: 'description',
       address: '0x123',
       totalSupply: 1,
-    };
+    } as unknown as NftContract;
 
     const wrapper = render(
       <Provider store={store}>

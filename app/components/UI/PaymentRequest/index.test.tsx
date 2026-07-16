@@ -129,8 +129,16 @@ const renderComponent = (props = {}) =>
     <Provider store={store}>
       <ThemeContext.Provider value={mockTheme}>
         <PaymentRequest
-          navigation={mockNavigation}
-          route={mockRoute}
+          navigation={
+            mockNavigation as unknown as React.ComponentProps<
+              typeof PaymentRequest
+            >['navigation']
+          }
+          route={
+            mockRoute as unknown as React.ComponentProps<
+              typeof PaymentRequest
+            >['route']
+          }
           {...props}
         />
       </ThemeContext.Provider>

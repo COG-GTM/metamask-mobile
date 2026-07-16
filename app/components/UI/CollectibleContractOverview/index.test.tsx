@@ -9,13 +9,16 @@ import { mockNetworkState } from '../../../util/test/network';
 import { fireEvent, render } from '@testing-library/react-native';
 import { TokenOverviewSelectorsIDs } from '../../../../e2e/selectors/wallet/TokenOverview.selectors';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ParamListBase } from '@react-navigation/native';
+import { NftContract } from '@metamask/assets-controllers';
 
 const mockStore = configureMockStore();
 
 const navigationMock = {
   navigate: jest.fn(),
   push: jest.fn(),
-};
+} as unknown as StackNavigationProp<ParamListBase>;
 
 jest.mock('@react-navigation/native', () => {
   const actualNav = jest.requireActual('@react-navigation/native');
@@ -79,13 +82,15 @@ describe('CollectibleContractOverview', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <CollectibleContractOverview
-          collectibleContract={{
-            name: 'name',
-            symbol: 'symbol',
-            description: 'description',
-            address: '',
-            totalSupply: 1,
-          }}
+          collectibleContract={
+            {
+              name: 'name',
+              symbol: 'symbol',
+              description: 'description',
+              address: '',
+              totalSupply: 1,
+            } as unknown as NftContract
+          }
         />
       </Provider>,
     );
@@ -97,13 +102,15 @@ describe('CollectibleContractOverview', () => {
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
           <CollectibleContractOverview
-            collectibleContract={{
-              name: 'name',
-              symbol: 'symbol',
-              description: 'description',
-              address: '0x72b1FDb6443338A158DeC2FbF411B71123456789',
-              totalSupply: 1,
-            }}
+            collectibleContract={
+              {
+                name: 'name',
+                symbol: 'symbol',
+                description: 'description',
+                address: '0x72b1FDb6443338A158DeC2FbF411B71123456789',
+                totalSupply: 1,
+              } as unknown as NftContract
+            }
             navigation={navigationMock}
           />
         </ThemeContext.Provider>
@@ -123,13 +130,15 @@ describe('CollectibleContractOverview', () => {
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
           <CollectibleContractOverview
-            collectibleContract={{
-              name: 'name',
-              symbol: 'symbol',
-              description: 'description',
-              address: '0x72b1FDb644338A158DeC2FbF411B71123456789',
-              totalSupply: 1,
-            }}
+            collectibleContract={
+              {
+                name: 'name',
+                symbol: 'symbol',
+                description: 'description',
+                address: '0x72b1FDb644338A158DeC2FbF411B71123456789',
+                totalSupply: 1,
+              } as unknown as NftContract
+            }
             navigation={navigationMock}
           />
         </ThemeContext.Provider>

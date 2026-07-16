@@ -1,5 +1,5 @@
 import React from 'react';
-import CollectibleOverview from './';
+import CollectibleOverview, { CollectibleOverviewAsset } from './';
 import configureMockStore from 'redux-mock-store';
 import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
@@ -21,13 +21,15 @@ describe('CollectibleOverview', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <CollectibleOverview
-          collectible={{
-            name: 'Leopard',
-            tokenId: 6904,
-            address: '0x06012c8cf97BEaD5deAe237070F9587f8E7A266d',
-            externalLink: 'https://nft.example.com',
-            tradable: true,
-          }}
+          collectible={
+            {
+              name: 'Leopard',
+              tokenId: 6904,
+              address: '0x06012c8cf97BEaD5deAe237070F9587f8E7A266d',
+              externalLink: 'https://nft.example.com',
+              tradable: true,
+            } as unknown as CollectibleOverviewAsset
+          }
         />
       </Provider>,
     );
