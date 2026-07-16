@@ -19,7 +19,7 @@ describe('goToAddEvmToken', () => {
   const mockSetIsAddTokenEnabled = jest.fn();
   const mockNavigation = { push: jest.fn() };
   const mockTrackEvent = jest.fn();
-  const mockGetDecimalChainId = jest.fn(() => 1);
+  const mockGetDecimalChainId = jest.fn(() => '1');
   const mockCreateEventBuilder = jest.fn(
     () =>
       ({

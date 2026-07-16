@@ -8,6 +8,10 @@ import {
 import { formatCurrency } from './confirm-tx.js';
 import { addHexPrefix } from './number';
 
+/**
+ * @param {string} hexValue
+ * @returns {string | number}
+ */
 export function hexToDecimal(hexValue) {
   return conversionUtil(hexValue, {
     fromNumericBase: 'hex',
@@ -51,6 +55,16 @@ export function getEthConversionFromWeiHex({
   return nonZeroDenomination;
 }
 
+/**
+ * @param {object} options
+ * @param {string} options.value
+ * @param {string} [options.fromCurrency]
+ * @param {string} [options.toCurrency]
+ * @param {number | import('bignumber.js').default} [options.conversionRate]
+ * @param {number} [options.numberOfDecimals]
+ * @param {string} [options.toDenomination]
+ * @returns {string | number}
+ */
 export function getValueFromWeiHex({
   value,
   fromCurrency = ETH,
@@ -123,6 +137,9 @@ export function decEthToConvertedCurrency(
   });
 }
 
+/**
+ * @returns {string}
+ */
 export function decGWEIToHexWEI(decGWEI) {
   return conversionUtil(decGWEI, {
     fromNumericBase: 'dec',

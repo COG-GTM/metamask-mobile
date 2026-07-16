@@ -45,7 +45,9 @@ const QRSigningModal = ({
   const dispatch = useDispatch();
   const styles = createStyles(colors);
   const [isModalCompleteShow, setModalCompleteShow] = useState(false);
-  const { from } = useSelector(getNormalizedTxState);
+  const { from } = (useSelector(getNormalizedTxState) ?? {}) as {
+    from: string;
+  };
 
   const handleCancel = () => {
     onCancel?.();
