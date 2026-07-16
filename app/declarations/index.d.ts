@@ -296,6 +296,48 @@ declare module '@metamask/react-native-actionsheet' {
 
 declare module '@metamask/react-native-search-api';
 
+declare module 'number-to-bn' {
+  type BN = import('bnjs4').default;
+
+  const numberToBN: (value: number | string | BN) => BN;
+  export default numberToBN;
+}
+
+declare module 'humanize-duration' {
+  const humanizeDuration: (
+    ms: number,
+    options?: Record<string, unknown>,
+  ) => string;
+  export default humanizeDuration;
+}
+
+declare module 'ethereumjs-abi' {
+  export function rawEncode(
+    types: string[],
+    values: unknown[],
+  ): Buffer;
+  export function rawDecode(types: string[], data: Buffer): unknown[];
+}
+
+declare module '@metamask/ethjs-unit' {
+  type BN = import('bnjs4').default;
+
+  type EthjsNumericValue = number | string | BN;
+
+  const convert: {
+    unitMap: Record<string, string>;
+    getValueOfUnit: (unit?: string) => BN;
+    numberToString: (arg: EthjsNumericValue) => string;
+    fromWei: (
+      weiInput: EthjsNumericValue,
+      unit: string,
+      optionsInput?: { pad?: boolean; commify?: boolean },
+    ) => string;
+    toWei: (etherInput: EthjsNumericValue, unit: string) => BN;
+  };
+  export default convert;
+}
+
 /**
  * @sentry/react-native types for v^6.10.0
  * Types are overridden to ensure captureException receives an Error type for more reliable stack traces
