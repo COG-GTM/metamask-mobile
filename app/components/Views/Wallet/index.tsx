@@ -72,6 +72,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import {
   selectConversionRate,
   selectCurrentCurrency,
@@ -721,7 +722,12 @@ const Wallet = ({
       <ScrollableTabView renderTabBar={renderTabBar} onChangeTab={onChangeTab}>
         <Tokens {...tokensTabProps} />
         {isEvmSelected && (
-          <CollectibleContracts {...collectibleContractsTabProps} />
+          <CollectibleContracts
+            {...collectibleContractsTabProps}
+            navigation={
+              collectibleContractsTabProps.navigation as unknown as StackNavigationProp<ParamListBase>
+            }
+          />
         )}
       </ScrollableTabView>
     );

@@ -10,10 +10,9 @@ import { toChecksumAddress } from 'ethereumjs-util';
 import { useTheme } from '../../../../util/theme';
 import { selectTokenList } from '../../../../selectors/tokenListController';
 import { ImportTokenViewSelectorsIDs } from '../../../../../e2e/selectors/wallet/ImportTokenView.selectors';
+import { Theme } from '../../../../util/theme/models';
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const createStyles = (colors: any) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     item: {
       borderWidth: 1,
@@ -28,9 +27,7 @@ const createStyles = (colors: any) =>
       alignItems: 'flex-start',
     },
     text: {
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ...(fontStyles.normal as any),
+      ...fontStyles.normal,
       color: colors.text.default,
     },
     textSymbol: {
@@ -38,9 +35,7 @@ const createStyles = (colors: any) =>
       paddingBottom: 4,
       fontSize: 16,
       color: colors.text.default,
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any,
+    },
     assetInfo: {
       flex: 1,
       flexDirection: 'column',
@@ -58,23 +53,34 @@ const createStyles = (colors: any) =>
     },
   });
 
+interface AssetListAsset {
+  address?: string;
+  symbol?: string;
+  name?: string;
+  isETH?: boolean;
+}
+
 interface Props {
   /**
    * Array of assets objects returned from the search
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  searchResults: any;
+  searchResults: AssetListAsset[];
   /**
    * Callback triggered when a token is selected
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleSelectAsset: any;
+  handleSelectAsset: (asset: AssetListAsset) => void;
   /**
    * Message string to display when searchResults is empty
    */
-  emptyMessage: string;
+  emptyMessage?: string;
+  /**
+   * Asset currently selected
+   */
+  selectedAsset?: unknown;
+  /**
+   * Current search query string
+   */
+  searchQuery?: string;
 }
 
 const AssetList = ({
@@ -92,11 +98,9 @@ const AssetList = ({
    * @param {object} asset - Asset to generate the logo to render
    */
   const renderLogo = useCallback(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (asset: any) => {
+    (asset: AssetListAsset) => {
       const { address, isETH } = asset;
-      if (isETH) {
+      if (isETH || !address) {
         return <NetworkMainAssetLogo big style={styles.ethLogo} />;
       }
       const token =
@@ -114,9 +118,7 @@ const AssetList = ({
   return (
     <View testID={ImportTokenViewSelectorsIDs.ASSET_SEARCH_CONTAINER}>
       {
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        searchResults.map((_: any, i: number) => {
+        searchResults.map((_: AssetListAsset, i: number) => {
           const { symbol, name } = searchResults[i] || {};
           return (
             <StyledButton
