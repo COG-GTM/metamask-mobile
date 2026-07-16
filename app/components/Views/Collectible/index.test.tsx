@@ -42,10 +42,12 @@ jest.mock('@react-navigation/native', () => {
   };
 });
 
+type CollectibleProps = React.ComponentProps<typeof Collectible>;
+
 const navigationMock = {
   navigate: jest.fn(),
   push: jest.fn(),
-};
+} as unknown as CollectibleProps['navigation'];
 
 const defaultCollectibleContract = {
   address: '0x1',
@@ -61,9 +63,12 @@ jest.mock('../../hooks/useNftDetectionChainIds', () => ({
 
 describe('Collectible', () => {
   it('should render correctly', () => {
+    const renderProps = {
+      route: { params: { address: '0x1' } },
+    } as unknown as CollectibleProps;
     const wrapper = shallow(
       <Provider store={store}>
-        <Collectible route={{ params: { address: '0x1' } }} />
+        <Collectible {...renderProps} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
@@ -82,7 +87,11 @@ describe('Collectible', () => {
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
             navigation={navigationMock}
-            route={{ params: defaultCollectibleContract }}
+            route={
+              {
+                params: defaultCollectibleContract,
+              } as unknown as CollectibleProps['route']
+            }
           />
         </ThemeContext.Provider>
       </Provider>,
@@ -99,7 +108,11 @@ describe('Collectible', () => {
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
             navigation={navigationMock}
-            route={{ params: defaultCollectibleContract }}
+            route={
+              {
+                params: defaultCollectibleContract,
+              } as unknown as CollectibleProps['route']
+            }
           />
         </ThemeContext.Provider>
       </Provider>,

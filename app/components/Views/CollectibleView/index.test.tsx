@@ -35,7 +35,9 @@ describe('CollectibleView Snapshot', () => {
     const { toJSON } = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <CollectibleView
+            {...(props as unknown as React.ComponentProps<typeof CollectibleView>)}
+          />
         </ThemeContext.Provider>
       </Provider>,
     );
@@ -60,7 +62,9 @@ describe('CollectibleView Snapshot', () => {
     const wrapper = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <CollectibleView
+            {...(props as unknown as React.ComponentProps<typeof CollectibleView>)}
+          />
         </ThemeContext.Provider>
       </Provider>,
     );
