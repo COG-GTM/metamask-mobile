@@ -80,7 +80,7 @@ describe('TransactionHeader', () => {
         {...defaultProps}
         currentPageInformation={{
           ...defaultProps.currentPageInformation,
-          origin,
+          origin: origin as string,
         }}
       />,
       { state: mockInitialState },
