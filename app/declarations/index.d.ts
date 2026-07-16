@@ -24,15 +24,56 @@ declare module '*.svg' {
   export default content;
 }
 
-declare module 'images/image-icons' {
-  const content: { [key: string]: ImageSourcePropType };
-  export default content;
-}
-
 declare module '*.png' {
   import { ImageSourcePropType } from 'react-native';
   const content: ImageSourcePropType;
   export default content;
+}
+
+declare module 'eth-ens-namehash' {
+  const namehash: {
+    hash(name: string): string;
+    normalize(name: string): string;
+  };
+  export default namehash;
+}
+
+declare module '@metamask/ethjs-query' {
+  interface Eth {
+    [method: string]: (...args: unknown[]) => Promise<unknown>;
+  }
+  const Eth: new (provider: unknown) => Eth;
+  export default Eth;
+}
+
+declare module '@metamask/ethjs-contract' {
+  interface ContractInstance {
+    [method: string]: (...args: unknown[]) => Promise<unknown[]>;
+  }
+  interface ContractAtFactory {
+    at(address: string): ContractInstance;
+  }
+  type ContractBuilder = (abi: unknown) => ContractAtFactory;
+  const EthContract: new (eth: unknown) => ContractBuilder;
+  export default EthContract;
+}
+
+declare module 'content-hash' {
+  const contentHash: {
+    decode(contentHash: string): string;
+    getCodec(contentHash: string): string;
+    encode(codec: string, value: string): string;
+  };
+  export default contentHash;
+}
+
+declare module 'multihashes' {
+  const multihashes: {
+    fromHexString(hex: string): Uint8Array;
+    toB58String(hash: Uint8Array): string;
+    encode(buffer: Uint8Array, code: string | number): Uint8Array;
+  };
+  export default multihashes;
 }
 
 declare module '@react-native-community/checkbox' {
