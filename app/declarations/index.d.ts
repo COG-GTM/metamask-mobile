@@ -284,6 +284,11 @@ declare module './util/termsOfUse/termsOfUseContent.ts' {
   export default content;
 }
 
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
 declare module 'react-native-emoji' {
   const emoji: React.JSX;
   export default emoji;
@@ -295,6 +300,8 @@ declare module '@metamask/react-native-actionsheet' {
 }
 
 declare module '@metamask/react-native-search-api';
+
+declare module '@metamask/ethjs-query';
 
 /**
  * @sentry/react-native types for v^6.10.0
