@@ -296,6 +296,33 @@ declare module '@metamask/react-native-actionsheet' {
 
 declare module '@metamask/react-native-search-api';
 
+declare module 'zxcvbn' {
+  interface ZXCVBNResult {
+    score: number;
+  }
+  const zxcvbn: (password: string, userInputs?: string[]) => ZXCVBNResult;
+  export default zxcvbn;
+}
+
+declare module '@metamask/react-native-button' {
+  // eslint-disable-next-line no-duplicate-imports
+  import { StyleProp, TextStyle, ViewStyle } from 'react-native';
+
+  interface ReactNativeButtonProps {
+    style?: StyleProp<TextStyle & ViewStyle>;
+    styleDisabled?: StyleProp<TextStyle>;
+    childGroupStyle?: StyleProp<ViewStyle>;
+    disabled?: boolean;
+    onPress?: () => void;
+    onLongPress?: () => void;
+    testID?: string;
+    children?: React.ReactNode;
+  }
+
+  const Button: ComponentType<ReactNativeButtonProps>;
+  export default Button;
+}
+
 /**
  * @sentry/react-native types for v^6.10.0
  * Types are overridden to ensure captureException receives an Error type for more reliable stack traces
