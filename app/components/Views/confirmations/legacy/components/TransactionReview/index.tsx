@@ -62,7 +62,10 @@ import QRSigningDetails from '../../../../../UI/QRHardware/QRSigningDetails';
 import withQRHardwareAwareness from '../../../../../UI/QRHardware/withQRHardwareAwareness';
 import SimulationDetails from '../../../../../UI/SimulationDetails/SimulationDetails';
 import TransactionHeader from '../../../../../UI/TransactionHeader';
-import { ResultType } from '../BlockaidBanner/BlockaidBanner.types';
+import {
+  ResultType,
+  SecurityAlertResponse,
+} from '../BlockaidBanner/BlockaidBanner.types';
 import TransactionBlockaidBanner from '../TransactionBlockaidBanner/TransactionBlockaidBanner';
 import TransactionReviewData from './TransactionReviewData';
 import TransactionReviewInformation from './TransactionReviewInformation';
@@ -75,7 +78,6 @@ import { Colors, Theme } from '../../../../../../util/theme/models';
 import { RootState } from '../../../../../../reducers';
 import { IUseMetricsHook } from '../../../../../../components/hooks/useMetrics/useMetrics.types';
 import { IQRState } from '../../../../../UI/QRHardware/types';
-import { SecurityAlertResponse } from '../BlockaidBanner/BlockaidBanner.types';
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
 let intervalIdForEstimatedL1Fee: ReturnType<typeof setInterval>;
@@ -305,7 +307,7 @@ class TransactionReview extends PureComponent<
           ({ address }) => address === safeToChecksumAddress(to as string),
         );
       }
-      const symbol = (contract && contract.symbol) || 'ERC20';
+      const symbol = contract?.symbol || 'ERC20';
       assetAmount = `${decodeTransferData('transfer', data as string)[1]} ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();

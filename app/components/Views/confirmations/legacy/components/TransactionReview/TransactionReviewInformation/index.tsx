@@ -38,8 +38,8 @@ import {
 } from '../../../../../../../util/networks';
 import CustomNonceModal from '../../../SendFlow/components/CustomNonceModal';
 import {
-  setNonce,
-  setProposedNonce,
+  setNonce as setNonceAction,
+  setProposedNonce as setProposedNonceAction,
 } from '../../../../../../../actions/transaction';
 import TransactionReviewEIP1559 from '../TransactionReviewEIP1559';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
@@ -338,7 +338,7 @@ class TransactionReviewInformation extends PureComponent<
   };
 
   getTotalFiat = (
-    asset: TransactionAsset,
+    _asset: TransactionAsset,
     totalGas: BN,
     conversionRate: number,
     exchangeRate: number,
@@ -834,8 +834,8 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setNonce: (nonce: number) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
+  setNonce: (nonce: number) => dispatch(setNonceAction(nonce)),
+  setProposedNonce: (nonce: number) => dispatch(setProposedNonceAction(nonce)),
 });
 
 export default connect(

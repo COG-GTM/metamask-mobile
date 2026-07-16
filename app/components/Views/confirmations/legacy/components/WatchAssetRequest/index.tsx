@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, InteractionManager } from 'react-native';
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import { useSelector } from 'react-redux';
 import { fontStyles } from '../../../../../../styles/common';
 import { strings } from '../../../../../../../locales/i18n';
@@ -149,13 +149,16 @@ const WatchAssetRequest = ({
   const chainId = useSelector(selectEvmChainId);
   const balanceWithSymbol = error
     ? strings('transaction.failed')
-    : `${renderFromTokenMinimalUnit(balance!, asset.decimals)} ${asset.symbol}`;
+    : `${renderFromTokenMinimalUnit(
+        balance as unknown as string,
+        asset.decimals,
+      )} ${asset.symbol}`;
 
   const activeTabUrl = useSelector(getActiveTabUrl, isEqual);
 
   const getTokenAddedAnalyticsParams = () => {
     try {
-      const url = new URL(currentPageInformation?.url as string);
+      const url = new URLParse(currentPageInformation?.url as string);
 
       return {
         token_address: asset?.address,

@@ -1,3 +1,4 @@
+import React from 'react';
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { cloneDeep } from 'lodash';
 import ApproveTransactionModal from '.';
@@ -5,6 +6,12 @@ import { getTokenDetails } from '../../../../../../util/address';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
 import { renderScreen } from '../../../../../../util/test/renderWithProvider';
 import { SET_APPROVAL_FOR_ALL_SIGNATURE } from '../../../../../../util/transactions';
+import { RootState } from '../../../../../../reducers';
+
+const ApproveTransactionModalComponent =
+  ApproveTransactionModal as unknown as React.ComponentType<{
+    onConfirm?: () => void;
+  }>;
 
 jest.mock('../../../../../../util/address', () => ({
   ...jest.requireActual('../../../../../../util/address'),
@@ -106,21 +113,29 @@ const initialState = {
 describe('ApproveTransactionModal', () => {
   it('render matches snapshot', () => {
     const { toJSON } = renderScreen(
-      ApproveTransactionModal,
+      ApproveTransactionModalComponent,
       { name: 'Approve' },
-      { state: initialState },
+      { state: initialState as unknown as RootState },
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('Approve button is enabled when standard is defined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = getTokenDetails as jest.Mock;
     mockGetTokenDetails.mockReturnValue({
       standard: 'ERC20',
     });
     const state = cloneDeep(initialState);
-    state.engine.backgroundState.AccountTrackerController.accounts = [];
-    state.engine.backgroundState.TokenListController = {
+    (
+      state.engine.backgroundState.AccountTrackerController as unknown as {
+        accounts: unknown[];
+      }
+    ).accounts = [];
+    (
+      state.engine.backgroundState as unknown as {
+        TokenListController: unknown;
+      }
+    ).TokenListController = {
       tokensChainsCache: {
         '0x1': {
           data: [{
@@ -161,10 +176,10 @@ describe('ApproveTransactionModal', () => {
     const { getByTestId } = renderScreen(
       () => (
         // eslint-disable-next-line react/react-in-jsx-scope
-        <ApproveTransactionModal onConfirm={mockOnConfirm} />
+        <ApproveTransactionModalComponent onConfirm={mockOnConfirm} />
       ),
       { name: 'Approve' },
-      { state },
+      { state: state as unknown as RootState },
     );
 
     expect(mockGetTokenDetails).toHaveBeenCalled();
@@ -178,11 +193,19 @@ describe('ApproveTransactionModal', () => {
   });
 
   it('Approve button is disabled when standard is undefined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = getTokenDetails as jest.Mock;
     mockGetTokenDetails.mockReturnValue({});
     const state = cloneDeep(initialState);
-    state.engine.backgroundState.AccountTrackerController.accounts = [];
-    state.engine.backgroundState.TokenListController = {
+    (
+      state.engine.backgroundState.AccountTrackerController as unknown as {
+        accounts: unknown[];
+      }
+    ).accounts = [];
+    (
+      state.engine.backgroundState as unknown as {
+        TokenListController: unknown;
+      }
+    ).TokenListController = {
       tokensChainsCache: {
         '0x1': {
           data: [{
@@ -222,10 +245,10 @@ describe('ApproveTransactionModal', () => {
     const { getByTestId } = renderScreen(
       () => (
         // eslint-disable-next-line react/react-in-jsx-scope
-        <ApproveTransactionModal onConfirm={mockOnConfirm} />
+        <ApproveTransactionModalComponent onConfirm={mockOnConfirm} />
       ),
       { name: 'Approve' },
-      { state },
+      { state: state as unknown as RootState },
     );
 
     expect(mockGetTokenDetails).toHaveBeenCalled();

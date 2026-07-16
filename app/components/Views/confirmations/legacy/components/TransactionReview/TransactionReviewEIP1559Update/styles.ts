@@ -44,12 +44,12 @@ const createStyles = (colors: Colors) => {
 
   return {
     ...styles,
-    overview: (noMargin: boolean): ViewStyle => ({
+    overview: (noMargin?: boolean): ViewStyle => ({
       marginHorizontal: noMargin ? 0 : 24,
       paddingTop: 10,
       paddingBottom: 10,
     }),
-    gasInfoIcon: (hasOrigin: boolean): TextStyle => ({
+    gasInfoIcon: (hasOrigin?: boolean | string): TextStyle => ({
       color: hasOrigin ? colors.warning.default : colors.icon.muted,
     }),
   };
