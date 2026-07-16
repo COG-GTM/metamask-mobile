@@ -158,6 +158,22 @@ interface TransactionReviewEIP1559Props {
    * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
    */
   originWarning?: boolean;
+  /**
+   * Total amount in native currency (passed through by parent)
+   */
+  totalNative?: string;
+  /**
+   * Total amount converted to chosen currency (passed through by parent)
+   */
+  totalConversion?: string;
+  /**
+   * Maximum total amount in native currency (passed through by parent)
+   */
+  totalMaxNative?: string;
+  /**
+   * True if transaction is over the available funds (passed through by parent)
+   */
+  over?: boolean;
 }
 
 const Skeleton = ({ width, noStyle }: SkeletonProps) => {
