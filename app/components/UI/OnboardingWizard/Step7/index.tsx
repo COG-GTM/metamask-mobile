@@ -97,10 +97,10 @@ const Step7 = ({ navigation, onClose }: Step7Props) => {
         <Coachmark
           title={strings('onboarding_wizard_new.step7.title')}
           content={content()}
-          onNext={onClose}
+          onNext={onClose as () => void}
           onBack={onBack}
           topIndicatorPosition={'topCenter'}
-          onClose={onClose}
+          onClose={onClose as () => void}
           currentStep={6}
         />
       </View>
