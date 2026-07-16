@@ -1,5 +1,7 @@
 import React from 'react';
 import { screen, render } from '@testing-library/react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ParamListBase } from '@react-navigation/native';
 import AddBookmark from './';
 import { ThemeContext } from '../../../util/theme';
 
@@ -21,8 +23,16 @@ describe('AddBookmark', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <AddBookmark
-          navigation={{ setOptions: () => null }}
-          route={{ params: {} }}
+          navigation={
+            {
+              setOptions: () => null,
+            } as unknown as StackNavigationProp<ParamListBase>
+          }
+          route={
+            { params: {} } as unknown as React.ComponentProps<
+              typeof AddBookmark
+            >['route']
+          }
         />
       </ThemeContext.Provider>,
     );
