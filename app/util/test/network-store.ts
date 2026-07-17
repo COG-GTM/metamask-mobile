@@ -1,5 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { getFixturesServerPortInApp } from './utils';
+import { RootState } from '../../reducers';
 
 const FETCH_TIMEOUT = 40000; // Timeout in milliseconds
 
@@ -10,10 +11,17 @@ axios.defaults.headers.common['Access-Control-Allow-Methods'] =
 axios.defaults.headers.common['Access-Control-Allow-Headers'] =
   'Origin, X-Requested-With, Content-Type, Accept';
 
-const fetchWithTimeout = (url) =>
+interface NetworkStoreData {
+  state?: RootState;
+  asyncState?: Record<string, string>;
+}
+
+const fetchWithTimeout = (
+  url: string,
+): Promise<AxiosResponse<NetworkStoreData>> =>
   new Promise((resolve, reject) => {
     axios
-      .get(url)
+      .get<NetworkStoreData>(url)
       .then((response) => resolve(response))
       .catch((error) => reject(error));
     setTimeout(() => {
@@ -26,6 +34,10 @@ const BROWSERSTACK_LOCALHOST = 'bs-local.com';
 const FIXTURE_SERVER_URL = `http://${FIXTURE_SERVER_HOST}:${getFixturesServerPortInApp()}/state.json`;
 
 class ReadOnlyNetworkStore {
+  private _initialized: boolean;
+  private _state?: RootState;
+  private _asyncState?: Record<string, string>;
+
   constructor() {
     this._initialized = false;
     this._state = undefined;
@@ -33,12 +45,12 @@ class ReadOnlyNetworkStore {
   }
 
   // Redux Store
-  async getState() {
+  async getState(): Promise<RootState | undefined> {
     await this._initIfRequired();
     return this._state;
   }
 
-  async setState(state) {
+  async setState(state: RootState): Promise<void> {
     if (!state) {
       throw new Error('MetaMask - updated state is missing');
     }
@@ -46,40 +58,49 @@ class ReadOnlyNetworkStore {
     this._state = state;
   }
 
+  private get _asyncStorage(): Record<string, string> {
+    if (!this._asyncState) {
+      throw new Error(
+        'MetaMask - ReadOnlyNetworkStore async state is not initialized',
+      );
+    }
+    return this._asyncState;
+  }
+
   // Async Storage
-  async getString(key) {
+  async getString(key: string): Promise<string | null> {
     await this._initIfRequired();
-    const value = this._asyncState[key];
+    const value = this._asyncStorage[key];
     return value !== undefined ? value : null;
   }
 
-  async set(key, value) {
+  async set(key: string, value: string): Promise<void> {
     await this._initIfRequired();
-    this._asyncState[key] = value;
+    this._asyncStorage[key] = value;
   }
 
-  async delete(key) {
+  async delete(key: string): Promise<void> {
     await this._initIfRequired();
-    delete this._asyncState[key];
+    delete this._asyncStorage[key];
   }
 
-  async clearAll() {
+  async clearAll(): Promise<void> {
     await this._initIfRequired();
-    delete this._asyncState;
+    this._asyncState = undefined;
   }
 
-  async _initIfRequired() {
+  async _initIfRequired(): Promise<void> {
     if (!this._initialized) {
       await this._init();
     }
   }
 
-  async _init() {
+  async _init(): Promise<void> {
     // List of URLs to check for Fixture Server availability.
     // Browserstack requires that the HOST is bs-local.com instead of localhost.
     const urls = [
       FIXTURE_SERVER_URL,
-      FIXTURE_SERVER_URL.replace(FIXTURE_SERVER_HOST, BROWSERSTACK_LOCALHOST)
+      FIXTURE_SERVER_URL.replace(FIXTURE_SERVER_HOST, BROWSERSTACK_LOCALHOST),
     ];
 
     try {
