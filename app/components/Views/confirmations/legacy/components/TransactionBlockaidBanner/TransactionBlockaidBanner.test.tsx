@@ -33,7 +33,7 @@ const mockState: DeepPartial<RootState> = {
     },
   },
   transaction: {
-    id: 123,
+    id: '123',
     securityAlertResponses: {
       123: {
         result_type: ResultType.Warning,

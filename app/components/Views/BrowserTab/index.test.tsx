@@ -1,5 +1,8 @@
 import React from 'react';
-import renderWithProvider from '../../../util/test/renderWithProvider';
+import renderWithProvider, {
+  DeepPartial,
+} from '../../../util/test/renderWithProvider';
+import { RootState } from '../../../reducers';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
 import BrowserTab from './BrowserTab';
@@ -74,7 +77,7 @@ describe('BrowserTab', () => {
 
   it('should render correctly', () => {
     const { toJSON } = renderWithProvider(<BrowserTab {...mockProps} />, {
-      state: mockInitialState,
+      state: mockInitialState as unknown as DeepPartial<RootState>,
     });
     expect(toJSON()).toMatchSnapshot();
   });

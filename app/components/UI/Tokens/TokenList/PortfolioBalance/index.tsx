@@ -39,7 +39,9 @@ export const PortfolioBalance = React.memo(() => {
   const { PreferencesController } = Engine.context;
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const browserTabs = useSelector((state: RootState) => state.browser.tabs);
+  const browserTabs = useSelector(
+    (state: RootState) => state.browser.tabs,
+  ) as unknown as BrowserTab[];
   const privacyMode = useSelector(selectPrivacyMode);
   const isMultichainBalancesCollectionForMarketingEnabled = useSelector(
     (state: RootState) => state.security.dataCollectionForMarketing,

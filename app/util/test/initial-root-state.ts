@@ -11,30 +11,52 @@ import { userInitialState } from '../../reducers/user';
 import { initialNavigationState } from '../../reducers/navigation';
 import { initialOnboardingState } from '../../reducers/onboarding';
 import { initialState as initialPerformanceState } from '../../core/redux/slices/performance';
+import legalNoticesReducer from '../../reducers/legalNotices';
+import collectiblesReducer from '../../reducers/collectibles';
+import privacyReducer from '../../reducers/privacy';
+import bookmarksReducer from '../../reducers/bookmarks';
+import browserReducer from '../../reducers/browser';
+import modalsReducer from '../../reducers/modals';
+import settingsReducer from '../../reducers/settings';
+import alertReducer from '../../reducers/alert';
+import transactionReducer from '../../reducers/transaction';
+import wizardReducer from '../../reducers/wizard';
+import notificationReducer from '../../reducers/notification';
+import { initialState as swapsInitialState } from '../../reducers/swaps';
+import infuraAvailabilityReducer from '../../reducers/infuraAvailability';
 import { isTest } from './utils';
+
+/**
+ * Derives a reducer's initial state by dispatching a no-op init action, so the
+ * fixture always stays in sync with each reducer's `initialState`.
+ */
+const getInitialReducerState = <S>(
+  reducer: (state: undefined, action: never) => S,
+): S => reducer(undefined, { type: '@@INIT' } as never);
+
 // A cast is needed here because we use enums in some controllers, and TypeScript doesn't consider
 // the string value of an enum as satisfying an enum type.
 export const backgroundState: EngineState =
   initialBackgroundState as unknown as EngineState;
 
 const initialRootState: RootState = {
-  legalNotices: undefined,
-  collectibles: undefined,
+  legalNotices: getInitialReducerState(legalNoticesReducer),
+  collectibles: getInitialReducerState(collectiblesReducer),
   engine: { backgroundState },
-  privacy: undefined,
-  bookmarks: undefined,
-  browser: undefined,
-  modals: undefined,
-  settings: undefined,
-  alert: undefined,
-  transaction: undefined,
+  privacy: getInitialReducerState(privacyReducer),
+  bookmarks: getInitialReducerState(bookmarksReducer),
+  browser: getInitialReducerState(browserReducer),
+  modals: getInitialReducerState(modalsReducer),
+  settings: getInitialReducerState(settingsReducer),
+  alert: getInitialReducerState(alertReducer),
+  transaction: getInitialReducerState(transactionReducer),
   user: userInitialState,
-  wizard: undefined,
+  wizard: getInitialReducerState(wizardReducer),
   onboarding: initialOnboardingState,
-  notification: undefined,
-  swaps: undefined,
+  notification: getInitialReducerState(notificationReducer),
+  swaps: swapsInitialState,
   fiatOrders: initialFiatOrdersState,
-  infuraAvailability: undefined,
+  infuraAvailability: getInitialReducerState(infuraAvailabilityReducer),
   navigation: initialNavigationState,
   networkOnboarded: undefined,
   security: initialSecurityState,

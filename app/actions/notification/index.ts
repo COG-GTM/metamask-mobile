@@ -37,6 +37,7 @@ interface ModifyOrShowTransactionNotificationParams {
 interface ModifyOrShowTransactionNotificationAction
   extends ModifyOrShowTransactionNotificationParams {
   type: typeof ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION;
+  id?: string | number;
 }
 
 interface ModifyOrShowSimpleNotificationParams {
@@ -49,6 +50,7 @@ interface ModifyOrShowSimpleNotificationParams {
 interface ModifyOrShowSimpleNotificationAction
   extends ModifyOrShowSimpleNotificationParams {
   type: typeof ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION;
+  id?: string | number;
 }
 
 interface ReplaceNotificationByIdAction {

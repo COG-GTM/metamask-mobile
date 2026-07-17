@@ -8,14 +8,17 @@ import reducer, {
   swapsSmartTxFlagEnabled,
   swapsTokensObjectSelector,
   selectSwapsChainFeatureFlags,
+  SwapsState,
 } from './index';
+import { RootState } from '..';
+import { FeatureFlags } from '@metamask/swaps-controller/dist/types';
 import { NetworkClientType } from '@metamask/network-controller';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
 
 jest.mock('../../selectors/tokensController');
 
-const emptyAction = { type: null };
+const emptyAction = { type: null } as unknown as Parameters<typeof reducer>[1];
 
 const DEFAULT_FEATURE_FLAGS = {
   ethereum: {
@@ -72,11 +75,11 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags: DEFAULT_FEATURE_FLAGS,
+          featureFlags: DEFAULT_FEATURE_FLAGS as unknown as FeatureFlags,
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(true);
+      expect(liveState['0x1']?.isLive).toBe(true);
     });
     it('should set isLive to false for iOS when flag is false', () => {
       Device.isIos = jest.fn().mockReturnValue(true);
@@ -104,11 +107,11 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags,
+          featureFlags: featureFlags as unknown as FeatureFlags,
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(false);
+      expect(liveState['0x1']?.isLive).toBe(false);
     });
     it('should set isLive to true for Android when flag is true', () => {
       Device.isIos = jest.fn().mockReturnValue(false);
@@ -136,11 +139,11 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags,
+          featureFlags: featureFlags as unknown as FeatureFlags,
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(true);
+      expect(liveState['0x1']?.isLive).toBe(true);
     });
     it('should set isLive to false for Android when flag is false', () => {
       Device.isIos = jest.fn().mockReturnValue(false);
@@ -168,11 +171,11 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags,
+          featureFlags: featureFlags as unknown as FeatureFlags,
           chainId: '0x1',
         },
       });
-      expect(liveState['0x1'].isLive).toBe(false);
+      expect(liveState['0x1']?.isLive).toBe(false);
     });
   });
 
@@ -236,9 +239,9 @@ describe('swaps reducer', () => {
             },
           },
         },
-      };
+      } as unknown as SwapsState;
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(true);
     });
 
@@ -291,9 +294,9 @@ describe('swaps reducer', () => {
             },
           },
         },
-      };
+      } as unknown as SwapsState;
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(false);
     });
 
@@ -322,7 +325,7 @@ describe('swaps reducer', () => {
         swaps: initialState,
       };
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(false);
     });
   });
@@ -358,7 +361,7 @@ describe('swaps reducer', () => {
           {}
         ),
       },
-    });
+    } as unknown as RootState);
 
     it('should return chain feature flags with merged smartTransactions from global flags', () => {
       const globalFlags = {
@@ -368,7 +371,7 @@ describe('swaps reducer', () => {
           globalSetting: true,
         },
       };
-      
+
       const chainFlags = {
         '0x1': {
           fallbackToV1: false,
@@ -378,12 +381,12 @@ describe('swaps reducer', () => {
           },
         },
       };
-      
+
       const rootState = createTestState({
         globalFeatureFlags: globalFlags,
         chainFeatureFlags: chainFlags,
       });
-      
+
       const result = selectSwapsChainFeatureFlags(rootState);
       expect(result).toEqual({
         fallbackToV1: false,
@@ -502,7 +505,7 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({
+      expect(swapsTokensObjectSelector(state as unknown as RootState)).toStrictEqual({
         '0x0000000000000000000000000000000000000000': undefined,
         '0x0000000000000000000000000000000000000001': undefined,
         '0x0000000000000000000000000000000000000010': undefined,
@@ -521,7 +524,7 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({});
+      expect(swapsTokensObjectSelector(state as unknown as RootState)).toStrictEqual({});
     });
   });
 

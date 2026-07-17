@@ -1,3 +1,5 @@
+import { BookmarksState } from '../../../reducers/bookmarks';
+
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type IpfsContentResult = {
   url?: string;
@@ -74,7 +76,7 @@ export type BrowserTabProps = {
   /**
    * Array of bookmarks
    */
-  bookmarks: { name: string; url: string }[];
+  bookmarks: BookmarksState;
   /**
    * String representing the current search engine
    */
