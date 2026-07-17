@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import { shallow } from 'enzyme';
 import ChoosePassword from './';
 import configureMockStore from 'redux-mock-store';
@@ -22,11 +22,15 @@ const initialState = {
 };
 const store = mockStore(initialState);
 
+const ChoosePasswordComponent = ChoosePassword as unknown as ComponentType<{
+  route: { params: string[] };
+}>;
+
 describe('ChoosePassword', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ChoosePassword route={{ params: [ONBOARDING, PROTECT] }} />
+        <ChoosePasswordComponent route={{ params: [ONBOARDING, PROTECT] }} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
