@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import { RpcEndpointType } from '@metamask/network-controller';
-import { NetworkSettings } from './'; // Import the undecorated component
+import { NetworkSettings as NetworkSettingsClass } from './'; // Import the undecorated component
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { ThemeContext, mockTheme } from '../../../../../../app/util/theme';
@@ -15,6 +15,11 @@ import Engine from '../../../../../core/Engine';
 // eslint-disable-next-line import/no-namespace
 import * as networks from '../../../../../util/networks';
 const { PreferencesController } = Engine.context;
+
+const NetworkSettings =
+  NetworkSettingsClass as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
 
 // Mock the entire module
 jest.mock('../../../../../util/networks/isNetworkUiRedesignEnabled', () => ({
@@ -332,7 +337,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapper2.instance() as NetworkSettings;
+    const instance = wrapper2.instance() as NetworkSettingsClass;
     instance.componentDidMount();
 
     expect(wrapper2.state('blockExplorerUrl')).toBe('https://etherscan.io');
@@ -378,7 +383,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapperComponent.instance() as NetworkSettings;
+    const instance = wrapperComponent.instance() as NetworkSettingsClass;
     instance.componentDidMount();
 
     expect(wrapperComponent.state('blockExplorerUrl')).toBe(
@@ -428,7 +433,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapper2.instance() as NetworkSettings;
+    const instance = wrapper2.instance() as NetworkSettingsClass;
     instance.componentDidMount();
 
     expect(wrapper2.state('blockExplorerUrl')).toBe('https://etherscan.io');
