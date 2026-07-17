@@ -55,7 +55,10 @@ const createStoreAndPersistor = async () => {
   store = configureStore({
     reducer: pReducer,
     middleware: middlewares,
-    preloadedState: initialState,
+    // RTK's PreloadedState mapped type over the full RootState exceeds the
+    // compiler's instantiation depth; the fixture value is a valid RootState at
+    // runtime, so assert to bypass the depth limit without changing behavior.
+    preloadedState: initialState as never,
   });
   // Set the store in the Redux class
   ReduxService.store = store;

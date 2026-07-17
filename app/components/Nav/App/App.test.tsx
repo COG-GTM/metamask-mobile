@@ -81,7 +81,7 @@ describe('App', () => {
       });
     });
     it('navigates to login when user exists and logs in', async () => {
-      jest.spyOn(StorageWrapper, 'getItem').mockResolvedValue(true);
+      jest.spyOn(StorageWrapper, 'getItem').mockResolvedValue('true');
       jest.spyOn(Authentication, 'appTriggeredAuth').mockResolvedValue();
       renderScreen(App, { name: 'App' }, { state: initialState });
       await waitFor(() => {
