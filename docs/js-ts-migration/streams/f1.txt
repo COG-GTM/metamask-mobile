@@ -1,0 +1,12 @@
+# F1 — actions — 11 files, convert in listed order (leaf-first)
+app/actions/privacy/index.js
+app/actions/bookmarks/index.js
+app/actions/infuraAvailability/index.js
+app/actions/notification/index.js
+app/actions/browser/index.js
+app/actions/collectibles/index.js
+app/actions/modals/index.js
+app/actions/wizard/index.js
+app/actions/settings/index.js
+app/actions/alert/index.js
+app/actions/transaction/index.js

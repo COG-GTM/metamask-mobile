@@ -1,0 +1,13 @@
+# F2 — reducers — 12 files, convert in listed order (leaf-first)
+app/reducers/alert/index.js
+app/reducers/bookmarks/index.js
+app/reducers/modals/index.js
+app/reducers/privacy/index.js
+app/reducers/settings/index.js
+app/reducers/transaction/index.js
+app/reducers/wizard/index.js
+app/reducers/browser/index.js
+app/reducers/infuraAvailability/index.js
+app/reducers/notification/index.js
+app/reducers/swaps/index.js
+app/reducers/collectibles/index.js
