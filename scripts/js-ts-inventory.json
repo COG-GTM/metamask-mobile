@@ -1,0 +1,3638 @@
+{
+  "summary": {
+    "js_source_files": 291,
+    "js_test_files": 40,
+    "total_js_files": 331,
+    "import_edges_resolved": 16516
+  },
+  "by_workstream": {
+    "A_util": 31,
+    "B_base": 10,
+    "C_ui": 92,
+    "D_views": 71,
+    "F_other": 87
+  },
+  "rows": [
+    {
+      "file": "app/util/networks/index.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 183,
+      "importers_js": 52,
+      "importers_ts": 131,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "B_base",
+        "C_ui",
+        "D_views",
+        "E_complib",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/device/index.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 182,
+      "importers_js": 61,
+      "importers_ts": 121,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "B_base",
+        "C_ui",
+        "D_views",
+        "E_complib",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/number/index.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 106,
+      "importers_js": 37,
+      "importers_ts": 69,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views",
+        "E_complib",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/transactions/index.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 68,
+      "importers_js": 35,
+      "importers_ts": 33,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/general/index.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 50,
+      "importers_js": 29,
+      "importers_ts": 21,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views",
+        "E_complib",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/test/utils.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 31,
+      "importers_js": 5,
+      "importers_ts": 26,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/conversions.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 28,
+      "importers_js": 9,
+      "importers_ts": 19,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views",
+        "F_other"
+      ],
+      "has_test": true
+    },
+    {
+      "file": "app/util/ENSUtils.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 18,
+      "importers_js": 2,
+      "importers_ts": 16,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/date/index.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 15,
+      "importers_js": 4,
+      "importers_ts": 11,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/walletconnect.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 12,
+      "importers_js": 6,
+      "importers_ts": 6,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/custom-gas/index.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 8,
+      "importers_js": 5,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/scaling.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 7,
+      "importers_js": 2,
+      "importers_ts": 5,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/etherscan.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 6,
+      "importers_js": 3,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/blockies.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 5,
+      "importers_js": 1,
+      "importers_ts": 4,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views",
+        "E_complib",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/confirm-tx.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 5,
+      "importers_js": 3,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/confusables/index.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 5,
+      "importers_js": 2,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/confirmation/signatureUtils.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 4,
+      "importers_js": 2,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/conversion/index.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 4,
+      "importers_js": 3,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/util/gasUtils.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 4,
+      "importers_js": 4,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/middlewares.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/payment-link-generator.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/sentry/utils.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/streams.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/test/network-store.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/dapp-url-list.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/util/test/contract-address-registry.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/util/test/smart-contracts.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/util/test/assetFileTransformer.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/util/test/ganache-seeder.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/util/test/ganache.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/util/test/testSetup.js",
+      "workstream": "A_util",
+      "domain": "app/util",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Base/RemoteImage/index.js",
+      "workstream": "B_base",
+      "domain": "app/components",
+      "importers_total": 17,
+      "importers_js": 2,
+      "importers_ts": 15,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Base/Keypad/index.js",
+      "workstream": "B_base",
+      "domain": "app/components",
+      "importers_total": 5,
+      "importers_js": 1,
+      "importers_ts": 4,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Base/Keypad/constants.js",
+      "workstream": "B_base",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 4,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Base/RangeInput.js",
+      "workstream": "B_base",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 4,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Base/StatusText.js",
+      "workstream": "B_base",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 2,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Base/Keypad/createKeypadRule.js",
+      "workstream": "B_base",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 3,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/components/Base/DetailsModal.js",
+      "workstream": "B_base",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Base/Keypad/components.js",
+      "workstream": "B_base",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Base/Keypad/useCurrency.js",
+      "workstream": "B_base",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Base/TabBar.js",
+      "workstream": "B_base",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Navbar/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 82,
+      "importers_js": 40,
+      "importers_ts": 42,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/StyledButton/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 72,
+      "importers_js": 40,
+      "importers_ts": 32,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/ActionModal/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 15,
+      "importers_js": 8,
+      "importers_ts": 7,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/utils/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 15,
+      "importers_js": 9,
+      "importers_ts": 6,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views",
+        "F_other"
+      ],
+      "has_test": true
+    },
+    {
+      "file": "app/components/UI/Swaps/components/TokenIcon.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 14,
+      "importers_js": 6,
+      "importers_ts": 8,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": true
+    },
+    {
+      "file": "app/components/UI/ActionView/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 11,
+      "importers_js": 7,
+      "importers_ts": 4,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/EthereumAddress/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 9,
+      "importers_js": 3,
+      "importers_ts": 6,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/GlobalAlert/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 9,
+      "importers_js": 7,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/OnboardingWizard/Coachmark/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 8,
+      "importers_js": 0,
+      "importers_ts": 8,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/WebsiteIcon/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 8,
+      "importers_js": 4,
+      "importers_ts": 4,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/AnimatedSpinner/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 7,
+      "importers_js": 2,
+      "importers_ts": 5,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/FadeAnimationView/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 7,
+      "importers_js": 7,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/FadeOutOverlay/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 6,
+      "importers_js": 3,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/NetworkMainAssetLogo/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 6,
+      "importers_js": 1,
+      "importers_ts": 5,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/SelectComponent/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 5,
+      "importers_js": 1,
+      "importers_ts": 4,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/utils/useBlockExplorer.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 5,
+      "importers_js": 2,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/TimeEstimateInfoModal/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 5,
+      "importers_js": 4,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/TokenImage/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 5,
+      "importers_js": 2,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/TransactionElement/utils.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 5,
+      "importers_js": 5,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": true
+    },
+    {
+      "file": "app/components/UI/AccountInfoCard/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 2,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/AddressInputs/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 1,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/AnimatedTransactionModal/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 3,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/HintModal/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 1,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Notification/BaseNotification/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 4,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/TransactionHeader/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 3,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/AccountApproval/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 0,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/CollectibleOverview/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 1,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/EditGasFee1559/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/NavbarTitle/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": true
+    },
+    {
+      "file": "app/components/UI/OptinMetrics/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 1,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/PhishingModal/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 0,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/SeedphraseModal/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/SkipAccountSecurityModal/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/TransactionElement/TransactionDetails/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Transactions/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/WarningExistingUserModal/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 1,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/WebviewProgressBar/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 0,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/ActionModal/ActionContent/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/AddCustomToken/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/BrowserBottomBar/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Button/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/CollectibleContractElement/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/CollectibleContractInformation/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/CollectibleContractOverview/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/CollectibleContracts/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Collectibles/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Confetti/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/DrawerView/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/EditGasFeeLegacy/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/PaymentRequest/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/ReceiveRequest/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/SettingsDrawer/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/SettingsNotification/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/SlippageSlider/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/QuotesView.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/ActionAlert.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/LoadingAnimation/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/TokenSelectButton.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/components/UI/Swaps/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/utils/useBalance.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/SwitchCustomNetwork/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Tabs/TabCountIcon/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Tabs/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/TransactionActionModal/TransactionActionContent/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/TransactionElement/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/AccountOverview/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/AssetList/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/CustomAlert/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/FoxScreen/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/NavbarBrowserTitle/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Notification/SimpleNotification/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Notification/TransactionNotification/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Notification/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/PaymentRequestSuccess/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/ProtectYourWalletModal/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Screen/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/SliderButton/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/StyledButton/index.android.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/StyledButton/index.ios.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/ApprovalTransactionEditionModal.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/GasEditModal.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/QuotesModal.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/QuotesSummary.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/SlippageModal.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/TokenImportModal.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/TokenSelectModal.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/utils/useFetchTokenMetadata.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/TransactionActionModal/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/WebviewError/index.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/AssetSwapButton.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/LoadingAnimation/backgroundShapes.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/UI/Swaps/components/Onboarding.js",
+      "workstream": "C_ui",
+      "domain": "app/components",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/ErrorMessage/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 7,
+      "importers_js": 3,
+      "importers_ts": 4,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "A_util"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/ErrorBoundary/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 6,
+      "importers_js": 1,
+      "importers_ts": 5,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/EditGasFeeLegacyUpdate/index.jsx",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 5,
+      "importers_js": 4,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/Browser/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 2,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/SimpleWebview/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 1,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/components/CustomNonceModal/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 2,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/EditGasFee1559Update/index.jsx",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 4,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/SignatureRequest/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 4,
+      "importers_js": 1,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/AccountBackupStep1/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 1,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/AccountBackupStep1B/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 1,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/ChoosePassword/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 1,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/ManualBackupStep1/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 1,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/ManualBackupStep2/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 1,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/ManualBackupStep3/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 1,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/NavigationUnitTest/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 3,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/AddressList/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/Amount/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/Confirm/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/ApproveTransactionReview/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 3,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/CustomNonce/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/SignatureRequest/ExpandedMessage/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 1,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update/index.jsx",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 3,
+      "importers_js": 3,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/components/Views/ActivityView/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/AddBookmark/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/Asset/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": true
+    },
+    {
+      "file": "app/components/Views/Collectible/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/EnterPasswordSimple/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/ImportFromSecretRecoveryPhrase/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/ImportPrivateKeySuccess/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/LockScreen/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/OfflineMode/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/Onboarding/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/ResetPassword/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/Settings/AdvancedSettings/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/Settings/AppInformation/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/Settings/Contacts/ContactForm/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/Settings/Contacts/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/Settings/GeneralSettings/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/Settings/NetworksSettings/NetworkSettings/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/Settings/NetworksSettings/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/TermsAndConditions/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/TransactionsView/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/WalletConnectSessions/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/Approval/components/TransactionEditor/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/Approval/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/ApproveView/Approve/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/Send/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/SendTo/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/Approval/ApprovalFlowLoader/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewData/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewDetailsCard/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update/styles.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewInformation/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewSummary/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TypedSign/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/WatchAssetRequest/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "F_other"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/mock-data.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/CollectibleView/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/GasEducationCarousel/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/MediaPlayer/AndroidMediaPlayer.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/MediaPlayer/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/Settings/NetworksSettings/NetworkSettings/withIsOriginalNativeToken.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/TransactionSummary/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/Approve/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/AddressList/AddressList.jsx",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/CustomGasModal.jsx",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/UpdateEIP1559Tx/index.jsx",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Views/AddressQRCode/index.js",
+      "workstream": "D_views",
+      "domain": "app/components",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/constants/network.js",
+      "workstream": "F_other",
+      "domain": "app/constants",
+      "importers_total": 54,
+      "importers_js": 19,
+      "importers_ts": 35,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "A_util",
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/NotificationManager.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 32,
+      "importers_js": 14,
+      "importers_ts": 18,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "A_util",
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/ClipboardManager.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 28,
+      "importers_js": 9,
+      "importers_ts": 19,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/actions/alert/index.js",
+      "workstream": "F_other",
+      "domain": "app/actions",
+      "importers_total": 26,
+      "importers_js": 14,
+      "importers_ts": 12,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/actions/transaction/index.js",
+      "workstream": "F_other",
+      "domain": "app/actions",
+      "importers_total": 25,
+      "importers_js": 16,
+      "importers_ts": 9,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/swaps/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 21,
+      "importers_js": 8,
+      "importers_ts": 13,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/TransactionTypes.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 19,
+      "importers_js": 8,
+      "importers_ts": 11,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "A_util",
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/images/image-icons.js",
+      "workstream": "F_other",
+      "domain": "app/images",
+      "importers_total": 18,
+      "importers_js": 3,
+      "importers_ts": 15,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "A_util",
+        "B_base",
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/actions/settings/index.js",
+      "workstream": "F_other",
+      "domain": "app/actions",
+      "importers_total": 16,
+      "importers_js": 5,
+      "importers_ts": 11,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/collectibles/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 16,
+      "importers_js": 9,
+      "importers_ts": 7,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/actions/wizard/index.js",
+      "workstream": "F_other",
+      "domain": "app/actions",
+      "importers_total": 14,
+      "importers_js": 4,
+      "importers_ts": 10,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/BackgroundBridge/BackgroundBridge.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 12,
+      "importers_js": 2,
+      "importers_ts": 10,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": true
+    },
+    {
+      "file": "app/actions/browser/index.js",
+      "workstream": "F_other",
+      "domain": "app/actions",
+      "importers_total": 8,
+      "importers_js": 2,
+      "importers_ts": 6,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "A_util",
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/SecureKeychain.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 7,
+      "importers_js": 0,
+      "importers_ts": 7,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "A_util",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/actions/modals/index.js",
+      "workstream": "F_other",
+      "domain": "app/actions",
+      "importers_total": 6,
+      "importers_js": 4,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/Permissions/specifications.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 6,
+      "importers_js": 1,
+      "importers_ts": 5,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "A_util"
+      ],
+      "has_test": true
+    },
+    {
+      "file": "app/actions/collectibles/index.js",
+      "workstream": "F_other",
+      "domain": "app/actions",
+      "importers_total": 5,
+      "importers_js": 4,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/RPCMethods/lib/ethereum-chain-utils.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 5,
+      "importers_js": 2,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/core/WalletConnect/WalletConnect.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 5,
+      "importers_js": 2,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/actions/bookmarks/index.js",
+      "workstream": "F_other",
+      "domain": "app/actions",
+      "importers_total": 4,
+      "importers_js": 0,
+      "importers_ts": 4,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/constants/navigation.js",
+      "workstream": "F_other",
+      "domain": "app/constants",
+      "importers_total": 4,
+      "importers_js": 3,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/constants/onboarding.js",
+      "workstream": "F_other",
+      "domain": "app/constants",
+      "importers_total": 4,
+      "importers_js": 4,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/notification/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 4,
+      "importers_js": 3,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/actions/notification/index.js",
+      "workstream": "F_other",
+      "domain": "app/actions",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/EntryScriptWeb3.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 3,
+      "importers_js": 0,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/RPCMethods/createEip1193MethodMiddleware/index.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 3,
+      "importers_js": 3,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/lib/ppom/blockaid-version.js",
+      "workstream": "F_other",
+      "domain": "app/lib",
+      "importers_total": 3,
+      "importers_js": 0,
+      "importers_ts": 3,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/infuraAvailability/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 3,
+      "importers_js": 2,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Nav/Main/MainNavigator.js",
+      "workstream": "F_other",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Nav/Main/RootRPCMethodsUI.js",
+      "workstream": "F_other",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/components/Nav/Main/index.js",
+      "workstream": "F_other",
+      "domain": "app/components",
+      "importers_total": 2,
+      "importers_js": 0,
+      "importers_ts": 2,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/core/PreventScreenshot.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "C_ui",
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/RPCMethods/eth-request-accounts.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/core/RPCMethods/wallet_addEthereumChain.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/core/RPCMethods/wallet_switchEthereumChain.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 2,
+      "importers_js": 2,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/core/Vault.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/browser/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/store/migrations/019.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/store/migrations/020.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/store/migrations/021.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/store/migrations/022.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/store/migrations/023.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/store/migrations/024.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/store/migrations/025.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/store/migrations/026.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/store/migrations/027.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 2,
+      "importers_js": 1,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": true
+    },
+    {
+      "file": "app/actions/infuraAvailability/index.js",
+      "workstream": "F_other",
+      "domain": "app/actions",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/actions/privacy/index.js",
+      "workstream": "F_other",
+      "domain": "app/actions",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/DrawerStatusTracker.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/core/MobilePortStream.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/core/RPCMethods/handlers/index.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/core/RPCMethods/index.js",
+      "workstream": "F_other",
+      "domain": "app/core",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/lib/ens-ipfs/contracts/registry.js",
+      "workstream": "F_other",
+      "domain": "app/lib",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/lib/ens-ipfs/contracts/resolver.js",
+      "workstream": "F_other",
+      "domain": "app/lib",
+      "importers_total": 1,
+      "importers_js": 1,
+      "importers_ts": 0,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/lib/ens-ipfs/resolver.js",
+      "workstream": "F_other",
+      "domain": "app/lib",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [
+        "D_views"
+      ],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/alert/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/bookmarks/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/modals/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/privacy/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/settings/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/transaction/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/reducers/wizard/index.js",
+      "workstream": "F_other",
+      "domain": "app/reducers",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/000.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/001.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/002.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/003.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/004.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/005.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/006.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/007.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/008.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/009.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/010.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/011.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/012.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/013.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/014.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/015.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/016.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/017.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/store/migrations/018.js",
+      "workstream": "F_other",
+      "domain": "app/store",
+      "importers_total": 1,
+      "importers_js": 0,
+      "importers_ts": 1,
+      "is_leaf": false,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/__mocks__/pngMock.js",
+      "workstream": "F_other",
+      "domain": "app/__mocks__",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/__mocks__/react-native-device-info.js",
+      "workstream": "F_other",
+      "domain": "app/__mocks__",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/__mocks__/react-native-splash-screen.js",
+      "workstream": "F_other",
+      "domain": "app/__mocks__",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/__mocks__/react-native-view-shot.js",
+      "workstream": "F_other",
+      "domain": "app/__mocks__",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/__mocks__/rn-fetch-blob.js",
+      "workstream": "F_other",
+      "domain": "app/__mocks__",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    },
+    {
+      "file": "app/__mocks__/svgMock.js",
+      "workstream": "F_other",
+      "domain": "app/__mocks__",
+      "importers_total": 0,
+      "importers_js": 0,
+      "importers_ts": 0,
+      "is_leaf": true,
+      "cross_domain_importers": [],
+      "has_test": false
+    }
+  ],
+  "test_files": [
+    "app/components/Base/Keypad/Keypad.test.js",
+    "app/components/Base/Keypad/createKeypadRule.test.js",
+    "app/components/UI/AddressInputs/index.test.jsx",
+    "app/components/UI/BasicFunctionality/BasicFunctionality.test.js",
+    "app/components/UI/BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test.js",
+    "app/components/UI/ManageNetworks/ManageNetworks.test.js",
+    "app/components/UI/Navbar/index.test.jsx",
+    "app/components/UI/NavbarTitle/index.test.js",
+    "app/components/UI/Notification/BaseNotification/index.test.jsx",
+    "app/components/UI/Swaps/components/TokenIcon.test.js",
+    "app/components/UI/Swaps/components/TokenSelectButton.test.js",
+    "app/components/UI/Swaps/utils/index.test.js",
+    "app/components/UI/TransactionElement/utils.test.js",
+    "app/components/Views/Asset/index.test.js",
+    "app/components/Views/NavigationUnitTest/TestScreen1.test.js",
+    "app/components/Views/NavigationUnitTest/TestScreen2.test.js",
+    "app/components/Views/NavigationUnitTest/TestScreen3.test.js",
+    "app/components/Views/OnboardingSuccess/index.test.js",
+    "app/components/Views/confirmations/legacy/components/ApproveTransactionReview/index.test.jsx",
+    "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewDetailsCard/index.test.js",
+    "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update/index.test.jsx",
+    "app/components/Views/confirmations/legacy/components/TransactionReview/index.test.jsx",
+    "app/core/BackgroundBridge/BackgroundBridge.test.js",
+    "app/core/Permissions/specifications.test.js",
+    "app/core/RPCMethods/createEip1193MethodMiddleware/index.test.js",
+    "app/core/RPCMethods/wallet_addEthereumChain.test.js",
+    "app/core/RPCMethods/wallet_switchEthereumChain.test.js",
+    "app/reducers/browser/index.test.js",
+    "app/reducers/notification/notification.test.js",
+    "app/store/migrations/019.test.js",
+    "app/store/migrations/020.test.js",
+    "app/store/migrations/021.test.js",
+    "app/store/migrations/022.test.js",
+    "app/store/migrations/023.test.js",
+    "app/store/migrations/024.test.js",
+    "app/store/migrations/025.test.js",
+    "app/store/migrations/026.test.js",
+    "app/store/migrations/027.test.js",
+    "app/store/migrations/028.test.js",
+    "app/util/conversions.test.js"
+  ]
+}

@@ -1,0 +1,18 @@
+# F5 — constants/nav/lib/mocks/images — 17 files, convert in listed order (leaf-first)
+app/__mocks__/pngMock.js
+app/__mocks__/react-native-device-info.js
+app/__mocks__/react-native-splash-screen.js
+app/__mocks__/react-native-view-shot.js
+app/__mocks__/rn-fetch-blob.js
+app/__mocks__/svgMock.js
+app/lib/ens-ipfs/resolver.js
+app/components/Nav/Main/index.js
+app/lib/ppom/blockaid-version.js
+app/lib/ens-ipfs/contracts/registry.js
+app/lib/ens-ipfs/contracts/resolver.js
+app/components/Nav/Main/MainNavigator.js
+app/components/Nav/Main/RootRPCMethodsUI.js
+app/constants/navigation.js
+app/images/image-icons.js
+app/constants/onboarding.js
+app/constants/network.js
