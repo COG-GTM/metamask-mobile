@@ -1,17 +1,57 @@
 import { NetworkType } from '@metamask/controller-utils';
 
+interface TransactionMeta {
+  chainId?: string;
+  origin?: string;
+  rawTransaction?: string;
+  time?: number;
+  transaction?: unknown;
+  transactionHash?: string;
+}
+
+interface NetworkConfiguration {
+  chainId?: string;
+  rpcUrl?: string;
+}
+
+interface ProviderConfig {
+  chainId?: string;
+  type?: NetworkType;
+}
+
+interface TransactionControllerState {
+  transactions?: TransactionMeta[];
+  submitHistory?: unknown[];
+}
+
+/**
+ * Shape of the persisted state this migration expects. Missing controllers are
+ * handled with the same defaults the original implementation used.
+ */
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      TransactionController?: TransactionControllerState;
+      NetworkController?: {
+        providerConfig?: ProviderConfig;
+        networkConfigurations?: Record<string, NetworkConfiguration>;
+      };
+    };
+  };
+}
+
 /**
  * Populate the submitHistory in the TransactionController using any
  * transaction metadata entries that have a rawTransaction value.
- * @param {any} state - Redux state
+ * @param state - Redux state
  * @returns
  */
-export default function migrate(state) {
-  const backgroundState = state.engine.backgroundState;
+export default function migrate(state: unknown): Record<string, unknown> {
+  const backgroundState = (state as MigrationState).engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;
 
-  if (!transactionControllerState) return state;
+  if (!transactionControllerState) return state as Record<string, unknown>;
 
   const transactions = transactionControllerState.transactions || [];
   const networkControllerState = backgroundState.NetworkController || {};
@@ -51,8 +91,7 @@ export default function migrate(state) {
       };
     });
 
-  state.engine.backgroundState.TransactionController.submitHistory =
-    submitHistory;
+  transactionControllerState.submitHistory = submitHistory;
 
-  return state;
+  return state as Record<string, unknown>;
 }
