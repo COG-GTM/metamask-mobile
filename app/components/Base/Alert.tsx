@@ -21,7 +21,7 @@ export enum AlertType {
 }
 
 interface Props {
-  type: AlertType;
+  type?: AlertType;
   style?: StyleProp<ViewStyle>;
   small?: boolean;
   renderIcon?: () => ReactNode;
