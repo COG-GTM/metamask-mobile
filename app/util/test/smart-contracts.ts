@@ -13,7 +13,16 @@ import {
   multisigBytecode,
 } from '@metamask/test-dapp/dist/constants.json';
 
-const hstFactory = {
+interface ContractFactoryConfiguration {
+  bytecode: string;
+  abi: unknown[];
+  initialAmount?: number;
+  tokenName?: string;
+  decimalUnits?: number;
+  tokenSymbol?: string;
+}
+
+const hstFactory: ContractFactoryConfiguration = {
   initialAmount: 100,
   tokenName: 'TST',
   decimalUnits: 4,
@@ -22,27 +31,27 @@ const hstFactory = {
   abi: hstAbi,
 };
 
-const nftsFactory = {
+const nftsFactory: ContractFactoryConfiguration = {
   bytecode: nftsBytecode,
   abi: nftsAbi,
 };
 
-const erc1155Factory = {
+const erc1155Factory: ContractFactoryConfiguration = {
   bytecode: erc1155Bytecode,
   abi: erc1155Abi,
 };
 
-const piggybankFactory = {
+const piggybankFactory: ContractFactoryConfiguration = {
   bytecode: piggybankBytecode,
   abi: piggybankAbi,
 };
 
-const failingContract = {
+const failingContract: ContractFactoryConfiguration = {
   bytecode: failingContractBytecode,
   abi: failingContractAbi,
 };
 
-const multisigFactory = {
+const multisigFactory: ContractFactoryConfiguration = {
   bytecode: multisigBytecode,
   abi: multisigAbi,
 };
@@ -56,7 +65,7 @@ const SMART_CONTRACTS = {
   MULTISIG: 'multisig',
 };
 
-const contractConfiguration = {
+const contractConfiguration: Record<string, ContractFactoryConfiguration> = {
   [SMART_CONTRACTS.HST]: hstFactory,
   [SMART_CONTRACTS.NFTS]: nftsFactory,
   [SMART_CONTRACTS.ERC1155]: erc1155Factory,
@@ -66,3 +75,4 @@ const contractConfiguration = {
 };
 
 export { SMART_CONTRACTS, contractConfiguration };
+export type { ContractFactoryConfiguration };
