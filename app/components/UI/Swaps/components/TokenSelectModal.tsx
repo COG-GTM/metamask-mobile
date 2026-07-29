@@ -212,11 +212,11 @@ function TokenSelectModal({
   const sortedInitialTokensWithFiatValue = useMemo(
     () =>
       getSortedTokensByFiatValue({
-        tokens: (initialTokens ?? []) as unknown as Token[],
+        tokens: initialTokens as unknown as Token[],
         account: accounts[selectedAddress ?? ''] as unknown as Account,
         tokenExchangeRates: tokenExchangeRates as unknown as TokenExchangeRates,
         balances: balances as unknown as Balances,
-        conversionRate: conversionRate ?? 0,
+        conversionRate: conversionRate as number,
         currencyCode: currentCurrency,
       }),
     [

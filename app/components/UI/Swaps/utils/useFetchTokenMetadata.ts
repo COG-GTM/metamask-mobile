@@ -45,7 +45,10 @@ function useFetchTokenMetadata(
         setTokenMetadata({ error: false, valid: true, metadata: data });
       } catch (error) {
         // Address is not an ERC20
-        if (axios.isAxiosError(error) && error.response?.status === 422) {
+        if (
+          (error as { response?: { status?: number } })?.response?.status ===
+          422
+        ) {
           setTokenMetadata({ error: false, valid: false, metadata: null });
         } else {
           setTokenMetadata({ ...defaultTokenMetadata, error: true });
