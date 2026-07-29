@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   Dimensions,
@@ -8,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Theme } from '@metamask/design-tokens';
 import Text from '../../../component-library/components/Texts/Text';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -18,7 +18,19 @@ import { fontStyles, colors as importedColors } from '../../../styles/common';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import withMetricsAwareness from '../../hooks/useMetrics/withMetricsAwareness';
+import { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
 import TabThumbnail from './TabThumbnail';
+import { TabThumbnailProps } from './TabThumbnail/TabThumbnail.types';
+
+type Tab = TabThumbnailProps['tab'];
+
+/**
+ * `TabThumbnail` is a function component, so the `ref` below is inert, but it is
+ * kept to preserve behaviour.
+ */
+const TabThumbnailWithRef = TabThumbnail as React.ComponentType<
+  TabThumbnailProps & { ref?: React.Ref<unknown> }
+>;
 
 const THUMB_VERTICAL_MARGIN = 15;
 const NAVBAR_SIZE = Device.isIphoneX() ? 88 : 64;
@@ -31,7 +43,7 @@ const ROWS_VISIBLE = Math.floor(
 );
 const TABS_VISIBLE = ROWS_VISIBLE;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']) =>
   StyleSheet.create({
     noTabs: {
       flex: 1,
@@ -120,59 +132,59 @@ const createStyles = (colors, shadows) =>
     }
   });
 
+interface TabsProps extends IWithMetricsAwarenessProps {
+  /**
+   * Array of tabs
+   */
+  tabs: Tab[];
+  /**
+   * ID of the active tab
+   */
+  activeTab?: number;
+  /**
+   * Opens a new tab
+   */
+  newTab: () => void;
+  /**
+   * Closes a tab
+   */
+  closeTab: (tab: Tab) => void;
+  /**
+   * Closes all tabs
+   */
+  closeAllTabs: () => void;
+  /**
+   * Dismiss the entire view
+   */
+  closeTabsView: () => void;
+  /**
+   * Switches to a specific tab
+   */
+  switchToTab: (tab: Tab) => void;
+  /**
+   * Sets the current tab used for the animation
+   */
+  animateCurrentTab?: (tab: Tab) => void;
+}
+
+interface TabsState {
+  currentTab: Tab | null;
+}
+
 /**
  * PureComponent that wraps all the thumbnails
  * representing all the open tabs
  */
-class Tabs extends PureComponent {
-  static propTypes = {
-    /**
-     * Array of tabs
-     */
-    tabs: PropTypes.array,
-    /**
-     * ID of the active tab
-     */
-    activeTab: PropTypes.number,
-    /**
-     * Opens a new tab
-     */
-    newTab: PropTypes.func,
-    /**
-     * Closes a tab
-     */
-    closeTab: PropTypes.func,
-    /**
-     * Closes all tabs
-     */
-    closeAllTabs: PropTypes.func,
-    /**
-     * Dismiss the entire view
-     */
-    closeTabsView: PropTypes.func,
-    /**
-     * Switches to a specific tab
-     */
-    switchToTab: PropTypes.func,
-    /**
-     * Sets the current tab used for the animation
-     */
-    animateCurrentTab: PropTypes.func, // eslint-disable-line react/no-unused-prop-types
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object
-  };
+class Tabs extends PureComponent<TabsProps, TabsState> {
+  thumbnails: Record<number, React.RefObject<unknown>> = {};
 
-  thumbnails = {};
-
-  state = {
+  state: TabsState = {
     currentTab: null,
   };
 
-  scrollview = React.createRef();
+  scrollview = React.createRef<ScrollView>();
 
-  constructor(props) {
+  constructor(props: TabsProps) {
     super(props);
     this.createTabsRef(props.tabs);
   }
@@ -201,25 +213,26 @@ class Tabs extends PureComponent {
     }
   }
 
-  createTabsRef(tabs) {
+  createTabsRef(tabs: Tab[]) {
     tabs.forEach((tab) => {
       this.thumbnails[tab.id] = React.createRef();
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: TabsProps) {
     if (prevProps.tabs.length !== Object.keys(this.thumbnails).length) {
       this.createTabsRef(this.props.tabs);
     }
   }
 
-  onSwitch = async (tab) => {
+  onSwitch = async (tab: Tab) => {
     this.props.switchToTab(tab);
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const shadows = this.context.shadows || mockTheme.shadows;
+    const theme = this.context as unknown as Theme;
+    const colors = theme.colors || mockTheme.colors;
+    const shadows = theme.shadows || mockTheme.shadows;
     return createStyles(colors, shadows);
   };
 
@@ -238,7 +251,7 @@ class Tabs extends PureComponent {
       </View>
     );
   }
-  renderTabs(tabs, activeTab) {
+  renderTabs(tabs: Tab[], activeTab: number | undefined) {
     const styles = this.getStyles();
 
     return (
@@ -249,7 +262,7 @@ class Tabs extends PureComponent {
       >
         {tabs.map((tab) => (
           // eslint-disable-next-line react/jsx-key
-          <TabThumbnail
+          <TabThumbnailWithRef
             ref={this.thumbnails[tab.id]}
             key={tab.id}
             tab={tab}
@@ -268,7 +281,7 @@ class Tabs extends PureComponent {
     this.trackNewTabEvent(tabs.length);
   };
 
-  trackNewTabEvent = (tabsNumber) => {
+  trackNewTabEvent = (tabsNumber: number) => {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.BROWSER_NEW_TAB)
@@ -340,7 +353,7 @@ class Tabs extends PureComponent {
     return (
       <SafeAreaInsetsContext.Consumer>
         {(insets) => (
-          <View style={{ ...styles.tabsView, paddingTop: insets.top }}>
+          <View style={{ ...styles.tabsView, paddingTop: insets?.top }}>
             {tabs.length === 0
               ? this.renderNoTabs()
               : this.renderTabs(tabs, activeTab)}
@@ -354,4 +367,6 @@ class Tabs extends PureComponent {
 
 Tabs.contextType = ThemeContext;
 
-export default withMetricsAwareness(Tabs);
+export default withMetricsAwareness(
+  Tabs as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+);
