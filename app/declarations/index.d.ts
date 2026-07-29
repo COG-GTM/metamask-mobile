@@ -408,3 +408,15 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 2 ---
+
+declare module 'eth-ens-namehash';
+
+declare module '@metamask/ethjs-query';
+
+declare module '@metamask/ethjs-contract';
+
+declare module 'content-hash';
+
+declare module 'multihashes';
