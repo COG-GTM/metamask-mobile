@@ -14,19 +14,19 @@ export interface TransactionEIP1559UpdateProps {
   /**
    * Boolean to determine if the total section should be hidden
    */
-  hideTotal: boolean;
+  hideTotal?: boolean;
   /**
    * Boolean to determine the container should have no margin
    */
-  noMargin: boolean;
+  noMargin?: boolean;
   /**
    * Origin (hostname) of the dapp that suggested the gas fee
    */
-  origin: string;
+  origin?: string;
   /**
    * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
    */
-  originWarning: string;
+  originWarning?: string;
   /**
    * Function to call when update animation starts
    */
