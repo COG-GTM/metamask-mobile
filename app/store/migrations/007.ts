@@ -1,6 +1,25 @@
-export default function migrate(state) {
-  const allTokens = state.engine.backgroundState.TokensController.allTokens;
-  const newAllTokens = {};
+type TokensByChainId = Record<string, unknown>;
+type TokensByAccount = Record<string, TokensByChainId>;
+
+interface TokensControllerState {
+  allTokens: TokensByAccount;
+  allIgnoredTokens?: TokensByAccount;
+  ignoredTokens?: unknown;
+}
+
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      TokensController: TokensControllerState;
+    };
+  };
+}
+
+export default function migrate(state: unknown) {
+  const migrationState = state as MigrationState;
+  const allTokens =
+    migrationState.engine.backgroundState.TokensController.allTokens;
+  const newAllTokens: TokensByAccount = {};
   if (allTokens) {
     Object.keys(allTokens).forEach((accountAddress) => {
       Object.keys(allTokens[accountAddress]).forEach((chainId) => {
@@ -18,8 +37,8 @@ export default function migrate(state) {
   }
 
   const ignoredTokens =
-    state.engine.backgroundState.TokensController.ignoredTokens;
-  const newAllIgnoredTokens = {};
+    migrationState.engine.backgroundState.TokensController.ignoredTokens;
+  const newAllIgnoredTokens: TokensByAccount = {};
   Object.keys(allTokens).forEach((accountAddress) => {
     Object.keys(allTokens[accountAddress]).forEach((chainId) => {
       if (newAllIgnoredTokens[chainId] === undefined) {
@@ -35,7 +54,7 @@ export default function migrate(state) {
     });
   });
 
-  state.engine.backgroundState.TokensController = {
+  migrationState.engine.backgroundState.TokensController = {
     allTokens: newAllTokens,
     allIgnoredTokens: newAllIgnoredTokens,
   };
