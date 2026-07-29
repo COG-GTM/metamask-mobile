@@ -408,3 +408,11 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 2 ---
+
+declare module 'readable-stream' {
+  // eslint-disable-next-line import/no-nodejs-modules, import/no-namespace
+  import * as stream from 'stream';
+  export = stream;
+}
