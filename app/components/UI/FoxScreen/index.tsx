@@ -2,8 +2,10 @@ import React, { PureComponent } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
+import { Theme } from '@metamask/design-tokens';
+import foxImage from '../../../images/branding/fox.png';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -22,15 +24,14 @@ const createStyles = (colors) =>
     },
   });
 
-const foxImage = require('../../../images/branding/fox.png'); // eslint-disable-line import/no-commonjs
-
 /**
  * View component that displays the MetaMask fox
  * in the middle of the screen
  */
 export default class FoxScreen extends PureComponent {
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
