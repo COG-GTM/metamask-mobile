@@ -7,8 +7,12 @@ const ClipboardManager = {
   async getString(): Promise<string> {
     return await Clipboard.getString();
   },
-  async setString(string: string): Promise<void> {
-    await Clipboard.setString(string);
+  /**
+   * Callers pass values coming from optional model fields, so `null` is
+   * accepted and forwarded as-is to keep the previous behaviour.
+   */
+  async setString(string: string | null): Promise<void> {
+    await Clipboard.setString(string as string);
   },
   expireTime: null as ReturnType<typeof setTimeout> | null,
   async setStringExpire(string: string): Promise<void> {
