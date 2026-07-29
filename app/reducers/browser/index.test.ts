@@ -1,6 +1,8 @@
 import browserReducer from './index';
 import AppConstants from '../../core/AppConstants';
 
+type BrowserState = Parameters<typeof browserReducer>[0];
+
 describe('browserReducer STORE_FAVICON_URL', () => {
   it('adds favicon in the state', () => {
     const initialState = {
@@ -9,7 +11,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
       tabs: [],
       favicons: [],
       activeTab: null,
-    };
+    } as BrowserState;
 
     const action = {
       type: 'STORE_FAVICON_URL',
@@ -40,7 +42,7 @@ describe('browserReducer STORE_FAVICON_URL', () => {
         url: 'oldUrl',
       }),
       activeTab: null,
-    };
+    } as BrowserState;
 
     const action = {
       type: 'STORE_FAVICON_URL',
