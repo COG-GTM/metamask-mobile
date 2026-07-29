@@ -3,10 +3,14 @@ import {
   REMOVE_FAVORITE_COLLECTIBLE,
 } from '../../reducers/collectibles';
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Collectible = any;
+
 export const addFavoriteCollectible = (
-  selectedAddress,
-  chainId,
-  collectible,
+  selectedAddress: string,
+  chainId: string,
+  collectible: Collectible,
 ) => ({
   type: ADD_FAVORITE_COLLECTIBLE,
   selectedAddress,
@@ -15,9 +19,9 @@ export const addFavoriteCollectible = (
 });
 
 export const removeFavoriteCollectible = (
-  selectedAddress,
-  chainId,
-  collectible,
+  selectedAddress: string,
+  chainId: string,
+  collectible: Collectible,
 ) => ({
   type: REMOVE_FAVORITE_COLLECTIBLE,
   selectedAddress,
