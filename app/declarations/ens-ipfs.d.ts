@@ -7,9 +7,7 @@ declare module 'eth-ens-namehash' {
 }
 
 declare module '@metamask/ethjs-query' {
-  interface EthQueryConstructor {
-    new (provider: unknown): object;
-  }
+  type EthQueryConstructor = new (provider: unknown) => object;
   const Eth: EthQueryConstructor;
   export default Eth;
 }
@@ -27,9 +25,9 @@ declare module '@metamask/ethjs-contract' {
     at(address: string): ContractInstance;
   }
 
-  interface EthContractConstructor {
-    new (eth: object): (abi: unknown[]) => ContractBuilder;
-  }
+  type EthContractConstructor = new (
+    eth: object,
+  ) => (abi: unknown[]) => ContractBuilder;
 
   const EthContract: EthContractConstructor;
   export default EthContract;
