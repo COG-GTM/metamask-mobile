@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -33,8 +32,49 @@ import {
   selectCurrentCurrency,
 } from '../../../../selectors/currencyRateController';
 import { selectSwapsQuoteValues } from '../../../../reducers/swaps';
+import { RootState } from '../../../../reducers';
+import { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors, shadows) =>
+interface QuotesModalToken {
+  symbol: string;
+  decimals: number;
+}
+
+interface QuotePriceSlippage {
+  calculationError?: unknown[];
+  destinationAmountInETH?: string;
+}
+
+interface Quote {
+  aggregator: string;
+  sourceAmount: string;
+  destinationAmount: string;
+  slippage?: number;
+  aggType?: string;
+  priceSlippage?: QuotePriceSlippage;
+}
+
+interface QuotesModalStateProps {
+  conversionRate: ReturnType<typeof selectConversionRate>;
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
+  quoteValues: ReturnType<typeof selectSwapsQuoteValues>;
+}
+
+interface QuotesModalOwnProps {
+  isVisible?: boolean;
+  toggleModal: () => void;
+  quotes: Quote[];
+  selectedQuote?: string;
+  sourceToken: QuotesModalToken;
+  destinationToken: QuotesModalToken;
+  showOverallValue?: boolean;
+  ticker?: string;
+  multiLayerL1ApprovalFeeTotal?: string;
+}
+
+type QuotesModalProps = QuotesModalOwnProps & QuotesModalStateProps;
+
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']) =>
   StyleSheet.create({
     modalView: {
       backgroundColor: colors.background.default,
@@ -140,12 +180,13 @@ function QuotesModal({
   showOverallValue,
   ticker,
   multiLayerL1ApprovalFeeTotal,
-}) {
+}: QuotesModalProps) {
   const bestOverallValue =
     quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
   const [displayDetails, setDisplayDetails] = useState(false);
-  const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] =
-    useState(null);
+  const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] = useState<
+    number | null
+  >(null);
   const { colors, shadows } = useTheme();
   const styles = createStyles(colors, shadows);
 
@@ -181,7 +222,7 @@ function QuotesModal({
 
   // Toggle to the details in case the quote exist
   const handleQuoteDetailsPress = useCallback(
-    (index) => {
+    (index: number) => {
       if (quotes?.[index]) {
         setSelectedDetailsQuoteIndex(index);
         toggleDetails();
@@ -207,7 +248,7 @@ function QuotesModal({
 
   // When quotes change go back to the first quote as selected
   useEffect(() => {
-    setSelectedDetailsQuoteIndex(quotes?.[0] || null);
+    setSelectedDetailsQuoteIndex((quotes?.[0] as unknown as number) || null);
   }, [quotes]);
 
   // If details are going to be displayed but the quotes does not exist,
@@ -471,37 +512,7 @@ function QuotesModal({
   );
 }
 
-QuotesModal.propTypes = {
-  isVisible: PropTypes.bool,
-  toggleModal: PropTypes.func,
-  quotes: PropTypes.array,
-  selectedQuote: PropTypes.string,
-  destinationToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  sourceToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  quoteValues: PropTypes.object,
-  showOverallValue: PropTypes.bool,
-  multiLayerL1ApprovalFeeTotal: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): QuotesModalStateProps => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   quoteValues: selectSwapsQuoteValues(state),
