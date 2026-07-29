@@ -1,8 +1,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import Animated, { useSharedValue } from 'react-native-reanimated';
+import Animated, { useSharedValue, SharedValue } from 'react-native-reanimated';
+import { Theme } from '@metamask/design-tokens';
+import {
+  TransactionMeta,
+  CANCEL_RATE,
+  SPEED_UP_RATE,
+} from '@metamask/transaction-controller';
+import { Hex } from '@metamask/utils';
+import { RootState } from '../../../../reducers';
 import { strings } from '../../../../../locales/i18n';
 import Engine from '../../../../core/Engine';
 import { renderFromWei, fastSplit } from '../../../../util/number';
@@ -19,7 +26,6 @@ import TransactionDetails from '../../TransactionElement/TransactionDetails';
 import BaseNotification from './../BaseNotification';
 import Device from '../../../../util/device';
 import ElevatedView from 'react-native-elevated-view';
-import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
 import BigNumber from 'bignumber.js';
 import { collectibleContractsSelector } from '../../../../reducers/collectibles';
 import { useTheme } from '../../../../util/theme';
@@ -41,7 +47,7 @@ const WINDOW_WIDTH = Dimensions.get('window').width;
 const ACTION_CANCEL = 'cancel';
 const ACTION_SPEEDUP = 'speedup';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     absoluteFill: {
       ...StyleSheet.absoluteFillObject,
@@ -101,7 +107,38 @@ const createStyles = (colors) =>
     },
   });
 
-function TransactionNotification(props) {
+export type AnimatedTimingStart = (
+  animatedRef: SharedValue<number>,
+  toValue: number,
+  callback?: () => void,
+) => void;
+
+interface CurrentTransactionNotification {
+  status?: string;
+  transaction: { id: string };
+}
+
+/** Shape returned as the first element of `decodeTransaction`. */
+interface TransactionElementInfo {
+  notificationKey?: string;
+  actionKey?: string;
+  [key: string]: unknown;
+}
+
+interface TransactionNotificationOwnProps {
+  isInBrowserView?: boolean;
+  notificationAnimated: SharedValue<number>;
+  onClose: () => void;
+  animatedTimingStart: AnimatedTimingStart;
+  currentNotification: CurrentTransactionNotification;
+  /** Not supplied by `mapStateToProps`; kept for parity with the JS props. */
+  exchangeRate?: number;
+}
+
+type TransactionNotificationProps = TransactionNotificationOwnProps &
+  ReturnType<typeof mapStateToProps>;
+
+function TransactionNotification(props: TransactionNotificationProps) {
   const {
     accounts,
     currentNotification,
@@ -113,12 +150,17 @@ function TransactionNotification(props) {
     smartTransactions,
   } = props;
 
-  const [transactionDetails, setTransactionDetails] = useState(undefined);
-  const [transactionElement, setTransactionElement] = useState(undefined);
-  const [tx, setTx] = useState({});
+  const [transactionDetails, setTransactionDetails] =
+    useState<unknown>(undefined);
+  const [transactionElement, setTransactionElement] = useState<
+    TransactionElementInfo | undefined
+  >(undefined);
+  const [tx, setTx] = useState<Partial<TransactionMeta>>({});
   const [transactionDetailsIsVisible, setTransactionDetailsIsVisible] =
     useState(false);
-  const [transactionAction, setTransactionAction] = useState(undefined);
+  const [transactionAction, setTransactionAction] = useState<
+    typeof ACTION_CANCEL | typeof ACTION_SPEEDUP | undefined
+  >(undefined);
   const [transactionActionDisabled, setTransactionActionDisabled] =
     useState(false);
   const [gasFee, setGasFee] = useState('0x0');
@@ -136,7 +178,7 @@ function TransactionNotification(props) {
   }, [setTransactionDetailsIsVisible, animatedTimingStart, detailsAnimated]);
 
   const animateActionTo = useCallback(
-    (position) => {
+    (position: number) => {
       animatedTimingStart(detailsYAnimated, position);
       animatedTimingStart(actionXAnimated, position);
     },
@@ -154,11 +196,15 @@ function TransactionNotification(props) {
   }, [onCloseDetails, onClose]);
 
   const onSpeedUpPress = useCallback(() => {
+    // `validateTransactionActionBalance` is untyped JS whose JSDoc declares
+    // `rate`, `accounts` and the return value as strings; at runtime they are a
+    // number, an account map and a boolean respectively.
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const transactionActionDisabled = validateTransactionActionBalance(
       tx,
-      SPEED_UP_RATE,
-      accounts,
-    );
+      SPEED_UP_RATE as unknown as string,
+      accounts as unknown as string,
+    ) as unknown as boolean;
     setTransactionAction(ACTION_SPEEDUP);
     setTransactionActionDisabled(transactionActionDisabled);
     animateActionTo(-WINDOW_WIDTH);
@@ -171,11 +217,12 @@ function TransactionNotification(props) {
   ]);
 
   const onCancelPress = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const transactionActionDisabled = validateTransactionActionBalance(
       tx,
-      CANCEL_RATE,
-      accounts,
-    );
+      CANCEL_RATE as unknown as string,
+      accounts as unknown as string,
+    ) as unknown as boolean;
     setTransactionAction(ACTION_CANCEL);
     setTransactionActionDisabled(transactionActionDisabled);
     animateActionTo(-WINDOW_WIDTH);
@@ -193,7 +240,7 @@ function TransactionNotification(props) {
   );
 
   const safelyExecute = useCallback(
-    (callback) => {
+    (callback: () => void) => {
       try {
         callback();
       } catch (e) {
@@ -205,17 +252,18 @@ function TransactionNotification(props) {
   );
 
   const speedUpTx = useCallback(() => {
-    safelyExecute(() => speedUpTransaction(tx?.id));
+    safelyExecute(() => speedUpTransaction(tx?.id as string));
   }, [safelyExecute, tx]);
 
   const stopTransaction = useCallback(() => {
     safelyExecute(() =>
-      Engine.context.TransactionController.stopTransaction(tx?.id),
+      Engine.context.TransactionController.stopTransaction(tx?.id as string),
     );
   }, [safelyExecute, tx]);
 
   useEffect(() => {
     async function getTransactionInfo() {
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const tx = transactions.find(
         ({ id }) => id === currentNotification.transaction.id,
       );
@@ -234,6 +282,7 @@ function TransactionNotification(props) {
         swapsTransactions,
         swapsTokens,
       } = props;
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const [transactionElement, transactionDetails] = await decodeTransaction({
         ...props,
         tx,
@@ -277,7 +326,9 @@ function TransactionNotification(props) {
   // Don't show submitted notification for STX b/c we only know when it's confirmed,
   // o/w a submitted notification will show up after it's confirmed, then a confirmed notification will show up immediately after
   if (tx.status === 'submitted') {
-    const smartTx = smartTransactions.find((stx) => stx.txHash === tx.hash);
+    const smartTx = smartTransactions.find(
+      (stx: { txHash?: string }) => stx.txHash === tx.hash,
+    );
     if (smartTx) {
       return null;
     }
@@ -367,71 +418,7 @@ function TransactionNotification(props) {
   );
 }
 
-TransactionNotification.propTypes = {
-  isInBrowserView: PropTypes.bool,
-  notificationAnimated: PropTypes.object,
-  onClose: PropTypes.func,
-  animatedTimingStart: PropTypes.func,
-  currentNotification: PropTypes.object,
-  swapsTransactions: PropTypes.object,
-  swapsTokens: PropTypes.array,
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * An array that represents the user transactions on chain
-   */
-  transactions: PropTypes.array,
-  /**
-   * An array that represents the user smart transactions on chain
-   */
-  smartTransactions: PropTypes.array,
-
-  /**
-   * String of selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-  /**
-   * Current provider chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Current exchange rate
-   */
-  exchangeRate: PropTypes.number,
-  /**
-   * Object containing token exchange rates in the format address => exchangeRate
-   */
-  contractExchangeRates: PropTypes.object,
-  /**
-   * An array that represents the user collectible contracts
-   */
-  collectibleContracts: PropTypes.array,
-  /**
-   * An array that represents the user tokens
-   */
-  tokens: PropTypes.object,
-
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-};
-
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const chainId = selectChainId(state);
 
   const {
@@ -442,7 +429,7 @@ const mapStateToProps = (state) => {
 
   const smartTransactions =
     SmartTransactionsController?.smartTransactionsState?.smartTransactions?.[
-      chainId
+      chainId as Hex
     ] || [];
 
   return {
@@ -457,6 +444,7 @@ const mapStateToProps = (state) => {
     conversionRate: selectConversionRate(state),
     currentCurrency: selectCurrentCurrency(state),
     primaryCurrency: state.settings.primaryCurrency,
+    // @ts-expect-error This is not defined on the type, but is a field added in app/components/UI/Swaps/QuotesView.js
     swapsTransactions: TransactionController.swapsTransactions || {},
     swapsTokens: SwapsController.tokens,
     smartTransactions,
