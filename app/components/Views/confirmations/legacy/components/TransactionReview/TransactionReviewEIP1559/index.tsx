@@ -1,4 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, {
+  useState,
+  useCallback,
+  ComponentProps,
+  FC,
+  ReactNode,
+} from 'react';
 import {
   TextStyle,
   TouchableOpacity,
@@ -7,7 +13,7 @@ import {
   Linking,
   ViewStyle,
 } from 'react-native';
-import Summary from '../../../../../../Base/Summary';
+import SummaryComponent from '../../../../../../Base/Summary';
 import Text from '../../../../../../Base/Text';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
@@ -24,6 +30,18 @@ import AppConstants from '../../../../../../../core/AppConstants';
 import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
 import { Colors } from '../../../../../../../util/theme/models';
+
+interface SummaryChildren {
+  children?: ReactNode;
+}
+
+const Summary = SummaryComponent as unknown as FC<
+  ComponentProps<typeof SummaryComponent> & SummaryChildren
+> & {
+  Col: FC<ComponentProps<typeof SummaryComponent.Col> & SummaryChildren>;
+  Row: FC<ComponentProps<typeof SummaryComponent.Row> & SummaryChildren>;
+  Separator: FC<ComponentProps<typeof SummaryComponent.Separator>>;
+};
 
 const createStyles = (colors: Colors) => ({
   overview: (noMargin?: boolean): ViewStyle => ({

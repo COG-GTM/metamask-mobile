@@ -42,7 +42,6 @@ const useGetStyles = () => {
 
 interface SummaryProps {
   style?: StyleProp<ViewStyle>;
-  children?: React.ReactNode;
 }
 
 interface SummaryRowProps extends SummaryProps {

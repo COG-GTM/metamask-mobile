@@ -1,6 +1,12 @@
 /* eslint-disable react/no-unstable-nested-components */
 import BigNumber from 'bignumber.js';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+  ComponentProps,
+  ComponentType,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
 import {
   ScrollView,
   TouchableOpacity,
@@ -24,10 +30,13 @@ import {
   getDecimalChainId,
   isMainnetByChainId,
 } from '../../../../../../util/networks';
-import { mockTheme, useAppThemeFromContext } from '../../../../../../util/theme';
+import {
+  mockTheme,
+  useAppThemeFromContext,
+} from '../../../../../../util/theme';
 import Alert, { AlertType } from '../../../../../Base/Alert';
 import useModalHandler from '../../../../../Base/hooks/useModalHandler';
-import HorizontalSelector from '../../../../../Base/HorizontalSelector';
+import HorizontalSelectorComponent from '../../../../../Base/HorizontalSelector';
 import RangeInput from '../../../../../Base/RangeInput';
 import Text from '../../../../../Base/Text';
 import { useMetrics } from '../../../../../hooks/useMetrics';
@@ -44,6 +53,10 @@ import {
   UpdateOption,
   getGasFeeEstimateLevel,
 } from './types';
+
+const HorizontalSelector = HorizontalSelectorComponent as ComponentType<
+  Partial<ComponentProps<typeof HorizontalSelectorComponent>>
+>;
 
 const EditGasFee1559Update = ({
   selectedGasValue,
@@ -75,9 +88,9 @@ const EditGasFee1559Update = ({
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(
     !selectedGasValue,
   );
-  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<
-    string | null
-  >('');
+  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<string | null>(
+    '',
+  );
   const [maxFeeError, setMaxFeeError] = useState('');
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(

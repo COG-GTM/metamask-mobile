@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  ComponentProps,
+  FC,
+  ReactNode,
+} from 'react';
 import { Linking, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { EditGasViewSelectorsIDs } from '../../../../../../../../e2e/selectors/SendFlow/EditGasView.selectors';
@@ -12,7 +19,7 @@ import {
   useAppThemeFromContext,
 } from '../../../../../../../util/theme';
 import useModalHandler from '../../../../../../Base/hooks/useModalHandler';
-import Summary from '../../../../../../Base/Summary';
+import SummaryComponent from '../../../../../../Base/Summary';
 import Text from '../../../../../../Base/Text';
 import FadeAnimationView from '../../../../../../UI/FadeAnimationView';
 import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
@@ -20,6 +27,18 @@ import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
 import { TransactionEIP1559UpdateProps, toGasTransaction } from './types';
+
+interface SummaryChildren {
+  children?: ReactNode;
+}
+
+const Summary = SummaryComponent as unknown as FC<
+  ComponentProps<typeof SummaryComponent> & SummaryChildren
+> & {
+  Col: FC<ComponentProps<typeof SummaryComponent.Col> & SummaryChildren>;
+  Row: FC<ComponentProps<typeof SummaryComponent.Row> & SummaryChildren>;
+  Separator: FC<ComponentProps<typeof SummaryComponent.Separator>>;
+};
 
 const TransactionReviewEIP1559Update = ({
   primaryCurrency,
