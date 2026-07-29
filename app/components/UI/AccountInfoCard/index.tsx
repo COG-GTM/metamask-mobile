@@ -1,8 +1,10 @@
 import isUrl from 'is-url';
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { connect } from 'react-redux';
+import { InternalAccount } from '@metamask/keyring-internal-api';
+import { ThemeColors } from '@metamask/design-tokens';
+import { Theme } from '../../../util/theme/models';
 import { strings } from '../../../../locales/i18n';
 import Text, {
   TextVariant,
@@ -30,10 +32,12 @@ import {
   getTicker,
 } from '../../../util/transactions';
 import ApproveTransactionHeader from '../../Views/confirmations/legacy/components/ApproveTransactionHeader';
+import { ApproveTransactionHeaderI } from '../../Views/confirmations/legacy/components/ApproveTransactionHeader/ApproveTransactionHeader.types';
 import Identicon from '../Identicon';
 import { selectInternalAccounts } from '../../../selectors/accountsController';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     accountInformation: {
       flexDirection: 'row',
@@ -100,44 +104,68 @@ const createStyles = (colors) =>
     },
   });
 
-class AccountInfoCard extends PureComponent {
-  static propTypes = {
-    /**
-     * A string that represents the from address.
-     */
-    fromAddress: PropTypes.string.isRequired,
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * A number that specifies the ETH/USD conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * The selected currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Declares the operation being performed i.e. 'signing'
-     */
-    operation: PropTypes.string,
-    /**
-     * Clarify should show fiat balance
-     */
-    showFiatBalance: PropTypes.bool,
-    /**
-     * Current selected ticker
-     */
-    ticker: PropTypes.string,
-    transaction: PropTypes.object,
-    origin: PropTypes.string,
-  };
+interface OwnProps {
+  /**
+   * A string that represents the from address.
+   */
+  fromAddress: string;
+  /**
+   * Declares the operation being performed i.e. 'signing'
+   */
+  operation?: string;
+  /**
+   * Clarify should show fiat balance
+   */
+  showFiatBalance?: boolean;
+  origin?: string;
+}
 
+interface StateProps {
+  /**
+   * Map of accounts to information objects including balances
+   */
+  accounts: Record<string, { balance: string }>;
+  /**
+   * List of accounts from the AccountsController
+   */
+  internalAccounts: InternalAccount[];
+  /**
+   * A number that specifies the ETH/USD conversion rate
+   */
+  conversionRate?: number | null;
+  /**
+   * The selected currency
+   */
+  currentCurrency: string;
+  /**
+   * Current selected ticker
+   */
+  ticker?: string;
+  transaction?: { origin?: string };
+  activeTabUrl?: string;
+}
+
+type AccountInfoCardProps = OwnProps & StateProps;
+
+/**
+ * `ApproveTransactionHeader` declares `asset` as required, but this call site
+ * has never provided one.
+ */
+const ApproveTransactionHeaderWithoutAsset =
+  ApproveTransactionHeader as React.FC<
+    Omit<ApproveTransactionHeaderI, 'asset'>
+  >;
+
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging --
+ * Declaration merging types `this.context` as the app theme without emitting a
+ * class field, which Babel would turn into an own property that shadows the
+ * `context` React assigns from `contextType`.
+ */
+interface AccountInfoCard {
+  context: Theme;
+}
+
+class AccountInfoCard extends PureComponent<AccountInfoCardProps> {
   render() {
     const {
       accounts,
@@ -153,15 +181,15 @@ class AccountInfoCard extends PureComponent {
     } = this.props;
 
     const fromAddress = safeToChecksumAddress(rawFromAddress);
-    const accountLabelTag = getLabelTextByAddress(fromAddress);
+    const accountLabelTag = getLabelTextByAddress(fromAddress ?? '');
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const weiBalance = accounts?.[fromAddress]?.balance
-      ? hexToBN(accounts[fromAddress].balance)
+    const weiBalance = accounts?.[fromAddress ?? '']?.balance
+      ? hexToBN(accounts[fromAddress ?? ''].balance)
       : 0;
     const balance = `${renderFromWei(weiBalance)} ${getTicker(ticker)}`;
-    const accountLabel = renderAccountName(fromAddress, internalAccounts);
-    const address = renderShortAddress(fromAddress);
+    const accountLabel = renderAccountName(fromAddress ?? '', internalAccounts);
+    const address = renderShortAddress(fromAddress ?? '');
     const dollarBalance = showFiatBalance
       ? weiToFiat(weiBalance, conversionRate, currentCurrency, 2)?.toUpperCase()
       : undefined;
@@ -170,20 +198,24 @@ class AccountInfoCard extends PureComponent {
 
     const currentConnection = sdkConnections[origin ?? ''];
 
-    const isOriginUrl = isUrl(origin);
+    const isOriginUrl = isUrl(origin ?? '');
 
     const originatorInfo = currentConnection?.originatorInfo;
 
     const sdkDappMetadata = {
-      url: isOriginUrl ? origin : originatorInfo?.url ?? strings('sdk.unknown'),
-      icon: originatorInfo?.icon,
+      url:
+        isOriginUrl && origin
+          ? origin
+          : originatorInfo?.url ?? strings('sdk.unknown'),
+      icon: originatorInfo?.icon ?? '',
     };
-    const actualOriginUrl = isOriginUrl
-      ? origin
-      : originatorInfo?.url ?? strings('sdk.unknown');
+    const actualOriginUrl =
+      isOriginUrl && origin
+        ? origin
+        : originatorInfo?.url ?? strings('sdk.unknown');
 
     return operation === 'signing' && transaction !== undefined ? (
-      <ApproveTransactionHeader
+      <ApproveTransactionHeaderWithoutAsset
         origin={actualOriginUrl}
         url={actualOriginUrl}
         from={rawFromAddress}
@@ -242,7 +274,7 @@ class AccountInfoCard extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   accounts: selectAccounts(state),
   internalAccounts: selectInternalAccounts(state),
   conversionRate: selectConversionRate(state),
