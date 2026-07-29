@@ -1,7 +1,60 @@
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
 
-const initialState = {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Asset = any;
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Transaction = any;
+
+export interface TransactionState {
+  ensRecipient?: string;
+  assetType?: string;
+  selectedAsset: Asset;
+  transaction: Transaction;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  symbol?: string;
+  paymentRequest?: boolean;
+  readableValue?: string;
+  id?: string;
+  type?: string;
+  proposedNonce?: number;
+  nonce?: number;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  securityAlertResponses: Record<string, any>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+}
+
+interface TransactionAction {
+  type: string;
+  selectedAsset: Asset;
+  assetType: string;
+  nonce: number;
+  proposedNonce: number;
+  from: string;
+  ensRecipient: string;
+  to: string;
+  transactionToName: string;
+  transactionFromName: string;
+  transaction: Transaction;
+  asset: Asset;
+  transactionId: string;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  securityAlertResponse: any;
+  maxValueMode: boolean;
+  value: string;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,7 +85,7 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+const getAssetType = (selectedAsset: Asset) => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,7 +99,11 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  // eslint-disable-next-line @typescript-eslint/default-param-last
+  state: TransactionState = initialState,
+  action: TransactionAction,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
