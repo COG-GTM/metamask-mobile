@@ -61,9 +61,10 @@ const createStyles = (colors: Colors) =>
 
 interface TransactionReviewSummaryProps {
   /**
-   * ETH to current currency conversion rate
+   * ETH to current currency conversion rate. ERC721 transfers pass `true`
+   * instead of a rate, so this is only used as a truthiness flag.
    */
-  conversionRate?: number;
+  conversionRate?: number | boolean;
   /**
    * Transaction corresponding action key
    */

@@ -106,6 +106,10 @@ interface TransactionReviewDataProps {
    */
   customGasHeight?: number;
   /**
+   * Passed down by TransactionReview, unused by this component
+   */
+  saveTransactionReviewDataHeight?: () => void;
+  /**
    * Triggers global alert
    */
   showAlert: (config: AlertConfig) => void;
