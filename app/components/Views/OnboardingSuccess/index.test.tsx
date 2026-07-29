@@ -4,7 +4,6 @@ import React from 'react';
 // Internal dependencies.
 import OnboardingSuccess from './';
 import renderWithProvider from '../../../util/test/renderWithProvider';
-import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectProviderConfig } from '../../../selectors/networkController';
 import { OnboardingSuccessSelectorIDs } from '../../../../e2e/selectors/Onboarding/OnboardingSuccess.selectors';
@@ -44,26 +43,29 @@ const mockProviderConfig = {
   chainId: '1',
 };
 
+const mockUseSelector = useSelector as jest.Mock;
+const mockUseDispatch = useDispatch as jest.Mock;
+
 describe('OnboardingSuccess', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
+    mockUseSelector.mockImplementation((selector) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const { toJSON } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} />,
+      <OnboardingSuccess onDone={jest.fn()} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('imports additional accounts and sets completedOnboarding to true when onDone is called', () => {
-    useSelector.mockImplementation((selector) => {
+    mockUseSelector.mockImplementation((selector) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const mockDispatch = jest.fn();
-    useDispatch.mockImplementation(() => mockDispatch);
+    mockUseDispatch.mockImplementation(() => mockDispatch);
 
     const { getByTestId } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} onDone={jest.fn()} />,
+      <OnboardingSuccess onDone={jest.fn()} />,
     );
     const button = getByTestId(OnboardingSuccessSelectorIDs.DONE_BUTTON);
     button.props.onPress();
