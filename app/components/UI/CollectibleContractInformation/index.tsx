@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   ScrollView,
   TouchableOpacity,
@@ -17,8 +16,11 @@ import { connect } from 'react-redux';
 import { isMainNet } from '../../../util/networks';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { selectChainId } from '../../../selectors/networkController';
+import { ThemeColors } from '@metamask/design-tokens';
+import { RootState } from '../../../reducers';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -109,39 +111,63 @@ const createStyles = (colors) =>
 
 const openSeaLogo = require('../../../images/opensea-logo-flat-colored-blue.png'); // eslint-disable-line
 
+interface CollectibleContract {
+  name?: string;
+  symbol?: string;
+  description?: string;
+  address: string;
+  totalSupply?: number;
+}
+
+interface OwnProps {
+  /**
+   * Navigation object required to push
+   * the Asset detail view
+   */
+  navigation?: {
+    push: (route: string, params?: object) => void;
+  };
+  /**
+   * An function to handle the close event
+   */
+  onClose?: (close: boolean) => void;
+  /**
+   * Collectible contract object
+   */
+  collectibleContract: CollectibleContract;
+}
+
+interface StateProps {
+  /**
+   * The chain ID for the current selected network
+   */
+  chainId: string;
+}
+
+type CollectibleContractInformationProps = OwnProps & StateProps;
+
 /**
  * View that contains a collectible contract information as description, total supply and address
  */
-class CollectibleContractInformation extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * An function to handle the close event
-     */
-    onClose: PropTypes.func,
-    /**
-     * Collectible contract object
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string.isRequired,
-  };
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging --
+ * Declaration merging types `this.context` as the app theme without emitting a
+ * class field, which Babel would turn into an own property that shadows the
+ * `context` React assigns from `contextType`.
+ */
+interface CollectibleContractInformation {
+  context: Theme;
+}
 
+class CollectibleContractInformation extends PureComponent<CollectibleContractInformationProps> {
   closeModal = () => {
-    this.props.onClose(true);
+    this.props.onClose?.(true);
   };
 
   goToOpenSea = () => {
     const openSeaUrl = 'https://opensea.io/';
     InteractionManager.runAfterInteractions(() => {
       this.closeModal();
-      this.props.navigation.push('Webview', {
+      this.props.navigation?.push('Webview', {
         screen: 'SimpleWebview',
         params: {
           url: openSeaUrl,
@@ -227,10 +253,12 @@ class CollectibleContractInformation extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   chainId: selectChainId(state),
 });
 
 CollectibleContractInformation.contextType = ThemeContext;
 
-export default connect(mapStateToProps)(CollectibleContractInformation);
+export default connect<StateProps, never, OwnProps, RootState>(mapStateToProps)(
+  CollectibleContractInformation,
+);
