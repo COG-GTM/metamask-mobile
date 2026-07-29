@@ -246,8 +246,7 @@ const GasEducationCarousel = ({
           conversionRate,
         });
 
-        const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
-        setGasFiat(gasFiat);
+        setGasFiat(formatCurrency(maxFeePerGasConversion, currentCurrency));
       } catch (e) {
         Logger.error(e as Error);
       }
@@ -366,7 +365,7 @@ const GasEducationCarousel = ({
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
             >
-              {['one', 'two', 'three'].map((value, index) => {
+              {['one', 'two', 'three'].map((_value, index) => {
                 const key = index + 1;
                 const imgStyleKey = `carouselImage${key}` as
                   | 'carouselImage1'

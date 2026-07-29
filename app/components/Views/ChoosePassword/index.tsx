@@ -489,8 +489,7 @@ class ChoosePassword extends PureComponent<
       const simpleKeyrings = KeyringController.state.keyrings.filter(
         (keyring) => keyring.type === 'Simple Key Pair',
       );
-      for (let i = 0; i < simpleKeyrings.length; i++) {
-        const simpleKeyring = simpleKeyrings[i];
+      for (const simpleKeyring of simpleKeyrings) {
         const simpleKeyringAccounts = await Promise.all(
           simpleKeyring.accounts.map((account) =>
             KeyringController.exportAccount(keychainPassword, account),
@@ -526,10 +525,10 @@ class ChoosePassword extends PureComponent<
 
     try {
       // Import imported accounts again
-      for (let i = 0; i < importedAccounts.length; i++) {
+      for (const importedAccount of importedAccounts) {
         await KeyringController.importAccountWithStrategy(
           AccountImportStrategy.privateKey,
-          [importedAccounts[i]],
+          [importedAccount],
         );
       }
     } catch (e) {
@@ -625,6 +624,7 @@ class ChoosePassword extends PureComponent<
           <View style={styles.loadingWrapper}>
             <View style={styles.foxWrapper}>
               <Image
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
                 source={require('../../../images/branding/fox.png')}
                 style={styles.image}
                 resizeMethod={'auto'}

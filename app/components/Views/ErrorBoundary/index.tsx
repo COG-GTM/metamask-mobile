@@ -45,7 +45,7 @@ import { isTest } from '../../../util/test/utils';
 import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import { JsonMap } from '../../../core/Analytics/MetaMetrics.types';
-// eslint-disable-next-line import/no-commonjs
+// eslint-disable-next-line import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const WarningIcon = require('./warning-icon.png');
 
 // The underlying SVG element handles presses, which `IconProps` does not declare.
