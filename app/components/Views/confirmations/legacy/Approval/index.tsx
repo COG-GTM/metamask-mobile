@@ -525,7 +525,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
         ({ id }: ApprovalAny) => id === transaction.id,
       );
 
-      if (fullTx?.txParams.type !== TransactionEnvelopeType.legacy) {
+      if (fullTx.txParams.type !== TransactionEnvelopeType.legacy) {
         // For EIP-1559 transactions, we need to remove gasPrice as it's not compatible
         delete transaction.gasPrice;
       }

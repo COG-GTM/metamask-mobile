@@ -523,7 +523,7 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
       const updatedTx = {
         ...fullTx,
         txParams: {
-          ...fullTx?.txParams,
+          ...fullTx.txParams,
           ...transaction,
           chainId,
         },

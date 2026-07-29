@@ -42,6 +42,9 @@ import { EditGasFee1559UpdateProps } from './types';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GasAny = any;
 
+const HorizontalSelectorComponent =
+  HorizontalSelector as unknown as React.ComponentType<GasAny>;
+
 const EditGasFee1559Update = ({
   selectedGasValue,
   gasOptions,
@@ -420,11 +423,10 @@ const EditGasFee1559Update = ({
         animateOnChange={animateOnChange}
       >
         <View>
-          <HorizontalSelector
-            selected={selectedOption ?? undefined}
+          <HorizontalSelectorComponent
+            selected={selectedOption}
             onPress={selectOption}
             options={renderOptions}
-            disabled={false}
           />
         </View>
         <View style={styles.advancedOptionsContainer}>

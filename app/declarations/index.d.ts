@@ -12,10 +12,13 @@ declare module 'react-native-minimizer';
 
 declare module 'xhr2';
 declare module 'react-native/Libraries/Utilities/dismissKeyboard';
+// Extensionless import of app/util/collectibles-transfer.json, which Metro
+// resolves but TypeScript does not (resolveJsonModule requires the extension).
 declare module '*/collectibles-transfer' {
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const content: any;
+  const content: Record<
+    string,
+    { name: string; tradable: boolean; method?: string }
+  >;
   export default content;
 }
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
