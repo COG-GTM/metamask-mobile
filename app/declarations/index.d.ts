@@ -408,3 +408,17 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 1 ---
+
+// `unicode-confusables` ships its declarations as `index.ts.d`, so the
+// `"types": "index.d.ts"` entry in its package.json does not resolve.
+declare module 'unicode-confusables' {
+  export interface ConfusablePoint {
+    point: string;
+    similarTo?: string;
+  }
+  export const isConfusing: (input: string) => boolean;
+  export const confusables: (input: string) => ConfusablePoint[];
+  export const rectifyConfusion: (input: string) => string;
+}
