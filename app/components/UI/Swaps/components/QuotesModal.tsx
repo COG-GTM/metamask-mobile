@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -14,6 +13,7 @@ import Modal from 'react-native-modal';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import { connect } from 'react-redux';
 import BigNumber from 'bignumber.js';
+import { Theme } from '@metamask/design-tokens';
 import { strings } from '../../../../../locales/i18n';
 import {
   fromTokenMinimalUnitString,
@@ -33,8 +33,9 @@ import {
   selectCurrentCurrency,
 } from '../../../../selectors/currencyRateController';
 import { selectSwapsQuoteValues } from '../../../../reducers/swaps';
+import type { RootState } from '../../../../reducers';
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']) =>
   StyleSheet.create({
     modalView: {
       backgroundColor: colors.background.default,
@@ -127,6 +128,75 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+export interface QuotesModalQuote {
+  aggregator: string;
+  aggType: string;
+  sourceAmount: string;
+  destinationAmount: string;
+  slippage: number;
+  priceSlippage?: {
+    calculationError?: string;
+    destinationAmountInETH?: string;
+  };
+}
+
+/**
+ * Quote values as computed by the Swaps controller. `overallValueOfQuote` is a
+ * number here because it is used in arithmetic below.
+ */
+export interface QuotesModalQuoteValues {
+  ethFee: string;
+  overallValueOfQuote: number;
+}
+
+/**
+ * `calculateEthFeeForMultiLayer` is untyped JavaScript; its `ethFee` parameter
+ * is inferred as a number from its default value but it also handles the
+ * decimal strings the Swaps controller produces.
+ */
+const multiLayerEthFee = (
+  multiLayerL1FeeTotal: string,
+  ethFee?: string | number,
+): string | number =>
+  calculateEthFeeForMultiLayer({
+    multiLayerL1FeeTotal,
+    ethFee: ethFee as number,
+  });
+
+interface QuotesModalToken {
+  symbol: string;
+  decimals: number;
+}
+
+interface OwnProps {
+  isVisible: boolean;
+  toggleModal: () => void;
+  quotes: QuotesModalQuote[];
+  selectedQuote?: string;
+  destinationToken: QuotesModalToken;
+  sourceToken: QuotesModalToken;
+  /**
+   * Native asset ticker
+   */
+  ticker?: string;
+  showOverallValue?: boolean;
+  multiLayerL1ApprovalFeeTotal?: string | null;
+}
+
+interface StateProps {
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate?: number | null;
+  /**
+   * Currency code of the currently-active currency
+   */
+  currentCurrency: string;
+  quoteValues: Record<string, QuotesModalQuoteValues>;
+}
+
+type Props = OwnProps & StateProps;
+
 function QuotesModal({
   isVisible,
   toggleModal,
@@ -140,12 +210,15 @@ function QuotesModal({
   showOverallValue,
   ticker,
   multiLayerL1ApprovalFeeTotal,
-}) {
+}: Props) {
   const bestOverallValue =
     quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
   const [displayDetails, setDisplayDetails] = useState(false);
-  const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] =
-    useState(null);
+  // Holds an index once a quote is selected for details, and the quote itself
+  // when it is reset after the quotes change.
+  const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] = useState<
+    number | QuotesModalQuote | null
+  >(null);
   const { colors, shadows } = useTheme();
   const styles = createStyles(colors, shadows);
 
@@ -153,7 +226,7 @@ function QuotesModal({
   // (quotes.length can be shorter than selected index)
   const selectedDetailsQuote = useMemo(() => {
     if (
-      selectedDetailsQuoteIndex !== null &&
+      typeof selectedDetailsQuoteIndex === 'number' &&
       quotes?.[selectedDetailsQuoteIndex]
     ) {
       return quotes[selectedDetailsQuoteIndex];
@@ -181,7 +254,7 @@ function QuotesModal({
 
   // Toggle to the details in case the quote exist
   const handleQuoteDetailsPress = useCallback(
-    (index) => {
+    (index: number) => {
       if (quotes?.[index]) {
         setSelectedDetailsQuoteIndex(index);
         toggleDetails();
@@ -218,12 +291,13 @@ function QuotesModal({
     }
   }, [displayDetails, selectedDetailsQuote]);
 
-  let selectedDetailsQuoteValuesEthFee = selectedDetailsQuoteValues?.ethFee;
+  let selectedDetailsQuoteValuesEthFee: string | number | undefined =
+    selectedDetailsQuoteValues?.ethFee;
   if (multiLayerL1ApprovalFeeTotal) {
-    selectedDetailsQuoteValuesEthFee = calculateEthFeeForMultiLayer({
-      multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
-      ethFee: selectedDetailsQuoteValuesEthFee,
-    });
+    selectedDetailsQuoteValuesEthFee = multiLayerEthFee(
+      multiLayerL1ApprovalFeeTotal,
+      selectedDetailsQuoteValuesEthFee,
+    );
   }
 
   return (
@@ -318,14 +392,16 @@ function QuotesModal({
                   <View style={styles.detailsRow}>
                     <Text small>{strings('swaps.estimated_network_fees')}</Text>
                     <Text primary>
-                      {renderFromWei(toWei(selectedDetailsQuoteValuesEthFee))}{' '}
+                      {renderFromWei(
+                        toWei(selectedDetailsQuoteValuesEthFee ?? 0),
+                      )}{' '}
                       <Text reset bold>
                         {ticker}
                       </Text>{' '}
                       <Text>
                         (~
                         {weiToFiat(
-                          toWei(selectedDetailsQuoteValuesEthFee),
+                          toWei(selectedDetailsQuoteValuesEthFee ?? 0),
                           conversionRate,
                           currentCurrency,
                         )}
@@ -389,12 +465,13 @@ function QuotesModal({
                       const { aggregator } = quote;
                       const isSelected = aggregator === selectedQuote;
                       const quoteValue = quoteValues[aggregator];
-                      let quoteEthFee = quoteValue?.ethFee;
+                      let quoteEthFee: string | number | undefined =
+                        quoteValue?.ethFee;
                       if (multiLayerL1ApprovalFeeTotal) {
-                        quoteEthFee = calculateEthFeeForMultiLayer({
-                          multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
-                          ethFee: quoteEthFee,
-                        });
+                        quoteEthFee = multiLayerEthFee(
+                          multiLayerL1ApprovalFeeTotal,
+                          quoteEthFee,
+                        );
                       }
                       return (
                         <TouchableOpacity
@@ -418,7 +495,7 @@ function QuotesModal({
                           <View style={styles.columnFee}>
                             <Text primary bold={isSelected}>
                               {weiToFiat(
-                                toWei(quoteEthFee),
+                                toWei(quoteEthFee ?? 0),
                                 conversionRate,
                                 currentCurrency,
                               )}
@@ -471,37 +548,7 @@ function QuotesModal({
   );
 }
 
-QuotesModal.propTypes = {
-  isVisible: PropTypes.bool,
-  toggleModal: PropTypes.func,
-  quotes: PropTypes.array,
-  selectedQuote: PropTypes.string,
-  destinationToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  sourceToken: PropTypes.shape({
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-  }),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Native asset ticker
-   */
-  ticker: PropTypes.string,
-  quoteValues: PropTypes.object,
-  showOverallValue: PropTypes.bool,
-  multiLayerL1ApprovalFeeTotal: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   quoteValues: selectSwapsQuoteValues(state),
