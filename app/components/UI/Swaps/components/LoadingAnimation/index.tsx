@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { useSelector } from 'react-redux';
 import { Animated, View, StyleSheet, Image } from 'react-native';
-import PropTypes from 'prop-types';
+import { Theme } from '@metamask/design-tokens';
 import { selectSelectedNetworkClientId } from '../../../../../selectors/networkController';
 import Engine from '../../../../../core/Engine';
 import Logger from '../../../../../util/Logger';
@@ -36,7 +36,7 @@ const PAN_RADIO = STAGE_SIZE * 0.6;
 // "finalizing" animationg
 const FINALIZING_PERCENTAGE = 80;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -108,8 +108,50 @@ const createStyles = (colors, shadows) =>
     },
   });
 
-function round(value, decimals) {
-  return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+function round(value: number, decimals: number) {
+  return Number(
+    Math.round((value + 'e' + decimals) as unknown as number) + 'e-' + decimals,
+  );
+}
+
+interface AggregatorMetadataEntry {
+  title?: string;
+  color?: string;
+  iconPng?: string;
+}
+
+interface AggregatorMetadataItem extends AggregatorMetadataEntry {
+  key: string;
+}
+
+type AggregatorPosition = [number, number, number, number];
+
+/**
+ * Legacy call signature kept from the JS implementation, where the initial
+ * value was passed as two numbers instead of an `{ x, y }` object.
+ */
+const AnimatedValueXY = Animated.ValueXY as unknown as new (
+  x?: number,
+  y?: number,
+) => Animated.ValueXY;
+
+interface LoadingAnimationProps {
+  /**
+   * Wether to execute the "Finalizing" animation after the main sequence
+   */
+  finish?: boolean;
+  /**
+   * Function callback executed once both the main sequence and the finalizing animation ends
+   */
+  onAnimationEnd?: () => void;
+  /**
+   * Aggregator metada from Swaps controller API
+   */
+  aggregatorMetadata?: Record<string, AggregatorMetadataEntry>;
+  /**
+   * Wether to show head panning animation with aggregators logos
+   */
+  headPan?: boolean;
 }
 
 function LoadingAnimation({
@@ -117,8 +159,8 @@ function LoadingAnimation({
   onAnimationEnd,
   aggregatorMetadata,
   headPan = true,
-}) {
-  const [metadata, setMetadata] = useState([]);
+}: LoadingAnimationProps) {
+  const [metadata, setMetadata] = useState<AggregatorMetadataItem[]>([]);
   const [shouldStart, setShouldStart] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [hasFinished, setHasFinished] = useState(false);
@@ -129,8 +171,11 @@ function LoadingAnimation({
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
   /* References */
-  const foxRef = useRef();
-  const foxHeadPan = useRef(new Animated.ValueXY(0, 0)).current;
+  const foxRef = useRef<{
+    injectJavaScript?: (script: string) => void;
+    reload?: () => void;
+  }>();
+  const foxHeadPan = useRef(new AnimatedValueXY(0, 0)).current;
   const currentQuoteIndexValue = useRef(new Animated.Value(0)).current;
   const progressValue = useRef(new Animated.Value(0)).current;
   const progressWidth = progressValue.interpolate({
@@ -152,38 +197,41 @@ function LoadingAnimation({
   const positions = useMemo(
     () =>
       headPan
-        ? metadata.reduce((acc, curr, index) => {
-            // Vertical position is random and is in range [-0.6, 0.6]
-            // making the head not look so steep up/down
-            const y = Math.random() * 0.6 * (Math.random() < 0.5 ? -1 : 1);
-            const isNegativeY = y < 0;
+        ? metadata.reduce<Record<string, AggregatorPosition>>(
+            (acc, curr, index) => {
+              // Vertical position is random and is in range [-0.6, 0.6]
+              // making the head not look so steep up/down
+              const y = Math.random() * 0.6 * (Math.random() < 0.5 ? -1 : 1);
+              const isNegativeY = y < 0;
 
-            // Horizontal position will be to the left or right depending 70% on the
-            // index, this ensures the head moves from left to right in these cases
-            // Otherwise is random.
-            const isNegativeX =
-              Math.random() < 0.7 ? index % 2 === 0 : Math.random() < 0.5;
-            const x = isNegativeX ? -1 : 1;
+              // Horizontal position will be to the left or right depending 70% on the
+              // index, this ensures the head moves from left to right in these cases
+              // Otherwise is random.
+              const isNegativeX =
+                Math.random() < 0.7 ? index % 2 === 0 : Math.random() < 0.5;
+              const x = isNegativeX ? -1 : 1;
 
-            // Head pan values, horizontal pan value is randomly changed by [-0.4,0.4]
-            // so the head rotates differently some times.
-            const panRadioX = (x + (0.8 * Math.random() - 0.8)) * PAN_RADIO;
-            const panRadioY = y * PAN_RADIO;
+              // Head pan values, horizontal pan value is randomly changed by [-0.4,0.4]
+              // so the head rotates differently some times.
+              const panRadioX = (x + (0.8 * Math.random() - 0.8)) * PAN_RADIO;
+              const panRadioY = y * PAN_RADIO;
 
-            // Icons positions are compensated by their size according to the position
-            const radioY = AGG_RADIO * y - (isNegativeY ? 40 : 0);
-            // Horizontal position depends on vertical position, making the logo sit
-            // in a radius from origin and not always same horizontal distance
-            const radioX =
-              Math.sqrt(1 - Math.pow(y, 2)) * x * AGG_RADIO -
-              (isNegativeX ? 95 : 0);
+              // Icons positions are compensated by their size according to the position
+              const radioY = AGG_RADIO * y - (isNegativeY ? 40 : 0);
+              // Horizontal position depends on vertical position, making the logo sit
+              // in a radius from origin and not always same horizontal distance
+              const radioX =
+                Math.sqrt(1 - Math.pow(y, 2)) * x * AGG_RADIO -
+                (isNegativeX ? 95 : 0);
 
-            return {
-              ...acc,
-              [curr.key]: [panRadioX, panRadioY, radioX, radioY],
-            };
-            // eslint-disable-next-line no-mixed-spaces-and-tabs
-          }, {})
+              return {
+                ...acc,
+                [curr.key]: [panRadioX, panRadioY, radioX, radioY],
+              };
+              // eslint-disable-next-line no-mixed-spaces-and-tabs
+            },
+            {},
+          )
         : {},
     [metadata, headPan],
   );
@@ -192,7 +240,7 @@ function LoadingAnimation({
   const opacities = useMemo(
     () =>
       headPan
-        ? metadata.reduce(
+        ? metadata.reduce<Record<string, Animated.Value>>(
             (acc, curr) => ({
               ...acc,
               [curr.key]: new Animated.Value(0),
@@ -210,7 +258,7 @@ function LoadingAnimation({
       headPan
         ? [
             // Animated.delay(INITIAL_DELAY),
-            ...metadata.reduce(
+            ...metadata.reduce<Animated.CompositeAnimation[]>(
               (acc, cur, index, array) => [
                 ...acc,
                 // Time to delay next iteration, this is the amount of time the head looks at the icon
@@ -252,7 +300,7 @@ function LoadingAnimation({
                       duration: PAN_DURATION,
                       useNativeDriver: true,
                     }),
-                ]),
+                ] as Animated.CompositeAnimation[]),
               ],
               [],
             ),
@@ -260,7 +308,7 @@ function LoadingAnimation({
             Animated.delay(DELAY),
             Animated.parallel([
               // Set last aggregator icon opacity to 0
-              Animated.timing(opacities[[...metadata].pop()?.key], {
+              Animated.timing(opacities[[...metadata].pop()?.key as string], {
                 toValue: 0,
                 duration: PAN_DURATION,
                 useNativeDriver: true,
@@ -272,7 +320,7 @@ function LoadingAnimation({
                   duration: PAN_DURATION,
                   useNativeDriver: true,
                 }),
-            ]),
+            ] as Animated.CompositeAnimation[]),
             // eslint-disable-next-line no-mixed-spaces-and-tabs
           ]
         : [],
@@ -323,11 +371,12 @@ function LoadingAnimation({
           });
         } catch (error) {
           Logger.error(
-            error,
+            error as Error,
             'Swaps: Error fetching agg metadata in animation',
           );
         }
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         const metadata = Object.entries(aggregatorMetadata).map(
           ([key, value]) => ({
             key,
@@ -470,6 +519,7 @@ function LoadingAnimation({
         </View>
         {renderLogos &&
           headPan &&
+          // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
           metadata &&
           metadata.map((agg) => (
             <Animated.View
@@ -498,24 +548,5 @@ function LoadingAnimation({
     </View>
   );
 }
-
-LoadingAnimation.propTypes = {
-  /**
-   * Wether to execute the "Finalizing" animation after the main sequence
-   */
-  finish: PropTypes.bool,
-  /**
-   * Function callback executed once both the main sequence and the finalizing animation ends
-   */
-  onAnimationEnd: PropTypes.func,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  /**
-   * Wether to show head panning animation with aggregators logos
-   */
-  headPan: PropTypes.bool,
-};
 
 export default LoadingAnimation;
