@@ -19,6 +19,7 @@ const mockTheme = {
 
 const mockNavigation = {
   setOptions: jest.fn(),
+  pop: jest.fn(),
   goBack: jest.fn(),
   navigate: jest.fn(),
   route: {
