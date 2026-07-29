@@ -1,8 +1,28 @@
 import { rpcErrors } from '@metamask/rpc-errors';
+import type {
+  JsonRpcEngineEndCallback,
+  JsonRpcEngineNextCallback,
+} from '@metamask/json-rpc-engine';
+import type {
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
+import type { RequestedPermissions } from '@metamask/permission-controller';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 import {
   trackDappViewedEvent,
 } from '../../util/metrics';
+
+interface RequestEthereumAccountsHooks {
+  getAccounts: (options?: { ignoreLock?: boolean }) => string[];
+  getUnlockPromise: (shouldShowUnlockRequest: boolean) => Promise<void>;
+  getCaip25PermissionFromLegacyPermissionsForOrigin: () => RequestedPermissions;
+  requestPermissionsForOrigin: (
+    requestedPermissions: RequestedPermissions,
+  ) => Promise<unknown>;
+}
 
 const requestEthereumAccounts = {
   methodNames: [MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS],
@@ -38,16 +58,16 @@ const locks = new Set();
  * @returns A promise that resolves to nothing
  */
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: JsonRpcRequest<JsonRpcParams> & { origin: string },
+  res: PendingJsonRpcResponse<Json>,
+  _next: JsonRpcEngineNextCallback,
+  end: JsonRpcEngineEndCallback,
   {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
-  },
+  }: RequestEthereumAccountsHooks,
 ) {
   const { origin } = req;
   if (locks.has(origin)) {
@@ -87,7 +107,14 @@ async function requestEthereumAccountsHandler(
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent(origin, ethAccounts.length);
+  // This call site passes positional arguments while trackDappViewedEvent takes
+  // a single object; preserved as-is because the behaviour is asserted by tests.
+  (
+    trackDappViewedEvent as unknown as (
+      hostname: string,
+      numberOfConnectedAccounts: number,
+    ) => void
+  )(origin, ethAccounts.length);
 
   res.result = ethAccounts;
   return end();
