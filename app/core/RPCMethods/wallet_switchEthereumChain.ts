@@ -1,13 +1,34 @@
 import Engine from '../Engine';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
+import {
+  Hex,
+  Json,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+  isObject,
+} from '@metamask/utils';
 import { selectEvmNetworkConfigurationsByChainId } from '../../selectors/networkController';
 import { store } from '../../store';
 import {
   validateChainId,
   findExistingNetwork,
   switchToNetwork,
+  NetworkConfigurationLike,
+  RequestUserApproval,
+  SwitchToNetworkHooks,
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
+
+/**
+ * Hooks into the background required by the `wallet_switchEthereumChain`
+ * implementation, on top of those required to switch network.
+ */
+export interface SwitchEthereumChainHooks extends SwitchToNetworkHooks {
+  getCurrentChainIdForDomain: (domain: string) => Hex;
+  getNetworkConfigurationByChainId: (
+    chainId: Hex,
+  ) => NetworkConfigurationLike | undefined;
+}
 
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
@@ -25,7 +46,13 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: {
+  req: JsonRpcRequest<Json[]> & { origin: string };
+  res: PendingJsonRpcResponse<Json>;
+  requestUserApproval: RequestUserApproval;
+  analytics?: Record<string, unknown>;
+  hooks: SwitchEthereumChainHooks;
+}): Promise<void> => {
   const {
     CurrencyRateController,
     NetworkController,
@@ -34,7 +61,7 @@ export const wallet_switchEthereumChain = async ({
   } = Engine.context;
   const params = req.params?.[0];
   const { origin } = req;
-  if (!params || typeof params !== 'object') {
+  if (!params || !isObject(params)) {
     throw rpcErrors.invalidParams({
       message: `Expected single, object parameter. Received:\n${JSON.stringify(
         req.params,
@@ -42,7 +69,7 @@ export const wallet_switchEthereumChain = async ({
     });
   }
   const { chainId } = params;
-  const allowedKeys = {
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
@@ -78,8 +105,9 @@ export const wallet_switchEthereumChain = async ({
       currentChainIdForOrigin,
     );
 
-    const toNetworkConfiguration =
-      hooks.getNetworkConfigurationByChainId(chainId);
+    const toNetworkConfiguration = hooks.getNetworkConfigurationByChainId(
+      chainId as Hex,
+    );
 
     await switchToNetwork({
       network: existingNetwork,
