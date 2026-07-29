@@ -1,7 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import Text from './Text';
 import { StyleSheet } from 'react-native';
+import Text from './Text';
 import { FIAT_ORDER_STATES } from '../../constants/on-ramp';
 import { strings } from '../../../locales/i18n';
 import { useTheme } from '../../util/theme';
@@ -14,7 +13,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ConfirmedText = ({testID, ...props}) => (
+type StatusTextBaseProps = React.ComponentProps<typeof Text>;
+
+interface StatusTextProps extends StatusTextBaseProps {
+  status: string;
+  context?: string;
+}
+
+export const ConfirmedText = ({ testID, ...props }: StatusTextBaseProps) => (
   <Text
     testID={testID}
     bold
@@ -23,11 +29,8 @@ export const ConfirmedText = ({testID, ...props}) => (
     {...props}
   />
 );
-ConfirmedText.propTypes = {
-  testID: PropTypes.string,
-};
 
-export const PendingText = ({testID, ...props}) => {
+export const PendingText = ({ testID, ...props }: StatusTextBaseProps) => {
   const { colors } = useTheme();
   return (
     <Text
@@ -38,11 +41,8 @@ export const PendingText = ({testID, ...props}) => {
     />
   );
 };
-PendingText.propTypes = {
-  testID: PropTypes.string,
-};
 
-export const FailedText = ({testID, ...props} ) => {
+export const FailedText = ({ testID, ...props }: StatusTextBaseProps) => {
   const { colors } = useTheme();
   return (
     <Text
@@ -53,11 +53,8 @@ export const FailedText = ({testID, ...props} ) => {
     />
   );
 };
-FailedText.propTypes = {
-  testID: PropTypes.string,
-};
 
-function StatusText({ status, context, testID, ...props }) {
+function StatusText({ status, context, testID, ...props }: StatusTextProps) {
   switch (status) {
     case 'Confirmed':
     case 'confirmed':
@@ -109,12 +106,6 @@ function StatusText({ status, context, testID, ...props }) {
 
 StatusText.defaultProps = {
   context: 'transaction',
-};
-
-StatusText.propTypes = {
-  status: PropTypes.string.isRequired,
-  context: PropTypes.string,
-  testID: PropTypes.string,
 };
 
 export default StatusText;
