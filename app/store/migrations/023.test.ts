@@ -6,6 +6,11 @@ import initialRootState, {
 import { captureException } from '@sentry/react-native';
 import { userInitialState } from '../../reducers/user';
 
+interface MigratedState {
+  engine: { backgroundState: Record<string, Record<string, unknown>> };
+  user: unknown;
+}
+
 jest.mock('@sentry/react-native', () => ({
   captureException: jest.fn(),
 }));
@@ -229,7 +234,7 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = migrate(state) as unknown as MigratedState;
 
     expect(newState.user).toStrictEqual(userInitialState);
     expect(newState.engine.backgroundState).toStrictEqual(
@@ -315,7 +320,7 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = migrate(state) as unknown as MigratedState;
 
     expect(newState.user).toStrictEqual(
       merge({}, userInitialState, {
@@ -402,7 +407,7 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = migrate(state) as unknown as MigratedState;
 
     expect(newState.user).toStrictEqual(userInitialState);
     expect(newState.engine.backgroundState).toStrictEqual(
