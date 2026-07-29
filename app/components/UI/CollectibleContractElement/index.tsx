@@ -82,8 +82,8 @@ const createStyles = (colors: Colors, brandColors: BrandColors) =>
 interface Collectible {
   address: string;
   tokenId: string;
-  name?: string;
-  logo?: string;
+  name?: string | null;
+  logo?: string | null;
 }
 
 interface CollectibleContractElementProps {
