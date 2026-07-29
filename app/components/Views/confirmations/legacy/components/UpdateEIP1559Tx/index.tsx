@@ -24,6 +24,13 @@ import {
 } from '../../../../../../util/number';
 import { getTicker } from '../../../../../../util/transactions';
 import EditGasFee1559Update from '../EditGasFee1559Update';
+import {
+  getGasFeeEstimateLevel,
+  UpdateOption,
+} from '../EditGasFee1559Update/types';
+import { GasTransaction } from '../TransactionReview/TransactionReviewEIP1559Update/types';
+import { RootState } from '../../../../../../reducers';
+import { UpdateEIP1559Props } from './types';
 
 const UpdateEIP1559Tx = ({
   gas,
@@ -38,9 +45,9 @@ const UpdateEIP1559Tx = ({
   chainId,
   onCancel,
   onSave,
-}) => {
+}: UpdateEIP1559Props) => {
   const [animateOnGasChange, setAnimateOnGasChange] = useState(false);
-  const [gasSelected, setGasSelected] = useState(
+  const [gasSelected, setGasSelected] = useState<string>(
     AppConstants.GAS_OPTIONS.MEDIUM,
   );
   const stopUpdateGas = useRef(false);
@@ -51,8 +58,8 @@ const UpdateEIP1559Tx = ({
   /**
    * Options
    */
-  const updateTx1559Options = useRef();
-  const pollToken = useRef();
+  const updateTx1559Options = useRef<UpdateOption>();
+  const pollToken = useRef<string>();
   const firstTime = useRef(true);
 
   const suggestedGasLimit = fromWei(gas, 'wei');
@@ -73,7 +80,7 @@ const UpdateEIP1559Tx = ({
   }, []);
 
   const isMaxFeePerGasMoreThanLegacy = useCallback(
-    (maxFeePerGas) => {
+    (maxFeePerGas: BigNumber) => {
       const newDecMaxFeePerGas = new BigNumber(existingGas.maxFeePerGas).times(
         new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE),
       );
@@ -86,7 +93,7 @@ const UpdateEIP1559Tx = ({
   );
 
   const isMaxPriorityFeePerGasMoreThanLegacy = useCallback(
-    (maxPriorityFeePerGas) => {
+    (maxPriorityFeePerGas: BigNumber) => {
       const newDecMaxPriorityFeePerGas = new BigNumber(
         existingGas.maxPriorityFeePerGas,
       ).times(new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE));
@@ -99,25 +106,27 @@ const UpdateEIP1559Tx = ({
   );
 
   const validateAmount = useCallback(
-    (updateTx) => {
+    (updateTx: GasTransaction) => {
       let error;
-      const totalMaxHexPrefixed = addHexPrefix(updateTx.totalMaxHex);
+      const totalMaxHexPrefixed = addHexPrefix(updateTx.totalMaxHex as string);
 
       if (!isHexString(totalMaxHexPrefixed)) {
         return strings('transaction.invalid_amount');
       }
       const updateTxCost = hexToBN(totalMaxHexPrefixed);
-      const accountBalance = hexToBN(accounts[selectedAddress].balance);
+      const accountBalance = hexToBN(
+        accounts[selectedAddress as string].balance,
+      );
       const isMaxFeePerGasMoreThanLegacyResult = isMaxFeePerGasMoreThanLegacy(
-        new BigNumber(updateTx.suggestedMaxFeePerGas),
+        new BigNumber(updateTx.suggestedMaxFeePerGas as string),
       );
       const isMaxPriorityFeePerGasMoreThanLegacyResult =
         isMaxPriorityFeePerGasMoreThanLegacy(
-          new BigNumber(updateTx.suggestedMaxPriorityFeePerGas),
+          new BigNumber(updateTx.suggestedMaxPriorityFeePerGas as string),
         );
       if (accountBalance.lt(updateTxCost)) {
         const amount = renderFromWei(updateTxCost.sub(accountBalance));
-        const tokenSymbol = getTicker(ticker);
+        const tokenSymbol = getTicker(ticker as string);
         error = strings('transaction.insufficient_amount', {
           amount,
           tokenSymbol,
@@ -164,13 +173,20 @@ const UpdateEIP1559Tx = ({
           existingGas.maxPriorityFeePerGas,
         ).times(new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE));
 
+        const mediumEstimate = getGasFeeEstimateLevel(
+          gasFeeEstimates,
+          AppConstants.GAS_OPTIONS.MEDIUM,
+        );
+
         //Check to see if default SPEED_UP_RATE/CANCEL_RATE is greater than current market medium value
         if (
           !isMaxFeePerGasMoreThanLegacy(
-            new BigNumber(gasFeeEstimates.medium.suggestedMaxPriorityFeePerGas),
+            new BigNumber(
+              mediumEstimate?.suggestedMaxPriorityFeePerGas as string,
+            ),
           ).result ||
           !isMaxPriorityFeePerGasMoreThanLegacy(
-            new BigNumber(gasFeeEstimates.medium.suggestedMaxFeePerGas),
+            new BigNumber(mediumEstimate?.suggestedMaxFeePerGas as string),
           ).result
         ) {
           updateTx1559Options.current = {
@@ -187,8 +203,8 @@ const UpdateEIP1559Tx = ({
         } else {
           updateTx1559Options.current = {
             maxPriortyFeeThreshold:
-              gasFeeEstimates.medium.suggestedMaxPriorityFeePerGas,
-            maxFeeThreshold: gasFeeEstimates.medium.suggestedMaxFeePerGas,
+              mediumEstimate?.suggestedMaxPriorityFeePerGas as string,
+            maxFeeThreshold: mediumEstimate?.suggestedMaxFeePerGas as string,
             showAdvanced: false,
             isCancel,
           };
@@ -211,12 +227,12 @@ const UpdateEIP1559Tx = ({
     isMaxPriorityFeePerGasMoreThanLegacy,
   ]);
 
-  const update1559TempGasValue = (selected) => {
+  const update1559TempGasValue = (selected: string | null) => {
     stopUpdateGas.current = !selected;
-    setGasSelected(selected);
+    setGasSelected(selected as string);
   };
 
-  const onSaveTxnWithError = (gasTxn) => {
+  const onSaveTxnWithError = (gasTxn: GasTransaction) => {
     gasTxn.error = validateAmount(gasTxn);
     onSave(gasTxn);
   };
@@ -257,7 +273,10 @@ const UpdateEIP1559Tx = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (
+  state: RootState,
+  ownProps: Pick<UpdateEIP1559Props, 'chainId'>,
+) => ({
   accounts: selectAccounts(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   ticker: selectNativeCurrencyByChainId(state, ownProps.chainId),
