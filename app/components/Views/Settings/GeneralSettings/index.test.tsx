@@ -45,7 +45,7 @@ const mockMetrics = {
   addTraitsToUser: jest.fn(),
   trackEvent: jest.fn(),
   createEventBuilder: MetricsEventBuilder.createEventBuilder,
-};
+} as unknown as Parameters<typeof updateUserTraitsWithCurrentCurrency>[1];
 
 describe('updateUserTraitsWithCurrentCurrency', () => {
   afterEach(() => {
