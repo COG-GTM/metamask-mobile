@@ -16,8 +16,10 @@ import { selectInternalAccounts } from '../../../../../../selectors/accountsCont
 import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { RootState } from '../../../../../../reducers';
+import { AddressListProps, Contact } from './AddressList.types';
 
-const LabelElement = (styles, label) => (
+const LabelElement = (styles: ReturnType<typeof styleSheet>, label: string) => (
   <View key={label} style={styles.labelElementWrapper}>
     <Text variant={TextVariant.BodyMD} style={styles.contactLabel}>
       {label.toUpperCase()}
@@ -33,15 +35,18 @@ const AddressList = ({
   onIconPress,
   onlyRenderAddressBook = false,
   reloadAddressList,
-}) => {
+}: AddressListProps) => {
   const { colors } = useTheme();
   const styles = styleSheet(colors);
-  const [contactElements, setContactElements] = useState([]);
-  const [fuse, setFuse] = useState(undefined);
+  const [contactElements, setContactElements] = useState<(string | Contact)[]>(
+    [],
+  );
+  const [fuse, setFuse] = useState<Fuse<Contact> | undefined>(undefined);
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
-    (state) => state.user.ambiguousAddressEntries,
+    (state: RootState) =>
+      state.user.ambiguousAddressEntries as Record<string, string[]>,
   );
 
   const networkAddressBook = useMemo(
@@ -49,8 +54,8 @@ const AddressList = ({
     [addressBook, chainId],
   );
   const parseAddressBook = useCallback(
-    (networkAddressBookList) => {
-      const contacts = networkAddressBookList.map((contact) => {
+    (networkAddressBookList: Contact[]) => {
+      const contacts: Contact[] = networkAddressBookList.map((contact) => {
         const isAmbiguousAddress =
           chainId &&
           ambiguousAddressEntries?.[chainId]?.includes(contact.address);
@@ -73,8 +78,8 @@ const AddressList = ({
             .catch(() => contact),
         ),
       ).then((updatedContacts) => {
-        const newContactElements = [];
-        const addressBookTree = {};
+        const newContactElements: (string | Contact)[] = [];
+        const addressBookTree: Record<string, Contact[]> = {};
 
         updatedContacts.forEach((contact) => {
           const contactNameInitial = contact?.name?.[0];
@@ -110,7 +115,7 @@ const AddressList = ({
     const networkAddressBookList = Object.keys(networkAddressBook).map(
       (address) => networkAddressBook[address],
     );
-    const newFuse = new Fuse(networkAddressBookList, {
+    const newFuse = new Fuse<Contact>(networkAddressBookList, {
       shouldSort: true,
       threshold: 0.45,
       location: 0,
@@ -126,7 +131,7 @@ const AddressList = ({
     parseAddressBook(networkAddressBookList);
   }, [networkAddressBook, parseAddressBook]);
 
-  const getNetworkAddressBookList = useCallback(() => {
+  const getNetworkAddressBookList = useCallback((): Contact[] => {
     if (inputSearch && fuse) {
       return fuse.search(inputSearch);
     }
@@ -175,7 +180,7 @@ const AddressList = ({
     );
   };
 
-  const renderElement = (addressElement) => {
+  const renderElement = (addressElement: string | Contact) => {
     if (typeof addressElement === 'string') {
       return LabelElement(styles, addressElement);
     }
@@ -198,7 +203,7 @@ const AddressList = ({
   };
 
   const renderContent = () => {
-    const sendFlowContacts = [];
+    const sendFlowContacts: (string | Contact)[] = [];
 
     contactElements.forEach((contractElement) => {
       if (
