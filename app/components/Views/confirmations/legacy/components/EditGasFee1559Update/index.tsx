@@ -36,6 +36,14 @@ import StyledButton from '../../../../../UI/StyledButton';
 import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../UI/TimeEstimateInfoModal';
 import createStyles from './styles';
+import { toGasTransaction } from '../TransactionReview/TransactionReviewEIP1559Update/types';
+import {
+  EditGasFee1559UpdateProps,
+  GasFeeEstimateLevel,
+  SelectedGasObject,
+  UpdateOption,
+  getGasFeeEstimateLevel,
+} from './types';
 
 const EditGasFee1559Update = ({
   selectedGasValue,
@@ -59,7 +67,7 @@ const EditGasFee1559Update = ({
   warning,
   selectedGasObject,
   onlyGas,
-}) => {
+}: EditGasFee1559UpdateProps) => {
   const [modalInfo, updateModalInfo] = useState({
     isVisible: false,
     value: '',
@@ -67,12 +75,16 @@ const EditGasFee1559Update = ({
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(
     !selectedGasValue,
   );
-  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState('');
+  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<
+    string | null
+  >('');
   const [maxFeeError, setMaxFeeError] = useState('');
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(selectedGasValue);
+  const [selectedOption, setSelectedOption] = useState<string | null>(
+    selectedGasValue,
+  );
   const [showInputs, setShowInputs] = useState(!dappSuggestedGas);
-  const [gasObject, updateGasObject] = useState({
+  const [gasObject, updateGasObject] = useState<Partial<SelectedGasObject>>({
     suggestedMaxFeePerGas: selectedGasObject.suggestedMaxFeePerGas,
     suggestedMaxPriorityFeePerGas:
       selectedGasObject.suggestedMaxPriorityFeePerGas,
@@ -88,12 +100,14 @@ const EditGasFee1559Update = ({
   const { trackEvent, createEventBuilder } = useMetrics();
   const styles = createStyles(colors);
 
-  const gasTransaction = useGasTransaction({
-    onlyGas,
-    gasSelected: selectedOption,
-    legacy: false,
-    gasObject,
-  });
+  const gasTransaction = toGasTransaction(
+    useGasTransaction({
+      onlyGas,
+      gasSelected: selectedOption,
+      legacy: false,
+      gasObject: gasObject as SelectedGasObject,
+    }),
+  );
 
   const {
     renderableGasFeeMinNative,
@@ -142,7 +156,7 @@ const EditGasFee1559Update = ({
   }, [showLearnMoreModal]);
 
   const toggleInfoModal = useCallback(
-    (value) => {
+    (value: string) => {
       updateModalInfo({ isVisible: !modalInfo.isVisible, value });
     },
     [updateModalInfo, modalInfo.isVisible],
@@ -172,7 +186,7 @@ const EditGasFee1559Update = ({
   ]);
 
   const changeGas = useCallback(
-    (gas, option) => {
+    (gas: Partial<GasFeeEstimateLevel>, option: string | null) => {
       setSelectedOption(option);
       updateGasObject({
         ...gasObject,
@@ -186,7 +200,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedGasLimit = useCallback(
-    (value) => {
+    (value: string) => {
       const newGas = { ...gasTransaction, suggestedGasLimit: value };
       changeGas(newGas, null);
     },
@@ -194,17 +208,19 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxPriorityFee = useCallback(
-    (value) => {
+    (value: string) => {
       const lowerValue = new BigNumber(
-        gasOptions?.[
-          warningMinimumEstimateOption
-        ]?.suggestedMaxPriorityFeePerGas,
+        getGasFeeEstimateLevel(gasOptions, warningMinimumEstimateOption)
+          ?.suggestedMaxPriorityFeePerGas as string,
       );
 
       const higherValue = new BigNumber(
-        gasOptions?.high?.suggestedMaxPriorityFeePerGas,
+        getGasFeeEstimateLevel(gasOptions, AppConstants.GAS_OPTIONS.HIGH)
+          ?.suggestedMaxPriorityFeePerGas as string,
       ).multipliedBy(new BigNumber(1.5));
-      const updateFloor = new BigNumber(updateOption?.maxPriortyFeeThreshold);
+      const updateFloor = new BigNumber(
+        updateOption?.maxPriortyFeeThreshold as string,
+      );
 
       const valueBN = new BigNumber(value);
 
@@ -247,14 +263,18 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxFeePerGas = useCallback(
-    (value) => {
+    (value: string) => {
       const lowerValue = new BigNumber(
-        gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxFeePerGas,
+        getGasFeeEstimateLevel(gasOptions, warningMinimumEstimateOption)
+          ?.suggestedMaxFeePerGas as string,
       );
       const higherValue = new BigNumber(
-        gasOptions?.high?.suggestedMaxFeePerGas,
+        getGasFeeEstimateLevel(gasOptions, AppConstants.GAS_OPTIONS.HIGH)
+          ?.suggestedMaxFeePerGas as string,
       ).multipliedBy(new BigNumber(1.5));
-      const updateFloor = new BigNumber(updateOption?.maxFeeThreshold);
+      const updateFloor = new BigNumber(
+        updateOption?.maxFeeThreshold as string,
+      );
 
       const valueBN = new BigNumber(value);
 
@@ -293,17 +313,17 @@ const EditGasFee1559Update = ({
   );
 
   const selectOption = useCallback(
-    (option) => {
+    (option: string) => {
       setSelectedOption(option);
       setMaxFeeError('');
       setMaxPriorityFeeError('');
-      changeGas({ ...gasOptions?.[option] }, option);
+      changeGas({ ...getGasFeeEstimateLevel(gasOptions, option) }, option);
     },
     [changeGas, gasOptions],
   );
 
   const shouldIgnore = useCallback(
-    (option) => ignoreOptions?.find((item) => item === option),
+    (option: string) => ignoreOptions?.find((item) => item === option),
     [ignoreOptions],
   );
 
@@ -326,7 +346,10 @@ const EditGasFee1559Update = ({
         .filter(({ name }) => !shouldIgnore(name))
         .map(({ name, label, ...option }) => ({
           name,
-          label: function LabelComponent(selected, disabled) {
+          label: function LabelComponent(
+            selected: boolean,
+            disabled?: boolean,
+          ) {
             return (
               <Text bold primary={selected && !disabled}>
                 {label}
@@ -335,7 +358,7 @@ const EditGasFee1559Update = ({
           },
           topLabel: recommended?.name === name && recommended.render,
           ...option,
-          ...extendOptions[name],
+          ...extendOptions?.[name],
         })),
     [recommended, extendOptions, shouldIgnore],
   );
@@ -344,8 +367,8 @@ const EditGasFee1559Update = ({
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
   const switchNativeCurrencyDisplayOptions = (
-    nativeValue,
-    fiatValue,
+    nativeValue?: string,
+    fiatValue?: string,
   ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
@@ -356,6 +379,9 @@ const EditGasFee1559Update = ({
   const LeftLabelComponent = ({
     value,
     infoValue,
+  }: {
+    value: string;
+    infoValue: string;
   }) => (
     <View style={styles.labelTextContainer}>
       <Text black bold noMargin>
@@ -374,18 +400,25 @@ const EditGasFee1559Update = ({
     </View>
   );
 
-  const RightLabelComponent = ({ value }) => (
+  const RightLabelComponent = ({ value }: { value: string }) => (
     <Text noMargin small grey>
       <Text bold reset>
         {strings(value)}:
       </Text>{' '}
-      {gasOptions?.[suggestedEstimateOption]?.suggestedMaxFeePerGas} GWEI
+      {
+        getGasFeeEstimateLevel(gasOptions, suggestedEstimateOption)
+          ?.suggestedMaxFeePerGas
+      }{' '}
+      GWEI
     </Text>
   );
 
   const TextComponent = ({
     title,
     value,
+  }: {
+    title: string;
+    value: string;
   }) => (
     <>
       <Text noMargin primary infoModal bold style={styles.learnMoreLabels}>
@@ -397,7 +430,7 @@ const EditGasFee1559Update = ({
     </>
   );
 
-  const renderInputs = (option) => (
+  const renderInputs = (option?: UpdateOption) => (
     <View>
       <FadeAnimationView
         valueToWatch={valueToWatch}
@@ -405,7 +438,7 @@ const EditGasFee1559Update = ({
       >
         <View>
           <HorizontalSelector
-            selected={selectedOption}
+            selected={selectedOption ?? undefined}
             onPress={selectOption}
             options={renderOptions}
           />
