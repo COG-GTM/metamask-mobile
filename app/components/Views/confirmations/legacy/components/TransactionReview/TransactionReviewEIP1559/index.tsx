@@ -170,6 +170,14 @@ interface TransactionReviewEIP1559Props {
    * If should show legacy gas
    */
   legacy?: boolean;
+  /**
+   * Total amounts and over-funds flag passed down by
+   * TransactionReviewInformation, unused by this component
+   */
+  totalNative?: string;
+  totalConversion?: string;
+  totalMaxNative?: string;
+  over?: boolean;
 }
 
 const TransactionReviewEIP1559 = ({

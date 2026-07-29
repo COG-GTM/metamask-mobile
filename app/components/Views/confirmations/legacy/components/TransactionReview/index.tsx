@@ -5,6 +5,7 @@ import {
 } from '@metamask/transaction-controller';
 import { Hex } from '@metamask/utils';
 import { withNavigation } from '@react-navigation/compat';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import React, {
   ComponentClass,
   ComponentProps,
@@ -284,7 +285,7 @@ interface TransactionReviewProps extends IWithMetricsAwarenessProps {
   /**
    * Object that represents the navigator
    */
-  navigation?: Record<string, unknown>;
+  navigation: NavigationProp<ParamListBase>;
   /**
    * If it's a eip1559 network and dapp suggest legacy gas then it should show a warning
    */
