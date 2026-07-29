@@ -1,15 +1,43 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error `NetworksChainId` was removed from `@metamask/controller-utils`.
+// The import is preserved as-is so this migration keeps its current runtime behaviour.
 import { NetworksChainId } from '@metamask/controller-utils';
 
-export default function migrate(state) {
-  const { allTokens } = state.engine.backgroundState.TokensController;
-  const { allCollectibleContracts, allCollectibles } =
-    state.engine.backgroundState.CollectiblesController;
-  const { frequentRpcList } =
-    state.engine.backgroundState.PreferencesController;
+/** Assets keyed by account address and then by network type or chain ID. */
+type AssetsByAccount = Record<string, Record<string, unknown>>;
 
-  const newAllCollectibleContracts = {};
-  const newAllCollectibles = {};
-  const newAllTokens = {};
+/**
+ * Shape of the persisted state this migration expects. It predates the runtime
+ * validation used by later migrations, so the shape is asserted rather than
+ * narrowed in order to keep the original behaviour.
+ */
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      TokensController: {
+        allTokens: AssetsByAccount;
+      };
+      CollectiblesController: {
+        allCollectibleContracts: AssetsByAccount;
+        allCollectibles: AssetsByAccount;
+      };
+      PreferencesController: {
+        frequentRpcList: { chainId: string }[];
+      };
+    };
+  };
+}
+
+export default function migrate(state: unknown): Record<string, unknown> {
+  const backgroundState = (state as MigrationState).engine.backgroundState;
+  const { allTokens } = backgroundState.TokensController;
+  const { allCollectibleContracts, allCollectibles } =
+    backgroundState.CollectiblesController;
+  const { frequentRpcList } = backgroundState.PreferencesController;
+
+  const newAllCollectibleContracts: AssetsByAccount = {};
+  const newAllCollectibles: AssetsByAccount = {};
+  const newAllTokens: AssetsByAccount = {};
 
   Object.keys(allTokens).forEach((address) => {
     newAllTokens[address] = {};
@@ -55,14 +83,14 @@ export default function migrate(state) {
     });
   });
 
-  state.engine.backgroundState.TokensController = {
-    ...state.engine.backgroundState.TokensController,
+  backgroundState.TokensController = {
+    ...backgroundState.TokensController,
     allTokens: newAllTokens,
   };
-  state.engine.backgroundState.CollectiblesController = {
-    ...state.engine.backgroundState.CollectiblesController,
+  backgroundState.CollectiblesController = {
+    ...backgroundState.CollectiblesController,
     allCollectibles: newAllCollectibles,
     allCollectibleContracts: newAllCollectibleContracts,
   };
-  return state;
+  return state as Record<string, unknown>;
 }
