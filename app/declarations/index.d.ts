@@ -408,16 +408,3 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
-
-declare module 'react-native-progress/Bar' {
-  import { ComponentType } from 'react';
-  import { BarPropTypes } from 'react-native-progress';
-
-  /**
-   * `width` accepts `null` to fall back to automatic flexbox sizing.
-   */
-  const Bar: ComponentType<
-    Omit<BarPropTypes, 'width'> & { width?: number | null }
-  >;
-  export default Bar;
-}
