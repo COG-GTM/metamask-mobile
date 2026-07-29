@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { useTheme } from '../../util/theme';
 import type { Theme as DesignTokenTheme } from '@metamask/design-tokens';
@@ -42,6 +42,7 @@ const useGetStyles = () => {
 
 interface SummaryProps {
   style?: StyleProp<ViewStyle>;
+  children?: ReactNode;
 }
 
 interface SummaryRowProps extends SummaryProps {
