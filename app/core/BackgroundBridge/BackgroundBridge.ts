@@ -80,6 +80,7 @@ export interface BackgroundBridgeParams {
   isRemoteConn?: boolean;
   sendMessage?: (msg: unknown) => void;
   isWalletConnect?: boolean;
+  wcWalletConnector?: unknown;
   wcRequestActions?: unknown;
   getApprovedHosts?: (host: string) => Record<string, boolean | number>;
   remoteConnHost?: string;
