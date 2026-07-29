@@ -1,5 +1,13 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { ComponentType, PureComponent } from 'react';
+import { Dispatch } from 'redux';
+import { Hex } from '@metamask/utils';
+import { InternalAccount } from '@metamask/keyring-internal-api';
+import { AddressBookControllerState } from '@metamask/address-book-controller';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import {
   InteractionManager,
   ActivityIndicator,
@@ -71,12 +79,19 @@ import {
   /* eslint-enable no-restricted-syntax */
   selectProviderTypeByChainId,
 } from '../../../../../selectors/networkController';
+import { Colors, Theme } from '../../../../../util/theme/models';
+import { RootState } from '../../../../../reducers';
+import { IWithMetricsAwarenessProps } from '../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
+import {
+  LegacySelectedAsset,
+  LegacyTransactionState,
+} from '../types/legacy-transaction';
 
 const REVIEW = 'review';
 const EDIT = 'edit';
 const SEND = 'Send';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -90,90 +105,134 @@ const createStyles = (colors) =>
     },
   });
 
+interface DeeplinkTxMetaParameters {
+  address?: string;
+  gas?: string;
+  gasPrice?: string;
+  uint256?: string;
+  value?: string;
+}
+
+interface DeeplinkTxMeta {
+  action?: string;
+  parameters?: DeeplinkTxMetaParameters | null;
+  source?: string;
+  target_address?: string;
+}
+
+interface SendRouteParams {
+  txMeta?: DeeplinkTxMeta;
+}
+
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+/**
+ * Transaction object as it is dispatched to the transaction reducer, holding
+ * BN values for `gas`, `gasPrice` and `value` before being hexlified.
+ */
+type NewTransactionMeta = Omit<
+  Partial<LegacyTransactionState>,
+  'gas' | 'gasPrice' | 'value' | 'selectedAsset' | 'transaction'
+> & {
+  gas?: unknown;
+  gasPrice?: unknown;
+  value?: unknown;
+  selectedAsset?: LegacySelectedAsset;
+};
+
+interface SendProps extends IWithMetricsAwarenessProps {
+  /**
+   * Object that represents the navigator
+   */
+  navigation: NavigationProp<ParamListBase> & { pop: () => void };
+  /**
+   * Action that cleans transaction state
+   */
+  resetTransaction: () => void;
+  /**
+   * A string representing the network name
+   */
+  networkType?: string;
+  /**
+   * Action that sets transaction attributes from object to a transaction
+   */
+  setTransactionObject: (transaction: NewTransactionMeta) => void;
+  /**
+   * Array of ERC20 assets
+   */
+  tokens: LegacySelectedAsset[];
+  /**
+   * Transaction state
+   */
+  transaction: LegacyTransactionState;
+  /**
+   * Triggers global alert
+   */
+  showAlert: (config: AlertConfig) => void;
+  /**
+   * Map representing the address book
+   */
+  addressBook: AddressBookControllerState['addressBook'];
+  /**
+   * ID of the global network client
+   */
+  globalNetworkClientId: string;
+  /**
+   * ID of the global chain
+   */
+  globalChainId: Hex;
+  /**
+   * List of accounts from the AccountsController
+   */
+  internalAccounts: InternalAccount[];
+  /**
+   * Selected address as string
+   */
+  selectedAddress?: string;
+  /**
+   * Object containing token balances in the format address => balance
+   */
+  contractBalances: Record<string, string | undefined>;
+  /**
+   * Hides or shows dApp transaction modal
+   */
+  toggleDappTransactionModal: () => void;
+  /**
+   * dApp transaction modal visible or not
+   */
+  dappTransactionModalVisible?: boolean;
+  /**
+   * List of tokens from TokenListController
+   */
+  tokenList: Record<string, LegacySelectedAsset | undefined>;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: RouteProp<{ params: SendRouteParams }, 'params'>;
+  /**
+   * Boolean that indicates if smart transaction should be used
+   */
+  shouldUseSmartTransaction?: boolean;
+}
+
+interface SendState {
+  mode: string;
+  transactionKey?: number;
+  ready: boolean;
+  transactionConfirmed: boolean;
+  transactionSubmitted: boolean;
+}
+
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Send extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Action that cleans transaction state
-     */
-    resetTransaction: PropTypes.func.isRequired,
-    /**
-     * A string representing the network name
-     */
-    networkType: PropTypes.string,
-    /**
-     * Action that sets transaction attributes from object to a transaction
-     */
-    setTransactionObject: PropTypes.func.isRequired,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * Transaction state
-     */
-    transaction: PropTypes.object.isRequired,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     * ID of the global network client
-     */
-    globalNetworkClientId: PropTypes.string,
-    /**
-     * ID of the global chain
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Object containing token balances in the format address => balance
-     */
-    contractBalances: PropTypes.object,
-    /**
-     * Hides or shows dApp transaction modal
-     */
-    toggleDappTransactionModal: PropTypes.func,
-    /**
-     * dApp transaction modal visible or not
-     */
-    dappTransactionModalVisible: PropTypes.bool,
-    /**
-     * List of tokens from TokenListController
-     */
-    tokenList: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
-
-  state = {
+class Send extends PureComponent<SendProps, SendState> {
+  state: SendState = {
     mode: REVIEW,
     transactionKey: undefined,
     ready: false,
@@ -189,10 +248,10 @@ class Send extends PureComponent {
    */
   async reset() {
     const { globalNetworkClientId, transaction } = this.props;
-    const { gas, gasPrice } = await estimateGas(
-      transaction,
+    const { gas, gasPrice } = (await estimateGas(
+      transaction as Parameters<typeof estimateGas>[0],
       globalNetworkClientId,
-    );
+    )) as { gas: string; gasPrice?: string };
     this.props.setTransactionObject({
       gas: hexToBN(gas),
       gasPrice: hexToBN(gasPrice),
@@ -221,7 +280,7 @@ class Send extends PureComponent {
   }
 
   updateNavBar = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const { navigation, route } = this.props;
     navigation.setOptions(
       getTransactionOptionsTitle('send.confirm', navigation, route, colors),
@@ -237,7 +296,7 @@ class Send extends PureComponent {
       transaction: { assetType, selectedAsset },
       contractBalances,
       dappTransactionModalVisible,
-      toggleDappTransactionModal,
+      toggleDappTransactionModal: toggleDappTransactionModalAction,
     } = this.props;
     this.updateNavBar();
     navigation &&
@@ -246,9 +305,9 @@ class Send extends PureComponent {
         dispatch: this.onModeChange,
         disableModeChange:
           assetType === 'ERC20' &&
-          contractBalances[selectedAsset.address] === undefined,
+          contractBalances[selectedAsset.address as string] === undefined,
       });
-    dappTransactionModalVisible && toggleDappTransactionModal();
+    dappTransactionModalVisible && toggleDappTransactionModalAction();
     this.mounted = true;
     await this.reset();
     await this.checkForDeeplinks();
@@ -259,15 +318,17 @@ class Send extends PureComponent {
    */
   async componentWillUnmount() {
     const { transactionSubmitted } = this.state;
-    const { transaction } = this.state;
+    const { transaction } = this.state as SendState & {
+      transaction?: LegacyTransactionState;
+    };
     if (!transactionSubmitted && !this.unmountHandled) {
-      transaction && (await this.onCancel(transaction.id));
+      transaction && (await this.onCancel(transaction.id as string));
     }
     this.clear();
     this.mounted = false;
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: SendProps) {
     const prevRoute = prevProps.route;
     const {
       route,
@@ -280,18 +341,18 @@ class Send extends PureComponent {
       const prevTxMeta = prevRoute.params?.txMeta;
       const currentTxMeta = route.params?.txMeta;
       if (
-        currentTxMeta &&
-        currentTxMeta.source &&
-        (!prevTxMeta.source || prevTxMeta.source !== currentTxMeta.source)
+        currentTxMeta?.source &&
+        (!prevTxMeta?.source || prevTxMeta.source !== currentTxMeta.source)
       ) {
         this.handleNewTxMeta(currentTxMeta);
       }
     }
 
-    const contractBalance = contractBalances[selectedAsset.address];
+    const contractBalance = contractBalances[selectedAsset.address as string];
     const erc20ContractBalanceChanged =
       assetType === 'ERC20' &&
-      prevProps.contractBalances[selectedAsset.address] !== contractBalance;
+      prevProps.contractBalances[selectedAsset.address as string] !==
+        contractBalance;
     const assetTypeDefined =
       prevProps.transaction.assetType === undefined && assetType === 'ERC20';
     if (assetTypeDefined || erc20ContractBalanceChanged) {
@@ -305,8 +366,8 @@ class Send extends PureComponent {
   /**
    * Handle deeplink txMeta recipient
    */
-  handleNewTxMetaRecipient = async (recipient) => {
-    const to = await getAddress(recipient, this.props.globalChainId);
+  handleNewTxMetaRecipient = async (recipient?: string) => {
+    const to = await getAddress(recipient as string, this.props.globalChainId);
 
     if (!to) {
       NotificationManager.showSimpleNotification({
@@ -323,11 +384,15 @@ class Send extends PureComponent {
   /**
    * Handle txMeta object, setting neccesary state to make a transaction
    */
-  handleNewTxMeta = async ({ target_address, action, parameters = null }) => {
+  handleNewTxMeta = async ({
+    target_address,
+    action,
+    parameters = null,
+  }: DeeplinkTxMeta) => {
     const { addressBook, globalChainId, internalAccounts, selectedAddress } =
       this.props;
 
-    let newTxMeta = {};
+    let newTxMeta: NewTransactionMeta = {};
     let txRecipient;
     switch (action) {
       case 'send-eth':
@@ -338,21 +403,21 @@ class Send extends PureComponent {
           assetType: 'ETH',
           paymentRequest: true,
           selectedAsset: { symbol: 'ETH', isETH: true },
-          ...txRecipient,
+          ...(txRecipient as { to?: string }),
         };
 
-        if (parameters && parameters.value) {
+        if (parameters?.value) {
           newTxMeta.value = BNToHex(toBN(parameters.value));
-          newTxMeta.transactionValue = newTxMeta.value;
-          newTxMeta.readableValue = fromWei(newTxMeta.value);
+          newTxMeta.transactionValue = newTxMeta.value as string;
+          newTxMeta.readableValue = fromWei(newTxMeta.value as string);
         }
 
         newTxMeta.transactionToName = getTransactionToName({
           addressBook,
           chainId: globalChainId,
-          toAddress: newTxMeta.to,
+          toAddress: newTxMeta.to as string,
           internalAccounts,
-          ensRecipient: newTxMeta.ensRecipient,
+          ensRecipient: newTxMeta.ensRecipient as string,
         });
 
         newTxMeta.transactionTo = newTxMeta.to;
@@ -360,12 +425,12 @@ class Send extends PureComponent {
       case 'send-token': {
         const selectedAsset = await this.handleTokenDeeplink(target_address);
 
-        const { ensRecipient, to } = await this.handleNewTxMetaRecipient(
-          parameters.address,
-        );
+        const { ensRecipient, to } = (await this.handleNewTxMetaRecipient(
+          parameters?.address,
+        )) as { ensRecipient?: string; to?: string };
         if (!to) return;
         const tokenAmount =
-          (parameters.uint256 &&
+          (parameters?.uint256 &&
             new BigNumber(parameters.uint256).toString(16)) ||
           '0';
         newTxMeta = {
@@ -382,16 +447,16 @@ class Send extends PureComponent {
           value: '0x0',
           readableValue:
             fromTokenMinimalUnit(
-              parameters.uint256 || '0',
-              selectedAsset.decimals,
+              parameters?.uint256 || '0',
+              selectedAsset.decimals as number,
             ) || '0',
         };
         newTxMeta.transactionToName = getTransactionToName({
           addressBook,
           chainId: globalChainId,
-          toAddress: to,
+          toAddress: to as string,
           internalAccounts,
-          ensRecipient,
+          ensRecipient: ensRecipient as string,
         });
         break;
       }
@@ -402,20 +467,22 @@ class Send extends PureComponent {
       if (gas) {
         newTxMeta.gas = toBN(gas);
       }
+
       if (gasPrice) {
-        newTxMeta.gasPrice = toBN(gas);
+        newTxMeta.gasPrice = toBN(gas as string);
       }
 
       // if gas and gasPrice is not defined in the deeplink, we should define them
       if (!gas && !gasPrice) {
-        const { gas, gasPrice } = await estimateGas(
-          this.props.transaction,
-          this.props.globalNetworkClientId,
-        );
+        const { gas: estimatedGas, gasPrice: estimatedGasPrice } =
+          (await estimateGas(
+            this.props.transaction as Parameters<typeof estimateGas>[0],
+            this.props.globalNetworkClientId,
+          )) as { gas: string; gasPrice?: string };
         newTxMeta = {
           ...newTxMeta,
-          gas,
-          gasPrice,
+          gas: estimatedGas,
+          gasPrice: estimatedGasPrice,
         };
       }
       // TODO: We should add here support for sending tokens
@@ -423,14 +490,16 @@ class Send extends PureComponent {
     }
 
     if (!newTxMeta.value) {
-      newTxMeta.value = toBN(0);
+      newTxMeta.value = toBN(0 as unknown as string);
     }
 
     newTxMeta.from = selectedAddress;
     const fromAccount = internalAccounts.find((account) =>
       toLowerCaseEquals(account.address, selectedAddress),
     );
-    newTxMeta.transactionFromName = fromAccount.metadata.name;
+    newTxMeta.transactionFromName = (
+      fromAccount as InternalAccount
+    ).metadata.name;
     this.props.setTransactionObject(newTxMeta);
     this.mounted && this.setState({ ready: true, transactionKey: Date.now() });
   };
@@ -442,12 +511,14 @@ class Send extends PureComponent {
    *
    * @returns ERC20 asset, containing address, symbol and decimals
    */
-  handleTokenDeeplink = async (address) => {
+  handleTokenDeeplink = async (
+    addressParam?: string,
+  ): Promise<LegacySelectedAsset> => {
     const { tokens, tokenList } = this.props;
-    address = toChecksumAddress(address);
+    const address = toChecksumAddress(addressParam as string);
     // First check if we have token information in token list
     if (address in tokenList) {
-      return tokenList[address];
+      return tokenList[address] as LegacySelectedAsset;
     }
     // Then check if the token is already in state
     const stateToken = tokens.find((token) => token.address === address);
@@ -456,7 +527,7 @@ class Send extends PureComponent {
     }
     // Finally try to query the contract
     const { AssetsContractController } = Engine.context;
-    const token = { address };
+    const token: LegacySelectedAsset = { address };
     try {
       const decimals = await AssetsContractController.getERC20TokenDecimals(
         address,
@@ -470,7 +541,7 @@ class Send extends PureComponent {
         content: 'clipboard-alert',
         data: { msg: strings(`send.deeplink_failure`) },
       });
-      this.onCancel();
+      this.onCancel(undefined);
     }
     try {
       token.symbol = await AssetsContractController.getERC721AssetSymbol(
@@ -487,7 +558,7 @@ class Send extends PureComponent {
    *
    * @param {object} transaction - Transaction object
    */
-  prepareTransaction = (transaction) => ({
+  prepareTransaction = (transaction: LegacyTransactionState) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -501,7 +572,10 @@ class Send extends PureComponent {
    * @param {object} transaction - Transaction object
    * @param {object} selectedAsset - Asset object
    */
-  prepareAssetTransaction = (transaction, selectedAsset) => ({
+  prepareAssetTransaction = (
+    transaction: LegacyTransactionState,
+    selectedAsset: LegacySelectedAsset,
+  ) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -514,7 +588,7 @@ class Send extends PureComponent {
    *
    * @param transaction - Transaction object
    */
-  sanitizeTransaction = (transaction) => ({
+  sanitizeTransaction = (transaction: LegacyTransactionState) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -524,10 +598,14 @@ class Send extends PureComponent {
    * Removes collectible in case an ERC721 asset is being sent, when not in mainnet
    */
   removeNft = () => {
-    const { selectedAsset, assetType, providerType } = this.props.transaction;
+    const { selectedAsset, assetType, providerType } = this.props
+      .transaction as LegacyTransactionState & { providerType?: string };
     if (assetType === 'ERC721' && providerType !== MAINNET) {
       const { NftController } = Engine.context;
-      NftController.removeNft(selectedAsset.address, selectedAsset.tokenId);
+      NftController.removeNft(
+        selectedAsset.address as string,
+        selectedAsset.tokenId as string,
+      );
     }
   };
 
@@ -536,9 +614,9 @@ class Send extends PureComponent {
    *
    * @param if - Transaction id
    */
-  onCancel = (id) => {
+  onCancel = (id?: string) => {
     Engine.context.ApprovalController.reject(
-      id,
+      id as string,
       providerErrors.userRejectedRequest(),
     );
     this.props.navigation.pop();
@@ -562,59 +640,83 @@ class Send extends PureComponent {
       globalNetworkClientId,
       addressBook,
     } = this.props;
-    let { transaction } = this.props;
+    let transaction = this.props.transaction as LegacyTransactionState;
     try {
       if (assetType === 'ETH') {
-        transaction = this.prepareTransaction(transaction);
+        transaction = this.prepareTransaction(
+          transaction,
+        ) as unknown as LegacyTransactionState;
       } else {
-        transaction = this.prepareAssetTransaction(transaction, selectedAsset);
+        transaction = this.prepareAssetTransaction(
+          transaction,
+          selectedAsset,
+        ) as unknown as LegacyTransactionState;
       }
-      const { result, transactionMeta } = await addTransaction(transaction, {
-        deviceConfirmedOn: WalletDevice.MM_MOBILE,
-        networkClientId: globalNetworkClientId,
-        origin: TransactionTypes.MMM,
-      });
+      const { result, transactionMeta } = await addTransaction(
+        transaction as Parameters<typeof addTransaction>[0],
+        {
+          deviceConfirmedOn: WalletDevice.MM_MOBILE,
+          networkClientId: globalNetworkClientId,
+          origin: TransactionTypes.MMM,
+        },
+      );
       await KeyringController.resetQRKeyringState();
       await ApprovalController.accept(transactionMeta.id, undefined, {
         waitForResult: true,
       });
 
       // Add to the AddressBook if it's an unkonwn address
-      let checksummedAddress = null;
+      let checksummedAddress: string | null = null;
+
+      const { transaction: transactionMetaParams } =
+        transactionMeta as unknown as {
+          transaction: { data?: string; to?: string };
+        };
 
       if (assetType === 'ETH') {
-        checksummedAddress = toChecksumAddress(transactionMeta.transaction.to);
+        checksummedAddress = toChecksumAddress(
+          transactionMetaParams.to as string,
+        );
       } else if (assetType === 'ERC20') {
         try {
           const [addressTo] = decodeTransferData(
             'transfer',
-            transactionMeta.transaction.data,
+            transactionMetaParams.data as string,
           );
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);
           }
         } catch (e) {
-          Logger.log('Error decoding transfer data', transactionMeta.data);
+          Logger.log(
+            'Error decoding transfer data',
+            transactionMetaParams.data,
+          );
         }
       } else if (assetType === 'ERC721') {
         try {
           const data = decodeTransferData(
             'transferFrom',
-            transactionMeta.transaction.data,
+            transactionMetaParams.data as string,
           );
           const addressTo = data[1];
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);
           }
         } catch (e) {
-          Logger.log('Error decoding transfer data', transactionMeta.data);
+          Logger.log(
+            'Error decoding transfer data',
+            transactionMetaParams.data,
+          );
         }
       }
       const existingContact =
-        addressBook[globalChainId] &&
-        addressBook[globalChainId][checksummedAddress];
+        addressBook[globalChainId]?.[checksummedAddress as string];
       if (!existingContact) {
-        AddressBookController.set(checksummedAddress, '', globalChainId);
+        AddressBookController.set(
+          checksummedAddress as string,
+          '',
+          globalChainId,
+        );
       }
       await new Promise((resolve) => {
         resolve(result);
@@ -631,17 +733,18 @@ class Send extends PureComponent {
         NotificationManager.watchSubmittedTransaction({
           ...transactionMeta,
           assetType: transaction.assetType,
-        });
+        } as Parameters<typeof NotificationManager.watchSubmittedTransaction>[0]);
         this.removeNft();
       });
-    } catch (error) {
+    } catch (caughtError) {
+      const error = caughtError as Error;
       if (
         !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
         !error?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          error && error.message,
+          error?.message,
           [{ text: strings('navigation.ok') }],
         );
         Logger.error(error, 'error while trying to send transaction (Send)');
@@ -679,7 +782,10 @@ class Send extends PureComponent {
    */
   trackEditScreen = async () => {
     const { transaction } = this.props;
-    const actionKey = await getTransactionReviewActionKey({ transaction });
+    const actionKey = await getTransactionReviewActionKey(
+      { transaction },
+      undefined as unknown as string,
+    );
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)
@@ -735,10 +841,16 @@ class Send extends PureComponent {
       network: networkType,
       activeCurrency:
         (selectedAsset &&
-          (selectedAsset.symbol || selectedAsset.contractName)) ||
+          (selectedAsset.symbol ||
+            (selectedAsset as LegacySelectedAsset & { contractName?: string })
+              .contractName)) ||
         'ETH',
       assetType,
-      ...getBlockaidTransactionMetricsParams(transaction),
+      ...getBlockaidTransactionMetricsParams(
+        transaction as unknown as Parameters<
+          typeof getBlockaidTransactionMetricsParams
+        >[0],
+      ),
       is_smart_transaction: shouldUseSmartTransaction,
     };
   };
@@ -749,7 +861,7 @@ class Send extends PureComponent {
    *
    * @param mode - Transaction mode, review or edit
    */
-  onModeChange = (mode) => {
+  onModeChange = (mode: string) => {
     const { navigation } = this.props;
     navigation && navigation.setParams({ mode });
     this.mounted && this.setState({ mode });
@@ -762,7 +874,7 @@ class Send extends PureComponent {
   changeToReviewMode = () => this.onModeChange(REVIEW);
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
@@ -792,6 +904,7 @@ class Send extends PureComponent {
         />
       );
     }
+    return null;
   }
 
   render = () => {
@@ -804,7 +917,7 @@ class Send extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const globalChainId = selectEvmChainId(state);
 
   return {
@@ -827,11 +940,11 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   resetTransaction: () => dispatch(resetTransaction()),
-  setTransactionObject: (transaction) =>
+  setTransactionObject: (transaction: NewTransactionMeta) =>
     dispatch(setTransactionObject(transaction)),
-  showAlert: (config) => dispatch(showAlert(config)),
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
   toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal()),
 });
 
@@ -840,4 +953,13 @@ Send.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Send));
+)(
+  withMetricsAwareness(
+    Send as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+) as unknown as ComponentType<
+  Partial<Omit<SendProps, 'metrics' | 'navigation' | 'route'>> & {
+    navigation?: Partial<NavigationProp<ParamListBase>>;
+    route?: { params?: SendRouteParams };
+  }
+>;
