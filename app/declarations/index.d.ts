@@ -408,3 +408,19 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 9 ---
+// Extensionless import of app/util/collectibles-transfer.json, which Metro
+// resolves but TypeScript does not (resolveJsonModule requires the extension).
+declare module '*/collectibles-transfer' {
+  const content: Record<
+    string,
+    { name: string; tradable: boolean; method?: string }
+  >;
+  export default content;
+}
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
