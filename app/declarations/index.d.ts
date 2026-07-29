@@ -408,3 +408,13 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 1 ---
+
+declare module 'ethjs-ens' {
+  export default class ENS {
+    constructor(opts: { provider: unknown; network: string });
+    reverse(address: string): Promise<string>;
+    lookup(name: string): Promise<string>;
+  }
+}
