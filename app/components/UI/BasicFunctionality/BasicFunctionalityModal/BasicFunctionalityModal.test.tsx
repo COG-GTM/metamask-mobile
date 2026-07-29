@@ -5,13 +5,11 @@ import React from 'react';
 import BasicFunctionalityModal from './BasicFunctionalityModal';
 import renderWithProvider from '../../../../util/test/renderWithProvider';
 import { useNavigation } from '@react-navigation/native';
+import { RootState } from '../../../../reducers';
 
-/**
- * @typedef {import('../../../../reducers').RootState} RootState
- * @typedef {import('redux').DeepPartial<RootState>} MockRootState
- */
+// Re-exported because several modules import `RootState` from this file.
+export type { RootState };
 
-/** @type {MockRootState} */
 const mockInitialState = {
   engine: {
     backgroundState: {
@@ -56,8 +54,14 @@ jest.mock('@react-navigation/native', () => {
 
 describe('BasicFunctionalityModal', () => {
   it('should render correctly', () => {
+    // The modal only reads `route`; `navigation` is passed to keep the render
+    // identical to the original test.
+    const props = {
+      navigation: useNavigation(),
+    } as unknown as React.ComponentProps<typeof BasicFunctionalityModal>;
+
     const { toJSON } = renderWithProvider(
-      <BasicFunctionalityModal navigation={useNavigation()} />,
+      <BasicFunctionalityModal {...props} />,
       { state: mockInitialState },
     );
     expect(toJSON()).toMatchSnapshot();

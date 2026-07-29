@@ -7,7 +7,10 @@ import renderWithProvider from '../../../util/test/renderWithProvider';
 
 describe('BasicFunctionality', () => {
   it('should render correctly', () => {
-    const { toJSON } = renderWithProvider(<BasicFunctionality />);
+    // `handleSwitchToggle` is declared as required, but the original render
+    // does not provide one.
+    const props = {} as React.ComponentProps<typeof BasicFunctionality>;
+    const { toJSON } = renderWithProvider(<BasicFunctionality {...props} />);
     expect(toJSON()).toMatchSnapshot();
   });
 });
