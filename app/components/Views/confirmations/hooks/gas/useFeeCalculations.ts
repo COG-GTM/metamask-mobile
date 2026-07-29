@@ -49,14 +49,14 @@ export const useFeeCalculations = (transactionMeta: TransactionMeta) => {
         formatAmount(
           locale,
           new BigNumber(
-            getValueFromWeiHex({
+            (getValueFromWeiHex({
               value: hexFee,
               fromCurrency: 'WEI',
               toCurrency: 'ETH',
               numberOfDecimals: 4,
               conversionRate: 1,
               toDenomination: 'ETH',
-            }) || 0
+            }) || 0) as BigNumber.Value,
           )
         )
       } ${nativeCurrency}`;
