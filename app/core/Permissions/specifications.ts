@@ -4,8 +4,14 @@ import {
   endowmentCaveatSpecifications as snapsEndowmentCaveatSpecifications,
 } from '@metamask/snaps-rpc-methods';
 ///: END:ONLY_INCLUDE_IF
-import {  RestrictedMethods } from './constants';
-import { caip25CaveatBuilder, Caip25CaveatType, caip25EndowmentBuilder, createCaip25Caveat } from '@metamask/chain-agnostic-permission';
+import { InternalAccount } from '@metamask/keyring-internal-api';
+import { RestrictedMethods } from './constants';
+import {
+  caip25CaveatBuilder,
+  Caip25CaveatType,
+  caip25EndowmentBuilder,
+  createCaip25Caveat,
+} from '@metamask/chain-agnostic-permission';
 
 /**
  * This file contains the specifications of the permissions and caveats
@@ -30,33 +36,31 @@ export const CaveatFactories = Object.freeze({
   [Caip25CaveatType]: createCaip25Caveat,
 });
 
-/**
- * A PreferencesController identity object.
- *
- * @typedef {Object} Identity
- * @property {string} address - The address of the identity.
- * @property {string} name - The name of the identity.
- * @property {number} [lastSelected] - Unix timestamp of when the identity was
- * last selected in the UI.
- */
+type Caip25CaveatBuilderOptions = Parameters<typeof caip25CaveatBuilder>[0];
+
+export type CaveatSpecificationOptions = Pick<
+  Caip25CaveatBuilderOptions,
+  'findNetworkClientIdByChainId'
+> & {
+  listAccounts: () => InternalAccount[];
+};
 
 /**
  * Gets the specifications for all caveats that will be recognized by the
  * PermissionController.
  *
- * @param {{
- * listAccounts: () => import('@metamask/keyring-api').InternalAccount[],
- * findNetworkClientIdByChainId: (chainId: `0x${string}`) => string,
- * }} options - Options bag.
+ * @param options - Options bag.
  */
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
-}) => ({
+}: CaveatSpecificationOptions) => ({
+  // The CAIP-25 builder types account addresses as `Hex` and also expects
+  // non-EVM hooks that this client does not provide yet.
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
-  }),
+  } as unknown as Caip25CaveatBuilderOptions),
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   ...snapsCaveatsSpecifications,
   ...snapsEndowmentCaveatSpecifications,
