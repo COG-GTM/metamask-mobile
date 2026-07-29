@@ -408,3 +408,18 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 1 ---
+
+declare module '@metamask/ethjs-unit' {
+  const convert: {
+    fromWei(value: unknown, unit: string): string;
+    toWei(value: unknown, unit: string): import('bnjs4');
+    numberToString(value: unknown): string;
+  };
+  export default convert;
+}
+
+declare module 'number-to-bn' {
+  export default function numberToBN(value: unknown): import('bnjs4');
+}
