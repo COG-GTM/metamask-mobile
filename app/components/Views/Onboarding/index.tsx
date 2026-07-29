@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   BackHandler,
@@ -24,6 +23,7 @@ import {
 import { strings } from '../../../../locales/i18n';
 import Button from '@metamask/react-native-button';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import FadeOutOverlay from '../../UI/FadeOutOverlay';
 import {
   getTransparentBackOnboardingNavbarOptions,
@@ -40,17 +40,32 @@ import { PREVIOUS_SCREEN, ONBOARDING } from '../../../constants/navigation';
 import { EXISTING_USER } from '../../../constants/storage';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { withMetricsAwareness } from '../../hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
 import { Authentication } from '../../../core';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import { OnboardingSelectorIDs } from '../../../../e2e/selectors/Onboarding/Onboarding.selectors';
 
 import Routes from '../../../constants/navigation/Routes';
 import { selectAccounts } from '../../../selectors/accountTrackerController';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
-import { trace, TraceName, TraceOperation } from '../../../util/trace';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
-const createStyles = (colors) =>
+// `BaseNotification` is plain JS: its inferred props make every handler
+// mandatory even though the component only renders what it is given.
+const Notification = BaseNotification as React.FC<
+  Partial<React.ComponentProps<typeof BaseNotification>>
+>;
+
+// `withMetricsAwareness` is typed for components whose only prop is `metrics`.
+const withMetrics = withMetricsAwareness as <
+  P extends IWithMetricsAwarenessProps,
+>(
+  Children: React.ComponentType<P>,
+) => React.ComponentType<Omit<P, 'metrics'>>;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     scroll: {
       flex: 1,
@@ -134,52 +149,81 @@ const createStyles = (colors) =>
     },
   });
 
+interface OnboardingRoute {
+  params?: {
+    delete?: boolean;
+  };
+}
+
+interface OnboardingNavigation {
+  setOptions: (
+    options: ReturnType<typeof getTransparentOnboardingNavbarOptions>,
+  ) => void;
+  navigate: (name: string, params?: Record<string, unknown>) => void;
+  replace: (name: string, params?: Record<string, unknown>) => void;
+  push: (name: string, params?: Record<string, unknown>) => void;
+}
+
+interface OwnProps {
+  /**
+   * The navigator object
+   */
+  navigation?: OnboardingNavigation;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route?: OnboardingRoute;
+}
+
+interface StateProps {
+  accounts: ReturnType<typeof selectAccounts>;
+  /**
+   * redux flag that indicates if the user set a password
+   */
+  passwordSet: boolean;
+  /**
+   * loading status
+   */
+  loading: boolean;
+  /**
+   * loadings msg
+   */
+  loadingMsg: string;
+}
+
+interface DispatchProps {
+  disableNewPrivacyPolicyToast: () => void;
+  /**
+   * set loading status
+   */
+  setLoading: (msg: string) => void;
+  /**
+   * unset loading status
+   */
+  unsetLoading: () => void;
+}
+
+type OnboardingProps = OwnProps &
+  StateProps &
+  DispatchProps &
+  IWithMetricsAwarenessProps;
+
+interface OnboardingState {
+  warningModalVisible: boolean;
+  loading: boolean;
+  existingUser: boolean;
+}
+
 /**
  * View that is displayed to first time (new) users
  */
-class Onboarding extends PureComponent {
-  static propTypes = {
-    disableNewPrivacyPolicyToast: PropTypes.func,
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * redux flag that indicates if the user set a password
-     */
-    passwordSet: PropTypes.bool,
-    /**
-     * loading status
-     */
-    loading: PropTypes.bool,
-    /**
-     * set loading status
-     */
-    setLoading: PropTypes.func,
-    /**
-     * unset loading status
-     */
-    unsetLoading: PropTypes.func,
-    /**
-     * loadings msg
-     */
-    loadingMsg: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
-
+class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
   notificationAnimated = new Animated.Value(100);
   detailsYAnimated = new Animated.Value(0);
   actionXAnimated = new Animated.Value(0);
   detailsAnimated = new Animated.Value(0);
 
-  animatedTimingStart = (animatedRef, toValue) => {
+  animatedTimingStart = (animatedRef: Animated.Value, toValue: number) => {
     Animated.timing(animatedRef, {
       toValue,
       duration: 500,
@@ -188,20 +232,20 @@ class Onboarding extends PureComponent {
     }).start();
   };
 
-  state = {
+  state: OnboardingState = {
     warningModalVisible: false,
     loading: false,
     existingUser: false,
   };
 
-  seedwords = null;
-  importedAccounts = null;
-  channelName = null;
+  seedwords: string[] | null = null;
+  importedAccounts: string[] | null = null;
+  channelName: string | null = null;
   incomingDataStr = '';
-  dataToSync = null;
+  dataToSync: Record<string, unknown> | null = null;
   mounted = false;
 
-  warningCallback = () => true;
+  warningCallback: () => void = () => true;
 
   showNotification = () => {
     // show notification
@@ -221,9 +265,10 @@ class Onboarding extends PureComponent {
 
   updateNavBar = () => {
     const { route, navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(
-      route.params?.delete
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
+    navigation?.setOptions(
+      route?.params?.delete
         ? getTransparentOnboardingNavbarOptions(colors)
         : getTransparentBackOnboardingNavbarOptions(colors),
     );
@@ -237,7 +282,7 @@ class Onboarding extends PureComponent {
 
     InteractionManager.runAfterInteractions(() => {
       PreventScreenshot.forbid();
-      if (this.props.route.params?.delete) {
+      if (this.props.route?.params?.delete) {
         this.props.setLoading(strings('onboarding.delete_current'));
         setTimeout(() => {
           this.showNotification();
@@ -268,14 +313,14 @@ class Onboarding extends PureComponent {
     const { passwordSet } = this.props;
     if (!passwordSet) {
       await Authentication.resetVault();
-      this.props.navigation.replace(Routes.ONBOARDING.HOME_NAV);
+      this.props.navigation?.replace(Routes.ONBOARDING.HOME_NAV);
     } else {
       await Authentication.lockApp();
-      this.props.navigation.replace(Routes.ONBOARDING.LOGIN);
+      this.props.navigation?.replace(Routes.ONBOARDING.LOGIN);
     }
   };
 
-  handleExistingUser = (action) => {
+  handleExistingUser = (action: () => void) => {
     if (this.state.existingUser) {
       this.alertExistingUser(action);
     } else {
@@ -287,14 +332,14 @@ class Onboarding extends PureComponent {
     const action = () => {
       const { metrics } = this.props;
       if (metrics.isEnabled()) {
-        this.props.navigation.navigate('ChoosePassword', {
+        this.props.navigation?.navigate('ChoosePassword', {
           [PREVIOUS_SCREEN]: ONBOARDING,
         });
         this.track(MetaMetricsEvents.WALLET_SETUP_STARTED);
       } else {
-        this.props.navigation.navigate('OptinMetrics', {
+        this.props.navigation?.navigate('OptinMetrics', {
           onContinue: () => {
-            this.props.navigation.replace('ChoosePassword', {
+            this.props.navigation?.replace('ChoosePassword', {
               [PREVIOUS_SCREEN]: ONBOARDING,
             });
             this.track(MetaMetricsEvents.WALLET_SETUP_STARTED);
@@ -310,14 +355,14 @@ class Onboarding extends PureComponent {
     const action = async () => {
       const { metrics } = this.props;
       if (metrics.isEnabled()) {
-        this.props.navigation.push(
+        this.props.navigation?.push(
           Routes.ONBOARDING.IMPORT_FROM_SECRET_RECOVERY_PHRASE,
         );
         this.track(MetaMetricsEvents.WALLET_IMPORT_STARTED);
       } else {
-        this.props.navigation.navigate('OptinMetrics', {
+        this.props.navigation?.navigate('OptinMetrics', {
           onContinue: () => {
-            this.props.navigation.replace(
+            this.props.navigation?.replace(
               Routes.ONBOARDING.IMPORT_FROM_SECRET_RECOVERY_PHRASE,
             );
             this.track(MetaMetricsEvents.WALLET_IMPORT_STARTED);
@@ -328,11 +373,13 @@ class Onboarding extends PureComponent {
     this.handleExistingUser(action);
   };
 
-  track = (event) => {
+  track = (
+    event: Parameters<typeof MetricsEventBuilder.createEventBuilder>[0],
+  ) => {
     trackOnboarding(MetricsEventBuilder.createEventBuilder(event).build());
   };
 
-  alertExistingUser = (callback) => {
+  alertExistingUser = (callback: () => void) => {
     this.warningCallback = () => {
       callback();
       this.toggleWarningModal();
@@ -346,7 +393,8 @@ class Onboarding extends PureComponent {
   };
 
   renderLoader = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -360,13 +408,15 @@ class Onboarding extends PureComponent {
   };
 
   renderContent() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
       <View style={styles.ctas}>
         <View style={styles.largeFoxWrapper}>
           <Image
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             source={require('../../../images/branding/fox.png')}
             style={styles.foxImage}
             resizeMethod={'auto'}
@@ -412,10 +462,11 @@ class Onboarding extends PureComponent {
   }
 
   handleSimpleNotification = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
-    if (!this.props.route.params?.delete) return;
+    if (!this.props.route?.params?.delete) return;
     return (
       <Animated.View
         style={[
@@ -424,8 +475,7 @@ class Onboarding extends PureComponent {
         ]}
       >
         <ElevatedView style={styles.modalTypeView} elevation={100}>
-          <BaseNotification
-            closeButtonDisabled
+          <Notification
             status="success"
             data={{
               title: strings('onboarding.success'),
@@ -440,7 +490,8 @@ class Onboarding extends PureComponent {
   render() {
     const { loading } = this.props;
     const { existingUser } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -456,6 +507,7 @@ class Onboarding extends PureComponent {
             {loading && (
               <View style={styles.foxWrapper}>
                 <Image
+                  // eslint-disable-next-line @typescript-eslint/no-require-imports
                   source={require('../../../images/branding/fox.png')}
                   style={styles.image}
                   resizeMethod={'auto'}
@@ -490,15 +542,15 @@ class Onboarding extends PureComponent {
 
 Onboarding.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   accounts: selectAccounts(state),
   passwordSet: state.user.passwordSet,
   loading: state.user.loadingSet,
   loadingMsg: state.user.loadingMsg,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setLoading: (msg) => dispatch(loadingSet(msg)),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  setLoading: (msg: string) => dispatch(loadingSet(msg)),
   unsetLoading: () => dispatch(loadingUnset()),
   disableNewPrivacyPolicyToast: () =>
     dispatch(storePrivacyPolicyClickedOrClosedAction()),
@@ -507,4 +559,4 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Onboarding));
+)(withMetrics(Onboarding));
