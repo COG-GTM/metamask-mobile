@@ -2,7 +2,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, TextStyle, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Modal from 'react-native-modal';
-import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
+import {
+  GAS_ESTIMATE_TYPES,
+  type EthGasPriceEstimate,
+  type GasFeeEstimates,
+  type LegacyGasPriceEstimate,
+} from '@metamask/gas-fee-controller';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { connect } from 'react-redux';
 
@@ -93,15 +98,57 @@ interface LegacyTransactionData {
 
 type GasOption = string;
 
-interface GasFeeEstimateOption {
+export interface GasFeeEstimateOption {
   suggestedMaxFeePerGas: string;
   suggestedMaxPriorityFeePerGas: string;
 }
 
-type GasFeeEstimatesShape = Record<string, GasFeeEstimateOption> & {
+/**
+ * Gas fee estimates as returned by the gas fee controller. Legacy and
+ * eth_gasPrice estimate types hold a decimal GWEI string per option, while the
+ * fee market estimate type holds an object per option.
+ */
+export type GasFeeEstimatesShape =
+  | Record<string, never>
+  | EthGasPriceEstimate
+  | LegacyGasPriceEstimate
+  | GasFeeEstimates;
+
+const isFeeMarketEstimate = (
+  estimate: unknown,
+): estimate is GasFeeEstimateOption =>
+  typeof estimate === 'object' &&
+  estimate !== null &&
+  'suggestedMaxFeePerGas' in estimate;
+
+const estimateForOption = (
+  estimates: GasFeeEstimatesShape,
+  option: string,
+): unknown => (estimates as Record<string, unknown>)[option];
+
+export const feeMarketEstimateForOption = (
+  estimates: GasFeeEstimatesShape,
+  option: string,
+): GasFeeEstimateOption | undefined => {
+  const estimate = estimateForOption(estimates, option);
+  return isFeeMarketEstimate(estimate) ? estimate : undefined;
+};
+
+export const legacyEstimateForOption = (
+  estimates: GasFeeEstimatesShape,
+  option: string,
+): string | undefined => {
+  const estimate = estimateForOption(estimates, option);
+  return typeof estimate === 'string' ? estimate : undefined;
+};
+
+export interface CustomGasEstimate {
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
   estimatedBaseFee?: string;
   gasPrice?: string;
-};
+  selected?: GasOption | null;
+}
 
 interface EIP1559GasChange {
   suggestedMaxFeePerGas: string;
@@ -150,16 +197,7 @@ interface OwnProps {
   /**
    * Function that handles user saving the gas editors
    */
-  onGasUpdate: (
-    customGas: {
-      maxFeePerGas?: string;
-      maxPriorityFeePerGas?: string;
-      estimatedBaseFee?: string;
-      gasPrice?: string;
-      selected?: GasOption | null;
-    },
-    gasLimit?: string,
-  ) => void;
+  onGasUpdate: (customGas: CustomGasEstimate, gasLimit?: string) => void;
   /**
    * usedCustomGas from Swaps Controller
    */
@@ -306,13 +344,20 @@ function GasEditModal({
             contractExchangeRates: undefined,
             nativeCurrency: ticker,
             selectedGasFee: {
-              suggestedMaxFeePerGas:
-                gasFeeEstimates[gasSelected].suggestedMaxFeePerGas,
-              suggestedMaxPriorityFeePerGas:
-                gasFeeEstimates[gasSelected].suggestedMaxPriorityFeePerGas,
+              suggestedMaxFeePerGas: feeMarketEstimateForOption(
+                gasFeeEstimates,
+                gasSelected,
+              )?.suggestedMaxFeePerGas,
+              suggestedMaxPriorityFeePerGas: feeMarketEstimateForOption(
+                gasFeeEstimates,
+                gasSelected,
+              )?.suggestedMaxPriorityFeePerGas,
               suggestedGasLimit: initialGasLimit,
               suggestedEstimatedGasLimit: tradeGasLimit,
-              estimatedBaseFee: gasFeeEstimates.estimatedBaseFee,
+              estimatedBaseFee: legacyEstimateForOption(
+                gasFeeEstimates,
+                'estimatedBaseFee',
+              ),
               selectedOption: gasSelected,
               recommended: RECOMMENDED,
             },
@@ -339,8 +384,8 @@ function GasEditModal({
               suggestedGasLimit: initialGasLimit,
               suggestedGasPrice:
                 gasEstimateType === GAS_ESTIMATE_TYPES.ETH_GASPRICE
-                  ? gasFeeEstimates.gasPrice
-                  : gasFeeEstimates[gasSelected],
+                  ? legacyEstimateForOption(gasFeeEstimates, 'gasPrice')
+                  : legacyEstimateForOption(gasFeeEstimates, gasSelected),
             },
           },
           { onlyGas: true },

@@ -132,7 +132,11 @@ export interface QuotesModalQuote {
   aggregator: string;
   aggType: string;
   sourceAmount: string;
-  destinationAmount: string;
+  /**
+   * The Swaps controller types this as a number, the API returns the minimal
+   * unit amount as a string.
+   */
+  destinationAmount: string | number;
   slippage: number;
   priceSlippage?: {
     calculationError?: string;
@@ -320,11 +324,7 @@ function QuotesModal({
               style={styles.titleButton}
               hitSlop={{ top: 10, left: 20, right: 10, bottom: 10 }}
             >
-              <IonicIcon
-                name="arrow-back"
-                style={styles.backIcon}
-                size={20}
-              />
+              <IonicIcon name="arrow-back" style={styles.backIcon} size={20} />
               <Title>{strings('swaps.quote_details')}</Title>
             </TouchableOpacity>
           ) : (
@@ -348,7 +348,9 @@ function QuotesModal({
                     <Ratio
                       sourceAmount={selectedDetailsQuote.sourceAmount}
                       sourceToken={sourceToken}
-                      destinationAmount={selectedDetailsQuote.destinationAmount}
+                      destinationAmount={String(
+                        selectedDetailsQuote.destinationAmount,
+                      )}
                       destinationToken={destinationToken}
                       boldSymbol
                     />
@@ -363,7 +365,7 @@ function QuotesModal({
                     <Text small>{strings('swaps.guaranteed_amount')}</Text>
                     <Text primary>
                       {fromTokenMinimalUnitString(
-                        selectedDetailsQuote.destinationAmount,
+                        String(selectedDetailsQuote.destinationAmount),
                         destinationToken.decimals,
                       )}{' '}
                       <Text reset bold>
