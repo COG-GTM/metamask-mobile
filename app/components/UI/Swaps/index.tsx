@@ -11,6 +11,7 @@ import {
   View,
   TouchableOpacity,
   InteractionManager,
+  type ScrollViewProps,
   type ViewProps,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -68,7 +69,7 @@ import useModalHandler from '../../Base/hooks/useModalHandler';
 import Text from '../../Base/Text';
 import Keypad from '../../Base/Keypad';
 import StyledButton from '../StyledButton';
-import ScreenView from '../../Base/ScreenView';
+import BaseScreenView from '../../Base/ScreenView';
 import ActionAlert from './components/ActionAlert';
 import TokenSelectButton from './components/TokenSelectButton';
 import TokenSelectModal from './components/TokenSelectModal';
@@ -107,6 +108,14 @@ import type {
 } from './utils/token-list-utils';
 import type { TokenMetadata } from './utils/useFetchTokenMetadata';
 import type { RootState } from '../../../reducers';
+
+/**
+ * `ScreenView` forwards every prop to the `ScrollView` it renders, while its
+ * own props only declare `children`.
+ */
+const ScreenView = BaseScreenView as React.ComponentType<
+  ScrollViewProps & { children?: React.ReactNode }
+>;
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
