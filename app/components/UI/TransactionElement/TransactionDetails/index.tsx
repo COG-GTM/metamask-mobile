@@ -243,11 +243,14 @@ class TransactionDetails extends PureComponent<
     networkConfigurations: Record<string, NetworkConfig> | undefined,
   ) => {
     const txChainConfig = networkConfigurations?.[txChainId ?? ''];
+    const defaultBlockExplorerUrlIndex =
+      txChainConfig?.defaultBlockExplorerUrlIndex;
     // First check for network configuration block explorer
     let blockExplorer =
-      txChainConfig?.blockExplorerUrls?.[
-        txChainConfig?.defaultBlockExplorerUrlIndex ?? 0
-      ] || NO_RPC_BLOCK_EXPLORER;
+      (defaultBlockExplorerUrlIndex === undefined
+        ? undefined
+        : txChainConfig?.blockExplorerUrls?.[defaultBlockExplorerUrlIndex]) ||
+      NO_RPC_BLOCK_EXPLORER;
 
     // Check for default block explorers based on chain ID
     if (isMainNet(txChainId as string)) {
