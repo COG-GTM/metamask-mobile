@@ -1,5 +1,5 @@
 /app/core/InpageBridgeWeb3.js
-/app/util/blockies.js
+/app/util/blockies.ts
 __snapshots__
 android
 coverage

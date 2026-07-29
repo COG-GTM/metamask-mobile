@@ -1,10 +1,71 @@
-(function (global, factory) {
+interface BlockiesExports {
+  toDataUrl?: (address: string) => string;
+}
+
+interface BlockiesGlobal {
+  blockies?: BlockiesExports;
+}
+
+type BlockiesFactory = (exports: BlockiesExports) => void;
+
+declare const define: ((deps: string[], factory: BlockiesFactory) => void) & {
+  amd?: unknown;
+};
+
+type Hsl = [number, number, number];
+type Rgba = [number, number, number, number];
+
+interface Png {
+  width: number;
+  height: number;
+  depth: number;
+  pix_size: number;
+  data_size: number;
+  ihdr_offs: number;
+  ihdr_size: number;
+  plte_offs: number;
+  plte_size: number;
+  trns_offs: number;
+  trns_size: number;
+  idat_offs: number;
+  idat_size: number;
+  iend_offs: number;
+  iend_size: number;
+  buffer_size: number;
+  buffer: string[];
+  palette: Record<number, string>;
+  pindex: number;
+  index: (x: number, y: number) => number;
+  color: (red: number, green: number, blue: number, alpha: number) => string;
+  getBase64: () => string;
+  getDump: () => string;
+  fillRect: (
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    color: string,
+  ) => void;
+}
+
+interface BlockiesOptions {
+  seed: string;
+  size?: number;
+  scale?: number;
+  color?: Hsl;
+  bgcolor?: Hsl;
+  spotcolor?: Hsl;
+}
+
+type ResolvedBlockiesOptions = Required<BlockiesOptions>;
+
+(function (global: BlockiesGlobal, factory: BlockiesFactory) {
   exports && typeof exports === 'object' && typeof module !== 'undefined'
     ? factory(exports)
     : typeof define === 'function' && define.amd
     ? define(['exports'], factory)
     : factory((global.blockies = {}));
-})(this, (exports) => {
+})(this as unknown as BlockiesGlobal, (exports: BlockiesExports) => {
   'use strict';
 
   /**
@@ -19,19 +80,19 @@
    */
 
   // helper functions for that ctx
-  function write(buffer, offs) {
-    for (let i = 2; i < arguments.length; i++) {
-      for (let j = 0; j < arguments[i].length; j++) {
-        buffer[offs++] = arguments[i].charAt(j);
+  function write(buffer: string[], offs: number, ...chunks: string[]) {
+    for (let i = 0; i < chunks.length; i++) {
+      for (let j = 0; j < chunks[i].length; j++) {
+        buffer[offs++] = chunks[i].charAt(j);
       }
     }
   }
 
-  function byte2(w) {
+  function byte2(w: number) {
     return String.fromCharCode((w >> 8) & 255, w & 255);
   }
 
-  function byte4(w) {
+  function byte4(w: number) {
     return String.fromCharCode(
       (w >> 24) & 255,
       (w >> 16) & 255,
@@ -40,11 +101,16 @@
     );
   }
 
-  function byte2lsb(w) {
+  function byte2lsb(w: number) {
     return String.fromCharCode(w & 255, (w >> 8) & 255);
   }
 
-  const PNG = function (width, height, depth) {
+  const PNG = function (
+    this: Png,
+    width: number,
+    height: number,
+    depth: number,
+  ) {
     this.width = width;
     this.height = height;
     this.depth = depth;
@@ -69,11 +135,11 @@
     this.iend_size = 4 + 4 + 4;
     this.buffer_size = this.iend_offs + this.iend_size; // total PNG size
 
-    this.buffer = new Array();
-    this.palette = new Object();
+    this.buffer = new Array<string>();
+    this.palette = new Object() as Record<number, string>;
     this.pindex = 0;
 
-    const _crc32 = new Array();
+    const _crc32 = new Array<number>();
 
     // initialize buffer with zero bytes
     for (var i = 0; i < this.buffer_size; i++) {
@@ -103,7 +169,7 @@
 
     // initialize deflate block headers
     for (var i = 0; (i << 16) - 1 < this.pix_size; i++) {
-      var size, bits;
+      var size: number, bits: string;
       if (i + 0xffff < this.pix_size) {
         size = 0xffff;
         bits = '\x00';
@@ -134,14 +200,20 @@
     }
 
     // compute the index into a png for a given pixel
-    this.index = function (x, y) {
+    this.index = function (this: Png, x: number, y: number) {
       const i = y * (this.width + 1) + x + 1;
       const j = this.idat_offs + 8 + 2 + 5 * Math.floor(i / 0xffff + 1) + i;
       return j;
     };
 
     // convert a color and build up the palette
-    this.color = function (red, green, blue, alpha) {
+    this.color = function (
+      this: Png,
+      red: number,
+      green: number,
+      blue: number,
+      alpha: number,
+    ) {
       alpha = alpha >= 0 ? alpha : 255;
       const color = (((((alpha << 8) | red) << 8) | green) << 8) | blue;
 
@@ -162,12 +234,13 @@
     };
 
     // output a PNG string, Base64 encoded
-    this.getBase64 = function () {
+    this.getBase64 = function (this: Png) {
       const s = this.getDump();
 
       const ch =
         'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-      let c1, c2, c3, e1, e2, e3, e4;
+      let c1: number, c2: number, c3: number;
+      let e1: number, e2: number, e3: number, e4: number;
       const l = s.length;
       let i = 0;
       let r = '';
@@ -194,7 +267,7 @@
     };
 
     // output a PNG string
-    this.getDump = function () {
+    this.getDump = function (this: Png) {
       // compute adler32 of output pixels + row filter bytes
       const BASE = 65521; /* largest prime smaller than 65536 */
       const NMAX = 5552; /* NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 */
@@ -222,7 +295,7 @@
       );
 
       // compute crc32 of the PNG chunks
-      function crc32(png, offs, size) {
+      function crc32(png: string[], offs: number, size: number) {
         let crc = -1;
         for (let i = 4; i < size - 4; i += 1) {
           crc =
@@ -242,14 +315,21 @@
       return '\x89PNG\r\n\x1A\n' + this.buffer.join('');
     };
 
-    this.fillRect = function (x, y, w, h, color) {
+    this.fillRect = function (
+      this: Png,
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      color: string,
+    ) {
       for (let i = 0; i < w; i++) {
         for (let j = 0; j < h; j++) {
           this.buffer[this.index(x + i, y + j)] = color;
         }
       }
     };
-  };
+  } as unknown as new (width: number, height: number, depth: number) => Png;
 
   // https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
   /**
@@ -264,7 +344,7 @@
    * @return  {Array}           The RGB representation
    */
 
-  function hue2rgb(p, q, t) {
+  function hue2rgb(p: number, q: number, t: number) {
     if (t < 0) t += 1;
     if (t > 1) t -= 1;
     if (t < 1 / 6) return p + (q - p) * 6 * t;
@@ -273,8 +353,8 @@
     return p;
   }
 
-  function hsl2rgb(h, s, l) {
-    let r, g, b;
+  function hsl2rgb(h: number, s: number, l: number): Rgba {
+    let r: number, g: number, b: number;
 
     if (s == 0) {
       r = g = b = l; // achromatic
@@ -290,9 +370,9 @@
   }
 
   // The random number is a js implementation of the Xorshift PRNG
-  const randseed = new Array(4); // Xorshift: [x, y, z, w] 32 bit values
+  const randseed = new Array<number>(4); // Xorshift: [x, y, z, w] 32 bit values
 
-  function seedrand(seed) {
+  function seedrand(seed: string) {
     for (var i = 0; i < randseed.length; i++) {
       randseed[i] = 0;
     }
@@ -314,7 +394,7 @@
     return (randseed[3] >>> 0) / ((1 << 31) >>> 0);
   }
 
-  function createColor() {
+  function createColor(): Hsl {
     //saturation is the whole color spectrum
     const h = Math.floor(rand() * 360);
     //saturation goes from 40 to 100, it avoids greyish colors
@@ -325,16 +405,16 @@
     return [h / 360, s / 100, l / 100];
   }
 
-  function createImageData(size) {
+  function createImageData(size: number) {
     const width = size; // Only support square icons for now
     const height = size;
 
     const dataWidth = Math.ceil(width / 2);
     const mirrorWidth = width - dataWidth;
 
-    const data = [];
+    const data: number[] = [];
     for (let y = 0; y < height; y++) {
-      let row = [];
+      let row: number[] = [];
       for (let x = 0; x < dataWidth; x++) {
         // this makes foreground and background color to have a 43% (1/2.3) probability
         // spot color has 13% chance
@@ -352,7 +432,7 @@
     return data;
   }
 
-  function buildOpts(opts) {
+  function buildOpts(opts: BlockiesOptions): ResolvedBlockiesOptions {
     if (!opts.seed) {
       throw new Error('No seed provided');
     }
@@ -371,7 +451,7 @@
     );
   }
 
-  function toDataUrl(address) {
+  function toDataUrl(address: string) {
     const cache = Blockies.cache[address];
     if (address && cache) {
       return cache;
@@ -418,5 +498,9 @@
  * of caching Blockies Data URIs
  */
 class Blockies {
-  static cache = {};
+  static cache: Record<string, string> = {};
 }
+
+// The UMD factory above populates this module's `exports` object at runtime;
+// this ambient declaration exposes that binding to TypeScript and emits nothing.
+export declare const toDataUrl: (address: string) => string;
