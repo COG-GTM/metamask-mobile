@@ -408,3 +408,43 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 5 ---
+
+declare module '@metamask/react-native-button' {
+  import { ComponentType, ReactNode } from 'react';
+  // Module-scoped, so it does not actually duplicate the imports of the other
+  // `declare module` blocks in this file.
+  // eslint-disable-next-line no-duplicate-imports
+  import {
+    StyleProp,
+    TextStyle,
+    TouchableOpacityProps,
+    ViewStyle,
+  } from 'react-native';
+
+  export interface ButtonProps extends Omit<TouchableOpacityProps, 'style'> {
+    allowFontScaling?: boolean;
+    childGroupStyle?: StyleProp<ViewStyle>;
+    children?: ReactNode;
+    containerStyle?: StyleProp<ViewStyle>;
+    disabled?: boolean;
+    disabledContainerStyle?: StyleProp<ViewStyle>;
+    style?: StyleProp<TextStyle>;
+    styleDisabled?: StyleProp<TextStyle>;
+  }
+
+  const Button: ComponentType<ButtonProps>;
+  export default Button;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  // eslint-disable-next-line no-duplicate-imports
+  import { ReactNode } from 'react';
+
+  const coalesceNonElementChildren: (
+    children: ReactNode,
+    coalesceNodes: (nodes: ReactNode[], index: number) => ReactNode,
+  ) => ReactNode[];
+  export default coalesceNonElementChildren;
+}
