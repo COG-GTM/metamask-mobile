@@ -408,3 +408,10 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 3 ---
+declare module 'human-standard-token-abi' {
+  import { ethers } from 'ethers';
+  const content: ConstructorParameters<typeof ethers.utils.Interface>[0];
+  export default content;
+}
