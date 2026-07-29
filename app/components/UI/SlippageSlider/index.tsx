@@ -13,14 +13,54 @@ import {
   Text,
   Image,
 } from 'react-native';
-import PropTypes from 'prop-types';
+import { Theme } from '../../../util/theme/models';
 import { fontStyles } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
 import Svg, { Path } from 'react-native-svg';
 
-/* eslint-disable import/no-commonjs */
+/* eslint-disable import/no-commonjs, @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports */
 const SlippageSliderBgImg = require('../../../images/slippage-slider-bg.png');
-/* eslint-enable import/no-commonjs */
+/* eslint-enable import/no-commonjs, @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports */
+
+interface SlippageSliderProps {
+  /**
+   * Range of the slider
+   */
+  range: [number, number];
+  /**
+   * The increments between the range that are selectable
+   */
+  increment: number;
+  /**
+   * Value for the slider
+   */
+  value?: number;
+  /**
+   * Action to execute when value changes
+   */
+  onChange: (value: number) => void;
+  /**
+   * Function to format/compose the text in the tooltip
+   */
+  formatTooltipText: (value: number) => string;
+  /**
+   * Value that decides whether or not the slider is disabled
+   */
+  disabled?: boolean;
+  /**
+   * Wether to call onChange only on gesture release
+   */
+  changeOnRelease?: boolean;
+}
+
+/**
+ * `Animated.Value` and interpolations expose their current value only through
+ * private members.
+ */
+type AnimatedValueWithCurrent = Animated.Value & { _value: number };
+interface AnimatedInterpolationWithCurrent {
+  __getValue(): number;
+}
 
 const DIAMETER = 30;
 const TRACK_PADDING = 2;
@@ -29,7 +69,7 @@ const TOOLTIP_HEIGHT = 36;
 const TOOLTIP_WIDTH = 40;
 const COMPONENT_HEIGHT = DIAMETER + TOOLTIP_HEIGHT + 10;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']) =>
   StyleSheet.create({
     root: {
       position: 'relative',
@@ -97,7 +137,7 @@ const createStyles = (colors, shadows) =>
     },
   });
 
-const setAnimatedValue = (animatedValue, value) =>
+const setAnimatedValue = (animatedValue: Animated.Value, value: number) =>
   animatedValue.setValue(value);
 
 const SlippageSlider = ({
@@ -108,7 +148,7 @@ const SlippageSlider = ({
   formatTooltipText,
   disabled,
   changeOnRelease,
-}) => {
+}: SlippageSliderProps) => {
   const { colors, shadows } = useTheme();
   const styles = createStyles(colors, shadows);
   /* Reusable/truncated references to the range prop values */
@@ -146,7 +186,8 @@ const SlippageSlider = ({
   /* Value effect, this updates the UI if the value prop changes */
   useEffect(() => {
     if (!isResponderGranted) {
-      const relativePercent = ((value - r0) / fullRange) * trackWidth;
+      const relativePercent =
+        (((value as number) - r0) / fullRange) * trackWidth;
       setAnimatedValue(slider, relativePercent);
       pan.setValue(relativePercent);
     }
@@ -154,7 +195,7 @@ const SlippageSlider = ({
 
   /* Get the slider position value (snaps to points) and the value for the onChange callback */
   const getValuesByProgress = useCallback(
-    (progressPercent) => {
+    (progressPercent: number) => {
       const multiplier = Math.round(progressPercent * ticksLength);
       const sliderValue = (multiplier / ticksLength) * trackWidth;
       const newValue = r0 + multiplier * increment;
@@ -171,21 +212,21 @@ const SlippageSlider = ({
         onMoveShouldSetPanResponder: () => !disabled,
         onPanResponderGrant: () => {
           setIsResponderGranted(true);
-          pan.setOffset(pan._value);
+          pan.setOffset((pan as AnimatedValueWithCurrent)._value);
         },
         /**
          * When the slider is being dragged, this handler will figure out which tick
          * it should snap to
          */
-        onPanResponderMove: (ev, gestureState) => {
+        onPanResponderMove: (_ev, gestureState) => {
           pan.setValue(gestureState.dx);
-          const relativeValue = pan
-            .interpolate({
+          const relativeValue = (
+            pan.interpolate({
               inputRange: [0, trackWidth],
               outputRange: [0, trackWidth],
               extrapolate: 'clamp',
-            })
-            .__getValue();
+            }) as unknown as AnimatedInterpolationWithCurrent
+          ).__getValue();
 
           const [sliderValue, newValue] = getValuesByProgress(
             relativeValue / trackWidth,
@@ -200,7 +241,10 @@ const SlippageSlider = ({
         },
         onPanResponderRelease: () => {
           pan.flattenOffset();
-          const relativeValue = Math.min(Math.max(0, pan._value), trackWidth);
+          const relativeValue = Math.min(
+            Math.max(0, (pan as AnimatedValueWithCurrent)._value),
+            trackWidth,
+          );
           pan.setValue(relativeValue);
           if (changeOnRelease && onChange) {
             const progress = relativeValue / trackWidth;
@@ -222,8 +266,9 @@ const SlippageSlider = ({
   );
 
   /* Rendering */
-  const displayValue =
-    changeOnRelease && isResponderGranted ? temporaryValue : value;
+  const displayValue = (
+    changeOnRelease && isResponderGranted ? temporaryValue : value
+  ) as number;
 
   return (
     <View
@@ -235,7 +280,7 @@ const SlippageSlider = ({
         onLayout={(e) => setTrackWidth(e.nativeEvent.layout.width)}
       >
         <View style={styles.trackBack}>
-          {new Array(ticksLength + 1).fill().map((_, i) => (
+          {new Array(ticksLength + 1).fill(undefined).map((_, i) => (
             <View key={i} style={styles.tick} />
           ))}
         </View>
@@ -288,37 +333,6 @@ const SlippageSlider = ({
       />
     </View>
   );
-};
-
-SlippageSlider.propTypes = {
-  /**
-   * Range of the slider
-   */
-  range: PropTypes.arrayOf(PropTypes.number),
-  /**
-   * The increments between the range that are selectable
-   */
-  increment: PropTypes.number,
-  /**
-   * Value for the slider
-   */
-  value: PropTypes.number,
-  /**
-   * Action to execute when value changes
-   */
-  onChange: PropTypes.func,
-  /**
-   * Function to format/compose the text in the tooltip
-   */
-  formatTooltipText: PropTypes.func,
-  /**
-   * Value that decides whether or not the slider is disabled
-   */
-  disabled: PropTypes.bool,
-  /**
-   * Wether to call onChange only on gesture release
-   */
-  changeOnRelease: PropTypes.bool,
 };
 
 export default SlippageSlider;
