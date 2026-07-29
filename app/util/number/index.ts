@@ -561,7 +561,7 @@ export function renderToGwei(
  */
 export function weiToFiat(
   wei: AnyBN | number | null | undefined,
-  conversionRate: number | null,
+  conversionRate: number | null | undefined,
   currencyCode: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   decimalsToShow = 5,
