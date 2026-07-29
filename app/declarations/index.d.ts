@@ -11,6 +11,47 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'unicode-confusables' {
+  export function confusables(
+    input: string,
+  ): { point: string; similarTo?: string }[];
+  export function remove(input: string): string;
+  export function isConfusing(input: string): boolean;
+}
+
+declare module '@metamask/ethjs-unit';
+declare module 'number-to-bn';
+
+declare module 'ethereumjs-abi' {
+  export function rawEncode(types: string[], values: unknown[]): Buffer;
+  export function rawDecode(types: string[], data: Buffer): unknown[];
+}
+
+declare module 'humanize-duration' {
+  interface HumanizeDurationOptions {
+    language?: string;
+    fallbacks?: string[];
+    [key: string]: unknown;
+  }
+  const humanizeDuration: (
+    ms: number,
+    options?: HumanizeDurationOptions,
+  ) => string;
+  export default humanizeDuration;
+}
+
+declare module 'enzyme-adapter-react-16';
+declare module '@react-native-clipboard/clipboard/jest/clipboard-mock.js';
+
+declare module 'ethjs-ens' {
+  export default class ENS {
+    constructor(opts: { provider: unknown; network: string });
+    reverse(address: string): Promise<string>;
+    lookup(name: string): Promise<string>;
+  }
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -307,6 +348,8 @@ declare module '@sentry/react-native' {
     Request,
     SdkInfo,
     Event,
+    ErrorEvent,
+    TransactionEvent,
     Exception,
     SendFeedbackParams,
     SeverityLevel,
