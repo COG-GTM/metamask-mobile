@@ -39,6 +39,7 @@ import {
   TOKEN_METHOD_APPROVE,
   getTransactionReviewActionKey,
   getTransactionById,
+  type SelectedGasFee,
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
@@ -195,7 +196,7 @@ describe('Transactions utils :: parseTransactionLegacy', () => {
     },
     conversionRate: 1,
     currentCurrency: 'USD',
-    selectedGasFee: 'average',
+    selectedGasFee: 'average' as unknown as SelectedGasFee,
     multiLayerL1FeeTotal: '0x0',
     ticker: 'tBNB',
   };
@@ -608,7 +609,9 @@ describe('Transactions utils :: generateTxWithNewTokenAllowance', () => {
 
   const decodeAmount = (data: string): string => {
     const decode = decodeApproveData(data);
-    return BNToHex(decode.encodedAmount);
+    // `encodedAmount` is already a zero-padded hex string, so it is passed
+    // through `BNToHex` as-is to keep the padding.
+    return BNToHex(decode.encodedAmount as unknown as BN);
   };
 
   it('should encode a integer correctly and return a new transaction', () => {
