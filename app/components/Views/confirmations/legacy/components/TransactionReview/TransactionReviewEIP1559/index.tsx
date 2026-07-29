@@ -10,7 +10,10 @@ import {
 import Summary from '../../../../../../Base/Summary';
 import Text from '../../../../../../Base/Text';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { isMainnetByChainId, isTestNet } from '../../../../../../../util/networks';
+import {
+  isMainnetByChainId,
+  isTestNet,
+} from '../../../../../../../util/networks';
 import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import FadeAnimationView from '../../../../../../UI/FadeAnimationView';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
@@ -200,7 +203,9 @@ const TransactionReviewEIP1559 = ({
   const [isVisibleLegacyLearnMore, , showLegacyLearnMore, hideLegacyLearnMore] =
     useModalHandler(false);
   const toggleLearnMoreModal = useCallback(() => {
-    setShowLearnMoreModal((showLearnMoreModal) => !showLearnMoreModal);
+    setShowLearnMoreModal(
+      (isShowingLearnMoreModal) => !isShowingLearnMoreModal,
+    );
   }, []);
   const { colors } = useTheme();
   const styles = createStyles(colors);
