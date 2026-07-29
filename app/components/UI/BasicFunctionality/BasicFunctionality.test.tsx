@@ -7,7 +7,9 @@ import renderWithProvider from '../../../util/test/renderWithProvider';
 
 describe('BasicFunctionality', () => {
   it('should render correctly', () => {
-    const { toJSON } = renderWithProvider(<BasicFunctionality />);
+    const { toJSON } = renderWithProvider(
+      <BasicFunctionality handleSwitchToggle={jest.fn()} />,
+    );
     expect(toJSON()).toMatchSnapshot();
   });
 });
