@@ -79,18 +79,19 @@ export function getCachedENSName(
 
 export async function doENSReverseLookup(
   address: string,
-  chainId: string,
+  chainId?: string,
 ): Promise<string | undefined> {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
   const { name: cachedName, timestamp } =
-    ENSCache.cache[chainId + address] || {};
+    ENSCache.cache[`${chainId}${address}`] || {};
   const nowTimestamp = Date.now();
   if (timestamp && nowTimestamp - timestamp < CACHE_REFRESH_THRESHOLD) {
     return Promise.resolve(cachedName);
   }
 
-  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
+  const networkHasEnsSupport =
+    chainId !== undefined && ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
 
   if (networkHasEnsSupport) {
     const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
