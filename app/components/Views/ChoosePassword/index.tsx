@@ -72,6 +72,8 @@ import {
   IMetaMetricsEvent,
   JsonMap,
 } from '../../../core/Analytics/MetaMetrics.types';
+const renderEmptyHeaderLeft = () => <View />;
+
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
@@ -358,7 +360,7 @@ class ChoosePassword extends PureComponent<
     if (!prevLoading && loading) {
       // update navigationOptions
       navigation?.setParams({
-        headerLeft: () => <View />,
+        headerLeft: renderEmptyHeaderLeft,
       });
     }
   }

@@ -37,6 +37,8 @@ import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder
 import SRPDesign from '../../../images/srp-lock-design.png';
 import { Theme } from '../../../util/theme/models';
 
+const renderEmptyHeaderLeft = () => <View />;
+
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
@@ -178,8 +180,7 @@ const AccountBackupStep1 = (props: AccountBackupStep1Props) => {
     navigation.setOptions({
       ...getOnboardingNavbarOptions(
         route,
-        // eslint-disable-next-line react/display-name
-        { headerLeft: () => <View /> },
+        { headerLeft: renderEmptyHeaderLeft },
         colors,
       ),
       gesturesEnabled: false,
