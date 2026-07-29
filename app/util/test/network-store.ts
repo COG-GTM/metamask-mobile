@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { getFixturesServerPortInApp } from './utils';
 
 const FETCH_TIMEOUT = 40000; // Timeout in milliseconds
@@ -10,10 +10,23 @@ axios.defaults.headers.common['Access-Control-Allow-Methods'] =
 axios.defaults.headers.common['Access-Control-Allow-Headers'] =
   'Origin, X-Requested-With, Content-Type, Accept';
 
-const fetchWithTimeout = (url) =>
-  new Promise((resolve, reject) => {
+/**
+ * The fixture served by the E2E fixture server.
+ */
+interface FixtureState {
+  // The fixture holds an arbitrary preloaded Redux state; typing it as
+  // `RootState` makes `configureStore`'s `preloadedState` inference blow up
+  // with TS2589 in `app/store/index.ts`.
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  state?: any;
+  asyncState?: Record<string, string>;
+}
+
+const fetchWithTimeout = (url: string) =>
+  new Promise<AxiosResponse<FixtureState>>((resolve, reject) => {
     axios
-      .get(url)
+      .get<FixtureState>(url)
       .then((response) => resolve(response))
       .catch((error) => reject(error));
     setTimeout(() => {
@@ -26,6 +39,12 @@ const BROWSERSTACK_LOCALHOST = 'bs-local.com';
 const FIXTURE_SERVER_URL = `http://${FIXTURE_SERVER_HOST}:${getFixturesServerPortInApp()}/state.json`;
 
 class ReadOnlyNetworkStore {
+  private _initialized: boolean;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _state?: any;
+  private _asyncState?: Record<string, string>;
+
   constructor() {
     this._initialized = false;
     this._state = undefined;
@@ -38,7 +57,9 @@ class ReadOnlyNetworkStore {
     return this._state;
   }
 
-  async setState(state) {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async setState(state: any) {
     if (!state) {
       throw new Error('MetaMask - updated state is missing');
     }
@@ -47,20 +68,24 @@ class ReadOnlyNetworkStore {
   }
 
   // Async Storage
-  async getString(key) {
+  async getString(key: string) {
     await this._initIfRequired();
-    const value = this._asyncState[key];
+    // The store is only read once the fixture has been loaded.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const value = this._asyncState![key];
     return value !== undefined ? value : null;
   }
 
-  async set(key, value) {
+  async set(key: string, value: string) {
     await this._initIfRequired();
-    this._asyncState[key] = value;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this._asyncState![key] = value;
   }
 
-  async delete(key) {
+  async delete(key: string) {
     await this._initIfRequired();
-    delete this._asyncState[key];
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    delete this._asyncState![key];
   }
 
   async clearAll() {
@@ -79,7 +104,7 @@ class ReadOnlyNetworkStore {
     // Browserstack requires that the HOST is bs-local.com instead of localhost.
     const urls = [
       FIXTURE_SERVER_URL,
-      FIXTURE_SERVER_URL.replace(FIXTURE_SERVER_HOST, BROWSERSTACK_LOCALHOST)
+      FIXTURE_SERVER_URL.replace(FIXTURE_SERVER_HOST, BROWSERSTACK_LOCALHOST),
     ];
 
     try {
