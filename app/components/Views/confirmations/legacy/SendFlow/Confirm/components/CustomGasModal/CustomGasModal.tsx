@@ -9,6 +9,15 @@ import { useAppThemeFromContext } from '../../../../../../../../util/theme';
 import EditGasFee1559 from '../../../../components/EditGasFee1559Update';
 import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
 import createStyles from './CustomGasModal.styles';
+import {
+  CustomGasModalProps,
+  EIP1559GasObject,
+  SendFlowTransaction,
+} from './CustomGasModal.types';
+import { RootState } from '../../../../../../../../reducers';
+import { getGasFeeEstimateLevel } from '../../../../components/EditGasFee1559Update/types';
+import { GasTransaction } from '../../../../components/TransactionReview/TransactionReviewEIP1559Update/types';
+import { LegacyGasObject } from '../../../../components/EditGasFeeLegacyUpdate/types';
 
 const CustomGasModal = ({
   gasSelected,
@@ -23,16 +32,22 @@ const CustomGasModal = ({
   onGasChanged,
   onGasCanceled,
   updateGasState,
-}) => {
+}: CustomGasModalProps) => {
   const { colors } = useAppThemeFromContext();
   const styles = createStyles();
 
-  const transaction = useSelector((state) => state.transaction);
+  const transaction: SendFlowTransaction = useSelector(
+    (state: RootState) => state.transaction,
+  );
   const gasFeeEstimate = useSelector(selectGasFeeEstimates);
-  const primaryCurrency = useSelector(selectPrimaryCurrency);
+  const selectedPrimaryCurrency = useSelector(selectPrimaryCurrency);
+  const primaryCurrency =
+    typeof selectedPrimaryCurrency === 'string'
+      ? selectedPrimaryCurrency
+      : undefined;
   const chainId = transaction?.chainId;
-  const selectedAsset = useSelector(
-    (state) => state.transaction.selectedAsset,
+  const selectedAsset: SendFlowTransaction['selectedAsset'] = useSelector(
+    (state: RootState) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
@@ -41,7 +56,7 @@ const CustomGasModal = ({
   const [legacyGasObj, setLegacyGasObj] = useState(legacyGasData);
   const [eip1559GasObj, setEIP1559GasObj] = useState(EIP1559GasData);
   const [isViewAnimating, setIsViewAnimating] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | undefined>('');
 
   useEffect(() => {
     setIsViewAnimating(isAnimating);
@@ -51,12 +66,12 @@ const CustomGasModal = ({
   const onGasAnimationEnd = useCallback(() => setIsViewAnimating(false), []);
 
   const getGasAnalyticsParams = () => ({
-    active_currency: { value: selectedAsset.symbol, anonymous: true },
+    active_currency: { value: selectedAsset?.symbol, anonymous: true },
     gas_estimate_type: gasEstimateType,
   });
 
-  const onChangeGas = (gasValue) => {
-    setSelectedGas(gasValue);
+  const onChangeGas = (gasValue: string | null) => {
+    setSelectedGas(gasValue as string);
     onGasChanged(selectedGas);
   };
 
@@ -74,7 +89,7 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: GasTransaction, gasObj: LegacyGasObject) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalHex,
@@ -87,7 +102,7 @@ const CustomGasModal = ({
   );
 
   const onSaveEIP1559GasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: GasTransaction, gasObj?: EIP1559GasObject) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalMaxHex,
@@ -120,10 +135,11 @@ const CustomGasModal = ({
   const eip1559GasObject = {
     suggestedMaxFeePerGas:
       eip1559GasObj?.suggestedMaxFeePerGas ||
-      eip1559GasObj?.[selectedGas]?.suggestedMaxFeePerGas,
+      getGasFeeEstimateLevel(eip1559GasObj, selectedGas)?.suggestedMaxFeePerGas,
     suggestedMaxPriorityFeePerGas:
       eip1559GasObj?.suggestedMaxPriorityFeePerGas ||
-      gasFeeEstimate[selectedGas]?.suggestedMaxPriorityFeePerGas,
+      getGasFeeEstimateLevel(gasFeeEstimate, selectedGas)
+        ?.suggestedMaxPriorityFeePerGas,
     suggestedGasLimit:
       eip1559GasObj?.suggestedGasLimit || eip1559Txn?.suggestedGasLimit,
   };

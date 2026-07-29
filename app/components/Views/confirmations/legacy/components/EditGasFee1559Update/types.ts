@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { ReactNode } from 'react';
+import { JsonMap } from '../../../../../../core/Analytics/MetaMetrics.types';
 import { GasTransaction } from '../TransactionReview/TransactionReviewEIP1559Update/types';
 
 /**
@@ -32,9 +33,9 @@ export interface RenderInputProps {
  * The gas object held in local state and passed to the gas polling hook.
  */
 export interface SelectedGasObject {
-  suggestedMaxFeePerGas: string;
-  suggestedMaxPriorityFeePerGas: string;
-  suggestedGasLimit: string;
+  suggestedMaxFeePerGas?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedGasLimit?: string;
 }
 
 export interface RecommendedOption {
@@ -42,13 +43,6 @@ export interface RecommendedOption {
   render: ReactNode;
 }
 
-export interface GasAnalyticsParams {
-  chain_id: string;
-  gas_estimate_type: string;
-  gas_mode: string;
-  speed_set?: string;
-  view: string;
-}
 
 export interface EditGasFee1559UpdateProps {
   /**
@@ -62,7 +56,7 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Primary currency, either ETH or Fiat
    */
-  primaryCurrency: string;
+  primaryCurrency?: string;
   /**
    * Option to display speed up/cancel view
    */
@@ -74,7 +68,15 @@ export interface EditGasFee1559UpdateProps {
   /**
    * A string representing the network chainId
    */
-  chainId: string;
+  chainId?: string;
+  /**
+   * Name of the view the component is rendered from, sent with the analytics
+   */
+  view?: string;
+  /**
+   * Gas limit suggested when the screen was opened
+   */
+  initialSuggestedGasLimit?: string;
   /**
    * Function to set the gas selected value
    */
@@ -88,7 +90,7 @@ export interface EditGasFee1559UpdateProps {
    */
   onSave: (
     gasTransaction: GasTransaction,
-    newGasPriceObject?: Partial<SelectedGasObject>,
+    newGasPriceObject?: SelectedGasObject,
   ) => void;
   /**
    * Error message to show
@@ -129,7 +131,7 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Extra analytics params to be send with the gas analytics
    */
-  analyticsParams: GasAnalyticsParams;
+  analyticsParams?: JsonMap;
   /**
    * This is used in calculating the new gas price from the advanced view.
    * The maxFeePerGas is the max fee per gas that the user can set.
@@ -151,11 +153,7 @@ export const getGasFeeEstimateLevel = (
     return undefined;
   }
   const estimate = (gasOptions as Record<string, unknown>)[level];
-  if (
-    estimate &&
-    typeof estimate === 'object' &&
-    'suggestedMaxFeePerGas' in estimate
-  ) {
+  if (estimate && typeof estimate === 'object') {
     return estimate as GasFeeEstimateLevel;
   }
   return undefined;

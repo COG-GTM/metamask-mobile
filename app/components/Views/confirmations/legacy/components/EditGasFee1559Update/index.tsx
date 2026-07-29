@@ -84,7 +84,7 @@ const EditGasFee1559Update = ({
     selectedGasValue,
   );
   const [showInputs, setShowInputs] = useState(!dappSuggestedGas);
-  const [gasObject, updateGasObject] = useState<Partial<SelectedGasObject>>({
+  const [gasObject, updateGasObject] = useState<SelectedGasObject>({
     suggestedMaxFeePerGas: selectedGasObject.suggestedMaxFeePerGas,
     suggestedMaxPriorityFeePerGas:
       selectedGasObject.suggestedMaxPriorityFeePerGas,
@@ -105,7 +105,7 @@ const EditGasFee1559Update = ({
       onlyGas,
       gasSelected: selectedOption,
       legacy: false,
-      gasObject: gasObject as SelectedGasObject,
+      gasObject: gasObject as Required<SelectedGasObject>,
     }),
   );
 
@@ -131,7 +131,7 @@ const EditGasFee1559Update = ({
       return {
         ...analyticsParams,
         chain_id: getDecimalChainId(chainId),
-        function_type: analyticsParams.view,
+        function_type: analyticsParams?.view,
         gas_mode: selectedOption ? 'Basic' : 'Advanced',
         speed_set: selectedOption || undefined,
       };
