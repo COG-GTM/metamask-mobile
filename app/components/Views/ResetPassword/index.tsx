@@ -627,7 +627,9 @@ class ResetPassword extends PureComponent<
     const passwordsMatch = password !== '' && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
     const previousScreen = this.props.route.params?.[PREVIOUS_SCREEN];
-    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength ?? 0);
+    const passwordStrengthWord = getPasswordStrengthWord(
+      passwordStrength as number,
+    );
 
     return (
       <SafeAreaView style={styles.mainWrapper}>

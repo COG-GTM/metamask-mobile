@@ -500,10 +500,11 @@ class NetworksSettings extends PureComponent<
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   renderSolanaMainnet() {
     // TODO: [SOLANA] - Please revisit this since it's supported on a constant array in mobile and should come from multichain network controller
-    const { name: solanaMainnetName } =
-      Object.values(this.props.nonEvmNetworkConfigurations).find(
-        (network) => network.chainId === SolScope.Mainnet,
-      ) ?? {};
+    const { name: solanaMainnetName } = Object.values(
+      this.props.nonEvmNetworkConfigurations,
+    ).find(
+      (network) => network.chainId === SolScope.Mainnet,
+    ) as { name: string };
     const colors =
       (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);

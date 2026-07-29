@@ -306,7 +306,7 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
       toChecksumAddress(toEnsAddress || address),
       name,
       chainId,
-      memo ?? undefined,
+      memo as string,
     );
     navigation.pop();
   };
@@ -315,7 +315,7 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
     const { AddressBookController } = Engine.context;
     const { chainId, navigation, route } = this.props;
     AddressBookController.delete(chainId, this.contactAddressToRemove as string);
-    route.params.onDelete?.();
+    (route.params.onDelete as () => void)();
     navigation.pop();
   };
 
