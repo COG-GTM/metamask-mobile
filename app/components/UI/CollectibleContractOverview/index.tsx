@@ -1,6 +1,8 @@
 import React, { PureComponent } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import PropTypes from 'prop-types';
+import { Nft } from '@metamask/assets-controllers';
+import { ThemeColors } from '@metamask/design-tokens';
+import { Dispatch } from 'redux';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import CollectibleMedia from '../CollectibleMedia';
@@ -8,7 +10,7 @@ import AssetActionButton from '../AssetOverview/AssetActionButton';
 import Device from '../../../util/device';
 import { toggleCollectibleContractModal } from '../../../actions/modals';
 import { connect } from 'react-redux';
-import collectiblesTransferInformation from '../../../util/collectibles-transfer';
+import collectiblesTransferInformation from '../../../util/collectibles-transfer.json';
 import { newAssetTransaction } from '../../../actions/transaction';
 import { toLowerCaseEquals } from '../../../util/general';
 import { collectiblesSelector } from '../../../reducers/collectibles';
@@ -16,7 +18,11 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import { TokenOverviewSelectorsIDs } from '../../../../e2e/selectors/wallet/TokenOverview.selectors';
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 
-const createStyles = (colors) =>
+import { RootState } from '../../../reducers';
+import { Theme } from '../../../util/theme/models';
+import { CollectibleMediaProps } from '../CollectibleMedia/CollectibleMedia.types';
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -50,42 +56,93 @@ const createStyles = (colors) =>
     },
   });
 
+interface CollectibleContract {
+  name?: string;
+  symbol?: string;
+  description?: string;
+  address: string;
+  totalSupply?: number;
+  logo?: string;
+}
+
+interface CollectibleTransferInformation {
+  name: string;
+  tradable: boolean;
+  method?: string;
+}
+
+const transferInformation =
+  collectiblesTransferInformation as unknown as Record<
+    string,
+    CollectibleTransferInformation
+  >;
+
+interface OwnProps {
+  /**
+   * Object that represents the asset to be displayed
+   */
+  collectibleContract: CollectibleContract;
+  /**
+   * Navigation object required to push
+   * the Asset detail view
+   */
+  navigation?: {
+    navigate: (route: string, params?: object) => void;
+    push: (route: string, params?: object) => void;
+  };
+  /**
+   * How many collectibles are owned by the user
+   */
+  ownerOf?: number;
+}
+
+interface StateProps {
+  /**
+   * Array of ERC721 assets
+   */
+  collectibles: Nft[];
+}
+
+interface DispatchProps {
+  /**
+   * Action that sets a collectible contract type transaction
+   */
+  toggleCollectibleContractModal: () => void;
+  /**
+   * Start transaction with asset
+   */
+  newAssetTransaction: (selectedAsset?: Nft) => void;
+}
+
+type CollectibleContractOverviewProps = OwnProps & StateProps & DispatchProps;
+
+/**
+ * `CollectibleMedia` expects a fully populated NFT; only the contract address
+ * and logo are available here.
+ */
+const CollectibleContractMedia = CollectibleMedia as React.FC<
+  Omit<CollectibleMediaProps, 'collectible'> & {
+    collectible: { address: string; image?: string };
+  }
+>;
+
 /**
  * View that displays a specific collectible contract
  * including the overview (name, address, symbol, logo, description, total supply)
  */
-class CollectibleContractOverview extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the asset to be displayed
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * Array of ERC721 assets
-     */
-    collectibles: PropTypes.array,
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * How many collectibles are owned by the user
-     */
-    ownerOf: PropTypes.number,
-    /**
-     * Action that sets a collectible contract type transaction
-     */
-    toggleCollectibleContractModal: PropTypes.func.isRequired,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func,
-  };
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging --
+ * Declaration merging types `this.context` as the app theme without emitting a
+ * class field, which Babel would turn into an own property that shadows the
+ * `context` React assigns from `contextType`.
+ */
+interface CollectibleContractOverview {
+  context: Theme;
+}
 
+class CollectibleContractOverview extends PureComponent<CollectibleContractOverviewProps> {
   onAdd = () => {
     const { navigation, collectibleContract } = this.props;
-    navigation.push('AddAsset', {
+    navigation?.push('AddAsset', {
       assetType: 'collectible',
       collectibleContract,
     });
@@ -93,11 +150,11 @@ class CollectibleContractOverview extends PureComponent {
 
   onSend = () => {
     const { collectibleContract, collectibles } = this.props;
-    const collectible = collectibles.find((collectible) =>
-      toLowerCaseEquals(collectible.address, collectibleContract.address),
+    const collectible = collectibles.find((item) =>
+      toLowerCaseEquals(item.address, collectibleContract.address),
     );
     this.props.newAssetTransaction(collectible);
-    this.props.navigation.navigate('SendFlowView');
+    this.props.navigation?.navigate('SendFlowView');
   };
 
   onInfo = () => this.props.toggleCollectibleContractModal();
@@ -106,7 +163,9 @@ class CollectibleContractOverview extends PureComponent {
     const {
       collectibleContract: { logo, address },
     } = this.props;
-    return <CollectibleMedia small collectible={{ address, image: logo }} />;
+    return (
+      <CollectibleContractMedia small collectible={{ address, image: logo }} />
+    );
   };
 
   render() {
@@ -118,8 +177,8 @@ class CollectibleContractOverview extends PureComponent {
     const styles = createStyles(colors);
     const lowerAddress = address.toLowerCase();
     const leftActionButtonText =
-      lowerAddress in collectiblesTransferInformation
-        ? collectiblesTransferInformation[lowerAddress].tradable &&
+      lowerAddress in transferInformation
+        ? transferInformation[lowerAddress].tradable &&
           strings('asset_overview.send_button')
         : strings('asset_overview.send_button');
     return (
@@ -138,7 +197,7 @@ class CollectibleContractOverview extends PureComponent {
           <AssetActionButton
             icon="send"
             onPress={this.onSend}
-            label={leftActionButtonText}
+            label={leftActionButtonText || undefined}
             testID={TokenOverviewSelectorsIDs.SEND_BUTTON}
           />
           <AssetActionButton
@@ -159,15 +218,15 @@ class CollectibleContractOverview extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   collectibles: collectiblesSelector(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),
-  newAssetTransaction: (selectedAsset) =>
-    dispatch(newAssetTransaction(selectedAsset)),
+  newAssetTransaction: (selectedAsset?: Nft) =>
+    dispatch(newAssetTransaction(selectedAsset as Nft)),
 });
 
 CollectibleContractOverview.contextType = ThemeContext;
