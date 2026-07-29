@@ -83,6 +83,7 @@ import { RootState } from '../../../../../../reducers';
 import { IWithMetricsAwarenessProps } from '../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { IQRState } from '../../../../../UI/QRHardware/types';
 import { LegacyTransactionState } from '../../types/legacy-transaction';
+import { EIP1559GasTransaction } from '../../types/legacy-gas';
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
 let intervalIdForEstimatedL1Fee: ReturnType<typeof setInterval>;
@@ -260,7 +261,7 @@ interface TransactionReviewProps extends IWithMetricsAwarenessProps {
    */
   over?: boolean;
   gasEstimateType?: string;
-  EIP1559GasData?: Record<string, string>;
+  EIP1559GasData?: EIP1559GasTransaction;
   /**
    * Function to call when update animation starts
    */
@@ -295,7 +296,7 @@ interface TransactionReviewProps extends IWithMetricsAwarenessProps {
   /**
    * Returns the selected gas type
    */
-  gasSelected?: string;
+  gasSelected?: string | null;
   /**
    * Boolean that indicates if smart transaction should be used
    */
@@ -834,7 +835,4 @@ export default connect(mapStateToProps)(
       }>,
     ),
   ),
-) as unknown as ComponentType<
-  Partial<Omit<TransactionReviewProps, 'metrics' | 'generateTransform'>> &
-    Pick<TransactionReviewProps, 'generateTransform'>
->;
+) as unknown as ComponentType<Partial<Omit<TransactionReviewProps, 'metrics'>>>;

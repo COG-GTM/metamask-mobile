@@ -259,7 +259,7 @@ interface TransactionReviewInformationProps extends IWithMetricsAwarenessProps {
    * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
    */
   originWarning?: boolean;
-  gasSelected?: string;
+  gasSelected?: string | null;
   multiLayerL1FeeTotal?: string;
   /**
    * Boolean that indicates if the network supports buy

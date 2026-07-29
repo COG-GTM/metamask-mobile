@@ -43,7 +43,7 @@ export interface EditGasFeeLegacyUpdateProps {
   /**
    * Boolean to determine if the animation is happening
    */
-  isAnimating: boolean;
+  isAnimating?: boolean;
   /**
    * Extra analytics params to be send with the gas analytics
    */
