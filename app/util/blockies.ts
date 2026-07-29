@@ -1,50 +1,86 @@
-(function (global, factory) {
-  exports && typeof exports === 'object' && typeof module !== 'undefined'
-    ? factory(exports)
-    : typeof define === 'function' && define.amd
-    ? define(['exports'], factory)
-    : factory((global.blockies = {}));
-})(this, (exports) => {
-  'use strict';
+/**
+ * A handy class to calculate color values.
+ *
+ * @version 1.0
+ * @author Robert Eisele <robert@xarg.org>
+ * @copyright Copyright (c) 2010, Robert Eisele
+ * @link http://www.xarg.org/2010/03/generate-client-side-png-files-using-javascript/
+ * @license http://www.opensource.org/licenses/bsd-license.php BSD License
+ *
+ */
 
-  /**
-   * A handy class to calculate color values.
-   *
-   * @version 1.0
-   * @author Robert Eisele <robert@xarg.org>
-   * @copyright Copyright (c) 2010, Robert Eisele
-   * @link http://www.xarg.org/2010/03/generate-client-side-png-files-using-javascript/
-   * @license http://www.opensource.org/licenses/bsd-license.php BSD License
-   *
-   */
+type Hsl = [number, number, number];
+type Rgba = [number, number, number, number];
 
-  // helper functions for that ctx
-  function write(buffer, offs) {
-    for (let i = 2; i < arguments.length; i++) {
-      for (let j = 0; j < arguments[i].length; j++) {
-        buffer[offs++] = arguments[i].charAt(j);
-      }
+interface BlockiesOptions {
+  seed: string;
+  size: number;
+  scale: number;
+  color: Hsl;
+  bgcolor: Hsl;
+  spotcolor: Hsl;
+}
+
+// helper functions for that ctx
+function write(buffer: string[], offs: number, ...chunks: string[]) {
+  for (const chunk of chunks) {
+    for (let j = 0; j < chunk.length; j++) {
+      buffer[offs++] = chunk.charAt(j);
     }
   }
+}
 
-  function byte2(w) {
-    return String.fromCharCode((w >> 8) & 255, w & 255);
-  }
+function byte2(w: number): string {
+  return String.fromCharCode((w >> 8) & 255, w & 255);
+}
 
-  function byte4(w) {
-    return String.fromCharCode(
-      (w >> 24) & 255,
-      (w >> 16) & 255,
-      (w >> 8) & 255,
-      w & 255,
-    );
-  }
+function byte4(w: number): string {
+  return String.fromCharCode(
+    (w >> 24) & 255,
+    (w >> 16) & 255,
+    (w >> 8) & 255,
+    w & 255,
+  );
+}
 
-  function byte2lsb(w) {
-    return String.fromCharCode(w & 255, (w >> 8) & 255);
-  }
+function byte2lsb(w: number): string {
+  return String.fromCharCode(w & 255, (w >> 8) & 255);
+}
 
-  const PNG = function (width, height, depth) {
+class PNG {
+  width: number;
+  height: number;
+  depth: number;
+  pix_size: number;
+  data_size: number;
+  ihdr_offs: number;
+  ihdr_size: number;
+  plte_offs: number;
+  plte_size: number;
+  trns_offs: number;
+  trns_size: number;
+  idat_offs: number;
+  idat_size: number;
+  iend_offs: number;
+  iend_size: number;
+  buffer_size: number;
+  buffer: string[];
+  palette: Record<number, string>;
+  pindex: number;
+
+  index: (x: number, y: number) => number;
+  color: (red: number, green: number, blue: number, alpha?: number) => string;
+  getBase64: () => string;
+  getDump: () => string;
+  fillRect: (
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    color: string,
+  ) => void;
+
+  constructor(width: number, height: number, depth: number) {
     this.width = width;
     this.height = height;
     this.depth = depth;
@@ -69,14 +105,14 @@
     this.iend_size = 4 + 4 + 4;
     this.buffer_size = this.iend_offs + this.iend_size; // total PNG size
 
-    this.buffer = new Array();
-    this.palette = new Object();
+    this.buffer = new Array<string>();
+    this.palette = {};
     this.pindex = 0;
 
-    const _crc32 = new Array();
+    const _crc32 = new Array<number>();
 
     // initialize buffer with zero bytes
-    for (var i = 0; i < this.buffer_size; i++) {
+    for (let i = 0; i < this.buffer_size; i++) {
       this.buffer[i] = '\x00';
     }
 
@@ -102,8 +138,8 @@
     write(this.buffer, this.idat_offs + 8, byte2(header));
 
     // initialize deflate block headers
-    for (var i = 0; (i << 16) - 1 < this.pix_size; i++) {
-      var size, bits;
+    for (let i = 0; (i << 16) - 1 < this.pix_size; i++) {
+      let size, bits;
       if (i + 0xffff < this.pix_size) {
         size = 0xffff;
         bits = '\x00';
@@ -121,7 +157,7 @@
     }
 
     /* Create crc32 lookup table */
-    for (var i = 0; i < 256; i++) {
+    for (let i = 0; i < 256; i++) {
       let c = i;
       for (let j = 0; j < 8; j++) {
         if (c & 1) {
@@ -134,19 +170,24 @@
     }
 
     // compute the index into a png for a given pixel
-    this.index = function (x, y) {
+    this.index = function (x: number, y: number) {
       const i = y * (this.width + 1) + x + 1;
       const j = this.idat_offs + 8 + 2 + 5 * Math.floor(i / 0xffff + 1) + i;
       return j;
     };
 
     // convert a color and build up the palette
-    this.color = function (red, green, blue, alpha) {
-      alpha = alpha >= 0 ? alpha : 255;
+    this.color = function (
+      red: number,
+      green: number,
+      blue: number,
+      alpha?: number,
+    ) {
+      alpha = alpha !== undefined && alpha >= 0 ? alpha : 255;
       const color = (((((alpha << 8) | red) << 8) | green) << 8) | blue;
 
       if (typeof this.palette[color] === 'undefined') {
-        if (this.pindex == this.depth) return '\x00';
+        if (this.pindex === this.depth) return '\x00';
 
         const ndx = this.plte_offs + 8 + 3 * this.pindex;
 
@@ -206,7 +247,7 @@
         for (let x = -1; x < this.width; x++) {
           s1 += this.buffer[this.index(x, y)].charCodeAt(0);
           s2 += s1;
-          if ((n -= 1) == 0) {
+          if ((n -= 1) === 0) {
             s1 %= BASE;
             s2 %= BASE;
             n = NMAX;
@@ -222,7 +263,7 @@
       );
 
       // compute crc32 of the PNG chunks
-      function crc32(png, offs, size) {
+      function crc32(png: string[], offs: number, size: number) {
         let crc = -1;
         for (let i = 4; i < size - 4; i += 1) {
           crc =
@@ -242,181 +283,183 @@
       return '\x89PNG\r\n\x1A\n' + this.buffer.join('');
     };
 
-    this.fillRect = function (x, y, w, h, color) {
+    this.fillRect = function (
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      color: string,
+    ) {
       for (let i = 0; i < w; i++) {
         for (let j = 0; j < h; j++) {
           this.buffer[this.index(x + i, y + j)] = color;
         }
       }
     };
-  };
+  }
+}
 
-  // https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
-  /**
-   * Converts an HSL color value to RGB. Conversion formula
-   * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
-   * Assumes h, s, and l are contained in the set [0, 1] and
-   * returns r, g, and b in the set [0, 255].
-   *
-   * @param   {number}  h       The hue
-   * @param   {number}  s       The saturation
-   * @param   {number}  l       The lightness
-   * @return  {Array}           The RGB representation
-   */
+// https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
+/**
+ * Converts an HSL color value to RGB. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+ * Assumes h, s, and l are contained in the set [0, 1] and
+ * returns r, g, and b in the set [0, 255].
+ *
+ * @param h - The hue
+ * @param s - The saturation
+ * @param l - The lightness
+ * @returns The RGB representation
+ */
 
-  function hue2rgb(p, q, t) {
-    if (t < 0) t += 1;
-    if (t > 1) t -= 1;
-    if (t < 1 / 6) return p + (q - p) * 6 * t;
-    if (t < 1 / 2) return q;
-    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-    return p;
+function hue2rgb(p: number, q: number, t: number): number {
+  if (t < 0) t += 1;
+  if (t > 1) t -= 1;
+  if (t < 1 / 6) return p + (q - p) * 6 * t;
+  if (t < 1 / 2) return q;
+  if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+  return p;
+}
+
+function hsl2rgb(h: number, s: number, l: number): Rgba {
+  let r, g, b;
+
+  if (s === 0) {
+    r = g = b = l; // achromatic
+  } else {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
   }
 
-  function hsl2rgb(h, s, l) {
-    let r, g, b;
+  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), 255];
+}
 
-    if (s == 0) {
-      r = g = b = l; // achromatic
-    } else {
-      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      const p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1 / 3);
-      g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1 / 3);
+// The random number is a js implementation of the Xorshift PRNG
+const randseed = new Array<number>(4); // Xorshift: [x, y, z, w] 32 bit values
+
+function seedrand(seed: string) {
+  for (let i = 0; i < randseed.length; i++) {
+    randseed[i] = 0;
+  }
+  for (let i = 0; i < seed.length; i++) {
+    randseed[i % 4] =
+      (randseed[i % 4] << 5) - randseed[i % 4] + seed.charCodeAt(i);
+  }
+}
+
+function rand(): number {
+  // based on Java's String.hashCode(), expanded to 4 32bit values
+  const t = randseed[0] ^ (randseed[0] << 11);
+
+  randseed[0] = randseed[1];
+  randseed[1] = randseed[2];
+  randseed[2] = randseed[3];
+  randseed[3] = randseed[3] ^ (randseed[3] >> 19) ^ t ^ (t >> 8);
+
+  return (randseed[3] >>> 0) / ((1 << 31) >>> 0);
+}
+
+function createColor(): Hsl {
+  //saturation is the whole color spectrum
+  const h = Math.floor(rand() * 360);
+  //saturation goes from 40 to 100, it avoids greyish colors
+  const s = rand() * 60 + 40;
+  //lightness can be anything from 0 to 100, but probabilities are a bell curve around 50%
+  const l = (rand() + rand() + rand() + rand()) * 25;
+
+  return [h / 360, s / 100, l / 100];
+}
+
+function createImageData(size: number): number[] {
+  const width = size; // Only support square icons for now
+  const height = size;
+
+  const dataWidth = Math.ceil(width / 2);
+  const mirrorWidth = width - dataWidth;
+
+  const data: number[] = [];
+  for (let y = 0; y < height; y++) {
+    let row: number[] = [];
+    for (let x = 0; x < dataWidth; x++) {
+      // this makes foreground and background color to have a 43% (1/2.3) probability
+      // spot color has 13% chance
+      row[x] = Math.floor(rand() * 2.3);
     }
+    const r = row.slice(0, mirrorWidth);
+    r.reverse();
+    row = row.concat(r);
 
-    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), 255];
-  }
-
-  // The random number is a js implementation of the Xorshift PRNG
-  const randseed = new Array(4); // Xorshift: [x, y, z, w] 32 bit values
-
-  function seedrand(seed) {
-    for (var i = 0; i < randseed.length; i++) {
-      randseed[i] = 0;
-    }
-    for (var i = 0; i < seed.length; i++) {
-      randseed[i % 4] =
-        (randseed[i % 4] << 5) - randseed[i % 4] + seed.charCodeAt(i);
+    for (const value of row) {
+      data.push(value);
     }
   }
 
-  function rand() {
-    // based on Java's String.hashCode(), expanded to 4 32bit values
-    const t = randseed[0] ^ (randseed[0] << 11);
+  return data;
+}
 
-    randseed[0] = randseed[1];
-    randseed[1] = randseed[2];
-    randseed[2] = randseed[3];
-    randseed[3] = randseed[3] ^ (randseed[3] >> 19) ^ t ^ (t >> 8);
-
-    return (randseed[3] >>> 0) / ((1 << 31) >>> 0);
+function buildOpts(opts: { seed: string }): BlockiesOptions {
+  if (!opts.seed) {
+    throw new Error('No seed provided');
   }
 
-  function createColor() {
-    //saturation is the whole color spectrum
-    const h = Math.floor(rand() * 360);
-    //saturation goes from 40 to 100, it avoids greyish colors
-    const s = rand() * 60 + 40;
-    //lightness can be anything from 0 to 100, but probabilities are a bell curve around 50%
-    const l = (rand() + rand() + rand() + rand()) * 25;
+  seedrand(opts.seed);
 
-    return [h / 360, s / 100, l / 100];
-  }
-
-  function createImageData(size) {
-    const width = size; // Only support square icons for now
-    const height = size;
-
-    const dataWidth = Math.ceil(width / 2);
-    const mirrorWidth = width - dataWidth;
-
-    const data = [];
-    for (let y = 0; y < height; y++) {
-      let row = [];
-      for (let x = 0; x < dataWidth; x++) {
-        // this makes foreground and background color to have a 43% (1/2.3) probability
-        // spot color has 13% chance
-        row[x] = Math.floor(rand() * 2.3);
-      }
-      const r = row.slice(0, mirrorWidth);
-      r.reverse();
-      row = row.concat(r);
-
-      for (let i = 0; i < row.length; i++) {
-        data.push(row[i]);
-      }
-    }
-
-    return data;
-  }
-
-  function buildOpts(opts) {
-    if (!opts.seed) {
-      throw new Error('No seed provided');
-    }
-
-    seedrand(opts.seed);
-
-    return Object.assign(
-      {
-        size: 8,
-        scale: 16,
-        color: createColor(),
-        bgcolor: createColor(),
-        spotcolor: createColor(),
-      },
-      opts,
-    );
-  }
-
-  function toDataUrl(address) {
-    const cache = Blockies.cache[address];
-    if (address && cache) {
-      return cache;
-    }
-
-    const opts = buildOpts({ seed: address.toLowerCase() });
-
-    const imageData = createImageData(opts.size);
-    const width = Math.sqrt(imageData.length);
-
-    const p = new PNG(opts.size * opts.scale, opts.size * opts.scale, 3);
-    const bgcolor = p.color(...hsl2rgb(...opts.bgcolor));
-    const color = p.color(...hsl2rgb(...opts.color));
-    const spotcolor = p.color(...hsl2rgb(...opts.spotcolor));
-
-    for (let i = 0; i < imageData.length; i++) {
-      const row = Math.floor(i / width);
-      const col = i % width;
-      // if data is 0, leave the background
-      if (imageData[i]) {
-        // if data is 2, choose spot color, if 1 choose foreground
-        const pngColor = imageData[i] == 1 ? color : spotcolor;
-        p.fillRect(
-          col * opts.scale,
-          row * opts.scale,
-          opts.scale,
-          opts.scale,
-          pngColor,
-        );
-      }
-    }
-    const ret = `data:image/png;base64,${p.getBase64()}`;
-    Blockies.cache[address] = ret;
-    return ret;
-  }
-
-  exports.toDataUrl = toDataUrl;
-
-  Object.defineProperty(exports, '__esModule', { value: true });
-});
+  return Object.assign(
+    {
+      size: 8,
+      scale: 16,
+      color: createColor(),
+      bgcolor: createColor(),
+      spotcolor: createColor(),
+    },
+    opts,
+  );
+}
 
 /**
  * Utility class with the single responsibility
  * of caching Blockies Data URIs
  */
 class Blockies {
-  static cache = {};
+  static cache: Record<string, string> = {};
+}
+
+export function toDataUrl(address: string): string {
+  const cache = Blockies.cache[address];
+  if (address && cache) {
+    return cache;
+  }
+
+  const opts = buildOpts({ seed: address.toLowerCase() });
+
+  const imageData = createImageData(opts.size);
+  const width = Math.sqrt(imageData.length);
+
+  const p = new PNG(opts.size * opts.scale, opts.size * opts.scale, 3);
+  p.color(...hsl2rgb(...opts.bgcolor));
+  const color = p.color(...hsl2rgb(...opts.color));
+  const spotcolor = p.color(...hsl2rgb(...opts.spotcolor));
+
+  for (let i = 0; i < imageData.length; i++) {
+    const row = Math.floor(i / width);
+    const col = i % width;
+    // if data is 0, leave the background
+    if (imageData[i]) {
+      // if data is 2, choose spot color, if 1 choose foreground
+      const pngColor = imageData[i] === 1 ? color : spotcolor;
+      p.fillRect(
+        col * opts.scale,
+        row * opts.scale,
+        opts.scale,
+        opts.scale,
+        pngColor,
+      );
+    }
+  }
+  const ret = `data:image/png;base64,${p.getBase64()}`;
+  Blockies.cache[address] = ret;
+  return ret;
 }
