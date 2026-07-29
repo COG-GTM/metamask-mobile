@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   TextInput,
@@ -17,6 +16,9 @@ import FAIcon from 'react-native-vector-icons/FontAwesome5';
 import Fuse from 'fuse.js';
 import { connect } from 'react-redux';
 import { isValidAddress } from 'ethereumjs-util';
+import { Hex } from '@metamask/utils';
+import { NetworkConfiguration } from '@metamask/network-controller';
+import { Theme } from '@metamask/design-tokens';
 
 import Device from '../../../../util/device';
 import { addCurrencySymbol } from '../../../../util/number';
@@ -51,9 +53,14 @@ import { MetaMetricsEvents } from '../../../../core/Analytics';
 import { useTheme } from '../../../../util/theme';
 import { QuoteViewSelectorIDs } from '../../../../../e2e/selectors/swaps/QuoteView.selectors';
 import { getDecimalChainId } from '../../../../util/networks';
-import { getSortedTokensByFiatValue } from '../utils/token-list-utils';
+import {
+  getSortedTokensByFiatValue,
+  Token,
+  TokenWithFiatValue,
+} from '../utils/token-list-utils';
+import { RootState } from '../../../../reducers';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -130,6 +137,74 @@ const createStyles = (colors) =>
 
 const MAX_TOKENS_RESULTS = 20;
 
+/**
+ * Tokens rendered by the list may or may not have gone through
+ * `getSortedTokensByFiatValue`, which is what adds the balance fields.
+ */
+type TokenListItem = Token & Partial<TokenWithFiatValue>;
+
+/**
+ * Shape returned by the token metadata endpoint behind `useFetchTokenMetadata`,
+ * which is a subset of `Token`.
+ */
+interface FetchedToken {
+  address: string;
+  name?: string;
+  symbol: string;
+  decimals: number;
+  iconUrl?: string;
+}
+
+interface FetchedTokenMetadata {
+  valid: boolean | null;
+  error: boolean;
+  metadata: FetchedToken;
+}
+
+interface TokenSelectModalProps {
+  isVisible?: boolean;
+  dismiss: () => void;
+  title?: string;
+  tokens: TokenListItem[];
+  initialTokens: Token[];
+  onItemPress: (token: TokenListItem | FetchedToken) => void;
+  excludeAddresses?: (string | undefined)[];
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate: ReturnType<typeof selectConversionRate>;
+  /**
+   * Map of accounts to information objects including balances
+   */
+  accounts: ReturnType<typeof selectAccounts>;
+  /**
+   * Currency code of the currently-active currency
+   */
+  currentCurrency: string;
+  /**
+   * A string that represents the selected address
+   */
+  selectedAddress: ReturnType<
+    typeof selectSelectedInternalAccountFormattedAddress
+  >;
+  /**
+   * An object containing token balances for current account and network in the format address => balance
+   */
+  balances: ReturnType<typeof selectContractBalances>;
+  /**
+   * An object containing token exchange rates in the format address => exchangeRate
+   */
+  tokenExchangeRates: ReturnType<typeof selectContractExchangeRates>;
+  /**
+   * Chain Id
+   */
+  chainId: Hex;
+  /**
+   * Network configurations
+   */
+  networkConfigurations: Record<Hex, NetworkConfiguration>;
+}
+
 function TokenSelectModal({
   isVisible,
   dismiss,
@@ -146,12 +221,12 @@ function TokenSelectModal({
   chainId,
   networkConfigurations,
   balances,
-}) {
+}: TokenSelectModalProps) {
   const navigation = useNavigation();
   const { trackEvent, createEventBuilder } = useMetrics();
 
-  const searchInput = useRef(null);
-  const list = useRef();
+  const searchInput = useRef<TextInput>(null);
+  const list = useRef<React.ComponentRef<typeof FlatList>>(null);
   const [searchString, setSearchString] = useState('');
   const explorer = useBlockExplorer(networkConfigurations);
   const [isTokenImportVisible, , showTokenImportModal, hideTokenImportModal] =
@@ -161,7 +236,9 @@ function TokenSelectModal({
 
   const excludedAddresses = useMemo(
     () =>
-      excludeAddresses.filter(Boolean).map((address) => address.toLowerCase()),
+      excludeAddresses
+        .filter(Boolean)
+        .map((address) => (address as string).toLowerCase()),
     [excludeAddresses],
   );
 
@@ -175,14 +252,17 @@ function TokenSelectModal({
 
   const sortedInitialTokensWithFiatValue = useMemo(
     () =>
+      // The selectors above describe these with the controller types (`Hex`
+      // keys, a nullable conversion rate); `token-list-utils` declares its own
+      // structurally equivalent shapes.
       getSortedTokensByFiatValue({
         tokens: initialTokens,
-        account: accounts[selectedAddress],
+        account: accounts[selectedAddress as string],
         tokenExchangeRates,
         balances,
         conversionRate,
         currencyCode: currentCurrency,
-      }),
+      } as Parameters<typeof getSortedTokensByFiatValue>[0]),
     [
       initialTokens,
       accounts,
@@ -235,13 +315,15 @@ function TokenSelectModal({
     [excludedAddresses, searchString, tokenSearchResults.length],
   );
 
+  // `useFetchTokenMetadata` is still JavaScript, so its tuple return widens to
+  // an array of the union of its members.
   const [loadingTokenMetadata, tokenMetadata] = useFetchTokenMetadata(
     shouldFetchToken ? searchString : null,
     chainId,
-  );
+  ) as [boolean, FetchedTokenMetadata];
 
   const renderItem = useCallback(
-    ({ item }) => {
+    ({ item }: { item: TokenListItem }) => {
       const { balance, balanceFiat } = item;
       const balanceFiatWithCurrencySymbol = balanceFiat
         ? addCurrencySymbol(balanceFiat, currentCurrency)
@@ -285,7 +367,7 @@ function TokenSelectModal({
   }, [showTokenImportModal]);
 
   const handlePressImportToken = useCallback(
-    (item) => {
+    (item: FetchedToken) => {
       const { address, symbol } = item;
       trackEvent(
         createEventBuilder(MetaMetricsEvents.CUSTOM_TOKEN_IMPORTED)
@@ -368,9 +450,15 @@ function TokenSelectModal({
     [searchString, styles],
   );
 
-  const handleSearchTextChange = useCallback((text) => {
+  const handleSearchTextChange = useCallback((text: string) => {
     setSearchString(text);
-    if (list.current) list.current.scrollToOffset({ animated: false, y: 0 });
+    // `scrollToOffset` takes an `offset`, not a `y`. Kept as-is so the emitted
+    // JavaScript is unchanged.
+    if (list.current)
+      list.current.scrollToOffset({ animated: false, y: 0 } as unknown as {
+        animated: boolean;
+        offset: number;
+      });
   }, []);
 
   const handleClearSearch = useCallback(() => {
@@ -513,49 +601,7 @@ function TokenSelectModal({
   );
 }
 
-TokenSelectModal.propTypes = {
-  isVisible: PropTypes.bool,
-  dismiss: PropTypes.func,
-  title: PropTypes.string,
-  tokens: PropTypes.arrayOf(PropTypes.object),
-  initialTokens: PropTypes.arrayOf(PropTypes.object),
-  onItemPress: PropTypes.func,
-  excludeAddresses: PropTypes.arrayOf(PropTypes.string),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * A string that represents the selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * An object containing token balances for current account and network in the format address => balance
-   */
-  balances: PropTypes.object,
-  /**
-   * An object containing token exchange rates in the format address => exchangeRate
-   */
-  tokenExchangeRates: PropTypes.object,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Network configurations
-   */
-  networkConfigurations: PropTypes.object,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   accounts: selectAccounts(state),
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
