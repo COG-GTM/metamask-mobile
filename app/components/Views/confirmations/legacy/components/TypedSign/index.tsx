@@ -252,10 +252,10 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
     const { messageParams } = this.props;
     const styles = this.getStyles();
 
-    if (messageParams.version === 'V1' && Array.isArray(messageParams.data)) {
+    if (messageParams.version === 'V1') {
       return (
         <View style={styles.message}>
-          {messageParams.data.map((obj: TypedDataV1Entry, i: number) => (
+          {(messageParams.data as TypedDataV1Entry[]).map((obj, i) => (
             <View key={`${obj.name}_${i}`}>
               <Text style={[styles.messageText, styles.msgKey]}>
                 {escapeSpecialUnicode(obj.name)}:

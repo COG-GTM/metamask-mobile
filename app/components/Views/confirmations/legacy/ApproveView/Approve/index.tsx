@@ -299,7 +299,7 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
 
   computeGasEstimates = (
     overrideGasLimit: string | null,
-    gasEstimateTypeChanged?: boolean,
+    gasEstimateTypeChanged?: boolean | null,
   ) => {
     const { transaction, gasEstimateType } = this.props;
 
@@ -428,7 +428,7 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
           ).eq(prevProps?.transaction?.gas) ||
           !this.state.ready)
       ) {
-        this.computeGasEstimates(null, gasEstimateTypeChanged);
+        this.computeGasEstimates(null, null);
       }
     }
   };
