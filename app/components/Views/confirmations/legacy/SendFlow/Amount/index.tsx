@@ -1762,5 +1762,6 @@ export default connect(
   Partial<Omit<AmountProps, 'metrics' | 'navigation' | 'route'>> & {
     navigation?: Partial<NavigationProp<ParamListBase>>;
     route?: unknown;
+    transaction?: LegacyTransactionState;
   }
 >;

@@ -6,6 +6,7 @@ import { GasTransactionProps } from '../../../../../core/GasPolling/types';
  */
 export interface EIP1559GasTransaction extends Partial<GasTransactionProps> {
   error?: string;
+  gasFeeMaxHex?: string;
   selectedOption?: string | null;
 }
 
@@ -14,6 +15,7 @@ export interface EIP1559GasTransaction extends Partial<GasTransactionProps> {
  */
 export interface LegacyGasTransaction {
   error?: string;
+  gasFeeMaxHex?: string;
   suggestedGasLimit?: string;
   suggestedGasLimitHex?: string;
   suggestedGasPrice?: string;
