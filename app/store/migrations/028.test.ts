@@ -1,3 +1,6 @@
+// The mocked modules are read back and reassigned in place, which only works
+// through `require`.
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import migrate, { controllerList } from './028';
 
 jest.mock('@metamask/utils', () => ({
