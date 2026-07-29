@@ -71,7 +71,7 @@ interface WebsiteIconProps {
   /**
    * String corresponding to website url
    */
-  url?: string;
+  url: string;
   /**
    * Flag that determines if the background
    * should be transaparent or not
@@ -141,7 +141,7 @@ class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
       title =
         typeof this.props.title === 'string'
           ? this.props.title.substring(0, 1)
-          : getHost(url ?? '').substring(0, 1);
+          : getHost(url).substring(0, 1);
     }
 
     if (title && (!apiLogoUrl?.uri || renderIconUrlError)) {
@@ -173,8 +173,10 @@ class WebsiteIcon extends PureComponent<WebsiteIconProps, WebsiteIconState> {
         ) : (
           <FadeIn
             placeholderStyle={{
+              // The theme has no transparent colour, so a transparent
+              // placeholder simply has no background colour.
               backgroundColor: transparent
-                ? colors.transparent
+                ? undefined
                 : colors.background.alternative,
             }}
           >
