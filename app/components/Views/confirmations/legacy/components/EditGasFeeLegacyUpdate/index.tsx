@@ -40,6 +40,20 @@ import FadeAnimationView from '../../../../../UI/FadeAnimationView';
 import StyledButton from '../../../../../UI/StyledButton';
 import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import createStyles from './styles';
+import { EditGasFeeLegacyUpdateProps } from './types';
+import {
+  GasTransaction,
+  toGasTransaction,
+} from '../TransactionReview/TransactionReviewEIP1559Update/types';
+
+/**
+ * Reads one of the legacy gas price estimates out of the gas fee estimates
+ * returned by the gas fee controller, which is a union of several shapes.
+ */
+const readGasEstimate = (
+  estimates: unknown,
+  key: 'low' | 'high' | 'gasPrice',
+): BigNumber.Value => (estimates as Record<string, BigNumber.Value>)?.[key];
 
 const EditGasFeeLegacy = ({
   onCancel,
@@ -56,7 +70,7 @@ const EditGasFeeLegacy = ({
   selectedGasObject,
   hasDappSuggestedGas,
   chainId,
-}) => {
+}: EditGasFeeLegacyUpdateProps) => {
   const { trackEvent, createEventBuilder } = useMetrics();
   const [showRangeInfoModal, setShowRangeInfoModal] = useState(false);
   const [infoText, setInfoText] = useState('');
@@ -77,11 +91,13 @@ const EditGasFeeLegacy = ({
 
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
-  const gasTransaction = useGasTransaction({
-    onlyGas,
-    legacy: true,
-    gasObjectLegacy,
-  });
+  const gasTransaction = toGasTransaction(
+    useGasTransaction({
+      onlyGas,
+      legacy: true,
+      gasObjectLegacy,
+    }),
+  );
 
   const save = useCallback(() => {
     trackEvent(
@@ -111,7 +127,7 @@ const EditGasFeeLegacy = ({
     createEventBuilder,
   ]);
 
-  const changeGas = useCallback((gas) => {
+  const changeGas = useCallback((gas: GasTransaction) => {
     updateGasObjectLegacy({
       legacyGasLimit: gas.suggestedGasLimit,
       suggestedGasPrice: gas.suggestedGasPrice,
@@ -119,18 +135,18 @@ const EditGasFeeLegacy = ({
   }, []);
 
   const changedGasPrice = useCallback(
-    (value) => {
+    (value: string) => {
       let newGas;
 
       const lowerValue = new BigNumber(
         gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-          ? gasFeeEstimate?.low
-          : gasFeeEstimate?.gasPrice,
+          ? readGasEstimate(gasFeeEstimate, 'low')
+          : readGasEstimate(gasFeeEstimate, 'gasPrice'),
       );
       const higherValue = new BigNumber(
         gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-          ? gasFeeEstimate?.high
-          : gasFeeEstimate?.gasPrice,
+          ? readGasEstimate(gasFeeEstimate, 'high')
+          : readGasEstimate(gasFeeEstimate, 'gasPrice'),
       ).multipliedBy(new BigNumber(1.5));
 
       const valueBN = new BigNumber(value);
@@ -155,7 +171,7 @@ const EditGasFeeLegacy = ({
   );
 
   const changedGasLimit = useCallback(
-    (value) => {
+    (value: string) => {
       const newGas =
         typeof gasTransaction === 'object'
           ? { ...gasTransaction, suggestedGasLimit: value }
@@ -243,7 +259,7 @@ const EditGasFeeLegacy = ({
 
   const valueToWatch = transactionFee;
 
-  const handleInfoModalPress = (text) => {
+  const handleInfoModalPress = (text: string) => {
     setShowRangeInfoModal(true);
     setInfoText(text);
   };

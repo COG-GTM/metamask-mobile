@@ -17,6 +17,10 @@ export interface GasTransaction extends Partial<GasTransactionProps> {
   renderableTotalMinConversion?: string;
   renderableTotalMaxNative?: string;
   renderableTotalMaxConversion?: string;
+  suggestedGasPrice?: string;
+  suggestedGasPriceHex?: string;
+  suggestedGasLimitHex?: string;
+  totalHex?: string;
 }
 
 /**
