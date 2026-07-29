@@ -8,8 +8,8 @@ const ClipboardManager = {
     return await Clipboard.getString();
   },
   /**
-   * Callers pass values coming from optional model fields, so `null` is
-   * accepted and forwarded as-is to keep the previous behaviour.
+   * Callers copy values held in optional model fields, so `null` is forwarded
+   * to the native module unchanged.
    */
   async setString(string: string | null): Promise<void> {
     await Clipboard.setString(string as string);
