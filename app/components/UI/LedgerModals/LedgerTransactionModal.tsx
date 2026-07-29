@@ -35,6 +35,7 @@ export interface LedgerTransactionModalParams {
   transactionId: string;
   deviceId: string;
   replacementParams?: ReplacementTxParams;
+  type?: string;
 }
 
 const LedgerTransactionModal = () => {
