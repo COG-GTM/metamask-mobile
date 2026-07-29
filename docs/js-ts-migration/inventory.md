@@ -19,8 +19,9 @@ Generated: `2026-07-29`
 
 ## Workstreams
 
-Each workstream is a disjoint set of files. One session owns one workstream; sessions in 
-different workstreams never touch the same file or folder, so their PRs cannot conflict.
+Each workstream is a disjoint set of files — one session owns one workstream, and no file 
+belongs to two, so their PRs cannot conflict. Directories are disjoint too, except 
+`app/constants` and `app/store/migrations`; in those, stay inside your own file list.
 
 | ID | Workstream | Files | `.tsx` | 0-error | Total `tsc` errors | Owner (session URL) | Status |
 |---|---|---|---|---|---|---|---|

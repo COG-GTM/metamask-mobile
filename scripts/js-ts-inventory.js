@@ -626,10 +626,13 @@ function renderMarkdown({ totals, summary, byStream, files }) {
   L.push('## Workstreams');
   L.push('');
   L.push(
-    'Each workstream is a disjoint set of files. One session owns one workstream; sessions in ',
+    'Each workstream is a disjoint set of files — one session owns one workstream, and no file ',
   );
   L.push(
-    'different workstreams never touch the same file or folder, so their PRs cannot conflict.',
+    'belongs to two, so their PRs cannot conflict. Directories are disjoint too, except ',
+  );
+  L.push(
+    '`app/constants` and `app/store/migrations`; in those, stay inside your own file list.',
   );
   L.push('');
   L.push(
