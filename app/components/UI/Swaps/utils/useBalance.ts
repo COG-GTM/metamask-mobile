@@ -7,12 +7,21 @@ import {
 } from '../../../../util/number';
 import { safeToChecksumAddress } from '../../../../util/address';
 
+interface AccountWithBalance {
+  balance: string;
+}
+
+interface BalanceSourceToken {
+  address: string;
+  decimals: number;
+}
+
 function useBalance(
-  accounts,
-  balances,
-  selectedAddress,
-  sourceToken,
-  { asUnits = false } = {},
+  accounts: Record<string, AccountWithBalance>,
+  balances: Record<string, string>,
+  selectedAddress: string,
+  sourceToken?: BalanceSourceToken | null,
+  { asUnits = false }: { asUnits?: boolean } = {},
 ) {
   // TODO: This doesn't always return type BN. Objects down the line may attempt to call functions on the BN object.
   const balance = useMemo(() => {
@@ -22,17 +31,13 @@ function useBalance(
     if (isSwapsNativeAsset(sourceToken)) {
       if (asUnits) {
         // Controller stores balances in hex for ETH
-        return safeNumberToBN(
-          (accounts[selectedAddress] && accounts[selectedAddress].balance) || 0,
-        );
+        return safeNumberToBN(accounts[selectedAddress]?.balance || 0);
       }
-      return renderFromWei(
-        accounts[selectedAddress] && accounts[selectedAddress].balance,
-      );
+      return renderFromWei(accounts[selectedAddress]?.balance);
     }
     const tokenAddress = safeToChecksumAddress(sourceToken.address);
 
-    if (tokenAddress in balances) {
+    if (tokenAddress && tokenAddress in balances) {
       if (asUnits) {
         return balances[tokenAddress];
       }
