@@ -3,6 +3,10 @@ import { merge } from 'lodash';
 import initialRootState from '../../util/test/initial-root-state';
 import { captureException } from '@sentry/react-native';
 
+interface MigratedState {
+  engine: { backgroundState: Record<string, Record<string, unknown>> };
+}
+
 jest.mock('@sentry/react-native', () => ({
   captureException: jest.fn(),
 }));
@@ -61,7 +65,7 @@ describe('Migration #24', () => {
       },
     };
 
-    const newState = migrate(state);
+    const newState = migrate(state) as unknown as MigratedState;
 
     expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
       networkId: null,
@@ -80,7 +84,7 @@ describe('Migration #24', () => {
       },
     };
 
-    const newState = migrate(state);
+    const newState = migrate(state) as unknown as MigratedState;
 
     expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
       networkId: '1',
