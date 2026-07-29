@@ -162,6 +162,16 @@ type Navigation = NavigationProp<ParamListBase> & {
   push?: StackNavigationProp<ParamListBase>['push'];
 };
 
+/**
+ * The subset of a collectible `CollectibleContractElement` hands back on press.
+ */
+interface CollectibleItem {
+  address: string;
+  tokenId: string;
+  name?: string | null;
+  logo?: string | null;
+}
+
 interface CollectibleContractsProps {
   /**
    * Network type
@@ -220,7 +230,7 @@ interface CollectibleContractsProps {
 }
 
 const debouncedNavigation = debounce(
-  (navigation: Navigation | undefined, collectible: Nft) => {
+  (navigation: Navigation | undefined, collectible: CollectibleItem) => {
     navigation?.navigate('NftDetails', { collectible });
   },
   200,
@@ -284,7 +294,7 @@ const CollectibleContracts = ({
     networkType === MAINNET && !useNftDetection;
 
   const onItemPress = useCallback(
-    (collectible: Nft) => {
+    (collectible: CollectibleItem) => {
       debouncedNavigation(navigation, collectible);
     },
     [navigation],
@@ -446,7 +456,7 @@ const CollectibleContracts = ({
           onPress={onItemPress}
           asset={{ name: 'Favorites', favorites: true }}
           key={'Favorites'}
-          contractCollectibles={filteredFavoriteCollectibles}
+          contractCollectibles={filteredFavoriteCollectibles as Nft[]}
           collectiblesVisible
         />
       )
