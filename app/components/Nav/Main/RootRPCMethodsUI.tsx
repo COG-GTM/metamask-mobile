@@ -527,7 +527,10 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
           const toAddress = getTokenAddressParam(tokenData);
           const tokenAmount =
             tokenData &&
-            calcTokenAmount(tokenValue ?? '', asset.decimals as number).toFixed();
+            calcTokenAmount(
+              tokenValue ?? '',
+              asset.decimals as number,
+            ).toFixed();
 
           transactionMeta.txParams.value = hexToBN(
             getTokenValueParamAsHex(tokenData),
@@ -560,7 +563,10 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
           });
         }
 
-        if (isApprovalTransaction(data ?? '') && (!value || isZeroValue(value))) {
+        if (
+          isApprovalTransaction(data ?? '') &&
+          (!value || isZeroValue(value))
+        ) {
           setTransactionModalType(TransactionModalType.Transaction);
         } else {
           setTransactionModalType(TransactionModalType.Dapp);
@@ -600,7 +606,8 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
 
     return function cleanup() {
       (
-        Engine.context.TokensController as unknown as LegacyEventEmitterController
+        Engine.context
+          .TokensController as unknown as LegacyEventEmitterController
       )?.hub?.removeAllListeners();
       WalletConnect?.hub?.removeAllListeners();
     };
