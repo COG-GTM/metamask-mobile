@@ -2,8 +2,11 @@ import React from 'react';
 import TransactionReviewEIP1559 from '.';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
 import renderWithProvider, {
+  DeepPartial,
   renderHookWithProvider,
 } from '../../../../../../../util/test/renderWithProvider';
+import { RootState } from '../../../../../../../reducers';
+import { TransactionEIP1559UpdateProps } from './types';
 
 const initialState = {
   settings: {},
@@ -47,9 +50,9 @@ const initialState = {
       },
     },
   },
-};
+} as unknown as DeepPartial<RootState>;
 
-const transactionReview = {
+const transactionReview: TransactionEIP1559UpdateProps = {
   primaryCurrency: 'USD',
   chainId: '1',
   onEdit: () => undefined,
@@ -65,11 +68,12 @@ const transactionReview = {
   legacy: false,
   gasSelected: '',
   gasObject: {
+    suggestedGasLimit: '',
     suggestedMaxFeePerGas: '',
     suggestedMaxPriorityFeePerGas: '',
   },
   gasObjectLegacy: {},
-  updateTransactionState: undefined,
+  updateTransactionState: () => undefined,
   onlyGas: false,
 };
 
