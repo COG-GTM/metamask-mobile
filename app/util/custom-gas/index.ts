@@ -1,5 +1,14 @@
 import BN from 'bnjs4';
-import { renderFromWei, weiToFiat, toWei, conversionUtil } from '../number';
+import type { TransactionParams } from '@metamask/transaction-controller';
+import type { NetworkClientId } from '@metamask/network-controller';
+import {
+  renderFromWei,
+  weiToFiat,
+  toWei,
+  conversionUtil,
+  type EthDenomination,
+  type NumericValue as ConvertibleValue,
+} from '../number';
 import { strings } from '../../../locales/i18n';
 import TransactionTypes from '../../core/TransactionTypes';
 import { estimateGas } from '../transaction-controller';
@@ -12,31 +21,34 @@ export const WEI = 'WEI';
 /**
  * Calculates wei value of estimate gas price in gwei
  *
- * @param {number} estimate - Number corresponding to api gas price estimation
- * @returns {Object} - BN instance containing gas price in wei
+ * @param estimate - Number corresponding to api gas price estimation
+ * @returns BN instance containing gas price in wei
  */
-export function apiEstimateModifiedToWEI(estimate) {
+export function apiEstimateModifiedToWEI(estimate: string | number | BN): BN {
   return toWei(estimate, 'gwei');
 }
 
 /**
  * Calculates GWEI value of estimate gas price from ethgasstation.info
  *
- * @param {number} val - Number corresponding to api gas price estimation
- * @returns {string} - The GWEI value as a string
+ * @param val - Number corresponding to api gas price estimation
+ * @returns The GWEI value as a string
  */
-export function convertApiValueToGWEI(val) {
+export function convertApiValueToGWEI(val: string): string {
   return parseInt(val, 10).toString();
 }
 
 /**
  * Calculates gas fee in wei
  *
- * @param {number} estimate - Number corresponding to api gas price estimation
- * @param {number} gasLimit - Number corresponding to transaction gas limit
- * @returns {Object} - BN instance containing gas price in wei
+ * @param estimate - Number corresponding to api gas price estimation
+ * @param gasLimit - Number corresponding to transaction gas limit
+ * @returns BN instance containing gas price in wei
  */
-export function getWeiGasFee(estimate, gasLimit = 21000) {
+export function getWeiGasFee(
+  estimate: string | number | BN,
+  gasLimit: number = 21000,
+): BN {
   const apiEstimate = apiEstimateModifiedToWEI(estimate);
   const gasFee = apiEstimate.mul(new BN(gasLimit, 10));
   return gasFee;
@@ -45,11 +57,14 @@ export function getWeiGasFee(estimate, gasLimit = 21000) {
 /**
  * Calculates gas fee in eth
  *
- * @param {number} estimate - Number corresponding to api gas price estimation
- * @param {number} gasLimit - Number corresponding to transaction gas limit
- * @returns {Object} - BN instance containing gas price in wei
+ * @param estimate - Number corresponding to api gas price estimation
+ * @param gasLimit - Number corresponding to transaction gas limit
+ * @returns the renderable gas fee in ETH
  */
-export function getRenderableEthGasFee(estimate, gasLimit = 21000) {
+export function getRenderableEthGasFee(
+  estimate: string | number | BN,
+  gasLimit: number = 21000,
+): string {
   const gasFee = getWeiGasFee(estimate, gasLimit);
   return renderFromWei(gasFee);
 }
@@ -57,18 +72,18 @@ export function getRenderableEthGasFee(estimate, gasLimit = 21000) {
 /**
  * Calculates gas fee in fiat
  *
- * @param {number} estimate - Number corresponding to api gas price estimation
- * @param {number} conversionRate - Number corresponding to conversion rate for current `currencyCode`
- * @param {string} currencyCode - String corresponding to code of current currency
- * @param {number} gasLimit - Number corresponding to transaction gas limit
- * @returns {Object} - BN instance containing gas price in wei
+ * @param estimate - Number corresponding to api gas price estimation
+ * @param conversionRate - Number corresponding to conversion rate for current `currencyCode`
+ * @param currencyCode - String corresponding to code of current currency
+ * @param gasLimit - Number corresponding to transaction gas limit
+ * @returns the renderable gas fee in fiat
  */
 export function getRenderableFiatGasFee(
-  estimate,
-  conversionRate,
-  currencyCode,
-  gasLimit = 21000,
-) {
+  estimate: string | number | BN,
+  conversionRate: number,
+  currencyCode: string,
+  gasLimit: number = 21000,
+): string | undefined {
   const wei = getWeiGasFee(estimate, gasLimit);
   return weiToFiat(wei, conversionRate, currencyCode);
 }
@@ -76,14 +91,14 @@ export function getRenderableFiatGasFee(
 /**
  * Parse minutes number to readable wait time
  *
- * @param {number} min - Minutes
- * @returns {string} - Readable wait time
+ * @param min - Minutes
+ * @returns Readable wait time
  */
-export function parseWaitTime(min) {
+export function parseWaitTime(min: number): string {
   let tempMin = min,
     parsed = '',
     val;
-  const timeUnits = [
+  const timeUnits: [string, number][] = [
     [strings('unit.week'), 10080],
     [strings('unit.day'), 1440],
     [strings('unit.hour'), 60],
@@ -108,24 +123,27 @@ export function parseWaitTime(min) {
 }
 
 export async function getGasLimit(
-  transaction,
+  transaction: Partial<TransactionParams>,
   resetGas = false,
-  networkClientId,
-) {
+  networkClientId?: NetworkClientId,
+): Promise<{ gas: ReturnType<typeof hexToBN> }> {
   let estimation;
   try {
     const newTransactionObj = resetGas
       ? { ...transaction, gas: undefined, gasPrice: undefined }
       : transaction;
 
-    estimation = await estimateGas(newTransactionObj, networkClientId);
+    estimation = await estimateGas(
+      newTransactionObj as TransactionParams,
+      networkClientId as NetworkClientId,
+    );
   } catch (error) {
     estimation = {
       gas: TransactionTypes.CUSTOM_GAS.DEFAULT_GAS_LIMIT,
     };
   }
 
-  const gas = hexToBN(estimation.gas);
+  const gas = hexToBN(estimation.gas as string);
   return { gas };
 }
 
@@ -136,6 +154,13 @@ export function getValueFromWeiHex({
   conversionRate,
   numberOfDecimals,
   toDenomination,
+}: {
+  value: ConvertibleValue;
+  fromCurrency?: string;
+  toCurrency?: string;
+  conversionRate?: number | null;
+  numberOfDecimals?: number;
+  toDenomination?: EthDenomination;
 }) {
   return conversionUtil(value, {
     fromNumericBase: 'hex',
