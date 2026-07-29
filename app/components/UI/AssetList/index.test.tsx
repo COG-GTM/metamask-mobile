@@ -8,7 +8,7 @@ describe('AssetList', () => {
       <AssetList
         searchQuery={''}
         searchResults={[]}
-        handleSelectAsset={null}
+        handleSelectAsset={jest.fn()}
         selectedAsset={{ address: '0xABC', symbol: 'ABC', decimals: 0 }}
       />,
     );
