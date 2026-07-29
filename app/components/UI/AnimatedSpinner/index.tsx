@@ -1,14 +1,15 @@
-/* eslint-disable react/prop-types */
 import React, { PureComponent } from 'react';
 import { View, Animated, Easing, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { ThemeColors } from '@metamask/design-tokens';
+import { Theme } from '../../../util/theme/models';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
 export const SpinnerSize = {
   MD: 'MD',
   SM: 'SM',
-};
+} as const;
 
 const measures = {
   [SpinnerSize.SM]: {
@@ -45,30 +46,63 @@ const measures = {
   },
 };
 
-const createStyles = (colors, measures) =>
+type SpinnerSizeType = keyof typeof measures;
+
+type SpinnerMeasures = (typeof measures)[SpinnerSizeType];
+
+interface AnimatedSpinnerProps {
+  /**
+   * Size of the spinner
+   */
+  size?: SpinnerSizeType;
+  /**
+   * Test ID for the spinner
+   */
+  testID?: string;
+}
+
+interface AnimatedSpinnerState {
+  spinning: boolean;
+}
+
+const createStyles = (colors: ThemeColors, spinnerMeasures: SpinnerMeasures) =>
   StyleSheet.create({
     view: {
       position: 'relative',
       height: Device.isAndroid()
-        ? measures.Android.height
-        : measures.iOS.height,
-      width: Device.isAndroid() ? measures.Android.width : measures.iOS.width,
+        ? spinnerMeasures.Android.height
+        : spinnerMeasures.iOS.height,
+      width: Device.isAndroid() ? spinnerMeasures.Android.width : spinnerMeasures.iOS.width,
       top: Device.isAndroid() ? -6 : -5.5,
       left: Device.isAndroid() ? -6 : -5.5,
     },
     static: {
       borderWidth: 3.5,
       borderColor: colors.background.alternative,
-      borderRadius: measures.static.borderRadius,
-      width: measures.static.width,
-      height: measures.static.height,
+      borderRadius: spinnerMeasures.static.borderRadius,
+      width: spinnerMeasures.static.width,
+      height: spinnerMeasures.static.height,
     },
   });
 
-export default class AnimatedSpinner extends PureComponent {
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging --
+ * Declaration merging types `this.context` as the app theme without emitting a
+ * class field, which Babel would turn into an own property that shadows the
+ * `context` React assigns from `contextType`.
+ */
+interface AnimatedSpinner {
+  context: Theme;
+}
+
+class AnimatedSpinner extends PureComponent<
+  AnimatedSpinnerProps,
+  AnimatedSpinnerState
+> {
   spinValue = new Animated.Value(0);
 
-  state = {
+  mounted = false;
+
+  state: AnimatedSpinnerState = {
     spinning: false,
   };
 
@@ -134,3 +168,5 @@ export default class AnimatedSpinner extends PureComponent {
 }
 
 AnimatedSpinner.contextType = ThemeContext;
+
+export default AnimatedSpinner;
