@@ -1,13 +1,35 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  TextStyle,
+  TouchableOpacity,
+  ViewStyle,
+} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import Text from './Text';
-import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
+import { ThemeColors } from '@metamask/design-tokens';
+import Text from './Text';
 import { useTheme } from '../../util/theme';
 
-const createStyles = (colors) =>
-  StyleSheet.create({
+const createStyles = (colors: ThemeColors) => ({
+  rangeInputContainer: (error: boolean): ViewStyle => ({
+    borderColor: error ? colors.error.default : colors.border.default,
+    borderWidth: 1,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 42,
+  }),
+  input: (error: boolean): TextStyle => ({
+    height: 38,
+    minWidth: 10,
+    paddingRight: 6,
+    color: error ? colors.error.default : colors.text.default,
+  }),
+  ...StyleSheet.create({
     labelContainer: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -15,21 +37,6 @@ const createStyles = (colors) =>
       marginBottom: 14,
       flexWrap: 'wrap',
     },
-    rangeInputContainer: (error) => ({
-      borderColor: error ? colors.error.default : colors.border.default,
-      borderWidth: 1,
-      borderRadius: 6,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      height: 42,
-    }),
-    input: (error) => ({
-      height: 38,
-      minWidth: 10,
-      paddingRight: 6,
-      color: error ? colors.error.default : colors.text.default,
-    }),
     buttonContainerLeft: {
       marginLeft: 17,
       flex: 1,
@@ -86,7 +93,55 @@ const createStyles = (colors) =>
       textAlign: 'center',
       fontSize: 11,
     },
-  });
+  }),
+});
+
+interface RangeInputProps {
+  /**
+   * Component or text to render on the right side of the label
+   */
+  rightLabelComponent?: React.ReactNode;
+  /**
+   * Component or text to render on the left side of the label
+   */
+  leftLabelComponent?: React.ReactNode;
+  /**
+   * The value to be on the input
+   */
+  value?: string;
+  /**
+   * The unit to show inside the input
+   */
+  unit?: string;
+  /**
+   * Function that is called when the input is changed
+   */
+  onChangeValue?: (value: string | undefined) => void;
+  /**
+   * A BigNumber value per which the input is incremented when clicking on the plus and minus button
+   */
+  increment?: BigNumber;
+  /**
+   * The label to show inside the input
+   */
+  inputInsideLabel?: string;
+  /**
+   * The error to show bellow the input. Also when the error exists the input text will turn red
+   */
+  error?: string;
+  /**
+   * A BigNumber minimum value the input is allowed to have when clicking on the minus button
+   */
+  min?: BigNumber;
+  /**
+   * A BigNumber maximum value the input is allowed to have when clicking on the plus button
+   */
+  max?: BigNumber;
+  /**
+   * The name of the input
+   */
+  name?: string;
+}
 
 const RangeInput = ({
   leftLabelComponent,
@@ -100,9 +155,9 @@ const RangeInput = ({
   min,
   max,
   name,
-}) => {
-  const textInput = useRef(null);
-  const [errorState, setErrorState] = useState();
+}: RangeInputProps) => {
+  const textInput = useRef<TextInput>(null);
+  const [errorState, setErrorState] = useState<string>();
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
@@ -111,7 +166,7 @@ const RangeInput = ({
   }, []);
 
   const changeValue = useCallback(
-    (newValue, dontEmptyError) => {
+    (newValue?: string, dontEmptyError?: boolean) => {
       if (!dontEmptyError) setErrorState('');
       const cleanValue = newValue?.replace?.(',', '.');
       if (cleanValue && new BigNumber(cleanValue).isNaN()) {
@@ -125,18 +180,24 @@ const RangeInput = ({
   );
 
   const increaseNumber = useCallback(() => {
-    const newValue = new BigNumber(value).plus(new BigNumber(increment));
-    if (!new BigNumber(max).isNaN() && newValue.gt(max)) return;
+    const newValue = new BigNumber(value ?? NaN).plus(
+      new BigNumber(increment ?? NaN),
+    );
+    const maxValue = new BigNumber(max ?? NaN);
+    if (!maxValue.isNaN() && newValue.gt(maxValue)) return;
     changeValue(newValue.toString());
   }, [changeValue, increment, max, value]);
 
   const decreaseNumber = useCallback(() => {
-    const newValue = new BigNumber(value).minus(new BigNumber(increment));
-    if (!new BigNumber(min).isNaN() && newValue.lt(min)) return;
+    const newValue = new BigNumber(value ?? NaN).minus(
+      new BigNumber(increment ?? NaN),
+    );
+    const minValue = new BigNumber(min ?? NaN);
+    if (!minValue.isNaN() && newValue.lt(minValue)) return;
     changeValue(newValue.toString());
   }, [changeValue, increment, min, value]);
 
-  const renderLabelComponent = useCallback((component) => {
+  const renderLabelComponent = useCallback((component: React.ReactNode) => {
     if (!component) return null;
     if (typeof component === 'string')
       return (
@@ -148,13 +209,15 @@ const RangeInput = ({
   }, []);
 
   const checkLimits = useCallback(() => {
-    if (new BigNumber(value || 0).lt(min)) {
+    const minValue = new BigNumber(min ?? NaN);
+    const maxValue = new BigNumber(max ?? NaN);
+    if (new BigNumber(value || 0).lt(minValue)) {
       setErrorState(`${name} must be at least ${min}`);
-      return changeValue(min.toString(), true);
+      return changeValue(minValue.toString(), true);
     }
-    if (new BigNumber(value || 0).gt(max)) {
+    if (new BigNumber(value || 0).gt(maxValue)) {
       setErrorState(`${name} must be at most ${max}`);
-      return changeValue(max.toString());
+      return changeValue(maxValue.toString());
     }
   }, [changeValue, max, min, name, value]);
 
@@ -233,53 +296,6 @@ const RangeInput = ({
 
 RangeInput.defaultProps = {
   increment: new BigNumber(1),
-};
-
-RangeInput.propTypes = {
-  /**
-   * Component or text to render on the right side of the label
-   */
-  rightLabelComponent: PropTypes.node,
-  /**
-   * Component or text to render on the left side of the label
-   */
-  leftLabelComponent: PropTypes.node,
-  /**
-   * The value to be on the input
-   */
-  value: PropTypes.string,
-  /**
-   * The unit to show inside the input
-   */
-  unit: PropTypes.string,
-  /**
-   * Function that is called when the input is changed
-   */
-  onChangeValue: PropTypes.func,
-  /**
-   * A BigNumber value per which the input is incremented when clicking on the plus and minus button
-   */
-  increment: PropTypes.object,
-  /**
-   * The label to show inside the input
-   */
-  inputInsideLabel: PropTypes.string,
-  /**
-   * The error to show bellow the input. Also when the error exists the input text will turn red
-   */
-  error: PropTypes.string,
-  /**
-   * A BigNumber minimum value the input is allowed to have when clicking on the minus button
-   */
-  min: PropTypes.object,
-  /**
-   * A BigNumber maximum value the input is allowed to have when clicking on the plus button
-   */
-  max: PropTypes.object,
-  /**
-   * The name of the input
-   */
-  name: PropTypes.string,
 };
 
 export default RangeInput;
