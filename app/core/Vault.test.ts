@@ -63,9 +63,9 @@ describe('Vault', () => {
       const mockLedgerKeyring = {
         deserialize: jest.fn(),
       };
-      mockWithLedgerKeyring.mockImplementation(
+      mockWithLedgerKeyring.mockImplementation((operation) =>
         // @ts-expect-error The Ledger keyring is not compatible with our keyring type yet
-        (operation) => operation(mockLedgerKeyring),
+        operation({ keyring: mockLedgerKeyring }),
       );
       const mockSerializedLedgerKeyring = 'serialized-keyring';
 
@@ -81,9 +81,9 @@ describe('Vault', () => {
       const mockLedgerKeyring = {
         deserialize: jest.fn().mockRejectedValue(error),
       };
-      mockWithLedgerKeyring.mockImplementation(
+      mockWithLedgerKeyring.mockImplementation((operation) =>
         // @ts-expect-error The Ledger keyring is not compatible with our keyring type yet
-        (operation) => operation(mockLedgerKeyring),
+        operation({ keyring: mockLedgerKeyring }),
       );
       const mockSerializedLedgerKeyring = 'serialized-keyring';
 
