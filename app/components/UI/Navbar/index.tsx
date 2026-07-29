@@ -5,13 +5,17 @@ import ModalNavbarTitle from '../ModalNavbarTitle';
 import AccountRightButton from '../AccountRightButton';
 import {
   Alert,
+  ColorValue,
   Image,
+  ImageSourcePropType,
   Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ViewStyle,
 } from 'react-native';
+import { InternalAccount } from '@metamask/keyring-internal-api';
 import { colors as importedColors, fontStyles } from '../../../styles/common';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
@@ -66,8 +70,78 @@ import { getFormattedAddressFromInternalAccount } from '../../../core/Multichain
 ///: END:ONLY_INCLUDE_IF
 import { withMetaMetrics } from '../Stake/utils/metaMetrics/withMetaMetrics';
 import { BridgeViewMode } from '../Bridge/types';
+import { AvatarAccountType } from '../../../component-library/components/Avatars/Avatar/variants/AvatarAccount';
+import {
+  IMetaMetricsEvent,
+  ITrackingEvent,
+  JsonMap,
+} from '../../../core/Analytics/MetaMetrics.types';
+import { Colors as ThemeColors } from '../../../util/theme/models';
+import { StackNavigationOptions } from '@react-navigation/stack';
 
-const trackEvent = (event, params = {}) => {
+/**
+ * Subset of the navigation object used by the navbar helpers. Every method is
+ * optional because these helpers are called with several flavours of
+ * navigation object (stack, compat and test doubles).
+ */
+interface NavbarNavigation {
+  navigate?(screen: string, params?: object): void;
+  goBack?(): void;
+  pop?(): void;
+  dangerouslyGetParent?(): { pop?(): void } | undefined;
+}
+
+/**
+ * Subset of the route object used by the navbar helpers
+ */
+interface NavbarRoute<Params extends object> {
+  name?: string;
+  params?: Params;
+}
+
+interface SwapsRequestedTrade {
+  token_from?: string;
+  token_to?: string;
+  request_type?: string;
+  custom_slippage?: number;
+  chain_id?: string;
+  token_from_amount?: string;
+}
+
+interface SwapsQuotesRouteParams {
+  title?: string;
+  leftAction?: string;
+  requestedTrade?: SwapsRequestedTrade;
+  selectedQuote?: string;
+  quoteBegin?: number;
+}
+
+interface FiatOnRampAggNavbarOptions {
+  title?: string;
+  showBack?: boolean;
+  showCancel?: boolean;
+}
+
+interface StakingNavbarOptions {
+  backgroundColor?: string;
+  hasCancelButton?: boolean;
+  hasBackButton?: boolean;
+  hasIconButton?: boolean;
+  handleIconPress?: () => void;
+}
+
+interface StakingNavbarEvent {
+  event: IMetaMetricsEvent;
+  properties?: JsonMap;
+}
+
+interface StakingNavbarMetricsOptions {
+  cancelButtonEvent?: StakingNavbarEvent;
+  backButtonEvent?: StakingNavbarEvent;
+  iconButtonEvent?: StakingNavbarEvent;
+}
+
+const trackEvent = (event: ITrackingEvent, _params: JsonMap = {}) => {
   MetaMetrics.getInstance().trackEvent(event);
 };
 
@@ -163,11 +237,11 @@ const metamask_fox = require('../../../images/branding/fox.png'); // eslint-disa
  * @returns {Object} - Corresponding navbar options containing headerTitle, headerLeft, headerTruncatedBackTitle and headerRight
  */
 export function getTransactionsNavbarOptions(
-  title,
-  themeColors,
-  _,
-  selectedAddress,
-  handleRightButtonPress,
+  title: string,
+  themeColors: ThemeColors,
+  _: unknown,
+  selectedAddress: string,
+  handleRightButtonPress: () => void,
 ) {
   const innerStyles = StyleSheet.create({
     headerStyle: {
@@ -211,12 +285,12 @@ export function getTransactionsNavbarOptions(
  * @returns {Object} - Corresponding navbar options containing title and headerTitleStyle
  */
 export function getNavigationOptionsTitle(
-  title,
-  navigation,
-  isFullScreenModal,
-  themeColors,
-  navigationPopEvent = null,
-) {
+  title: string,
+  navigation: NavbarNavigation,
+  isFullScreenModal: boolean | undefined,
+  themeColors: ThemeColors,
+  navigationPopEvent: IMetaMetricsEvent | null = null,
+): Partial<StackNavigationOptions> {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -233,7 +307,7 @@ export function getNavigationOptionsTitle(
       trackEvent(
         MetricsEventBuilder.createEventBuilder(navigationPopEvent).build(),
       );
-    navigation.goBack();
+    navigation.goBack?.();
   }
 
   return {
@@ -261,7 +335,9 @@ export function getNavigationOptionsTitle(
       ),
     headerTintColor: themeColors.primary.default,
     ...innerStyles,
-  };
+    // `headerTitle` is rendered as an element, which the navigation options
+    // type does not model
+  } as unknown as Partial<StackNavigationOptions>;
 }
 
 /**
@@ -272,7 +348,16 @@ export function getNavigationOptionsTitle(
  * @param {Object} navigation - Navigation object required to push new views
  * @returns {Object} - Corresponding navbar options
  */
-export function getEditableOptions(title, navigation, route, themeColors) {
+export function getEditableOptions(
+  title: string,
+  navigation: NavbarNavigation,
+  route: NavbarRoute<{
+    dispatch?: () => void;
+    editMode?: string;
+    mode?: string;
+  }>,
+  themeColors: ThemeColors,
+) {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -295,7 +380,7 @@ export function getEditableOptions(title, navigation, route, themeColors) {
   });
 
   function navigationPop() {
-    navigation.pop();
+    navigation.pop?.();
   }
 
   const rightAction = route.params?.dispatch;
@@ -347,10 +432,10 @@ export function getEditableOptions(title, navigation, route, themeColors) {
  * @returns {Object} - Corresponding navbar options containing title, headerLeft and headerRight
  */
 export function getPaymentRequestOptionsTitle(
-  title,
-  navigation,
-  route,
-  themeColors,
+  title: string,
+  navigation: NavbarNavigation,
+  route: NavbarRoute<{ dispatch?: () => void }>,
+  themeColors: ThemeColors,
 ) {
   const goBack = route.params?.dispatch;
   const innerStyles = StyleSheet.create({
@@ -392,7 +477,7 @@ export function getPaymentRequestOptionsTitle(
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
       <TouchableOpacity
-        onPress={() => navigation.pop()}
+        onPress={() => navigation.pop?.()}
         style={styles.closeButton}
       >
         <IonicIcon
@@ -413,7 +498,10 @@ export function getPaymentRequestOptionsTitle(
  *
  * @returns {Object} - Corresponding navbar options containing title, and headerRight
  */
-export function getPaymentRequestSuccessOptionsTitle(navigation, themeColors) {
+export function getPaymentRequestSuccessOptionsTitle(
+  navigation: NavbarNavigation,
+  themeColors: ThemeColors,
+) {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -432,7 +520,7 @@ export function getPaymentRequestSuccessOptionsTitle(navigation, themeColors) {
     headerRight: () => (
       <TouchableOpacity
         // eslint-disable-next-line react/jsx-no-bind
-        onPress={() => navigation.pop()}
+        onPress={() => navigation.pop?.()}
         style={styles.closeButton}
         {...generateTestId(
           Platform,
@@ -458,10 +546,14 @@ export function getPaymentRequestSuccessOptionsTitle(navigation, themeColors) {
  * @returns {Object} - Corresponding navbar options containing title and headerTitleStyle
  */
 export function getTransactionOptionsTitle(
-  _title,
-  navigation,
-  route,
-  themeColors,
+  _title: string,
+  navigation: NavbarNavigation,
+  route: NavbarRoute<{
+    mode?: string;
+    disableModeChange?: boolean;
+    dispatch?: (mode: string) => void;
+  }>,
+  themeColors: ThemeColors,
 ) {
   const innerStyles = StyleSheet.create({
     headerStyle: {
@@ -483,8 +575,8 @@ export function getTransactionOptionsTitle(
       : strings('transaction.edit');
   const disableModeChange = route.params?.disableModeChange;
   const modeChange = route.params?.dispatch;
-  const leftAction = () => modeChange('edit');
-  const rightAction = () => navigation.pop();
+  const leftAction = () => modeChange?.('edit');
+  const rightAction = () => navigation.pop?.();
   const rightText = strings('transaction.cancel');
   const title = transactionMode === 'edit' ? 'transaction.edit' : _title;
 
@@ -530,7 +622,7 @@ export function getTransactionOptionsTitle(
   };
 }
 
-export function getApproveNavbar(title) {
+export function getApproveNavbar(title: string) {
   return {
     headerTitle: () => <NavbarTitle title={title} disableNetwork />,
     headerLeft: () => <View />,
@@ -546,12 +638,12 @@ export function getApproveNavbar(title) {
  * @returns {Object} - Corresponding navbar options containing title and headerTitleStyle
  */
 export function getSendFlowTitle(
-  title,
-  navigation,
-  route,
-  themeColors,
-  resetTransaction,
-  transaction,
+  title: string,
+  navigation: NavbarNavigation,
+  route: NavbarRoute<{ providerType?: string; isPaymentRequest?: boolean }>,
+  themeColors: ThemeColors,
+  resetTransaction: () => void,
+  transaction: Parameters<typeof getBlockaidTransactionMetricsParams>[0],
 ) {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
@@ -579,9 +671,9 @@ export function getSendFlowTitle(
         .build(),
     );
     resetTransaction();
-    navigation.dangerouslyGetParent()?.pop();
+    navigation.dangerouslyGetParent?.()?.pop?.();
   };
-  const leftAction = () => navigation.pop();
+  const leftAction = () => navigation.pop?.();
 
   const canGoBack =
     title !== 'send.send_to' && !route?.params?.isPaymentRequest;
@@ -627,7 +719,7 @@ export function getSendFlowTitle(
  * @param {string} title - Title in string format
  * @returns {Object} - Corresponding navbar options containing headerTitle
  */
-export function getModalNavbarOptions(title) {
+export function getModalNavbarOptions(title: string) {
   return {
     headerTitle: () => <ModalNavbarTitle title={title} />,
   };
@@ -641,9 +733,10 @@ export function getModalNavbarOptions(title) {
  * @returns {Object} - Corresponding navbar options containing headerTitle, headerTitle and headerTitle
  */
 export function getOnboardingNavbarOptions(
-  route,
-  { headerLeft } = {},
-  themeColors,
+  route: NavbarRoute<{ headerLeft?: () => React.ReactNode }>,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
+  { headerLeft }: { headerLeft?: () => React.ReactNode } = {},
+  themeColors: ThemeColors,
 ) {
   const headerLeftHide = headerLeft || route.params?.headerLeft;
   const innerStyles = StyleSheet.create({
@@ -682,7 +775,9 @@ export function getOnboardingNavbarOptions(
  *
  * @returns {Object} - Corresponding navbar options containing headerTitle
  */
-export function getTransparentOnboardingNavbarOptions(themeColors) {
+export function getTransparentOnboardingNavbarOptions(
+  themeColors: ThemeColors,
+) {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -716,7 +811,9 @@ export function getTransparentOnboardingNavbarOptions(themeColors) {
  *
  * @returns {Object} - Corresponding navbar options containing headerTitle and a back button
  */
-export function getTransparentBackOnboardingNavbarOptions(themeColors) {
+export function getTransparentBackOnboardingNavbarOptions(
+  themeColors: ThemeColors,
+) {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -752,7 +849,7 @@ export function getTransparentBackOnboardingNavbarOptions(themeColors) {
  *
  * @returns {Object} - Corresponding navbar options containing headerLeft
  */
-export function getOptinMetricsNavbarOptions(themeColors) {
+export function getOptinMetricsNavbarOptions(themeColors: ThemeColors) {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -789,10 +886,10 @@ export function getOptinMetricsNavbarOptions(themeColors) {
  * @returns {Object} - Corresponding navbar options containing headerTitle, headerTitle and headerTitle
  */
 export function getClosableNavigationOptions(
-  title,
-  backButtonText,
-  navigation,
-  themeColors,
+  title: string,
+  backButtonText: string,
+  navigation: NavbarNavigation,
+  themeColors: ThemeColors,
 ) {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
@@ -816,7 +913,7 @@ export function getClosableNavigationOptions(
   });
 
   function navigationPop() {
-    navigation.pop();
+    navigation.pop?.();
   }
 
   return {
@@ -881,23 +978,25 @@ export function getOfflineModalNavbar() {
  * @returns {Object} An object containing the navbar options for the wallet screen
  */
 export function getWalletNavbarOptions(
-  accountActionsRef,
-  selectedInternalAccount,
-  accountName,
-  accountAvatarType,
-  networkName,
-  networkImageSource,
-  onPressTitle,
-  navigation,
-  themeColors,
-  isNotificationEnabled,
-  isBackupAndSyncEnabled,
-  unreadNotificationCount,
-  readNotificationCount,
+  accountActionsRef: React.Ref<typeof TouchableOpacity>,
+  selectedInternalAccount: InternalAccount | undefined,
+  accountName: string,
+  accountAvatarType: AvatarAccountType,
+  networkName: string,
+  networkImageSource: ImageSourcePropType,
+  onPressTitle: () => void,
+  navigation: NavbarNavigation,
+  themeColors: ThemeColors,
+  isNotificationEnabled: boolean,
+  isBackupAndSyncEnabled: boolean | null,
+  unreadNotificationCount: number,
+  readNotificationCount: number,
 ) {
   const innerStyles = StyleSheet.create({
     headerStyle: {
-      backgroundColor: themeColors.background,
+      // `background` is the group of background colors rather than a single
+      // color, kept as-is so the rendered header is unchanged
+      backgroundColor: themeColors.background as unknown as ColorValue,
       shadowColor: importedColors.transparent,
       elevation: 0,
     },
@@ -911,16 +1010,24 @@ export function getWalletNavbarOptions(
     },
   });
 
-  let formattedAddress = toChecksumHexAddress(selectedInternalAccount.address);
+  let formattedAddress = toChecksumHexAddress(
+    selectedInternalAccount?.address ?? '',
+  );
 
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-  formattedAddress = getFormattedAddressFromInternalAccount(
-    selectedInternalAccount,
-  );
+  if (selectedInternalAccount) {
+    formattedAddress = getFormattedAddressFromInternalAccount(
+      selectedInternalAccount,
+    );
+  }
   ///: END:ONLY_INCLUDE_IF
 
-  const onScanSuccess = (data, content) => {
-    if (data.private_key) {
+  const onScanSuccess = (
+    data: { private_key?: string; seed?: string },
+    content: string,
+  ) => {
+    const privateKey = data.private_key;
+    if (privateKey) {
       Alert.alert(
         strings('wallet.private_key_detected'),
         strings('wallet.do_you_want_to_import_this_account'),
@@ -934,8 +1041,8 @@ export function getWalletNavbarOptions(
             text: strings('wallet.yes'),
             onPress: async () => {
               try {
-                await importAccountFromPrivateKey(data.private_key);
-                navigation.navigate('ImportPrivateKeyView', {
+                await importAccountFromPrivateKey(privateKey);
+                navigation.navigate?.('ImportPrivateKeyView', {
                   screen: 'ImportPrivateKeySuccess',
                 });
               } catch (e) {
@@ -964,7 +1071,7 @@ export function getWalletNavbarOptions(
   };
 
   function openQRScanner() {
-    navigation.navigate(Routes.QR_TAB_SWITCHER, {
+    navigation.navigate?.(Routes.QR_TAB_SWITCHER, {
       onScanSuccess,
     });
     trackEvent(
@@ -976,7 +1083,7 @@ export function getWalletNavbarOptions(
 
   function handleNotificationOnPress() {
     if (isNotificationEnabled && isNotificationsFeatureEnabled()) {
-      navigation.navigate(Routes.NOTIFICATIONS.VIEW);
+      navigation.navigate?.(Routes.NOTIFICATIONS.VIEW);
       trackEvent(
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.NOTIFICATIONS_MENU_OPENED,
@@ -988,7 +1095,7 @@ export function getWalletNavbarOptions(
           .build(),
       );
     } else {
-      navigation.navigate(Routes.NOTIFICATIONS.OPT_IN_STACK);
+      navigation.navigate?.(Routes.NOTIFICATIONS.OPT_IN_STACK);
       trackEvent(
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.NOTIFICATIONS_ACTIVATED,
@@ -1025,13 +1132,12 @@ export function getWalletNavbarOptions(
           accountName={accountName}
           accountAvatarType={accountAvatarType}
           onPress={() => {
-            navigation.navigate(...createAccountSelectorNavDetails({}));
+            navigation.navigate?.(...createAccountSelectorNavDetails({}));
           }}
           accountTypeLabel={
             getLabelTextByAddress(formattedAddress) || undefined
           }
           showAddress
-          cellAccountContainerStyle={styles.account}
           testID={WalletViewSelectorsIDs.ACCOUNT_ICON}
         />
       </View>
@@ -1052,9 +1158,8 @@ export function getWalletNavbarOptions(
               iconColor={IconColor.Default}
               onPress={handleNotificationOnPress}
               iconName={IconName.Notification}
-              size={IconSize.Xl}
+              size={ButtonIconSizes.Lg}
               testID={WalletViewSelectorsIDs.WALLET_NOTIFICATIONS_BUTTON}
-              style={styles.notificationButton}
             />
 
             {/* Badge Dot */}
@@ -1065,7 +1170,7 @@ export function getWalletNavbarOptions(
                   {
                     backgroundColor: unreadNotificationCount
                       ? themeColors.error.default
-                      : themeColors.background.transparent,
+                      : undefined,
                   },
                 ]}
               />
@@ -1077,7 +1182,7 @@ export function getWalletNavbarOptions(
           iconColor={IconColor.Default}
           onPress={openQRScanner}
           iconName={IconName.ScanBarcode}
-          size={IconSize.Xl}
+          size={ButtonIconSizes.Lg}
           testID={WalletViewSelectorsIDs.WALLET_SCAN_BUTTON}
         />
       </View>
@@ -1099,13 +1204,13 @@ export function getWalletNavbarOptions(
  * @returns {Object} - Corresponding navbar options containing headerTitle and headerTitle
  */
 export function getImportTokenNavbarOptions(
-  title,
-  translate,
-  navigation,
-  themeColors,
+  title: string,
+  translate: boolean,
+  navigation: NavbarNavigation,
+  themeColors: ThemeColors,
   disableNetwork = false,
   contentOffset = 0,
-  onClose = undefined,
+  onClose: (() => void) | undefined = undefined,
 ) {
   const innerStyles = StyleSheet.create({
     headerStyle: {
@@ -1115,7 +1220,7 @@ export function getImportTokenNavbarOptions(
     },
     headerShadow: {
       elevation: 2,
-      shadowColor: themeColors.background.primary,
+      shadowColor: undefined,
       shadowOpacity: contentOffset < 20 ? contentOffset / 100 : 0.2,
       shadowOffset: { height: 4, width: 0 },
       shadowRadius: 8,
@@ -1152,7 +1257,7 @@ export function getImportTokenNavbarOptions(
             onClose
               ? () => onClose()
               : () =>
-                  navigation.navigate(Routes.WALLET.HOME, {
+                  navigation.navigate?.(Routes.WALLET.HOME, {
                     screen: Routes.WALLET.TAB_STACK_FLOW,
                     params: {
                       screen: Routes.WALLET_VIEW,
@@ -1171,9 +1276,9 @@ export function getImportTokenNavbarOptions(
 }
 
 export function getNftDetailsNavbarOptions(
-  navigation,
-  themeColors,
-  onRightPress,
+  navigation: NavbarNavigation,
+  themeColors: ThemeColors,
+  onRightPress: (() => void) | undefined,
   contentOffset = 0,
 ) {
   const innerStyles = StyleSheet.create({
@@ -1184,7 +1289,7 @@ export function getNftDetailsNavbarOptions(
     },
     headerShadow: {
       elevation: 2,
-      shadowColor: themeColors.background.primary,
+      shadowColor: undefined,
       shadowOpacity: contentOffset < 20 ? contentOffset / 100 : 0.2,
       shadowOffset: { height: 4, width: 0 },
       shadowRadius: 8,
@@ -1194,12 +1299,12 @@ export function getNftDetailsNavbarOptions(
     },
     headerBackIcon: {
       color: themeColors.icon.default,
-    },
+    } as ViewStyle,
   });
   return {
     headerLeft: () => (
       <TouchableOpacity
-        onPress={() => navigation.pop()}
+        onPress={() => navigation.pop?.()}
         style={styles.backButton}
         testID={CommonSelectorsIDs.BACK_ARROW_BUTTON}
       >
@@ -1229,8 +1334,8 @@ export function getNftDetailsNavbarOptions(
 }
 
 export function getNftFullImageNavbarOptions(
-  navigation,
-  themeColors,
+  navigation: NavbarNavigation,
+  themeColors: ThemeColors,
   contentOffset = 0,
 ) {
   const innerStyles = StyleSheet.create({
@@ -1241,7 +1346,7 @@ export function getNftFullImageNavbarOptions(
     },
     headerShadow: {
       elevation: 2,
-      shadowColor: themeColors.background.primary,
+      shadowColor: undefined,
       shadowOpacity: contentOffset < 20 ? contentOffset / 100 : 0.2,
       shadowOffset: { height: 4, width: 0 },
       shadowRadius: 8,
@@ -1251,13 +1356,13 @@ export function getNftFullImageNavbarOptions(
     },
     headerBackIcon: {
       color: themeColors.icon.default,
-    },
+    } as ViewStyle,
   });
   return {
     headerRight: () => (
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.pop()}
+        onPress={() => navigation.pop?.()}
       >
         <Icon
           name={IconName.Close}
@@ -1286,13 +1391,15 @@ export function getNftFullImageNavbarOptions(
  * @returns {Object} - Corresponding navbar options containing headerTitle and headerTitle
  */
 export function getNetworkNavbarOptions(
-  title,
-  translate,
-  navigation,
-  themeColors,
-  onRightPress = undefined,
+  title: string,
+  translate: boolean,
+  navigation: NavbarNavigation,
+  // `_themeColors` and `_contentOffset` are unused but kept so that existing
+  // call sites are unchanged
+  _themeColors?: ThemeColors,
+  onRightPress: (() => void) | undefined = undefined,
   disableNetwork = false,
-  contentOffset = 0,
+  _contentOffset = 0,
   networkName = '',
 ) {
   return {
@@ -1302,7 +1409,7 @@ export function getNetworkNavbarOptions(
         startAccessory={
           <ButtonIcon
             style={styles.headerLeftButton}
-            onPress={() => navigation.pop()}
+            onPress={() => navigation.pop?.()}
             testID={CommonSelectorsIDs.BACK_ARROW_BUTTON}
             size={ButtonIconSizes.Lg}
             iconName={IconName.ArrowLeft}
@@ -1337,7 +1444,11 @@ export function getNetworkNavbarOptions(
  *
  * @returns {Object} - Corresponding navbar options containing headerTitle and headerTitle
  */
-export function getWebviewNavbar(navigation, route, themeColors) {
+export function getWebviewNavbar(
+  navigation: NavbarNavigation,
+  route: NavbarRoute<{ title?: string; dispatch?: () => void }>,
+  themeColors: ThemeColors,
+) {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -1352,7 +1463,9 @@ export function getWebviewNavbar(navigation, route, themeColors) {
       elevation: 0,
     },
     headerIcon: {
-      color: themeColors.default,
+      // the theme has no `default` color at its root, the icon color has
+      // always resolved to `undefined` here
+      color: undefined,
     },
   });
 
@@ -1366,7 +1479,7 @@ export function getWebviewNavbar(navigation, route, themeColors) {
       Device.isAndroid() ? (
         // eslint-disable-next-line react/jsx-no-bind
         <TouchableOpacity
-          onPress={() => navigation.pop()}
+          onPress={() => navigation.pop?.()}
           style={styles.backButton}
           {...generateTestId(Platform, BACK_BUTTON_SIMPLE_WEBVIEW)}
         >
@@ -1379,7 +1492,7 @@ export function getWebviewNavbar(navigation, route, themeColors) {
       ) : (
         // eslint-disable-next-line react/jsx-no-bind
         <TouchableOpacity
-          onPress={() => navigation.pop()}
+          onPress={() => navigation.pop?.()}
           style={styles.backButton}
         >
           <IonicIcon
@@ -1411,7 +1524,11 @@ export function getWebviewNavbar(navigation, route, themeColors) {
   };
 }
 
-export function getPaymentSelectorMethodNavbar(navigation, onPop, themeColors) {
+export function getPaymentSelectorMethodNavbar(
+  navigation: NavbarNavigation,
+  onPop: (() => void) | undefined,
+  themeColors: ThemeColors,
+) {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1440,7 +1557,7 @@ export function getPaymentSelectorMethodNavbar(navigation, onPop, themeColors) {
       // eslint-disable-next-line react/jsx-no-bind
       <TouchableOpacity
         onPress={() => {
-          navigation.dangerouslyGetParent()?.pop();
+          navigation.dangerouslyGetParent?.()?.pop?.();
           onPop?.();
         }}
         style={styles.closeButton}
@@ -1455,10 +1572,10 @@ export function getPaymentSelectorMethodNavbar(navigation, onPop, themeColors) {
 }
 
 export function getPaymentMethodApplePayNavbar(
-  navigation,
-  onPop,
-  onExit,
-  themeColors,
+  navigation: NavbarNavigation,
+  onPop: (() => void) | undefined,
+  onExit: (() => void) | undefined,
+  themeColors: ThemeColors,
 ) {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
@@ -1485,7 +1602,7 @@ export function getPaymentMethodApplePayNavbar(
       // eslint-disable-next-line react/jsx-no-bind
       <TouchableOpacity
         onPress={() => {
-          navigation.dangerouslyGetParent()?.pop();
+          navigation.dangerouslyGetParent?.()?.pop?.();
           onExit?.();
         }}
         style={styles.closeButton}
@@ -1500,7 +1617,7 @@ export function getPaymentMethodApplePayNavbar(
         // eslint-disable-next-line react/jsx-no-bind
         <TouchableOpacity
           onPress={() => {
-            navigation.pop();
+            navigation.pop?.();
             onPop?.();
           }}
           style={styles.backButton}
@@ -1515,7 +1632,7 @@ export function getPaymentMethodApplePayNavbar(
         // eslint-disable-next-line react/jsx-no-bind
         <TouchableOpacity
           onPress={() => {
-            navigation.pop();
+            navigation.pop?.();
             onPop?.();
           }}
           style={styles.closeButton}
@@ -1529,7 +1646,12 @@ export function getPaymentMethodApplePayNavbar(
   };
 }
 
-export function getTransakWebviewNavbar(navigation, route, onPop, themeColors) {
+export function getTransakWebviewNavbar(
+  navigation: NavbarNavigation,
+  route: NavbarRoute<{ title?: string }>,
+  onPop: (() => void) | undefined,
+  themeColors: ThemeColors,
+) {
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -1555,7 +1677,7 @@ export function getTransakWebviewNavbar(navigation, route, onPop, themeColors) {
         // eslint-disable-next-line react/jsx-no-bind
         <TouchableOpacity
           onPress={() => {
-            navigation.pop();
+            navigation.pop?.();
             onPop?.();
           }}
           style={styles.backButton}
@@ -1570,7 +1692,7 @@ export function getTransakWebviewNavbar(navigation, route, onPop, themeColors) {
         // eslint-disable-next-line react/jsx-no-bind
         <TouchableOpacity
           onPress={() => {
-            navigation.pop();
+            navigation.pop?.();
             onPop?.();
           }}
           style={styles.backButton}
@@ -1587,7 +1709,11 @@ export function getTransakWebviewNavbar(navigation, route, onPop, themeColors) {
   };
 }
 
-export function getSwapsAmountNavbar(navigation, route, themeColors) {
+export function getSwapsAmountNavbar(
+  navigation: NavbarNavigation,
+  route: NavbarRoute<{ title?: string }>,
+  themeColors: ThemeColors,
+) {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1609,7 +1735,7 @@ export function getSwapsAmountNavbar(navigation, route, themeColors) {
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
       <TouchableOpacity
-        onPress={() => navigation.dangerouslyGetParent()?.pop()}
+        onPress={() => navigation.dangerouslyGetParent?.()?.pop?.()}
         style={styles.closeButton}
       >
         <Text style={innerStyles.headerButtonText}>
@@ -1621,7 +1747,11 @@ export function getSwapsAmountNavbar(navigation, route, themeColors) {
   };
 }
 
-export function getSwapsQuotesNavbar(navigation, route, themeColors) {
+export function getSwapsQuotesNavbar(
+  navigation: NavbarNavigation,
+  route: NavbarRoute<SwapsQuotesRouteParams>,
+  themeColors: ThemeColors,
+) {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1643,53 +1773,53 @@ export function getSwapsQuotesNavbar(navigation, route, themeColors) {
   const leftAction = () => {
     const trade = route.params?.requestedTrade;
     const selectedQuote = route.params?.selectedQuote;
-    const quoteBegin = route.params?.quoteBegin;
+    const quoteBegin = route.params?.quoteBegin ?? 0;
     if (!selectedQuote) {
       trackEvent(
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.QUOTES_REQUEST_CANCELLED,
         )
           .addProperties({
-            token_from: trade.token_from,
-            token_to: trade.token_to,
-            request_type: trade.request_type,
-            custom_slippage: trade.custom_slippage,
-            chain_id: trade.chain_id,
+            token_from: trade?.token_from,
+            token_to: trade?.token_to,
+            request_type: trade?.request_type,
+            custom_slippage: trade?.custom_slippage,
+            chain_id: trade?.chain_id,
             responseTime: new Date().getTime() - quoteBegin,
           })
           .addSensitiveProperties({
-            token_from_amount: trade.token_from_amount,
+            token_from_amount: trade?.token_from_amount,
           })
           .build(),
       );
     }
-    navigation.pop();
+    navigation.pop?.();
   };
 
   const rightAction = () => {
     const trade = route.params?.requestedTrade;
     const selectedQuote = route.params?.selectedQuote;
-    const quoteBegin = route.params?.quoteBegin;
+    const quoteBegin = route.params?.quoteBegin ?? 0;
     if (!selectedQuote) {
       trackEvent(
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.QUOTES_REQUEST_CANCELLED,
         )
           .addProperties({
-            token_from: trade.token_from,
-            token_to: trade.token_to,
-            request_type: trade.request_type,
-            custom_slippage: trade.custom_slippage,
-            chain_id: trade.chain_id,
+            token_from: trade?.token_from,
+            token_to: trade?.token_to,
+            request_type: trade?.request_type,
+            custom_slippage: trade?.custom_slippage,
+            chain_id: trade?.chain_id,
             responseTime: new Date().getTime() - quoteBegin,
           })
           .addSensitiveProperties({
-            token_from_amount: trade.token_from_amount,
+            token_from_amount: trade?.token_from_amount,
           })
           .build(),
       );
     }
-    navigation.dangerouslyGetParent()?.pop();
+    navigation.dangerouslyGetParent?.()?.pop?.();
   };
 
   return {
@@ -1724,7 +1854,11 @@ export function getSwapsQuotesNavbar(navigation, route, themeColors) {
   };
 }
 
-export function getBridgeNavbar(navigation, route, themeColors) {
+export function getBridgeNavbar(
+  navigation: NavbarNavigation,
+  route: NavbarRoute<{ bridgeViewMode?: BridgeViewMode }>,
+  themeColors: ThemeColors,
+) {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
       color: themeColors.primary.default,
@@ -1745,7 +1879,7 @@ export function getBridgeNavbar(navigation, route, themeColors) {
     title = strings('swaps.title');
   }
 
-  const leftAction = () => navigation.pop();
+  const leftAction = () => navigation.pop?.();
 
   return {
     headerTitle: () => (
@@ -1764,7 +1898,7 @@ export function getBridgeNavbar(navigation, route, themeColors) {
     headerRight: () => (
       // eslint-disable-next-line react/jsx-no-bind
       <TouchableOpacity
-        onPress={() => navigation.dangerouslyGetParent()?.pop()}
+        onPress={() => navigation.dangerouslyGetParent?.()?.pop?.()}
         style={styles.closeButton}
       >
         <Text style={innerStyles.headerButtonText}>
@@ -1776,8 +1910,10 @@ export function getBridgeNavbar(navigation, route, themeColors) {
   };
 }
 
-export function getBridgeTransactionDetailsNavbar(navigation) {
-  const leftAction = () => navigation.pop();
+export function getBridgeTransactionDetailsNavbar(
+  navigation: NavbarNavigation,
+) {
+  const leftAction = () => navigation.pop?.();
 
   return {
     headerTitle: () => (
@@ -1797,10 +1933,15 @@ export function getBridgeTransactionDetailsNavbar(navigation) {
 }
 
 export function getFiatOnRampAggNavbar(
-  navigation,
-  { title = 'Buy', showBack = true, showCancel = true } = {},
-  themeColors,
-  onCancel,
+  navigation: NavbarNavigation,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
+  {
+    title = 'Buy',
+    showBack = true,
+    showCancel = true,
+  }: FiatOnRampAggNavbarOptions = {},
+  themeColors: ThemeColors,
+  onCancel?: () => void,
 ) {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
@@ -1823,7 +1964,7 @@ export function getFiatOnRampAggNavbar(
 
   const leftActionText = strings('navigation.back');
 
-  const leftAction = () => navigation.pop();
+  const leftAction = () => navigation.pop?.();
 
   const navigationCancelText = strings('navigation.cancel');
 
@@ -1841,11 +1982,7 @@ export function getFiatOnRampAggNavbar(
           accessibilityRole="button"
           accessible
         >
-          <IonicIcon
-            name={'arrow-back'}
-            size={24}
-            style={innerStyles.headerIcon}
-          />
+          <IonicIcon name={'arrow-back'} size={24} />
         </TouchableOpacity>
       ) : (
         <TouchableOpacity
@@ -1863,7 +2000,7 @@ export function getFiatOnRampAggNavbar(
       return (
         <TouchableOpacity
           onPress={() => {
-            navigation.dangerouslyGetParent()?.pop();
+            navigation.dangerouslyGetParent?.()?.pop?.();
             onCancel?.();
           }}
           style={styles.closeButton}
@@ -1881,7 +2018,10 @@ export function getFiatOnRampAggNavbar(
   };
 }
 
-export const getEditAccountNameNavBarOptions = (goBack, themeColors) => {
+export const getEditAccountNameNavBarOptions = (
+  goBack: () => void,
+  themeColors: ThemeColors,
+) => {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1910,7 +2050,10 @@ export const getEditAccountNameNavBarOptions = (goBack, themeColors) => {
   };
 };
 
-export const getSettingsNavigationOptions = (title, themeColors) => {
+export const getSettingsNavigationOptions = (
+  title: string,
+  themeColors: ThemeColors,
+) => {
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1935,11 +2078,11 @@ export const getSettingsNavigationOptions = (title, themeColors) => {
  * @returns Staking Navbar Component.
  */
 export function getStakingNavbar(
-  title,
-  navigation,
-  themeColors,
-  navBarOptions,
-  metricsOptions,
+  title: string,
+  navigation: NavbarNavigation,
+  themeColors: ThemeColors,
+  navBarOptions?: StakingNavbarOptions,
+  metricsOptions?: StakingNavbarMetricsOptions,
 ) {
   const {
     hasBackButton = true,
@@ -1952,7 +2095,8 @@ export function getStakingNavbar(
     headerStyle: {
       backgroundColor:
         navBarOptions?.backgroundColor ?? themeColors.background.default,
-      shadowOffset: null,
+      // `null` removes the default header shadow offset
+      shadowOffset: null as unknown as ViewStyle['shadowOffset'],
     },
     headerLeft: {
       marginHorizontal: 16,
@@ -1968,7 +2112,7 @@ export function getStakingNavbar(
   });
 
   function navigationPop() {
-    navigation.goBack();
+    navigation.goBack?.();
   }
 
   function handleBackPress() {
