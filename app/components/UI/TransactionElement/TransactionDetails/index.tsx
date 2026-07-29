@@ -190,10 +190,26 @@ interface TransactionDetailsProps extends OwnProps, StateProps {}
  * Legacy call sites render this component with loosely typed transaction data,
  * which carries fields this component does not read.
  */
+/**
+ * Detail fields legacy call sites still pass but this component does not read.
+ */
+interface LegacyTransactionDetails extends TransactionDetailsType {
+  transactionHash?: string;
+  renderTotalValue?: string;
+  renderTotalValueFiat?: string;
+}
+
 interface TransactionDetailsPublicProps
-  extends Omit<OwnProps, 'transactionObject' | 'transactionDetails'> {
+  extends Omit<
+    OwnProps,
+    'navigation' | 'transactionObject' | 'transactionDetails'
+  > {
+  /**
+   * Injected by the `withNavigation` HOC when the caller does not provide it.
+   */
+  navigation?: TransactionDetailsNavigation;
   transactionObject: Partial<TransactionObject> & Record<string, unknown>;
-  transactionDetails: TransactionDetailsType & Record<string, unknown>;
+  transactionDetails: LegacyTransactionDetails;
   chainId?: string;
 }
 
