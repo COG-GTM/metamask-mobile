@@ -1,4 +1,9 @@
-import React, { Component, ComponentProps, ComponentType, ErrorInfo } from 'react';
+import React, {
+  Component,
+  ComponentProps,
+  ComponentType,
+  ErrorInfo,
+} from 'react';
 import {
   Text,
   TouchableOpacity,
@@ -415,9 +420,10 @@ export const Fallback = (props: FallbackProps) => {
 
 // `route` is only read through optional chaining, so it can be omitted when
 // `RevealPrivateCredential` is rendered outside of the navigation stack.
-const RevealPrivateCredentialFallback = RevealPrivateCredential as ComponentType<
-  Omit<ComponentProps<typeof RevealPrivateCredential>, 'route'>
->;
+const RevealPrivateCredentialFallback =
+  RevealPrivateCredential as ComponentType<
+    Omit<ComponentProps<typeof RevealPrivateCredential>, 'route'>
+  >;
 
 interface ErrorBoundaryProps extends IWithMetricsAwarenessProps {
   children?: React.ReactNode;
@@ -430,7 +436,6 @@ interface ErrorBoundaryState {
   sentryId?: string;
   backupSeedphrase?: boolean;
 }
-
 
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   static contextType = ThemeContext;
