@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   StyleSheet,
@@ -9,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 
 import Engine from '../../../../core/Engine';
 import I18n, {
@@ -29,8 +29,12 @@ import PickComponent from '../../PickComponent';
 import { toDataUrl } from '../../../../util/blockies.js';
 import Jazzicon from 'react-native-jazzicon';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
+import { Theme } from '../../../../util/theme/models';
+import { RootState } from '../../../../reducers';
 import { selectCurrentCurrency } from '../../../../selectors/currencyRateController';
 import { withMetricsAwareness } from '../../../../components/hooks/useMetrics';
+import { IUseMetricsHook } from '../../../../components/hooks/useMetrics/useMetrics.types';
+import { IWithMetricsAwarenessProps } from '../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../../selectors/accountsController';
 import Text, {
   TextVariant,
@@ -57,7 +61,18 @@ const infuraCurrencyOptions = sortedCurrencies.map(
   }),
 );
 
-export const updateUserTraitsWithCurrentCurrency = (currency, metrics) => {
+/**
+ * Subset of the metrics hook used to report currency preference traits.
+ */
+type CurrencyTraitsMetrics = Pick<
+  IUseMetricsHook,
+  'addTraitsToUser' | 'trackEvent' | 'createEventBuilder'
+>;
+
+export const updateUserTraitsWithCurrentCurrency = (
+  currency: string,
+  metrics: CurrencyTraitsMetrics,
+) => {
   // track event and add selected currency to user profile for analytics
   const traits = { [UserProfileProperty.CURRENT_CURRENCY]: currency };
   metrics.addTraitsToUser(traits);
@@ -71,7 +86,10 @@ export const updateUserTraitsWithCurrentCurrency = (currency, metrics) => {
   );
 };
 
-export const updateUserTraitsWithCurrencyType = (primaryCurrency, metrics) => {
+export const updateUserTraitsWithCurrencyType = (
+  primaryCurrency: string,
+  metrics: CurrencyTraitsMetrics,
+) => {
   // track event and add primary currency preference (fiat/crypto) to user profile for analytics
   const traits = { [UserProfileProperty.PRIMARY_CURRENCY]: primaryCurrency };
   metrics.addTraitsToUser(traits);
@@ -87,7 +105,7 @@ export const updateUserTraitsWithCurrencyType = (primaryCurrency, metrics) => {
   );
 };
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -159,101 +177,127 @@ const createStyles = (colors) =>
     },
   });
 
+interface SettingsNavigation {
+  setOptions: (
+    options: ReturnType<typeof getNavigationOptionsTitle>,
+  ) => void;
+  navigate: (name: string) => void;
+}
+
+interface PickerOption {
+  value: string;
+  label: string;
+  key: string;
+}
+
+interface OwnProps {
+  /**
+  /* navigation object required to push new views
+  */
+  navigation?: SettingsNavigation;
+}
+
+interface StateProps {
+  /**
+  /* State current currency
+  */
+  currentCurrency: string;
+  /**
+   * Active search engine
+   */
+  searchEngine: string;
+  /**
+   * Active primary currency
+   */
+  primaryCurrency: string;
+  /**
+   * Show a BlockieIcon instead of JazzIcon
+   */
+  useBlockieIcon: boolean;
+  /**
+   * A string that represents the selected address
+   */
+  selectedAddress?: string;
+  /**
+   * A bool that represents if the user wants to hide zero balance token
+   */
+  hideZeroBalanceTokens: boolean;
+}
+
+interface DispatchProps {
+  /**
+   * Called to set the active search engine
+   */
+  setSearchEngine: (searchEngine: string) => void;
+  /**
+   * Called to set primary currency
+   */
+  setPrimaryCurrency: (primaryCurrency: string) => void;
+  /**
+   * called to toggle BlockieIcon
+   */
+  setUseBlockieIcon: (useBlockieIcon: boolean) => void;
+  /**
+   * Called to toggle zero balance token display
+   */
+  setHideZeroBalanceTokens: (hideZeroBalanceTokens: boolean) => void;
+}
+
+type SettingsProps = OwnProps &
+  StateProps &
+  DispatchProps &
+  IWithMetricsAwarenessProps;
+
+interface SettingsState {
+  currentLanguage: string;
+  languages: Record<string, string>;
+}
+
 /**
  * Main view for general app configurations
  */
-class Settings extends PureComponent {
-  static propTypes = {
-    /**
-    /* State current currency
-    */
-    currentCurrency: PropTypes.string,
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Called to set the active search engine
-     */
-    setSearchEngine: PropTypes.func,
-    /**
-     * Called to set primary currency
-     */
-    setPrimaryCurrency: PropTypes.func,
-    /**
-     * Active search engine
-     */
-    searchEngine: PropTypes.string,
-    /**
-     * Active primary currency
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Show a BlockieIcon instead of JazzIcon
-     */
-    useBlockieIcon: PropTypes.bool,
-    /**
-     * called to toggle BlockieIcon
-     */
-    setUseBlockieIcon: PropTypes.func,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * A bool that represents if the user wants to hide zero balance token
-     */
-    hideZeroBalanceTokens: PropTypes.bool,
-    /**
-     * Called to toggle zero balance token display
-     */
-    setHideZeroBalanceTokens: PropTypes.func,
-    /**
-     * App theme
-     */
-    // appTheme: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class Settings extends PureComponent<SettingsProps, SettingsState> {
+  languageOptions?: PickerOption[];
+  searchEngineOptions?: PickerOption[];
+  primaryCurrencyOptions?: PickerOption[];
 
-  state = {
+  state: SettingsState = {
     currentLanguage: I18n.locale.substr(0, 2),
     languages: {},
   };
 
-  selectCurrency = async (currency) => {
+  selectCurrency = async (currency: string) => {
     const { CurrencyRateController } = Engine.context;
     CurrencyRateController.setCurrentCurrency(currency);
     updateUserTraitsWithCurrentCurrency(currency, this.props.metrics);
   };
 
-  selectLanguage = (language) => {
+  selectLanguage = (language: string) => {
     if (language === this.state.currentLanguage) return;
     setLocale(language);
     this.setState({ currentLanguage: language });
-    setTimeout(() => this.props.navigation.navigate('Home'), 100);
+    setTimeout(() => this.props.navigation?.navigate('Home'), 100);
   };
 
-  selectSearchEngine = (searchEngine) => {
+  selectSearchEngine = (searchEngine: string) => {
     this.props.setSearchEngine(searchEngine);
   };
 
-  selectPrimaryCurrency = (primaryCurrency) => {
+  selectPrimaryCurrency = (primaryCurrency: string) => {
     this.props.setPrimaryCurrency(primaryCurrency);
 
     updateUserTraitsWithCurrencyType(primaryCurrency, this.props.metrics);
   };
 
-  toggleHideZeroBalanceTokens = (toggleHideZeroBalanceTokens) => {
+  toggleHideZeroBalanceTokens = (toggleHideZeroBalanceTokens: boolean) => {
     this.props.setHideZeroBalanceTokens(toggleHideZeroBalanceTokens);
   };
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
+    navigation?.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.general_title'),
         navigation,
@@ -265,7 +309,7 @@ class Settings extends PureComponent {
 
   componentDidMount = () => {
     this.updateNavBar();
-    const languages = getLanguages();
+    const languages: Record<string, string> = getLanguages();
     this.setState({ languages });
     this.languageOptions = Object.keys(languages).map((key) => ({
       value: key,
@@ -327,11 +371,12 @@ class Settings extends PureComponent {
       currentCurrency,
       primaryCurrency,
       useBlockieIcon,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setUseBlockieIcon,
       selectedAddress,
       hideZeroBalanceTokens,
     } = this.props;
-    const themeTokens = this.context || mockTheme;
+    const themeTokens = (this.context as unknown as Theme) || mockTheme;
     const { colors } = themeTokens;
     const styles = createStyles(colors);
 
@@ -517,7 +562,7 @@ class Settings extends PureComponent {
 
 Settings.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   currentCurrency: selectCurrentCurrency(state),
   searchEngine: state.settings.searchEngine,
   primaryCurrency: state.settings.primaryCurrency,
@@ -527,17 +572,25 @@ const mapStateToProps = (state) => ({
   // appTheme: state.user.appTheme,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setSearchEngine: (searchEngine) => dispatch(setSearchEngine(searchEngine)),
-  setPrimaryCurrency: (primaryCurrency) =>
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  setSearchEngine: (searchEngine: string) =>
+    dispatch(setSearchEngine(searchEngine)),
+  setPrimaryCurrency: (primaryCurrency: string) =>
     dispatch(setPrimaryCurrency(primaryCurrency)),
-  setUseBlockieIcon: (useBlockieIcon) =>
+  setUseBlockieIcon: (useBlockieIcon: boolean) =>
     dispatch(setUseBlockieIcon(useBlockieIcon)),
-  setHideZeroBalanceTokens: (hideZeroBalanceTokens) =>
+  setHideZeroBalanceTokens: (hideZeroBalanceTokens: boolean) =>
     dispatch(setHideZeroBalanceTokens(hideZeroBalanceTokens)),
 });
+
+// `withMetricsAwareness` is typed for components whose only prop is `metrics`.
+const withMetrics = withMetricsAwareness as <
+  P extends IWithMetricsAwarenessProps,
+>(
+  Children: React.ComponentType<P>,
+) => React.ComponentType<Omit<P, 'metrics'>>;
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Settings));
+)(withMetrics(Settings));
