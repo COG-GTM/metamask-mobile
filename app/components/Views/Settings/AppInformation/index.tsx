@@ -16,16 +16,16 @@ import {
   getBuildNumber,
 } from 'react-native-device-info';
 import { fontStyles } from '../../../../styles/common';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import AppConstants from '../../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
+import { Theme } from '../../../../util/theme/models';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -85,28 +85,51 @@ const createStyles = (colors) =>
     },
   });
 
-const foxImage = require('../../../../images/branding/fox.png'); // eslint-disable-line import/no-commonjs
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-commonjs
+const foxImage = require('../../../../images/branding/fox.png');
+
+interface AppInformationNavigation {
+  setOptions: (
+    options: ReturnType<typeof getNavigationOptionsTitle>,
+  ) => void;
+  navigate: (
+    name: string,
+    params: {
+      screen: string;
+      params: { url: string; title: string };
+    },
+  ) => void;
+}
+
+interface AppInformationProps {
+  /**
+  /* navigation object required to push new views
+  */
+  navigation?: AppInformationNavigation;
+}
+
+interface AppInformationState {
+  appInfo: string;
+  appVersion: string;
+}
 
 /**
  * View that contains app information
  */
-export default class AppInformation extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-  };
-
-  state = {
+export default class AppInformation extends PureComponent<
+  AppInformationProps,
+  AppInformationState
+> {
+  state: AppInformationState = {
     appInfo: '',
     appVersion: '',
   };
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
+    navigation?.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.info_title'),
         navigation,
@@ -131,9 +154,9 @@ export default class AppInformation extends PureComponent {
     this.updateNavBar();
   };
 
-  goTo = (url, title) => {
+  goTo = (url: string, title: string) => {
     InteractionManager.runAfterInteractions(() => {
-      this.props.navigation.navigate('Webview', {
+      this.props.navigation?.navigate('Webview', {
         screen: 'SimpleWebview',
         params: {
           url,
@@ -174,7 +197,8 @@ export default class AppInformation extends PureComponent {
   };
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -197,7 +221,7 @@ export default class AppInformation extends PureComponent {
             ) : null}
           </View>
           <Text style={styles.title}>{strings('app_information.links')}</Text>
-          <View style={styles.links}>
+          <View>
             <TouchableOpacity onPress={this.onPrivacyPolicy}>
               <Text style={styles.link}>
                 {strings('app_information.privacy_policy')}
@@ -215,7 +239,7 @@ export default class AppInformation extends PureComponent {
             </TouchableOpacity>
           </View>
           <View style={styles.division} />
-          <View style={styles.links}>
+          <View>
             <TouchableOpacity onPress={this.onSupportCenter}>
               <Text style={styles.link}>
                 {strings('app_information.support_center')}
