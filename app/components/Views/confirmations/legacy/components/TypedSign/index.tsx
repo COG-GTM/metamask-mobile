@@ -1,9 +1,19 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { ComponentType, PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { StyleSheet, View, Text } from 'react-native';
+import {
+  LayoutChangeEvent,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
+import { Theme } from '@metamask/design-tokens';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { Hex } from '@metamask/utils';
 import { fontStyles } from '../../../../../../styles/common';
 import SignatureRequest from '../SignatureRequest';
+import { MessageParams } from '../SignatureRequest/types';
 import ExpandedMessage from '../SignatureRequest/ExpandedMessage';
 import Device from '../../../../../../util/device';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
@@ -25,11 +35,17 @@ import {
 import { isExternalHardwareAccount } from '../../../../../../util/address';
 import createExternalSignModelNav from '../../../../../../util/hardwareWallet/signatureUtils';
 import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selectors/Browser/SigningBottomSheet.selectors';
-import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
+import {
+  IUseMetricsHook,
+  withMetricsAwareness,
+} from '../../../../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { selectProviderTypeByChainId } from '../../../../../../selectors/networkController';
 import { selectSignatureRequestById } from '../../../../../../selectors/signatureController';
+import { RootState } from '../../../../../../reducers';
+import { Colors } from '../../../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     messageText: {
       color: colors.text.default,
@@ -55,53 +71,67 @@ const createStyles = (colors) =>
   });
 
 /**
+ * `MessageParams.data` is typed as the V3/V4 JSON string, but V1 requests carry
+ * decoded typed-data entries instead
+ */
+type TypedSignMessageParams = Omit<MessageParams, 'data'> & {
+  data: string | Record<string, unknown> | { name: string; value: string }[];
+};
+
+interface TypedSignProps {
+  /**
+   * react-navigation object used for switching between screens
+   */
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * Callback triggered when this message signature is rejected
+   */
+  onReject: () => void;
+  /**
+   * Callback triggered when this message signature is approved
+   */
+  onConfirm: () => void;
+  /**
+   * Typed message to be displayed to the user
+   */
+  messageParams: TypedSignMessageParams;
+  /**
+   * Object containing current page title and url
+   */
+  currentPageInformation?: { title?: string; url?: string };
+  /**
+   * Hides or shows the expanded signing message
+   */
+  toggleExpandedMessage?: () => void;
+  /**
+   * Indicated whether or not the expanded message is shown
+   */
+  showExpandedMessage?: boolean;
+  /**
+   * Security alert response object
+   */
+  securityAlertResponse?: ReturnType<
+    typeof mapStateToProps
+  >['securityAlertResponse'];
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  metrics: IUseMetricsHook;
+  /**
+   * String representing the associated network
+   */
+  networkType?: string;
+}
+
+interface TypedSignState {
+  truncateMessage: boolean;
+}
+
+/**
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
-class TypedSign extends PureComponent {
-  static propTypes = {
-    /**
-     * react-navigation object used for switching between screens
-     */
-    navigation: PropTypes.object,
-    /**
-     * Callback triggered when this message signature is rejected
-     */
-    onReject: PropTypes.func,
-    /**
-     * Callback triggered when this message signature is approved
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Typed message to be displayed to the user
-     */
-    messageParams: PropTypes.object,
-    /**
-     * Object containing current page title and url
-     */
-    currentPageInformation: PropTypes.object,
-    /**
-     * Hides or shows the expanded signing message
-     */
-    toggleExpandedMessage: PropTypes.func,
-    /**
-     * Indicated whether or not the expanded message is shown
-     */
-    showExpandedMessage: PropTypes.bool,
-    /**
-     * Security alert response object
-     */
-    securityAlertResponse: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * String representing the associated network
-     */
-    networkType: PropTypes.string,
-  };
-
-  state = {
+class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
+  state: TypedSignState = {
     truncateMessage: false,
   };
 
@@ -129,7 +159,7 @@ class TypedSign extends PureComponent {
     removeSignatureErrorListener(metamaskId, this.onSignatureError);
   };
 
-  onSignatureError = ({ error }) => {
+  onSignatureError = ({ error }: { error?: Error }) => {
     const { metrics } = this.props;
     if (error?.message.startsWith(KEYSTONE_TX_CANCELED)) {
       metrics.trackEvent(
@@ -148,7 +178,7 @@ class TypedSign extends PureComponent {
     await handleSignatureAction(
       onReject,
       messageParams,
-      typedSign[messageParams.version],
+      typedSign[messageParams.version as keyof typeof typedSign],
       securityAlertResponse,
       false,
     );
@@ -166,7 +196,7 @@ class TypedSign extends PureComponent {
       await handleSignatureAction(
         onConfirm,
         messageParams,
-        typedSign[messageParams.version],
+        typedSign[messageParams.version as keyof typeof typedSign],
         securityAlertResponse,
         true,
       );
@@ -176,23 +206,24 @@ class TypedSign extends PureComponent {
           onReject,
           onConfirm,
           messageParams,
-          typedSign[messageParams.version],
+          typedSign[messageParams.version as keyof typeof typedSign],
         )),
       );
     }
   };
 
-  updateShouldTruncateMessage = (e) => {
+  updateShouldTruncateMessage = (e: LayoutChangeEvent) => {
     const truncateMessage = shouldTruncateMessage(e);
     this.setState({ truncateMessage });
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     return createStyles(colors);
   };
 
-  renderTypedMessageV3 = (obj) => {
+  renderTypedMessageV3 = (obj: Record<string, unknown>) => {
     const styles = this.getStyles();
     return Object.keys(obj).map((key) => (
       <View style={styles.message} key={key}>
@@ -201,7 +232,9 @@ class TypedSign extends PureComponent {
             <Text style={[styles.messageText, styles.msgKey]}>
               {escapeSpecialUnicode(key)}:
             </Text>
-            <View>{this.renderTypedMessageV3(obj[key])}</View>
+            <View>
+              {this.renderTypedMessageV3(obj[key] as Record<string, unknown>)}
+            </View>
           </View>
         ) : (
           <Text style={styles.messageText}>
@@ -220,7 +253,9 @@ class TypedSign extends PureComponent {
     if (messageParams.version === 'V1') {
       return (
         <View style={styles.message}>
-          {messageParams.data.map((obj, i) => (
+          {(
+            messageParams.data as unknown as { name: string; value: string }[]
+          ).map((obj, i) => (
             <View key={`${obj.name}_${i}`}>
               <Text style={[styles.messageText, styles.msgKey]}>
                 {escapeSpecialUnicode(obj.name)}:
@@ -234,7 +269,9 @@ class TypedSign extends PureComponent {
       );
     }
     if (messageParams.version === 'V3' || messageParams.version === 'V4') {
-      const { sanitizedMessage } = parseAndSanitizeSignTypedData(messageParams.data);
+      const { sanitizedMessage } = parseAndSanitizeSignTypedData(
+        messageParams.data as string,
+      ) as unknown as { sanitizedMessage: Record<string, unknown> };
       return this.renderTypedMessageV3(sanitizedMessage);
     }
   };
@@ -249,12 +286,12 @@ class TypedSign extends PureComponent {
       networkType,
     } = this.props;
     const { truncateMessage } = this.state;
-    const messageWrapperStyles = [];
+    const messageWrapperStyles: StyleProp<ViewStyle>[] = [];
     let domain;
     const styles = this.getStyles();
 
     if (messageParams.version === 'V3') {
-      domain = JSON.parse(messageParams.data).domain;
+      domain = JSON.parse(messageParams.data as string).domain;
     }
 
     if (truncateMessage) {
@@ -281,14 +318,18 @@ class TypedSign extends PureComponent {
         domain={domain}
         currentPageInformation={currentPageInformation}
         truncateMessage={truncateMessage}
-        type={typedSign[messageParams.version]}
+        type={typedSign[messageParams.version as keyof typeof typedSign]}
         fromAddress={from}
         testID={SigningBottomSheetSelectorsIDs.TYPED_REQUEST}
         networkType={networkType}
       >
         <View
           style={messageWrapperStyles}
-          onLayout={truncateMessage ? null : this.updateShouldTruncateMessage}
+          onLayout={
+            truncateMessage
+              ? (null as unknown as undefined)
+              : this.updateShouldTruncateMessage
+          }
         >
           {this.renderTypedMessage()}
         </View>
@@ -300,16 +341,27 @@ class TypedSign extends PureComponent {
 
 TypedSign.contextType = ThemeContext;
 
-const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = (
+  state: RootState,
+  ownProps: { messageParams: TypedSignMessageParams },
+) => {
   const signatureRequest = selectSignatureRequestById(
     state,
     ownProps.messageParams.metamaskId,
   );
 
   return {
-    networkType: selectProviderTypeByChainId(state, signatureRequest?.chainId),
+    networkType: selectProviderTypeByChainId(
+      state,
+      signatureRequest?.chainId as Hex,
+    ),
     securityAlertResponse: state.signatureRequest.securityAlertResponse,
   };
 };
 
-export default connect(mapStateToProps)(withMetricsAwareness(TypedSign));
+export default connect(mapStateToProps)(
+  // `withMetricsAwareness` only knows about the `metrics` prop it injects
+  withMetricsAwareness(
+    TypedSign as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);
