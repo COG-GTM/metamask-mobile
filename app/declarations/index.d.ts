@@ -408,3 +408,24 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 4 ---
+
+declare module 'react-native-confetti' {
+  import { Component } from 'react';
+
+  export interface ConfettiViewProps {
+    confettiCount?: number;
+    timeout?: number;
+    untilStopped?: boolean;
+    duration?: number;
+    colors?: string[];
+    size?: number;
+    bsize?: number;
+  }
+
+  export default class ConfettiView extends Component<ConfettiViewProps> {
+    startConfetti(onComplete?: () => void): void;
+    stopConfetti(): void;
+  }
+}
