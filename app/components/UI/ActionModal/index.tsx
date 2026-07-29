@@ -35,16 +35,16 @@ interface ActionModalProps extends ActionContentProps {
  * View that renders an action modal
  */
 export default function ActionModal({
-  cancelTestID = '',
-  confirmTestID = '',
-  cancelText = strings('action_view.cancel'),
+  cancelTestID,
+  confirmTestID,
+  cancelText,
   children,
-  confirmText = strings('action_view.confirm'),
-  confirmDisabled = false,
-  cancelButtonMode = 'neutral',
-  confirmButtonMode = 'warning',
-  displayCancelButton = true,
-  displayConfirmButton = true,
+  confirmText,
+  confirmDisabled,
+  cancelButtonMode,
+  confirmButtonMode,
+  displayCancelButton,
+  displayConfirmButton,
   onCancelPress,
   onConfirmPress,
   onRequestClose,
@@ -56,7 +56,7 @@ export default function ActionModal({
   childrenContainerStyle,
   verticalButtons,
   propagateSwipe,
-  cancelButtonDisabled = false,
+  cancelButtonDisabled,
 }: ActionModalProps) {
   const { colors } = useTheme();
 
@@ -97,3 +97,16 @@ export default function ActionModal({
     </Modal>
   );
 }
+
+ActionModal.defaultProps = {
+  cancelButtonMode: 'neutral',
+  cancelButtonDisabled: false,
+  confirmButtonMode: 'warning',
+  confirmTestID: '',
+  cancelTestID: '',
+  cancelText: strings('action_view.cancel'),
+  confirmText: strings('action_view.confirm'),
+  confirmDisabled: false,
+  displayCancelButton: true,
+  displayConfirmButton: true,
+};
