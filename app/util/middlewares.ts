@@ -1,3 +1,5 @@
+import type { JsonRpcEngineNextCallback } from '@metamask/json-rpc-engine';
+import type { Json, JsonRpcParams } from '@metamask/utils';
 import Logger from './Logger';
 import trackErrorAsAnalytics from './metrics/TrackError/trackErrorAsAnalytics';
 
@@ -16,15 +18,40 @@ const USER_REJECTED_ERRORS = ['user rejected', 'user denied', 'user cancelled'];
 const USER_REJECTED_ERROR_CODE = 4001;
 
 /**
- * Returns a middleware that appends the DApp origin to request
- * @param {{ origin: string }} opts - The middleware options
- * @returns {Function}
+ * A JSON-RPC request as it flows through the mobile middleware stack, which
+ * decorates it with the origin of the DApp that issued it.
  */
-export function createOriginMiddleware(opts) {
+export interface OriginatedJsonRpcRequest {
+  method: string;
+  params?: JsonRpcParams;
+  origin?: string;
+  isMetamaskInternal?: boolean;
+}
+
+/**
+ * A JSON-RPC response, which may hold an error raised while processing the
+ * request.
+ */
+export interface JsonRpcResponseWithError {
+  error?: {
+    message: string;
+    code?: number;
+    data?: Json;
+  };
+  result?: Json;
+}
+
+/**
+ * Returns a middleware that appends the DApp origin to request
+ *
+ * @param opts - The middleware options
+ * @returns the origin middleware
+ */
+export function createOriginMiddleware(opts: { origin: string }) {
   return function originMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ _,
-    /** @type {Function} */ next,
+    req: OriginatedJsonRpcRequest,
+    _: JsonRpcResponseWithError,
+    next: JsonRpcEngineNextCallback,
   ) {
     req.origin = opts.origin;
 
@@ -40,10 +67,15 @@ export function createOriginMiddleware(opts) {
 
 /**
  * Checks if the error code or message contains a user rejected error
- * @param {String} errorMessage
- * @returns {boolean}
+ *
+ * @param errorMessage - The error message to check
+ * @param errorCode - The error code to check
+ * @returns whether the error was caused by the user rejecting the request
  */
-export function containsUserRejectedError(errorMessage, errorCode) {
+export function containsUserRejectedError(
+  errorMessage?: string,
+  errorCode?: number,
+): boolean {
   try {
     if (!errorMessage || !(typeof errorMessage === 'string')) return false;
 
@@ -64,16 +96,17 @@ export function containsUserRejectedError(errorMessage, errorCode) {
 
 /**
  * Returns a middleware that logs RPC activity
- * @param {{ origin: string }} opts - The middleware options
- * @returns {Function}
+ *
+ * @param opts - The middleware options
+ * @returns the logger middleware
  */
-export function createLoggerMiddleware(opts) {
+export function createLoggerMiddleware(opts: { origin: string }) {
   return function loggerMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ res,
-    /** @type {Function} */ next,
+    req: OriginatedJsonRpcRequest,
+    res: JsonRpcResponseWithError,
+    next: JsonRpcEngineNextCallback,
   ) {
-    next((/** @type {Function} */ cb) => {
+    next((cb) => {
       if (res.error) {
         const { error, ...resWithoutError } = res;
         if (error) {
@@ -83,7 +116,7 @@ export function createLoggerMiddleware(opts) {
               error.message,
             );
           } else {
-            /**
+            /*
              * Example of a rpc error:
              * { "code":-32603,
              *   "message":"Internal JSON-RPC error.",
@@ -92,7 +125,13 @@ export function createLoggerMiddleware(opts) {
              * This will make the error log to sentry with the title "gas required exceeds allowance (59956966) or always failing transaction"
              * making it easier to differentiate each error.
              */
-            const errorParams = {
+            const errorParams: {
+              message: string;
+              orginalError: typeof error;
+              res: typeof resWithoutError;
+              req: OriginatedJsonRpcRequest;
+              data?: Json;
+            } = {
               message: 'Error in RPC response',
               orginalError: error,
               res: resWithoutError,
@@ -103,7 +142,7 @@ export function createLoggerMiddleware(opts) {
               errorParams.data = error.data;
             }
 
-            Logger.error(error, errorParams);
+            Logger.error(error as unknown as Error, errorParams);
           }
         }
       }
