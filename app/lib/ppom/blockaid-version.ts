@@ -1,1 +1,9 @@
-var e={d:(o,r)=>{for(var t in r)e.o(r,t)&&!e.o(o,t)&&Object.defineProperty(o,t,{enumerable:!0,get:r[t]})},o:(e,o)=>Object.prototype.hasOwnProperty.call(e,o)},o={};e.d(o,{Z:()=>r});const r={BlockaidVersion:"1.5.3"};var t=o.Z;export{t as default};
+interface BlockaidVersionInfo {
+  BlockaidVersion: string;
+}
+
+const blockaidVersionInfo: BlockaidVersionInfo = {
+  BlockaidVersion: '1.5.3',
+};
+
+export default blockaidVersionInfo;
