@@ -154,6 +154,7 @@ const createStyles = (colors: Theme['colors'], typography: Theme['typography']) 
  */
 export type TransactionElementTx = DecodableTransaction & {
   [key: string]: unknown;
+  speedUpParams?: { type?: string };
   txParams: DecodableTransaction['txParams'] & Record<string, unknown>;
   time?: number;
   type?: string;
@@ -162,7 +163,7 @@ export type TransactionElementTx = DecodableTransaction & {
   deviceConfirmedOn?: string;
 };
 
-interface ExistingGas {
+export interface ExistingGas {
   isEIP1559Transaction?: boolean;
   maxFeePerGas?: string;
   maxPriorityFeePerGas?: string;
