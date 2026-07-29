@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import type BN4 from 'bnjs4';
 import { isSwapsNativeAsset } from '.';
 import {
   renderFromTokenMinimalUnit,
@@ -19,11 +20,10 @@ interface BalanceSourceToken {
 function useBalance(
   accounts: Record<string, AccountWithBalance>,
   balances: Record<string, string>,
-  selectedAddress: string,
+  selectedAddress: string | undefined,
   sourceToken?: BalanceSourceToken | null,
   { asUnits = false }: { asUnits?: boolean } = {},
-) {
-  // TODO: This doesn't always return type BN. Objects down the line may attempt to call functions on the BN object.
+): BN4 | string | null {
   const balance = useMemo(() => {
     if (!sourceToken) {
       return null;
@@ -31,9 +31,11 @@ function useBalance(
     if (isSwapsNativeAsset(sourceToken)) {
       if (asUnits) {
         // Controller stores balances in hex for ETH
-        return safeNumberToBN(accounts[selectedAddress]?.balance || 0);
+        return safeNumberToBN(
+          accounts[selectedAddress ?? '']?.balance || 0,
+        ) as BN4;
       }
-      return renderFromWei(accounts[selectedAddress]?.balance);
+      return renderFromWei(accounts[selectedAddress ?? '']?.balance);
     }
     const tokenAddress = safeToChecksumAddress(sourceToken.address);
 
@@ -46,7 +48,7 @@ function useBalance(
         sourceToken.decimals,
       );
     }
-    return safeNumberToBN(0);
+    return safeNumberToBN(0) as BN4;
   }, [accounts, asUnits, balances, selectedAddress, sourceToken]);
 
   return balance;
