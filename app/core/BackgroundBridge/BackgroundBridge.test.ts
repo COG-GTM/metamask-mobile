@@ -45,8 +45,6 @@ jest.mock('../../store', () => ({
 
 jest.mock('../RPCMethods/createEthAccountsMethodMiddleware');
 
-createEthAccountsMethodMiddleware;
-
 jest.mock('@metamask/eth-json-rpc-filters');
 jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   events: {
@@ -54,14 +52,37 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+// Every controller reachable through `Engine.context` is fully mocked in this
+// suite, so it is described structurally as a bag of jest mocks.
+const mockedEngineContext = Engine.context as unknown as Record<
+  string,
+  Record<string, jest.Mock>
+>;
+
+interface Eip1193MethodMiddlewareHooks {
+  getAccounts: () => void;
+  getCaip25PermissionFromLegacyPermissionsForOrigin: (
+    requestedPermissions: unknown,
+  ) => void;
+  getPermissionsForOrigin: () => void;
+  requestPermissionsForOrigin: (requestedPermissions: unknown) => void;
+  revokePermissionsForOrigin: (permissionKeys: string[]) => void;
+  updateCaveat: (caveatType: string, caveatValue: unknown) => void;
+  getUnlockPromise: () => Promise<void>;
+}
+
+interface EthAccountsMethodMiddlewareHooks {
+  getAccounts: () => void;
+}
+
+function setupBackgroundBridge(url: string) {
   // Arrange
   const {
     AccountsController,
     PermissionController,
     SelectedNetworkController,
     NetworkController,
-  } = Engine.context;
+  } = mockedEngineContext;
 
   AccountsController.getSelectedAccount.mockReturnValue({
     address: '0x0',
@@ -104,20 +125,21 @@ function setupBackgroundBridge(url) {
     url,
     isRemoteConn: true,
     ...defaultBridgeParams,
-  });
+  } as unknown as ConstructorParameters<typeof BackgroundBridge>[0]);
 }
 
 describe('BackgroundBridge', () => {
   beforeEach(() => jest.clearAllMocks());
   describe('constructor', () => {
-    const { KeyringController, PermissionController } = Engine.context;
+    const { KeyringController, PermissionController } = mockedEngineContext;
 
     it('creates Eip1193MethodMiddleware with expected hooks', async () => {
       const url = 'https:www.mock.io';
       const origin = new URL(url).hostname;
       const bridge = setupBackgroundBridge(url);
-      const eip1193MethodMiddlewareHooks =
-        createEip1193MethodMiddleware.mock.calls[0][0];
+      const eip1193MethodMiddlewareHooks = jest.mocked(
+        createEip1193MethodMiddleware,
+      ).mock.calls[0][0] as unknown as Eip1193MethodMiddlewareHooks;
 
       // Assert getAccounts
       eip1193MethodMiddlewareHooks.getAccounts();
@@ -183,8 +205,9 @@ describe('BackgroundBridge', () => {
     it('creates EthAccountsMethodMiddleware with expected hooks', async () => {
       const url = 'https:www.mock.io';
       const bridge = setupBackgroundBridge(url);
-      const ethAccountsMethodMiddlewareHooks =
-        createEthAccountsMethodMiddleware.mock.calls[0][0];
+      const ethAccountsMethodMiddlewareHooks = jest.mocked(
+        createEthAccountsMethodMiddleware,
+      ).mock.calls[0][0] as unknown as EthAccountsMethodMiddlewareHooks;
 
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
