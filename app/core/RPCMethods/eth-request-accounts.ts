@@ -1,8 +1,31 @@
 import { rpcErrors } from '@metamask/rpc-errors';
-import { MESSAGE_TYPE } from '../createTracingMiddleware';
+import { RequestedPermissions } from '@metamask/permission-controller';
 import {
-  trackDappViewedEvent,
-} from '../../util/metrics';
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
+import {
+  JsonRpcEngineEndCallback,
+  JsonRpcEngineNextCallback,
+} from '@metamask/json-rpc-engine';
+import { MESSAGE_TYPE } from '../createTracingMiddleware';
+import { trackDappViewedEvent } from '../../util/metrics';
+
+/**
+ * Hooks into the background required by the `eth_requestAccounts` handler.
+ */
+export interface RequestEthereumAccountsHooks {
+  getAccounts: (options?: { ignoreLock?: boolean }) => string[];
+  getUnlockPromise: (shouldShowUnlockRequest: boolean) => Promise<void>;
+  getCaip25PermissionFromLegacyPermissionsForOrigin: (
+    requestedPermissions?: RequestedPermissions,
+  ) => RequestedPermissions;
+  requestPermissionsForOrigin: (
+    requestedPermissions: RequestedPermissions,
+  ) => Promise<unknown>;
+}
 
 const requestEthereumAccounts = {
   methodNames: [MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS],
@@ -17,7 +40,7 @@ const requestEthereumAccounts = {
 export default requestEthereumAccounts;
 
 // Used to rate-limit pending requests to one per origin
-const locks = new Set();
+const locks = new Set<string>();
 
 /**
  * This method attempts to retrieve the Ethereum accounts available to the
@@ -38,17 +61,17 @@ const locks = new Set();
  * @returns A promise that resolves to nothing
  */
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: JsonRpcRequest<JsonRpcParams> & { origin: string },
+  res: PendingJsonRpcResponse<Json>,
+  _next: JsonRpcEngineNextCallback,
+  end: JsonRpcEngineEndCallback,
   {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
-  },
-) {
+  }: RequestEthereumAccountsHooks,
+): Promise<void> {
   const { origin } = req;
   if (locks.has(origin)) {
     res.error = rpcErrors.resourceUnavailable(
@@ -68,7 +91,7 @@ async function requestEthereumAccountsHandler(
       res.result = ethAccounts;
       end();
     } catch (error) {
-      end(error);
+      end(error as Error);
     } finally {
       locks.delete(origin);
     }
@@ -80,13 +103,16 @@ async function requestEthereumAccountsHandler(
       getCaip25PermissionFromLegacyPermissionsForOrigin();
     await requestPermissionsForOrigin(caip25Permission);
   } catch (error) {
-    return end(error);
+    return end(error as Error);
   }
 
   // We cannot derive ethAccounts directly from the CAIP-25 permission
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
+  // @ts-expect-error `trackDappViewedEvent` takes a single object argument;
+  // this call site passes positional arguments and is asserted as such by the
+  // unit tests, so it is left untouched by this conversion.
   trackDappViewedEvent(origin, ethAccounts.length);
 
   res.result = ethAccounts;

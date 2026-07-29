@@ -1,12 +1,33 @@
-import { JsonRpcEngine } from '@metamask/json-rpc-engine';
 import {
+  JsonRpcEngine,
+  JsonRpcEngineEndCallback,
+  JsonRpcEngineNextCallback,
+} from '@metamask/json-rpc-engine';
+import {
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
   assertIsJsonRpcFailure,
   assertIsJsonRpcSuccess,
+  hasProperty,
+  isObject,
 } from '@metamask/utils';
 import { createEip1193MethodMiddleware } from '.';
 
+interface TestHooks {
+  hook1: () => number;
+  hook2: () => number;
+}
+
 const getHandler = () => ({
-  implementation: (req, res, _next, end, hooks) => {
+  implementation: (
+    req: JsonRpcRequest<JsonRpcParams>,
+    res: PendingJsonRpcResponse<Json>,
+    _next: JsonRpcEngineNextCallback,
+    end: JsonRpcEngineEndCallback,
+    hooks: TestHooks,
+  ) => {
     if (Array.isArray(req.params)) {
       switch (req.params[0]) {
         case 1:
@@ -46,6 +67,23 @@ jest.mock('../handlers', () => ({
   localHandlers: [getHandler()],
   eip1193OnlyHandlers: [getHandler()],
 }));
+
+/**
+ * Reads the message of the error cause attached to a JSON-RPC error `data`.
+ *
+ * @param data - The `data` property of a JSON-RPC error.
+ * @returns The message of the error cause, if any.
+ */
+const getErrorCauseMessage = (data: Json | undefined): string | undefined => {
+  if (!isObject(data) || !hasProperty(data, 'cause')) {
+    return undefined;
+  }
+  const { cause } = data;
+  if (!isObject(cause) || typeof cause.message !== 'string') {
+    return undefined;
+  }
+  return cause.message;
+};
 
 describe('createEip1193MethodMiddleware', () => {
   const method1 = 'method1';
@@ -144,7 +182,7 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(getErrorCauseMessage(response.error.data)).toBe('test error');
   });
 
   it('should handle errors thrown by the implementation', async () => {
@@ -161,7 +199,7 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(getErrorCauseMessage(response.error.data)).toBe('test error');
   });
 
   it('should handle non-errors thrown by the implementation', async () => {
