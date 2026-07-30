@@ -17,6 +17,9 @@ if [ -f "$WITH_ENVIRONMENT" ]; then
   . "$WITH_ENVIRONMENT"
 fi
 
+# Set the app entry file used by react-native-xcode.sh (defaults to index.js otherwise)
+export ENTRY_FILE=${ENTRY_FILE:-"index.ts"}
+
 # Set Sentry properties
 export SENTRY_PROPERTIES=${SENTRY_PROPERTIES:-"../sentry.properties"}
 
