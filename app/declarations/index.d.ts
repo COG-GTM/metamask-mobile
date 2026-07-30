@@ -8,7 +8,71 @@ declare module 'react-native-fade-in-image';
 
 declare module 'react-native-fast-crypto';
 
+declare module '@metamask/ethjs-unit' {
+  import BN from 'bnjs4';
+  const convert: {
+    fromWei(value: number | string | BN, unit: string): string;
+    toWei(value: number | string | BN, unit: string): BN;
+    numberToString(value: number | string | BN): string;
+  };
+  export default convert;
+}
+
+declare module 'number-to-bn' {
+  // eslint-disable-next-line no-duplicate-imports
+  import BN from 'bnjs4';
+  export default function numberToBN(value: number | string | BN): BN;
+}
+
+declare module 'ethjs-ens' {
+  class ENS {
+    constructor(options: { provider: unknown; network?: string });
+    reverse(address: string): Promise<string>;
+    lookup(name: string): Promise<string>;
+  }
+  export default ENS;
+}
+
+declare module 'unicode-confusables' {
+  export function confusables(
+    str: string,
+  ): { point: string; similarTo?: string }[];
+}
+
+declare module 'unicode-confusables/data/confusables.json' {
+  const content: Record<string, string>;
+  export default content;
+}
+
 declare module 'react-native-minimizer';
+declare module 'ethereumjs-abi' {
+  export function rawDecode(types: string[], data: Buffer): unknown[];
+  export function rawEncode(types: string[], values: unknown[]): Buffer;
+  export function soliditySHA3(types: string[], values: unknown[]): Buffer;
+  export function methodID(name: string, types: string[]): Buffer;
+}
+declare module 'humanize-duration' {
+  interface HumanizeDurationOptions {
+    language?: string;
+    languages?: Record<string, unknown>;
+    fallbacks?: string[];
+    delimiter?: string;
+    spacer?: string;
+    largest?: number;
+    units?: string[];
+    round?: boolean;
+    decimal?: string;
+    conjunction?: string;
+    maxDecimalPoints?: number;
+    unitMeasures?: Record<string, number>;
+    serialComma?: boolean;
+  }
+  function humanizeDuration(
+    milliseconds: number,
+    options?: HumanizeDurationOptions,
+  ): string;
+  export default humanizeDuration;
+}
 
 declare module 'xhr2';
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
