@@ -37,13 +37,14 @@ export function findRouteNameFromNavigatorState(
   routes: NavigatorRoute[],
 ): string {
   let route: NavigatorRoute | undefined = routes?.[routes.length - 1];
-  if (route?.state) {
-    route = route.state;
+  if ((route as NavigatorRoute).state) {
+    route = (route as NavigatorRoute).state;
   }
-  while (route?.index !== undefined) {
+  // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+  while (route !== undefined && route.index !== undefined) {
     route = route?.routes?.[route.index];
-    if (route?.state) {
-      route = route.state;
+    if ((route as NavigatorRoute).state) {
+      route = (route as NavigatorRoute).state;
     }
   }
 
@@ -173,7 +174,7 @@ export const deepJSONParse = ({
             // If parsing throws, it's not a JSON string, so do nothing
           }
         }
-      } else if (typeof value === 'object' && value !== null) {
+      } else if (typeof value === 'object') {
         // If it's an object, parse its properties
         parseProperties(value as Record<string, unknown>);
       }
