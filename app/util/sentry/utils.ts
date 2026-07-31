@@ -472,9 +472,8 @@ function rewriteReport(report: ErrorEvent): ErrorEvent {
       appState as unknown as Record<string, unknown>,
       sentryStateMask,
     );
-    if (report.contexts) {
-      report.contexts.appState = maskedState;
-    }
+    (report.contexts as NonNullable<typeof report.contexts>).appState =
+      maskedState;
   } catch (err) {
     console.error('ENTER ERROR OF REPORT ', err);
     throw err;

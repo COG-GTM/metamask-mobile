@@ -1034,10 +1034,10 @@ export const safeBNToHex = (
  * @returns A localized string of the formatted number + unit.
  */
 export const localizeLargeNumber = (
-  i18n: { t: unknown },
+  i18n: { t: (key: string) => string },
   number: number,
 ): string => {
-  const t = i18n.t as (key: string) => string;
+  const t = (key: string) => i18n.t(key);
   const oneTrillion = 1000000000000;
   const oneBillion = 1000000000;
   const oneMillion = 1000000;
