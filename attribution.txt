@@ -49108,7 +49108,7 @@ SOFTWARE.
 ******************************
 
 react-native-tcp
-4.0.0 <https://github.com/aprock/react-native-tcp>
+4.0.0 <https://github.com/MetaMask/react-native-tcp>
 The MIT License (MIT)
 
 Copyright (c) 2015 Peel Technologies, Inc
