@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fix(bridge): show "Auto" slippage for Solana swaps
 
+### Changed
+
+- chore(js-ts): Convert app/components/UI/AccountApproval/index.js to TypeScript ([#1380](https://github.com/COG-GTM/metamask-mobile/pull/1380))
+
 ### Added
 
 - feat: migrate eth_accounts and permittedChains to CAIP-25 endowment ([#13970](https://github.com/MetaMask/metamask-mobile/pull/13970))
