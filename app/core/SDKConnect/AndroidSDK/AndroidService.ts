@@ -321,13 +321,18 @@ export default class AndroidService extends EventEmitter2 {
           parsedMsg = JSON.parse(jsonMessage); // handle message and redirect to corresponding bridge
           sessionId = parsedMsg.id;
           message = parsedMsg.message;
-          data = JSON.parse(message);
 
-          // Update connected state
-          this.connections[sessionId] = {
-            ...this.connections[sessionId],
-            connected: true,
-          };
+          // Validate the shape of the caller-supplied IPC message before use.
+          if (
+            typeof sessionId !== 'string' ||
+            sessionId.length === 0 ||
+            typeof message !== 'string' ||
+            message.length === 0
+          ) {
+            throw new Error('Invalid message shape');
+          }
+
+          data = JSON.parse(message);
         } catch (error) {
           Logger.log(
             error,
@@ -347,6 +352,39 @@ export default class AndroidService extends EventEmitter2 {
           });
           return;
         }
+
+        // Reject messages for unknown/unapproved sessions instead of
+        // implicitly creating connection state or prompting for permissions
+        // against a caller-supplied sessionId. Mirrors
+        // DeeplinkProtocolService's 'Unauthorized request' handling.
+        if (!this.connections?.[sessionId]) {
+          DevLogger.log(
+            `AndroidService::onMessageReceived unauthorized sessionId=${sessionId}`,
+          );
+          this.sendMessage({
+            data: {
+              id: data.id,
+              error: {
+                code: 4100,
+                message: 'Unauthorized request',
+              },
+              jsonrpc: '2.0',
+            },
+            name: 'metamask-provider',
+          }).catch((err) => {
+            Logger.log(
+              err,
+              `AndroidService::onMessageReceived error sending unauthorized error to client ${sessionId}`,
+            );
+          });
+          return;
+        }
+
+        // Update connected state
+        this.connections[sessionId] = {
+          ...this.connections[sessionId],
+          connected: true,
+        };
 
         let bridge = this.bridgeByClientId[sessionId];
 
