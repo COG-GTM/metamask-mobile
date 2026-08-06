@@ -1,4 +1,5 @@
 import { RegexTypes } from './index.types';
+import { safeRegexExec } from './safeRegexExec';
 import { AccountListBottomSheetSelectorsIDs } from '../../../e2e/selectors/wallet/AccountListBottomSheet.selectors';
 
 export function hasDecimals(separator: string, decimalPlaces: string) {
@@ -19,7 +20,7 @@ export const regex: RegexTypes = {
   decimalString: /[1-9]/,
   decimalStringMigrations: /^[1-9]\d*$/u,
   defaultAccount: /^Account \d*$/,
-  exec: (exp: string, input: string) => new RegExp(exp).exec(input),
+  exec: (exp: string, input: string) => safeRegexExec(exp, input),
   // Checks that the domain consists of at least one valid domain pieces separated by periods, followed by a tld
   // Each piece of domain name has only the characters a-z, 0-9, and a hyphen (but not at the start or end of chunk)
   // A chunk has minimum length of 1, but minimum tld is set to 2 for now (no 1-character tlds exist yet)
