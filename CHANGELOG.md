@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- chore(js-ts): Convert app/components/UI/AccountApproval/index.js to TypeScript
+- chore(js-ts): Convert app/components/UI/AccountApproval/index.js to TypeScript ([#1380](https://github.com/COG-GTM/metamask-mobile/pull/1380))
 
 ### Added
 
