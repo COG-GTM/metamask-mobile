@@ -200,3 +200,40 @@ describe('SecureKeychain - setGenericPassword', () => {
     });
   });
 });
+
+describe('SecureKeychain - getGenericPassword', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    SecureKeychain.init('test_salt');
+  });
+
+  it.each([[false], [null], [undefined]])(
+    'returns null without throwing when the keychain resolves %p',
+    async (emptyResult) => {
+      (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce(
+        emptyResult,
+      );
+
+      await expect(SecureKeychain.getGenericPassword()).resolves.toBeNull();
+    },
+  );
+
+  it('resets isAuthenticating when the keychain holds no credentials', async () => {
+    (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce(false);
+
+    await SecureKeychain.getGenericPassword();
+
+    expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+  });
+
+  it('resets isAuthenticating when the keychain read fails', async () => {
+    (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
+      new Error('User canceled the operation.'),
+    );
+
+    await expect(SecureKeychain.getGenericPassword()).rejects.toThrow(
+      'User canceled the operation.',
+    );
+    expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+  });
+});
