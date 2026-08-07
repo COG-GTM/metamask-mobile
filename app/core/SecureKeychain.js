@@ -37,15 +37,23 @@ import { MetricsEventBuilder } from './Analytics/MetricsEventBuilder';
  * the phone's keychain
  */
 class SecureKeychain {
-  isAuthenticating = false;
-
   constructor(code) {
     if (!SecureKeychain.instance) {
-      privates.set(this, { code });
+      privates.set(this, { code, isAuthenticating: false });
       SecureKeychain.instance = this;
     }
 
     return SecureKeychain.instance;
+  }
+
+  // Backed by `privates` and exposed through the prototype so the flag stays
+  // writable after `init` freezes the singleton.
+  get isAuthenticating() {
+    return privates.get(this).isAuthenticating;
+  }
+
+  set isAuthenticating(value) {
+    privates.get(this).isAuthenticating = value;
   }
 
   encryptPassword(password) {
@@ -93,26 +101,24 @@ export default {
   },
 
   async getGenericPassword() {
-    if (instance) {
-      try {
-        instance.isAuthenticating = true;
-        const keychainObject = await Keychain.getGenericPassword(
-          defaultOptions,
-        );
-        if (keychainObject.password) {
-          const encryptedPassword = keychainObject.password;
-          const decrypted = await instance.decryptPassword(encryptedPassword);
-          keychainObject.password = decrypted.password;
-          instance.isAuthenticating = false;
-          return keychainObject;
-        }
-        instance.isAuthenticating = false;
-      } catch (error) {
-        instance.isAuthenticating = false;
-        throw new Error(error.message);
-      }
+    if (!instance) {
+      return null;
     }
-    return null;
+    try {
+      instance.isAuthenticating = true;
+      const keychainObject = await Keychain.getGenericPassword(defaultOptions);
+      // react-native-keychain resolves with `false` when nothing is stored
+      if (!keychainObject?.password) {
+        return null;
+      }
+      const decrypted = await instance.decryptPassword(keychainObject.password);
+      keychainObject.password = decrypted.password;
+      return keychainObject;
+    } catch (error) {
+      throw new Error(error.message);
+    } finally {
+      instance.isAuthenticating = false;
+    }
   },
 
   async setGenericPassword(password, type) {

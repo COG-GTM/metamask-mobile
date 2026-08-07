@@ -200,3 +200,72 @@ describe('SecureKeychain - setGenericPassword', () => {
     });
   });
 });
+
+describe('SecureKeychain - getGenericPassword', () => {
+  const mockPassword = 'test_password';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    SecureKeychain.init('test_salt');
+  });
+
+  it.each([[false], [null], [undefined]])(
+    'returns null when the keychain resolves with %p',
+    async (keychainResult) => {
+      (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce(
+        keychainResult,
+      );
+
+      await expect(SecureKeychain.getGenericPassword()).resolves.toBeNull();
+      expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+    },
+  );
+
+  it('returns the decrypted credentials when the keychain has a password', async () => {
+    const decryptPassword = jest
+      .spyOn(
+        Object.getPrototypeOf(SecureKeychain.getInstance()),
+        'decryptPassword',
+      )
+      .mockResolvedValue({ password: mockPassword });
+    (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce({
+      username: 'metamask-user',
+      password: 'encrypted_password',
+    });
+
+    await expect(SecureKeychain.getGenericPassword()).resolves.toEqual(
+      expect.objectContaining({
+        username: 'metamask-user',
+        password: mockPassword,
+      }),
+    );
+    expect(decryptPassword).toHaveBeenCalledWith('encrypted_password');
+    expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+
+    decryptPassword.mockRestore();
+  });
+
+  it('marks authentication as in progress while reading the keychain', async () => {
+    let authenticatingDuringRead;
+    (Keychain.getGenericPassword as jest.Mock).mockImplementationOnce(() => {
+      authenticatingDuringRead = SecureKeychain.getInstance().isAuthenticating;
+      return Promise.resolve(false);
+    });
+
+    await SecureKeychain.getGenericPassword();
+
+    expect(authenticatingDuringRead).toBe(true);
+    expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+  });
+
+  it('resets the authenticating flag when the keychain read throws', async () => {
+    (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
+      new Error('Keychain unavailable'),
+    );
+
+    await expect(SecureKeychain.getGenericPassword()).rejects.toThrow(
+      'Keychain unavailable',
+    );
+    expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+  });
+});
