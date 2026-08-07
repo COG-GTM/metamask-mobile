@@ -56,6 +56,40 @@ jest.mock('../core/Analytics', () => ({
   },
 }));
 
+describe('SecureKeychain - getGenericPassword', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    SecureKeychain.init('test_salt');
+  });
+
+  it.each([
+    ['false', false],
+    ['null', null],
+    ['undefined', undefined],
+  ])(
+    'returns null when the keychain resolves to %s',
+    async (_label, keychainResult) => {
+      (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce(
+        keychainResult,
+      );
+
+      await expect(SecureKeychain.getGenericPassword()).resolves.toBeNull();
+      expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+    },
+  );
+
+  it('resets isAuthenticating when the keychain throws', async () => {
+    (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
+      new Error('User canceled the operation.'),
+    );
+
+    await expect(SecureKeychain.getGenericPassword()).rejects.toThrow(
+      'User canceled the operation.',
+    );
+    expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+  });
+});
+
 describe('SecureKeychain - setGenericPassword', () => {
   const mockPassword = 'test_password';
 
