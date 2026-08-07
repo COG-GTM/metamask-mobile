@@ -65,8 +65,10 @@ function isMigrationCandidate(filePath) {
   );
 }
 
+// `export ... from` counts too: a barrel that only re-exports still makes its
+// target a dependency, and there are ~466 such statements under app/.
 const IMPORT_PATTERN =
-  /(?:import\s[^'"]*from\s*|import\s*|require\s*\(\s*|jest\.mock\s*\(\s*)['"]([^'"]+)['"]/g;
+  /(?:import\s[^'"]*from\s*|export\s[^'"]*from\s*|import\s*\(\s*|import\s*|require\s*\(\s*|jest\.mock\s*\(\s*)['"]([^'"]+)['"]/g;
 
 function extractSpecifiers(contents) {
   const specifiers = [];

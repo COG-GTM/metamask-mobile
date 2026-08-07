@@ -7,7 +7,7 @@ Tests, stories, snapshots and `__mocks__` are excluded — convert those togethe
 
 "Internal dependents" is the number of files under `app/` that import the file (relative or `app/`-rooted imports).
 Zero-dependent files are leaves: they can be converted in any order, in parallel, with no cross-PR conflicts.
-Leaf files: **10**.
+Leaf files: **8**.
 
 ## Conversion order (leaf-first)
 
@@ -19,8 +19,6 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | `app/components/UI/Swaps/components/LoadingAnimation/backgroundShapes.js` | 0 | 62 |
 | `app/components/UI/Swaps/components/Onboarding.js` | 0 | 153 |
 | `app/components/Views/AddressQRCode/index.js` | 0 | 190 |
-| `app/components/Views/confirmations/legacy/SendFlow/AddressList/AddressList.jsx` | 0 | 253 |
-| `app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/CustomGasModal.jsx` | 0 | 189 |
 | `app/util/test/assetFileTransformer.js` | 0 | 13 |
 | `app/util/test/ganache-seeder.js` | 0 | 90 |
 | `app/util/test/ganache.js` | 0 | 64 |
@@ -54,6 +52,8 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | `app/components/Views/CollectibleView/index.js` | 1 | 140 |
 | `app/components/Views/confirmations/legacy/Approve/index.js` | 1 | 1004 |
 | `app/components/Views/confirmations/legacy/components/UpdateEIP1559Tx/index.jsx` | 1 | 270 |
+| `app/components/Views/confirmations/legacy/SendFlow/AddressList/AddressList.jsx` | 1 | 253 |
+| `app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/CustomGasModal.jsx` | 1 | 189 |
 | `app/components/Views/GasEducationCarousel/index.js` | 1 | 420 |
 | `app/components/Views/MediaPlayer/AndroidMediaPlayer.js` | 1 | 655 |
 | `app/components/Views/MediaPlayer/index.js` | 1 | 196 |
@@ -335,20 +335,6 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | `app/components/UI/Swaps/components/LoadingAnimation/backgroundShapes.js` | 0 | 62 |
 | `app/components/UI/Swaps/components/LoadingAnimation/index.js` | 3 | 522 |
 
-### `app/components/Views/confirmations/legacy/SendFlow/AddressList` — 2 files
-
-| File | Internal dependents | Lines |
-| --- | ---: | ---: |
-| `app/components/Views/confirmations/legacy/SendFlow/AddressList/AddressList.jsx` | 0 | 253 |
-| `app/components/Views/confirmations/legacy/SendFlow/AddressList/index.js` | 3 | 2 |
-
-### `app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal` — 2 files
-
-| File | Internal dependents | Lines |
-| --- | ---: | ---: |
-| `app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/CustomGasModal.jsx` | 0 | 189 |
-| `app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/index.js` | 2 | 2 |
-
 ### `app/components/Views/AddressQRCode` — 1 file
 
 | File | Internal dependents | Lines |
@@ -453,6 +439,20 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | `app/core/RPCMethods/eth-request-accounts.js` | 2 | 95 |
 | `app/core/RPCMethods/wallet_addEthereumChain.js` | 2 | 305 |
 | `app/core/RPCMethods/wallet_switchEthereumChain.js` | 2 | 128 |
+
+### `app/components/Views/confirmations/legacy/SendFlow/AddressList` — 2 files
+
+| File | Internal dependents | Lines |
+| --- | ---: | ---: |
+| `app/components/Views/confirmations/legacy/SendFlow/AddressList/AddressList.jsx` | 1 | 253 |
+| `app/components/Views/confirmations/legacy/SendFlow/AddressList/index.js` | 3 | 2 |
+
+### `app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal` — 2 files
+
+| File | Internal dependents | Lines |
+| --- | ---: | ---: |
+| `app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/CustomGasModal.jsx` | 1 | 189 |
+| `app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/index.js` | 2 | 2 |
 
 ### `app/components/Views/MediaPlayer` — 2 files
 
