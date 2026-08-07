@@ -16,6 +16,18 @@ jest.mock('../../locales/i18n', () => ({
   strings: jest.fn((key) => key),
 }));
 
+// The native crypto mocks cannot round-trip a payload, so the encryptor is
+// stubbed with a reversible JSON implementation
+jest.mock('./Encryptor', () => ({
+  LEGACY_DERIVATION_OPTIONS: {},
+  Encryptor: jest.fn().mockImplementation(() => ({
+    encrypt: jest.fn(async (_code: string, data: unknown) =>
+      JSON.stringify(data),
+    ),
+    decrypt: jest.fn(async (_code: string, text: string) => JSON.parse(text)),
+  })),
+}));
+
 jest.mock('../store/storage-wrapper', () => ({
   __esModule: true,
   default: {
@@ -198,5 +210,57 @@ describe('SecureKeychain - setGenericPassword', () => {
         }),
       );
     });
+  });
+});
+
+describe('SecureKeychain - getGenericPassword', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    SecureKeychain.init('test_salt');
+  });
+
+  it.each([
+    ['false', false],
+    ['null', null],
+    ['undefined', undefined],
+  ])(
+    'returns null and resets isAuthenticating when keychain returns %s',
+    async (_label, keychainResult) => {
+      (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce(
+        keychainResult,
+      );
+
+      await expect(SecureKeychain.getGenericPassword()).resolves.toBeNull();
+      expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+    },
+  );
+
+  it('returns the decrypted credentials when a password is stored', async () => {
+    await SecureKeychain.setGenericPassword(
+      'test_password',
+      SecureKeychain.TYPES.REMEMBER_ME,
+    );
+    const [, encryptedPassword] = (Keychain.setGenericPassword as jest.Mock)
+      .mock.calls[0];
+    (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce({
+      username: 'metamask-user',
+      password: encryptedPassword,
+    });
+
+    await expect(SecureKeychain.getGenericPassword()).resolves.toEqual(
+      expect.objectContaining({ password: 'test_password' }),
+    );
+    expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
+  });
+
+  it('resets isAuthenticating when the keychain throws', async () => {
+    (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
+      new Error('User canceled the operation.'),
+    );
+
+    await expect(SecureKeychain.getGenericPassword()).rejects.toThrow(
+      'User canceled the operation.',
+    );
+    expect(SecureKeychain.getInstance().isAuthenticating).toBe(false);
   });
 });
