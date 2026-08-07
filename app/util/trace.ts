@@ -248,7 +248,7 @@ function startTrace(request: TraceRequest): TraceContext {
 
   const callback = (span: Span | undefined) => {
     const end = (timestamp?: number) => {
-      span?.end(timestamp);
+      span?.end?.(timestamp);
     };
 
     if (span) {
