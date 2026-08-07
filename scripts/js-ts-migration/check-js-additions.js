@@ -17,6 +17,9 @@ const DEFAULT_BASE_REF = process.env.BASE_REF
   ? `origin/${process.env.BASE_REF}`
   : 'origin/main';
 const APP_FOLDER_JS_REGEX = /^app\/.*\.(js|jsx)$/;
+// Same population as MIGRATION_INVENTORY.md, so the two counts are comparable.
+const EXCLUDED_FILE_PATTERN =
+  /(\.test\.|\.spec\.|\.stories\.|\.constants\.test|\.testUtils\.|__mocks__|__snapshots__)/;
 
 function git(args) {
   return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' }).trim();
@@ -31,7 +34,7 @@ function addedFiles(baseRef) {
 
 function countAppFiles(pattern) {
   const files = git(['ls-files', '--', pattern]).split('\n').filter(Boolean);
-  return files.filter((file) => !/(__snapshots__)/.test(file)).length;
+  return files.filter((file) => !EXCLUDED_FILE_PATTERN.test(file)).length;
 }
 
 function reportProgress() {
@@ -42,7 +45,7 @@ function reportProgress() {
   const total = javascript + typescript;
   const percentage = total === 0 ? 100 : ((typescript / total) * 100).toFixed(1);
   console.log(
-    `TypeScript coverage of app/: ${typescript}/${total} files (${percentage}%), ${javascript} JavaScript files left.`,
+    `TypeScript coverage of app/: ${typescript}/${total} source files (${percentage}%), ${javascript} JavaScript files left. Tests, stories and mocks excluded.`,
   );
   console.log('See MIGRATION.md for the per-file conversion checklist.');
 }

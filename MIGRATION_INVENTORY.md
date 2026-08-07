@@ -41,8 +41,6 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | `app/components/UI/ProtectYourWalletModal/index.js` | 1 | 210 |
 | `app/components/UI/Screen/index.js` | 1 | 27 |
 | `app/components/UI/SliderButton/index.js` | 1 | 355 |
-| `app/components/UI/StyledButton/index.android.js` | 1 | 148 |
-| `app/components/UI/StyledButton/index.ios.js` | 1 | 105 |
 | `app/components/UI/Swaps/components/ApprovalTransactionEditionModal.js` | 1 | 172 |
 | `app/components/UI/Swaps/components/GasEditModal.js` | 1 | 554 |
 | `app/components/UI/Swaps/components/QuotesModal.js` | 1 | 511 |
@@ -266,7 +264,6 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | `app/components/UI/EthereumAddress/index.js` | 9 | 73 |
 | `app/components/UI/GlobalAlert/index.js` | 9 | 157 |
 | `app/util/custom-gas/index.js` | 9 | 151 |
-| `app/images/image-icons.js` | 10 | 59 |
 | `app/components/UI/ActionView/index.js` | 11 | 237 |
 | `app/util/walletconnect.js` | 12 | 13 |
 | `app/actions/wizard/index.js` | 14 | 10 |
@@ -278,6 +275,7 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | `app/reducers/collectibles/index.js` | 16 | 160 |
 | `app/components/Base/RemoteImage/index.js` | 17 | 319 |
 | `app/util/date/index.js` | 17 | 89 |
+| `app/images/image-icons.js` | 18 | 59 |
 | `app/core/TransactionTypes.js` | 19 | 17 |
 | `app/actions/transaction/index.js` | 25 | 174 |
 | `app/reducers/swaps/index.js` | 25 | 422 |
@@ -290,6 +288,8 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | `app/util/general/index.js` | 51 | 193 |
 | `app/constants/network.js` | 54 | 106 |
 | `app/components/UI/StyledButton/index.js` | 72 | 11 |
+| `app/components/UI/StyledButton/index.android.js` | 73 | 148 |
+| `app/components/UI/StyledButton/index.ios.js` | 73 | 105 |
 | `app/util/transactions/index.js` | 73 | 1659 |
 | `app/components/UI/Navbar/index.js` | 82 | 2048 |
 | `app/util/number/index.js` | 106 | 940 |
@@ -453,14 +453,6 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | `app/core/RPCMethods/eth-request-accounts.js` | 2 | 95 |
 | `app/core/RPCMethods/wallet_addEthereumChain.js` | 2 | 305 |
 | `app/core/RPCMethods/wallet_switchEthereumChain.js` | 2 | 128 |
-
-### `app/components/UI/StyledButton` — 3 files
-
-| File | Internal dependents | Lines |
-| --- | ---: | ---: |
-| `app/components/UI/StyledButton/index.android.js` | 1 | 148 |
-| `app/components/UI/StyledButton/index.ios.js` | 1 | 105 |
-| `app/components/UI/StyledButton/index.js` | 72 | 11 |
 
 ### `app/components/Views/MediaPlayer` — 2 files
 
@@ -1424,12 +1416,6 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | --- | ---: | ---: |
 | `app/util/custom-gas/index.js` | 9 | 151 |
 
-### `app/images` — 1 file
-
-| File | Internal dependents | Lines |
-| --- | ---: | ---: |
-| `app/images/image-icons.js` | 10 | 59 |
-
 ### `app/components/UI/ActionView` — 1 file
 
 | File | Internal dependents | Lines |
@@ -1478,6 +1464,12 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | --- | ---: | ---: |
 | `app/util/date/index.js` | 17 | 89 |
 
+### `app/images` — 1 file
+
+| File | Internal dependents | Lines |
+| --- | ---: | ---: |
+| `app/images/image-icons.js` | 18 | 59 |
+
 ### `app/actions/transaction` — 1 file
 
 | File | Internal dependents | Lines |
@@ -1507,6 +1499,14 @@ Work top-to-bottom. Within a batch, one file per PR keeps reviews small and lets
 | File | Internal dependents | Lines |
 | --- | ---: | ---: |
 | `app/constants/network.js` | 54 | 106 |
+
+### `app/components/UI/StyledButton` — 3 files
+
+| File | Internal dependents | Lines |
+| --- | ---: | ---: |
+| `app/components/UI/StyledButton/index.js` | 72 | 11 |
+| `app/components/UI/StyledButton/index.android.js` | 73 | 148 |
+| `app/components/UI/StyledButton/index.ios.js` | 73 | 105 |
 
 ### `app/util/transactions` — 1 file
 

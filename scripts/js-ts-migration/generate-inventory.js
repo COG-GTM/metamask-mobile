@@ -7,6 +7,7 @@
  *
  * Usage: node scripts/js-ts-migration/generate-inventory.js
  */
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -16,6 +17,9 @@ const OUTPUT_FILE = path.join(REPO_ROOT, 'MIGRATION_INVENTORY.md');
 
 const SOURCE_EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx'];
 const JS_EXTENSIONS = ['.js', '.jsx'];
+// Metro resolves `./Foo` to `Foo.ios.js` / `Foo.android.js` / `Foo.native.js`
+// before falling back to `Foo.js`.
+const PLATFORM_SUFFIXES = ['', '.ios', '.android', '.native'];
 const EXCLUDED_DIRECTORIES = new Set(['node_modules', '__snapshots__']);
 const EXCLUDED_FILE_PATTERN =
   /(\.test\.|\.spec\.|\.stories\.|\.constants\.test|\.testUtils\.)/;
@@ -32,6 +36,23 @@ function walk(dir, files = []) {
     }
   }
   return files;
+}
+
+/**
+ * Tracked files only — generated-but-gitignored sources such as
+ * `app/lib/ppom/ppom.html.js` are not ours to migrate.
+ */
+function trackedFiles() {
+  return new Set(
+    execFileSync('git', ['ls-files', '--', 'app'], {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    })
+      .split('\n')
+      .filter(Boolean)
+      .map((file) => path.resolve(REPO_ROOT, file)),
+  );
 }
 
 /** Files that are in scope for the migration. */
@@ -56,10 +77,27 @@ function extractSpecifiers(contents) {
   return specifiers;
 }
 
+function existingFiles(candidates) {
+  return candidates.filter(
+    (candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile(),
+  );
+}
+
+function variants(base) {
+  return PLATFORM_SUFFIXES.flatMap((suffix) =>
+    SOURCE_EXTENSIONS.map((extension) => base + suffix + extension),
+  );
+}
+
 /**
- * Resolves an import specifier to a file on disk, mimicking Metro/tsc
- * resolution for relative imports and for `baseUrl: "."` rooted imports
- * (e.g. `app/util/number`). Package imports resolve to null.
+ * Resolves an import specifier to the files on disk it may load, mimicking
+ * Metro/tsc resolution for relative imports, for `baseUrl: "."` rooted imports
+ * (e.g. `app/util/number`) and for the `images/*` path alias. Package imports
+ * resolve to an empty list.
+ *
+ * A specifier can resolve to more than one file: `./StyledButton` maps to both
+ * `index.js` and `index.android.js`, and converting one means converting all of
+ * them, so every platform variant is counted as depended upon.
  */
 function resolveSpecifier(specifier, importerDir) {
   let base;
@@ -68,24 +106,25 @@ function resolveSpecifier(specifier, importerDir) {
   } else if (specifier.startsWith('app/')) {
     base = path.resolve(REPO_ROOT, specifier);
   } else if (specifier.startsWith('images/')) {
-    base = path.resolve(APP_DIR, specifier.slice('images/'.length));
+    // tsconfig maps `images/*` to `./app/images/*`, so the prefix is kept.
+    base = path.resolve(APP_DIR, specifier);
   } else {
-    return null;
+    return [];
   }
 
-  const candidates = [
-    base,
-    ...SOURCE_EXTENSIONS.map((extension) => base + extension),
-    ...SOURCE_EXTENSIONS.map((extension) =>
-      path.join(base, `index${extension}`),
-    ),
-  ];
-  return (
-    candidates.find(
-      (candidate) =>
-        fs.existsSync(candidate) && fs.statSync(candidate).isFile(),
-    ) ?? null
-  );
+  // Tiers mirror resolution precedence: an exact file wins over an extension
+  // match, which wins over a directory index.
+  for (const tier of [
+    [base],
+    variants(base),
+    variants(path.join(base, 'index')),
+  ]) {
+    const matches = existingFiles(tier);
+    if (matches.length > 0) {
+      return matches;
+    }
+  }
+  return [];
 }
 
 function buildDependentCounts(allFiles) {
@@ -93,9 +132,10 @@ function buildDependentCounts(allFiles) {
   for (const file of allFiles) {
     const contents = fs.readFileSync(file, 'utf8');
     for (const specifier of extractSpecifiers(contents)) {
-      const resolved = resolveSpecifier(specifier, path.dirname(file));
-      if (resolved && resolved !== file && dependents.has(resolved)) {
-        dependents.get(resolved).add(file);
+      for (const resolved of resolveSpecifier(specifier, path.dirname(file))) {
+        if (resolved !== file && dependents.has(resolved)) {
+          dependents.get(resolved).add(file);
+        }
       }
     }
   }
@@ -114,7 +154,8 @@ function formatTable(rows) {
 }
 
 function main() {
-  const allFiles = walk(APP_DIR);
+  const tracked = trackedFiles();
+  const allFiles = walk(APP_DIR).filter((file) => tracked.has(file));
   const dependents = buildDependentCounts(allFiles);
   const candidates = allFiles.filter(isMigrationCandidate).map((file) => ({
     file: path.relative(REPO_ROOT, file),
