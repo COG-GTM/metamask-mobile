@@ -1,10 +1,35 @@
 import { rpcErrors } from '@metamask/rpc-errors';
-import { MESSAGE_TYPE } from '../createTracingMiddleware';
+import { PermittedHandlerExport } from '@metamask/permission-controller';
 import {
-  trackDappViewedEvent,
-} from '../../util/metrics';
+  JsonRpcEngineEndCallback,
+  JsonRpcEngineNextCallback,
+} from '@metamask/json-rpc-engine';
+import {
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
+import { MESSAGE_TYPE } from '../createTracingMiddleware';
+import { trackDappViewedEvent } from '../../util/metrics';
 
-const requestEthereumAccounts = {
+/**
+ * Hooks used by the `eth_requestAccounts` handler.
+ */
+export interface RequestEthereumAccountsHooks {
+  getAccounts: (options: { ignoreLock: boolean }) => string[];
+  getUnlockPromise: (shouldShowUnlockRequest: boolean) => Promise<void>;
+  getCaip25PermissionFromLegacyPermissionsForOrigin: () => Record<string, Json>;
+  requestPermissionsForOrigin: (
+    requestedPermissions: Record<string, Json>,
+  ) => Promise<unknown>;
+}
+
+const requestEthereumAccounts: PermittedHandlerExport<
+  RequestEthereumAccountsHooks,
+  JsonRpcParams,
+  Json
+> = {
   methodNames: [MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS],
   implementation: requestEthereumAccountsHandler,
   hookNames: {
@@ -38,16 +63,16 @@ const locks = new Set();
  * @returns A promise that resolves to nothing
  */
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: JsonRpcRequest<JsonRpcParams> & { origin?: string },
+  res: PendingJsonRpcResponse<Json>,
+  _next: JsonRpcEngineNextCallback,
+  end: JsonRpcEngineEndCallback,
   {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
-  },
+  }: RequestEthereumAccountsHooks,
 ) {
   const { origin } = req;
   if (locks.has(origin)) {
@@ -68,7 +93,7 @@ async function requestEthereumAccountsHandler(
       res.result = ethAccounts;
       end();
     } catch (error) {
-      end(error);
+      end(error as Error);
     } finally {
       locks.delete(origin);
     }
@@ -80,14 +105,22 @@ async function requestEthereumAccountsHandler(
       getCaip25PermissionFromLegacyPermissionsForOrigin();
     await requestPermissionsForOrigin(caip25Permission);
   } catch (error) {
-    return end(error);
+    return end(error as Error);
   }
 
   // We cannot derive ethAccounts directly from the CAIP-25 permission
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent(origin, ethAccounts.length);
+  // `trackDappViewedEvent` is declared with a single params object, but this
+  // call site has always passed positional arguments. Kept as-is to avoid a
+  // behavioral change during the TypeScript migration.
+  (
+    trackDappViewedEvent as unknown as (
+      hostname: string | undefined,
+      numberOfConnectedAccounts: number,
+    ) => void
+  )(origin, ethAccounts.length);
 
   res.result = ethAccounts;
   return end();
