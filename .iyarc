@@ -1,2 +1,10 @@
-# https://github.com/advisories/GHSA-c76h-2ccp-4975 This is temporarily ignored, will be fixed by updating yarn to v3 in this PR: https://github.com/MetaMask/metamask-mobile/pull/14477
-GHSA-c76h-2ccp-4975
+# GHSA-w5hq-g745-h8pq (moderate, uuid < 11.1.1): fix requires a major bump of uuid
+# across the entire dependency tree (v3/v7/v8/v9 pins in dozens of transitive deps).
+GHSA-w5hq-g745-h8pq
+# GHSA-5p2g-fcmc-qvqq / GHSA-w3rx-r6r6-pgpr (image-size <= 2.0.2): no patched version
+# published yet; only reachable via metro's dev-time asset resolution.
+GHSA-5p2g-fcmc-qvqq
+GHSA-w3rx-r6r6-pgpr
+# GHSA-gh4j-gqv2-49f6 (moderate, fast-xml-parser < 5.7.0): patch only exists in the
+# v5 major line; @metamask/snaps-utils and react-native CLI require ^4.
+GHSA-gh4j-gqv2-49f6
