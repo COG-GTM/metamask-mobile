@@ -203,7 +203,7 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
       ).build(),
     );
     const newAppStartTime = await StorageWrapper.getItem('appStartTime');
-    setAppStartTime(newAppStartTime);
+    setAppStartTime(newAppStartTime ?? undefined);
   }, [updateNavBar, track]);
 
   useEffect(() => {

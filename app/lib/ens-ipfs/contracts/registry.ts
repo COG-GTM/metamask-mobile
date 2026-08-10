@@ -1,4 +1,21 @@
-export default [
+export interface AbiParameter {
+  name: string;
+  type: string;
+  indexed?: boolean;
+}
+
+export interface AbiFragment {
+  name?: string;
+  type: string;
+  constant?: boolean;
+  anonymous?: boolean;
+  payable?: boolean;
+  stateMutability?: string;
+  inputs?: AbiParameter[];
+  outputs?: AbiParameter[];
+}
+
+const registryAbi: AbiFragment[] = [
   {
     constant: true,
     inputs: [{ name: 'node', type: 'bytes32' }],
@@ -106,3 +123,5 @@ export default [
     type: 'event',
   },
 ];
+
+export default registryAbi;

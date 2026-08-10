@@ -6,7 +6,7 @@ import {
   isTest,
   enableApiCallLogs,
   testConfig,
-} from './app/util/test/utils.js';
+} from './app/util/test/utils';
 import { LaunchArguments } from 'react-native-launch-arguments';
 import { defaultMockPort } from './e2e/api-mocking/mock-config/mockUrlCollection.json';
 
