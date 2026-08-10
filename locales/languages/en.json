@@ -3900,6 +3900,11 @@
     "add_account_button": "Add account",
     "name_taken_message": "This account name already exists"
   },
+  "snap_account_removal_approval": {
+    "title": "Remove account from MetaMask",
+    "description": "This account will be removed from MetaMask. Make sure you have a way to recover it before continuing.",
+    "remove_account_button": "Remove account"
+  },
   "smart_transactions_migration": {
     "title": "Transactions just got smarter",
     "link": "Higher success rates",
