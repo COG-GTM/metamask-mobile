@@ -54,6 +54,17 @@ public class RNTar extends ReactContextBaseJavaModule {
     }
   }
 
+  private File resolveEntryFile(File outputDir, String entryName) throws IOException {
+    File outputFile = new File(outputDir, entryName);
+    String canonicalOutputDir = outputDir.getCanonicalPath();
+    String canonicalOutputFile = outputFile.getCanonicalPath();
+    if (!canonicalOutputFile.equals(canonicalOutputDir)
+        && !canonicalOutputFile.startsWith(canonicalOutputDir + File.separator)) {
+      throw new IOException("Invalid tar entry, path escapes the destination directory: " + entryName);
+    }
+    return outputFile;
+  }
+
   private boolean exists(String path) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       return Files.exists(Paths.get(path));
@@ -84,9 +95,11 @@ public class RNTar extends ReactContextBaseJavaModule {
 
         TarArchiveEntry entry;
 
+        File outputDir = new File(outputPath);
+
         // Loop through the entries in the .tgz file
         while ((entry = (TarArchiveEntry) tarInputStream.getNextEntry()) != null) {
-          File outputFile = new File(outputPath, entry.getName());
+          File outputFile = resolveEntryFile(outputDir, entry.getName());
 
           // If it is a directory, create the output directory
           if (entry.isDirectory()) {
