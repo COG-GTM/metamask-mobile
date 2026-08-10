@@ -4,7 +4,7 @@ import { getAddressAccountType } from '../address';
 import NotificationManager from '../../core/NotificationManager';
 import { WALLET_CONNECT_ORIGIN } from '../walletconnect';
 import AppConstants from '../../core/AppConstants';
-import { InteractionManager } from 'react-native';
+import { InteractionManager, LayoutChangeEvent } from 'react-native';
 import { strings } from '../../../locales/i18n';
 import { selectEvmChainId } from '../../selectors/networkController';
 import { store } from '../../store';
@@ -14,6 +14,36 @@ import { getDecimalChainId } from '../networks';
 import Logger from '../Logger';
 import { MetricsEventBuilder } from '../../core/Analytics/MetricsEventBuilder';
 
+interface PageInformation {
+  url?: string;
+  origin?: string;
+  // Analytics properties are dapp-provided and unstructured
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  analytics?: Record<string, any>;
+}
+
+export interface SignatureMessageParams {
+  from?: string;
+  origin?: string;
+  version?: string;
+  currentPageInformation?: PageInformation;
+  meta?: PageInformation;
+}
+
+interface SignatureAnalyticsParams {
+  account_type: string;
+  dapp_host_name: string;
+  chain_id: string | null;
+  signature_type: string;
+  version: string;
+  // Additional properties come from the dapp page info and Blockaid
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+// `replaceAll` is unavailable with the current `lib` setting
+const stripColons = (value: string): string => value.split(':').join('');
+
 export const typedSign = {
   V1: 'eth_signTypedData',
   V3: 'eth_signTypedData_v3',
@@ -21,10 +51,12 @@ export const typedSign = {
 };
 
 export const getAnalyticsParams = (
-  messageParams,
-  signType,
-  securityAlertResponse,
-) => {
+  messageParams: SignatureMessageParams,
+  signType?: string,
+  // The Blockaid response shape is owned by the security alerts feature
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  securityAlertResponse?: any,
+): SignatureAnalyticsParams => {
   if (!messageParams || typeof messageParams !== 'object') {
     throw new Error('Invalid messageParams provided');
   }
@@ -32,11 +64,11 @@ export const getAnalyticsParams = (
   const { currentPageInformation = {}, meta = {} } = messageParams;
   const pageInfo = { ...currentPageInformation, ...meta };
 
-  const analyticsParams = {
-    account_type: getAddressAccountType(messageParams.from),
+  const analyticsParams: SignatureAnalyticsParams = {
+    account_type: getAddressAccountType(messageParams.from as string),
     dapp_host_name: 'N/A',
     chain_id: null,
-    signature_type: signType,
+    signature_type: signType as string,
     version: messageParams?.version || 'N/A',
     ...pageInfo.analytics,
   };
@@ -55,13 +87,16 @@ export const getAnalyticsParams = (
       Object.assign(analyticsParams, blockaidParams);
     }
   } catch (error) {
-    Logger.error(error, 'Error processing analytics parameters:');
+    Logger.error(error as Error, 'Error processing analytics parameters:');
   }
 
   return analyticsParams;
 };
 
-export const walletConnectNotificationTitle = (confirmation, isError) => {
+export const walletConnectNotificationTitle = (
+  confirmation: boolean,
+  isError: boolean,
+): string => {
   if (isError) return strings('notifications.wc_signed_failed_title');
   return confirmation
     ? strings('notifications.wc_signed_title')
@@ -69,7 +104,7 @@ export const walletConnectNotificationTitle = (confirmation, isError) => {
 };
 
 export const showWalletConnectNotification = (
-  messageParams = {},
+  messageParams: SignatureMessageParams = {},
   confirmation = false,
   isError = false,
 ) => {
@@ -77,12 +112,14 @@ export const showWalletConnectNotification = (
     /**
      * FIXME: need to rewrite the way BackgroundBridge sets the origin.
      */
-    const origin = messageParams.origin.toLowerCase().replaceAll(':', '');
+    const origin = stripColons(
+      (messageParams.origin as string).toLowerCase(),
+    );
     const isWCOrigin = origin.startsWith(
-      WALLET_CONNECT_ORIGIN.replaceAll(':', '').toLowerCase(),
+      stripColons(WALLET_CONNECT_ORIGIN).toLowerCase(),
     );
     const isSDKOrigin = origin.startsWith(
-      AppConstants.MM_SDK.SDK_REMOTE_ORIGIN.replaceAll(':', '').toLowerCase(),
+      stripColons(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN).toLowerCase(),
     );
 
     if (isWCOrigin || isSDKOrigin) {
@@ -97,11 +134,13 @@ export const showWalletConnectNotification = (
 };
 
 export const handleSignatureAction = async (
-  onAction,
-  messageParams,
-  signType,
-  securityAlertResponse,
-  confirmation,
+  onAction: () => Promise<void> | void,
+  messageParams: SignatureMessageParams,
+  signType: string,
+  // The Blockaid response shape is owned by the security alerts feature
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  securityAlertResponse?: any,
+  confirmation = false,
 ) => {
   await onAction();
   showWalletConnectNotification(messageParams, confirmation);
@@ -118,21 +157,27 @@ export const handleSignatureAction = async (
   );
 };
 
-export const addSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const addSignatureErrorListener = (
+  metamaskId: string,
+  onSignatureError: (...args: unknown[]) => void,
+) => {
   Engine.context.SignatureController.hub.on(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const removeSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const removeSignatureErrorListener = (
+  metamaskId: string,
+  onSignatureError: (...args: unknown[]) => void,
+) => {
   Engine.context.SignatureController.hub.removeListener(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const shouldTruncateMessage = (e) => {
+export const shouldTruncateMessage = (e: LayoutChangeEvent): boolean => {
   if (
     (Device.isIos() && e.nativeEvent.layout.height > 70) ||
     (Device.isAndroid() && e.nativeEvent.layout.height > 100)
