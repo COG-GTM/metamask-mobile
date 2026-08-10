@@ -1,10 +1,17 @@
-import React, { useState, useCallback } from 'react';
-import { TouchableOpacity, View, StyleSheet, Linking } from 'react-native';
+import React, { PropsWithChildren, useState, useCallback } from 'react';
+import {
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  Linking,
+  StyleProp,
+  TextStyle,
+  ViewStyle,
+} from 'react-native';
 import Summary from '../../../../../../Base/Summary';
 import Text from '../../../../../../Base/Text';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { isMainnetByChainId, isTestNet } from '../../../../../../../util/networks';
-import PropTypes from 'prop-types';
 import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import FadeAnimationView from '../../../../../../UI/FadeAnimationView';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
@@ -14,14 +21,128 @@ import useModalHandler from '../../../../../../Base/hooks/useModalHandler';
 import AppConstants from '../../../../../../../core/AppConstants';
 import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
+import { Theme } from '../../../../../../../util/theme/models';
 
-const createStyles = (colors) =>
-  StyleSheet.create({
-    overview: (noMargin) => ({
-      marginHorizontal: noMargin ? 0 : 24,
-      paddingTop: 10,
-      paddingBottom: 10,
-    }),
+/**
+ * `Summary` and its sub components are typed without an explicit `children`
+ * prop, so they are aliased locally to keep the existing markup.
+ */
+const SummaryView = Summary as React.FC<
+  PropsWithChildren<{ style?: StyleProp<ViewStyle> }>
+>;
+const SummaryRow = Summary.Row as React.FC<
+  PropsWithChildren<{
+    style?: StyleProp<ViewStyle>;
+    end?: boolean;
+    last?: boolean;
+  }>
+>;
+
+interface TransactionReviewEIP1559Props {
+  /**
+   * Gas fee in native currency
+   */
+  gasFeeNative?: string;
+  /**
+   * Gas fee converted to chosen currency
+   */
+  gasFeeConversion?: string;
+  /**
+   * Maximum gas fee in native currency
+   */
+  gasFeeMaxNative?: string;
+  /**
+   * Maximum gas fee onverted to chosen currency
+   */
+  gasFeeMaxConversion?: string;
+  /**
+   * Selected primary currency
+   */
+  primaryCurrency?: string;
+  /**
+   * A string representing the network chainId
+   */
+  chainId?: string;
+  /**
+   * Function called when user clicks to edit the gas fee
+   */
+  onEdit?: () => void;
+  /**
+   * String that represents the time estimates
+   */
+  timeEstimate?: string;
+  /**
+   * String that represents the color of the time estimate
+   */
+  timeEstimateColor?: string;
+  /**
+   * Time estimate name (unknown, low, medium, high, less_than, range)
+   */
+  timeEstimateId?: string;
+  /**
+   * Boolean to determine the container should have no margin
+   */
+  noMargin?: boolean;
+  /**
+   * Origin (hostname) of the dapp that suggested the gas fee
+   */
+  origin?: string;
+  /**
+   * Function to call when update animation starts
+   */
+  onUpdatingValuesStart?: () => void;
+  /**
+   * Function to call when update animation ends
+   */
+  onUpdatingValuesEnd?: () => void;
+  /**
+   * If the values should animate upon update or not
+   */
+  animateOnChange?: boolean;
+  /**
+   * Boolean to determine if the animation is happening
+   */
+  isAnimating?: boolean;
+  /**
+   * If loading should stop
+   */
+  gasEstimationReady?: boolean;
+  /**
+   * If should show legacy gas
+   */
+  legacy?: boolean;
+  /**
+   * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
+   */
+  originWarning?: boolean;
+  /**
+   * Total value in native currency, provided by legacy call sites
+   */
+  totalNative?: string;
+  /**
+   * Total value converted to chosen currency, provided by legacy call sites
+   */
+  totalConversion?: string;
+  /**
+   * Maximum total value in native currency, provided by legacy call sites
+   */
+  totalMaxNative?: string;
+  /**
+   * Whether the transaction amount is over the account balance
+   */
+  over?: boolean;
+}
+
+const createStyles = (colors: Theme['colors']) => ({
+  overview: (noMargin?: boolean): ViewStyle => ({
+    marginHorizontal: noMargin ? 0 : 24,
+    paddingTop: 10,
+    paddingBottom: 10,
+  }),
+  gasInfoIcon: (hasOrigin?: boolean): TextStyle => ({
+    color: hasOrigin ? colors.warning.default : colors.icon.muted,
+  }),
+  ...StyleSheet.create({
     valuesContainer: {
       flex: 1,
       flexDirection: 'row',
@@ -30,9 +151,6 @@ const createStyles = (colors) =>
     gasInfoContainer: {
       paddingLeft: 2,
     },
-    gasInfoIcon: (hasOrigin) => ({
-      color: hasOrigin ? colors.warning.default : colors.icon.muted,
-    }),
     amountContainer: {
       flex: 1,
       paddingRight: 10,
@@ -62,10 +180,16 @@ const createStyles = (colors) =>
     flex: {
       flex: 1,
     },
-  });
+  }),
+});
 
-// eslint-disable-next-line react/prop-types
-const Skeleton = ({ width, noStyle }) => {
+const Skeleton = ({
+  width,
+  noStyle,
+}: {
+  width: number;
+  noStyle?: boolean;
+}) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -98,7 +222,7 @@ const TransactionReviewEIP1559 = ({
   isAnimating,
   gasEstimationReady,
   legacy,
-}) => {
+}: TransactionReviewEIP1559Props) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -109,7 +233,7 @@ const TransactionReviewEIP1559 = ({
   const [isVisibleLegacyLearnMore, , showLegacyLearnMore, hideLegacyLearnMore] =
     useModalHandler(false);
   const toggleLearnMoreModal = useCallback(() => {
-    setShowLearnMoreModal((showLearnMoreModal) => !showLearnMoreModal);
+    setShowLearnMoreModal((isVisible) => !isVisible);
   }, []);
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -123,10 +247,10 @@ const TransactionReviewEIP1559 = ({
   );
 
   const edit = useCallback(() => {
-    if (!isAnimating) onEdit();
+    if (!isAnimating) onEdit?.();
   }, [isAnimating, onEdit]);
 
-  const isMainnet = isMainnetByChainId(chainId);
+  const isMainnet = isMainnetByChainId(chainId as string);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
   let gasFeePrimary, gasFeeSecondary, gasFeeMaxPrimary;
   if (nativeCurrencySelected) {
@@ -140,11 +264,11 @@ const TransactionReviewEIP1559 = ({
   }
 
   const valueToWatchAnimation = `${gasFeeNative}${gasFeeMaxNative}`;
-  const isTestNetwork = isTestNet(chainId);
+  const isTestNetwork = isTestNet(chainId as string);
 
   return (
-    <Summary style={styles.overview(noMargin)}>
-      <Summary.Row>
+    <SummaryView style={styles.overview(noMargin)}>
+      <SummaryRow>
         <View style={styles.gasRowContainer}>
           <View style={styles.gasRowContainer}>
             <Text
@@ -226,9 +350,9 @@ const TransactionReviewEIP1559 = ({
             <Skeleton width={80} />
           )}
         </View>
-      </Summary.Row>
+      </SummaryRow>
       {!legacy && (
-        <Summary.Row>
+        <SummaryRow>
           <View style={styles.gasRowContainer}>
             {gasEstimationReady ? (
               <FadeAnimationView
@@ -314,7 +438,7 @@ const TransactionReviewEIP1559 = ({
               <Skeleton width={120} />
             )}
           </View>
-        </Summary.Row>
+        </SummaryRow>
       )}
       <InfoModal
         isVisible={isVisibleLegacyLearnMore}
@@ -368,87 +492,8 @@ const TransactionReviewEIP1559 = ({
         timeEstimateId={timeEstimateId}
         onHideModal={hideTimeEstimateInfoModal}
       />
-    </Summary>
+    </SummaryView>
   );
-};
-
-TransactionReviewEIP1559.propTypes = {
-  /**
-   * Gas fee in native currency
-   */
-  gasFeeNative: PropTypes.string,
-  /**
-   * Gas fee converted to chosen currency
-   */
-  gasFeeConversion: PropTypes.string,
-  /**
-   * Maximum gas fee in native currency
-   */
-  gasFeeMaxNative: PropTypes.string,
-  /**
-   * Maximum gas fee onverted to chosen currency
-   */
-  gasFeeMaxConversion: PropTypes.string,
-  /**
-   * Selected primary currency
-   */
-  primaryCurrency: PropTypes.string,
-  /**
-   * A string representing the network chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * Function called when user clicks to edit the gas fee
-   */
-  onEdit: PropTypes.func,
-  /**
-   * String that represents the time estimates
-   */
-  timeEstimate: PropTypes.string,
-  /**
-   * String that represents the color of the time estimate
-   */
-  timeEstimateColor: PropTypes.string,
-  /**
-   * Time estimate name (unknown, low, medium, high, less_than, range)
-   */
-  timeEstimateId: PropTypes.string,
-  /**
-   * Boolean to determine the container should have no margin
-   */
-  noMargin: PropTypes.bool,
-  /**
-   * Origin (hostname) of the dapp that suggested the gas fee
-   */
-  origin: PropTypes.string,
-  /**
-   * Function to call when update animation starts
-   */
-  onUpdatingValuesStart: PropTypes.func,
-  /**
-   * Function to call when update animation ends
-   */
-  onUpdatingValuesEnd: PropTypes.func,
-  /**
-   * If the values should animate upon update or not
-   */
-  animateOnChange: PropTypes.bool,
-  /**
-   * Boolean to determine if the animation is happening
-   */
-  isAnimating: PropTypes.bool,
-  /**
-   * If loading should stop
-   */
-  gasEstimationReady: PropTypes.bool,
-  /**
-   * If should show legacy gas
-   */
-  legacy: PropTypes.bool,
-  /**
-   * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
-   */
-  originWarning: PropTypes.bool,
 };
 
 export default TransactionReviewEIP1559;

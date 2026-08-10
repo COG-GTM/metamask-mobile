@@ -2,8 +2,10 @@ import React from 'react';
 import TransactionReviewEIP1559 from '.';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
 import renderWithProvider, {
+  DeepPartial,
   renderHookWithProvider,
 } from '../../../../../../../util/test/renderWithProvider';
+import { RootState } from '../../../../../../../reducers';
 
 const initialState = {
   settings: {},
@@ -77,7 +79,7 @@ describe('TransactionReviewEIP1559', () => {
   it('should render correctly', () => {
     const wrapper = renderWithProvider(
       <TransactionReviewEIP1559 {...transactionReview} />,
-      { state: initialState },
+      { state: initialState as unknown as DeepPartial<RootState> },
     );
 
     expect(wrapper).toMatchSnapshot();
@@ -94,7 +96,7 @@ describe('TransactionReviewEIP1559', () => {
           updateTransactionState: updateTransactionStateMock,
         }),
       {
-        state: initialState,
+        state: initialState as unknown as DeepPartial<RootState>,
       },
     );
 
