@@ -11,6 +11,92 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'ethjs-ens' {
+  export default class Ens {
+    constructor(opts: {
+      provider?: unknown;
+      network?: string | number;
+      registryAddress?: string;
+    });
+    lookup(name: string): Promise<string>;
+    reverse(address: string): Promise<string>;
+    getNamehash(name: string): string;
+  }
+}
+
+declare module 'unicode-confusables' {
+  export interface ConfusablePoint {
+    point: string;
+    similarTo?: string;
+  }
+  export function confusables(input: string): ConfusablePoint[];
+  export function isConfusing(input: string): boolean;
+  export function rectifyConfusion(input: string): string;
+}
+
+declare module '@metamask/ethjs-unit' {
+  import BN from 'bnjs4';
+
+  export const unitMap: Record<string, string>;
+  export function numberToString(arg: unknown): string;
+  export function getValueOfUnit(unit?: string): BN;
+  export function fromWei(
+    weiInput: unknown,
+    unit?: string,
+    optionsInput?: {
+      commify?: boolean;
+      pad?: boolean;
+    },
+  ): string;
+  export function toWei(etherInput: unknown, unit?: string): BN;
+
+  const convert: {
+    unitMap: typeof unitMap;
+    numberToString: typeof numberToString;
+    getValueOfUnit: typeof getValueOfUnit;
+    fromWei: typeof fromWei;
+    toWei: typeof toWei;
+  };
+  export default convert;
+}
+
+declare module 'number-to-bn' {
+  // eslint-disable-next-line no-duplicate-imports
+  import BN from 'bnjs4';
+
+  export default function numberToBN(arg: unknown): BN;
+}
+
+declare module 'ethereumjs-abi' {
+  export function rawEncode(types: string[], values: unknown[]): Buffer;
+  export function rawDecode(types: string[], data: Buffer | string): unknown[];
+  export function methodID(name: string, types: string[]): Buffer;
+  export function simpleEncode(method: string, ...args: unknown[]): Buffer;
+  export function soliditySHA3(types: string[], values: unknown[]): Buffer;
+}
+
+declare module 'humanize-duration' {
+  interface HumanizeDurationOptions {
+    language?: string;
+    fallbacks?: string[];
+    delimiter?: string;
+    spacer?: string;
+    largest?: number;
+    units?: string[];
+    round?: boolean;
+    decimal?: string;
+    conjunction?: string;
+    maxDecimalPoints?: number;
+    serialComma?: boolean;
+    unitMeasures?: Record<string, number>;
+  }
+  function humanizeDuration(
+    milliseconds: number,
+    options?: HumanizeDurationOptions,
+  ): string;
+  export default humanizeDuration;
+}
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

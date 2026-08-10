@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import BN from 'bnjs4';
 import { addHexPrefix } from './number';
 
 import {
@@ -27,7 +28,7 @@ const NON_ISO4217_CRYPTO_CODES = [
   'ZEC',
 ];
 
-export function increaseLastGasPrice(lastGasPrice) {
+export function increaseLastGasPrice(lastGasPrice?: string): string {
   return addHexPrefix(
     multiplyCurrencies(lastGasPrice || '0x0', 1.1, {
       multiplicandBase: 16,
@@ -37,14 +38,20 @@ export function increaseLastGasPrice(lastGasPrice) {
   );
 }
 
-export function hexGreaterThan(a, b) {
+export function hexGreaterThan(a: string, b: string): boolean {
   return conversionGreaterThan(
     { value: a, fromNumericBase: 'hex' },
     { value: b, fromNumericBase: 'hex' },
   );
 }
 
-export function getHexGasTotal({ gasLimit, gasPrice }) {
+export function getHexGasTotal({
+  gasLimit,
+  gasPrice,
+}: {
+  gasLimit?: string;
+  gasPrice?: string;
+}): string {
   return addHexPrefix(
     multiplyCurrencies(gasLimit || '0x0', gasPrice || '0x0', {
       toNumericBase: 'hex',
@@ -54,26 +61,26 @@ export function getHexGasTotal({ gasLimit, gasPrice }) {
   );
 }
 
-export function addEth(...args) {
-  return args.reduce((acc, ethAmount) =>
+export function addEth(...args: (string | number)[]): string {
+  return args.reduce((acc: string | number, ethAmount) =>
     addCurrencies(acc, ethAmount, {
       toNumericBase: 'dec',
       numberOfDecimals: 6,
       aBase: 10,
       bBase: 10,
     }),
-  );
+  ) as string;
 }
 
-export function addFiat(...args) {
-  return args.reduce((acc, fiatAmount) =>
+export function addFiat(...args: (string | number)[]): string {
+  return args.reduce((acc: string | number, fiatAmount) =>
     addCurrencies(acc, fiatAmount, {
       toNumericBase: 'dec',
       numberOfDecimals: 2,
       aBase: 10,
       bBase: 10,
     }),
-  );
+  ) as string;
 }
 
 export function getValueFromWeiHex({
@@ -83,7 +90,14 @@ export function getValueFromWeiHex({
   conversionRate,
   numberOfDecimals,
   toDenomination,
-}) {
+}: {
+  value: string;
+  fromCurrency?: string;
+  toCurrency?: string;
+  conversionRate?: number | BigNumber;
+  numberOfDecimals?: number;
+  toDenomination?: 'WEI' | 'GWEI' | 'ETH';
+}): string {
   return conversionUtil(value, {
     fromNumericBase: 'hex',
     toNumericBase: 'dec',
@@ -92,7 +106,7 @@ export function getValueFromWeiHex({
     numberOfDecimals,
     fromDenomination: 'WEI',
     toDenomination,
-    conversionRate,
+    conversionRate: conversionRate as number,
   });
 }
 
@@ -102,7 +116,13 @@ export function getTransactionFee({
   toCurrency,
   conversionRate,
   numberOfDecimals,
-}) {
+}: {
+  value: BN;
+  fromCurrency?: string;
+  toCurrency?: string;
+  conversionRate?: number;
+  numberOfDecimals?: number;
+}): string {
   return conversionUtil(value, {
     fromNumericBase: 'BN',
     toNumericBase: 'dec',
@@ -114,7 +134,10 @@ export function getTransactionFee({
   });
 }
 
-export function formatCurrency(value, currencyCode) {
+export function formatCurrency(
+  value: string | number,
+  currencyCode: string,
+): string {
   const upperCaseCurrencyCode = currencyCode.toUpperCase();
 
   const formatedCurrency = NON_ISO4217_CRYPTO_CODES.includes(
@@ -135,7 +158,13 @@ export function convertTokenToFiat({
   toCurrency,
   conversionRate,
   contractExchangeRate,
-}) {
+}: {
+  value: string | number;
+  fromCurrency?: string;
+  toCurrency?: string;
+  conversionRate: number;
+  contractExchangeRate?: number;
+}): string | number {
   if (!contractExchangeRate) return 0;
   const totalExchangeRate = conversionRate * contractExchangeRate;
 
@@ -156,12 +185,12 @@ export function convertTokenToFiat({
  * @returns {string} The rounded number, or the original number if no
  * rounding was necessary.
  */
-export function roundExponential(decimalString) {
+export function roundExponential(decimalString: string): string {
   const PRECISION = 4;
   const bigNumberValue = new BigNumber(decimalString);
 
   // In JS, numbers with exponentials greater than 20 get displayed as an exponential.
-  return bigNumberValue.e > 20
+  return (bigNumberValue.e as number) > 20
     ? bigNumberValue.toPrecision(PRECISION)
     : decimalString;
 }
