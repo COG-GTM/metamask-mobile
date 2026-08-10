@@ -536,6 +536,99 @@ describe('Snap Keyring Methods', () => {
       expect(trackSnapAccountEvent).toHaveBeenCalled();
     });
 
+    it('shows a removal confirmation dialog for non-preinstalled snaps', async () => {
+      (isSnapPreinstalled as jest.Mock).mockReturnValue(false);
+      const builder = createSnapKeyringBuilder();
+      const snapKeyring = builder();
+
+      await snapKeyring.handleKeyringSnapMessage(mockSnapId, {
+        method: KeyringEvent.AccountCreated,
+        params: {
+          account: mockAccount,
+          displayConfirmation: false,
+        },
+      });
+
+      mockAddRequest.mockClear();
+
+      await snapKeyring.handleKeyringSnapMessage(mockSnapId, {
+        method: KeyringEvent.AccountDeleted,
+        params: {
+          id: mockAccount.id,
+        },
+      });
+
+      expect(mockAddRequest).toHaveBeenCalledWith([
+        {
+          origin: mockSnapId,
+          type: SNAP_MANAGE_ACCOUNTS_CONFIRMATION_TYPES.confirmAccountRemoval,
+          requestData: {
+            publicAddress: mockAccount.address.toLowerCase(),
+          },
+        },
+        true,
+      ]);
+      expect(mockRemoveAccountHelper).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not remove the account when the user denies the removal', async () => {
+      (isSnapPreinstalled as jest.Mock).mockReturnValue(false);
+      const builder = createSnapKeyringBuilder();
+      const snapKeyring = builder();
+
+      await snapKeyring.handleKeyringSnapMessage(mockSnapId, {
+        method: KeyringEvent.AccountCreated,
+        params: {
+          account: mockAccount,
+          displayConfirmation: false,
+        },
+      });
+
+      mockRemoveAccountHelper.mockReset();
+      mockPersisKeyringHelper.mockReset();
+      // The user rejects the removal confirmation.
+      mockAddRequest.mockReturnValue(false);
+
+      await expect(
+        snapKeyring.handleKeyringSnapMessage(mockSnapId, {
+          method: KeyringEvent.AccountDeleted,
+          params: {
+            id: mockAccount.id,
+          },
+        }),
+      ).rejects.toThrow('User denied account removal');
+
+      expect(mockRemoveAccountHelper).not.toHaveBeenCalled();
+      expect(mockPersisKeyringHelper).not.toHaveBeenCalled();
+    });
+
+    it('skips the removal confirmation dialog for preinstalled snaps', async () => {
+      (isSnapPreinstalled as jest.Mock).mockReturnValue(true);
+      const builder = createSnapKeyringBuilder();
+      const snapKeyring = builder();
+
+      await snapKeyring.handleKeyringSnapMessage(mockSnapId, {
+        method: KeyringEvent.AccountCreated,
+        params: {
+          account: mockAccount,
+          displayConfirmation: false,
+        },
+      });
+
+      mockAddRequest.mockClear();
+      mockRemoveAccountHelper.mockReset();
+
+      await snapKeyring.handleKeyringSnapMessage(mockSnapId, {
+        method: KeyringEvent.AccountDeleted,
+        params: {
+          id: mockAccount.id,
+        },
+      });
+
+      expect(mockAddRequest).not.toHaveBeenCalled();
+      expect(mockRemoveAccountHelper).toHaveBeenCalledTimes(1);
+    });
+
     it('handles errors when removing an account', async () => {
       const loggerSpy = jest.spyOn(Logger, 'error').mockImplementation();
 

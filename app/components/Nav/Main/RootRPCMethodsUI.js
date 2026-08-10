@@ -78,6 +78,7 @@ import SnapDialogApproval from '../../Snaps/SnapDialogApproval/SnapDialogApprova
 ///: END:ONLY_INCLUDE_IF
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import SnapAccountCustomNameApproval from '../../Approvals/SnapAccountCustomNameApproval';
+import SnapAccountRemovalApproval from '../../Approvals/SnapAccountRemovalApproval';
 ///: END:ONLY_INCLUDE_IF
 
 const hstInterface = new ethers.utils.Interface(abi);
@@ -545,6 +546,7 @@ const RootRPCMethodsUI = (props) => {
         ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
       }
       <SnapAccountCustomNameApproval />
+      <SnapAccountRemovalApproval />
       {
         ///: END:ONLY_INCLUDE_IF
       }
