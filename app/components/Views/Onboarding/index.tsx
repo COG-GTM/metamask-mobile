@@ -1,5 +1,4 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { ComponentType, PureComponent, ReactNode } from 'react';
 import {
   ActivityIndicator,
   BackHandler,
@@ -10,7 +9,14 @@ import {
   InteractionManager,
   Animated,
   Easing,
+  StyleProp,
+  TextStyle,
 } from 'react-native';
+import type { Dispatch } from 'redux';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { RouteProp } from '@react-navigation/native';
+import type { ThemeColors } from '@metamask/design-tokens';
+import type { Theme } from '../../../util/theme/models';
 import Text, {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
@@ -22,7 +28,6 @@ import {
   colors as importedColors,
 } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
-import Button from '@metamask/react-native-button';
 import { connect } from 'react-redux';
 import FadeOutOverlay from '../../UI/FadeOutOverlay';
 import {
@@ -30,6 +35,7 @@ import {
   getTransparentOnboardingNavbarOptions,
 } from '../../UI/Navbar';
 import Device from '../../../util/device';
+import foxImage from '../../../images/branding/fox.png';
 import BaseNotification from '../../UI/Notification/BaseNotification';
 import ElevatedView from 'react-native-elevated-view';
 import { loadingSet, loadingUnset } from '../../../actions/user';
@@ -47,10 +53,28 @@ import { OnboardingSelectorIDs } from '../../../../e2e/selectors/Onboarding/Onbo
 import Routes from '../../../constants/navigation/Routes';
 import { selectAccounts } from '../../../selectors/accountTrackerController';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
-import { trace, TraceName, TraceOperation } from '../../../util/trace';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { RootState } from '../../../reducers';
+import type { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
+import type { IMetaMetricsEvent } from '../../../core/Analytics/MetaMetrics.types';
 
-const createStyles = (colors) =>
+// @metamask/react-native-button does not ship type declarations
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports, import/no-commonjs
+const ButtonModule = require('@metamask/react-native-button');
+const Button = ButtonModule.default as React.ComponentType<{
+  style?: StyleProp<TextStyle>;
+  onPress?: () => void;
+  children?: ReactNode;
+}>;
+
+// `BaseNotification` is untyped JS; describe the props used here
+const Notification = BaseNotification as unknown as React.FC<{
+  closeButtonDisabled?: boolean;
+  status?: string;
+  data?: { title?: string; description?: string };
+}>;
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     scroll: {
       flex: 1,
@@ -134,52 +158,41 @@ const createStyles = (colors) =>
     },
   });
 
+interface OnboardingRouteParams {
+  delete?: boolean;
+}
+
+interface OwnProps extends IWithMetricsAwarenessProps {
+  /**
+   * The navigator object
+   */
+  navigation: StackNavigationProp<Record<string, object | undefined>>;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: RouteProp<{ params?: OnboardingRouteParams }, 'params'>;
+}
+
+type StateProps = ReturnType<typeof mapStateToProps>;
+type DispatchProps = ReturnType<typeof mapDispatchToProps>;
+type OnboardingProps = OwnProps & StateProps & DispatchProps;
+
+interface OnboardingState {
+  warningModalVisible: boolean;
+  loading: boolean;
+  existingUser: boolean;
+}
+
 /**
  * View that is displayed to first time (new) users
  */
-class Onboarding extends PureComponent {
-  static propTypes = {
-    disableNewPrivacyPolicyToast: PropTypes.func,
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * redux flag that indicates if the user set a password
-     */
-    passwordSet: PropTypes.bool,
-    /**
-     * loading status
-     */
-    loading: PropTypes.bool,
-    /**
-     * set loading status
-     */
-    setLoading: PropTypes.func,
-    /**
-     * unset loading status
-     */
-    unsetLoading: PropTypes.func,
-    /**
-     * loadings msg
-     */
-    loadingMsg: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
-
+class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
   notificationAnimated = new Animated.Value(100);
   detailsYAnimated = new Animated.Value(0);
   actionXAnimated = new Animated.Value(0);
   detailsAnimated = new Animated.Value(0);
 
-  animatedTimingStart = (animatedRef, toValue) => {
+  animatedTimingStart = (animatedRef: Animated.Value, toValue: number) => {
     Animated.timing(animatedRef, {
       toValue,
       duration: 500,
@@ -188,20 +201,20 @@ class Onboarding extends PureComponent {
     }).start();
   };
 
-  state = {
+  state: OnboardingState = {
     warningModalVisible: false,
     loading: false,
     existingUser: false,
   };
 
-  seedwords = null;
-  importedAccounts = null;
-  channelName = null;
+  seedwords: string | null = null;
+  importedAccounts: string[] | null = null;
+  channelName: string | null = null;
   incomingDataStr = '';
-  dataToSync = null;
+  dataToSync: Record<string, unknown> | null = null;
   mounted = false;
 
-  warningCallback = () => true;
+  warningCallback: () => void = () => true;
 
   showNotification = () => {
     // show notification
@@ -221,7 +234,8 @@ class Onboarding extends PureComponent {
 
   updateNavBar = () => {
     const { route, navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     navigation.setOptions(
       route.params?.delete
         ? getTransparentOnboardingNavbarOptions(colors)
@@ -275,7 +289,7 @@ class Onboarding extends PureComponent {
     }
   };
 
-  handleExistingUser = (action) => {
+  handleExistingUser = (action: () => void) => {
     if (this.state.existingUser) {
       this.alertExistingUser(action);
     } else {
@@ -328,11 +342,11 @@ class Onboarding extends PureComponent {
     this.handleExistingUser(action);
   };
 
-  track = (event) => {
+  track = (event: IMetaMetricsEvent) => {
     trackOnboarding(MetricsEventBuilder.createEventBuilder(event).build());
   };
 
-  alertExistingUser = (callback) => {
+  alertExistingUser = (callback: () => void) => {
     this.warningCallback = () => {
       callback();
       this.toggleWarningModal();
@@ -346,7 +360,8 @@ class Onboarding extends PureComponent {
   };
 
   renderLoader = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -360,14 +375,15 @@ class Onboarding extends PureComponent {
   };
 
   renderContent() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
       <View style={styles.ctas}>
         <View style={styles.largeFoxWrapper}>
           <Image
-            source={require('../../../images/branding/fox.png')}
+            source={foxImage}
             style={styles.foxImage}
             resizeMethod={'auto'}
           />
@@ -412,7 +428,8 @@ class Onboarding extends PureComponent {
   }
 
   handleSimpleNotification = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!this.props.route.params?.delete) return;
@@ -424,7 +441,7 @@ class Onboarding extends PureComponent {
         ]}
       >
         <ElevatedView style={styles.modalTypeView} elevation={100}>
-          <BaseNotification
+          <Notification
             closeButtonDisabled
             status="success"
             data={{
@@ -440,7 +457,8 @@ class Onboarding extends PureComponent {
   render() {
     const { loading } = this.props;
     const { existingUser } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -456,7 +474,7 @@ class Onboarding extends PureComponent {
             {loading && (
               <View style={styles.foxWrapper}>
                 <Image
-                  source={require('../../../images/branding/fox.png')}
+                  source={foxImage}
                   style={styles.image}
                   resizeMethod={'auto'}
                 />
@@ -490,15 +508,15 @@ class Onboarding extends PureComponent {
 
 Onboarding.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   accounts: selectAccounts(state),
   passwordSet: state.user.passwordSet,
   loading: state.user.loadingSet,
   loadingMsg: state.user.loadingMsg,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setLoading: (msg) => dispatch(loadingSet(msg)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  setLoading: (msg: string) => dispatch(loadingSet(msg)),
   unsetLoading: () => dispatch(loadingUnset()),
   disableNewPrivacyPolicyToast: () =>
     dispatch(storePrivacyPolicyClickedOrClosedAction()),
@@ -507,4 +525,8 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Onboarding));
+)(
+  withMetricsAwareness(
+    Onboarding as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);
