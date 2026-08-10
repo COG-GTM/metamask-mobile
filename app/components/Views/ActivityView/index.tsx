@@ -1,6 +1,8 @@
-import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import ScrollableTabView from 'react-native-scrollable-tab-view';
+import React, { ComponentType, useEffect, useCallback, useRef } from 'react';
+import { View, StyleSheet, Text, TextStyle } from 'react-native';
+import ScrollableTabView, {
+  TabProps,
+} from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { isNonEvmAddress } from '../../../core/Multichain/utils';
@@ -35,12 +37,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DEFAULT_HEADERBASE_TITLE_TEXTVARIANT } from '../../../component-library/components/HeaderBase/HeaderBase.constants';
 import { typography } from '@metamask/design-tokens';
 import { useStyles } from '../../hooks/useStyles';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import {
   getFontFamily,
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (params) => {
+const createStyles = (params: { theme: Theme }) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -82,9 +86,8 @@ const createStyles = (params) => {
     },
     title: {
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
-      ...typography.sHeadingMD,
+      ...(typography.sHeadingMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.HeadingMD),
     },
     titleText: {
@@ -92,6 +95,12 @@ const createStyles = (params) => {
     },
   });
 };
+
+const TabTransactionsView =
+  TransactionsView as unknown as ComponentType<TabProps>;
+const TabMultichainTransactionsView =
+  MultichainTransactionsView as unknown as ComponentType<TabProps>;
+const TabRampOrdersList = RampOrdersList as unknown as ComponentType<TabProps>;
 
 const ActivityView = () => {
   const { colors } = useTheme();
@@ -111,10 +120,14 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector(
+    (state: RootState) => getHasOrders(state) || false,
+  );
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<
+    ScrollableTabView & { goToPage: (page: number) => void }
+  >(null);
+  const params = useParams<{ redirectToOrders?: boolean }>();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
@@ -128,7 +141,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            accountsByChainId[selectedAddress as string] ?? {},
           ).length,
         })
         .build(),
@@ -179,7 +192,8 @@ const ActivityView = () => {
       <View style={[styles.header, { marginTop: insets.top }]}>
         <Text
           style={styles.title}
-          variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          {...({ variant: DEFAULT_HEADERBASE_TITLE_TEXTVARIANT } as any)}
         >
           {strings('transactions_view.title')}
         </Text>
@@ -212,14 +226,16 @@ const ActivityView = () => {
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
+            <TabMultichainTransactionsView
               tabLabel={strings('transactions_view.title')}
             />
           ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title')} />
+            <TabTransactionsView
+              tabLabel={strings('transactions_view.title')}
+            />
           )}
           {hasOrders && (
-            <RampOrdersList
+            <TabRampOrdersList
               tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}
