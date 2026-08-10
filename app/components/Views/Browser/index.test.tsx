@@ -88,9 +88,11 @@ jest.mock('../../../util/phishingDetection', () => ({
 const Stack = createStackNavigator();
 const mockStore = configureMockStore();
 
+type BrowserComponentProps = React.ComponentProps<typeof Browser>;
+
 const routeMock = {
   params: {},
-};
+} as unknown as BrowserComponentProps['route'];
 
 const mockNavigation = {
   setOptions: jest.fn(),
@@ -98,6 +100,9 @@ const mockNavigation = {
   navigate: jest.fn(),
   goBack: jest.fn(),
 };
+
+const navigationMock =
+  mockNavigation as unknown as BrowserComponentProps['navigation'];
 
 describe('Browser', () => {
   it('should render correctly', () => {
@@ -112,7 +117,7 @@ describe('Browser', () => {
                     route={routeMock}
                     tabs={mockTabs}
                     activeTab={1}
-                    navigation={mockNavigation}
+                    navigation={navigationMock}
                     createNewTab={jest.fn}
                     closeAllTabs={jest.fn}
                     closeTab={jest.fn}
@@ -142,7 +147,7 @@ describe('Browser', () => {
                   route={routeMock}
                   tabs={[]}
                   activeTab={1}
-                  navigation={mockNavigation}
+                  navigation={navigationMock}
                   createNewTab={jest.fn}
                   closeAllTabs={jest.fn}
                   closeTab={jest.fn}
@@ -168,12 +173,14 @@ describe('Browser', () => {
             <Stack.Screen name={Routes.BROWSER.VIEW}>
               {() => (
                 <Browser
-                  route={{
-                    params: { newTabUrl: 'about:blank', timestamp: '987' },
-                  }}
+                  route={
+                    {
+                      params: { newTabUrl: 'about:blank', timestamp: '987' },
+                    } as unknown as BrowserComponentProps['route']
+                  }
                   tabs={mockTabs}
                   activeTab={1}
-                  navigation={mockNavigation}
+                  navigation={navigationMock}
                   createNewTab={jest.fn}
                   closeAllTabs={jest.fn}
                   closeTab={jest.fn}
@@ -211,10 +218,10 @@ describe('Browser', () => {
             <Stack.Screen name="Browser">
               {() => (
                 <Browser
-                  route={{ params: {} }}
+                  route={routeMock}
                   tabs={mockTabsForIdling}
                   activeTab={1}
-                  navigation={mockNavigation}
+                  navigation={navigationMock}
                   createNewTab={jest.fn}
                   closeAllTabs={jest.fn}
                   closeTab={jest.fn}
