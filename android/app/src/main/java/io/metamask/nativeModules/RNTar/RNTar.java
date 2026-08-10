@@ -56,9 +56,10 @@ public class RNTar extends ReactContextBaseJavaModule {
 
   private File resolveEntryFile(File outputDir, String entryName) throws IOException {
     File outputFile = new File(outputDir, entryName);
-    String canonicalOutputDir = outputDir.getCanonicalPath() + File.separator;
+    String canonicalOutputDir = outputDir.getCanonicalPath();
     String canonicalOutputFile = outputFile.getCanonicalPath();
-    if (!canonicalOutputFile.startsWith(canonicalOutputDir)) {
+    if (!canonicalOutputFile.equals(canonicalOutputDir)
+        && !canonicalOutputFile.startsWith(canonicalOutputDir + File.separator)) {
       throw new IOException("Invalid tar entry, path escapes the destination directory: " + entryName);
     }
     return outputFile;
