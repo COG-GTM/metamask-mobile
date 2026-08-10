@@ -1,7 +1,53 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import type BN from 'bnjs4';
+import type { SecurityAlertResponse } from '@metamask/transaction-controller';
+import {
+  NEW_ASSET_TRANSACTION,
+  PREPARE_TRANSACTION,
+  RESET_TRANSACTION,
+  SET_ETHER_TRANSACTION,
+  SET_MAX_VALUE_MODE,
+  SET_NONCE,
+  SET_PROPOSED_NONCE,
+  SET_RECIPIENT,
+  SET_SELECTED_ASSET,
+  SET_TOKENS_TRANSACTION,
+  SET_TRANSACTION_ID,
+  SET_TRANSACTION_OBJECT,
+  SET_TRANSACTION_SECURITY_ALERT_RESPONSE,
+  SET_TRANSACTION_VALUE,
+  SelectedAsset,
+  TransactionAction,
+  TransactionObject,
+  TransactionSecurityAlertResponse,
+} from '../../actions/transaction';
 
-const initialState = {
+export interface TransactionState {
+  ensRecipient?: string;
+  assetType?: string;
+  selectedAsset: SelectedAsset;
+  transaction: TransactionObject;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  symbol?: string;
+  paymentRequest?: boolean;
+  readableValue?: string;
+  id?: string;
+  type?: string;
+  proposedNonce?: number;
+  nonce?: number;
+  securityAlertResponses: Record<string, TransactionSecurityAlertResponse>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+  [key: string]: unknown;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,7 +78,7 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+const getAssetType = (selectedAsset?: SelectedAsset): string | undefined => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,34 +92,37 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction | { type: typeof REHYDRATE },
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
         ...initialState,
       };
-    case 'RESET_TRANSACTION':
+    case RESET_TRANSACTION:
       return {
         ...initialState,
       };
-    case 'NEW_ASSET_TRANSACTION':
+    case NEW_ASSET_TRANSACTION:
       return {
         ...state,
         ...initialState,
         selectedAsset: action.selectedAsset,
         assetType: action.assetType,
       };
-    case 'SET_NONCE':
+    case SET_NONCE:
       return {
         ...state,
         nonce: action.nonce,
       };
-    case 'SET_PROPOSED_NONCE':
+    case SET_PROPOSED_NONCE:
       return {
         ...state,
         proposedNonce: action.proposedNonce,
       };
-    case 'SET_RECIPIENT':
+    case SET_RECIPIENT:
       return {
         ...state,
         transaction: { ...state.transaction, from: action.from },
@@ -82,7 +131,7 @@ const transactionReducer = (state = initialState, action) => {
         transactionToName: action.transactionToName,
         transactionFromName: action.transactionFromName,
       };
-    case 'SET_SELECTED_ASSET': {
+    case SET_SELECTED_ASSET: {
       const selectedAsset = action.selectedAsset;
       const assetType = action.assetType || getAssetType(selectedAsset);
       return {
@@ -91,30 +140,34 @@ const transactionReducer = (state = initialState, action) => {
         assetType,
       };
     }
-    case 'PREPARE_TRANSACTION':
+    case PREPARE_TRANSACTION:
       return {
         ...state,
         transaction: action.transaction,
       };
-    case 'SET_TRANSACTION_OBJECT': {
+    case SET_TRANSACTION_OBJECT: {
       const selectedAsset = action.transaction.selectedAsset;
       if (selectedAsset) {
         const assetType = getAssetType(selectedAsset);
         action.transaction.assetType = assetType;
       }
-      const txMeta = getTxMeta(action.transaction);
+      const transaction = action.transaction as TransactionObject & {
+        value?: BN;
+        securityAlertResponse?: SecurityAlertResponse;
+      };
+      const txMeta = getTxMeta(transaction);
       return {
         ...state,
         transaction: {
           ...state.transaction,
-          ...getTxData(action.transaction),
+          ...getTxData(transaction),
         },
         ...txMeta,
         // Retain the securityAlertResponses from the old state
         securityAlertResponses: state.securityAlertResponses,
       };
     }
-    case 'SET_TOKENS_TRANSACTION': {
+    case SET_TOKENS_TRANSACTION: {
       const selectedAsset = action.asset;
       const assetType = getAssetType(selectedAsset);
       return {
@@ -123,39 +176,44 @@ const transactionReducer = (state = initialState, action) => {
         assetType,
       };
     }
-    case 'SET_ETHER_TRANSACTION':
+    case SET_ETHER_TRANSACTION: {
+      const transaction = action.transaction as TransactionObject & {
+        value?: BN;
+        securityAlertResponse?: SecurityAlertResponse;
+      };
       return {
         ...state,
         symbol: 'ETH',
         assetType: 'ETH',
         selectedAsset: { isETH: true, symbol: 'ETH' },
-        ...getTxMeta(action.transaction),
-        transaction: getTxData(action.transaction),
+        ...getTxMeta(transaction),
+        transaction: getTxData(transaction),
       };
-    case 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE': {
+    }
+    case SET_TRANSACTION_SECURITY_ALERT_RESPONSE: {
       const { transactionId, securityAlertResponse } = action;
       return {
         ...state,
         securityAlertResponses: {
           ...state.securityAlertResponses,
-          [transactionId]: securityAlertResponse,
+          [transactionId as string]: securityAlertResponse,
         },
       };
     }
-    case 'SET_TRANSACTION_ID': {
+    case SET_TRANSACTION_ID: {
       const { transactionId } = action;
       return {
         ...state,
         id: transactionId,
       };
     }
-    case 'SET_MAX_VALUE_MODE': {
+    case SET_MAX_VALUE_MODE: {
       return {
         ...state,
         maxValueMode: action.maxValueMode,
       };
     }
-    case 'SET_TRANSACTION_VALUE': {
+    case SET_TRANSACTION_VALUE: {
       return {
         ...state,
         transaction: { ...state.transaction, value: action.value },
