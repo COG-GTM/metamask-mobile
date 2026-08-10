@@ -1,5 +1,16 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Linking, TouchableOpacity, View } from 'react-native';
+import React, {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
+import {
+  Linking,
+  StyleProp,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { EditGasViewSelectorsIDs } from '../../../../../../../../e2e/selectors/SendFlow/EditGasView.selectors';
 import { strings } from '../../../../../../../../locales/i18n';
@@ -19,6 +30,102 @@ import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
+import {
+  GasTransactionProps,
+  UseGasTransactionProps,
+} from '../../../../../../../core/GasPolling/types';
+
+/**
+ * `Summary` and its sub components are typed without an explicit `children`
+ * prop, so they are aliased locally to keep the existing markup.
+ */
+const SummaryView = Summary as React.FC<
+  PropsWithChildren<{ style?: StyleProp<ViewStyle> }>
+>;
+const SummaryRow = Summary.Row as React.FC<
+  PropsWithChildren<{ style?: StyleProp<ViewStyle>; end?: boolean; last?: boolean }>
+>;
+
+/**
+ * Fields of the parsed gas transaction consumed by this component. The parsing
+ * utilities are still untyped JavaScript, hence the partial shape.
+ */
+interface ParsedGasTransaction extends Partial<GasTransactionProps> {
+  renderableTotalMinNative?: string;
+  renderableTotalMinConversion?: string;
+  renderableTotalMaxNative?: string;
+  transactionFee?: string;
+  transactionFeeFiat?: string;
+  transactionTotalAmount?: string;
+  transactionTotalAmountFiat?: string;
+}
+
+interface TransactionReviewEIP1559UpdateProps {
+  /**
+   * Primary currency, either ETH or Fiat
+   */
+  primaryCurrency?: string;
+  /**
+   * Chain id of the current network
+   */
+  chainId?: string;
+  /**
+   * Called when the user taps on the estimated fee
+   */
+  onEdit?: () => void;
+  /**
+   * Hides the total section
+   */
+  hideTotal?: boolean;
+  /**
+   * Removes the horizontal margin of the container
+   */
+  noMargin?: boolean;
+  /**
+   * Whether the origin provided a gas suggestion
+   */
+  originWarning?: boolean | string;
+  /**
+   * Called when the animation of the values starts
+   */
+  onUpdatingValuesStart?: () => void;
+  /**
+   * Called when the animation of the values ends
+   */
+  onUpdatingValuesEnd?: () => void;
+  /**
+   * Whether the values should animate on change
+   */
+  animateOnChange?: boolean;
+  /**
+   * Whether an animation is currently running
+   */
+  isAnimating?: boolean;
+  /**
+   * Whether the gas estimates are ready to be displayed
+   */
+  gasEstimationReady?: boolean;
+  /**
+   * Whether the transaction is a legacy (non EIP1559) transaction
+   */
+  legacy?: boolean;
+  /**
+   * Origin of the transaction request
+   */
+  origin?: string;
+  gasSelected?: string | null;
+  gasObject?: Partial<NonNullable<UseGasTransactionProps['gasObject']>>;
+  gasObjectLegacy?: UseGasTransactionProps['gasObjectLegacy'];
+  onlyGas?: boolean;
+  /**
+   * Called with the parsed gas transaction once the estimates are ready
+   */
+  // TODO: Replace "any" with the parsed gas transaction type once
+  // app/util/transactions is migrated to TypeScript
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateTransactionState?: (gasTransaction: any) => void;
+  multiLayerL1FeeTotal?: string;
+}
 
 const TransactionReviewEIP1559Update = ({
   primaryCurrency,
@@ -39,7 +146,7 @@ const TransactionReviewEIP1559Update = ({
   onlyGas,
   updateTransactionState,
   multiLayerL1FeeTotal,
-}) => {
+}: TransactionReviewEIP1559UpdateProps) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -60,10 +167,10 @@ const TransactionReviewEIP1559Update = ({
     onlyGas: !!onlyGas,
     gasSelected,
     legacy: !!legacy,
-    gasObject,
+    gasObject: gasObject as UseGasTransactionProps['gasObject'],
     gasObjectLegacy,
     multiLayerL1FeeTotal,
-  });
+  }) as ParsedGasTransaction;
 
   const {
     gasFeeMaxNative,
@@ -86,7 +193,7 @@ const TransactionReviewEIP1559Update = ({
 
   useEffect(() => {
     if (gasEstimationReady) {
-      updateTransactionState(gasTransaction);
+      updateTransactionState?.(gasTransaction);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -102,13 +209,16 @@ const TransactionReviewEIP1559Update = ({
   );
 
   const edit = useCallback(() => {
-    if (!isAnimating) onEdit();
+    if (!isAnimating) onEdit?.();
   }, [isAnimating, onEdit]);
 
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
-  const switchNativeCurrencyDisplayOptions = (nativeValue, fiatValue) => {
+  const switchNativeCurrencyDisplayOptions = (
+    nativeValue?: string,
+    fiatValue?: string,
+  ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
   };
@@ -116,8 +226,8 @@ const TransactionReviewEIP1559Update = ({
   const valueToWatchAnimation = `${renderableGasFeeMinNative}${renderableGasFeeMaxNative}`;
 
   return (
-    <Summary style={styles.overview(noMargin)}>
-      <Summary.Row>
+    <SummaryView style={styles.overview(noMargin)}>
+      <SummaryRow>
         <View style={styles.gasRowContainer}>
           <View style={styles.gasRowContainer}>
             <Text
@@ -137,7 +247,7 @@ const TransactionReviewEIP1559Update = ({
                 <MaterialCommunityIcons
                   name="information"
                   size={13}
-                  style={styles.gasInfoIcon(originWarning)}
+                  style={styles.gasInfoIcon(Boolean(originWarning))}
                 />
               </TouchableOpacity>
             </Text>
@@ -215,9 +325,9 @@ const TransactionReviewEIP1559Update = ({
             <SkeletonComponent width={80} />
           )}
         </View>
-      </Summary.Row>
+      </SummaryRow>
       {!legacy && (
-        <Summary.Row>
+        <SummaryRow>
           <View style={styles.gasRowContainer}>
             {gasEstimationReady ? (
               <FadeAnimationView
@@ -306,13 +416,13 @@ const TransactionReviewEIP1559Update = ({
               <SkeletonComponent width={120} />
             )}
           </View>
-        </Summary.Row>
+        </SummaryRow>
       )}
       {!hideTotal && (
         <View>
           <Summary.Separator />
           <View style={styles.gasBottomRowContainer}>
-            <Summary.Row>
+            <SummaryRow>
               <Text primary bold noMargin>
                 {strings('transaction_review_eip1559.total')}
               </Text>
@@ -372,10 +482,10 @@ const TransactionReviewEIP1559Update = ({
               ) : (
                 <SkeletonComponent width={80} />
               )}
-            </Summary.Row>
+            </SummaryRow>
           </View>
           {!legacy && (
-            <Summary.Row>
+            <SummaryRow>
               {gasEstimationReady ? (
                 <FadeAnimationView
                   style={styles.valuesContainer}
@@ -397,7 +507,7 @@ const TransactionReviewEIP1559Update = ({
               ) : (
                 <SkeletonComponent width={120} />
               )}
-            </Summary.Row>
+            </SummaryRow>
           )}
         </View>
       )}
@@ -453,7 +563,7 @@ const TransactionReviewEIP1559Update = ({
         timeEstimateId={timeEstimateId}
         onHideModal={hideTimeEstimateInfoModal}
       />
-    </Summary>
+    </SummaryView>
   );
 };
 

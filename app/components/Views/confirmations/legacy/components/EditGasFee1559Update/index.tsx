@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 import BigNumber from 'bignumber.js';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { ReactNode, useCallback, useMemo, useState } from 'react';
 import {
   ScrollView,
   TouchableOpacity,
@@ -36,6 +36,127 @@ import StyledButton from '../../../../../UI/StyledButton';
 import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../UI/TimeEstimateInfoModal';
 import createStyles from './styles';
+import { GasTransactionProps } from '../../../../../../core/GasPolling/types';
+
+const Selector = HorizontalSelector as React.FC<
+  Omit<React.ComponentProps<typeof HorizontalSelector>, 'disabled'> & {
+    disabled?: boolean;
+  }
+>;
+
+interface GasOption {
+  suggestedMaxFeePerGas?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedGasLimit?: string;
+}
+
+interface UpdateOption {
+  isCancel?: boolean;
+  maxFeeThreshold?: string;
+  maxPriortyFeeThreshold?: string;
+  showAdvanced?: boolean;
+}
+
+interface EditGasFee1559UpdateProps {
+  /**
+   * Gas option selected (low, medium, high)
+   */
+  selectedGasValue?: string;
+  /**
+   * Gas fee options to select from
+   */
+  gasOptions?: Record<string, GasOption>;
+  /**
+   * Primary currency, either ETH or Fiat
+   */
+  primaryCurrency?: string;
+  /**
+   * A string representing the network chainId
+   */
+  chainId?: string;
+  /**
+   * Function called when user cancels
+   */
+  onCancel: () => void;
+  /**
+   * Function called when user is changing the gas fee
+   */
+  onChange: (option: string | null) => void;
+  /**
+   * Function called when user saves the new gas fee
+   */
+  onSave: (
+    // TODO: Replace "any" with the parsed gas transaction type once
+    // app/util/transactions is migrated to TypeScript
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    gasTransaction: any,
+    gasObject: GasOption,
+  ) => void;
+  /**
+   * Error message to show
+   */
+  error?: string | ReactNode;
+  /**
+   * Warning message to show
+   */
+  warning?: string | ReactNode;
+  /**
+   * Boolean that specifies if the gas price was suggested by the dapp
+   */
+  dappSuggestedGas?: boolean;
+  /**
+   * List of options to hide
+   */
+  ignoreOptions?: string[];
+  /**
+   * Option to update the transaction (speed up or cancel)
+   */
+  updateOption?: UpdateOption;
+  /**
+   * Extra options to be added to the gas options
+   */
+  extendOptions?: Record<string, object>;
+  /**
+   * Recommended option to be highlighted
+   */
+  recommended?: { name?: string; render?: ReactNode };
+  /**
+   * Estimate option to compare with for too low warning
+   */
+  warningMinimumEstimateOption?: string;
+  /**
+   * Suggested estimate option to show in the label
+   */
+  suggestedEstimateOption?: string;
+  /**
+   * If the values should animate upon update or not
+   */
+  animateOnChange?: boolean;
+  /**
+   * Boolean to determine if the animation is happening
+   */
+  isAnimating?: boolean;
+  /**
+   * Extra analytics params to be sent with the gas fee tracked events
+   */
+  analyticsParams: {
+    view?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+  };
+  /**
+   * Gas object used to calculate the gas transaction
+   */
+  selectedGasObject: {
+    suggestedMaxFeePerGas: string;
+    suggestedMaxPriorityFeePerGas: string;
+    suggestedGasLimit: string;
+  };
+  /**
+   * Boolean that specifies if only the gas fee should be calculated
+   */
+  onlyGas?: boolean;
+}
 
 const EditGasFee1559Update = ({
   selectedGasValue,
@@ -59,7 +180,7 @@ const EditGasFee1559Update = ({
   warning,
   selectedGasObject,
   onlyGas,
-}) => {
+}: EditGasFee1559UpdateProps) => {
   const [modalInfo, updateModalInfo] = useState({
     isVisible: false,
     value: '',
@@ -67,12 +188,16 @@ const EditGasFee1559Update = ({
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(
     !selectedGasValue,
   );
-  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState('');
+  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<
+    string | null
+  >('');
   const [maxFeeError, setMaxFeeError] = useState('');
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(selectedGasValue);
+  const [selectedOption, setSelectedOption] = useState<
+    string | null | undefined
+  >(selectedGasValue);
   const [showInputs, setShowInputs] = useState(!dappSuggestedGas);
-  const [gasObject, updateGasObject] = useState({
+  const [gasObject, updateGasObject] = useState<GasOption>({
     suggestedMaxFeePerGas: selectedGasObject.suggestedMaxFeePerGas,
     suggestedMaxPriorityFeePerGas:
       selectedGasObject.suggestedMaxPriorityFeePerGas,
@@ -92,8 +217,8 @@ const EditGasFee1559Update = ({
     onlyGas,
     gasSelected: selectedOption,
     legacy: false,
-    gasObject,
-  });
+    gasObject: gasObject as Required<GasOption>,
+  }) as Partial<GasTransactionProps>;
 
   const {
     renderableGasFeeMinNative,
@@ -142,7 +267,7 @@ const EditGasFee1559Update = ({
   }, [showLearnMoreModal]);
 
   const toggleInfoModal = useCallback(
-    (value) => {
+    (value: string) => {
       updateModalInfo({ isVisible: !modalInfo.isVisible, value });
     },
     [updateModalInfo, modalInfo.isVisible],
@@ -172,7 +297,7 @@ const EditGasFee1559Update = ({
   ]);
 
   const changeGas = useCallback(
-    (gas, option) => {
+    (gas: GasOption, option: string | null) => {
       setSelectedOption(option);
       updateGasObject({
         ...gasObject,
@@ -186,7 +311,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedGasLimit = useCallback(
-    (value) => {
+    (value: string) => {
       const newGas = { ...gasTransaction, suggestedGasLimit: value };
       changeGas(newGas, null);
     },
@@ -194,17 +319,18 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxPriorityFee = useCallback(
-    (value) => {
+    (value: string) => {
       const lowerValue = new BigNumber(
-        gasOptions?.[
-          warningMinimumEstimateOption
-        ]?.suggestedMaxPriorityFeePerGas,
+        gasOptions?.[warningMinimumEstimateOption as string]
+          ?.suggestedMaxPriorityFeePerGas as string,
       );
 
       const higherValue = new BigNumber(
-        gasOptions?.high?.suggestedMaxPriorityFeePerGas,
+        gasOptions?.high?.suggestedMaxPriorityFeePerGas as string,
       ).multipliedBy(new BigNumber(1.5));
-      const updateFloor = new BigNumber(updateOption?.maxPriortyFeeThreshold);
+      const updateFloor = new BigNumber(
+        updateOption?.maxPriortyFeeThreshold as string,
+      );
 
       const valueBN = new BigNumber(value);
 
@@ -247,14 +373,17 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxFeePerGas = useCallback(
-    (value) => {
+    (value: string) => {
       const lowerValue = new BigNumber(
-        gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxFeePerGas,
+        gasOptions?.[warningMinimumEstimateOption as string]
+          ?.suggestedMaxFeePerGas as string,
       );
       const higherValue = new BigNumber(
-        gasOptions?.high?.suggestedMaxFeePerGas,
+        gasOptions?.high?.suggestedMaxFeePerGas as string,
       ).multipliedBy(new BigNumber(1.5));
-      const updateFloor = new BigNumber(updateOption?.maxFeeThreshold);
+      const updateFloor = new BigNumber(
+        updateOption?.maxFeeThreshold as string,
+      );
 
       const valueBN = new BigNumber(value);
 
@@ -293,7 +422,7 @@ const EditGasFee1559Update = ({
   );
 
   const selectOption = useCallback(
-    (option) => {
+    (option: string) => {
       setSelectedOption(option);
       setMaxFeeError('');
       setMaxPriorityFeeError('');
@@ -303,7 +432,7 @@ const EditGasFee1559Update = ({
   );
 
   const shouldIgnore = useCallback(
-    (option) => ignoreOptions?.find((item) => item === option),
+    (option: string) => ignoreOptions?.find((item) => item === option),
     [ignoreOptions],
   );
 
@@ -326,7 +455,10 @@ const EditGasFee1559Update = ({
         .filter(({ name }) => !shouldIgnore(name))
         .map(({ name, label, ...option }) => ({
           name,
-          label: function LabelComponent(selected, disabled) {
+          label: function LabelComponent(
+            selected: boolean,
+            disabled: boolean,
+          ) {
             return (
               <Text bold primary={selected && !disabled}>
                 {label}
@@ -340,12 +472,12 @@ const EditGasFee1559Update = ({
     [recommended, extendOptions, shouldIgnore],
   );
 
-  const isMainnet = isMainnetByChainId(chainId);
+  const isMainnet = isMainnetByChainId(chainId as string);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
   const switchNativeCurrencyDisplayOptions = (
-    nativeValue,
-    fiatValue,
+    nativeValue?: string,
+    fiatValue?: string,
   ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
@@ -356,6 +488,9 @@ const EditGasFee1559Update = ({
   const LeftLabelComponent = ({
     value,
     infoValue,
+  }: {
+    value: string;
+    infoValue: string;
   }) => (
     <View style={styles.labelTextContainer}>
       <Text black bold noMargin>
@@ -374,18 +509,24 @@ const EditGasFee1559Update = ({
     </View>
   );
 
-  const RightLabelComponent = ({ value }) => (
+  const suggestedEstimateMaxFeePerGas =
+    gasOptions?.[suggestedEstimateOption as string]?.suggestedMaxFeePerGas;
+
+  const RightLabelComponent = ({ value }: { value: string }) => (
     <Text noMargin small grey>
       <Text bold reset>
         {strings(value)}:
       </Text>{' '}
-      {gasOptions?.[suggestedEstimateOption]?.suggestedMaxFeePerGas} GWEI
+      {suggestedEstimateMaxFeePerGas} GWEI
     </Text>
   );
 
   const TextComponent = ({
     title,
     value,
+  }: {
+    title: string;
+    value: string;
   }) => (
     <>
       <Text noMargin primary infoModal bold style={styles.learnMoreLabels}>
@@ -397,15 +538,15 @@ const EditGasFee1559Update = ({
     </>
   );
 
-  const renderInputs = (option) => (
+  const renderInputs = (option?: UpdateOption) => (
     <View>
       <FadeAnimationView
         valueToWatch={valueToWatch}
         animateOnChange={animateOnChange}
       >
         <View>
-          <HorizontalSelector
-            selected={selectedOption}
+          <Selector
+            selected={selectedOption as string | undefined}
             onPress={selectOption}
             options={renderOptions}
           />
