@@ -16,8 +16,17 @@ import { selectInternalAccounts } from '../../../../../../selectors/accountsCont
 import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { RootState } from '../../../../../../reducers';
+import { Colors } from '../../../../../../util/theme/models';
+import {
+  AddressListElement,
+  AddressListProps,
+  Contact,
+} from './AddressList.types';
 
-const LabelElement = (styles, label) => (
+type Styles = ReturnType<typeof styleSheet>;
+
+const LabelElement = (styles: Styles, label: string) => (
   <View key={label} style={styles.labelElementWrapper}>
     <Text variant={TextVariant.BodyMD} style={styles.contactLabel}>
       {label.toUpperCase()}
@@ -33,15 +42,19 @@ const AddressList = ({
   onIconPress,
   onlyRenderAddressBook = false,
   reloadAddressList,
-}) => {
+}: AddressListProps) => {
   const { colors } = useTheme();
-  const styles = styleSheet(colors);
-  const [contactElements, setContactElements] = useState([]);
-  const [fuse, setFuse] = useState(undefined);
+  const styles = styleSheet(colors as Colors);
+  const [contactElements, setContactElements] = useState<AddressListElement[]>(
+    [],
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [fuse, setFuse] = useState<Fuse<any> | undefined>(undefined);
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
-    (state) => state.user.ambiguousAddressEntries,
+    (state: RootState) =>
+      state.user.ambiguousAddressEntries as Record<string, string[]>,
   );
 
   const networkAddressBook = useMemo(
@@ -49,8 +62,8 @@ const AddressList = ({
     [addressBook, chainId],
   );
   const parseAddressBook = useCallback(
-    (networkAddressBookList) => {
-      const contacts = networkAddressBookList.map((contact) => {
+    (networkAddressBookList: Contact[]) => {
+      const contacts: Contact[] = networkAddressBookList.map((contact) => {
         const isAmbiguousAddress =
           chainId &&
           ambiguousAddressEntries?.[chainId]?.includes(contact.address);
@@ -73,8 +86,8 @@ const AddressList = ({
             .catch(() => contact),
         ),
       ).then((updatedContacts) => {
-        const newContactElements = [];
-        const addressBookTree = {};
+        const newContactElements: AddressListElement[] = [];
+        const addressBookTree: Record<string, Contact[]> = {};
 
         updatedContacts.forEach((contact) => {
           const contactNameInitial = contact?.name?.[0];
@@ -175,7 +188,7 @@ const AddressList = ({
     );
   };
 
-  const renderElement = (addressElement) => {
+  const renderElement = (addressElement: AddressListElement) => {
     if (typeof addressElement === 'string') {
       return LabelElement(styles, addressElement);
     }
@@ -198,7 +211,7 @@ const AddressList = ({
   };
 
   const renderContent = () => {
-    const sendFlowContacts = [];
+    const sendFlowContacts: AddressListElement[] = [];
 
     contactElements.forEach((contractElement) => {
       if (
