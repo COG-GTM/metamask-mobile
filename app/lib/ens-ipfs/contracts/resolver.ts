@@ -1,4 +1,6 @@
-export default [
+import { AbiFragment } from './registry';
+
+const resolverAbi: AbiFragment[] = [
   {
     constant: false,
     inputs: [
@@ -233,3 +235,5 @@ export default [
     type: 'event',
   },
 ];
+
+export default resolverAbi;
