@@ -34,6 +34,7 @@ import { useSelectedAccountMultichainBalances } from '../../../../hooks/useMulti
 import Loader from '../../../../../component-library/components-temp/Loader/Loader';
 import NonEvmAggregatedPercentage from '../../../../../component-library/components-temp/Price/AggregatedPercentage/NonEvmAggregatedPercentage';
 import { selectIsEvmNetworkSelected } from '../../../../../selectors/multichainNetworkController';
+import PortfolioChart from '../PortfolioChart';
 
 export const PortfolioBalance = React.memo(() => {
   const { PreferencesController } = Engine.context;
@@ -49,7 +50,7 @@ export const PortfolioBalance = React.memo(() => {
 
   const { selectedAccountMultichainBalance } =
     useSelectedAccountMultichainBalances();
-    const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
+  const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
 
   const onOpenPortfolio = useCallback(() => {
     const existingPortfolioTab = browserTabs.find(({ url }: BrowserTab) =>
@@ -172,6 +173,7 @@ export const PortfolioBalance = React.memo(() => {
           {renderAggregatedPercentage()}
         </View>
       </View>
+      {!privacyMode && <PortfolioChart />}
       <View style={styles.portfolioButtonContainer}>
         <Button
           variant={ButtonVariants.Secondary}

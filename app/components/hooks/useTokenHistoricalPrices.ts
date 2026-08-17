@@ -36,6 +36,42 @@ export const standardizeTimeInterval = (timePeriod: TimePeriod) => {
   }
 };
 
+/**
+ * Fetches historical prices for an EVM token from the price API.
+ */
+export const fetchEvmHistoricalPrices = async ({
+  address,
+  chainId,
+  timePeriod,
+  vsCurrency,
+  from,
+  to,
+}: {
+  address: string;
+  chainId: Hex;
+  timePeriod: TimePeriod;
+  vsCurrency: string;
+  from?: number;
+  to?: number;
+}): Promise<TokenPrice[]> => {
+  const baseUri = 'https://price.api.cx.metamask.io/v1';
+  const uri = new URL(
+    `${baseUri}/chains/${getDecimalChainId(
+      chainId,
+    )}/historical-prices/${address}`,
+  );
+  uri.searchParams.set('timePeriod', timePeriod === '1w' ? '7d' : timePeriod);
+  uri.searchParams.set('vsCurrency', vsCurrency);
+  if (from && to) {
+    uri.searchParams.set('from', from.toString());
+    uri.searchParams.set('to', to.toString());
+  }
+
+  const response = await fetch(uri.toString());
+  const data: { prices: TokenPrice[] } = await response.json();
+  return data.prices;
+};
+
 const useTokenHistoricalPrices = ({
   asset,
   address,
@@ -90,25 +126,15 @@ const useTokenHistoricalPrices = ({
           );
           setPrices(transformedResult);
         } else {
-          const baseUri = 'https://price.api.cx.metamask.io/v1';
-          const uri = new URL(
-            `${baseUri}/chains/${getDecimalChainId(
-              chainId,
-            )}/historical-prices/${address}`,
-          );
-          uri.searchParams.set(
-            'timePeriod',
-            timePeriod === '1w' ? '7d' : timePeriod,
-          );
-          uri.searchParams.set('vsCurrency', vsCurrency);
-          if (from && to) {
-            uri.searchParams.set('from', from.toString());
-            uri.searchParams.set('to', to.toString());
-          }
-
-          const response = await fetch(uri.toString());
-          const data: { prices: TokenPrice[] } = await response.json();
-          setPrices(data.prices as TokenPrice[]);
+          const data = await fetchEvmHistoricalPrices({
+            address,
+            chainId,
+            timePeriod,
+            vsCurrency,
+            from,
+            to,
+          });
+          setPrices(data);
         }
       } catch (e: unknown) {
         setError(e as Error);

@@ -29,6 +29,11 @@ jest.mock('../../../../hooks/useMultichainBalances', () => ({
   }),
 }));
 
+jest.mock('../PortfolioChart', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 jest.mock('../../../../../core/Engine', () => ({
   getTotalEvmFiatAccountBalance: jest.fn(),
   context: {

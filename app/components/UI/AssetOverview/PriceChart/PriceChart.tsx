@@ -51,6 +51,7 @@ interface PriceChartProps {
   priceDiff: number;
   isLoading: boolean;
   onChartIndexChange: (index: number) => void;
+  height?: number;
 }
 
 const PriceChart = ({
@@ -58,11 +59,12 @@ const PriceChart = ({
   priceDiff,
   isLoading,
   onChartIndexChange,
+  height = CHART_HEIGHT,
 }: PriceChartProps) => {
   const { setIsChartBeingTouched } = useContext(PriceChartContext);
 
   const [positionX, setPositionX] = useState(-1); // The currently selected X coordinate position
-  const { styles, theme } = useStyles(styleSheet, {});
+  const { styles, theme } = useStyles(styleSheet, { height });
 
   useEffect(() => {
     setPositionX(-1);
@@ -166,7 +168,7 @@ const PriceChart = ({
         x1="0"
         y1="0%"
         x2="0%"
-        y2={`${CHART_HEIGHT}px`}
+        y2={`${height}px`}
       >
         <Stop offset="0%" stopColor={chartColor} stopOpacity={0.25} />
         <Stop offset="90%" stopColor={chartColor} stopOpacity={0} />
@@ -205,7 +207,7 @@ const PriceChart = ({
           x="0"
           y="0"
           width={Dimensions.get('screen').width}
-          height={CHART_HEIGHT}
+          height={height}
           fill="url(#gradient)"
         />
       </G>
@@ -239,7 +241,7 @@ const PriceChart = ({
         <G>
           <SvgLine
             y1={1}
-            y2={CHART_HEIGHT}
+            y2={height}
             stroke={styles.tooltipLine.color}
             strokeWidth={1}
           />
@@ -261,7 +263,7 @@ const PriceChart = ({
         <SkeletonPlaceholder>
           <SkeletonPlaceholder.Item
             width={Dimensions.get('screen').width - 32}
-            height={CHART_HEIGHT}
+            height={height}
             borderRadius={6}
           ></SkeletonPlaceholder.Item>
         </SkeletonPlaceholder>
