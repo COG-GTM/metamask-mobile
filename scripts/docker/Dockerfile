@@ -1,11 +1,17 @@
 # syntax=docker/dockerfile:1.4
-FROM node:20-bookworm
+FROM node:20-bookworm-slim
 
+# the slim base image omits the buildpack-deps toolchain, so everything needed
+# to build native modules and compile ruby via ruby-build is installed here
 RUN apt-get update \
-  && apt-get install -y \
+  && apt-get install -y --no-install-recommends \
     git curl jq time \
-    sudo locales \
+    sudo locales ca-certificates \
     build-essential ccache cmake cmake-format distcc \
+    autoconf bison patch pkg-config procps \
+    libssl-dev libyaml-dev libreadline-dev zlib1g-dev \
+    libncurses-dev libffi-dev libgdbm-dev libdb-dev uuid-dev \
+  && rm -rf /var/lib/apt/lists/* \
   && sed -i '/en_US.UTF-8/s/^# //' /etc/locale.gen \
   && locale-gen
 
