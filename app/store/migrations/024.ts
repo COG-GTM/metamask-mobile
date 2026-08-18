@@ -2,6 +2,20 @@ import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
 import { NetworkStatus } from '@metamask/network-controller';
 
+interface NetworkControllerState {
+  network?: unknown;
+  networkId?: string | null;
+  networkStatus?: NetworkStatus;
+}
+
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      NetworkController?: NetworkControllerState;
+    };
+  };
+}
+
 /**
  * Migrate NetworkController state, splitting old `network` property into
  * `networkId` and `networkStatus`. This is required to update to v8 of the
@@ -9,15 +23,11 @@ import { NetworkStatus } from '@metamask/network-controller';
  *
  * @see {@link https://github.com/MetaMask/core/blob/main/packages/network-controller/CHANGELOG.md#800}
  *
- * Note: the type is wrong here because it conflicts with `redux-persist`
- * types, due to a bug in that package.
- * See: https://github.com/rt2zz/redux-persist/issues/1065
- * TODO: Use `unknown` as the state type, and silence or work around the
- * redux-persist bug somehow.
- *
  **/
-export default function migrate(state) {
-  const networkControllerState = state.engine.backgroundState.NetworkController;
+export default function migrate(state: unknown) {
+  const typedState = state as MigrationState;
+  const networkControllerState = typedState.engine.backgroundState
+    .NetworkController as NetworkControllerState;
 
   if (!isObject(networkControllerState)) {
     captureException(
@@ -25,14 +35,14 @@ export default function migrate(state) {
         `Migration 24: Invalid network controller state: '${typeof networkControllerState}'`,
       ),
     );
-    return state;
+    return typedState;
   } else if (typeof networkControllerState.network !== 'string') {
     captureException(
       new Error(
         `Migration 24: Invalid network state: '${typeof networkControllerState.network}'`,
       ),
     );
-    return state;
+    return typedState;
   }
 
   if (networkControllerState.network === 'loading') {
@@ -44,5 +54,5 @@ export default function migrate(state) {
   }
   delete networkControllerState.network;
 
-  return state;
+  return typedState;
 }
