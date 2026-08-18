@@ -36,6 +36,55 @@ import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectTokenNetworkFilter } from '../../../selectors/preferencesController';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { PopularList } from '../../../util/networks/customNetworks';
+import { selectActivitySearchEnabled } from '../../../selectors/featureFlagController/activitySearch';
+import { useActivityFilters } from '../../hooks/useActivityFilters';
+import {
+  ActivityControlBar,
+  ActivityFilterSheets,
+} from '../../UI/ActivityFilters';
+
+const NO_TRANSACTIONS = [];
+
+/**
+ * Mirrors the ordering `Transactions` renders: submitted transactions (newest
+ * first) followed by confirmed ones, falling back to the plain list when there
+ * is nothing submitted.
+ */
+const getRenderedOrder = (
+  transactions,
+  submittedTransactions,
+  confirmedTransactions,
+) =>
+  submittedTransactions.length
+    ? [...submittedTransactions]
+        .sort((a, b) => b.time - a.time)
+        .concat(confirmedTransactions)
+    : transactions;
+
+/**
+ * Recomputes the "account added" marker against the list that is actually
+ * rendered. The marker is a property of the rendered list, not of a single
+ * transaction, so filtering without recomputing it either misplaces it or
+ * drops it entirely.
+ */
+const applyAccountAddedMarker = (transactions, addedAccountTime) => {
+  let accountAddedTimeInsertPointFound = false;
+
+  transactions.forEach((tx) => {
+    tx.insertImportTime = addAccountTimeFlagFilter(
+      tx,
+      addedAccountTime,
+      accountAddedTimeInsertPointFound,
+    );
+    if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
+  });
+
+  if (!accountAddedTimeInsertPointFound && transactions.length) {
+    transactions[transactions.length - 1].insertImportTime = true;
+  }
+
+  return transactions;
+};
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -65,6 +114,8 @@ const TransactionsView = ({
   );
 
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
+  const isActivitySearchEnabled = useSelector(selectActivitySearchEnabled);
+  const [openFilterSheet, setOpenFilterSheet] = useState(null);
 
   const filterTransactions = useCallback(
     (networkId) => {
@@ -178,19 +229,85 @@ const TransactionsView = ({
     }
   }, [filterTransactions, selectedNetworkClientId]);
 
+  const {
+    filters,
+    isFiltered,
+    setQuery,
+    setTypes,
+    setStatuses,
+    setDateRange,
+    clearFilters,
+    filteredTransactions,
+    filteredSubmittedTransactions,
+    filteredConfirmedTransactions,
+  } = useActivityFilters(
+    isActivitySearchEnabled ? allTransactions : NO_TRANSACTIONS,
+    isActivitySearchEnabled ? submittedTxs : NO_TRANSACTIONS,
+    isActivitySearchEnabled ? confirmedTxs : NO_TRANSACTIONS,
+    selectedAddress,
+  );
+
+  const transactionsToRender = isActivitySearchEnabled
+    ? filteredTransactions
+    : allTransactions;
+  const submittedTransactionsToRender = isActivitySearchEnabled
+    ? filteredSubmittedTransactions
+    : submittedTxs;
+  const confirmedTransactionsToRender = isActivitySearchEnabled
+    ? filteredConfirmedTransactions
+    : confirmedTxs;
+
+  if (isActivitySearchEnabled) {
+    applyAccountAddedMarker(
+      getRenderedOrder(
+        transactionsToRender,
+        submittedTransactionsToRender,
+        confirmedTransactionsToRender,
+      ),
+      selectedInternalAccount?.metadata.importTime,
+    );
+  }
+
+  const header = isActivitySearchEnabled ? (
+    <ActivityControlBar
+      filters={filters}
+      isFiltered={isFiltered}
+      isDisabled={Boolean(loading)}
+      onQueryChange={setQuery}
+      onTypesChange={setTypes}
+      onStatusesChange={setStatuses}
+      onDateRangeChange={setDateRange}
+      onClearFilters={clearFilters}
+      onOpenSheet={setOpenFilterSheet}
+    />
+  ) : undefined;
+
   return (
     <View style={styles.wrapper}>
       <Transactions
         navigation={navigation}
-        transactions={allTransactions}
-        submittedTransactions={submittedTxs}
-        confirmedTransactions={confirmedTxs}
+        transactions={transactionsToRender}
+        submittedTransactions={submittedTransactionsToRender}
+        confirmedTransactions={confirmedTransactionsToRender}
         conversionRate={conversionRate}
         currentCurrency={currentCurrency}
         selectedAddress={selectedAddress}
         networkType={networkType}
         loading={loading}
+        header={header}
+        filtersActive={isActivitySearchEnabled && isFiltered}
+        onClearFilters={clearFilters}
       />
+      {isActivitySearchEnabled && (
+        <ActivityFilterSheets
+          openSheet={openFilterSheet}
+          filters={filters}
+          onTypesChange={setTypes}
+          onStatusesChange={setStatuses}
+          onDateRangeChange={setDateRange}
+          onClose={() => setOpenFilterSheet(null)}
+        />
+      )}
     </View>
   );
 };
