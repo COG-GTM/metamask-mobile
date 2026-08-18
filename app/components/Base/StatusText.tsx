@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import Text from './Text';
 import { StyleSheet } from 'react-native';
 import { FIAT_ORDER_STATES } from '../../constants/on-ramp';
@@ -14,7 +13,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ConfirmedText = ({testID, ...props}) => (
+type TextComponentProps = React.ComponentPropsWithoutRef<typeof Text>;
+
+export const ConfirmedText: React.FC<TextComponentProps> = ({
+  testID,
+  ...props
+}) => (
   <Text
     testID={testID}
     bold
@@ -23,11 +27,10 @@ export const ConfirmedText = ({testID, ...props}) => (
     {...props}
   />
 );
-ConfirmedText.propTypes = {
-  testID: PropTypes.string,
-};
-
-export const PendingText = ({testID, ...props}) => {
+export const PendingText: React.FC<TextComponentProps> = ({
+  testID,
+  ...props
+}) => {
   const { colors } = useTheme();
   return (
     <Text
@@ -38,11 +41,10 @@ export const PendingText = ({testID, ...props}) => {
     />
   );
 };
-PendingText.propTypes = {
-  testID: PropTypes.string,
-};
-
-export const FailedText = ({testID, ...props} ) => {
+export const FailedText: React.FC<TextComponentProps> = ({
+  testID,
+  ...props
+}) => {
   const { colors } = useTheme();
   return (
     <Text
@@ -53,11 +55,17 @@ export const FailedText = ({testID, ...props} ) => {
     />
   );
 };
-FailedText.propTypes = {
-  testID: PropTypes.string,
-};
+interface StatusTextProps extends TextComponentProps {
+  status: string;
+  context?: string;
+}
 
-function StatusText({ status, context, testID, ...props }) {
+function StatusText({
+  status,
+  context = 'transaction',
+  testID,
+  ...props
+}: StatusTextProps) {
   switch (status) {
     case 'Confirmed':
     case 'confirmed':
@@ -106,15 +114,5 @@ function StatusText({ status, context, testID, ...props }) {
       );
   }
 }
-
-StatusText.defaultProps = {
-  context: 'transaction',
-};
-
-StatusText.propTypes = {
-  status: PropTypes.string.isRequired,
-  context: PropTypes.string,
-  testID: PropTypes.string,
-};
 
 export default StatusText;
