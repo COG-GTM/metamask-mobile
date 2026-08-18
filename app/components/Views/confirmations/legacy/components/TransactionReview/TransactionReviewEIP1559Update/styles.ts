@@ -1,8 +1,27 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import type { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
-  StyleSheet.create({
-    overview: (noMargin) => ({
+interface TransactionReviewStyles {
+  overview: (noMargin: boolean) => ViewStyle;
+  valuesContainer: ViewStyle;
+  gasInfoContainer: ViewStyle;
+  gasInfoIcon: (hasOrigin: boolean) => TextStyle;
+  amountContainer: ViewStyle;
+  gasRowContainer: ViewStyle;
+  gasBottomRowContainer: ViewStyle;
+  hitSlop: ViewStyle;
+  redInfo: TextStyle;
+  timeEstimateContainer: ViewStyle;
+  flex: ViewStyle;
+}
+
+const createStyleSheet = StyleSheet.create as unknown as (
+  styles: TransactionReviewStyles,
+) => TransactionReviewStyles;
+
+const createStyles = (colors: Theme['colors']): TransactionReviewStyles =>
+  createStyleSheet({
+    overview: (noMargin: boolean) => ({
       marginHorizontal: noMargin ? 0 : 24,
       paddingTop: 10,
       paddingBottom: 10,
@@ -15,7 +34,7 @@ const createStyles = (colors) =>
     gasInfoContainer: {
       paddingLeft: 2,
     },
-    gasInfoIcon: (hasOrigin) => ({
+    gasInfoIcon: (hasOrigin: boolean) => ({
       color: hasOrigin ? colors.warning.default : colors.icon.muted,
     }),
     amountContainer: {
