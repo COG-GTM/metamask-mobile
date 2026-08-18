@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
-import type { CompatNavigationProp } from '@react-navigation/compat/lib/typescript/src/types';
 import PropTypes from 'prop-types';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { query } from '@metamask/controller-utils';
@@ -142,13 +141,17 @@ const createStyles = (colors: Theme['colors']) =>
  * View that renders a transaction details as part of transactions list
  */
 interface TransactionDetailsProps {
-  navigation: CompatNavigationProp<NavigationProp<ParamListBase>>;
+  navigation:
+    | NavigationProp<ParamListBase>
+    | {
+        push: (...args: never[]) => unknown;
+      };
   chainId: string;
   transactionObject: {
     chainId: string;
     networkID: string;
     status: string;
-    txParams: {
+    txParams?: {
       nonce?: string;
       multiLayerL1FeeTotal?: string;
       [key: string]: string | undefined;
@@ -504,7 +507,6 @@ class TransactionDetails extends PureComponent<
                     size={AvatarSize.Md}
                     style={styles.accountAvatar}
                   />
-                  {/* Preserve the legacy Text props used by this component. */}
                   <Text
                     // @ts-expect-error Preserve the legacy Text props used by this component.
                     small
@@ -564,7 +566,6 @@ class TransactionDetails extends PureComponent<
             <DetailsModal.SectionTitle upper>
               {strings('transactions.nonce')}
             </DetailsModal.SectionTitle>
-            {/* Preserve the legacy Text props used by this component. */}
             {!!txParams?.nonce && (
               // @ts-expect-error Preserve the legacy Text props used by this component.
               <Text small primary>{`#${parseInt(
@@ -640,22 +641,6 @@ type TransactionDetailsOwnProps = Pick<
   | 'showCancelModal'
   | 'close'
 >;
-interface TransactionDetailsExternalProps {
-  transactionObject: {
-    [key: string]: unknown;
-    chainId: string;
-    networkID: string;
-    status: string;
-    txParams?: Record<string, unknown>;
-  };
-  navigation: {
-    navigate: (...args: never[]) => unknown;
-    push: (...args: never[]) => unknown;
-  };
-  chainId: string;
-  transactionDetails: TransactionDetailsProps['transactionDetails'];
-}
-
 const mapStateToProps = (
   state: RootState,
   ownProps: TransactionDetailsOwnProps,
@@ -685,14 +670,11 @@ const mapStateToProps = (
 
 TransactionDetails.contextType = ThemeContext;
 
-// @ts-expect-error React Redux/navigation HOC types collapse this legacy external boundary to never.
 export default connect(mapStateToProps)(
   withNavigation<
     NavigationProp<ParamListBase>,
+    // @ts-expect-error The compat HOC requires a private navigation subtype.
     TransactionDetailsProps,
     React.ComponentType<TransactionDetailsProps>
-  >(
-    // @ts-expect-error Legacy propTypes are narrower than the typed component props.
-    TransactionDetails,
-  ),
-) as React.ComponentType<TransactionDetailsExternalProps>;
+  >(TransactionDetails),
+);

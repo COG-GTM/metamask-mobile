@@ -766,13 +766,12 @@ function decodeConfirmTx(
   const renderTo = renderFullAddress(to);
   const chainId = txChainId;
 
-  const tokenList =
-    (
-      Engine.context.TokenListController.state.tokensChainsCache as Record<
-        string,
-        { data?: Record<string, TokenLike> }
-      >
-    )?.[chainId]?.data || {};
+  const tokenList = ((
+    Engine.context.TokenListController.state.tokensChainsCache as Record<
+      string,
+      { data?: Record<string, TokenLike> }
+    >
+  )?.[chainId]?.data || []) as Record<string, TokenLike>;
   let symbol;
   if (renderTo in tokenList) {
     symbol = tokenList[renderTo].symbol;
@@ -1070,14 +1069,6 @@ function decodeSwapsTx(
 export default async function decodeTransaction(
   args: DecodeTransactionInput,
 ): Promise<[DecodedTransactionElement, DecodedTransactionDetails]> {
-  const normalizedArgs = {
-    ...args,
-    networkConfigurationsByChainId: args.networkConfigurationsByChainId || {},
-    txChainId: args.txChainId || args.tx.chainId || args.chainId,
-    totalGas: args.totalGas || 0,
-    actionKey: args.actionKey || '',
-    collectibleContracts: args.collectibleContracts || [],
-  } as DecodeTransactionArgs;
   const {
     tx,
     selectedAddress,
@@ -1085,8 +1076,9 @@ export default async function decodeTransaction(
     networkConfigurationsByChainId,
     txChainId,
     swapsTransactions = {},
-  } = normalizedArgs;
-  const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
+  } = args;
+  const ticker =
+    networkConfigurationsByChainId?.[txChainId as string]?.nativeCurrency;
   const chainIdToUse = tx.chainId || chainId;
   const { isTransfer } = tx || {};
 
@@ -1105,43 +1097,43 @@ export default async function decodeTransaction(
   ) {
     // eslint-disable-next-line @typescript-eslint/no-shadow
     const [transactionElement, transactionDetails] = decodeSwapsTx({
-      ...normalizedArgs,
+      ...args,
       actionKey,
-    });
+    } as DecodeTransactionArgs);
 
     if (transactionElement && transactionDetails)
       return [transactionElement, transactionDetails];
   }
   if (isTransfer) {
     [transactionElement, transactionDetails] = decodeIncomingTransfer({
-      ...normalizedArgs,
+      ...args,
       actionKey,
-    });
+    } as DecodeTransactionArgs);
   } else {
     switch (actionKey) {
       case strings('transactions.sent_tokens'):
         [transactionElement, transactionDetails] = await decodeTransferTx({
-          ...normalizedArgs,
+          ...args,
           actionKey,
-        });
+        } as DecodeTransactionArgs);
         break;
       case strings('transactions.sent_collectible'):
         [transactionElement, transactionDetails] = decodeTransferFromTx({
-          ...normalizedArgs,
+          ...args,
           actionKey,
-        });
+        } as DecodeTransactionArgs);
         break;
       case strings('transactions.contract_deploy'):
         [transactionElement, transactionDetails] = decodeDeploymentTx({
-          ...normalizedArgs,
+          ...args,
           actionKey,
-        });
+        } as DecodeTransactionArgs);
         break;
       default:
         [transactionElement, transactionDetails] = decodeConfirmTx({
-          ...normalizedArgs,
+          ...args,
           actionKey,
-        });
+        } as DecodeTransactionArgs);
     }
   }
   return [transactionElement, transactionDetails];
