@@ -1,7 +1,9 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
+  ListRenderItemInfo,
   StyleSheet,
+  StyleProp,
+  TextStyle,
   TextInput,
   SafeAreaView,
   TouchableOpacity,
@@ -51,9 +53,20 @@ import { MetaMetricsEvents } from '../../../../core/Analytics';
 import { useTheme } from '../../../../util/theme';
 import { QuoteViewSelectorIDs } from '../../../../../e2e/selectors/swaps/QuoteView.selectors';
 import { getDecimalChainId } from '../../../../util/networks';
-import { getSortedTokensByFiatValue } from '../utils/token-list-utils';
+import {
+  getSortedTokensByFiatValue,
+  type Account,
+  type Balances,
+  type Token,
+  type TokenExchangeRates,
+  type TokenWithFiatValue,
+} from '../utils/token-list-utils';
+import type { RootState } from '../../../../reducers';
+import type { Theme } from '../../../../util/theme/models';
+import type { NetworkConfiguration } from '@metamask/network-controller';
+import type { Hex } from '@metamask/utils';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -130,6 +143,44 @@ const createStyles = (colors) =>
 
 const MAX_TOKENS_RESULTS = 20;
 
+interface TokenSelectModalProps {
+  isVisible?: boolean;
+  dismiss?: () => void;
+  title?: string;
+  tokens: Token[];
+  initialTokens: Token[];
+  onItemPress: (item: Token | TokenWithFiatValue) => void;
+  excludeAddresses?: string[];
+  accounts: Record<string, { balance: string }>;
+  selectedAddress: string | undefined;
+  currentCurrency: string;
+  conversionRate: number | null | undefined;
+  tokenExchangeRates: Record<string, unknown>;
+  chainId: Hex;
+  networkConfigurations: Record<string, NetworkConfiguration>;
+  balances: Balances;
+}
+
+interface Navigation {
+  navigate: (
+    route: string,
+    params: { screen: string; params: { url: string; title: string } },
+  ) => void;
+}
+
+interface TokenMetadataState {
+  valid: boolean | null;
+  error: boolean;
+  metadata: Token | null;
+}
+
+const LegacyAlert = Alert as unknown as React.ComponentType<{
+  renderIcon?: () => React.ReactNode;
+  children?:
+    | React.ReactNode
+    | ((textStyle: StyleProp<TextStyle>) => React.ReactNode);
+}>;
+
 function TokenSelectModal({
   isVisible,
   dismiss,
@@ -146,12 +197,12 @@ function TokenSelectModal({
   chainId,
   networkConfigurations,
   balances,
-}) {
-  const navigation = useNavigation();
+}: TokenSelectModalProps) {
+  const navigation = useNavigation() as unknown as Navigation;
   const { trackEvent, createEventBuilder } = useMetrics();
 
-  const searchInput = useRef(null);
-  const list = useRef();
+  const searchInput = useRef<TextInput>(null);
+  const list = useRef<React.ElementRef<typeof FlatList> | null>(null);
   const [searchString, setSearchString] = useState('');
   const explorer = useBlockExplorer(networkConfigurations);
   const [isTokenImportVisible, , showTokenImportModal, hideTokenImportModal] =
@@ -177,10 +228,10 @@ function TokenSelectModal({
     () =>
       getSortedTokensByFiatValue({
         tokens: initialTokens,
-        account: accounts[selectedAddress],
-        tokenExchangeRates,
+        account: accounts[selectedAddress as string] as Account,
+        tokenExchangeRates: tokenExchangeRates as TokenExchangeRates,
         balances,
-        conversionRate,
+        conversionRate: conversionRate as number,
         currencyCode: currentCurrency,
       }),
     [
@@ -238,10 +289,10 @@ function TokenSelectModal({
   const [loadingTokenMetadata, tokenMetadata] = useFetchTokenMetadata(
     shouldFetchToken ? searchString : null,
     chainId,
-  );
+  ) as [boolean, TokenMetadataState];
 
   const renderItem = useCallback(
-    ({ item }) => {
+    ({ item }: ListRenderItemInfo<TokenWithFiatValue>) => {
       const { balance, balanceFiat } = item;
       const balanceFiatWithCurrencySymbol = balanceFiat
         ? addCurrencySymbol(balanceFiat, currentCurrency)
@@ -285,7 +336,7 @@ function TokenSelectModal({
   }, [showTokenImportModal]);
 
   const handlePressImportToken = useCallback(
-    (item) => {
+    (item: Token) => {
       const { address, symbol } = item;
       trackEvent(
         createEventBuilder(MetaMetricsEvents.CUSTOM_TOKEN_IMPORTED)
@@ -320,13 +371,13 @@ function TokenSelectModal({
         ),
       },
     });
-    dismiss();
+    (dismiss as () => void)();
   }, [dismiss, explorer, navigation, searchString, shouldFetchToken]);
 
   const renderFooter = useMemo(
     () => (
       <TouchableWithoutFeedback>
-        <Alert
+        <LegacyAlert
           renderIcon={() => (
             <FAIcon
               name="info-circle"
@@ -353,7 +404,7 @@ function TokenSelectModal({
               )}
             </Text>
           )}
-        </Alert>
+        </LegacyAlert>
       </TouchableWithoutFeedback>
     ),
     [explorer.isValid, explorer.name, handleBlockExplorerPress, styles, colors],
@@ -368,9 +419,15 @@ function TokenSelectModal({
     [searchString, styles],
   );
 
-  const handleSearchTextChange = useCallback((text) => {
+  const handleSearchTextChange = useCallback((text: string) => {
     setSearchString(text);
-    if (list.current) list.current.scrollToOffset({ animated: false, y: 0 });
+    if (list.current) {
+      (
+        list.current as unknown as {
+          scrollToOffset: (options: { animated: boolean; y: number }) => void;
+        }
+      ).scrollToOffset({ animated: false, y: 0 });
+    }
   }, []);
 
   const handleClearSearch = useCallback(() => {
@@ -439,16 +496,16 @@ function TokenSelectModal({
                     <ListItem.Icon>
                       <TokenIcon
                         medium
-                        icon={tokenMetadata.metadata.iconUrl}
-                        symbol={tokenMetadata.metadata.symbol}
+                        icon={(tokenMetadata.metadata as Token).iconUrl}
+                        symbol={(tokenMetadata.metadata as Token).symbol}
                       />
                     </ListItem.Icon>
                     <ListItem.Body>
                       <ListItem.Title>
-                        {tokenMetadata.metadata.symbol}
+                        {(tokenMetadata.metadata as Token).symbol}
                       </ListItem.Title>
-                      {tokenMetadata.metadata.name && (
-                        <Text>{tokenMetadata.metadata.name}</Text>
+                      {(tokenMetadata.metadata as Token).name && (
+                        <Text>{(tokenMetadata.metadata as Token).name}</Text>
                       )}
                     </ListItem.Body>
                     <ListItem.Amounts>
@@ -466,9 +523,9 @@ function TokenSelectModal({
                 <TokenImportModal
                   isVisible={isTokenImportVisible}
                   dismiss={hideTokenImportModal}
-                  token={tokenMetadata.metadata}
+                  token={tokenMetadata.metadata as Token}
                   onPressImport={() =>
-                    handlePressImportToken(tokenMetadata.metadata)
+                    handlePressImportToken(tokenMetadata.metadata as Token)
                   }
                 />
               </View>
@@ -496,7 +553,7 @@ function TokenSelectModal({
           </View>
         ) : (
           <FlatList
-            ref={list}
+            ref={list as never}
             style={styles.resultsView}
             keyboardDismissMode="none"
             keyboardShouldPersistTaps="always"
@@ -513,49 +570,7 @@ function TokenSelectModal({
   );
 }
 
-TokenSelectModal.propTypes = {
-  isVisible: PropTypes.bool,
-  dismiss: PropTypes.func,
-  title: PropTypes.string,
-  tokens: PropTypes.arrayOf(PropTypes.object),
-  initialTokens: PropTypes.arrayOf(PropTypes.object),
-  onItemPress: PropTypes.func,
-  excludeAddresses: PropTypes.arrayOf(PropTypes.string),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * A string that represents the selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * An object containing token balances for current account and network in the format address => balance
-   */
-  balances: PropTypes.object,
-  /**
-   * An object containing token exchange rates in the format address => exchangeRate
-   */
-  tokenExchangeRates: PropTypes.object,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Network configurations
-   */
-  networkConfigurations: PropTypes.object,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   accounts: selectAccounts(state),
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
