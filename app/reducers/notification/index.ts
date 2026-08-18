@@ -1,8 +1,41 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { createSelector } from 'reselect';
 import { NotificationTypes } from '../../util/notifications';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-export const initialState = {
+export interface NotificationTransaction {
+  id: string | number;
+  [key: string]: unknown;
+}
+
+export interface Notification {
+  id?: string | number;
+  isVisible?: boolean;
+  autodismiss?: number | boolean;
+  title?: string;
+  description?: string;
+  status?: string;
+  transaction?: NotificationTransaction;
+  type?: string;
+  [key: string]: unknown;
+}
+
+export interface NotificationState {
+  notifications: Notification[];
+}
+
+interface NotificationAction {
+  type: string | null;
+  id?: string | number;
+  autodismiss?: number | boolean;
+  title?: string;
+  description?: string;
+  status?: string;
+  transaction?: NotificationTransaction;
+  notification?: Notification;
+}
+
+export const initialState: NotificationState = {
   notifications: [],
 };
 
@@ -21,21 +54,27 @@ export const ACTIONS = {
   UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
 };
 
-const enqueue = (notifications, notification) => [
+const enqueue = (
+  notifications: Notification[],
+  notification: Notification,
+): Notification[] => [
   ...notifications,
   notification,
 ];
-const dequeue = (notifications) => notifications.slice(1);
+const dequeue = (notifications: Notification[]): Notification[] =>
+  notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
   (
-    /** @type {import('..').RootState} */
-    state,
-  ) => state?.notifications,
-  (notifications) => notifications[0] || {},
+    state: unknown,
+  ) => (state as { notifications: NotificationState }).notifications.notifications,
+  (notifications): Notification => notifications[0] || {},
 );
 
-const notificationReducer = (state = initialState, action) => {
+const notificationReducer = (
+  state: NotificationState = initialState,
+  action: NotificationAction,
+): NotificationState => {
   const { notifications } = state;
   switch (action.type) {
     // make current notification isVisible props false
@@ -75,10 +114,10 @@ const notificationReducer = (state = initialState, action) => {
             {
               ...notifications[index],
               ...{
-                id: action.transaction.id,
+                id: (action.transaction as NotificationTransaction).id,
                 isVisible: true,
                 autodismiss: action.autodismiss,
-                transaction: action.transaction,
+                transaction: action.transaction as NotificationTransaction,
                 status: action.status,
                 type: TRANSACTION,
               },
@@ -90,10 +129,10 @@ const notificationReducer = (state = initialState, action) => {
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.transaction.id,
+          id: (action.transaction as NotificationTransaction).id,
           isVisible: true,
           autodismiss: action.autodismiss,
-          transaction: action.transaction,
+          transaction: action.transaction as NotificationTransaction,
           status: action.status,
           type: TRANSACTION,
         }),
@@ -144,7 +183,7 @@ const notificationReducer = (state = initialState, action) => {
         ...state,
         notifications: [
           ...notifications.slice(0, index),
-          action.notification,
+          action.notification as Notification,
           ...notifications.slice(index + 1),
         ],
       };
@@ -179,10 +218,10 @@ const notificationReducer = (state = initialState, action) => {
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.transaction.id,
+          id: (action.transaction as NotificationTransaction).id,
           isVisible: true,
           autodismiss: action.autodismiss || 5000,
-          transaction: action.transaction,
+          transaction: action.transaction as NotificationTransaction,
           status: action.status,
           type: TRANSACTION,
         }),

@@ -1,4 +1,15 @@
-const initialState = {
+/* eslint-disable @typescript-eslint/default-param-last */
+import type { RootState } from '..';
+
+export interface InfuraAvailabilityState {
+  isBlocked: boolean;
+}
+
+interface InfuraAvailabilityAction {
+  type: string;
+}
+
+const initialState: InfuraAvailabilityState = {
   isBlocked: false,
 };
 
@@ -6,10 +17,13 @@ export const INFURA_AVAILABILITY_BLOCKED = 'INFURA_AVAILABILITY_BLOCKED';
 export const INFURA_AVAILABILITY_NOT_BLOCKED =
   'INFURA_AVAILABILITY_NOT_BLOCKED';
 
-export const getInfuraBlockedSelector = (state) =>
+export const getInfuraBlockedSelector = (state: RootState): boolean =>
   state.infuraAvailability?.isBlocked;
 
-const infuraAvailabilityReducer = (state = initialState, action) => {
+const infuraAvailabilityReducer = (
+  state: InfuraAvailabilityState = initialState,
+  action: InfuraAvailabilityAction,
+): InfuraAvailabilityState => {
   switch (action.type) {
     case INFURA_AVAILABILITY_BLOCKED:
       return {
