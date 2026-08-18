@@ -289,6 +289,8 @@ class Approve extends PureComponent<
     IWithMetricsAwarenessProps,
   ApproveState
 > {
+  appStateListener?: ReturnType<typeof AppState.addEventListener>;
+
   #transactionFinishedSubscription!: (transactionMeta: TransactionMeta) => void;
 
   static contextType = ThemeContext;
@@ -518,11 +520,7 @@ class Approve extends PureComponent<
     if (showCustomNonce) {
       await this.setNetworkNonce();
     }
-    (
-      this as unknown as {
-        appStateListener: ReturnType<typeof AppState.addEventListener>;
-      }
-    ).appStateListener = AppState.addEventListener(
+    this.appStateListener = AppState.addEventListener(
       'change',
       this.handleAppStateChange,
     );
@@ -578,11 +576,7 @@ class Approve extends PureComponent<
       ExtendedKeyringTypes.ledger,
     ]);
 
-    (
-      this as unknown as {
-        appStateListener: ReturnType<typeof AppState.addEventListener>;
-      }
-    ).appStateListener?.remove();
+    this.appStateListener?.remove();
     if (!isLedgerAccount) {
       Engine.controllerMessenger.tryUnsubscribe(
         'TransactionController:transactionFinished',
