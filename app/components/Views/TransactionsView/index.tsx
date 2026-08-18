@@ -119,7 +119,7 @@ const TransactionsView = ({
           selectedAddress,
           networkId,
           chainId,
-          tokenNetworkFilter,
+          tokenNetworkFilter as unknown as { [key: string]: boolean }[],
         );
 
         if (!filter) return false;
