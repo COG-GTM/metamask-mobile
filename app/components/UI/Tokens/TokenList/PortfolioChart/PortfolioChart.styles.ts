@@ -30,7 +30,7 @@ const styleSheet = (params: { theme: Theme; vars: { diff: number } }) => {
     },
     timePeriods: {
       flexDirection: 'row',
-      justifyContent: 'center',
+      justifyContent: 'space-around',
     },
   });
 };

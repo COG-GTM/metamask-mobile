@@ -91,7 +91,7 @@ const PriceChart = ({
   };
 
   const updatePosition = (x: number) => {
-    if (x === -1) {
+    if (x === -1 || priceList.length === 0) {
       onActiveIndexChange(-1);
       return;
     }
