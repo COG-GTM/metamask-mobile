@@ -12,9 +12,27 @@ const styles = StyleSheet.create({
   },
 });
 
-function TokenSelectButton({ icon, symbol, onPress, disabled, label }) {
+interface TokenSelectButtonProps {
+  icon?: string;
+  symbol?: string;
+  onPress?: () => void;
+  disabled?: boolean;
+  label?: string;
+}
+
+function TokenSelectButton({
+  icon,
+  symbol,
+  onPress,
+  disabled,
+  label,
+}: TokenSelectButtonProps) {
   return (
-    <SelectorButton onPress={onPress} disabled={disabled}>
+    <SelectorButton
+      // @ts-expect-error Preserve the legacy optional callback.
+      onPress={onPress}
+      disabled={disabled}
+    >
       <View style={styles.icon}>
         <TokenIcon icon={icon} symbol={symbol} />
       </View>
