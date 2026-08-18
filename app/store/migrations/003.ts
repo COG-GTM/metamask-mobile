@@ -1,6 +1,6 @@
-// @ts-expect-error NetworksChainId is available in the runtime migration environment.
+// @ts-expect-error This export no longer exists in the current version; migration retained for historical persisted state.
 import { NetworksChainId } from '@metamask/controller-utils';
-// @ts-expect-error isSafeChainId is available in the runtime migration environment.
+// @ts-expect-error This export no longer exists in the current version; migration retained for historical persisted state.
 import { isSafeChainId } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
 import { regex } from '../../../app/util/regex';
@@ -32,7 +32,7 @@ export default function migrate(state: unknown) {
       ...provider,
       chainId,
     };
-    return state;
+    return typedState;
   }
 
   // If provider is rpc, check if the current network has a valid chainId

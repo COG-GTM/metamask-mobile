@@ -1,4 +1,4 @@
-// @ts-expect-error NetworksChainId is available in the runtime migration environment.
+// @ts-expect-error This export no longer exists in the current version; migration retained for historical persisted state.
 import { NetworksChainId } from '@metamask/controller-utils';
 
 type NetworkData = Record<string, unknown>;
@@ -39,8 +39,7 @@ export default function migrate(state: unknown) {
       if (NetworksChainId[networkType as keyof typeof NetworksChainId]) {
         newAllTokens[address][
           NetworksChainId[networkType as keyof typeof NetworksChainId]
-        ] =
-          allTokens[address][networkType];
+        ] = allTokens[address][networkType];
       } else {
         frequentRpcList.forEach(({ chainId }) => {
           newAllTokens[address][chainId] = allTokens[address][networkType];
@@ -55,8 +54,7 @@ export default function migrate(state: unknown) {
       if (NetworksChainId[networkType as keyof typeof NetworksChainId]) {
         newAllCollectibles[address][
           NetworksChainId[networkType as keyof typeof NetworksChainId]
-        ] =
-          allCollectibles[address][networkType];
+        ] = allCollectibles[address][networkType];
       } else {
         frequentRpcList.forEach(({ chainId }) => {
           newAllCollectibles[address][chainId] =
@@ -72,8 +70,7 @@ export default function migrate(state: unknown) {
       if (NetworksChainId[networkType as keyof typeof NetworksChainId]) {
         newAllCollectibleContracts[address][
           NetworksChainId[networkType as keyof typeof NetworksChainId]
-        ] =
-          allCollectibleContracts[address][networkType];
+        ] = allCollectibleContracts[address][networkType];
       } else {
         frequentRpcList.forEach(({ chainId }) => {
           newAllCollectibleContracts[address][chainId] =

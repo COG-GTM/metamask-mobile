@@ -1,4 +1,4 @@
-// @ts-expect-error isSafeChainId is available in the runtime migration environment.
+// @ts-expect-error This export no longer exists in the current version; migration retained for historical persisted state.
 import { getAllNetworks, isSafeChainId } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
 

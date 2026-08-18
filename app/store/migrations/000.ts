@@ -1,5 +1,5 @@
 interface AddressBookEntry {
-  chainId: string | number | bigint;
+  chainId?: string | number | bigint;
   [key: string]: unknown;
 }
 
@@ -26,7 +26,12 @@ export default function migrate(state: unknown) {
     Record<string, AddressBookEntry>
   > = {};
   Object.keys(addressBook).forEach((address) => {
-    const chainId = addressBook[address].chainId.toString();
+    const chainId = (
+      (addressBook[address] as AddressBookEntry).chainId as
+        | string
+        | number
+        | bigint
+    ).toString();
     migratedAddressBook[chainId]
       ? (migratedAddressBook[chainId] = {
           ...migratedAddressBook[chainId],
@@ -34,7 +39,6 @@ export default function migrate(state: unknown) {
         })
       : (migratedAddressBook[chainId] = { [address]: addressBook[address] });
   });
-  // @ts-expect-error The address book changes shape during this migration.
   typedState.engine.backgroundState.AddressBookController.addressBook =
     migratedAddressBook;
   return typedState;
