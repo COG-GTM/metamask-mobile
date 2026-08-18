@@ -47,26 +47,9 @@ interface BlockiesOptions {
   spotcolor?: HslColor;
 }
 
-interface GlobalWithBlockies {
-  blockies?: BlockiesExports;
-}
+const blockiesExports: BlockiesExports = {};
 
-declare const exports: BlockiesExports;
-declare const module: { exports: BlockiesExports };
-declare const define: {
-  amd?: boolean;
-} & ((dependencies: string[], factory: (exports: BlockiesExports) => void) => void);
-
-(function (
-  global: GlobalWithBlockies,
-  factory: (exports: BlockiesExports) => void,
-) {
-  exports && typeof exports === 'object' && typeof module !== 'undefined'
-    ? factory(exports)
-    : typeof define === 'function' && define.amd
-    ? define(['exports'], factory)
-    : factory((global.blockies = {}));
-})(this as unknown as GlobalWithBlockies, (exports: BlockiesExports) => {
+((exports: BlockiesExports) => {
   'use strict';
 
   /**
@@ -502,13 +485,13 @@ declare const define: {
   exports.toDataUrl = toDataUrl;
 
   Object.defineProperty(exports, '__esModule', { value: true });
-});
+})(blockiesExports);
 
 export const toDataUrl = (address: string): string => {
-  if (!exports.toDataUrl) {
+  if (!blockiesExports.toDataUrl) {
     throw new Error('Blockies toDataUrl is unavailable');
   }
-  return exports.toDataUrl(address);
+  return blockiesExports.toDataUrl(address);
 };
 
 /**

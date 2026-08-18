@@ -101,7 +101,7 @@ export function getValueFromWeiHex({
   numberOfDecimals,
   toDenomination,
 }: WeiConversionOptions) {
-  return String(conversionUtil(value, {
+  return conversionUtil(value, {
     fromNumericBase: 'hex',
     toNumericBase: 'dec',
     fromCurrency,
@@ -110,7 +110,7 @@ export function getValueFromWeiHex({
     fromDenomination: WEI,
     toDenomination,
     conversionRate,
-  }));
+  }) as string;
 }
 
 export function getWeiHexFromDecimalValue({
@@ -120,7 +120,7 @@ export function getWeiHexFromDecimalValue({
   fromDenomination,
   invertConversionRate,
 }: ConversionOptions & { value: NumericValue }): string {
-  return String(conversionUtil(value, {
+  return conversionUtil(value, {
     fromNumericBase: 'dec',
     toNumericBase: 'hex',
     toCurrency: ETH,
@@ -129,7 +129,7 @@ export function getWeiHexFromDecimalValue({
     invertConversionRate,
     fromDenomination,
     toDenomination: WEI,
-  }));
+  }) as string;
 }
 
 export function addHexWEIsToDec(
@@ -288,5 +288,5 @@ export function multiplyHexes(hex1: string, hex2: string): string {
 }
 
 export function decimalToPrefixedHex(decimal: NumericValue): string {
-  return addHexPrefix(String(decimalToHex(decimal)));
+  return addHexPrefix(decimalToHex(decimal) as string);
 }
