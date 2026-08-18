@@ -201,6 +201,18 @@ const initialState = {
 
 const Stack = createStackNavigator();
 
+type AmountForTestProps = Omit<
+  React.ComponentProps<typeof Amount>,
+  'navigation' | 'route'
+> & {
+  navigation?: object;
+  route?: object;
+};
+
+const AmountForTest = Amount as React.ComponentType<
+  Partial<AmountForTestProps>
+>;
+
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const renderComponent = (state: any = {}) =>
@@ -208,7 +220,7 @@ const renderComponent = (state: any = {}) =>
     <Stack.Navigator>
       <Stack.Screen name="Amount" options={{}}>
         {(props) => (
-          <Amount
+          <AmountForTest
             {...props}
             navigation={{
               navigate: mockNavigate,
