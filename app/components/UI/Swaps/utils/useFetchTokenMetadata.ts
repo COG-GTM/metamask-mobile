@@ -15,7 +15,7 @@ const defaultTokenMetadata: TokenMetadata = {
 };
 
 function useFetchTokenMetadata(
-  address: string | undefined,
+  address: string | null | undefined,
   chainId: string,
 ): [boolean, TokenMetadata] {
   const [isLoading, setIsLoading] = useState(false);
