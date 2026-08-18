@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+/* eslint-disable @typescript-eslint/no-shadow */
 
 import { Alert } from 'react-native';
-import PropTypes from 'prop-types';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { connect, useSelector } from 'react-redux';
+import { Dispatch } from 'redux';
 import { ethers } from 'ethers';
+// @ts-expect-error human-standard-token-abi does not publish TypeScript declarations.
 import abi from 'human-standard-token-abi';
 
 import NotificationManager from '../../../core/NotificationManager';
@@ -34,6 +37,7 @@ import BigNumber from 'bignumber.js';
 import { toLowerCaseEquals } from '../../../util/general';
 import { KEYSTONE_TX_CANCELED } from '../../../constants/error';
 import { MetaMetricsEvents } from '../../../core/Analytics';
+import type { IMetaMetricsEvent } from '../../../core/Analytics/MetaMetrics.types';
 import {
   getAddressAccountType,
   isHardwareAccount,
@@ -70,6 +74,7 @@ import { getSmartTransactionMetricsProperties } from '../../../util/smart-transa
 import { cloneDeep, isEqual } from 'lodash';
 import { selectSwapsTransactions } from '../../../selectors/transactionController';
 import { updateSwapsTransaction } from '../../../util/swaps/swaps-transactions';
+import { RootState } from '../../../reducers';
 
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
 import InstallSnapApproval from '../../Approvals/InstallSnapApproval';
@@ -80,20 +85,96 @@ import SnapDialogApproval from '../../Snaps/SnapDialogApproval/SnapDialogApprova
 import SnapAccountCustomNameApproval from '../../Approvals/SnapAccountCustomNameApproval';
 ///: END:ONLY_INCLUDE_IF
 
-const hstInterface = new ethers.utils.Interface(abi);
+type SwapsTransactionParams = Parameters<
+  typeof swapsUtils.getSwapsTokensReceived
+>[2];
 
-function useSwapsTransactions() {
+const hstInterface = new ethers.utils.Interface(
+  abi as ConstructorParameters<typeof ethers.utils.Interface>[0],
+);
+
+interface TokenLike {
+  address: string;
+  decimals: number | string | BN;
+  symbol?: string;
+}
+
+interface TransactionParams {
+  from?: string;
+  to?: string;
+  data?: string;
+  value?: string | BN;
+  gas?: string | BN;
+  gasPrice?: string | BN;
+  assetType?: string;
+  [key: string]: unknown;
+}
+
+interface TransactionMetaLike {
+  id: string;
+  origin?: string;
+  status?: string;
+  hash?: string;
+  error?: Error;
+  chainId?: string;
+  networkClientId?: string;
+  txParams: TransactionParams;
+  securityAlertResponse?: unknown;
+}
+
+type AnalyticsParameters = Record<string, string | number | boolean>;
+
+interface SwapTransactionLike {
+  analytics?: AnalyticsParameters;
+  paramsForAnalytics: {
+    sentAt: number;
+    gasEstimate: string;
+    ethAccountBalance: string;
+    approvalTransactionMetaId?: string;
+  };
+  destinationToken: {
+    decimals: number;
+  };
+  destinationTokenDecimals: number;
+  destinationAmount: string;
+  gasUsed?: unknown;
+}
+
+type TrackSwaps = (
+  event: IMetaMetricsEvent,
+  transactionMeta: TransactionMetaLike,
+  swapsTransactions: Record<string, SwapTransactionLike>,
+) => void | Promise<void>;
+
+interface SwapConfirmedEventProps {
+  trackSwaps: TrackSwaps;
+}
+
+interface RootRPCMethodsUIProps {
+  navigation: NavigationProp<ParamListBase>;
+  setEtherTransaction: (transaction: Record<string, unknown>) => void;
+  setTransactionObject: (transaction: Record<string, unknown>) => void;
+  tokens: TokenLike[];
+  selectedAddress: string;
+  chainId: string;
+  providerType?: string;
+  shouldUseSmartTransaction: boolean;
+}
+
+function useSwapsTransactions(): Record<string, SwapTransactionLike> {
   const swapTransactions = useSelector(selectSwapsTransactions, isEqual);
 
   // Memo prevents fresh fallback empty object on every render.
   return useMemo(() => swapTransactions ?? {}, [swapTransactions]);
 }
 
-export const useSwapConfirmedEvent = ({ trackSwaps }) => {
+export const useSwapConfirmedEvent = ({
+  trackSwaps,
+}: SwapConfirmedEventProps) => {
   const [transactionMetaIdsForListening, setTransactionMetaIdsForListening] =
-    useState([]);
+    useState<string[]>([]);
 
-  const addTransactionMetaIdForListening = useCallback((txMetaId) => {
+  const addTransactionMetaIdForListening = useCallback((txMetaId: string) => {
     setTransactionMetaIdsForListening((transactionMetaIdsForListening) => [
       ...transactionMetaIdsForListening,
       txMetaId,
@@ -108,7 +189,7 @@ export const useSwapConfirmedEvent = ({ trackSwaps }) => {
     if (txMetaId && swapsTransactions[txMetaId]) {
       Engine.controllerMessenger.subscribeOnceIf(
         'TransactionController:transactionConfirmed',
-        (transactionMeta) => {
+        (transactionMeta: TransactionMetaLike) => {
           if (
             swapsTransactions[transactionMeta.id]?.analytics &&
             swapsTransactions[transactionMeta.id]?.paramsForAnalytics
@@ -120,7 +201,7 @@ export const useSwapConfirmedEvent = ({ trackSwaps }) => {
             );
           }
         },
-        (transactionMeta) => transactionMeta.id === txMetaId,
+        (transactionMeta: TransactionMetaLike) => transactionMeta.id === txMetaId,
       );
       setTransactionMetaIdsForListening(restTxMetaIds);
     }
@@ -132,9 +213,11 @@ export const useSwapConfirmedEvent = ({ trackSwaps }) => {
   };
 };
 
-const RootRPCMethodsUI = (props) => {
+const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
   const { trackEvent, createEventBuilder } = useMetrics();
-  const [transactionModalType, setTransactionModalType] = useState(undefined);
+  const [transactionModalType, setTransactionModalType] = useState<
+    TransactionModalType | undefined
+  >();
   const tokenList = useSelector(selectTokenList);
   const setTransactionObject = props.setTransactionObject;
   const setEtherTransaction = props.setEtherTransaction;
@@ -144,7 +227,11 @@ const RootRPCMethodsUI = (props) => {
   };
 
   const trackSwaps = useCallback(
-    async (event, transactionMeta, swapsTransactions) => {
+    async (
+      event: IMetaMetricsEvent,
+      transactionMeta: TransactionMetaLike,
+      swapsTransactions: Record<string, SwapTransactionLike>,
+    ) => {
       try {
         const { TransactionController, SmartTransactionsController } =
           Engine.context;
@@ -159,7 +246,7 @@ const RootRPCMethodsUI = (props) => {
 
         const approvalTransaction =
           TransactionController.state.transactions.find(
-            ({ id }) => id === approvalTransactionMetaId,
+            ({ id }: { id: string }) => id === approvalTransactionMetaId,
           );
 
         const ethQuery = getGlobalEthQuery();
@@ -168,7 +255,7 @@ const RootRPCMethodsUI = (props) => {
           props.selectedAddress,
         ]);
         const receipt = await query(ethQuery, 'getTransactionReceipt', [
-          transactionMeta.hash,
+          transactionMeta.hash as string,
         ]);
 
         const currentBlock = await query(ethQuery, 'getBlockByHash', [
@@ -184,9 +271,9 @@ const RootRPCMethodsUI = (props) => {
         const tokensReceived = swapsUtils.getSwapsTokensReceived(
           receipt,
           approvalReceipt,
-          transactionMeta?.txParams,
-          approvalTransaction?.txParams,
-          swapTransaction.destinationToken,
+          transactionMeta?.txParams as unknown as SwapsTransactionParams,
+          approvalTransaction?.txParams as SwapsTransactionParams,
+          swapTransaction.destinationToken as never,
           ethAccountBalance,
           ethBalance,
         );
@@ -198,21 +285,23 @@ const RootRPCMethodsUI = (props) => {
           .toFixed(2)}%`;
         const quoteVsExecutionRatio = `${swapsUtils
           .calcTokenAmount(
-            tokensReceived || '0x0',
-            swapTransaction.destinationTokenDecimals,
+            (tokensReceived || '0x0') as never,
+            swapTransaction.destinationTokenDecimals as never,
           )
           .div(swapTransaction.destinationAmount)
           .times(100)
           .toFixed(2)}%`;
         const tokenToAmountReceived = swapsUtils.calcTokenAmount(
-          tokensReceived,
-          swapTransaction.destinationToken.decimals,
+          tokensReceived as never,
+          swapTransaction.destinationToken.decimals as never,
         );
 
         const analyticsParams = {
           ...swapTransaction.analytics,
-          account_type: getAddressAccountType(transactionMeta.txParams.from),
-        };
+          account_type: getAddressAccountType(
+            transactionMeta.txParams.from as string,
+          ),
+        } as AnalyticsParameters & Record<string, unknown>;
 
         updateSwapsTransaction(transactionMeta.id, (swapsTransaction) => {
           swapsTransaction.gasUsed = receipt.gasUsed;
@@ -229,7 +318,10 @@ const RootRPCMethodsUI = (props) => {
         });
 
         const smartTransactionMetricsProperties =
-          getSmartTransactionMetricsProperties(
+          (getSmartTransactionMetricsProperties as unknown as (
+            controller: typeof SmartTransactionsController,
+            transactionMeta: TransactionMetaLike,
+          ) => Record<string, unknown>)(
             SmartTransactionsController,
             transactionMeta,
           );
@@ -251,7 +343,7 @@ const RootRPCMethodsUI = (props) => {
           request_type: analyticsParams.request_type,
           token_from: analyticsParams.token_from,
           token_to: analyticsParams.token_to,
-        };
+        } as unknown as AnalyticsParameters;
         const sensitiveParameters = {
           token_from_amount: analyticsParams.token_from_amount,
           token_to_amount: analyticsParams.token_to_amount,
@@ -267,11 +359,12 @@ const RootRPCMethodsUI = (props) => {
             .build(),
         );
       } catch (e) {
-        Logger.error(e, MetaMetricsEvents.SWAP_TRACKING_FAILED);
+        const error = e as Error;
+        Logger.error(error, MetaMetricsEvents.SWAP_TRACKING_FAILED);
         trackEvent(
           createEventBuilder(MetaMetricsEvents.SWAP_TRACKING_FAILED)
             .addProperties({
-              error: e,
+              error: error as never,
             })
             .build(),
         );
@@ -291,14 +384,14 @@ const RootRPCMethodsUI = (props) => {
   const swapsTransactions = useSwapsTransactions();
 
   const autoSign = useCallback(
-    async (transactionMeta) => {
+    async (transactionMeta: TransactionMetaLike) => {
       const { KeyringController } = Engine.context;
       const { id: transactionId } = transactionMeta;
 
       try {
         Engine.controllerMessenger.subscribeOnceIf(
           'TransactionController:transactionFinished',
-          (transactionMeta) => {
+          (transactionMeta: TransactionMetaLike) => {
             if (transactionMeta.status === 'submitted') {
               NotificationManager.watchSubmittedTransaction({
                 ...transactionMeta,
@@ -315,7 +408,8 @@ const RootRPCMethodsUI = (props) => {
               throw transactionMeta.error;
             }
           },
-          (transactionMeta) => transactionMeta.id === transactionId,
+          (transactionMeta: TransactionMetaLike) =>
+            transactionMeta.id === transactionId,
         );
 
         // Queue txMetaId to listen for confirmation event
@@ -324,7 +418,7 @@ const RootRPCMethodsUI = (props) => {
         await KeyringController.resetQRKeyringState();
 
         const isLedgerAccount = isHardwareAccount(
-          transactionMeta.txParams.from,
+          transactionMeta.txParams.from as string,
           [ExtendedKeyringTypes.ledger],
         );
 
@@ -339,19 +433,20 @@ const RootRPCMethodsUI = (props) => {
               // eslint-disable-next-line no-empty-function
               onConfirmationComplete: () => {},
               type: 'signTransaction',
-            }),
+            } as Parameters<typeof createLedgerTransactionModalNavDetails>[0]),
           );
         } else {
           Engine.acceptPendingApproval(transactionMeta.id);
         }
-      } catch (error) {
+      } catch (caughtError) {
+        const error = caughtError as Error;
         if (
-          !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
-          !error?.message.startsWith(STX_NO_HASH_ERROR)
+          !error.message.startsWith(KEYSTONE_TX_CANCELED) &&
+          !error.message.startsWith(STX_NO_HASH_ERROR)
         ) {
           Alert.alert(
             strings('transactions.transaction_error'),
-            error && error.message,
+            error.message,
             [{ text: strings('navigation.ok') }],
           );
           Logger.error(error, 'error while trying to send transaction (Main)');
@@ -375,7 +470,7 @@ const RootRPCMethodsUI = (props) => {
   );
 
   const onUnapprovedTransaction = useCallback(
-    async (transactionMetaOriginal) => {
+    async (transactionMetaOriginal: TransactionMetaLike) => {
       const transactionMeta = cloneDeep(transactionMetaOriginal);
 
       if (transactionMeta.origin === TransactionTypes.MMM) return;
@@ -407,19 +502,20 @@ const RootRPCMethodsUI = (props) => {
           data &&
           data !== '0x' &&
           to &&
-          (await getMethodData(data, networkClientId)).name ===
+          (await getMethodData(data as string, networkClientId)).name ===
             TOKEN_METHOD_TRANSFER
         ) {
-          let asset = props.tokens.find(({ address }) =>
+          let asset: TokenLike | undefined = props.tokens.find(
+            ({ address }: TokenLike) =>
             toLowerCaseEquals(address, to),
           );
           if (!asset) {
             // try to lookup contract by lowercased address `to`
-            asset = tokenList[to];
+            asset = tokenList[to] as unknown as TokenLike | undefined;
 
             if (!asset) {
               try {
-                asset = {};
+                asset = {} as TokenLike;
                 asset.decimals =
                   await AssetsContractController.getERC20TokenDecimals(to);
                 asset.symbol =
@@ -438,7 +534,11 @@ const RootRPCMethodsUI = (props) => {
           const tokenValue = getTokenValueParam(tokenData);
           const toAddress = getTokenAddressParam(tokenData);
           const tokenAmount =
-            tokenData && calcTokenAmount(tokenValue, asset.decimals).toFixed();
+            tokenData &&
+            calcTokenAmount(
+              tokenValue as never,
+              asset.decimals as never,
+            ).toFixed();
 
           transactionMeta.txParams.value = hexToBN(
             getTokenValueParamAsHex(tokenData),
@@ -456,9 +556,9 @@ const RootRPCMethodsUI = (props) => {
             ...transactionMeta.txParams,
           });
         } else {
-          transactionMeta.txParams.value = hexToBN(value);
+          transactionMeta.txParams.value = hexToBN(value as string);
           transactionMeta.txParams.readableValue = fromWei(
-            transactionMeta.txParams.value,
+            transactionMeta.txParams.value as never,
           );
 
           setEtherTransaction({
@@ -471,7 +571,10 @@ const RootRPCMethodsUI = (props) => {
           });
         }
 
-        if (isApprovalTransaction(data) && (!value || isZeroValue(value))) {
+        if (
+          isApprovalTransaction(data as never) &&
+          (!value || isZeroValue(value as never))
+        ) {
           setTransactionModalType(TransactionModalType.Transaction);
         } else {
           setTransactionModalType(TransactionModalType.Dapp);
@@ -510,7 +613,11 @@ const RootRPCMethodsUI = (props) => {
     initializeWalletConnect();
 
     return function cleanup() {
-      Engine.context.TokensController?.hub?.removeAllListeners();
+      (
+        Engine.context.TokensController as unknown as {
+          hub?: { removeAllListeners: () => void };
+        }
+      )?.hub?.removeAllListeners();
       WalletConnect?.hub?.removeAllListeners();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -552,41 +659,19 @@ const RootRPCMethodsUI = (props) => {
   );
 };
 
-RootRPCMethodsUI.propTypes = {
-  /**
-   * Object that represents the navigator
-   */
-  navigation: PropTypes.object,
-  /**
-   * Action that sets an ETH transaction
-   */
-  setEtherTransaction: PropTypes.func,
-  /**
-   * Action that sets a transaction
-   */
-  setTransactionObject: PropTypes.func,
-  /**
-   * Array of ERC20 assets
-   */
-  tokens: PropTypes.array,
-  /**
-   * Selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * If smart transactions should be used
-   */
-  shouldUseSmartTransaction: PropTypes.bool,
-};
+type RootRPCStateProps = Pick<
+  RootRPCMethodsUIProps,
+  | 'selectedAddress'
+  | 'chainId'
+  | 'tokens'
+  | 'providerType'
+  | 'shouldUseSmartTransaction'
+>;
 
-const mapStateToProps = (state) => ({
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
-  chainId: selectEvmChainId(state),
-  tokens: selectTokens(state),
+const mapStateToProps = (state: RootState): RootRPCStateProps => ({
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) as string,
+  chainId: selectEvmChainId(state) as string,
+  tokens: selectTokens(state) as TokenLike[],
   providerType: selectProviderType(state),
   shouldUseSmartTransaction: selectShouldUseSmartTransaction(
     state,
@@ -594,10 +679,10 @@ const mapStateToProps = (state) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setEtherTransaction: (transaction) =>
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  setEtherTransaction: (transaction: Record<string, unknown>) =>
     dispatch(setEtherTransaction(transaction)),
-  setTransactionObject: (transaction) =>
+  setTransactionObject: (transaction: Record<string, unknown>) =>
     dispatch(setTransactionObject(transaction)),
 });
 
