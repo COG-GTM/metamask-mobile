@@ -109,6 +109,12 @@ const PriceChart = ({
     onActiveIndexChange(value);
   };
 
+  // The responder is created once, so its handlers must read the latest
+  // updatePosition (which closes over the measured width and price list)
+  // through a ref rather than the first render's closure.
+  const updatePositionRef = useRef(updatePosition);
+  updatePositionRef.current = updatePosition;
+
   const prevTouch = useRef({ x: 0, y: 0 });
   const panResponder = useRef(
     PanResponder.create({
@@ -123,7 +129,7 @@ const PriceChart = ({
           x: evt.nativeEvent.locationX,
           y: evt.nativeEvent.locationY,
         };
-        updatePosition(evt.nativeEvent.locationX);
+        updatePositionRef.current(evt.nativeEvent.locationX);
       },
       onPanResponderMove: (evt: GestureResponderEvent) => {
         const deltaX = evt.nativeEvent.locationX - prevTouch.current.x;
@@ -131,7 +137,9 @@ const PriceChart = ({
         const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY);
 
         setIsChartBeingTouched(isHorizontalSwipe);
-        updatePosition(isHorizontalSwipe ? evt.nativeEvent.locationX : -1);
+        updatePositionRef.current(
+          isHorizontalSwipe ? evt.nativeEvent.locationX : -1,
+        );
 
         // save current touch for the next move
         prevTouch.current = {
@@ -142,7 +150,7 @@ const PriceChart = ({
 
       onPanResponderRelease: () => {
         setIsChartBeingTouched(false);
-        updatePosition(-1);
+        updatePositionRef.current(-1);
       },
     }),
   );
