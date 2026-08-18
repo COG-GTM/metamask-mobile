@@ -93,7 +93,8 @@ type CollectibleContractOverviewDispatchProps = Pick<
 
 type CollectibleContractOverviewOwnProps = Omit<
   CollectibleContractOverviewProps,
-  keyof CollectibleContractOverviewStateProps | keyof CollectibleContractOverviewDispatchProps
+  | keyof CollectibleContractOverviewStateProps
+  | keyof CollectibleContractOverviewDispatchProps
 >;
 
 class CollectibleContractOverview extends PureComponent<CollectibleContractOverviewProps> {
@@ -127,9 +128,11 @@ class CollectibleContractOverview extends PureComponent<CollectibleContractOverv
 
   onAdd = () => {
     const { navigation, collectibleContract } = this.props;
-    (navigation as {
-      push: (name: string, params?: object) => void;
-    }).push('AddAsset', {
+    (
+      navigation as {
+        push: (name: string, params?: object) => void;
+      }
+    ).push('AddAsset', {
       assetType: 'collectible',
       collectibleContract,
     });
@@ -141,9 +144,11 @@ class CollectibleContractOverview extends PureComponent<CollectibleContractOverv
       toLowerCaseEquals(item.address, collectibleContract.address),
     );
     this.props.newAssetTransaction(collectible);
-    (this.props.navigation as {
-      navigate: (name: string, params?: object) => void;
-    }).navigate('SendFlowView');
+    (
+      this.props.navigation as {
+        navigate: (name: string, params?: object) => void;
+      }
+    ).navigate('SendFlowView');
   };
 
   onInfo = () => this.props.toggleCollectibleContractModal();
@@ -221,9 +226,9 @@ const mapDispatchToProps = (
   toggleCollectibleContractModal: (): void => {
     dispatch(toggleCollectibleContractModal());
   },
-    newAssetTransaction: (selectedAsset: Collectible | undefined) =>
-      // @ts-expect-error Preserve the legacy action call with a possibly undefined collectible.
-      dispatch(newAssetTransaction(selectedAsset)),
+  newAssetTransaction: (selectedAsset: Collectible | undefined) =>
+    // @ts-expect-error Preserve the legacy action call with a possibly undefined collectible.
+    dispatch(newAssetTransaction(selectedAsset)),
 });
 
 CollectibleContractOverview.contextType = ThemeContext;

@@ -188,7 +188,9 @@ interface CollectibleOverviewProps {
 /**
  * View that displays the information of a specific ERC-721 Token
  */
-const CollectibleOverview: React.FunctionComponent<CollectibleOverviewProps> = ({
+const CollectibleOverview: React.FunctionComponent<
+  CollectibleOverviewProps
+> = ({
   chainId,
   collectible,
   selectedAddress,
@@ -205,7 +207,9 @@ const CollectibleOverview: React.FunctionComponent<CollectibleOverviewProps> = (
   const [wrapperHeight, setWrapperHeight] = useState(0);
   const [position, setPosition] = useState(0);
   const positionAnimated = useRef(new Animated.Value(0)).current;
-  const scrollViewRef = useRef<React.ElementRef<typeof ScrollView> | null>(null);
+  const scrollViewRef = useRef<React.ElementRef<typeof ScrollView> | null>(
+    null,
+  );
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -627,7 +631,9 @@ const mapStateToProps = (
   props: CollectibleOverviewOwnProps,
 ): CollectibleOverviewStateProps => ({
   chainId: selectChainId(state),
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) as string,
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(
+    state,
+  ) as string,
   isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
 });
 
@@ -662,10 +668,12 @@ export default connect<
 >(
   mapStateToProps,
   mapDispatchToProps,
-)(Device.isIos()
-  ? CollectibleOverview
-  : gestureHandlerRootHOC(CollectibleOverview, {
-      flex: 0,
-      zIndex: 0,
-      elevation: 0,
-    }));
+)(
+  Device.isIos()
+    ? CollectibleOverview
+    : gestureHandlerRootHOC(CollectibleOverview, {
+        flex: 0,
+        zIndex: 0,
+        elevation: 0,
+      }),
+);

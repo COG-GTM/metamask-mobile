@@ -148,8 +148,7 @@ class NavbarBrowserTitle extends PureComponent<NavbarBrowserTitleProps> {
     const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const color =
-      Networks[providerConfig.type as keyof typeof Networks]?.color ||
-      null;
+      Networks[providerConfig.type as keyof typeof Networks]?.color || null;
     const name = this.getNetworkName(providerConfig);
 
     return (

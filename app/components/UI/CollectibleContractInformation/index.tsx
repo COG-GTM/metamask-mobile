@@ -167,9 +167,11 @@ class CollectibleContractInformation extends PureComponent<CollectibleContractIn
     const openSeaUrl = 'https://opensea.io/';
     InteractionManager.runAfterInteractions(() => {
       this.closeModal();
-      (this.props.navigation as {
-        push: (name: string, params?: object) => void;
-      }).push('Webview', {
+      (
+        this.props.navigation as {
+          push: (name: string, params?: object) => void;
+        }
+      ).push('Webview', {
         screen: 'SimpleWebview',
         params: {
           url: openSeaUrl,

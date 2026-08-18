@@ -10,9 +10,7 @@ import Text from '../../Base/Text';
 import ActionSheet from '@metamask/react-native-actionsheet';
 import { strings } from '../../../../locales/i18n';
 import Engine from '../../../core/Engine';
-import {
-  removeFavoriteCollectible as removeFavoriteCollectibleAction,
-} from '../../../actions/collectibles';
+import { removeFavoriteCollectible as removeFavoriteCollectibleAction } from '../../../actions/collectibles';
 import { useTheme } from '../../../util/theme';
 import { selectChainId } from '../../../selectors/networkController';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
@@ -72,7 +70,8 @@ type CollectibleContractElementDispatchProps = Pick<
 
 type CollectibleContractElementOwnProps = Omit<
   CollectibleContractElementProps,
-  keyof CollectibleContractElementStateProps | keyof CollectibleContractElementDispatchProps
+  | keyof CollectibleContractElementStateProps
+  | keyof CollectibleContractElementDispatchProps
 >;
 
 const createStyles = (colors: Colors, brandColors: BrandColors) =>
@@ -363,7 +362,9 @@ const mapStateToProps = (
   _ownProps: CollectibleContractElementOwnProps,
 ): CollectibleContractElementStateProps => ({
   chainId: selectChainId(state),
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) as string,
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(
+    state,
+  ) as string,
 });
 
 const mapDispatchToProps = (
