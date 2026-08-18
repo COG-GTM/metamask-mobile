@@ -4,6 +4,22 @@ import {
   trackDappViewedEvent,
 } from '../../util/metrics';
 
+interface Request {
+  origin: string;
+}
+
+interface Response {
+  result?: unknown;
+  error?: unknown;
+}
+
+interface HandlerHooks {
+  getAccounts(options: { ignoreLock: boolean }): string[];
+  getUnlockPromise(waitForUnlock: boolean): Promise<void>;
+  getCaip25PermissionFromLegacyPermissionsForOrigin(): unknown;
+  requestPermissionsForOrigin(permission: unknown): Promise<void>;
+}
+
 const requestEthereumAccounts = {
   methodNames: [MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS],
   implementation: requestEthereumAccountsHandler,
@@ -38,23 +54,29 @@ const locks = new Set();
  * @returns A promise that resolves to nothing
  */
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
-  {
+  req: unknown,
+  res: unknown,
+  _next: unknown,
+  end: unknown,
+  hooks: unknown,
+) {
+  const { origin } = req as Request;
+  const response = res as Response;
+  const endRequest = end as (
+    error?: unknown,
+    callback?: unknown,
+  ) => unknown;
+  const {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
-  },
-) {
-  const { origin } = req;
+  } = hooks as HandlerHooks;
   if (locks.has(origin)) {
-    res.error = rpcErrors.resourceUnavailable(
+    response.error = rpcErrors.resourceUnavailable(
       `Already processing ${MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS}. Please wait.`,
     );
-    return end();
+    return endRequest();
   }
 
   let ethAccounts = getAccounts({ ignoreLock: true });
@@ -65,10 +87,10 @@ async function requestEthereumAccountsHandler(
     try {
       locks.add(origin);
       await getUnlockPromise(true);
-      res.result = ethAccounts;
-      end();
+      response.result = ethAccounts;
+      endRequest();
     } catch (error) {
-      end(error);
+      endRequest(error);
     } finally {
       locks.delete(origin);
     }
@@ -80,15 +102,17 @@ async function requestEthereumAccountsHandler(
       getCaip25PermissionFromLegacyPermissionsForOrigin();
     await requestPermissionsForOrigin(caip25Permission);
   } catch (error) {
-    return end(error);
+    return endRequest(error);
   }
 
   // We cannot derive ethAccounts directly from the CAIP-25 permission
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent(origin, ethAccounts.length);
+  (
+    trackDappViewedEvent as unknown as (origin: string, accountCount: number) => void
+  )(origin, ethAccounts.length);
 
-  res.result = ethAccounts;
-  return end();
+  response.result = ethAccounts;
+  return endRequest();
 }
