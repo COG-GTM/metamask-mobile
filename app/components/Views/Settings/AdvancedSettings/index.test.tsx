@@ -1,4 +1,6 @@
 import React from 'react';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import AdvancedSettings from './';
 import renderWithProvider from '../../../../util/test/renderWithProvider';
 import { fireEvent } from '@testing-library/react-native';
@@ -13,6 +15,19 @@ const originalFetch = global.fetch;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let initialState: any;
 const mockNavigate = jest.fn();
+const navigationMock = {
+  navigate: mockNavigate,
+  setOptions: jest.fn(),
+} as unknown as StackNavigationProp<ParamListBase>;
+const AdvancedSettingsForTest = AdvancedSettings as React.ComponentType<{
+  navigation: StackNavigationProp<ParamListBase>;
+  route?: {
+    params?: {
+      isFullScreenModal?: boolean;
+      scrollToBottom?: boolean;
+    };
+  };
+}>;
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let mockSetSmartTransactionsOptInStatus: jest.Mock<any, any>;
@@ -55,9 +70,7 @@ jest.mock('../../../../core/Engine', () => {
 describe('AdvancedSettings', () => {
   it('should render correctly', () => {
     const container = renderWithProvider(
-      <AdvancedSettings
-        navigation={{ navigate: mockNavigate, setOptions: jest.fn() }}
-      />,
+      <AdvancedSettingsForTest navigation={navigationMock} />,
       {
         state: initialState,
       },
@@ -75,9 +88,7 @@ describe('AdvancedSettings', () => {
 
     it('should render smart transactions opt in switch on by default', async () => {
       const { findByLabelText } = renderWithProvider(
-        <AdvancedSettings
-          navigation={{ navigate: mockNavigate, setOptions: jest.fn() }}
-        />,
+        <AdvancedSettingsForTest navigation={navigationMock} />,
         {
           state: initialState,
         },
@@ -90,9 +101,7 @@ describe('AdvancedSettings', () => {
     });
     it('should update smartTransactionsOptInStatus when smart transactions opt in is pressed', async () => {
       const { findByLabelText } = renderWithProvider(
-        <AdvancedSettings
-          navigation={{ navigate: mockNavigate, setOptions: jest.fn() }}
-        />,
+        <AdvancedSettingsForTest navigation={navigationMock} />,
         {
           state: initialState,
         },

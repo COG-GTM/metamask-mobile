@@ -47,7 +47,6 @@ import Button, {
 } from '../../../../component-library/components/Buttons/Button';
 import { withMetricsAwareness } from '../../../../components/hooks/useMetrics';
 import type { IUseMetricsHook } from '../../../../components/hooks/useMetrics/useMetrics.types';
-import type { IWithMetricsAwarenessProps } from '../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { wipeTransactions } from '../../../../util/transaction-controller';
 import AppConstants from '../../../../../app/core/AppConstants';
 import { downloadStateLogs } from '../../../../util/logs';
@@ -543,8 +542,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(
-  withMetricsAwareness(
-    AdvancedSettings as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
-  ),
-);
+)(withMetricsAwareness(AdvancedSettings));
