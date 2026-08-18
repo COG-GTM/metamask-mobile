@@ -88,7 +88,9 @@ jest.mock('../../../util/networks', () => ({
 
 jest.mock('../../../core/Engine', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-  const { MOCK_ADDRESS_1 } = require('../../../util/test/accountsControllerTestUtils');
+  const {
+    MOCK_ADDRESS_1,
+  } = require('../../../util/test/accountsControllerTestUtils');
 
   return {
     context: {
