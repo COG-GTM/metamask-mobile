@@ -7,14 +7,15 @@ import {
 
 export const CHART_HEIGHT = Dimensions.get('screen').height * 0.44;
 
-const styleSheet = (params: { theme: Theme }) => {
-  const { theme } = params;
+const styleSheet = (params: { theme: Theme; vars: { height?: number } }) => {
+  const { theme, vars } = params;
+  const height = vars?.height ?? CHART_HEIGHT;
   const { typography } = theme;
   return StyleSheet.create({
     chart: {
       paddingRight: 0,
       paddingLeft: 0,
-      height: CHART_HEIGHT - 10, // hack to remove internal padding that is not configurable
+      height: height - 10, // hack to remove internal padding that is not configurable
       paddingTop: 0,
       marginVertical: 10,
       width: Dimensions.get('screen').width,

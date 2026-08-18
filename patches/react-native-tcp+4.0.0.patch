@@ -1,0 +1,43 @@
+diff --git a/node_modules/react-native-tcp/android/build.gradle b/node_modules/react-native-tcp/android/build.gradle
+index c582eb7..812a498 100644
+--- a/node_modules/react-native-tcp/android/build.gradle
++++ b/node_modules/react-native-tcp/android/build.gradle
+@@ -4,23 +4,23 @@ def safeExtGet(prop, fallback) {
+ 
+ buildscript {
+     repositories {
+-        jcenter()
++        mavenCentral()
+     }
+ 
+     dependencies {
+-        classpath 'com.android.tools.build:gradle:1.2.3'
++        
+     }
+ }
+ 
+ apply plugin: 'com.android.library'
+ 
+ android {
+-    compileSdkVersion safeExtGet('compileSdkVersion', 23)
+-    buildToolsVersion safeExtGet('buildToolsVersion', '23.0.1')
++    compileSdkVersion safeExtGet('compileSdkVersion', 34)
++    buildToolsVersion safeExtGet('buildToolsVersion', '34.0.0')
+ 
+     defaultConfig {
+-        minSdkVersion safeExtGet('minSdkVersion', 16)
+-        targetSdkVersion safeExtGet('targetSdkVersion', 22)
++        minSdkVersion safeExtGet('minSdkVersion', 21)
++        targetSdkVersion safeExtGet('targetSdkVersion', 34)
+         versionCode 1
+         versionName "0.2.0"
+     }
+@@ -44,6 +44,6 @@ repositories {
+ }
+ 
+ dependencies {
+-    compile 'com.facebook.react:react-native:+'
+-    compile 'com.koushikdutta.async:androidasync:2.1.6'
++    implementation 'com.facebook.react:react-android'
++    implementation 'com.koushikdutta.async:androidasync:2.1.6'
+ }

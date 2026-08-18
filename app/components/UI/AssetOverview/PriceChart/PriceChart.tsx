@@ -51,6 +51,7 @@ interface PriceChartProps {
   priceDiff: number;
   isLoading: boolean;
   onChartIndexChange: (index: number) => void;
+  height?: number;
 }
 
 const PriceChart = ({
@@ -58,11 +59,13 @@ const PriceChart = ({
   priceDiff,
   isLoading,
   onChartIndexChange,
+  height = CHART_HEIGHT,
 }: PriceChartProps) => {
   const { setIsChartBeingTouched } = useContext(PriceChartContext);
 
   const [positionX, setPositionX] = useState(-1); // The currently selected X coordinate position
-  const { styles, theme } = useStyles(styleSheet, {});
+  const [chartWidth, setChartWidth] = useState(Dimensions.get('window').width);
+  const { styles, theme } = useStyles(styleSheet, { height });
 
   useEffect(() => {
     setPositionX(-1);
@@ -88,11 +91,10 @@ const PriceChart = ({
   };
 
   const updatePosition = (x: number) => {
-    if (x === -1) {
+    if (x === -1 || priceList.length === 0) {
       onActiveIndexChange(-1);
       return;
     }
-    const chartWidth = Dimensions.get('window').width;
     const xDistance = chartWidth / priceList.length;
     if (x <= 0) {
       x = 0;
@@ -106,6 +108,12 @@ const PriceChart = ({
     }
     onActiveIndexChange(value);
   };
+
+  // The responder is created once, so its handlers must read the latest
+  // updatePosition (which closes over the measured width and price list)
+  // through a ref rather than the first render's closure.
+  const updatePositionRef = useRef(updatePosition);
+  updatePositionRef.current = updatePosition;
 
   const prevTouch = useRef({ x: 0, y: 0 });
   const panResponder = useRef(
@@ -121,7 +129,7 @@ const PriceChart = ({
           x: evt.nativeEvent.locationX,
           y: evt.nativeEvent.locationY,
         };
-        updatePosition(evt.nativeEvent.locationX);
+        updatePositionRef.current(evt.nativeEvent.locationX);
       },
       onPanResponderMove: (evt: GestureResponderEvent) => {
         const deltaX = evt.nativeEvent.locationX - prevTouch.current.x;
@@ -129,7 +137,9 @@ const PriceChart = ({
         const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY);
 
         setIsChartBeingTouched(isHorizontalSwipe);
-        updatePosition(isHorizontalSwipe ? evt.nativeEvent.locationX : -1);
+        updatePositionRef.current(
+          isHorizontalSwipe ? evt.nativeEvent.locationX : -1,
+        );
 
         // save current touch for the next move
         prevTouch.current = {
@@ -140,7 +150,7 @@ const PriceChart = ({
 
       onPanResponderRelease: () => {
         setIsChartBeingTouched(false);
-        updatePosition(-1);
+        updatePositionRef.current(-1);
       },
     }),
   );
@@ -166,7 +176,7 @@ const PriceChart = ({
         x1="0"
         y1="0%"
         x2="0%"
-        y2={`${CHART_HEIGHT}px`}
+        y2={`${height}px`}
       >
         <Stop offset="0%" stopColor={chartColor} stopOpacity={0.25} />
         <Stop offset="90%" stopColor={chartColor} stopOpacity={0} />
@@ -205,7 +215,7 @@ const PriceChart = ({
           x="0"
           y="0"
           width={Dimensions.get('screen').width}
-          height={CHART_HEIGHT}
+          height={height}
           fill="url(#gradient)"
         />
       </G>
@@ -239,7 +249,7 @@ const PriceChart = ({
         <G>
           <SvgLine
             y1={1}
-            y2={CHART_HEIGHT}
+            y2={height}
             stroke={styles.tooltipLine.color}
             strokeWidth={1}
           />
@@ -261,7 +271,7 @@ const PriceChart = ({
         <SkeletonPlaceholder>
           <SkeletonPlaceholder.Item
             width={Dimensions.get('screen').width - 32}
-            height={CHART_HEIGHT}
+            height={height}
             borderRadius={6}
           ></SkeletonPlaceholder.Item>
         </SkeletonPlaceholder>
@@ -273,7 +283,11 @@ const PriceChart = ({
 
   return (
     <View style={styles.chart}>
-      <View style={styles.chartArea} {...panResponder.current.panHandlers}>
+      <View
+        style={styles.chartArea}
+        onLayout={({ nativeEvent }) => setChartWidth(nativeEvent.layout.width)}
+        {...panResponder.current.panHandlers}
+      >
         {!chartHasData && <NoDataOverlay />}
         <AreaChart
           style={styles.chartArea}
