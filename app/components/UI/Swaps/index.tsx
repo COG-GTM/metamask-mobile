@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import type { Dispatch } from 'redux';
 import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
@@ -14,7 +15,12 @@ import {
   InteractionManager,
 } from 'react-native';
 import { connect } from 'react-redux';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  type NavigationProp,
+  type ParamListBase,
+} from '@react-navigation/native';
 import { View as AnimatableView } from 'react-native-animatable';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import Logger from '../../../util/Logger';
@@ -87,7 +93,10 @@ import { useMetrics } from '../../../components/hooks/useMetrics';
 import { getSwapsLiveness } from '../../../reducers/swaps/utils';
 import { selectShouldUseSmartTransaction } from '../../../selectors/smartTransactionsController';
 import { useStablecoinsDefaultSlippage } from './useStablecoinsDefaultSlippage';
-const createStyles = (colors) =>
+import { Theme } from '@metamask/design-tokens';
+import type { RootState } from '../../../reducers';
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     container: { backgroundColor: colors.background.default },
     screen: {
@@ -180,8 +189,49 @@ const SWAPS_NATIVE_ADDRESS = swapsUtils.NATIVE_SWAPS_TOKEN_ADDRESS;
 const TOKEN_MINIMUM_SOURCES = 1;
 const MAX_TOP_ASSETS = 20;
 
+interface SwapToken {
+  address: string;
+  symbol: string;
+  decimals: number;
+  iconUrl?: string;
+  name?: string;
+  occurrences: number;
+  occurances?: number;
+  aggregators?: string[];
+}
+
+interface NetworkConfiguration {
+  nativeCurrency?: string;
+}
+
+interface SwapsStateProps {
+  swapsTokens: SwapToken[];
+  swapsControllerTokens: SwapToken[];
+  accountsByChainId: Record<string, unknown>;
+  selectedAddress: string;
+  chainId: string;
+  selectedNetworkClientId: string;
+  networkConfigurations: Record<string, NetworkConfiguration>;
+  balances: Record<string, unknown>;
+  tokensWithBalance: SwapToken[];
+  tokensTopAssets: SwapToken[];
+  conversionRate: number;
+  tokenExchangeRates: Record<string, { price?: number }>;
+  currentCurrency: string;
+  shouldUseSmartTransaction: boolean;
+}
+
+interface SwapsDispatchProps {
+  setLiveness: (chainId: string, featureFlags: unknown) => void;
+}
+
+type SwapsAmountViewProps = SwapsStateProps & {
+  setLiveness?: SwapsDispatchProps['setLiveness'];
+};
+
 function SwapsAmountView({
   swapsTokens,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   swapsControllerTokens,
   accountsByChainId,
   selectedAddress,
@@ -196,22 +246,32 @@ function SwapsAmountView({
   currentCurrency,
   setLiveness,
   shouldUseSmartTransaction,
-}) {
+}: SwapsAmountViewProps) {
   const accounts = accountsByChainId[chainId];
-  const navigation = useNavigation();
-  const route = useRoute();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<{
+    key: string;
+    name: string;
+    params?: {
+      sourceToken?: string;
+      destinationToken?: string;
+      sourcePage?: string;
+    };
+  }>();
   const { colors } = useTheme();
   const { trackEvent, createEventBuilder } = useMetrics();
   const styles = createStyles(colors);
 
-  const previousSelectedAddress = useRef();
+  const previousSelectedAddress = useRef<string>();
 
   const explorer = useBlockExplorer(networkConfigurations);
   const initialSource = route.params?.sourceToken ?? SWAPS_NATIVE_ADDRESS;
   const initialDestination = route.params?.destinationToken;
 
   const [amount, setAmount] = useState('0');
-  const [slippage, setSlippage] = useState(AppConstants.SWAPS.DEFAULT_SLIPPAGE);
+  const [slippage, setSlippage] = useState<number>(
+    AppConstants.SWAPS.DEFAULT_SLIPPAGE,
+  );
   const [isInitialLoadingTokens, setInitialLoadingTokens] = useState(false);
   const [, setLoadingTokens] = useState(false);
   const [isSourceSet, setIsSourceSet] = useState(() =>
@@ -223,12 +283,14 @@ function SwapsAmountView({
   );
   const [isDestinationSet, setIsDestinationSet] = useState(false);
 
-  const [sourceToken, setSourceToken] = useState(() =>
+  const [sourceToken, setSourceToken] = useState<SwapToken | undefined>(() =>
     swapsTokens?.find((token) =>
       toLowerCaseEquals(token.address, initialSource),
     ),
   );
-  const [destinationToken, setDestinationToken] = useState(
+  const [destinationToken, setDestinationToken] = useState<
+    SwapToken | null | undefined
+  >(
     swapsTokens?.find((token) =>
       toLowerCaseEquals(token.address, initialDestination),
     ),
@@ -237,13 +299,13 @@ function SwapsAmountView({
   useStablecoinsDefaultSlippage({
     sourceTokenAddress: sourceToken?.address,
     destTokenAddress: destinationToken?.address,
-    chainId,
-    setSlippage,
+    chainId: chainId as `0x${string}`,
+    setSlippage: setSlippage as (slippage: number) => void,
   });
 
   const [hasDismissedTokenAlert, setHasDismissedTokenAlert] = useState(true);
-  const [contractBalance, setContractBalance] = useState(null);
-  const [contractBalanceAsUnits, setContractBalanceAsUnits] = useState(
+  const [contractBalance, setContractBalance] = useState<unknown>(null);
+  const [contractBalanceAsUnits, setContractBalanceAsUnits] = useState<unknown>(
     safeNumberToBN(0),
   );
   const [isDirectWrapping, setIsDirectWrapping] = useState(false);
@@ -271,7 +333,11 @@ function SwapsAmountView({
           AppConstants.SWAPS.CLIENT_ID,
         );
 
-        const liveness = getSwapsLiveness(featureFlags, chainId);
+        const liveness = getSwapsLiveness(
+          featureFlags as Parameters<typeof getSwapsLiveness>[0],
+          chainId as `0x${string}`,
+        );
+        // @ts-expect-error Preserve the legacy injected liveness callback.
         setLiveness(chainId, featureFlags);
 
         if (liveness) {
@@ -292,18 +358,24 @@ function SwapsAmountView({
             );
           });
         } else {
+          // @ts-expect-error Legacy navigation exposes pop at runtime.
           navigation.pop();
         }
       } catch (error) {
-        Logger.error(error, 'Swaps: error while fetching swaps liveness');
+        Logger.error(
+          error as Error,
+          'Swaps: error while fetching swaps liveness',
+        );
+        // @ts-expect-error Preserve the legacy injected liveness callback.
         setLiveness(chainId, null);
+        // @ts-expect-error Legacy navigation exposes pop at runtime.
         navigation.pop();
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialSource, chainId, navigation, setLiveness]);
 
-  const keypadViewRef = useRef(null);
+  const keypadViewRef = useRef<{ shake?: () => void } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -317,7 +389,7 @@ function SwapsAmountView({
         });
       } catch (error) {
         Logger.error(
-          error,
+          error as Error,
           'Swaps: Error while updating agg metadata and top assets in amount view',
         );
       }
@@ -343,7 +415,7 @@ function SwapsAmountView({
         setInitialLoadingTokens(false);
       } catch (error) {
         Logger.error(
-          error,
+          error as Error,
           'Swaps: Error while fetching tokens in amount view',
         );
       } finally {
@@ -395,7 +467,7 @@ function SwapsAmountView({
 
   const isTokenInBalances =
     sourceToken && !isSwapsNativeAsset(sourceToken)
-      ? safeToChecksumAddress(sourceToken.address) in balances
+      ? (safeToChecksumAddress(sourceToken.address) as string) in balances
       : false;
 
   useEffect(() => {
@@ -415,7 +487,11 @@ function SwapsAmountView({
           );
           setContractBalanceAsUnits(balance);
           setContractBalance(
-            renderFromTokenMinimalUnit(balance, sourceToken.decimals),
+            renderFromTokenMinimalUnit(
+              // @ts-expect-error Preserve the legacy BN-like balance value.
+              balance,
+              sourceToken.decimals,
+            ),
           );
         } catch (e) {
           // Don't validate balance if error
@@ -452,7 +528,7 @@ function SwapsAmountView({
     () =>
       toTokenMinimalUnit(
         hasInvalidDecimals ? '0' : amount,
-        sourceToken?.decimals,
+        sourceToken?.decimals as number,
       ),
     [amount, hasInvalidDecimals, sourceToken],
   );
@@ -511,7 +587,9 @@ function SwapsAmountView({
         currentCurrency,
       );
     } else {
-      const sourceAddress = safeToChecksumAddress(sourceToken.address);
+      const sourceAddress = safeToChecksumAddress(
+        sourceToken.address,
+      ) as string;
       const exchangeRate =
         tokenExchangeRates && sourceAddress in tokenExchangeRates
           ? tokenExchangeRates[sourceAddress]?.price
@@ -551,7 +629,7 @@ function SwapsAmountView({
       !isBalanceZero
     ) {
       const { TokensController } = Engine.context;
-      const { address, symbol, decimals, name } = sourceToken;
+      const { address, symbol, decimals, name } = sourceToken as SwapToken;
       await TokensController.addToken({
         address,
         symbol,
@@ -563,9 +641,11 @@ function SwapsAmountView({
     return navigation.navigate(
       'SwapsQuotesView',
       setQuotesNavigationsParams(
-        sourceToken?.address,
-        destinationToken?.address,
-        toTokenMinimalUnit(amount, sourceToken?.decimals).toString(10),
+        sourceToken?.address as string,
+        destinationToken?.address as string,
+        toTokenMinimalUnit(amount, sourceToken?.decimals as number).toString(
+          10,
+        ),
         slippage,
         [sourceToken, destinationToken],
       ),
@@ -584,7 +664,7 @@ function SwapsAmountView({
 
   /* Keypad Handlers */
   const handleKeypadChange = useCallback(
-    ({ value }) => {
+    ({ value }: { value: string }) => {
       if (value === amount) {
         return;
       }
@@ -595,11 +675,11 @@ function SwapsAmountView({
   );
 
   const setSlippageAfterTokenPress = useCallback(
-    (sourceTokenAddress, destinationTokenAddress) => {
+    (sourceTokenAddress: string, destinationTokenAddress?: string) => {
       const enableDirectWrapping = swapsUtils.shouldEnableDirectWrapping(
-        chainId,
-        sourceTokenAddress,
-        destinationTokenAddress,
+        chainId as `0x${string}`,
+        sourceTokenAddress as `0x${string}`,
+        destinationTokenAddress as `0x${string}`,
       );
       if (enableDirectWrapping && !isDirectWrapping) {
         // ETH <> WETH, set slippage to 0
@@ -615,7 +695,7 @@ function SwapsAmountView({
   );
 
   const handleSourceTokenPress = useCallback(
-    (item) => {
+    (item: SwapToken) => {
       toggleSourceModal();
       setSourceToken(item);
       setSlippageAfterTokenPress(item.address, destinationToken?.address);
@@ -624,10 +704,10 @@ function SwapsAmountView({
   );
 
   const handleDestinationTokenPress = useCallback(
-    (item) => {
+    (item: SwapToken) => {
       toggleDestinationModal();
       setDestinationToken(item);
-      setSlippageAfterTokenPress(sourceToken?.address, item.address);
+      setSlippageAfterTokenPress(sourceToken?.address as string, item.address);
     },
     [toggleDestinationModal, setSlippageAfterTokenPress, sourceToken],
   );
@@ -644,7 +724,7 @@ function SwapsAmountView({
     );
   }, [balanceAsUnits, sourceToken]);
 
-  const handleSlippageChange = useCallback((value) => {
+  const handleSlippageChange = useCallback((value: number) => {
     setSlippage(value);
   }, []);
 
@@ -672,7 +752,7 @@ function SwapsAmountView({
   );
 
   const handleFlipTokens = useCallback(() => {
-    setSourceToken(destinationToken);
+    setSourceToken(destinationToken as SwapToken);
     setDestinationToken(sourceToken);
   }, [destinationToken, sourceToken]);
 
@@ -680,13 +760,15 @@ function SwapsAmountView({
     !destinationTokenHasEnoughOcurrances && !hasDismissedTokenAlert;
 
   const showMaxBalanceLink = shouldShowMaxBalanceLink({
-    sourceToken,
+    sourceToken: sourceToken as SwapToken,
     shouldUseSmartTransaction,
     hasBalance,
   });
+  const destinationTokenValue = destinationToken as SwapToken;
 
   return (
     <ScreenView
+      // @ts-expect-error Preserve the legacy ScrollView props.
       style={styles.container}
       contentContainerStyle={styles.screen}
       keyboardShouldPersistTaps="handled"
@@ -799,13 +881,14 @@ function SwapsAmountView({
             title={strings('swaps.convert_to')}
             tokens={swapsTokens}
             initialTokens={[
-              swapsUtils.getNativeSwapsToken(chainId),
+              swapsUtils.getNativeSwapsToken(chainId as `0x${string}`),
               ...tokensTopAssets
                 .slice(0, MAX_TOP_ASSETS)
                 .filter(
                   (asset) =>
                     asset.address !==
-                    swapsUtils.getNativeSwapsToken(chainId).address,
+                    swapsUtils.getNativeSwapsToken(chainId as `0x${string}`)
+                      .address,
                 ),
             ]}
             onItemPress={handleDestinationTokenPress}
@@ -823,7 +906,7 @@ function SwapsAmountView({
                 <Text small centered>
                   <Text reset bold>
                     {strings('swaps.verified_on_sources', {
-                      sources: destinationToken.occurrences,
+                      sources: destinationTokenValue.occurrences,
                     })}
                   </Text>
                   {` ${strings('swaps.verify_on')} `}
@@ -840,7 +923,7 @@ function SwapsAmountView({
             ) : (
               <ActionAlert
                 type={
-                  !destinationToken.occurances ||
+                  !destinationTokenValue.occurances ||
                   isDynamicToken(destinationToken)
                     ? AlertType.Error
                     : AlertType.Warning
@@ -857,19 +940,19 @@ function SwapsAmountView({
                     onPress={explorer.isValid ? handleVerifyPress : undefined}
                   >
                     <Text style={textStyle} bold centered>
-                      {!destinationToken.occurrences ||
+                      {!destinationTokenValue.occurrences ||
                       isDynamicToken(destinationToken)
                         ? strings('swaps.added_manually', {
-                            symbol: destinationToken.symbol,
+                            symbol: destinationTokenValue.symbol,
                             // eslint-disable-next-line no-mixed-spaces-and-tabs
                           })
                         : strings('swaps.only_verified_on', {
-                            symbol: destinationToken.symbol,
-                            occurrences: destinationToken.occurrences,
+                            symbol: destinationTokenValue.symbol,
+                            occurrences: destinationTokenValue.occurrences,
                             // eslint-disable-next-line no-mixed-spaces-and-tabs
                           })}
                     </Text>
-                    {!destinationToken.occurrences ||
+                    {!destinationTokenValue.occurrences ||
                     isDynamicToken(destinationToken) ? (
                       <Text style={textStyle} centered>
                         {`${strings('swaps.verify_this_token_on')} `}
@@ -908,7 +991,10 @@ function SwapsAmountView({
         style={[styles.keypad, disabledView && styles.disabled]}
         pointerEvents={disabledView ? 'none' : 'auto'}
       >
-        <AnimatableView ref={keypadViewRef}>
+        <AnimatableView
+          // @ts-expect-error Preserve the legacy animation ref.
+          ref={keypadViewRef}
+        >
           <Keypad
             onChange={handleKeypadChange}
             value={amount}
@@ -1031,31 +1117,46 @@ SwapsAmountView.propTypes = {
    * Whether to use smart transactions
    */
   shouldUseSmartTransaction: PropTypes.bool,
-};
+} as React.WeakValidationMap<SwapsAmountViewProps>;
 
-const mapStateToProps = (state) => ({
-  swapsTokens: swapsTokensSelector(state),
-  swapsControllerTokens: swapsControllerTokens(state),
-  accountsByChainId: selectAccountsByChainId(state),
-  balances: selectContractBalances(state),
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
-  conversionRate: selectConversionRate(state),
-  currentCurrency: selectCurrentCurrency(state),
-  tokenExchangeRates: selectContractExchangeRates(state),
-  networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
-  chainId: selectEvmChainId(state),
-  selectedNetworkClientId: selectSelectedNetworkClientId(state),
-  tokensWithBalance: swapsTokensWithBalanceSelector(state),
-  tokensTopAssets: swapsTopAssetsSelector(state),
+const mapStateToProps = (state: RootState): SwapsStateProps => ({
+  swapsTokens: swapsTokensSelector(state) as SwapToken[],
+  swapsControllerTokens: swapsControllerTokens(state) as SwapToken[],
+  accountsByChainId: selectAccountsByChainId(state) as Record<string, unknown>,
+  balances: selectContractBalances(state) as Record<string, unknown>,
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(
+    state,
+  ) as string,
+  conversionRate: selectConversionRate(state) as number,
+  currentCurrency: selectCurrentCurrency(state) as string,
+  tokenExchangeRates: selectContractExchangeRates(state) as Record<
+    string,
+    { price?: number }
+  >,
+  networkConfigurations: selectEvmNetworkConfigurationsByChainId(
+    state,
+  ) as Record<string, NetworkConfiguration>,
+  chainId: selectEvmChainId(state) as string,
+  selectedNetworkClientId: selectSelectedNetworkClientId(state) as string,
+  tokensWithBalance: swapsTokensWithBalanceSelector(state) as SwapToken[],
+  tokensTopAssets: swapsTopAssetsSelector(state) as SwapToken[],
   shouldUseSmartTransaction: selectShouldUseSmartTransaction(
     state,
     selectEvmChainId(state),
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setLiveness: (chainId, featureFlags) =>
+const mapDispatchToProps = (dispatch: Dispatch): SwapsDispatchProps => ({
+  setLiveness: (chainId: string, featureFlags: unknown) =>
     dispatch(setSwapsLiveness(chainId, featureFlags)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(SwapsAmountView);
+export default connect<
+  SwapsStateProps,
+  SwapsDispatchProps,
+  Record<string, never>,
+  RootState
+>(
+  mapStateToProps,
+  mapDispatchToProps,
+)(SwapsAmountView);

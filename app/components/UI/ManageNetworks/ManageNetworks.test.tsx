@@ -35,10 +35,11 @@ const mockNetworkName = 'Ethereum Main Network';
 
 describe('ManageNetworks', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as jest.Mock).mockImplementation((selector) => {
       if (selector === selectNetworkName) return mockNetworkName;
     });
     const { toJSON } = renderWithProvider(
+      // @ts-expect-error Preserve the legacy test's unused navigation prop.
       <ManageNetworks navigation={useNavigation()} />,
     );
     expect(toJSON()).toMatchSnapshot();
@@ -56,10 +57,11 @@ describe('ManageNetworks', () => {
       },
     ],
   ])('opens link %link', ({ link, testId }) => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as jest.Mock).mockImplementation((selector) => {
       if (selector === selectNetworkName) return mockNetworkName;
     });
     const { getByTestId } = renderWithProvider(
+      // @ts-expect-error Preserve the legacy test's unused navigation prop.
       <ManageNetworks navigation={useNavigation()} />,
     );
     const button = getByTestId(testId);

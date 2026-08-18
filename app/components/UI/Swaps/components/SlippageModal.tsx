@@ -8,8 +8,9 @@ import Text from '../../../Base/Text';
 import SlippageSlider from '../../SlippageSlider';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -38,7 +39,19 @@ const createStyles = (colors) =>
     },
   });
 
-function SlippageModal({ isVisible, dismiss, onChange, slippage }) {
+interface SlippageModalProps {
+  isVisible?: boolean;
+  dismiss?: () => void;
+  onChange?: (value: number) => void;
+  slippage: number;
+}
+
+function SlippageModal({
+  isVisible,
+  dismiss,
+  onChange,
+  slippage,
+}: SlippageModalProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
