@@ -84,8 +84,6 @@ export default class AddBookmark extends PureComponent<
 > {
   static contextType = ThemeContext;
 
-  declare addToken?: TextInputProps['onSubmitEditing'];
-
   state: AddBookmarkState = {
     title: '',
     url: '',
@@ -208,7 +206,13 @@ export default class AddBookmark extends PureComponent<
                 onChangeText={this.onUrlChange}
                 testID={AddBookmarkViewSelectorsIDs.URL_TEXT}
                 ref={this.urlInput}
-                onSubmitEditing={this.addToken}
+                onSubmitEditing={
+                  (
+                    this as unknown as {
+                      addToken?: TextInputProps['onSubmitEditing'];
+                    }
+                  ).addToken
+                }
                 returnKeyType={'done'}
                 placeholderTextColor={colors.text.muted}
                 keyboardAppearance={themeAppearance}

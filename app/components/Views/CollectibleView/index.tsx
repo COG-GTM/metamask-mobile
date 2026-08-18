@@ -95,8 +95,6 @@ interface CollectibleViewProps extends ReduxProps, CollectibleViewOwnProps {}
 class CollectibleView extends PureComponent<CollectibleViewProps> {
   static contextType = ThemeContext;
 
-  declare scrollViewRef: React.RefObject<ScrollView>;
-
   static propTypes = {
     /**
     /* navigation object required to access the props
@@ -163,7 +161,16 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
 
     return (
       <SafeAreaView style={styles.root}>
-        <ScrollView style={styles.wrapper} ref={this.scrollViewRef}>
+        <ScrollView
+          style={styles.wrapper}
+          ref={
+            (
+              this as unknown as {
+                scrollViewRef: React.RefObject<ScrollView>;
+              }
+            ).scrollViewRef
+          }
+        >
           <View style={styles.assetOverviewWrapper}>
             <CollectibleOverview
               navigation={navigation}
