@@ -17,8 +17,11 @@ import { connect } from 'react-redux';
 import { isMainNet } from '../../../util/networks';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { selectChainId } from '../../../selectors/networkController';
+import { NftContract } from '@metamask/assets-controllers';
+import { Colors, Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -109,10 +112,33 @@ const createStyles = (colors) =>
 
 const openSeaLogo = require('../../../images/opensea-logo-flat-colored-blue.png'); // eslint-disable-line
 
+type CollectibleContract = Omit<NftContract, 'totalSupply'> & {
+  totalSupply?: string | number;
+};
+
+interface CollectibleContractInformationProps {
+  navigation?: {
+    push: (name: string, params?: object) => void;
+  };
+  onClose?: (value: boolean) => void;
+  collectibleContract: CollectibleContract;
+  chainId: string;
+}
+
+type CollectibleContractInformationStateProps = Pick<
+  CollectibleContractInformationProps,
+  'chainId'
+>;
+
+type CollectibleContractInformationOwnProps = Omit<
+  CollectibleContractInformationProps,
+  keyof CollectibleContractInformationStateProps
+>;
+
 /**
  * View that contains a collectible contract information as description, total supply and address
  */
-class CollectibleContractInformation extends PureComponent {
+class CollectibleContractInformation extends PureComponent<CollectibleContractInformationProps> {
   static propTypes = {
     /**
      * Navigation object required to push
@@ -131,17 +157,21 @@ class CollectibleContractInformation extends PureComponent {
      * The chain ID for the current selected network
      */
     chainId: PropTypes.string.isRequired,
-  };
+  } as React.WeakValidationMap<CollectibleContractInformationProps>;
 
   closeModal = () => {
-    this.props.onClose(true);
+    (this.props.onClose as (value: boolean) => void)(true);
   };
 
   goToOpenSea = () => {
     const openSeaUrl = 'https://opensea.io/';
     InteractionManager.runAfterInteractions(() => {
       this.closeModal();
-      this.props.navigation.push('Webview', {
+      (
+        this.props.navigation as {
+          push: (name: string, params?: object) => void;
+        }
+      ).push('Webview', {
         screen: 'SimpleWebview',
         params: {
           url: openSeaUrl,
@@ -156,7 +186,7 @@ class CollectibleContractInformation extends PureComponent {
       collectibleContract: { name, description, totalSupply, address },
       chainId,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const is_main_net = isMainNet(chainId);
 
@@ -227,10 +257,18 @@ class CollectibleContractInformation extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (
+  state: RootState,
+  _ownProps: CollectibleContractInformationOwnProps,
+): CollectibleContractInformationStateProps => ({
   chainId: selectChainId(state),
 });
 
 CollectibleContractInformation.contextType = ThemeContext;
 
-export default connect(mapStateToProps)(CollectibleContractInformation);
+export default connect<
+  CollectibleContractInformationStateProps,
+  Record<string, never>,
+  CollectibleContractInformationOwnProps,
+  RootState
+>(mapStateToProps)(CollectibleContractInformation);

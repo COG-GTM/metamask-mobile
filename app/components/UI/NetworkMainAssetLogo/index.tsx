@@ -7,6 +7,22 @@ import {
   selectChainId,
   selectEvmTicker,
 } from '../../../selectors/networkController';
+import { StyleProp, ViewStyle } from 'react-native';
+import { RootState } from '../../../reducers';
+
+interface NetworkMainAssetLogoProps {
+  chainId: string;
+  ticker: string;
+  style?: StyleProp<ViewStyle>;
+  big?: boolean;
+  biggest?: boolean;
+  testID?: string;
+}
+
+type NetworkMainAssetLogoStateProps = Pick<
+  NetworkMainAssetLogoProps,
+  'chainId' | 'ticker'
+>;
 
 function NetworkMainAssetLogo({
   chainId,
@@ -15,14 +31,14 @@ function NetworkMainAssetLogo({
   big,
   biggest,
   testID,
-}) {
+}: NetworkMainAssetLogoProps) {
   if (chainId === ChainId.mainnet) {
     return (
       <TokenIcon
         big={big}
         biggest={biggest}
         symbol={'ETH'}
-        style={style}
+        style={style as ViewStyle}
         testID={testID}
       />
     );
@@ -32,13 +48,13 @@ function NetworkMainAssetLogo({
       big={big}
       biggest={biggest}
       symbol={ticker}
-      style={style}
+      style={style as ViewStyle}
       testID={testID}
     />
   );
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): NetworkMainAssetLogoStateProps => ({
   chainId: selectChainId(state),
   ticker: selectEvmTicker(state),
 });
@@ -50,6 +66,6 @@ NetworkMainAssetLogo.propTypes = {
   big: PropTypes.bool,
   biggest: PropTypes.bool,
   testID: PropTypes.string,
-};
+} as React.WeakValidationMap<NetworkMainAssetLogoProps>;
 
 export default connect(mapStateToProps)(NetworkMainAssetLogo);
