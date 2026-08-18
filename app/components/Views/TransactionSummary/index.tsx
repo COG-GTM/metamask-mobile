@@ -8,7 +8,7 @@ import {
 import { strings } from '../../../../locales/i18n';
 import { TRANSACTION_TYPES } from '../../../util/transactions';
 import Summary from '../../Base/Summary';
-import TextComponent from '../../Base/Text';
+import Text from '../../Base/Text';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { isTestNet } from '../../../util/networks';
 import type { Theme } from '../../../util/theme/models';
@@ -23,36 +23,6 @@ interface TransactionSummaryProps {
   transactionType?: string;
   chainId?: string;
 }
-
-const Text = TextComponent as React.ComponentType<
-  React.ComponentProps<typeof TextComponent> & {
-    children?: React.ReactNode;
-    italic?: boolean;
-  }
->;
-
-type SummaryPropsWithChildren = React.ComponentProps<typeof Summary> & {
-  children?: React.ReactNode;
-};
-type SummaryRowPropsWithChildren = React.ComponentProps<typeof Summary.Row> & {
-  children?: React.ReactNode;
-};
-type SummaryColPropsWithChildren = React.ComponentProps<typeof Summary.Col> & {
-  children?: React.ReactNode;
-};
-type SummarySeparatorPropsWithChildren = React.ComponentProps<
-  typeof Summary.Separator
-> & {
-  children?: React.ReactNode;
-};
-
-const SummaryWithChildren = Summary as React.ComponentType<
-  SummaryPropsWithChildren
-> & {
-  Row: React.ComponentType<SummaryRowPropsWithChildren>;
-  Col: React.ComponentType<SummaryColPropsWithChildren>;
-  Separator: React.ComponentType<SummarySeparatorPropsWithChildren>;
-};
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -100,44 +70,44 @@ export default class TransactionSummary extends PureComponent<TransactionSummary
       chainId,
     } = this.props;
 
-    const isTestNetResult = isTestNet(chainId as string);
+    const isTestNetResult = isTestNet(chainId ?? '');
 
     if (
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED_TOKEN ||
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED
     ) {
       return (
-        <SummaryWithChildren>
-          <SummaryWithChildren.Row>
+        <Summary>
+          <Summary.Row>
             <Text small bold primary>
               {strings('transaction.amount')}
             </Text>
             <Text small bold primary upper={!isTestNetResult}>
               {amount}
             </Text>
-          </SummaryWithChildren.Row>
+          </Summary.Row>
           {secondaryTotalAmount && (
-            <SummaryWithChildren.Row end last>
+            <Summary.Row end last>
               <Text small right upper={!isTestNetResult}>
                 {secondaryTotalAmount}
               </Text>
-            </SummaryWithChildren.Row>
+            </Summary.Row>
           )}
-        </SummaryWithChildren>
+        </Summary>
       );
     }
     return (
-      <SummaryWithChildren>
-        <SummaryWithChildren.Row>
+      <Summary>
+        <Summary.Row>
           <Text small primary>
             {this.renderAmountTitle()}
           </Text>
           <Text small primary upper={!isTestNetResult}>
             {amount}
           </Text>
-        </SummaryWithChildren.Row>
-        <SummaryWithChildren.Row>
-          <SummaryWithChildren.Col>
+        </Summary.Row>
+        <Summary.Row>
+          <Summary.Col>
             <Text small primary italic>
               {!fee
                 ? strings('transaction.transaction_fee_less')
@@ -156,16 +126,16 @@ export default class TransactionSummary extends PureComponent<TransactionSummary
                 </Text>
               </TouchableOpacity>
             )}
-          </SummaryWithChildren.Col>
+          </Summary.Col>
           {!!fee &&
             this.renderIfGastEstimationReady(
               <Text small primary upper={!isTestNetResult}>
                 {fee}
               </Text>,
             )}
-        </SummaryWithChildren.Row>
-        <SummaryWithChildren.Separator />
-        <SummaryWithChildren.Row>
+        </Summary.Row>
+        <Summary.Separator />
+        <Summary.Row>
           <Text small bold primary>
             {strings('transaction.total_amount')}
           </Text>
@@ -174,15 +144,15 @@ export default class TransactionSummary extends PureComponent<TransactionSummary
               {totalAmount}
             </Text>,
           )}
-        </SummaryWithChildren.Row>
-        <SummaryWithChildren.Row end last>
+        </Summary.Row>
+        <Summary.Row end last>
           {this.renderIfGastEstimationReady(
             <Text small right upper={!isTestNetResult}>
               {secondaryTotalAmount}
             </Text>,
           )}
-        </SummaryWithChildren.Row>
-      </SummaryWithChildren>
+        </Summary.Row>
+      </Summary>
     );
   };
 }

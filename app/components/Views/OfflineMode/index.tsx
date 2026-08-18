@@ -19,7 +19,7 @@ import type { RootState } from '../../../reducers';
 import type { Colors } from '../../../util/theme/models';
 
 interface OfflineModeProps {
-  navigation?: StackNavigationProp<ParamListBase>;
+  navigation: StackNavigationProp<ParamListBase>;
   infuraBlocked?: boolean;
 }
 
@@ -68,13 +68,12 @@ const OfflineMode = ({ navigation, infuraBlocked }: OfflineModeProps) => {
 
   const tryAgain = () => {
     if (netinfo?.isConnected) {
-      navigation?.pop();
+      navigation.pop();
     }
   };
 
   const learnMore = () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    navigation!.navigate('Webview', {
+    navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: { url: AppConstants.URLS.CONNECTIVITY_ISSUES },
     });
@@ -113,16 +112,7 @@ const OfflineMode = ({ navigation, infuraBlocked }: OfflineModeProps) => {
   );
 };
 
-OfflineMode.navigationOptions = ({
-  navigation,
-}: {
-  navigation: StackNavigationProp<ParamListBase>;
-}) =>
-  (
-    getOfflineModalNavbar as unknown as (
-      navigation: StackNavigationProp<ParamListBase>,
-    ) => ReturnType<typeof getOfflineModalNavbar>
-  )(navigation);
+OfflineMode.navigationOptions = () => getOfflineModalNavbar();
 
 const mapStateToProps = (state: RootState) => ({
   infuraBlocked: getInfuraBlockedSelector(state),

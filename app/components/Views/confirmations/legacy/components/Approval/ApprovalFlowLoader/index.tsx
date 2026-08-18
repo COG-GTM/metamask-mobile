@@ -7,7 +7,7 @@ import Text from '../../../../../../Base/Text';
 import Spinner from '../../../../../../UI/AnimatedSpinner';
 
 interface ApprovalFlowLoaderProps {
-  loadingText?: string;
+  loadingText?: string | null;
 }
 
 const createStyles = (colors: Colors) =>

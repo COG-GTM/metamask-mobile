@@ -4,7 +4,6 @@ import React from 'react';
 // Internal dependencies.
 import OnboardingSuccess from './';
 import renderWithProvider from '../../../util/test/renderWithProvider';
-import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectProviderConfig } from '../../../selectors/networkController';
 import { OnboardingSuccessSelectorIDs } from '../../../../e2e/selectors/Onboarding/OnboardingSuccess.selectors';
@@ -50,11 +49,7 @@ describe('OnboardingSuccess', () => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const { toJSON } = renderWithProvider(
-      <OnboardingSuccess
-        {...({
-          navigation: useNavigation(),
-        } as unknown as React.ComponentProps<typeof OnboardingSuccess>)}
-      />,
+      <OnboardingSuccess onDone={jest.fn()} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
@@ -67,12 +62,7 @@ describe('OnboardingSuccess', () => {
     (useDispatch as jest.Mock).mockImplementation(() => mockDispatch);
 
     const { getByTestId } = renderWithProvider(
-      <OnboardingSuccess
-        {...({
-          navigation: useNavigation(),
-          onDone: jest.fn(),
-        } as unknown as React.ComponentProps<typeof OnboardingSuccess>)}
-      />,
+      <OnboardingSuccess onDone={jest.fn()} />,
     );
     const button = getByTestId(OnboardingSuccessSelectorIDs.DONE_BUTTON);
     button.props.onPress();
