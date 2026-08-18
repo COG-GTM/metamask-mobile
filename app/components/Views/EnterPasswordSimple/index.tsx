@@ -39,7 +39,7 @@ interface EnterPasswordSimpleState {
 }
 
 const createStyles = (colors: Colors) =>
-  StyleSheet.create<Record<string, object>>({
+  StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
       flex: 1,

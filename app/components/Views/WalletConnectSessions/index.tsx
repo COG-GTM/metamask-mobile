@@ -54,7 +54,7 @@ interface WalletConnectSessionsState {
 }
 
 const createStyles = (colors: Colors) =>
-  StyleSheet.create<Record<string, object>>({
+  StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
       flex: 1,
@@ -196,9 +196,7 @@ export default class WalletConnectSessions extends PureComponent<
         await (await WC2Manager.getInstance())?.removeSession(sessionToRemove);
       } else {
         await WalletConnect.killSession(
-          'peerId' in sessionToRemove
-            ? sessionToRemove.peerId
-            : (undefined as unknown as string),
+          'peerId' in sessionToRemove ? sessionToRemove.peerId : undefined,
         );
       }
 

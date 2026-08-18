@@ -3,6 +3,8 @@ import { RefreshControl, ScrollView, View, StyleSheet } from 'react-native';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import { connect } from 'react-redux';
 import type { Dispatch } from 'redux';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import Collectibles from '../../UI/Collectibles';
 import CollectibleContractOverview from '../../UI/CollectibleContractOverview';
 import Engine from '../../../core/Engine';
@@ -33,10 +35,7 @@ interface CollectibleRoute {
 }
 
 interface CollectibleOwnProps {
-  navigation: {
-    navigate: (...args: never[]) => unknown;
-    push: (...args: never[]) => unknown;
-  };
+  navigation: StackNavigationProp<ParamListBase>;
   route: CollectibleRoute;
 }
 
@@ -107,7 +106,7 @@ class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
     }
   };
 
-  hideCollectibleContractModal = (..._args: unknown[]): void => {
+  hideCollectibleContractModal = (): void => {
     this.props.toggleCollectibleContractModal();
   };
 

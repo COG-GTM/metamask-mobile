@@ -28,12 +28,6 @@ exports[`Collectible should render correctly 1`] = `
   }
 >
   <Component
-    navigation={
-      {
-        "navigate": [MockFunction],
-        "push": [MockFunction],
-      }
-    }
     route={
       {
         "params": {
