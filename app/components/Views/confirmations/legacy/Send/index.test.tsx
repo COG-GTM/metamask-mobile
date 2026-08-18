@@ -13,6 +13,10 @@ import {
 } from '../../../../../util/test/renderWithProvider';
 import { SolScope } from '@metamask/keyring-api';
 
+const SendForTest = Send as React.ComponentType<
+  Partial<React.ComponentProps<typeof Send>>
+>;
+
 const mockedNetworkControllerState = mockNetworkState({
   chainId: CHAIN_IDS.MAINNET,
   id: 'mainnet',
@@ -200,7 +204,7 @@ describe('Accounts', () => {
   // TODO: fix this test
   it.skip('should render correctly', () => {
     const { toJSON } = renderScreen(
-      Send,
+      SendForTest,
       { name: 'Send' },
       { state: initialState },
     );
