@@ -536,8 +536,6 @@ class Confirm extends PureComponent<ConnectedConfirmProps, ConfirmState> {
 
   static contextType = ThemeContext;
 
-  declare scrollView: ScrollView;
-
   state: ConfirmState = {
     gasEstimationReady: false,
     fromSelectedAddress: this.props.transactionState.transaction.from,
@@ -898,7 +896,9 @@ class Confirm extends PureComponent<ConnectedConfirmProps, ConfirmState> {
       this.parseTransactionDataHeader();
     }
     if (!prevState.errorMessage && errorMessage) {
-      this.scrollView.scrollToEnd({ animated: true });
+      (this as unknown as { scrollView: ScrollView }).scrollView.scrollToEnd({
+        animated: true,
+      });
     }
 
     if (
@@ -978,7 +978,7 @@ class Confirm extends PureComponent<ConnectedConfirmProps, ConfirmState> {
   };
 
   setScrollViewRef = (ref: ScrollView) => {
-    this.scrollView = ref;
+    (this as unknown as { scrollView: ScrollView }).scrollView = ref;
   };
 
   toggleConfirmationModal = (
@@ -1219,7 +1219,9 @@ class Confirm extends PureComponent<ConnectedConfirmProps, ConfirmState> {
   setError = (errorMessage?: string | null) => {
     this.setState({ errorMessage: errorMessage as string | undefined }, () => {
       if (errorMessage) {
-        this.scrollView.scrollToEnd({ animated: true });
+        (this as unknown as { scrollView: ScrollView }).scrollView.scrollToEnd({
+          animated: true,
+        });
       }
     });
   };
