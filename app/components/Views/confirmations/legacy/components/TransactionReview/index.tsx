@@ -14,7 +14,10 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { strings } from '../../../../../../../locales/i18n';
-import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
+import {
+  withMetricsAwareness,
+  type IUseMetricsHook,
+} from '../../../../../../components/hooks/useMetrics';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
 import Engine from '../../../../../../core/Engine';
 import { SDKConnect } from '../../../../../../core/SDKConnect/SDKConnect';
@@ -71,26 +74,28 @@ import { selectContractExchangeRatesByChainId } from '../../../../../../selector
 import SmartTransactionsMigrationBanner from '../SmartTransactionsMigrationBanner/SmartTransactionsMigrationBanner';
 import type { RootState } from '../../../../../../reducers';
 import type BN from 'bnjs4';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
+// Legacy propTypes require additional props that main does not pass at runtime.
 const AccountFromToInfoCardComponent =
   AccountFromToInfoCard as unknown as React.ComponentType<
     Record<string, unknown>
   >;
-const ApprovalTagUrlComponent =
-  ApprovalTagUrl as unknown as React.ComponentType<Record<string, unknown>>;
-const SimulationDetailsComponent =
-  SimulationDetails as unknown as React.ComponentType<Record<string, unknown>>;
+// Batch-3 child remains JavaScript on main, so its props are unavailable here.
 const TransactionReviewDataComponent =
   TransactionReviewData as unknown as React.ComponentType<
     Record<string, unknown>
   >;
+// Legacy JavaScript child has no usable prop declaration on main.
 const QRSigningDetailsComponent =
   QRSigningDetails as unknown as React.ComponentType<Record<string, unknown>>;
+// Legacy JavaScript child has no usable prop declaration on main.
 const TransactionReviewSummaryComponent =
   TransactionReviewSummary as unknown as React.ComponentType<
     Record<string, unknown>
   >;
+// Batch-4 child is typed locally but its exported JavaScript boundary remains legacy.
 const TransactionReviewInformationComponent =
   TransactionReviewInformation as unknown as React.ComponentType<
     Record<string, unknown>
@@ -108,7 +113,6 @@ const withMetricsAwarenessTyped = withMetricsAwareness as unknown as (
 let intervalIdForEstimatedL1Fee: ReturnType<typeof setInterval>;
 
 interface ReviewTransaction {
-  [key: string]: unknown;
   transaction?: {
     from?: string;
     to?: string;
@@ -143,41 +147,17 @@ interface Browser {
   activeTab: string | number;
 }
 
-interface TransactionMetadata {
-  [key: string]: unknown;
-  networkClientId?: string;
-  simulationData?: unknown;
-}
-
-interface Navigation {
-  navigate: (...args: unknown[]) => void;
-}
-
-interface Metrics {
-  trackEvent: (event: unknown) => void;
-  createEventBuilder: (event: unknown) => {
-    addProperties: (properties: Record<string, unknown>) => {
-      build: () => unknown;
-    };
-    build: () => unknown;
-  };
-}
+type TransactionRenderValues = [
+  string | number | undefined,
+  number | undefined,
+  string | undefined,
+];
 
 interface TransactionReviewProps {
   onCancel?: () => void;
   onModeChange?: (mode: string) => void;
   onConfirm?: (data?: Record<string, unknown>) => void;
-  showHexData?: boolean;
   transactionConfirmed?: boolean;
-  transaction?: ReviewTransaction;
-  browser?: Browser;
-  conversionRate?: number;
-  currentCurrency?: string;
-  contractExchangeRates?: Record<string, { price?: number }>;
-  tokens?: Record<string, string>[];
-  ticker?: string;
-  chainId?: string;
-  primaryCurrency?: string;
   error?: string | boolean;
   ready?: boolean;
   customGasHeight?: number;
@@ -191,27 +171,34 @@ interface TransactionReviewProps {
   over?: boolean;
   gasEstimateType?: string;
   EIP1559GasData?: Record<string, unknown>;
+  gasSelected?: string;
   onUpdatingValuesStart?: () => void;
   onUpdatingValuesEnd?: () => void;
   animateOnChange?: boolean;
   isAnimating?: boolean;
-  dappSuggestedGas?: boolean;
-  tokenList?: Record<string, Record<string, string>>;
-  navigation?: Navigation;
+  navigation?: NavigationProp<ParamListBase>;
   dappSuggestedGasWarning?: boolean;
   isSigningQRObject?: boolean;
   QRState?: Record<string, unknown>;
-  gasSelected?: string;
-  metrics?: Metrics;
-  shouldUseSmartTransaction?: boolean;
-  useTransactionSimulations?: boolean;
-  securityAlertResponse?: Record<string, unknown>;
-  transactionMetadata?: TransactionMetadata;
-  networkClientId?: string;
+  metrics?: IUseMetricsHook;
+  dappSuggestedGas?: boolean;
 }
 
 interface TransactionReviewStyles {
-  [key: string]: StyleProp<ViewStyle | TextStyle>;
+  tabUnderlineStyle: StyleProp<ViewStyle | TextStyle>;
+  tabStyle: StyleProp<ViewStyle | TextStyle>;
+  textStyle: StyleProp<ViewStyle | TextStyle>;
+  actionViewWrapper: StyleProp<ViewStyle | TextStyle>;
+  actionViewChildren: StyleProp<ViewStyle | TextStyle>;
+  accountTransactionWrapper: StyleProp<ViewStyle | TextStyle>;
+  actionViewQRObject: StyleProp<ViewStyle | TextStyle>;
+  accountInfoCardWrapper: StyleProp<ViewStyle | TextStyle>;
+  transactionData: StyleProp<ViewStyle | TextStyle>;
+  hidden: StyleProp<ViewStyle | TextStyle>;
+  blockaidWarning: StyleProp<ViewStyle | TextStyle>;
+  transactionSimulations: StyleProp<ViewStyle | TextStyle>;
+  blockaidBannerContainer: StyleProp<ViewStyle | TextStyle>;
+  smartTransactionsMigrationBanner: StyleProp<ViewStyle | TextStyle>;
   accountWrapper: StyleProp<ViewStyle>;
 }
 
@@ -288,22 +275,44 @@ const createStyles = (colors: Theme['colors']): TransactionReviewStyles =>
 /**
  * PureComponent that supports reviewing a transaction
  */
-type TransactionReviewComponentProps = TransactionReviewProps & {
-  transaction: ReviewTransaction;
-  browser: Browser;
-  navigation: Navigation;
-  metrics: Metrics;
-  tokens: Record<string, string>[];
-  tokenList: Record<string, Record<string, string>>;
-  transactionMetadata: TransactionMetadata;
-  generateTransform: (
-    name: string,
-    values: number[],
-  ) => Record<string, unknown>;
-  animate: (params: Record<string, unknown>) => void;
-  chainId: string;
-  ticker: string;
+const mapStateToProps = (state: RootState) => {
+  const transaction = getNormalizedTxState(state);
+  const chainId = transaction?.chainId;
+  const transactionMetadata = selectCurrentTransactionMetadata(state);
+  const networkClientId = transaction?.networkClientId;
+
+  return {
+    tokens: selectTokens(state),
+    conversionRate: selectConversionRateByChainId(state, chainId),
+    currentCurrency: selectCurrentCurrency(state),
+    contractExchangeRates: selectContractExchangeRatesByChainId(state, chainId),
+    ticker: selectNativeCurrencyByChainId(state, chainId),
+    chainId,
+    showHexData: state.settings.showHexData,
+    transaction,
+    browser: state.browser,
+    primaryCurrency: state.settings.primaryCurrency,
+    tokenList: selectTokenList(state),
+    shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),
+    useTransactionSimulations: selectUseTransactionSimulations(state),
+    securityAlertResponse: selectCurrentTransactionSecurityAlertResponse(state),
+    transactionMetadata,
+    networkClientId,
+  };
 };
+
+type TransactionReviewComponentProps = TransactionReviewProps &
+  ReturnType<typeof mapStateToProps> & {
+    transaction: ReviewTransaction;
+    browser: Browser;
+    navigation: NavigationProp<ParamListBase>;
+    metrics: IUseMetricsHook;
+    generateTransform: (
+      name: string,
+      values: number[],
+    ) => Record<string, unknown>;
+    animate: (params: Record<string, unknown>) => void;
+  };
 
 class TransactionReview extends PureComponent<
   TransactionReviewComponentProps,
@@ -510,9 +519,7 @@ class TransactionReview extends PureComponent<
       metrics,
       shouldUseSmartTransaction,
     } = this.props;
-    let { showHexData } = this.props as {
-      showHexData: boolean | string;
-    };
+    let { showHexData } = this.props;
     let assetAmount, conversionRate, fiatValue;
     showHexData = showHexData || data;
     const approveTransaction =
@@ -528,7 +535,7 @@ class TransactionReview extends PureComponent<
     );
 
     if (approveTransaction) {
-      let contract: Record<string, string> | undefined =
+      let contract: { symbol?: string } | undefined =
         tokenList[safeToChecksumAddress(to) as keyof typeof tokenList];
       if (!contract) {
         contract = tokens.find(
@@ -590,19 +597,19 @@ class TransactionReview extends PureComponent<
     clearInterval(intervalIdForEstimatedL1Fee);
   };
 
-  getRenderValues = (): (() => (string | number | undefined)[]) => {
+  getRenderValues = (): (() => TransactionRenderValues) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
       contractExchangeRates,
       ticker,
     } = this.props;
-    const values = {
+    const values: Record<string, () => TransactionRenderValues> = {
       ETH: () => {
         const assetAmount = `${renderFromWei(
           value as unknown as BN,
         )} ${getTicker(ticker)}`;
-        const conversionRate = this.props.conversionRate;
+        const conversionRate = this.props.conversionRate as number | undefined;
         const fiatValue = weiToFiat(
           value as unknown as BN,
           conversionRate as number,
@@ -615,20 +622,22 @@ class TransactionReview extends PureComponent<
           value,
           selectedAsset.decimals,
         )} ${selectedAsset.symbol}`;
-        const conversionRate = contractExchangeRates
-          ? contractExchangeRates[selectedAsset.address]?.price
-          : undefined;
+        const conversionRate = (
+          contractExchangeRates
+            ? contractExchangeRates[selectedAsset.address]?.price
+            : undefined
+        ) as number | undefined;
         const fiatValue = balanceToFiat(
           (value && fromTokenMinimalUnit(value, selectedAsset.decimals)) || 0,
           this.props.conversionRate,
           conversionRate,
           currentCurrency as string,
-        );
+        ) as string | undefined;
         return [assetAmount, conversionRate, fiatValue];
       },
       ERC721: () => {
         const assetAmount = strings('unit.token_id') + selectedAsset.tokenId;
-        const conversionRate = true;
+        const conversionRate = true as unknown as number;
         const fiatValue = selectedAsset.name;
         return [assetAmount, conversionRate, fiatValue];
       },
@@ -675,7 +684,7 @@ class TransactionReview extends PureComponent<
   getUrlFromBrowser(): string | undefined {
     const { browser } = this.props;
     let url;
-    browser.tabs.forEach((tab) => {
+    browser.tabs.forEach((tab: BrowserTab) => {
       if (tab.id === browser.activeTab) {
         url = tab.url;
       }
@@ -757,9 +766,9 @@ class TransactionReview extends PureComponent<
     const styles = this.getStyles();
 
     const originatorInfo = currentConnection?.originatorInfo;
-    const sdkDappMetadata = {
+    const sdkDappMetadata: { url: string; icon: string } = {
       url: originatorInfo?.url ?? strings('sdk.unknown'),
-      icon: originatorInfo?.icon,
+      icon: originatorInfo?.icon as string,
     };
 
     return (
@@ -788,7 +797,7 @@ class TransactionReview extends PureComponent<
                     style={styles.accountTransactionWrapper}
                     onStartShouldSetResponder={() => true}
                   >
-                    <ApprovalTagUrlComponent
+                    <ApprovalTagUrl
                       currentEnsName={ensRecipient}
                       from={from}
                       origin={origin}
@@ -827,7 +836,7 @@ class TransactionReview extends PureComponent<
                       transactionSimulationData &&
                       transactionMetadata && (
                         <View style={styles.transactionSimulations}>
-                          <SimulationDetailsComponent
+                          <SimulationDetails
                             transaction={transactionMetadata}
                             enableMetrics
                           />
@@ -914,32 +923,6 @@ class TransactionReview extends PureComponent<
       : this.renderTransactionReview();
   }
 }
-
-const mapStateToProps = (state: RootState) => {
-  const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
-  const transactionMetadata = selectCurrentTransactionMetadata(state);
-  const networkClientId = transactionMetadata?.networkClientId;
-
-  return {
-    tokens: selectTokens(state),
-    conversionRate: selectConversionRateByChainId(state, chainId),
-    currentCurrency: selectCurrentCurrency(state),
-    contractExchangeRates: selectContractExchangeRatesByChainId(state, chainId),
-    ticker: selectNativeCurrencyByChainId(state, chainId),
-    chainId,
-    showHexData: state.settings.showHexData,
-    transaction,
-    browser: state.browser,
-    primaryCurrency: state.settings.primaryCurrency,
-    tokenList: selectTokenList(state),
-    shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),
-    useTransactionSimulations: selectUseTransactionSimulations(state),
-    securityAlertResponse: selectCurrentTransactionSecurityAlertResponse(state),
-    transactionMetadata,
-    networkClientId,
-  };
-};
 
 export default connect(mapStateToProps)(
   withNavigationTyped(

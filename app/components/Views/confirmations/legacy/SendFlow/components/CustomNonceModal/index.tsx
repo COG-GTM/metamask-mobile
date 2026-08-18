@@ -142,7 +142,7 @@ const CustomModalNonce = ({
     onChangeText(clampedValue);
   };
 
-  const saveAndClose = (_nonce?: number) => {
+  const saveAndClose = () => {
     const numberNonce = Number(nonce);
     save(numberNonce);
     close();
@@ -195,11 +195,7 @@ const CustomModalNonce = ({
                 style={styles.nonceInput}
                 value={String(nonce)}
                 numberOfLines={1}
-                onSubmitEditing={
-                  saveAndClose as unknown as React.ComponentProps<
-                    typeof TextInput
-                  >['onSubmitEditing']
-                }
+                onSubmitEditing={saveAndClose}
                 keyboardAppearance={themeAppearance}
               />
             </View>
@@ -263,7 +259,7 @@ const CustomModalNonce = ({
             </StyledButton>
             <StyledButton
               type={'blue'}
-              onPress={() => saveAndClose(nonce as number)}
+              onPress={saveAndClose}
               containerStyle={styles.actionButton}
             >
               {strings('transaction.save')}

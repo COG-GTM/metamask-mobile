@@ -8,12 +8,21 @@ import {
   View,
   TouchableOpacity,
   InteractionManager,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
 } from 'react-native';
 import { fontStyles } from '../../../../../../../styles/common';
 import { connect } from 'react-redux';
 import type { Dispatch } from 'redux';
 import type { RootState } from '../../../../../../../reducers';
 import type BN from 'bnjs4';
+import type { MarketDataDetails } from '@metamask/assets-controllers';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import {
+  withMetricsAwareness,
+  type IUseMetricsHook,
+} from '../../../../../../../components/hooks/useMetrics';
 import {
   isBN,
   weiToFiat,
@@ -63,7 +72,6 @@ import { createBrowserNavDetails } from '../../../../../Browser';
 import { isNetworkRampNativeTokenSupported } from '../../../../../../../components/UI/Ramp/utils';
 import { getRampNetworks } from '../../../../../../../reducers/fiatOrders';
 import { createBuyNavigationDetails } from '../../../../../../UI/Ramp/routes/utils';
-import { withMetricsAwareness } from '../../../../../../../components/hooks/useMetrics';
 import { selectShouldUseSmartTransaction } from '../../../../../../../selectors/smartTransactionsController';
 import { getNetworkNonce } from '../../../../../../../util/transaction-controller';
 import { selectNativeCurrencyByChainId } from '../../../../../../../selectors/networkController';
@@ -77,24 +85,7 @@ interface TransactionAsset {
   tokenId?: string | number;
 }
 
-interface ReviewTransaction {
-  [key: string]: unknown;
-  value: string | BN;
-  from: string;
-  selectedAsset: TransactionAsset;
-  assetType: string;
-  proposedNonce: number;
-  nonce: number;
-  chainId?: string;
-  networkClientId?: string;
-  warningGasPriceHigh?: string;
-  type?: string;
-  gas: BN;
-  gasPrice: BN;
-}
-
 interface EIP1559GasData {
-  [key: string]: unknown;
   gasFeeMinNative?: string;
   gasFeeMinConversion?: string;
   gasFeeMaxNative?: string;
@@ -108,49 +99,25 @@ interface EIP1559GasData {
   timeEstimateId?: string;
 }
 
-interface Navigation {
-  navigate: (...args: unknown[]) => void;
-}
-
-interface Metrics {
-  trackEvent: (event: unknown) => void;
-  createEventBuilder: (event: unknown) => {
-    build: () => unknown;
-  };
-}
-
 interface TransactionReviewInformationProps {
-  conversionRate?: number;
-  currentCurrency?: string;
-  transaction?: ReviewTransaction;
-  contractExchangeRates?: Record<string, number>;
   edit?: () => void;
-  ticker?: string;
-  primaryCurrency?: string;
   toggleDataView?: () => void;
   ready?: boolean;
   error?: string | boolean;
   over?: boolean;
-  navigation?: Navigation;
-  onCancelPress?: () => void;
-  chainId?: string;
-  networkClientId?: string;
-  showCustomNonce?: boolean;
-  setNonce?: (nonce: number) => void;
-  setProposedNonce?: (nonce: number) => void;
-  gasEstimateType?: string;
   EIP1559GasData?: EIP1559GasData;
+  gasSelected?: string;
+  multiLayerL1FeeTotal?: string;
+  navigation?: NavigationProp<ParamListBase>;
+  onCancelPress?: () => void;
+  gasEstimateType?: string;
   origin?: string | null;
   onUpdatingValuesStart?: () => void;
   onUpdatingValuesEnd?: () => void;
   animateOnChange?: boolean;
   isAnimating?: boolean;
   originWarning?: boolean;
-  gasSelected?: string;
-  multiLayerL1FeeTotal?: string;
-  isNativeTokenBuySupported?: boolean;
-  metrics?: Metrics;
-  shouldUseSmartTransaction?: boolean;
+  metrics?: IUseMetricsHook;
   assetAmount?: string | number;
   fiatValue?: string | number;
 }
@@ -162,7 +129,22 @@ interface TransactionReviewInformationState {
   nonceModalVisible: boolean;
 }
 
-const createStyles = (colors: Theme['colors']) =>
+interface TransactionReviewInformationStyles {
+  overviewAlert: StyleProp<ViewStyle | TextStyle>;
+  overviewAlertText: StyleProp<ViewStyle | TextStyle>;
+  overviewAlertIcon: StyleProp<ViewStyle | TextStyle>;
+  viewDataWrapper: StyleProp<ViewStyle | TextStyle>;
+  viewDataButton: StyleProp<ViewStyle | TextStyle>;
+  viewDataText: StyleProp<ViewStyle | TextStyle>;
+  errorWrapper: StyleProp<ViewStyle | TextStyle>;
+  error: StyleProp<ViewStyle | TextStyle>;
+  underline: StyleProp<ViewStyle | TextStyle>;
+  actionsWrapper: StyleProp<ViewStyle | TextStyle>;
+}
+
+const createStyles = (
+  colors: Theme['colors'],
+): TransactionReviewInformationStyles =>
   StyleSheet.create({
     overviewAlert: {
       alignItems: 'center',
@@ -232,20 +214,40 @@ const createStyles = (colors: Theme['colors']) =>
 /**
  * PureComponent that supports reviewing a transaction information
  */
-type TransactionReviewInformationComponentProps =
-  TransactionReviewInformationProps & {
-    transaction: ReviewTransaction;
-    navigation: Navigation;
-    metrics: Metrics;
-    setNonce: (nonce: number) => void;
-    setProposedNonce: (nonce: number) => void;
-    EIP1559GasData: EIP1559GasData;
-    conversionRate: number;
-    currentCurrency: string;
-    ticker: string;
-    contractExchangeRates: Record<string, number>;
-    chainId: string;
+const mapStateToProps = (state: RootState) => {
+  const transaction = getNormalizedTxState(state);
+  const chainId = transaction?.chainId;
+  const networkClientId = transaction?.networkClientId;
+
+  return {
+    chainId,
+    networkClientId,
+    conversionRate: selectConversionRateByChainId(state, chainId),
+    currentCurrency: selectCurrentCurrency(state),
+    contractExchangeRates: selectContractExchangeRatesByChainId(state, chainId),
+    transaction,
+    ticker: selectNativeCurrencyByChainId(state, chainId),
+    primaryCurrency: state.settings.primaryCurrency,
+    showCustomNonce: state.settings.showCustomNonce,
+    isNativeTokenBuySupported: isNetworkRampNativeTokenSupported(
+      chainId,
+      getRampNetworks(state),
+    ),
+    shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),
   };
+};
+
+type TransactionReviewInformationComponentProps =
+  TransactionReviewInformationProps &
+    ReturnType<typeof mapStateToProps> & {
+      navigation: NavigationProp<ParamListBase>;
+      metrics: IUseMetricsHook;
+      EIP1559GasData: EIP1559GasData;
+      gasSelected: string;
+      multiLayerL1FeeTotal: string;
+      setNonce: (nonce: number) => unknown;
+      setProposedNonce: (nonce: number) => unknown;
+    };
 
 class TransactionReviewInformation extends PureComponent<
   TransactionReviewInformationComponentProps,
@@ -411,8 +413,8 @@ class TransactionReviewInformation extends PureComponent<
   getTotalFiat = (
     _asset: TransactionAsset,
     totalGas: BN,
-    conversionRate: number | undefined,
-    exchangeRate: number | undefined,
+    conversionRate: number | null | undefined,
+    exchangeRate: MarketDataDetails | undefined,
     currentCurrency: string | undefined,
     amountToken: string,
   ): string => {
@@ -421,7 +423,7 @@ class TransactionReviewInformation extends PureComponent<
     const balanceFiat = balanceToFiatNumber(
       parseFloat(amountToken),
       conversionRate as number,
-      exchangeRate as number,
+      exchangeRate as unknown as number,
     );
     const base = Math.pow(10, 5);
     total =
@@ -892,29 +894,6 @@ class TransactionReviewInformation extends PureComponent<
     );
   }
 }
-
-const mapStateToProps = (state: RootState) => {
-  const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
-  const networkClientId = transaction?.networkClientId;
-
-  return {
-    chainId,
-    networkClientId,
-    conversionRate: selectConversionRateByChainId(state, chainId),
-    currentCurrency: selectCurrentCurrency(state),
-    contractExchangeRates: selectContractExchangeRatesByChainId(state, chainId),
-    transaction,
-    ticker: selectNativeCurrencyByChainId(state, chainId),
-    primaryCurrency: state.settings.primaryCurrency,
-    showCustomNonce: state.settings.showCustomNonce,
-    isNativeTokenBuySupported: isNetworkRampNativeTokenSupported(
-      chainId,
-      getRampNetworks(state),
-    ),
-    shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),
-  };
-};
 
 const mapDispatchToProps = (
   dispatch: Dispatch,

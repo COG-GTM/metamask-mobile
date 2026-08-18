@@ -65,13 +65,14 @@ const EditGasFeeLegacyComponent =
   EditGasFeeLegacy as unknown as React.ComponentType<Record<string, unknown>>;
 
 interface GasData {
-  [key: string]: unknown;
   suggestedGasLimit?: string;
   suggestedGasLimitHex?: string;
   suggestedGasPrice?: string | number | BN;
   suggestedGasPriceHex?: string | number | BN;
   suggestedMaxFeePerGas?: string;
+  suggestedMaxFeePerGasHex?: string;
   suggestedMaxPriorityFeePerGas?: string;
+  suggestedMaxPriorityFeePerGasHex?: string;
   gasPrice?: string;
   renderableGasFeeMinNative?: string;
   renderableGasFeeMinConversion?: string;
@@ -97,10 +98,11 @@ interface GasData {
   gasLimitHex?: string;
   maxPriorityFeeNative?: string;
   maxFeePerGasNative?: string;
+  estimatedBaseFee?: string | number | BN;
+  legacyGasLimit?: string;
 }
 
 interface Transaction {
-  [key: string]: unknown;
   assetType: string;
   data: string;
   ensRecipient?: string;
@@ -118,32 +120,22 @@ interface Transaction {
   };
   value: string;
   to: string;
+  readableValue?: string;
   chainId?: string;
   origin?: string;
   type?: string;
 }
 
 interface TransactionEditorProps {
-  accounts?: Record<string, { balance: string }>;
   mode?: string;
   onCancel?: () => void;
   onConfirm?: (data: Record<string, unknown>) => void;
   onModeChange?: (mode: string) => void;
-  transaction?: Transaction;
   transactionConfirmed?: boolean;
-  contractBalances?: Record<string, unknown>;
-  selectedAddress?: string;
-  setTransactionObject?: (transaction: Partial<Transaction>) => unknown;
   promptedFromApproval?: boolean;
-  ticker?: string;
-  gasEstimateType?: string;
-  gasFeeEstimates?: Record<string, GasData>;
-  primaryCurrency?: string;
-  chainId?: string;
 }
 
 interface TransactionEditorState {
-  [key: string]: unknown;
   toFocused: boolean;
   ensRecipient?: string;
   ready: boolean;
@@ -161,6 +153,7 @@ interface TransactionEditorState {
   legacyGasObject: GasData;
   legacyGasTransaction: GasData;
   suggestedMaxFeePerGas?: string;
+  suggestedMaxFeePerGasHex?: string;
   pollToken?: string;
   dappSuggestedGasPrice?: string | BN | null;
   dappSuggestedEIP1559Gas?: {
@@ -170,6 +163,7 @@ interface TransactionEditorState {
   advancedGasInserted?: boolean;
   stopUpdateGas?: boolean;
   animateOnChange?: boolean;
+  isAnimating?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -182,12 +176,31 @@ const styles = StyleSheet.create({
 /**
  * PureComponent that supports editing and reviewing a transaction
  */
-type TransactionEditorComponentProps = TransactionEditorProps & {
-  accounts: Record<string, { balance: string }>;
-  transaction: Transaction;
-  setTransactionObject: (transaction: Partial<Transaction>) => unknown;
-  gasFeeEstimates: Record<string, GasData>;
+const mapStateToProps = (state: RootState) => {
+  const transaction = getNormalizedTxState(state);
+  const chainId = transaction?.chainId;
+
+  return {
+    accounts: selectAccounts(state),
+    contractBalances: selectContractBalances(state),
+    networkType: selectProviderTypeByChainId(state, chainId),
+    selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+    ticker: selectNativeCurrencyByChainId(state, chainId),
+    transaction,
+    activeTabUrl: getActiveTabUrl(state),
+    gasFeeEstimates: selectGasFeeEstimates(state),
+    gasEstimateType: selectGasFeeControllerEstimateType(state),
+    conversionRate: selectConversionRateByChainId(state, chainId),
+    currentCurrency: selectCurrentCurrency(state),
+    primaryCurrency: state.settings.primaryCurrency,
+    chainId,
+  };
 };
+
+type TransactionEditorComponentProps = TransactionEditorProps &
+  ReturnType<typeof mapStateToProps> & {
+    setTransactionObject: (transaction: Partial<Transaction>) => unknown;
+  };
 
 class TransactionEditor extends PureComponent<
   TransactionEditorComponentProps,
@@ -290,6 +303,10 @@ class TransactionEditor extends PureComponent<
       gasFeeEstimates,
       setTransactionObject: setTransactionObjectProp,
     } = this.props;
+    const typedGasFeeEstimates = gasFeeEstimates as unknown as Record<
+      string,
+      GasData
+    >;
     const { dappSuggestedGasPrice, dappSuggestedEIP1559Gas } = this.state;
 
     const gasSelected = gasEstimateTypeChanged
@@ -322,8 +339,8 @@ class TransactionEditor extends PureComponent<
         };
         initialGasTemp = initialGas;
       } else {
-        initialGas = gasFeeEstimates[gasSelected as string];
-        initialGasTemp = gasFeeEstimates[gasSelectedTemp as string];
+        initialGas = typedGasFeeEstimates[gasSelected as string];
+        initialGasTemp = typedGasFeeEstimates[gasSelectedTemp as string];
       }
 
       const suggestedGasLimit = fromWei(transaction.gas, 'wei');
@@ -370,14 +387,8 @@ class TransactionEditor extends PureComponent<
         dappSuggestedGasPrice
           ? fromWei(dappSuggestedGasPrice, 'gwei')
           : gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-          ? (this.props.gasFeeEstimates[selected] as unknown as
-              | string
-              | number
-              | BN)
-          : (this.props.gasFeeEstimates.gasPrice as unknown as
-              | string
-              | number
-              | BN);
+          ? (typedGasFeeEstimates[selected] as unknown as string | number | BN)
+          : (typedGasFeeEstimates.gasPrice as unknown as string | number | BN);
 
       const LegacyGasData = this.parseTransactionDataLegacy(
         {
@@ -487,9 +498,12 @@ class TransactionEditor extends PureComponent<
 
   parseTransactionDataEIP1559 = (
     gasFee: GasData,
-    _options: Record<string, unknown> = {},
+    _options?: Record<string, unknown>,
   ): GasData => {
     const { ticker } = this.props;
+    const typedGasFeeEstimates = this.props.gasFeeEstimates as unknown as {
+      estimatedBaseFee?: string | number | BN;
+    };
 
     const parsedTransactionEIP1559 = parseTransactionEIP1559(
       {
@@ -497,7 +511,7 @@ class TransactionEditor extends PureComponent<
         nativeCurrency: ticker,
         selectedGasFee: {
           ...gasFee,
-          estimatedBaseFee: this.props.gasFeeEstimates.estimatedBaseFee,
+          estimatedBaseFee: typedGasFeeEstimates.estimatedBaseFee,
         },
       } as Parameters<typeof parseTransactionEIP1559>[0],
       { onlyGas: true },
@@ -512,7 +526,7 @@ class TransactionEditor extends PureComponent<
 
   parseTransactionDataLegacy = (
     gasFee: GasData,
-    _options: Record<string, unknown> = {},
+    _options?: Record<string, unknown>,
   ): GasData => {
     const { ticker } = this.props;
 
@@ -532,7 +546,7 @@ class TransactionEditor extends PureComponent<
     return parsedTransactionLegacy as unknown as GasData;
   };
 
-  componentDidUpdate = (prevProps: TransactionEditorProps): void => {
+  componentDidUpdate = (prevProps: TransactionEditorComponentProps): void => {
     const { transaction } = this.props;
     if (transaction.data !== (prevProps.transaction as Transaction).data) {
       this.handleUpdateData(transaction.data);
@@ -907,7 +921,7 @@ class TransactionEditor extends PureComponent<
     suggestedMaxPriorityFeePerGas:
       legacyGasTransaction?.suggestedGasPrice as string,
     suggestedMaxPriorityFeePerGasHex:
-      legacyGasTransaction?.suggestedGasPriceHex,
+      legacyGasTransaction?.suggestedGasPriceHex as string,
   });
 
   saveGasEditionLegacy = (
@@ -1157,27 +1171,6 @@ class TransactionEditor extends PureComponent<
     );
   };
 }
-
-const mapStateToProps = (state: RootState) => {
-  const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
-
-  return {
-    accounts: selectAccounts(state),
-    contractBalances: selectContractBalances(state),
-    networkType: selectProviderTypeByChainId(state, chainId),
-    selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
-    ticker: selectNativeCurrencyByChainId(state, chainId),
-    transaction,
-    activeTabUrl: getActiveTabUrl(state),
-    gasFeeEstimates: selectGasFeeEstimates(state),
-    gasEstimateType: selectGasFeeControllerEstimateType(state),
-    conversionRate: selectConversionRateByChainId(state, chainId),
-    currentCurrency: selectCurrentCurrency(state),
-    primaryCurrency: state.settings.primaryCurrency,
-    chainId,
-  };
-};
 
 const mapDispatchToProps = (
   dispatch: Dispatch,
