@@ -231,8 +231,6 @@ type AssetComponentProps = AssetOwnProps &
  * and also the transaction list
  */
 class Asset extends PureComponent<AssetComponentProps, AssetState> {
-  declare mounted: boolean;
-
   static contextType = ThemeContext;
 
   static propTypes = {
@@ -389,7 +387,7 @@ class Asset extends PureComponent<AssetComponentProps, AssetState> {
 
     InteractionManager.runAfterInteractions(() => {
       this.normalizeTransactions();
-      this.mounted = true;
+      (this as unknown as { mounted: boolean }).mounted = true;
     });
     this.navSymbol = (this.props.route.params?.symbol ?? '').toLowerCase();
     this.navAddress = (this.props.route.params?.address ?? '').toLowerCase();
@@ -420,7 +418,7 @@ class Asset extends PureComponent<AssetComponentProps, AssetState> {
   }
 
   componentWillUnmount(): void {
-    this.mounted = false;
+    (this as unknown as { mounted: boolean }).mounted = false;
   }
 
   didTxStatusesChange = (newTxsPending: AssetTransaction[]): boolean =>
