@@ -29,6 +29,7 @@ interface BNLike {
 }
 
 type NumericInput = number | string | BNLike | BigNumber;
+type BN4Type = BN4;
 type NumericBase = 'hex' | 'dec' | 'BN';
 type Denomination = 'WEI' | 'GWEI' | 'ETH';
 type Currency = string | null;
@@ -60,7 +61,7 @@ const BIG_NUMBER_ETH_MULTIPLIER = new BigNumber('1');
  * @param inputHex - Number represented as a hex string.
  * @returns A BN instance.
  */
-export const hexToBN = (inputHex: NumericInput): BNLike =>
+export const hexToBN = (inputHex: NumericInput): BN4Type =>
   typeof inputHex !== 'string'
     ? new BN4(inputHex as unknown as string | number, 16)
     : (inputHex ? new BN4(remove0x(inputHex), 16) : new BN4(0));
