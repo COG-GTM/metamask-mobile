@@ -49,26 +49,35 @@ export const CaveatFactories = Object.freeze({
  * findNetworkClientIdByChainId: (chainId: `0x${string}`) => string,
  * }} options - Options bag.
  */
-export const getCaveatSpecifications = ({
-  listAccounts,
-  findNetworkClientIdByChainId,
-}) => ({
-  [Caip25CaveatType]: caip25CaveatBuilder({
-    listAccounts,
-    findNetworkClientIdByChainId,
-  }),
-  ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-  ...snapsCaveatsSpecifications,
-  ...snapsEndowmentCaveatSpecifications,
-  ///: END:ONLY_INCLUDE_IF
-});
+interface CaveatSpecificationOptions {
+  listAccounts: () => unknown[];
+  findNetworkClientIdByChainId: (chainId: `0x${string}`) => string;
+}
+
+export const getCaveatSpecifications = (options: unknown) => {
+  const { listAccounts, findNetworkClientIdByChainId } =
+    options as CaveatSpecificationOptions;
+
+  return {
+    [Caip25CaveatType]: caip25CaveatBuilder(
+      {
+        listAccounts,
+        findNetworkClientIdByChainId,
+      } as Parameters<typeof caip25CaveatBuilder>[0],
+    ),
+    ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
+    ...snapsCaveatsSpecifications,
+    ...snapsEndowmentCaveatSpecifications,
+    ///: END:ONLY_INCLUDE_IF
+  };
+};
 
 /**
  * Gets the specifications for all permissions that will be recognized by the
  * PermissionController.
  *
  */
-export const getPermissionSpecifications = () => ({
+export const getPermissionSpecifications = (..._args: unknown[]) => ({
   [caip25EndowmentBuilder.targetName]:
     caip25EndowmentBuilder.specificationBuilder({}),
 });
