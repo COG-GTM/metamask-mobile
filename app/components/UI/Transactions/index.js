@@ -228,6 +228,14 @@ class Transactions extends PureComponent {
      * Chain ID of the token
      */
     tokenChainId: PropTypes.string,
+    /**
+     * Whether the list is currently constrained by activity filters
+     */
+    filtersActive: PropTypes.bool,
+    /**
+     * Clears every active activity filter
+     */
+    onClearFilters: PropTypes.func,
   };
 
   static defaultProps = {
@@ -388,6 +396,26 @@ class Transactions extends PureComponent {
   renderEmpty = () => {
     const { colors, typography } = this.context || mockTheme;
     const styles = createStyles(colors, typography);
+    if (this.props.filtersActive) {
+      return (
+        <View
+          style={styles.emptyContainer}
+          testID={ActivitiesViewSelectorsIDs.FILTERED_EMPTY_STATE}
+        >
+          <Text style={styles.textTransactions}>
+            {strings('activity_view.no_results_title')}
+          </Text>
+          <Button
+            variant={ButtonVariants.Link}
+            size={ButtonSize.Md}
+            label={strings('activity_view.no_results_cta')}
+            accessibilityRole="button"
+            accessibilityLabel={strings('activity_view.no_results_cta')}
+            onPress={this.props.onClearFilters}
+          />
+        </View>
+      );
+    }
     if (this.props.tokenChainId !== this.props.chainId) {
       return (
         <View style={styles.emptyContainer}>

@@ -622,7 +622,14 @@
     "filter_date_last_30_days": "Last 30 days",
     "filter_date_last_90_days": "Last 90 days",
     "filter_date_this_year": "This year",
-    "filter_date_custom": "Custom range"
+    "filter_date_custom": "Custom range",
+    "filter_date_start": "Start date",
+    "filter_date_end": "End date",
+    "filter_date_apply": "Apply",
+    "filter_type_title": "Filter by type",
+    "filter_status_title": "Filter by status",
+    "filter_date_title": "Filter by date",
+    "remove_filter": "Remove filter: {{filter}}"
   },
   "transactions_view": {
     "title": "Transactions"
