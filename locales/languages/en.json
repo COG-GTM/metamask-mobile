@@ -622,7 +622,11 @@
     "filter_date_last_30_days": "Last 30 days",
     "filter_date_last_90_days": "Last 90 days",
     "filter_date_this_year": "This year",
-    "filter_date_custom": "Custom range"
+    "filter_date_custom": "Custom range",
+    "export_csv": "Export activity (CSV)",
+    "export_share_title": "MetaMask activity",
+    "export_empty": "There's no activity to export.",
+    "export_error": "We couldn't export your activity. Please try again."
   },
   "transactions_view": {
     "title": "Transactions"
