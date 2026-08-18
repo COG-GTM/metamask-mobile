@@ -19,9 +19,8 @@ import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import StyledButton from '../../UI/StyledButton';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
-import { connect } from 'react-redux';
+import { connect, type ConnectedProps } from 'react-redux';
 import type { Dispatch } from 'redux';
-import type { ConnectedProps } from 'react-redux';
 import collectiblesTransferInformation from '../../../util/collectibles-transfer.json';
 import { newAssetTransaction } from '../../../actions/transaction';
 import { ThemeContext, mockTheme } from '../../../util/theme';
@@ -83,7 +82,7 @@ const mapDispatchToProps = (dispatch: Dispatch): CollectibleViewDispatchProps =>
 });
 
 const connector = connect<
-  {},
+  Record<string, never>,
   CollectibleViewDispatchProps,
   CollectibleViewOwnProps
 >(null, mapDispatchToProps);

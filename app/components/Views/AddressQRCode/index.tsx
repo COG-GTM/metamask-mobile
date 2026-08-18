@@ -9,9 +9,8 @@ import {
   Text,
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
-import { connect } from 'react-redux';
+import { connect, type ConnectedProps } from 'react-redux';
 import type { Dispatch } from 'redux';
-import type { ConnectedProps } from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 import { strings } from '../../../../locales/i18n';
 import IonicIcon from 'react-native-vector-icons/Ionicons';

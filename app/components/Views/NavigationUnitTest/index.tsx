@@ -69,6 +69,7 @@ const TestStack = ({ secondRoute }: TestStackProps) => (
   </Stack.Navigator>
 );
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 const NavigationUnitTest = ({
   firstRoute,
   secondRoute,
@@ -84,6 +85,7 @@ const NavigationUnitTest = ({
     </Stack.Navigator>
   </NavigationContainer>
 );
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 const NavigationUnitTestFactory = ({
   firstRoute,
