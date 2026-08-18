@@ -33,7 +33,12 @@ export const ActivitiesViewSelectorsText = {
   STAKE_DEPOSIT: enContent.transactions.tx_review_staking_deposit,
   UNSTAKE: enContent.transactions.tx_review_staking_unstake,
   STAKING_CLAIM: enContent.transactions.tx_review_staking_claim,
-
+  SEARCH_PLACEHOLDER: enContent.activity_view.search_placeholder,
+  FILTER_TYPE_SEND: enContent.activity_view.filter_type_send,
+  FILTER_TYPE_RECEIVE: enContent.activity_view.filter_type_receive,
+  FILTER_STATUS_CONFIRMED: enContent.activity_view.filter_status_confirmed,
+  CLEAR_ALL: enContent.activity_view.clear_all,
+  NO_RESULTS_TITLE: enContent.activity_view.no_results_title,
 };
 
 export const sentMessageTokenIDs = {
