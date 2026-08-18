@@ -1,4 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import type {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import {
   InteractionManager,
   Alert,
@@ -13,6 +18,7 @@ import ActionView from '../../UI/ActionView';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
 import { strings } from '../../../../locales/i18n';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
 import { seedphraseBackedUp } from '../../../actions/user';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getOnboardingNavbarOptions } from '../../UI/Navbar';
@@ -24,12 +30,52 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
-const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
+export interface ManualBackupParamList extends ParamListBase {
+  ManualBackupStep2: { words: string[]; steps: string[] };
+  ManualBackupStep3: { words: string[]; steps: string[] };
+}
+
+const getTypedOnboardingNavbarOptions =
+  getOnboardingNavbarOptions as unknown as (
+    route: Pick<
+      RouteProp<ManualBackupParamList, 'ManualBackupStep2'>,
+      'params'
+    >,
+    options: Record<string, unknown>,
+    colors: ReturnType<typeof useTheme>['colors'],
+  ) => Record<string, unknown>;
+
+interface ManualBackupStep2OwnProps {
+  navigation: NavigationProp<ManualBackupParamList>;
+  route: Pick<RouteProp<ManualBackupParamList, 'ManualBackupStep2'>, 'params'>;
+}
+
+interface ConfirmedWord {
+  word?: string;
+  originalPosition?: number;
+}
+
+interface WordPosition {
+  currentPosition?: number;
+}
+
+interface ManualBackupStep2DispatchProps {
+  seedphraseBackedUp: () => void;
+}
+
+type ManualBackupStep2Props = ManualBackupStep2OwnProps &
+  ManualBackupStep2DispatchProps;
+
+const ManualBackupStep2 = ({
+  navigation,
+  seedphraseBackedUp: onSeedphraseBackedUp,
+  route,
+}: ManualBackupStep2Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const [confirmedWords, setConfirmedWords] = useState([]);
-  const [wordsDict, setWordsDict] = useState({});
+  const [confirmedWords, setConfirmedWords] = useState<ConfirmedWord[]>([]);
+  const [wordsDict, setWordsDict] = useState<Record<string, WordPosition>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [seedPhraseReady, setSeedPhraseReady] = useState(false);
 
@@ -40,7 +86,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
       : route.params?.words;
 
   const createWordsDictionary = () => {
-    const dict = {};
+    const dict: Record<string, WordPosition> = {};
     words.forEach((word, i) => {
       dict[`${word},${i}`] = { currentPosition: undefined };
     });
@@ -48,7 +94,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   };
 
   const updateNavBar = useCallback(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation.setOptions(getTypedOnboardingNavbarOptions(route, {}, colors));
   }, [colors, navigation, route]);
 
   useEffect(() => {
@@ -73,12 +119,13 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   );
 
   const selectWord = useCallback(
-    (word, i) => {
+    (word: string, i: number) => {
       let tempCurrentIndex = currentIndex;
       const tempWordsDict = wordsDict;
       const tempConfirmedWords = confirmedWords;
       if (wordsDict[`${word},${i}`].currentPosition !== undefined) {
-        tempCurrentIndex = wordsDict[`${word},${i}`].currentPosition;
+        tempCurrentIndex =
+          wordsDict[`${word},${i}`].currentPosition ?? currentIndex;
         tempWordsDict[`${word},${i}`].currentPosition = undefined;
         tempConfirmedWords[currentIndex] = {
           word: undefined,
@@ -98,15 +145,15 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     [confirmedWords, currentIndex, findNextAvailableIndex, wordsDict],
   );
 
-  const clearConfirmedWordAt = (i) => {
+  const clearConfirmedWordAt = (i: number) => {
     const { word, originalPosition } = confirmedWords[i];
-    const currentIndex = i;
+    const clearIndex = i;
     if (word && (originalPosition || originalPosition === 0)) {
-      wordsDict[[word, originalPosition]].currentPosition = undefined;
+      wordsDict[`${word},${originalPosition}`].currentPosition = undefined;
       confirmedWords[i] = { word: undefined, originalPosition: undefined };
     }
 
-    setCurrentIndex(currentIndex);
+    setCurrentIndex(clearIndex);
     setWordsDict(wordsDict);
     setConfirmedWords(confirmedWords);
     setSeedPhraseReady(findNextAvailableIndex() === -1);
@@ -115,7 +162,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   const validateWords = useCallback(() => {
     const validWords = route.params?.words ?? [];
     const proposedWords = confirmedWords.map(
-      (confirmedWord) => confirmedWord.word,
+      (confirmedWord) => confirmedWord.word ?? '',
     );
 
     return compareMnemonics(validWords, proposedWords);
@@ -123,12 +170,12 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
 
   const goNext = () => {
     if (validateWords()) {
-      seedphraseBackedUp();
+      onSeedphraseBackedUp();
       InteractionManager.runAfterInteractions(async () => {
-        const words = route.params?.words;
+        const routeWords = route.params?.words;
         navigation.navigate('ManualBackupStep3', {
           steps: route.params?.steps,
-          words,
+          words: routeWords,
         });
         trackOnboarding(
           MetricsEventBuilder.createEventBuilder(
@@ -145,62 +192,65 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   };
 
   const renderSuccess = () => {
-    const styles = createStyles(colors);
+    const successStyles = createStyles(colors);
 
     return (
-      <View style={styles.successRow}>
+      <View style={successStyles.successRow}>
         <MaterialIcon
           name="check-circle"
           size={15}
           color={colors.success.default}
         />
-        <Text style={styles.successText}>
+        <Text style={successStyles.successText}>
           {strings('manual_backup_step_2.success')}
         </Text>
       </View>
     );
   };
 
-  const renderWordBox = (word, i) => {
-    const styles = createStyles(colors);
+  const renderWordBox = (word: string | undefined, i: number) => {
+    const wordStyles = createStyles(colors);
 
     return (
-      <View key={`word_${i}`} style={styles.wordBoxWrapper}>
-        <Text style={styles.wordBoxIndex}>{i + 1}.</Text>
+      <View key={`word_${i}`} style={wordStyles.wordBoxWrapper}>
+        <Text style={wordStyles.wordBoxIndex}>{i + 1}.</Text>
         <TouchableOpacity
           // eslint-disable-next-line react/jsx-no-bind
           onPress={() => {
             clearConfirmedWordAt(i);
           }}
           style={[
-            styles.wordWrapper,
-            i === currentIndex && styles.currentWord,
-            confirmedWords[i].word && styles.confirmedWord,
+            wordStyles.wordWrapper,
+            i === currentIndex && wordStyles.currentWord,
+            confirmedWords[i].word && wordStyles.confirmedWord,
           ]}
         >
-          <Text style={styles.word}>{word}</Text>
+          <Text style={wordStyles.word}>{word}</Text>
         </TouchableOpacity>
       </View>
     );
   };
 
   const renderWordSelectableBox = useCallback(
-    (key, i) => {
+    (key: string, i: number) => {
       const [word] = key.split(',');
       const selected = wordsDict[key].currentPosition !== undefined;
-      const styles = createStyles(colors);
+      const selectableStyles = createStyles(colors);
 
       return (
         <TouchableOpacity
           // eslint-disable-next-line react/jsx-no-bind
           onPress={() => selectWord(word, i)}
-          style={[styles.selectableWord, selected && styles.selectedWord]}
+          style={[
+            selectableStyles.selectableWord,
+            selected && selectableStyles.selectedWord,
+          ]}
           key={`selectableWord_${i}`}
         >
           <Text
             style={[
-              styles.selectableWordText,
-              selected && styles.selectedWordText,
+              selectableStyles.selectableWordText,
+              selected && selectableStyles.selectedWordText,
             ]}
           >
             {word}
@@ -227,7 +277,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
       <View style={styles.onBoardingWrapper}>
         <OnboardingProgress
           currentStep={currentStep}
-          steps={route.params?.steps}
+          steps={route.params?.steps ?? []}
         />
       </View>
       <ActionView
@@ -294,8 +344,15 @@ ManualBackupStep2.propTypes = {
   route: PropTypes.object,
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
 });
 
-export default connect(null, mapDispatchToProps)(ManualBackupStep2);
+export default connect<
+  Record<string, never>,
+  ManualBackupStep2DispatchProps,
+  ManualBackupStep2OwnProps
+>(
+  null,
+  mapDispatchToProps,
+)(ManualBackupStep2 as React.ComponentType<ManualBackupStep2Props>);

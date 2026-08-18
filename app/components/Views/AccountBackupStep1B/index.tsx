@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import type {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import {
   ScrollView,
   TouchableOpacity,
@@ -8,7 +13,9 @@ import {
   StyleSheet,
   Image,
   Dimensions,
+  type ViewStyle,
 } from 'react-native';
+import type { Theme } from '@metamask/design-tokens';
 import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
@@ -34,7 +41,7 @@ const IMAGE_1_RATIO = 162.8 / 138;
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const IMG_PADDING = Device.isIphoneX() ? 100 : Device.isIphone5S() ? 180 : 220;
 
-const createStyles = (colors) =>
+const createStylesBase = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -196,11 +203,40 @@ const createStyles = (colors) =>
     },
   });
 
+interface AccountBackupParamList extends ParamListBase {
+  AccountBackupStep1B: Record<string, unknown>;
+  ManualBackupStep1: Record<string, unknown>;
+  Webview: {
+    screen: string;
+    params: { url: string; title: string };
+  };
+}
+
+type AccountBackupStep1BStyles = ReturnType<typeof createStylesBase> & {
+  button?: ViewStyle;
+  remindLaterButton?: ViewStyle;
+};
+
+const createStyles = (colors: Theme['colors']): AccountBackupStep1BStyles =>
+  createStylesBase(colors) as AccountBackupStep1BStyles;
+
+const getTypedOnboardingNavbarOptions =
+  getOnboardingNavbarOptions as unknown as (
+    route: RouteProp<AccountBackupParamList, 'AccountBackupStep1B'>,
+    options: Record<string, unknown>,
+    colors: Theme['colors'],
+  ) => Record<string, unknown>;
+
+interface AccountBackupStep1BProps {
+  navigation: NavigationProp<AccountBackupParamList>;
+  route: RouteProp<AccountBackupParamList, 'AccountBackupStep1B'>;
+}
+
 /**
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1B = (props) => {
+const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
   const { navigation, route } = props;
   const [showWhySecureWalletModal, setWhySecureWalletModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -208,7 +244,7 @@ const AccountBackupStep1B = (props) => {
   const styles = createStyles(colors);
 
   useEffect(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation.setOptions(getTypedOnboardingNavbarOptions(route, {}, colors));
   }, [navigation, route, colors]);
 
   const goNext = () => {
