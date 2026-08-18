@@ -1,9 +1,21 @@
 import React, { useState, useCallback } from 'react';
-import { TouchableOpacity, View, StyleSheet, Linking } from 'react-native';
+import {
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  Linking,
+  type ViewStyle,
+  type TextStyle,
+  type Insets,
+  type StyleProp,
+} from 'react-native';
 import Summary from '../../../../../../Base/Summary';
 import Text from '../../../../../../Base/Text';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { isMainnetByChainId, isTestNet } from '../../../../../../../util/networks';
+import {
+  isMainnetByChainId,
+  isTestNet,
+} from '../../../../../../../util/networks';
 import PropTypes from 'prop-types';
 import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import FadeAnimationView from '../../../../../../UI/FadeAnimationView';
@@ -14,10 +26,31 @@ import useModalHandler from '../../../../../../Base/hooks/useModalHandler';
 import AppConstants from '../../../../../../../core/AppConstants';
 import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
+import type { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
-  StyleSheet.create({
-    overview: (noMargin) => ({
+interface TransactionReviewEIP1559Styles {
+  overview: (noMargin?: boolean) => ViewStyle;
+  valuesContainer: ViewStyle;
+  gasInfoContainer: ViewStyle;
+  gasInfoIcon: (hasOrigin?: boolean) => TextStyle;
+  amountContainer: ViewStyle;
+  gasRowContainer: ViewStyle;
+  gasBottomRowContainer: ViewStyle;
+  hitSlop: Insets;
+  redInfo: TextStyle;
+  timeEstimateContainer: ViewStyle;
+  flex: ViewStyle;
+}
+
+const createStyleSheet = StyleSheet.create as unknown as (
+  styles: TransactionReviewEIP1559Styles,
+) => TransactionReviewEIP1559Styles;
+
+const createStyles = (
+  colors: Theme['colors'],
+): TransactionReviewEIP1559Styles =>
+  createStyleSheet({
+    overview: (noMargin?: boolean) => ({
       marginHorizontal: noMargin ? 0 : 24,
       paddingTop: 10,
       paddingBottom: 10,
@@ -30,7 +63,7 @@ const createStyles = (colors) =>
     gasInfoContainer: {
       paddingLeft: 2,
     },
-    gasInfoIcon: (hasOrigin) => ({
+    gasInfoIcon: (hasOrigin?: boolean) => ({
       color: hasOrigin ? colors.warning.default : colors.icon.muted,
     }),
     amountContainer: {
@@ -64,8 +97,17 @@ const createStyles = (colors) =>
     },
   });
 
+type SummaryPropsWithChildren = React.PropsWithChildren<{
+  style?: StyleProp<ViewStyle>;
+}>;
+
+const SummaryWithChildren =
+  Summary as unknown as React.ComponentType<SummaryPropsWithChildren> & {
+    Row: React.ComponentType<SummaryPropsWithChildren>;
+  };
+
 // eslint-disable-next-line react/prop-types
-const Skeleton = ({ width, noStyle }) => {
+const Skeleton = ({ width, noStyle }: { width: number; noStyle?: boolean }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -77,6 +119,28 @@ const Skeleton = ({ width, noStyle }) => {
     </View>
   );
 };
+
+interface TransactionReviewEIP1559Props {
+  gasFeeNative?: string;
+  gasFeeConversion?: string;
+  gasFeeMaxNative?: string;
+  gasFeeMaxConversion?: string;
+  timeEstimate?: string;
+  timeEstimateColor?: string;
+  timeEstimateId?: string;
+  primaryCurrency?: string;
+  chainId?: string;
+  onEdit?: () => void;
+  noMargin?: boolean;
+  origin?: string;
+  originWarning?: boolean;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  gasEstimationReady?: boolean;
+  legacy?: boolean;
+}
 
 const TransactionReviewEIP1559 = ({
   gasFeeNative,
@@ -98,7 +162,7 @@ const TransactionReviewEIP1559 = ({
   isAnimating,
   gasEstimationReady,
   legacy,
-}) => {
+}: TransactionReviewEIP1559Props) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -109,7 +173,7 @@ const TransactionReviewEIP1559 = ({
   const [isVisibleLegacyLearnMore, , showLegacyLearnMore, hideLegacyLearnMore] =
     useModalHandler(false);
   const toggleLearnMoreModal = useCallback(() => {
-    setShowLearnMoreModal((showLearnMoreModal) => !showLearnMoreModal);
+    setShowLearnMoreModal((isVisible) => !isVisible);
   }, []);
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -123,10 +187,10 @@ const TransactionReviewEIP1559 = ({
   );
 
   const edit = useCallback(() => {
-    if (!isAnimating) onEdit();
+    if (!isAnimating) (onEdit as () => void)();
   }, [isAnimating, onEdit]);
 
-  const isMainnet = isMainnetByChainId(chainId);
+  const isMainnet = isMainnetByChainId(chainId as string);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
   let gasFeePrimary, gasFeeSecondary, gasFeeMaxPrimary;
   if (nativeCurrencySelected) {
@@ -140,11 +204,11 @@ const TransactionReviewEIP1559 = ({
   }
 
   const valueToWatchAnimation = `${gasFeeNative}${gasFeeMaxNative}`;
-  const isTestNetwork = isTestNet(chainId);
+  const isTestNetwork = isTestNet(chainId as string);
 
   return (
-    <Summary style={styles.overview(noMargin)}>
-      <Summary.Row>
+    <SummaryWithChildren style={styles.overview(noMargin)}>
+      <SummaryWithChildren.Row>
         <View style={styles.gasRowContainer}>
           <View style={styles.gasRowContainer}>
             <Text
@@ -226,9 +290,9 @@ const TransactionReviewEIP1559 = ({
             <Skeleton width={80} />
           )}
         </View>
-      </Summary.Row>
+      </SummaryWithChildren.Row>
       {!legacy && (
-        <Summary.Row>
+        <SummaryWithChildren.Row>
           <View style={styles.gasRowContainer}>
             {gasEstimationReady ? (
               <FadeAnimationView
@@ -314,7 +378,7 @@ const TransactionReviewEIP1559 = ({
               <Skeleton width={120} />
             )}
           </View>
-        </Summary.Row>
+        </SummaryWithChildren.Row>
       )}
       <InfoModal
         isVisible={isVisibleLegacyLearnMore}
@@ -368,7 +432,7 @@ const TransactionReviewEIP1559 = ({
         timeEstimateId={timeEstimateId}
         onHideModal={hideTimeEstimateInfoModal}
       />
-    </Summary>
+    </SummaryWithChildren>
   );
 };
 
