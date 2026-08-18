@@ -7,12 +7,17 @@ import NavbarTitle from './';
 const mockStore = configureMockStore();
 const store = mockStore({});
 
+// `NavbarTitle` is still JavaScript, so its inferred props type is not usable.
+const NavbarTitleComponent = NavbarTitle as unknown as React.ComponentType<{
+  title: string;
+}>;
+
 describe('NavbarTitle', () => {
   it('should render correctly', () => {
     const title = 'Test';
     const wrapper = shallow(
       <Provider store={store}>
-        <NavbarTitle title={title} />
+        <NavbarTitleComponent title={title} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
