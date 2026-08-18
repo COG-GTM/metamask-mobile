@@ -53,7 +53,7 @@ import AppConstants from '../../../../../app/core/AppConstants';
 import { downloadStateLogs } from '../../../../util/logs';
 import AutoDetectTokensSettings from '../AutoDetectTokensSettings';
 import type { RootState } from '../../../../reducers';
-import type { Colors, Theme } from '../../../../util/theme/models';
+import type { Colors } from '../../../../util/theme/models';
 
 interface AdvancedSettingsProps {
   navigation: StackNavigationProp<ParamListBase>;
@@ -81,6 +81,10 @@ interface AdvancedSettingsState {
   resetModalVisible: boolean;
   inputWidth: string | undefined;
 }
+
+type AdvancedSettingsScrollViewRef = KeyboardAwareScrollViewRef & {
+  scrollToEnd: (options?: { animated?: boolean }) => void;
+};
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create<Record<string, object>>({
@@ -177,7 +181,9 @@ class AdvancedSettings extends PureComponent<
   AdvancedSettingsProps,
   AdvancedSettingsState
 > {
-  scrollView = React.createRef<KeyboardAwareScrollViewRef>();
+  // @ts-expect-error React's base context property is unknown.
+  context!: React.ContextType<typeof ThemeContext>;
+  scrollView = React.createRef<AdvancedSettingsScrollViewRef>();
   mounted = false;
 
   state: AdvancedSettingsState = {
@@ -186,7 +192,7 @@ class AdvancedSettings extends PureComponent<
   };
 
   getStyles = () => {
-    const colors = (this.context as Theme).colors || mockTheme.colors;
+    const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return { styles, colors };
   };
@@ -217,7 +223,7 @@ class AdvancedSettings extends PureComponent<
     this.props.route?.params?.scrollToBottom &&
       this.scrollView?.current?.scrollToEnd({
         animated: true,
-      } as unknown as boolean);
+      });
   };
 
   componentDidUpdate = (): void => {
@@ -290,7 +296,7 @@ class AdvancedSettings extends PureComponent<
     } = this.props;
     const { resetModalVisible } = this.state;
     const { styles, colors } = this.getStyles();
-    const theme = (this.context as Theme) || mockTheme;
+    const theme = this.context || mockTheme;
 
     return (
       <SafeAreaView style={baseStyles.flexGrow}>
@@ -376,7 +382,8 @@ class AdvancedSettings extends PureComponent<
                 )}{' '}
                 <Text
                   color={TextColor.Primary}
-                  {...({ link: true } as { link: boolean })}
+                  // @ts-expect-error Legacy link prop is not in design-system Text typings.
+                  link
                   onPress={this.openLinkAboutStx}
                 >
                   {strings('app_settings.smart_transactions_learn_more')}

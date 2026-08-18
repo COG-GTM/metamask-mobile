@@ -347,44 +347,41 @@ const GasEducationCarousel = ({
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
             >
-              {['one', 'two', 'three'].map(
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                (value, index) => {
-                  const key = index + 1;
-                  const imgStyleKey = `carouselImage${key}`;
-                  return (
-                    <View key={key} style={baseStyles.flexGrow}>
-                      <View style={styles.carouselImageWrapper}>
-                        <Image
-                          source={carousel_images[index]}
-                          style={[styles.carouselImage, styles[imgStyleKey]]}
-                          resizeMethod={'auto'}
-                        />
-                      </View>
-                      <View style={baseStyles.flexGrow}>
-                        {renderText(key)}
-                        {key === 3 && (
-                          <View style={styles.ctas}>
-                            <View style={styles.ctaWrapper}>
-                              <StyledButton
-                                type={'confirm'}
-                                onPress={onPresGetStarted}
-                              >
-                                {strings(
-                                  'fiat_on_ramp.gas_education_carousel.step_3.cta',
-                                  {
-                                    ticker: getTicker(ticker),
-                                  },
-                                )}
-                              </StyledButton>
-                            </View>
-                          </View>
-                        )}
-                      </View>
+              {['one', 'two', 'three'].map((_value, index) => {
+                const key = index + 1;
+                const imgStyleKey = `carouselImage${key}`;
+                return (
+                  <View key={key} style={baseStyles.flexGrow}>
+                    <View style={styles.carouselImageWrapper}>
+                      <Image
+                        source={carousel_images[index]}
+                        style={[styles.carouselImage, styles[imgStyleKey]]}
+                        resizeMethod={'auto'}
+                      />
                     </View>
-                  );
-                },
-              )}
+                    <View style={baseStyles.flexGrow}>
+                      {renderText(key)}
+                      {key === 3 && (
+                        <View style={styles.ctas}>
+                          <View style={styles.ctaWrapper}>
+                            <StyledButton
+                              type={'confirm'}
+                              onPress={onPresGetStarted}
+                            >
+                              {strings(
+                                'fiat_on_ramp.gas_education_carousel.step_3.cta',
+                                {
+                                  ticker: getTicker(ticker),
+                                },
+                              )}
+                            </StyledButton>
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                );
+              })}
             </ScrollableTabView>
 
             <View style={styles.progessContainer}>
