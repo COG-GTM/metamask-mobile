@@ -601,7 +601,28 @@
     "disclaimer": "Disclaimer: MetaMask pulls the media file from the source URL. This URL is sometimes changed by the marketplace the NFT was minted on."
   },
   "activity_view": {
-    "title": "Activity"
+    "title": "Activity",
+    "search_placeholder": "Search activity",
+    "filter_type": "All types",
+    "filter_status": "Status",
+    "filter_date": "Date",
+    "clear_all": "Clear all",
+    "no_results_title": "No activity matches your filters",
+    "no_results_cta": "Clear filters",
+    "filter_type_send": "Send",
+    "filter_type_receive": "Receive",
+    "filter_type_swap": "Swap",
+    "filter_type_bridge": "Bridge",
+    "filter_type_approve": "Approve",
+    "filter_type_contract_interaction": "Contract interaction",
+    "filter_status_pending": "Pending",
+    "filter_status_confirmed": "Confirmed",
+    "filter_status_failed": "Failed",
+    "filter_date_last_7_days": "Last 7 days",
+    "filter_date_last_30_days": "Last 30 days",
+    "filter_date_last_90_days": "Last 90 days",
+    "filter_date_this_year": "This year",
+    "filter_date_custom": "Custom range"
   },
   "transactions_view": {
     "title": "Transactions"
