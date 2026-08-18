@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import PropTypes from 'prop-types';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { query } from '@metamask/controller-utils';
@@ -25,7 +26,13 @@ import DetailsModal from '../../../Base/DetailsModal';
 import { RPC, NO_RPC_BLOCK_EXPLORER } from '../../../../constants/network';
 import { withNavigation } from '@react-navigation/compat';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
-import decodeTransaction from '../../TransactionElement/utils';
+import { Theme } from '../../../../util/theme/models';
+import { RootState } from '../../../../reducers';
+import decodeTransaction, {
+  type SwapTransaction,
+  type TokenLike,
+  type TransactionLike,
+} from '../../TransactionElement/utils';
 import {
   selectChainId,
   selectNetworkConfigurations,
@@ -62,7 +69,25 @@ import {
 } from '../../../../constants/urls';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 
-const createStyles = (colors) =>
+interface RenderedTransactionDetails {
+  renderFrom?: string;
+  renderTo?: string;
+  hash?: string;
+  summaryAmount?: string;
+  summaryFee?: string;
+  summaryTotalAmount?: string;
+  summarySecondaryTotalAmount?: string;
+  transactionType?: string;
+  txChainId?: string;
+  [key: string]: unknown;
+}
+
+interface NetworkConfiguration {
+  blockExplorerUrls: string[];
+  defaultBlockExplorerUrlIndex: number;
+}
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     viewOnEtherscan: {
       fontSize: 16,
@@ -115,7 +140,52 @@ const createStyles = (colors) =>
 /**
  * View that renders a transaction details as part of transactions list
  */
-class TransactionDetails extends PureComponent {
+interface TransactionDetailsProps {
+  navigation:
+    | NavigationProp<ParamListBase>
+    | {
+        push: (...args: never[]) => unknown;
+      };
+  chainId: string;
+  transactionObject: {
+    chainId: string;
+    networkID: string;
+    status: string;
+    txParams?: {
+      nonce?: string;
+      multiLayerL1FeeTotal?: string;
+      [key: string]: string | undefined;
+    };
+    [key: string]: unknown;
+  };
+  transactionDetails: RenderedTransactionDetails;
+  networkConfigurations: Record<string, NetworkConfiguration>;
+  close?: () => void;
+  showSpeedUpModal?: () => void;
+  showCancelModal?: () => void;
+  selectedAddress: string;
+  transactions: unknown[];
+  ticker: string;
+  tokens: Record<string, unknown>;
+  contractExchangeRates: Record<string, { price?: number }>;
+  conversionRate: number;
+  currentCurrency: string;
+  swapsTransactions: Record<string, unknown>;
+  swapsTokens: unknown[];
+  primaryCurrency: string;
+  shouldUseSmartTransaction: boolean;
+}
+
+interface TransactionDetailsState {
+  rpcBlockExplorer?: string;
+  renderTxActions: boolean;
+  updatedTransactionDetails?: RenderedTransactionDetails;
+}
+
+class TransactionDetails extends PureComponent<
+  TransactionDetailsProps,
+  TransactionDetailsState
+> {
   static propTypes = {
     /**
     /* navigation object required to push new views
@@ -163,13 +233,13 @@ class TransactionDetails extends PureComponent {
     shouldUseSmartTransaction: PropTypes.bool,
   };
 
-  state = {
+  state: TransactionDetailsState = {
     rpcBlockExplorer: undefined,
     renderTxActions: true,
     updatedTransactionDetails: undefined,
   };
 
-  fetchTxReceipt = async (transactionHash) => {
+  fetchTxReceipt = async (transactionHash: string) => {
     const ethQuery = getGlobalEthQuery();
     return await query(ethQuery, 'getTransactionReceipt', [transactionHash]);
   };
@@ -181,7 +251,11 @@ class TransactionDetails extends PureComponent {
    * @param {Object} networkConfigurations - The network configurations object
    * @returns {string} The block explorer URL
    */
-  getBlockExplorerForChain = (chainId, txChainId, networkConfigurations) => {
+  getBlockExplorerForChain = (
+    chainId: string,
+    txChainId: string,
+    networkConfigurations: Record<string, NetworkConfiguration>,
+  ) => {
     // First check for network configuration block explorer
     let blockExplorer =
       networkConfigurations?.[txChainId]?.blockExplorerUrls[
@@ -245,7 +319,8 @@ class TransactionDetails extends PureComponent {
       }
       transactionObject.txParams.multiLayerL1FeeTotal = multiLayerL1FeeTotal;
       const decodedTx = await decodeTransaction({
-        tx: transactionObject,
+        // @ts-expect-error Preserve the loosely shaped transaction object passed by the legacy screen.
+        tx: transactionObject as TransactionLike,
         selectedAddress,
         ticker,
         chainId,
@@ -253,14 +328,14 @@ class TransactionDetails extends PureComponent {
         currentCurrency,
         transactions,
         contractExchangeRates,
-        tokens,
+        tokens: tokens as Record<string, TokenLike>,
         primaryCurrency,
-        swapsTransactions,
-        swapsTokens,
+        swapsTransactions: swapsTransactions as Record<string, SwapTransaction>,
+        swapsTokens: swapsTokens as TokenLike[],
       });
       this.setState({ updatedTransactionDetails: decodedTx[1] });
     } catch (e) {
-      Logger.error(e);
+      Logger.error(e as Error);
       this.setState({ updatedTransactionDetails: transactionDetails });
     }
   };
@@ -290,7 +365,12 @@ class TransactionDetails extends PureComponent {
     } = this.props;
     const { rpcBlockExplorer } = this.state;
     try {
-      const { url, title } = getBlockExplorerTxUrl(RPC, hash, rpcBlockExplorer);
+      const { url, title } = getBlockExplorerTxUrl(
+        RPC,
+        hash as string,
+        rpcBlockExplorer,
+      );
+      // @ts-expect-error Legacy navigation exposes push at runtime.
       navigation.push('Webview', {
         screen: 'SimpleWebview',
         params: { url, title },
@@ -298,7 +378,7 @@ class TransactionDetails extends PureComponent {
       close && close();
     } catch (e) {
       // eslint-disable-next-line no-console
-      Logger.error(e, {
+      Logger.error(e as Error, {
         message: `can't get a block explorer link for network `,
         networkID,
       });
@@ -306,7 +386,7 @@ class TransactionDetails extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
@@ -314,7 +394,7 @@ class TransactionDetails extends PureComponent {
     const { showSpeedUpModal, close } = this.props;
     if (close) {
       close();
-      showSpeedUpModal();
+      (showSpeedUpModal as () => void)();
     }
   };
 
@@ -322,7 +402,7 @@ class TransactionDetails extends PureComponent {
     const { showCancelModal, close } = this.props;
     if (close) {
       close();
-      showCancelModal();
+      (showCancelModal as () => void)();
     }
   };
 
@@ -374,12 +454,17 @@ class TransactionDetails extends PureComponent {
     const { rpcBlockExplorer } = this.state;
 
     return updatedTransactionDetails ? (
+      /* @ts-expect-error Legacy JS modal body requires style despite accepting omitted runtime props. */
       <DetailsModal.Body>
+        {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
         <DetailsModal.Section borderBottom>
+          {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
           <DetailsModal.Column>
+            {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
             <DetailsModal.SectionTitle>
               {strings('transactions.status')}
             </DetailsModal.SectionTitle>
+            {/* @ts-expect-error Preserve the legacy StatusText props. */}
             <StatusText status={status} />
             {!!renderTxActions &&
               updatedTransactionDetails?.txChainId === chainId && (
@@ -389,17 +474,23 @@ class TransactionDetails extends PureComponent {
                 </View>
               )}
           </DetailsModal.Column>
+          {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
           <DetailsModal.Column end>
+            {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
             <DetailsModal.SectionTitle>
               {strings('transactions.date')}
             </DetailsModal.SectionTitle>
+            {/* @ts-expect-error Preserve the legacy Text props used by this component. */}
             <Text small primary>
               {toDateFormat(time)}
             </Text>
           </DetailsModal.Column>
         </DetailsModal.Section>
+        {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
         <DetailsModal.Section borderBottom={!!txParams?.nonce}>
+          {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
           <DetailsModal.Column>
+            {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
             <DetailsModal.SectionTitle>
               {strings('transactions.from')}
             </DetailsModal.SectionTitle>
@@ -408,12 +499,16 @@ class TransactionDetails extends PureComponent {
                 <View style={styles.accountNameAvatar}>
                   <Avatar
                     variant={AvatarVariant.Account}
+                    // @ts-expect-error Preserve the legacy AvatarAccountType.Jazzicon value.
                     type={AvatarAccountType.Jazzicon}
-                    accountAddress={updatedTransactionDetails.renderFrom}
+                    accountAddress={
+                      updatedTransactionDetails.renderFrom as string
+                    }
                     size={AvatarSize.Md}
                     style={styles.accountAvatar}
                   />
                   <Text
+                    // @ts-expect-error Preserve the legacy Text props used by this component.
                     small
                     primary
                     testID={WalletViewSelectorsIDs.ACCOUNT_NAME_LABEL_TEXT}
@@ -427,7 +522,9 @@ class TransactionDetails extends PureComponent {
               </View>
             </View>
           </DetailsModal.Column>
+          {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
           <DetailsModal.Column end>
+            {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
             <DetailsModal.SectionTitle>
               {strings('transactions.to')}
             </DetailsModal.SectionTitle>
@@ -436,12 +533,17 @@ class TransactionDetails extends PureComponent {
                 <View style={styles.accountNameAvatar}>
                   <Avatar
                     variant={AvatarVariant.Account}
+                    // @ts-expect-error Preserve the legacy AvatarAccountType.Jazzicon value.
                     type={AvatarAccountType.Jazzicon}
-                    accountAddress={updatedTransactionDetails.renderFrom}
+                    accountAddress={
+                      updatedTransactionDetails.renderFrom as string
+                    }
                     size={AvatarSize.Md}
                     style={styles.accountAvatar}
                   />
+                  {/* Preserve the legacy Text props used by this component. */}
                   <Text
+                    // @ts-expect-error Preserve the legacy Text props used by this component.
                     small
                     primary
                     testID={WalletViewSelectorsIDs.ACCOUNT_NAME_LABEL_TEXT}
@@ -456,12 +558,16 @@ class TransactionDetails extends PureComponent {
             </View>
           </DetailsModal.Column>
         </DetailsModal.Section>
+        {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
         <DetailsModal.Section>
+          {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
           <DetailsModal.Column>
+            {/* @ts-expect-error Legacy JS modal component accepts the original omitted style props. */}
             <DetailsModal.SectionTitle upper>
               {strings('transactions.nonce')}
             </DetailsModal.SectionTitle>
             {!!txParams?.nonce && (
+              // @ts-expect-error Preserve the legacy Text props used by this component.
               <Text small primary>{`#${parseInt(
                 txParams.nonce.replace(regex.transactionNonce, ''),
                 16,
@@ -509,25 +615,66 @@ class TransactionDetails extends PureComponent {
   };
 }
 
-const mapStateToProps = (state, ownProps) => ({
+type TransactionDetailsStateProps = Pick<
+  TransactionDetailsProps,
+  | 'chainId'
+  | 'networkConfigurations'
+  | 'selectedAddress'
+  | 'transactions'
+  | 'ticker'
+  | 'tokens'
+  | 'contractExchangeRates'
+  | 'conversionRate'
+  | 'currentCurrency'
+  | 'primaryCurrency'
+  | 'swapsTransactions'
+  | 'swapsTokens'
+  | 'shouldUseSmartTransaction'
+>;
+type TransactionDetailsOwnProps = Pick<
+  TransactionDetailsProps,
+  | 'navigation'
+  | 'chainId'
+  | 'transactionObject'
+  | 'transactionDetails'
+  | 'showSpeedUpModal'
+  | 'showCancelModal'
+  | 'close'
+>;
+const mapStateToProps = (
+  state: RootState,
+  ownProps: TransactionDetailsOwnProps,
+): TransactionDetailsStateProps => ({
   chainId: selectChainId(state),
-  networkConfigurations: selectNetworkConfigurations(state),
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+  networkConfigurations: selectNetworkConfigurations(state) as Record<
+    string,
+    NetworkConfiguration
+  >,
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(
+    state,
+  ) as string,
   transactions: selectTransactions(state),
   ticker: selectEvmTicker(state),
   tokens: selectTokensByAddress(state),
   contractExchangeRates: selectContractExchangeRates(state),
-  conversionRate: selectConversionRate(state),
-  currentCurrency: selectCurrentCurrency(state),
-  primaryCurrency: selectPrimaryCurrency(state),
+  conversionRate: selectConversionRate(state) as number,
+  currentCurrency: selectCurrentCurrency(state) as string,
+  primaryCurrency: selectPrimaryCurrency(state) as string,
   swapsTransactions: selectSwapsTransactions(state),
-  swapsTokens: swapsControllerTokens(state),
+  swapsTokens: swapsControllerTokens(state) as TokenLike[],
   shouldUseSmartTransaction: selectShouldUseSmartTransaction(
     state,
-    ownProps.transactionObject.chainId,
+    ownProps.transactionObject.chainId as `0x${string}`,
   ),
 });
 
 TransactionDetails.contextType = ThemeContext;
 
-export default connect(mapStateToProps)(withNavigation(TransactionDetails));
+export default connect(mapStateToProps)(
+  withNavigation<
+    NavigationProp<ParamListBase>,
+    // @ts-expect-error The compat HOC requires a private navigation subtype.
+    TransactionDetailsProps,
+    React.ComponentType<TransactionDetailsProps>
+  >(TransactionDetails),
+);
