@@ -20,11 +20,11 @@ import StyledButton from '../../UI/StyledButton';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
 import type { ConnectedProps } from 'react-redux';
 import collectiblesTransferInformation from '../../../util/collectibles-transfer.json';
 import { newAssetTransaction } from '../../../actions/transaction';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import type { Dispatch } from 'redux';
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -77,9 +77,10 @@ interface CollectibleViewDispatchProps {
   newAssetTransaction: (selectedAsset: CollectibleViewParams) => void;
 }
 
-const mapDispatchToProps: CollectibleViewDispatchProps = {
-  newAssetTransaction,
-};
+const mapDispatchToProps = (dispatch: Dispatch): CollectibleViewDispatchProps => ({
+  newAssetTransaction: (selectedAsset) =>
+    dispatch(newAssetTransaction(selectedAsset)),
+});
 
 const connector = connect<
   {},

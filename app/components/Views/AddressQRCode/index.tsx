@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
 import type { ConnectedProps } from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 import { strings } from '../../../../locales/i18n';
@@ -107,10 +108,10 @@ interface AddressQRCodeDispatchProps {
   protectWalletModalVisible: () => unknown;
 }
 
-const mapDispatchToProps: AddressQRCodeDispatchProps = {
-  showAlert: (config) => showAlert(config),
-  protectWalletModalVisible: () => protectWalletModalVisible(),
-};
+const mapDispatchToProps = (dispatch: Dispatch): AddressQRCodeDispatchProps => ({
+  showAlert: (config) => dispatch(showAlert(config)),
+  protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
+});
 
 const connector = connect<
   AddressQRCodeStateProps,
