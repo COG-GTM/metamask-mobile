@@ -387,8 +387,7 @@ class AccountOverview extends PureComponent<
       onboardingWizard,
     } = this.props;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const themeAppearance =
-      (this.context as Theme).themeAppearance || 'light';
+    const themeAppearance = (this.context as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);
 
     if (!address) return null;
@@ -514,8 +513,11 @@ const mapDispatchToProps = (dispatch: (action: object) => unknown) => ({
 
 AccountOverview.contextType = ThemeContext;
 
-// @ts-expect-error Redux and metrics HOCs inject the remaining component props.
-export default connect(mapStateToProps, mapDispatchToProps)(
+export default connect(
+  mapStateToProps,
+  // @ts-expect-error Redux and metrics HOCs inject the remaining component props.
+  mapDispatchToProps,
+)(
   // @ts-expect-error Redux and metrics HOCs inject the remaining component props.
   withMetricsAwareness(AccountOverview),
 );

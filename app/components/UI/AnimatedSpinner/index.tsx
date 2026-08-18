@@ -66,9 +66,7 @@ const createStyles = (colors: Colors, measure: SpinnerMeasures) =>
   StyleSheet.create({
     view: {
       position: 'relative',
-      height: Device.isAndroid()
-        ? measure.Android.height
-        : measure.iOS.height,
+      height: Device.isAndroid() ? measure.Android.height : measure.iOS.height,
       width: Device.isAndroid() ? measure.Android.width : measure.iOS.width,
       top: Device.isAndroid() ? -6 : -5.5,
       left: Device.isAndroid() ? -6 : -5.5,

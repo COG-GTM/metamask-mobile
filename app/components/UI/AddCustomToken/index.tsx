@@ -610,8 +610,7 @@ class AddCustomToken extends PureComponent<
       warningAddress,
     } = this.state;
     const colors = (this.context as Theme).colors || mockTheme.colors;
-    const themeAppearance =
-      (this.context as Theme).themeAppearance || 'light';
+    const themeAppearance = (this.context as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);
     const isDisabled = !symbol || !decimals || !this.props.selectedNetwork;
 

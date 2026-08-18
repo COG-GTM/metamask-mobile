@@ -41,10 +41,7 @@ const Button = (props: ButtonProps) => {
   const styles = createStyles(colors);
 
   return (
-    <GenericButton
-      onPress={props.onPress}
-      style={[styles.button, props.style]}
-    >
+    <GenericButton onPress={props.onPress} style={[styles.button, props.style]}>
       {props.children}
     </GenericButton>
   );
