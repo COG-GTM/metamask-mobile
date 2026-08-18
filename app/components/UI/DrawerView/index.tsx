@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import {
   Alert,
   TouchableOpacity,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import Share from 'react-native-share';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import FeatherIcon from 'react-native-vector-icons/Feather';
@@ -41,7 +43,7 @@ import Logger from '../../../util/Logger';
 import Device from '../../../util/device';
 import AppConstants from '../../../core/AppConstants';
 import { MetaMetricsEvents } from '../../../core/Analytics';
-import URL from 'url-parse';
+import URLParser from 'url-parse';
 import EthereumAddress from '../EthereumAddress';
 import { getEther } from '../../../util/transactions';
 import { newAssetTransaction } from '../../../actions/transaction';
@@ -61,6 +63,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { isZero } from '../../../util/lodash';
 import { Authentication } from '../../../core/';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import { getLabelTextByAddress } from '../../../util/address';
 import {
   onboardNetworkAction,
@@ -75,6 +78,7 @@ import {
   selectNetworkConfigurations,
   selectProviderConfig,
   selectEvmTicker,
+  ProviderConfig,
 } from '../../../selectors/networkController';
 import { selectCurrentCurrency } from '../../../selectors/currencyRateController';
 import { selectTokens } from '../../../selectors/tokensController';
@@ -87,9 +91,13 @@ import { createAccountSelectorNavDetails } from '../../Views/AccountSelector';
 import NetworkInfo from '../NetworkInfo';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
+import { InternalAccount } from '@metamask/keyring-internal-api';
+import { Token } from '@metamask/assets-controllers';
+import { RootState } from '../../../reducers';
+import { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import safePromiseHandler from './utils';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -322,7 +330,7 @@ const createStyles = (colors) =>
 
 const metamask_name = require('../../../images/branding/metamask-name.png'); // eslint-disable-line
 const metamask_fox = require('../../../images/branding/fox.png'); // eslint-disable-line
-const ICON_IMAGES = {
+const ICON_IMAGES: Record<string, number> = {
   wallet: require('../../../images/wallet-icon.png'), // eslint-disable-line
   'selected-wallet': require('../../../images/selected-wallet-icon.png'), // eslint-disable-line
 };
@@ -331,7 +339,70 @@ const ICON_IMAGES = {
  * View component that displays the MetaMask fox
  * in the middle of the screen
  */
-class DrawerView extends PureComponent {
+interface Keyring {
+  accounts: string[];
+  type: string;
+}
+
+interface DrawerState {
+  showProtectWalletModal?: boolean;
+  account: {
+    ens?: string;
+    name?: string;
+    address?: string;
+    currentChainId?: string;
+  };
+  networkType?: string;
+  showModal: boolean;
+  networkUrl?: string;
+}
+
+interface DrawerViewProps extends IWithMetricsAwarenessProps {
+  navigation: NavigationProp<ParamListBase>;
+  providerConfig: ProviderConfig;
+  accounts: ReturnType<typeof selectAccounts>;
+  selectedInternalAccount: InternalAccount;
+  currentCurrency: string;
+  keyrings?: Keyring[];
+  toggleNetworkModal?: () => void;
+  showAlert: (config: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: { msg: string };
+  }) => void;
+  networkModalVisible: boolean;
+  newAssetTransaction: (selectedAsset: Parameters<typeof newAssetTransaction>[0]) => void;
+  passwordSet?: boolean;
+  wizard?: RootState['wizard'];
+  ticker: string;
+  networkConfigurations: ReturnType<typeof selectNetworkConfigurations>;
+  tokens: Token[];
+  collectibles: ReturnType<typeof collectiblesSelector>;
+  seedphraseBackedUp?: boolean;
+  tokenBalances: ReturnType<typeof selectContractBalances>;
+  protectWalletModalVisible: () => void;
+  onCloseDrawer: () => void;
+  currentRoute: string;
+  onboardNetworkAction: (chainId: string) => void;
+  switchedNetwork?: RootState['networkOnboarded']['switchedNetwork'];
+  networkSwitched: (params: { networkUrl: string; networkStatus: boolean }) => void;
+  infoNetworkModalVisible?: boolean;
+  toggleInfoNetworkModal: () => void;
+  chainId: string;
+}
+
+interface DrawerMenuItem {
+  name: string;
+  icon?: React.ReactNode;
+  selectedIcon?: React.ReactNode;
+  action: () => void;
+  routeNames?: string[];
+  testID?: string;
+  warning?: string;
+}
+
+class DrawerView extends PureComponent<DrawerViewProps, DrawerState> {
   static propTypes = {
     /**
     /* navigation object required to push new views
@@ -431,7 +502,7 @@ class DrawerView extends PureComponent {
      */
     networkSwitched: PropTypes.func,
     /**
-     *  Boolean that determines the state of network info modal
+     * Boolean that determines the state of network info modal
      */
     infoNetworkModalVisible: PropTypes.bool,
     /**
@@ -448,7 +519,7 @@ class DrawerView extends PureComponent {
     chainId: PropTypes.string,
   };
 
-  state = {
+  state: DrawerState = {
     showProtectWalletModal: undefined,
     account: {
       ens: undefined,
@@ -461,10 +532,10 @@ class DrawerView extends PureComponent {
     networkUrl: undefined,
   };
 
-  browserSectionRef = React.createRef();
+  browserSectionRef = React.createRef<View>();
 
-  currentBalance = null;
-  previousBalance = null;
+  currentBalance: number | null = null;
+  previousBalance: number | null = null;
   processedNewBalance = false;
   animatingNetworksModal = false;
   selectedChecksummedAddress = toChecksumHexAddress(
@@ -475,7 +546,7 @@ class DrawerView extends PureComponent {
     let ret = false;
     const { keyrings } = this.props;
     const allKeyrings =
-      keyrings && keyrings.length
+      keyrings?.length
         ? keyrings
         : Engine.context.KeyringController.state.keyrings;
     for (const keyring of allKeyrings) {
@@ -489,7 +560,7 @@ class DrawerView extends PureComponent {
   }
 
   renderTag() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const label = getLabelTextByAddress(this.selectedChecksummedAddress);
 
@@ -529,15 +600,21 @@ class DrawerView extends PureComponent {
 
       this.props.tokens.forEach((token) => {
         if (
-          this.props.tokenBalances[token.address] &&
-          !isZero(this.props.tokenBalances[token.address])
+          this.props.tokenBalances[
+            token.address as keyof typeof this.props.tokenBalances
+          ] &&
+          !isZero(
+            this.props.tokenBalances[
+              token.address as keyof typeof this.props.tokenBalances
+            ],
+          )
         ) {
           tokenFound = true;
         }
       });
       if (
         !this.props.passwordSet ||
-        this.currentBalance > 0 ||
+        (this.currentBalance !== null && this.currentBalance > 0) ||
         tokenFound ||
         this.props.collectibles.length > 0
       ) {
@@ -579,7 +656,7 @@ class DrawerView extends PureComponent {
   }
 
   updateAccountInfo = async () => {
-    const { providerConfig, selectedInternalAccount, chainId } = this.props;
+    const { selectedInternalAccount, chainId } = this.props;
     const { currentChainId, address, name } = this.state.account;
     const accountName = selectedInternalAccount.metadata.name;
     if (
@@ -591,7 +668,7 @@ class DrawerView extends PureComponent {
         this.selectedChecksummedAddress,
         chainId,
       );
-      this.setState((state) => ({
+      this.setState((_state) => ({
         account: {
           ens,
           name: accountName,
@@ -687,6 +764,7 @@ class DrawerView extends PureComponent {
         params: { screen: 'Onboarding' },
       });
     } else {
+      // @ts-expect-error Legacy navigation exposes replace at runtime.
       this.props.navigation.replace(Routes.ONBOARDING.LOGIN, { locked: true });
     }
   };
@@ -723,7 +801,7 @@ class DrawerView extends PureComponent {
         networkConfigurations,
       );
       const url = `${blockExplorer}/address/${this.selectedChecksummedAddress}`;
-      const title = new URL(blockExplorer).hostname;
+      const title = new URLParser(blockExplorer).hostname;
       this.goToBrowserUrl(url, title);
     } else {
       const url = getEtherscanAddressUrl(
@@ -771,7 +849,7 @@ class DrawerView extends PureComponent {
     this.hideDrawer();
   };
 
-  goToBrowserUrl(url, title) {
+  goToBrowserUrl(url: string, title: string) {
     this.props.navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
@@ -786,7 +864,7 @@ class DrawerView extends PureComponent {
     this.props.onCloseDrawer();
   };
 
-  hasBlockExplorer = (providerType) => {
+  hasBlockExplorer = (providerType: string) => {
     const { networkConfigurations } = this.props;
     if (providerType === RPC) {
       const {
@@ -803,16 +881,16 @@ class DrawerView extends PureComponent {
     return hasBlockExplorer(providerType);
   };
 
-  getIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getIcon(name: string, size?: number) {
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
 
     return (
       <Icon name={name} size={size || 24} color={colors.icon.alternative} />
     );
   }
 
-  getFeatherIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getFeatherIcon(name: string, size?: number) {
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
 
     return (
       <FeatherIcon
@@ -823,8 +901,8 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getMaterialIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getMaterialIcon(name: string, size?: number) {
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
 
     return (
       <MaterialIcon
@@ -835,8 +913,8 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getImageIcon(name) {
-    const colors = this.context.colors || mockTheme.colors;
+  getImageIcon(name: string) {
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -844,16 +922,16 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getSelectedIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getSelectedIcon(name: string, size?: number) {
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
 
     return (
       <Icon name={name} size={size || 24} color={colors.primary.default} />
     );
   }
 
-  getSelectedMaterialIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getSelectedMaterialIcon(name: string, size?: number) {
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
 
     return (
       <MaterialIcon
@@ -864,8 +942,8 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getSelectedImageIcon(name) {
-    const colors = this.context.colors || mockTheme.colors;
+  getSelectedImageIcon(name: string) {
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -876,7 +954,7 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getSections = () => {
+  getSections = (): DrawerMenuItem[][] => {
     const {
       providerConfig: { type, rpcUrl },
       networkConfigurations,
@@ -926,6 +1004,7 @@ class DrawerView extends PureComponent {
 
   copyAccountToClipboard = async () => {
     await ClipboardManager.setString(this.selectedChecksummedAddress);
+    // @ts-expect-error Preserve the legacy call to the missing toggle method.
     this.toggleReceiveModal();
     InteractionManager.runAfterInteractions(() => {
       this.props.showAlert({
@@ -978,20 +1057,21 @@ class DrawerView extends PureComponent {
   onInfoNetworksModalClose = () => {
     const {
       chainId,
-      onboardNetworkAction,
-      networkSwitched,
-      toggleInfoNetworkModal,
+      onboardNetworkAction: onboardNetwork,
+      networkSwitched: switchNetwork,
+      toggleInfoNetworkModal: toggleInfoModal,
     } = this.props;
 
-    onboardNetworkAction(chainId);
-    networkSwitched({ networkUrl: '', networkStatus: false });
+    onboardNetwork(chainId);
+    switchNetwork({ networkUrl: '', networkStatus: false });
 
     // Wrap the toggle call in a setTimeout to avoid awaiting a non-promise function.
-    safePromiseHandler(toggleInfoNetworkModal(), 100);
+    // @ts-expect-error Preserve the legacy eager action invocation.
+    safePromiseHandler(toggleInfoModal(), 100);
   };
 
   renderProtectModal = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1045,13 +1125,14 @@ class DrawerView extends PureComponent {
       navigation,
       infoNetworkModalVisible,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const {
       account: { name: nameFromState, ens: ensFromState },
     } = this.state;
 
     const account = {
+      // @ts-expect-error Preserve the original spread order, which allows the selected account to overwrite address.
       address: this.selectedChecksummedAddress,
       name: nameFromState,
       ens: ensFromState,
@@ -1059,7 +1140,7 @@ class DrawerView extends PureComponent {
       ...accounts[this.selectedChecksummedAddress],
     };
     const { name, ens } = account;
-    account.balance =
+    (account as { balance?: string | number }).balance =
       (accounts[this.selectedChecksummedAddress] &&
         renderFromWei(accounts[this.selectedChecksummedAddress].balance)) ||
       0;
@@ -1069,7 +1150,10 @@ class DrawerView extends PureComponent {
       this.previousBalance = this.currentBalance;
     }
     this.currentBalance = totalFiatBalance;
-    const fiatBalanceStr = renderFiat(this.currentBalance, currentCurrency);
+    const fiatBalanceStr = renderFiat(
+      this.currentBalance as number,
+      currentCurrency,
+    );
     const accountName = isDefaultAccountName(name) && ens ? ens : name;
 
     return (
@@ -1104,7 +1188,8 @@ class DrawerView extends PureComponent {
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.accountInfo}
+                  // @ts-expect-error Preserve the legacy accountInfo style key absent from createStyles.
+                  style={styles.accountInfo}
                 onPress={this.openAccountSelector}
                 testID={'navbar-account-button'}
               >
@@ -1176,10 +1261,10 @@ class DrawerView extends PureComponent {
                     {section
                       .filter((item) => {
                         if (!item) return undefined;
-                        const { name = undefined } = item;
+                        const { name: itemName = undefined } = item;
                         if (
-                          name &&
-                          name.toLowerCase().indexOf('etherscan') !== -1
+                          itemName &&
+                          itemName.toLowerCase().indexOf('etherscan') !== -1
                         ) {
                           const type = providerConfig?.type;
                           return (
@@ -1193,11 +1278,11 @@ class DrawerView extends PureComponent {
                           key={`item_${i}_${j}`}
                           style={[
                             styles.menuItem,
-                            item.routeNames &&
-                            item.routeNames.includes(currentRoute)
+                            item.routeNames?.includes(currentRoute as string)
                               ? styles.selectedRoute
                               : null,
                           ]}
+                          // @ts-expect-error Preserve the legacy false-or-ref expression.
                           ref={
                             item.name === strings('drawer.browser') &&
                             this.browserSectionRef
@@ -1205,8 +1290,7 @@ class DrawerView extends PureComponent {
                           onPress={() => item.action()} // eslint-disable-line
                         >
                           {item.icon
-                            ? item.routeNames &&
-                              item.routeNames.includes(currentRoute)
+                            ? item.routeNames?.includes(currentRoute as string)
                               ? item.selectedIcon
                               : item.icon
                             : null}
@@ -1214,8 +1298,7 @@ class DrawerView extends PureComponent {
                             style={[
                               styles.menuItemName,
                               !item.icon ? styles.noIcon : null,
-                              item.routeNames &&
-                              item.routeNames.includes(currentRoute)
+                              item.routeNames?.includes(currentRoute as string)
                                 ? styles.selectedName
                                 : null,
                             ]}
@@ -1258,7 +1341,7 @@ class DrawerView extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   providerConfig: selectProviderConfig(state),
   chainId: selectChainId(state),
   accounts: selectAccounts(state),
@@ -1279,15 +1362,26 @@ const mapStateToProps = (state) => ({
   switchedNetwork: state.networkOnboarded.switchedNetwork,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   toggleNetworkModal: () => dispatch(toggleNetworkModal()),
-  showAlert: (config) => dispatch(showAlert(config)),
-  newAssetTransaction: (selectedAsset) =>
+  showAlert: (config: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: { msg: string };
+  }) => dispatch(showAlert(config)),
+  newAssetTransaction: (selectedAsset: ReturnType<typeof getEther>) =>
     dispatch(newAssetTransaction(selectedAsset)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
-  onboardNetworkAction: (chainId) => dispatch(onboardNetworkAction(chainId)),
-  networkSwitched: ({ networkUrl, networkStatus }) =>
-    dispatch(networkSwitched({ networkUrl, networkStatus })),
+  onboardNetworkAction: (chainId: string) =>
+    dispatch(onboardNetworkAction(chainId)),
+  networkSwitched: ({
+    networkUrl,
+    networkStatus,
+  }: {
+    networkUrl: string;
+    networkStatus: boolean;
+  }) => dispatch(networkSwitched({ networkUrl, networkStatus })),
   toggleInfoNetworkModal: () => dispatch(toggleInfoNetworkModal(false)),
 });
 
@@ -1296,4 +1390,5 @@ DrawerView.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+  // @ts-expect-error Redux supplies DrawerView's state and dispatch props before metrics awareness.
 )(withMetricsAwareness(DrawerView));
