@@ -136,56 +136,58 @@ export const PortfolioBalance = React.memo(() => {
   );
 
   return (
-    <View style={styles.portfolioBalance}>
-      <View>
+    <View>
+      <View style={styles.portfolioBalance}>
         <View>
-          {selectedAccountMultichainBalance?.displayBalance ? (
-            <View style={styles.balanceContainer}>
-              <SensitiveText
-                isHidden={privacyMode}
-                length={SensitiveTextLength.Long}
-                testID={WalletViewSelectorsIDs.TOTAL_BALANCE_TEXT}
-                variant={TextVariant.DisplayMD}
-              >
-                {selectedAccountMultichainBalance.displayBalance}
-              </SensitiveText>
-              <TouchableOpacity
-                onPress={() => toggleIsBalanceAndAssetsHidden(!privacyMode)}
-                testID="balance-container"
-              >
-                <Icon
-                  style={styles.privacyIcon}
-                  name={privacyMode ? IconName.EyeSlash : IconName.Eye}
-                  size={IconSize.Md}
-                  color={colors.text.muted}
-                  testID={
-                    privacyMode ? EYE_SLASH_ICON_TEST_ID : EYE_ICON_TEST_ID
-                  }
-                />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.loaderWrapper}>
-              <Loader />
-            </View>
-          )}
+          <View>
+            {selectedAccountMultichainBalance?.displayBalance ? (
+              <View style={styles.balanceContainer}>
+                <SensitiveText
+                  isHidden={privacyMode}
+                  length={SensitiveTextLength.Long}
+                  testID={WalletViewSelectorsIDs.TOTAL_BALANCE_TEXT}
+                  variant={TextVariant.DisplayMD}
+                >
+                  {selectedAccountMultichainBalance.displayBalance}
+                </SensitiveText>
+                <TouchableOpacity
+                  onPress={() => toggleIsBalanceAndAssetsHidden(!privacyMode)}
+                  testID="balance-container"
+                >
+                  <Icon
+                    style={styles.privacyIcon}
+                    name={privacyMode ? IconName.EyeSlash : IconName.Eye}
+                    size={IconSize.Md}
+                    color={colors.text.muted}
+                    testID={
+                      privacyMode ? EYE_SLASH_ICON_TEST_ID : EYE_ICON_TEST_ID
+                    }
+                  />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.loaderWrapper}>
+                <Loader />
+              </View>
+            )}
 
-          {renderAggregatedPercentage()}
+            {renderAggregatedPercentage()}
+          </View>
+        </View>
+        <View style={styles.portfolioButtonContainer}>
+          <Button
+            variant={ButtonVariants.Secondary}
+            size={ButtonSize.Md}
+            width={ButtonWidthTypes.Full}
+            style={styles.buyButton}
+            onPress={onOpenPortfolio}
+            label={strings('asset_overview.portfolio_button')}
+            testID={WalletViewSelectorsIDs.PORTFOLIO_BUTTON}
+            endIconName={IconName.Export}
+          />
         </View>
       </View>
       {!privacyMode && <PortfolioChart />}
-      <View style={styles.portfolioButtonContainer}>
-        <Button
-          variant={ButtonVariants.Secondary}
-          size={ButtonSize.Md}
-          width={ButtonWidthTypes.Full}
-          style={styles.buyButton}
-          onPress={onOpenPortfolio}
-          label={strings('asset_overview.portfolio_button')}
-          testID={WalletViewSelectorsIDs.PORTFOLIO_BUTTON}
-          endIconName={IconName.Export}
-        />
-      </View>
     </View>
   );
 });

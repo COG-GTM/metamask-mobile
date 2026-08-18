@@ -64,6 +64,7 @@ const PriceChart = ({
   const { setIsChartBeingTouched } = useContext(PriceChartContext);
 
   const [positionX, setPositionX] = useState(-1); // The currently selected X coordinate position
+  const [chartWidth, setChartWidth] = useState(Dimensions.get('window').width);
   const { styles, theme } = useStyles(styleSheet, { height });
 
   useEffect(() => {
@@ -94,7 +95,6 @@ const PriceChart = ({
       onActiveIndexChange(-1);
       return;
     }
-    const chartWidth = Dimensions.get('window').width;
     const xDistance = chartWidth / priceList.length;
     if (x <= 0) {
       x = 0;
@@ -275,7 +275,11 @@ const PriceChart = ({
 
   return (
     <View style={styles.chart}>
-      <View style={styles.chartArea} {...panResponder.current.panHandlers}>
+      <View
+        style={styles.chartArea}
+        onLayout={({ nativeEvent }) => setChartWidth(nativeEvent.layout.width)}
+        {...panResponder.current.panHandlers}
+      >
         {!chartHasData && <NoDataOverlay />}
         <AreaChart
           style={styles.chartArea}

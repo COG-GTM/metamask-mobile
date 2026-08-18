@@ -11,6 +11,7 @@ const styleSheet = (params: { theme: Theme; vars: { diff: number } }) => {
 
   return StyleSheet.create({
     wrapper: {
+      paddingTop: 8,
       paddingBottom: 8,
     },
     summary: {
