@@ -4,7 +4,7 @@ import { View, Animated, Easing, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 export const SpinnerSize = {
   MD: 'MD',
@@ -94,8 +94,6 @@ export default class AnimatedSpinner extends PureComponent<
   AnimatedSpinnerProps,
   AnimatedSpinnerState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   spinValue = new Animated.Value(0);
 
   state: AnimatedSpinnerState = {
@@ -144,7 +142,7 @@ export default class AnimatedSpinner extends PureComponent<
 
   render() {
     const { size = SpinnerSize.MD } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors, measures[size]);
     const spin = this.spinValue.interpolate({
       inputRange: [0, 1],

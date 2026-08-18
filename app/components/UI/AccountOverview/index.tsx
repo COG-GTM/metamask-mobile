@@ -49,7 +49,7 @@ import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { InternalAccount } from '@metamask/keyring-internal-api';
 import type { IUseMetricsHook } from '../../../components/hooks/useMetrics/useMetrics.types';
 import type { RootState } from '../../../reducers';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -194,8 +194,6 @@ class AccountOverview extends PureComponent<
   AccountOverviewProps,
   AccountOverviewState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   static propTypes = {
     /**
      * String that represents the selected address
@@ -388,8 +386,9 @@ class AccountOverview extends PureComponent<
       account: { address, name },
       onboardingWizard,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = (this.context as Theme).colors || mockTheme.colors;
+    const themeAppearance =
+      (this.context as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);
 
     if (!address) return null;

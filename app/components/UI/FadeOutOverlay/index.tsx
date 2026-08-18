@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Animated, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -33,8 +33,6 @@ export default class FadeOutOverlay extends PureComponent<
   FadeOutOverlayProps,
   FadeOutOverlayState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   static propTypes = {
     style: PropTypes.any,
     duration: PropTypes.number,
@@ -58,7 +56,7 @@ export default class FadeOutOverlay extends PureComponent<
   }
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (this.state.done) return null;

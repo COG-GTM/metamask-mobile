@@ -7,7 +7,7 @@ import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 // @ts-expect-error Package does not publish TypeScript declarations.
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -60,7 +60,6 @@ interface CustomAlertProps {
 }
 
 export default class CustomAlert extends PureComponent<CustomAlertProps> {
-  declare context: React.ContextType<typeof ThemeContext>;
   static propTypes = {
     /**
     /* Style of the header view
@@ -109,7 +108,7 @@ export default class CustomAlert extends PureComponent<CustomAlertProps> {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

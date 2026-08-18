@@ -53,7 +53,7 @@ import ButtonIcon from '../../../component-library/components/Buttons/ButtonIcon
 import { endTrace, trace, TraceName } from '../../../util/trace';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -186,8 +186,6 @@ class AddCustomToken extends PureComponent<
   AddCustomTokenProps,
   AddCustomTokenState
 > {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   state: AddCustomTokenState = {
     address: '',
     symbol: '',
@@ -494,7 +492,7 @@ class AddCustomToken extends PureComponent<
 
   renderInfoBanner = (): React.ReactElement => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -536,7 +534,7 @@ class AddCustomToken extends PureComponent<
 
   renderWarningBanner = (): React.ReactElement => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const goToWebView = () => {
@@ -611,8 +609,9 @@ class AddCustomToken extends PureComponent<
       warningDecimals,
       warningAddress,
     } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = (this.context as Theme).colors || mockTheme.colors;
+    const themeAppearance =
+      (this.context as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);
     const isDisabled = !symbol || !decimals || !this.props.selectedNetwork;
 
