@@ -119,7 +119,7 @@ class NavbarBrowserTitle extends PureComponent<NavbarBrowserTitleProps> {
      * Object that represents the current route info like params passed to it
      */
     route: PropTypes.object,
-  };
+  } as React.WeakValidationMap<NavbarBrowserTitleProps>;
 
   onTitlePress = () => {
     this.props.route?.params?.showUrlModal?.();
@@ -201,13 +201,9 @@ const mapStateToProps = (
 
 NavbarBrowserTitle.contextType = ThemeContext;
 
-// @ts-expect-error Legacy propTypes validators do not reflect Redux-injected required props.
-const connectedNavbarBrowserTitle: React.ComponentType<NavbarBrowserTitleProps> =
-  NavbarBrowserTitle;
-
 export default connect<
   NavbarBrowserTitleStateProps,
   Record<string, never>,
   NavbarBrowserTitleOwnProps,
   RootState
->(mapStateToProps)(connectedNavbarBrowserTitle);
+>(mapStateToProps)(NavbarBrowserTitle);

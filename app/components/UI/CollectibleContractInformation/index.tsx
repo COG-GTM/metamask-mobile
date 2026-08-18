@@ -157,7 +157,7 @@ class CollectibleContractInformation extends PureComponent<CollectibleContractIn
      * The chain ID for the current selected network
      */
     chainId: PropTypes.string.isRequired,
-  };
+  } as React.WeakValidationMap<CollectibleContractInformationProps>;
 
   closeModal = () => {
     (this.props.onClose as (value: boolean) => void)(true);
@@ -264,13 +264,9 @@ const mapStateToProps = (
 
 CollectibleContractInformation.contextType = ThemeContext;
 
-// @ts-expect-error Legacy propTypes validators do not reflect Redux-injected required props.
-const connectedCollectibleContractInformation: React.ComponentType<CollectibleContractInformationProps> =
-  CollectibleContractInformation;
-
 export default connect<
   CollectibleContractInformationStateProps,
   Record<string, never>,
   CollectibleContractInformationOwnProps,
   RootState
->(mapStateToProps)(connectedCollectibleContractInformation);
+>(mapStateToProps)(CollectibleContractInformation);

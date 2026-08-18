@@ -24,11 +24,6 @@ type NetworkMainAssetLogoStateProps = Pick<
   'chainId' | 'ticker'
 >;
 
-type NetworkMainAssetLogoOwnProps = Omit<
-  NetworkMainAssetLogoProps,
-  keyof NetworkMainAssetLogoStateProps
->;
-
 function NetworkMainAssetLogo({
   chainId,
   ticker,
@@ -59,10 +54,7 @@ function NetworkMainAssetLogo({
   );
 }
 
-const mapStateToProps = (
-  state: RootState,
-  _ownProps: NetworkMainAssetLogoOwnProps,
-): NetworkMainAssetLogoStateProps => ({
+const mapStateToProps = (state: RootState): NetworkMainAssetLogoStateProps => ({
   chainId: selectChainId(state),
   ticker: selectEvmTicker(state),
 });
@@ -74,15 +66,6 @@ NetworkMainAssetLogo.propTypes = {
   big: PropTypes.bool,
   biggest: PropTypes.bool,
   testID: PropTypes.string,
-};
+} as React.WeakValidationMap<NetworkMainAssetLogoProps>;
 
-// @ts-expect-error Legacy propTypes validators do not reflect Redux-injected required props.
-const connectedNetworkMainAssetLogo: React.ComponentType<NetworkMainAssetLogoProps> =
-  NetworkMainAssetLogo;
-
-export default connect<
-  NetworkMainAssetLogoStateProps,
-  Record<string, never>,
-  NetworkMainAssetLogoOwnProps,
-  RootState
->(mapStateToProps)(connectedNetworkMainAssetLogo);
+export default connect(mapStateToProps)(NetworkMainAssetLogo);

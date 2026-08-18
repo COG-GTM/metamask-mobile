@@ -188,7 +188,7 @@ interface CollectibleOverviewProps {
 /**
  * View that displays the information of a specific ERC-721 Token
  */
-const CollectibleOverview = ({
+const CollectibleOverview: React.FunctionComponent<CollectibleOverviewProps> = ({
   chainId,
   collectible,
   selectedAddress,
@@ -605,7 +605,7 @@ CollectibleOverview.propTypes = {
    * callback to trigger when modal is being animated
    */
   onTranslation: PropTypes.func,
-};
+} as React.WeakValidationMap<CollectibleOverviewProps>;
 
 type CollectibleOverviewStateProps = Pick<
   CollectibleOverviewProps,
@@ -654,19 +654,6 @@ const mapDispatchToProps = (
   },
 });
 
-// @ts-expect-error Legacy propTypes validators do not reflect Redux-injected required props.
-const typedCollectibleOverview: React.ComponentType<CollectibleOverviewProps> =
-  CollectibleOverview;
-
-const platformComponent: React.ComponentType<CollectibleOverviewProps> =
-  Device.isIos()
-    ? typedCollectibleOverview
-    : gestureHandlerRootHOC(typedCollectibleOverview, {
-        flex: 0,
-        zIndex: 0,
-        elevation: 0,
-      });
-
 export default connect<
   CollectibleOverviewStateProps,
   CollectibleOverviewDispatchProps,
@@ -675,4 +662,10 @@ export default connect<
 >(
   mapStateToProps,
   mapDispatchToProps,
-)(platformComponent);
+)(Device.isIos()
+  ? CollectibleOverview
+  : gestureHandlerRootHOC(CollectibleOverview, {
+      flex: 0,
+      zIndex: 0,
+      elevation: 0,
+    }));

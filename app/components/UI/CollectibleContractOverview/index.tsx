@@ -123,7 +123,7 @@ class CollectibleContractOverview extends PureComponent<CollectibleContractOverv
      * Start transaction with asset
      */
     newAssetTransaction: PropTypes.func,
-  };
+  } as React.WeakValidationMap<CollectibleContractOverviewProps>;
 
   onAdd = () => {
     const { navigation, collectibleContract } = this.props;
@@ -228,10 +228,6 @@ const mapDispatchToProps = (
 
 CollectibleContractOverview.contextType = ThemeContext;
 
-// @ts-expect-error Legacy propTypes validators do not reflect Redux-injected required props.
-const connectedCollectibleContractOverview: React.ComponentType<CollectibleContractOverviewProps> =
-  CollectibleContractOverview;
-
 export default connect<
   CollectibleContractOverviewStateProps,
   CollectibleContractOverviewDispatchProps,
@@ -240,4 +236,4 @@ export default connect<
 >(
   mapStateToProps,
   mapDispatchToProps,
-)(connectedCollectibleContractOverview);
+)(CollectibleContractOverview);

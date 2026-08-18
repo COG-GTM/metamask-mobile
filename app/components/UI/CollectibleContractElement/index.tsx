@@ -356,7 +356,7 @@ CollectibleContractElement.propTypes = {
    * Dispatch remove collectible from favorites action
    */
   removeFavoriteCollectible: PropTypes.func,
-};
+} as React.WeakValidationMap<CollectibleContractElementProps>;
 
 const mapStateToProps = (
   state: RootState,
@@ -380,10 +380,6 @@ const mapDispatchToProps = (
   },
 });
 
-// @ts-expect-error Legacy propTypes validators do not reflect Redux-injected required props.
-const connectedCollectibleContractElement: React.ComponentType<CollectibleContractElementProps> =
-  CollectibleContractElement;
-
 export default connect<
   CollectibleContractElementStateProps,
   CollectibleContractElementDispatchProps,
@@ -392,4 +388,4 @@ export default connect<
 >(
   mapStateToProps,
   mapDispatchToProps,
-)(connectedCollectibleContractElement);
+)(CollectibleContractElement);
