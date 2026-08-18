@@ -1,10 +1,72 @@
-(function (global, factory) {
+interface BlockiesExports {
+  toDataUrl?: (address: string) => string;
+}
+
+interface PNGInstance {
+  width: number;
+  height: number;
+  depth: number;
+  pix_size: number;
+  data_size: number;
+  ihdr_offs: number;
+  ihdr_size: number;
+  plte_offs: number;
+  plte_size: number;
+  trns_offs: number;
+  trns_size: number;
+  idat_offs: number;
+  idat_size: number;
+  iend_offs: number;
+  iend_size: number;
+  buffer_size: number;
+  buffer: string[];
+  palette: Record<number, string>;
+  pindex: number;
+  index: (x: number, y: number) => number;
+  color: (red: number, green: number, blue: number, alpha?: number) => string;
+  getBase64: () => string;
+  getDump: () => string;
+  fillRect: (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    color: string,
+  ) => void;
+}
+
+type HslColor = [number, number, number];
+type RgbColor = [number, number, number, number];
+
+interface BlockiesOptions {
+  seed: string;
+  size?: number;
+  scale?: number;
+  color?: HslColor;
+  bgcolor?: HslColor;
+  spotcolor?: HslColor;
+}
+
+interface GlobalWithBlockies {
+  blockies?: BlockiesExports;
+}
+
+declare const exports: BlockiesExports;
+declare const module: { exports: BlockiesExports };
+declare const define: {
+  amd?: boolean;
+} & ((dependencies: string[], factory: (exports: BlockiesExports) => void) => void);
+
+(function (
+  global: GlobalWithBlockies,
+  factory: (exports: BlockiesExports) => void,
+) {
   exports && typeof exports === 'object' && typeof module !== 'undefined'
     ? factory(exports)
     : typeof define === 'function' && define.amd
     ? define(['exports'], factory)
     : factory((global.blockies = {}));
-})(this, (exports) => {
+})(this as unknown as GlobalWithBlockies, (exports: BlockiesExports) => {
   'use strict';
 
   /**
@@ -19,7 +81,7 @@
    */
 
   // helper functions for that ctx
-  function write(buffer, offs) {
+  function write(buffer: string[], offs: number, ...chunks: string[]): void {
     for (let i = 2; i < arguments.length; i++) {
       for (let j = 0; j < arguments[i].length; j++) {
         buffer[offs++] = arguments[i].charAt(j);
@@ -27,11 +89,11 @@
     }
   }
 
-  function byte2(w) {
+  function byte2(w: number): string {
     return String.fromCharCode((w >> 8) & 255, w & 255);
   }
 
-  function byte4(w) {
+  function byte4(w: number): string {
     return String.fromCharCode(
       (w >> 24) & 255,
       (w >> 16) & 255,
@@ -40,11 +102,16 @@
     );
   }
 
-  function byte2lsb(w) {
+  function byte2lsb(w: number): string {
     return String.fromCharCode(w & 255, (w >> 8) & 255);
   }
 
-  const PNG = function (width, height, depth) {
+  function PNG(
+    this: PNGInstance,
+    width: number,
+    height: number,
+    depth: number,
+  ): void {
     this.width = width;
     this.height = height;
     this.depth = depth;
@@ -69,8 +136,8 @@
     this.iend_size = 4 + 4 + 4;
     this.buffer_size = this.iend_offs + this.iend_size; // total PNG size
 
-    this.buffer = new Array();
-    this.palette = new Object();
+    this.buffer = [];
+    this.palette = {};
     this.pindex = 0;
 
     const _crc32 = new Array();
@@ -134,16 +201,23 @@
     }
 
     // compute the index into a png for a given pixel
-    this.index = function (x, y) {
+    this.index = function (this: PNGInstance, x: number, y: number): number {
       const i = y * (this.width + 1) + x + 1;
       const j = this.idat_offs + 8 + 2 + 5 * Math.floor(i / 0xffff + 1) + i;
       return j;
     };
 
     // convert a color and build up the palette
-    this.color = function (red, green, blue, alpha) {
-      alpha = alpha >= 0 ? alpha : 255;
-      const color = (((((alpha << 8) | red) << 8) | green) << 8) | blue;
+    this.color = function (
+      this: PNGInstance,
+      red: number,
+      green: number,
+      blue: number,
+      alpha?: number,
+    ): string {
+      const resolvedAlpha = alpha !== undefined && alpha >= 0 ? alpha : 255;
+      const color =
+        (((((resolvedAlpha << 8) | red) << 8) | green) << 8) | blue;
 
       if (typeof this.palette[color] === 'undefined') {
         if (this.pindex == this.depth) return '\x00';
@@ -154,7 +228,7 @@
         this.buffer[ndx + 1] = String.fromCharCode(green);
         this.buffer[ndx + 2] = String.fromCharCode(blue);
         this.buffer[this.trns_offs + 8 + this.pindex] =
-          String.fromCharCode(alpha);
+          String.fromCharCode(resolvedAlpha);
 
         this.palette[color] = String.fromCharCode(this.pindex++);
       }
@@ -162,7 +236,7 @@
     };
 
     // output a PNG string, Base64 encoded
-    this.getBase64 = function () {
+    this.getBase64 = function (): string {
       const s = this.getDump();
 
       const ch =
@@ -194,7 +268,7 @@
     };
 
     // output a PNG string
-    this.getDump = function () {
+    this.getDump = function (): string {
       // compute adler32 of output pixels + row filter bytes
       const BASE = 65521; /* largest prime smaller than 65536 */
       const NMAX = 5552; /* NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 */
@@ -222,7 +296,7 @@
       );
 
       // compute crc32 of the PNG chunks
-      function crc32(png, offs, size) {
+      function crc32(png: string[], offs: number, size: number): void {
         let crc = -1;
         for (let i = 4; i < size - 4; i += 1) {
           crc =
@@ -242,14 +316,27 @@
       return '\x89PNG\r\n\x1A\n' + this.buffer.join('');
     };
 
-    this.fillRect = function (x, y, w, h, color) {
+    this.fillRect = function (
+      this: PNGInstance,
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      color: string,
+    ): void {
       for (let i = 0; i < w; i++) {
         for (let j = 0; j < h; j++) {
           this.buffer[this.index(x + i, y + j)] = color;
         }
       }
     };
-  };
+  }
+
+  const PNGConstructor = PNG as unknown as new (
+    width: number,
+    height: number,
+    depth: number,
+  ) => PNGInstance;
 
   // https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
   /**
@@ -264,7 +351,7 @@
    * @return  {Array}           The RGB representation
    */
 
-  function hue2rgb(p, q, t) {
+  function hue2rgb(p: number, q: number, t: number): number {
     if (t < 0) t += 1;
     if (t > 1) t -= 1;
     if (t < 1 / 6) return p + (q - p) * 6 * t;
@@ -273,7 +360,7 @@
     return p;
   }
 
-  function hsl2rgb(h, s, l) {
+  function hsl2rgb(h: number, s: number, l: number): RgbColor {
     let r, g, b;
 
     if (s == 0) {
@@ -290,9 +377,9 @@
   }
 
   // The random number is a js implementation of the Xorshift PRNG
-  const randseed = new Array(4); // Xorshift: [x, y, z, w] 32 bit values
+  const randseed: number[] = new Array(4); // Xorshift: [x, y, z, w] 32 bit values
 
-  function seedrand(seed) {
+  function seedrand(seed: string): void {
     for (var i = 0; i < randseed.length; i++) {
       randseed[i] = 0;
     }
@@ -302,7 +389,7 @@
     }
   }
 
-  function rand() {
+  function rand(): number {
     // based on Java's String.hashCode(), expanded to 4 32bit values
     const t = randseed[0] ^ (randseed[0] << 11);
 
@@ -314,7 +401,7 @@
     return (randseed[3] >>> 0) / ((1 << 31) >>> 0);
   }
 
-  function createColor() {
+  function createColor(): HslColor {
     //saturation is the whole color spectrum
     const h = Math.floor(rand() * 360);
     //saturation goes from 40 to 100, it avoids greyish colors
@@ -325,16 +412,16 @@
     return [h / 360, s / 100, l / 100];
   }
 
-  function createImageData(size) {
+  function createImageData(size: number): number[] {
     const width = size; // Only support square icons for now
     const height = size;
 
     const dataWidth = Math.ceil(width / 2);
     const mirrorWidth = width - dataWidth;
 
-    const data = [];
+    const data: number[] = [];
     for (let y = 0; y < height; y++) {
-      let row = [];
+      let row: number[] = [];
       for (let x = 0; x < dataWidth; x++) {
         // this makes foreground and background color to have a 43% (1/2.3) probability
         // spot color has 13% chance
@@ -352,7 +439,7 @@
     return data;
   }
 
-  function buildOpts(opts) {
+  function buildOpts(opts: BlockiesOptions): Required<BlockiesOptions> {
     if (!opts.seed) {
       throw new Error('No seed provided');
     }
@@ -371,7 +458,7 @@
     );
   }
 
-  function toDataUrl(address) {
+  function toDataUrl(address: string): string {
     const cache = Blockies.cache[address];
     if (address && cache) {
       return cache;
@@ -382,7 +469,11 @@
     const imageData = createImageData(opts.size);
     const width = Math.sqrt(imageData.length);
 
-    const p = new PNG(opts.size * opts.scale, opts.size * opts.scale, 3);
+    const p = new PNGConstructor(
+      opts.size * opts.scale,
+      opts.size * opts.scale,
+      3,
+    );
     const bgcolor = p.color(...hsl2rgb(...opts.bgcolor));
     const color = p.color(...hsl2rgb(...opts.color));
     const spotcolor = p.color(...hsl2rgb(...opts.spotcolor));
@@ -413,10 +504,17 @@
   Object.defineProperty(exports, '__esModule', { value: true });
 });
 
+export const toDataUrl = (address: string): string => {
+  if (!exports.toDataUrl) {
+    throw new Error('Blockies toDataUrl is unavailable');
+  }
+  return exports.toDataUrl(address);
+};
+
 /**
  * Utility class with the single responsibility
  * of caching Blockies Data URIs
  */
 class Blockies {
-  static cache = {};
+  static cache: Record<string, string> = {};
 }

@@ -6,7 +6,7 @@ describe('multiplyHexes', () => {
     const hex2 = '0x5';
     const expectedResult = '19';
 
-    const result = multiplyHexes(hex1, hex2);
+    const result: string = multiplyHexes(hex1, hex2);
     expect(result).toBe(expectedResult);
   });
 });
