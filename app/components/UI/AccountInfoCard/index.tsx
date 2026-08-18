@@ -1,6 +1,5 @@
 import isUrl from 'is-url';
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { ComponentType, PureComponent } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { connect } from 'react-redux';
 import { strings } from '../../../../locales/i18n';
@@ -32,8 +31,17 @@ import {
 import ApproveTransactionHeader from '../../Views/confirmations/legacy/components/ApproveTransactionHeader';
 import Identicon from '../Identicon';
 import { selectInternalAccounts } from '../../../selectors/accountsController';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
+import { InternalAccount } from '@metamask/keyring-internal-api';
+import { AccountInformation } from '@metamask/assets-controllers';
 
-const createStyles = (colors) =>
+const LegacyApproveTransactionHeader =
+  ApproveTransactionHeader as unknown as ComponentType<
+    Partial<React.ComponentProps<typeof ApproveTransactionHeader>>
+  >;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     accountInformation: {
       flexDirection: 'row',
@@ -100,43 +108,49 @@ const createStyles = (colors) =>
     },
   });
 
-class AccountInfoCard extends PureComponent {
-  static propTypes = {
-    /**
-     * A string that represents the from address.
-     */
-    fromAddress: PropTypes.string.isRequired,
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * A number that specifies the ETH/USD conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * The selected currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Declares the operation being performed i.e. 'signing'
-     */
-    operation: PropTypes.string,
-    /**
-     * Clarify should show fiat balance
-     */
-    showFiatBalance: PropTypes.bool,
-    /**
-     * Current selected ticker
-     */
-    ticker: PropTypes.string,
-    transaction: PropTypes.object,
-    origin: PropTypes.string,
-  };
+interface AccountInfoCardOwnProps {
+  /**
+   * A string that represents the from address.
+   */
+  fromAddress: string;
+  /**
+   * Declares the operation being performed i.e. 'signing'
+   */
+  operation?: string;
+  /**
+   * Clarify should show fiat balance
+   */
+  showFiatBalance?: boolean;
+  origin?: string;
+}
+
+interface AccountInfoCardProps extends AccountInfoCardOwnProps {
+  /**
+   * Map of accounts to information objects including balances
+   */
+  accounts?: Record<string, AccountInformation>;
+  /**
+   * List of accounts from the AccountsController
+   */
+  internalAccounts?: InternalAccount[];
+  /**
+   * A number that specifies the ETH/USD conversion rate
+   */
+  conversionRate?: number;
+  /**
+   * The selected currency
+   */
+  currentCurrency?: string;
+  /**
+   * Current selected ticker
+   */
+  ticker?: string;
+  transaction?: ReturnType<typeof getNormalizedTxState>;
+  activeTabUrl?: ReturnType<typeof getActiveTabUrl>;
+}
+
+class AccountInfoCard extends PureComponent<AccountInfoCardProps> {
+  static contextType = ThemeContext;
 
   render() {
     const {
@@ -152,38 +166,49 @@ class AccountInfoCard extends PureComponent {
       origin,
     } = this.props;
 
-    const fromAddress = safeToChecksumAddress(rawFromAddress);
+    const fromAddress = safeToChecksumAddress(rawFromAddress) as string;
     const accountLabelTag = getLabelTextByAddress(fromAddress);
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const weiBalance = accounts?.[fromAddress]?.balance
       ? hexToBN(accounts[fromAddress].balance)
       : 0;
     const balance = `${renderFromWei(weiBalance)} ${getTicker(ticker)}`;
-    const accountLabel = renderAccountName(fromAddress, internalAccounts);
+    const accountLabel = renderAccountName(
+      fromAddress,
+      internalAccounts as InternalAccount[],
+    );
     const address = renderShortAddress(fromAddress);
     const dollarBalance = showFiatBalance
-      ? weiToFiat(weiBalance, conversionRate, currentCurrency, 2)?.toUpperCase()
+      ? weiToFiat(
+          weiBalance,
+          conversionRate,
+          currentCurrency as string,
+          2,
+        )?.toUpperCase()
       : undefined;
 
     const sdkConnections = SDKConnect.getInstance().getConnections();
 
     const currentConnection = sdkConnections[origin ?? ''];
 
-    const isOriginUrl = isUrl(origin);
+    const isOriginUrl = isUrl(origin as string);
 
     const originatorInfo = currentConnection?.originatorInfo;
 
     const sdkDappMetadata = {
-      url: isOriginUrl ? origin : originatorInfo?.url ?? strings('sdk.unknown'),
-      icon: originatorInfo?.icon,
+      url: (isOriginUrl
+        ? origin
+        : originatorInfo?.url ?? strings('sdk.unknown')) as string,
+      icon: originatorInfo?.icon as string,
     };
     const actualOriginUrl = isOriginUrl
       ? origin
       : originatorInfo?.url ?? strings('sdk.unknown');
 
     return operation === 'signing' && transaction !== undefined ? (
-      <ApproveTransactionHeader
+      <LegacyApproveTransactionHeader
         origin={actualOriginUrl}
         url={actualOriginUrl}
         from={rawFromAddress}
@@ -242,7 +267,7 @@ class AccountInfoCard extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   accounts: selectAccounts(state),
   internalAccounts: selectInternalAccounts(state),
   conversionRate: selectConversionRate(state),
@@ -252,6 +277,6 @@ const mapStateToProps = (state) => ({
   activeTabUrl: getActiveTabUrl(state),
 });
 
-AccountInfoCard.contextType = ThemeContext;
-
-export default connect(mapStateToProps)(AccountInfoCard);
+export default connect(mapStateToProps)(
+  AccountInfoCard as unknown as ComponentType,
+) as unknown as ComponentType<Partial<AccountInfoCardOwnProps>>;
