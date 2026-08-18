@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import { View, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../locales/i18n';
 import StyledButton from '../StyledButton'; // eslint-disable-line  import/no-unresolved
 import AssetIcon from '../AssetIcon';
@@ -28,30 +27,38 @@ const styles = StyleSheet.create({
   },
 });
 
+interface Asset {
+  decimals?: number;
+  symbol?: string;
+  name?: string;
+  address?: string;
+  iconUrl?: string;
+}
+
+interface AssetListProps {
+  /**
+   * Array of assets objects returned from the search
+   */
+  searchResults: Asset[];
+  /**
+   * Callback triggered when a token is selected
+   */
+  handleSelectAsset: (asset: Asset) => void;
+  /**
+   * Object of the currently-selected token
+   */
+  selectedAsset?: Asset;
+  /**
+   * Search query that generated "searchResults"
+   */
+  searchQuery: string;
+}
+
 /**
  * PureComponent that provides ability to search assets.
  */
-export default class AssetList extends PureComponent {
-  static propTypes = {
-    /**
-     * Array of assets objects returned from the search
-     */
-    searchResults: PropTypes.array,
-    /**
-     * Callback triggered when a token is selected
-     */
-    handleSelectAsset: PropTypes.func,
-    /**
-     * Object of the currently-selected token
-     */
-    selectedAsset: PropTypes.object,
-    /**
-     * Search query that generated "searchResults"
-     */
-    searchQuery: PropTypes.string,
-  };
-
-  onToggleAsset = (key) => {
+export default class AssetList extends PureComponent<AssetListProps> {
+  onToggleAsset = (key: number) => {
     const { searchResults, handleSelectAsset } = this.props;
     handleSelectAsset(searchResults[key]);
   };
@@ -81,7 +88,7 @@ export default class AssetList extends PureComponent {
               key={i}
             >
               <View style={styles.assetListElement}>
-                <AssetIcon address={address} logo={iconUrl} />
+                <AssetIcon address={address} logo={iconUrl ?? ''} />
                 <Text style={styles.text}>
                   {name} ({symbol})
                 </Text>

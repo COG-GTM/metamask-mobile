@@ -5,7 +5,7 @@ import TimeEstimateInfoModal from './';
 describe('TimeEstimateInfoModal', () => {
   it('should render correctly', () => {
     const { toJSON } = render(
-      <TimeEstimateInfoModal timeEstimateId={'medium'} />,
+      <TimeEstimateInfoModal timeEstimateId={'medium'} onHideModal={jest.fn()} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
