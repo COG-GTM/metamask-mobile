@@ -3,12 +3,25 @@ import { render } from '@testing-library/react-native';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { Store } from 'redux';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import {
+  NavigationContainer,
+  type ParamListBase,
+} from '@react-navigation/native';
+import {
+  createStackNavigator,
+  type StackNavigationProp,
+} from '@react-navigation/stack';
 
 import Approval from './index';
 import { ThemeContext, mockTheme } from '../../../../../util/theme';
 import initialRootState from '../../../../../util/test/initial-root-state';
+
+const ApprovalForTest = Approval as React.ComponentType<{
+  navigation?: StackNavigationProp<ParamListBase>;
+  route?: { params?: Record<string, unknown> };
+  dappTransactionModalVisible?: boolean;
+  hideModal?: () => void;
+}>;
 
 const TRANSACTION_ID_MOCK = '123';
 jest.mock('../../../../../selectors/smartTransactionsController', () => ({
@@ -64,7 +77,7 @@ const navigationPropMock = {
   setOptions: jest.fn(),
   setParams: jest.fn(),
   navigate: jest.fn(),
-};
+} as unknown as StackNavigationProp<ParamListBase>;
 const routeMock = {
   params: {},
 };
@@ -77,7 +90,7 @@ const renderComponent = ({ store }: { store: Store }) =>
           <Stack.Navigator>
             <Stack.Screen name="Approval">
               {() => (
-                <Approval
+                <ApprovalForTest
                   dappTransactionModalVisible
                   navigation={navigationPropMock}
                   route={routeMock}
