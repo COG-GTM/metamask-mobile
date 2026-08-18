@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { Dispatch } from 'redux';
 import {
   StyleSheet,
   View,
@@ -12,6 +13,7 @@ import {
   Animated,
   SafeAreaView,
   TouchableWithoutFeedback,
+  LayoutChangeEvent,
 } from 'react-native';
 import RemoteImage from '../../Base/RemoteImage';
 import PropTypes from 'prop-types';
@@ -31,8 +33,8 @@ import { isMainNet } from '../../../util/networks';
 import { isLinkSafe } from '../../../util/linkCheck';
 import etherscanLink from '@metamask/etherscan-link';
 import {
-  addFavoriteCollectible,
-  removeFavoriteCollectible,
+  addFavoriteCollectible as addFavoriteCollectibleAction,
+  removeFavoriteCollectible as removeFavoriteCollectibleAction,
 } from '../../../actions/collectibles';
 import { isCollectibleInFavoritesSelector } from '../../../reducers/collectibles';
 import Share from 'react-native-share';
@@ -49,6 +51,8 @@ import {
   selectIsIpfsGatewayEnabled,
 } from '../../../selectors/preferencesController';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
+import { RootState } from '../../../reducers';
+import { Colors } from '../../../util/theme/models';
 
 const ANIMATION_VELOCITY = 250;
 const HAS_NOTCH = Device.hasNotch();
@@ -58,7 +62,7 @@ const VERTICAL_ALIGNMENT = IS_SMALL_DEVICE ? 12 : 16;
 
 const THRESHOLD = 50;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       flex: 0,
@@ -145,6 +149,42 @@ const FieldType = {
   Link: 'Link',
   Text: 'Text',
 };
+
+interface Collectible {
+  address: string;
+  tokenId: string | number;
+  tradable?: boolean;
+  name?: string | null;
+  description?: string | null;
+  standard?: string | null;
+  imageOriginal?: string;
+  externalLink?: string;
+  logo?: string;
+  contractName?: string;
+  creator?: { user?: { username?: string } };
+  lastSale?: { event_timestamp?: string; total_price?: string };
+}
+
+interface CollectibleOverviewProps {
+  chainId: string;
+  collectible: Collectible;
+  selectedAddress: string;
+  tradable?: boolean;
+  onSend?: () => void;
+  addFavoriteCollectible: (
+    selectedAddress: string,
+    chainId: string,
+    collectible: Collectible,
+  ) => void;
+  removeFavoriteCollectible: (
+    selectedAddress: string,
+    chainId: string,
+    collectible: Collectible,
+  ) => void;
+  isInFavorites: boolean;
+  openLink?: (url: string) => void;
+  onTranslation?: (moveUp: boolean) => void;
+}
 /**
  * View that displays the information of a specific ERC-721 Token
  */
@@ -159,13 +199,13 @@ const CollectibleOverview = ({
   isInFavorites,
   openLink,
   onTranslation,
-}) => {
+}: CollectibleOverviewProps) => {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [prevWrapperHeight, setPrevWrapperHeight] = useState(0);
   const [wrapperHeight, setWrapperHeight] = useState(0);
   const [position, setPosition] = useState(0);
   const positionAnimated = useRef(new Animated.Value(0)).current;
-  const scrollViewRef = useRef(null);
+  const scrollViewRef = useRef<React.ElementRef<typeof ScrollView> | null>(null);
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -180,11 +220,23 @@ const CollectibleOverview = ({
 
   const renderScrollableDescription = useMemo(() => {
     const maxLength = IS_SMALL_DEVICE ? 150 : 300;
-    return collectible?.description?.length > maxLength;
+    return collectible.description == null
+      ? undefined
+      : collectible.description.length > maxLength;
   }, [collectible.description]);
 
   const renderCollectibleInfoRow = useCallback(
-    ({ key, value, onPress, type }) => {
+    ({
+      key,
+      value,
+      onPress,
+      type,
+    }: {
+      key: string;
+      value?: string | null;
+      onPress?: () => void;
+      type: string;
+    }) => {
       if (!value) return null;
       if (type === FieldType.Link) {
         if (!isLinkSafe(value)) return null;
@@ -244,13 +296,19 @@ const CollectibleOverview = ({
     renderCollectibleInfoRow({
       key: strings('collectible.collectible_source'),
       value: collectible?.imageOriginal,
-      onPress: () => openLink(collectible?.imageOriginal),
+      onPress: () =>
+        (openLink as (url: string) => void)(
+          collectible?.imageOriginal as string,
+        ),
       type: FieldType.Link,
     }),
     renderCollectibleInfoRow({
       key: strings('collectible.collectible_link'),
       value: collectible?.externalLink,
-      onPress: () => openLink(collectible?.externalLink),
+      onPress: () =>
+        (openLink as (url: string) => void)(
+          collectible?.externalLink as string,
+        ),
       type: FieldType.Link,
     }),
     renderCollectibleInfoRow({
@@ -258,7 +316,7 @@ const CollectibleOverview = ({
       value: renderShortAddress(collectible?.address),
       onPress: () => {
         if (isMainNet(chainId))
-          openLink(
+          (openLink as (url: string) => void)(
             etherscanLink.createTokenTrackerLink(collectible?.address, chainId),
           );
       },
@@ -296,7 +354,7 @@ const CollectibleOverview = ({
       nativeEvent: {
         layout: { height },
       },
-    }) => setHeaderHeight(height),
+    }: LayoutChangeEvent) => setHeaderHeight(height),
     [],
   );
 
@@ -305,7 +363,7 @@ const CollectibleOverview = ({
       nativeEvent: {
         layout: { height },
       },
-    }) => {
+    }: LayoutChangeEvent) => {
       //This condition is needed to prevent bouncing when the component is rendered
       if (Math.abs(height - prevWrapperHeight) > THRESHOLD) {
         setWrapperHeight(height);
@@ -316,7 +374,7 @@ const CollectibleOverview = ({
   );
 
   const animateViewPosition = useCallback(
-    (toValue, duration) => {
+    (toValue: number, duration: number) => {
       animating.current = true;
       Animated.timing(positionAnimated, {
         toValue,
@@ -332,12 +390,12 @@ const CollectibleOverview = ({
   );
 
   const handleGesture = useCallback(
-    (evt) => {
+    (evt: { nativeEvent: { velocityY: number } }) => {
       // we don't want to trigger the animation again when the view is being animated
       if (evt.nativeEvent.velocityY === 0 || animating.current) return;
       const toValue = evt.nativeEvent.velocityY > 0 ? translationHeight : 0;
       if (toValue !== position) {
-        onTranslation(toValue !== 0);
+        (onTranslation as (moveUp: boolean) => void)(toValue !== 0);
         animateViewPosition(toValue, ANIMATION_VELOCITY);
       }
     },
@@ -345,7 +403,8 @@ const CollectibleOverview = ({
   );
 
   const gestureHandlerWrapper = useCallback(
-    (child) => (
+    (child: React.ReactNode) => (
+      // @ts-expect-error Legacy gesture-handler typing rejects the ScrollView ref used by this component.
       <PanGestureHandler
         waitFor={scrollViewRef}
         activeOffsetY={[0, 0]}
@@ -396,7 +455,11 @@ const CollectibleOverview = ({
                     style={styles.userImage}
                   />
                 )}
-                <View numberOfLines={1} style={styles.userInfoContainer}>
+                <View
+                  // @ts-expect-error Preserve the legacy unsupported "numberOfLines" prop.
+                  numberOfLines={1}
+                  style={styles.userInfoContainer}
+                >
                   {collectible.creator.user?.username && (
                     <Text black bold noMargin big={!IS_SMALL_DEVICE}>
                       {collectible.creator.user.username}
@@ -544,28 +607,72 @@ CollectibleOverview.propTypes = {
   onTranslation: PropTypes.func,
 };
 
-const mapStateToProps = (state, props) => ({
+type CollectibleOverviewStateProps = Pick<
+  CollectibleOverviewProps,
+  'chainId' | 'selectedAddress' | 'isInFavorites'
+>;
+
+type CollectibleOverviewDispatchProps = Pick<
+  CollectibleOverviewProps,
+  'addFavoriteCollectible' | 'removeFavoriteCollectible'
+>;
+
+type CollectibleOverviewOwnProps = Omit<
+  CollectibleOverviewProps,
+  keyof CollectibleOverviewStateProps | keyof CollectibleOverviewDispatchProps
+>;
+
+const mapStateToProps = (
+  state: RootState,
+  props: CollectibleOverviewOwnProps,
+): CollectibleOverviewStateProps => ({
   chainId: selectChainId(state),
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) as string,
   isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  addFavoriteCollectible: (selectedAddress, chainId, collectible) =>
-    dispatch(addFavoriteCollectible(selectedAddress, chainId, collectible)),
-  removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
-    dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
+const mapDispatchToProps = (
+  dispatch: Dispatch,
+): CollectibleOverviewDispatchProps => ({
+  addFavoriteCollectible: (
+    selectedAddress: string,
+    chainId: string,
+    collectible: Collectible,
+  ): void => {
+    dispatch(
+      addFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+    );
+  },
+  removeFavoriteCollectible: (
+    selectedAddress: string,
+    chainId: string,
+    collectible: Collectible,
+  ): void => {
+    dispatch(
+      removeFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+    );
+  },
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(
+// @ts-expect-error Legacy propTypes validators do not reflect Redux-injected required props.
+const typedCollectibleOverview: React.ComponentType<CollectibleOverviewProps> =
+  CollectibleOverview;
+
+const platformComponent: React.ComponentType<CollectibleOverviewProps> =
   Device.isIos()
-    ? CollectibleOverview
-    : gestureHandlerRootHOC(CollectibleOverview, {
+    ? typedCollectibleOverview
+    : gestureHandlerRootHOC(typedCollectibleOverview, {
         flex: 0,
         zIndex: 0,
         elevation: 0,
-      }),
-);
+      });
+
+export default connect<
+  CollectibleOverviewStateProps,
+  CollectibleOverviewDispatchProps,
+  CollectibleOverviewOwnProps,
+  RootState
+>(
+  mapStateToProps,
+  mapDispatchToProps,
+)(platformComponent);

@@ -7,10 +7,15 @@ import Networks from '../../../util/networks';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Device from '../../../util/device';
 import { mockTheme, ThemeContext } from '../../../util/theme';
-import { selectProviderConfig } from '../../../selectors/networkController';
+import {
+  ProviderConfig,
+  selectProviderConfig,
+} from '../../../selectors/networkController';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
+import { RootState } from '../../../reducers';
+import { Colors, Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       alignItems: 'center',
@@ -65,7 +70,30 @@ const createStyles = (colors) =>
  * UI PureComponent that renders inside the navbar
  * showing the view title and the selected network
  */
-class NavbarBrowserTitle extends PureComponent {
+interface NavbarBrowserTitleProps {
+  providerConfig: ProviderConfig;
+  hostname: string;
+  https?: boolean;
+  error?: boolean;
+  icon?: string;
+  route?: {
+    params?: {
+      showUrlModal?: () => void;
+    };
+  };
+}
+
+type NavbarBrowserTitleStateProps = Pick<
+  NavbarBrowserTitleProps,
+  'providerConfig'
+>;
+
+type NavbarBrowserTitleOwnProps = Omit<
+  NavbarBrowserTitleProps,
+  keyof NavbarBrowserTitleStateProps
+>;
+
+class NavbarBrowserTitle extends PureComponent<NavbarBrowserTitleProps> {
   static propTypes = {
     /**
      * Object representing the configuration for the selected network
@@ -94,18 +122,19 @@ class NavbarBrowserTitle extends PureComponent {
   };
 
   onTitlePress = () => {
-    this.props.route.params?.showUrlModal?.();
+    this.props.route?.params?.showUrlModal?.();
   };
 
-  getNetworkName(providerConfig) {
+  getNetworkName(providerConfig: ProviderConfig) {
     let name = { ...Networks.rpc, color: null }.name;
 
     if (providerConfig) {
       if (providerConfig.nickname) {
         name = providerConfig.nickname;
       } else if (providerConfig.type) {
-        const currentNetwork = Networks[providerConfig.type];
-        if (currentNetwork && currentNetwork.name) {
+        const currentNetwork =
+          Networks[providerConfig.type as keyof typeof Networks];
+        if (currentNetwork?.name) {
           name = currentNetwork.name;
         }
       }
@@ -116,10 +145,10 @@ class NavbarBrowserTitle extends PureComponent {
 
   render = () => {
     const { https, providerConfig, hostname, error, icon } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const color =
-      (Networks[providerConfig.type] && Networks[providerConfig.type].color) ||
+      Networks[providerConfig.type as keyof typeof Networks]?.color ||
       null;
     const name = this.getNetworkName(providerConfig);
 
@@ -163,10 +192,22 @@ class NavbarBrowserTitle extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (
+  state: RootState,
+  _ownProps: NavbarBrowserTitleOwnProps,
+): NavbarBrowserTitleStateProps => ({
   providerConfig: selectProviderConfig(state),
 });
 
 NavbarBrowserTitle.contextType = ThemeContext;
 
-export default connect(mapStateToProps)(NavbarBrowserTitle);
+// @ts-expect-error Legacy propTypes validators do not reflect Redux-injected required props.
+const connectedNavbarBrowserTitle: React.ComponentType<NavbarBrowserTitleProps> =
+  NavbarBrowserTitle;
+
+export default connect<
+  NavbarBrowserTitleStateProps,
+  Record<string, never>,
+  NavbarBrowserTitleOwnProps,
+  RootState
+>(mapStateToProps)(connectedNavbarBrowserTitle);
