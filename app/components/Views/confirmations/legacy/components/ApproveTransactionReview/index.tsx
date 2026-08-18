@@ -1,4 +1,11 @@
 import React, { PureComponent } from 'react';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { TransactionMeta } from '@metamask/transaction-controller';
+import type { Hex } from '@metamask/utils';
+import type { NetworkState } from '@metamask/network-controller';
+import type { IUseMetricsHook } from '../../../../../../components/hooks/useMetrics/useMetrics.types';
+import type { RootState } from '../../../../../../reducers';
 import {
   View,
   TouchableOpacity,
@@ -6,6 +13,7 @@ import {
   Linking,
   ScrollView,
 } from 'react-native';
+// @ts-expect-error Legacy package has no TypeScript declaration.
 import Eth from '@metamask/ethjs-query';
 import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
 import PropTypes from 'prop-types';
@@ -65,12 +73,13 @@ import { fetchEstimatedMultiLayerL1Fee } from '../../../../../../util/networks/e
 import CustomSpendCap from '../../../../../../component-library/components-temp/CustomSpendCap';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import Logger from '../../../../../../util/Logger';
-import ButtonLink from '../../../../../../component-library/components/Buttons/Button/variants/ButtonLink';
-import TransactionReview from '../TransactionReview/TransactionReviewEIP1559Update';
+import ButtonLinkBase from '../../../../../../component-library/components/Buttons/Button/variants/ButtonLink';
+import TransactionReviewBase from '../TransactionReview/TransactionReviewEIP1559Update';
 import ClipboardManager from '../../../../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
 import withQRHardwareAwareness from '../../../../../UI/QRHardware/withQRHardwareAwareness';
 import QRSigningDetails from '../../../../../UI/QRHardware/QRSigningDetails';
+import type { IQRState } from '../../../../../UI/QRHardware/types';
 import Routes from '../../../../../../constants/navigation/Routes';
 import createStyles from './styles';
 import {
@@ -83,7 +92,7 @@ import { selectTokenList } from '../../../../../../selectors/tokenListController
 import { selectTokensLength } from '../../../../../../selectors/tokensController';
 import { selectAccountsLength } from '../../../../../../selectors/accountTrackerController';
 import { selectCurrentTransactionSecurityAlertResponse } from '../../../../../../selectors/confirmTransaction';
-import Text, {
+import DesignSystemText, {
   TextVariant,
 } from '../../../../../../component-library/components/Texts/Text';
 import ApproveTransactionHeader from '../ApproveTransactionHeader';
@@ -109,17 +118,188 @@ import SmartTransactionsMigrationBanner from '../SmartTransactionsMigrationBanne
 const { ORIGIN_DEEPLINK, ORIGIN_QR_CODE } = AppConstants.DEEPLINKS;
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
-let intervalIdForEstimatedL1Fee;
+let intervalIdForEstimatedL1Fee: ReturnType<typeof setInterval>;
 
 const {
   ASSET: { ERC20 },
 } = TransactionTypes;
 
+interface ApprovalToken {
+  tokenSymbol: string;
+  tokenDecimals: number;
+  tokenName: string;
+  tokenValue: string;
+  tokenStandard: string;
+  tokenBalance: string;
+  tokenImage?: string;
+  address?: string;
+  iconUrl?: string;
+  symbol?: string;
+  decimals?: number;
+}
+
+type ApprovalTransaction = Omit<
+  Partial<TransactionMeta>,
+  | 'selectedAsset'
+  | 'transaction'
+  | 'origin'
+  | 'chainId'
+  | 'from'
+  | 'to'
+  | 'data'
+> & {
+  transaction: {
+    from: string;
+    to: string;
+    data: string;
+    [key: string]: unknown;
+  };
+  selectedAsset?: Record<string, unknown>;
+  origin: string;
+  chainId: Hex;
+  from: string;
+  to: string;
+  data: string;
+};
+
+interface ApprovalTokenAllowanceState {
+  tokenSymbol?: string;
+  tokenDecimals?: number;
+  tokenName?: string;
+  tokenBalance?: string;
+  tokenStandard?: string;
+  isReadyToApprove?: boolean;
+  tokenSpendValue?: string;
+  originalApproveAmount?: string;
+}
+
+interface ApprovalProps {
+  onCancel?: () => void;
+  onConfirm?: () => void;
+  transaction: ApprovalTransaction;
+  showAlert: (config: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: { msg: string };
+  }) => void;
+  ticker: string;
+  tokensLength?: number;
+  accountsLength?: number;
+  providerType: string;
+  onModeChange?: (mode: string) => void;
+  gasError?: string;
+  primaryCurrency: string;
+  activeTabUrl: string;
+  navigation: StackNavigationProp<ParamListBase>;
+  over?: boolean;
+  onSetAnalyticsParams?: (params: Record<string, unknown>) => void;
+  chainId: string;
+  gasEstimateType: string;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  gasEstimationReady?: boolean;
+  tokenList: Record<string, ApprovalToken>;
+  transactionConfirmed?: boolean;
+  setTransactionObject: (transaction: Partial<ApprovalTransaction>) => void;
+  toggleModal: (address?: string) => void;
+  nickname?: string;
+  nicknameExists?: boolean;
+  isSigningQRObject?: boolean;
+  QRState: IQRState;
+  gasSelected?: string;
+  updateTransactionState: (state: Record<string, unknown>) => void;
+  legacyGasObject?: Record<string, unknown>;
+  eip1559GasObject?: Record<string, unknown>;
+  showBlockExplorer: () => void;
+  showVerifyContractDetails: () => void;
+  savedContactListToArray: string[];
+  closeVerifyContractDetails: () => void;
+  shouldVerifyContractDetails?: boolean;
+  networkConfigurations: NetworkState['networkConfigurationsByChainId'];
+  providerRpcTarget?: string;
+  isNativeTokenBuySupported?: boolean;
+  updateTokenAllowanceState: (state: ApprovalTokenAllowanceState) => void;
+  tokenAllowanceState?: ApprovalTokenAllowanceState;
+  isGasEstimateStatusIn?: boolean;
+  metrics: IUseMetricsHook;
+  shouldUseSmartTransaction?: boolean;
+  securityAlertResponse?: { result_type?: string };
+}
+
+interface ApprovalState {
+  viewData: boolean;
+  host?: string;
+  originalApproveAmount?: string;
+  spendLimitCustomValue?: string;
+  ticker: string;
+  viewDetails: boolean;
+  spenderAddress: string;
+  transaction: ApprovalTransaction;
+  token: ApprovalToken;
+  isReadyToApprove: boolean;
+  tokenSpendValue: string;
+  showGasTooltip: boolean;
+  gasTransactionObject: Record<string, unknown>;
+  multiLayerL1FeeTotal: string;
+  fetchingUpdateDone: boolean;
+  showBlockExplorerModal: boolean;
+  address: string;
+  learnMoreURL?: string | null;
+  isCustomSpendInputValid: boolean;
+  unroundedAccountBalance: string | null;
+  method?: string;
+  encodedHexAmount?: string;
+}
+
+interface ApprovalWalletConnectState {
+  originIsWalletConnect?: boolean;
+}
+
+const Text = DesignSystemText as React.ComponentType<
+  Partial<React.ComponentProps<typeof DesignSystemText>> & {
+    grey?: boolean;
+    infoModal?: boolean;
+    bold?: boolean;
+    reset?: boolean;
+    link?: boolean;
+    red?: boolean;
+  }
+>;
+const ButtonLink = ButtonLinkBase as React.ComponentType<
+  Partial<React.ComponentProps<typeof ButtonLinkBase>> & {
+    label?: React.ReactNode;
+    variant?: TextVariant;
+  }
+>;
+const TransactionReview = TransactionReviewBase as React.ComponentType<
+  Partial<React.ComponentProps<typeof TransactionReviewBase>>
+>;
+const CustomSpendCapForLegacy = CustomSpendCap as React.ComponentType<
+  Omit<
+    Partial<React.ComponentProps<typeof CustomSpendCap>>,
+    'unroundedAccountBalance' | 'isInputValid'
+  > & {
+    unroundedAccountBalance?: string | null;
+    isInputValid?: (value: boolean) => void;
+  }
+>;
+
 /**
  * PureComponent that manages ERC20 approve from the dapp browser
  */
-class ApproveTransactionReview extends PureComponent {
-  static navigationOptions = ({ navigation }) =>
+class ApproveTransactionReview extends PureComponent<
+  ApprovalProps,
+  ApprovalState
+> {
+  static navigationOptions = ({
+    navigation,
+  }: {
+    navigation: StackNavigationProp<ParamListBase>;
+  }) =>
+    // @ts-expect-error Legacy navbar helper accepts navigation at runtime.
     getApproveNavbar('approve.title', navigation);
 
   static propTypes = {
@@ -293,7 +473,10 @@ class ApproveTransactionReview extends PureComponent {
     securityAlertResponse: PropTypes.object,
   };
 
-  state = {
+  // @ts-expect-error React's base context property is unknown.
+  context!: React.ContextType<typeof ThemeContext>;
+
+  state: ApprovalState = {
     viewData: false,
     host: undefined,
     originalApproveAmount: undefined,
@@ -302,7 +485,7 @@ class ApproveTransactionReview extends PureComponent {
     viewDetails: false,
     spenderAddress: '0x...',
     transaction: this.props.transaction,
-    token: {},
+    token: {} as ApprovalToken,
     isReadyToApprove: false,
     tokenSpendValue: '',
     showGasTooltip: false,
@@ -319,11 +502,11 @@ class ApproveTransactionReview extends PureComponent {
   channelIdOrHostname = this.props.transaction.origin;
 
   sdkConnection = SDKConnect.getInstance().getConnection({
-    channelId: this.channelIdOrHostname,
+    channelId: this.channelIdOrHostname as string,
   });
   originIsMMSDKRemoteConn = Boolean(this.sdkConnection);
 
-  fetchEstimatedL1Fee = async () => {
+  fetchEstimatedL1Fee = async (): Promise<void> => {
     const { transaction, chainId } = this.props;
     if (!transaction?.transaction) {
       return;
@@ -333,58 +516,63 @@ class ApproveTransactionReview extends PureComponent {
         Engine.context.NetworkController.getProviderAndBlockTracker().provider,
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
-        txParams: transaction.transaction,
-        chainId,
+        txParams: transaction.transaction as Parameters<
+          typeof fetchEstimatedMultiLayerL1Fee
+        >[1]['txParams'],
+        chainId: chainId as Hex,
       });
       this.setState({
-        multiLayerL1FeeTotal: result,
+        multiLayerL1FeeTotal: result as string,
       });
     } catch (e) {
-      Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
+      Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
         multiLayerL1FeeTotal: '0x0',
       });
     }
   };
 
-  componentDidMount = async () => {
+  componentDidMount = async (): Promise<void> => {
     const { chainId } = this.props;
     const {
       // We need to extract transaction.transaction here to retrieve up-to-date nonce
       transaction: { origin, to, data, from, transaction },
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setTransactionObject,
       tokenList,
       tokenAllowanceState,
     } = this.props;
     const { AssetsContractController } = Engine.context;
 
-    const host = getHost(origin);
+    const host = getHost(origin as string);
 
     if (!this.originIsMMSDKRemoteConn) {
       // Check if it is walletConnect origin
       WC2Manager.getInstance().then((wc2) => {
-        this.originIsWalletConnect = wc2.getSessions().some((session) => {
-          // Otherwise, compare the origin with the metadata URL
-          if (
-            session.peer.metadata.url === origin ||
-            origin.startsWith(WALLET_CONNECT_ORIGIN)
-          ) {
-            DevLogger.log(
-              `ApproveTransactionReview::componentDidMount Found matching session for origin ${origin}`,
-            );
-            return true;
-          }
-          return false;
-        });
+        (this as ApprovalWalletConnectState).originIsWalletConnect = wc2
+          .getSessions()
+          .some((session) => {
+            // Otherwise, compare the origin with the metadata URL
+            if (
+              session.peer.metadata.url === origin ||
+              origin.startsWith(WALLET_CONNECT_ORIGIN)
+            ) {
+              DevLogger.log(
+                `ApproveTransactionReview::componentDidMount Found matching session for origin ${origin}`,
+              );
+              return true;
+            }
+            return false;
+          });
       });
     }
 
-    let tokenSymbol,
-      tokenDecimals,
-      tokenName,
-      tokenStandard,
-      tokenBalance,
-      createdSpendCap,
+    let tokenSymbol: string | undefined,
+      tokenDecimals: number | undefined,
+      tokenName: string | undefined,
+      tokenStandard: string | undefined,
+      tokenBalance: string | undefined,
+      createdSpendCap: boolean | undefined,
       unroundedAccountBalance = '';
 
     const { spenderAddress, encodedAmount: encodedHexAmount } =
@@ -412,7 +600,11 @@ class ApproveTransactionReview extends PureComponent {
       createdSpendCap = isReadyToApprove;
     } else {
       try {
-        const result = await getTokenDetails(to, from, encodedDecimalAmount);
+        const result = await getTokenDetails(
+          to,
+          from,
+          encodedDecimalAmount as string,
+        );
 
         const { standard, name, decimals, symbol } = result;
 
@@ -423,16 +615,19 @@ class ApproveTransactionReview extends PureComponent {
         } else {
           const erc20TokenBalance =
             await AssetsContractController.getERC20BalanceOf(to, from);
+          // @ts-expect-error Legacy token metadata may expose decimal strings.
           tokenDecimals = decimals;
           tokenSymbol = symbol;
           tokenStandard = standard;
           tokenName = name;
           tokenBalance = renderFromTokenMinimalUnit(
+            // @ts-expect-error Legacy balance helper accepts the controller BN value.
             erc20TokenBalance,
             decimals,
           );
           unroundedAccountBalance = fromTokenMinimalUnit(
             erc20TokenBalance || 0,
+            // @ts-expect-error Legacy token metadata may expose decimal strings.
             decimals,
           );
         }
@@ -444,16 +639,19 @@ class ApproveTransactionReview extends PureComponent {
 
     const approveAmount = fromTokenMinimalUnit(
       hexToBN(encodedHexAmount),
-      tokenDecimals,
+      tokenDecimals as number,
       false,
     );
 
+    // @ts-expect-error Legacy helper accepts the legacy one-argument call.
     const { name: method } = await getMethodData(data);
-    const minTokenAllowance = minimumTokenAllowance(tokenDecimals);
+    const minTokenAllowance = minimumTokenAllowance(tokenDecimals as number);
 
     const approvalData = generateApprovalData({
       spender: spenderAddress,
-      value: isNFTTokenStandard(tokenStandard) ? encodedHexAmount : '0',
+      value: isNFTTokenStandard(tokenStandard as string)
+        ? (encodedHexAmount as string)
+        : '0',
       data,
     });
 
@@ -465,6 +663,7 @@ class ApproveTransactionReview extends PureComponent {
     });
 
     const token = Object.values(tokenList).filter(
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       (token) => token.address === to,
     );
 
@@ -474,21 +673,21 @@ class ApproveTransactionReview extends PureComponent {
         method,
         originalApproveAmount: approveAmount,
         token: {
-          tokenSymbol,
-          tokenDecimals,
-          tokenName,
+          tokenSymbol: tokenSymbol as string,
+          tokenDecimals: tokenDecimals as number,
+          tokenName: tokenName as string,
           tokenValue: encodedDecimalAmount,
-          tokenStandard,
-          tokenBalance,
+          tokenStandard: tokenStandard as string,
+          tokenBalance: tokenBalance as string,
           tokenImage: token[0]?.iconUrl,
         },
         spenderAddress,
         encodedHexAmount,
         fetchingUpdateDone: true,
-        isReadyToApprove: createdSpendCap,
-        tokenSpendValue: tokenAllowanceState
+        isReadyToApprove: createdSpendCap as boolean,
+        tokenSpendValue: (tokenAllowanceState
           ? tokenAllowanceState?.tokenSpendValue
-          : '',
+          : '') as string,
         spendLimitCustomValue: minTokenAllowance,
         unroundedAccountBalance,
       },
@@ -510,37 +709,44 @@ class ApproveTransactionReview extends PureComponent {
     }
   };
 
-  componentDidUpdate = (_, prevState) => {
+  componentDidUpdate = (
+    _prevProps: ApprovalProps,
+    prevState: ApprovalState,
+  ): void => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { transaction, setTransactionObject } = this.props;
     const {
       tokenSpendValue,
       spenderAddress,
       token: { tokenDecimals },
-    } = this.state;
+    } = (this.state || {}) as ApprovalState;
 
     if (prevState?.tokenSpendValue !== tokenSpendValue) {
       const newApprovalTransaction = generateTxWithNewTokenAllowance(
         tokenSpendValue || '0',
-        tokenDecimals,
+        tokenDecimals as number,
         spenderAddress,
-        transaction,
+        transaction as Parameters<typeof generateTxWithNewTokenAllowance>[3],
       );
 
       setTransactionObject({
         ...newApprovalTransaction,
         transaction: {
-          ...newApprovalTransaction.transaction,
+          ...(newApprovalTransaction as ApprovalTransaction).transaction,
           data: newApprovalTransaction.data,
         },
       });
     }
   };
 
-  componentWillUnmount = async () => {
+  componentWillUnmount = async (): Promise<void> => {
     clearInterval(intervalIdForEstimatedL1Fee);
   };
 
-  getTrustMessage = (originIsDeeplink, isMethodSetApprovalForAll) => {
+  getTrustMessage = (
+    originIsDeeplink: boolean,
+    isMethodSetApprovalForAll: boolean,
+  ): string => {
     if (isMethodSetApprovalForAll) {
       return strings('spend_limit_edition.you_trust_this_third_party');
     }
@@ -551,10 +757,10 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   getTrustTitle = (
-    originIsDeeplink,
-    isNonFungibleToken,
-    isMethodSetApprovalForAll,
-  ) => {
+    originIsDeeplink: boolean,
+    isNonFungibleToken: boolean,
+    isMethodSetApprovalForAll: boolean,
+  ): string => {
     if (isMethodSetApprovalForAll) {
       return strings('spend_limit_edition.allow_to_transfer_all');
     }
@@ -576,10 +782,10 @@ class ApproveTransactionReview extends PureComponent {
     } = this.props;
 
     const {
-      token: { tokenSymbol } = {},
+      token: { tokenSymbol },
       originalApproveAmount,
       encodedHexAmount,
-    } = this.state || {};
+    } = (this.state || {}) as ApprovalState;
 
     const baseParams = {
       account_type: transaction?.from
@@ -597,7 +803,7 @@ class ApproveTransactionReview extends PureComponent {
       referral_type: 'unknown',
       request_source: this.originIsMMSDKRemoteConn
         ? AppConstants.REQUEST_SOURCES.SDK_REMOTE_CONN
-        : this.originIsWalletConnect
+        : (this as ApprovalWalletConnectState).originIsWalletConnect
         ? AppConstants.REQUEST_SOURCES.WC
         : AppConstants.REQUEST_SOURCES.IN_APP_BROWSER,
       is_smart_transaction: shouldUseSmartTransaction || false,
@@ -605,7 +811,7 @@ class ApproveTransactionReview extends PureComponent {
 
     try {
       const isDapp = !Object.values(AppConstants.DEEPLINKS).includes(
-        transaction?.origin,
+        transaction?.origin as never,
       );
 
       const params = {
@@ -620,12 +826,14 @@ class ApproveTransactionReview extends PureComponent {
 
       return params;
     } catch (error) {
-      Logger.error(error, 'Error in getAnalyticsParams:');
+      Logger.error(error as Error, 'Error in getAnalyticsParams:');
       return baseParams;
     }
   };
 
-  trackApproveEvent = (event) => {
+  trackApproveEvent = (
+    event: Parameters<IUseMetricsHook['createEventBuilder']>[0],
+  ): void => {
     const { transaction, tokensLength, accountsLength, providerType } =
       this.props;
 
@@ -657,7 +865,7 @@ class ApproveTransactionReview extends PureComponent {
     this.setState({ viewDetails: !viewDetails });
   };
 
-  copyContractAddress = async (address) => {
+  copyContractAddress = async (address: string): Promise<void> => {
     await ClipboardManager.setString(address);
     this.props.showAlert({
       isVisible: true,
@@ -743,25 +951,29 @@ class ApproveTransactionReview extends PureComponent {
     );
   };
 
-  getStyles = () => {
+  getStyles = (): ReturnType<typeof createStyles> & {
+    blockaidWarning: object;
+  } => {
     const colors = this.context.colors || mockTheme.colors;
-    return createStyles(colors);
+    return createStyles(colors) as ReturnType<typeof createStyles> & {
+      blockaidWarning: object;
+    };
   };
 
   goToSpendCap = () => this.setState({ isReadyToApprove: false });
 
-  handleSetIsCustomSpendInputValid = (value) => {
+  handleSetIsCustomSpendInputValid = (value: boolean): void => {
     this.setState({ isCustomSpendInputValid: value });
   };
 
-  toggleLearnMoreWebPage = (url) => {
+  toggleLearnMoreWebPage = (url: string): void => {
     this.setState({
       showBlockExplorerModal: !this.state.showBlockExplorerModal,
       learnMoreURL: url,
     });
   };
 
-  handleCustomSpendOnInputChange = (value) => {
+  handleCustomSpendOnInputChange = (value: string): void => {
     if (isNumber(value)) {
       this.setState({
         tokenSpendValue: value.replace(regex.nonNumber, ''),
@@ -773,6 +985,7 @@ class ApproveTransactionReview extends PureComponent {
     const { transaction } = this.props;
     const analyticsParams = {
       ...this.getAnalyticsParams(),
+      // @ts-expect-error Legacy helper accepts the legacy transaction shape.
       ...getBlockaidTransactionMetricsParams(transaction),
       external_link_clicked: 'security_alert_support_link',
     };
@@ -865,8 +1078,8 @@ class ApproveTransactionReview extends PureComponent {
     const hasBlockExplorer = isNonEvmChainId(chainId)
       ? false
       : shouldShowBlockExplorer(
-          providerType,
-          providerRpcTarget,
+          providerType as Parameters<typeof shouldShowBlockExplorer>[0],
+          providerRpcTarget as string,
           networkConfigurations,
         );
 
@@ -891,7 +1104,7 @@ class ApproveTransactionReview extends PureComponent {
         ? strings('transaction.next')
         : strings('transactions.approve');
 
-    const isNonFungibleToken = isNFTTokenStandard(tokenStandard);
+    const isNonFungibleToken = isNFTTokenStandard(tokenStandard as string);
     const isMethodSetApprovalForAll =
       method === TOKEN_METHOD_SET_APPROVAL_FOR_ALL;
 
@@ -1014,7 +1227,7 @@ class ApproveTransactionReview extends PureComponent {
                           <SkeletonText style={styles.skeletalView} />
                         ) : (
                           isERC2OToken && (
-                            <CustomSpendCap
+                            <CustomSpendCapForLegacy
                               ticker={tokenSymbol}
                               dappProposedValue={originalApproveAmount}
                               tokenSpendValue={tokenSpendValue}
@@ -1169,7 +1382,7 @@ class ApproveTransactionReview extends PureComponent {
       token: { tokenSymbol },
     } = this.state;
 
-    const toggleBlockExplorerModal = (address) => {
+    const toggleBlockExplorerModal = (address: string) => {
       closeVerifyContractDetails();
       this.setState({
         showBlockExplorerModal: !showBlockExplorerModal,
@@ -1177,7 +1390,7 @@ class ApproveTransactionReview extends PureComponent {
       });
     };
 
-    const showNickname = (address) => {
+    const showNickname = (address: string) => {
       toggleModal(address);
     };
 
@@ -1192,7 +1405,7 @@ class ApproveTransactionReview extends PureComponent {
         copyAddress={this.copyContractAddress}
         providerType={providerType}
         tokenSymbol={tokenSymbol}
-        providerRpcTarget={providerRpcTarget}
+        providerRpcTarget={providerRpcTarget as string}
         networkConfigurations={networkConfigurations}
         tokenStandard={this.state.token?.tokenStandard}
       />
@@ -1227,7 +1440,7 @@ class ApproveTransactionReview extends PureComponent {
         iconStyle={styles.icon}
         providerRpcTarget={providerRpcTarget}
         networkConfigurations={networkConfigurations}
-        learnMoreURL={learnMoreURL}
+        learnMoreURL={learnMoreURL as string}
       />
     );
   };
@@ -1239,7 +1452,10 @@ class ApproveTransactionReview extends PureComponent {
     try {
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
-      Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
+      Logger.error(
+        error as Error,
+        'Navigation: Error when navigating to buy ETH.',
+      );
     }
 
     this.props.metrics.trackEvent(
@@ -1257,6 +1473,7 @@ class ApproveTransactionReview extends PureComponent {
         .createEventBuilder(MetaMetricsEvents.APPROVAL_PERMISSION_UPDATED)
         .addProperties({
           ...this.getAnalyticsParams(),
+          // @ts-expect-error Legacy helper accepts the legacy transaction shape.
           ...getBlockaidTransactionMetricsParams(transaction),
         })
         .build(),
@@ -1276,6 +1493,7 @@ class ApproveTransactionReview extends PureComponent {
           .createEventBuilder(MetaMetricsEvents.APPROVAL_PERMISSION_UPDATED)
           .addProperties({
             ...this.getAnalyticsParams(),
+            // @ts-expect-error Legacy helper accepts the legacy transaction shape.
             ...getBlockaidTransactionMetricsParams(this.props.transaction),
           })
           .build(),
@@ -1291,7 +1509,7 @@ class ApproveTransactionReview extends PureComponent {
     InteractionManager.runAfterInteractions(() => {
       this.onCancelPress();
       this.props.navigation.navigate(Routes.BROWSER.VIEW, {
-        newTabUrl: TESTNET_FAUCETS[chainId],
+        newTabUrl: TESTNET_FAUCETS[chainId as keyof typeof TESTNET_FAUCETS],
         timestamp: Date.now(),
       });
     });
@@ -1349,10 +1567,11 @@ class ApproveTransactionReview extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState): Partial<ApprovalProps> => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
 
+  // @ts-expect-error Legacy selectors return JavaScript-shaped transaction props.
   return {
     ticker: selectNativeCurrencyByChainId(state, chainId),
     networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
@@ -1371,22 +1590,28 @@ const mapStateToProps = (state) => {
     ),
     shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),
     securityAlertResponse: selectCurrentTransactionSecurityAlertResponse(state),
-  };
+  } as Partial<ApprovalProps>;
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  setTransactionObject: (transaction) =>
+const mapDispatchToProps = (dispatch: (action: object) => unknown) => ({
+  setTransactionObject: (transaction: Partial<ApprovalTransaction>) =>
     dispatch(setTransactionObject(transaction)),
-  showAlert: (config) => dispatch(showAlert(config)),
+  showAlert: (
+    config: ApprovalProps['showAlert'] extends (config: infer T) => unknown
+      ? T
+      : never,
+  ) => dispatch(showAlert(config)),
 });
 
 ApproveTransactionReview.contextType = ThemeContext;
 
 export default connect(
   mapStateToProps,
+  // @ts-expect-error Legacy Redux connector declarations do not model injected props.
   mapDispatchToProps,
 )(
   withNavigation(
+    // @ts-expect-error Legacy QR HOC declarations do not model the wrapped component props.
     withQRHardwareAwareness(withMetricsAwareness(ApproveTransactionReview)),
   ),
 );
