@@ -9,9 +9,12 @@ describe('AccountBackupStep1B', () => {
   });
 
   it('should render correctly', () => {
-    const { toJSON } = renderScreen(AccountBackupStep1B, {
+    const { toJSON } = renderScreen(
+      AccountBackupStep1B as unknown as React.ComponentType,
+      {
       name: 'AccountBackupStep1B',
-    });
+      },
+    );
     expect(toJSON()).toMatchSnapshot();
   });
 });

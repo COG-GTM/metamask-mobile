@@ -42,7 +42,7 @@ const IMAGE_1_RATIO = 162.8 / 138;
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const IMG_PADDING = Device.isIphoneX() ? 100 : Device.isIphone5S() ? 180 : 220;
 
-const createStyles = (colors: Theme['colors']) =>
+const createStylesBase = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -213,9 +213,24 @@ interface AccountBackupParamList extends ParamListBase {
   };
 }
 
+type AccountBackupStep1BStyles = ReturnType<typeof createStylesBase> & {
+  button?: ViewStyle;
+  remindLaterButton?: ViewStyle;
+};
+
+const createStyles = (colors: Theme['colors']): AccountBackupStep1BStyles =>
+  createStylesBase(colors) as AccountBackupStep1BStyles;
+
+const getTypedOnboardingNavbarOptions =
+  getOnboardingNavbarOptions as unknown as (
+    route: RouteProp<AccountBackupParamList, 'AccountBackupStep1B'>,
+    options: Record<string, unknown>,
+    colors: Theme['colors'],
+  ) => Record<string, unknown>;
+
 interface AccountBackupStep1BProps {
-  navigation?: NavigationProp<AccountBackupParamList>;
-  route?: RouteProp<AccountBackupParamList, 'AccountBackupStep1B'>;
+  navigation: NavigationProp<AccountBackupParamList>;
+  route: RouteProp<AccountBackupParamList, 'AccountBackupStep1B'>;
 }
 
 /**
@@ -230,15 +245,10 @@ const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
   const styles = createStyles(colors);
 
   useEffect(() => {
-    if (navigation && route) {
-      navigation.setOptions(
-        getOnboardingNavbarOptions(route, { headerLeft: undefined }, colors),
-      );
-    }
+    navigation.setOptions(getTypedOnboardingNavbarOptions(route, {}, colors));
   }, [navigation, route, colors]);
 
   const goNext = () => {
-    if (!props.navigation || !props.route) return;
     props.navigation.navigate('ManualBackupStep1', { ...props.route.params });
     trackOnboarding(
       MetricsEventBuilder.createEventBuilder(
@@ -249,7 +259,7 @@ const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
 
   const learnMore = () => {
     setWhySecureWalletModal(false);
-    props.navigation?.navigate('Webview', {
+    props.navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: 'https://support.metamask.io/privacy-and-security/basic-safety-and-security-tips-for-metamask/',
@@ -348,7 +358,7 @@ const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
             </Text>
 
             <StyledButton
-              containerStyle={undefined}
+              containerStyle={styles.button}
               type={'confirm'}
               onPress={goNext}
             >
@@ -393,7 +403,7 @@ const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
               </Text>
             </Text>
             <TouchableOpacity
-              style={undefined}
+              style={styles.remindLaterButton}
               onPress={learnMore}
               hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
             >

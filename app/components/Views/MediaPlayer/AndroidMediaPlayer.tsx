@@ -472,7 +472,7 @@ export default function VideoPlayer({
   const renderControl = useCallback(
     (
       children: React.ReactNode,
-      callback: () => void,
+      callback?: () => void,
       style: StyleProp<ViewStyle> = {},
     ) => (
       <TouchableHighlight
@@ -600,7 +600,7 @@ export default function VideoPlayer({
     () =>
       renderControl(
         <AntIcon color={styles.actionButtons.color} size={16} name={'close'} />,
-        onClose ?? (() => undefined),
+        onClose,
         {},
       ),
     [onClose, renderControl, styles],

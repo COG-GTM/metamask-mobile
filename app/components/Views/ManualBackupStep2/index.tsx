@@ -18,6 +18,7 @@ import ActionView from '../../UI/ActionView';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
 import { strings } from '../../../../locales/i18n';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
 import { seedphraseBackedUp } from '../../../actions/user';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getOnboardingNavbarOptions } from '../../UI/Navbar';
@@ -29,13 +30,23 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
-interface ManualBackupParamList extends ParamListBase {
+export interface ManualBackupParamList extends ParamListBase {
   ManualBackupStep2: { words: string[]; steps: string[] };
   ManualBackupStep3: { words: string[]; steps: string[] };
 }
 
+const getTypedOnboardingNavbarOptions =
+  getOnboardingNavbarOptions as unknown as (
+    route: Pick<
+      RouteProp<ManualBackupParamList, 'ManualBackupStep2'>,
+      'params'
+    >,
+    options: Record<string, unknown>,
+    colors: ReturnType<typeof useTheme>['colors'],
+  ) => Record<string, unknown>;
+
 interface ManualBackupStep2OwnProps {
-  navigation?: NavigationProp<ManualBackupParamList>;
+  navigation: NavigationProp<ManualBackupParamList>;
   route: Pick<RouteProp<ManualBackupParamList, 'ManualBackupStep2'>, 'params'>;
 }
 
@@ -60,8 +71,6 @@ const ManualBackupStep2 = ({
   seedphraseBackedUp,
   route,
 }: ManualBackupStep2Props) => {
-  const requiredNavigation =
-    navigation as NavigationProp<ManualBackupParamList>;
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -85,10 +94,8 @@ const ManualBackupStep2 = ({
   };
 
   const updateNavBar = useCallback(() => {
-    requiredNavigation.setOptions(
-      getOnboardingNavbarOptions(route, { headerLeft: undefined }, colors),
-    );
-  }, [colors, requiredNavigation, route]);
+    navigation.setOptions(getTypedOnboardingNavbarOptions(route, {}, colors));
+  }, [colors, navigation, route]);
 
   useEffect(() => {
     const wordsFromRoute = route.params?.words ?? [];
@@ -166,8 +173,8 @@ const ManualBackupStep2 = ({
       seedphraseBackedUp();
       InteractionManager.runAfterInteractions(async () => {
         const words = route.params?.words;
-        requiredNavigation.navigate('ManualBackupStep3', {
-          steps: route.params?.steps ?? [],
+        navigation.navigate('ManualBackupStep3', {
+          steps: route.params?.steps,
           words,
         });
         trackOnboarding(
@@ -201,7 +208,7 @@ const ManualBackupStep2 = ({
     );
   };
 
-  const renderWordBox = (word: string, i: number) => {
+  const renderWordBox = (word: string | undefined, i: number) => {
     const styles = createStyles(colors);
 
     return (
@@ -300,13 +307,13 @@ const ManualBackupStep2 = ({
             <View style={styles.colLeft}>
               {confirmedWords
                 .slice(0, confirmedWords.length / 2)
-                .map(({ word }, i) => renderWordBox(word ?? '', i))}
+                .map(({ word }, i) => renderWordBox(word, i))}
             </View>
             <View style={styles.colRight}>
               {confirmedWords
                 .slice(-confirmedWords.length / 2)
                 .map(({ word }, i) =>
-                  renderWordBox(word ?? '', i + confirmedWords.length / 2),
+                  renderWordBox(word, i + confirmedWords.length / 2),
                 )}
             </View>
           </View>
@@ -334,11 +341,11 @@ ManualBackupStep2.propTypes = {
   route: PropTypes.object,
 };
 
-const mapDispatchToProps = {
-  seedphraseBackedUp,
-};
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
+});
 
-export default connect(
+export default connect<{}, ManualBackupStep2DispatchProps, ManualBackupStep2OwnProps>(
   null,
   mapDispatchToProps,
 )(ManualBackupStep2 as React.ComponentType<ManualBackupStep2Props>);
