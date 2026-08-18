@@ -35,7 +35,7 @@ import FA5Icon from 'react-native-vector-icons/FontAwesome5';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import { baseStyles, colors as importedColors } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
-// eslint-disable-next-line import/no-commonjs, @typescript-eslint/no-require-imports
+// eslint-disable-next-line import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const { ViewPropTypes } = require('deprecated-react-native-prop-types');
 
 type MediaPlayerTheme = Theme & {
@@ -502,7 +502,8 @@ export default function VideoPlayer({
   );
 
   const onLayoutSeekerWidth = useCallback(
-    (event: LayoutChangeEvent) => setSeekerWidth(event.nativeEvent.layout.width),
+    (event: LayoutChangeEvent) =>
+      setSeekerWidth(event.nativeEvent.layout.width),
     [],
   );
 

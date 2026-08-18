@@ -155,31 +155,32 @@ const TransactionsView = ({
           )
         : filteredAllTransactions.filter((tx) => tx.chainId === chainId);
 
-      const submittedTxsFiltered = filteredSubmittedTxs.filter(({ txParams }) => {
-        const { from, nonce } = txParams;
-        if (!toLowerCaseEquals(from, selectedAddress)) {
-          return false;
-        }
-        const alreadySubmitted = submittedNonces.includes(nonce);
-        const alreadyConfirmed = filteredConfirmedTxs.find(
-          (tx) =>
-            toLowerCaseEquals(
-              safeToChecksumAddress(tx.txParams.from),
-              selectedAddress,
-            ) && tx.txParams.nonce === nonce,
-        );
-        if (alreadyConfirmed) {
-          return false;
-        }
-        submittedNonces.push(nonce);
-        return !alreadySubmitted;
-      });
+      const submittedTxsFiltered = filteredSubmittedTxs.filter(
+        ({ txParams }) => {
+          const { from, nonce } = txParams;
+          if (!toLowerCaseEquals(from, selectedAddress)) {
+            return false;
+          }
+          const alreadySubmitted = submittedNonces.includes(nonce);
+          const alreadyConfirmed = filteredConfirmedTxs.find(
+            (tx) =>
+              toLowerCaseEquals(
+                safeToChecksumAddress(tx.txParams.from),
+                selectedAddress,
+              ) && tx.txParams.nonce === nonce,
+          );
+          if (alreadyConfirmed) {
+            return false;
+          }
+          submittedNonces.push(nonce);
+          return !alreadySubmitted;
+        },
+      );
 
       // If the account added insert point is not found, add it to the last transaction
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      /* eslint-disable @typescript-eslint/prefer-optional-chain */
       if (
         !accountAddedTimeInsertPointFound &&
+        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
         allTransactionsFiltered &&
         allTransactionsFiltered.length
       ) {
@@ -187,7 +188,6 @@ const TransactionsView = ({
           allTransactionsFiltered.length - 1
         ].insertImportTime = true;
       }
-      /* eslint-enable @typescript-eslint/prefer-optional-chain */
 
       setAllTransactions(allTransactionsFiltered);
       setSubmittedTxs(submittedTxsFiltered);

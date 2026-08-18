@@ -1,7 +1,4 @@
 import React from 'react';
-import type { NavigationProp } from '@react-navigation/native';
-import type { CompatNavigationProp } from '@react-navigation/compat/lib/typescript/src/types';
-import type { ManualBackupParamList } from './';
 import { shallow } from 'enzyme';
 import ManualBackupStep2 from './';
 import configureMockStore from 'redux-mock-store';
