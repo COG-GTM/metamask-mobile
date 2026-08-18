@@ -1,25 +1,4 @@
-interface RpcEndpoint {
-  failoverUrls: string[];
-  networkClientId: string;
-  type: string;
-  url: string;
-}
-
-interface NetworkConfiguration {
-  blockExplorerUrls: string[];
-  chainId: string;
-  defaultRpcEndpointIndex: number;
-  defaultBlockExplorerUrlIndex?: number;
-  name: string;
-  nativeCurrency: string;
-  rpcEndpoints: RpcEndpoint[];
-}
-
-interface NetworkControllerState {
-  networkConfigurationsByChainId: Record<string, NetworkConfiguration>;
-}
-
-export const MOCK_NETWORK_CONTROLLER_STATE: NetworkControllerState = {
+export const MOCK_NETWORK_CONTROLLER_STATE = {
   networkConfigurationsByChainId: {
     '0xaa36a7': {
       blockExplorerUrls: [],
@@ -55,24 +34,7 @@ export const MOCK_NETWORK_CONTROLLER_STATE: NetworkControllerState = {
   },
 };
 
-interface MultichainNetworkConfiguration {
-  chainId: string;
-  isEvm: boolean;
-  name: string;
-  nativeCurrency: string;
-}
-
-interface MultichainNetworkControllerState {
-  isEvmSelected: boolean;
-  multichainNetworkConfigurationsByChainId: Record<
-    string,
-    MultichainNetworkConfiguration
-  >;
-  selectedMultichainNetworkChainId: string;
-}
-
-export const MOCK_MULTICHAIN_NETWORK_CONTROLLER_STATE: MultichainNetworkControllerState =
-  {
+export const MOCK_MULTICHAIN_NETWORK_CONTROLLER_STATE = {
   isEvmSelected: true,
   multichainNetworkConfigurationsByChainId: {
     'bip122:000000000019d6689c085ae165831e93': {
@@ -92,29 +54,7 @@ export const MOCK_MULTICHAIN_NETWORK_CONTROLLER_STATE: MultichainNetworkControll
   selectedMultichainNetworkChainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
 };
 
-interface InternalAccount {
-  id: string;
-  address: string;
-  options: Record<string, unknown>;
-  methods: string[];
-  scopes: string[];
-  type: string;
-  metadata: {
-    name: string;
-    importTime: number;
-    keyring: { type: string };
-    lastSelected: number;
-  };
-}
-
-interface AccountControllerState {
-  internalAccounts: {
-    accounts: Record<string, InternalAccount>;
-    selectedAccount: string;
-  };
-}
-
-export const MOCK_ACCOUNT_CONTROLLER_STATE: AccountControllerState = {
+export const MOCK_ACCOUNT_CONTROLLER_STATE = {
   internalAccounts: {
     accounts: {
       '94b520b3-a0c9-4cbd-a689-441a01630331': {
@@ -185,18 +125,7 @@ export const MOCK_ACCOUNT_CONTROLLER_STATE: AccountControllerState = {
   },
 };
 
-interface Keyring {
-  type: string;
-  accounts: string[];
-}
-
-interface KeyringControllerState {
-  isUnlocked: boolean;
-  keyrings: Keyring[];
-  keyringsMetadata: { id: string; name: string }[];
-}
-
-export const MOCK_KEYRING_CONTROLLER_STATE: KeyringControllerState = {
+export const MOCK_KEYRING_CONTROLLER_STATE = {
   isUnlocked: true,
   keyrings: [
     {

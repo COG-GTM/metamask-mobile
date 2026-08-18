@@ -21,7 +21,7 @@ interface TestRouteParams {
 }
 
 interface TestScreenProps {
-  route: RouteProp<ParamListBase, string>;
+  route: RouteProp<Record<string, TestRouteParams>, string>;
 }
 
 interface TestStackProps {
@@ -40,7 +40,7 @@ const TestScreen = ({ route }: TestScreenProps) => {
 
   const name = findRouteNameFromNavigatorState(routes);
 
-  if (name !== (route.params as TestRouteParams).screenName)
+  if (name !== route.params.screenName)
     throw new Error(
       'Error, react navigation api changed: https://reactnavigation.org/docs/navigation-prop/#dangerouslygetstate',
     );
@@ -71,6 +71,7 @@ const TestStack = ({ secondRoute }: TestStackProps) => (
 
 const NavigationUnitTest = ({
   firstRoute,
+  secondRoute,
 }: NavigationUnitTestProps) => (
   <NavigationContainer>
     <Stack.Navigator initialRouteName={firstRoute || 'TestStack'}>

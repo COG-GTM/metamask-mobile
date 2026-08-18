@@ -2,7 +2,15 @@ import React, {
   PureComponent,
   type ComponentType,
 } from 'react';
-import { ScrollView, View, StyleSheet, Text, SafeAreaView } from 'react-native';
+import {
+  ScrollView,
+  View,
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 import PropTypes from 'prop-types';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { Theme } from '@metamask/design-tokens';
@@ -12,10 +20,11 @@ import StyledButton from '../../UI/StyledButton';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
-import type { Dispatch } from 'redux';
+import type { ConnectedProps } from 'react-redux';
 import collectiblesTransferInformation from '../../../util/collectibles-transfer.json';
 import { newAssetTransaction } from '../../../actions/transaction';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { Dispatch } from 'redux';
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -43,22 +52,54 @@ const createStyles = (colors: Theme['colors']) =>
     },
   });
 
+interface CollectibleViewStyles {
+  root: ViewStyle;
+  wrapper: ViewStyle;
+  buttons: ViewStyle;
+  button: ViewStyle;
+  buttonText: TextStyle;
+  assetOverviewWrapper?: ViewStyle;
+  flexRow?: ViewStyle;
+}
+
 interface CollectibleViewParams {
   address: string;
   contractName?: string;
   [key: string]: unknown;
 }
 
-interface CollectibleViewProps {
+interface CollectibleViewOwnProps {
   navigation: Pick<NavigationProp<ParamListBase>, 'navigate'>;
-  newAssetTransaction: (selectedAsset: CollectibleViewParams) => void;
   route: { params: CollectibleViewParams };
 }
+
+interface CollectibleViewDispatchProps {
+  newAssetTransaction: (selectedAsset: CollectibleViewParams) => void;
+}
+
+const mapDispatchToProps: CollectibleViewDispatchProps = {
+  newAssetTransaction,
+};
+
+const connector = connect<
+  {},
+  CollectibleViewDispatchProps,
+  CollectibleViewOwnProps
+>(null, mapDispatchToProps);
+type ReduxProps = ConnectedProps<typeof connector>;
+
+interface CollectibleViewProps
+  extends ReduxProps,
+    CollectibleViewOwnProps {}
 
 /**
  * View that displays a specific collectible asset
  */
 class CollectibleView extends PureComponent<CollectibleViewProps> {
+  static contextType = ThemeContext;
+
+  declare scrollViewRef: React.RefObject<ScrollView>;
+
   static propTypes = {
     /**
     /* navigation object required to access the props
@@ -111,12 +152,7 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
     const collectible = params;
     const colors =
       (this.context as unknown as Theme).colors || mockTheme.colors;
-    const styles = createStyles(colors) as ReturnType<
-      typeof createStyles
-    > & {
-      assetOverviewWrapper?: undefined;
-      flexRow?: undefined;
-    };
+    const styles: CollectibleViewStyles = createStyles(colors);
 
     const lowerAddress = collectible.address.toLowerCase();
     const transferInformation = collectiblesTransferInformation as Record<
@@ -130,13 +166,7 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
 
     return (
       <SafeAreaView style={styles.root}>
-        <ScrollView
-          style={styles.wrapper}
-          ref={
-            (this as unknown as { scrollViewRef: React.RefObject<ScrollView> })
-              .scrollViewRef
-          }
-        >
+        <ScrollView style={styles.wrapper} ref={this.scrollViewRef}>
           <View style={styles.assetOverviewWrapper}>
             <CollectibleOverview
               navigation={navigation}
@@ -164,18 +194,6 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
   }
 }
 
-CollectibleView.contextType = ThemeContext;
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  newAssetTransaction: (selectedAsset: CollectibleViewParams) =>
-    dispatch(newAssetTransaction(selectedAsset)),
-});
-
-const ConnectedCollectibleView = connect(
-  null,
-  mapDispatchToProps,
-)(CollectibleView as unknown as ComponentType<CollectibleViewProps>);
-
-export default ConnectedCollectibleView as unknown as ComponentType<
-  Omit<CollectibleViewProps, 'newAssetTransaction'>
->;
+export default connector(
+  CollectibleView as ComponentType<CollectibleViewProps>,
+);

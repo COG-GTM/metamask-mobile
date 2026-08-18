@@ -15,8 +15,12 @@ interface TransactionReviewStyles {
   flex: ViewStyle;
 }
 
+const createStyleSheet = StyleSheet.create as unknown as (
+  styles: TransactionReviewStyles,
+) => TransactionReviewStyles;
+
 const createStyles = (colors: Theme['colors']): TransactionReviewStyles =>
-  StyleSheet.create(({
+  createStyleSheet({
     overview: (noMargin: boolean) => ({
       marginHorizontal: noMargin ? 0 : 24,
       paddingTop: 10,
@@ -62,6 +66,6 @@ const createStyles = (colors: Theme['colors']): TransactionReviewStyles =>
     flex: {
       flex: 1,
     },
-  } as unknown) as Record<string, ViewStyle | TextStyle>) as unknown as TransactionReviewStyles;
+  });
 
 export default createStyles;

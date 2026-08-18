@@ -1,6 +1,6 @@
 import React, { PureComponent, type ComponentType } from 'react';
 import PropTypes from 'prop-types';
-import type { Theme } from '../../../util/theme/models';
+import type { Theme } from '@metamask/design-tokens';
 import {
   TouchableOpacity,
   Dimensions,
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
+import type { ConnectedProps } from 'react-redux';
 import QRCode from 'react-native-qrcode-svg';
 import { strings } from '../../../../locales/i18n';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
@@ -21,11 +22,14 @@ import ClipboardManager from '../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
 import type { RootState } from '../../../reducers';
-import type { Dispatch } from 'redux';
 
 const WIDTH = Dimensions.get('window').width - 88;
 
-const createStyles = (theme: Theme) =>
+type AddressQRCodeTheme = Theme & {
+  brandColors: { white: string };
+};
+
+const createStyles = (theme: AddressQRCodeTheme) =>
   StyleSheet.create({
     root: {
       flex: 1,
@@ -79,23 +83,50 @@ const createStyles = (theme: Theme) =>
     },
   });
 
-interface AddressQRCodeProps {
+interface AddressQRCodeStateProps {
   selectedAddress: string | undefined;
+  seedphraseBackedUp: boolean;
+}
+
+const mapStateToProps = (state: RootState): AddressQRCodeStateProps => ({
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+  seedphraseBackedUp: state.user.seedphraseBackedUp,
+});
+
+interface AddressQRCodeOwnProps {
+  closeQrModal: () => void;
+}
+
+interface AddressQRCodeDispatchProps {
   showAlert: (config: {
     isVisible: boolean;
     autodismiss: number;
     content: string;
     data: { msg: string };
-  }) => void;
-  closeQrModal: () => void;
-  protectWalletModalVisible: () => void;
-  seedphraseBackedUp: boolean;
+  }) => unknown;
+  protectWalletModalVisible: () => unknown;
 }
+
+const mapDispatchToProps: AddressQRCodeDispatchProps = {
+  showAlert: (config) => showAlert(config),
+  protectWalletModalVisible: () => protectWalletModalVisible(),
+};
+
+const connector = connect<
+  AddressQRCodeStateProps,
+  AddressQRCodeDispatchProps,
+  AddressQRCodeOwnProps,
+  RootState
+>(mapStateToProps, mapDispatchToProps);
+type AddressQRCodeProps = ConnectedProps<typeof connector> &
+  AddressQRCodeOwnProps;
 
 /**
  * PureComponent that renders a public address view
  */
 class AddressQRCode extends PureComponent<AddressQRCodeProps> {
+  static contextType = ThemeContext;
+
   static propTypes = {
     /**
      * Selected address as string
@@ -150,7 +181,8 @@ class AddressQRCode extends PureComponent<AddressQRCodeProps> {
   };
 
   render() {
-    const theme = (this.context as unknown as Theme) || mockTheme;
+    const theme =
+      (this.context as unknown as AddressQRCodeTheme) || mockTheme;
     const colors = theme.colors;
     const styles = createStyles(theme);
 
@@ -190,26 +222,6 @@ class AddressQRCode extends PureComponent<AddressQRCodeProps> {
   }
 }
 
-const mapStateToProps = (state: RootState) => ({
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
-  seedphraseBackedUp: state.user.seedphraseBackedUp,
-});
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  showAlert: (config: {
-    isVisible: boolean;
-    autodismiss: number;
-    content: string;
-    data: { msg: string };
-  }) => dispatch(showAlert(config)),
-  protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
-});
-
-AddressQRCode.contextType = ThemeContext;
-
-const ConnectedAddressQRCode = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(AddressQRCode as unknown as ComponentType<AddressQRCodeProps>);
-
-export default ConnectedAddressQRCode as unknown as ComponentType<object>;
+export default connector(
+  AddressQRCode as ComponentType<AddressQRCodeProps>,
+);

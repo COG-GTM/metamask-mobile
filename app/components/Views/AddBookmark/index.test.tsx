@@ -21,8 +21,8 @@ describe('AddBookmark', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <AddBookmark
-          navigation={{ setOptions: () => null }}
-          route={{ params: {} }}
+          navigation={{ setOptions: jest.fn(), pop: jest.fn() }}
+          route={{ params: { onAddBookmark: jest.fn() } }}
         />
       </ThemeContext.Provider>,
     );

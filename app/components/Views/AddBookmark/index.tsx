@@ -7,8 +7,13 @@ import {
   StyleSheet,
   type TextInputProps,
 } from 'react-native';
+import type {
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import PropTypes from 'prop-types';
-import type { Theme } from '../../../util/theme/models';
+import type { Theme } from '@metamask/design-tokens';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import ActionView from '../../UI/ActionView';
@@ -47,17 +52,19 @@ const createStyles = (colors: Theme['colors']) =>
 interface AddBookmarkRouteParams {
   title?: string;
   url?: string;
-  onAddBookmark?: (bookmark: { name: string; url: string }) => void;
+  onAddBookmark: (bookmark: { name: string; url: string }) => void;
 }
 
-interface AddBookmarkNavigation {
-  setOptions: (options: object) => unknown;
-  pop?: () => unknown;
+interface AddBookmarkParamList extends ParamListBase {
+  AddBookmark: AddBookmarkRouteParams;
 }
 
 interface AddBookmarkProps {
-  navigation: AddBookmarkNavigation;
-  route: { params: AddBookmarkRouteParams };
+  navigation: Pick<
+    StackNavigationProp<AddBookmarkParamList>,
+    'setOptions' | 'pop'
+  >;
+  route: Pick<RouteProp<AddBookmarkParamList, 'AddBookmark'>, 'params'>;
 }
 
 interface AddBookmarkState {
@@ -67,6 +74,10 @@ interface AddBookmarkState {
   warningDecimals?: React.ReactNode;
 }
 
+type AddBookmarkTheme = Theme & {
+  themeAppearance?: TextInputProps['keyboardAppearance'];
+};
+
 /**
  * Copmonent that provides ability to add a bookmark
  */
@@ -74,6 +85,10 @@ export default class AddBookmark extends PureComponent<
   AddBookmarkProps,
   AddBookmarkState
 > {
+  static contextType = ThemeContext;
+
+  declare addToken?: TextInputProps['onSubmitEditing'];
+
   state: AddBookmarkState = {
     title: '',
     url: '',
@@ -125,16 +140,12 @@ export default class AddBookmark extends PureComponent<
   addBookmark = () => {
     const { title, url } = this.state;
     if (title === '' || url === '') return false;
-    const onAddBookmark = this.props.route.params
-      .onAddBookmark as (bookmark: { name: string; url: string }) => void;
-    const pop = this.props.navigation.pop as () => unknown;
-    onAddBookmark({ name: title, url });
-    pop();
+    this.props.route.params.onAddBookmark({ name: title, url });
+    this.props.navigation.pop();
   };
 
   cancelAddBookmark = () => {
-    const pop = this.props.navigation.pop as () => unknown;
-    pop();
+    this.props.navigation.pop();
   };
 
   onTitleChange = (title: string) => {
@@ -153,7 +164,7 @@ export default class AddBookmark extends PureComponent<
   };
 
   render = () => {
-    const theme = this.context as unknown as Theme;
+    const theme = this.context as unknown as AddBookmarkTheme;
     const colors = theme.colors || mockTheme.colors;
     const themeAppearance = theme.themeAppearance || 'light';
     const styles = createStyles(colors);
@@ -200,11 +211,7 @@ export default class AddBookmark extends PureComponent<
                 onChangeText={this.onUrlChange}
                 testID={AddBookmarkViewSelectorsIDs.URL_TEXT}
                 ref={this.urlInput}
-                onSubmitEditing={
-                  (this as unknown as {
-                    addToken: TextInputProps['onSubmitEditing'];
-                  }).addToken
-                }
+                onSubmitEditing={this.addToken}
                 returnKeyType={'done'}
                 placeholderTextColor={colors.text.muted}
                 keyboardAppearance={themeAppearance}
@@ -219,5 +226,3 @@ export default class AddBookmark extends PureComponent<
     );
   };
 }
-
-AddBookmark.contextType = ThemeContext;
