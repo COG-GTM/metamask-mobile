@@ -296,6 +296,17 @@ declare module '@metamask/react-native-actionsheet' {
 
 declare module '@metamask/react-native-search-api';
 
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  const coalesceNonElementChildren: (
+    children: React.ReactNode,
+    coalesceNodes: (
+      children: React.ReactNode[],
+      index: number,
+    ) => React.ReactNode,
+  ) => React.ReactNode[];
+  export default coalesceNonElementChildren;
+}
+
 /**
  * @sentry/react-native types for v^6.10.0
  * Types are overridden to ensure captureException receives an Error type for more reliable stack traces
