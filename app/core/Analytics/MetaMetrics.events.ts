@@ -427,6 +427,12 @@ enum EVENT_NAME {
 
   // Tooltip
   TOOLTIP_OPENED = 'Tooltip Opened',
+
+  // Activity search and filters
+  ACTIVITY_SEARCH_USED = 'Activity Search Used',
+  ACTIVITY_FILTER_APPLIED = 'Activity Filter Applied',
+  ACTIVITY_FILTERS_CLEARED = 'Activity Filters Cleared',
+  ACTIVITY_EXPORT_CSV = 'Activity Export CSV',
 }
 
 enum ACTIONS {
@@ -598,6 +604,11 @@ const events = {
   BROWSER_ADD_FAVORITES: generateOpt(EVENT_NAME.BROWSER_ADD_FAVORITES),
   DAPP_VIEWED: generateOpt(EVENT_NAME.DAPP_VIEWED),
   TOOLTIP_OPENED: generateOpt(EVENT_NAME.TOOLTIP_OPENED),
+  // Activity search and filters
+  ACTIVITY_SEARCH_USED: generateOpt(EVENT_NAME.ACTIVITY_SEARCH_USED),
+  ACTIVITY_FILTER_APPLIED: generateOpt(EVENT_NAME.ACTIVITY_FILTER_APPLIED),
+  ACTIVITY_FILTERS_CLEARED: generateOpt(EVENT_NAME.ACTIVITY_FILTERS_CLEARED),
+  ACTIVITY_EXPORT_CSV: generateOpt(EVENT_NAME.ACTIVITY_EXPORT_CSV),
   // Security & Privacy Settings
   VIEW_SECURITY_SETTINGS: generateOpt(EVENT_NAME.VIEW_SECURITY_SETTINGS),
   BASIC_FUNCTIONALITY_ENABLED: generateOpt(

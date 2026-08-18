@@ -81,6 +81,27 @@ export const mockEvents = {
       ],
       responseCode: 200,
     },
+
+    /**
+     * Remote feature flags with the Activity search and filters feature enabled.
+     */
+    remoteFeatureFlagsActivitySearch: {
+      urlEndpoint:
+        'https://client-config.api.cx.metamask.io/v1/flags?client=mobile&distribution=main&environment=dev',
+      response: [
+        {
+          mobileMinimumVersions: {
+            appMinimumBuild: 1243,
+            appleMinimumOS: 6,
+            androidMinimumAPIVersion: 21,
+          },
+        },
+        {
+          activitySearchEnabled: true,
+        },
+      ],
+      responseCode: 200,
+    },
   },
 
   /**
