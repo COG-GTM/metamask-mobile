@@ -1,6 +1,14 @@
 import React, { PureComponent } from 'react';
-import { SafeAreaView, Text, TextInput, View, StyleSheet } from 'react-native';
+import {
+  SafeAreaView,
+  Text,
+  TextInput,
+  View,
+  StyleSheet,
+  type TextInputProps,
+} from 'react-native';
 import PropTypes from 'prop-types';
+import type { Theme } from '../../../util/theme/models';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import ActionView from '../../UI/ActionView';
@@ -9,7 +17,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 
 import { AddBookmarkViewSelectorsIDs } from '../../../../e2e/selectors/Browser/AddBookmarkView.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -36,11 +44,37 @@ const createStyles = (colors) =>
     },
   });
 
+interface AddBookmarkRouteParams {
+  title?: string;
+  url?: string;
+  onAddBookmark?: (bookmark: { name: string; url: string }) => void;
+}
+
+interface AddBookmarkNavigation {
+  setOptions: (options: object) => unknown;
+  pop?: () => unknown;
+}
+
+interface AddBookmarkProps {
+  navigation: AddBookmarkNavigation;
+  route: { params: AddBookmarkRouteParams };
+}
+
+interface AddBookmarkState {
+  title: string;
+  url: string;
+  warningSymbol?: React.ReactNode;
+  warningDecimals?: React.ReactNode;
+}
+
 /**
  * Copmonent that provides ability to add a bookmark
  */
-export default class AddBookmark extends PureComponent {
-  state = {
+export default class AddBookmark extends PureComponent<
+  AddBookmarkProps,
+  AddBookmarkState
+> {
+  state: AddBookmarkState = {
     title: '',
     url: '',
   };
@@ -58,7 +92,8 @@ export default class AddBookmark extends PureComponent {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
 
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -90,23 +125,27 @@ export default class AddBookmark extends PureComponent {
   addBookmark = () => {
     const { title, url } = this.state;
     if (title === '' || url === '') return false;
-    this.props.route.params.onAddBookmark({ name: title, url });
-    this.props.navigation.pop();
+    const onAddBookmark = this.props.route.params
+      .onAddBookmark as (bookmark: { name: string; url: string }) => void;
+    const pop = this.props.navigation.pop as () => unknown;
+    onAddBookmark({ name: title, url });
+    pop();
   };
 
   cancelAddBookmark = () => {
-    this.props.navigation.pop();
+    const pop = this.props.navigation.pop as () => unknown;
+    pop();
   };
 
-  onTitleChange = (title) => {
+  onTitleChange = (title: string) => {
     this.setState({ title });
   };
 
-  onUrlChange = (url) => {
+  onUrlChange = (url: string) => {
     this.setState({ url });
   };
 
-  urlInput = React.createRef();
+  urlInput = React.createRef<TextInput>();
 
   jumpToUrl = () => {
     const { current } = this.urlInput;
@@ -114,8 +153,9 @@ export default class AddBookmark extends PureComponent {
   };
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const theme = this.context as unknown as Theme;
+    const colors = theme.colors || mockTheme.colors;
+    const themeAppearance = theme.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (
@@ -160,7 +200,11 @@ export default class AddBookmark extends PureComponent {
                 onChangeText={this.onUrlChange}
                 testID={AddBookmarkViewSelectorsIDs.URL_TEXT}
                 ref={this.urlInput}
-                onSubmitEditing={this.addToken}
+                onSubmitEditing={
+                  (this as unknown as {
+                    addToken: TextInputProps['onSubmitEditing'];
+                  }).addToken
+                }
                 returnKeyType={'done'}
                 placeholderTextColor={colors.text.muted}
                 keyboardAppearance={themeAppearance}
