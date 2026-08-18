@@ -412,20 +412,23 @@ export const swapsTokensWithBalanceSelector = createSelector(
       return [];
     }
     const baseTokens = tokens;
-    const tokensAddressesWithBalance = Object.entries(balances)
-      .filter(([, balance]) => Number(balance) !== 0)
+    const tokensAddressesWithBalance = Object.entries(
+      balances as unknown as Record<string, number>,
+    )
+      .filter(([, balance]) => balance !== 0)
       .sort(([, balanceA], [, balanceB]) =>
-        lte(Number(balanceB), Number(balanceA)) ? -1 : 1,
+        lte(balanceB, balanceA) ? -1 : 1,
       )
       .map(([address]) => address.toLowerCase());
     const tokensWithBalance = [];
     const originalTokens = [];
 
-    for (const token of baseTokens) {
-      if (tokensAddressesWithBalance.includes(token.address)) {
-        tokensWithBalance.push(token);
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let i = 0; i < baseTokens.length; i++) {
+      if (tokensAddressesWithBalance.includes(baseTokens[i].address)) {
+        tokensWithBalance.push(baseTokens[i]);
       } else {
-        originalTokens.push(token);
+        originalTokens.push(baseTokens[i]);
       }
 
       if (
