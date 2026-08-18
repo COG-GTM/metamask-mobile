@@ -1,23 +1,54 @@
 import { NativeModules } from 'react-native';
 import mockRNAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
+// @ts-expect-error @react-native-clipboard/clipboard does not ship declarations for its Jest mock.
 import mockClipboard from '@react-native-clipboard/clipboard/jest/clipboard-mock.js';
 /* eslint-disable import/no-namespace */
 import { mockTheme } from '../theme';
+// @ts-expect-error enzyme-adapter-react-16 does not ship declarations.
 import Adapter from 'enzyme-adapter-react-16';
 import Enzyme from 'enzyme';
 import '@shopify/flash-list/jestSetup';
 
+type SegmentMockClient = {
+  screen: jest.Mock;
+  track: jest.Mock;
+  identify: jest.Mock;
+  flush: jest.Mock;
+  group: jest.Mock;
+  alias: jest.Mock;
+  reset: jest.Mock;
+  add: jest.Mock;
+};
+
+type TestGlobal = Omit<typeof globalThis, 'crypto'> & {
+  segmentMockClient: SegmentMockClient | null;
+  __reanimatedWorkletInit: jest.Mock;
+  __DEV__: boolean;
+  crypto: {
+    getRandomValues: (array: Uint8Array) => Uint8Array;
+  };
+};
+
+const testGlobal = global as unknown as TestGlobal;
+
 Enzyme.configure({ adapter: new Adapter() });
 
 jest.mock('react-native-quick-crypto', () => ({
-  getRandomValues: jest.fn((array) => {
+  getRandomValues: jest.fn((array: Uint8Array) => {
     for (let i = 0; i < array.length; i++) {
       array[i] = Math.floor(Math.random() * 256);
     }
     return array;
   }),
   subtle: {
-    importKey: jest.fn((format, keyData, algorithm, extractable, keyUsages) => {
+    importKey: jest.fn(
+      (
+        format: string,
+        keyData: unknown,
+        algorithm: unknown,
+        extractable: boolean,
+        keyUsages: string[],
+      ) => {
       return Promise.resolve({
         format,
         keyData,
@@ -25,25 +56,28 @@ jest.mock('react-native-quick-crypto', () => ({
         extractable,
         keyUsages,
       });
-    }),
-    deriveBits: jest.fn((algorithm, baseKey, length) => {
+      },
+    ),
+    deriveBits: jest.fn(
+      (algorithm: unknown, baseKey: unknown, length: number) => {
       const derivedBits = new Uint8Array(length);
       for (let i = 0; i < length; i++) {
         derivedBits[i] = Math.floor(Math.random() * 256);
       }
       return Promise.resolve(derivedBits);
-    }),
-    exportKey: jest.fn((format, key) => {
+      },
+    ),
+    exportKey: jest.fn((format: string, key: unknown) => {
       return Promise.resolve(new Uint8Array([1, 2, 3, 4]));
     }),
-    encrypt: jest.fn((algorithm, key, data) => {
+    encrypt: jest.fn((algorithm: unknown, key: unknown, data: unknown) => {
       return Promise.resolve(new Uint8Array([
         123,  34, 116, 101, 115,
         116,  34,  58,  34, 100,
          97, 116,  97,  34, 125
       ]));
     }),
-    decrypt: jest.fn((algorithm, key, data) => {
+    decrypt: jest.fn((algorithm: unknown, key: unknown, data: unknown) => {
       return Promise.resolve(new Uint8Array([
         123,  34, 116, 101, 115,
         116,  34,  58,  34, 100,
@@ -59,7 +93,7 @@ jest.mock('react-native', () => {
   const originalModule = jest.requireActual('react-native');
 
   // Set the Platform.OS property to the desired value
-  originalModule.Platform.OS = 'ios'; // or 'android', depending on what you want to test
+  (originalModule.Platform as { OS: string }).OS = 'ios'; // or 'android', depending on what you want to test
 
   return originalModule;
 });
@@ -71,7 +105,7 @@ jest.mock('react-native', () => {
 jest.mock('@metamask/react-native-webview', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
   const { View } = require('react-native');
-  const WebView = (props) => <View {...props} />;
+  const WebView = (props: Record<string, unknown>) => <View {...props} />;
 
   return {
     WebView,
@@ -97,7 +131,7 @@ const mockFs = {
   copyFileAssetsIOS: jest.fn(),
   downloadFile: jest.fn(),
   exists: () =>
-    new Promise((resolve) => {
+    new Promise<string>((resolve) => {
       resolve('console.log()');
     }),
   existsAssets: jest.fn(),
@@ -114,7 +148,7 @@ const mockFs = {
   readDir: jest.fn(),
   readDirAssets: jest.fn(),
   readFile: () =>
-    new Promise((resolve) => {
+    new Promise<string>((resolve) => {
       resolve('console.log()');
     }),
   readFileAssets: jest.fn(),
@@ -157,14 +191,14 @@ jest.mock('../../core/NotificationManager', () => ({
   showSimpleNotification: jest.fn(),
 }));
 
-let mockState = {};
+let mockState: unknown = {};
 
 jest.mock('../../store', () => ({
   store: {
     getState: jest.fn().mockImplementation(() => mockState),
     dispatch: jest.fn(),
   },
-  _updateMockState: (state) => {
+  _updateMockState: (state: unknown) => {
     mockState = state;
   },
 }));
@@ -206,11 +240,19 @@ jest.mock('react-native-keychain', () => ({
   },
   getSupportedBiometryType: jest.fn().mockReturnValue('FaceID'),
   setInternetCredentials: jest
-    .fn(('server', 'username', 'password'))
-    .mockResolvedValue({ service: 'metamask', storage: 'storage' }),
+    .fn(
+      // @ts-expect-error Preserve the original comma expression used by this mock.
+      (('server', 'username', 'password') as unknown) as (
+        ...args: never[]
+      ) => unknown,
+    )
+    .mockResolvedValue(
+      ({ service: 'metamask', storage: 'storage' } as unknown) as never,
+    ),
   getInternetCredentials: jest
     .fn()
     .mockResolvedValue({ password: 'mock-credentials-password' }),
+  // @ts-expect-error This mock intentionally resolves without an explicit value.
   resetInternetCredentials: jest.fn().mockResolvedValue(),
   ACCESSIBLE: {
     WHEN_UNLOCKED: 'AccessibleWhenUnlocked',
@@ -248,7 +290,10 @@ jest.mock('react-native-reanimated', () =>
   require('react-native-reanimated/mock'),
 );
 
-NativeModules.RNGestureHandlerModule = {
+const mutableNativeModules = NativeModules as typeof NativeModules &
+  Record<string, unknown>;
+
+mutableNativeModules.RNGestureHandlerModule = {
   attachGestureHandler: jest.fn(),
   createGestureHandler: jest.fn(),
   dropGestureHandler: jest.fn(),
@@ -258,7 +303,7 @@ NativeModules.RNGestureHandlerModule = {
   Directions: {},
 };
 
-NativeModules.RNCNetInfo = {
+mutableNativeModules.RNCNetInfo = {
   getCurrentConnectivity: jest.fn(),
   isConnectionMetered: jest.fn(),
   addListener: jest.fn(),
@@ -266,18 +311,18 @@ NativeModules.RNCNetInfo = {
   getCurrentState: jest.fn(() => Promise.resolve()),
 };
 
-NativeModules.NotifeeApiModule = {
+mutableNativeModules.NotifeeApiModule = {
   addListener: jest.fn(),
   eventsAddListener: jest.fn(),
   eventsNotifyReady: jest.fn(),
 };
 
-NativeModules.PlatformConstants = {
+mutableNativeModules.PlatformConstants = {
   forceTouchAvailable: false,
 };
 
-NativeModules.Aes = {
-  sha256: jest.fn().mockImplementation((address) => {
+mutableNativeModules.Aes = {
+  sha256: jest.fn().mockImplementation((address: string) => {
     const uniqueAddressChar = address[2]; // Assuming 0x prefix is present, so actual third character is at index 2
     const hashBase = '012345678987654';
     return Promise.resolve(hashBase + uniqueAddressChar);
@@ -288,12 +333,12 @@ NativeModules.Aes = {
   decrypt: jest.fn().mockResolvedValue('{"mockData": "mockedPlainText"}'),
 };
 
-NativeModules.AesForked = {
+mutableNativeModules.AesForked = {
   pbkdf2: jest.fn().mockResolvedValue('mockedKeyForked'),
   decrypt: jest.fn().mockResolvedValue('{"mockData": "mockedPlainTextForked"}'),
 };
 
-NativeModules.RNTar = {
+mutableNativeModules.RNTar = {
   unTar: jest.fn().mockResolvedValue('/document-dir/archive'),
 };
 
@@ -324,10 +369,10 @@ jest.mock('../theme', () => ({
   useAppThemeFromContext: () => ({ ...mockTheme }),
 }));
 
-global.segmentMockClient = null;
+testGlobal.segmentMockClient = null;
 
-const initializeMockClient = () => {
-  global.segmentMockClient = {
+const initializeMockClient = (): SegmentMockClient => {
+  testGlobal.segmentMockClient = {
     screen: jest.fn(),
     track: jest.fn(),
     identify: jest.fn(),
@@ -337,15 +382,15 @@ const initializeMockClient = () => {
     reset: jest.fn(),
     add: jest.fn(),
   };
-  return global.segmentMockClient;
+  return testGlobal.segmentMockClient as SegmentMockClient;
 };
 
 jest.mock('@segment/analytics-react-native', () => {
   class Plugin {
     type = 'utility';
-    analytics = undefined;
+    analytics: unknown = undefined;
 
-    configure(analytics) {
+    configure(analytics: unknown): void {
       this.analytics = analytics;
     }
   }
@@ -370,14 +415,17 @@ jest.mock('@notifee/react-native', () =>
 
 jest.mock('react-native/Libraries/Image/resolveAssetSource', () => ({
   __esModule: true,
-  default: (source) => {
+  default: (source: { uri: string }) => {
     return { uri: source.uri };
   },
 }));
 
 jest.mock('redux-persist', () => ({
   persistStore: jest.fn(),
-  persistReducer: (_, reducer) => {
+  persistReducer: (
+    _: unknown,
+    reducer: ((state: unknown) => unknown) | undefined,
+  ) => {
     return reducer || ((state) => state);
   },
   createTransform: jest.fn(),
@@ -391,8 +439,8 @@ jest.mock('../../store/storage-wrapper', () => ({
 
 // eslint-disable-next-line import/no-commonjs
 require('react-native-reanimated').setUpTests();
-global.__reanimatedWorkletInit = jest.fn();
-global.__DEV__ = false;
+testGlobal.__reanimatedWorkletInit = jest.fn();
+testGlobal.__DEV__ = false;
 
 jest.mock('../../core/Engine', () =>
   require('../../core/__mocks__/MockedEngine'),
@@ -405,21 +453,22 @@ jest.mock('react-native-safe-area-context', () => ({
 
 afterEach(() => {
   jest.restoreAllMocks();
-  global.gc && global.gc(true);
+  global.gc && (global.gc as (force?: boolean) => void)(true);
 });
 
-global.crypto = {
-  getRandomValues: (arr) => {
+testGlobal.crypto = {
+  getRandomValues: <T extends ArrayBufferView | null>(arr: T): T => {
+    const bytes = arr as Uint8Array;
     const uint8Max = 255;
-    for (let i = 0; i < arr.length; i++) {
-      arr[i] = Math.floor(Math.random() * (uint8Max + 1));
+    for (let i = 0; i < bytes.length; i++) {
+      bytes[i] = Math.floor(Math.random() * (uint8Max + 1));
     }
     return arr;
   },
 };
 
 jest.mock('@react-native-firebase/messaging', () => {
-  const module = () => {
+  const module = (function firebaseMock() {
     return {
       getToken: jest.fn(() => Promise.resolve('fcmToken')),
       deleteToken: jest.fn(() => Promise.resolve()),
@@ -444,6 +493,8 @@ jest.mock('@react-native-firebase/messaging', () => {
       onMessage: jest.fn(),
       onTokenRefresh: jest.fn(),
     };
+  } as unknown) as (() => Record<string, unknown>) & {
+    AuthorizationStatus: Record<string, number>;
   };
 
   module.AuthorizationStatus = {
