@@ -48,9 +48,8 @@ import { toLowerCaseEquals } from '../../../util/general';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { InternalAccount } from '@metamask/keyring-internal-api';
 import type { IUseMetricsHook } from '../../../components/hooks/useMetrics/useMetrics.types';
-import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import type { RootState } from '../../../reducers';
-import type { Colors, Theme } from '../../../util/theme/models';
+import type { Colors } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -140,13 +139,14 @@ const createStyles = (colors: Colors) =>
       flexDirection: 'row',
     },
     netWorthContainer: {
+      // @ts-expect-error React Native's ViewStyle type omits this legacy style key.
       justifyItems: 'center',
       alignItems: 'center',
       flexDirection: 'row',
     },
     portfolioLink: { marginLeft: 5 },
     portfolioIcon: { color: colors.primary.default },
-  } as unknown as Record<string, object>);
+  });
 
 /**
  * View that's part of the <Wallet /> component
@@ -194,7 +194,7 @@ class AccountOverview extends PureComponent<
   AccountOverviewProps,
   AccountOverviewState
 > {
-  context: Theme = {} as Theme;
+  declare context: React.ContextType<typeof ThemeContext>;
 
   static propTypes = {
     /**
@@ -515,20 +515,8 @@ const mapDispatchToProps = (dispatch: (action: object) => unknown) => ({
 
 AccountOverview.contextType = ThemeContext;
 
-type ConnectedAccountOverviewProps = Pick<AccountOverviewProps, 'account'>;
-
-const connectAccountOverview = connect as unknown as (
-  mapState: typeof mapStateToProps,
-  mapDispatch: typeof mapDispatchToProps,
-) => (
-  component: React.ComponentType<AccountOverviewProps>,
-) => React.ComponentType<ConnectedAccountOverviewProps>;
-
-export default connectAccountOverview(
-  mapStateToProps,
-  mapDispatchToProps,
-)(
-  withMetricsAwareness(
-    AccountOverview as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
-  ) as unknown as React.ComponentType<AccountOverviewProps>,
+// @ts-expect-error Redux and metrics HOCs inject the remaining component props.
+export default connect(mapStateToProps, mapDispatchToProps)(
+  // @ts-expect-error Redux and metrics HOCs inject the remaining component props.
+  withMetricsAwareness(AccountOverview),
 );

@@ -7,8 +7,6 @@ import {
   InteractionManager,
   ScrollView,
   TouchableOpacity,
-  StyleProp,
-  ViewStyle,
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import Engine from '../../../core/Engine';
@@ -55,7 +53,7 @@ import ButtonIcon from '../../../component-library/components/Buttons/ButtonIcon
 import { endTrace, trace, TraceName } from '../../../util/trace';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
-import type { Colors, Theme } from '../../../util/theme/models';
+import type { Colors } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -188,7 +186,7 @@ class AddCustomToken extends PureComponent<
   AddCustomTokenProps,
   AddCustomTokenState
 > {
-  context: Theme = {} as Theme;
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state: AddCustomTokenState = {
     address: '',
@@ -276,19 +274,11 @@ class AddCustomToken extends PureComponent<
     const networkClientId = this.props.networkClientId;
 
     trace({ name: TraceName.ImportTokens });
-    await (
-      TokensController.addToken as unknown as (params: {
-        address: string;
-        symbol: string;
-        decimals: number;
-        name: string;
-        chainId: string;
-        networkClientId: string;
-      }) => Promise<void>
-    )({
+    await TokensController.addToken({
       address,
       symbol,
-      decimals: decimals as unknown as number,
+      // @ts-expect-error decimals is intentionally passed as a string to preserve existing behavior.
+      decimals,
       name,
       chainId,
       networkClientId,
@@ -683,11 +673,8 @@ class AddCustomToken extends PureComponent<
                   testID={ImportTokenViewSelectorsIDs.SELECT_NETWORK_BUTTON}
                   onPress={() => this.props.setOpenNetworkSelector(true)}
                   accessibilityRole="button"
-                  style={
-                    (styles as unknown as {
-                      buttonIcon?: StyleProp<ViewStyle>;
-                    }).buttonIcon
-                  }
+                  // @ts-expect-error This legacy style key is absent from createStyles and resolves undefined.
+                  style={styles.buttonIcon}
                 />
               </View>
             </TouchableOpacity>
@@ -782,7 +769,8 @@ class AddCustomToken extends PureComponent<
                   >
                     {title}{' '}
                     <Icon
-                      style={styles.link as unknown as StyleProp<ViewStyle>}
+                      // @ts-expect-error Icon accepts ViewStyle while this legacy link style is shared.
+                      style={styles.link}
                       size={IconSize.Xss}
                       name={IconName.Export}
                     />
@@ -810,6 +798,5 @@ class AddCustomToken extends PureComponent<
 
 AddCustomToken.contextType = ThemeContext;
 
-export default withMetricsAwareness(
-  AddCustomToken as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
-);
+// @ts-expect-error withMetricsAwareness injects metrics at runtime.
+export default withMetricsAwareness(AddCustomToken);

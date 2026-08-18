@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
-import GenericButton from '../GenericButton/index.ios'; // eslint-disable-line import/no-unresolved
+// @ts-expect-error GenericButton is platform-resolved by Metro.
+import GenericButton from '../GenericButton'; // eslint-disable-line import/no-unresolved
 import { useTheme } from '../../../util/theme';
 // @ts-expect-error Package does not publish TypeScript declarations.
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
@@ -42,7 +43,7 @@ const Button = (props: ButtonProps) => {
   return (
     <GenericButton
       onPress={props.onPress}
-      style={[styles.button, props.style] as unknown as ViewStyle}
+      style={[styles.button, props.style]}
     >
       {props.children}
     </GenericButton>

@@ -14,7 +14,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/BrowserView.selectors';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
-import type { Colors, Theme } from '../../../util/theme/models';
+import type { Colors } from '../../../util/theme/models';
 
 // NOTE: not needed anymore. The use of BottomTabBar already accomodates the home indicator height
 // TODO: test on an android device
@@ -71,7 +71,7 @@ interface BrowserBottomBarProps extends IWithMetricsAwarenessProps {
 }
 
 class BrowserBottomBar extends PureComponent<BrowserBottomBarProps> {
-  context: Theme = {} as Theme;
+  declare context: React.ContextType<typeof ThemeContext>;
   static propTypes = {
     /**
      * Boolean that determines if you can navigate back
@@ -232,5 +232,6 @@ class BrowserBottomBar extends PureComponent<BrowserBottomBarProps> {
 
 BrowserBottomBar.contextType = ThemeContext;
 export default withMetricsAwareness(
-  BrowserBottomBar as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+  // @ts-expect-error withMetricsAwareness injects metrics at runtime.
+  BrowserBottomBar,
 );

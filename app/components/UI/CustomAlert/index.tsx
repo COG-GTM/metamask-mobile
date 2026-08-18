@@ -7,7 +7,7 @@ import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 // @ts-expect-error Package does not publish TypeScript declarations.
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
-import type { Colors, Theme } from '../../../util/theme/models';
+import type { Colors } from '../../../util/theme/models';
 
 const createStyles = (colors: Colors) =>
   StyleSheet.create({
@@ -60,7 +60,7 @@ interface CustomAlertProps {
 }
 
 export default class CustomAlert extends PureComponent<CustomAlertProps> {
-  context: Theme = {} as Theme;
+  declare context: React.ContextType<typeof ThemeContext>;
   static propTypes = {
     /**
     /* Style of the header view
@@ -112,21 +112,17 @@ export default class CustomAlert extends PureComponent<CustomAlertProps> {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
-    const modalProps = Object.assign(
-      {
-        style: styles.modal,
-        isVisible: (this as unknown as { propTypes: boolean }).propTypes,
-        onBackButtonPress: this.props.onPress,
-      },
-      this.props,
-      {
-        backdropColor: colors.overlay.default,
-        backdropOpacity: 1,
-      },
-    );
-
     return (
-      <Modal {...(modalProps as React.ComponentProps<typeof Modal>)}>
+      // @ts-expect-error Preserve the legacy custom props and propTypes read.
+      <Modal
+        style={styles.modal}
+        // @ts-expect-error Preserve the legacy instance propTypes read.
+        isVisible={this.propTypes}
+        onBackButtonPress={this.props.onPress}
+        {...this.props}
+        backdropColor={colors.overlay.default}
+        backdropOpacity={1}
+      >
         <View style={styles.content}>
           <View style={[styles.header, this.props.headerStyle]}>
             {this.props.headerContent}
