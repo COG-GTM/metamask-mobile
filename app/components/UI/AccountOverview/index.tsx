@@ -45,8 +45,14 @@ import Text, {
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { isPortfolioUrl } from '../../../util/url';
 import { toLowerCaseEquals } from '../../../util/general';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { InternalAccount } from '@metamask/keyring-internal-api';
+import type { IUseMetricsHook } from '../../../components/hooks/useMetrics/useMetrics.types';
+import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
+import type { RootState } from '../../../reducers';
+import type { Colors, Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     scrollView: {
       backgroundColor: colors.background.default,
@@ -140,13 +146,56 @@ const createStyles = (colors) =>
     },
     portfolioLink: { marginLeft: 5 },
     portfolioIcon: { color: colors.primary.default },
-  });
+  } as unknown as Record<string, object>);
 
 /**
  * View that's part of the <Wallet /> component
  * which shows information about the selected account
  */
-class AccountOverview extends PureComponent {
+interface AccountOverviewAccount {
+  address: string;
+  name?: string;
+}
+
+interface BrowserTab {
+  id: string;
+  url: string;
+}
+
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface AccountOverviewProps {
+  selectedAddress: string;
+  internalAccounts: InternalAccount[];
+  account: AccountOverviewAccount;
+  showAlert: (config: AlertConfig) => void;
+  onboardingWizard?: boolean;
+  onRef?: (ref: AccountOverview) => void;
+  protectWalletModalVisible: () => void;
+  navigation: NavigationProp<ParamListBase>;
+  chainId: string;
+  browserTabs: BrowserTab[];
+  metrics: IUseMetricsHook;
+}
+
+interface AccountOverviewState {
+  accountLabelEditable: boolean;
+  accountLabel: string;
+  originalAccountLabel: string;
+  ens?: string;
+}
+
+class AccountOverview extends PureComponent<
+  AccountOverviewProps,
+  AccountOverviewState
+> {
+  context: Theme = {} as Theme;
+
   static propTypes = {
     /**
      * String that represents the selected address
@@ -195,16 +244,16 @@ class AccountOverview extends PureComponent {
     metrics: PropTypes.object,
   };
 
-  state = {
+  state: AccountOverviewState = {
     accountLabelEditable: false,
     accountLabel: '',
     originalAccountLabel: '',
     ens: undefined,
   };
 
-  editableLabelRef = React.createRef();
-  scrollViewContainer = React.createRef();
-  mainView = React.createRef();
+  editableLabelRef = React.createRef<View>();
+  scrollViewContainer = React.createRef<View>();
+  mainView = React.createRef<View>();
 
   openAccountSelector = () => {
     const { onboardingWizard, navigation } = this.props;
@@ -212,10 +261,10 @@ class AccountOverview extends PureComponent {
       navigation.navigate(...createAccountSelectorNavDetails({}));
   };
 
-  isAccountLabelDefined = (accountLabel) =>
+  isAccountLabelDefined = (accountLabel: string): boolean =>
     !!accountLabel && !!accountLabel.trim().length;
 
-  input = React.createRef();
+  input = React.createRef<TextInput>();
 
   componentDidMount = () => {
     const { internalAccounts, selectedAddress, onRef } = this.props;
@@ -231,7 +280,7 @@ class AccountOverview extends PureComponent {
     }
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: AccountOverviewProps): void {
     if (
       prevProps.account.address !== this.props.account.address ||
       prevProps.chainId !== this.props.chainId
@@ -248,7 +297,7 @@ class AccountOverview extends PureComponent {
 
     const accountWithMatchingToAddress = internalAccounts.find((account) =>
       toLowerCaseEquals(account.address, selectedAddress),
-    );
+    ) as InternalAccount;
 
     Engine.setAccountLabel(
       selectedAddress,
@@ -259,7 +308,7 @@ class AccountOverview extends PureComponent {
     this.setState({ accountLabelEditable: false });
   };
 
-  onAccountLabelChange = (accountLabel) => {
+  onAccountLabelChange = (accountLabel: string): void => {
     this.setState({ accountLabel });
   };
 
@@ -268,7 +317,7 @@ class AccountOverview extends PureComponent {
     const accountLabel = renderAccountName(selectedAddress, internalAccounts);
     this.setState({ accountLabelEditable: true, accountLabel });
     setTimeout(() => {
-      this.input && this.input.current && this.input.current.focus();
+      this.input?.current?.focus();
     }, 100);
   };
 
@@ -449,7 +498,7 @@ class AccountOverview extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   internalAccounts: selectInternalAccounts(state),
   currentCurrency: selectCurrentCurrency(state),
@@ -457,16 +506,29 @@ const mapStateToProps = (state) => ({
   browserTabs: state.browser.tabs,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: (action: object) => unknown) => ({
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
-  newAssetTransaction: (selectedAsset) =>
+  newAssetTransaction: (selectedAsset: object) =>
     dispatch(newAssetTransaction(selectedAsset)),
 });
 
 AccountOverview.contextType = ThemeContext;
 
-export default connect(
+type ConnectedAccountOverviewProps = Pick<AccountOverviewProps, 'account'>;
+
+const connectAccountOverview = connect as unknown as (
+  mapState: typeof mapStateToProps,
+  mapDispatch: typeof mapDispatchToProps,
+) => (
+  component: React.ComponentType<AccountOverviewProps>,
+) => React.ComponentType<ConnectedAccountOverviewProps>;
+
+export default connectAccountOverview(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(AccountOverview));
+)(
+  withMetricsAwareness(
+    AccountOverview as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+  ) as unknown as React.ComponentType<AccountOverviewProps>,
+);

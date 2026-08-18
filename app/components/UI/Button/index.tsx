@@ -1,11 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { StyleSheet } from 'react-native';
-import GenericButton from '../GenericButton'; // eslint-disable-line import/no-unresolved
+import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import GenericButton from '../GenericButton/index.ios'; // eslint-disable-line import/no-unresolved
 import { useTheme } from '../../../util/theme';
+// @ts-expect-error Package does not publish TypeScript declarations.
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import type { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     button: {
       flex: 1,
@@ -27,12 +29,21 @@ const createStyles = (colors) =>
  * If you would like to help with the replacement of the old `Button` component, please submit a pull request against this GitHub issue:
  * {@link https://github.com/MetaMask/metamask-mobile/issues/8108}
  */
-const Button = (props) => {
+interface ButtonProps {
+  children?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  onPress?: () => void;
+}
+
+const Button = (props: ButtonProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return (
-    <GenericButton onPress={props.onPress} style={[styles.button, props.style]}>
+    <GenericButton
+      onPress={props.onPress}
+      style={[styles.button, props.style] as unknown as ViewStyle}
+    >
       {props.children}
     </GenericButton>
   );

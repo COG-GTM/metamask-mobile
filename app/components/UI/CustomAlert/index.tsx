@@ -1,13 +1,15 @@
 import React, { PureComponent } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, StyleProp, ViewStyle } from 'react-native';
 import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
 import StyledButton from '../StyledButton';
 import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+// @ts-expect-error Package does not publish TypeScript declarations.
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import type { Colors, Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     modal: {
       padding: 20,
@@ -43,7 +45,22 @@ const createStyles = (colors) =>
 /* PureComponent that renders our custom alerts, which contains
 /* a header with an image, body and footer with a button
 */
-export default class CustomAlert extends PureComponent {
+interface CustomAlertProps {
+  headerStyle?: StyleProp<ViewStyle>;
+  headerContent?: React.ReactNode;
+  titleText?: string;
+  bodyContent?: React.ReactElement;
+  buttonText?: string;
+  onPress?: () => void;
+  isVisible?: boolean;
+  onBackdropPress?: () => void;
+  onSwipeComplete?: () => void;
+  swipeDirection?: string;
+  children?: React.ReactNode;
+}
+
+export default class CustomAlert extends PureComponent<CustomAlertProps> {
+  context: Theme = {} as Theme;
   static propTypes = {
     /**
     /* Style of the header view
@@ -95,15 +112,21 @@ export default class CustomAlert extends PureComponent {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
+    const modalProps = Object.assign(
+      {
+        style: styles.modal,
+        isVisible: (this as unknown as { propTypes: boolean }).propTypes,
+        onBackButtonPress: this.props.onPress,
+      },
+      this.props,
+      {
+        backdropColor: colors.overlay.default,
+        backdropOpacity: 1,
+      },
+    );
+
     return (
-      <Modal
-        style={styles.modal}
-        isVisible={this.propTypes}
-        onBackButtonPress={this.props.onPress}
-        {...this.props}
-        backdropColor={colors.overlay.default}
-        backdropOpacity={1}
-      >
+      <Modal {...(modalProps as React.ComponentProps<typeof Modal>)}>
         <View style={styles.content}>
           <View style={[styles.header, this.props.headerStyle]}>
             {this.props.headerContent}

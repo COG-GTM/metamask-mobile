@@ -13,13 +13,15 @@ import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/BrowserView.selectors';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
+import type { Colors, Theme } from '../../../util/theme/models';
 
 // NOTE: not needed anymore. The use of BottomTabBar already accomodates the home indicator height
 // TODO: test on an android device
 // const HOME_INDICATOR_HEIGHT = 0;
 // const defaultBottomBarPadding = 0;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     bottomBar: {
       backgroundColor: colors.background.default,
@@ -57,7 +59,19 @@ const createStyles = (colors) =>
  * Browser bottom bar that contains icons for navigation
  * tab management, url change and other options
  */
-class BrowserBottomBar extends PureComponent {
+interface BrowserBottomBarProps extends IWithMetricsAwarenessProps {
+  canGoBack?: boolean;
+  canGoForward?: boolean;
+  goBack: () => void;
+  goForward: () => void;
+  showTabs: () => void;
+  showUrlModal: () => void;
+  goHome: () => void;
+  toggleOptions: () => void;
+}
+
+class BrowserBottomBar extends PureComponent<BrowserBottomBarProps> {
+  context: Theme = {} as Theme;
   static propTypes = {
     /**
      * Boolean that determines if you can navigate back
@@ -109,7 +123,7 @@ class BrowserBottomBar extends PureComponent {
     );
   };
 
-  trackNavigationEvent = (navigationOption) => {
+  trackNavigationEvent = (navigationOption: string): void => {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.BROWSER_NAVIGATION)
@@ -217,4 +231,6 @@ class BrowserBottomBar extends PureComponent {
 }
 
 BrowserBottomBar.contextType = ThemeContext;
-export default withMetricsAwareness(BrowserBottomBar);
+export default withMetricsAwareness(
+  BrowserBottomBar as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+);
