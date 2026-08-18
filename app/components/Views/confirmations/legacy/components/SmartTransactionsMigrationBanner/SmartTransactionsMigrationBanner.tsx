@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import type { RootState } from '../../../../../../reducers';
 import { Linking } from 'react-native';
 import BannerAlert from '../../../../../../component-library/components/Banners/Banner/variants/BannerAlert/BannerAlert';
 import { BannerAlertSeverity } from '../../../../../../component-library/components/Banners/Banner/variants/BannerAlert/BannerAlert.types';
@@ -28,7 +29,7 @@ const SmartTransactionsMigrationBanner = ({
   const isBannerDismissed = useSelector(selectSmartTransactionsBannerDismissed);
   const chainId = useSelector(selectEvmChainId);
 
-  const shouldUseSmartTransaction = useSelector((state) =>
+  const shouldUseSmartTransaction = useSelector((state: RootState) =>
     selectShouldUseSmartTransaction(state, chainId)
   );
 
