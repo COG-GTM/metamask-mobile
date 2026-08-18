@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../../../../../styles/common';
 import { strings } from '../../../../../../../../locales/i18n';
 import {
@@ -19,7 +20,14 @@ import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import { useTheme } from '../../../../../../../util/theme';
 import { isNumber } from '../../../../../../../util/number';
 
-const createStyles = (colors) =>
+interface CustomNonceModalProps {
+  proposedNonce: number;
+  nonceValue: number;
+  close: () => void;
+  save: (nonce: number) => void;
+}
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     bottomModal: {
       justifyContent: 'flex-end',
@@ -116,12 +124,17 @@ const createStyles = (colors) =>
     },
   });
 
-const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }) => {
-  const [nonce, onChangeText] = React.useState(nonceValue);
+const CustomModalNonce = ({
+  proposedNonce,
+  nonceValue,
+  close,
+  save,
+}: CustomNonceModalProps) => {
+  const [nonce, onChangeText] = React.useState<string | number>(nonceValue);
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
-  const incrementDecrementNonce = (isDecrement) => {
+  const incrementDecrementNonce = (isDecrement: boolean) => {
     const currentNonce = Number(nonce);
     const updatedValue = isDecrement ? currentNonce - 1 : currentNonce + 1;
     const clampedValue = Math.max(updatedValue, 0);
@@ -246,7 +259,7 @@ const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }) => {
             </StyledButton>
             <StyledButton
               type={'blue'}
-              onPress={() => saveAndClose(nonce)}
+              onPress={saveAndClose}
               containerStyle={styles.actionButton}
             >
               {strings('transaction.save')}
