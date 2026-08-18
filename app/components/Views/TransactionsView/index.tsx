@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { StyleSheet, View } from 'react-native';
 import PropTypes from 'prop-types';
 import { connect, useSelector } from 'react-redux';
@@ -36,6 +37,36 @@ import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectTokenNetworkFilter } from '../../../selectors/preferencesController';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { PopularList } from '../../../util/networks/customNetworks';
+import type { RootState } from '../../../reducers';
+import type { Dispatch } from 'redux';
+
+interface TransactionParams {
+  from: string;
+  nonce: string;
+}
+
+interface Transaction {
+  id: string;
+  status: string;
+  chainId?: string;
+  txParams: TransactionParams;
+  insertImportTime?: boolean;
+}
+
+interface TransactionsViewProps {
+  navigation: NavigationProp<ParamListBase>;
+  conversionRate?: number;
+  selectedInternalAccount?: {
+    address?: string;
+    metadata?: { importTime?: number };
+  };
+  networkType?: string;
+  currentCurrency?: string;
+  transactions: Transaction[];
+  chainId: string;
+  tokens: unknown[];
+  tokenNetworkFilter?: { [key: string]: boolean }[];
+}
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -53,27 +84,27 @@ const TransactionsView = ({
   chainId,
   tokens,
   tokenNetworkFilter,
-}) => {
-  const [allTransactions, setAllTransactions] = useState([]);
-  const [submittedTxs, setSubmittedTxs] = useState([]);
-  const [confirmedTxs, setConfirmedTxs] = useState([]);
-  const [loading, setLoading] = useState();
+}: TransactionsViewProps) => {
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [submittedTxs, setSubmittedTxs] = useState<Transaction[]>([]);
+  const [confirmedTxs, setConfirmedTxs] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState<boolean | undefined>();
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
-  const selectedAddress = toChecksumHexAddress(
-    selectedInternalAccount?.address,
-  );
+  const selectedAddress =
+    toChecksumHexAddress(selectedInternalAccount?.address) ?? '';
 
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
 
   const filterTransactions = useCallback(
-    (networkId) => {
+    (networkId: string) => {
       let accountAddedTimeInsertPointFound = false;
-      const addedAccountTime = selectedInternalAccount?.metadata.importTime;
+      const addedAccountTime =
+        selectedInternalAccount?.metadata?.importTime ?? 0;
 
-      const submittedTxs = [];
-      const confirmedTxs = [];
-      const submittedNonces = [];
+      const submittedTxs: Transaction[] = [];
+      const confirmedTxs: Transaction[] = [];
+      const submittedNonces: string[] = [];
 
       const allTransactionsSorted = sortTransactions(transactions).filter(
         (tx, index, self) =>
@@ -87,12 +118,12 @@ const TransactionsView = ({
           selectedAddress,
           networkId,
           chainId,
-          tokenNetworkFilter,
+          tokenNetworkFilter ?? [],
         );
 
         if (!filter) return false;
 
-        tx.insertImportTime = addAccountTimeFlagFilter(
+        tx.insertImportTime = addAccountTimeFlagFilterTyped(
           tx,
           addedAccountTime,
           accountAddedTimeInsertPointFound,
@@ -234,7 +265,7 @@ TransactionsView.propTypes = {
   tokenNetworkFilter: PropTypes.object,
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const chainId = selectChainId(state);
 
   return {
@@ -249,11 +280,27 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  showAlert: (config: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: { msg: string };
+  }) => dispatch(showAlert(config)),
 });
+
+const addAccountTimeFlagFilterTyped =
+  addAccountTimeFlagFilter as unknown as (
+    transaction: Transaction,
+    addedAccountTime: number,
+    accountAddedTimeInsertPointFound: boolean,
+  ) => boolean;
+
+const navigatedTransactionsView = withNavigation(
+  TransactionsView as React.ComponentType<any>,
+) as React.ComponentType<TransactionsViewProps>;
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withNavigation(TransactionsView));
+)(navigatedTransactionsView as React.ComponentType<any>);

@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import type {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import {
   ScrollView,
   TouchableOpacity,
@@ -8,7 +13,10 @@ import {
   StyleSheet,
   Image,
   Dimensions,
+  type TextStyle,
+  type ViewStyle,
 } from 'react-native';
+import type { Theme } from '@metamask/design-tokens';
 import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
@@ -34,7 +42,7 @@ const IMAGE_1_RATIO = 162.8 / 138;
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const IMG_PADDING = Device.isIphoneX() ? 100 : Device.isIphone5S() ? 180 : 220;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -196,11 +204,25 @@ const createStyles = (colors) =>
     },
   });
 
+interface AccountBackupParamList extends ParamListBase {
+  AccountBackupStep1B: Record<string, unknown>;
+  ManualBackupStep1: Record<string, unknown>;
+  Webview: {
+    screen: string;
+    params: { url: string; title: string };
+  };
+}
+
+interface AccountBackupStep1BProps {
+  navigation?: NavigationProp<AccountBackupParamList>;
+  route?: RouteProp<AccountBackupParamList, 'AccountBackupStep1B'>;
+}
+
 /**
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1B = (props) => {
+const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
   const { navigation, route } = props;
   const [showWhySecureWalletModal, setWhySecureWalletModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -208,10 +230,15 @@ const AccountBackupStep1B = (props) => {
   const styles = createStyles(colors);
 
   useEffect(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    if (navigation && route) {
+      navigation.setOptions(
+        getOnboardingNavbarOptions(route, { headerLeft: undefined }, colors),
+      );
+    }
   }, [navigation, route, colors]);
 
   const goNext = () => {
+    if (!props.navigation || !props.route) return;
     props.navigation.navigate('ManualBackupStep1', { ...props.route.params });
     trackOnboarding(
       MetricsEventBuilder.createEventBuilder(
@@ -222,7 +249,7 @@ const AccountBackupStep1B = (props) => {
 
   const learnMore = () => {
     setWhySecureWalletModal(false);
-    props.navigation.navigate('Webview', {
+    props.navigation?.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: 'https://support.metamask.io/privacy-and-security/basic-safety-and-security-tips-for-metamask/',
@@ -321,7 +348,7 @@ const AccountBackupStep1B = (props) => {
             </Text>
 
             <StyledButton
-              containerStyle={styles.button}
+              containerStyle={undefined}
               type={'confirm'}
               onPress={goNext}
             >
@@ -366,7 +393,7 @@ const AccountBackupStep1B = (props) => {
               </Text>
             </Text>
             <TouchableOpacity
-              style={styles.remindLaterButton}
+              style={undefined}
               onPress={learnMore}
               hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
             >

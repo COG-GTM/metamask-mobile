@@ -1,4 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import type {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import {
   InteractionManager,
   Alert,
@@ -24,12 +29,44 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
-const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
+interface ManualBackupParamList extends ParamListBase {
+  ManualBackupStep2: { words: string[]; steps: string[] };
+  ManualBackupStep3: { words: string[]; steps: string[] };
+}
+
+interface ManualBackupStep2OwnProps {
+  navigation?: NavigationProp<ManualBackupParamList>;
+  route: Pick<RouteProp<ManualBackupParamList, 'ManualBackupStep2'>, 'params'>;
+}
+
+interface ConfirmedWord {
+  word?: string;
+  originalPosition?: number;
+}
+
+interface WordPosition {
+  currentPosition?: number;
+}
+
+interface ManualBackupStep2DispatchProps {
+  seedphraseBackedUp: () => void;
+}
+
+type ManualBackupStep2Props = ManualBackupStep2OwnProps &
+  ManualBackupStep2DispatchProps;
+
+const ManualBackupStep2 = ({
+  navigation,
+  seedphraseBackedUp,
+  route,
+}: ManualBackupStep2Props) => {
+  const requiredNavigation =
+    navigation as NavigationProp<ManualBackupParamList>;
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const [confirmedWords, setConfirmedWords] = useState([]);
-  const [wordsDict, setWordsDict] = useState({});
+  const [confirmedWords, setConfirmedWords] = useState<ConfirmedWord[]>([]);
+  const [wordsDict, setWordsDict] = useState<Record<string, WordPosition>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [seedPhraseReady, setSeedPhraseReady] = useState(false);
 
@@ -40,7 +77,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
       : route.params?.words;
 
   const createWordsDictionary = () => {
-    const dict = {};
+    const dict: Record<string, WordPosition> = {};
     words.forEach((word, i) => {
       dict[`${word},${i}`] = { currentPosition: undefined };
     });
@@ -48,8 +85,10 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   };
 
   const updateNavBar = useCallback(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
-  }, [colors, navigation, route]);
+    requiredNavigation.setOptions(
+      getOnboardingNavbarOptions(route, { headerLeft: undefined }, colors),
+    );
+  }, [colors, requiredNavigation, route]);
 
   useEffect(() => {
     const wordsFromRoute = route.params?.words ?? [];
@@ -73,12 +112,13 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   );
 
   const selectWord = useCallback(
-    (word, i) => {
+    (word: string, i: number) => {
       let tempCurrentIndex = currentIndex;
       const tempWordsDict = wordsDict;
       const tempConfirmedWords = confirmedWords;
       if (wordsDict[`${word},${i}`].currentPosition !== undefined) {
-        tempCurrentIndex = wordsDict[`${word},${i}`].currentPosition;
+        tempCurrentIndex =
+          wordsDict[`${word},${i}`].currentPosition ?? currentIndex;
         tempWordsDict[`${word},${i}`].currentPosition = undefined;
         tempConfirmedWords[currentIndex] = {
           word: undefined,
@@ -98,11 +138,11 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     [confirmedWords, currentIndex, findNextAvailableIndex, wordsDict],
   );
 
-  const clearConfirmedWordAt = (i) => {
+  const clearConfirmedWordAt = (i: number) => {
     const { word, originalPosition } = confirmedWords[i];
     const currentIndex = i;
     if (word && (originalPosition || originalPosition === 0)) {
-      wordsDict[[word, originalPosition]].currentPosition = undefined;
+      wordsDict[`${word},${originalPosition}`].currentPosition = undefined;
       confirmedWords[i] = { word: undefined, originalPosition: undefined };
     }
 
@@ -115,7 +155,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   const validateWords = useCallback(() => {
     const validWords = route.params?.words ?? [];
     const proposedWords = confirmedWords.map(
-      (confirmedWord) => confirmedWord.word,
+      (confirmedWord) => confirmedWord.word ?? '',
     );
 
     return compareMnemonics(validWords, proposedWords);
@@ -126,8 +166,8 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
       seedphraseBackedUp();
       InteractionManager.runAfterInteractions(async () => {
         const words = route.params?.words;
-        navigation.navigate('ManualBackupStep3', {
-          steps: route.params?.steps,
+        requiredNavigation.navigate('ManualBackupStep3', {
+          steps: route.params?.steps ?? [],
           words,
         });
         trackOnboarding(
@@ -161,7 +201,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     );
   };
 
-  const renderWordBox = (word, i) => {
+  const renderWordBox = (word: string, i: number) => {
     const styles = createStyles(colors);
 
     return (
@@ -185,7 +225,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   };
 
   const renderWordSelectableBox = useCallback(
-    (key, i) => {
+    (key: string, i: number) => {
       const [word] = key.split(',');
       const selected = wordsDict[key].currentPosition !== undefined;
       const styles = createStyles(colors);
@@ -227,7 +267,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
       <View style={styles.onBoardingWrapper}>
         <OnboardingProgress
           currentStep={currentStep}
-          steps={route.params?.steps}
+          steps={route.params?.steps ?? []}
         />
       </View>
       <ActionView
@@ -260,13 +300,13 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
             <View style={styles.colLeft}>
               {confirmedWords
                 .slice(0, confirmedWords.length / 2)
-                .map(({ word }, i) => renderWordBox(word, i))}
+                .map(({ word }, i) => renderWordBox(word ?? '', i))}
             </View>
             <View style={styles.colRight}>
               {confirmedWords
                 .slice(-confirmedWords.length / 2)
                 .map(({ word }, i) =>
-                  renderWordBox(word, i + confirmedWords.length / 2),
+                  renderWordBox(word ?? '', i + confirmedWords.length / 2),
                 )}
             </View>
           </View>
@@ -294,8 +334,11 @@ ManualBackupStep2.propTypes = {
   route: PropTypes.object,
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
-});
+const mapDispatchToProps = {
+  seedphraseBackedUp,
+};
 
-export default connect(null, mapDispatchToProps)(ManualBackupStep2);
+export default connect(
+  null,
+  mapDispatchToProps,
+)(ManualBackupStep2 as React.ComponentType<ManualBackupStep2Props>);
