@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -9,11 +8,53 @@ import {
 import { strings } from '../../../../locales/i18n';
 import { TRANSACTION_TYPES } from '../../../util/transactions';
 import Summary from '../../Base/Summary';
-import Text from '../../Base/Text';
+import TextComponent from '../../Base/Text';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { isTestNet } from '../../../util/networks';
+import type { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface TransactionSummaryProps {
+  amount?: string;
+  fee?: string;
+  totalAmount?: string;
+  secondaryTotalAmount?: string;
+  gasEstimationReady?: boolean;
+  onEditPress?: () => void;
+  transactionType?: string;
+  chainId?: string;
+}
+
+const Text = TextComponent as React.ComponentType<
+  React.ComponentProps<typeof TextComponent> & {
+    children?: React.ReactNode;
+    italic?: boolean;
+  }
+>;
+
+type SummaryPropsWithChildren = React.ComponentProps<typeof Summary> & {
+  children?: React.ReactNode;
+};
+type SummaryRowPropsWithChildren = React.ComponentProps<typeof Summary.Row> & {
+  children?: React.ReactNode;
+};
+type SummaryColPropsWithChildren = React.ComponentProps<typeof Summary.Col> & {
+  children?: React.ReactNode;
+};
+type SummarySeparatorPropsWithChildren = React.ComponentProps<
+  typeof Summary.Separator
+> & {
+  children?: React.ReactNode;
+};
+
+const SummaryWithChildren = Summary as React.ComponentType<
+  SummaryPropsWithChildren
+> & {
+  Row: React.ComponentType<SummaryRowPropsWithChildren>;
+  Col: React.ComponentType<SummaryColPropsWithChildren>;
+  Separator: React.ComponentType<SummarySeparatorPropsWithChildren>;
+};
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     loader: {
       backgroundColor: colors.background.default,
@@ -21,21 +62,11 @@ const createStyles = (colors) =>
     },
   });
 
-export default class TransactionSummary extends PureComponent {
-  static propTypes = {
-    amount: PropTypes.string,
-    fee: PropTypes.string,
-    totalAmount: PropTypes.string,
-    secondaryTotalAmount: PropTypes.string,
-    gasEstimationReady: PropTypes.bool,
-    onEditPress: PropTypes.func,
-    transactionType: PropTypes.string,
-    chainId: PropTypes.string,
-  };
-
-  renderIfGastEstimationReady = (children) => {
+export default class TransactionSummary extends PureComponent<TransactionSummaryProps> {
+  renderIfGastEstimationReady = (children: React.ReactNode) => {
     const { gasEstimationReady } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return !gasEstimationReady ? (
@@ -69,44 +100,44 @@ export default class TransactionSummary extends PureComponent {
       chainId,
     } = this.props;
 
-    const isTestNetResult = isTestNet(chainId);
+    const isTestNetResult = isTestNet(chainId as string);
 
     if (
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED_TOKEN ||
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED
     ) {
       return (
-        <Summary>
-          <Summary.Row>
+        <SummaryWithChildren>
+          <SummaryWithChildren.Row>
             <Text small bold primary>
               {strings('transaction.amount')}
             </Text>
             <Text small bold primary upper={!isTestNetResult}>
               {amount}
             </Text>
-          </Summary.Row>
+          </SummaryWithChildren.Row>
           {secondaryTotalAmount && (
-            <Summary.Row end last>
+            <SummaryWithChildren.Row end last>
               <Text small right upper={!isTestNetResult}>
                 {secondaryTotalAmount}
               </Text>
-            </Summary.Row>
+            </SummaryWithChildren.Row>
           )}
-        </Summary>
+        </SummaryWithChildren>
       );
     }
     return (
-      <Summary>
-        <Summary.Row>
+      <SummaryWithChildren>
+        <SummaryWithChildren.Row>
           <Text small primary>
             {this.renderAmountTitle()}
           </Text>
           <Text small primary upper={!isTestNetResult}>
             {amount}
           </Text>
-        </Summary.Row>
-        <Summary.Row>
-          <Summary.Col>
+        </SummaryWithChildren.Row>
+        <SummaryWithChildren.Row>
+          <SummaryWithChildren.Col>
             <Text small primary italic>
               {!fee
                 ? strings('transaction.transaction_fee_less')
@@ -125,16 +156,16 @@ export default class TransactionSummary extends PureComponent {
                 </Text>
               </TouchableOpacity>
             )}
-          </Summary.Col>
+          </SummaryWithChildren.Col>
           {!!fee &&
             this.renderIfGastEstimationReady(
               <Text small primary upper={!isTestNetResult}>
                 {fee}
               </Text>,
             )}
-        </Summary.Row>
-        <Summary.Separator />
-        <Summary.Row>
+        </SummaryWithChildren.Row>
+        <SummaryWithChildren.Separator />
+        <SummaryWithChildren.Row>
           <Text small bold primary>
             {strings('transaction.total_amount')}
           </Text>
@@ -143,15 +174,15 @@ export default class TransactionSummary extends PureComponent {
               {totalAmount}
             </Text>,
           )}
-        </Summary.Row>
-        <Summary.Row end last>
+        </SummaryWithChildren.Row>
+        <SummaryWithChildren.Row end last>
           {this.renderIfGastEstimationReady(
             <Text small right upper={!isTestNetResult}>
               {secondaryTotalAmount}
             </Text>,
           )}
-        </Summary.Row>
-      </Summary>
+        </SummaryWithChildren.Row>
+      </SummaryWithChildren>
     );
   };
 }

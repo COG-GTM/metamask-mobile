@@ -46,24 +46,33 @@ const mockProviderConfig = {
 
 describe('OnboardingSuccess', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as jest.Mock).mockImplementation((selector: unknown) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const { toJSON } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} />,
+      <OnboardingSuccess
+        {...({
+          navigation: useNavigation(),
+        } as unknown as React.ComponentProps<typeof OnboardingSuccess>)}
+      />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('imports additional accounts and sets completedOnboarding to true when onDone is called', () => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as jest.Mock).mockImplementation((selector: unknown) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const mockDispatch = jest.fn();
-    useDispatch.mockImplementation(() => mockDispatch);
+    (useDispatch as jest.Mock).mockImplementation(() => mockDispatch);
 
     const { getByTestId } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} onDone={jest.fn()} />,
+      <OnboardingSuccess
+        {...({
+          navigation: useNavigation(),
+          onDone: jest.fn(),
+        } as unknown as React.ComponentProps<typeof OnboardingSuccess>)}
+      />,
     );
     const button = getByTestId(OnboardingSuccessSelectorIDs.DONE_BUTTON);
     button.props.onPress();
