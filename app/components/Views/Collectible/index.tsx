@@ -1,8 +1,10 @@
 import React, { PureComponent } from 'react';
 import { RefreshControl, ScrollView, View, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import Collectibles from '../../UI/Collectibles';
 import CollectibleContractOverview from '../../UI/CollectibleContractOverview';
 import Engine from '../../../core/Engine';
@@ -13,9 +15,50 @@ import { toLowerCaseEquals } from '../../../util/general';
 import { collectiblesSelector } from '../../../reducers/collectibles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
+import type { RootState } from '../../../reducers';
+import type { Colors, Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
-  StyleSheet.create({
+interface CollectibleContract {
+  address: string;
+  name?: string;
+  logo?: string;
+}
+
+interface CollectibleItem {
+  address: string;
+  name?: string;
+  image?: string | null;
+}
+
+interface CollectibleRoute {
+  params: CollectibleContract;
+}
+
+interface CollectibleOwnProps {
+  navigation: StackNavigationProp<ParamListBase>;
+  route: CollectibleRoute;
+}
+
+interface CollectibleStateProps {
+  collectibles: CollectibleItem[];
+  collectibleContractModalVisible: boolean;
+}
+
+interface CollectibleDispatchProps {
+  toggleCollectibleContractModal: () => void;
+}
+
+type CollectibleProps = CollectibleOwnProps &
+  CollectibleStateProps &
+  CollectibleDispatchProps;
+
+interface CollectibleState {
+  refreshing: boolean;
+  collectibles: CollectibleItem[];
+}
+
+const createStyles = (colors: Colors) =>
+  StyleSheet.create<Record<string, object>>({
     wrapper: {
       backgroundColor: colors.background.default,
       flex: 1,
@@ -27,39 +70,15 @@ const createStyles = (colors) =>
  * including the overview (name, address, symbol, logo, description, total supply)
  * and also individual collectibles list
  */
-class Collectible extends PureComponent {
-  static propTypes = {
-    /**
-     * Array of assets (in this case Collectibles)
-     */
-    collectibles: PropTypes.array,
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-     * Called to toggle collectible contract information modal
-     */
-    toggleCollectibleContractModal: PropTypes.func,
-    /**
-     * Whether collectible contract information is visible
-     */
-    collectibleContractModalVisible: PropTypes.bool,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
-
-  state = {
+class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
+  state: CollectibleState = {
     refreshing: false,
     collectibles: [],
   };
 
-  updateNavBar = () => {
+  updateNavBar = (): void => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.name ?? '',
       false,
@@ -68,15 +87,15 @@ class Collectible extends PureComponent {
     );
   };
 
-  componentDidMount = () => {
+  componentDidMount = (): void => {
     this.updateNavBar();
   };
 
-  componentDidUpdate = () => {
+  componentDidUpdate = (): void => {
     this.updateNavBar();
   };
 
-  onRefresh = async () => {
+  onRefresh = async (): Promise<void> => {
     this.setState({ refreshing: true });
     const { NftDetectionController } = Engine.context;
     const chainIdsToDetectNftsFor = useNftDetectionChainIds();
@@ -87,11 +106,11 @@ class Collectible extends PureComponent {
     }
   };
 
-  hideCollectibleContractModal = () => {
+  hideCollectibleContractModal = (): void => {
     this.props.toggleCollectibleContractModal();
   };
 
-  render = () => {
+  render = (): React.ReactNode => {
     const {
       route: { params },
       navigation,
@@ -100,7 +119,7 @@ class Collectible extends PureComponent {
     const collectibleContract = params;
     const address = params.address;
     const { collectibles } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const filteredCollectibles = collectibles.filter((collectible) =>
       toLowerCaseEquals(collectible.address, address),
@@ -168,16 +187,18 @@ class Collectible extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): CollectibleStateProps => ({
   collectibles: collectiblesSelector(state),
   collectibleContractModalVisible: state.modals.collectibleContractModalVisible,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch): CollectibleDispatchProps => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),
 });
 
 Collectible.contextType = ThemeContext;
 
-export default connect(mapStateToProps, mapDispatchToProps)(Collectible);
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+export default connector(Collectible);
