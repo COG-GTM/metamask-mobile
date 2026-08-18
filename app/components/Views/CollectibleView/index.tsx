@@ -1,7 +1,4 @@
-import React, {
-  PureComponent,
-  type ComponentType,
-} from 'react';
+import React, { PureComponent, type ComponentType } from 'react';
 import {
   ScrollView,
   View,
@@ -76,7 +73,9 @@ interface CollectibleViewDispatchProps {
   newAssetTransaction: (selectedAsset: CollectibleViewParams) => void;
 }
 
-const mapDispatchToProps = (dispatch: Dispatch): CollectibleViewDispatchProps => ({
+const mapDispatchToProps = (
+  dispatch: Dispatch,
+): CollectibleViewDispatchProps => ({
   newAssetTransaction: (selectedAsset) =>
     dispatch(newAssetTransaction(selectedAsset)),
 });
@@ -88,9 +87,7 @@ const connector = connect<
 >(null, mapDispatchToProps);
 type ReduxProps = ConnectedProps<typeof connector>;
 
-interface CollectibleViewProps
-  extends ReduxProps,
-    CollectibleViewOwnProps {}
+interface CollectibleViewProps extends ReduxProps, CollectibleViewOwnProps {}
 
 /**
  * View that displays a specific collectible asset

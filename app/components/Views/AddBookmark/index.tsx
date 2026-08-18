@@ -7,10 +7,7 @@ import {
   StyleSheet,
   type TextInputProps,
 } from 'react-native';
-import type {
-  ParamListBase,
-  RouteProp,
-} from '@react-navigation/native';
+import type { ParamListBase, RouteProp } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import PropTypes from 'prop-types';
 import type { Theme } from '@metamask/design-tokens';

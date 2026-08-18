@@ -107,7 +107,9 @@ interface AddressQRCodeDispatchProps {
   protectWalletModalVisible: () => unknown;
 }
 
-const mapDispatchToProps = (dispatch: Dispatch): AddressQRCodeDispatchProps => ({
+const mapDispatchToProps = (
+  dispatch: Dispatch,
+): AddressQRCodeDispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
@@ -181,8 +183,7 @@ class AddressQRCode extends PureComponent<AddressQRCodeProps> {
   };
 
   render() {
-    const theme =
-      (this.context as unknown as AddressQRCodeTheme) || mockTheme;
+    const theme = (this.context as unknown as AddressQRCodeTheme) || mockTheme;
     const colors = theme.colors;
     const styles = createStyles(theme);
 
@@ -222,6 +223,4 @@ class AddressQRCode extends PureComponent<AddressQRCodeProps> {
   }
 }
 
-export default connector(
-  AddressQRCode as ComponentType<AddressQRCodeProps>,
-);
+export default connector(AddressQRCode as ComponentType<AddressQRCodeProps>);
