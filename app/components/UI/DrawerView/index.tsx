@@ -372,7 +372,9 @@ interface DrawerViewProps extends IWithMetricsAwarenessProps {
     data: { msg: string };
   }) => void;
   networkModalVisible: boolean;
-  newAssetTransaction: (selectedAsset: Parameters<typeof newAssetTransaction>[0]) => void;
+  newAssetTransaction: (
+    selectedAsset: Parameters<typeof newAssetTransaction>[0],
+  ) => void;
   passwordSet?: boolean;
   wizard?: RootState['wizard'];
   ticker: string;
@@ -386,7 +388,10 @@ interface DrawerViewProps extends IWithMetricsAwarenessProps {
   currentRoute: string;
   onboardNetworkAction: (chainId: string) => void;
   switchedNetwork?: RootState['networkOnboarded']['switchedNetwork'];
-  networkSwitched: (params: { networkUrl: string; networkStatus: boolean }) => void;
+  networkSwitched: (params: {
+    networkUrl: string;
+    networkStatus: boolean;
+  }) => void;
   infoNetworkModalVisible?: boolean;
   toggleInfoNetworkModal: () => void;
   chainId: string;
@@ -545,10 +550,9 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerState> {
   isCurrentAccountImported() {
     let ret = false;
     const { keyrings } = this.props;
-    const allKeyrings =
-      keyrings?.length
-        ? keyrings
-        : Engine.context.KeyringController.state.keyrings;
+    const allKeyrings = keyrings?.length
+      ? keyrings
+      : Engine.context.KeyringController.state.keyrings;
     for (const keyring of allKeyrings) {
       if (keyring.accounts.includes(this.selectedChecksummedAddress)) {
         ret = keyring.type !== 'HD Key Tree';
@@ -1057,17 +1061,20 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerState> {
   onInfoNetworksModalClose = () => {
     const {
       chainId,
-      onboardNetworkAction: onboardNetwork,
-      networkSwitched: switchNetwork,
-      toggleInfoNetworkModal: toggleInfoModal,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      onboardNetworkAction,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      networkSwitched,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      toggleInfoNetworkModal,
     } = this.props;
 
-    onboardNetwork(chainId);
-    switchNetwork({ networkUrl: '', networkStatus: false });
+    onboardNetworkAction(chainId);
+    networkSwitched({ networkUrl: '', networkStatus: false });
 
     // Wrap the toggle call in a setTimeout to avoid awaiting a non-promise function.
     // @ts-expect-error Preserve the legacy eager action invocation.
-    safePromiseHandler(toggleInfoModal(), 100);
+    safePromiseHandler(toggleInfoNetworkModal(), 100);
   };
 
   renderProtectModal = () => {
@@ -1188,8 +1195,8 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerState> {
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                  // @ts-expect-error Preserve the legacy accountInfo style key absent from createStyles.
-                  style={styles.accountInfo}
+                // @ts-expect-error Preserve the legacy accountInfo style key absent from createStyles.
+                style={styles.accountInfo}
                 onPress={this.openAccountSelector}
                 testID={'navbar-account-button'}
               >
@@ -1278,7 +1285,9 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerState> {
                           key={`item_${i}_${j}`}
                           style={[
                             styles.menuItem,
-                            item.routeNames?.includes(currentRoute as string)
+                            // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+                            item.routeNames &&
+                            item.routeNames.includes(currentRoute as string)
                               ? styles.selectedRoute
                               : null,
                           ]}
@@ -1290,7 +1299,9 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerState> {
                           onPress={() => item.action()} // eslint-disable-line
                         >
                           {item.icon
-                            ? item.routeNames?.includes(currentRoute as string)
+                            ? // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+                              item.routeNames &&
+                              item.routeNames.includes(currentRoute as string)
                               ? item.selectedIcon
                               : item.icon
                             : null}
@@ -1298,7 +1309,9 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerState> {
                             style={[
                               styles.menuItemName,
                               !item.icon ? styles.noIcon : null,
-                              item.routeNames?.includes(currentRoute as string)
+                              // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+                              item.routeNames &&
+                              item.routeNames.includes(currentRoute as string)
                                 ? styles.selectedName
                                 : null,
                             ]}

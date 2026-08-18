@@ -6,8 +6,11 @@ import { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import getStyles from './styledButtonStyles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { Theme } from '../../../util/theme/models';
-// @ts-expect-error Legacy prop-types package has no TypeScript declarations.
-import { ViewPropTypes, TextPropTypes } from 'deprecated-react-native-prop-types';
+import {
+  ViewPropTypes,
+  TextPropTypes,
+  // @ts-expect-error Legacy prop-types package has no TypeScript declarations.
+} from 'deprecated-react-native-prop-types';
 
 /**
  * @deprecated The `<StyledButton>` component has been deprecated in favor of the new `<Button>` component from the component-library.

@@ -352,7 +352,9 @@ export default class Coachmark extends PureComponent<
    * @param {string} bottomIndicatorPosition - Indicator position
    * @returns {Object} - Corresponding style object
    */
-  getBotttomIndicatorStyle = (bottomIndicatorPosition?: BottomIndicatorPosition) => {
+  getBotttomIndicatorStyle = (
+    bottomIndicatorPosition?: BottomIndicatorPosition,
+  ) => {
     const styles = this.getStyles();
 
     const positions = {
