@@ -11,8 +11,6 @@ const BasicFunctionalityModalComponent =
     navigation: unknown;
   }>;
 
-export type { RootState } from '../../../../reducers';
-
 const mockInitialState = {
   engine: {
     backgroundState: {

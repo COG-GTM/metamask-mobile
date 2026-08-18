@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 
 import Engine from '../../../../../core/Engine';
 import { selectTransactionMetadataById } from '../../../../../selectors/transactionController';
-import { RootState } from '../../../../UI/BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
+import type { RootState } from '../../../../../reducers';
 import useApprovalRequest from '../useApprovalRequest';
 
 export function useTransactionMetadataRequest() {
