@@ -72,6 +72,18 @@ import { selectAddressBook } from '../../../../../../selectors/addressBookContro
 import type { RootState } from '../../../../../../reducers';
 import type { IUseMetricsHook } from '../../../../../../components/hooks/useMetrics/useMetrics.types';
 
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+// showAlertAction is untyped JavaScript; this boundary supplies its runtime config shape.
+const showAlertActionWithConfig = showAlertAction as (
+  config: AlertConfig,
+) => ReturnType<typeof showAlertAction>;
+
 const SendFlowAddressToForLegacy = SendFlowAddressTo as React.ComponentType<
   Omit<React.ComponentProps<typeof SendFlowAddressTo>, 'toSelectedAddress'> & {
     toSelectedAddress?: string;
@@ -135,12 +147,7 @@ interface SendFlowProps {
   setSelectedAsset: (
     selectedAsset: Parameters<typeof setSelectedAssetAction>[0],
   ) => void;
-  showAlert: (config: {
-    isVisible: boolean;
-    autodismiss: number;
-    content: string;
-    data: { msg: string };
-  }) => void;
+  showAlert: (config: AlertConfig) => void;
   providerType: string;
   route: SendFlowRoute;
   isPaymentRequest: boolean;
@@ -832,12 +839,8 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   setSelectedAsset: (
     selectedAsset: Parameters<typeof setSelectedAssetAction>[0],
   ) => dispatch(setSelectedAssetAction(selectedAsset)),
-  showAlert: (config: {
-    isVisible: boolean;
-    autodismiss: number;
-    content: string;
-    data: { msg: string };
-  }) => dispatch(showAlertAction(config as never)),
+  showAlert: (config: AlertConfig) =>
+    dispatch(showAlertActionWithConfig(config)),
   resetTransaction: () => dispatch(resetTransactionAction()),
 });
 
