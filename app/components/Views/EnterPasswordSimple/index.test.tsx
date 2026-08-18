@@ -1,7 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
 import EnterPasswordSimple from './';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  type ParamListBase,
+} from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { ThemeContext } from '../../../util/theme';
 
 const mockTheme = {
@@ -21,9 +25,11 @@ const mockNavigation = {
   setOptions: jest.fn(),
   goBack: jest.fn(),
   navigate: jest.fn(),
+  pop: jest.fn(),
   route: {
     params: {
       accountAddress: '0x123',
+      onPasswordSet: jest.fn(),
     },
   },
 };
@@ -33,7 +39,12 @@ describe('EnterPasswordSimple', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <NavigationContainer>
-          <EnterPasswordSimple navigation={mockNavigation} />
+          <EnterPasswordSimple
+            navigation={
+              mockNavigation as unknown as StackNavigationProp<ParamListBase>
+            }
+            route={{ params: { onPasswordSet: jest.fn() } }}
+          />
         </NavigationContainer>
       </ThemeContext.Provider>,
     );

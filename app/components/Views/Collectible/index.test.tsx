@@ -63,7 +63,10 @@ describe('Collectible', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <Collectible route={{ params: { address: '0x1' } }} />
+        <Collectible
+          navigation={navigationMock}
+          route={{ params: { address: '0x1' } }}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
