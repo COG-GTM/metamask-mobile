@@ -35,7 +35,8 @@ import FA5Icon from 'react-native-vector-icons/FontAwesome5';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import { baseStyles, colors as importedColors } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+// eslint-disable-next-line import/no-commonjs, @typescript-eslint/no-require-imports
+const { ViewPropTypes } = require('deprecated-react-native-prop-types');
 
 type MediaPlayerTheme = Theme & {
   brandColors: { white: string };
@@ -473,12 +474,12 @@ export default function VideoPlayer({
     (
       children: React.ReactNode,
       callback?: () => void,
-      style: StyleProp<ViewStyle> = {},
+      controlStyle: StyleProp<ViewStyle> = {},
     ) => (
       <TouchableHighlight
         underlayColor="transparent"
         onPress={callback}
-        style={[styles.controlsControl, style]}
+        style={[styles.controlsControl, controlStyle]}
       >
         {children}
       </TouchableHighlight>

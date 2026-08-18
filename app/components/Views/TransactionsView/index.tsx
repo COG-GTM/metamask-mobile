@@ -103,8 +103,8 @@ const TransactionsView = ({
       let accountAddedTimeInsertPointFound = false;
       const addedAccountTime = selectedInternalAccount?.metadata.importTime;
 
-      const submittedTxs: Transaction[] = [];
-      const confirmedTxs: Transaction[] = [];
+      const filteredSubmittedTxs: Transaction[] = [];
+      const filteredConfirmedTxs: Transaction[] = [];
       const submittedNonces: string[] = [];
 
       const allTransactionsSorted = sortTransactions(transactions).filter(
@@ -112,7 +112,7 @@ const TransactionsView = ({
           self.findIndex((_tx) => _tx.id === tx.id) === index,
       );
 
-      const allTransactions = allTransactionsSorted.filter((tx) => {
+      const filteredAllTransactions = allTransactionsSorted.filter((tx) => {
         const filter = filterByAddressAndNetwork(
           tx,
           tokens,
@@ -136,10 +136,10 @@ const TransactionsView = ({
           case TX_SIGNED:
           case TX_UNAPPROVED:
           case TX_PENDING:
-            submittedTxs.push(tx);
+            filteredSubmittedTxs.push(tx);
             return false;
           case TX_CONFIRMED:
-            confirmedTxs.push(tx);
+            filteredConfirmedTxs.push(tx);
             break;
         }
 
@@ -147,21 +147,21 @@ const TransactionsView = ({
       });
 
       const allTransactionsFiltered = isPopularNetwork
-        ? allTransactions.filter(
+        ? filteredAllTransactions.filter(
             (tx) =>
               tx.chainId === CHAIN_IDS.MAINNET ||
               tx.chainId === CHAIN_IDS.LINEA_MAINNET ||
               PopularList.some((network) => network.chainId === tx.chainId),
           )
-        : allTransactions.filter((tx) => tx.chainId === chainId);
+        : filteredAllTransactions.filter((tx) => tx.chainId === chainId);
 
-      const submittedTxsFiltered = submittedTxs.filter(({ txParams }) => {
+      const submittedTxsFiltered = filteredSubmittedTxs.filter(({ txParams }) => {
         const { from, nonce } = txParams;
         if (!toLowerCaseEquals(from, selectedAddress)) {
           return false;
         }
         const alreadySubmitted = submittedNonces.includes(nonce);
-        const alreadyConfirmed = confirmedTxs.find(
+        const alreadyConfirmed = filteredConfirmedTxs.find(
           (tx) =>
             toLowerCaseEquals(
               safeToChecksumAddress(tx.txParams.from),
@@ -176,6 +176,8 @@ const TransactionsView = ({
       });
 
       // If the account added insert point is not found, add it to the last transaction
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      /* eslint-disable @typescript-eslint/prefer-optional-chain */
       if (
         !accountAddedTimeInsertPointFound &&
         allTransactionsFiltered &&
@@ -185,10 +187,11 @@ const TransactionsView = ({
           allTransactionsFiltered.length - 1
         ].insertImportTime = true;
       }
+      /* eslint-enable @typescript-eslint/prefer-optional-chain */
 
       setAllTransactions(allTransactionsFiltered);
       setSubmittedTxs(submittedTxsFiltered);
-      setConfirmedTxs(confirmedTxs);
+      setConfirmedTxs(filteredConfirmedTxs);
       setLoading(false);
     },
     [

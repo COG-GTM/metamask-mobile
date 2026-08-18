@@ -13,7 +13,6 @@ import {
   StyleSheet,
   Image,
   Dimensions,
-  type TextStyle,
   type ViewStyle,
 } from 'react-native';
 import type { Theme } from '@metamask/design-tokens';
