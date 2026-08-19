@@ -20,6 +20,8 @@ jest.mock('../../../core/NativeModules', () => ({
   },
 }));
 
+const VALID_CHANNEL_ID = '9b9d1e1e-9b0e-4a3a-9e5f-3f2b7c6f1a11';
+
 describe('handleMetaMaskProtocol', () => {
   const mockParse = jest.fn();
   const mockHandleBuyCrypto = jest.fn();
@@ -134,7 +136,7 @@ describe('handleMetaMaskProtocol', () => {
     beforeEach(() => {
       url = `${PREFIXES.METAMASK}${ACTIONS.CONNECT}`;
       params.comm = 'deeplinking';
-      params.channelId = 'test-channel-id';
+      params.channelId = VALID_CHANNEL_ID;
       params.pubkey = 'test-pubkey';
       params.originatorInfo = 'test-originator-info';
       params.request = 'test-request';
@@ -185,14 +187,58 @@ describe('handleMetaMaskProtocol', () => {
         request: params.request,
       });
     });
+
+    it('does not connect when channelId is not a valid channel identifier', () => {
+      const mockHandleConnection = jest.fn();
+      mockSDKConnectGetInstance.mockImplementation(() => ({
+        state: {
+          deeplinkingService: {
+            handleConnection: mockHandleConnection,
+          },
+        },
+      }));
+
+      params.scheme = 'test-scheme';
+      params.channelId = 'app.uniswap.org';
+
+      handleMetaMaskDeeplink({
+        instance,
+        handled,
+        params,
+        url,
+        origin,
+        wcURL,
+      });
+
+      expect(mockHandleConnection).not.toHaveBeenCalled();
+    });
   });
 
   describe('when url starts with ${PREFIXES.METAMASK}${ACTIONS.MMSDK}', () => {
     beforeEach(() => {
       url = `${PREFIXES.METAMASK}${ACTIONS.MMSDK}`;
-      params.channelId = 'test-channel-id';
+      params.channelId = VALID_CHANNEL_ID;
       params.pubkey = 'test-pubkey';
       params.account = 'test-account';
+    });
+
+    it('should throw an error if params.channelId is not a valid channel identifier', () => {
+      params.channelId = 'app.uniswap.org';
+      params.message = 'test-message';
+      params.scheme = 'test-scheme';
+
+      expect(() => {
+        handleMetaMaskDeeplink({
+          instance,
+          handled,
+          params,
+          url,
+          origin,
+          wcURL,
+        });
+      }).toThrow(
+        'DeepLinkManager: deeplinkingService failed to handleMessage - Invalid channelId',
+      );
     });
 
     it('should throw an error if params.message is not defined', () => {
@@ -294,9 +340,9 @@ describe('handleMetaMaskProtocol', () => {
 
     it('should call handleDeeplink when channel exists and params.redirect is falsy', () => {
       origin = AppConstants.DEEPLINKS.ORIGIN_DEEPLINK;
-      params.channelId = 'ABC';
+      params.channelId = VALID_CHANNEL_ID;
       params.redirect = '';
-      mockGetApprovedHosts.mockReturnValue({ ABC: true });
+      mockGetApprovedHosts.mockReturnValue({ [VALID_CHANNEL_ID]: true });
 
       handleMetaMaskDeeplink({
         instance,
@@ -330,6 +376,23 @@ describe('handleMetaMaskProtocol', () => {
           },
         },
       });
+    });
+
+    it('does not call handleDeeplink when channelId is not a valid channel identifier', () => {
+      origin = AppConstants.DEEPLINKS.ORIGIN_DEEPLINK;
+      params.channelId = 'app.uniswap.org';
+      params.redirect = '';
+
+      handleMetaMaskDeeplink({
+        instance,
+        handled,
+        params,
+        url,
+        origin,
+        wcURL,
+      });
+
+      expect(mockHandleDeeplink).not.toHaveBeenCalled();
     });
   });
 

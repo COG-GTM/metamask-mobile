@@ -21,6 +21,10 @@ import {
 import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import {
+  hasValidOriginatorIdentity,
+  isValidChannelId,
+} from '../utils/validateDeeplinkConnection';
 import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
@@ -429,6 +433,17 @@ export default class DeeplinkProtocolService {
       return;
     }
 
+    if (!isValidChannelId(params.channelId)) {
+      Logger.error(
+        new Error(
+          'DeeplinkProtocolService::handleConnection invalid channelId',
+        ),
+        { url: params.url },
+      );
+
+      return;
+    }
+
     this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
 
     const decodedOriginatorInfo = Buffer.from(
@@ -436,9 +451,30 @@ export default class DeeplinkProtocolService {
       'base64',
     ).toString('utf-8');
 
-    const originatorInfoJson = JSON.parse(decodedOriginatorInfo);
+    let originatorInfo: OriginatorInfo;
 
-    const originatorInfo = originatorInfoJson.originatorInfo;
+    try {
+      originatorInfo = JSON.parse(decodedOriginatorInfo).originatorInfo;
+    } catch (error) {
+      Logger.error(error as Error, {
+        message:
+          'DeeplinkProtocolService::handleConnection invalid originatorInfo',
+        url: params.url,
+      });
+
+      return;
+    }
+
+    if (!hasValidOriginatorIdentity(originatorInfo)) {
+      Logger.error(
+        new Error(
+          'DeeplinkProtocolService::handleConnection invalid originatorInfo',
+        ),
+        { url: params.url },
+      );
+
+      return;
+    }
 
     const clientInfo: DappClient = {
       clientId: params.channelId,
@@ -480,16 +516,8 @@ export default class DeeplinkProtocolService {
       return;
     }
 
-    await SDKConnect.getInstance().addDappConnection({
-      id: clientInfo.clientId,
-      lastAuthorized: Date.now(),
-      origin: AppConstants.MM_SDK.IOS_SDK,
-      originatorInfo: clientInfo.originatorInfo,
-      otherPublicKey: this.dappPublicKeyByClientId[clientInfo.clientId],
-      validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      scheme: clientInfo.scheme,
-    });
-
+    // The connection is only persisted once the user has approved the
+    // permission request in handleConnectionEventAsync.
     this.handleConnectionEventAsync({
       clientInfo,
       params,

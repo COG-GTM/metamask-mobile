@@ -26,6 +26,7 @@ jest.mock('../../Permissions', () => ({
 }));
 
 const MOCK_ADDRESS = '0xc4955c0d639d99699bfd7ec54d9fafee40e4d272';
+const VALID_CHANNEL_ID = '9b9d1e1e-9b0e-4a3a-9e5f-3f2b7c6f1a11';
 const mockInternalAccount = createMockInternalAccount(
   MOCK_ADDRESS,
   'Account 1',
@@ -280,7 +281,7 @@ describe('DeeplinkProtocolService', () => {
         dappPublicKey: 'key',
         url: 'url',
         scheme: 'scheme',
-        channelId: 'channel1',
+        channelId: VALID_CHANNEL_ID,
         originatorInfo: Buffer.from(
           JSON.stringify({
             originatorInfo: {
@@ -292,8 +293,8 @@ describe('DeeplinkProtocolService', () => {
           }),
         ).toString('base64'),
       };
-      service.connections.channel1 = {
-        clientId: 'channel1',
+      service.connections[VALID_CHANNEL_ID] = {
+        clientId: VALID_CHANNEL_ID,
         originatorInfo: {
           url: 'test.com',
           title: 'Test',
@@ -307,7 +308,7 @@ describe('DeeplinkProtocolService', () => {
 
       await service.handleConnection(connectionParams);
 
-      expect(service.connections.channel1.connected).toBe(true);
+      expect(service.connections[VALID_CHANNEL_ID].connected).toBe(true);
     });
   });
 
@@ -342,20 +343,75 @@ describe('DeeplinkProtocolService', () => {
   });
 
   describe('handleConnection', () => {
+    const originatorInfo = Buffer.from(
+      JSON.stringify({
+        originatorInfo: { url: 'test.com', title: 'Test' },
+      }),
+    ).toString('base64');
+
     it('should handle a new connection', async () => {
-      const connectionParams = {
+      const handleConnectionEventAsyncSpy = jest
+        .spyOn(service, 'handleConnectionEventAsync')
+        .mockResolvedValue(undefined);
+
+      await service.handleConnection({
         dappPublicKey: 'key',
         url: 'url',
         scheme: 'scheme',
-        channelId: 'channel1',
-        originatorInfo: Buffer.from(
-          JSON.stringify({
-            originatorInfo: { url: 'test.com', title: 'Test' },
-          }),
-        ).toString('base64'),
-      };
-      await service.handleConnection(connectionParams);
-      expect(service.connections.connection1).toBeDefined();
+        channelId: VALID_CHANNEL_ID,
+        originatorInfo,
+      });
+
+      expect(handleConnectionEventAsyncSpy).toHaveBeenCalled();
+    });
+
+    it('rejects a channelId that is not a valid channel identifier', async () => {
+      const handleConnectionEventAsyncSpy = jest
+        .spyOn(service, 'handleConnectionEventAsync')
+        .mockResolvedValue(undefined);
+
+      await service.handleConnection({
+        dappPublicKey: 'key',
+        url: 'url',
+        scheme: 'scheme',
+        channelId: 'app.uniswap.org',
+        originatorInfo,
+      });
+
+      expect(handleConnectionEventAsyncSpy).not.toHaveBeenCalled();
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+    });
+
+    it('rejects a malformed originatorInfo', async () => {
+      const handleConnectionEventAsyncSpy = jest
+        .spyOn(service, 'handleConnectionEventAsync')
+        .mockResolvedValue(undefined);
+
+      await service.handleConnection({
+        dappPublicKey: 'key',
+        url: 'url',
+        scheme: 'scheme',
+        channelId: VALID_CHANNEL_ID,
+        originatorInfo: Buffer.from('not json').toString('base64'),
+      });
+
+      expect(handleConnectionEventAsyncSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not persist the connection before the permission request is approved', async () => {
+      jest
+        .spyOn(service, 'handleConnectionEventAsync')
+        .mockResolvedValue(undefined);
+
+      await service.handleConnection({
+        dappPublicKey: 'key',
+        url: 'url',
+        scheme: 'scheme',
+        channelId: VALID_CHANNEL_ID,
+        originatorInfo,
+      });
+
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
     });
   });
 

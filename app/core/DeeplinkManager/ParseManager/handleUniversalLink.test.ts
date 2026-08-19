@@ -163,7 +163,7 @@ describe('handleUniversalLinks', () => {
 
   describe('ACTIONS.CONNECT with channelId and params.redirect is falsy', () => {
     beforeEach(() => {
-      params.channelId = 'test-channel-id';
+      params.channelId = '9b9d1e1e-9b0e-4a3a-9e5f-3f2b7c6f1a11';
       params.redirect = '';
     });
 
@@ -186,7 +186,7 @@ describe('handleUniversalLinks', () => {
 
       expect(handled).toHaveBeenCalled();
       expect(mockHandleDeeplink).toHaveBeenCalledWith({
-        channelId: 'test-channel-id',
+        channelId: '9b9d1e1e-9b0e-4a3a-9e5f-3f2b7c6f1a11',
         origin: 'test-origin',
         context: 'deeplink_universal',
         url: 'test-url',
@@ -201,6 +201,27 @@ describe('handleUniversalLinks', () => {
           bindAndroidSDK: mockBindAndroidSDK,
         },
       });
+    });
+
+    it('does not call handleDeeplink when channelId is not a valid channel identifier', () => {
+      params.channelId = 'app.uniswap.org';
+      urlObj = {
+        hostname: AppConstants.MM_UNIVERSAL_LINK_HOST,
+        pathname: `/${ACTIONS.CONNECT}/additional/path`,
+      } as ReturnType<typeof extractURLParams>['urlObj'];
+
+      handleUniversalLink({
+        instance,
+        handled,
+        urlObj,
+        params,
+        browserCallBack: mockBrowserCallBack,
+        origin,
+        wcURL,
+        url,
+      });
+
+      expect(mockHandleDeeplink).not.toHaveBeenCalled();
     });
   });
 
