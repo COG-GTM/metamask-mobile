@@ -128,7 +128,7 @@ const buildPpomTask = {
         {
           title: 'Install deps',
           task: async () => {
-            await $ppom`yarn`;
+            await $ppom`yarn install --frozen-lockfile --ignore-scripts`;
           },
         },
         {

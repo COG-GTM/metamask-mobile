@@ -66,6 +66,7 @@ jobs:
         scripts:
           - lint
           - lint:tsc
+          - lint:lockfile
           - audit:ci
           - test:depcheck
           - test:tgz-check

@@ -27,7 +27,7 @@ main() {
   mv "$tmp" package.json
 
   rm -rf "${PROJECT_DIRECTORY}/node_modules"
-  yarn --pure-lockfile
+  yarn --pure-lockfile --ignore-scripts
 
   cd "${PROJECT_DIRECTORY}/scripts/generate-attributions"
 
@@ -44,7 +44,7 @@ main() {
   # Check if the script is running in a CI environment (GitHub Actions sets the CI variable to true)
   if [ -z "${CI:-}" ]; then
     # If not running in CI, restore development dependencies
-    yarn
+    yarn install --frozen-lockfile --ignore-scripts
   fi
 }
 
