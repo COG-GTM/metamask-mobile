@@ -51,6 +51,7 @@ import { getRpcMethodMiddleware } from '../../../core/RPCMethods/RPCMethodMiddle
 import downloadFile from '../../../util/browser/downloadFile';
 import { MAX_MESSAGE_LENGTH } from '../../../constants/dapp';
 import sanitizeUrlInput from '../../../util/url/sanitizeUrlInput';
+import toJsLiteral from '../../../util/browser/toJsLiteral';
 import {
   getCaip25Caveat,
   getPermittedAccountsByHostname,
@@ -572,13 +573,13 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       const analyticsEnabled = isEnabled();
       const disctinctId = await getMetaMetricsId();
       const homepageScripts = `
-              window.__mmFavorites = ${JSON.stringify(
+              window.__mmFavorites = ${toJsLiteral(
                 injectedBookmarks || bookmarks,
               )};
-              window.__mmSearchEngine = "${searchEngine}";
-              window.__mmMetametrics = ${analyticsEnabled};
-              window.__mmDistinctId = "${disctinctId}";
-              window.__mmMixpanelToken = "${MM_MIXPANEL_TOKEN}";
+              window.__mmSearchEngine = ${toJsLiteral(searchEngine)};
+              window.__mmMetametrics = ${toJsLiteral(analyticsEnabled)};
+              window.__mmDistinctId = ${toJsLiteral(disctinctId)};
+              window.__mmMixpanelToken = ${toJsLiteral(MM_MIXPANEL_TOKEN)};
               (function () {
                   try {
                       window.dispatchEvent(new Event('metamask_onHomepageScriptsInjected'));
@@ -1109,7 +1110,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       }
       // Directly update url in webview
       webviewRef.current?.injectJavaScript(`
-      window.location.href = '${sanitizeUrlInput(processedUrl)}';
+      window.location.href = ${toJsLiteral(sanitizeUrlInput(processedUrl))};
       true;  // Required for iOS
     `);
     },
