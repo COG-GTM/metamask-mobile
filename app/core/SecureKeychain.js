@@ -12,6 +12,7 @@ import {
   TRUE,
 } from '../constants/storage';
 import Device from '../util/device';
+import Logger from '../util/Logger';
 
 const privates = new WeakMap();
 const encryptor = new Encryptor({
@@ -159,33 +160,24 @@ export default {
       // If the user enables biometrics, we're trying to read the password
       // immediately so we get the permission prompt
       if (Platform.OS === 'ios') {
+        let biometricsConfirmed = false;
         try {
-          await this.getGenericPassword();
+          biometricsConfirmed = Boolean(await this.getGenericPassword());
         } catch (error) {
-          // Specifically check for user cancellation
-          if (error.message === 'User canceled the operation.') {
-            // Store password without biometrics
-            const encryptedPassword = await instance.encryptPassword(password);
-            await Keychain.setGenericPassword(
-              'metamask-user',
-              encryptedPassword,
-              {
-                ...defaultOptions,
-              },
-            );
+          Logger.error(
+            error,
+            'SecureKeychain: unable to confirm the biometric gate on the stored credentials',
+          );
+        }
 
-            // Update storage to reflect disabled biometrics
-            await StorageWrapper.removeItem(BIOMETRY_CHOICE);
-            await StorageWrapper.setItem(BIOMETRY_CHOICE_DISABLED, TRUE);
-
-            // Update metrics
-            await metrics.addTraitsToUser({
-              [UserProfileProperty.AUTHENTICATION_TYPE]:
-                AUTHENTICATION_TYPE.PASSWORD,
-            });
-
-            return;
-          }
+        // The credentials are only kept when the biometric gate protecting
+        // them has been confirmed. Anything else (cancellation, lockout,
+        // unenrolled or unavailable biometrics) removes them so they can
+        // never be read back without authentication.
+        if (!biometricsConfirmed) {
+          await this.resetGenericPassword();
+          await StorageWrapper.setItem(BIOMETRY_CHOICE_DISABLED, TRUE);
+          return;
         }
       }
     } else if (type === this.TYPES.PASSCODE) {
