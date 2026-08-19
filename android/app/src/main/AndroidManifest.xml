@@ -4,7 +4,13 @@
 
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+	<!--
+		android.permission.SYSTEM_ALERT_WINDOW is intentionally NOT declared here.
+		Draw-over-other-apps windows can be used to spoof or obscure the
+		transaction signing UI (tapjacking / UI redressing). The permission is
+		declared only in the debug manifest, where the React Native dev menu
+		needs it.
+	-->
 	<uses-permission android:name="android.permission.CAMERA" />
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
 	<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
