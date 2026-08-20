@@ -482,14 +482,14 @@ export function excludeEvents(event) {
 
 function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
-    const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
+    const urlsInMessage = errorMessage.match(regex.sanitizeUrl) ?? [];
 
-    urlsInMessage?.forEach((url) => {
-      if (!ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
-        errorMessage.replace(url, '**');
+    return urlsInMessage.reduce((message, url) => {
+      if (ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
+        return message;
       }
-    });
-    return errorMessage;
+      return message.split(url).join('**');
+    }, errorMessage);
   });
 }
 
