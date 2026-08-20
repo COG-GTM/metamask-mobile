@@ -5,6 +5,7 @@ import {
   excludeEvents,
   captureSentryFeedback,
   maskObject,
+  sanitizeUrlsFromErrorMessages,
   sentryStateMask,
   AllProperties,
 } from './utils';
@@ -730,5 +731,49 @@ describe('captureSentryFeedback', () => {
         exampleObj: 'object',
       },
     });
+  });
+});
+
+describe('sanitizeUrlsFromErrorMessages', () => {
+  it('replaces non-allowlisted urls in the message and exception values', () => {
+    const report = {
+      message: 'Failed to fetch https://dapp.example.com/swap?account=alice',
+      exception: {
+        values: [
+          {
+            value:
+              'Network error at https://dapp.example.com/swap and https://dapp.example.com/swap',
+          },
+        ],
+      },
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch **');
+    expect(report.exception.values[0].value).toBe('Network error at ** and **');
+  });
+
+  it('keeps allowlisted hosts intact', () => {
+    const report = {
+      message:
+        'Failed to fetch https://min-api.cryptocompare.com/data/price?fsym=ETH',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe(
+      'Failed to fetch https://min-api.cryptocompare.com/data/price?fsym=ETH',
+    );
+  });
+
+  it('does not treat an allowlisted domain appearing outside the host as allowlisted', () => {
+    const report = {
+      message: 'Failed to fetch https://dapp.example.com/x?ref=coingecko.com',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch **');
   });
 });

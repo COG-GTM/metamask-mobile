@@ -480,12 +480,22 @@ export function excludeEvents(event) {
   return event;
 }
 
-function sanitizeUrlsFromErrorMessages(report) {
+function isAllowlistedUrl(url) {
+  const authority = url.match(/^https?:\/\/([^/?#]*)/iu)?.[1] ?? '';
+  const hostname = authority.split('@').pop().split(':')[0].toLowerCase();
+
+  return ERROR_URL_ALLOWLIST.some(
+    (allowedUrl) =>
+      hostname === allowedUrl || hostname.endsWith(`.${allowedUrl}`),
+  );
+}
+
+export function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl) ?? [];
 
     return urlsInMessage.reduce((message, url) => {
-      if (ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
+      if (isAllowlistedUrl(url)) {
         return message;
       }
       return message.split(url).join('**');
