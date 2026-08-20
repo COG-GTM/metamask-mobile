@@ -493,7 +493,7 @@ function sanitizeUrlsFromErrorMessages(report) {
   });
 }
 
-function sanitizeAddressesFromErrorMessages(report) {
+export function sanitizeAddressesFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const newErrorMessage = errorMessage.replace(
       new RegExp(regex.replaceNetworkErrorSentry, 'gu'),

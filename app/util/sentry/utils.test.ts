@@ -5,6 +5,7 @@ import {
   excludeEvents,
   captureSentryFeedback,
   maskObject,
+  sanitizeAddressesFromErrorMessages,
   sentryStateMask,
   AllProperties,
 } from './utils';
@@ -730,5 +731,29 @@ describe('captureSentryFeedback', () => {
         exampleObj: 'object',
       },
     });
+  });
+});
+
+describe('sanitizeAddressesFromErrorMessages', () => {
+  it('replaces every evm address in the message and exception values', () => {
+    const report = {
+      message:
+        'Transfer from 0x1234567890abcdef1234567890abcdef12345678 to 0xabcdefabcdefabcdefabcdefabcdefabcdefabcd failed',
+      exception: {
+        values: [
+          {
+            value:
+              'nonce mismatch for 0x1111111111111111111111111111111111111111 and 0x2222222222222222222222222222222222222222',
+          },
+        ],
+      },
+    };
+
+    sanitizeAddressesFromErrorMessages(report);
+
+    expect(report.message).toBe('Transfer from ** to ** failed');
+    expect(report.exception.values[0].value).toBe(
+      'nonce mismatch for ** and **',
+    );
   });
 });
