@@ -496,7 +496,7 @@ function sanitizeUrlsFromErrorMessages(report) {
 function sanitizeAddressesFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const newErrorMessage = errorMessage.replace(
-      regex.replaceNetworkErrorSentry,
+      new RegExp(regex.replaceNetworkErrorSentry, 'gu'),
       '**',
     );
     return newErrorMessage;
