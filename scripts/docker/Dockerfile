@@ -15,7 +15,7 @@ ENV YARN_VERSION 1.22.22
 # https://github.com/nodejs/docker-node/blob/07bd7414c9eeb7a134951122e1105e8c849f770e/Dockerfile-debian.template
 COPY scripts/docker/yarn-v$YARN_VERSION.tar.gz.sha256 .
 RUN curl -fsSLO --compressed "https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz" \
-  && sha256sum yarn-v$YARN_VERSION.tar.gz.sha256 \
+  && sha256sum -c yarn-v$YARN_VERSION.tar.gz.sha256 \
   && tar -xzf yarn-v$YARN_VERSION.tar.gz -C /opt/ \
   && ln -sf /opt/yarn-v$YARN_VERSION/bin/yarn /usr/local/bin/yarn \
   && ln -sf /opt/yarn-v$YARN_VERSION/bin/yarnpkg /usr/local/bin/yarnpkg \
