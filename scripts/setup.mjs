@@ -1,4 +1,5 @@
 /* eslint-disable import/no-nodejs-modules */
+import crypto from 'crypto';
 import fs from 'fs';
 import { $ } from 'execa';
 import { Listr } from 'listr2';
@@ -281,24 +282,33 @@ const runLavamoatAllowScriptsTask = {
   },
 };
 
+// Committed SHA-256 of the reviewed, normalized Terms of Use document. The
+// build fails if the freshly-downloaded (and normalized) document does not
+// match this pin, so only the reviewed legal content can ever ship. Update
+// this file deliberately (and review the diff) when the terms legitimately
+// change.
+const TERMS_OF_USE_CHECKSUM_PATH = path.resolve(
+  './scripts/assets/termsOfUse.expected.sha256',
+);
+
 /**
- * Strip active content from the remotely-downloaded Terms of Use HTML before it
- * is embedded into shipped source. Static legal text needs no scripts, inline
- * event handlers, or externally-loaded subresources, so removing them prevents
- * a compromised/altered remote document from executing in the in-app WebView.
+ * Remove the two Cloudflare-injected, per-response fragments from the
+ * downloaded Terms of Use HTML so the document is deterministic and can be
+ * integrity-pinned by checksum:
+ *   1. `<script>` blocks — Cloudflare injects a challenge/rocket-loader script
+ *      carrying a fresh nonce and timestamp on every response. Static legal
+ *      text needs no script, and removing it also strips the primary
+ *      code-execution vector before the HTML is embedded in the in-app WebView.
+ *   2. the `data-cfemail` email-obfuscation token, whose XOR key rotates per
+ *      response.
+ * Everything else (viewport/charset meta, stylesheet links, markup) is left
+ * intact so the terms screen renders normally, and any attacker-modified byte
+ * outside these fragments changes the checksum and fails the build.
  */
-function sanitizeTermsOfUseHtml(html) {
-  return (
-    html
-      // Drop <script>...</script> blocks (including unterminated ones).
-      .replace(/<script\b[\s\S]*?(?:<\/script>|$)/gi, '')
-      // Drop <iframe>/<object>/<embed> and other external-content tags.
-      .replace(/<(iframe|object|embed|link|meta)\b[\s\S]*?(?:>|$)/gi, '')
-      // Drop inline event handlers (onclick=, onload=, ...).
-      .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-      // Neutralize javascript: URLs.
-      .replace(/(href|src)\s*=\s*("|')\s*javascript:[^"']*\2/gi, '$1=$2#$2')
-  );
+function normalizeTermsOfUseHtml(html) {
+  return html
+    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+    .replace(/data-cfemail="[0-9a-fA-F]*"/gi, 'data-cfemail=""');
 }
 
 const generateTermsOfUseTask = {
@@ -310,7 +320,7 @@ const generateTermsOfUseTask = {
           title: 'Download Terms of Use',
           task: async () => {
             try {
-              await $`curl --fail --location --proto =https --tlsv1.2 --show-error --silent -o ./docs/assets/termsOfUse.html https://legal.consensys.io/plain/terms-of-use/`;
+              await $`curl --fail --location --proto =https --proto-redir =https --tlsv1.2 --show-error --silent -o ./docs/assets/termsOfUse.html https://legal.consensys.io/plain/terms-of-use/`;
             } catch (error) {
               throw new Error('Failed to download Terms of Use');
             }
@@ -338,7 +348,42 @@ const generateTermsOfUseTask = {
               );
             }
 
-            termsOfUse = sanitizeTermsOfUseHtml(termsOfUse);
+            termsOfUse = normalizeTermsOfUseHtml(termsOfUse);
+
+            if (!termsOfUse.trim()) {
+              throw new Error(
+                'Terms of Use is empty after normalization; refusing to embed',
+              );
+            }
+
+            // Integrity gate: the normalized document must match the reviewed,
+            // committed checksum. Any attacker-controlled change to the remote
+            // bytes (origin/CDN compromise, build-host TLS interception) alters
+            // the hash and fails the build instead of shipping.
+            let expectedChecksum = '';
+            try {
+              expectedChecksum = fs
+                .readFileSync(TERMS_OF_USE_CHECKSUM_PATH, 'utf8')
+                .trim()
+                .toLowerCase();
+            } catch (error) {
+              throw new Error(
+                'Failed to read Terms of Use checksum pin file',
+              );
+            }
+
+            const actualChecksum = crypto
+              .createHash('sha256')
+              .update(termsOfUse, 'utf8')
+              .digest('hex');
+
+            if (actualChecksum !== expectedChecksum) {
+              throw new Error(
+                `Terms of Use checksum mismatch: expected ${expectedChecksum}, got ${actualChecksum}. ` +
+                  'The remote document changed; review the new content and update ' +
+                  'scripts/assets/termsOfUse.expected.sha256 if the change is legitimate.',
+              );
+            }
 
             const outputContent = `export default ${JSON.stringify(
               termsOfUse,

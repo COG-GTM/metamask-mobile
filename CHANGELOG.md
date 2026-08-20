@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- fix(build): harden Terms of Use download (fail-closed HTTPS/TLS curl) and strip active content before embedding in the app ([#1495](https://github.com/COG-GTM/metamask-mobile/pull/1495))
+- fix(build): harden Terms of Use download (fail-closed HTTPS/TLS curl with HTTPS-only redirects) and integrity-pin the reviewed content by SHA-256 so a compromised remote document fails the build instead of being embedded in the app ([#1495](https://github.com/COG-GTM/metamask-mobile/pull/1495))
 - fix(multi-srp): display multichain accounts in SRP list ([#14724](https://github.com/MetaMask/metamask-mobile/pull/14724))
 - fix(confirmations): remove transaction simulations from wallet initiated send flow ([#14994](https://github.com/MetaMask/metamask-mobile/pull/14994))
 - fix(bridge): add auto slippage option and improve slippage selection UI ([#15159](https://github.com/MetaMask/metamask-mobile/pull/15159))
