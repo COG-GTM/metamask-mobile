@@ -480,7 +480,20 @@ export function excludeEvents(event) {
   return event;
 }
 
+/**
+ * Checks whether a URL found in an error message may be reported as-is.
+ *
+ * @param {string} url - Absolute http(s) URL matched in an error message.
+ * @returns {boolean} True when the URL's host exactly matches, or is a
+ * subdomain of, an allowlisted domain and the URL does not embed another URL.
+ */
 function isAllowlistedUrl(url) {
+  // A nested url (e.g. a redirect target in the query string) can carry data
+  // the allowlisted host itself would not, so never allowlist those.
+  if ((url.match(/https?:\/\//giu) ?? []).length > 1) {
+    return false;
+  }
+
   const authority = url.match(/^https?:\/\/([^/?#]*)/iu)?.[1] ?? '';
   const hostname = authority.split('@').pop().split(':')[0].toLowerCase();
 

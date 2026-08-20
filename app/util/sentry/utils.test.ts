@@ -790,3 +790,16 @@ describe('sanitizeUrlsFromErrorMessages prefix handling', () => {
     expect(report.message).toBe('Failed ** then **');
   });
 });
+
+describe('sanitizeUrlsFromErrorMessages nested urls', () => {
+  it('redacts an allowlisted url that embeds another url', () => {
+    const report = {
+      message:
+        'Failed to fetch https://api.segment.io/v1/track?redirect=https://user-dapp.example/path',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch **');
+  });
+});
