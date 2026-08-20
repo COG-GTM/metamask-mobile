@@ -281,6 +281,26 @@ const runLavamoatAllowScriptsTask = {
   },
 };
 
+/**
+ * Strip active content from the remotely-downloaded Terms of Use HTML before it
+ * is embedded into shipped source. Static legal text needs no scripts, inline
+ * event handlers, or externally-loaded subresources, so removing them prevents
+ * a compromised/altered remote document from executing in the in-app WebView.
+ */
+function sanitizeTermsOfUseHtml(html) {
+  return (
+    html
+      // Drop <script>...</script> blocks (including unterminated ones).
+      .replace(/<script\b[\s\S]*?(?:<\/script>|$)/gi, '')
+      // Drop <iframe>/<object>/<embed> and other external-content tags.
+      .replace(/<(iframe|object|embed|link|meta)\b[\s\S]*?(?:>|$)/gi, '')
+      // Drop inline event handlers (onclick=, onload=, ...).
+      .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      // Neutralize javascript: URLs.
+      .replace(/(href|src)\s*=\s*("|')\s*javascript:[^"']*\2/gi, '$1=$2#$2')
+  );
+}
+
 const generateTermsOfUseTask = {
   title: 'Generate Terms of Use',
   task: (_, task) =>
@@ -290,7 +310,7 @@ const generateTermsOfUseTask = {
           title: 'Download Terms of Use',
           task: async () => {
             try {
-              await $`curl -o ./docs/assets/termsOfUse.html https://legal.consensys.io/plain/terms-of-use/`;
+              await $`curl --fail --location --proto =https --tlsv1.2 --show-error --silent -o ./docs/assets/termsOfUse.html https://legal.consensys.io/plain/terms-of-use/`;
             } catch (error) {
               throw new Error('Failed to download Terms of Use');
             }
@@ -311,6 +331,14 @@ const generateTermsOfUseTask = {
             } catch (error) {
               throw new Error('Failed to read Terms of Use file');
             }
+
+            if (!termsOfUse.trim() || !/<[a-z!][\s\S]*>/i.test(termsOfUse)) {
+              throw new Error(
+                'Downloaded Terms of Use is empty or not HTML; refusing to embed',
+              );
+            }
+
+            termsOfUse = sanitizeTermsOfUseHtml(termsOfUse);
 
             const outputContent = `export default ${JSON.stringify(
               termsOfUse,
