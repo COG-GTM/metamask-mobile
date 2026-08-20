@@ -777,3 +777,16 @@ describe('sanitizeUrlsFromErrorMessages', () => {
     expect(report.message).toBe('Failed to fetch **');
   });
 });
+
+describe('sanitizeUrlsFromErrorMessages prefix handling', () => {
+  it('fully redacts a url that shares a prefix with another matched url', () => {
+    const report = {
+      message:
+        'Failed https://dapp.example.com/api then https://dapp.example.com/api/v2/secret',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed ** then **');
+  });
+});

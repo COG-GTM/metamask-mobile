@@ -493,8 +493,13 @@ function isAllowlistedUrl(url) {
 export function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl) ?? [];
+    // Longest first, so a URL that is a prefix of another one does not
+    // partially replace it and leave the remainder in the message.
+    const urlsByLength = [...new Set(urlsInMessage)].sort(
+      (urlA, urlB) => urlB.length - urlA.length,
+    );
 
-    return urlsInMessage.reduce((message, url) => {
+    return urlsByLength.reduce((message, url) => {
       if (isAllowlistedUrl(url)) {
         return message;
       }
