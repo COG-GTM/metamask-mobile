@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import Modal from 'react-native-modal';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { swapsUtils } from '@metamask/swaps-controller';
+import type { Hex } from '@metamask/utils';
 
 import EditPermission from '../../../Views/confirmations/legacy/components/ApproveTransactionReview/EditPermission';
 import { fromTokenMinimalUnitString, hexToBN } from '../../../../util/number';
@@ -15,6 +15,7 @@ import {
 import { useTheme } from '../../../../util/theme';
 import Logger from '../../../../util/Logger';
 import { selectSwapsApprovalTransaction } from '../../../../reducers/swaps';
+import type { RootState } from '../../../../reducers';
 
 const styles = StyleSheet.create({
   keyboardAwareWrapper: {
@@ -27,6 +28,48 @@ const styles = StyleSheet.create({
   },
 });
 
+export interface ApprovalTransaction {
+  data: string;
+  from: string;
+  to?: string;
+  gas?: string;
+  gasPrice?: string;
+  value?: string;
+}
+
+/**
+ * `generateTxWithNewTokenAllowance` is untyped JavaScript, so its parameters and
+ * return value are described here.
+ */
+const generateApprovalTransaction = (
+  tokenValue: string,
+  tokenDecimals: number,
+  spenderAddress: string,
+  transaction?: ApprovalTransaction,
+): ApprovalTransaction =>
+  generateTxWithNewTokenAllowance(
+    tokenValue,
+    tokenDecimals,
+    spenderAddress,
+    transaction ?? {},
+  ) as ApprovalTransaction;
+
+interface OwnProps {
+  approvalTransaction?: ApprovalTransaction;
+  editQuoteTransactionsVisible: boolean;
+  minimumSpendLimit: string;
+  onCancelEditQuoteTransactions: () => void;
+  setApprovalTransaction: (transaction?: ApprovalTransaction) => void;
+  sourceToken: { symbol: string; decimals: number };
+  chainId: Hex;
+}
+
+interface StateProps {
+  originalApprovalTransaction?: ApprovalTransaction;
+}
+
+type Props = OwnProps & StateProps;
+
 function ApprovalTransactionEditionModal({
   originalApprovalTransaction,
   approvalTransaction,
@@ -36,7 +79,7 @@ function ApprovalTransactionEditionModal({
   sourceToken,
   minimumSpendLimit,
   chainId,
-}) {
+}: Props) {
   /* Approval transaction if any */
   const [customApprovalTransaction, setCustomApprovalTransaction] =
     useState(approvalTransaction);
@@ -49,7 +92,8 @@ function ApprovalTransactionEditionModal({
   const { colors } = useTheme();
 
   const onSpendLimitCustomValueChange = useCallback(
-    (approvalCustomValue) => setApprovalCustomValue(approvalCustomValue),
+    (newApprovalCustomValue: string) =>
+      setApprovalCustomValue(newApprovalCustomValue),
     [],
   );
 
@@ -65,7 +109,7 @@ function ApprovalTransactionEditionModal({
 
   const onSetApprovalAmount = useCallback(() => {
     try {
-      const newApprovalTransaction = generateTxWithNewTokenAllowance(
+      const newApprovalTransaction = generateApprovalTransaction(
         spendLimitUnlimitedSelected
           ? approvalTransactionAmount
           : approvalCustomValue,
@@ -96,10 +140,10 @@ function ApprovalTransactionEditionModal({
       : customApprovalTransaction;
     setApprovalTransaction(newApprovalTx);
     if (newApprovalTx) {
-      const approvalTransactionAmount = decodeApproveData(
+      const newApprovalTransactionAmount = decodeApproveData(
         newApprovalTx.data,
       ).encodedAmount;
-      const amountDec = hexToBN(approvalTransactionAmount).toString(10);
+      const amountDec = hexToBN(newApprovalTransactionAmount).toString(10);
       setApprovalTransactionAmount(
         fromTokenMinimalUnitString(amountDec, sourceToken.decimals),
       );
@@ -153,18 +197,7 @@ function ApprovalTransactionEditionModal({
   );
 }
 
-ApprovalTransactionEditionModal.propTypes = {
-  approvalTransaction: PropTypes.object,
-  originalApprovalTransaction: PropTypes.object,
-  editQuoteTransactionsVisible: PropTypes.bool,
-  minimumSpendLimit: PropTypes.string.isRequired,
-  onCancelEditQuoteTransactions: PropTypes.func,
-  setApprovalTransaction: PropTypes.func,
-  sourceToken: PropTypes.object,
-  chainId: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   originalApprovalTransaction: selectSwapsApprovalTransaction(state),
 });
 
