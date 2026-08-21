@@ -45,8 +45,6 @@ jest.mock('../../store', () => ({
 
 jest.mock('../RPCMethods/createEthAccountsMethodMiddleware');
 
-createEthAccountsMethodMiddleware;
-
 jest.mock('@metamask/eth-json-rpc-filters');
 jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   events: {
@@ -54,7 +52,9 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+const asMock = (fn: unknown) => fn as jest.Mock;
+
+function setupBackgroundBridge(url: string) {
   // Arrange
   const {
     AccountsController,
@@ -63,28 +63,28 @@ function setupBackgroundBridge(url) {
     NetworkController,
   } = Engine.context;
 
-  AccountsController.getSelectedAccount.mockReturnValue({
+  asMock(AccountsController.getSelectedAccount).mockReturnValue({
     address: '0x0',
   });
-  PermissionController.getPermissions.mockReturnValue({
+  asMock(PermissionController.getPermissions).mockReturnValue({
     bind: jest.fn(),
   });
-  PermissionController.getPermissions.mockReturnValue({
+  asMock(PermissionController.getPermissions).mockReturnValue({
     bind: jest.fn(),
   });
-  PermissionController.hasPermissions.mockReturnValue({
+  asMock(PermissionController.hasPermissions).mockReturnValue({
     bind: jest.fn(),
   });
-  NetworkController.getNetworkConfigurationByChainId.mockReturnValue({
+  asMock(NetworkController.getNetworkConfigurationByChainId).mockReturnValue({
     bind: jest.fn(),
   });
-  PermissionController.executeRestrictedMethod.mockReturnValue({
+  asMock(PermissionController.executeRestrictedMethod).mockReturnValue({
     bind: jest.fn(),
   });
-  SelectedNetworkController.getProviderAndBlockTracker.mockReturnValue({
+  asMock(SelectedNetworkController.getProviderAndBlockTracker).mockReturnValue({
     provider: {},
   });
-  PermissionController.updateCaveat.mockReturnValue(jest.fn());
+  asMock(PermissionController.updateCaveat).mockReturnValue(jest.fn());
 
   const defaultBridgeParams = getDefaultBridgeParams({
     originatorInfo: {
@@ -117,7 +117,7 @@ describe('BackgroundBridge', () => {
       const origin = new URL(url).hostname;
       const bridge = setupBackgroundBridge(url);
       const eip1193MethodMiddlewareHooks =
-        createEip1193MethodMiddleware.mock.calls[0][0];
+        asMock(createEip1193MethodMiddleware).mock.calls[0][0];
 
       // Assert getAccounts
       eip1193MethodMiddlewareHooks.getAccounts();
@@ -165,13 +165,13 @@ describe('BackgroundBridge', () => {
 
       // Assert getUnlockPromise
       // when already unlocked
-      KeyringController.isUnlocked.mockReturnValueOnce(true);
+      asMock(KeyringController.isUnlocked).mockReturnValueOnce(true);
       const unlockPromise1 = eip1193MethodMiddlewareHooks.getUnlockPromise();
       await expect(unlockPromise1).resolves.toBeUndefined();
       expect(KeyringController.isUnlocked).toHaveBeenCalled();
 
       // when needs to be unlocked
-      KeyringController.isUnlocked.mockReturnValueOnce(false);
+      asMock(KeyringController.isUnlocked).mockReturnValueOnce(false);
       eip1193MethodMiddlewareHooks.getUnlockPromise();
       expect(Engine.controllerMessenger.subscribeOnceIf).toHaveBeenCalledWith(
         'KeyringController:unlock',
@@ -184,7 +184,7 @@ describe('BackgroundBridge', () => {
       const url = 'https:www.mock.io';
       const bridge = setupBackgroundBridge(url);
       const ethAccountsMethodMiddlewareHooks =
-        createEthAccountsMethodMiddleware.mock.calls[0][0];
+        asMock(createEthAccountsMethodMiddleware).mock.calls[0][0];
 
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();

@@ -4,14 +4,18 @@ import Device from '../util/device';
 const EXPIRE_TIME_MS = 60000;
 
 const ClipboardManager = {
-  async getString() {
+  async getString(): Promise<string> {
     return await Clipboard.getString();
   },
-  async setString(string) {
-    await Clipboard.setString(string);
+  /**
+   * Callers copy values held in optional model fields, so `null` is forwarded
+   * to the native module unchanged.
+   */
+  async setString(string: string | null): Promise<void> {
+    await Clipboard.setString(string as string);
   },
-  expireTime: null,
-  async setStringExpire(string) {
+  expireTime: null as ReturnType<typeof setTimeout> | null,
+  async setStringExpire(string: string): Promise<void> {
     if (Device.isIos()) {
       await Clipboard.setStringExpire(string);
     } else {
@@ -20,9 +24,9 @@ const ClipboardManager = {
         clearTimeout(this.expireTime);
       }
       this.expireTime = setTimeout(async () => {
-        const string = await this.getString();
+        const clipboardString = await this.getString();
 
-        if (!string) return;
+        if (!clipboardString) return;
 
         await Clipboard.clearString();
       }, EXPIRE_TIME_MS);
