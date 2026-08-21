@@ -1,6 +1,13 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import {
+  Animated,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextStyle,
+  View,
+  ViewStyle,
+} from 'react-native';
 import {
   colors as importedColors,
   fontStyles,
@@ -15,7 +22,7 @@ import {
   IconName,
   IconColor,
 } from '../../../../component-library/components/Icons/Icon';
-import { typography } from '@metamask/design-tokens';
+import { Theme, typography } from '@metamask/design-tokens';
 import {
   ButtonSize,
   ButtonVariants,
@@ -28,7 +35,7 @@ import {
   TextVariant,
 } from '../../../../component-library/components/Texts/Text';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     coachmark: {
       backgroundColor: colors.primary.default,
@@ -164,7 +171,10 @@ const createStyles = (colors) =>
       alignSelf: 'center',
     },
     stepCounter: {
-      ...typography.BodyMD,
+      // `BodyMD` is not part of the design tokens typography scale, so this
+      // spread is a no-op; it is kept as-is to preserve the rendered style.
+      ...(typography as unknown as Record<string, TextStyle | undefined>)
+        .BodyMD,
       fontFamily: getFontFamily(TextVariant.BodyMD),
       color: colors.info.inverse,
     },
@@ -175,68 +185,81 @@ const createStyles = (colors) =>
     },
   });
 
-export default class Coachmark extends PureComponent {
-  static propTypes = {
-    /**
-     * Custom coachmark style to apply
-     */
-    coachmarkStyle: PropTypes.object,
-    /**
-     * Custom animated view style to apply
-     */
-    style: PropTypes.object,
-    /**
-     * Content object
-     */
-    content: PropTypes.object,
-    /**
-     * Title text
-     */
-    title: PropTypes.string,
-    /**
-     * Current onboarding wizard step
-     */
-    currentStep: PropTypes.number,
-    /**
-     * Callback to be called when next is pressed
-     */
-    onNext: PropTypes.func,
-    /**
-     * Callback to be called when back is pressed
-     */
-    onBack: PropTypes.func,
-    /**
-     * Whether action buttons have to be rendered
-     */
-    action: PropTypes.bool,
-    /**
-     * Top indicator position
-     */
-    topIndicatorPosition: PropTypes.oneOf([
-      false,
-      'topCenter',
-      'topLeft',
-      'topLeftCorner',
-      'topRight',
-      'topRightCorner',
-    ]),
-    /**
-     * Bottom indicator position
-     */
-    bottomIndicatorPosition: PropTypes.oneOf([
-      false,
-      'bottomCenter',
-      'bottomLeft',
-      'bottomLeftCorner',
-      'bottomRight',
-    ]),
-    /**
-     * Callback called when closing on boarding wizard
-     */
-    onClose: PropTypes.func,
-  };
+type TopIndicatorPosition =
+  | 'topCenter'
+  | 'topLeft'
+  | 'topLeftCorner'
+  | 'topRight'
+  | 'topRightCorner';
 
-  state = {
+type BottomIndicatorPosition =
+  | 'bottomCenter'
+  | 'bottomLeft'
+  | 'bottomLeftCorner'
+  | 'bottomRight';
+
+/**
+ * Coachmark ignores any argument its callbacks are invoked with, and the
+ * onboarding wizard steps declare them with differing signatures.
+ */
+type CoachmarkCallback = (...args: never[]) => void | Promise<void>;
+
+interface CoachmarkProps {
+  /**
+   * Custom coachmark style to apply
+   */
+  coachmarkStyle?: StyleProp<ViewStyle>;
+  /**
+   * Custom animated view style to apply
+   */
+  style?: StyleProp<ViewStyle>;
+  /**
+   * Content object
+   */
+  content?: React.ReactNode;
+  /**
+   * Title text
+   */
+  title?: string;
+  /**
+   * Current onboarding wizard step
+   */
+  currentStep?: number;
+  /**
+   * Callback to be called when next is pressed
+   */
+  onNext?: CoachmarkCallback;
+  /**
+   * Callback to be called when back is pressed
+   */
+  onBack?: CoachmarkCallback;
+  /**
+   * Whether action buttons have to be rendered
+   */
+  action?: boolean;
+  /**
+   * Top indicator position
+   */
+  topIndicatorPosition?: TopIndicatorPosition | false;
+  /**
+   * Bottom indicator position
+   */
+  bottomIndicatorPosition?: BottomIndicatorPosition | false;
+  /**
+   * Callback called when closing on boarding wizard
+   */
+  onClose?: CoachmarkCallback;
+}
+
+interface CoachmarkState {
+  ready: boolean;
+}
+
+export default class Coachmark extends PureComponent<
+  CoachmarkProps,
+  CoachmarkState
+> {
+  state: CoachmarkState = {
     ready: false,
   };
 
@@ -277,53 +300,56 @@ export default class Coachmark extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
   /**
    * Gets top indicator style according to 'topIndicatorPosition'
    *
-   * @param {string} topIndicatorPosition - Indicator position
-   * @returns {Object} - Corresponding style object
+   * @param topIndicatorPosition - Indicator position
+   * @returns - Corresponding style object
    */
-  getIndicatorStyle = (topIndicatorPosition) => {
+  getIndicatorStyle = (topIndicatorPosition?: TopIndicatorPosition | false) => {
     const styles = this.getStyles();
 
-    const positions = {
+    const positions: Record<string, StyleProp<ViewStyle>> = {
       topCenter: styles.topCenter,
       topLeft: styles.topLeft,
       topRight: styles.topRight,
       topLeftCorner: styles.topLeftCorner,
       topRightCorner: styles.topRightCorner,
-      [undefined]: styles.topCenter,
+      undefined: styles.topCenter,
     };
-    return positions[topIndicatorPosition];
+    return positions[String(topIndicatorPosition)];
   };
 
   /**
    * Gets top indicator style according to 'bottomIndicatorPosition'
    *
-   * @param {string} bottomIndicatorPosition - Indicator position
-   * @returns {Object} - Corresponding style object
+   * @param bottomIndicatorPosition - Indicator position
+   * @returns - Corresponding style object
    */
-  getBotttomIndicatorStyle = (bottomIndicatorPosition) => {
+  getBotttomIndicatorStyle = (
+    bottomIndicatorPosition?: BottomIndicatorPosition | false,
+  ) => {
     const styles = this.getStyles();
 
-    const positions = {
+    const positions: Record<string, StyleProp<ViewStyle>> = {
       bottomCenter: styles.bottomCenter,
       bottomLeft: styles.bottomLeft,
       bottomLeftCorner: styles.bottomLeftCorner,
       bottomRight: styles.bottomRight,
-      [undefined]: styles.bottomCenter,
+      undefined: styles.bottomCenter,
     };
-    return positions[bottomIndicatorPosition];
+    return positions[String(bottomIndicatorPosition)];
   };
 
   /**
    * Returns progress bar, back and next buttons. According to currentStep
    *
-   * @returns {Object} - Corresponding view object
+   * @returns - Corresponding view object
    */
   renderProgressButtons = () => {
     const { currentStep } = this.props;
@@ -351,7 +377,7 @@ export default class Coachmark extends PureComponent {
   /**
    * Returns horizontal action buttons
    *
-   * @returns {Object} - Corresponding view object
+   * @returns - Corresponding view object
    */
   renderActionButtons = () => {
     const styles = this.getStyles();
@@ -419,7 +445,7 @@ export default class Coachmark extends PureComponent {
             <ButtonIcon
               iconName={IconName.Close}
               size={ButtonIconSizes.Sm}
-              onPress={onClose}
+              onPress={onClose as (() => void) | undefined}
               iconColor={IconColor.Inverse}
             />
           </View>

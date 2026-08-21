@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { ComponentType, PureComponent } from 'react';
 import {
   SafeAreaView,
   TextInput,
@@ -8,14 +8,24 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   InteractionManager,
+  NativeSyntheticEvent,
+  TextInputSubmitEditingEventData,
+  DimensionValue,
 } from 'react-native';
+import { Hex } from '@metamask/utils';
+import BN4 from 'bnjs4';
+import {
+  isTokenDetectionSupportedForNetwork,
+  MarketDataDetails,
+  Token,
+  TokenListToken,
+} from '@metamask/assets-controllers';
 import { connect } from 'react-redux';
 import { fontStyles, baseStyles } from '../../../styles/common';
 import { getPaymentRequestOptionsTitle } from '../../UI/Navbar';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import Fuse from 'fuse.js';
 import AssetList from './AssetList';
-import PropTypes from 'prop-types';
 import {
   weiToFiat,
   toWei,
@@ -45,8 +55,8 @@ import { getTicker } from '../../../util/transactions';
 import { toLowerCaseEquals } from '../../../util/general';
 import { utils as ethersUtils } from 'ethers';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import { isTestNet } from '../../../util/networks';
-import { isTokenDetectionSupportedForNetwork } from '@metamask/assets-controllers';
 import {
   selectChainId,
   selectEvmTicker,
@@ -61,9 +71,10 @@ import { selectContractExchangeRates } from '../../../selectors/tokenRatesContro
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
 
 import { RequestPaymentViewSelectors } from '../../../../e2e/selectors/Receive/RequestPaymentView.selectors';
+import { RootState } from '../../../reducers';
 
 const KEYBOARD_OFFSET = 120;
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -220,7 +231,22 @@ const createStyles = (colors) =>
     },
   });
 
-const fuse = new Fuse([], {
+/**
+ * Asset shape shared by the token list, the user's tokens and the hardcoded
+ * defaults below. Every field is optional because each source provides a
+ * different subset.
+ */
+interface PaymentRequestAsset {
+  address?: string;
+  decimals?: number;
+  erc20?: boolean;
+  logo?: string;
+  name?: string;
+  symbol?: string;
+  isETH?: boolean;
+}
+
+const fuse = new Fuse<PaymentRequestAsset>([], {
   shouldSort: true,
   threshold: 0.45,
   location: 0,
@@ -233,12 +259,12 @@ const fuse = new Fuse([], {
   ],
 });
 
-const defaultEth = {
+const defaultEth: PaymentRequestAsset = {
   symbol: 'ETH',
   name: 'Ether',
   isETH: true,
 };
-const defaultAssets = [
+const defaultAssets: PaymentRequestAsset[] = [
   defaultEth,
   {
     address: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
@@ -253,61 +279,144 @@ const defaultAssets = [
 const MODE_SELECT = 'select';
 const MODE_AMOUNT = 'amount';
 
+type PaymentRequestMode = typeof MODE_SELECT | typeof MODE_AMOUNT;
+
+/**
+ * `AssetList` declares only the props it consumes; the extra props forwarded
+ * here are ignored at runtime, so widen its type locally instead of changing it.
+ */
+const AssetListView = AssetList as ComponentType<{
+  searchResults: PaymentRequestAsset[];
+  handleSelectAsset: (asset: PaymentRequestAsset) => void;
+  selectedAsset?: PaymentRequestAsset;
+  searchQuery?: string;
+  emptyMessage?: string;
+}>;
+
+/**
+ * Only the navigation methods this view uses, so that callers (including the
+ * tests) can supply a partial navigator.
+ */
+interface PaymentRequestNavigation {
+  setOptions: (options: object) => void;
+  setParams: (params: Record<string, unknown>) => void;
+  replace?: (name: string, params?: Record<string, unknown>) => void;
+}
+
+interface PaymentRequestProps {
+  /**
+   * Object that represents the navigator
+   */
+  navigation: PaymentRequestNavigation;
+  /**
+   * ETH-to-current currency conversion rate from CurrencyRateController
+   */
+  conversionRate?: number | null;
+  /**
+   * Currency code for currently-selected currency from CurrencyRateController
+   */
+  currentCurrency: string;
+  /**
+   * Object containing token exchange rates in the format address => exchangeRate
+   */
+  contractExchangeRates?: Record<Hex, MarketDataDetails>;
+  /**
+   * Primary currency, either ETH or Fiat
+   */
+  primaryCurrency: string;
+  /**
+   * A string that represents the selected address
+   */
+  selectedAddress?: string;
+  /**
+   * Array of ERC20 assets
+   */
+  tokens: Token[];
+  /**
+   * A string representing the chainId
+   */
+  chainId: string;
+  /**
+   * Current provider ticker
+   */
+  ticker?: string;
+  /**
+   * List of tokens from TokenListController (Formatted into array)
+   */
+  tokenList: TokenListToken[];
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route?: {
+    params?: {
+      receiveAsset?: PaymentRequestAsset;
+      [key: string]: unknown;
+    };
+  };
+}
+
+interface PaymentRequestState {
+  searchInputValue: string;
+  results: PaymentRequestAsset[];
+  selectedAsset?: PaymentRequestAsset;
+  mode: PaymentRequestMode;
+  internalPrimaryCurrency: string;
+  cryptoAmount?: string;
+  amount?: string;
+  secondaryAmount?: string;
+  symbol?: string;
+  showError: boolean;
+  inputWidth: { width: DimensionValue };
+  /**
+   * Never set; read by `renderEnterAmount` to decide the ticker style.
+   */
+  chainId?: string;
+}
+
+/**
+ * The amount screen is only reachable once an asset has been selected, and the
+ * ERC-20 branches are only reached for tokens, which always carry an address
+ * and decimals.
+ */
+type SelectedAsset = PaymentRequestAsset & {
+  symbol: string;
+  address: string;
+  decimals: number;
+};
+
+interface AmountResult {
+  symbol?: string;
+  secondaryAmount?: string;
+  cryptoAmount?: string;
+}
+
+/**
+ * `app/util/number` is untyped JavaScript and its JSDoc describes the BN
+ * results below as `Object`; re-declare the signatures actually used here.
+ */
+const fiatToTokenMinimalUnit = fiatNumberToTokenMinimalUnit as unknown as (
+  fiat: string | number,
+  conversionRate: number,
+  exchangeRate: number,
+  decimals: number,
+) => BN4;
+
+const fiatToWei = fiatNumberToWei as unknown as (
+  fiat: string | number,
+  conversionRate: number,
+) => BN4;
+
 /**
  * View to generate a payment request link
  */
-class PaymentRequest extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * ETH-to-current currency conversion rate from CurrencyRateController
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code for currently-selected currency from CurrencyRateController
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Primary currency, either ETH or Fiat
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * A string representing the chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * List of tokens from TokenListController (Formatted into array)
-     */
-    tokenList: PropTypes.array,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+class PaymentRequest extends PureComponent<
+  PaymentRequestProps,
+  PaymentRequestState
+> {
+  amountInput = React.createRef<TextInput>();
+  searchInput = React.createRef<TextInput>();
 
-  amountInput = React.createRef();
-  searchInput = React.createRef();
-
-  state = {
+  state: PaymentRequestState = {
     searchInputValue: '',
     results: [],
     selectedAsset: undefined,
@@ -323,7 +432,8 @@ class PaymentRequest extends PureComponent {
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     navigation.setOptions(
       getPaymentRequestOptionsTitle(
         strings('payment_request.title'),
@@ -381,7 +491,7 @@ class PaymentRequest extends PureComponent {
    *
    * @param {object} selectedAsset - Asset selected to build the payment request
    */
-  goToAmountInput = async (selectedAsset) => {
+  goToAmountInput = async (selectedAsset: PaymentRequestAsset) => {
     const { navigation } = this.props;
     navigation &&
       navigation.setParams({
@@ -397,11 +507,14 @@ class PaymentRequest extends PureComponent {
    *
    * @param {string} searchInputValue - String containing assets query
    */
-  handleSearch = (searchInputValue) => {
+  handleSearch = (
+    searchInput: string | NativeSyntheticEvent<TextInputSubmitEditingEventData>,
+  ) => {
     const { tokenList } = this.props;
-    if (typeof searchInputValue !== 'string') {
-      searchInputValue = this.state.searchInputValue;
-    }
+    const searchInputValue =
+      typeof searchInput === 'string'
+        ? searchInput
+        : this.state.searchInputValue;
 
     const fuseSearchResult = fuse.search(searchInputValue);
     const addressSearchResult = tokenList.filter((token) =>
@@ -424,12 +537,14 @@ class PaymentRequest extends PureComponent {
   renderSelectAssets = () => {
     const { tokens, chainId, ticker, tokenList } = this.props;
     const { inputWidth } = this.state;
-    let results;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    let results: PaymentRequestAsset[];
+    const theme = (this.context as Theme) || mockTheme;
+    const colors = theme.colors || mockTheme.colors;
+    const themeAppearance = theme.themeAppearance || 'light';
     const styles = createStyles(colors);
-    const isTDSupportedForNetwork =
-      isTokenDetectionSupportedForNetwork(chainId);
+    const isTDSupportedForNetwork = isTokenDetectionSupportedForNetwork(
+      chainId as Hex,
+    );
 
     if (isTDSupportedForNetwork) {
       const defaults =
@@ -439,7 +554,7 @@ class PaymentRequest extends PureComponent {
       results = this.state.searchInputValue ? this.state.results : defaults;
     } else if (
       //Check to see if it is not a test net ticker symbol
-      Object.values(ChainId).find((value) => value === chainId) &&
+      Object.values(ChainId).find((value: string) => value === chainId) &&
       !(parseInt(chainId, 10) > 1 && parseInt(chainId, 10) < 6)
     ) {
       results = [defaultEth];
@@ -510,7 +625,7 @@ class PaymentRequest extends PureComponent {
               ? strings('payment_request.search_results')
               : strings('payment_request.search_top_picks')}
           </Text>
-          <AssetList
+          <AssetListView
             searchResults={results}
             handleSelectAsset={this.goToAmountInput}
             selectedAsset={this.state.selectedAsset}
@@ -523,7 +638,7 @@ class PaymentRequest extends PureComponent {
             <Text style={styles.assetsTitle}>
               {strings('payment_request.your_tokens')}
             </Text>
-            <AssetList
+            <AssetListView
               searchResults={userTokens}
               handleSelectAsset={this.goToAmountInput}
               selectedAsset={this.state.selectedAsset}
@@ -541,19 +656,23 @@ class PaymentRequest extends PureComponent {
    * @param {string} amount - String containing amount number from input, as token value
    * @returns {object} - Object containing respective symbol, secondaryAmount and cryptoAmount according to amount and selectedAsset
    */
-  handleETHPrimaryCurrency = (amount) => {
+  handleETHPrimaryCurrency = (amount?: string): AmountResult => {
     const { conversionRate, currentCurrency, contractExchangeRates } =
       this.props;
-    const { selectedAsset } = this.state;
+    const selectedAsset = this.state.selectedAsset as SelectedAsset;
     let secondaryAmount;
     const symbol = selectedAsset.symbol;
     const undefAmount =
-      isDecimal(amount) && !ethersUtils.isHexString(amount) ? amount : 0;
+      amount !== undefined &&
+      isDecimal(amount) &&
+      !ethersUtils.isHexString(amount)
+        ? amount
+        : 0;
     const cryptoAmount = amount;
     const exchangeRate =
       selectedAsset &&
       selectedAsset.address &&
-      contractExchangeRates?.[selectedAsset.address]?.price;
+      contractExchangeRates?.[selectedAsset.address as Hex]?.price;
     if (selectedAsset.symbol !== 'ETH') {
       secondaryAmount = exchangeRate
         ? balanceToFiat(
@@ -579,22 +698,21 @@ class PaymentRequest extends PureComponent {
    * @param {string} amount - String containing amount number from input, as fiat value
    * @returns {object} - Object containing respective symbol, secondaryAmount and cryptoAmount according to amount and selectedAsset
    */
-  handleFiatPrimaryCurrency = (amount) => {
+  handleFiatPrimaryCurrency = (amount?: string): AmountResult => {
     const { conversionRate, currentCurrency, contractExchangeRates } =
       this.props;
-    const { selectedAsset } = this.state;
+    const selectedAsset = this.state.selectedAsset as SelectedAsset;
     const symbol = currentCurrency;
     const exchangeRate =
-      selectedAsset &&
-      selectedAsset.address &&
-      contractExchangeRates &&
-      contractExchangeRates[selectedAsset.address]?.price;
-    const undefAmount = (isDecimal(amount) && amount) || 0;
+      selectedAsset?.address &&
+      contractExchangeRates?.[selectedAsset.address as Hex]?.price;
+    const undefAmount =
+      (amount !== undefined && isDecimal(amount) && amount) || 0;
     let secondaryAmount, cryptoAmount;
     if (selectedAsset.symbol !== 'ETH' && exchangeRate && exchangeRate !== 0) {
-      const secondaryMinimalUnit = fiatNumberToTokenMinimalUnit(
+      const secondaryMinimalUnit = fiatToTokenMinimalUnit(
         undefAmount,
-        conversionRate,
+        conversionRate as number,
         exchangeRate,
         selectedAsset.decimals,
       );
@@ -611,10 +729,10 @@ class PaymentRequest extends PureComponent {
       );
     } else {
       secondaryAmount =
-        renderFromWei(fiatNumberToWei(undefAmount, conversionRate)) +
+        renderFromWei(fiatToWei(undefAmount, conversionRate as number)) +
         ' ' +
         strings('unit.eth');
-      cryptoAmount = fromWei(fiatNumberToWei(undefAmount, conversionRate));
+      cryptoAmount = fromWei(fiatToWei(undefAmount, conversionRate as number));
     }
     return { symbol, secondaryAmount, cryptoAmount };
   };
@@ -624,17 +742,18 @@ class PaymentRequest extends PureComponent {
    *
    * @param {string} amount - String containing amount number from input
    */
-  updateAmount = (amount) => {
-    const { internalPrimaryCurrency, selectedAsset } = this.state;
+  updateAmount = (amount?: string) => {
+    const { internalPrimaryCurrency } = this.state;
+    const selectedAsset = this.state.selectedAsset as SelectedAsset;
     const { conversionRate, contractExchangeRates, currentCurrency } =
       this.props;
-    const currencySymbol = currencySymbols[currentCurrency];
+    const currencySymbol = (currencySymbols as Record<string, string>)[
+      currentCurrency
+    ];
     const exchangeRate =
-      selectedAsset &&
-      selectedAsset.address &&
-      contractExchangeRates &&
-      contractExchangeRates[selectedAsset.address]?.price;
-    let res;
+      selectedAsset?.address &&
+      contractExchangeRates?.[selectedAsset.address as Hex]?.price;
+    let res: AmountResult;
     // If primary currency is not crypo we need to know if there are conversion and exchange rates to handle0,
     // fiat conversion for the payment request
     if (
@@ -670,9 +789,11 @@ class PaymentRequest extends PureComponent {
       Fiat: 'ETH',
     };
     await this.setState({
-      internalPrimaryCurrency: primarycurrencies[internalPrimaryCurrency],
+      internalPrimaryCurrency: (primarycurrencies as Record<string, string>)[
+        internalPrimaryCurrency
+      ],
     });
-    this.updateAmount(secondaryAmount.split(' ')[0]);
+    this.updateAmount(secondaryAmount?.split(' ')[0]);
   };
 
   /**
@@ -688,21 +809,26 @@ class PaymentRequest extends PureComponent {
    */
   onNext = () => {
     const { selectedAddress, navigation, chainId } = this.props;
-    const { cryptoAmount, selectedAsset } = this.state;
+    const { cryptoAmount } = this.state;
+    const selectedAsset = this.state.selectedAsset as SelectedAsset;
 
     try {
       if (cryptoAmount && cryptoAmount > '0') {
         let eth_link;
         if (selectedAsset.isETH) {
           const amount = toWei(cryptoAmount).toString();
-          eth_link = generateETHLink(selectedAddress, amount, chainId);
+          eth_link = generateETHLink(
+            selectedAddress as string,
+            amount,
+            chainId,
+          );
         } else {
           const amount = toTokenMinimalUnit(
             cryptoAmount,
             selectedAsset.decimals,
           ).toString();
           eth_link = generateERC20Link(
-            selectedAddress,
+            selectedAddress as string,
             selectedAsset.address,
             amount,
             chainId,
@@ -713,7 +839,7 @@ class PaymentRequest extends PureComponent {
         const link = generateUniversalLinkRequest(eth_link);
 
         navigation &&
-          navigation.replace('PaymentRequestSuccess', {
+          navigation.replace?.('PaymentRequestSuccess', {
             link,
             qrLink: eth_link,
             amount: cryptoAmount,
@@ -739,19 +865,20 @@ class PaymentRequest extends PureComponent {
       symbol,
       cryptoAmount,
       showError,
-      selectedAsset,
       internalPrimaryCurrency,
       chainId,
     } = this.state;
-    const currencySymbol = currencySymbols[currentCurrency];
+    const selectedAsset = this.state.selectedAsset as SelectedAsset;
+    const currencySymbol = (currencySymbols as Record<string, string>)[
+      currentCurrency
+    ];
     const exchangeRate =
-      selectedAsset &&
-      selectedAsset.address &&
-      contractExchangeRates &&
-      contractExchangeRates[selectedAsset.address]?.price;
+      selectedAsset?.address &&
+      contractExchangeRates?.[selectedAsset.address as Hex]?.price;
     let switchable = true;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const theme = (this.context as Theme) || mockTheme;
+    const colors = theme.colors || mockTheme.colors;
+    const themeAppearance = theme.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     if (!conversionRate) {
@@ -796,7 +923,11 @@ class PaymentRequest extends PureComponent {
                     keyboardAppearance={themeAppearance}
                   />
                   <Text
-                    style={isTestNet(chainId) ? styles.testNetEth : styles.eth}
+                    style={
+                      isTestNet(chainId as string)
+                        ? styles.testNetEth
+                        : styles.eth
+                    }
                     numberOfLines={1}
                   >
                     {symbol}
@@ -870,7 +1001,8 @@ class PaymentRequest extends PureComponent {
 
   render() {
     const { mode } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -890,7 +1022,7 @@ class PaymentRequest extends PureComponent {
 
 PaymentRequest.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   contractExchangeRates: selectContractExchangeRates(state),

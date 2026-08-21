@@ -1,3 +1,6 @@
+// @ts-expect-error - './StyledButton' has no file of its own; the bundler
+// resolves this directory to the platform specific `index.ios` /
+// `index.android` implementations before it ever loads this file
 import StyledButton from './StyledButton'; // eslint-disable-line import/no-unresolved
 /**
  * @deprecated The `<StyledButton>` component has been deprecated in favor of the new `<Button>` component from the component-library.
