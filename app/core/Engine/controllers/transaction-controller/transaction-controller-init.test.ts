@@ -9,7 +9,10 @@ import {
 import { SmartTransactionStatuses } from '@metamask/smart-transactions-controller/dist/types';
 import { NetworkController } from '@metamask/network-controller';
 
-import { selectSwapsChainFeatureFlags } from '../../../../reducers/swaps';
+import {
+  selectSwapsChainFeatureFlags,
+  type SwapsChainFeatureFlags,
+} from '../../../../reducers/swaps';
 import { selectShouldUseSmartTransaction } from '../../../../selectors/smartTransactionsController';
 import { getGlobalChainId } from '../../../../util/networks/global-network';
 import { submitSmartTransactionHook } from '../../../../util/smart-transactions/smart-publish-hook';
@@ -145,7 +148,9 @@ describe('Transaction Controller Init', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     selectShouldUseSmartTransactionMock.mockReturnValue(true);
-    selectSwapsChainFeatureFlagsMock.mockReturnValue({});
+    selectSwapsChainFeatureFlagsMock.mockReturnValue(
+      {} as SwapsChainFeatureFlags,
+    );
     getGlobalChainIdMock.mockReturnValue('0x1');
   });
 
