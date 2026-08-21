@@ -396,7 +396,7 @@ class TransactionReview extends PureComponent<
         ...transactionMetadata,
         transaction,
         txParams: undefined,
-      },
+      } as unknown as Parameters<typeof getTransactionReviewActionKey>[0],
       chainId as string,
     );
 
@@ -409,7 +409,7 @@ class TransactionReview extends PureComponent<
       }
       const symbol = contract?.symbol || 'ERC20';
       assetAmount = `${
-        decodeTransferData('transfer', data as string)[1]
+        (decodeTransferData('transfer', data as string) as string[])[1]
       } ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();
@@ -796,16 +796,21 @@ class TransactionReview extends PureComponent<
 }
 
 const mapStateToProps = (state: RootState) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = getNormalizedTxState(state) as
+    | LegacyTransactionState
+    | undefined;
   const chainId = transaction?.chainId;
   const transactionMetadata = selectCurrentTransactionMetadata(state);
   const networkClientId = transactionMetadata?.networkClientId;
 
   return {
     tokens: selectTokens(state),
-    conversionRate: selectConversionRateByChainId(state, chainId),
+    conversionRate: selectConversionRateByChainId(state, chainId as Hex),
     currentCurrency: selectCurrentCurrency(state),
-    contractExchangeRates: selectContractExchangeRatesByChainId(state, chainId),
+    contractExchangeRates: selectContractExchangeRatesByChainId(
+      state,
+      chainId as Hex,
+    ),
     ticker: selectNativeCurrencyByChainId(state, chainId),
     chainId,
     showHexData: state.settings.showHexData,

@@ -659,7 +659,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         suggestedMaxPriorityFeePerGasHex,
       } as unknown as Parameters<typeof calculateEIP1559GasFeeHexes>[0]);
       this.setState({
-        estimatedTotalGas: hexToBN(gasHexes.gasFeeMaxHex),
+        estimatedTotalGas: hexToBN(gasHexes.gasFeeMaxHex as string),
       });
     } else if (gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
       const gasPrice = hexToBN(
@@ -775,7 +775,9 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       value = (inputValue as string).replace(',', '.');
     }
 
-    value = formatValueToMatchTokenDecimals(value, selectedAsset.decimals);
+    value =
+      formatValueToMatchTokenDecimals(value, selectedAsset.decimals) ??
+      undefined;
     if (
       !selectedAsset.tokenId &&
       this.validateAmount(value, internalPrimaryCurrencyIsCrypto)
@@ -1144,7 +1146,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
             conversionRate,
             exchangeRate as number,
             selectedAsset.decimals as number,
-          ) as string,
+          ),
           selectedAsset.decimals as number,
         )}`;
         renderableInputValueConversion = `${inputValueConversion} ${selectedAsset.symbol}`;
@@ -1743,7 +1745,11 @@ const mapStateToProps = (
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   prepareTransaction: (transaction: LegacyTransactionParams) =>
-    dispatch(prepareTransactionAction(transaction)),
+    dispatch(
+      prepareTransactionAction(
+        transaction as unknown as Parameters<typeof prepareTransactionAction>[0],
+      ),
+    ),
   setSelectedAsset: (selectedAsset: LegacySelectedAsset) =>
     dispatch(setSelectedAssetAction(selectedAsset)),
   resetTransaction: () => dispatch(resetTransactionAction()),

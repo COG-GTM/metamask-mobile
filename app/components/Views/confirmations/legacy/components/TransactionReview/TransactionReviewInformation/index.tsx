@@ -14,6 +14,7 @@ import {
 import { fontStyles } from '../../../../../../../styles/common';
 import { connect } from 'react-redux';
 import {
+  type AnyBN,
   isBN,
   weiToFiat,
   weiToFiatNumber,
@@ -467,7 +468,7 @@ class TransactionReviewInformation extends PureComponent<
           totalMaxNative,
           totalMaxConversion,
         } = calculateAmountsEIP1559({
-          value: value && BNToHex(value),
+          value: value && BNToHex(value as unknown as AnyBN),
           nativeCurrency: ticker,
           currentCurrency,
           conversionRate,
@@ -483,8 +484,8 @@ class TransactionReviewInformation extends PureComponent<
           renderableTotalMaxNative,
           renderableTotalMaxConversion,
         ] = calculateEthEIP1559({
-          nativeCurrency: ticker,
-          currentCurrency,
+          nativeCurrency: ticker as string,
+          currentCurrency: currentCurrency as string,
           totalMinNative,
           totalMinConversion,
           totalMaxNative,
@@ -529,14 +530,14 @@ class TransactionReviewInformation extends PureComponent<
           renderableTotalMaxNative,
           renderableTotalMaxConversion,
         ] = calculateERC20EIP1559({
-          currentCurrency,
-          nativeCurrency: ticker,
-          conversionRate,
+          currentCurrency: currentCurrency as string,
+          nativeCurrency: ticker as string,
+          conversionRate: conversionRate as number,
           exchangeRate,
           tokenAmount,
           totalMinConversion,
           totalMaxConversion,
-          symbol,
+          symbol: symbol as string,
           totalMinNative,
           totalMaxNative,
         });
@@ -570,8 +571,8 @@ class TransactionReviewInformation extends PureComponent<
           renderableTotalMaxNative,
           renderableTotalMaxConversion,
         ] = calculateEthEIP1559({
-          nativeCurrency: ticker,
-          currentCurrency,
+          nativeCurrency: ticker as string,
+          currentCurrency: currentCurrency as string,
           totalMinNative,
           totalMinConversion,
           totalMaxNative,
@@ -699,7 +700,7 @@ class TransactionReviewInformation extends PureComponent<
     )}`;
     const [totalFiat, totalValue] = this.getRenderTotals(
       totalGas,
-      totalGasFiat,
+      totalGasFiat as string,
     )();
     return (
       <TransactionReviewEIP1559
@@ -817,22 +818,27 @@ class TransactionReviewInformation extends PureComponent<
 }
 
 const mapStateToProps = (state: RootState) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = getNormalizedTxState(state) as
+    | LegacyTransactionState
+    | undefined;
   const chainId = transaction?.chainId;
   const networkClientId = transaction?.networkClientId;
 
   return {
     chainId,
     networkClientId,
-    conversionRate: selectConversionRateByChainId(state, chainId),
+    conversionRate: selectConversionRateByChainId(state, chainId as Hex),
     currentCurrency: selectCurrentCurrency(state),
-    contractExchangeRates: selectContractExchangeRatesByChainId(state, chainId),
+    contractExchangeRates: selectContractExchangeRatesByChainId(
+      state,
+      chainId as Hex,
+    ),
     transaction,
     ticker: selectNativeCurrencyByChainId(state, chainId),
     primaryCurrency: state.settings.primaryCurrency,
     showCustomNonce: state.settings.showCustomNonce,
     isNativeTokenBuySupported: isNetworkRampNativeTokenSupported(
-      chainId,
+      chainId as string,
       getRampNetworks(state),
     ),
     shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),

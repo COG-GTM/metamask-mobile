@@ -638,7 +638,7 @@ class TransactionEditor extends PureComponent<
           return generateTransferData('transferFrom', {
             fromAddress: from,
             toAddress: to,
-            tokenId: toHexadecimal(selectedAsset.tokenId),
+            tokenId: toHexadecimal(selectedAsset.tokenId) ?? undefined,
           });
         } else if (
           collectibleTransferInformation.tradable &&
@@ -776,7 +776,7 @@ class TransactionEditor extends PureComponent<
     });
   };
 
-  saveGasEdition = (gasSelected: string | null) => {
+  saveGasEdition = (gasSelected?: string | null) => {
     const { gasEstimateType, setTransactionObject } = this.props;
     const { LegacyGasDataTemp } = this.state;
 
@@ -792,8 +792,8 @@ class TransactionEditor extends PureComponent<
       {
         LegacyGasData: { ...this.state.LegacyGasDataTemp },
         EIP1559GasData: { ...this.state.EIP1559GasDataTemp },
-        gasSelected,
-        gasSelectedTemp: gasSelected,
+        gasSelected: gasSelected ?? null,
+        gasSelectedTemp: gasSelected ?? null,
         advancedGasInserted: !gasSelected,
         stopUpdateGas: false,
         dappSuggestedGasPrice: null,
@@ -1023,9 +1023,13 @@ class TransactionEditor extends PureComponent<
             />
           ) : (
             <EditGasFee1559
-              selected={gasSelected}
+              selected={gasSelected ?? undefined}
               gasFee={EIP1559GasDataTemp}
-              gasOptions={gasFeeEstimates}
+              gasOptions={
+                gasFeeEstimates as unknown as ComponentProps<
+                  typeof EditGasFee1559Component
+                >['gasOptions']
+              }
               onChange={this.calculateTempGasFee}
               gasFeeNative={EIP1559GasDataTemp.renderableGasFeeMinNative}
               gasFeeConversion={
@@ -1066,13 +1070,15 @@ class TransactionEditor extends PureComponent<
               animateOnChange={animateOnChange}
               isAnimating={isAnimating}
               view={'Transaction'}
-              analyticsParams={getGasAnalyticsParams(
-                transaction as unknown as Parameters<
-                  typeof getGasAnalyticsParams
-                >[0],
-                '',
-                gasEstimateType,
-              )}
+              analyticsParams={
+                getGasAnalyticsParams(
+                  transaction as unknown as Parameters<
+                    typeof getGasAnalyticsParams
+                  >[0],
+                  '',
+                  gasEstimateType,
+                ) as JsonMap
+              }
             />
           ))}
       </React.Fragment>
@@ -1081,13 +1087,15 @@ class TransactionEditor extends PureComponent<
 }
 
 const mapStateToProps = (state: RootState) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = getNormalizedTxState(
+    state,
+  ) as unknown as LegacyTransactionState;
   const chainId = transaction?.chainId;
 
   return {
     accounts: selectAccounts(state),
     contractBalances: selectContractBalances(state),
-    networkType: selectProviderTypeByChainId(state, chainId),
+    networkType: selectProviderTypeByChainId(state, chainId as Hex),
     selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
     ticker: selectNativeCurrencyByChainId(state, chainId),
     transaction,

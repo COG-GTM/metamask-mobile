@@ -86,6 +86,8 @@ interface SendToRouteParams {
   txMeta?: {
     target_address?: string;
   };
+  providerType?: string;
+  isPaymentRequest?: boolean;
 }
 
 interface AlertConfig {
@@ -231,7 +233,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
         route,
         colors,
         resetTransactionState,
-        undefined,
+        undefined as unknown as Parameters<typeof getSendFlowTitle>[5],
       ),
     );
   };
@@ -484,7 +486,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
       toSelectedAddressName: toAddressName,
       errorContinue,
       isOnlyWarning,
-      confusableCollection,
+      confusableCollection: confusableCollection ?? [],
     });
   };
 

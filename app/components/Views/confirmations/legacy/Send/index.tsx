@@ -19,6 +19,7 @@ import Engine from '../../../../../core/Engine';
 import EditAmount from '../SendFlow/Amount';
 import ConfirmSend from '../SendFlow/Confirm';
 import {
+  type AnyBN,
   toBN,
   BNToHex,
   hexToBN,
@@ -122,6 +123,9 @@ interface DeeplinkTxMeta {
 
 interface SendRouteParams {
   txMeta?: DeeplinkTxMeta;
+  mode?: string;
+  disableModeChange?: boolean;
+  dispatch?: (mode: string) => void;
 }
 
 interface AlertConfig {
@@ -560,9 +564,9 @@ class Send extends PureComponent<SendProps, SendState> {
    */
   prepareTransaction = (transaction: LegacyTransactionState) => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
-    value: BNToHex(transaction.value),
+    gas: BNToHex(transaction.gas as unknown as AnyBN),
+    gasPrice: BNToHex(transaction.gasPrice as unknown as AnyBN),
+    value: BNToHex(transaction.value as unknown as AnyBN),
   });
 
   /**
@@ -577,8 +581,8 @@ class Send extends PureComponent<SendProps, SendState> {
     selectedAsset: LegacySelectedAsset,
   ) => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
+    gas: BNToHex(transaction.gas as unknown as AnyBN),
+    gasPrice: BNToHex(transaction.gasPrice as unknown as AnyBN),
     value: '0x0',
     to: selectedAsset.address,
   });
@@ -590,8 +594,8 @@ class Send extends PureComponent<SendProps, SendState> {
    */
   sanitizeTransaction = (transaction: LegacyTransactionState) => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
+    gas: BNToHex(transaction.gas as unknown as AnyBN),
+    gasPrice: BNToHex(transaction.gasPrice as unknown as AnyBN),
   });
 
   /**
@@ -698,7 +702,7 @@ class Send extends PureComponent<SendProps, SendState> {
             'transferFrom',
             transactionMetaParams.data as string,
           );
-          const addressTo = data[1];
+          const addressTo = data?.[1];
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);
           }
@@ -783,7 +787,9 @@ class Send extends PureComponent<SendProps, SendState> {
   trackEditScreen = async () => {
     const { transaction } = this.props;
     const actionKey = await getTransactionReviewActionKey(
-      { transaction },
+      { transaction } as unknown as Parameters<
+        typeof getTransactionReviewActionKey
+      >[0],
       undefined as unknown as string,
     );
     this.props.metrics.trackEvent(
@@ -943,7 +949,11 @@ const mapStateToProps = (state: RootState) => {
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   resetTransaction: () => dispatch(resetTransaction()),
   setTransactionObject: (transaction: NewTransactionMeta) =>
-    dispatch(setTransactionObject(transaction)),
+    dispatch(
+      setTransactionObject(
+        transaction as unknown as Parameters<typeof setTransactionObject>[0],
+      ),
+    ),
   showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
   toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal()),
 });

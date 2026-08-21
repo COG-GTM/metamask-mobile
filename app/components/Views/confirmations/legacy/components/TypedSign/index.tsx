@@ -27,6 +27,7 @@ import {
   shouldTruncateMessage,
   showWalletConnectNotification,
   typedSign,
+  type SignatureSecurityAlertResponse,
 } from '../../../../../../util/confirmation/signatureUtils';
 import { isExternalHardwareAccount } from '../../../../../../util/address';
 import createExternalSignModelNav from '../../../../../../util/hardwareWallet/signatureUtils';
@@ -162,7 +163,8 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
     removeSignatureErrorListener(metamaskId, this.onSignatureError);
   };
 
-  onSignatureError = ({ error }: { error?: Error }) => {
+  onSignatureError = (...args: unknown[]) => {
+    const { error } = (args[0] ?? {}) as { error?: Error };
     const { metrics } = this.props;
     if (error?.message.startsWith(KEYSTONE_TX_CANCELED)) {
       metrics.trackEvent(
@@ -182,7 +184,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
       onReject,
       messageParams,
       typedSign[messageParams.version as keyof typeof typedSign],
-      securityAlertResponse,
+      securityAlertResponse as unknown as SignatureSecurityAlertResponse,
       false,
     );
   };
@@ -200,7 +202,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
         onConfirm,
         messageParams,
         typedSign[messageParams.version as keyof typeof typedSign],
-        securityAlertResponse,
+        securityAlertResponse as unknown as SignatureSecurityAlertResponse,
         true,
       );
     } else {

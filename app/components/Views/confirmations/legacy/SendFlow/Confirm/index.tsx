@@ -52,7 +52,9 @@ import Engine from '../../../../../../core/Engine';
 import Logger from '../../../../../../util/Logger';
 import { WALLET_CONNECT_ORIGIN } from '../../../../../../util/walletconnect';
 import CustomNonceModal from '../components/CustomNonceModal';
-import NotificationManager from '../../../../../../core/NotificationManager';
+import NotificationManager, {
+  type WatchedTransaction,
+} from '../../../../../../core/NotificationManager';
 import { strings } from '../../../../../../../locales/i18n';
 import CollectibleMediaComponent from '../../../../../UI/CollectibleMedia';
 import Modal from 'react-native-modal';
@@ -70,7 +72,10 @@ import {
 } from '../../../../../../util/networks';
 import { fetchEstimatedMultiLayerL1Fee } from '../../../../../../util/networks/engineNetworkUtils';
 import Text from '../../../../../Base/Text';
-import { removeFavoriteCollectible as removeFavoriteCollectibleAction } from '../../../../../../actions/collectibles';
+import {
+  removeFavoriteCollectible as removeFavoriteCollectibleAction,
+  type FavoriteCollectible,
+} from '../../../../../../actions/collectibles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AccountFromToInfoCardComponent from '../../../../../UI/AccountFromToInfoCard';
 import TransactionReviewComponent from '../../components/TransactionReview/TransactionReviewEIP1559Update';
@@ -85,7 +90,10 @@ import { KEYSTONE_TX_CANCELED } from '../../../../../../constants/error';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
 import Routes from '../../../../../../constants/navigation/Routes';
 import WarningMessage from '../WarningMessage';
-import { showAlert as showAlertAction } from '../../../../../../actions/alert';
+import {
+  showAlert as showAlertAction,
+  type AlertContent,
+} from '../../../../../../actions/alert';
 import ClipboardManager from '../../../../../../core/ClipboardManager';
 import GlobalAlert from '../../../../../UI/GlobalAlert';
 import createStyles from './styles';
@@ -270,7 +278,9 @@ interface ConfirmProps extends IWithMetricsAwarenessProps {
   /**
    * Object that contains navigation props
    */
-  route?: { params?: Record<string, unknown> };
+  route: {
+    params?: { providerType?: string; isPaymentRequest?: boolean };
+  };
   /**
    * Map of accounts to information objects including balances
    */
@@ -366,7 +376,7 @@ interface ConfirmProps extends IWithMetricsAwarenessProps {
   /**
    * Triggers global alert
    */
-  showAlert: (config: Record<string, unknown>) => void;
+  showAlert: (config: AlertContent) => void;
   /**
    * Boolean that indicates if the network supports buy
    */
@@ -553,7 +563,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         route,
         colors,
         resetTransaction,
-        transaction,
+        transaction as unknown as Parameters<typeof getSendFlowTitle>[5],
       ),
     );
   };
@@ -1020,7 +1030,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       removeFavoriteCollectibleAction(
         fromSelectedAddress as string,
         chainId,
-        selectedAsset,
+        selectedAsset as FavoriteCollectible,
       );
       NftController.removeNft(
         selectedAsset.address as string,
@@ -1128,7 +1138,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
           NotificationManager.watchSubmittedTransaction({
             ...transactionMeta,
             assetType,
-          });
+          } as WatchedTransaction);
           this.checkRemoveCollectible();
           this.props.metrics.trackEvent(
             this.props.metrics
@@ -1261,7 +1271,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         NotificationManager.watchSubmittedTransaction({
           ...transactionMeta,
           assetType,
-        });
+        } as WatchedTransaction);
         this.checkRemoveCollectible();
         this.props.metrics.trackEvent(
           this.props.metrics
@@ -1374,7 +1384,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
   handleCopyHex = () => {
     const { data } = this.props.transactionState.transaction;
-    ClipboardManager.setString(data);
+    ClipboardManager.setString(data as string);
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -1807,7 +1817,9 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 Confirm.contextType = ThemeContext;
 
 const mapStateToProps = (state: RootState) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = getNormalizedTxState(state) as
+    | LegacyTransactionState
+    | undefined;
   const chainId = transaction?.chainId || selectEvmChainId(state);
 
   const networkClientId =
@@ -1847,7 +1859,11 @@ const mapStateToProps = (state: RootState) => {
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   prepareTransaction: (transaction: LegacyTransactionParams) =>
-    dispatch(prepareTransactionAction(transaction)),
+    dispatch(
+      prepareTransactionAction(
+        transaction as unknown as Parameters<typeof prepareTransactionAction>[0],
+      ),
+    ),
   resetTransaction: () => dispatch(resetTransactionAction()),
   setTransactionId: (transactionId: string) =>
     dispatch(
@@ -1865,10 +1881,13 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     collectible: LegacySelectedAsset,
   ) =>
     dispatch(
-      removeFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+      removeFavoriteCollectibleAction(
+        selectedAddress,
+        chainId,
+        collectible as FavoriteCollectible,
+      ),
     ),
-  showAlert: (config: Record<string, unknown>) =>
-    dispatch(showAlertAction(config as Parameters<typeof showAlertAction>[0])),
+  showAlert: (config: AlertContent) => dispatch(showAlertAction(config)),
   updateConfirmationMetric: ({
     id,
     params,

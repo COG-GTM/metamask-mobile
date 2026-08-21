@@ -135,7 +135,7 @@ const EditGasFeeLegacy = ({
   }, []);
 
   const changedGasPrice = useCallback(
-    (value: string) => {
+    (value?: string) => {
       let newGas;
 
       const lowerValue = new BigNumber(
@@ -149,7 +149,7 @@ const EditGasFeeLegacy = ({
           : readGasEstimate(gasFeeEstimate, 'gasPrice'),
       ).multipliedBy(new BigNumber(1.5));
 
-      const valueBN = new BigNumber(value);
+      const valueBN = new BigNumber(value ?? NaN);
 
       if (!lowerValue.isNaN() && valueBN.lt(lowerValue)) {
         setGasPriceError(strings('edit_gas_fee_eip1559.gas_price_low'));
@@ -171,7 +171,7 @@ const EditGasFeeLegacy = ({
   );
 
   const changedGasLimit = useCallback(
-    (value: string) => {
+    (value?: string) => {
       const newGas =
         typeof gasTransaction === 'object'
           ? { ...gasTransaction, suggestedGasLimit: value }
@@ -245,7 +245,7 @@ const EditGasFeeLegacy = ({
     transactionFeeFiat,
   } = gasTransaction;
 
-  const isMainnet = isMainnetByChainId(chainId);
+  const isMainnet = chainId !== undefined && isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
   let gasFeePrimary,
     gasFeeSecondary;

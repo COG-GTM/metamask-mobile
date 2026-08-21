@@ -285,7 +285,7 @@ describe('TransactionReview', () => {
   it('should have enabled confirm button if from account has balance', async () => {
     jest
       .spyOn(TransactionUtils, 'getTransactionReviewActionKey')
-      .mockReturnValue(Promise.resolve(undefined) as unknown as string);
+      .mockReturnValue(Promise.resolve(undefined) as unknown as Promise<string>);
     const { queryByRole } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}

@@ -213,7 +213,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedGasLimit = useCallback(
-    (value: string) => {
+    (value?: string) => {
       const newGas = { ...gasTransaction, suggestedGasLimit: value };
       changeGas(newGas, null);
     },
@@ -221,7 +221,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxPriorityFee = useCallback(
-    (value: string) => {
+    (value?: string) => {
       const lowerValue = new BigNumber(
         getGasFeeEstimateLevel(gasOptions, warningMinimumEstimateOption)
           ?.suggestedMaxPriorityFeePerGas as string,
@@ -235,7 +235,7 @@ const EditGasFee1559Update = ({
         updateOption?.maxPriortyFeeThreshold as string,
       );
 
-      const valueBN = new BigNumber(value);
+      const valueBN = new BigNumber(value ?? NaN);
 
       if (updateFloor && !updateFloor.isNaN() && valueBN.lt(updateFloor)) {
         setMaxPriorityFeeError(
@@ -276,7 +276,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxFeePerGas = useCallback(
-    (value: string) => {
+    (value?: string) => {
       const lowerValue = new BigNumber(
         getGasFeeEstimateLevel(gasOptions, warningMinimumEstimateOption)
           ?.suggestedMaxFeePerGas as string,
@@ -289,7 +289,7 @@ const EditGasFee1559Update = ({
         updateOption?.maxFeeThreshold as string,
       );
 
-      const valueBN = new BigNumber(value);
+      const valueBN = new BigNumber(value ?? NaN);
 
       if (updateFloor && !updateFloor.isNaN() && valueBN.lt(updateFloor)) {
         setMaxFeeError(
@@ -376,7 +376,7 @@ const EditGasFee1559Update = ({
     [recommended, extendOptions, shouldIgnore],
   );
 
-  const isMainnet = isMainnetByChainId(chainId);
+  const isMainnet = chainId !== undefined && isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
   const switchNativeCurrencyDisplayOptions = (
@@ -512,7 +512,7 @@ const EditGasFee1559Update = ({
                       renderableMaxPriorityFeeConversion,
                     )}`
                   }
-                  error={maxPriorityFeeError}
+                  error={maxPriorityFeeError ?? undefined}
                   onChangeValue={changedMaxPriorityFee}
                 />
               </View>

@@ -514,7 +514,7 @@ class ApproveTransactionReview extends PureComponent<
       unroundedAccountBalance = '';
 
     const { spenderAddress, encodedAmount: encodedHexAmount } =
-      decodeApproveData(data);
+      decodeApproveData(data as string);
     const encodedDecimalAmount = hexToBN(encodedHexAmount).toString();
 
     // The tokenList addresses we get from state are not checksum addresses
@@ -577,7 +577,7 @@ class ApproveTransactionReview extends PureComponent<
 
     const approveAmount = fromTokenMinimalUnit(
       hexToBN(encodedHexAmount),
-      tokenDecimals as string | number,
+      tokenDecimals as number,
       false,
     );
 
@@ -640,7 +640,7 @@ class ApproveTransactionReview extends PureComponent<
         );
       },
     );
-    if (isMultiLayerFeeNetwork(chainId)) {
+    if (isMultiLayerFeeNetwork(chainId as string)) {
       this.fetchEstimatedL1Fee();
       intervalIdForEstimatedL1Fee = setInterval(
         this.fetchEstimatedL1Fee,
@@ -665,7 +665,9 @@ class ApproveTransactionReview extends PureComponent<
         tokenSpendValue || '0',
         tokenDecimals as number,
         spenderAddress,
-        transaction,
+        transaction as unknown as Parameters<
+          typeof generateTxWithNewTokenAllowance
+        >[3],
       ) as unknown as {
         data?: string;
         transaction?: Record<string, unknown>;
@@ -864,7 +866,8 @@ class ApproveTransactionReview extends PureComponent<
     this.setState((state) => ({ showGasTooltip: !state.showGasTooltip }));
 
   renderGasTooltip = () => {
-    const isMainnet = isMainnetByChainId(this.props.chainId);
+    const { chainId } = this.props;
+    const isMainnet = chainId !== undefined && isMainnetByChainId(chainId);
     return (
       <InfoModal
         isVisible={this.state.showGasTooltip}
@@ -1233,7 +1236,7 @@ class ApproveTransactionReview extends PureComponent<
                         )}
                         {gasError && (
                           <View style={styles.errorWrapper}>
-                            {isTestNetworkWithFaucet(chainId) ||
+                            {isTestNetworkWithFaucet(chainId as string) ||
                             isNativeTokenBuySupported ? (
                               <TouchableOpacity onPress={errorPress}>
                                 <Text reset style={styles.error}>
@@ -1494,7 +1497,9 @@ class ApproveTransactionReview extends PureComponent<
             spenderAddress,
             title: host,
             url: activeTabUrl,
-          }}
+          } as ComponentProps<
+            typeof TransactionHeader
+          >['currentPageInformation']}
         />
         <QRSigningDetails
           QRState={QRState}
@@ -1531,26 +1536,31 @@ class ApproveTransactionReview extends PureComponent<
 }
 
 const mapStateToProps = (state: RootState) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = getNormalizedTxState(state) as
+    | LegacyTransactionState
+    | undefined;
   const chainId = transaction?.chainId;
 
   return {
-    ticker: selectNativeCurrencyByChainId(state, chainId),
+    ticker: selectNativeCurrencyByChainId(state, chainId as Hex),
     networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
-    transaction: getNormalizedTxState(state),
+    transaction,
     tokensLength: selectTokensLength(state),
     accountsLength: selectAccountsLength(state),
-    providerType: selectProviderTypeByChainId(state, chainId),
-    providerRpcTarget: selectRpcUrlByChainId(state, chainId),
+    providerType: selectProviderTypeByChainId(state, chainId as Hex),
+    providerRpcTarget: selectRpcUrlByChainId(state, chainId as Hex),
     primaryCurrency: state.settings.primaryCurrency,
     activeTabUrl: getActiveTabUrl(state),
     chainId,
     tokenList: selectTokenList(state),
     isNativeTokenBuySupported: isNetworkRampNativeTokenSupported(
-      chainId,
+      chainId as string,
       getRampNetworks(state),
     ),
-    shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),
+    shouldUseSmartTransaction: selectShouldUseSmartTransaction(
+      state,
+      chainId as Hex,
+    ),
     securityAlertResponse: selectCurrentTransactionSecurityAlertResponse(state),
   };
 };

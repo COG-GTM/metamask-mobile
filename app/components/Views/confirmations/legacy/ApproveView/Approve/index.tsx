@@ -402,7 +402,9 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
     const { networkClientId } = this.props;
     const { setTransactionObject, transaction } = this.props;
     const estimation = await getGasLimit(
-      { ...transaction, gas: undefined },
+      { ...transaction, gas: undefined } as unknown as Parameters<
+        typeof getGasLimit
+      >[0],
       false,
       networkClientId,
     );
@@ -1092,7 +1094,9 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
 }
 
 const mapStateToProps = (state: RootState) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = getNormalizedTxState(state) as unknown as LegacyTransactionState & {
+    networkId?: string;
+  };
   const chainId = transaction?.chainId;
   const networkClientId = transaction?.networkId;
 
@@ -1112,8 +1116,8 @@ const mapStateToProps = (state: RootState) => {
     currentCurrency: selectCurrentCurrency(state),
     showCustomNonce: selectShowCustomNonce(state),
     addressBook: selectAddressBook(state),
-    providerType: selectProviderTypeByChainId(state, chainId),
-    providerRpcTarget: selectRpcUrlByChainId(state, chainId),
+    providerType: selectProviderTypeByChainId(state, chainId as Hex),
+    providerRpcTarget: selectRpcUrlByChainId(state, chainId as Hex),
     networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
     shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),
     simulationData: selectCurrentTransactionMetadata(state)?.simulationData,

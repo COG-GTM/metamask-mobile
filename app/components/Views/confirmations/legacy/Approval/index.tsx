@@ -21,7 +21,7 @@ import TransactionEditor, {
   TransactionEditorConfirmParams,
 } from './components/TransactionEditor';
 import Modal from 'react-native-modal';
-import { safeBNToHex } from '../../../../../util/number';
+import { type AnyBN, safeBNToHex } from '../../../../../util/number';
 import { getTransactionOptionsTitle } from '../../../../UI/Navbar';
 import { resetTransaction } from '../../../../../actions/transaction';
 import { connect } from 'react-redux';
@@ -352,7 +352,9 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
   trackEditScreen = async () => {
     const { transaction, metrics } = this.props;
     const actionKey = await getTransactionReviewActionKey(
-      { transaction },
+      { transaction } as unknown as Parameters<
+        typeof getTransactionReviewActionKey
+      >[0],
       undefined as unknown as string,
     );
     metrics.trackEvent(
@@ -750,8 +752,8 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
     }
 
     const gasDataLegacy = {
-      suggestedGasLimitHex: safeBNToHex(gas),
-      suggestedGasPriceHex: safeBNToHex(gasPrice),
+      suggestedGasLimitHex: safeBNToHex(gas as unknown as AnyBN),
+      suggestedGasPriceHex: safeBNToHex(gasPrice as unknown as AnyBN),
     };
 
     return buildTransactionParams({
@@ -811,7 +813,9 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
 }
 
 const mapStateToProps = (state: RootState) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = getNormalizedTxState(
+    state,
+  ) as unknown as LegacyTransactionState;
   const chainId = transaction?.chainId;
 
   return {
@@ -819,7 +823,7 @@ const mapStateToProps = (state: RootState) => {
     transactions: selectTransactions(state),
     simulationData: selectCurrentTransactionMetadata(state)?.simulationData,
     selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
-    networkType: selectProviderTypeByChainId(state, chainId),
+    networkType: selectProviderTypeByChainId(state, chainId as Hex),
     showCustomNonce: selectShowCustomNonce(state),
     chainId,
     activeTabUrl: getActiveTabUrl(state),
