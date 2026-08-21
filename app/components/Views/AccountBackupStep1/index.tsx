@@ -9,7 +9,6 @@ import {
   BackHandler,
   Image,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import StyledButton from '../../UI/StyledButton';
 import OnboardingProgress from '../../UI/OnboardingProgress';
@@ -24,8 +23,10 @@ import { ONBOARDING_WIZARD } from '../../../constants/storage';
 import { CHOOSE_PASSWORD_STEPS } from '../../../constants/onboarding';
 import SkipAccountSecurityModal from '../../UI/SkipAccountSecurityModal';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import setOnboardingWizardStep from '../../../actions/wizard';
 import { MetaMetricsEvents } from '../../../core/Analytics';
+import { IMetaMetricsEvent, JsonMap } from '../../../core/Analytics/MetaMetrics.types';
 
 import StorageWrapper from '../../../store/storage-wrapper';
 import { useTheme } from '../../../util/theme';
@@ -34,8 +35,11 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import Routes from '../../../../app/constants/navigation/Routes';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import SRPDesign from '../../../images/srp-lock-design.png';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const renderEmptyHeaderLeft = () => <View />;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -123,11 +127,41 @@ const createStyles = (colors) =>
     },
   });
 
+interface AccountBackupStep1Navigation {
+  setOptions: (options: Record<string, unknown>) => void;
+  navigate: (routeName: string, params?: Record<string, unknown>) => void;
+  reset: (state: { index: number; routes: { name: string }[] }) => void;
+}
+
+interface AccountBackupStep1Route {
+  params?: Record<string, unknown>;
+}
+
+interface OwnProps {
+  /**
+   * navigation object required to push and pop other views
+   */
+  navigation: AccountBackupStep1Navigation;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: AccountBackupStep1Route;
+}
+
+interface DispatchProps {
+  /**
+   * Action to set onboarding wizard step
+   */
+  setOnboardingWizardStep: (step: number) => void;
+}
+
+type AccountBackupStep1Props = OwnProps & DispatchProps;
+
 /**
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1 = (props) => {
+const AccountBackupStep1 = (props: AccountBackupStep1Props) => {
   const { navigation, route } = props;
   const [showRemindLaterModal, setRemindLaterModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -136,7 +170,7 @@ const AccountBackupStep1 = (props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const track = (event, properties) => {
+  const track = (event: IMetaMetricsEvent, properties: JsonMap = {}) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
     trackOnboarding(eventBuilder.build());
@@ -146,8 +180,7 @@ const AccountBackupStep1 = (props) => {
     navigation.setOptions({
       ...getOnboardingNavbarOptions(
         route,
-        // eslint-disable-next-line react/display-name
-        { headerLeft: () => <View /> },
+        { headerLeft: renderEmptyHeaderLeft },
         colors,
       ),
       gesturesEnabled: false,
@@ -266,7 +299,6 @@ const AccountBackupStep1 = (props) => {
             )}
             <View style={styles.ctaContainer}>
               <StyledButton
-                containerStyle={styles.button}
                 type={'confirm'}
                 onPress={goNext}
               >
@@ -298,23 +330,9 @@ const AccountBackupStep1 = (props) => {
   );
 };
 
-AccountBackupStep1.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Action to set onboarding wizard step
-   */
-  setOnboardingWizardStep: PropTypes.func,
-};
-
-const mapDispatchToProps = (dispatch) => ({
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  setOnboardingWizardStep: (step: number) =>
+    dispatch(setOnboardingWizardStep(step)),
 });
 
 export default connect(null, mapDispatchToProps)(AccountBackupStep1);

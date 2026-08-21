@@ -1,8 +1,9 @@
 import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, TextStyle } from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { isNonEvmAddress } from '../../../core/Multichain/utils';
 import { getHasOrders } from '../../../reducers/fiatOrders';
 import { getTransactionsNavbarOptions } from '../../UI/Navbar';
@@ -39,8 +40,43 @@ import {
   getFontFamily,
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 
-const createStyles = (params) => {
+interface ActivityViewParamList {
+  [key: string]: undefined | object;
+}
+
+interface ActivityViewParams {
+  redirectToOrders?: boolean;
+}
+
+/**
+ * The `goToPage` method is implemented by the underlying library but is missing
+ * from its type definitions.
+ */
+type ScrollableTabViewRef = ScrollableTabView & {
+  goToPage: (pageNumber: number) => void;
+};
+
+// `variant` is forwarded to react-native's `Text`, which does not declare it.
+const titleVariantProp = { variant: DEFAULT_HEADERBASE_TITLE_TEXTVARIANT };
+
+// `tabLabel` is read by `ScrollableTabView` from its children's props.
+interface TabProps {
+  tabLabel: string;
+}
+
+// The tab components do not declare `tabLabel` themselves; it is read from
+// their props by `ScrollableTabView`. `TransactionsView` is additionally still
+// untyped JavaScript, so its connected props cannot be inferred.
+const TransactionsViewTab =
+  TransactionsView as unknown as React.ComponentType<TabProps>;
+const MultichainTransactionsViewTab =
+  MultichainTransactionsView as React.ComponentType<TabProps>;
+const RampOrdersListTab = RampOrdersList as React.ComponentType<TabProps>;
+
+const createStyles = (params: { theme: Theme }) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -82,11 +118,10 @@ const createStyles = (params) => {
     },
     title: {
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
       ...typography.sHeadingMD,
       fontFamily: getFontFamily(TextVariant.HeadingMD),
-    },
+    } as TextStyle,
     titleText: {
       color: colors.text.default,
     },
@@ -102,7 +137,8 @@ const ActivityView = () => {
   });
 
   const { trackEvent, createEventBuilder } = useMetrics();
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<StackNavigationProp<ActivityViewParamList>>();
   const selectedAddress = useSelector(
     selectSelectedInternalAccountFormattedAddress,
   );
@@ -111,10 +147,12 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector(
+    (state: RootState) => getHasOrders(state) || false,
+  );
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<ScrollableTabViewRef>(null);
+  const params = useParams<ActivityViewParams>();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
@@ -128,7 +166,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            accountsByChainId[selectedAddress ?? ''] ?? {},
           ).length,
         })
         .build(),
@@ -177,10 +215,7 @@ const ActivityView = () => {
   return (
     <ErrorBoundary navigation={navigation} view="ActivityView">
       <View style={[styles.header, { marginTop: insets.top }]}>
-        <Text
-          style={styles.title}
-          variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT}
-        >
+        <Text style={styles.title} {...titleVariantProp}>
           {strings('transactions_view.title')}
         </Text>
       </View>
@@ -212,14 +247,16 @@ const ActivityView = () => {
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
+            <MultichainTransactionsViewTab
               tabLabel={strings('transactions_view.title')}
             />
           ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title')} />
+            <TransactionsViewTab
+              tabLabel={strings('transactions_view.title')}
+            />
           )}
           {hasOrders && (
-            <RampOrdersList
+            <RampOrdersListTab
               tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}
