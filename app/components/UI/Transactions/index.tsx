@@ -97,6 +97,7 @@ import { selectGasFeeEstimates } from '../../../selectors/confirmTransaction';
 import { decGWEIToHexWEI } from '../../../util/conversions';
 import { ActivitiesViewSelectorsIDs } from '../../../../e2e/selectors/Transactions/ActivitiesView.selectors';
 import { isNonEvmChainId } from '../../../core/Multichain/utils';
+import { isCaipChainId } from '@metamask/utils';
 import {
   getFontFamily,
   TextVariant,
@@ -387,7 +388,7 @@ class Transactions extends PureComponent<
       blockExplorer =
         findBlockExplorerForRpc(rpcUrl ?? undefined, networkConfigurations) ||
         NO_RPC_BLOCK_EXPLORER;
-    } else if (isNonEvmChainId(chainId)) {
+    } else if (isCaipChainId(chainId) && isNonEvmChainId(chainId)) {
       // TODO: [SOLANA] - block explorer needs to be implemented
       blockExplorer = findBlockExplorerForNonEvmChainId(chainId);
     }

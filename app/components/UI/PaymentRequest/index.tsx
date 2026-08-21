@@ -301,6 +301,11 @@ interface PaymentRequestNavigation {
   setOptions: (options: object) => void;
   setParams: (params: Record<string, unknown>) => void;
   replace?: (name: string, params?: Record<string, unknown>) => void;
+  /**
+   * Used by the navbar helpers this view passes the navigator to.
+   */
+  pop?: () => void;
+  goBack?: () => void;
 }
 
 interface PaymentRequestProps {
@@ -347,9 +352,13 @@ interface PaymentRequestProps {
   /**
    * Object that represents the current route info like params passed to it
    */
-  route?: {
+  route: {
     params?: {
       receiveAsset?: PaymentRequestAsset;
+      /**
+       * Back handler the navbar helper reads off the route.
+       */
+      dispatch?: () => void;
       [key: string]: unknown;
     };
   };

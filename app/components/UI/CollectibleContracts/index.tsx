@@ -25,7 +25,10 @@ import {
   multichainCollectibleContractsSelector,
   multichainCollectiblesSelector,
 } from '../../../reducers/collectibles';
-import { removeFavoriteCollectible as removeFavoriteCollectibleAction } from '../../../actions/collectibles';
+import {
+  removeFavoriteCollectible as removeFavoriteCollectibleAction,
+  type FavoriteCollectible,
+} from '../../../actions/collectibles';
 import AppConstants from '../../../core/AppConstants';
 import { toLowerCaseEquals } from '../../../util/general';
 import { compareTokenIds } from '../../../util/tokens';
@@ -212,7 +215,7 @@ interface StateProps {
   /**
    * Object of collectibles
    */
-  favoriteCollectibles: Nft[];
+  favoriteCollectibles: FavoriteCollectible[];
   /**
    * Boolean to show if NFT detection is enabled
    */

@@ -29,7 +29,7 @@ export function timeoutFetch(
  * Partial shape of a react-navigation state, which nests routes that can
  * themselves hold a nested navigator state.
  */
-interface NavigatorRoute {
+export interface NavigatorRoute {
   name?: string;
   index?: number;
   routes?: NavigatorRoute[];

@@ -124,7 +124,7 @@ interface StateProps {
   /**
    * Map of accounts to information objects including balances
    */
-  accounts: Record<string, { balance: string }>;
+  accounts: ReturnType<typeof selectAccounts>;
   /**
    * List of accounts from the AccountsController
    */
@@ -132,17 +132,17 @@ interface StateProps {
   /**
    * A number that specifies the ETH/USD conversion rate
    */
-  conversionRate?: number | null;
+  conversionRate: ReturnType<typeof selectConversionRate>;
   /**
    * The selected currency
    */
-  currentCurrency: string;
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
   /**
    * Current selected ticker
    */
-  ticker?: string;
-  transaction?: { origin?: string };
-  activeTabUrl?: string;
+  ticker: ReturnType<typeof selectEvmTicker>;
+  transaction: ReturnType<typeof getNormalizedTxState>;
+  activeTabUrl: ReturnType<typeof getActiveTabUrl>;
 }
 
 type AccountInfoCardProps = OwnProps & StateProps;
@@ -274,7 +274,7 @@ class AccountInfoCard extends PureComponent<AccountInfoCardProps> {
   }
 }
 
-const mapStateToProps = (state: RootState) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   accounts: selectAccounts(state),
   internalAccounts: selectInternalAccounts(state),
   conversionRate: selectConversionRate(state),
@@ -286,4 +286,6 @@ const mapStateToProps = (state: RootState) => ({
 
 AccountInfoCard.contextType = ThemeContext;
 
-export default connect(mapStateToProps)(AccountInfoCard);
+export default connect<StateProps, unknown, OwnProps, RootState>(
+  mapStateToProps,
+)(AccountInfoCard);

@@ -53,7 +53,7 @@ export interface UpdateEIP1559Props {
   /**
    * Gas object used to get suggestedGasLimit
    */
-  gas: string;
+  gas?: string;
   /**
    * Function that cancels the tx update
    */

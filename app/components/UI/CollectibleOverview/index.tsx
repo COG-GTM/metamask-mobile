@@ -36,6 +36,7 @@ import etherscanLink from '@metamask/etherscan-link';
 import {
   addFavoriteCollectible as addFavoriteCollectibleAction,
   removeFavoriteCollectible as removeFavoriteCollectibleAction,
+  type FavoriteCollectible,
 } from '../../../actions/collectibles';
 import { isCollectibleInFavoritesSelector } from '../../../reducers/collectibles';
 import Share from 'react-native-share';
@@ -170,6 +171,10 @@ interface Collectible {
    */
   [key: string]: unknown;
   address: string;
+  /**
+   * Controllers store token ids as strings, but older call sites still pass the
+   * numeric id.
+   */
   tokenId: string | number;
   name?: string | null;
   description?: string | null;
@@ -188,6 +193,23 @@ interface CollectibleInfoRow {
   onPress?: () => void;
   type: string;
 }
+
+type CollectibleWithStringTokenId = Collectible & { tokenId: string };
+
+const hasStringTokenId = (
+  collectible: Collectible,
+): collectible is CollectibleWithStringTokenId =>
+  typeof collectible.tokenId === 'string';
+
+/**
+ * Favorites are keyed by a string token id, so numeric ids are stringified.
+ */
+const asFavoriteCollectible = (
+  collectible: Collectible,
+): Collectible & FavoriteCollectible =>
+  hasStringTokenId(collectible)
+    ? collectible
+    : { ...collectible, tokenId: String(collectible.tokenId) };
 
 type FavoriteCollectibleAction = (
   selectedAddress: string | undefined,
@@ -544,7 +566,7 @@ const CollectibleOverview = ({
             </Text>
             <Text primary noMargin big>
               {strings('unit.token_id')}
-              {renderShortText(collectible.tokenId, 8)}
+              {renderShortText(String(collectible.tokenId), 8)}
             </Text>
           </View>
 
@@ -635,7 +657,10 @@ const CollectibleOverview = ({
 const mapStateToProps = (state: RootState, props: OwnProps): StateProps => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
-  isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
+  isInFavorites: isCollectibleInFavoritesSelector(
+    state,
+    asFavoriteCollectible(props.collectible),
+  ),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
@@ -645,7 +670,11 @@ const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
     collectible: Collectible,
   ) =>
     dispatch(
-      addFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+      addFavoriteCollectibleAction(
+        selectedAddress,
+        chainId,
+        asFavoriteCollectible(collectible),
+      ),
     ),
   removeFavoriteCollectible: (
     selectedAddress: string | undefined,
@@ -653,7 +682,11 @@ const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
     collectible: Collectible,
   ) =>
     dispatch(
-      removeFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+      removeFavoriteCollectibleAction(
+        selectedAddress,
+        chainId,
+        asFavoriteCollectible(collectible),
+      ),
     ),
 });
 
