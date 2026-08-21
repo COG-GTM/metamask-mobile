@@ -1146,7 +1146,7 @@ export class NetworkSettings extends PureComponent<
 
     const isOnboarded = getIsNetworkOnboarded(
       stateChainId as string,
-      networkOnboardedState,
+      networkOnboardedState ?? {},
     );
 
     const nativeToken = ticker || PRIVATENETWORK;

@@ -28,6 +28,10 @@ interface ManualBackupStep2Route {
   params?: {
     words?: string[];
     steps?: string[];
+    /**
+     * Read by `getOnboardingNavbarOptions` to override the header back button.
+     */
+    headerLeft?: () => React.ReactNode;
   };
 }
 

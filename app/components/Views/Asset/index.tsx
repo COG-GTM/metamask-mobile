@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
-import { Hex } from '@metamask/utils';
+import { Hex, isCaipChainId } from '@metamask/utils';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { TransactionMeta } from '@metamask/transaction-controller';
 import Routes from '../../../constants/navigation/Routes';
@@ -284,9 +284,10 @@ class Asset extends PureComponent<AssetProps, AssetState> {
       (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const isNativeToken = route.params.isNative ?? route.params.isETH;
     const isMainnet = isMainnetByChainId(chainId);
-    const blockExplorer = isNonEvmChainId(chainId)
-      ? findBlockExplorerForNonEvmChainId(chainId)
-      : findBlockExplorerForRpc(rpcUrl, networkConfigurations);
+    const blockExplorer =
+      isNonEvmChainId(chainId) && isCaipChainId(chainId)
+        ? findBlockExplorerForNonEvmChainId(chainId)
+        : findBlockExplorerForRpc(rpcUrl, networkConfigurations);
 
     const shouldShowMoreOptionsInNavBar =
       isMainnet || !isNativeToken || (isNativeToken && blockExplorer);

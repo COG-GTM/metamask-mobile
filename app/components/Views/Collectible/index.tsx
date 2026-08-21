@@ -15,6 +15,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
+import { Nft } from '@metamask/assets-controllers';
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -25,19 +26,14 @@ const createStyles = (colors: Theme['colors']) =>
   });
 
 interface CollectibleNavigation {
-  navigate: (routeName: string, params?: Record<string, unknown>) => void;
+  navigate: (routeName: string, params?: object) => void;
+  push: (routeName: string, params?: object) => void;
 }
 
 interface CollectibleContract {
   address: string;
   name?: string;
   logo?: string;
-}
-
-interface CollectibleItem {
-  address: string;
-  name?: string;
-  image?: string | null;
 }
 
 interface OwnProps {
@@ -56,7 +52,7 @@ interface StateProps {
   /**
    * Array of assets (in this case Collectibles)
    */
-  collectibles: CollectibleItem[];
+  collectibles: Nft[];
   /**
    * Whether collectible contract information is visible
    */
@@ -74,7 +70,7 @@ type CollectibleProps = OwnProps & StateProps & DispatchProps;
 
 interface CollectibleState {
   refreshing: boolean;
-  collectibles: CollectibleItem[];
+  collectibles: Nft[];
 }
 
 /**
@@ -145,7 +141,7 @@ class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
     );
     filteredCollectibles.map((collectible) => {
       if (!collectible.name || collectible.name === '') {
-        collectible.name = collectibleContract.name;
+        collectible.name = collectibleContract.name ?? null;
       }
       if (!collectible.image && collectibleContract.logo) {
         collectible.image = collectibleContract.logo;

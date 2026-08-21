@@ -3,6 +3,19 @@ import Device from '../util/device';
 
 const EXPIRE_TIME_MS = 60000;
 
+/**
+ * `setStringExpire` (iOS) and `clearString` (Android) are added to the native
+ * clipboard module by `patches/@react-native-clipboard+clipboard+1.16.1.patch`,
+ * so they are missing from the published typings unless the patch is applied.
+ */
+interface PatchedClipboardMethods {
+  setStringExpire(content: string): void;
+  clearString(): void;
+}
+
+const PatchedClipboard = Clipboard as typeof Clipboard &
+  PatchedClipboardMethods;
+
 const ClipboardManager = {
   async getString(): Promise<string> {
     return await Clipboard.getString();
@@ -17,7 +30,7 @@ const ClipboardManager = {
   expireTime: null as ReturnType<typeof setTimeout> | null,
   async setStringExpire(string: string): Promise<void> {
     if (Device.isIos()) {
-      await Clipboard.setStringExpire(string);
+      await PatchedClipboard.setStringExpire(string);
     } else {
       await this.setString(string);
       if (this.expireTime) {
@@ -28,7 +41,7 @@ const ClipboardManager = {
 
         if (!clipboardString) return;
 
-        await Clipboard.clearString();
+        await PatchedClipboard.clearString();
       }, EXPIRE_TIME_MS);
     }
   },

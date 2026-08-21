@@ -223,7 +223,7 @@ const GasEducationCarousel = ({
             suggestedMaxFeePerGasHex,
             suggestedMaxPriorityFeePerGasHex,
           });
-          estimatedTotalGas = hexToBN(gasHexes.gasFeeMaxHex);
+          estimatedTotalGas = hexToBN(gasHexes.gasFeeMaxHex.toString());
         } else if (gasEstimates.gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
           const gasPrice = hexToBN(
             decGWEIToHexWEI(

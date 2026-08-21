@@ -212,7 +212,7 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
       getEditableOptions(
         strings(`address_book.${route?.params?.mode ?? ADD}_contact_title`),
         navigation,
-        route,
+        route ?? {},
         colors,
       ),
     );

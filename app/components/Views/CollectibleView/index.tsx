@@ -49,6 +49,7 @@ const transferInformation: Record<string, TransferInformation> =
 
 interface Collectible {
   address: string;
+  tokenId?: string;
   contractName?: string;
 }
 
@@ -114,7 +115,6 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
   render() {
     const {
       route: { params },
-      navigation,
     } = this.props;
     const collectible = params;
     const colors =
@@ -132,8 +132,10 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
         <ScrollView style={styles.wrapper}>
           <View>
             <CollectibleOverview
-              navigation={navigation}
-              collectible={collectible}
+              collectible={{
+                ...collectible,
+                tokenId: collectible.tokenId ?? '',
+              }}
             />
           </View>
         </ScrollView>

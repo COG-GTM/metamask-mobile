@@ -23,6 +23,7 @@ import {
   getTokenValueParamAsHex,
   getIsSwapApproveOrSwapTransaction,
   isApprovalTransaction,
+  TokenData,
 } from '../../../util/transactions';
 import BN from 'bnjs4';
 import Logger from '../../../util/Logger';
@@ -523,8 +524,11 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
           }
 
           const tokenData = hstInterface.parseTransaction({ data });
-          const tokenValue = getTokenValueParam(tokenData);
-          const toAddress = getTokenAddressParam(tokenData);
+          // ethers returns the decoded arguments as a `Result`, which the token
+          // helpers read both by name and by index
+          const tokenArgs: TokenData = { args: tokenData?.args };
+          const tokenValue = getTokenValueParam(tokenArgs);
+          const toAddress = getTokenAddressParam(tokenArgs);
           const tokenAmount =
             tokenData &&
             calcTokenAmount(
@@ -533,7 +537,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
             ).toFixed();
 
           transactionMeta.txParams.value = hexToBN(
-            getTokenValueParamAsHex(tokenData),
+            getTokenValueParamAsHex(tokenArgs),
           );
           transactionMeta.txParams.readableValue = tokenAmount;
           transactionMeta.txParams.to = toAddress;
