@@ -151,16 +151,16 @@ export interface CustomGasEstimate {
 }
 
 interface EIP1559GasChange {
-  suggestedMaxFeePerGas: string;
-  suggestedMaxPriorityFeePerGas: string;
-  suggestedGasLimit: string;
-  estimatedBaseFee: string;
-  suggestedEstimatedGasLimit: string;
+  suggestedMaxFeePerGas?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedGasLimit?: string;
+  estimatedBaseFee?: string;
+  suggestedEstimatedGasLimit?: string;
 }
 
 interface LegacyGasChange {
-  suggestedGasLimit: string;
-  suggestedGasPrice: string;
+  suggestedGasLimit?: string;
+  suggestedGasPrice?: string;
 }
 
 interface CustomGasFee {
@@ -217,15 +217,15 @@ interface OwnProps {
   /**
    * Wether the swap is from native asset
    */
-  isNativeAsset?: boolean;
+  isNativeAsset: boolean;
   /**
    * Value of the trade
    */
-  tradeValue?: string;
+  tradeValue: string;
   /**
    * Amount of the swap
    */
-  sourceAmount?: string;
+  sourceAmount: string;
   /**
    * If the values should animate upon update or not
    */
@@ -492,7 +492,7 @@ function GasEditModal({
   );
 
   const saveGasEdition = useCallback(
-    (selected: GasOption | null) => {
+    (selected?: GasOption | null) => {
       if (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
         const {
           suggestedMaxFeePerGas: maxFeePerGas,

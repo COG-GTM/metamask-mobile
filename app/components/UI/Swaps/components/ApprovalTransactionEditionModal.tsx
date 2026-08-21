@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import Modal from 'react-native-modal';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { swapsUtils } from '@metamask/swaps-controller';
+import type { TxParams } from '@metamask/swaps-controller/dist/types';
 import type { Hex } from '@metamask/utils';
 
 import EditPermission from '../../../Views/confirmations/legacy/components/ApproveTransactionReview/EditPermission';
@@ -38,20 +39,38 @@ export interface ApprovalTransaction {
 }
 
 /**
- * `generateTxWithNewTokenAllowance` is untyped JavaScript, so its parameters and
- * return value are described here.
+ * The swaps controller types the approval transaction calldata as optional,
+ * but an approval transaction always carries the approve calldata.
+ */
+const hasApproveData = (
+  transaction: TxParams | null,
+): transaction is TxParams & { data: string } =>
+  typeof transaction?.data === 'string';
+
+/**
+ * Narrows the approval transaction held by the swaps controller to the shape
+ * the swaps views consume, keeping the same object reference.
+ */
+export const asApprovalTransaction = (
+  transaction: TxParams | null,
+): ApprovalTransaction | undefined =>
+  hasApproveData(transaction) ? transaction : undefined;
+
+/**
+ * `generateTxWithNewTokenAllowance` returns the given transaction with new
+ * approve calldata, which keeps it an approval transaction.
  */
 const generateApprovalTransaction = (
   tokenValue: string,
   tokenDecimals: number,
   spenderAddress: string,
-  transaction?: ApprovalTransaction,
+  transaction: ApprovalTransaction,
 ): ApprovalTransaction =>
   generateTxWithNewTokenAllowance(
     tokenValue,
     tokenDecimals,
     spenderAddress,
-    transaction ?? {},
+    { ...transaction },
   ) as ApprovalTransaction;
 
 interface OwnProps {
@@ -108,6 +127,9 @@ function ApprovalTransactionEditionModal({
   );
 
   const onSetApprovalAmount = useCallback(() => {
+    if (!customApprovalTransaction) {
+      return;
+    }
     try {
       const newApprovalTransaction = generateApprovalTransaction(
         spendLimitUnlimitedSelected
@@ -198,7 +220,9 @@ function ApprovalTransactionEditionModal({
 }
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  originalApprovalTransaction: selectSwapsApprovalTransaction(state),
+  originalApprovalTransaction: asApprovalTransaction(
+    selectSwapsApprovalTransaction(state),
+  ),
 });
 
 export default connect(mapStateToProps)(ApprovalTransactionEditionModal);

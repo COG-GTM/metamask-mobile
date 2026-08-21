@@ -226,11 +226,15 @@ interface SwapsAmountRouteParams {
   sourceToken?: string;
   destinationToken?: string;
   sourcePage?: string;
+  /**
+   * Read by the swaps amount navbar to override the screen title
+   */
+  title?: string;
 }
 
 interface StateProps {
   swapsTokens: Token[];
-  swapsControllerTokens: Token[];
+  swapsControllerTokens: Token[] | null;
   tokensWithBalance: Token[];
   tokensTopAssets: Token[];
   /**

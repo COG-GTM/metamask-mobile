@@ -137,7 +137,7 @@ export interface QuotesModalQuote {
    * unit amount as a string.
    */
   destinationAmount: string | number;
-  slippage: number;
+  slippage?: number;
   priceSlippage?: {
     calculationError?: string;
     destinationAmountInETH?: string;
@@ -145,12 +145,12 @@ export interface QuotesModalQuote {
 }
 
 /**
- * Quote values as computed by the Swaps controller. `overallValueOfQuote` is a
- * number here because it is used in arithmetic below.
+ * Quote values as computed by the Swaps controller, which stores the overall
+ * value of a quote as a decimal string.
  */
 export interface QuotesModalQuoteValues {
   ethFee: string;
-  overallValueOfQuote: number;
+  overallValueOfQuote: string;
 }
 
 /**
@@ -196,7 +196,7 @@ interface StateProps {
    * Currency code of the currently-active currency
    */
   currentCurrency: string;
-  quoteValues: Record<string, QuotesModalQuoteValues>;
+  quoteValues: Record<string, QuotesModalQuoteValues> | null;
 }
 
 type Props = OwnProps & StateProps;
@@ -215,8 +215,9 @@ function QuotesModal({
   ticker,
   multiLayerL1ApprovalFeeTotal,
 }: Props) {
-  const bestOverallValue =
-    quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
+  const bestOverallValue = Number(
+    quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0,
+  );
   const [displayDetails, setDisplayDetails] = useState(false);
   // Holds an index once a quote is selected for details, and the quote itself
   // when it is reset after the quotes change.
@@ -466,7 +467,7 @@ function QuotesModal({
                     quotes.map((quote, index) => {
                       const { aggregator } = quote;
                       const isSelected = aggregator === selectedQuote;
-                      const quoteValue = quoteValues[aggregator];
+                      const quoteValue = quoteValues?.[aggregator];
                       let quoteEthFee: string | number | undefined =
                         quoteValue?.ethFee;
                       if (multiLayerL1ApprovalFeeTotal) {
@@ -511,7 +512,9 @@ function QuotesModal({
                                   toWei(
                                     (
                                       bestOverallValue -
-                                      (quoteValue?.overallValueOfQuote ?? 0)
+                                      Number(
+                                        quoteValue?.overallValueOfQuote ?? 0,
+                                      )
                                     ).toFixed(18),
                                   ),
                                   conversionRate,
