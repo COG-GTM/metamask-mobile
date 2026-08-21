@@ -29,7 +29,7 @@ import type { AccountTrackerControllerState } from '@metamask/assets-controllers
 import type { NetworkConfiguration } from '@metamask/network-controller';
 import type { Hex } from '@metamask/utils';
 import type BN4 from 'bnjs4';
-import type BN from 'bn.js';
+import type { BN } from 'ethereumjs-util';
 import { Theme } from '@metamask/design-tokens';
 import Logger from '../../../util/Logger';
 import {

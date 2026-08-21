@@ -405,6 +405,14 @@ const BASE = 4 * 16;
  * @returns Array containing the decoded transfer data
  */
 export function decodeTransferData(
+  type: 'transfer' | 'transferFrom',
+  data: string,
+): string[];
+export function decodeTransferData(
+  type: string,
+  data: string,
+): string[] | undefined;
+export function decodeTransferData(
   type: string,
   data: string,
 ): string[] | undefined {
@@ -1455,10 +1463,7 @@ export const parseTransactionEIP1559 = (
   } else {
     const { address, symbol = 'ERC20', decimals } = selectedAsset;
 
-    const [, , rawAmount] = decodeTransferData(
-      'transfer',
-      data as string,
-    ) as string[];
+    const [, , rawAmount] = decodeTransferData('transfer', data as string);
     const rawAmountString = parseInt(rawAmount, 16).toLocaleString('fullwide', {
       useGrouping: false,
     });
@@ -1617,10 +1622,7 @@ export const parseTransactionLegacy = (
     );
   } else if (data) {
     const { address, symbol = 'ERC20', decimals } = selectedAsset;
-    const [, , rawAmount] = decodeTransferData(
-      'transfer',
-      data as string,
-    ) as string[];
+    const [, , rawAmount] = decodeTransferData('transfer', data as string);
     const rawAmountString = parseInt(rawAmount, 16).toLocaleString('fullwide', {
       useGrouping: false,
     });

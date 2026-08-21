@@ -1,9 +1,8 @@
 /**
  * Collection of utility functions for consistent formatting and conversion
  */
-import { stripHexPrefix } from 'ethereumjs-util';
+import { stripHexPrefix, type BN } from 'ethereumjs-util';
 import BN4 from 'bnjs4';
-import type BN from 'bn.js';
 import { utils as ethersUtils } from 'ethers';
 import convert from '@metamask/ethjs-unit';
 import { add0x, remove0x, type Hex } from '@metamask/utils';
