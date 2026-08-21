@@ -419,7 +419,7 @@ describe('Number utils :: renderFromWei', () => {
 });
 
 describe('Number utils :: localizeLargeNumber', () => {
-  let i18n: { t: unknown };
+  let i18n: { t: (key: string) => string };
 
   beforeEach(() => {
     i18n = {
