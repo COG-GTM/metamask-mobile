@@ -382,8 +382,10 @@ const EditGasFee1559 = ({
     false,
   );
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(!selected);
-  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<string>();
-  const [maxFeeError, setMaxFeeError] = useState<string>();
+  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<
+    string | null
+  >(null);
+  const [maxFeeError, setMaxFeeError] = useState<string | null>(null);
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState<
     string | null | undefined
