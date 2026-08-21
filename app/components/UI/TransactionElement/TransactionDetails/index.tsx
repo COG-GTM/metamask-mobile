@@ -74,7 +74,7 @@ import {
   SEPOLIA_BLOCK_EXPLORER,
 } from '../../../../constants/urls';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
-import { isStrictHexString } from '@metamask/utils';
+import { isCaipChainId, isStrictHexString } from '@metamask/utils';
 import { RootState } from '../../../../reducers';
 
 interface StyledSectionProps {
@@ -209,7 +209,10 @@ interface TransactionDetailsPublicProps
    */
   navigation?: TransactionDetailsNavigation;
   transactionObject: Partial<TransactionObject> & Record<string, unknown>;
-  transactionDetails: LegacyTransactionDetails;
+  /**
+   * Call sites render this view before the transaction has been decoded.
+   */
+  transactionDetails?: LegacyTransactionDetails;
   chainId?: string;
 }
 
@@ -313,7 +316,7 @@ class TransactionDetails extends PureComponent<
     // Check for default block explorers based on chain ID
     if (isMainNet(txChainId ?? '')) {
       blockExplorer = MAINNET_BLOCK_EXPLORER;
-    } else if (isLineaMainnetChainId(txChainId)) {
+    } else if (isLineaMainnetChainId(txChainId ?? '')) {
       blockExplorer = LINEA_MAINNET_BLOCK_EXPLORER;
     } else if (txChainId === CHAIN_IDS.LINEA_SEPOLIA) {
       blockExplorer = LINEA_SEPOLIA_BLOCK_EXPLORER;
@@ -322,8 +325,9 @@ class TransactionDetails extends PureComponent<
     }
 
     // Check for non-EVM chain block explorer
-    if (isNonEvmChainId(chainId)) {
-      blockExplorer = findBlockExplorerForNonEvmChainId(chainId);
+    if (isCaipChainId(chainId) && isNonEvmChainId(chainId)) {
+      blockExplorer =
+        findBlockExplorerForNonEvmChainId(chainId) ?? NO_RPC_BLOCK_EXPLORER;
     }
 
     return blockExplorer;

@@ -10,7 +10,10 @@ import {
   fontStyles,
   colors as importedColors,
 } from '../../../../styles/common';
-import decodeTransaction from '../../TransactionElement/utils';
+import decodeTransaction, {
+  type DecodeTransactionArgs,
+  type TransactionDetailsType,
+} from '../../TransactionElement/utils';
 import TransactionActionContent from '../../TransactionActionModal/TransactionActionContent';
 import ActionContent from '../../ActionModal/ActionContent';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -117,7 +120,7 @@ interface TransactionElementData {
   notificationKey?: string;
 }
 
-type TransactionDetailsData = Record<string, unknown>;
+type TransactionDetailsData = TransactionDetailsType;
 
 /**
  * `swapsTransactions` is written to the TransactionController state by the swaps
@@ -125,7 +128,7 @@ type TransactionDetailsData = Record<string, unknown>;
  */
 interface TransactionControllerStateWithSwaps {
   transactions: TransactionMeta[];
-  swapsTransactions?: Record<string, unknown>;
+  swapsTransactions?: DecodeTransactionArgs['swapsTransactions'];
 }
 
 /**

@@ -54,7 +54,10 @@ import { protectWalletModalVisible } from '../../../actions/user';
 import DeeplinkManager from '../../../core/DeeplinkManager/SharedDeeplinkManager';
 import SettingsNotification from '../SettingsNotification';
 import { RPC } from '../../../constants/network';
-import { findRouteNameFromNavigatorState } from '../../../util/general';
+import {
+  findRouteNameFromNavigatorState,
+  type NavigatorRoute,
+} from '../../../util/general';
 import {
   isDefaultAccountName,
   doENSReverseLookup,
@@ -339,7 +342,7 @@ interface DrawerNavigation {
   navigate: (route: string, params?: object) => void;
   replace: (route: string, params?: object) => void;
   goBack: () => void;
-  dangerouslyGetState: () => { routes: unknown[] };
+  dangerouslyGetState: () => { routes: NavigatorRoute[] };
 }
 
 interface ProviderConfig {
@@ -585,7 +588,7 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
           'ManualBackupStep3',
           'Webview',
           Routes.LOCK_SCREEN,
-        ].includes(route)
+        ].includes(route ?? '')
       ) {
         this.state.showProtectWalletModal &&
           // eslint-disable-next-line react/no-did-update-set-state
@@ -790,7 +793,7 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
         networkConfigurations,
       );
       const url = `${blockExplorer}/address/${this.selectedChecksummedAddress}`;
-      const title = new URLParse(blockExplorer).hostname;
+      const title = new URLParse(blockExplorer ?? '').hostname;
       this.goToBrowserUrl(url, title);
     } else {
       const url = getEtherscanAddressUrl(

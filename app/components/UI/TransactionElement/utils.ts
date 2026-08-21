@@ -61,7 +61,7 @@ export interface TransactionDetailsType {
   hash?: string;
   renderValue?: string;
   renderGas?: string | number;
-  renderGasPrice?: string;
+  renderGasPrice?: string | number;
   renderTotalGas?: string;
   transactionType?: string;
   txChainId?: string;
@@ -84,6 +84,7 @@ interface TransferInformation {
   symbol?: string;
   decimals?: number;
   contractAddress?: string;
+  [key: string]: unknown;
 }
 
 export interface DecodableTransaction {
@@ -135,6 +136,7 @@ export interface DecodeTransactionArgs {
     { nativeCurrency?: string } | undefined
   >;
   conversionRate?: number | null;
+  exchangeRate?: number;
   currentCurrency: string;
   primaryCurrency?: string;
   selectedAddress?: string;
@@ -147,8 +149,23 @@ export interface DecodeTransactionArgs {
   contractExchangeRates?: Record<string, { price?: number } | undefined>;
   collectibleContracts?: CollectibleContract[];
   swapsTransactions?: Record<string, SwapTransaction | undefined>;
-  swapsTokens?: SwapsToken[];
+  /**
+   * The swaps controller exposes `null` before its token list has loaded.
+   */
+  swapsTokens?: SwapsToken[] | null;
 }
+
+type EIP1559TxParams = TxParams & {
+  maxFeePerGas: string;
+  maxPriorityFeePerGas: string;
+};
+
+const isEIP1559TxParams = (
+  transaction: TxParams,
+): transaction is EIP1559TxParams => isEIP1559Transaction(transaction);
+
+const toHexString = (value: string | { toString(): string }): string =>
+  typeof value === 'string' ? value : value.toString();
 
 function calculateTotalGas(transaction: TxParams): BN {
   const {
@@ -156,19 +173,17 @@ function calculateTotalGas(transaction: TxParams): BN {
     gasPrice,
     gasUsed,
     estimatedBaseFee,
-    maxPriorityFeePerGas,
-    maxFeePerGas,
     multiLayerL1FeeTotal,
   } = transaction;
-  if (isEIP1559Transaction(transaction)) {
+  if (isEIP1559TxParams(transaction)) {
     const eip1559GasHex = calculateEIP1559GasFeeHexes({
-      gasLimitHex: gasUsed || gas,
+      gasLimitHex: gasUsed || gas || '0x0',
       estimatedGasLimitHex: undefined,
       estimatedBaseFeeHex: estimatedBaseFee || '0x0',
-      suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas,
-      suggestedMaxFeePerGasHex: maxFeePerGas,
+      suggestedMaxPriorityFeePerGasHex: transaction.maxPriorityFeePerGas,
+      suggestedMaxFeePerGasHex: transaction.maxFeePerGas,
     });
-    return hexToBN(eip1559GasHex.gasFeeMinHex);
+    return hexToBN(toHexString(eip1559GasHex.gasFeeMinHex));
   }
   const gasBN = hexToBN(gas);
   const gasPriceBN = hexToBN(gasPrice);
@@ -187,30 +202,21 @@ function calculateTotalGas(transaction: TxParams): BN {
 }
 
 function renderGwei(transaction: TxParams) {
-  const {
-    gasPrice,
-    estimatedBaseFee,
-    maxFeePerGas,
-    maxPriorityFeePerGas,
-    gas,
-  } = transaction;
+  const { gasPrice, estimatedBaseFee, gas } = transaction;
 
-  if (isEIP1559Transaction(transaction)) {
+  if (isEIP1559TxParams(transaction)) {
     const eip1559GasHex = calculateEIP1559GasFeeHexes({
-      gasLimitHex: gas,
+      gasLimitHex: gas || '0x0',
       estimatedGasLimitHex: undefined,
       estimatedBaseFeeHex: estimatedBaseFee || '0x0',
-      suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas,
-      suggestedMaxFeePerGasHex: maxFeePerGas,
+      suggestedMaxPriorityFeePerGasHex: transaction.maxPriorityFeePerGas,
+      suggestedMaxFeePerGasHex: transaction.maxFeePerGas,
     });
 
-    const baseFeePlusPriorityFeeHex =
-      eip1559GasHex.estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex;
-
     return renderToGwei(
-      typeof baseFeePlusPriorityFeeHex === 'string'
-        ? baseFeePlusPriorityFeeHex
-        : baseFeePlusPriorityFeeHex.toString(),
+      toHexString(
+        eip1559GasHex.estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex,
+      ),
     );
   }
   return renderToGwei(gasPrice ?? 0);
@@ -235,7 +241,7 @@ function getTokenTransfer(
   } = args;
   const totalGas = toWeiBN(args.totalGas);
 
-  const [, , encodedAmount] = decodeTransferData('transfer', data);
+  const [, , encodedAmount] = decodeTransferData('transfer', data) ?? [];
   const amount = hexToBN(encodedAmount);
   const checksummedTo = safeToChecksumAddress(to) ?? '';
   const userHasToken = tokens ? checksummedTo in tokens : false;
@@ -341,7 +347,7 @@ function getCollectibleTransfer(
   } = args;
   const totalGas = toWeiBN(args.totalGas);
   let actionKey;
-  const [, tokenId] = decodeTransferData('transfer', data);
+  const [, tokenId] = decodeTransferData('transfer', data) ?? [];
   const ticker =
     networkConfigurationsByChainId?.[txChainId ?? '']?.nativeCurrency;
   const collectible = collectibleContracts?.find((collectibleContract) =>
@@ -532,11 +538,11 @@ async function decodeTransferTx(
     txChainId,
   } = args;
 
-  const decodedData = decodeTransferData('transfer', data);
+  const decodedData = decodeTransferData('transfer', data) ?? [];
   const addressTo = decodedData[0];
   let isCollectible = false;
   try {
-    isCollectible = await isCollectibleAddress(to, decodedData[1]);
+    isCollectible = Boolean(await isCollectibleAddress(to, decodedData[1]));
   } catch (e) {
     //
   }
@@ -579,10 +585,8 @@ function decodeTransferFromTx(
     primaryCurrency,
     selectedAddress,
   } = args;
-  const [addressFrom, addressTo, tokenId] = decodeTransferData(
-    'transferFrom',
-    data,
-  );
+  const [addressFrom, addressTo, tokenId] =
+    decodeTransferData('transferFrom', data) ?? [];
   const collectible = collectibleContracts?.find((collectibleContract) =>
     toLowerCaseEquals(collectibleContract.address, to),
   );
@@ -1086,10 +1090,10 @@ export default async function decodeTransaction(
   const { isTransfer } = tx || {};
 
   const actionKey = await getActionKey(
-    tx,
+    { ...tx },
     selectedAddress,
     ticker,
-    chainIdToUse,
+    chainIdToUse ?? '',
   );
   let transactionElement, transactionDetails;
 

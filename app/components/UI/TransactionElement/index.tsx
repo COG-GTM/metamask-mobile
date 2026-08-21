@@ -163,12 +163,22 @@ export type TransactionElementTx = DecodableTransaction & {
   deviceConfirmedOn?: string;
 };
 
-export interface ExistingGas {
-  isEIP1559Transaction?: boolean;
-  maxFeePerGas?: string;
-  maxPriorityFeePerGas?: string;
-  gasPrice?: number;
-}
+/**
+ * EIP-1559 transactions carry both fee values, legacy ones carry a gas price.
+ */
+export type ExistingGas =
+  | {
+      isEIP1559Transaction: true;
+      maxFeePerGas: string;
+      maxPriorityFeePerGas: string;
+      gasPrice?: undefined;
+    }
+  | {
+      isEIP1559Transaction?: false;
+      maxFeePerGas?: undefined;
+      maxPriorityFeePerGas?: undefined;
+      gasPrice?: number;
+    };
 
 interface Navigation {
   navigate: (name: string, params?: object) => void;

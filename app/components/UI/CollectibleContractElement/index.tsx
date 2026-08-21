@@ -130,7 +130,7 @@ interface OwnProps {
   removeFavoriteCollectible?: (
     selectedAddress: string | undefined,
     chainId: string,
-    collectible: CollectibleItem | null,
+    collectible: CollectibleItem,
   ) => void;
 }
 
@@ -149,7 +149,7 @@ interface DispatchProps {
   removeFavoriteCollectible: (
     selectedAddress: string | undefined,
     chainId: string,
-    collectible: CollectibleItem | null,
+    collectible: CollectibleItem,
   ) => void;
 }
 
@@ -230,12 +230,8 @@ function CollectibleContractElement({
 
   const removeNft = () => {
     const { NftController } = Engine.context;
-    removeFavoriteCollectible(
-      selectedAddress,
-      chainId,
-      longPressedCollectible.current,
-    );
     const collectible = longPressedCollectible.current as CollectibleItem;
+    removeFavoriteCollectible(selectedAddress, chainId, collectible);
     NftController.removeAndIgnoreNft(collectible.address, collectible.tokenId);
     trackEvent(
       createEventBuilder(MetaMetricsEvents.COLLECTIBLE_REMOVED)
@@ -388,7 +384,7 @@ const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   removeFavoriteCollectible: (
     selectedAddress: string | undefined,
     chainId: string,
-    collectible: CollectibleItem | null,
+    collectible: CollectibleItem,
   ) =>
     dispatch(
       removeFavoriteCollectibleAction(selectedAddress, chainId, collectible),
