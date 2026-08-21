@@ -806,7 +806,7 @@ export const calculateAmountsEIP1559 = ({
   value: string;
   nativeCurrency: string;
   currentCurrency: string;
-  conversionRate: number;
+  conversionRate?: number | null;
   gasFeeMinConversion: string;
   gasFeeMinNative: string;
   gasFeeMaxNative: string;
@@ -906,7 +906,7 @@ export const calculateERC20EIP1559 = ({
 }: {
   currentCurrency: string;
   nativeCurrency: string;
-  conversionRate: number;
+  conversionRate?: number | null;
   exchangeRate?: number;
   tokenAmount: string;
   totalMinConversion: string;
@@ -918,7 +918,7 @@ export const calculateERC20EIP1559 = ({
   const tokenAmountConversion = convertTokenToFiat({
     value: tokenAmount,
     toCurrency: currentCurrency,
-    conversionRate,
+    conversionRate: Number(conversionRate),
     contractExchangeRate: exchangeRate,
   });
 
@@ -1198,8 +1198,8 @@ export const parseTransactionEIP1559 = (
       isNativeAsset: boolean;
       sourceAmount: string;
     };
-    contractExchangeRates: Record<string, unknown>;
-    conversionRate: number;
+    contractExchangeRates?: Record<string, unknown>;
+    conversionRate?: number | null;
     currentCurrency: string;
     nativeCurrency: string;
     transactionState?: TransactionStateSlice;
@@ -1468,7 +1468,7 @@ export const parseTransactionEIP1559 = (
     );
 
     const exchangeRate = (
-      contractExchangeRates[address as string] as ContractExchangeRate
+      contractExchangeRates?.[address as string] as ContractExchangeRate
     )?.price;
 
     [
@@ -1544,7 +1544,7 @@ export const parseTransactionLegacy = (
     multiLayerL1FeeTotal,
   }: {
     contractExchangeRates?: Record<string, unknown>;
-    conversionRate: number;
+    conversionRate?: number | null;
     currentCurrency: string;
     transactionState?: TransactionStateSlice;
     ticker?: string;
@@ -1634,12 +1634,12 @@ export const parseTransactionLegacy = (
     )?.price;
     const transactionFeeFiatNumber = weiToFiatNumber(
       weiTransactionFee,
-      conversionRate,
+      Number(conversionRate),
     );
 
     const transactionValueFiatNumber = balanceToFiatNumber(
       transferValue,
-      conversionRate,
+      Number(conversionRate),
       exchangeRate as number,
     );
     transactionTotalAmount = `${transactionValue} + ${renderFromWei(

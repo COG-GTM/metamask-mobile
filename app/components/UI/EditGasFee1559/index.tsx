@@ -147,8 +147,9 @@ const createStyles = (colors: Colors) =>
 
 // The JavaScript implementation renders these functions without calling them,
 // which React ignores; they are kept as-is to preserve the rendered output
-const asNode = (renderFunction: () => React.ReactNode) =>
-  renderFunction as unknown as React.ReactNode;
+const asNode = (
+  renderFunction: React.ReactNode | (() => React.ReactNode),
+) => renderFunction as unknown as React.ReactNode;
 
 interface GasFee {
   maxWaitTimeEstimate?: number;
@@ -163,6 +164,22 @@ interface GasOption {
   suggestedMaxFeePerGas?: string;
 }
 
+/**
+ * Gas fee estimates keyed by option name. Callers pass the gas fee controller
+ * estimates, which also hold non-option entries (base fee, trends, ranges).
+ */
+type GasOptions = Record<string, unknown>;
+
+const gasOptionFor = (
+  gasOptions: GasOptions | undefined,
+  option: string,
+): GasOption | undefined => {
+  const estimate = gasOptions?.[option];
+  return typeof estimate === 'object' && estimate !== null
+    ? (estimate as GasOption)
+    : undefined;
+};
+
 interface UpdateOption {
   isCancel?: boolean;
   showAdvanced?: boolean;
@@ -172,7 +189,7 @@ interface UpdateOption {
 
 interface RecommendedOption {
   name?: string;
-  render?: React.ReactNode;
+  render?: React.ReactNode | (() => React.ReactNode);
 }
 
 type InfoModalName =
@@ -186,7 +203,7 @@ interface EditGasFee1559Props {
   /**
    * Gas option selected (low, medium, high)
    */
-  selected?: string;
+  selected?: string | null;
   /**
    * Gas fee currently active
    */
@@ -194,7 +211,7 @@ interface EditGasFee1559Props {
   /**
    * Gas fee options to select from
    */
-  gasOptions?: Record<string, GasOption>;
+  gasOptions?: GasOptions;
   /**
    * Function called when user selected or changed the gas
    */
@@ -365,10 +382,8 @@ const EditGasFee1559 = ({
     false,
   );
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(!selected);
-  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<string | null>(
-    null,
-  );
-  const [maxFeeError, setMaxFeeError] = useState<string | null>(null);
+  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<string>();
+  const [maxFeeError, setMaxFeeError] = useState<string>();
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState<
     string | null | undefined
@@ -434,19 +449,19 @@ const EditGasFee1559 = ({
     onChange?.(gas, newSelectedOption);
   };
 
-  const changedMaxPriorityFee = (value: string) => {
+  const changedMaxPriorityFee = (value?: string) => {
     const lowerValue = new BigNumber(
-      gasOptions?.[warningMinimumEstimateOption]
+      gasOptionFor(gasOptions, warningMinimumEstimateOption)
         ?.suggestedMaxPriorityFeePerGas ?? NaN,
     );
     const higherValue = new BigNumber(
-      gasOptions?.high?.suggestedMaxPriorityFeePerGas ?? NaN,
+      gasOptionFor(gasOptions, 'high')?.suggestedMaxPriorityFeePerGas ?? NaN,
     ).multipliedBy(new BigNumber(1.5));
     const updateFloor = new BigNumber(
       updateOption?.maxPriortyFeeThreshold ?? NaN,
     );
 
-    const valueBN = new BigNumber(value);
+    const valueBN = new BigNumber(value ?? NaN);
 
     if (updateFloor && !updateFloor.isNaN() && valueBN.lt(updateFloor)) {
       setMaxPriorityFeeError(
@@ -475,16 +490,17 @@ const EditGasFee1559 = ({
     changeGas(newGas, null);
   };
 
-  const changedMaxFeePerGas = (value: string) => {
+  const changedMaxFeePerGas = (value?: string) => {
     const lowerValue = new BigNumber(
-      gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxFeePerGas ?? NaN,
+      gasOptionFor(gasOptions, warningMinimumEstimateOption)
+        ?.suggestedMaxFeePerGas ?? NaN,
     );
     const higherValue = new BigNumber(
-      gasOptions?.high?.suggestedMaxFeePerGas ?? NaN,
+      gasOptionFor(gasOptions, 'high')?.suggestedMaxFeePerGas ?? NaN,
     ).multipliedBy(new BigNumber(1.5));
     const updateFloor = new BigNumber(updateOption?.maxFeeThreshold ?? NaN);
 
-    const valueBN = new BigNumber(value);
+    const valueBN = new BigNumber(value ?? NaN);
 
     if (updateFloor && !updateFloor.isNaN() && valueBN.lt(updateFloor)) {
       setMaxFeeError(
@@ -508,7 +524,7 @@ const EditGasFee1559 = ({
     changeGas(newGas, null);
   };
 
-  const changedGasLimit = (value: string) => {
+  const changedGasLimit = (value?: string) => {
     const newGas = { ...gasFee, suggestedGasLimit: value };
     changeGas(newGas, null);
   };
@@ -517,7 +533,7 @@ const EditGasFee1559 = ({
     setSelectedOption(option);
     setMaxFeeError('');
     setMaxPriorityFeeError('');
-    changeGas({ ...gasOptions?.[option] }, option);
+    changeGas({ ...gasOptionFor(gasOptions, option) }, option);
   };
 
   const shouldIgnore = (option: string) =>
@@ -552,12 +568,12 @@ const EditGasFee1559 = ({
       .map(({ name, label, ...option }) => ({
         name,
         label: renderLabel(selectedOption === name, false, label),
-        topLabel: recommended?.name === name && recommended.render,
+        topLabel: recommended?.name === name && asNode(recommended.render),
         ...option,
         ...extendOptions[name],
       }));
 
-  const isMainnet = isMainnetByChainId(chainId);
+  const isMainnet = chainId !== undefined && isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
   let gasFeePrimary,
     gasFeeMaxPrimary,
@@ -664,7 +680,7 @@ const EditGasFee1559 = ({
                         {strings('edit_gas_fee_eip1559.estimate')}:
                       </Text>{' '}
                       {
-                        gasOptions?.[suggestedEstimateOption]
+                        gasOptionFor(gasOptions, suggestedEstimateOption)
                           ?.suggestedMaxPriorityFeePerGas
                       }{' '}
                       GWEI
@@ -714,7 +730,7 @@ const EditGasFee1559 = ({
                         {strings('edit_gas_fee_eip1559.estimate')}:
                       </Text>{' '}
                       {
-                        gasOptions?.[suggestedEstimateOption]
+                        gasOptionFor(gasOptions, suggestedEstimateOption)
                           ?.suggestedMaxFeePerGas
                       }{' '}
                       GWEI

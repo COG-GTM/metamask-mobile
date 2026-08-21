@@ -121,6 +121,21 @@ const createStyles = (colors: Colors) =>
 const asNode = (renderFunction: () => React.ReactNode) =>
   renderFunction as unknown as React.ReactNode;
 
+/**
+ * Gas price estimates keyed by option name. Callers pass the gas fee
+ * controller estimates, which also hold non-string entries for other estimate
+ * types.
+ */
+type GasOptions = Record<string, unknown>;
+
+const gasPriceFor = (
+  gasOptions: GasOptions | undefined,
+  option: string,
+): string | undefined => {
+  const estimate = gasOptions?.[option];
+  return typeof estimate === 'string' ? estimate : undefined;
+};
+
 interface GasFee {
   maxWaitTimeEstimate?: number;
   minWaitTimeEstimate?: number;
@@ -143,7 +158,7 @@ interface EditGasFeeLegacyProps {
   /**
    * Gas option selected (low, medium, high)
    */
-  selected?: string;
+  selected?: string | null;
   /**
    * Gas fee currently active
    */
@@ -151,7 +166,7 @@ interface EditGasFeeLegacyProps {
   /**
    * Gas fee options to select from
    */
-  gasOptions?: Record<string, string>;
+  gasOptions?: GasOptions;
   /**
    * Function called when user selected or changed the gas
    */
@@ -314,19 +329,19 @@ const EditGasFeeLegacy = ({
     onChange?.(gas, newSelectedOption);
   };
 
-  const changedGasPrice = (value: string) => {
+  const changedGasPrice = (value?: string) => {
     const lowerValue = new BigNumber(
       gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-        ? gasOptions?.[warningMinimumEstimateOption] ?? NaN
-        : gasOptions?.gasPrice ?? NaN,
+        ? gasPriceFor(gasOptions, warningMinimumEstimateOption) ?? NaN
+        : gasPriceFor(gasOptions, 'gasPrice') ?? NaN,
     );
     const higherValue = new BigNumber(
       gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-        ? gasOptions?.high ?? NaN
-        : gasOptions?.gasPrice ?? NaN,
+        ? gasPriceFor(gasOptions, 'high') ?? NaN
+        : gasPriceFor(gasOptions, 'gasPrice') ?? NaN,
     ).multipliedBy(new BigNumber(1.5));
 
-    const valueBN = new BigNumber(value);
+    const valueBN = new BigNumber(value ?? NaN);
 
     if (!lowerValue.isNaN() && valueBN.lt(lowerValue)) {
       setGasPriceError(strings('edit_gas_fee_eip1559.gas_price_low'));
@@ -341,7 +356,7 @@ const EditGasFeeLegacy = ({
     changeGas(newGas, null);
   };
 
-  const changedGasLimit = (value: string) => {
+  const changedGasLimit = (value?: string) => {
     const newGas = { ...gasFee, suggestedGasLimit: value };
 
     changeGas(newGas, null);
@@ -350,7 +365,10 @@ const EditGasFeeLegacy = ({
   const selectOption = (option: string) => {
     setGasPriceError('');
     setSelectedOption(option);
-    changeGas({ ...gasFee, suggestedGasPrice: gasOptions?.[option] }, option);
+    changeGas(
+      { ...gasFee, suggestedGasPrice: gasPriceFor(gasOptions, option) },
+      option,
+    );
   };
 
   const shouldIgnore = (option: string) =>
@@ -450,7 +468,7 @@ const EditGasFeeLegacy = ({
     return error;
   };
 
-  const isMainnet = isMainnetByChainId(chainId);
+  const isMainnet = chainId !== undefined && isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
   let gasFeePrimary, gasFeeSecondary;
   if (nativeCurrencySelected) {

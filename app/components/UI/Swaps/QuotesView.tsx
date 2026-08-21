@@ -84,6 +84,7 @@ import QuotesModal from './components/QuotesModal';
 import Ratio from './components/Ratio';
 import ActionAlert from './components/ActionAlert';
 import ApprovalTransactionEditionModal, {
+  asApprovalTransaction,
   type ApprovalTransaction,
 } from './components/ApprovalTransactionEditionModal';
 import GasEditModal, {
@@ -387,7 +388,7 @@ interface PriceSlippage {
  */
 type SwapsQuote = Quote &
   Partial<GasIncludedQuote> & {
-    slippage: number;
+    slippage?: number;
     priceSlippage?: PriceSlippage;
   };
 
@@ -425,7 +426,26 @@ interface TransactionGasEstimates {
 
 type QuotesNavigation = StackNavigationProp<ParamListBase>;
 
-type QuotesRoute = RouteProp<Record<string, QuotesNavigationParams>, string>;
+/**
+ * Params the quotes navbar reads and this view sets through `setParams`, in
+ * addition to the ones the amount view navigates with.
+ */
+interface QuotesRouteParams extends QuotesNavigationParams {
+  title?: string;
+  leftAction?: string;
+  requestedTrade?: {
+    token_from?: string;
+    token_to?: string;
+    request_type?: string;
+    custom_slippage?: number;
+    chain_id?: string;
+    token_from_amount?: string;
+  };
+  selectedQuote?: string;
+  quoteBegin?: number;
+}
+
+type QuotesRoute = RouteProp<Record<string, QuotesRouteParams>, string>;
 
 interface ResetAndStartPollingOptions {
   slippage: number;
@@ -953,6 +973,7 @@ function SwapsQuotesView({
         );
       }
 
+      const changedGasPrice = changedGasEstimate.gasPrice;
       const parameters = {
         speed_set: changedGasEstimate?.selected,
         gas_mode: changedGasEstimate?.selected ? 'Basic' : 'Advanced',
@@ -962,13 +983,13 @@ function SwapsQuotesView({
             GAS_ESTIMATE_TYPES.LEGACY,
             GAS_ESTIMATE_TYPES.ETH_GASPRICE,
           ] as string[]
-        ).includes(gasEstimateType)
+        ).includes(gasEstimateType) && changedGasPrice !== undefined
           ? weiToFiat(
               toWei(
                 swapsUtils
                   .calcTokenAmount(
                     new BigNumber(changedGasLimit ?? '0', 10).times(
-                      decGWEIToHexWEI(changedGasEstimate.gasPrice),
+                      decGWEIToHexWEI(changedGasPrice),
                       16,
                     ),
                     18,
@@ -2831,7 +2852,9 @@ const mapStateToProps = (state: RootState): StateProps => ({
   aggregatorMetadata: selectSwapsAggregatorMetadata(state),
   quotes: selectSwapsQuotes(state),
   quoteValues: selectSwapsQuoteValues(state),
-  approvalTransaction: selectSwapsApprovalTransaction(state),
+  approvalTransaction: asApprovalTransaction(
+    selectSwapsApprovalTransaction(state),
+  ),
   error: selectSwapsError(state),
   quoteRefreshSeconds: selectSwapsQuoteRefreshSeconds(state),
   gasEstimateType: selectGasFeeControllerEstimateType(state),
