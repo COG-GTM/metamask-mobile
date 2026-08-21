@@ -62,16 +62,16 @@ interface NotificationNavigation {
 }
 
 interface TransactionNotificationProps {
-  autodismiss?: number;
+  autodismiss?: number | boolean;
   transaction?: NotificationTransaction;
-  status: string;
+  status?: string;
 }
 
 interface SimpleNotificationProps {
-  id: number;
-  autodismiss?: number;
-  title: string;
-  description: string;
+  id: string | number;
+  autodismiss?: number | boolean;
+  title?: string;
+  description?: string;
   status?: string;
 }
 
@@ -81,10 +81,10 @@ interface SimpleNotificationProps {
  */
 export interface NotificationManagerParams {
   navigation: NotificationNavigation;
-  showTransactionNotification: (props: TransactionNotificationProps) => void;
-  hideCurrentNotification: () => void;
-  showSimpleNotification: (props: SimpleNotificationProps) => void;
-  removeNotificationById: (id: string) => void;
+  showTransactionNotification(props: TransactionNotificationProps): void;
+  hideCurrentNotification(): void;
+  showSimpleNotification(props: SimpleNotificationProps): void;
+  removeNotificationById(id: string): void;
 }
 
 /**

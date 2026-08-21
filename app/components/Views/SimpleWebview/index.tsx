@@ -17,6 +17,11 @@ interface SimpleWebviewRouteParams {
 interface SimpleWebviewNavigation {
   setOptions: (options: ReturnType<typeof getWebviewNavbar>) => void;
   setParams: (params: SimpleWebviewRouteParams) => void;
+  /**
+   * Used by the navbar back button. Not provided by every caller, e.g. tests
+   * render the screen with a minimal navigation double.
+   */
+  pop?: () => void;
 }
 
 interface SimpleWebviewRoute {

@@ -157,7 +157,9 @@ interface OnboardingRoute {
 
 interface OnboardingNavigation {
   setOptions: (
-    options: ReturnType<typeof getTransparentOnboardingNavbarOptions>,
+    options:
+      | ReturnType<typeof getTransparentOnboardingNavbarOptions>
+      | ReturnType<typeof getTransparentBackOnboardingNavbarOptions>,
   ) => void;
   navigate: (name: string, params?: Record<string, unknown>) => void;
   replace: (name: string, params?: Record<string, unknown>) => void;

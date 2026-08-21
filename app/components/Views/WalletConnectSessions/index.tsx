@@ -106,6 +106,10 @@ interface WalletConnectSessionsProps {
    */
   navigation?: {
     setOptions: (options: ReturnType<typeof getNavigationOptionsTitle>) => void;
+    /**
+     * Used by the navbar back button.
+     */
+    goBack?: () => void;
   };
 }
 

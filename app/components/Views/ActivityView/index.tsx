@@ -187,15 +187,17 @@ const ActivityView = () => {
     () => {
       const title =
         hasOrders ?? false ? 'activity_view.title' : 'transactions_view.title';
-      navigation.setOptions(
-        getTransactionsNavbarOptions(
-          title,
-          colors,
-          navigation,
-          selectedAddress,
-          openAccountSelector,
-        ),
+      const { headerLeft, ...navbarOptions } = getTransactionsNavbarOptions(
+        title,
+        colors,
+        navigation,
+        selectedAddress ?? '',
+        openAccountSelector,
       );
+      navigation.setOptions({
+        ...navbarOptions,
+        headerLeft: () => headerLeft,
+      });
     },
     /* eslint-disable-next-line */
     [navigation, hasOrders, colors, selectedAddress, openAccountSelector],

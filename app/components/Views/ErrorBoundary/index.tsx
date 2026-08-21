@@ -266,7 +266,7 @@ export const Fallback = (props: FallbackProps) => {
 
   const handleSubmit = () => {
     toggleModal();
-    captureSentryFeedback({ sentryId: props.sentryId, comments: feedback });
+    captureSentryFeedback({ sentryId: props.sentryId ?? '', comments: feedback });
     Alert.alert(strings('error_screen.bug_report_thanks'));
   };
   return (

@@ -76,6 +76,18 @@ import {
 
 const MINIMUM_SUPPORTED_CLIPBOARD_VERSION = 9;
 
+/**
+ * `clearString` is added to the native clipboard module by
+ * `patches/@react-native-clipboard+clipboard+1.16.1.patch`, so it is missing
+ * from the published typings unless the patch is applied.
+ */
+interface PatchedClipboardMethods {
+  clearString(): void;
+}
+
+const PatchedClipboard = Clipboard as typeof Clipboard &
+  PatchedClipboardMethods;
+
 const PASSCODE_NOT_SET_ERROR = 'Error: Passcode not set.';
 const IOS_REJECTED_BIOMETRICS_ERROR =
   'Error: The user name or passphrase you entered is not correct.';
@@ -336,7 +348,7 @@ const ImportFromSecretRecoveryPhrase = ({
       // only clear clipboard if the seed phrase entered matches what's in the clipboard
       parseSeedPhrase(secretRecoveryPhrase) === parsedClipboardContents
     ) {
-      await Clipboard.clearString();
+      await PatchedClipboard.clearString();
     }
   };
 
