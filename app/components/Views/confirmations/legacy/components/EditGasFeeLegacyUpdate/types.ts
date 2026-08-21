@@ -1,63 +1,58 @@
+import { ReactNode } from 'react';
+import { JsonMap } from '../../../../../../core/Analytics/MetaMetrics.types';
+import { GasTransaction } from '../TransactionReview/TransactionReviewEIP1559Update/types';
+
+/**
+ * Gas values kept by the parent screen for a legacy (non EIP1559) transaction.
+ */
+export interface LegacyGasObject {
+  legacyGasLimit?: string;
+  suggestedGasPrice?: string;
+  suggestedMaxFeePerGas?: string;
+}
+
 export interface EditGasFeeLegacyUpdateProps {
   /**
    * Function called when user cancels
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onCancel: any;
+  onCancel: () => void;
   /**
    * Function called when user saves the new gas
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSave: (gasTxn: any, newGasObject: any) => void;
+  onSave: (gasTxn: GasTransaction, newGasObject: LegacyGasObject) => void;
   /**
    * Error message to show
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: any;
+  error?: ReactNode;
   /**
    * Warning message to show
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warning?: any;
-  /**
-   * Extend options object. Object has option keys and properties will be spread
-   */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extendOptions?: any;
+  warning?: ReactNode;
   /**
    * Function to call when update animation starts
    */
-  onUpdatingValuesStart: () => void;
+  onUpdatingValuesStart?: () => void;
   /**
    * Function to call when update animation ends
    */
-  onUpdatingValuesEnd: () => void;
+  onUpdatingValuesEnd?: () => void;
   /**
    * If the values should animate upon update or not
    */
-  animateOnChange: boolean | undefined;
+  animateOnChange?: boolean;
   /**
    * Boolean to determine if the animation is happening
    */
-  isAnimating: boolean;
+  isAnimating?: boolean;
   /**
    * Extra analytics params to be send with the gas analytics
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  analyticsParams: any;
+  analyticsParams?: JsonMap;
   view: string;
   onlyGas?: boolean;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  selectedGasObject: any;
+  selectedGasObject: LegacyGasObject;
   hasDappSuggestedGas?: boolean;
-  chainId: string;
+  chainId?: string;
 }
 
 export interface EditLegacyGasTransaction {

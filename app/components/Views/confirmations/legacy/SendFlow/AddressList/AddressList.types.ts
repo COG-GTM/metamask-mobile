@@ -1,4 +1,8 @@
+import { AddressBookEntry } from '@metamask/address-book-controller';
+import { Hex } from '@metamask/utils';
+
 export interface AddressListProps {
+  chainId: Hex;
   inputSearch?: string;
   onAccountPress: (address: string) => void;
   onAccountLongPress: (address: string) => void;
@@ -7,10 +11,7 @@ export interface AddressListProps {
   reloadAddressList?: boolean;
 }
 
-export interface Contact {
-  address: string;
-  name: string;
-  chainId: string;
+export interface Contact extends AddressBookEntry {
   isSmartContract?: boolean;
   isAmbiguousAddress?: boolean;
 }

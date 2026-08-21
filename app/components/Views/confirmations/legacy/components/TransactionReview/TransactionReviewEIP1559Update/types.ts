@@ -1,3 +1,38 @@
+import {
+  GasTransactionProps,
+  UseGasTransactionProps,
+} from '../../../../../../../core/GasPolling/types';
+
+/**
+ * The gas transaction data produced by the gas polling hook. The hook returns a
+ * union of the EIP1559 and the legacy shapes, plus an error string when the
+ * data it is given is incomplete, so every field is optional here.
+ */
+export interface GasTransaction extends Partial<GasTransactionProps> {
+  transactionFee?: string;
+  transactionFeeFiat?: string;
+  transactionTotalAmount?: string;
+  transactionTotalAmountFiat?: string;
+  renderableTotalMinNative?: string;
+  renderableTotalMinConversion?: string;
+  renderableTotalMaxNative?: string;
+  renderableTotalMaxConversion?: string;
+  suggestedGasPrice?: string;
+  suggestedGasPriceHex?: string;
+  suggestedGasLimitHex?: string;
+  totalHex?: string;
+}
+
+/**
+ * Narrows the value returned by `useGasTransaction` to the gas transaction
+ * data. The hook returns an error string instead of an object when it is given
+ * incomplete data, in which case there is no data to read.
+ */
+export const toGasTransaction = (gasTransaction: unknown): GasTransaction =>
+  typeof gasTransaction === 'object' && gasTransaction !== null
+    ? (gasTransaction as GasTransaction)
+    : {};
+
 export interface TransactionEIP1559UpdateProps {
   /**
    * Selected primary currency
@@ -58,33 +93,14 @@ export interface TransactionEIP1559UpdateProps {
   /**
    * gas object for calculating the gas transaction cost
    */
-  gasObject: {
-    suggestedMaxFeePerGas: string;
-    suggestedMaxPriorityFeePerGas: string;
-  };
-  gasObjectLegacy: {
-    legacyGasLimit?: string;
-    suggestedGasPrice?: string;
-  };
+  gasObject: UseGasTransactionProps['gasObject'];
+  gasObjectLegacy: UseGasTransactionProps['gasObjectLegacy'];
   /**
    * update gas transaction state to parent
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updateTransactionState: any;
+  updateTransactionState: (gasTransaction: GasTransaction) => void;
   onlyGas: boolean;
   multiLayerL1FeeTotal?: string;
-}
-
-export interface SkeletonProps {
-  /**
-   * Skeleton width
-   */
-  width: number;
-  /**
-   * if noStyle is passed to skeleton
-   */
-  noStyle?: boolean;
 }
 
 export interface SkeletonProps {

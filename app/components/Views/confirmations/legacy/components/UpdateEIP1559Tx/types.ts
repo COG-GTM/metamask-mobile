@@ -1,26 +1,35 @@
-import BigNumber from 'bignumber.js';
+import { GasTransaction } from '../TransactionReview/TransactionReviewEIP1559Update/types';
+
+export interface ExistingGas {
+  /**
+   * The max fee of the transaction being sped up or cancelled
+   */
+  maxFeePerGas: string;
+  /**
+   * The max priority fee of the transaction being sped up or cancelled
+   */
+  maxPriorityFeePerGas: string;
+  isEIP1559Transaction?: boolean;
+}
 
 export interface UpdateEIP1559Props {
   /**
    * Map of accounts to information objects including balances
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  accounts: any;
+  accounts: Record<string, { balance: string }>;
   /**
    * Chain Id
    */
-  chainId: string;
+  chainId?: string;
   /**
    * ETH or fiat, depending on user setting
    */
-  primaryCurrency: string;
+  primaryCurrency?: string;
   /**
-   * Gas fee estimates returned by the gas fee controller
+   * Gas fee estimates returned by the gas fee controller. The shape depends on
+   * the estimate type, so it is narrowed where it is read.
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  gasFeeEstimates: any;
+  gasFeeEstimates: unknown;
   /**
    * Estimate type returned by the gas fee controller, can be market-fee, legacy or eth_gasPrice
    */
@@ -28,7 +37,7 @@ export interface UpdateEIP1559Props {
   /**
    * A string that represents the selected address
    */
-  selectedAddress: string;
+  selectedAddress?: string;
   /**
    * A bool indicates whether tx is speed up/cancel
    */
@@ -36,19 +45,15 @@ export interface UpdateEIP1559Props {
   /**
    * Current provider ticker
    */
-  ticker: string;
+  ticker?: string;
   /**
    * The max fee and max priorty fee selected tx
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  existingGas: any;
+  existingGas: ExistingGas;
   /**
    * Gas object used to get suggestedGasLimit
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  gas: any;
+  gas?: string;
   /**
    * Function that cancels the tx update
    */
@@ -56,26 +61,5 @@ export interface UpdateEIP1559Props {
   /**
    * Function that performs the rest of the tx update
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSave: (tx: any) => void;
-}
-
-export interface UpdateTx1559Options {
-  /**
-   * The legacy calculated max priorty fee used in subcomponent for threshold warning messages
-   */
-  maxPriortyFeeThreshold: BigNumber;
-  /**
-   * The legacy calculated max fee used in subcomponent for threshold warning messages
-   */
-  maxFeeThreshold: BigNumber;
-  /**
-   * Boolean to indicate to sumcomponent if the view should display only advanced settings
-   */
-  showAdvanced: boolean;
-  /**
-   * Boolean to indicate if this is a cancel tx update
-   */
-  isCancel: boolean;
+  onSave: (tx: GasTransaction) => void;
 }
