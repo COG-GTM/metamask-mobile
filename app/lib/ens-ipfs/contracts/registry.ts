@@ -1,4 +1,6 @@
-export default [
+import { ContractAbi } from './abi';
+
+const registryAbi: ContractAbi = [
   {
     constant: true,
     inputs: [{ name: 'node', type: 'bytes32' }],
@@ -106,3 +108,5 @@ export default [
     type: 'event',
   },
 ];
+
+export default registryAbi;
