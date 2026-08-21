@@ -24,7 +24,7 @@ const config = {
   transform: {
     '^.+\\.[jt]sx?$': ['babel-jest', { configFile: './babel.config.tests.js' }],
     '^.+\\.(png|jpg|jpeg|gif|webp|svg|mp4)$':
-      '<rootDir>/app/util/test/assetFileTransformer.js',
+      '<rootDir>/jest.transformers/assetFileTransformer.js',
   },
   snapshotSerializers: ['enzyme-to-json/serializer'],
   // This is an environment variable that can be used to execute logic only in development
