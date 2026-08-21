@@ -1,11 +1,11 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, View, Text } from 'react-native';
+import { ImageURISource, StyleSheet, View, Text } from 'react-native';
+import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
 import WebsiteIcon from '../WebsiteIcon';
 import { getHost, getUrlObj } from '../../../util/browser';
-import networkList from '../../../util/networks';
+import NetworkList from '../../../util/networks';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AppConstants from '../../../core/AppConstants';
 import { renderShortAddress } from '../../../util/address';
@@ -17,10 +17,22 @@ import {
 } from '../../../selectors/networkController';
 import { INTERNAL_ORIGINS } from '../../../constants/transaction';
 import { TransactionReviewSelectorsIDs } from '../../../../e2e/selectors/SendFlow/TransactionReview.selectors';
+import { RootState } from '../../../reducers';
 
 const { ORIGIN_DEEPLINK, ORIGIN_QR_CODE } = AppConstants.DEEPLINKS;
 
-const createStyles = (colors) =>
+interface NetworkListEntry {
+  color?: string;
+  shortName?: string;
+}
+
+/**
+ * `util/networks` is still JavaScript, so its default export has no index
+ * signature. Networks are looked up by the provider type at runtime.
+ */
+const networkList: Record<string, NetworkListEntry | undefined> = NetworkList;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     transactionHeader: {
       justifyContent: 'center',
@@ -83,10 +95,38 @@ const createStyles = (colors) =>
     },
   });
 
+interface CurrentPageInformation {
+  url?: string;
+  origin?: string;
+  currentEnsName?: string;
+  icon?: string | ImageURISource;
+  spenderAddress?: string;
+}
+
+interface OwnProps {
+  /**
+   * Object containing current page title and url
+   */
+  currentPageInformation: CurrentPageInformation;
+}
+
+interface StateProps {
+  /**
+   * String representing the selected network
+   */
+  networkType: ReturnType<typeof selectProviderType>;
+  /**
+   * Provider name
+   */
+  nickname: ReturnType<typeof selectNickname>;
+}
+
+interface TransactionHeaderProps extends OwnProps, StateProps {}
+
 /**
  * PureComponent that renders the transaction header used for signing, granting permissions and sending
  */
-const TransactionHeader = (props) => {
+const TransactionHeader = (props: TransactionHeaderProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -110,8 +150,7 @@ const TransactionHeader = (props) => {
   const renderNetworkStatusIndicator = () => {
     const { networkType } = props;
     const networkStatusIndicatorColor =
-      (networkList[networkType] && networkList[networkType].color) ||
-      colors.error.default;
+      networkList[networkType]?.color || colors.error.default;
     const networkStatusIndicator = (
       <View
         style={[
@@ -130,7 +169,7 @@ const TransactionHeader = (props) => {
    */
   const renderSecureIcon = () => {
     if (originIsDeeplink) return null;
-    const { url, origin } = props.currentPageInformation;
+    const { url = '', origin = '' } = props.currentPageInformation;
     const name =
       getUrlObj(
         originIsWalletConnect
@@ -145,8 +184,8 @@ const TransactionHeader = (props) => {
   };
 
   const renderTopIcon = () => {
-    const { currentEnsName, icon, origin } = props.currentPageInformation;
-    let url = props.currentPageInformation.url;
+    const { currentEnsName, icon, origin = '' } = props.currentPageInformation;
+    let url = props.currentPageInformation.url ?? '';
     if (originIsDeeplink && !icon) {
       return (
         <View style={styles.deeplinkIconContainer}>
@@ -178,8 +217,12 @@ const TransactionHeader = (props) => {
   };
 
   const renderTitle = () => {
-    const { url, currentEnsName, spenderAddress, origin } =
-      props.currentPageInformation;
+    const {
+      url = '',
+      currentEnsName,
+      spenderAddress = '',
+      origin = '',
+    } = props.currentPageInformation;
     let title = '';
 
     if (originIsDeeplink) title = renderShortAddress(spenderAddress);
@@ -213,7 +256,7 @@ const TransactionHeader = (props) => {
     </View>
   );
   const showOrigin = !INTERNAL_ORIGINS.includes(
-    props.currentPageInformation.origin,
+    props.currentPageInformation.origin ?? '',
   );
 
   return (
@@ -225,22 +268,7 @@ const TransactionHeader = (props) => {
   );
 };
 
-TransactionHeader.propTypes = {
-  /**
-   * Object containing current page title and url
-   */
-  currentPageInformation: PropTypes.object,
-  /**
-   * String representing the selected network
-   */
-  networkType: PropTypes.string,
-  /**
-   * Provider name
-   */
-  nickname: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   networkType: selectProviderType(state),
   nickname: selectNickname(state),
 });
