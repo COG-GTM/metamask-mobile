@@ -577,7 +577,7 @@ interface StateProps {
   /**
    * Token network filter
    */
-  tokenNetworkFilter?: Record<string, boolean>;
+  tokenNetworkFilter?: Record<string, string>;
 }
 
 interface DispatchProps {
@@ -1184,7 +1184,12 @@ export class NetworkSettings extends PureComponent<
         });
       } else {
         preferencesController.setTokenNetworkFilter({
-          ...tokenNetworkFilter,
+          ...Object.fromEntries(
+            Object.entries(tokenNetworkFilter ?? {}).map(([key, value]) => [
+              key,
+              Boolean(value),
+            ]),
+          ),
           [chainId]: true,
         });
       }

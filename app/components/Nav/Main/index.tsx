@@ -344,7 +344,12 @@ const Main = (props: MainProps) => {
           });
         } else {
           preferencesController.setTokenNetworkFilter({
-            ...tokenNetworkFilter,
+            ...Object.fromEntries(
+              Object.entries(tokenNetworkFilter).map(([key, value]) => [
+                key,
+                Boolean(value),
+              ]),
+            ),
             [chainId]: true,
           });
         }
