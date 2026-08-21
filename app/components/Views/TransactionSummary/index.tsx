@@ -1,19 +1,36 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ReactNode } from 'react';
 import {
   StyleSheet,
   View,
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
+import { Theme } from '@metamask/design-tokens';
 import { strings } from '../../../../locales/i18n';
 import { TRANSACTION_TYPES } from '../../../util/transactions';
-import Summary from '../../Base/Summary';
-import Text from '../../Base/Text';
+import BaseSummary from '../../Base/Summary';
+import BaseText from '../../Base/Text';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { isTestNet } from '../../../util/networks';
 
-const createStyles = (colors) =>
+// `Base/Summary` and `Base/Text` spread the props they do not consume onto the
+// underlying `View`/`Text`, but their prop types declare neither `children` nor
+// the `italic` flag used below, so they are described locally.
+type WithChildren<TProps> = React.FC<React.PropsWithChildren<TProps>>;
+
+const Summary = BaseSummary as WithChildren<
+  React.ComponentProps<typeof BaseSummary>
+> & {
+  Row: WithChildren<React.ComponentProps<typeof BaseSummary.Row>>;
+  Col: WithChildren<React.ComponentProps<typeof BaseSummary.Col>>;
+  Separator: typeof BaseSummary.Separator;
+};
+
+const Text = BaseText as React.FC<
+  React.ComponentProps<typeof BaseText> & { italic?: boolean }
+>;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     loader: {
       backgroundColor: colors.background.default,
@@ -21,21 +38,22 @@ const createStyles = (colors) =>
     },
   });
 
-export default class TransactionSummary extends PureComponent {
-  static propTypes = {
-    amount: PropTypes.string,
-    fee: PropTypes.string,
-    totalAmount: PropTypes.string,
-    secondaryTotalAmount: PropTypes.string,
-    gasEstimationReady: PropTypes.bool,
-    onEditPress: PropTypes.func,
-    transactionType: PropTypes.string,
-    chainId: PropTypes.string,
-  };
+interface TransactionSummaryProps {
+  amount?: string;
+  fee?: string;
+  totalAmount?: string;
+  secondaryTotalAmount?: string;
+  gasEstimationReady?: boolean;
+  onEditPress?: () => void;
+  transactionType?: string;
+  chainId?: string;
+}
 
-  renderIfGastEstimationReady = (children) => {
+export default class TransactionSummary extends PureComponent<TransactionSummaryProps> {
+  renderIfGastEstimationReady = (children: ReactNode) => {
     const { gasEstimationReady } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return !gasEstimationReady ? (
@@ -69,7 +87,7 @@ export default class TransactionSummary extends PureComponent {
       chainId,
     } = this.props;
 
-    const isTestNetResult = isTestNet(chainId);
+    const isTestNetResult = chainId !== undefined && isTestNet(chainId);
 
     if (
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED_TOKEN ||

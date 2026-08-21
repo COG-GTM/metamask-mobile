@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import PropTypes from 'prop-types';
+import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
@@ -8,7 +8,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { TERMS_AND_CONDITIONS_BUTTON_ID } from '../../../../wdio/screen-objects/testIDs/Components/TermsAndConditions.testIds';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     text: {
       ...fontStyles.normal,
@@ -21,20 +21,37 @@ const createStyles = (colors) =>
     },
   });
 
+interface TermsAndConditionsNavigation {
+  navigate: (
+    name: string,
+    params: {
+      screen: string;
+      params: {
+        url: string;
+        title: string;
+      };
+    },
+  ) => void;
+}
+
+interface TermsAndConditionsProps {
+  /**
+   * navigation object required to push and pop other views
+   */
+  navigation?: TermsAndConditionsNavigation;
+  /**
+   * Label of the action the user is agreeing to, passed by some callers
+   */
+  action?: string;
+}
+
 /**
  * View that is displayed in the flow to agree terms and conditions
  */
-export default class TermsAndConditions extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
-  };
-
+export default class TermsAndConditions extends PureComponent<TermsAndConditionsProps> {
   press = () => {
     const { navigation } = this.props;
-    navigation.navigate('Webview', {
+    navigation?.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: AppConstants.URLS.TERMS_AND_CONDITIONS,
@@ -44,7 +61,8 @@ export default class TermsAndConditions extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
