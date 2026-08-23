@@ -22,8 +22,8 @@ export const AllProperties = Symbol('*');
 export const sentryStateMask = {
   accounts: true,
   alert: true,
-  bookmarks: true,
-  browser: true,
+  bookmarks: false,
+  browser: false,
   collectibles: true,
   engine: {
     backgroundState: {
@@ -237,7 +237,7 @@ export const sentryStateMask = {
   onboarding: true,
   privacy: true,
   rpcEvents: true,
-  sdk: true,
+  sdk: false,
   security: true,
   settings: true,
   smartTransactions: true,

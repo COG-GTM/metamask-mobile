@@ -3,7 +3,6 @@ import { Alert } from 'react-native';
 import UrlParser from 'url-parse';
 import { strings } from '../../../../locales/i18n';
 import { PROTOCOLS } from '../../../constants/deeplinks';
-import Logger from '../../../util/Logger';
 import DevLogger from '../../SDKConnect/utils/DevLogger';
 
 export interface DeeplinkUrlParams {
@@ -54,9 +53,7 @@ function extractURLParams(url: string) {
       ) as unknown as DeeplinkUrlParams;
 
       if (params.message) {
-        Logger.log('extractParams:: message before...: ', params.message);
         params.message = params.message?.replace(/ /g, '+');
-        Logger.log('extractParams:: message after: ', params.message);
       }
     } catch (e) {
       if (e) Alert.alert(strings('deeplink.invalid'), e.toString());
