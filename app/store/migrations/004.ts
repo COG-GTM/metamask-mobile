@@ -1,15 +1,39 @@
+// @ts-expect-error `NetworksChainId` is not exported by this module; the import
+// is pre-existing and left as-is to keep this a type-only migration.
 import { NetworksChainId } from '@metamask/controller-utils';
 
-export default function migrate(state) {
-  const { allTokens } = state.engine.backgroundState.TokensController;
-  const { allCollectibleContracts, allCollectibles } =
-    state.engine.backgroundState.CollectiblesController;
-  const { frequentRpcList } =
-    state.engine.backgroundState.PreferencesController;
+type AssetsByNetwork = Record<string, Record<string, unknown>>;
 
-  const newAllCollectibleContracts = {};
-  const newAllCollectibles = {};
-  const newAllTokens = {};
+interface Migration004State {
+  engine: {
+    backgroundState: {
+      TokensController: {
+        allTokens: AssetsByNetwork;
+        [key: string]: unknown;
+      };
+      CollectiblesController: {
+        allCollectibleContracts: AssetsByNetwork;
+        allCollectibles: AssetsByNetwork;
+        [key: string]: unknown;
+      };
+      PreferencesController: {
+        frequentRpcList: { chainId: string }[];
+      };
+    };
+  };
+}
+
+export default function migrate(state: unknown) {
+  const migratedState = state as Migration004State;
+  const { allTokens } = migratedState.engine.backgroundState.TokensController;
+  const { allCollectibleContracts, allCollectibles } =
+    migratedState.engine.backgroundState.CollectiblesController;
+  const { frequentRpcList } =
+    migratedState.engine.backgroundState.PreferencesController;
+
+  const newAllCollectibleContracts: AssetsByNetwork = {};
+  const newAllCollectibles: AssetsByNetwork = {};
+  const newAllTokens: AssetsByNetwork = {};
 
   Object.keys(allTokens).forEach((address) => {
     newAllTokens[address] = {};
@@ -55,14 +79,14 @@ export default function migrate(state) {
     });
   });
 
-  state.engine.backgroundState.TokensController = {
-    ...state.engine.backgroundState.TokensController,
+  migratedState.engine.backgroundState.TokensController = {
+    ...migratedState.engine.backgroundState.TokensController,
     allTokens: newAllTokens,
   };
-  state.engine.backgroundState.CollectiblesController = {
-    ...state.engine.backgroundState.CollectiblesController,
+  migratedState.engine.backgroundState.CollectiblesController = {
+    ...migratedState.engine.backgroundState.CollectiblesController,
     allCollectibles: newAllCollectibles,
     allCollectibleContracts: newAllCollectibleContracts,
   };
-  return state;
+  return migratedState;
 }

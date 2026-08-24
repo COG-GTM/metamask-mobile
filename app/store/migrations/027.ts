@@ -1,21 +1,60 @@
 import { NetworkType } from '@metamask/controller-utils';
 
+interface Migration027Transaction {
+  chainId?: string;
+  origin?: string;
+  rawTransaction?: string;
+  time?: number;
+  transaction?: unknown;
+  transactionHash?: string;
+}
+
+interface Migration027NetworkConfiguration {
+  chainId?: string;
+  rpcUrl?: string;
+}
+
+interface Migration027ProviderConfig {
+  chainId?: string;
+  type?: string;
+}
+
+interface Migration027State {
+  engine: {
+    backgroundState: {
+      TransactionController?: {
+        transactions?: Migration027Transaction[];
+        submitHistory?: unknown[];
+      };
+      NetworkController?: {
+        providerConfig?: Migration027ProviderConfig;
+        networkConfigurations?: Record<
+          string,
+          Migration027NetworkConfiguration
+        >;
+      };
+    };
+  };
+}
+
 /**
  * Populate the submitHistory in the TransactionController using any
  * transaction metadata entries that have a rawTransaction value.
- * @param {any} state - Redux state
+ * @param state - Redux state
  * @returns
  */
-export default function migrate(state) {
-  const backgroundState = state.engine.backgroundState;
+export default function migrate(state: unknown) {
+  const migratedState = state as Migration027State;
+  const backgroundState = migratedState.engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;
 
-  if (!transactionControllerState) return state;
+  if (!transactionControllerState) return migratedState;
 
   const transactions = transactionControllerState.transactions || [];
   const networkControllerState = backgroundState.NetworkController || {};
-  const providerConfig = networkControllerState.providerConfig || {};
+  const providerConfig: Migration027ProviderConfig =
+    networkControllerState.providerConfig || {};
 
   const networkConfigurations =
     networkControllerState.networkConfigurations || {};
@@ -51,8 +90,7 @@ export default function migrate(state) {
       };
     });
 
-  state.engine.backgroundState.TransactionController.submitHistory =
-    submitHistory;
+  transactionControllerState.submitHistory = submitHistory;
 
-  return state;
+  return migratedState;
 }
