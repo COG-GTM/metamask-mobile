@@ -1,7 +1,42 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import type {
+  AssetType,
+  TransactionAction,
+  TransactionAsset,
+  TransactionParams,
+  TransactionSecurityAlertResponse,
+} from '../../actions/transaction';
 
-const initialState = {
+interface RehydrateAction {
+  type: typeof REHYDRATE;
+}
+
+export interface TransactionState {
+  ensRecipient?: string;
+  assetType?: AssetType;
+  selectedAsset: TransactionAsset;
+  transaction: TransactionParams;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  symbol?: string;
+  paymentRequest?: boolean;
+  readableValue?: string;
+  id?: string;
+  type?: string;
+  proposedNonce?: number;
+  nonce?: number;
+  securityAlertResponses: Record<string, TransactionSecurityAlertResponse>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+  securityAlertResponse?: TransactionSecurityAlertResponse;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,7 +67,9 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
+const getAssetType = (
+  selectedAsset?: TransactionAsset,
+): AssetType | undefined => {
   let assetType;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
@@ -46,7 +83,10 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction | RehydrateAction,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
@@ -138,7 +178,7 @@ const transactionReducer = (state = initialState, action) => {
         ...state,
         securityAlertResponses: {
           ...state.securityAlertResponses,
-          [transactionId]: securityAlertResponse,
+          [transactionId as string]: securityAlertResponse,
         },
       };
     }
