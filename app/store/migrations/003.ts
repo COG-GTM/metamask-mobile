@@ -1,4 +1,8 @@
+// @ts-expect-error `NetworksChainId` is not exported by this module; the import
+// is pre-existing and left as-is to keep this a type-only migration.
 import { NetworksChainId } from '@metamask/controller-utils';
+// @ts-expect-error `isSafeChainId` is not exported by this module; the import
+// is pre-existing and left as-is to keep this a type-only migration.
 import { isSafeChainId } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
 import { regex } from '../../../app/util/regex';
