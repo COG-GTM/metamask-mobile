@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { getFixturesServerPortInApp } from './utils';
 
 const FETCH_TIMEOUT = 40000; // Timeout in milliseconds
@@ -10,7 +10,12 @@ axios.defaults.headers.common['Access-Control-Allow-Methods'] =
 axios.defaults.headers.common['Access-Control-Allow-Headers'] =
   'Origin, X-Requested-With, Content-Type, Accept';
 
-const fetchWithTimeout = (url) =>
+interface FixtureServerState {
+  state?: Record<string, unknown>;
+  asyncState?: Record<string, string>;
+}
+
+const fetchWithTimeout = (url: string): Promise<AxiosResponse> =>
   new Promise((resolve, reject) => {
     axios
       .get(url)
@@ -26,6 +31,10 @@ const BROWSERSTACK_LOCALHOST = 'bs-local.com';
 const FIXTURE_SERVER_URL = `http://${FIXTURE_SERVER_HOST}:${getFixturesServerPortInApp()}/state.json`;
 
 class ReadOnlyNetworkStore {
+  private _initialized: boolean;
+  private _state: Record<string, unknown> | undefined;
+  private _asyncState: Record<string, string> | undefined;
+
   constructor() {
     this._initialized = false;
     this._state = undefined;
@@ -38,7 +47,7 @@ class ReadOnlyNetworkStore {
     return this._state;
   }
 
-  async setState(state) {
+  async setState(state: Record<string, unknown>) {
     if (!state) {
       throw new Error('MetaMask - updated state is missing');
     }
@@ -47,25 +56,25 @@ class ReadOnlyNetworkStore {
   }
 
   // Async Storage
-  async getString(key) {
+  async getString(key: string) {
     await this._initIfRequired();
-    const value = this._asyncState[key];
+    const value = (this._asyncState as Record<string, string>)[key];
     return value !== undefined ? value : null;
   }
 
-  async set(key, value) {
+  async set(key: string, value: string) {
     await this._initIfRequired();
-    this._asyncState[key] = value;
+    (this._asyncState as Record<string, string>)[key] = value;
   }
 
-  async delete(key) {
+  async delete(key: string) {
     await this._initIfRequired();
-    delete this._asyncState[key];
+    delete (this._asyncState as Record<string, string>)[key];
   }
 
   async clearAll() {
     await this._initIfRequired();
-    delete this._asyncState;
+    delete (this as { _asyncState?: Record<string, string> })._asyncState;
   }
 
   async _initIfRequired() {
@@ -79,7 +88,7 @@ class ReadOnlyNetworkStore {
     // Browserstack requires that the HOST is bs-local.com instead of localhost.
     const urls = [
       FIXTURE_SERVER_URL,
-      FIXTURE_SERVER_URL.replace(FIXTURE_SERVER_HOST, BROWSERSTACK_LOCALHOST)
+      FIXTURE_SERVER_URL.replace(FIXTURE_SERVER_HOST, BROWSERSTACK_LOCALHOST),
     ];
 
     try {
@@ -87,8 +96,9 @@ class ReadOnlyNetworkStore {
         try {
           const response = await fetchWithTimeout(url);
           if (response.status === 200) {
-            this._state = response.data?.state;
-            this._asyncState = response.data?.asyncState;
+            const data: FixtureServerState = response.data;
+            this._state = data?.state;
+            this._asyncState = data?.asyncState;
             return;
           }
         } catch (error) {
