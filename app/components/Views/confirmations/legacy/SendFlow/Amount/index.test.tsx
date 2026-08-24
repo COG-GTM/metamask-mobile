@@ -1,3 +1,4 @@
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import React from 'react';
 import Amount from '.';
 // eslint-disable-next-line @typescript-eslint/no-shadow
@@ -210,11 +211,13 @@ const renderComponent = (state: any = {}) =>
         {(props) => (
           <Amount
             {...props}
-            navigation={{
-              navigate: mockNavigate,
-              setOptions: jest.fn(),
-              setParams: jest.fn(),
-            }}
+            navigation={
+              {
+                navigate: mockNavigate,
+                setOptions: jest.fn(),
+                setParams: jest.fn(),
+              } as unknown as NavigationProp<ParamListBase>
+            }
           />
         )}
       </Stack.Screen>
