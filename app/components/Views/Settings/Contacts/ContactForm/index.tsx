@@ -271,7 +271,7 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
       addressError,
       toEnsName: toEnsName as string | null,
       addressReady,
-      toEnsAddress,
+      toEnsAddress: toEnsAddress as string | null,
       errorContinue,
     });
   };

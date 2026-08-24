@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { ComponentType, PureComponent } from 'react';
 import { ScrollView, View, StyleSheet, Text, SafeAreaView } from 'react-native';
 import CollectibleOverview from '../../UI/CollectibleOverview';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
@@ -43,8 +43,15 @@ const createStyles = (colors: Theme['colors']) =>
     },
   });
 
+const CollectibleOverviewView =
+  CollectibleOverview as unknown as ComponentType<{
+    navigation: NavigationProp<ParamListBase>;
+    collectible: Collectible;
+  }>;
+
 interface Collectible {
   address: string;
+  tokenId: string;
   contractName?: string;
   [key: string]: unknown;
 }
@@ -129,7 +136,7 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
       <SafeAreaView style={styles.root}>
         <ScrollView style={styles.wrapper}>
           <View>
-            <CollectibleOverview
+            <CollectibleOverviewView
               navigation={navigation}
               collectible={collectible}
             />

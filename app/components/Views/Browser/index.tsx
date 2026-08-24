@@ -495,7 +495,7 @@ export const Browser = (props: BrowserProps) => {
     if (shouldShowTabs) {
       return (
         <Tabs
-          tabs={tabs}
+          tabs={tabs as React.ComponentProps<typeof Tabs>['tabs']}
           activeTab={activeTabId}
           switchToTab={switchToTab}
           newTab={newTab}

@@ -147,19 +147,19 @@ interface RangeInputProps {
   /**
    * The label to show inside the input
    */
-  inputInsideLabel?: string;
+  inputInsideLabel?: string | null;
   /**
    * The error to show bellow the input. Also when the error exists the input text will turn red
    */
-  error?: string;
+  error?: string | null;
   /**
    * A BigNumber minimum value the input is allowed to have when clicking on the minus button
    */
-  min: BigNumber;
+  min?: BigNumber;
   /**
    * A BigNumber maximum value the input is allowed to have when clicking on the plus button
    */
-  max: BigNumber;
+  max?: BigNumber;
   /**
    * The name of the input
    */
@@ -206,7 +206,11 @@ const RangeInput = ({
     const newValue = new BigNumber(value as string).plus(
       new BigNumber(increment),
     );
-    if (!new BigNumber(max).isNaN() && newValue.gt(max)) return;
+    if (
+      !new BigNumber(max as BigNumber).isNaN() &&
+      newValue.gt(max as BigNumber)
+    )
+      return;
     changeValue(newValue.toString());
   }, [changeValue, increment, max, value]);
 
@@ -214,7 +218,11 @@ const RangeInput = ({
     const newValue = new BigNumber(value as string).minus(
       new BigNumber(increment),
     );
-    if (!new BigNumber(min).isNaN() && newValue.lt(min)) return;
+    if (
+      !new BigNumber(min as BigNumber).isNaN() &&
+      newValue.lt(min as BigNumber)
+    )
+      return;
     changeValue(newValue.toString());
   }, [changeValue, increment, min, value]);
 
@@ -230,13 +238,13 @@ const RangeInput = ({
   }, []);
 
   const checkLimits = useCallback(() => {
-    if (new BigNumber(value || 0).lt(min)) {
+    if (new BigNumber(value || 0).lt(min as BigNumber)) {
       setErrorState(`${name} must be at least ${min}`);
-      return changeValue(min.toString(), true);
+      return changeValue((min as BigNumber).toString(), true);
     }
-    if (new BigNumber(value || 0).gt(max)) {
+    if (new BigNumber(value || 0).gt(max as BigNumber)) {
       setErrorState(`${name} must be at most ${max}`);
-      return changeValue(max.toString());
+      return changeValue((max as BigNumber).toString());
     }
   }, [changeValue, max, min, name, value]);
 

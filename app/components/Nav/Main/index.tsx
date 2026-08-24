@@ -123,6 +123,10 @@ const createStyles = (colors: Theme['colors']) =>
     },
   });
 
+type NotificationManagerInitOptions = Parameters<
+  typeof NotificationManager.init
+>[0];
+
 interface MainProps {
   /**
    * Object that represents the navigator
@@ -457,10 +461,13 @@ const Main = (props: MainProps) => {
     setTimeout(() => {
       NotificationManager.init({
         navigation: props.navigation,
-        showTransactionNotification: props.showTransactionNotification,
+        showTransactionNotification:
+          props.showTransactionNotification as NotificationManagerInitOptions['showTransactionNotification'],
         hideCurrentNotification: props.hideCurrentNotification,
-        showSimpleNotification: props.showSimpleNotification,
-        removeNotificationById: props.removeNotificationById,
+        showSimpleNotification:
+          props.showSimpleNotification as unknown as NotificationManagerInitOptions['showSimpleNotification'],
+        removeNotificationById:
+          props.removeNotificationById as NotificationManagerInitOptions['removeNotificationById'],
       });
       checkInfuraAvailability();
       removeConnectionStatusListener.current = NetInfo.addEventListener(

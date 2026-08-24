@@ -25,7 +25,7 @@ import {
   setHideZeroBalanceTokens,
 } from '../../../../actions/settings';
 import PickComponent from '../../PickComponent';
-import { toDataUrl } from '../../../../util/blockies.js';
+import { toDataUrl } from '../../../../util/blockies';
 import Jazzicon from 'react-native-jazzicon';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { selectCurrentCurrency } from '../../../../selectors/currencyRateController';
@@ -517,7 +517,7 @@ class Settings extends PureComponent<SettingsProps, SettingsState> {
                     style={[styles.border, useBlockieIcon && styles.selected]}
                   >
                     <Image
-                      source={{ uri: toDataUrl(selectedAddress) }}
+                      source={{ uri: toDataUrl(selectedAddress as string) }}
                       style={styles.blockie}
                     />
                   </View>

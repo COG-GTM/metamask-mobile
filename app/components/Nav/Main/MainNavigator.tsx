@@ -496,10 +496,10 @@ const HomeTabs = () => {
   /* activeTab: state.browser.activeTab, */
   const activeConnectedDapp = useSelector((state: RootState) => {
     const activeTabUrl = getActiveTabUrl(state);
-    if (!isUrl(activeTabUrl)) return [];
+    if (!isUrl(activeTabUrl as string)) return [];
     try {
       const permissionsControllerState = selectPermissionControllerState(state);
-      const hostname = new URLParse(activeTabUrl).hostname;
+      const hostname = new URLParse(activeTabUrl as string).hostname;
       const permittedAcc = getPermittedAccountsByHostname(
         permissionsControllerState,
         hostname,

@@ -471,9 +471,9 @@ class ResetPassword extends PureComponent<
     const { originalPassword, password: newPassword } = this.state;
     // Recreate keyring with password
     await recreateVaultWithNewPassword(
-      originalPassword,
-      newPassword,
-      this.props.selectedAddress,
+      originalPassword as string,
+      newPassword as string,
+      this.props.selectedAddress as string,
     );
   };
 

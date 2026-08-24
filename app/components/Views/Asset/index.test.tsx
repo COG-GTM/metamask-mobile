@@ -1,4 +1,6 @@
 import React from 'react';
+import { ParamListBase } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { TransactionType } from '@metamask/transaction-controller';
 import { swapsUtils } from '@metamask/swaps-controller/';
 import renderWithProvider, {
@@ -116,7 +118,11 @@ describe('Asset', () => {
   it('should render correctly', () => {
     const { toJSON } = renderWithProvider(
       <Asset
-        navigation={{ setOptions: jest.fn() }}
+        navigation={
+          {
+            setOptions: jest.fn(),
+          } as unknown as StackNavigationProp<ParamListBase>
+        }
         route={{
           params: {
             symbol: 'ETH',
@@ -137,7 +143,11 @@ describe('Asset', () => {
     const mockSetOptions = jest.fn();
     renderWithProvider(
       <Asset
-        navigation={{ setOptions: mockSetOptions }}
+        navigation={
+          {
+            setOptions: mockSetOptions,
+          } as unknown as StackNavigationProp<ParamListBase>
+        }
         route={{
           params: {
             symbol: 'BNB',
@@ -159,7 +169,11 @@ describe('Asset', () => {
   it('should display swaps button if the asset is allowed', () => {
     const { toJSON } = renderWithProvider(
       <Asset
-        navigation={{ setOptions: jest.fn() }}
+        navigation={
+          {
+            setOptions: jest.fn(),
+          } as unknown as StackNavigationProp<ParamListBase>
+        }
         route={{
           params: {
             symbol: 'ETH',
@@ -181,7 +195,11 @@ describe('Asset', () => {
     jest.spyOn(swapsUtils, 'fetchSwapsFeatureFlags').mockRejectedValue('error');
     const { toJSON } = renderWithProvider(
       <Asset
-        navigation={{ setOptions: jest.fn() }}
+        navigation={
+          {
+            setOptions: jest.fn(),
+          } as unknown as StackNavigationProp<ParamListBase>
+        }
         route={{
           params: {
             symbol: 'AVAX',

@@ -230,7 +230,7 @@ const GasEducationCarousel = ({
             suggestedMaxFeePerGasHex,
             suggestedMaxPriorityFeePerGasHex,
           } as unknown as Parameters<typeof calculateEIP1559GasFeeHexes>[0]);
-          estimatedTotalGas = hexToBN(gasHexes.gasFeeMaxHex);
+          estimatedTotalGas = hexToBN(gasHexes.gasFeeMaxHex as string);
         } else if (gasEstimates.gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
           const gasPrice = hexToBN(
             decGWEIToHexWEI(
@@ -250,7 +250,7 @@ const GasEducationCarousel = ({
           fromCurrency: ticker,
           toCurrency: currentCurrency,
           numberOfDecimals: 2,
-          conversionRate,
+          conversionRate: conversionRate as number | undefined,
         });
 
         const gasFiatValue = formatCurrency(

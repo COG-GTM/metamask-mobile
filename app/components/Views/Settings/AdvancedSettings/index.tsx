@@ -165,6 +165,10 @@ const createStyles = (colors: Theme['colors']) =>
 /**
  * Main view for app configurations
  */
+interface AdvancedSettingsOwnProps {
+  navigation: StackNavigationProp<ParamListBase>;
+}
+
 interface AdvancedSettingsProps extends IWithMetricsAwarenessProps {
   /**
   /* navigation object required to push new views
@@ -546,7 +550,10 @@ class AdvancedSettings extends PureComponent<
 
 AdvancedSettings.contextType = ThemeContext;
 
-const mapStateToProps = (state: RootState) => ({
+const mapStateToProps = (
+  state: RootState,
+  _ownProps: AdvancedSettingsOwnProps,
+) => ({
   showHexData: state.settings.showHexData,
   showCustomNonce: state.settings.showCustomNonce,
   showFiatOnTestnets: state.settings.showFiatOnTestnets,
@@ -572,8 +579,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(
-  withMetricsAwareness(
-    AdvancedSettings as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
-  ),
-);
+)(withMetricsAwareness(AdvancedSettings));

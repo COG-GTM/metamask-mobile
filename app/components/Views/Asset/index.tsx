@@ -1,5 +1,5 @@
-import { swapsUtils } from '@metamask/swaps-controller/';
-import React, { ComponentType, PureComponent } from 'react';
+import { FeatureFlags, swapsUtils } from '@metamask/swaps-controller/';
+import React, { PureComponent } from 'react';
 import {
   ActivityIndicator,
   InteractionManager,
@@ -158,6 +158,12 @@ interface SwapsTransaction {
   sourceToken: { address: string };
 }
 
+interface AssetOwnProps {
+  route: { params: AssetRouteParams };
+  navigation: StackNavigationProp<ParamListBase>;
+  transactions?: AssetTransaction[];
+}
+
 interface AssetProps extends IWithMetricsAwarenessProps {
   /**
   /* navigation object required to access the props
@@ -167,7 +173,7 @@ interface AssetProps extends IWithMetricsAwarenessProps {
   /**
   /* conversion rate of ETH - FIAT
   */
-  conversionRate?: number;
+  conversionRate?: number | null;
   /**
   /* Selected currency
   */
@@ -209,10 +215,7 @@ interface AssetProps extends IWithMetricsAwarenessProps {
   /**
    * Function to set the swaps liveness
    */
-  setLiveness: (
-    chainId: Hex,
-    featureFlags: Record<string, unknown> | null,
-  ) => void;
+  setLiveness: (chainId: Hex, featureFlags?: FeatureFlags | null) => void;
 }
 
 interface AssetState {
@@ -305,10 +308,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
         getFeatureFlagChainId(chainId),
         AppConstants.SWAPS.CLIENT_ID,
       );
-      this.props.setLiveness(
-        chainId,
-        featureFlags as unknown as Record<string, unknown>,
-      );
+      this.props.setLiveness(chainId, featureFlags);
     } catch (error) {
       Logger.error(
         error as Error,
@@ -457,8 +457,8 @@ class Asset extends PureComponent<AssetProps, AssetState> {
         if (filterResult) {
           tx.insertImportTime = addAccountTimeFlagFilter(
             tx,
-            addedAccountTime as unknown as object,
-            accountAddedTimeInsertPointFound as unknown as object,
+            addedAccountTime as number,
+            accountAddedTimeInsertPointFound,
           );
           if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
           switch (tx.status as string) {
@@ -639,10 +639,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
 
 Asset.contextType = ThemeContext;
 
-const mapStateToProps = (
-  state: RootState,
-  { route }: { route: { params: AssetRouteParams } },
-) => ({
+const mapStateToProps = (state: RootState, { route }: AssetOwnProps) => ({
   swapsIsLive: getSwapsIsLive(state, route.params.chainId as Hex),
   swapsTokens: isPortfolioViewEnabled()
     ? swapsTokensMultiChainObjectSelector(state)
@@ -655,7 +652,7 @@ const mapStateToProps = (
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   selectedInternalAccount: selectSelectedInternalAccount(state),
-  chainId: selectChainId(state),
+  chainId: selectChainId(state) as Hex,
   tokens: selectTokens(state),
   transactions: selectTransactions(state),
   rpcUrl: selectRpcUrl(state),
@@ -672,15 +669,11 @@ const mapStateToProps = (
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setLiveness: (chainId: Hex, featureFlags: Record<string, unknown> | null) =>
+  setLiveness: (chainId: Hex, featureFlags?: FeatureFlags | null) =>
     dispatch(setSwapsLiveness(chainId, featureFlags)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(
-  withMetricsAwareness(
-    Asset as unknown as ComponentType<IWithMetricsAwarenessProps>,
-  ),
-);
+)(withMetricsAwareness(Asset));

@@ -27,8 +27,9 @@ const createStyles = (colors: Theme['colors']) =>
 
 interface CollectibleItem {
   address: string;
-  name?: string;
-  image?: string;
+  tokenId?: string;
+  name?: string | null;
+  image?: string | null;
   [key: string]: unknown;
 }
 
@@ -166,7 +167,11 @@ class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
             <View style={styles.wrapper}>
               <Collectibles
                 navigation={navigation}
-                collectibles={filteredCollectibles}
+                collectibles={
+                  filteredCollectibles as React.ComponentProps<
+                    typeof Collectibles
+                  >['collectibles']
+                }
                 collectibleContract={collectibleContract}
               />
             </View>
