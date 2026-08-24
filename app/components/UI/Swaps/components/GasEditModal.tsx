@@ -48,6 +48,9 @@ const styles: ReturnType<typeof StyleSheet.create> & {
 
 const RECOMMENDED = GAS_OPTIONS.HIGH;
 
+type EditGasFee1559Props = React.ComponentProps<typeof EditGasFee1559>;
+type EditGasFeeLegacyProps = React.ComponentProps<typeof EditGasFeeLegacy>;
+
 type ParseTransactionEIP1559Args = Parameters<
   typeof parseTransactionEIP1559
 >[0];
@@ -533,8 +536,12 @@ function GasEditModal({
                   : EIP1559TransactionDataTemp.error
               }
               suggestedEstimateOption={defaultGasFeeOptionFeeMarket}
-              gasFee={EIP1559TransactionDataTemp}
-              gasOptions={gasFeeEstimates}
+              gasFee={
+                EIP1559TransactionDataTemp as EditGasFee1559Props['gasFee']
+              }
+              gasOptions={
+                gasFeeEstimates as unknown as EditGasFee1559Props['gasOptions']
+              }
               onChange={calculateTempGasFee}
               gasFeeNative={
                 EIP1559TransactionDataTemp.renderableGasFeeMinNative
@@ -567,22 +574,24 @@ function GasEditModal({
               timeEstimateId={EIP1559TransactionDataTemp.timeEstimateId}
               onCancel={cancelGasEdition}
               onSave={saveGasEdition}
-              recommended={{
-                name: GAS_OPTIONS.HIGH,
-                // eslint-disable-next-line react/display-name
-                render: () => (
-                  <TouchableOpacity onPress={showGasFeeRecommendation}>
-                    <Text noMargin link bold small centered>
-                      {`${strings('swaps.recommended')} `}
-                      <MaterialCommunityIcon
-                        name="information"
-                        size={14}
-                        style={styles.labelInfo}
-                      />
-                    </Text>
-                  </TouchableOpacity>
-                ),
-              }}
+              recommended={
+                {
+                  name: GAS_OPTIONS.HIGH,
+                  // eslint-disable-next-line react/display-name
+                  render: () => (
+                    <TouchableOpacity onPress={showGasFeeRecommendation}>
+                      <Text noMargin link bold small centered>
+                        {`${strings('swaps.recommended')} `}
+                        <MaterialCommunityIcon
+                          name="information"
+                          size={14}
+                          style={styles.labelInfo}
+                        />
+                      </Text>
+                    </TouchableOpacity>
+                  ),
+                } as unknown as EditGasFee1559Props['recommended']
+              }
               view="Swaps"
               animateOnChange={animateOnChange}
               isAnimating={isAnimating}
@@ -605,9 +614,13 @@ function GasEditModal({
             selected={gasSelected}
             ignoreOptions={[GAS_OPTIONS.LOW]}
             warningMinimumEstimateOption={GAS_OPTIONS.MEDIUM}
-            gasFee={LegacyTransactionDataTemp}
+            gasFee={
+              LegacyTransactionDataTemp as EditGasFeeLegacyProps['gasFee']
+            }
             gasEstimateType={gasEstimateType}
-            gasOptions={gasFeeEstimates}
+            gasOptions={
+              gasFeeEstimates as unknown as EditGasFeeLegacyProps['gasOptions']
+            }
             onChange={calculateTempGasFeeLegacy}
             gasFeeNative={LegacyTransactionDataTemp.transactionFee}
             gasFeeConversion={LegacyTransactionDataTemp.transactionFeeFiat}
