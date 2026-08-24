@@ -7,11 +7,11 @@ const ClipboardManager = {
   async getString() {
     return await Clipboard.getString();
   },
-  async setString(string) {
+  async setString(string: string) {
     await Clipboard.setString(string);
   },
-  expireTime: null,
-  async setStringExpire(string) {
+  expireTime: null as ReturnType<typeof setTimeout> | null,
+  async setStringExpire(string: string) {
     if (Device.isIos()) {
       await Clipboard.setStringExpire(string);
     } else {
@@ -20,9 +20,9 @@ const ClipboardManager = {
         clearTimeout(this.expireTime);
       }
       this.expireTime = setTimeout(async () => {
-        const string = await this.getString();
+        const currentString = await this.getString();
 
-        if (!string) return;
+        if (!currentString) return;
 
         await Clipboard.clearString();
       }, EXPIRE_TIME_MS);

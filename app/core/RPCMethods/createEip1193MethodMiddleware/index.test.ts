@@ -1,12 +1,35 @@
-import { JsonRpcEngine } from '@metamask/json-rpc-engine';
+import {
+  JsonRpcEngine,
+  JsonRpcEngineEndCallback,
+  JsonRpcEngineNextCallback,
+} from '@metamask/json-rpc-engine';
 import {
   assertIsJsonRpcFailure,
   assertIsJsonRpcSuccess,
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
 } from '@metamask/utils';
 import { createEip1193MethodMiddleware } from '.';
 
+type Eip1193MethodMiddlewareHooks = Parameters<
+  typeof createEip1193MethodMiddleware
+>[0];
+
+interface TestHooks {
+  hook1: () => number;
+  hook2: () => number;
+}
+
 const getHandler = () => ({
-  implementation: (req, res, _next, end, hooks) => {
+  implementation: (
+    req: JsonRpcRequest<JsonRpcParams>,
+    res: PendingJsonRpcResponse<Json>,
+    _next: JsonRpcEngineNextCallback,
+    end: JsonRpcEngineEndCallback,
+    hooks: TestHooks,
+  ) => {
     if (Array.isArray(req.params)) {
       switch (req.params[0]) {
         case 1:
@@ -56,16 +79,20 @@ describe('createEip1193MethodMiddleware', () => {
   });
 
   it('should return a function', () => {
-    const middleware = createEip1193MethodMiddleware(getDefaultHooks());
+    const middleware = createEip1193MethodMiddleware(
+      getDefaultHooks() as unknown as Eip1193MethodMiddlewareHooks,
+    );
     expect(typeof middleware).toBe('function');
   });
 
   it('should throw an error if a required hook is missing', () => {
     const hooks = { hook1: () => 42 };
 
-    expect(() => createEip1193MethodMiddleware(hooks)).toThrow(
-      'Missing expected hooks',
-    );
+    expect(() =>
+      createEip1193MethodMiddleware(
+        hooks as unknown as Eip1193MethodMiddlewareHooks,
+      ),
+    ).toThrow('Missing expected hooks');
   });
 
   it('should throw an error if an extraneous hook is provided', () => {
@@ -74,9 +101,11 @@ describe('createEip1193MethodMiddleware', () => {
       extraneousHook: () => 100,
     };
 
-    expect(() => createEip1193MethodMiddleware(hooks)).toThrow(
-      'Received unexpected hooks',
-    );
+    expect(() =>
+      createEip1193MethodMiddleware(
+        hooks as unknown as Eip1193MethodMiddlewareHooks,
+      ),
+    ).toThrow('Received unexpected hooks');
   });
 
   it('should call the handler for the matching method (uses hook1)', async () => {
@@ -144,7 +173,9 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(
+      (response.error.data as { cause: { message: string } }).cause.message,
+    ).toBe('test error');
   });
 
   it('should handle errors thrown by the implementation', async () => {
@@ -161,7 +192,9 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(
+      (response.error.data as { cause: { message: string } }).cause.message,
+    ).toBe('test error');
   });
 
   it('should handle non-errors thrown by the implementation', async () => {
