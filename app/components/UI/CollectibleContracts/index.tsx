@@ -63,9 +63,9 @@ import { RootState } from '../../../reducers';
 interface Collectible {
   address: string;
   tokenId: string;
-  name?: string;
-  image?: string;
-  chainId?: string;
+  name?: string | null;
+  image?: string | null;
+  chainId?: string | number;
   isCurrentlyOwned?: boolean;
 }
 
@@ -667,7 +667,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     collectible: Collectible,
   ) =>
     dispatch(
-      removeFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+      removeFavoriteCollectibleAction(
+        selectedAddress as string,
+        chainId,
+        collectible,
+      ),
     ),
 });
 
