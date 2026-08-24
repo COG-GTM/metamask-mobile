@@ -244,7 +244,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
   navSymbol: string | undefined = undefined;
   navAddress: string | undefined = undefined;
   selectedAddress = toChecksumHexAddress(
-    this.props.selectedInternalAccount?.address ?? '',
+    this.props.selectedInternalAccount?.address,
   );
 
   updateNavBar = (contentOffset = 0) => {
