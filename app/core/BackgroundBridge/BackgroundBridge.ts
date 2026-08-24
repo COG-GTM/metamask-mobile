@@ -1,11 +1,20 @@
 /* eslint-disable import/no-commonjs */
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import {
   createSelectedNetworkMiddleware,
   METAMASK_DOMAIN,
 } from '@metamask/selected-network-controller';
 import EthQuery from '@metamask/eth-query';
-import { JsonRpcEngine } from '@metamask/json-rpc-engine';
+import { JsonRpcEngine, JsonRpcMiddleware } from '@metamask/json-rpc-engine';
+import { Hex, Json, JsonRpcParams, NonEmptyArray } from '@metamask/utils';
+import {
+  RequestedPermissions,
+  ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
+  SubjectType,
+  ///: END:ONLY_INCLUDE_IF
+} from '@metamask/permission-controller';
+// eslint-disable-next-line import/no-nodejs-modules
+import { Duplex } from 'stream';
 import MobilePortStream from '../MobilePortStream';
 import { setupMultiplex } from '../../util/streams';
 import {
@@ -23,15 +32,17 @@ import { store } from '../../store';
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
 import { rpcErrors } from '@metamask/rpc-errors';
 import snapMethodMiddlewareBuilder from '../Snaps/SnapsMethodMiddleware';
-import { SubjectType } from '@metamask/permission-controller';
 ///: END:ONLY_INCLUDE_IF
 
 import { createEngineStream } from '@metamask/json-rpc-middleware-stream';
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 const createFilterMiddleware = require('@metamask/eth-json-rpc-filters');
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 const createSubscriptionManager = require('@metamask/eth-json-rpc-filters/subscriptionManager');
 import { providerAsMiddleware } from '@metamask/eth-json-rpc-middleware';
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 const pump = require('pump');
-// eslint-disable-next-line import/no-nodejs-modules
+// eslint-disable-next-line import/no-nodejs-modules, @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 const EventEmitter = require('events').EventEmitter;
 const { NOTIFICATION_NAMES } = AppConstants;
 import DevLogger from '../SDKConnect/utils/DevLogger';
@@ -43,6 +54,41 @@ import createEthAccountsMethodMiddleware from '../RPCMethods/createEthAccountsMe
 import createTracingMiddleware from '../createTracingMiddleware';
 import { createEip1193MethodMiddleware } from '../RPCMethods/createEip1193MethodMiddleware';
 import { getCaip25PermissionFromLegacyPermissions } from '../../util/permissions';
+
+/**
+ * The provider state exposed to dapps
+ */
+export interface ProviderNetworkState {
+  chainId: Hex;
+  networkVersion: string;
+}
+
+export interface ProviderState extends ProviderNetworkState {
+  isUnlocked: boolean;
+}
+
+export interface BackgroundBridgeOptions {
+  webview: { current?: unknown } | null;
+  url: string;
+  getRpcMethodMiddleware(args: {
+    hostname: string;
+    channelId?: string;
+    getProviderState: (origin?: string) => Promise<ProviderState>;
+  }): JsonRpcMiddleware<JsonRpcParams, Json>;
+  isMainFrame?: boolean;
+  isRemoteConn?: boolean;
+  sendMessage?: (msg: unknown) => void;
+  isWalletConnect?: boolean;
+  /**
+   * Only used by WalletConnect connections
+   */
+  wcWalletConnector?: unknown;
+  wcRequestActions?: unknown;
+  getApprovedHosts?: (host: string) => unknown;
+  remoteConnHost?: string;
+  isMMSDK?: boolean;
+  channelId?: string;
+}
 
 const legacyNetworkId = () => {
   const { networksMetadata, selectedNetworkClientId } =
@@ -57,6 +103,14 @@ const legacyNetworkId = () => {
 };
 
 export class BackgroundBridge extends EventEmitter {
+  url!: string;
+  hostname!: string;
+  isMMSDK?: boolean;
+  isRemoteConn?: boolean;
+  isWalletConnect?: boolean;
+  channelId!: string;
+  disconnected!: boolean;
+
   constructor({
     webview,
     url,
@@ -70,29 +124,29 @@ export class BackgroundBridge extends EventEmitter {
     remoteConnHost,
     isMMSDK,
     channelId,
-  }) {
+  }: BackgroundBridgeOptions) {
     super();
     this.url = url;
     // TODO - When WalletConnect and MMSDK uses the Permission System, URL does not apply in all conditions anymore since hosts may not originate from web. This will need to change!
-    this.hostname = new URL(url).hostname;
+    this.hostname = new URLParse(url).hostname;
     this.remoteConnHost = remoteConnHost;
     this.isMainFrame = isMainFrame;
     this.isWalletConnect = isWalletConnect;
     this.isMMSDK = isMMSDK;
     this.isRemoteConn = isRemoteConn;
-    this._webviewRef = webview && webview.current;
+    this._webviewRef = webview?.current;
     this.disconnected = false;
     this.getApprovedHosts = getApprovedHosts;
-    this.channelId = channelId;
+    this.channelId = channelId as string;
     this.deprecatedNetworkVersions = {};
 
     this.createMiddleware = getRpcMethodMiddleware;
 
     this.port = isRemoteConn
-      ? new RemotePort(sendMessage)
+      ? new RemotePort(sendMessage as () => void)
       : this.isWalletConnect
       ? new WalletConnectPort(wcRequestActions)
-      : new Port(this._webviewRef, isMainFrame);
+      : new Port(this._webviewRef, isMainFrame as boolean);
 
     this.engine = null;
 
@@ -229,7 +283,9 @@ export class BackgroundBridge extends EventEmitter {
     });
   }
 
-  async getProviderNetworkState(origin = METAMASK_DOMAIN) {
+  async getProviderNetworkState(
+    origin: string = METAMASK_DOMAIN,
+  ): Promise<ProviderNetworkState> {
     const networkClientId = Engine.controllerMessenger.call(
       'SelectedNetworkController:getNetworkClientIdForDomain',
       origin,
@@ -264,7 +320,7 @@ export class BackgroundBridge extends EventEmitter {
     };
   }
 
-  async notifyChainChanged(params) {
+  async notifyChainChanged(params?: ProviderNetworkState) {
     DevLogger.log(`notifyChainChanged: `, params);
     this.sendNotification({
       method: NOTIFICATION_NAMES.chainChanged,
@@ -272,9 +328,9 @@ export class BackgroundBridge extends EventEmitter {
     });
   }
 
-  async notifySelectedAddressChanged(selectedAddress) {
+  async notifySelectedAddressChanged(selectedAddress?: string) {
     try {
-      let approvedAccounts = [];
+      let approvedAccounts: string[] = [];
       DevLogger.log(
         `notifySelectedAddressChanged: ${selectedAddress} channelId=${this.channelId} wc=${this.isWalletConnect} url=${this.url}`,
       );
@@ -288,14 +344,15 @@ export class BackgroundBridge extends EventEmitter {
       // Check if selectedAddress is approved
       const found = approvedAccounts
         .map((addr) => addr.toLowerCase())
-        .includes(selectedAddress.toLowerCase());
+        .includes((selectedAddress as string).toLowerCase());
 
       if (found) {
         // Set selectedAddress as first value in array
         approvedAccounts = [
-          selectedAddress,
+          selectedAddress as string,
           ...approvedAccounts.filter(
-            (addr) => addr.toLowerCase() !== selectedAddress.toLowerCase(),
+            (addr) =>
+              addr.toLowerCase() !== (selectedAddress as string).toLowerCase(),
           ),
         ];
 
@@ -318,7 +375,7 @@ export class BackgroundBridge extends EventEmitter {
     }
   }
 
-  async onStateUpdate(memState) {
+  async onStateUpdate(memState?: { selectedAddress?: string }) {
     if (!memState) {
       memState = this.getState();
     }
@@ -350,7 +407,7 @@ export class BackgroundBridge extends EventEmitter {
     return Engine.context.KeyringController.isUnlocked();
   }
 
-  async getProviderState(origin) {
+  async getProviderState(origin?: string) {
     return {
       isUnlocked: this.isUnlocked(),
       ...(await this.getProviderNetworkState(origin)),
@@ -361,7 +418,7 @@ export class BackgroundBridge extends EventEmitter {
     this.emit('update');
   };
 
-  onMessage = (msg) => {
+  onMessage = (msg: { name: string; data: unknown; origin?: string }) => {
     this.port.emit('message', { name: msg.name, data: msg.data });
   };
 
@@ -383,13 +440,13 @@ export class BackgroundBridge extends EventEmitter {
    * A method for serving our ethereum provider over a given stream.
    * @param {*} outStream - The stream to provide over.
    */
-  setupProviderConnection(outStream) {
+  setupProviderConnection(outStream: Duplex) {
     this.engine = this.setupProviderEngine();
 
     // setup connection
     const providerStream = createEngineStream({ engine: this.engine });
 
-    pump(outStream, providerStream, outStream, (err) => {
+    pump(outStream, providerStream, outStream, (err?: Error) => {
       // handle any middleware cleanup
       this.engine.destroy();
       if (err) Logger.log('Error with provider stream conn', err);
@@ -421,17 +478,35 @@ export class BackgroundBridge extends EventEmitter {
 
     // create subscription polyfill middleware
     const subscriptionManager = createSubscriptionManager(proxyClient);
-    subscriptionManager.events.on('notification', (message) =>
+    subscriptionManager.events.on('notification', (message: unknown) =>
       engine.emit('notification', message),
     );
 
     // metadata
-    engine.push(createOriginMiddleware({ origin }));
-    engine.push(createSelectedNetworkMiddleware(Engine.controllerMessenger));
-    engine.push(createLoggerMiddleware({ origin }));
+    engine.push(
+      createOriginMiddleware({ origin }) as JsonRpcMiddleware<
+        JsonRpcParams,
+        Json
+      >,
+    );
+    engine.push(
+      createSelectedNetworkMiddleware(
+        Engine.controllerMessenger as unknown as Parameters<
+          typeof createSelectedNetworkMiddleware
+        >[0],
+      ),
+    );
+    engine.push(
+      createLoggerMiddleware({ origin }) as JsonRpcMiddleware<
+        JsonRpcParams,
+        Json
+      >,
+    );
     // filter and subscription polyfills
-    engine.push(filterMiddleware);
-    engine.push(subscriptionManager.middleware);
+    engine.push(filterMiddleware as JsonRpcMiddleware<JsonRpcParams, Json>);
+    engine.push(
+      subscriptionManager.middleware as JsonRpcMiddleware<JsonRpcParams, Json>,
+    );
 
     // Handle unsupported RPC Methods
     engine.push(createUnsupportedMethodMiddleware());
@@ -440,10 +515,13 @@ export class BackgroundBridge extends EventEmitter {
     engine.push(
       createEip1193MethodMiddleware({
         // Permission-related
-        getAccounts: (...args) =>
-          getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
+        getAccounts: (...args: [{ ignoreLock?: boolean }?]) =>
+          getPermittedAccounts(
+            (this.isMMSDK ? this.channelId : origin) as string,
+            ...args,
+          ),
         getCaip25PermissionFromLegacyPermissionsForOrigin: (
-          requestedPermissions,
+          requestedPermissions?: RequestedPermissions,
         ) =>
           getCaip25PermissionFromLegacyPermissions(
             origin,
@@ -453,15 +531,17 @@ export class BackgroundBridge extends EventEmitter {
           PermissionController,
           origin,
         ),
-        requestPermissionsForOrigin: (requestedPermissions) =>
+        requestPermissionsForOrigin: (
+          requestedPermissions: RequestedPermissions,
+        ) =>
           PermissionController.requestPermissions(
             { origin },
             requestedPermissions,
           ),
-        revokePermissionsForOrigin: (permissionKeys) => {
+        revokePermissionsForOrigin: (permissionKeys: string[]) => {
           try {
             PermissionController.revokePermissions({
-              [origin]: permissionKeys,
+              [origin]: permissionKeys as NonEmptyArray<string>,
             });
           } catch (e) {
             // we dont want to handle errors here because
@@ -483,7 +563,7 @@ export class BackgroundBridge extends EventEmitter {
           return new Promise((resolve) => {
             Engine.controllerMessenger.subscribeOnceIf(
               'KeyringController:unlock',
-              resolve,
+              resolve as () => void,
               () => true,
             );
           });
@@ -494,8 +574,11 @@ export class BackgroundBridge extends EventEmitter {
     // Legacy RPC methods that need to be implemented ahead of the permission middleware
     engine.push(
       createEthAccountsMethodMiddleware({
-        getAccounts: (...args) =>
-          getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
+        getAccounts: (...args: [{ ignoreLock?: boolean }?]) =>
+          getPermittedAccounts(
+            (this.isMMSDK ? this.channelId : origin) as string,
+            ...args,
+          ),
       }),
     );
 
@@ -505,7 +588,7 @@ export class BackgroundBridge extends EventEmitter {
     ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
     // These Snaps RPC methods are disabled in WalletConnect and SDK for now
     if (this.isMMSDK || this.isWalletConnect) {
-      engine.push((req, _res, next, end) => {
+      engine.push<JsonRpcParams, Json>((req, _res, next, end) => {
         if (['wallet_snap'].includes(req.method)) {
           return end(
             rpcErrors.methodNotFound({ data: { method: req.method } }),
@@ -555,9 +638,9 @@ export class BackgroundBridge extends EventEmitter {
     return engine;
   }
 
-  sendNotification(payload) {
+  sendNotification(payload: unknown) {
     DevLogger.log(`BackgroundBridge::sendNotification: `, payload);
-    this.engine && this.engine.emit('notification', payload);
+    this.engine?.emit('notification', payload);
   }
 
   /**
