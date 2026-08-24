@@ -368,8 +368,8 @@ interface CustomGasEstimate {
 }
 
 interface SwapsError {
-  key?: string;
-  description?: string;
+  key?: string | null;
+  description?: string | null;
 }
 
 interface ResetAndStartPollingOptions {
@@ -491,22 +491,22 @@ interface SwapsQuotesViewProps {
    */
   primaryCurrency?: string;
   isInPolling: boolean;
-  quotesLastFetched: number;
-  topAggId?: string;
+  quotesLastFetched: number | null;
+  topAggId?: string | null;
   /**
    * Aggregator metada from Swaps controller API
    */
-  aggregatorMetadata?: Record<string, APIAggregatorMetadata>;
+  aggregatorMetadata?: Record<string, APIAggregatorMetadata> | null;
   pollingCyclesLeft: number;
   quotes: Record<string, SwapsQuote>;
   quoteValues: Record<string, QuoteValues>;
   approvalTransaction?: TransactionParams | null;
   error?: SwapsError | null;
-  quoteRefreshSeconds: number;
+  quoteRefreshSeconds: number | null;
   gasEstimateType?: string;
   gasFeeEstimates: GasFeeEstimatesLike;
   usedGasEstimate: { gasPrice?: string; selected?: string };
-  usedCustomGas?: CustomGasEstimate;
+  usedCustomGas?: CustomGasEstimate | null;
   setRecipient: (from: string) => void;
   resetTransaction: () => void;
   shouldUseSmartTransaction: boolean;
@@ -1444,7 +1444,7 @@ function SwapsQuotesView({
       return;
     }
     const originalApprovalTransactionEncodedAmount = decodeApproveData(
-      originalApprovalTransaction.data,
+      originalApprovalTransaction.data as string,
     ).encodedAmount;
     const originalAmount = fromTokenMinimalUnitString(
       hexToBN(originalApprovalTransactionEncodedAmount).toString(10),
@@ -1760,7 +1760,7 @@ function SwapsQuotesView({
   /* First load effect: handle initial animation */
   useEffect(() => {
     if (isFirstLoad && !shouldFinishFirstLoad) {
-      if (firstLoadTime < quotesLastFetched || error) {
+      if (firstLoadTime < (quotesLastFetched as number) || error) {
         setShouldFinishFirstLoad(true);
         if (!error) {
           navigation.setParams({ leftAction: strings('swaps.edit') });
@@ -1791,7 +1791,10 @@ function SwapsQuotesView({
   useEffect(() => {
     const tick = setInterval(() => {
       const newRemainingTime =
-        quotesLastFetched + quoteRefreshSeconds * 1000 - Date.now() + 1000;
+        (quotesLastFetched as number) +
+        (quoteRefreshSeconds as number) * 1000 -
+        Date.now() +
+        1000;
       // If newRemainingTime > remainingTime means that a new set of quotes were fetched
       if (newRemainingTime > remainingTime) {
         hideFeeModal();
@@ -2814,14 +2817,17 @@ const mapStateToProps = (state: RootState) => ({
   pollingCyclesLeft: selectSwapsPollingCyclesLeft(state),
   topAggId: selectSwapsTopAggId(state),
   aggregatorMetadata: selectSwapsAggregatorMetadata(state),
-  quotes: selectSwapsQuotes(state),
-  quoteValues: selectSwapsQuoteValues(state),
+  quotes: selectSwapsQuotes(state) as unknown as Record<string, SwapsQuote>,
+  quoteValues: selectSwapsQuoteValues(state) as Record<string, QuoteValues>,
   approvalTransaction: selectSwapsApprovalTransaction(state),
   error: selectSwapsError(state),
   quoteRefreshSeconds: selectSwapsQuoteRefreshSeconds(state),
   gasEstimateType: selectGasFeeControllerEstimateType(state),
   gasFeeEstimates: selectGasFeeEstimates(state) as GasFeeEstimatesLike,
-  usedGasEstimate: selectSwapsUsedGasEstimate(state),
+  usedGasEstimate: selectSwapsUsedGasEstimate(state) as {
+    gasPrice?: string;
+    selected?: string;
+  },
   usedCustomGas: selectSwapsUsedCustomGas(state),
   primaryCurrency: state.settings.primaryCurrency,
   swapsTokens: swapsTokensSelector(state),

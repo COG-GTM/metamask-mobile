@@ -37,6 +37,7 @@ import {
 } from '../../../util/number';
 import { safeToChecksumAddress } from '../../../util/address';
 import { swapsUtils } from '@metamask/swaps-controller';
+import type { FeatureFlags } from '@metamask/swaps-controller/dist/types';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 
 import {
@@ -219,7 +220,7 @@ interface KeypadAnimatableView {
 
 interface SwapsAmountViewProps {
   swapsTokens?: Token[];
-  swapsControllerTokens?: Token[];
+  swapsControllerTokens?: Token[] | null;
   /**
    * Map of chainId to accounts to information objects including balances
    */
@@ -261,7 +262,7 @@ interface SwapsAmountViewProps {
   /**
    * Function to set liveness
    */
-  setLiveness: (chainId: Hex, featureFlags: unknown) => void;
+  setLiveness: (chainId: Hex, featureFlags?: FeatureFlags | null) => void;
   /**
    * Whether to use smart transactions
    */
@@ -511,7 +512,9 @@ function SwapsAmountView({
             sourceToken.address,
             selectedAddress as string,
           );
-          setContractBalanceAsUnits(balance);
+          setContractBalanceAsUnits(
+            balance as unknown as ReturnType<typeof safeNumberToBN>,
+          );
           setContractBalance(
             renderFromTokenMinimalUnit(
               balance as unknown as string,
@@ -1096,8 +1099,8 @@ function SwapsAmountView({
 }
 
 const mapStateToProps = (state: RootState) => ({
-  swapsTokens: swapsTokensSelector(state),
-  swapsControllerTokens: swapsControllerTokensSelector(state),
+  swapsTokens: swapsTokensSelector(state) as Token[],
+  swapsControllerTokens: swapsControllerTokensSelector(state) as Token[] | null,
   accountsByChainId: selectAccountsByChainId(state),
   balances: selectContractBalances(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
@@ -1107,8 +1110,8 @@ const mapStateToProps = (state: RootState) => ({
   networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
   chainId: selectEvmChainId(state),
   selectedNetworkClientId: selectSelectedNetworkClientId(state),
-  tokensWithBalance: swapsTokensWithBalanceSelector(state),
-  tokensTopAssets: swapsTopAssetsSelector(state),
+  tokensWithBalance: swapsTokensWithBalanceSelector(state) as Token[],
+  tokensTopAssets: swapsTopAssetsSelector(state) as Token[],
   shouldUseSmartTransaction: selectShouldUseSmartTransaction(
     state,
     selectEvmChainId(state),
@@ -1116,7 +1119,7 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setLiveness: (chainId: Hex, featureFlags: unknown) =>
+  setLiveness: (chainId: Hex, featureFlags?: FeatureFlags | null) =>
     dispatch(setSwapsLiveness(chainId, featureFlags)),
 });
 

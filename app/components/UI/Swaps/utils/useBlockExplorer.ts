@@ -19,6 +19,13 @@ interface ProviderConfigLike {
   rpcUrl?: string;
 }
 
+interface NetworkConfigurationLike {
+  rpcEndpoints?: { url: string }[];
+  blockExplorerUrls?: string[];
+  defaultBlockExplorerUrlIndex?: number;
+  [key: string]: unknown;
+}
+
 interface Explorer {
   name: string;
   value: string | null;
@@ -49,7 +56,7 @@ function useBlockExplorer(
       try {
         const blockExplorer = findBlockExplorerForRpc(
           definitiveProviderConfig.rpcUrl,
-          networkConfigurations,
+          networkConfigurations as Record<string, NetworkConfigurationLike>,
         );
         if (!blockExplorer) {
           throw new Error('No block explorer url');

@@ -80,7 +80,7 @@ interface EIP1559TransactionData {
   error?: string;
   suggestedMaxFeePerGas?: string;
   suggestedMaxPriorityFeePerGas?: string;
-  suggestedGasLimit?: string;
+  suggestedGasLimit?: string | number;
   estimatedBaseFee?: string;
   renderableGasFeeMinNative?: string;
   renderableGasFeeMinConversion?: string;
@@ -98,8 +98,8 @@ interface EIP1559TransactionData {
 interface LegacyTransactionData {
   totalHex?: HexLike;
   error?: string;
-  suggestedGasPrice?: string;
-  suggestedGasLimit?: string;
+  suggestedGasPrice?: string | number;
+  suggestedGasLimit?: string | number;
   transactionFee?: string;
   transactionFeeFiat?: string;
 }
@@ -458,17 +458,17 @@ function GasEditModal({
             estimatedBaseFee,
             selected,
           },
-          suggestedGasLimit,
+          suggestedGasLimit as string | undefined,
         );
       } else {
         const { suggestedGasPrice: gasPrice, suggestedGasLimit } =
           LegacyTransactionDataTemp;
         onGasUpdate(
           {
-            gasPrice,
+            gasPrice: gasPrice as string | undefined,
             selected,
           },
-          suggestedGasLimit,
+          suggestedGasLimit as string | undefined,
         );
       }
       dismiss();

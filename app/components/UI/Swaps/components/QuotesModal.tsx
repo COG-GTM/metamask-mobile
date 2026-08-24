@@ -161,7 +161,7 @@ interface QuotesModalProps {
    * Currency code of the currently-active currency
    */
   currentCurrency: string;
-  quoteValues: Record<string, QuoteValues>;
+  quoteValues: Record<string, QuoteValues> | null;
   showOverallValue?: boolean;
   /**
    * Native asset ticker
@@ -432,7 +432,9 @@ function QuotesModal({
                     quotes.map((quote, index) => {
                       const { aggregator } = quote;
                       const isSelected = aggregator === selectedQuote;
-                      const quoteValue = quoteValues[aggregator];
+                      const quoteValue = (
+                        quoteValues as Record<string, QuoteValues>
+                      )[aggregator];
                       let quoteEthFee: string | number | undefined =
                         quoteValue?.ethFee;
                       if (multiLayerL1ApprovalFeeTotal) {

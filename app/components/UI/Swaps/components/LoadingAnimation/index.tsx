@@ -134,7 +134,7 @@ interface LoadingAnimationProps {
   /**
    * Aggregator metada from Swaps controller API
    */
-  aggregatorMetadata?: Record<string, APIAggregatorMetadata>;
+  aggregatorMetadata?: Record<string, APIAggregatorMetadata> | null;
   /**
    * Wether to show head panning animation with aggregators logos
    */
