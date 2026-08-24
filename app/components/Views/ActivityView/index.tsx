@@ -87,6 +87,7 @@ const createStyles = (params: { theme: Theme }) => {
     },
     title: {
       marginTop: 20,
+      fontSize: 20,
       color: colors.text.default,
       ...(typography.sHeadingMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.HeadingMD),
