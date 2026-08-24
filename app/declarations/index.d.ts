@@ -76,11 +76,28 @@ declare module 'readable-stream' {
   export = stream;
 }
 
+declare module 'zxcvbn' {
+  interface ZxcvbnResult {
+    score: number;
+  }
+  const zxcvbn: (password: string, userInputs?: string[]) => ZxcvbnResult;
+  export default zxcvbn;
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const content: React.FC<any>;
   export default content;
+}
+
+declare module 'react-native/Libraries/Image/resolveAssetSource' {
+  const resolveAssetSource: (
+    source: import('react-native').ImageSourcePropType,
+  ) => import('react-native').ImageResolvedAssetSource & {
+    __packager_asset?: boolean;
+  };
+  export default resolveAssetSource;
 }
 
 declare module '*.svg' {
@@ -392,6 +409,10 @@ declare module '@metamask/react-native-button' {
     disabledContainerStyle?: import('react-native').StyleProp<
       import('react-native').ViewStyle
     >;
+    activeOpacity?: number;
+    delayPressIn?: number;
+    delayPressOut?: number;
+    delayLongPress?: number;
     onPress?: () => void;
     onPressIn?: () => void;
     onPressOut?: () => void;
@@ -587,4 +608,11 @@ declare module 'unicode-confusables' {
     input: string,
   ): { point: string; similarTo?: string }[];
   export function isConfusing(input: string): boolean;
+}
+
+declare module 'human-standard-token-abi' {
+  import { JsonFragment } from '@ethersproject/abi';
+
+  const abi: JsonFragment[];
+  export default abi;
 }
