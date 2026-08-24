@@ -68,6 +68,8 @@ declare module 'react-native-minimizer';
 
 declare module 'xhr2';
 
+declare module '@metamask/ethjs-query';
+
 declare module 'readable-stream' {
   // eslint-disable-next-line import/no-nodejs-modules
   import stream from 'stream';
