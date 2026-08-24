@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
-import CollectibleView from '.';
+import CollectibleView, { CollectibleViewProps } from '.';
 import configureMockStore from 'redux-mock-store';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { ThemeContext, mockTheme } from '../../../util/theme';
@@ -35,7 +35,7 @@ describe('CollectibleView Snapshot', () => {
     const { toJSON } = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <CollectibleView {...(props as unknown as CollectibleViewProps)} />
         </ThemeContext.Provider>
       </Provider>,
     );
@@ -60,7 +60,7 @@ describe('CollectibleView Snapshot', () => {
     const wrapper = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <CollectibleView {...(props as unknown as CollectibleViewProps)} />
         </ThemeContext.Provider>
       </Provider>,
     );

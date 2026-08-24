@@ -11,11 +11,28 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'zxcvbn' {
+  interface ZxcvbnResult {
+    score: number;
+  }
+  const zxcvbn: (password: string, userInputs?: string[]) => ZxcvbnResult;
+  export default zxcvbn;
+}
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const content: React.FC<any>;
   export default content;
+}
+
+declare module 'react-native/Libraries/Image/resolveAssetSource' {
+  const resolveAssetSource: (
+    source: import('react-native').ImageSourcePropType,
+  ) => import('react-native').ImageResolvedAssetSource & {
+    __packager_asset?: boolean;
+  };
+  export default resolveAssetSource;
 }
 
 declare module '*.svg' {
@@ -296,6 +313,40 @@ declare module '@metamask/react-native-actionsheet' {
 
 declare module '@metamask/react-native-search-api';
 
+declare module '@metamask/react-native-button' {
+  export interface ButtonProps {
+    accessibilityLabel?: string;
+    allowFontScaling?: boolean;
+    containerStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    disabledContainerStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    disabled?: boolean;
+    style?: import('react-native').StyleProp<import('react-native').TextStyle>;
+    styleDisabled?: import('react-native').StyleProp<
+      import('react-native').TextStyle
+    >;
+    childGroupStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    activeOpacity?: number;
+    onPress?: () => void;
+    onPressIn?: () => void;
+    onPressOut?: () => void;
+    onLongPress?: () => void;
+    delayPressIn?: number;
+    delayPressOut?: number;
+    delayLongPress?: number;
+    testID?: string;
+    children?: import('react').ReactNode;
+  }
+
+  const Button: import('react').ComponentType<ButtonProps>;
+  export default Button;
+}
+
 /**
  * @sentry/react-native types for v^6.10.0
  * Types are overridden to ensure captureException receives an Error type for more reliable stack traces
@@ -407,4 +458,11 @@ declare module '@sentry/react-native' {
     hint?: ExclusiveEventHintOrCaptureContext,
   ) => string;
   export { captureException };
+}
+
+declare module 'human-standard-token-abi' {
+  import { JsonFragment } from '@ethersproject/abi';
+
+  const abi: JsonFragment[];
+  export default abi;
 }

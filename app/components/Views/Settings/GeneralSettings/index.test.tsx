@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import GeneralSettings, {
+import GeneralSettingsComponent, {
   updateUserTraitsWithCurrentCurrency,
   updateUserTraitsWithCurrencyType,
 } from './';
@@ -11,8 +11,14 @@ import { backgroundState } from '../../../../util/test/initial-root-state';
 import { MetaMetricsEvents } from '../../../../core/Analytics';
 import { UserProfileProperty } from '../../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
 import { MetricsEventBuilder } from '../../../../core/Analytics/MetricsEventBuilder';
+import { IUseMetricsHook } from '../../../hooks/useMetrics/useMetrics.types';
 
 jest.mock('../../../../core/Analytics');
+
+const GeneralSettings =
+  GeneralSettingsComponent as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
 
 const mockStore = configureMockStore();
 const initialState = {
@@ -45,7 +51,7 @@ const mockMetrics = {
   addTraitsToUser: jest.fn(),
   trackEvent: jest.fn(),
   createEventBuilder: MetricsEventBuilder.createEventBuilder,
-};
+} as unknown as IUseMetricsHook;
 
 describe('updateUserTraitsWithCurrentCurrency', () => {
   afterEach(() => {
