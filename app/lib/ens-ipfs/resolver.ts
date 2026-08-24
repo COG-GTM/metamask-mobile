@@ -8,11 +8,32 @@ import multihash from 'multihashes';
 import Engine from '../../core/Engine';
 import { IPFS_GATEWAY_DISABLED_ERROR } from '../../components/Views/BrowserTab/constants';
 
+interface ResolveEnsToIpfsContentIdParams {
+  provider: unknown;
+  name: string;
+  chainId: string;
+}
+
+interface EnsIpfsContent {
+  type: string;
+  hash: string;
+}
+
+interface EnsRegistryContract {
+  resolver(node: string): Promise<[string]>;
+}
+
+interface EnsResolverContract {
+  supportsInterface(interfaceId: string): Promise<[boolean]>;
+  contenthash(node: string): Promise<[string]>;
+  content(node: string): Promise<[string]>;
+}
+
 export default async function resolveEnsToIpfsContentId({
   provider,
   name,
   chainId,
-}) {
+}: ResolveEnsToIpfsContentIdParams): Promise<EnsIpfsContent> {
   const eth = new Eth(provider);
   const hash = namehash.hash(name);
   const contract = new EthContract(eth);
@@ -23,14 +44,18 @@ export default async function resolveEnsToIpfsContentId({
       `EnsIpfsResolver - no known ens-ipfs registry for chainId "${chainId}"`,
     );
   }
-  const Registry = contract(registryAbi).at(registryAddress);
+  const Registry = contract(registryAbi).at(
+    registryAddress,
+  ) as unknown as EnsRegistryContract;
   // lookup resolver
   const resolverLookupResult = await Registry.resolver(hash);
   const resolverAddress = resolverLookupResult[0];
   if (hexValueIsEmpty(resolverAddress)) {
     throw new Error(`EnsIpfsResolver - no resolver found for name "${name}"`);
   }
-  const Resolver = contract(resolverAbi).at(resolverAddress);
+  const Resolver = contract(resolverAbi).at(
+    resolverAddress,
+  ) as unknown as EnsResolverContract;
   const isEIP1577Compliant = await Resolver.supportsInterface('0xbc1c58d1');
   const isLegacyResolver = await Resolver.supportsInterface('0xd8389dc5');
   if (isEIP1577Compliant[0]) {
@@ -70,7 +95,7 @@ export default async function resolveEnsToIpfsContentId({
   );
 }
 
-function hexValueIsEmpty(value) {
+function hexValueIsEmpty(value: string | undefined | null) {
   return [
     undefined,
     null,
@@ -80,7 +105,7 @@ function hexValueIsEmpty(value) {
   ].includes(value);
 }
 
-function getRegistryForChainId(chainId) {
+function getRegistryForChainId(chainId: string): string | null {
   switch (chainId) {
     // mainnet
     case '0x1':
@@ -93,7 +118,7 @@ function getRegistryForChainId(chainId) {
   }
 }
 
-export function isGatewayUrl(urlObj) {
+export function isGatewayUrl(urlObj: { pathname: string }) {
   // All IPFS gateway urls start with the path /ipfs/
   if (urlObj.pathname.substr(0, 6) === '/ipfs/') return true;
   // All Swarm gateway urls start with the path /bzz:/
