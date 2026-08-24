@@ -557,7 +557,6 @@ export function getTicker(ticker) {
  * Construct ETH asset object
  *
  * @param {string} ticker - Ticker
- * @returns {object} - ETH object
  */
 export function getEther(ticker) {
   return {
