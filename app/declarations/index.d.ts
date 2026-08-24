@@ -419,3 +419,61 @@ declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
   const dismissKeyboard: () => void;
   export default dismissKeyboard;
 }
+
+declare module 'ethjs-ens';
+
+declare module 'number-to-bn' {
+  import type BN from 'bnjs4';
+  const numberToBN: (value: string | number | BN) => BN;
+  export default numberToBN;
+}
+
+declare module '@metamask/ethjs-unit' {
+  type EthjsUnitValue =
+    | string
+    | number
+    | import('bnjs4').default
+    | import('bnjs5').default
+    | import('bignumber.js').default
+    | import('ethereumjs-util').BN;
+  export function fromWei(value: EthjsUnitValue, unit: string): string;
+  export function toWei(
+    value: EthjsUnitValue,
+    unit: string,
+  ): import('bnjs4').default;
+  export function numberToString(value: EthjsUnitValue): string;
+}
+
+declare module '@react-native-clipboard/clipboard/jest/clipboard-mock.js';
+
+declare module 'enzyme-adapter-react-16';
+
+declare module 'humanize-duration' {
+  interface HumanizeDurationOptions {
+    language?: string;
+    fallbacks?: string[];
+    largest?: number;
+    units?: string[];
+    round?: boolean;
+    delimiter?: string;
+    conjunction?: string;
+    serialComma?: boolean;
+  }
+  const humanizeDuration: (
+    milliseconds: number,
+    options?: HumanizeDurationOptions,
+  ) => string;
+  export default humanizeDuration;
+}
+
+declare module 'ethereumjs-abi' {
+  export function rawEncode(types: string[], values: unknown[]): Buffer;
+  export function rawDecode(types: string[], data: Buffer): unknown[];
+}
+
+declare module 'unicode-confusables' {
+  export function confusables(
+    input: string,
+  ): { point: string; similarTo?: string }[];
+  export function isConfusing(input: string): boolean;
+}
