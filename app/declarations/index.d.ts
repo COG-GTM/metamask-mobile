@@ -361,6 +361,63 @@ declare module '@metamask/react-native-actionsheet' {
 
 declare module '@metamask/react-native-search-api';
 
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
+declare module 'react-native-progress/Bar' {
+  // `width` accepts `null` to opt into automatic flexbox sizing
+  const Bar: import('react').ComponentType<
+    Omit<import('react-native-progress').BarPropTypes, 'width'> & {
+      width?: number | null;
+    }
+  >;
+  export default Bar;
+}
+
+declare module '@metamask/react-native-button' {
+  interface ButtonProps {
+    accessibilityLabel?: string;
+    accessibilityRole?: import('react-native').AccessibilityRole;
+    allowFontScaling?: boolean;
+    children?: import('react').ReactNode;
+    childGroupStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    containerStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    disabled?: boolean;
+    disabledContainerStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    onPress?: () => void;
+    onPressIn?: () => void;
+    onPressOut?: () => void;
+    onLongPress?: () => void;
+    style?: import('react-native').StyleProp<import('react-native').TextStyle>;
+    styleDisabled?: import('react-native').StyleProp<
+      import('react-native').TextStyle
+    >;
+    testID?: string;
+  }
+
+  const Button: import('react').ComponentType<ButtonProps>;
+  export default Button;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  const coalesceNonElementChildren: (
+    children: import('react').ReactNode,
+    coalesceNodes: (
+      nodes: import('react').ReactNode[],
+      index: number,
+    ) => import('react').ReactNode,
+  ) => import('react').ReactNode[];
+  export default coalesceNonElementChildren;
+}
+
 /**
  * @sentry/react-native types for v^6.10.0
  * Types are overridden to ensure captureException receives an Error type for more reliable stack traces
