@@ -54,7 +54,7 @@ const SMART_CONTRACTS = {
   PIGGYBANK: 'piggybank',
   FAILING: 'failing',
   MULTISIG: 'multisig',
-};
+} as const;
 
 const contractConfiguration = {
   [SMART_CONTRACTS.HST]: hstFactory,
@@ -65,4 +65,7 @@ const contractConfiguration = {
   [SMART_CONTRACTS.MULTISIG]: multisigFactory,
 };
 
+type SmartContractName = (typeof SMART_CONTRACTS)[keyof typeof SMART_CONTRACTS];
+
 export { SMART_CONTRACTS, contractConfiguration };
+export type { SmartContractName };

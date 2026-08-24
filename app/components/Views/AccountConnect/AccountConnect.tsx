@@ -154,7 +154,7 @@ const AccountConnect = (props: AccountConnectProps) => {
   const { toastRef } = useContext(ToastContext);
 
   // origin is set to the last active tab url in the browser which can conflict with sdk
-  const inappBrowserOrigin: string = useSelector(getActiveTabUrl, isEqual);
+  const inappBrowserOrigin = useSelector(getActiveTabUrl, isEqual) as string;
   const accountsLength = useSelector(selectAccountsLength);
   const { wc2Metadata } = useSelector((state: RootState) => state.sdk);
 
@@ -403,7 +403,8 @@ const AccountConnect = (props: AccountConnectProps) => {
      * This logic should be removed and the UI should ensure it cannot continue if no chains are selected.
      * {@link https://github.com/MetaMask/metamask-mobile/pull/13970/files#r2042345624}
      */
-    const chainsToPermit = chainId && selectedChainIds.length === 0 ? [chainId] : selectedChainIds;
+    const chainsToPermit =
+      chainId && selectedChainIds.length === 0 ? [chainId] : selectedChainIds;
     const hexSelectedAddresses = selectedAddresses.map((account) =>
       toHex(account),
     );
@@ -737,7 +738,7 @@ const AccountConnect = (props: AccountConnectProps) => {
       isLoading,
       sdkConnection,
       hostname,
-      handleAccountsSelected
+      handleAccountsSelected,
     ],
   );
 
@@ -751,12 +752,7 @@ const AccountConnect = (props: AccountConnectProps) => {
         defaultSelectedChainIds={selectedChainIds}
       />
     ),
-    [
-      isLoading,
-      urlWithProtocol,
-      handleNetworksSelected,
-      selectedChainIds,
-    ],
+    [isLoading, urlWithProtocol, handleNetworksSelected, selectedChainIds],
   );
 
   const renderPhishingModal = useCallback(
