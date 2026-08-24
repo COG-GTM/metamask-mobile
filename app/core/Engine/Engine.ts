@@ -1616,11 +1616,12 @@ export class Engine {
       const { accountsByChainId } = AccountTrackerController.state;
       const chainIdHex = toHexadecimal(chainId);
       const tokens =
-        TokensController.state.allTokens?.[chainIdHex]?.[
+        TokensController.state.allTokens?.[chainIdHex as `0x${string}`]?.[
           selectedInternalAccount.address
         ] || [];
       const { marketData } = TokenRatesController.state;
-      const tokenExchangeRates = marketData?.[toHexadecimal(chainId)];
+      const tokenExchangeRates =
+        marketData?.[toHexadecimal(chainId) as `0x${string}`];
 
       let ethFiat = 0;
       let ethFiat1dAgo = 0;

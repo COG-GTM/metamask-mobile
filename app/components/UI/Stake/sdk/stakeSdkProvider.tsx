@@ -43,7 +43,14 @@ export const StakeSDKProvider: React.FC<
   const networkClientId = useSelector(selectNetworkClientId);
 
   const sdkService = useMemo(() => {
-    if (!chainId || !isSupportedChain(getDecimalChainId(chainId))) {
+    if (
+      !chainId ||
+      !isSupportedChain(
+        getDecimalChainId(chainId) as unknown as Parameters<
+          typeof isSupportedChain
+        >[0],
+      )
+    ) {
       console.error(
         'Failed to initialize Staking SDK Service: chainId unsupported',
       );
@@ -60,7 +67,7 @@ export const StakeSDKProvider: React.FC<
     }
 
     const sdk = StakeSdk.create({
-      chainId: getDecimalChainId(chainId),
+      chainId: getDecimalChainId(chainId) as unknown as number,
       stakingType: sdkType,
     });
 
