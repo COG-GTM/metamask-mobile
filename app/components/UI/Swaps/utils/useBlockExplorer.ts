@@ -28,7 +28,7 @@ interface Explorer {
 }
 
 function useBlockExplorer(
-  networkConfigurations: Record<string, unknown> = {},
+  networkConfigurations: Record<string, unknown>,
   providerConfigTokenExplorer?: ProviderConfigLike,
 ) {
   const [explorer, setExplorer] = useState<Explorer>({
