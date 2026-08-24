@@ -1,6 +1,11 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import ChoosePassword from './';
+import ChoosePasswordComponent from './';
+
+const ChoosePassword =
+  ChoosePasswordComponent as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
 import configureMockStore from 'redux-mock-store';
 import { ONBOARDING, PROTECT } from '../../../constants/navigation';
 import { Provider } from 'react-redux';

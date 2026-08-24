@@ -10,7 +10,11 @@ import { backgroundState } from '../../../util/test/initial-root-state';
 
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  NavigationProp,
+  ParamListBase,
+} from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { act } from '@testing-library/react';
@@ -97,7 +101,7 @@ const mockNavigation = {
   setParams: jest.fn(),
   navigate: jest.fn(),
   goBack: jest.fn(),
-};
+} as unknown as NavigationProp<ParamListBase>;
 
 describe('Browser', () => {
   it('should render correctly', () => {
