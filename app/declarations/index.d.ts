@@ -62,6 +62,8 @@ declare module 'multihashes' {
 
 declare module 'react-native-fast-crypto';
 
+declare module 'react-native-confetti';
+
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
@@ -73,6 +75,8 @@ declare module 'zxcvbn' {
   const zxcvbn: (password: string, userInputs?: string[]) => ZxcvbnResult;
   export default zxcvbn;
 }
+
+declare module '@metamask/ethjs-query';
 
 declare module 'readable-stream' {
   // eslint-disable-next-line import/no-nodejs-modules
@@ -374,38 +378,61 @@ declare module '@metamask/react-native-actionsheet' {
 
 declare module '@metamask/react-native-search-api';
 
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
+declare module 'react-native-progress/Bar' {
+  // `width` accepts `null` to opt into automatic flexbox sizing
+  const Bar: import('react').ComponentType<
+    Omit<import('react-native-progress').BarPropTypes, 'width'> & {
+      width?: number | null;
+    }
+  >;
+  export default Bar;
+}
+
 declare module '@metamask/react-native-button' {
-  export interface ButtonProps {
+  interface ButtonProps {
     accessibilityLabel?: string;
+    accessibilityRole?: import('react-native').AccessibilityRole;
     allowFontScaling?: boolean;
-    containerStyle?: import('react-native').StyleProp<
-      import('react-native').ViewStyle
-    >;
-    disabledContainerStyle?: import('react-native').StyleProp<
-      import('react-native').ViewStyle
-    >;
-    disabled?: boolean;
-    style?: import('react-native').StyleProp<import('react-native').TextStyle>;
-    styleDisabled?: import('react-native').StyleProp<
-      import('react-native').TextStyle
-    >;
+    children?: import('react').ReactNode;
     childGroupStyle?: import('react-native').StyleProp<
       import('react-native').ViewStyle
     >;
-    activeOpacity?: number;
+    containerStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    disabled?: boolean;
+    disabledContainerStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
     onPress?: () => void;
     onPressIn?: () => void;
     onPressOut?: () => void;
     onLongPress?: () => void;
-    delayPressIn?: number;
-    delayPressOut?: number;
-    delayLongPress?: number;
+    style?: import('react-native').StyleProp<import('react-native').TextStyle>;
+    styleDisabled?: import('react-native').StyleProp<
+      import('react-native').TextStyle
+    >;
     testID?: string;
-    children?: import('react').ReactNode;
   }
 
   const Button: import('react').ComponentType<ButtonProps>;
   export default Button;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  const coalesceNonElementChildren: (
+    children: import('react').ReactNode,
+    coalesceNodes: (
+      nodes: import('react').ReactNode[],
+      index: number,
+    ) => import('react').ReactNode,
+  ) => import('react').ReactNode[];
+  export default coalesceNonElementChildren;
 }
 
 /**

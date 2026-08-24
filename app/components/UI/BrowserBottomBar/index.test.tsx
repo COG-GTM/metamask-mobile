@@ -9,13 +9,15 @@ describe('BrowserBottomBar', () => {
 
     const { toJSON } = renderWithProvider(
       <BrowserBottomBar
-        canGoBack
-        canGoForward={false}
-        showTabs={fn}
-        toggleOptions={fn}
-        showUrlModal={fn}
-        goBack={fn}
-        goForward={fn}
+        {...({
+          canGoBack: true,
+          canGoForward: false,
+          showTabs: fn,
+          toggleOptions: fn,
+          showUrlModal: fn,
+          goBack: fn,
+          goForward: fn,
+        } as unknown as React.ComponentProps<typeof BrowserBottomBar>)}
       />,
     );
     expect(toJSON()).toMatchSnapshot();

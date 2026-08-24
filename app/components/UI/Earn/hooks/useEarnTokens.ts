@@ -5,7 +5,7 @@ import { TokenI } from '../../Tokens/types';
 import { getSupportedEarnTokens, filterEligibleTokens } from '../utils';
 import { selectAccountTokensAcrossChains } from '../../../../selectors/multichain';
 import { isPortfolioViewEnabled } from '../../../../util/networks';
-import { RootState } from '../../BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
+import { RootState } from '../../../../reducers';
 import { useEarnTokenDetails } from './useEarnTokenDetails';
 import {
   selectPooledStakingEnabledFlag,
