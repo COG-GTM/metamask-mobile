@@ -33,7 +33,7 @@ const FIXTURE_SERVER_URL = `http://${FIXTURE_SERVER_HOST}:${getFixturesServerPor
 class ReadOnlyNetworkStore {
   private _initialized: boolean;
   private _state: Record<string, unknown> | undefined;
-  private _asyncState: Record<string, string> | undefined;
+  private _asyncState?: Record<string, string>;
 
   constructor() {
     this._initialized = false;
@@ -74,7 +74,7 @@ class ReadOnlyNetworkStore {
 
   async clearAll() {
     await this._initIfRequired();
-    delete (this as { _asyncState?: Record<string, string> })._asyncState;
+    delete this._asyncState;
   }
 
   async _initIfRequired() {

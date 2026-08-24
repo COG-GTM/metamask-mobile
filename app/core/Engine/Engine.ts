@@ -1438,7 +1438,7 @@ export class Engine {
       (state: NetworkState) => {
         if (
           state.networksMetadata[state.selectedNetworkClientId].status ===
-          NetworkStatus.Available &&
+            NetworkStatus.Available &&
           getGlobalChainId(networkController) !== currentChainId
         ) {
           // We should add a state or event emitter saying the provider changed
@@ -1610,11 +1610,12 @@ export class Engine {
       const { accountsByChainId } = AccountTrackerController.state;
       const chainIdHex = toHexadecimal(chainId);
       const tokens =
-        TokensController.state.allTokens?.[chainIdHex]?.[
-        selectedInternalAccount.address
+        TokensController.state.allTokens?.[chainIdHex as `0x${string}`]?.[
+          selectedInternalAccount.address
         ] || [];
       const { marketData } = TokenRatesController.state;
-      const tokenExchangeRates = marketData?.[toHexadecimal(chainId)];
+      const tokenExchangeRates =
+        marketData?.[toHexadecimal(chainId) as `0x${string}`];
 
       let ethFiat = 0;
       let ethFiat1dAgo = 0;
@@ -1624,7 +1625,7 @@ export class Engine {
       const decimalsToShow = (currentCurrency === 'usd' && 2) || undefined;
       if (
         accountsByChainId?.[toHexadecimal(chainId)]?.[
-        selectedInternalAccountFormattedAddress
+          selectedInternalAccountFormattedAddress
         ]
       ) {
         const balanceHex =
@@ -1665,7 +1666,7 @@ export class Engine {
 
         const tokenBalances =
           allTokenBalances?.[selectedInternalAccount.address as Hex]?.[
-          chainId
+            chainId
           ] ?? {};
         tokens.forEach(
           (item: { address: string; balance?: string; decimals: number }) => {
@@ -1676,9 +1677,9 @@ export class Engine {
               item.balance ||
               (item.address in tokenBalances
                 ? renderFromTokenMinimalUnit(
-                  tokenBalances[item.address as Hex],
-                  item.decimals,
-                )
+                    tokenBalances[item.address as Hex],
+                    item.decimals,
+                  )
                 : undefined);
             const tokenBalanceFiat = balanceToFiatNumber(
               // TODO: Fix this by handling or eliminating the undefined case

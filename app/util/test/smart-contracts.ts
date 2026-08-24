@@ -65,8 +65,7 @@ const contractConfiguration = {
   [SMART_CONTRACTS.MULTISIG]: multisigFactory,
 };
 
-type SmartContractName =
-  (typeof SMART_CONTRACTS)[keyof typeof SMART_CONTRACTS];
+type SmartContractName = (typeof SMART_CONTRACTS)[keyof typeof SMART_CONTRACTS];
 
 export { SMART_CONTRACTS, contractConfiguration };
 export type { SmartContractName };

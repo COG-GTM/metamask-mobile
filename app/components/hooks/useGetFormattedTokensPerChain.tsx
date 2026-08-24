@@ -189,7 +189,8 @@ export const useGetFormattedTokensPerChain = (
         const matchedChainSymbol = allNetworks[singleChain].nativeCurrency;
         const conversionRate =
           currencyRates?.[matchedChainSymbol]?.conversionRate ?? 0;
-        const tokenExchangeRates = marketData?.[toHexadecimal(singleChain)];
+        const tokenExchangeRates =
+          marketData?.[toHexadecimal(singleChain) as `0x${string}`];
         const decimalsToShow = (currentCurrency === 'usd' && 2) || undefined;
         const tokensWithBalances = getTokenFiatBalances({
           tokens,
