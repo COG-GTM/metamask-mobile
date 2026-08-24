@@ -366,4 +366,13 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
 
 Tabs.contextType = ThemeContext;
 
-export default withMetricsAwareness(Tabs);
+/**
+ * Consumers only have to provide the tabs, the browser callbacks are optional
+ * from the outside and `metrics` is injected by `withMetricsAwareness`.
+ */
+type TabsOwnProps = Pick<TabsProps, 'tabs'> &
+  Partial<Omit<TabsProps, 'tabs' | 'metrics'>>;
+
+export default withMetricsAwareness(
+  Tabs,
+) as unknown as React.ComponentType<TabsOwnProps>;

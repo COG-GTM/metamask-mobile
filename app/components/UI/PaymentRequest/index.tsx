@@ -13,6 +13,7 @@ import {
   InteractionManager,
 } from 'react-native';
 import { Hex } from '@metamask/utils';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { RootState } from '../../../reducers';
 import { connect } from 'react-redux';
 import { fontStyles, baseStyles } from '../../../styles/common';
@@ -367,8 +368,8 @@ class PaymentRequest extends PureComponent<
     navigation.setOptions(
       getPaymentRequestOptionsTitle(
         strings('payment_request.title'),
-        navigation,
-        route,
+        navigation as unknown as NavigationProp<ParamListBase>,
+        route ?? {},
         colors,
       ),
     );

@@ -27,9 +27,9 @@ const { TRANSACTION, SIMPLE } = NotificationTypes;
 const BROWSER_ROUTE = 'BrowserView';
 
 export interface CurrentNotification {
-  id?: number;
+  id?: string;
   isVisible?: boolean;
-  autodismiss?: number;
+  autodismiss?: number | false | null;
   type?: string;
   status?: string;
   title?: string;
