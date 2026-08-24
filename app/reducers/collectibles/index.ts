@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { createSelector } from 'reselect';
+import { Nft } from '@metamask/assets-controllers';
+import { Hex } from '@metamask/utils';
 import { selectChainId } from '../../selectors/networkController';
 import {
   selectAllNftContracts,
@@ -7,10 +10,36 @@ import {
 import { selectSelectedInternalAccountAddress } from '../../selectors/accountsController';
 import { compareTokenIds } from '../../util/tokens';
 import { createDeepEqualSelector } from '../../selectors/util';
+import type { RootState } from '../index';
+import type { CollectiblesAction } from '../../actions/collectibles';
 
-const favoritesSelector = (state) => state.collectibles.favorites;
+/**
+ * Favorite collectibles are stored by account address and then by chain id.
+ */
+export interface FavoriteCollectible {
+  tokenId: string;
+  address: string;
+}
 
-export const isNftFetchingProgressSelector = (state) =>
+export type FavoriteCollectiblesByChainId = Record<
+  string,
+  FavoriteCollectible[]
+>;
+
+export type FavoriteCollectiblesByAddress = Record<
+  string,
+  FavoriteCollectiblesByChainId
+>;
+
+export interface CollectiblesState {
+  favorites: FavoriteCollectiblesByAddress;
+  isNftFetchingProgress: boolean;
+}
+
+const favoritesSelector = (state: RootState): FavoriteCollectiblesByAddress =>
+  state.collectibles.favorites;
+
+export const isNftFetchingProgressSelector = (state: RootState): boolean =>
   state.collectibles.isNftFetchingProgress;
 
 export const collectibleContractsSelector = createSelector(
@@ -18,66 +47,85 @@ export const collectibleContractsSelector = createSelector(
   selectChainId,
   selectAllNftContracts,
   (address, chainId, allNftContracts) =>
-    allNftContracts[address]?.[chainId] || [],
+    allNftContracts[address as string]?.[chainId as Hex] || [],
 );
 
 export const multichainCollectibleContractsSelector = createSelector(
   selectSelectedInternalAccountAddress,
   selectAllNftContracts,
-  (address, allNftContracts) => allNftContracts[address] || {},
+  (address, allNftContracts) => allNftContracts[address as string] || {},
 );
 
 export const collectiblesSelector = createDeepEqualSelector(
   selectSelectedInternalAccountAddress,
   selectChainId,
   selectAllNfts,
-  (address, chainId, allNfts) => allNfts[address]?.[chainId] || [],
+  (address, chainId, allNfts) =>
+    allNfts[address as string]?.[chainId as Hex] || [],
 );
 
 export const multichainCollectiblesSelector = createDeepEqualSelector(
   selectSelectedInternalAccountAddress,
   selectAllNfts,
-  (address, allNfts) => allNfts[address] || {},
+  (address, allNfts) => allNfts[address as string] || {},
 );
 
 export const favoritesCollectiblesSelector = createSelector(
   selectSelectedInternalAccountAddress,
   selectChainId,
   favoritesSelector,
-  (address, chainId, favorites) => favorites[address]?.[chainId] || [],
+  (address, chainId, favorites) =>
+    favorites[address as string]?.[chainId] || [],
 );
 
 export const isCollectibleInFavoritesSelector = createSelector(
   favoritesCollectiblesSelector,
-  (state, collectible) => collectible,
+  (_state: RootState, collectible: Nft) => collectible,
   (favoriteCollectibles, collectible) =>
     Boolean(
       favoriteCollectibles.find(
         ({ tokenId, address }) =>
           // TO DO: Remove after moving favorites to controllers.
-          compareTokenIds(tokenId, collectible.tokenId) &&
+          compareTokenIds(tokenId, collectible.tokenId as string) &&
           address === collectible.address,
       ),
     ),
 );
 
 const getFavoritesCollectibles = (
-  favoriteCollectibles,
-  selectedAddress,
-  chainId,
-) => favoriteCollectibles[selectedAddress]?.[chainId] || [];
+  favoriteCollectibles: FavoriteCollectiblesByAddress,
+  selectedAddress: string,
+  chainId: string,
+): FavoriteCollectible[] =>
+  favoriteCollectibles[selectedAddress]?.[chainId] || [];
 
 export const ADD_FAVORITE_COLLECTIBLE = 'ADD_FAVORITE_COLLECTIBLE';
 export const REMOVE_FAVORITE_COLLECTIBLE = 'REMOVE_FAVORITE_COLLECTIBLE';
 export const SHOW_NFT_FETCHING_LOADER = 'SHOW_NFT_FETCHING_LOADER';
 export const HIDE_NFT_FETCHING_LOADER = 'HIDE_NFT_FETCHING_LOADER';
 
-const initialState = {
+export interface ShowNftFetchingLoaderAction {
+  type: typeof SHOW_NFT_FETCHING_LOADER;
+}
+
+export interface HideNftFetchingLoaderAction {
+  type: typeof HIDE_NFT_FETCHING_LOADER;
+}
+
+export type CollectiblesReducerAction =
+  | CollectiblesAction
+  | ShowNftFetchingLoaderAction
+  | HideNftFetchingLoaderAction;
+
+const initialState: CollectiblesState = {
   favorites: {},
   isNftFetchingProgress: false,
 };
 
-const collectiblesFavoritesReducer = (state = initialState, action) => {
+const collectiblesFavoritesReducer = (
+  state: CollectiblesState = initialState,
+  action: CollectiblesReducerAction,
+): CollectiblesState => {
   switch (action.type) {
     case ADD_FAVORITE_COLLECTIBLE: {
       const { selectedAddress, chainId, collectible } = action;
@@ -87,7 +135,7 @@ const collectiblesFavoritesReducer = (state = initialState, action) => {
         chainId,
       );
       collectibles.push({
-        tokenId: collectible.tokenId,
+        tokenId: collectible.tokenId as string,
         address: collectible.address,
       });
       const selectedAddressCollectibles =
@@ -113,7 +161,7 @@ const collectiblesFavoritesReducer = (state = initialState, action) => {
       const indexToRemove = collectibles.findIndex(
         ({ tokenId, address }) =>
           // TO DO: Remove after moving favorites to controllers.
-          compareTokenIds(tokenId, collectible.tokenId) &&
+          compareTokenIds(tokenId, collectible.tokenId as string) &&
           address === collectible.address,
       );
       collectibles.splice(indexToRemove, 1);
@@ -148,12 +196,14 @@ const collectiblesFavoritesReducer = (state = initialState, action) => {
   }
 };
 
-export const showNftFetchingLoadingIndicator = () => ({
-  type: SHOW_NFT_FETCHING_LOADER,
-});
+export const showNftFetchingLoadingIndicator =
+  (): ShowNftFetchingLoaderAction => ({
+    type: SHOW_NFT_FETCHING_LOADER,
+  });
 
-export const hideNftFetchingLoadingIndicator = () => ({
-  type: HIDE_NFT_FETCHING_LOADER,
-});
+export const hideNftFetchingLoadingIndicator =
+  (): HideNftFetchingLoaderAction => ({
+    type: HIDE_NFT_FETCHING_LOADER,
+  });
 
 export default collectiblesFavoritesReducer;
