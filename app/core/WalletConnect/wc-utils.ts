@@ -14,6 +14,7 @@ import {
 import Engine from '../Engine';
 import { getPermittedAccounts, getPermittedChains, removePermittedChain, updatePermittedChains } from '../Permissions';
 import {
+  ExistingNetwork,
   findExistingNetwork,
   switchToNetwork,
 } from '../RPCMethods/lib/ethereum-chain-utils';
@@ -311,7 +312,7 @@ export const checkWCPermissions = async ({
       }
 
       await switchToNetwork({
-        network: existingNetwork,
+        network: existingNetwork as unknown as ExistingNetwork,
         chainId: hexChainIdString,
         requestUserApproval: onRequestUserApproval(origin),
         analytics: {},
