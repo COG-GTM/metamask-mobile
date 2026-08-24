@@ -108,7 +108,7 @@ export interface TransactionDetailsType {
   hash?: string;
   renderValue?: string;
   renderGas?: string | number;
-  renderGasPrice?: string;
+  renderGasPrice?: string | number;
   renderTotalGas?: string;
   summaryAmount?: string;
   summaryFee?: string;
@@ -132,7 +132,7 @@ export interface DecodeTransactionArgs {
   tokens?: Record<string, TransactionToken>;
   primaryCurrency?: string;
   swapsTransactions?: Record<string, SwapTransaction>;
-  swapsTokens?: SwapsToken[];
+  swapsTokens?: SwapsToken[] | null;
   networkConfigurationsByChainId?: Record<
     string,
     { nativeCurrency?: string } | undefined
@@ -255,7 +255,7 @@ function getTokenTransfer(
     selectedAddress,
   } = args as ResolvedDecodeArgs;
 
-  const [, , encodedAmount] = decodeTransferData('transfer', data);
+  const [, , encodedAmount] = decodeTransferData('transfer', data) as string[];
   const amount = hexToBN(encodedAmount);
   const userHasToken = (safeToChecksumAddress(to) as string) in tokens;
   const token = userHasToken
@@ -361,7 +361,7 @@ function getCollectibleTransfer(
     selectedAddress,
   } = args as ResolvedDecodeArgs;
   let actionKey;
-  const [, tokenId] = decodeTransferData('transfer', data);
+  const [, tokenId] = decodeTransferData('transfer', data) as string[];
   const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
   const collectible = collectibleContracts?.find(
     (collectibleContract: CollectibleContract) =>
@@ -550,9 +550,9 @@ async function decodeTransferTx(
     txChainId,
   } = args as ResolvedDecodeArgs;
 
-  const decodedData = decodeTransferData('transfer', data);
+  const decodedData = decodeTransferData('transfer', data) as string[];
   const addressTo = decodedData[0];
-  let isCollectible = false;
+  let isCollectible: string | boolean = false;
   try {
     isCollectible = await isCollectibleAddress(to, decodedData[1]);
   } catch (e) {
@@ -600,7 +600,7 @@ function decodeTransferFromTx(
   const [addressFrom, addressTo, tokenId] = decodeTransferData(
     'transferFrom',
     data,
-  );
+  ) as string[];
   const collectible = collectibleContracts?.find(
     (collectibleContract: CollectibleContract) =>
       toLowerCaseEquals(collectibleContract.address, to),
@@ -1098,7 +1098,7 @@ export default async function decodeTransaction(
   const { isTransfer } = tx || {};
 
   const actionKey = await getActionKey(
-    tx,
+    tx as unknown as Parameters<typeof getActionKey>[0],
     selectedAddress,
     ticker,
     chainIdToUse,
