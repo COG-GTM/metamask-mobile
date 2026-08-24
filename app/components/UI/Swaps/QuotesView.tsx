@@ -619,7 +619,13 @@ function SwapsQuotesView({
   const [isInFetch, setIsInFetch] = useState(false);
 
   useEffect(() => {
-    navigation.setOptions(getSwapsQuotesNavbar(navigation, route, colors));
+    navigation.setOptions(
+      getSwapsQuotesNavbar(
+        navigation as unknown as ReturnType<typeof useNavigation>,
+        route as { name?: string; params?: Record<string, unknown> },
+        colors,
+      ),
+    );
   }, [navigation, route, colors]);
 
   const hasConversionRate = useMemo(
