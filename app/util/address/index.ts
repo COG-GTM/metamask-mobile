@@ -73,7 +73,7 @@ export function renderFullAddress(address: string) {
  * @param {String} type - Format  type
  * @returns {String} Formatted address
  */
-type FormatAddressType = 'short' | 'mid' | 'full';
+export type FormatAddressType = 'short' | 'mid' | 'full';
 export const formatAddress = (rawAddress: string, type: FormatAddressType) => {
   let formattedAddress = rawAddress;
 
@@ -357,7 +357,9 @@ export function getLabelTextByAddress(address: string) {
             );
             // -1 means the address is not found in any of the hd keyrings
             if (hdKeyringIndex !== -1) {
-              return strings('accounts.srp_index', { index: hdKeyringIndex + 1 });
+              return strings('accounts.srp_index', {
+                index: hdKeyringIndex + 1,
+              });
             }
           }
         }
