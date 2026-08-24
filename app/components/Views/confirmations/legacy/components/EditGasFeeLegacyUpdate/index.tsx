@@ -395,6 +395,7 @@ const EditGasFeeLegacy = ({
                       value={suggestedGasLimit}
                       onChangeValue={changedGasLimit}
                       min={GAS_LIMIT_MIN}
+                      max={undefined as unknown as BigNumber}
                       name={strings('edit_gas_fee_eip1559.gas_limit')}
                       increment={GAS_LIMIT_INCREMENT}
                     />
@@ -424,6 +425,7 @@ const EditGasFeeLegacy = ({
                       name={strings('edit_gas_fee_eip1559.gas_price')}
                       increment={GAS_PRICE_INCREMENT}
                       min={GAS_PRICE_MIN}
+                      max={undefined as unknown as BigNumber}
                       inputInsideLabel={
                         transactionFeeFiat && `≈ ${transactionFeeFiat}`
                       }

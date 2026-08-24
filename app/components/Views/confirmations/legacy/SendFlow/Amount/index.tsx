@@ -644,10 +644,10 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       getSendFlowTitle(
         'send.amount',
         navigation,
-        route as RouteProp<ParamListBase, string>,
+        route as unknown as Parameters<typeof getSendFlowTitle>[2],
         colors,
         resetTransaction,
-        undefined,
+        undefined as unknown as Parameters<typeof getSendFlowTitle>[5],
       ),
     );
   };
@@ -690,7 +690,9 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         suggestedMaxFeePerGas: string;
       };
       const estimatedBaseFeeHex = decGWEIToHexWEI(
-        gasFeeEstimates.estimatedBaseFee,
+        gasFeeEstimates.estimatedBaseFee as Parameters<
+          typeof decGWEIToHexWEI
+        >[0],
       );
       const suggestedMaxPriorityFeePerGasHex = decGWEIToHexWEI(
         mediumGasFeeEstimates.suggestedMaxPriorityFeePerGas,
@@ -698,7 +700,9 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       const suggestedMaxFeePerGasHex = decGWEIToHexWEI(
         mediumGasFeeEstimates.suggestedMaxFeePerGas,
       );
-      const gasLimitHex = BNToHex(gas);
+      const gasLimitHex = BNToHex(
+        gas as unknown as Parameters<typeof BNToHex>[0],
+      );
       const gasHexes = calculateEIP1559GasFeeHexes({
         gasLimitHex,
         estimatedGasLimitHex: gasLimitHex,
@@ -707,17 +711,27 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         suggestedMaxPriorityFeePerGasHex,
       });
       this.setState({
-        estimatedTotalGas: hexToBN(gasHexes.gasFeeMaxHex) as unknown as BN4,
+        estimatedTotalGas: hexToBN(
+          gasHexes.gasFeeMaxHex as string,
+        ) as unknown as BN4,
       });
     } else if (gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
       const gasPrice = hexToBN(
-        decGWEIToHexWEI(gasFeeEstimates[AppConstants.GAS_OPTIONS.MEDIUM]),
+        decGWEIToHexWEI(
+          gasFeeEstimates[AppConstants.GAS_OPTIONS.MEDIUM] as Parameters<
+            typeof decGWEIToHexWEI
+          >[0],
+        ),
       );
       this.setState({
         estimatedTotalGas: gas.mul(gasPrice as never) as unknown as BN4,
       });
     } else {
-      const gasPrice = hexToBN(decGWEIToHexWEI(gasFeeEstimates.gasPrice));
+      const gasPrice = hexToBN(
+        decGWEIToHexWEI(
+          gasFeeEstimates.gasPrice as Parameters<typeof decGWEIToHexWEI>[0],
+        ),
+      );
       this.setState({
         estimatedTotalGas: gas.mul(gasPrice as never) as unknown as BN4,
       });
@@ -818,7 +832,10 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     value = formatValueToMatchTokenDecimals(value, selectedAsset.decimals);
     if (
       !selectedAsset.tokenId &&
-      this.validateAmount(value, internalPrimaryCurrencyIsCrypto)
+      this.validateAmount(
+        value as string | undefined,
+        internalPrimaryCurrencyIsCrypto,
+      )
     ) {
       return;
     } else if (selectedAsset.tokenId) {
@@ -832,7 +849,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       }
     }
 
-    await this.prepareTransaction(value);
+    await this.prepareTransaction(value as string);
 
     this.props.metrics.trackEvent(
       this.props.metrics

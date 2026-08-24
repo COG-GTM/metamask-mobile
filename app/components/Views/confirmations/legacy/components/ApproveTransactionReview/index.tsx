@@ -702,7 +702,9 @@ class ApproveTransactionReview extends PureComponent<
         tokenSpendValue || '0',
         tokenDecimals as number,
         spenderAddress,
-        transaction,
+        transaction as unknown as Parameters<
+          typeof generateTxWithNewTokenAllowance
+        >[3],
       );
 
       setTransactionObject({
@@ -1263,7 +1265,7 @@ class ApproveTransactionReview extends PureComponent<
                         )}
                         {gasError && (
                           <View style={styles.errorWrapper}>
-                            {isTestNetworkWithFaucet(chainId) ||
+                            {isTestNetworkWithFaucet(chainId as string) ||
                             isNativeTokenBuySupported ? (
                               <TouchableOpacity onPress={errorPress}>
                                 <Text reset style={styles.error}>
@@ -1513,12 +1515,16 @@ class ApproveTransactionReview extends PureComponent<
     return (
       <View style={styles.actionViewQRObject}>
         <TransactionHeader
-          currentPageInformation={{
-            origin,
-            spenderAddress,
-            title: host,
-            url: activeTabUrl,
-          }}
+          currentPageInformation={
+            {
+              origin,
+              spenderAddress,
+              title: host,
+              url: activeTabUrl,
+            } as React.ComponentProps<
+              typeof TransactionHeader
+            >['currentPageInformation']
+          }
         />
         <QRSigningDetails
           QRState={QRState as IQRState}

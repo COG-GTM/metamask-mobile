@@ -795,7 +795,7 @@ class Send extends PureComponent<SendProps, SendComponentState> {
           const [addressTo] = decodeTransferData(
             'transfer',
             legacyTransactionMeta.transaction.data as string,
-          );
+          ) as string[];
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);
           }
@@ -810,7 +810,7 @@ class Send extends PureComponent<SendProps, SendComponentState> {
           const data = decodeTransferData(
             'transferFrom',
             legacyTransactionMeta.transaction.data as string,
-          );
+          ) as string[];
           const addressTo = data[1];
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);
@@ -899,7 +899,9 @@ class Send extends PureComponent<SendProps, SendComponentState> {
   trackEditScreen = async () => {
     const { transaction } = this.props;
     const actionKey = await getTransactionReviewActionKey(
-      { transaction },
+      { transaction } as unknown as Parameters<
+        typeof getTransactionReviewActionKey
+      >[0],
       undefined as unknown as string,
     );
     this.props.metrics.trackEvent(
@@ -1068,6 +1070,9 @@ export default connect(
   mapDispatchToProps,
 )(
   withMetricsAwareness(
-    Send as unknown as ComponentType<IWithMetricsAwarenessProps>,
+    Send as unknown as ComponentType<SendOwnProps & IWithMetricsAwarenessProps>,
   ),
-);
+) as unknown as ComponentType<{
+  navigation?: object;
+  route?: Record<string, unknown>;
+}>;

@@ -196,17 +196,34 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
       MetricsEventBuilder.createEventBuilder(
         MetaMetricsEvents.SIGNATURE_REQUESTED,
       )
-        .addProperties(getAnalyticsParams(messageParams, 'typed_sign'))
+        .addProperties(
+          getAnalyticsParams(
+            messageParams as unknown as Parameters<
+              typeof getAnalyticsParams
+            >[0],
+            'typed_sign',
+          ),
+        )
         .build(),
     );
-    addSignatureErrorListener(metamaskId, this.onSignatureError);
+    addSignatureErrorListener(
+      metamaskId,
+      this.onSignatureError as unknown as Parameters<
+        typeof addSignatureErrorListener
+      >[1],
+    );
   };
 
   componentWillUnmount = () => {
     const {
       messageParams: { metamaskId },
     } = this.props;
-    removeSignatureErrorListener(metamaskId, this.onSignatureError);
+    removeSignatureErrorListener(
+      metamaskId,
+      this.onSignatureError as unknown as Parameters<
+        typeof removeSignatureErrorListener
+      >[1],
+    );
   };
 
   onSignatureError = ({ error }: { error: Error }) => {
@@ -220,16 +237,24 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
           .build(),
       );
     }
-    showWalletConnectNotification(this.props.messageParams, false, true);
+    showWalletConnectNotification(
+      this.props.messageParams as unknown as Parameters<
+        typeof showWalletConnectNotification
+      >[0],
+      false,
+      true,
+    );
   };
 
   rejectSignature = async () => {
     const { messageParams, onReject, securityAlertResponse } = this.props;
     await handleSignatureAction(
       onReject as () => void,
-      messageParams,
+      messageParams as unknown as Parameters<typeof handleSignatureAction>[1],
       typedSign[messageParams.version as keyof typeof typedSign],
-      securityAlertResponse,
+      securityAlertResponse as unknown as Parameters<
+        typeof handleSignatureAction
+      >[3],
       false,
     );
   };
@@ -245,9 +270,11 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
     if (!isExternalHardwareAccount(messageParams.from)) {
       await handleSignatureAction(
         onConfirm as () => void,
-        messageParams,
+        messageParams as unknown as Parameters<typeof handleSignatureAction>[1],
         typedSign[messageParams.version as keyof typeof typedSign],
-        securityAlertResponse,
+        securityAlertResponse as unknown as Parameters<
+          typeof handleSignatureAction
+        >[3],
         true,
       );
     } else {

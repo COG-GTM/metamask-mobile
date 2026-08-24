@@ -644,7 +644,7 @@ class TransactionReviewInformation extends PureComponent<
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
-        });
+        } as Parameters<typeof calculateEthEIP1559>[0]);
 
         return [
           renderableTotalMinNative,
@@ -694,7 +694,7 @@ class TransactionReviewInformation extends PureComponent<
           symbol,
           totalMinNative,
           totalMaxNative,
-        });
+        } as unknown as Parameters<typeof calculateERC20EIP1559>[0]);
         return [
           renderableTotalMinNative,
           renderableTotalMinConversion,
@@ -731,7 +731,7 @@ class TransactionReviewInformation extends PureComponent<
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
-        });
+        } as Parameters<typeof calculateEthEIP1559>[0]);
 
         renderableTotalMinNative = `${selectedAsset?.name} ${
           ' (#' + selectedAsset?.tokenId + ')'
@@ -846,11 +846,15 @@ class TransactionReviewInformation extends PureComponent<
       totalGas = hexToBN(sumHexWEIs([BNToHex(totalGas), multiLayerL1FeeTotal]));
     }
 
-    const totalGasFiat = weiToFiat(totalGas, conversionRate, currentCurrency);
+    const totalGasFiat = weiToFiat(
+      totalGas,
+      conversionRate,
+      currentCurrency as string,
+    );
     const totalGasEth = `${renderFromWei(totalGas)} ${getTicker(ticker)}`;
     const [totalFiat, totalValue] = this.getRenderTotals(
       totalGas,
-      totalGasFiat,
+      totalGasFiat as string,
     )();
     return (
       <TransactionReviewEIP1559
@@ -970,7 +974,7 @@ class TransactionReviewInformation extends PureComponent<
 
 const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const chainId = transaction?.chainId as Hex;
   const networkClientId = transaction?.networkClientId;
 
   return {

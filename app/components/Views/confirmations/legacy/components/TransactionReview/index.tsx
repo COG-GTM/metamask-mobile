@@ -580,7 +580,7 @@ class TransactionReview extends PureComponent<
         ...transactionMetadata,
         transaction,
         txParams: undefined,
-      },
+      } as unknown as Parameters<typeof getTransactionReviewActionKey>[0],
       chainId as string,
     );
 
@@ -594,7 +594,7 @@ class TransactionReview extends PureComponent<
       }
       const symbol = contract?.symbol || 'ERC20';
       assetAmount = `${
-        decodeTransferData('transfer', data as string)[1]
+        (decodeTransferData('transfer', data as string) as string[])[1]
       } ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();
@@ -1005,7 +1005,7 @@ class TransactionReview extends PureComponent<
 
 const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const chainId = transaction?.chainId as Hex;
   const transactionMetadata = selectCurrentTransactionMetadata(state);
   const networkClientId = transactionMetadata?.networkClientId;
 

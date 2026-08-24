@@ -534,6 +534,7 @@ const EditGasFee1559Update = ({
                     />
                   }
                   min={GAS_LIMIT_MIN}
+                  max={undefined as unknown as BigNumber}
                   value={suggestedGasLimit}
                   onChangeValue={changedGasLimit}
                   name={strings('edit_gas_fee_eip1559.gas_limit')}
@@ -558,6 +559,7 @@ const EditGasFee1559Update = ({
                   name={strings('edit_gas_fee_eip1559.max_priority_fee')}
                   unit={'GWEI'}
                   min={GAS_MIN}
+                  max={undefined as unknown as BigNumber}
                   increment={GAS_INCREMENT}
                   inputInsideLabel={
                     renderableMaxPriorityFeeNative &&
@@ -566,7 +568,7 @@ const EditGasFee1559Update = ({
                       renderableMaxPriorityFeeConversion,
                     )}`
                   }
-                  error={maxPriorityFeeError}
+                  error={maxPriorityFeeError as string | undefined}
                   onChangeValue={changedMaxPriorityFee}
                 />
               </View>
@@ -585,8 +587,9 @@ const EditGasFee1559Update = ({
                   name={strings('edit_gas_fee_eip1559.max_fee')}
                   unit={'GWEI'}
                   min={GAS_MIN}
+                  max={undefined as unknown as BigNumber}
                   increment={GAS_INCREMENT}
-                  error={maxFeeError}
+                  error={maxFeeError as string | undefined}
                   onChangeValue={changedMaxFeePerGas}
                   inputInsideLabel={
                     renderableMaxFeePerGasNative &&

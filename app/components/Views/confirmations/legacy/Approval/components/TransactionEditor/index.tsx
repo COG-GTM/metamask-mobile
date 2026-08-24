@@ -1157,7 +1157,7 @@ class TransactionEditor extends PureComponent<
 
 const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const chainId = transaction?.chainId as Hex;
 
   return {
     accounts: selectAccounts(state),

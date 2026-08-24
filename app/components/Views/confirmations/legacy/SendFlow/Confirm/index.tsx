@@ -619,11 +619,11 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmComponentState> {
     navigation.setOptions(
       getSendFlowTitle(
         'send.confirm',
-        navigation,
-        route,
+        navigation as unknown as Parameters<typeof getSendFlowTitle>[1],
+        route as unknown as Parameters<typeof getSendFlowTitle>[2],
         colors,
         resetTransaction,
-        transaction,
+        transaction as unknown as Parameters<typeof getSendFlowTitle>[5],
       ),
     );
   };
@@ -1035,7 +1035,10 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmComponentState> {
         });
       }
 
-      const [, , rawAmount] = decodeTransferData('transfer', data as string);
+      const [, , rawAmount] = decodeTransferData(
+        'transfer',
+        data as string,
+      ) as string[];
       const rawAmountString = parseInt(rawAmount, 16).toLocaleString(
         'fullwide',
         { useGrouping: false },
@@ -1103,7 +1106,9 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmComponentState> {
       removeFavoriteCollectible(
         fromSelectedAddress as string,
         chainId,
-        selectedAsset,
+        selectedAsset as unknown as Parameters<
+          typeof removeFavoriteCollectible
+        >[2],
       );
       NftController.removeNft(
         selectedAsset.address as string,
@@ -1905,7 +1910,7 @@ Confirm.contextType = ThemeContext;
 
 const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId || selectEvmChainId(state);
+  const chainId = (transaction?.chainId as Hex) || selectEvmChainId(state);
 
   const networkClientId =
     transaction?.networkClientId || selectNetworkClientId(state);
@@ -1955,7 +1960,15 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     chainId: Hex,
     collectible: ConfirmSelectedAsset,
   ) =>
-    dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
+    dispatch(
+      removeFavoriteCollectible(
+        selectedAddress,
+        chainId,
+        collectible as unknown as Parameters<
+          typeof removeFavoriteCollectible
+        >[2],
+      ),
+    ),
   showAlert: (config: ConfirmAlertConfig) => dispatch(showAlert(config)),
   updateConfirmationMetric: ({ id, params }: ConfirmMetricParams) =>
     dispatch(updateConfirmationMetricAction({ id, params })),
@@ -1969,4 +1982,8 @@ export default connect(
   withMetricsAwareness(
     Confirm as unknown as ComponentType<IWithMetricsAwarenessProps>,
   ),
-);
+) as unknown as ComponentType<{
+  navigation?: object;
+  route?: Record<string, unknown>;
+  transaction?: object;
+}>;

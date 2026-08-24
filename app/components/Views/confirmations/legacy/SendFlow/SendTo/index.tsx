@@ -320,11 +320,11 @@ class SendFlow extends PureComponent<SendToProps, SendToState> {
     navigation.setOptions(
       getSendFlowTitle(
         'send.send_to',
-        navigation,
-        route,
+        navigation as unknown as Parameters<typeof getSendFlowTitle>[1],
+        route as unknown as Parameters<typeof getSendFlowTitle>[2],
         colors,
         resetTransaction,
-        undefined,
+        undefined as unknown as Parameters<typeof getSendFlowTitle>[5],
       ),
     );
   };
@@ -573,7 +573,7 @@ class SendFlow extends PureComponent<SendToProps, SendToState> {
       toSelectedAddressName: toAddressName,
       errorContinue,
       isOnlyWarning,
-      confusableCollection,
+      confusableCollection: confusableCollection as string[],
     });
   };
 
@@ -888,6 +888,11 @@ export default connect(
   mapDispatchToProps,
 )(
   withMetricsAwareness(
-    SendFlow as unknown as ComponentType<IWithMetricsAwarenessProps>,
+    SendFlow as unknown as ComponentType<
+      SendToOwnProps & IWithMetricsAwarenessProps
+    >,
   ),
-);
+) as unknown as ComponentType<{
+  navigation?: object;
+  route?: Record<string, unknown>;
+}>;

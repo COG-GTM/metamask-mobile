@@ -181,6 +181,10 @@ interface ApprovalOwnProps {
    * Tells whether or not dApp transaction modal is visible
    */
   dappTransactionModalVisible: boolean;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route?: { params?: Record<string, unknown> };
 }
 
 type ApprovalProps = ApprovalOwnProps &
@@ -861,8 +865,12 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
     }
 
     const gasDataLegacy = {
-      suggestedGasLimitHex: safeBNToHex(gas),
-      suggestedGasPriceHex: safeBNToHex(gasPrice),
+      suggestedGasLimitHex: safeBNToHex(
+        gas as unknown as Parameters<typeof safeBNToHex>[0],
+      ),
+      suggestedGasPriceHex: safeBNToHex(
+        gasPrice as unknown as Parameters<typeof safeBNToHex>[0],
+      ),
     };
 
     return buildTransactionParams({
@@ -923,7 +931,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
 
 const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const chainId = transaction?.chainId as Hex;
 
   return {
     transaction,
@@ -951,6 +959,13 @@ export default connect(
   mapDispatchToProps,
 )(
   withMetricsAwareness(
-    Approval as unknown as ComponentType<IWithMetricsAwarenessProps>,
+    Approval as unknown as ComponentType<
+      ApprovalOwnProps & IWithMetricsAwarenessProps
+    >,
   ),
-);
+) as unknown as ComponentType<{
+  navigation?: object;
+  dappTransactionModalVisible?: boolean;
+  hideModal?: () => void;
+  route?: Record<string, unknown>;
+}>;
