@@ -380,7 +380,7 @@ class Transactions extends PureComponent<TransactionsProps, TransactionsState> {
           (tx) => txToView === tx.id,
         );
         if (index >= 0) {
-          this.toggleDetailsView(txToView, index);
+          this.toggleDetailsView(txToView as string, index);
         }
       }, 1000);
     }

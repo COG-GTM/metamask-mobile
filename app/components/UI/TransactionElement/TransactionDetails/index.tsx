@@ -465,7 +465,7 @@ class TransactionDetails extends PureComponent<
               {strings('transactions.date')}
             </DetailsModal.SectionTitle>
             <Text small primary>
-              {toDateFormat(time)}
+              {toDateFormat(time as number)}
             </Text>
           </DetailsModal.Column>
         </DetailsModal.Section>

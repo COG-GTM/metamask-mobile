@@ -117,6 +117,16 @@ interface ReceiveRequestAlertConfig {
   data: { msg: string };
 }
 
+/**
+ * Props supplied by the consumers of the connected component; every other prop
+ * is injected by `connect`, `withMetricsAwareness` or the navigator.
+ */
+export interface ReceiveRequestOwnProps {
+  navigation?: NavigationProp<ParamListBase>;
+  hideModal?: () => void;
+  showReceiveModal?: boolean;
+}
+
 interface ReceiveRequestProps extends IWithMetricsAwarenessProps {
   /**
    * The navigator object
@@ -125,7 +135,7 @@ interface ReceiveRequestProps extends IWithMetricsAwarenessProps {
   /**
    * Selected address as string
    */
-  selectedAddress: string;
+  selectedAddress?: string;
   /**
    * Asset to receive, could be not defined
    */
@@ -180,7 +190,7 @@ class ReceiveRequest extends PureComponent<
   onShare = () => {
     const { selectedAddress } = this.props;
     Share.open({
-      message: generateUniversalLinkAddress(selectedAddress),
+      message: generateUniversalLinkAddress(selectedAddress as string),
     })
       .then(() => {
         this.props.hideModal();
@@ -229,7 +239,7 @@ class ReceiveRequest extends PureComponent<
 
   copyAccountToClipboard = async () => {
     const { selectedAddress } = this.props;
-    ClipboardManager.setString(selectedAddress);
+    ClipboardManager.setString(selectedAddress as string);
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -272,7 +282,9 @@ class ReceiveRequest extends PureComponent<
             />
           </View>
 
-          <QRAccountDisplay accountAddress={this.props.selectedAddress} />
+          <QRAccountDisplay
+            accountAddress={this.props.selectedAddress as string}
+          />
 
           <View style={styles.actionRow}>
             <StyledButton
@@ -313,4 +325,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(ReceiveRequest));
+)(
+  withMetricsAwareness(ReceiveRequest),
+) as unknown as React.ComponentType<ReceiveRequestOwnProps>;
