@@ -732,7 +732,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch(setDataCollectionForMarketingAction(value)),
 });
 
+/**
+ * `navigation` and `route` are provided by the navigator that renders this
+ * screen, every other prop is injected by `connect`/`withMetricsAwareness`.
+ */
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(OptinMetrics));
+)(withMetricsAwareness(OptinMetrics)) as unknown as React.ComponentType;
