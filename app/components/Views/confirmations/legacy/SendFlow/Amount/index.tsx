@@ -489,7 +489,7 @@ interface AmountState {
   estimatedTotalGas?: BN4;
   hasExchangeRate: boolean;
   isRedesignedTransferTransactionLoading: boolean;
-  maxFiatInput?: string;
+  maxFiatInput?: string | false;
   currentBalance?: string;
 }
 
@@ -905,7 +905,11 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         'transfer',
         {
           toAddress: transactionTo,
-          amount: Number(selectedAsset.tokenId).toString(16),
+          amount: (
+            selectedAsset.tokenId as unknown as {
+              toString(radix?: number): string;
+            }
+          ).toString(16),
         },
       );
     }
@@ -1184,7 +1188,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       renderableInputValueConversion,
       amountError: undefined,
       hasExchangeRate,
-      maxFiatInput: !useMax ? undefined : this.state.maxFiatInput,
+      maxFiatInput: !useMax && undefined,
     });
   };
 
