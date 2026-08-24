@@ -113,7 +113,9 @@ describe('CollectibleContracts', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <CollectibleContracts />
+        <CollectibleContracts
+          {...({} as React.ComponentProps<typeof CollectibleContracts>)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
@@ -214,15 +216,25 @@ describe('CollectibleContracts', () => {
       .spyOn(Engine.context.NftController, 'updateNftMetadata')
       .mockImplementation(async () => undefined);
 
-    const { getByTestId } = renderWithProvider(<CollectibleContracts />, {
-      state: mockState,
-    });
+    const { getByTestId } = renderWithProvider(
+      <CollectibleContracts
+        {...({} as React.ComponentProps<typeof CollectibleContracts>)}
+      />,
+      {
+        state: mockState,
+      },
+    );
     const nftImageBefore = getByTestId('nft-image');
     expect(nftImageBefore.props.source.uri).toEqual(nftItemData[0].image);
 
-    const { queryByTestId } = renderWithProvider(<CollectibleContracts />, {
-      state: mockState,
-    });
+    const { queryByTestId } = renderWithProvider(
+      <CollectibleContracts
+        {...({} as React.ComponentProps<typeof CollectibleContracts>)}
+      />,
+      {
+        state: mockState,
+      },
+    );
 
     await waitFor(() => {
       expect(spyOnUpdateNftMetadata).toHaveBeenCalled();
@@ -330,15 +342,25 @@ describe('CollectibleContracts', () => {
       .spyOn(Engine.context.NftController, 'updateNftMetadata')
       .mockImplementation(async () => undefined);
 
-    const { getByTestId } = renderWithProvider(<CollectibleContracts />, {
-      state: mockState,
-    });
+    const { getByTestId } = renderWithProvider(
+      <CollectibleContracts
+        {...({} as React.ComponentProps<typeof CollectibleContracts>)}
+      />,
+      {
+        state: mockState,
+      },
+    );
     const nftImageBefore = getByTestId('nft-image');
     expect(nftImageBefore.props.source.uri).toEqual(nftItemData[0].image);
 
-    const { queryByTestId } = renderWithProvider(<CollectibleContracts />, {
-      state: mockState,
-    });
+    const { queryByTestId } = renderWithProvider(
+      <CollectibleContracts
+        {...({} as React.ComponentProps<typeof CollectibleContracts>)}
+      />,
+      {
+        state: mockState,
+      },
+    );
 
     await waitFor(() => {
       expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(0);
@@ -450,9 +472,14 @@ describe('CollectibleContracts', () => {
       .spyOn(Engine.context.NftDetectionController, 'detectNfts')
       .mockImplementation(async () => undefined);
 
-    const { getByTestId } = renderWithProvider(<CollectibleContracts />, {
-      state: mockState,
-    });
+    const { getByTestId } = renderWithProvider(
+      <CollectibleContracts
+        {...({} as React.ComponentProps<typeof CollectibleContracts>)}
+      />,
+      {
+        state: mockState,
+      },
+    );
     const scrollView = getByTestId('refreshControl');
 
     expect(scrollView).toBeDefined();
@@ -519,9 +546,14 @@ describe('CollectibleContracts', () => {
         },
       },
     };
-    const { queryByTestId } = renderWithProvider(<CollectibleContracts />, {
-      state: mockState,
-    });
+    const { queryByTestId } = renderWithProvider(
+      <CollectibleContracts
+        {...({} as React.ComponentProps<typeof CollectibleContracts>)}
+      />,
+      {
+        state: mockState,
+      },
+    );
 
     const spinner = queryByTestId('spinner');
     expect(spinner).not.toBeNull();
@@ -578,9 +610,14 @@ describe('CollectibleContracts', () => {
       },
     };
 
-    const { queryByTestId } = renderWithProvider(<CollectibleContracts />, {
-      state: mockState,
-    });
+    const { queryByTestId } = renderWithProvider(
+      <CollectibleContracts
+        {...({} as React.ComponentProps<typeof CollectibleContracts>)}
+      />,
+      {
+        state: mockState,
+      },
+    );
 
     const spinner = queryByTestId('spinner');
     expect(spinner).toBeNull();
@@ -668,9 +705,14 @@ describe('CollectibleContracts', () => {
       )
       .mockImplementation(async () => undefined);
 
-    const { getByTestId } = renderWithProvider(<CollectibleContracts />, {
-      state: mockState,
-    });
+    const { getByTestId } = renderWithProvider(
+      <CollectibleContracts
+        {...({} as React.ComponentProps<typeof CollectibleContracts>)}
+      />,
+      {
+        state: mockState,
+      },
+    );
 
     const scrollView = getByTestId('refreshControl');
     expect(scrollView).toBeDefined();
@@ -782,9 +824,14 @@ describe('CollectibleContracts', () => {
       )
       .mockImplementation(async () => undefined);
 
-    const { getByTestId } = renderWithProvider(<CollectibleContracts />, {
-      state: mockState,
-    });
+    const { getByTestId } = renderWithProvider(
+      <CollectibleContracts
+        {...({} as React.ComponentProps<typeof CollectibleContracts>)}
+      />,
+      {
+        state: mockState,
+      },
+    );
 
     const scrollView = getByTestId('refreshControl');
     const { refreshControl } = scrollView.props;
@@ -890,9 +937,14 @@ describe('CollectibleContracts', () => {
       )
       .mockImplementation(async () => undefined);
 
-    const { getByTestId } = renderWithProvider(<CollectibleContracts />, {
-      state: mockState,
-    });
+    const { getByTestId } = renderWithProvider(
+      <CollectibleContracts
+        {...({} as React.ComponentProps<typeof CollectibleContracts>)}
+      />,
+      {
+        state: mockState,
+      },
+    );
 
     const scrollView = getByTestId('refreshControl');
     const { refreshControl } = scrollView.props;
