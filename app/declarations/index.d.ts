@@ -6,6 +6,60 @@ declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
 declare module 'react-native-fade-in-image';
 
+declare module 'eth-ens-namehash' {
+  const namehash: {
+    hash(name: string): string;
+    normalize(name: string): string;
+  };
+  export default namehash;
+}
+
+declare module '@metamask/ethjs-query' {
+  export default class Eth {
+    constructor(provider: unknown, options?: Record<string, unknown>);
+    [method: string]: unknown;
+  }
+}
+
+declare module '@metamask/ethjs-contract' {
+  export type EthContractMethod = (...args: unknown[]) => Promise<unknown[]>;
+
+  export interface EthContractInstance {
+    [methodName: string]: EthContractMethod;
+  }
+
+  export interface EthContractFactory {
+    at(address: string): EthContractInstance;
+  }
+
+  export type EthContractBuilder = (abi: unknown[]) => EthContractFactory;
+
+  type EthContractConstructor = new (eth: unknown) => EthContractBuilder;
+
+  const EthContract: EthContractConstructor;
+  export default EthContract;
+}
+
+declare module 'content-hash' {
+  const contentHash: {
+    decode(contentHash: string): string;
+    getCodec(contentHash: string): string;
+    encode(codec: string, value: string): string;
+  };
+  export default contentHash;
+}
+
+declare module 'multihashes' {
+  const multihash: {
+    fromHexString(hex: string): Buffer;
+    toHexString(buffer: Buffer): string;
+    toB58String(buffer: Buffer): string;
+    fromB58String(value: string): Buffer;
+    encode(buffer: Buffer, codec: string, length?: number): Buffer;
+  };
+  export default multihash;
+}
+
 declare module 'react-native-fast-crypto';
 
 declare module 'react-native-confetti';
