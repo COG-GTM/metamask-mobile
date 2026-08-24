@@ -1,13 +1,18 @@
-import { Web3Provider } from '@ethersproject/providers';
-import { ContractFactory } from '@ethersproject/contracts';
+import { ExternalProvider, Web3Provider } from '@ethersproject/providers';
+import { Contract, ContractFactory } from '@ethersproject/contracts';
 import { SMART_CONTRACTS, contractConfiguration } from './smart-contracts';
 import ContractAddressRegistry from './contract-address-registry';
+
+type ContractName = keyof typeof contractConfiguration;
 
 /*
  * Ganache seeder is used to seed initial smart contract or set initial blockchain state.
  */
 class GanacheSeeder {
-  constructor(ganacheProvider) {
+  private smartContractRegistry: ContractAddressRegistry;
+  private ganacheProvider: ExternalProvider;
+
+  constructor(ganacheProvider: ExternalProvider) {
     this.smartContractRegistry = new ContractAddressRegistry();
     this.ganacheProvider = ganacheProvider;
   }
@@ -18,7 +23,7 @@ class GanacheSeeder {
    * @param contractName
    */
 
-  async deploySmartContract(contractName) {
+  async deploySmartContract(contractName: ContractName) {
     const ethersProvider = new Web3Provider(this.ganacheProvider, 'any');
     const signer = ethersProvider.getSigner();
     const fromAddress = await signer.getAddress();
@@ -28,7 +33,7 @@ class GanacheSeeder {
       signer,
     );
 
-    let contract;
+    let contract: Contract;
 
     if (contractName === SMART_CONTRACTS.HST) {
       contract = await contractFactory.deploy(
@@ -69,7 +74,7 @@ class GanacheSeeder {
    * @param contractName
    * @param contractAddress
    */
-  storeSmartContractAddress(contractName, contractAddress) {
+  storeSmartContractAddress(contractName: string, contractAddress: string) {
     this.smartContractRegistry.storeNewContractAddress(
       contractName,
       contractAddress,

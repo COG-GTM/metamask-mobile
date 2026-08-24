@@ -1,8 +1,8 @@
 /* eslint-disable import/no-commonjs, import/no-nodejs-modules */
-const path = require('path');
+import path from 'path';
 
-module.exports = {
-  process(_, filename) {
+const transformer = {
+  process(_: string, filename: string) {
     const assetFilename = JSON.stringify(path.basename(filename));
 
     return {
@@ -10,3 +10,5 @@ module.exports = {
     };
   },
 };
+
+module.exports = transformer;
