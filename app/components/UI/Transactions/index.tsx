@@ -838,14 +838,21 @@ class Transactions extends PureComponent<TransactionsProps, TransactionsState> {
             contentContainerStyle={styles.keyboardAwareWrapper}
           >
             <UpdateEIP1559Tx
-              gas={(this.existingTx as TransactionElementTx).txParams.gas}
+              gas={
+                (this.existingTx as TransactionElementTx).txParams.gas as string
+              }
               onSave={
                 isCancel ? this.cancelTransaction : this.speedUpTransaction
               }
               onCancel={
                 isCancel ? this.onCancelCompleted : this.onSpeedUpCompleted
               }
-              existingGas={this.existingGas}
+              existingGas={
+                this.existingGas as {
+                  maxFeePerGas: string;
+                  maxPriorityFeePerGas: string;
+                }
+              }
               isCancel={isCancel}
             />
           </KeyboardAwareScrollView>

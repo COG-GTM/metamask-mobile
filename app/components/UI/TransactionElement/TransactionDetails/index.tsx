@@ -575,7 +575,7 @@ class TransactionDetails extends PureComponent<
             }
             gasEstimationReady
             transactionType={updatedTransactionDetails.transactionType}
-            chainId={chainId}
+            chainId={chainId as Hex}
           />
         </View>
         {updatedTransactionDetails.hash &&
