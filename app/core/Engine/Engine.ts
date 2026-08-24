@@ -120,7 +120,10 @@ import SmartTransactionsController from '@metamask/smart-transactions-controller
 import { getAllowedSmartTransactionsChainIds } from '../../../app/constants/smartTransactions';
 import { selectBasicFunctionalityEnabled } from '../../selectors/settings';
 import { selectSwapsChainFeatureFlags } from '../../reducers/swaps';
-import { ClientId } from '@metamask/smart-transactions-controller/dist/types';
+import {
+  ClientId,
+  type FeatureFlags,
+} from '@metamask/smart-transactions-controller/dist/types';
 import { zeroAddress } from 'ethereumjs-util';
 import {
   ApprovalType,
@@ -910,7 +913,10 @@ export class Engine {
         this.transactionController.getTransactions(...args),
       updateTransaction: (...args) =>
         this.transactionController.updateTransaction(...args),
-      getFeatureFlags: () => selectSwapsChainFeatureFlags(store.getState()),
+      getFeatureFlags: () =>
+        selectSwapsChainFeatureFlags(
+          store.getState(),
+        ) as unknown as FeatureFlags,
       getMetaMetricsProps: () => Promise.resolve({}), // Return MetaMetrics props once we enable HW wallets for smart transactions.
     });
 
@@ -1438,7 +1444,7 @@ export class Engine {
       (state: NetworkState) => {
         if (
           state.networksMetadata[state.selectedNetworkClientId].status ===
-          NetworkStatus.Available &&
+            NetworkStatus.Available &&
           getGlobalChainId(networkController) !== currentChainId
         ) {
           // We should add a state or event emitter saying the provider changed
@@ -1611,7 +1617,7 @@ export class Engine {
       const chainIdHex = toHexadecimal(chainId);
       const tokens =
         TokensController.state.allTokens?.[chainIdHex]?.[
-        selectedInternalAccount.address
+          selectedInternalAccount.address
         ] || [];
       const { marketData } = TokenRatesController.state;
       const tokenExchangeRates = marketData?.[toHexadecimal(chainId)];
@@ -1624,7 +1630,7 @@ export class Engine {
       const decimalsToShow = (currentCurrency === 'usd' && 2) || undefined;
       if (
         accountsByChainId?.[toHexadecimal(chainId)]?.[
-        selectedInternalAccountFormattedAddress
+          selectedInternalAccountFormattedAddress
         ]
       ) {
         const balanceHex =
@@ -1665,7 +1671,7 @@ export class Engine {
 
         const tokenBalances =
           allTokenBalances?.[selectedInternalAccount.address as Hex]?.[
-          chainId
+            chainId
           ] ?? {};
         tokens.forEach(
           (item: { address: string; balance?: string; decimals: number }) => {
@@ -1676,9 +1682,9 @@ export class Engine {
               item.balance ||
               (item.address in tokenBalances
                 ? renderFromTokenMinimalUnit(
-                  tokenBalances[item.address as Hex],
-                  item.decimals,
-                )
+                    tokenBalances[item.address as Hex],
+                    item.decimals,
+                  )
                 : undefined);
             const tokenBalanceFiat = balanceToFiatNumber(
               // TODO: Fix this by handling or eliminating the undefined case
