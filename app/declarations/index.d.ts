@@ -76,7 +76,6 @@ declare module 'readable-stream' {
   export = stream;
 }
 
-
 declare module 'zxcvbn' {
   interface ZxcvbnResult {
     score: number;
