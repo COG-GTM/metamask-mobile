@@ -613,7 +613,10 @@ const mapStateToProps = (
 ) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
-  isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
+  isInFavorites: isCollectibleInFavoritesSelector(
+    state,
+    props.collectible as Parameters<typeof isCollectibleInFavoritesSelector>[1],
+  ),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
@@ -623,7 +626,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     collectible: Collectible,
   ) =>
     dispatch(
-      addFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+      addFavoriteCollectibleAction(
+        selectedAddress as string,
+        chainId,
+        collectible,
+      ),
     ),
   removeFavoriteCollectible: (
     selectedAddress: string | undefined,
@@ -631,7 +638,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     collectible: Collectible,
   ) =>
     dispatch(
-      removeFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+      removeFavoriteCollectibleAction(
+        selectedAddress as string,
+        chainId,
+        collectible,
+      ),
     ),
 });
 

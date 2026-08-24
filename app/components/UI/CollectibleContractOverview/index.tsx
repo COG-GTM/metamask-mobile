@@ -70,8 +70,8 @@ interface CollectibleContract {
 interface Collectible {
   address: string;
   tokenId?: string;
-  name?: string;
-  image?: string;
+  name?: string | null;
+  image?: string | null;
 }
 
 interface CollectibleContractOverviewProps {
