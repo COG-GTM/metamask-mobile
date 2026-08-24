@@ -100,7 +100,11 @@ describe('DrawerView - Extended Coverage', () => {
 
   it('renders correctly (snapshot)', () => {
     const { toJSON } = renderWithProvider(
-      <DrawerView navigation={{ goBack: () => null }} />,
+      <DrawerView
+        {...({
+          navigation: { goBack: () => null },
+        } as unknown as React.ComponentProps<typeof DrawerView>)}
+      />,
       {
         state: mockInitialState,
       },
@@ -109,27 +113,42 @@ describe('DrawerView - Extended Coverage', () => {
   });
 
   it('handles onSend correctly', async () => {
-    const { getByTestId } = renderWithProvider(<DrawerView {...props} />, {
-      state: mockInitialState,
-    });
+    const { getByTestId } = renderWithProvider(
+      <DrawerView
+        {...(props as unknown as React.ComponentProps<typeof DrawerView>)}
+      />,
+      {
+        state: mockInitialState,
+      },
+    );
     const sendButton = getByTestId('drawer-send-button');
     fireEvent.press(sendButton);
     expect(navigationMock.navigate).toHaveBeenCalledWith('SendFlowView');
   });
 
   it('calls openAccountSelector and tracks the event', () => {
-    const { getByTestId } = renderWithProvider(<DrawerView {...props} />, {
-      state: mockInitialState,
-    });
+    const { getByTestId } = renderWithProvider(
+      <DrawerView
+        {...(props as unknown as React.ComponentProps<typeof DrawerView>)}
+      />,
+      {
+        state: mockInitialState,
+      },
+    );
     const identicon = getByTestId('navbar-account-identicon');
     fireEvent.press(identicon);
     expect(navigationMock.navigate).toHaveBeenCalled();
   });
 
   it('handles onReceive correctly', () => {
-    const { getByTestId } = renderWithProvider(<DrawerView {...props} />, {
-      state: mockInitialState,
-    });
+    const { getByTestId } = renderWithProvider(
+      <DrawerView
+        {...(props as unknown as React.ComponentProps<typeof DrawerView>)}
+      />,
+      {
+        state: mockInitialState,
+      },
+    );
     const receiveButton = getByTestId('drawer-receive-button');
     fireEvent.press(receiveButton);
     expect(navigationMock.navigate).toHaveBeenCalledWith('QRTabSwitcher', {

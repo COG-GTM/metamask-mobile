@@ -4,9 +4,7 @@ import { IWithMetricsAwarenessProps } from './withMetricsAwareness.types';
 
 const withMetricsAwareness =
   <P extends IWithMetricsAwarenessProps>(Children: ComponentType<P>) =>
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (props: any) =>
-    <Children {...props} metrics={useMetrics()} />;
+  (props: Omit<P, 'metrics'>) =>
+    <Children {...(props as P)} metrics={useMetrics()} />;
 
 export default withMetricsAwareness;

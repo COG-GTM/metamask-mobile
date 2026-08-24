@@ -62,6 +62,8 @@ declare module 'multihashes' {
 
 declare module 'react-native-fast-crypto';
 
+declare module 'react-native-confetti';
+
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
