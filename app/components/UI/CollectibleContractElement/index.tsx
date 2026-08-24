@@ -100,9 +100,9 @@ const splitIntoSubArrays = (array: Collectible[], count: number) => {
 interface Collectible {
   address: string;
   tokenId: string;
-  name?: string;
-  image?: string;
-  logo?: string;
+  name?: string | null;
+  image?: string | null;
+  logo?: string | null;
 }
 
 interface CollectibleContractElementProps {
@@ -355,7 +355,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     collectible: Collectible | null,
   ) =>
     dispatch(
-      removeFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+      removeFavoriteCollectibleAction(
+        selectedAddress as string,
+        chainId,
+        collectible as NonNullable<typeof collectible>,
+      ),
     ),
 });
 

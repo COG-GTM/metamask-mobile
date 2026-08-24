@@ -171,7 +171,7 @@ interface AccountOverviewProps extends IWithMetricsAwarenessProps {
   /**
    * Object that represents the selected account
    */
-  account: { address?: string; name?: string };
+  account: { address: string; name?: string };
   /**
   /* Triggers global alert
   */

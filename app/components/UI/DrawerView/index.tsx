@@ -541,7 +541,9 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
     const route = findRouteNameFromNavigatorState(
       (
         this.props.navigation as unknown as {
-          dangerouslyGetState: () => { routes: unknown[] };
+          dangerouslyGetState: () => {
+            routes: Parameters<typeof findRouteNameFromNavigatorState>[0];
+          };
         }
       ).dangerouslyGetState().routes,
     );
@@ -557,7 +559,7 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
           'ManualBackupStep3',
           'Webview',
           Routes.LOCK_SCREEN,
-        ].includes(route)
+        ].includes(route as string)
       ) {
         this.state.showProtectWalletModal &&
           // eslint-disable-next-line react/no-did-update-set-state
@@ -766,7 +768,7 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
         networkConfigurations,
       );
       const url = `${blockExplorer}/address/${this.selectedChecksummedAddress}`;
-      const title = new URLParse(blockExplorer).hostname;
+      const title = new URLParse(blockExplorer as string).hostname;
       this.goToBrowserUrl(url, title);
     } else {
       const url = getEtherscanAddressUrl(
