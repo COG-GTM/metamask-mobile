@@ -13,7 +13,7 @@ import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import BigNumber from 'bignumber.js';
 import Text from '../../Base/Text';
 import StyledButton from '../StyledButton';
-import RangeInput from '../../Base/RangeInput';
+import BaseRangeInput from '../../Base/RangeInput';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import InfoModal from '../Swaps/components/InfoModal';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -34,6 +34,20 @@ import {
   GAS_PRICE_MIN,
 } from '../../../util/gasUtils';
 import { useMetrics } from '../../../components/hooks/useMetrics';
+
+// The base component declares `max` as required and `inputInsideLabel` as
+// `string | undefined`; this screen relies on the pre-existing behaviour of
+// omitting `max` and forwarding nullable labels.
+const RangeInput = BaseRangeInput as React.ComponentType<
+  Omit<
+    React.ComponentProps<typeof BaseRangeInput>,
+    'max' | 'inputInsideLabel' | 'error'
+  > & {
+    max?: BigNumber;
+    inputInsideLabel?: string | null;
+    error?: string | null;
+  }
+>;
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
