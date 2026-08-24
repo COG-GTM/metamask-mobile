@@ -52,8 +52,8 @@ export const validateSufficientTokenBalance = (
 };
 
 export const validateSufficientBalance = (
-  weiBalance: string,
-  totalTransactionValue: string,
+  weiBalance: string | BN4,
+  totalTransactionValue: string | BN4,
   ticker: string,
 ) => {
   const weiBalanceBN = hexToBN(weiBalance);
