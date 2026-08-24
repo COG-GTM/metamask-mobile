@@ -588,3 +588,14 @@ declare module 'unicode-confusables' {
   ): { point: string; similarTo?: string }[];
   export function isConfusing(input: string): boolean;
 }
+
+declare module '@metamask/ethjs-query' {
+  export default class Eth {
+    constructor(provider: unknown);
+  }
+}
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
