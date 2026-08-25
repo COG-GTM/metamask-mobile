@@ -11,6 +11,15 @@ declare module 'react-native-fast-crypto';
 declare module 'react-native-minimizer';
 
 declare module 'xhr2';
+
+declare module 'unicode-confusables' {
+  export function confusables(
+    input: string,
+  ): { point: string; similarTo?: string }[];
+  export function isConfusing(input: string): boolean;
+  export function removeConfusables(input: string): string;
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
