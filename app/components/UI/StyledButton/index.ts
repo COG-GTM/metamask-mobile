@@ -1,3 +1,6 @@
+// This module is shadowed at runtime by the platform specific `index.ios` and
+// `index.android` implementations, so `./StyledButton` is never resolved.
+// @ts-expect-error - `./StyledButton` does not exist; kept as-is to preserve behavior
 import StyledButton from './StyledButton'; // eslint-disable-line import/no-unresolved
 /**
  * @deprecated The `<StyledButton>` component has been deprecated in favor of the new `<Button>` component from the component-library.

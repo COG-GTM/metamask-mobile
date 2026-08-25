@@ -1,9 +1,10 @@
 import React, { PureComponent } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
+import { Theme } from '@metamask/design-tokens';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -29,8 +30,12 @@ const foxImage = require('../../../images/branding/fox.png'); // eslint-disable-
  * in the middle of the screen
  */
 export default class FoxScreen extends PureComponent {
+  static contextType = ThemeContext;
+
+  declare context: React.ContextType<typeof ThemeContext>;
+
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors: Theme['colors'] = this.context?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -40,5 +45,3 @@ export default class FoxScreen extends PureComponent {
     );
   };
 }
-
-FoxScreen.contextType = ThemeContext;
