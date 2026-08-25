@@ -237,11 +237,11 @@ class Settings extends PureComponent<
 > {
   static contextType = ThemeContext;
 
-  languageOptions: SelectOption[] = [];
+  languageOptions?: SelectOption[];
 
-  searchEngineOptions: SelectOption[] = [];
+  searchEngineOptions?: SelectOption[];
 
-  primaryCurrencyOptions: SelectOption[] = [];
+  primaryCurrencyOptions?: SelectOption[];
 
   state: GeneralSettingsState = {
     currentLanguage: I18n.locale.substr(0, 2),
