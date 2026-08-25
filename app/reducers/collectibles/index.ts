@@ -14,8 +14,9 @@ import { RootState } from '..';
  * A favorited collectible, identified by its contract address and token ID.
  */
 export interface FavoriteCollectible {
-  address: string;
-  tokenId: string;
+  address?: string;
+  tokenId?: string | number;
+  [key: string]: unknown;
 }
 
 /**

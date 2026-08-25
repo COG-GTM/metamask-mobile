@@ -757,12 +757,13 @@ export function getTransactionToName({
  * @param accountAddedTimeInsertPointFound - Flag to see if the import time was already found
  */
 export function addAccountTimeFlagFilter(
-  transaction: { time: number },
+  transaction: { time?: number; [key: string]: unknown },
   addedAccountTime: number,
   accountAddedTimeInsertPointFound: boolean,
 ) {
   return (
-    transaction.time <= addedAccountTime && !accountAddedTimeInsertPointFound
+    (transaction.time as number) <= addedAccountTime &&
+    !accountAddedTimeInsertPointFound
   );
 }
 
@@ -786,6 +787,12 @@ export function getNormalizedTxState(state: {
 type NormalizedTxState = Omit<TransactionParamsLike, 'from' | 'to'> & {
   from: string;
   to: string;
+  chainId?: Hex;
+  networkID?: string;
+  networkId?: string;
+  networkClientId?: string;
+  id?: string;
+  origin?: string;
   transaction?: TransactionParamsLike;
 };
 
@@ -1211,11 +1218,11 @@ export const parseTransactionEIP1559 = (
   }: {
     selectedGasFee: SelectedGasFeeLike | string;
     swapsParams?: {
-      tradeValue: string;
+      tradeValue?: string;
       isNativeAsset?: boolean;
-      sourceAmount: string;
+      sourceAmount?: string;
     };
-    contractExchangeRates: ContractExchangeRatesLike;
+    contractExchangeRates?: ContractExchangeRatesLike;
     conversionRate: number;
     currentCurrency: string;
     nativeCurrency: string;
@@ -1271,24 +1278,24 @@ export const parseTransactionEIP1559 = (
 
   if (swapsParams) {
     const { tradeValue, isNativeAsset, sourceAmount } = swapsParams;
-    gasFeeMinHex = addCurrencies(gasFeeMinHex, tradeValue, {
+    gasFeeMinHex = addCurrencies(gasFeeMinHex, tradeValue as string, {
       toNumericBase: 'hex',
       aBase: MULTIPLIER_HEX,
       bBase: MULTIPLIER_HEX,
     });
-    gasFeeMaxHex = addCurrencies(gasFeeMaxHex, tradeValue, {
+    gasFeeMaxHex = addCurrencies(gasFeeMaxHex, tradeValue as string, {
       toNumericBase: 'hex',
       aBase: MULTIPLIER_HEX,
       bBase: MULTIPLIER_HEX,
     });
 
     if (isNativeAsset) {
-      gasFeeMinHex = subtractCurrencies(gasFeeMinHex, sourceAmount, {
+      gasFeeMinHex = subtractCurrencies(gasFeeMinHex, sourceAmount as string, {
         toNumericBase: 'hex',
         aBase: MULTIPLIER_HEX,
         bBase: 10,
       });
-      gasFeeMaxHex = subtractCurrencies(gasFeeMaxHex, sourceAmount, {
+      gasFeeMaxHex = subtractCurrencies(gasFeeMaxHex, sourceAmount as string, {
         toNumericBase: 'hex',
         aBase: MULTIPLIER_HEX,
         bBase: 10,

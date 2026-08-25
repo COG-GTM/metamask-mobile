@@ -660,7 +660,7 @@ class Send extends PureComponent<SendProps, SendState> {
           const [addressTo] = decodeTransferData(
             'transfer',
             transactionMeta.transaction.data,
-          );
+          ) as string[];
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);
           }
@@ -672,7 +672,7 @@ class Send extends PureComponent<SendProps, SendState> {
           const data = decodeTransferData(
             'transferFrom',
             transactionMeta.transaction.data,
-          );
+          ) as string[];
           const addressTo = data[1];
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);

@@ -1,3 +1,4 @@
+import type { Hex } from '@metamask/utils';
 import React, { PureComponent } from 'react';
 import { StyleSheet, View } from 'react-native';
 import AnimatedTransactionModal from '../../../../../../UI/AnimatedTransactionModal';
@@ -1069,7 +1070,7 @@ class TransactionEditor extends PureComponent<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapStateToProps = (state: any) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const chainId = transaction?.chainId as Hex;
 
   return {
     accounts: selectAccounts(state),

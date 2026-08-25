@@ -402,7 +402,7 @@ class Transactions extends PureComponent<
           (tx) => txToView === tx.id,
         );
         if (index >= 0) {
-          this.toggleDetailsView(txToView, index);
+          this.toggleDetailsView(txToView as string, index);
         }
       }, 1000);
     }
@@ -846,14 +846,20 @@ class Transactions extends PureComponent<
             contentContainerStyle={styles.keyboardAwareWrapper}
           >
             <UpdateEIP1559Tx
-              gas={this.existingTx?.txParams?.gas}
+              {...({} as { chainId: string })}
+              gas={this.existingTx?.txParams?.gas as string}
               onSave={
                 isCancel ? this.cancelTransaction : this.speedUpTransaction
               }
               onCancel={
                 isCancel ? this.onCancelCompleted : this.onSpeedUpCompleted
               }
-              existingGas={this.existingGas}
+              existingGas={
+                this.existingGas as unknown as {
+                  maxFeePerGas: string;
+                  maxPriorityFeePerGas: string;
+                }
+              }
               isCancel={isCancel}
             />
           </KeyboardAwareScrollView>

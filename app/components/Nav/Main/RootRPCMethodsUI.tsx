@@ -107,6 +107,8 @@ const hstInterface = new ethers.utils.Interface(
 interface LooseTxParams {
   from?: string;
   to?: string;
+  data?: string;
+  assetType?: string;
   [key: string]: unknown;
 }
 
@@ -483,7 +485,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
       if (transactionMeta.origin === TransactionTypes.MMM) return;
 
       const to = transactionMeta.txParams.to?.toLowerCase();
-      const { data } = transactionMeta.txParams;
+      const { data } = transactionMeta.txParams as LooseTxParams;
 
       if (
         getIsSwapApproveOrSwapTransaction(

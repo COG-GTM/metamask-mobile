@@ -234,7 +234,7 @@ interface TransactionElementProps {
     tx: TransactionMetaLike,
   ) => void;
   swapsTransactions?: Record<string, unknown>;
-  swapsTokens?: Record<string, unknown>[];
+  swapsTokens?: unknown[];
   signQRTransaction: (tx: TransactionMetaLike) => void;
   cancelUnsignedQRTransaction: (tx: TransactionMetaLike) => void;
   isQRHardwareAccount?: boolean;

@@ -780,7 +780,7 @@ class DrawerView extends PureComponent<DrawerViewProps> {
         networkConfigurations,
       );
       const url = `${blockExplorer}/address/${this.selectedChecksummedAddress}`;
-      const title = new URLParse(blockExplorer).hostname;
+      const title = new URLParse(blockExplorer as string).hostname;
       this.goToBrowserUrl(url, title);
     } else {
       const url = getEtherscanAddressUrl(

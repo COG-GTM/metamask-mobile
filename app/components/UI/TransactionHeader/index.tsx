@@ -89,6 +89,7 @@ const createStyles = (colors: Theme['colors']) =>
  */
 interface CurrentPageInformation {
   origin?: string;
+  title?: string;
   url?: string;
   icon?: string | { uri?: string };
   currentEnsName?: string;

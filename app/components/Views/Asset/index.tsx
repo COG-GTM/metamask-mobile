@@ -462,8 +462,8 @@ class Asset extends PureComponent<AssetProps, AssetState> {
         if (filterResult) {
           tx.insertImportTime = addAccountTimeFlagFilter(
             tx,
-            addedAccountTime as unknown as object,
-            accountAddedTimeInsertPointFound as unknown as object,
+            addedAccountTime as number,
+            accountAddedTimeInsertPointFound,
           );
           if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
           switch (tx.status) {

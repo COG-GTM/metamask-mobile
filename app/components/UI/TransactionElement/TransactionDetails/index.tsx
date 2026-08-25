@@ -263,7 +263,7 @@ class TransactionDetails extends PureComponent<
 
     // Check for non-EVM chain block explorer
     if (chainId && isNonEvmChainId(chainId)) {
-      blockExplorer = findBlockExplorerForNonEvmChainId(chainId);
+      blockExplorer = findBlockExplorerForNonEvmChainId(chainId) as string;
     }
 
     return blockExplorer;

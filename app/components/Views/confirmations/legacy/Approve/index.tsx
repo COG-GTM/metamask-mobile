@@ -1,3 +1,4 @@
+import type { Hex } from '@metamask/utils';
 import React, { PureComponent } from 'react';
 import { Alert, AppState, View, NativeEventSubscription } from 'react-native';
 import { getApproveNavbar } from '../../../../UI/Navbar';
@@ -1091,7 +1092,7 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapStateToProps = (state: any) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const chainId = transaction?.chainId as Hex;
   const networkClientId = transaction?.networkId;
 
   return {

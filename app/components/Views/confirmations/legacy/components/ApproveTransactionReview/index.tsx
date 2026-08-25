@@ -1,3 +1,4 @@
+import type { Hex } from '@metamask/utils';
 import React, { PureComponent } from 'react';
 import {
   View,
@@ -1181,7 +1182,7 @@ class ApproveTransactionReview extends PureComponent<
                         )}
                         {gasError && (
                           <View style={styles.errorWrapper}>
-                            {isTestNetworkWithFaucet(chainId) ||
+                            {isTestNetworkWithFaucet(chainId as string) ||
                             isNativeTokenBuySupported ? (
                               <TouchableOpacity onPress={errorPress}>
                                 <Text reset style={styles.error}>
@@ -1474,7 +1475,7 @@ class ApproveTransactionReview extends PureComponent<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapStateToProps = (state: any) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const chainId = transaction?.chainId as Hex;
 
   return {
     ticker: selectNativeCurrencyByChainId(state, chainId),

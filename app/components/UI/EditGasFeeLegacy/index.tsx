@@ -131,27 +131,27 @@ interface EditGasFeeLegacyProps {
   /**
    * Gas option selected (low, medium, high)
    */
-  selected?: string;
+  selected?: string | null;
   /**
    * Gas fee currently active
    */
-  gasFee?: LegacyGasFeeValues;
+  gasFee?: object;
   /**
    * Gas fee options to select from
    */
-  gasOptions?: Record<string, string | undefined>;
+  gasOptions?: object;
   /**
    * Function called when user selected or changed the gas
    */
-  onChange: (...args: unknown[]) => void;
+  onChange(gas: LegacyGasFeeValues, option: string | null): void;
   /**
    * Function called when user cancels
    */
-  onCancel: (...args: unknown[]) => void;
+  onCancel(): void;
   /**
    * Function called when user saves the new gas
    */
-  onSave: (...args: unknown[]) => void;
+  onSave(option?: string | null): void;
   /**
    * Gas fee in native currency
    */
@@ -224,8 +224,8 @@ interface EditGasFeeLegacyProps {
 
 const EditGasFeeLegacy = ({
   selected,
-  gasFee,
-  gasOptions,
+  gasFee: gasFeeInput,
+  gasOptions: gasOptionsInput,
   onChange,
   onCancel,
   onSave,
@@ -247,6 +247,11 @@ const EditGasFeeLegacy = ({
   analyticsParams,
   view,
 }: EditGasFeeLegacyProps) => {
+  const gasFee = (gasFeeInput ?? {}) as LegacyGasFeeValues;
+  const gasOptions = (gasOptionsInput ?? {}) as Record<
+    string,
+    string | undefined
+  >;
   const onlyAdvanced = gasEstimateType !== GAS_ESTIMATE_TYPES.LEGACY;
   const [showRangeInfoModal, setShowRangeInfoModal] = useState<
     string | boolean | null
@@ -305,13 +310,13 @@ const EditGasFeeLegacy = ({
   const changedGasPrice = (value: string) => {
     const lowerValue = new BigNumber(
       gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-        ? (gasOptions?.[warningMinimumEstimateOption as string] as string)
-        : (gasOptions?.gasPrice as string),
+        ? (gasOptions[warningMinimumEstimateOption as string] as string)
+        : (gasOptions.gasPrice as string),
     );
     const higherValue = new BigNumber(
       gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-        ? (gasOptions?.high as string)
-        : (gasOptions?.gasPrice as string),
+        ? (gasOptions.high as string)
+        : (gasOptions.gasPrice as string),
     ).multipliedBy(new BigNumber(1.5));
 
     const valueBN = new BigNumber(value);
@@ -338,7 +343,7 @@ const EditGasFeeLegacy = ({
   const selectOption = (option: string) => {
     setGasPriceError('');
     setSelectedOption(option);
-    changeGas({ ...gasFee, suggestedGasPrice: gasOptions?.[option] }, option);
+    changeGas({ ...gasFee, suggestedGasPrice: gasOptions[option] }, option);
   };
 
   const shouldIgnore = (option: string) =>
@@ -546,7 +551,7 @@ const EditGasFeeLegacy = ({
                             </TouchableOpacity>
                           </View>
                         }
-                        value={gasFee?.suggestedGasLimit}
+                        value={gasFee.suggestedGasLimit}
                         onChangeValue={changedGasLimit}
                         min={GAS_LIMIT_MIN}
                         name={strings('edit_gas_fee_eip1559.gas_limit')}
@@ -573,7 +578,7 @@ const EditGasFeeLegacy = ({
                             </TouchableOpacity>
                           </View>
                         }
-                        value={gasFee?.suggestedGasPrice}
+                        value={gasFee.suggestedGasPrice}
                         name={strings('edit_gas_fee_eip1559.gas_price')}
                         unit={'GWEI'}
                         increment={GAS_PRICE_INCREMENT}

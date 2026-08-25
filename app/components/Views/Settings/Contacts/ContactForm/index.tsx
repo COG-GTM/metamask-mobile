@@ -82,7 +82,7 @@ interface ContactFormState {
   address: string | null;
   addressError: string | null;
   toEnsName: string | null | undefined;
-  toEnsAddress: string | null;
+  toEnsAddress: string | null | undefined;
   addressReady: boolean;
   mode: string;
   memo: string | null;

@@ -84,7 +84,7 @@ function SlippageModal({
             <SlippageSlider
               range={[1, 5]}
               increment={1}
-              onChange={onChange}
+              onChange={onChange as (value: number) => void}
               value={slippage}
               formatTooltipText={(text) => `${text}%`}
             />

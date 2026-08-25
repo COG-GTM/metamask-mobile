@@ -1,3 +1,4 @@
+import type { Hex } from '@metamask/utils';
 import React, { PureComponent } from 'react';
 import { TransactionEnvelopeType } from '@metamask/transaction-controller';
 import {
@@ -826,7 +827,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapStateToProps = (state: any) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const chainId = transaction?.chainId as Hex;
 
   return {
     transaction,

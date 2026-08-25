@@ -40,9 +40,11 @@ export function timeoutFetch(
 }
 
 export function findRouteNameFromNavigatorState(
-  routes: NavigatorRoute[],
+  routes: NavigatorRoute[] | unknown[],
 ): string {
-  let route: NavigatorRoute | undefined = routes?.[routes.length - 1];
+  let route: NavigatorRoute | undefined = (routes as NavigatorRoute[])?.[
+    routes.length - 1
+  ];
   if (route.state) {
     route = route.state;
   }

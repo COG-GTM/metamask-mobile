@@ -309,11 +309,11 @@ export const captureSentryFeedback = ({
   sentryId,
   comments,
 }: {
-  sentryId: string;
+  sentryId: string | undefined;
   comments: string;
 }) => {
   const userFeedback = {
-    event_id: sentryId,
+    event_id: sentryId as string,
     name: '',
     email: '',
     comments,

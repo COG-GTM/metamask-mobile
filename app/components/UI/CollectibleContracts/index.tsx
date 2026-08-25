@@ -480,7 +480,7 @@ const CollectibleContracts = ({
   const getNftDetectionAnalyticsParams = useCallback((nft: CollectibleLike) => {
     try {
       return {
-        chain_id: getDecimalChainId(nft.chainId),
+        chain_id: getDecimalChainId(nft.chainId as string),
         source: 'detected',
       };
     } catch (error) {

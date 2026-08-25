@@ -757,7 +757,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     value = formatValueToMatchTokenDecimals(value, selectedAsset.decimals);
     if (
       !selectedAsset.tokenId &&
-      this.validateAmount(value, internalPrimaryCurrencyIsCrypto)
+      this.validateAmount(value as string, internalPrimaryCurrencyIsCrypto)
     ) {
       return;
     } else if (selectedAsset.tokenId) {
@@ -877,7 +877,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       const tokenAmount = toTokenMinimalUnit(value, selectedAsset.decimals);
       transaction.data = generateTransferData('transfer', {
         toAddress: transactionTo,
-        amount: BNToHex(tokenAmount),
+        amount: BNToHex(tokenAmount as unknown as Parameters<typeof BNToHex>[0]),
       });
       transaction.to = selectedAsset.address;
       transaction.value = '0x0';

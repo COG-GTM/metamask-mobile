@@ -166,34 +166,36 @@ interface UpdateOption {
 
 interface RecommendedOption {
   name?: string;
-  render?: React.ReactNode;
+  render?:
+    | React.ReactNode
+    | ((selected: boolean, disabled: boolean) => React.ReactNode);
 }
 
 interface EditGasFee1559Props {
   /**
    * Gas option selected (low, medium, high)
    */
-  selected?: string;
+  selected?: string | null;
   /**
    * Gas fee currently active
    */
-  gasFee?: GasFeeValues;
+  gasFee?: object;
   /**
    * Gas fee options to select from
    */
-  gasOptions?: GasOptionsMap;
+  gasOptions?: object;
   /**
    * Function called when user selected or changed the gas
    */
-  onChange: (...args: unknown[]) => void;
+  onChange(gas: GasFeeValues, option: string | null): void;
   /**
    * Function called when user cancels
    */
-  onCancel: (...args: unknown[]) => void;
+  onCancel(): void;
   /**
    * Function called when user saves the new gas
    */
-  onSave: (...args: unknown[]) => void;
+  onSave(option?: string | null): void;
   /**
    * Gas fee in native currency
    */
@@ -315,8 +317,8 @@ const OptionSelector = HorizontalSelector as unknown as React.FC<
 
 const EditGasFee1559 = ({
   selected,
-  gasFee,
-  gasOptions,
+  gasFee: gasFeeInput,
+  gasOptions: gasOptionsInput,
   onChange,
   onCancel,
   onSave,
@@ -349,6 +351,8 @@ const EditGasFee1559 = ({
   analyticsParams,
   view,
 }: EditGasFee1559Props) => {
+  const gasFee = (gasFeeInput ?? {}) as GasFeeValues;
+  const gasOptions = (gasOptionsInput ?? {}) as GasOptionsMap;
   const [showInfoModal, setShowInfoModal] = useState<string | null | false>(
     false,
   );
@@ -419,11 +423,11 @@ const EditGasFee1559 = ({
 
   const changedMaxPriorityFee = (value: string) => {
     const lowerValue = new BigNumber(
-      gasOptions?.[warningMinimumEstimateOption]
+      gasOptions[warningMinimumEstimateOption]
         ?.suggestedMaxPriorityFeePerGas as string,
     );
     const higherValue = new BigNumber(
-      gasOptions?.high?.suggestedMaxPriorityFeePerGas as string,
+      gasOptions.high?.suggestedMaxPriorityFeePerGas as string,
     ).multipliedBy(new BigNumber(1.5));
     const updateFloor = new BigNumber(
       updateOption?.maxPriortyFeeThreshold as string,
@@ -460,11 +464,11 @@ const EditGasFee1559 = ({
 
   const changedMaxFeePerGas = (value: string) => {
     const lowerValue = new BigNumber(
-      gasOptions?.[warningMinimumEstimateOption]
+      gasOptions[warningMinimumEstimateOption]
         ?.suggestedMaxFeePerGas as string,
     );
     const higherValue = new BigNumber(
-      gasOptions?.high?.suggestedMaxFeePerGas as string,
+      gasOptions.high?.suggestedMaxFeePerGas as string,
     ).multipliedBy(new BigNumber(1.5));
     const updateFloor = new BigNumber(
       updateOption?.maxFeeThreshold as string,
@@ -503,7 +507,7 @@ const EditGasFee1559 = ({
     setSelectedOption(option);
     setMaxFeeError('');
     setMaxPriorityFeeError('');
-    changeGas({ ...gasOptions?.[option] }, option);
+    changeGas({ ...gasOptions[option] }, option);
   };
 
   const shouldIgnore = (option: string) =>
@@ -613,7 +617,7 @@ const EditGasFee1559 = ({
                     </View>
                   }
                   min={GAS_LIMIT_MIN}
-                  value={gasFee?.suggestedGasLimit}
+                  value={gasFee.suggestedGasLimit}
                   onChangeValue={changedGasLimit}
                   name={strings('edit_gas_fee_eip1559.gas_limit')}
                   increment={GAS_LIMIT_INCREMENT}
@@ -645,13 +649,13 @@ const EditGasFee1559 = ({
                         {strings('edit_gas_fee_eip1559.estimate')}:
                       </Text>{' '}
                       {
-                        gasOptions?.[suggestedEstimateOption]
+                        gasOptions[suggestedEstimateOption]
                           ?.suggestedMaxPriorityFeePerGas
                       }{' '}
                       GWEI
                     </Text>
                   }
-                  value={gasFee?.suggestedMaxPriorityFeePerGas}
+                  value={gasFee.suggestedMaxPriorityFeePerGas}
                   name={strings('edit_gas_fee_eip1559.max_priority_fee')}
                   unit={'GWEI'}
                   min={GAS_MIN}
@@ -695,13 +699,13 @@ const EditGasFee1559 = ({
                         {strings('edit_gas_fee_eip1559.estimate')}:
                       </Text>{' '}
                       {
-                        gasOptions?.[suggestedEstimateOption]
+                        gasOptions[suggestedEstimateOption]
                           ?.suggestedMaxFeePerGas
                       }{' '}
                       GWEI
                     </Text>
                   }
-                  value={gasFee?.suggestedMaxFeePerGas}
+                  value={gasFee.suggestedMaxFeePerGas}
                   name={strings('edit_gas_fee_eip1559.max_fee')}
                   unit={'GWEI'}
                   min={GAS_MIN}

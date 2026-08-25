@@ -1,3 +1,4 @@
+import type { Hex } from '@metamask/utils';
 import React, { PureComponent } from 'react';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -493,7 +494,7 @@ class TransactionReviewInformation extends PureComponent<
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
-        });
+        } as Parameters<typeof calculateEthEIP1559>[0]);
 
         return [
           renderableTotalMinNative,
@@ -542,7 +543,7 @@ class TransactionReviewInformation extends PureComponent<
           symbol,
           totalMinNative,
           totalMaxNative,
-        });
+        } as Parameters<typeof calculateERC20EIP1559>[0]);
         return [
           renderableTotalMinNative,
           renderableTotalMinConversion,
@@ -579,7 +580,7 @@ class TransactionReviewInformation extends PureComponent<
           totalMinConversion,
           totalMaxNative,
           totalMaxConversion,
-        });
+        } as Parameters<typeof calculateEthEIP1559>[0]);
 
         renderableTotalMinNative = `${selectedAsset.name} ${
           ' (#' + selectedAsset.tokenId + ')'
@@ -765,7 +766,7 @@ class TransactionReviewInformation extends PureComponent<
         )}
         {!!error && (
           <View style={styles.errorWrapper}>
-            {isTestNetworkWithFaucet(chainId) || isNativeTokenBuySupported ? (
+            {isTestNetworkWithFaucet(chainId as string) || isNativeTokenBuySupported ? (
               <TouchableOpacity onPress={errorPress}>
                 <Text style={styles.error}>{error}</Text>
                 {over && (
@@ -805,7 +806,7 @@ class TransactionReviewInformation extends PureComponent<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapStateToProps = (state: any) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const chainId = transaction?.chainId as Hex;
   const networkClientId = transaction?.networkClientId;
 
   return {

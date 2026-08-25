@@ -14,8 +14,8 @@ export const tokenListToArray = (tokenList: TokenListMap) =>
  * @returns Boolean indicationg if the ID is the same.
  */
 export const compareTokenIds = (
-  unknownTokenId: number | string,
-  stringTokenId: string,
+  unknownTokenId: number | string | undefined,
+  stringTokenId: string | number | undefined,
 ): boolean => {
   if (typeof unknownTokenId === 'number') {
     return String(unknownTokenId) === stringTokenId;

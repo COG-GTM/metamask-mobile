@@ -136,8 +136,12 @@ interface NavbarRouteParams {
 
 interface NavbarRoute {
   name?: string;
-  params?: NavbarRouteParams;
+  params?: object;
 }
+
+/** Reads the params of a navigation route as navbar params. */
+const navbarParams = (route?: NavbarRoute): NavbarRouteParams =>
+  (route?.params ?? {}) as NavbarRouteParams;
 
 const trackEvent = (event: ITrackingEvent, _params = {}) => {
   MetaMetrics.getInstance().trackEvent(event);
@@ -238,7 +242,7 @@ export function getTransactionsNavbarOptions(
   title: string,
   themeColors: ThemeColors,
   _: unknown,
-  selectedAddress: string,
+  selectedAddress: string | undefined,
   handleRightButtonPress: () => void,
 ) {
   const innerStyles = StyleSheet.create({
@@ -262,7 +266,7 @@ export function getTransactionsNavbarOptions(
     headerLeft: null,
     headerRight: () => (
       <AccountRightButton
-        selectedAddress={selectedAddress}
+        selectedAddress={selectedAddress as string}
         onPress={handleRightButtonPress}
       />
     ),
@@ -370,9 +374,9 @@ export function getEditableOptions(title: string, navigation: NavbarNavigation, 
     navigation.pop?.();
   }
 
-  const rightAction = route.params?.dispatch;
-  const editMode = route.params?.editMode === 'edit';
-  const addMode = route.params?.mode === 'add';
+  const rightAction = navbarParams(route).dispatch;
+  const editMode = navbarParams(route).editMode === 'edit';
+  const addMode = navbarParams(route).mode === 'add';
   return {
     title,
     headerTitleStyle: innerStyles.headerTitleStyle,
@@ -424,7 +428,7 @@ export function getPaymentRequestOptionsTitle(
   route: NavbarRoute,
   themeColors: ThemeColors,
 ) {
-  const goBack = route.params?.dispatch;
+  const goBack = navbarParams(route).dispatch;
   const innerStyles = StyleSheet.create({
     headerTitleStyle: {
       fontSize: 20,
@@ -547,14 +551,14 @@ export function getTransactionOptionsTitle(
       ...fontStyles.normal,
     },
   });
-  const transactionMode = route.params?.mode ?? '';
+  const transactionMode = navbarParams(route).mode ?? '';
   const { name } = route;
   const leftText =
     transactionMode === 'edit'
       ? strings('transaction.cancel')
       : strings('transaction.edit');
-  const disableModeChange = route.params?.disableModeChange;
-  const modeChange = route.params?.dispatch;
+  const disableModeChange = navbarParams(route).disableModeChange;
+  const modeChange = navbarParams(route).dispatch;
   const leftAction = () => modeChange?.('edit');
   const rightAction = () => navigation.pop?.();
   const rightText = strings('transaction.cancel');
@@ -638,7 +642,7 @@ export function getSendFlowTitle(
     },
   });
   const rightAction = () => {
-    const providerType = route?.params?.providerType ?? '';
+    const providerType = navbarParams(route).providerType ?? '';
     const additionalTransactionMetricsParams =
       getBlockaidTransactionMetricsParams(
         transaction as unknown as Parameters<
@@ -660,7 +664,7 @@ export function getSendFlowTitle(
   const leftAction = () => navigation.pop?.();
 
   const canGoBack =
-    title !== 'send.send_to' && !route?.params?.isPaymentRequest;
+    title !== 'send.send_to' && !navbarParams(route).isPaymentRequest;
 
   const titleToRender = title;
 
@@ -719,10 +723,12 @@ export function getModalNavbarOptions(title: string) {
 export function getOnboardingNavbarOptions(
   route: NavbarRoute,
   // eslint-disable-next-line @typescript-eslint/default-param-last
-  { headerLeft }: { headerLeft?: React.ReactNode } = {},
+  {
+    headerLeft,
+  }: { headerLeft?: React.ReactNode | (() => React.ReactNode) } = {},
   themeColors: ThemeColors,
 ) {
-  const headerLeftHide = headerLeft || route.params?.headerLeft;
+  const headerLeftHide = headerLeft || navbarParams(route).headerLeft;
   const innerStyles = StyleSheet.create({
     headerStyle: {
       backgroundColor: themeColors.background.default,
@@ -1446,8 +1452,8 @@ export function getWebviewNavbar(navigation: NavbarNavigation, route: NavbarRout
     },
   });
 
-  const title = route.params?.title ?? '';
-  const share = route.params?.dispatch;
+  const title = navbarParams(route).title ?? '';
+  const share = navbarParams(route).dispatch;
   return {
     headerTitle: () => (
       <Text style={innerStyles.headerTitleStyle}>{title}</Text>
@@ -1636,7 +1642,7 @@ export function getTransakWebviewNavbar(navigation: NavbarNavigation, route: Nav
     },
   });
 
-  const title = route.params?.title ?? '';
+  const title = navbarParams(route).title ?? '';
   return {
     title,
     headerTitleStyle: innerStyles.headerTitleStyle,
@@ -1690,7 +1696,7 @@ export function getSwapsAmountNavbar(navigation: NavbarNavigation, route: Navbar
       elevation: 0,
     },
   });
-  const title = route.params?.title ?? 'Swap';
+  const title = navbarParams(route).title ?? 'Swap';
   return {
     headerTitle: () => (
       <NavbarTitle title={title} disableNetwork translate={false} />
@@ -1727,13 +1733,13 @@ export function getSwapsQuotesNavbar(navigation: NavbarNavigation, route: Navbar
       elevation: 0,
     },
   });
-  const title = route.params?.title ?? 'Swap';
-  const leftActionText = route.params?.leftAction ?? strings('navigation.back');
+  const title = navbarParams(route).title ?? 'Swap';
+  const leftActionText = navbarParams(route).leftAction ?? strings('navigation.back');
 
   const leftAction = () => {
-    const trade = route.params?.requestedTrade;
-    const selectedQuote = route.params?.selectedQuote;
-    const quoteBegin = route.params?.quoteBegin;
+    const trade = navbarParams(route).requestedTrade;
+    const selectedQuote = navbarParams(route).selectedQuote;
+    const quoteBegin = navbarParams(route).quoteBegin;
     if (!selectedQuote) {
       trackEvent(
         MetricsEventBuilder.createEventBuilder(
@@ -1757,9 +1763,9 @@ export function getSwapsQuotesNavbar(navigation: NavbarNavigation, route: Navbar
   };
 
   const rightAction = () => {
-    const trade = route.params?.requestedTrade;
-    const selectedQuote = route.params?.selectedQuote;
-    const quoteBegin = route.params?.quoteBegin;
+    const trade = navbarParams(route).requestedTrade;
+    const selectedQuote = navbarParams(route).selectedQuote;
+    const quoteBegin = navbarParams(route).quoteBegin;
     if (!selectedQuote) {
       trackEvent(
         MetricsEventBuilder.createEventBuilder(
@@ -1829,9 +1835,9 @@ export function getBridgeNavbar(navigation: NavbarNavigation, route: NavbarRoute
   });
 
   let title = `${strings('swaps.title')}/${strings('bridge.title')}`;
-  if (route.params?.bridgeViewMode === BridgeViewMode.Bridge) {
+  if (navbarParams(route).bridgeViewMode === BridgeViewMode.Bridge) {
     title = strings('bridge.title');
-  } else if (route.params?.bridgeViewMode === BridgeViewMode.Swap) {
+  } else if (navbarParams(route).bridgeViewMode === BridgeViewMode.Swap) {
     title = strings('swaps.title');
   }
 

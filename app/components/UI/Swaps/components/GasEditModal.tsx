@@ -366,7 +366,7 @@ function GasEditModal({
             estimatedBaseFee,
             selected,
           } as CustomGasFee,
-          suggestedGasLimit,
+          suggestedGasLimit as string | undefined,
         );
       } else {
         const { suggestedGasPrice: gasPrice, suggestedGasLimit } =
@@ -375,8 +375,8 @@ function GasEditModal({
           {
             gasPrice,
             selected,
-          },
-          suggestedGasLimit,
+          } as CustomEthGasPriceEstimate,
+          suggestedGasLimit as string | undefined,
         );
       }
       dismiss();
@@ -443,7 +443,11 @@ function GasEditModal({
               suggestedEstimateOption={defaultGasFeeOptionFeeMarket}
               gasFee={EIP1559TransactionDataTemp}
               gasOptions={gasFeeEstimates}
-              onChange={calculateTempGasFee}
+              onChange={
+                calculateTempGasFee as unknown as React.ComponentProps<
+                  typeof EditGasFee1559
+                >['onChange']
+              }
               gasFeeNative={
                 EIP1559TransactionDataTemp.renderableGasFeeMinNative
               }
@@ -515,7 +519,11 @@ function GasEditModal({
             gasFee={LegacyTransactionDataTemp}
             gasEstimateType={gasEstimateType}
             gasOptions={gasFeeEstimates}
-            onChange={calculateTempGasFeeLegacy}
+            onChange={
+              calculateTempGasFeeLegacy as unknown as React.ComponentProps<
+                typeof EditGasFeeLegacy
+              >['onChange']
+            }
             gasFeeNative={LegacyTransactionDataTemp.transactionFee}
             gasFeeConversion={LegacyTransactionDataTemp.transactionFeeFiat}
             {...({

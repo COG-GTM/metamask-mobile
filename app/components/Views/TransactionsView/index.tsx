@@ -162,8 +162,8 @@ const TransactionsView = ({
 
         tx.insertImportTime = addAccountTimeFlagFilter(
           tx,
-          addedAccountTime as unknown as object,
-          accountAddedTimeInsertPointFound as unknown as object,
+          addedAccountTime as number,
+          accountAddedTimeInsertPointFound,
         );
         if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
 

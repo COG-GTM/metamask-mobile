@@ -35,7 +35,7 @@ export const typedSign = {
 };
 
 export const getAnalyticsParams = (
-  messageParams: SignatureMessageParams,
+  messageParams?: SignatureMessageParams,
   signType?: string,
   // Some callers pass a boolean flag in this position.
   securityAlertResponse?: SecurityAlertResponse | boolean,

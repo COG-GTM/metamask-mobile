@@ -17,6 +17,13 @@ import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
 import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 
+/** Navigation surface expected by the collectible child components. */
+const collectibleNavigation = (navigation?: NavigationProp<ParamListBase>) =>
+  navigation as unknown as {
+    push: (screen: string, params?: Record<string, unknown>) => void;
+    navigate: (screen: string, params?: Record<string, unknown>) => void;
+  };
+
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
@@ -27,7 +34,7 @@ const createStyles = (colors: Theme['colors']) =>
 
 interface CollectibleItem {
   address: string;
-  name?: string;
+  name?: string | null;
   image?: string | null;
   [key: string]: unknown;
 }
@@ -160,15 +167,19 @@ class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
           <View>
             <View>
               <CollectibleContractOverview
-                navigation={navigation}
+                navigation={collectibleNavigation(navigation)}
                 collectibleContract={collectibleContract}
                 ownerOf={ownerOf}
               />
             </View>
             <View style={styles.wrapper}>
               <Collectibles
-                navigation={navigation}
-                collectibles={filteredCollectibles}
+                navigation={collectibleNavigation(navigation)}
+                collectibles={
+                  filteredCollectibles as unknown as React.ComponentProps<
+                    typeof Collectibles
+                  >['collectibles']
+                }
                 collectibleContract={collectibleContract}
               />
             </View>
@@ -184,7 +195,7 @@ class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
           backdropOpacity={1}
         >
           <CollectibleContractInformation
-            navigation={navigation}
+            navigation={collectibleNavigation(navigation)}
             onClose={this.hideCollectibleContractModal}
             collectibleContract={collectibleContract}
           />

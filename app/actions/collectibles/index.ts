@@ -4,13 +4,14 @@ import {
 } from '../../reducers/collectibles';
 
 export interface FavoriteCollectible {
-  address: string;
-  tokenId: string | number;
+  address?: string;
+  tokenId?: string | number;
+  [key: string]: unknown;
 }
 
 export const addFavoriteCollectible = (
   selectedAddress: string | undefined,
-  chainId: string,
+  chainId: string | undefined,
   collectible: FavoriteCollectible,
 ) => ({
   type: ADD_FAVORITE_COLLECTIBLE,
@@ -21,7 +22,7 @@ export const addFavoriteCollectible = (
 
 export const removeFavoriteCollectible = (
   selectedAddress: string | undefined,
-  chainId: string,
+  chainId: string | undefined,
   collectible: FavoriteCollectible,
 ) => ({
   type: REMOVE_FAVORITE_COLLECTIBLE,

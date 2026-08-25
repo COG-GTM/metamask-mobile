@@ -80,7 +80,7 @@ if (__DEV__) {
   allowedChainIds.push(...allowedTestnetChainIds);
 }
 
-export function isSwapsAllowed(chainId: string): boolean {
+export function isSwapsAllowed(chainId: string | undefined): boolean {
   if (!AppConstants.SWAPS.ACTIVE) {
     return false;
   }
@@ -94,7 +94,7 @@ export function isSwapsAllowed(chainId: string): boolean {
   }
   ///: END:ONLY_INCLUDE_IF(keyring-snaps)
 
-  return allowedChainIds.includes(chainId);
+  return allowedChainIds.includes(chainId as string);
 }
 
 export function isSwapsNativeAsset(

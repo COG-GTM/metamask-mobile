@@ -18,7 +18,7 @@ const ClipboardManager = {
   async getString(): Promise<string> {
     return await Clipboard.getString();
   },
-  async setString(string: string | null): Promise<void> {
+  async setString(string?: string | null): Promise<void> {
     await Clipboard.setString(string as string);
   },
   expireTime: null as ReturnType<typeof setTimeout> | null,

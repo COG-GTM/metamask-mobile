@@ -1108,7 +1108,10 @@ export class NetworkSettings extends PureComponent<
 
     // Set tokenNetworkFilter
     if (isPortfolioViewEnabled()) {
-      const { PreferencesController } = Engine.context;
+      const PreferencesController = Engine.context
+        .PreferencesController as typeof Engine.context.PreferencesController & {
+        setTokenNetworkFilter(filter: Record<string, boolean>): void;
+      };
       if (!isAllNetworks) {
         PreferencesController.setTokenNetworkFilter({
           [chainId]: true,

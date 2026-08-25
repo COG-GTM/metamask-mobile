@@ -118,8 +118,10 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
         <ScrollView style={styles.wrapper}>
           <View>
             <CollectibleOverview
-              navigation={navigation}
-              collectible={collectible}
+              {...({
+                navigation,
+                collectible,
+              } as unknown as React.ComponentProps<typeof CollectibleOverview>)}
             />
           </View>
         </ScrollView>

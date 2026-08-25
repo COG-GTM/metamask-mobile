@@ -215,7 +215,7 @@ export default class WalletConnectSessions extends PureComponent<
           >[0],
         );
       } else {
-        await WalletConnect.killSession(sessionToRemove?.peerId);
+        await WalletConnect.killSession(sessionToRemove?.peerId as string);
       }
 
       Alert.alert(

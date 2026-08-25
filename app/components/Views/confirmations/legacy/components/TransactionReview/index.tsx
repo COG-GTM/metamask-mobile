@@ -1,3 +1,4 @@
+import type { Hex } from '@metamask/utils';
 import Eth from '@metamask/ethjs-query';
 import { withNavigation } from '@react-navigation/compat';
 import React, { PureComponent } from 'react';
@@ -394,7 +395,9 @@ class TransactionReview extends PureComponent<
         );
       }
       const symbol = (contract?.symbol) || 'ERC20';
-      assetAmount = `${decodeTransferData('transfer', data)[1]} ${symbol}`;
+      assetAmount = `${
+        (decodeTransferData('transfer', data) as string[])[1]
+      } ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();
     }
@@ -776,7 +779,7 @@ class TransactionReview extends PureComponent<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapStateToProps = (state: any) => {
   const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const chainId = transaction?.chainId as Hex;
   const transactionMetadata = selectCurrentTransactionMetadata(state);
   const networkClientId = transactionMetadata?.networkClientId;
 

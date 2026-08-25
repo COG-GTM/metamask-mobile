@@ -1287,7 +1287,7 @@ function SwapsQuotesView({
           },
           destinationToken: { swaps: 'swaps' },
           upTo: new BigNumber(
-            decodeApproveData(approvalTransaction.data).encodedAmount,
+            decodeApproveData(approvalTransaction.data as string).encodedAmount,
             16,
           ).toString(10),
         });
@@ -1360,7 +1360,7 @@ function SwapsQuotesView({
             },
             destinationToken: { swaps: 'swaps' },
             upTo: new BigNumber(
-              decodeApproveData(approvalTransaction.data).encodedAmount,
+              decodeApproveData(approvalTransaction.data as string).encodedAmount,
               16,
             ).toString(10),
           });
@@ -1440,14 +1440,14 @@ function SwapsQuotesView({
       return;
     }
     const originalApprovalTransactionEncodedAmount = decodeApproveData(
-      originalApprovalTransaction.data,
+      originalApprovalTransaction.data as string,
     ).encodedAmount;
     const originalAmount = fromTokenMinimalUnitString(
       hexToBN(originalApprovalTransactionEncodedAmount).toString(10),
       sourceToken.decimals,
     );
     const currentApprovalTransactionEncodedAmount = approvalTransaction
-      ? decodeApproveData(approvalTransaction.data).encodedAmount
+      ? decodeApproveData(approvalTransaction.data as string).encodedAmount
       : '0';
     const currentAmount = fromTokenMinimalUnitString(
       hexToBN(currentApprovalTransactionEncodedAmount).toString(10),

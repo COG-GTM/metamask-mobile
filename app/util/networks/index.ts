@@ -94,7 +94,6 @@ interface ProviderConfigLike {
 type DecimalChainId = any;
 
 interface NetworkConfigurationLike {
-  [key: string]: unknown;
   rpcEndpoints?: { url: string }[];
   blockExplorerUrls?: string[];
   defaultBlockExplorerUrlIndex?: number;
@@ -379,10 +378,12 @@ export function isPrivateConnection(hostname: string) {
  */
 export function findBlockExplorerForRpc(
   rpcTargetUrl: string | undefined,
-  networkConfigurations: Record<string, NetworkConfigurationLike>,
+  networkConfigurations: Record<string, unknown>,
 ) {
-  const networkConfiguration = Object.values(networkConfigurations).find(
-    ({ rpcEndpoints }) => rpcEndpoints?.some(({ url }) => url === rpcTargetUrl),
+  const networkConfiguration = (
+    Object.values(networkConfigurations) as NetworkConfigurationLike[]
+  ).find(({ rpcEndpoints }) =>
+    rpcEndpoints?.some(({ url }) => url === rpcTargetUrl),
   );
 
   if (networkConfiguration) {
@@ -400,13 +401,13 @@ export function findBlockExplorerForRpc(
  * @param chainId - Non-EVM chain id
  * @returns Block explorer url or undefined if not found
  */
-export function findBlockExplorerForNonEvmChainId(chainId: string) {
+export function findBlockExplorerForNonEvmChainId(chainId: string | undefined) {
   const blockExplorerUrls = (
     MULTICHAIN_NETWORK_BLOCK_EXPLORER_FORMAT_URLS_MAP as Record<
       string,
       { url: string } | undefined
     >
-  )[chainId];
+  )[chainId as string];
   return blockExplorerUrls?.url;
 }
 

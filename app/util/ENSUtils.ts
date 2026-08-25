@@ -86,13 +86,13 @@ export function getCachedENSName(
 
 export async function doENSReverseLookup(
   this: ENSLookupContext | void,
-  address: string,
+  address: string | undefined,
   chainId?: string,
 ): Promise<string | undefined> {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
   const { name: cachedName, timestamp } =
-    ENSCache.cache[chainId + address] || {};
+    ENSCache.cache[`${chainId}${address}`] || {};
   const self = this as ENSLookupContext;
   const nowTimestamp = Date.now();
   if (timestamp && nowTimestamp - timestamp < CACHE_REFRESH_THRESHOLD) {
@@ -107,7 +107,7 @@ export async function doENSReverseLookup(
     const networkId = CHAIN_ID_TO_NETWORK_ID[chainId as string];
     self.ens = new ENS({ provider, network: networkId });
     try {
-      const name = await self.ens.reverse(address);
+      const name = await self.ens.reverse(address as string);
       const resolvedAddress = await self.ens.lookup(name);
       if (toLowerCaseEquals(address, resolvedAddress)) {
         ENSCache.cache[networkId + address] = { name, timestamp: Date.now() };

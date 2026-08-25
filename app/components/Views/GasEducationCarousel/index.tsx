@@ -244,7 +244,10 @@ const GasEducationCarousel = ({
         });
 
         // eslint-disable-next-line @typescript-eslint/no-shadow
-        const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
+        const gasFiat = formatCurrency(
+          maxFeePerGasConversion,
+          currentCurrency as string,
+        );
         setGasFiat(gasFiat);
       } catch (e) {
         Logger.error(e as Error);

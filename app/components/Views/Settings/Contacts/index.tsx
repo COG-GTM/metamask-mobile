@@ -160,7 +160,7 @@ class Contacts extends PureComponent<ContactsProps, ContactsState> {
         testID={ContactsViewSelectorIDs.CONTAINER}
       >
         <AddressList
-          chainId={chainId}
+          chainId={chainId as Hex}
           inputSearch={undefined}
           onlyRenderAddressBook
           reloadAddressList={reloadAddressList}

@@ -485,7 +485,7 @@ const Main = (props: MainProps) => {
         hideCurrentNotification: props.hideCurrentNotification,
         showSimpleNotification: props.showSimpleNotification,
         removeNotificationById: props.removeNotificationById,
-      });
+      } as unknown as Parameters<typeof NotificationManager.init>[0]);
       checkInfuraAvailability();
       removeConnectionStatusListener.current = NetInfo.addEventListener(
         connectionChangeHandler as unknown as NetInfoChangeHandler,

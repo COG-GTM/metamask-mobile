@@ -145,14 +145,20 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
         .addProperties(getAnalyticsParams(messageParams, 'typed_sign'))
         .build(),
     );
-    addSignatureErrorListener(metamaskId, this.onSignatureError);
+    addSignatureErrorListener(
+      metamaskId,
+      this.onSignatureError as (...args: unknown[]) => void,
+    );
   };
 
   componentWillUnmount = () => {
     const {
       messageParams: { metamaskId },
     } = this.props;
-    removeSignatureErrorListener(metamaskId, this.onSignatureError);
+    removeSignatureErrorListener(
+      metamaskId,
+      this.onSignatureError as (...args: unknown[]) => void,
+    );
   };
 
   onSignatureError = ({ error }: { error?: Error }) => {
@@ -172,7 +178,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
   rejectSignature = async () => {
     const { messageParams, onReject, securityAlertResponse } = this.props;
     await handleSignatureAction(
-      onReject,
+      onReject as () => void,
       messageParams,
       typedSign[messageParams.version as keyof typeof typedSign],
       securityAlertResponse,
@@ -190,7 +196,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
     } = this.props;
     if (!isExternalHardwareAccount(messageParams.from)) {
       await handleSignatureAction(
-        onConfirm,
+        onConfirm as () => void,
         messageParams,
         typedSign[messageParams.version as keyof typeof typedSign],
         securityAlertResponse,
