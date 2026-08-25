@@ -2760,11 +2760,13 @@ const mapStateToProps = (state: RootState) => ({
   tokenNetworkFilter: selectTokenNetworkFilter(state),
 });
 
-export default compose(
+const NetworkSettingsContainer = compose(
   connect(mapStateToProps, mapDispatchToProps),
   withIsOriginalNativeToken,
 )(
   withMetricsAwareness(
     NetworkSettings as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
   ),
-);
+) as React.ComponentType;
+
+export default NetworkSettingsContainer;
