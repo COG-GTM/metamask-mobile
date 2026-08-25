@@ -754,7 +754,9 @@ function SwapsQuotesView({
   ] = useMemo(() => {
     // Token
     const sourceBN = new BigNumber(sourceAmount);
-    const tokenBalanceBN = new BigNumber(balance?.toString(10) ?? '0');
+    const tokenBalanceBN = new BigNumber(
+      (balance as NonNullable<typeof balance>).toString(10),
+    );
     const tokenBalanceSufficient = tokenBalanceBN.gte(sourceBN);
     const missingTokenAmount = tokenBalanceSufficient
       ? null
@@ -767,10 +769,14 @@ function SwapsQuotesView({
     const gasBN = toWei(selectedQuoteValue?.maxEthFee || '0');
     const ethBalanceSufficient = canUseGasIncludedSwap
       ? true
-      : ethBalanceBN.gte(ethAmountBN.plus(new BigNumber(gasBN.toString(10))));
+      : ethBalanceBN.gte(
+          ethAmountBN.plus(gasBN as unknown as BigNumber.Value),
+        );
     const missingEthAmount = ethBalanceSufficient
       ? null
-      : ethAmountBN.plus(new BigNumber(gasBN.toString(10))).minus(ethBalanceBN);
+      : ethAmountBN
+          .plus(gasBN as unknown as BigNumber.Value)
+          .minus(ethBalanceBN);
 
     return [
       tokenBalanceSufficient,
@@ -1900,7 +1906,9 @@ function SwapsQuotesView({
         } else if (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
           const feeMarketGasEstimates = gasFeeEstimates as GasFeeEstimates;
           customGasAreIncompatible =
-            customGasEstimate !== null && 'gasPrice' in customGasEstimate;
+            Boolean(customGasEstimate) &&
+            customGasEstimate !== null &&
+            'gasPrice' in customGasEstimate;
           const selected =
             customGasEstimate?.selected || DEFAULT_GAS_FEE_OPTION_FEE_MARKET;
           gasEstimate = {
@@ -2138,11 +2146,11 @@ function SwapsQuotesView({
               <Text reset bold>
                 {!hasEnoughTokenBalance && !isSwapsNativeAsset(sourceToken)
                   ? `${renderFromTokenMinimalUnit(
-                      missingTokenBalance?.toString(10) ?? '0',
+                      missingTokenBalance as unknown as string,
                       sourceToken.decimals,
                     )} ${sourceToken.symbol} `
                   : `${renderFromWei(
-                      missingEthBalance?.toString(10) ?? '0',
+                      missingEthBalance as unknown as string,
                     )} ${getTicker(ticker)} `}
               </Text>
               {!hasEnoughTokenBalance
