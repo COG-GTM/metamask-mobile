@@ -140,6 +140,7 @@
     "base58-js": "1.0.0",
     "bech32": "2.0.0",
     "sha256-uint8array": "0.10.3",
+    "**/sha.js": "^2.4.12",
     "express": "4.21.2",
     "nanoid": "^3.3.8",
     "**/@ethersproject/signing-key/elliptic": "^6.6.1",
