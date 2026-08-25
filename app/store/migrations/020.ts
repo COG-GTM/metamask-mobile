@@ -1,5 +1,28 @@
 import { v4 } from 'uuid';
 
+interface FrequentRpcEntry {
+  chainId: string | number;
+  [key: string]: unknown;
+}
+
+/**
+ * Subset of the persisted state read and written by this migration.
+ */
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      PreferencesController?: {
+        frequentRpcList?: FrequentRpcEntry[];
+        [key: string]: unknown;
+      };
+      NetworkController?: {
+        networkConfigurations?: Record<string, FrequentRpcEntry>;
+        [key: string]: unknown;
+      };
+    };
+  };
+}
+
 /**
  * Migrate network configuration from Preferences controller to Network controller.
  * See this changelog for details: https://github.com/MetaMask/core/releases/tag/v44.0.0
@@ -11,14 +34,16 @@ import { v4 } from 'uuid';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
+export default function migrate(state: unknown) {
+  const migratedState = state as MigrationState;
   const preferencesControllerState =
-    state.engine.backgroundState.PreferencesController;
-  const networkControllerState = state.engine.backgroundState.NetworkController;
+    migratedState.engine.backgroundState.PreferencesController;
+  const networkControllerState =
+    migratedState.engine.backgroundState.NetworkController;
   const frequentRpcList = preferencesControllerState?.frequentRpcList;
   if (networkControllerState && frequentRpcList) {
     const networkConfigurations = frequentRpcList.reduce(
-      (networkConfigs, networkConfig) => {
+      (networkConfigs: Record<string, FrequentRpcEntry>, networkConfig) => {
         const networkConfigurationId = v4();
         return {
           ...networkConfigs,
@@ -33,9 +58,9 @@ export default function migrate(state) {
       },
       {},
     );
-    delete preferencesControllerState.frequentRpcList;
+    delete preferencesControllerState?.frequentRpcList;
 
     networkControllerState.networkConfigurations = networkConfigurations ?? {};
   }
-  return state;
+  return migratedState;
 }
