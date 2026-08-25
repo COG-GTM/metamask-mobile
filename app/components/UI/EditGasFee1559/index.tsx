@@ -580,7 +580,6 @@ const EditGasFee1559 = ({
         </View>
         <View style={styles.advancedOptionsContainer}>
           <TouchableOpacity
-            disabled={updateOption?.showAdvanced}
             onPress={toggleAdvancedOptions}
             style={styles.advancedOptionsButton}
           >
