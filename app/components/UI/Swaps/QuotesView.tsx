@@ -828,9 +828,9 @@ function SwapsQuotesView({
   );
 
   /* Approval transaction if any */
-  const [approvalTransaction, setApprovalTransaction] = useState(
-    originalApprovalTransaction,
-  );
+  const [approvalTransaction, setApprovalTransaction] = useState<
+    TxParams | null | undefined
+  >(originalApprovalTransaction);
 
   const approvalMinimumSpendLimit = useMemo(() => {
     if (!approvalTransaction) return '0';
@@ -2762,9 +2762,7 @@ function SwapsQuotesView({
         editQuoteTransactionsVisible={editQuoteTransactionsVisible}
         minimumSpendLimit={approvalMinimumSpendLimit}
         onCancelEditQuoteTransactions={onCancelEditQuoteTransactions}
-        setApprovalTransaction={(transaction) =>
-          setApprovalTransaction(transaction ?? null)
-        }
+        setApprovalTransaction={setApprovalTransaction}
         sourceToken={sourceToken}
         chainId={chainId}
       />

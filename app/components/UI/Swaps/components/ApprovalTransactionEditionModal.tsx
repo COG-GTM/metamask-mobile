@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import { StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import Modal from 'react-native-modal';
@@ -41,7 +47,9 @@ interface OwnProps {
   editQuoteTransactionsVisible?: boolean;
   minimumSpendLimit: string;
   onCancelEditQuoteTransactions: () => void;
-  setApprovalTransaction: (transaction?: TxParams | null) => void;
+  setApprovalTransaction: Dispatch<
+    SetStateAction<TxParams | null | undefined>
+  >;
   sourceToken: SwapsToken;
   chainId: Hex;
 }
