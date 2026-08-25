@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { ScrollView, View, StyleSheet, Text, SafeAreaView } from 'react-native';
-import { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { Theme } from '@metamask/design-tokens';
 import CollectibleOverview from '../../UI/CollectibleOverview';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
@@ -58,7 +58,7 @@ interface CollectibleViewProps {
   /**
    * Object that represents the current route info like params passed to it
    */
-  route: RouteProp<{ params: Collectible }, 'params'>;
+  route: { params: Collectible };
 }
 
 /**

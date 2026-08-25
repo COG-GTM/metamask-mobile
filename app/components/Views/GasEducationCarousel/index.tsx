@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   ScrollView,
@@ -7,12 +6,17 @@ import {
   Image,
   Dimensions,
   TouchableOpacity,
+  StyleProp,
+  ViewStyle,
+  ImageStyle,
 } from 'react-native';
 import StyledButton from '../../UI/StyledButton';
 import { baseStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import FadeOutOverlay from '../../UI/FadeOutOverlay';
-import ScrollableTabView from 'react-native-scrollable-tab-view';
+import ScrollableTabView, {
+  ChangeTabProperties,
+} from 'react-native-scrollable-tab-view';
 import { getTransparentOnboardingNavbarOptions } from '../../UI/Navbar';
 import OnboardingScreenWithBg from '../../UI/OnboardingScreenWithBg';
 import Text from '../../Base/Text';
@@ -36,6 +40,10 @@ import {
   selectConversionRate,
   selectCurrentCurrency,
 } from '../../../selectors/currencyRateController';
+import { ParamListBase } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootState } from '../../../reducers';
+import { Theme } from '../../../util/theme/models';
 
 const IMAGE_3_RATIO = 281 / 354;
 const IMAGE_2_RATIO = 353 / 416;
@@ -44,7 +52,7 @@ const DEVICE_WIDTH = Dimensions.get('window').width;
 
 const IMG_PADDING = Device.isIphone5() ? 220 : 200;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     scroll: {
       flexGrow: 1,
@@ -141,17 +149,43 @@ const carousel_images = [
 /**
  * View that is displayed to first time (new) users
  */
+interface GasEducationCarouselProps {
+  /**
+   * The navigator object
+   */
+  navigation: StackNavigationProp<ParamListBase>;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route?: { params?: { navigateTo?: () => void } };
+  /**
+   * conversion rate of ETH - FIAT
+   */
+  conversionRate?: number | null;
+  /**
+   * Selected currency
+   */
+  currentCurrency?: string;
+  /**
+   * Current provider ticker
+   */
+  ticker?: string;
+}
+
 const GasEducationCarousel = ({
   navigation,
   route,
   conversionRate,
   currentCurrency,
   ticker,
-}) => {
+}: GasEducationCarouselProps) => {
   const [currentTab, setCurrentTab] = useState(1);
-  const [gasFiat, setGasFiat] = useState(null);
+  const [gasFiat, setGasFiat] = useState<string | null>(null);
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  // `scrollTabs` and the per-index carousel image styles are resolved dynamically.
+  const dynamicViewStyles = styles as unknown as Record<string, ViewStyle>;
+  const dynamicImageStyles = styles as unknown as Record<string, ImageStyle>;
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -186,7 +220,7 @@ const GasEducationCarousel = ({
             estimatedBaseFeeHex,
             suggestedMaxFeePerGasHex,
             suggestedMaxPriorityFeePerGasHex,
-          });
+          } as Parameters<typeof calculateEIP1559GasFeeHexes>[0]);
           estimatedTotalGas = hexToBN(gasHexes.gasFeeMaxHex);
         } else if (gasEstimates.gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
           const gasPrice = hexToBN(
@@ -213,7 +247,7 @@ const GasEducationCarousel = ({
         const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
         setGasFiat(gasFiat);
       } catch (e) {
-        Logger.error(e);
+        Logger.error(e as Error);
       }
       setIsLoading(false);
     };
@@ -227,7 +261,7 @@ const GasEducationCarousel = ({
 
   const renderTabBar = () => <View />;
 
-  const onChangeTab = (obj) => {
+  const onChangeTab = (obj: ChangeTabProperties) => {
     setCurrentTab(obj.i + 1);
   };
 
@@ -239,7 +273,7 @@ const GasEducationCarousel = ({
       },
     });
 
-  const renderText = (key) => {
+  const renderText = (key: number) => {
     if (key === 1) {
       return (
         <View style={styles.tab}>
@@ -327,7 +361,7 @@ const GasEducationCarousel = ({
         >
           <View style={styles.wrapper}>
             <ScrollableTabView
-              style={styles.scrollTabs}
+              style={dynamicViewStyles.scrollTabs}
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
             >
@@ -339,7 +373,10 @@ const GasEducationCarousel = ({
                     <View style={styles.carouselImageWrapper}>
                       <Image
                         source={carousel_images[index]}
-                        style={[styles.carouselImage, styles[imgStyleKey]]}
+                        style={[
+                          styles.carouselImage,
+                          dynamicImageStyles[imgStyleKey],
+                        ]}
                         resizeMethod={'auto'}
                       />
                     </View>
@@ -387,30 +424,7 @@ const GasEducationCarousel = ({
   );
 };
 
-GasEducationCarousel.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-    /* conversion rate of ETH - FIAT
-    */
-  conversionRate: PropTypes.any,
-  /**
-    /* Selected currency
-    */
-  currentCurrency: PropTypes.string,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),

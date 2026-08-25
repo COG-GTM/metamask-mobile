@@ -21,6 +21,28 @@ const createStyles = (colors: Theme['colors']) =>
     },
   });
 
+/**
+ * `Summary` and its subcomponents are typed without children, so they are
+ * re-typed locally to allow the children they render at runtime.
+ */
+type WithChildren<P> = React.FC<React.PropsWithChildren<P>>;
+const SummaryWrapper = Summary as unknown as WithChildren<
+  React.ComponentProps<typeof Summary>
+>;
+const SummaryRow = Summary.Row as unknown as WithChildren<
+  React.ComponentProps<typeof Summary.Row>
+>;
+const SummaryCol = Summary.Col as unknown as WithChildren<
+  React.ComponentProps<typeof Summary.Col>
+>;
+/**
+ * `italic` is forwarded to the underlying react-native Text by `Text`, but is
+ * not part of its prop types.
+ */
+const LegacyText = Text as React.FC<
+  React.ComponentProps<typeof Text> & { italic?: boolean }
+>;
+
 interface TransactionSummaryProps {
   amount?: string;
   fee?: string;
@@ -72,49 +94,49 @@ export default class TransactionSummary extends PureComponent<TransactionSummary
       chainId,
     } = this.props;
 
-    const isTestNetResult = isTestNet(chainId);
+    const isTestNetResult = isTestNet(chainId as string);
 
     if (
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED_TOKEN ||
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED
     ) {
       return (
-        <Summary>
-          <Summary.Row>
+        <SummaryWrapper>
+          <SummaryRow>
             <Text small bold primary>
               {strings('transaction.amount')}
             </Text>
             <Text small bold primary upper={!isTestNetResult}>
               {amount}
             </Text>
-          </Summary.Row>
+          </SummaryRow>
           {secondaryTotalAmount && (
-            <Summary.Row end last>
+            <SummaryRow end last>
               <Text small right upper={!isTestNetResult}>
                 {secondaryTotalAmount}
               </Text>
-            </Summary.Row>
+            </SummaryRow>
           )}
-        </Summary>
+        </SummaryWrapper>
       );
     }
     return (
-      <Summary>
-        <Summary.Row>
+      <SummaryWrapper>
+        <SummaryRow>
           <Text small primary>
             {this.renderAmountTitle()}
           </Text>
           <Text small primary upper={!isTestNetResult}>
             {amount}
           </Text>
-        </Summary.Row>
-        <Summary.Row>
-          <Summary.Col>
-            <Text small primary italic>
+        </SummaryRow>
+        <SummaryRow>
+          <SummaryCol>
+            <LegacyText small primary italic>
               {!fee
                 ? strings('transaction.transaction_fee_less')
                 : strings('transaction.transaction_fee_estimated')}
-            </Text>
+            </LegacyText>
             {!fee || !onEditPress ? null : (
               <TouchableOpacity
                 disabled={!gasEstimationReady}
@@ -128,16 +150,16 @@ export default class TransactionSummary extends PureComponent<TransactionSummary
                 </Text>
               </TouchableOpacity>
             )}
-          </Summary.Col>
+          </SummaryCol>
           {!!fee &&
             this.renderIfGastEstimationReady(
               <Text small primary upper={!isTestNetResult}>
                 {fee}
               </Text>,
             )}
-        </Summary.Row>
+        </SummaryRow>
         <Summary.Separator />
-        <Summary.Row>
+        <SummaryRow>
           <Text small bold primary>
             {strings('transaction.total_amount')}
           </Text>
@@ -146,15 +168,15 @@ export default class TransactionSummary extends PureComponent<TransactionSummary
               {totalAmount}
             </Text>,
           )}
-        </Summary.Row>
-        <Summary.Row end last>
+        </SummaryRow>
+        <SummaryRow end last>
           {this.renderIfGastEstimationReady(
             <Text small right upper={!isTestNetResult}>
               {secondaryTotalAmount}
             </Text>,
           )}
-        </Summary.Row>
-      </Summary>
+        </SummaryRow>
+      </SummaryWrapper>
     );
   };
 }

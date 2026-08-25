@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import { render, screen } from '@testing-library/react-native';
 import EnterPasswordSimple from './';
 import { NavigationContainer } from '@react-navigation/native';
@@ -33,7 +33,11 @@ describe('EnterPasswordSimple', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <NavigationContainer>
-          <EnterPasswordSimple navigation={mockNavigation} />
+          <EnterPasswordSimple
+            {...({
+              navigation: mockNavigation,
+            } as unknown as ComponentProps<typeof EnterPasswordSimple>)}
+          />
         </NavigationContainer>
       </ThemeContext.Provider>,
     );

@@ -6,6 +6,8 @@ import { backgroundState } from '../../../util/test/initial-root-state';
 import Asset from './';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
 import { isPortfolioViewEnabled } from '../../../util/networks';
+import { DeepPartial } from '../../../util/test/renderWithProvider';
+import { RootState } from '../../../reducers';
 
 const mockInitialState = {
   swaps: { '0x1': { isLive: true }, hasOnboarded: false, isLive: true },
@@ -75,7 +77,7 @@ const mockInitialState = {
       },
     },
   },
-};
+} as unknown as DeepPartial<RootState>;
 
 jest.unmock('react-native/Libraries/Interaction/InteractionManager');
 

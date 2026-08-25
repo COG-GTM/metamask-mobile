@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import { connect } from 'react-redux';
@@ -14,8 +14,11 @@ import Routes from '../../../../../app/constants/navigation/Routes';
 
 import { ContactsViewSelectorIDs } from '../../../../../e2e/selectors/Settings/Contacts/ContacsView.selectors';
 import { selectAddressBook } from '../../../../selectors/addressBookController';
+import { Theme } from '../../../../util/theme/models';
+import { RootState } from '../../../../reducers';
+import { Hex } from '@metamask/utils';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -31,36 +34,47 @@ const createStyles = (colors) =>
 const EDIT = 'edit';
 const ADD = 'add';
 
+interface ActionSheetRef {
+  show: () => void;
+}
+
+interface ContactsProps {
+  /**
+   * Map representing the address book
+   */
+  addressBook: ReturnType<typeof selectAddressBook>;
+  /**
+   * navigation object required to push new views
+   */
+  navigation?: NavigationProp<ParamListBase>;
+  /**
+   * The chain ID for the current selected network
+   */
+  chainId: ReturnType<typeof selectChainId>;
+}
+
+interface ContactsState {
+  reloadAddressList: boolean;
+}
+
 /**
  * View that contains app information
  */
-class Contacts extends PureComponent {
-  static propTypes = {
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     /* navigation object required to push new views
-     */
-    navigation: PropTypes.object,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string,
-  };
+class Contacts extends PureComponent<ContactsProps, ContactsState> {
+  static contextType = ThemeContext;
 
-  state = {
+  state: ContactsState = {
     reloadAddressList: false,
   };
 
-  actionSheet;
-  contactAddressToRemove;
+  actionSheet: ActionSheetRef | null = null;
+  contactAddressToRemove: string | undefined;
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
+    navigation?.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.contacts_title'),
         navigation,
@@ -74,14 +88,14 @@ class Contacts extends PureComponent {
     this.updateNavBar();
   };
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate = (prevProps: ContactsProps) => {
     this.updateNavBar();
     const { chainId } = this.props;
     if (
       prevProps.addressBook &&
       this.props.addressBook &&
-      JSON.stringify(prevProps.addressBook[chainId]) !==
-        JSON.stringify(this.props.addressBook[chainId])
+      JSON.stringify(prevProps.addressBook[chainId as Hex]) !==
+        JSON.stringify(this.props.addressBook[chainId as Hex])
     )
       this.updateAddressList();
   };
@@ -93,7 +107,7 @@ class Contacts extends PureComponent {
     }, 100);
   };
 
-  onAddressLongPress = (address) => {
+  onAddressLongPress = (address: string) => {
     this.contactAddressToRemove = address;
     this.actionSheet && this.actionSheet.show();
   };
@@ -101,12 +115,15 @@ class Contacts extends PureComponent {
   deleteContact = () => {
     const { AddressBookController } = Engine.context;
     const { chainId } = this.props;
-    AddressBookController.delete(chainId, this.contactAddressToRemove);
+    AddressBookController.delete(
+      chainId as Hex,
+      this.contactAddressToRemove as string,
+    );
     this.updateAddressList();
   };
 
-  onAddressPress = (address) => {
-    this.props.navigation.navigate('ContactForm', {
+  onAddressPress = (address: string) => {
+    this.props.navigation?.navigate('ContactForm', {
       mode: EDIT,
       editMode: EDIT,
       address,
@@ -115,24 +132,25 @@ class Contacts extends PureComponent {
   };
 
   goToAddContact = () => {
-    this.props.navigation.navigate('ContactForm', { mode: ADD });
+    this.props.navigation?.navigate('ContactForm', { mode: ADD });
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: ActionSheetRef | null) => {
     this.actionSheet = ref;
   };
 
   onIconPress = () => {
     const { navigation } = this.props;
-    navigation.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
+    navigation?.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
       screen: Routes.SHEET.AMBIGUOUS_ADDRESS,
     });
   };
 
   render = () => {
     const { reloadAddressList } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance;
+    const theme = this.context as unknown as Theme;
+    const colors = theme?.colors || mockTheme.colors;
+    const themeAppearance = theme?.themeAppearance;
     const styles = createStyles(colors);
     const { chainId } = this.props;
 
@@ -143,6 +161,7 @@ class Contacts extends PureComponent {
       >
         <AddressList
           chainId={chainId}
+          inputSearch={undefined}
           onlyRenderAddressBook
           reloadAddressList={reloadAddressList}
           onAccountPress={this.onAddressPress}
@@ -167,7 +186,7 @@ class Contacts extends PureComponent {
           cancelButtonIndex={1}
           destructiveButtonIndex={0}
           // eslint-disable-next-line react/jsx-no-bind
-          onPress={(index) => (index === 0 ? this.deleteContact() : null)}
+          onPress={(index: number) => (index === 0 ? this.deleteContact() : null)}
           theme={themeAppearance}
         />
       </SafeAreaView>
@@ -175,9 +194,7 @@ class Contacts extends PureComponent {
   };
 }
 
-Contacts.contextType = ThemeContext;
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   addressBook: selectAddressBook(state),
   chainId: selectChainId(state),
 });

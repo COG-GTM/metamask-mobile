@@ -15,17 +15,21 @@ import {
   getVersion,
   getBuildNumber,
 } from 'react-native-device-info';
+import {
+  NavigationProp,
+  ParamListBase,
+} from '@react-navigation/native';
 import { fontStyles } from '../../../../styles/common';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import AppConstants from '../../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
+import { Theme } from '../../../../util/theme/models';
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -90,22 +94,33 @@ const foxImage = require('../../../../images/branding/fox.png'); // eslint-disab
 /**
  * View that contains app information
  */
-export default class AppInformation extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-  };
+interface AppInformationProps {
+  /**
+   * navigation object required to push new views
+   */
+  navigation: NavigationProp<ParamListBase>;
+}
 
-  state = {
+interface AppInformationState {
+  appInfo: string;
+  appVersion: string;
+}
+
+export default class AppInformation extends PureComponent<
+  AppInformationProps,
+  AppInformationState
+> {
+  static contextType = ThemeContext;
+
+  state: AppInformationState = {
     appInfo: '',
     appVersion: '',
   };
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.info_title'),
@@ -131,7 +146,7 @@ export default class AppInformation extends PureComponent {
     this.updateNavBar();
   };
 
-  goTo = (url, title) => {
+  goTo = (url: string, title: string) => {
     InteractionManager.runAfterInteractions(() => {
       this.props.navigation.navigate('Webview', {
         screen: 'SimpleWebview',
@@ -174,8 +189,10 @@ export default class AppInformation extends PureComponent {
   };
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
+    const legacyStyles = styles as Record<string, object>;
 
     return (
       <SafeAreaView
@@ -197,7 +214,7 @@ export default class AppInformation extends PureComponent {
             ) : null}
           </View>
           <Text style={styles.title}>{strings('app_information.links')}</Text>
-          <View style={styles.links}>
+          <View style={legacyStyles.links}>
             <TouchableOpacity onPress={this.onPrivacyPolicy}>
               <Text style={styles.link}>
                 {strings('app_information.privacy_policy')}
@@ -215,7 +232,7 @@ export default class AppInformation extends PureComponent {
             </TouchableOpacity>
           </View>
           <View style={styles.division} />
-          <View style={styles.links}>
+          <View style={legacyStyles.links}>
             <TouchableOpacity onPress={this.onSupportCenter}>
               <Text style={styles.link}>
                 {strings('app_information.support_center')}
@@ -237,5 +254,3 @@ export default class AppInformation extends PureComponent {
     );
   };
 }
-
-AppInformation.contextType = ThemeContext;
