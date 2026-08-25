@@ -10,59 +10,60 @@ export interface TransactionEIP1559UpdateProps {
   /**
    * Function called when user clicks to edit the gas fee
    */
-  onEdit: () => void;
+  onEdit?: () => void;
   /**
    * Boolean to determine if the total section should be hidden
    */
-  hideTotal: boolean;
+  hideTotal?: boolean;
   /**
    * Boolean to determine the container should have no margin
    */
-  noMargin: boolean;
+  noMargin?: boolean;
   /**
    * Origin (hostname) of the dapp that suggested the gas fee
    */
-  origin: string;
+  origin?: string;
   /**
    * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
    */
-  originWarning: string;
+  originWarning?: string | boolean;
   /**
    * Function to call when update animation starts
    */
-  onUpdatingValuesStart: () => void;
+  onUpdatingValuesStart?: () => void;
   /**
    * Function to call when update animation ends
    */
-  onUpdatingValuesEnd: () => void;
+  onUpdatingValuesEnd?: () => void;
   /**
    * If the values should animate upon update or not
    */
-  animateOnChange: boolean;
+  animateOnChange?: boolean;
   /**
    * Boolean to determine if the animation is happening
    */
-  isAnimating: boolean;
+  isAnimating?: boolean;
   /**
    * If loading should stop
    */
-  gasEstimationReady: boolean;
+  gasEstimationReady?: boolean;
   /**
    * If should show legacy gas
    */
-  legacy: boolean;
+  legacy?: boolean;
   /**
    * The selected gas option
    */
-  gasSelected: string;
+  gasSelected?: string | null;
   /**
    * gas object for calculating the gas transaction cost
    */
-  gasObject: {
-    suggestedMaxFeePerGas: string;
-    suggestedMaxPriorityFeePerGas: string;
+  gasObject?: {
+    suggestedMaxFeePerGas?: string;
+    suggestedMaxPriorityFeePerGas?: string;
+    suggestedGasLimit?: string;
   };
-  gasObjectLegacy: {
+  gasObjectLegacy?: {
     legacyGasLimit?: string;
     suggestedGasPrice?: string;
   };
@@ -71,20 +72,9 @@ export interface TransactionEIP1559UpdateProps {
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updateTransactionState: any;
-  onlyGas: boolean;
+  updateTransactionState?: any;
+  onlyGas?: boolean;
   multiLayerL1FeeTotal?: string;
-}
-
-export interface SkeletonProps {
-  /**
-   * Skeleton width
-   */
-  width: number;
-  /**
-   * if noStyle is passed to skeleton
-   */
-  noStyle?: boolean;
 }
 
 export interface SkeletonProps {
