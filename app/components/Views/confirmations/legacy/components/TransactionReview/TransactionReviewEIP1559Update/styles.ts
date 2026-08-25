@@ -1,12 +1,8 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
+import { ThemeColors } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
-  StyleSheet.create({
-    overview: (noMargin) => ({
-      marginHorizontal: noMargin ? 0 : 24,
-      paddingTop: 10,
-      paddingBottom: 10,
-    }),
+const createStyles = (colors: ThemeColors) => {
+  const staticStyles = StyleSheet.create({
     valuesContainer: {
       flex: 1,
       flexDirection: 'row',
@@ -15,9 +11,6 @@ const createStyles = (colors) =>
     gasInfoContainer: {
       paddingLeft: 2,
     },
-    gasInfoIcon: (hasOrigin) => ({
-      color: hasOrigin ? colors.warning.default : colors.icon.muted,
-    }),
     amountContainer: {
       flex: 1,
       paddingRight: 10,
@@ -48,5 +41,18 @@ const createStyles = (colors) =>
       flex: 1,
     },
   });
+
+  return {
+    ...staticStyles,
+    overview: (noMargin?: boolean): ViewStyle => ({
+      marginHorizontal: noMargin ? 0 : 24,
+      paddingTop: 10,
+      paddingBottom: 10,
+    }),
+    gasInfoIcon: (hasOrigin?: boolean): TextStyle => ({
+      color: hasOrigin ? colors.warning.default : colors.icon.muted,
+    }),
+  };
+};
 
 export default createStyles;
