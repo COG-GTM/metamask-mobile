@@ -8,6 +8,7 @@ import reducer, {
   swapsSmartTxFlagEnabled,
   swapsTokensObjectSelector,
   selectSwapsChainFeatureFlags,
+  SwapsState,
 } from './index';
 import { NetworkClientType } from '@metamask/network-controller';
 // eslint-disable-next-line import/no-namespace
@@ -236,7 +237,7 @@ describe('swaps reducer', () => {
             },
           },
         },
-      };
+      } as unknown as SwapsState;
 
       const enabled = swapsSmartTxFlagEnabled(rootState);
       expect(enabled).toEqual(true);
@@ -291,7 +292,7 @@ describe('swaps reducer', () => {
             },
           },
         },
-      };
+      } as unknown as SwapsState;
 
       const enabled = swapsSmartTxFlagEnabled(rootState);
       expect(enabled).toEqual(false);
@@ -368,7 +369,7 @@ describe('swaps reducer', () => {
           globalSetting: true,
         },
       };
-      
+
       const chainFlags = {
         '0x1': {
           fallbackToV1: false,
@@ -378,12 +379,12 @@ describe('swaps reducer', () => {
           },
         },
       };
-      
+
       const rootState = createTestState({
         globalFeatureFlags: globalFlags,
         chainFeatureFlags: chainFlags,
       });
-      
+
       const result = selectSwapsChainFeatureFlags(rootState);
       expect(result).toEqual({
         fallbackToV1: false,
