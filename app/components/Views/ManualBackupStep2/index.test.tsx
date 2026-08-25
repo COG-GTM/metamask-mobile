@@ -3,6 +3,12 @@ import { shallow } from 'enzyme';
 import ManualBackupStep2 from './';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
+
+const navigationMock = {
+  setOptions: jest.fn(),
+  navigate: jest.fn(),
+} as unknown as NavigationProp<ParamListBase>;
 
 const mockStore = configureMockStore();
 const initialState = {
@@ -18,6 +24,7 @@ describe('ManualBackupStep2', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <ManualBackupStep2
+          navigation={navigationMock}
           route={{
             params: {
               words: [
