@@ -8,6 +8,43 @@ import { NETWORKS_CHAIN_ID } from '../../../../constants/network';
 import { SolScope } from '@metamask/keyring-api';
 ///: END:ONLY_INCLUDE_IF(keyring-snaps)
 
+interface SwapsTokenLike {
+  address: string;
+  symbol?: string | null;
+  decimals?: number;
+  occurrences?: number;
+  aggregators?: string[];
+  [key: string]: unknown;
+}
+
+interface QuotesNavigationParams {
+  sourceTokenAddress: string;
+  destinationTokenAddress: string;
+  sourceAmount?: string;
+  slippage: string | number;
+  tokens?: SwapsTokenLike[];
+}
+
+interface QuotesRoute {
+  params?: Partial<QuotesNavigationParams>;
+}
+
+interface FetchParamsOptions {
+  slippage?: string | number;
+  sourceToken: SwapsTokenLike;
+  destinationToken: SwapsTokenLike;
+  sourceAmount: string;
+  walletAddress: string;
+  networkClientId: string;
+  enableGasIncludedQuotes: boolean;
+}
+
+interface MaxBalanceLinkOptions {
+  sourceToken?: SwapsTokenLike | null;
+  shouldUseSmartTransaction: boolean;
+  hasBalance: boolean;
+}
+
 const {
   ETH_CHAIN_ID,
   BSC_CHAIN_ID,
@@ -21,7 +58,7 @@ const {
   BASE_CHAIN_ID,
 } = swapsUtils;
 
-const allowedChainIds = [
+const allowedChainIds: string[] = [
   ETH_CHAIN_ID,
   BSC_CHAIN_ID,
   POLYGON_CHAIN_ID,
@@ -43,7 +80,7 @@ if (__DEV__) {
   allowedChainIds.push(...allowedTestnetChainIds);
 }
 
-export function isSwapsAllowed(chainId) {
+export function isSwapsAllowed(chainId: string): boolean {
   if (!AppConstants.SWAPS.ACTIVE) {
     return false;
   }
@@ -60,17 +97,21 @@ export function isSwapsAllowed(chainId) {
   return allowedChainIds.includes(chainId);
 }
 
-export function isSwapsNativeAsset(token) {
+export function isSwapsNativeAsset(
+  token?: Pick<SwapsTokenLike, 'address'> | null,
+): boolean {
   return (
     Boolean(token) && token?.address === swapsUtils.NATIVE_SWAPS_TOKEN_ADDRESS
   );
 }
 
-export function isDynamicToken(token) {
+export function isDynamicToken(token?: SwapsTokenLike | null): boolean {
+  if (!token) {
+    return false;
+  }
   return (
-    Boolean(token) &&
     token.occurrences === 1 &&
-    token?.aggregators.length === 1 &&
+    token?.aggregators?.length === 1 &&
     token.aggregators[0] === 'dynamic'
   );
 }
@@ -85,12 +126,12 @@ export function isDynamicToken(token) {
  * @return {object} Object containing sourceTokenAddress, destinationTokenAddress, sourceAmount and slippage
  */
 export function setQuotesNavigationsParams(
-  sourceTokenAddress,
-  destinationTokenAddress,
-  sourceAmount,
-  slippage,
-  tokens = [],
-) {
+  sourceTokenAddress: string,
+  destinationTokenAddress: string,
+  sourceAmount: string,
+  slippage: string | number,
+  tokens: SwapsTokenLike[] = [],
+): QuotesNavigationParams {
   return {
     sourceTokenAddress,
     destinationTokenAddress,
@@ -104,7 +145,9 @@ export function setQuotesNavigationsParams(
  * Gets required parameters for Swaps Quotes View
  * @return {object} Object containing sourceTokenAddress, destinationTokenAddress, sourceAmount and slippage
  */
-export function getQuotesNavigationsParams(route) {
+export function getQuotesNavigationsParams(
+  route: QuotesRoute,
+): QuotesNavigationParams {
   const slippage = route.params?.slippage ?? 1;
   const sourceTokenAddress = route.params?.sourceTokenAddress ?? '';
   const destinationTokenAddress = route.params?.destinationTokenAddress ?? '';
@@ -139,7 +182,7 @@ export function getFetchParams({
   walletAddress,
   networkClientId,
   enableGasIncludedQuotes,
-}) {
+}: FetchParamsOptions) {
   return {
     slippage,
     sourceToken: sourceToken.address,
@@ -156,11 +199,11 @@ export function getFetchParams({
 }
 
 export function useRatio(
-  numeratorAmount,
-  numeratorDecimals,
-  denominatorAmount,
-  denominatorDecimals,
-) {
+  numeratorAmount: BigNumber.Value,
+  numeratorDecimals: number,
+  denominatorAmount: BigNumber.Value,
+  denominatorDecimals: number,
+): BigNumber {
   const ratio = useMemo(
     () =>
       new BigNumber(numeratorAmount)
@@ -179,7 +222,7 @@ export function useRatio(
   return ratio;
 }
 
-export function getErrorMessage(errorKey) {
+export function getErrorMessage(errorKey?: string): string[] {
   const { SwapsError } = swapsUtils;
   const errorAction =
     errorKey === SwapsError.QUOTES_EXPIRED_ERROR
@@ -212,7 +255,7 @@ export function getErrorMessage(errorKey) {
   }
 }
 
-export function getQuotesSourceMessage(type) {
+export function getQuotesSourceMessage(type?: string): string[] {
   switch (type) {
     case 'DEX': {
       return [
@@ -259,7 +302,7 @@ export function shouldShowMaxBalanceLink({
   sourceToken,
   shouldUseSmartTransaction,
   hasBalance,
-}) {
+}: MaxBalanceLinkOptions): boolean {
   if (!sourceToken?.symbol || !hasBalance) {
     return false;
   }
