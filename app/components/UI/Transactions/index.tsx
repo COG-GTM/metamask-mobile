@@ -627,7 +627,8 @@ class Transactions extends PureComponent<
       message: `speedUpTransaction failed `,
       speedUpTxId,
     });
-    InteractionManager.runAfterInteractions(() => this.toggleRetry(message));
+    this.toggleRetry(message);
+    InteractionManager.runAfterInteractions();
     this.setState({
       speedUp1559IsOpen: false,
       speedUpIsOpen: false,
@@ -641,7 +642,8 @@ class Transactions extends PureComponent<
       message: `cancelTransaction failed `,
       cancelTxId,
     });
-    InteractionManager.runAfterInteractions(() => this.toggleRetry(message));
+    this.toggleRetry(message);
+    InteractionManager.runAfterInteractions();
     this.setState({
       cancel1559IsOpen: false,
       cancelIsOpen: false,
