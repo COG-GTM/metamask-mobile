@@ -1,8 +1,8 @@
-/* eslint-disable react/prop-types */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 import Fuse from 'fuse.js';
+import { Hex } from '@metamask/utils';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { isSmartContractAddress } from '../../../../../../util/transactions';
 import { strings } from '../../../../../../../locales/i18n';
@@ -16,8 +16,13 @@ import { selectInternalAccounts } from '../../../../../../selectors/accountsCont
 import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { AddressListProps, Contact } from './AddressList.types';
+import { RootState } from '../../../../../../reducers';
 
-const LabelElement = (styles, label) => (
+const LabelElement = (
+  styles: ReturnType<typeof styleSheet>,
+  label: string,
+) => (
   <View key={label} style={styles.labelElementWrapper}>
     <Text variant={TextVariant.BodyMD} style={styles.contactLabel}>
       {label.toUpperCase()}
@@ -33,23 +38,28 @@ const AddressList = ({
   onIconPress,
   onlyRenderAddressBook = false,
   reloadAddressList,
-}) => {
+}: AddressListProps) => {
   const { colors } = useTheme();
   const styles = styleSheet(colors);
-  const [contactElements, setContactElements] = useState([]);
-  const [fuse, setFuse] = useState(undefined);
+  const [contactElements, setContactElements] = useState<
+    (Contact | string)[]
+  >([]);
+  const [fuse, setFuse] = useState<Fuse<Contact> | undefined>(undefined);
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
-    (state) => state.user.ambiguousAddressEntries,
+    (state: RootState) =>
+      state.user.ambiguousAddressEntries as
+        | Record<string, string[]>
+        | undefined,
   );
 
   const networkAddressBook = useMemo(
-    () => addressBook[chainId] || {},
+    () => addressBook[chainId as Hex] || {},
     [addressBook, chainId],
   );
   const parseAddressBook = useCallback(
-    (networkAddressBookList) => {
+    (networkAddressBookList: Contact[]) => {
       const contacts = networkAddressBookList.map((contact) => {
         const isAmbiguousAddress =
           chainId &&
@@ -73,8 +83,8 @@ const AddressList = ({
             .catch(() => contact),
         ),
       ).then((updatedContacts) => {
-        const newContactElements = [];
-        const addressBookTree = {};
+        const newContactElements: (Contact | string)[] = [];
+        const addressBookTree: Record<string, Contact[]> = {};
 
         updatedContacts.forEach((contact) => {
           const contactNameInitial = contact?.name?.[0];
@@ -110,7 +120,7 @@ const AddressList = ({
     const networkAddressBookList = Object.keys(networkAddressBook).map(
       (address) => networkAddressBook[address],
     );
-    const newFuse = new Fuse(networkAddressBookList, {
+    const newFuse = new Fuse<Contact>(networkAddressBookList, {
       shouldSort: true,
       threshold: 0.45,
       location: 0,
@@ -168,14 +178,14 @@ const AddressList = ({
             onIconPress={onIconPress}
             onAccountLongPress={onAccountLongPress}
             testID={SendViewSelectorsIDs.MY_ACCOUNT_ELEMENT}
-            chainId={chainId}
+            chainId={chainId as Hex}
           />
         ))}
       </View>
     );
   };
 
-  const renderElement = (addressElement) => {
+  const renderElement = (addressElement: Contact | string) => {
     if (typeof addressElement === 'string') {
       return LabelElement(styles, addressElement);
     }
@@ -192,13 +202,13 @@ const AddressList = ({
         onAccountLongPress={onAccountLongPress}
         testID={SendViewSelectorsIDs.ADDRESS_BOOK_ACCOUNT}
         isAmbiguousAddress={addressElement.isAmbiguousAddress}
-        chainId={chainId}
+        chainId={chainId as Hex}
       />
     );
   };
 
   const renderContent = () => {
-    const sendFlowContacts = [];
+    const sendFlowContacts: (Contact | string)[] = [];
 
     contactElements.forEach((contractElement) => {
       if (

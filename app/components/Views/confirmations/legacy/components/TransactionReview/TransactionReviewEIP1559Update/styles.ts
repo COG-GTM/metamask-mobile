@@ -49,7 +49,7 @@ const createStyles = (colors: ThemeColors) => {
       paddingTop: 10,
       paddingBottom: 10,
     }),
-    gasInfoIcon: (hasOrigin?: boolean): TextStyle => ({
+    gasInfoIcon: (hasOrigin?: boolean | string): TextStyle => ({
       color: hasOrigin ? colors.warning.default : colors.icon.muted,
     }),
   };

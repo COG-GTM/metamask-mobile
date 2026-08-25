@@ -1,5 +1,3 @@
-import { GasFeeOptions } from '../../../../../../core/GasPolling/types';
-
 export interface RenderInputProps {
   updateOption:
     | {
@@ -18,7 +16,9 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Gas fee options.
    */
-  gasOptions: GasFeeOptions;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gasOptions: any;
   /**
    * Primary currency, either ETH or Fiat
    */
@@ -26,11 +26,11 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Option to display speed up/cancel view
    */
-  updateOption: RenderInputProps;
+  updateOption?: RenderInputProps['updateOption'];
   /**
    * If the values should animate upon update or not
    */
-  animateOnChange: boolean | undefined;
+  animateOnChange?: boolean;
   /**
    * A string representing the network chainId
    */
@@ -58,54 +58,57 @@ export interface EditGasFee1559UpdateProps {
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: any;
+  error?: any;
   /**
    * Warning message to show
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warning: any;
+  warning?: any;
   /**
    * Boolean that specifies if the gas price was suggested by the dapp
    */
-  dappSuggestedGas: boolean | undefined;
+  dappSuggestedGas?: boolean;
   /**
    * An array of selected gas value and lower that should be ignored.
    */
-  ignoreOptions: string[] | undefined;
+  ignoreOptions?: string[];
   /**
    * Extend options object. Object has option keys and properties will be spread
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extendOptions: any;
+  extendOptions?: any;
   /**
    * Recommended object with type and render function
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  recommended: any;
+  recommended?: any;
   /**
    * Estimate option to compare with for too low warning
    */
-  warningMinimumEstimateOption: string;
+  warningMinimumEstimateOption?: string;
   /**
    * Suggested estimate option to show recommended values
    */
-  suggestedEstimateOption: string;
+  suggestedEstimateOption?: string;
   /**
    * Boolean to determine if the animation is happening
    */
-  isAnimating: boolean;
+  isAnimating?: boolean;
   /**
    * Extra analytics params to be send with the gas analytics
    */
   analyticsParams: {
-    chain_id: string;
+    chain_id?: string;
     gas_estimate_type: string;
-    gas_mode: string;
-    speed_set: string;
-    view: string;
+    gas_mode?: string;
+    speed_set?: string;
+    view?: string;
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   };
   /**
    * This is used in calculating the new gas price from the advanced view.
@@ -113,9 +116,9 @@ export interface EditGasFee1559UpdateProps {
    * The maxPriorityFeePerGas is the max fee per gas that the user can set for priority transactions.
    */
   selectedGasObject: {
-    suggestedMaxFeePerGas: string;
-    suggestedMaxPriorityFeePerGas: string;
-    suggestedGasLimit: string;
+    suggestedMaxFeePerGas?: string;
+    suggestedMaxPriorityFeePerGas?: string;
+    suggestedGasLimit?: string;
   };
   onlyGas?: boolean;
 }
