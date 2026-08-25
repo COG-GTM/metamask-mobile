@@ -3,6 +3,26 @@
 // `app/declarations/index.d.ts`) to keep the TypeScript migration of this
 // directory self-contained.
 
+declare module 'react-native-progress/Bar' {
+  import { ComponentType } from 'react';
+  import { StyleProp, ViewStyle } from 'react-native';
+
+  interface ProgressBarProps {
+    progress?: number;
+    width?: number | null;
+    height?: number;
+    color?: string;
+    borderRadius?: number;
+    borderWidth?: number;
+    borderColor?: string;
+    useNativeDriver?: boolean;
+    style?: StyleProp<ViewStyle>;
+  }
+
+  const ProgressBar: ComponentType<ProgressBarProps>;
+  export default ProgressBar;
+}
+
 declare module 'react-native-confetti';
 
 declare module '@metamask/react-native-button';
@@ -10,9 +30,10 @@ declare module '@metamask/react-native-button';
 declare module '@metamask/react-native-button/coalesceNonElementChildren' {
   const coalesceNonElementChildren: (
     children: React.ReactNode,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mapper: (children: React.ReactNode, index: number) => any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) => any[];
+    mapper: (
+      children: React.ReactNode[],
+      index: number,
+    ) => React.ReactNode,
+  ) => React.ReactNode[];
   export default coalesceNonElementChildren;
 }

@@ -61,7 +61,6 @@ interface StyledButtonProps {
 export default class StyledButton extends PureComponent<StyledButtonProps> {
   static contextType = ThemeContext;
 
-  declare context: React.ContextType<typeof ThemeContext>;
 
   static defaultProps = {
     styleDisabled: { opacity: 0.6 },
@@ -80,7 +79,7 @@ export default class StyledButton extends PureComponent<StyledButtonProps> {
       testID,
       disabledContainerStyle,
     } = this.props;
-    const colors: Theme['colors'] = this.context?.colors || mockTheme.colors;
+    const colors: Theme['colors'] = (this.context as unknown as Theme).colors || mockTheme.colors;
     const { fontStyle, containerStyle } = getStyles(type as string, colors);
 
     return (

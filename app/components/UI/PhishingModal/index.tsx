@@ -6,22 +6,26 @@ import {
   Platform,
   Linking,
   TouchableOpacity,
-} from 'react-native';
-import PropTypes from 'prop-types';
+ FlexAlignType } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
-import URL from 'url-parse';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
-import { ETHEREUM_DETECTION_TITLE } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
+// eslint-disable-next-line import/no-namespace
+import * as ExternalWebsitesTestIds from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
 import Button from '../../../component-library/components/Buttons/Button/Button';
 import {
   ButtonVariants,
   ButtonWidthTypes,
 } from '../../../component-library/components/Buttons/Button/Button.types';
+import { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
+const ETHEREUM_DETECTION_TITLE = (
+  ExternalWebsitesTestIds as Record<string, string | undefined>
+).ETHEREUM_DETECTION_TITLE;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     warningIcon: {
       color: colors.error.default,
@@ -89,7 +93,7 @@ const createStyles = (colors) =>
       color: colors.primary.default,
     },
     warningContainer: {
-      alignItems: 'left',
+      alignItems: 'left' as FlexAlignType,
     },
     buttonWrapper: {
       marginTop: 32,
@@ -97,28 +101,36 @@ const createStyles = (colors) =>
     },
   });
 
-export default class PhishingModal extends PureComponent {
-  static propTypes = {
-    /**
-     * name of the blacklisted url
-     */
-    fullUrl: PropTypes.string,
-    /**
-     * Called to the user decides to proceed to the phishing site
-     */
-    continueToPhishingSite: PropTypes.func,
-    /**
-     * Called to the user decides to report an issue
-     */
-    goToFilePhishingIssue: PropTypes.func,
-    /**
-     * Called when the user takes the recommended action
-     */
-    goBackToSafety: PropTypes.func,
-    /**
-     * Called to the user decides to share on Twitter
-     */
-  };
+interface PhishingModalProps {
+  /**
+   * name of the blacklisted url
+   */
+  fullUrl?: string;
+  /**
+   * Called to the user decides to proceed to the phishing site
+   */
+  continueToPhishingSite?: () => void;
+  /**
+   * Called to the user decides to report an issue
+   */
+  goToFilePhishingIssue?: () => void;
+  /**
+   * Called when the user takes the recommended action
+   */
+  goBackToSafety?: () => void;
+  /**
+   * Called when the user goes to the ETH phishing detector repo
+   */
+  goToETHPhishingDetector?: () => void;
+  /**
+   * Called when the user goes to the Etherscam database
+   */
+  goToEtherscam?: () => void;
+}
+
+export default class PhishingModal extends PureComponent<PhishingModalProps> {
+  static contextType = ThemeContext;
+
 
   shareToTwitter = () => {
     const tweetText =
@@ -134,10 +146,8 @@ export default class PhishingModal extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const urlObj = new URL(this.props.fullUrl);
-    const host = urlObj.hostname;
 
     return (
       <View style={styles.phishingModalWrapper}>
@@ -181,7 +191,7 @@ export default class PhishingModal extends PureComponent {
         <Button
           variant={ButtonVariants.Primary}
           label={strings('phishing.back_to_safety')}
-          onPress={this.props.goBackToSafety}
+          onPress={this.props.goBackToSafety as () => void}
           style={styles.buttonWrapper}
           width={ButtonWidthTypes.Full}
         />
@@ -189,5 +199,3 @@ export default class PhishingModal extends PureComponent {
     );
   }
 }
-
-PhishingModal.contextType = ThemeContext;

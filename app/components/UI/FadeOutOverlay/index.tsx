@@ -34,7 +34,6 @@ export default class FadeOutOverlay extends PureComponent<
 > {
   static contextType = ThemeContext;
 
-  declare context: React.ContextType<typeof ThemeContext>;
 
   static defaultProps = {
     style: null,
@@ -59,7 +58,7 @@ export default class FadeOutOverlay extends PureComponent<
   }
 
   render() {
-    const colors: Theme['colors'] = this.context?.colors || mockTheme.colors;
+    const colors: Theme['colors'] = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (this.state.done) return null;

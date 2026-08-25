@@ -1,9 +1,9 @@
-/* eslint-disable react/prop-types */
 import React, { PureComponent } from 'react';
 import { View, Animated, Easing, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 
 export const SpinnerSize = {
   MD: 'MD',
@@ -45,27 +45,42 @@ const measures = {
   },
 };
 
-const createStyles = (colors, measures) =>
+type SpinnerMeasures = (typeof measures)[keyof typeof measures];
+
+const createStyles = (
+  colors: Theme['colors'],
+  spinnerMeasures: SpinnerMeasures,
+) =>
   StyleSheet.create({
     view: {
       position: 'relative',
       height: Device.isAndroid()
-        ? measures.Android.height
-        : measures.iOS.height,
-      width: Device.isAndroid() ? measures.Android.width : measures.iOS.width,
+        ? spinnerMeasures.Android.height
+        : spinnerMeasures.iOS.height,
+      width: Device.isAndroid() ? spinnerMeasures.Android.width : spinnerMeasures.iOS.width,
       top: Device.isAndroid() ? -6 : -5.5,
       left: Device.isAndroid() ? -6 : -5.5,
     },
     static: {
       borderWidth: 3.5,
       borderColor: colors.background.alternative,
-      borderRadius: measures.static.borderRadius,
-      width: measures.static.width,
-      height: measures.static.height,
+      borderRadius: spinnerMeasures.static.borderRadius,
+      width: spinnerMeasures.static.width,
+      height: spinnerMeasures.static.height,
     },
   });
 
-export default class AnimatedSpinner extends PureComponent {
+interface AnimatedSpinnerProps {
+  size?: keyof typeof measures;
+  testID?: string;
+}
+
+export default class AnimatedSpinner extends PureComponent<AnimatedSpinnerProps> {
+  static contextType = ThemeContext;
+
+
+  mounted = false;
+
   spinValue = new Animated.Value(0);
 
   state = {
@@ -112,7 +127,7 @@ export default class AnimatedSpinner extends PureComponent {
 
   render() {
     const { size = SpinnerSize.MD } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors, measures[size]);
     const spin = this.spinValue.interpolate({
       inputRange: [0, 1],
@@ -133,4 +148,3 @@ export default class AnimatedSpinner extends PureComponent {
   }
 }
 
-AnimatedSpinner.contextType = ThemeContext;
