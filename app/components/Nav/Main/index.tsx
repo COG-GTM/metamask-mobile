@@ -382,10 +382,12 @@ const Main = (props: MainProps) => {
             [chainId]: true,
           });
         } else {
+          // the controller state types `tokenNetworkFilter` values as strings
+          // while the setter expects booleans
           PreferencesController.setTokenNetworkFilter({
             ...tokenNetworkFilter,
             [chainId]: true,
-          });
+          } as unknown as Record<string, boolean>);
         }
       }
       toastRef?.current?.showToast({
