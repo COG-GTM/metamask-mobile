@@ -47,9 +47,10 @@ export function findRouteNameFromNavigatorState(
     route = route.state;
   }
   while (route?.index !== undefined) {
-    route = route?.routes?.[route.index];
-    if (route?.state) {
-      route = route.state;
+    route = route.routes?.[route.index];
+    // Unguarded on purpose: a missing route throws here, as it did before typing.
+    if ((route as NavigatorRoute).state) {
+      route = (route as NavigatorRoute).state;
     }
   }
 
