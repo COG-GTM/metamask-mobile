@@ -1,9 +1,14 @@
 import React from 'react';
-import CollectibleOverview from './';
+import CollectibleOverviewComponent from './';
 import configureMockStore from 'redux-mock-store';
 import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';
+
+const CollectibleOverview =
+  CollectibleOverviewComponent as unknown as React.FC<
+    Partial<React.ComponentProps<typeof CollectibleOverviewComponent>>
+  >;
 
 const mockStore = configureMockStore();
 const initialState = {
