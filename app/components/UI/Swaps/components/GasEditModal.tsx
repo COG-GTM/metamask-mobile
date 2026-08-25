@@ -359,16 +359,13 @@ function GasEditModal({
           estimatedBaseFee,
           suggestedGasLimit,
         } = EIP1559TransactionDataTemp;
-        if (!maxFeePerGas || !maxPriorityFeePerGas) {
-          return;
-        }
         onGasUpdate(
           {
             maxFeePerGas,
             maxPriorityFeePerGas,
             estimatedBaseFee,
             selected,
-          },
+          } as CustomGasFee,
           suggestedGasLimit,
         );
       } else {

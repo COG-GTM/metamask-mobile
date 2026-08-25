@@ -418,10 +418,14 @@ function TokenSelectModal({
   const handleSearchTextChange = useCallback((text: string) => {
     setSearchString(text);
     if (list.current) {
-      list.current.scrollToOffset({
-        animated: false,
-        offset: 0,
-      });
+      list.current.scrollToOffset(
+        {
+          animated: false,
+          y: 0,
+        } as unknown as Parameters<
+          FlatList<SelectableToken>['scrollToOffset']
+        >[0],
+      );
     }
   }, []);
 
