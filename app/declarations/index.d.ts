@@ -274,6 +274,55 @@ declare module 'react-native-vector-icons/Zocial' {
   export default Zocial;
 }
 
+declare module 'eth-ens-namehash' {
+  const namehash: {
+    hash: (name: string) => string;
+    normalize: (name: string) => string;
+  };
+  export default namehash;
+}
+
+declare module '@metamask/ethjs-query' {
+  class Eth {
+    constructor(provider: unknown);
+  }
+  export default Eth;
+}
+
+declare module '@metamask/ethjs-contract' {
+  interface ContractInstance {
+    [method: string]: (...args: unknown[]) => Promise<unknown[]>;
+  }
+  interface ContractFactory {
+    at: (address: string) => ContractInstance;
+  }
+  type ContractBuilder = (abi: unknown[]) => ContractFactory;
+  type EthContractConstructor = new (eth: unknown) => ContractBuilder;
+  const EthContract: EthContractConstructor;
+  export default EthContract;
+}
+
+declare module 'content-hash' {
+  const contentHash: {
+    decode: (contentHash: string) => string;
+    encode: (codec: string, value: string) => string;
+    getCodec: (contentHash: string) => string;
+  };
+  export default contentHash;
+}
+
+declare module 'multihashes' {
+  const multihash: {
+    encode: (buffer: Uint8Array, code: string | number) => Uint8Array;
+    decode: (buffer: Uint8Array) => { code: number; name: string; length: number; digest: Uint8Array };
+    fromHexString: (hex: string) => Uint8Array;
+    toHexString: (buffer: Uint8Array) => string;
+    fromB58String: (value: string | Uint8Array) => Uint8Array;
+    toB58String: (buffer: Uint8Array) => string;
+  };
+  export default multihash;
+}
+
 declare module '@metamask/contract-metadata' {
   const content: Record<string, TokenListToken>;
   export default content;
