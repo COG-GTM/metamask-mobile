@@ -1,5 +1,8 @@
 import React from 'react';
-import TransactionElement from './';
+import TransactionElementComponent from './';
+
+const TransactionElement =
+  TransactionElementComponent as unknown as React.FC<Record<string, unknown>>;
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';

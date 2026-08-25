@@ -1,10 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import { connect } from 'react-redux';
-import Animated, {
-  useSharedValue,
-  SharedValue,
-} from 'react-native-reanimated';
+import Animated, { useSharedValue, SharedValue } from 'react-native-reanimated';
 import { strings } from '../../../../../locales/i18n';
 import Engine from '../../../../core/Engine';
 import { renderFromWei, fastSplit } from '../../../../util/number';
@@ -200,13 +197,13 @@ function TransactionNotification(props: TransactionNotificationProps) {
   }, [onCloseDetails, onClose]);
 
   const onSpeedUpPress = useCallback(() => {
-    const transactionActionDisabled = validateActionBalance(
+    const actionDisabled = validateActionBalance(
       tx,
       SPEED_UP_RATE,
       accounts,
     );
     setTransactionAction(ACTION_SPEEDUP);
-    setTransactionActionDisabled(transactionActionDisabled);
+    setTransactionActionDisabled(actionDisabled);
     animateActionTo(-WINDOW_WIDTH);
   }, [
     setTransactionAction,
@@ -217,13 +214,13 @@ function TransactionNotification(props: TransactionNotificationProps) {
   ]);
 
   const onCancelPress = useCallback(() => {
-    const transactionActionDisabled = validateActionBalance(
+    const actionDisabled = validateActionBalance(
       tx,
       CANCEL_RATE,
       accounts,
     );
     setTransactionAction(ACTION_CANCEL);
-    setTransactionActionDisabled(transactionActionDisabled);
+    setTransactionActionDisabled(actionDisabled);
     animateActionTo(-WINDOW_WIDTH);
   }, [
     setTransactionAction,
@@ -262,10 +259,10 @@ function TransactionNotification(props: TransactionNotificationProps) {
 
   useEffect(() => {
     async function getTransactionInfo() {
-      const tx = transactions.find(
+      const currentTx = transactions.find(
         ({ id }) => id === currentNotification.transaction?.id,
       );
-      if (!tx) return;
+      if (!currentTx) return;
       const {
         selectedAddress,
         ticker,
@@ -280,9 +277,9 @@ function TransactionNotification(props: TransactionNotificationProps) {
         swapsTransactions,
         swapsTokens,
       } = props;
-      const [transactionElement, transactionDetails] = await decodeTransaction({
+      const [decodedElement, decodedDetails] = await decodeTransaction({
         ...props,
-        tx,
+        tx: currentTx,
         selectedAddress,
         ticker,
         chainId,
@@ -296,7 +293,9 @@ function TransactionNotification(props: TransactionNotificationProps) {
         swapsTransactions,
         swapsTokens,
       });
-      const existingGasPrice = new BigNumber(tx?.txParams?.gasPrice || '0x0');
+      const existingGasPrice = new BigNumber(
+        currentTx?.txParams?.gasPrice || '0x0',
+      );
       const gasFeeValue = fastSplit(
         existingGasPrice
           .times(
@@ -305,15 +304,15 @@ function TransactionNotification(props: TransactionNotificationProps) {
           .toString(),
       ); // strips decimals if any, coming from the 'times' operation
       setGasFee(gasFeeValue);
-      setTx(tx);
-      setTransactionElement(transactionElement);
-      setTransactionDetails(transactionDetails);
+      setTx(currentTx);
+      setTransactionElement(decodedElement);
+      setTransactionDetails(decodedDetails);
     }
     getTransactionInfo();
   }, [
     transactions,
     smartTransactions,
-      currentNotification.transaction?.id,
+    currentNotification.transaction?.id,
     transactionAction,
     props,
   ]);

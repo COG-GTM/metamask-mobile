@@ -79,7 +79,6 @@ interface WebviewErrorProps {
 export default class WebviewError extends PureComponent<WebviewErrorProps> {
   static contextType = ThemeContext;
 
-
   static defaultProps = {
     error: false,
   };
@@ -90,7 +89,8 @@ export default class WebviewError extends PureComponent<WebviewErrorProps> {
 
   render() {
     const { error } = this.props;
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return error ? (
@@ -132,4 +132,3 @@ export default class WebviewError extends PureComponent<WebviewErrorProps> {
     ) : null;
   }
 }
-

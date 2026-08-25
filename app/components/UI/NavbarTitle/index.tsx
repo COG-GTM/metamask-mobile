@@ -87,7 +87,6 @@ interface NavbarTitleProps {
 class NavbarTitle extends PureComponent<NavbarTitleProps> {
   static contextType = ThemeContext;
 
-
   static defaultProps = {
     translate: true,
     showSelectedNetwork: true,
@@ -138,10 +137,7 @@ class NavbarTitle extends PureComponent<NavbarTitleProps> {
     } else if (providerConfig.nickname) {
       name = providerConfig.nickname;
     } else {
-      const networks = Networks as Record<
-        string,
-        { name: string } | undefined
-      >;
+      const networks = Networks as Record<string, { name: string } | undefined>;
       name =
         networks[providerConfig.type]?.name ||
         { ...Networks.rpc, color: null }.name;
@@ -186,10 +182,20 @@ const mapStateToProps = (state: RootState) => ({
   selectedNetworkName: selectNetworkName(state),
 });
 
+type NavbarTitleOwnProps = Pick<
+  NavbarTitleProps,
+  | 'title'
+  | 'translate'
+  | 'disableNetwork'
+  | 'showSelectedNetwork'
+  | 'networkName'
+  | 'children'
+>;
+
 export default withNavigation(
   connect(mapStateToProps)(
     withMetricsAwareness(
       NavbarTitle as unknown as ComponentType<IWithMetricsAwarenessProps>,
     ),
   ) as unknown as Parameters<typeof withNavigation>[0],
-);
+) as unknown as ComponentType<NavbarTitleOwnProps>;

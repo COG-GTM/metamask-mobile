@@ -6,7 +6,8 @@ import {
   Platform,
   Linking,
   TouchableOpacity,
- FlexAlignType } from 'react-native';
+  FlexAlignType,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
@@ -131,7 +132,6 @@ interface PhishingModalProps {
 export default class PhishingModal extends PureComponent<PhishingModalProps> {
   static contextType = ThemeContext;
 
-
   shareToTwitter = () => {
     const tweetText =
       'MetaMask just protected me from a phishing attack! Remember to always stay vigilant when clicking on links. Learn more at https://metamask.io';
@@ -146,7 +146,8 @@ export default class PhishingModal extends PureComponent<PhishingModalProps> {
   };
 
   render() {
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

@@ -100,7 +100,6 @@ interface BrowserBottomBarProps {
 class BrowserBottomBar extends PureComponent<BrowserBottomBarProps> {
   static contextType = ThemeContext;
 
-
   trackSearchEvent = () => {
     this.props.metrics.trackEvent(
       this.props.metrics
@@ -136,7 +135,8 @@ class BrowserBottomBar extends PureComponent<BrowserBottomBarProps> {
       showUrlModal,
       toggleOptions,
     } = this.props;
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const onSearchPress = () => {

@@ -1,5 +1,11 @@
 import React from 'react';
-import { ImageStyle, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import {
+  ImageStyle,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from 'react-native';
 import AssetIcon from '../AssetIcon';
 import Identicon from '../Identicon';
 import isUrl from 'is-url';

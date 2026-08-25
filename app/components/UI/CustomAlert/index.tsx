@@ -1,11 +1,5 @@
 import React, { PureComponent } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  StyleProp,
-  ViewStyle,
-} from 'react-native';
+import { StyleSheet, View, Text, StyleProp, ViewStyle } from 'react-native';
 import Modal from 'react-native-modal';
 import StyledButton from '../StyledButton';
 import { fontStyles } from '../../../styles/common';
@@ -98,9 +92,9 @@ interface CustomAlertProps {
 export default class CustomAlert extends PureComponent<CustomAlertProps> {
   static contextType = ThemeContext;
 
-
   render() {
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -130,4 +124,3 @@ export default class CustomAlert extends PureComponent<CustomAlertProps> {
     );
   }
 }
-

@@ -1,11 +1,5 @@
 import React, { PureComponent } from 'react';
-import {
-  View,
-  StyleSheet,
-  StyleProp,
-  Text,
-  ViewStyle,
-} from 'react-native';
+import { View, StyleSheet, StyleProp, Text, ViewStyle } from 'react-native';
 import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../../styles/common';
 import { connect } from 'react-redux';
@@ -52,7 +46,8 @@ class TabCountIcon extends PureComponent<TabCountIconProps> {
 
   render() {
     const { tabCount, style } = this.props;
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

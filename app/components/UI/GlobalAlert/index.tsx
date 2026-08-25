@@ -37,7 +37,7 @@ const createStyles = (colors: Theme['colors']) => ({
       alignItems: 'center',
       justifyContent: 'center',
       borderRadius: 8,
-    }) as const,
+    } as const),
 });
 
 /**
@@ -70,7 +70,6 @@ interface GlobalAlertProps {
 class GlobalAlert extends PureComponent<GlobalAlertProps> {
   static contextType = ThemeContext;
 
-
   onClose = () => {
     this.props.dismissAlert();
   };
@@ -98,12 +97,14 @@ class GlobalAlert extends PureComponent<GlobalAlertProps> {
   }
 
   getStyles = () => {
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     return createStyles(colors);
   };
 
   renderClipboardAlert = () => {
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = this.getStyles();
 
     return (
@@ -118,9 +119,7 @@ class GlobalAlert extends PureComponent<GlobalAlertProps> {
             color={colors.overlay.inverse}
           />
         </View>
-        <Text style={styles.copyAlertText}>
-          {this.props.data?.msg}
-        </Text>
+        <Text style={styles.copyAlertText}>{this.props.data?.msg}</Text>
       </ElevatedView>
     );
   };

@@ -34,7 +34,6 @@ export default class FadeOutOverlay extends PureComponent<
 > {
   static contextType = ThemeContext;
 
-
   static defaultProps = {
     style: null,
     duration: Device.isAndroid() ? 300 : 300,
@@ -58,7 +57,8 @@ export default class FadeOutOverlay extends PureComponent<
   }
 
   render() {
-    const colors: Theme['colors'] = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors: Theme['colors'] =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (this.state.done) return null;

@@ -57,7 +57,9 @@ const createStyles = (
       height: Device.isAndroid()
         ? spinnerMeasures.Android.height
         : spinnerMeasures.iOS.height,
-      width: Device.isAndroid() ? spinnerMeasures.Android.width : spinnerMeasures.iOS.width,
+      width: Device.isAndroid()
+        ? spinnerMeasures.Android.width
+        : spinnerMeasures.iOS.width,
       top: Device.isAndroid() ? -6 : -5.5,
       left: Device.isAndroid() ? -6 : -5.5,
     },
@@ -77,7 +79,6 @@ interface AnimatedSpinnerProps {
 
 export default class AnimatedSpinner extends PureComponent<AnimatedSpinnerProps> {
   static contextType = ThemeContext;
-
 
   mounted = false;
 
@@ -127,7 +128,8 @@ export default class AnimatedSpinner extends PureComponent<AnimatedSpinnerProps>
 
   render() {
     const { size = SpinnerSize.MD } = this.props;
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors, measures[size]);
     const spin = this.spinValue.interpolate({
       inputRange: [0, 1],
@@ -147,4 +149,3 @@ export default class AnimatedSpinner extends PureComponent<AnimatedSpinnerProps>
     );
   }
 }
-

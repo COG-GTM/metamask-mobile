@@ -44,7 +44,10 @@ class EthereumAddress extends PureComponent<
 
     this.state = {
       ensName: null,
-      address: formatAddress(address as string, type as 'short' | 'mid' | 'full'),
+      address: formatAddress(
+        address as string,
+        type as 'short' | 'mid' | 'full',
+      ),
     };
   }
 

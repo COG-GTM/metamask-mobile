@@ -1,3 +1,3 @@
 export interface BasicFunctionalityComponentProps {
-  handleSwitchToggle: () => void;
+  handleSwitchToggle?: () => void;
 }

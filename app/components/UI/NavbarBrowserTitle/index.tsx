@@ -104,7 +104,6 @@ interface NavbarBrowserTitleProps {
 class NavbarBrowserTitle extends PureComponent<NavbarBrowserTitleProps> {
   static contextType = ThemeContext;
 
-
   onTitlePress = () => {
     this.props.route?.params?.showUrlModal?.();
   };
@@ -128,7 +127,8 @@ class NavbarBrowserTitle extends PureComponent<NavbarBrowserTitleProps> {
 
   render = () => {
     const { https, providerConfig, hostname, error, icon } = this.props;
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const color = networks[providerConfig.type]?.color || null;
     const name = this.getNetworkName(providerConfig);

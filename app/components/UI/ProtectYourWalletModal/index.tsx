@@ -101,7 +101,6 @@ interface ProtectYourWalletModalProps {
 class ProtectYourWalletModal extends PureComponent<ProtectYourWalletModalProps> {
   static contextType = ThemeContext;
 
-
   goToBackupFlow = () => {
     this.props.protectWalletModalNotVisible();
     this.props.navigation.navigate(
@@ -144,7 +143,8 @@ class ProtectYourWalletModal extends PureComponent<ProtectYourWalletModalProps> 
   };
 
   render() {
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

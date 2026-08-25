@@ -23,7 +23,8 @@ const createStyles = (colors: Theme['colors']) =>
     },
   });
 
-const foxImage = require('../../../images/branding/fox.png'); // eslint-disable-line import/no-commonjs
+// eslint-disable-next-line import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const foxImage = require('../../../images/branding/fox.png');
 
 /**
  * View component that displays the MetaMask fox
@@ -32,9 +33,9 @@ const foxImage = require('../../../images/branding/fox.png'); // eslint-disable-
 export default class FoxScreen extends PureComponent {
   static contextType = ThemeContext;
 
-
   render = () => {
-    const colors: Theme['colors'] = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors: Theme['colors'] =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

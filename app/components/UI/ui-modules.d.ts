@@ -23,6 +23,11 @@ declare module 'react-native-progress/Bar' {
   export default ProgressBar;
 }
 
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
 declare module 'react-native-confetti';
 
 declare module '@metamask/react-native-button';
@@ -30,10 +35,7 @@ declare module '@metamask/react-native-button';
 declare module '@metamask/react-native-button/coalesceNonElementChildren' {
   const coalesceNonElementChildren: (
     children: React.ReactNode,
-    mapper: (
-      children: React.ReactNode[],
-      index: number,
-    ) => React.ReactNode,
+    mapper: (children: React.ReactNode[], index: number) => React.ReactNode,
   ) => React.ReactNode[];
   export default coalesceNonElementChildren;
 }
