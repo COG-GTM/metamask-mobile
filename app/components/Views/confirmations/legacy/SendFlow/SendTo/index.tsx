@@ -1,6 +1,5 @@
 import React, { Fragment, PureComponent } from 'react';
 import { View, ScrollView, Alert, Platform, BackHandler } from 'react-native';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { toChecksumAddress } from 'ethereumjs-util';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -66,89 +65,144 @@ import { selectAddressBook } from '../../../../../../selectors/addressBookContro
 
 const dummy = () => true;
 
+interface SendFlowProps {
+  /**
+   * Map representing the address book
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addressBook: any;
+  /**
+   * Network provider chain id
+   */
+  globalChainId: string;
+  /**
+   * Object that represents the navigator
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  /**
+   * Start transaction with asset
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  newAssetTransaction: (asset: any) => void;
+  /**
+   * Selected address as string
+   */
+  selectedAddress?: string;
+  /**
+   * List of accounts from the AccountsController
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  internalAccounts: any[];
+  /**
+   * Current provider ticker
+   */
+  ticker?: string;
+  /**
+   * Action that sets transaction to and ensRecipient in case is available
+   */
+  setRecipient: (
+    from?: string,
+    to?: string,
+    ensRecipient?: string,
+    transactionToName?: string,
+    transactionFromName?: string,
+  ) => void;
+  /**
+   * Set selected in transaction state
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setSelectedAsset: (asset: any) => void;
+  /**
+   * Show alert
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showAlert: (config: any) => void;
+  /**
+   * Network provider type as mainnet
+   */
+  providerType?: string;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+  /**
+   * Indicates whether the current transaction is a deep link transaction
+   */
+  isPaymentRequest?: boolean;
+  /**
+   * Boolean that indicates if the network supports buy
+   */
+  isNativeTokenBuySupported?: boolean;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateParentState?: (state: any) => void;
+  /**
+   * Resets transaction state
+   */
+  resetTransaction: () => void;
+  /**
+   * Boolean to show warning if send to address is on multiple networks
+   */
+  showAmbiguousAcountWarning?: boolean;
+  /**
+   * Object of addresses associated with multiple chains {'id': [address: string]}
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ambiguousAddressEntries?: any;
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metrics: any;
+}
+
+interface SendFlowState {
+  addressError?: string;
+  balanceIsZero: boolean;
+  fromSelectedAddress?: string;
+  toAccount?: string;
+  toSelectedAddressName?: string;
+  toSelectedAddressReady: boolean;
+  toEnsName?: string;
+  toEnsAddressResolved?: string;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  confusableCollection: any[];
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  inputWidth: any;
+  showAmbiguousAcountWarning: boolean;
+  toInputHighlighted?: boolean;
+  addToAddressToAddressBook?: boolean;
+  errorContinue?: boolean;
+  isOnlyWarning?: boolean;
+  isFromAddressBook?: boolean;
+}
+
 /**
  * View that wraps the wraps the "Send" screen
  */
-class SendFlow extends PureComponent {
-  static propTypes = {
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     * Network provider chain id
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func.isRequired,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Action that sets transaction to and ensRecipient in case is available
-     */
-    setRecipient: PropTypes.func,
-    /**
-     * Set selected in transaction state
-     */
-    setSelectedAsset: PropTypes.func,
-    /**
-     * Show alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Network provider type as mainnet
-     */
-    providerType: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Indicates whether the current transaction is a deep link transaction
-     */
-    isPaymentRequest: PropTypes.bool,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNativeTokenBuySupported: PropTypes.bool,
-    updateParentState: PropTypes.func,
-    /**
-     * Resets transaction state
-     */
-    resetTransaction: PropTypes.func,
-    /**
-     * Boolean to show warning if send to address is on multiple networks
-     */
-    showAmbiguousAcountWarning: PropTypes.bool,
-    /**
-     * Object of addresses associated with multiple chains {'id': [address: string]}
-     */
-    ambiguousAddressEntries: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  addressToInputRef = React.createRef();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addressToInputRef = React.createRef<any>();
 
-  state = {
+  hardwareBackPress?: () => boolean;
+
+  state: SendFlowState = {
     addressError: undefined,
     balanceIsZero: false,
     fromSelectedAddress: this.props.selectedAddress,
@@ -166,7 +220,9 @@ class SendFlow extends PureComponent {
     const { navigation, route, resetTransaction } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
-      getSendFlowTitle(
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (getSendFlowTitle as any)(
         'send.send_to',
         navigation,
         route,
@@ -200,7 +256,7 @@ class SendFlow extends PureComponent {
     //Fills in to address and sets the transaction if coming from QR code scan
     const targetAddress = route.params?.txMeta?.target_address;
     if (targetAddress) {
-      this.props.newAssetTransaction(getEther(ticker));
+      this.props.newAssetTransaction(getEther(ticker as string));
       this.onToSelectedAddressChange(targetAddress);
     }
 
@@ -216,7 +272,7 @@ class SendFlow extends PureComponent {
   componentWillUnmount() {
     BackHandler.removeEventListener(
       'hardwareBackPress',
-      this.hardwareBackPress,
+      this.hardwareBackPress as () => boolean,
     );
   }
 
@@ -224,11 +280,13 @@ class SendFlow extends PureComponent {
     const { toAccount } = this.state;
     const { addressBook, globalChainId, internalAccounts } = this.props;
     const networkAddressBook = addressBook[globalChainId] || {};
-    const checksummedAddress = toChecksumAddress(toAccount);
+    const checksummedAddress = toChecksumAddress(toAccount as string);
     return !!(
       networkAddressBook[checksummedAddress] ||
-      internalAccounts.find((account) =>
-        toLowerCaseEquals(account.address, checksummedAddress),
+      internalAccounts.find(
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (account: any) => toLowerCaseEquals(account.address, checksummedAddress),
       )
     );
   };
@@ -240,14 +298,16 @@ class SendFlow extends PureComponent {
       if (!toEnsAddressResolved) {
         addressError = strings('transaction.could_not_resolve_ens');
       }
-    } else if (!isValidHexAddress(toAccount, { mixedCaseUseChecksum: true })) {
+    } else if (
+      !isValidHexAddress(toAccount as string, { mixedCaseUseChecksum: true })
+    ) {
       addressError = strings('transaction.invalid_address');
     }
     this.setState({ addressError });
     return addressError;
   };
 
-  handleNetworkSwitch = (globalChainId) => {
+  handleNetworkSwitch = (globalChainId: string) => {
     try {
       const { showAlert } = this.props;
       const networkName = handleNetworkSwitch(globalChainId);
@@ -262,7 +322,9 @@ class SendFlow extends PureComponent {
           msg: strings('send.warn_network_change') + networkName,
         },
       });
-    } catch (e) {
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
       let alertMessage;
       switch (e.message) {
         case NetworkSwitchErrorType.missingNetworkId:
@@ -352,7 +414,9 @@ class SendFlow extends PureComponent {
     );
   };
 
-  renderAddressError = (addressError) =>
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  renderAddressError = (addressError: any) =>
     addressError === SYMBOL_ERROR ? (
       <Fragment>
         <Text>{strings('transaction.tokenContractAddressWarning_1')}</Text>
@@ -363,27 +427,31 @@ class SendFlow extends PureComponent {
       addressError
     );
 
-  updateParentState = (state) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateParentState = (state: any) => {
     this.setState({ ...state });
   };
 
-  fromAccountBalanceState = (value) => {
+  fromAccountBalanceState = (value: boolean) => {
     this.setState({ balanceIsZero: value });
   };
 
-  setFromAddress = (address) => {
+  setFromAddress = (address: string) => {
     this.setState({ fromSelectedAddress: address });
   };
 
-  getAddressNameFromBookOrInternalAccounts = (toAccount) => {
+  getAddressNameFromBookOrInternalAccounts = (toAccount?: string) => {
     const { addressBook, internalAccounts, globalChainId } = this.props;
     if (!toAccount) return;
 
     const networkAddressBook = addressBook[globalChainId] || {};
 
     const checksummedAddress = toChecksumAddress(toAccount);
-    const matchingAccount = internalAccounts.find((account) =>
-      toLowerCaseEquals(account.address, checksummedAddress),
+    const matchingAccount = internalAccounts.find(
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (account: any) => toLowerCaseEquals(account.address, checksummedAddress),
     );
 
     return networkAddressBook[checksummedAddress]
@@ -393,7 +461,7 @@ class SendFlow extends PureComponent {
       : null;
   };
 
-  validateAddressOrENSFromInput = async (toAccount) => {
+  validateAddressOrENSFromInput = async (toAccount: string) => {
     const { addressBook, internalAccounts, globalChainId } = this.props;
     const {
       addressError,
@@ -405,12 +473,16 @@ class SendFlow extends PureComponent {
       errorContinue,
       isOnlyWarning,
       confusableCollection,
-    } = await validateAddressOrENS(
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } = (await validateAddressOrENS(
       toAccount,
       addressBook,
       internalAccounts,
-      globalChainId,
-    );
+      globalChainId as `0x${string}`,
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    )) as any;
 
     this.setState({
       addressError,
@@ -425,7 +497,7 @@ class SendFlow extends PureComponent {
     });
   };
 
-  onToSelectedAddressChange = (toAccount) => {
+  onToSelectedAddressChange = (toAccount: string) => {
     const currentChain =
       this.props.ambiguousAddressEntries &&
       this.props.ambiguousAddressEntries[this.props.globalChainId];
@@ -540,7 +612,7 @@ class SendFlow extends PureComponent {
             confusableCollectionArray={
               (!existingContact && confusableCollection) || []
             }
-            isFromAddressBook={existingAddressName?.length > 0}
+            isFromAddressBook={(existingAddressName?.length ?? 0) > 0}
             onToSelectedAddressChange={this.onToSelectedAddressChange}
             highlighted={false}
           />
@@ -560,7 +632,7 @@ class SendFlow extends PureComponent {
 
         {!toSelectedAddressReady ? (
           <AddressList
-            chainId={globalChainId}
+            chainId={globalChainId as `0x${string}`}
             inputSearch={toAccount}
             onIconPress={this.onIconPress}
             onAccountPress={this.onToSelectedAddressChange}
@@ -586,7 +658,7 @@ class SendFlow extends PureComponent {
                 <View
                   style={[
                     styles.confusabeError,
-                    displayAsWarning && styles.confusabeWarning,
+                    !!displayAsWarning && styles.confusabeWarning,
                   ]}
                 >
                   <View style={styles.warningIcon}>
@@ -606,16 +678,16 @@ class SendFlow extends PureComponent {
                     </Text>
                     <Text style={styles.confusableMsg}>
                       {strings('transaction.confusable_msg')}{' '}
-                      {explanations.join(', ')}.
+                      {(explanations || []).join(', ')}.
                     </Text>
                   </View>
                 </View>
               )}
               <AddToAddressBookWrapper
-                setToAddressName={(toSelectedAddressName) =>
+                setToAddressName={(toSelectedAddressName: string) =>
                   this.setState({ toSelectedAddressName })
                 }
-                address={toEnsAddressResolved || toAccount}
+                address={(toEnsAddressResolved || toAccount) as string}
                 defaultNull
               >
                 <Text
@@ -668,8 +740,8 @@ class SendFlow extends PureComponent {
                   //Will be here just to ensure that we don't break existing conditions
                   disabled={
                     !(
-                      (isValidHexAddress(toEnsAddressResolved) ||
-                        isValidHexAddress(toAccount)) &&
+                      (isValidHexAddress(toEnsAddressResolved as string) ||
+                        isValidHexAddress(toAccount as string)) &&
                       toSelectedAddressReady
                     )
                   }
@@ -687,7 +759,9 @@ class SendFlow extends PureComponent {
 
 SendFlow.contextType = ThemeContext;
 
-const mapStateToProps = (state) => {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => {
   const globalChainId = selectEvmChainId(state);
 
   return {
@@ -707,32 +781,44 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
   setRecipient: (
-    from,
-    to,
-    ensRecipient,
-    transactionToName,
-    transactionFromName,
+    from?: string,
+    to?: string,
+    ensRecipient?: string,
+    transactionToName?: string,
+    transactionFromName?: string,
   ) =>
     dispatch(
       setRecipient(
-        from,
-        to,
-        ensRecipient,
-        transactionToName,
-        transactionFromName,
+        from as string,
+        to as string,
+        ensRecipient as string,
+        transactionToName as string,
+        transactionFromName as string,
       ),
     ),
-  newAssetTransaction: (selectedAsset) =>
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  newAssetTransaction: (selectedAsset: any) =>
     dispatch(newAssetTransaction(selectedAsset)),
-  setSelectedAsset: (selectedAsset) =>
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setSelectedAsset: (selectedAsset: any) =>
     dispatch(setSelectedAsset(selectedAsset)),
-  showAlert: (config) => dispatch(showAlert(config)),
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showAlert: (config: any) => dispatch(showAlert(config)),
   resetTransaction: () => dispatch(resetTransaction()),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(SendFlow));
+)(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  withMetricsAwareness(SendFlow as any),
+);

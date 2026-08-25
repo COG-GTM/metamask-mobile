@@ -1,8 +1,13 @@
 import React, { PureComponent } from 'react';
 import { TransactionEnvelopeType } from '@metamask/transaction-controller';
-import { StyleSheet, AppState, Alert, InteractionManager } from 'react-native';
+import {
+  StyleSheet,
+  AppState,
+  Alert,
+  InteractionManager,
+  NativeEventSubscription,
+} from 'react-native';
 import Engine from '../../../../../core/Engine';
-import PropTypes from 'prop-types';
 import TransactionEditor from './components/TransactionEditor';
 import Modal from 'react-native-modal';
 import { safeBNToHex } from '../../../../../util/number';
@@ -72,81 +77,101 @@ const styles = StyleSheet.create({
   },
 });
 
+interface ApprovalProps {
+  /**
+   * A string that represents the selected address
+   */
+  selectedAddress?: string;
+  /**
+   * react-navigation object used for switching between screens
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  /**
+   * Action that cleans transaction state
+   */
+  resetTransaction: () => void;
+  /**
+   * Transaction state
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction: any;
+  /**
+   * List of transactions
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transactions: any[];
+  /**
+   * A string representing the network name
+   */
+  networkType?: string;
+  /**
+   * Hide dapp transaction modal
+   */
+  hideModal: () => void;
+  /**
+   * Tells whether or not dApp transaction modal is visible
+   */
+  dappTransactionModalVisible?: boolean;
+  /**
+   * Indicates whether custom nonce should be shown in transaction editor
+   */
+  showCustomNonce: boolean;
+  /**
+   * A string representing the network chainId
+   */
+  chainId?: string;
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metrics: any;
+  /**
+   * Boolean that indicates if smart transaction should be used
+   */
+  shouldUseSmartTransaction?: boolean;
+  /**
+   * Object containing confirmation metrics by id
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  confirmationMetricsById: any;
+  /**
+   * Object containing blockaid validation response for confirmation
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  securityAlertResponse?: any;
+  /**
+   * Object containing simulation data
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  simulationData?: any;
+}
+
+interface ApprovalState {
+  mode: string;
+  transactionHandled: boolean;
+  transactionConfirmed: boolean;
+  isChangeInSimulationModalOpen: boolean;
+}
+
 /**
  * PureComponent that manages transaction approval from the dapp browser
  */
-class Approval extends PureComponent {
-  appStateListener;
+class Approval extends PureComponent<ApprovalProps, ApprovalState> {
+  appStateListener?: NativeEventSubscription;
 
-  #transactionFinishedListener;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  #transactionFinishedListener: any;
 
-  static propTypes = {
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * react-navigation object used for switching between screens
-     */
-    navigation: PropTypes.object.isRequired,
-    /**
-     * Action that cleans transaction state
-     */
-    resetTransaction: PropTypes.func.isRequired,
-    /**
-     * Transaction state
-     */
-    transaction: PropTypes.object.isRequired,
-    /**
-     * List of transactions
-     */
-    transactions: PropTypes.array,
-    /**
-     * A string representing the network name
-     */
-    networkType: PropTypes.string,
-    /**
-     * Hide dapp transaction modal
-     */
-    hideModal: PropTypes.func,
-    /**
-     * Tells whether or not dApp transaction modal is visible
-     */
-    dappTransactionModalVisible: PropTypes.bool,
-    /**
-     * Indicates whether custom nonce should be shown in transaction editor
-     */
-    showCustomNonce: PropTypes.bool,
-
-    /**
-     * A string representing the network chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-
-    /**
-     * Object containing confirmation metrics by id
-     */
-    confirmationMetricsById: PropTypes.object,
-
-    /**
-     * Object containing blockaid validation response for confirmation
-     */
-    securityAlertResponse: PropTypes.object,
-
-    /**
-     * Object containing simulation data
-     */
-    simulationData: PropTypes.object,
-  };
+  declare context: React.ContextType<typeof ThemeContext>;
 
   state = {
     mode: REVIEW,
@@ -177,7 +202,7 @@ class Approval extends PureComponent {
       const { KeyringController } = Engine.context;
 
       if (!transactionHandled) {
-        if (isQRHardwareAccount(selectedAddress)) {
+        if (selectedAddress && isQRHardwareAccount(selectedAddress)) {
           KeyringController.cancelQRSignRequest();
         } else {
           Engine.rejectPendingApproval(
@@ -206,7 +231,9 @@ class Approval extends PureComponent {
     }
   };
 
-  isTxStatusCancellable = (transaction) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  isTxStatusCancellable = (transaction: any) => {
     if (
       transaction?.status === TX_SUBMITTED ||
       transaction?.status === TX_REJECTED ||
@@ -219,12 +246,14 @@ class Approval extends PureComponent {
     return true;
   };
 
-  handleAppStateChange = (appState) => {
+  handleAppStateChange = (appState: string) => {
     try {
       if (appState !== 'active') {
         const { transaction, transactions } = this.props;
         const currentTransaction = transactions.find(
-          (tx) => tx.id === transaction.id,
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (tx: any) => tx.id === transaction.id,
         );
 
         if (transaction?.id && this.isTxStatusCancellable(currentTransaction)) {
@@ -283,7 +312,9 @@ class Approval extends PureComponent {
       // Check if origin is WalletConnect
       const wc2Manager = await WC2Manager.getInstance();
       const sessions = wc2Manager.getSessions();
-      this.originIsWalletConnect = sessions.some((session) => {
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.originIsWalletConnect = sessions.some((session: any) => {
         // Otherwise, compare the origin with the metadata URL
         if (
           session.peer.metadata.url === origin ||
@@ -319,7 +350,11 @@ class Approval extends PureComponent {
    */
   trackEditScreen = async () => {
     const { transaction, metrics } = this.props;
-    const actionKey = await getTransactionReviewActionKey({ transaction });
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const actionKey = await (getTransactionReviewActionKey as any)({
+      transaction,
+    });
     metrics.trackEvent(
       metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)
@@ -370,7 +405,12 @@ class Approval extends PureComponent {
       : {};
   };
 
-  getAnalyticsParams = ({ gasEstimateType, gasSelected } = {}) => {
+  getAnalyticsParams = (
+    {
+      gasEstimateType,
+      gasSelected,
+    }: { gasEstimateType?: string; gasSelected?: string | null } = {},
+  ) => {
     const { chainId, transaction, selectedAddress, shouldUseSmartTransaction } =
       this.props;
 
@@ -392,17 +432,21 @@ class Approval extends PureComponent {
       const transactionMeta = TransactionController.getTransactions({
         chainId,
         searchCriteria: { id: transaction.id },
-      })?.[0];
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any)?.[0];
 
       const smartTransactionMetricsProperties =
-        getSmartTransactionMetricsProperties(
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (getSmartTransactionMetricsProperties as any)(
           SmartTransactionsController,
           transactionMeta,
         );
 
       return {
         ...baseParams,
-        account_type: getAddressAccountType(selectedAddress),
+        account_type: selectedAddress && getAddressAccountType(selectedAddress),
         chain_id: getDecimalChainId(chainId),
         active_currency: { value: selectedAsset?.symbol, anonymous: true },
         gas_estimate_type: gasEstimateType,
@@ -411,7 +455,9 @@ class Approval extends PureComponent {
         is_smart_transaction: shouldUseSmartTransaction,
         ...smartTransactionMetricsProperties,
       };
-    } catch (error) {
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       Logger.error(
         error,
         'Error while getting analytics params for approval screen',
@@ -459,7 +505,13 @@ class Approval extends PureComponent {
     );
   };
 
-  onLedgerConfirmation = (approve, transactionId, gaParams) => {
+  onLedgerConfirmation = (
+    approve: boolean,
+    transactionId: string,
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    gaParams: any,
+  ) => {
     try {
       //manual cancel from UI when transaction is awaiting from ledger confirmation
       if (!approve) {
@@ -494,7 +546,13 @@ class Approval extends PureComponent {
   /**
    * Callback on confirm transaction
    */
-  onConfirm = async ({ gasEstimateType, EIP1559GasData, gasSelected }) => {
+  onConfirm = async ({
+    gasEstimateType,
+    EIP1559GasData,
+    gasSelected,
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }: any) => {
     const { KeyringController, ApprovalController } = Engine.context;
     const {
       transactions,
@@ -546,7 +604,9 @@ class Approval extends PureComponent {
       this.#transactionFinishedListener =
         Engine.controllerMessenger.subscribeOnceIf(
           'TransactionController:transactionFinished',
-          (transactionMeta) => {
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (transactionMeta: any) => {
             if (transactionMeta.status === 'submitted') {
               if (!isLedgerAccount) {
                 this.setState({ transactionHandled: true });
@@ -563,11 +623,17 @@ class Approval extends PureComponent {
               );
             }
           },
-          (transactionMeta) => transactionMeta.id === transaction.id,
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (transactionMeta: any) => transactionMeta.id === transaction.id,
         );
       await KeyringController.resetQRKeyringState();
 
-      const fullTx = transactions.find(({ id }) => id === transaction.id);
+      const fullTx = transactions.find(
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ({ id }: any) => id === transaction.id,
+      );
 
       if (fullTx.txParams.type !== TransactionEnvelopeType.legacy) {
         // For EIP-1559 transactions, we need to remove gasPrice as it's not compatible
@@ -581,7 +647,9 @@ class Approval extends PureComponent {
         },
       };
 
-      await updateTransaction(updatedTx);
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (updateTransaction as any)(updatedTx);
 
       // For Ledger Accounts we handover the signing to the confirmation flow
       if (isLedgerAccount) {
@@ -593,13 +661,15 @@ class Approval extends PureComponent {
           ...createLedgerTransactionModalNavDetails({
             transactionId: transaction.id,
             deviceId,
-            onConfirmationComplete: (approve) =>
+            onConfirmationComplete: (approve: boolean) =>
               this.onLedgerConfirmation(approve, transaction.id, {
                 ...this.getAnalyticsParams({ gasEstimateType, gasSelected }),
                 ...this.getTransactionMetrics(),
               }),
             type: 'signTransaction',
-          }),
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any),
         );
         this.props.hideModal();
         return;
@@ -610,7 +680,9 @@ class Approval extends PureComponent {
       });
 
       this.showWalletConnectNotification(true);
-    } catch (error) {
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       if (
         !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
         !error?.message.startsWith(STX_NO_HASH_ERROR)
@@ -660,7 +732,7 @@ class Approval extends PureComponent {
    *
    * @param mode - Transaction mode, review or edit
    */
-  onModeChange = (mode) => {
+  onModeChange = (mode: string) => {
     const { navigation } = this.props;
     navigation && navigation.setParams({ mode });
     this.setState({ mode });
@@ -677,7 +749,12 @@ class Approval extends PureComponent {
    * @param {object} transaction - Transaction object
    * @param {object} selectedAsset - Asset object
    */
-  prepareTransaction = ({ EIP1559GasData, gasEstimateType }) => {
+  prepareTransaction = ({
+    EIP1559GasData,
+    gasEstimateType,
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }: any) => {
     const { transaction: rawTransaction, showCustomNonce } = this.props;
     const { assetType, gas, gasPrice, selectedAsset } = rawTransaction;
 
@@ -738,7 +815,7 @@ class Approval extends PureComponent {
       >
         <TransactionEditor
           promptedFromApproval
-          mode={mode}
+          mode={mode as 'review' | 'edit'}
           onCancel={this.onCancel}
           onConfirm={this.onConfirm}
           onModeChange={this.onModeChange}
@@ -750,7 +827,9 @@ class Approval extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
 
@@ -769,7 +848,9 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
   resetTransaction: () => dispatch(resetTransaction()),
 });
 
@@ -778,4 +859,8 @@ Approval.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Approval));
+)(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  withMetricsAwareness(Approval as any),
+);

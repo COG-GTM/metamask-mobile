@@ -118,6 +118,10 @@ interface TransactionEditorProps {
    */
   promptedFromApproval?: boolean;
   /**
+   * Whether the dapp transaction modal is visible
+   */
+  dappTransactionModalVisible?: boolean;
+  /**
    * Current selected ticker
    */
   ticker?: string;

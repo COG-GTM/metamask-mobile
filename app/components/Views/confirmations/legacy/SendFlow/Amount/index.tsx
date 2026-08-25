@@ -21,7 +21,6 @@ import {
 } from '../../../../../../actions/transaction';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
 import StyledButton from '../../../../../UI/StyledButton';
-import PropTypes from 'prop-types';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Modal from 'react-native-modal';
@@ -58,7 +57,7 @@ import ErrorMessage from '../ErrorMessage';
 import { getGasLimit } from '../../../../../../util/custom-gas';
 import Engine from '../../../../../../core/Engine';
 import CollectibleMedia from '../../../../../UI/CollectibleMedia';
-import collectiblesTransferInformation from '../../../../../../util/collectibles-transfer';
+import collectiblesTransferInformationRaw from '../../../../../../util/collectibles-transfer.json';
 import { strings } from '../../../../../../../locales/i18n';
 import Device from '../../../../../../util/device';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
@@ -111,9 +110,16 @@ import { isNativeToken } from '../../../utils/generic';
 import { selectConfirmationRedesignFlags } from '../../../../../../selectors/featureFlagController/confirmations';
 import { MMM_ORIGIN } from '../../../constants/confirmations';
 
+const collectiblesTransferInformation: Record<
+  string,
+  { tradable: boolean; method?: string }
+> = collectiblesTransferInformationRaw;
+
 const KEYBOARD_OFFSET = Device.isSmallDevice() ? 80 : 120;
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -375,134 +381,182 @@ const createStyles = (colors) =>
     },
   });
 
+interface AmountProps {
+  /**
+   * Map of accounts to information objects including balances
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  accounts: any;
+  /**
+   * Array of collectible objects
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  collectibles: any[];
+  /**
+   * An array that represents the user collectible contracts
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  collectibleContracts: any[];
+  /**
+   * Object containing token balances in the format address => balance
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contractBalances: any;
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate: number;
+  /**
+   * Currency code of the currently-active currency
+   */
+  currentCurrency: string;
+  /**
+   * Object containing token exchange rates in the format address => exchangeRate
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contractExchangeRates?: any;
+  /**
+   * Object that represents the navigator
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  /**
+   * Object that contains navigation props
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+  /**
+   * A string that represents the selected address
+   */
+  selectedAddress?: string;
+  /**
+   * An array that represents the user tokens
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokens: any[];
+  /**
+   * Current provider ticker
+   */
+  ticker?: string;
+  /**
+   * Set selected in transaction state
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setSelectedAsset: (asset: any) => void;
+  /**
+   * Set transaction object to be sent
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prepareTransaction: (transaction: any) => void;
+  /**
+   * Primary currency, either ETH or Fiat
+   */
+  primaryCurrency?: string;
+  /**
+   * Selected asset from current transaction state
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectedAsset: any;
+  /**
+   * Current transaction state
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transactionState: any;
+  /**
+   * Network provider type as mainnet
+   */
+  providerType?: string;
+  /**
+   * function to call when the 'Next' button is clicked
+   */
+  onConfirm?: () => void;
+  /**
+   * Indicates whether the current transaction is a deep link transaction
+   */
+  isPaymentRequest?: boolean;
+  /**
+   * Resets transaction state
+   */
+  resetTransaction: () => void;
+  /**
+   * Boolean that indicates if the network supports buy
+   */
+  isNetworkBuyNativeTokenSupported?: boolean;
+  /**
+   * Boolean that indicates if the swap is live
+   */
+  swapsIsLive?: boolean;
+  /**
+   * String that indicates the current chain id
+   */
+  globalChainId?: string;
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metrics: any;
+  /**
+   * Gas fee estimates for the transaction.
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gasFeeEstimates: any;
+  /**
+   * Type of gas fee estimate provided by the gas fee controller.
+   */
+  gasEstimateType?: string;
+  /**
+   * Function that sets the max value mode
+   */
+  setMaxValueMode: (maxValueMode: boolean) => void;
+  /**
+   * Network client id
+   */
+  globalNetworkClientId: string;
+  /**
+   * Boolean that indicates if the redesigned transfer confirmation is enabled
+   */
+  isRedesignedTransferConfirmationEnabled?: boolean;
+}
+
+interface AmountState {
+  amountError?: string;
+  inputValue?: string;
+  inputValueConversion?: string;
+  renderableInputValueConversion?: string;
+  assetsModalVisible: boolean;
+  internalPrimaryCurrencyIsCrypto: boolean;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  estimatedTotalGas?: any;
+  hasExchangeRate: boolean;
+  isRedesignedTransferTransactionLoading: boolean;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  maxFiatInput?: any;
+  currentBalance?: string;
+}
+
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Amount extends PureComponent {
-  static propTypes = {
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * Array of collectible objects
-     */
-    collectibles: PropTypes.array,
-    /**
-     * An array that represents the user collectible contracts
-     */
-    collectibleContracts: PropTypes.array,
-    /**
-     * Object containing token balances in the format address => balance
-     */
-    contractBalances: PropTypes.object,
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that contains navigation props
-     */
-    route: PropTypes.object,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * An array that represents the user tokens
-     */
-    tokens: PropTypes.array,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Set selected in transaction state
-     */
-    setSelectedAsset: PropTypes.func,
-    /**
-     * Set transaction object to be sent
-     */
-    prepareTransaction: PropTypes.func,
-    /**
-     * Primary currency, either ETH or Fiat
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Selected asset from current transaction state
-     */
-    selectedAsset: PropTypes.object,
-    /**
-     * Current transaction state
-     */
-    transactionState: PropTypes.object,
-    /**
-     * Network provider type as mainnet
-     */
-    providerType: PropTypes.string,
-    /**
-     * function to call when the 'Next' button is clicked
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Indicates whether the current transaction is a deep link transaction
-     */
-    isPaymentRequest: PropTypes.bool,
-    /**
-     * Resets transaction state
-     */
-    resetTransaction: PropTypes.func,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNetworkBuyNativeTokenSupported: PropTypes.bool,
-    /**
-     * Boolean that indicates if the swap is live
-     */
-    swapsIsLive: PropTypes.bool,
-    /**
-     * String that indicates the current chain id
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Gas fee estimates for the transaction.
-     */
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * Type of gas fee estimate provided by the gas fee controller.
-     */
-    gasEstimateType: PropTypes.string,
-    /**
-     * Function that sets the max value mode
-     */
-    setMaxValueMode: PropTypes.func,
-    /**
-     * Network client id
-     */
-    globalNetworkClientId: PropTypes.string,
-    /**
-     * Boolean that indicates if the redesigned transfer confirmation is enabled
-     */
-    isRedesignedTransferConfirmationEnabled: PropTypes.bool,
-  };
+class Amount extends PureComponent<AmountProps, AmountState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: AmountState = {
     amountError: undefined,
     inputValue: undefined,
     inputValueConversion: undefined,
@@ -514,15 +568,21 @@ class Amount extends PureComponent {
     isRedesignedTransferTransactionLoading: false,
   };
 
-  amountInput = React.createRef();
-  tokens = [];
-  collectibles = [];
+  amountInput = React.createRef<TextInput>();
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokens: any[] = [];
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  collectibles: any[] = [];
 
   updateNavBar = () => {
     const { navigation, route, resetTransaction } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
-      getSendFlowTitle(
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (getSendFlowTitle as any)(
         'send.amount',
         navigation,
         route,
@@ -548,7 +608,7 @@ class Amount extends PureComponent {
     this.updateNavBar();
     navigation.setParams({ providerType, isPaymentRequest });
 
-    this.tokens = [getEther(ticker), ...tokens];
+    this.tokens = [getEther(ticker as string), ...tokens];
     this.collectibles = this.processCollectibles();
     // Wait until navigation finishes to focus
     InteractionManager.runAfterInteractions(() =>
@@ -572,12 +632,16 @@ class Amount extends PureComponent {
         mediumGasFeeEstimates.suggestedMaxFeePerGas,
       );
       const gasLimitHex = BNToHex(gas);
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const gasHexes = calculateEIP1559GasFeeHexes({
         gasLimitHex,
         estimatedBaseFeeHex,
         suggestedMaxFeePerGasHex,
         suggestedMaxPriorityFeePerGasHex,
-      });
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
       this.setState({
         estimatedTotalGas: hexToBN(gasHexes.gasFeeMaxHex),
       });
@@ -585,10 +649,14 @@ class Amount extends PureComponent {
       const gasPrice = hexToBN(
         decGWEIToHexWEI(gasFeeEstimates[AppConstants.GAS_OPTIONS.MEDIUM]),
       );
-      this.setState({ estimatedTotalGas: gas.mul(gasPrice) });
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.setState({ estimatedTotalGas: gas.mul(gasPrice as any) });
     } else {
       const gasPrice = hexToBN(decGWEIToHexWEI(gasFeeEstimates.gasPrice));
-      this.setState({ estimatedTotalGas: gas.mul(gasPrice) });
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.setState({ estimatedTotalGas: gas.mul(gasPrice as any) });
     }
 
     const hasExchangeRate = this.hasExchangeRate();
@@ -636,7 +704,11 @@ class Amount extends PureComponent {
       selectedAddress,
     } = this.props;
     try {
-      return await NftController.isNftOwner(selectedAddress, address, tokenId);
+      return await NftController.isNftOwner(
+        selectedAddress as string,
+        address,
+        tokenId,
+      );
     } catch (e) {
       return false;
     }
@@ -668,15 +740,19 @@ class Amount extends PureComponent {
       if (maxFiatInput) {
         value = `${renderFromWei(
           fiatNumberToWei(
-            handleWeiNumber(maxFiatInput),
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            handleWeiNumber(maxFiatInput) as any,
             this.props.conversionRate,
-          ),
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ) as any,
           18,
         )}`;
       }
     }
     if (value && value.includes(',')) {
-      value = inputValue.replace(',', '.');
+      value = (inputValue as string).replace(',', '.');
     }
 
     value = formatValueToMatchTokenDecimals(value, selectedAsset.decimals);
@@ -740,7 +816,9 @@ class Amount extends PureComponent {
       transactionState: { transaction, transactionTo },
     } = this.props;
 
-    const collectibleTransferTransactionProperties = {};
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const collectibleTransferTransactionProperties: any = {};
 
     const collectibleTransferInformation =
       collectiblesTransferInformation[selectedAsset.address.toLowerCase()];
@@ -775,7 +853,9 @@ class Amount extends PureComponent {
     return collectibleTransferTransactionProperties;
   }
 
-  prepareTransaction = async (value) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prepareTransaction = async (value: any) => {
     const {
       prepareTransaction,
       selectedAsset,
@@ -785,7 +865,9 @@ class Amount extends PureComponent {
     if (isNativeToken(selectedAsset)) {
       transaction.data = '0x';
       transaction.to = transactionTo;
-      transaction.value = BNToHex(toWei(value));
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      transaction.value = BNToHex(toWei(value) as any);
     } else if (selectedAsset.tokenId) {
       const collectibleTransferTransactionProperties =
         this.getCollectibleTranferTransactionProperties();
@@ -810,7 +892,10 @@ class Amount extends PureComponent {
    * @param {string} - Crypto value
    * @returns - Whether there is an error with the amount
    */
-  validateAmount = (inputValue, internalPrimaryCurrencyIsCrypto) => {
+  validateAmount = (
+    inputValue?: string,
+    internalPrimaryCurrencyIsCrypto?: boolean,
+  ) => {
     const { accounts, selectedAddress, selectedAsset, contractBalances } =
       this.props;
     const { estimatedTotalGas, inputValueConversion } = this.state;
@@ -821,11 +906,13 @@ class Amount extends PureComponent {
     }
 
     let weiBalance, weiInput, amountError;
-    if (isDecimal(value)) {
+    if (isDecimal(value as string)) {
       // toWei can throw error if input is not a number: Error: while converting number to string, invalid number value
-      let weiValue = 0;
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let weiValue: any = 0;
       try {
-        weiValue = toWei(value);
+        weiValue = toWei(value as string);
       } catch (error) {
         amountError = strings('transaction.invalid_amount');
       }
@@ -836,14 +923,15 @@ class Amount extends PureComponent {
 
       if (!amountError) {
         if (isNativeToken(selectedAsset)) {
-          weiBalance = hexToBN(accounts[selectedAddress].balance);
+          weiBalance = hexToBN(accounts[selectedAddress as string].balance);
           weiInput = weiValue.add(estimatedTotalGas);
         } else {
           weiBalance = hexToBN(contractBalances[selectedAsset.address]);
-          weiInput = toTokenMinimalUnit(value, selectedAsset.decimals);
+          weiInput = toTokenMinimalUnit(value as string, selectedAsset.decimals);
         }
         // TODO: weiBalance is not always guaranteed to be type BN. Need to consolidate type.
-        amountError = gte(weiBalance, weiInput)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        amountError = gte(weiBalance as any, weiInput as any)
           ? undefined
           : strings('transaction.insufficient');
       }
@@ -891,10 +979,12 @@ class Amount extends PureComponent {
     const tokenBalance = contractBalances[selectedAsset.address] || '0x0';
     let input;
     if (isNativeToken(selectedAsset)) {
-      const balanceBN = hexToBN(accounts[selectedAddress].balance);
+      const balanceBN = hexToBN(accounts[selectedAddress as string].balance);
       const realMaxValue = balanceBN.sub(estimatedTotalGas);
       const maxValue =
-        balanceBN.isZero() || realMaxValue.isNeg() ? hexToBN('0x0') : realMaxValue;
+        balanceBN.isZero() || realMaxValue.isNeg()
+          ? hexToBN('0x0')
+          : realMaxValue;
       if (internalPrimaryCurrencyIsCrypto) {
         input = fromWei(maxValue);
       } else {
@@ -923,7 +1013,9 @@ class Amount extends PureComponent {
     this.onInputChange(input, undefined, true);
   };
 
-  onInputChange = (inputValue, selectedAsset, useMax) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onInputChange = (inputValue?: any, selectedAsset?: any, useMax?: boolean) => {
     const {
       contractExchangeRates,
       conversionRate,
@@ -953,7 +1045,9 @@ class Amount extends PureComponent {
     selectedAsset = selectedAsset || this.props.selectedAsset;
     if (isNativeToken(selectedAsset)) {
       // toWei can throw error if input is not a number: Error: while converting number to string, invalid number value
-      let weiValue = 0;
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let weiValue: any = 0;
 
       try {
         weiValue = toWei(processedInputValue);
@@ -971,7 +1065,9 @@ class Amount extends PureComponent {
         )}`;
       } else {
         inputValueConversion = `${renderFromWei(
-          fiatNumberToWei(processedInputValue, conversionRate),
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          fiatNumberToWei(processedInputValue as any, conversionRate) as any,
         )}`;
         renderableInputValueConversion = `${inputValueConversion} ${processedTicker}`;
       }
@@ -995,11 +1091,15 @@ class Amount extends PureComponent {
       } else {
         inputValueConversion = `${renderFromTokenMinimalUnit(
           fiatNumberToTokenMinimalUnit(
-            processedInputValue,
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            processedInputValue as any,
             conversionRate,
             exchangeRate,
             selectedAsset.decimals,
-          ),
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ) as any,
           selectedAsset.decimals,
         )}`;
         renderableInputValueConversion = `${inputValueConversion} ${selectedAsset.symbol}`;
@@ -1023,15 +1123,20 @@ class Amount extends PureComponent {
     this.setState({ assetsModalVisible: !assetsModalVisible });
   };
 
-  handleSelectedAssetBalance = (selectedAsset, renderableBalance) => {
+  handleSelectedAssetBalance = (
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    selectedAsset: any,
+    renderableBalance?: string,
+  ) => {
     const { accounts, selectedAddress, contractBalances } = this.props;
     let currentBalance;
     if (renderableBalance) {
       currentBalance = `${renderableBalance} ${selectedAsset.symbol}`;
     } else if (isNativeToken(selectedAsset)) {
-      currentBalance = `${renderFromWei(accounts[selectedAddress].balance)} ${
-        selectedAsset.symbol
-      }`;
+      currentBalance = `${renderFromWei(
+        accounts[selectedAddress as string].balance,
+      )} ${selectedAsset.symbol}`;
     } else {
       currentBalance = `${renderFromTokenMinimalUnit(
         contractBalances[selectedAsset.address],
@@ -1041,7 +1146,9 @@ class Amount extends PureComponent {
     this.setState({ currentBalance });
   };
 
-  pickSelectedAsset = (selectedAsset) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pickSelectedAsset = (selectedAsset: any) => {
     this.toggleAssetsModal();
     this.props.setSelectedAsset(selectedAsset);
     if (!selectedAsset.tokenId) {
@@ -1058,14 +1165,18 @@ class Amount extends PureComponent {
     }
   };
 
-  assetKeyExtractor = (asset) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  assetKeyExtractor = (asset: any) => {
     if (asset.tokenId) {
       return asset.address + asset.tokenId;
     }
     return asset.address;
   };
 
-  renderToken = (token, index) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  renderToken = (token: any, index?: number) => {
     const {
       accounts,
       selectedAddress,
@@ -1080,9 +1191,9 @@ class Amount extends PureComponent {
     const styles = createStyles(colors);
 
     if (isNativeToken(token)) {
-      balance = renderFromWei(accounts[selectedAddress].balance);
+      balance = renderFromWei(accounts[selectedAddress as string].balance);
       balanceFiat = weiToFiat(
-        hexToBN(accounts[selectedAddress].balance),
+        hexToBN(accounts[selectedAddress as string].balance),
         conversionRate,
         currentCurrency,
       );
@@ -1130,7 +1241,9 @@ class Amount extends PureComponent {
     );
   };
 
-  renderCollectible = (collectible, index) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  renderCollectible = (collectible: any, index?: number) => {
     const { name } = collectible;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
@@ -1146,8 +1259,10 @@ class Amount extends PureComponent {
           <CollectibleMedia
             small
             collectible={collectible}
-            iconStyle={styles.tokenImage}
             containerStyle={styles.tokenImage}
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            {...({ iconStyle: styles.tokenImage } as any)}
           />
           <View style={styles.assetInformationWrapper}>
             <Text style={styles.textAssetTitle}>{name}</Text>
@@ -1157,7 +1272,9 @@ class Amount extends PureComponent {
     );
   };
 
-  renderAsset = (props) => {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  renderAsset = (props: any) => {
     const { item: asset, index } = props;
     if (!asset.tokenId) {
       return this.renderToken(asset, index);
@@ -1167,7 +1284,9 @@ class Amount extends PureComponent {
 
   processCollectibles = () => {
     const { collectibleContracts } = this.props;
-    const collectibles = [];
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const collectibles: any[] = [];
     const sortedCollectibles = [...this.props.collectibles].sort((a, b) => {
       if (a.address < b.address) return -1;
       if (a.address > b.address) return 1;
@@ -1343,7 +1462,9 @@ class Amount extends PureComponent {
                 >
                   {renderableInputValueConversion}
                 </Text>
-                <View styles={styles.switchWrapper}>
+                {/* TODO: Replace "any" with type */}
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                <View {...({ styles: styles.switchWrapper } as any)}>
                   <MaterialCommunityIcons
                     name="swap-vertical"
                     size={16}
@@ -1410,8 +1531,10 @@ class Amount extends PureComponent {
           <CollectibleMedia
             small
             containerStyle={styles.CollectibleMedia}
-            iconStyle={styles.CollectibleMedia}
             collectible={selectedAsset}
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            {...({ iconStyle: styles.CollectibleMedia } as any)}
           />
         </View>
         <View style={styles.collectibleInputInformationWrapper}>
@@ -1469,7 +1592,9 @@ class Amount extends PureComponent {
               {() => (
                 <View style={styles.warningTextContainer}>
                   <Text
-                    red
+                    // TODO: Replace "any" with type
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    {...({ red: true } as any)}
                     style={styles.warningText}
                     testID={AmountViewSelectorsIDs.FIAT_CONVERSION_WARNING_TEXT}
                   >
@@ -1491,7 +1616,9 @@ class Amount extends PureComponent {
                   <Text style={styles.textDropdown}>
                     {selectedAsset.symbol || strings('wallet.collectible')}
                   </Text>
-                  <View styles={styles.arrow}>
+                  {/* TODO: Replace "any" with type */}
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  <View {...({ styles: (styles as any).arrow } as any)}>
                     <Ionicons
                       name="arrow-down"
                       size={16}
@@ -1549,7 +1676,9 @@ class Amount extends PureComponent {
 
 Amount.contextType = ThemeContext;
 
-const mapStateToProps = (state, ownProps) => {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any, ownProps: any) => {
   const transaction = ownProps.transaction || state.transaction;
   const globalChainId = selectEvmChainId(state);
   const globalNetworkClientId = selectNetworkClientId(state);
@@ -1587,16 +1716,27 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  prepareTransaction: (transaction) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prepareTransaction: (transaction: any) =>
     dispatch(prepareTransaction(transaction)),
-  setSelectedAsset: (selectedAsset) =>
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setSelectedAsset: (selectedAsset: any) =>
     dispatch(setSelectedAsset(selectedAsset)),
   resetTransaction: () => dispatch(resetTransaction()),
-  setMaxValueMode: (maxValueMode) => dispatch(setMaxValueMode(maxValueMode)),
+  setMaxValueMode: (maxValueMode: boolean) =>
+    dispatch(setMaxValueMode(maxValueMode)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Amount));
+)(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  withMetricsAwareness(Amount as any),
+);

@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   InteractionManager,
   ActivityIndicator,
@@ -76,7 +75,9 @@ const REVIEW = 'review';
 const EDIT = 'edit';
 const SEND = 'Send';
 
-const createStyles = (colors) =>
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createStyles = (colors: any) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -90,90 +91,125 @@ const createStyles = (colors) =>
     },
   });
 
+interface SendProps {
+  /**
+   * Object that represents the navigator
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  /**
+   * Action that cleans transaction state
+   */
+  resetTransaction: () => void;
+  /**
+   * A string representing the network name
+   */
+  networkType?: string;
+  /**
+   * Action that sets transaction attributes from object to a transaction
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setTransactionObject: (transaction: any) => void;
+  /**
+   * Array of ERC20 assets
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokens: any[];
+  /**
+   * Transaction state
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction: any;
+  /**
+   * Triggers global alert
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showAlert: (config: any) => void;
+  /**
+   * Map representing the address book
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addressBook: any;
+  /**
+   * ID of the global network client
+   */
+  globalNetworkClientId: string;
+  /**
+   * ID of the global chain
+   */
+  globalChainId: string;
+  /**
+   * List of accounts from the AccountsController
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  internalAccounts: any[];
+  /**
+   * Selected address as string
+   */
+  selectedAddress?: string;
+  /**
+   * Object containing token balances in the format address => balance
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contractBalances: any;
+  /**
+   * Hides or shows dApp transaction modal
+   */
+  toggleDappTransactionModal: () => void;
+  /**
+   * dApp transaction modal visible or not
+   */
+  dappTransactionModalVisible?: boolean;
+  /**
+   * List of tokens from TokenListController
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokenList: any;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  route: any;
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metrics: any;
+  /**
+   * Boolean that indicates if smart transaction should be used
+   */
+  shouldUseSmartTransaction?: boolean;
+}
+
+interface SendState {
+  mode: string;
+  transactionKey?: number;
+  ready: boolean;
+  transactionConfirmed: boolean;
+  transactionSubmitted: boolean;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction?: any;
+}
+
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Send extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Action that cleans transaction state
-     */
-    resetTransaction: PropTypes.func.isRequired,
-    /**
-     * A string representing the network name
-     */
-    networkType: PropTypes.string,
-    /**
-     * Action that sets transaction attributes from object to a transaction
-     */
-    setTransactionObject: PropTypes.func.isRequired,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * Transaction state
-     */
-    transaction: PropTypes.object.isRequired,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     * ID of the global network client
-     */
-    globalNetworkClientId: PropTypes.string,
-    /**
-     * ID of the global chain
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * List of accounts from the AccountsController
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Object containing token balances in the format address => balance
-     */
-    contractBalances: PropTypes.object,
-    /**
-     * Hides or shows dApp transaction modal
-     */
-    toggleDappTransactionModal: PropTypes.func,
-    /**
-     * dApp transaction modal visible or not
-     */
-    dappTransactionModalVisible: PropTypes.bool,
-    /**
-     * List of tokens from TokenListController
-     */
-    tokenList: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
+class Send extends PureComponent<SendProps, SendState> {
+  declare context: React.ContextType<typeof ThemeContext>;
 
-  state = {
+  state: SendState = {
     mode: REVIEW,
     transactionKey: undefined,
     ready: false,
@@ -189,10 +225,14 @@ class Send extends PureComponent {
    */
   async reset() {
     const { globalNetworkClientId, transaction } = this.props;
-    const { gas, gasPrice } = await estimateGas(
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { gas, gasPrice } = (await estimateGas(
       transaction,
       globalNetworkClientId,
-    );
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    )) as any;
     this.props.setTransactionObject({
       gas: hexToBN(gas),
       gasPrice: hexToBN(gasPrice),
@@ -267,7 +307,7 @@ class Send extends PureComponent {
     this.mounted = false;
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: SendProps) {
     const prevRoute = prevProps.route;
     const {
       route,
@@ -305,7 +345,11 @@ class Send extends PureComponent {
   /**
    * Handle deeplink txMeta recipient
    */
-  handleNewTxMetaRecipient = async (recipient) => {
+  handleNewTxMetaRecipient = async (
+    recipient: string,
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> => {
     const to = await getAddress(recipient, this.props.globalChainId);
 
     if (!to) {
@@ -323,11 +367,19 @@ class Send extends PureComponent {
   /**
    * Handle txMeta object, setting neccesary state to make a transaction
    */
-  handleNewTxMeta = async ({ target_address, action, parameters = null }) => {
+  handleNewTxMeta = async ({
+    target_address,
+    action,
+    parameters = null,
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }: any) => {
     const { addressBook, globalChainId, internalAccounts, selectedAddress } =
       this.props;
 
-    let newTxMeta = {};
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let newTxMeta: any = {};
     let txRecipient;
     switch (action) {
       case 'send-eth':
@@ -408,10 +460,14 @@ class Send extends PureComponent {
 
       // if gas and gasPrice is not defined in the deeplink, we should define them
       if (!gas && !gasPrice) {
-        const { gas, gasPrice } = await estimateGas(
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { gas, gasPrice } = (await estimateGas(
           this.props.transaction,
           this.props.globalNetworkClientId,
-        );
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        )) as any;
         newTxMeta = {
           ...newTxMeta,
           gas,
@@ -423,12 +479,14 @@ class Send extends PureComponent {
     }
 
     if (!newTxMeta.value) {
-      newTxMeta.value = toBN(0);
+      newTxMeta.value = toBN('0');
     }
 
     newTxMeta.from = selectedAddress;
-    const fromAccount = internalAccounts.find((account) =>
-      toLowerCaseEquals(account.address, selectedAddress),
+    const fromAccount = internalAccounts.find(
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (account: any) => toLowerCaseEquals(account.address, selectedAddress),
     );
     newTxMeta.transactionFromName = fromAccount.metadata.name;
     this.props.setTransactionObject(newTxMeta);
@@ -442,7 +500,7 @@ class Send extends PureComponent {
    *
    * @returns ERC20 asset, containing address, symbol and decimals
    */
-  handleTokenDeeplink = async (address) => {
+  handleTokenDeeplink = async (address: string) => {
     const { tokens, tokenList } = this.props;
     address = toChecksumAddress(address);
     // First check if we have token information in token list
@@ -450,13 +508,19 @@ class Send extends PureComponent {
       return tokenList[address];
     }
     // Then check if the token is already in state
-    const stateToken = tokens.find((token) => token.address === address);
+    const stateToken = tokens.find(
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (token: any) => token.address === address,
+    );
     if (stateToken) {
       return stateToken;
     }
     // Finally try to query the contract
     const { AssetsContractController } = Engine.context;
-    const token = { address };
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const token: any = { address };
     try {
       const decimals = await AssetsContractController.getERC20TokenDecimals(
         address,
@@ -487,7 +551,9 @@ class Send extends PureComponent {
    *
    * @param {object} transaction - Transaction object
    */
-  prepareTransaction = (transaction) => ({
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prepareTransaction = (transaction: any) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -501,7 +567,9 @@ class Send extends PureComponent {
    * @param {object} transaction - Transaction object
    * @param {object} selectedAsset - Asset object
    */
-  prepareAssetTransaction = (transaction, selectedAsset) => ({
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prepareAssetTransaction = (transaction: any, selectedAsset: any) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -514,7 +582,9 @@ class Send extends PureComponent {
    *
    * @param transaction - Transaction object
    */
-  sanitizeTransaction = (transaction) => ({
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sanitizeTransaction = (transaction: any) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
     gasPrice: BNToHex(transaction.gasPrice),
@@ -536,9 +606,9 @@ class Send extends PureComponent {
    *
    * @param if - Transaction id
    */
-  onCancel = (id) => {
+  onCancel = (id?: string) => {
     Engine.context.ApprovalController.reject(
-      id,
+      id as string,
       providerErrors.userRejectedRequest(),
     );
     this.props.navigation.pop();
@@ -569,18 +639,21 @@ class Send extends PureComponent {
       } else {
         transaction = this.prepareAssetTransaction(transaction, selectedAsset);
       }
-      const { result, transactionMeta } = await addTransaction(transaction, {
-        deviceConfirmedOn: WalletDevice.MM_MOBILE,
-        networkClientId: globalNetworkClientId,
-        origin: TransactionTypes.MMM,
-      });
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { result, transactionMeta }: { result: any; transactionMeta: any } =
+        await addTransaction(transaction, {
+          deviceConfirmedOn: WalletDevice.MM_MOBILE,
+          networkClientId: globalNetworkClientId,
+          origin: TransactionTypes.MMM,
+        });
       await KeyringController.resetQRKeyringState();
       await ApprovalController.accept(transactionMeta.id, undefined, {
         waitForResult: true,
       });
 
       // Add to the AddressBook if it's an unkonwn address
-      let checksummedAddress = null;
+      let checksummedAddress: string | null = null;
 
       if (assetType === 'ETH') {
         checksummedAddress = toChecksumAddress(transactionMeta.transaction.to);
@@ -612,9 +685,13 @@ class Send extends PureComponent {
       }
       const existingContact =
         addressBook[globalChainId] &&
-        addressBook[globalChainId][checksummedAddress];
+        addressBook[globalChainId][checksummedAddress as string];
       if (!existingContact) {
-        AddressBookController.set(checksummedAddress, '', globalChainId);
+        AddressBookController.set(
+          checksummedAddress as string,
+          '',
+          globalChainId as `0x${string}`,
+        );
       }
       await new Promise((resolve) => {
         resolve(result);
@@ -634,7 +711,9 @@ class Send extends PureComponent {
         });
         this.removeNft();
       });
-    } catch (error) {
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       if (
         !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
         !error?.message.startsWith(STX_NO_HASH_ERROR)
@@ -679,7 +758,11 @@ class Send extends PureComponent {
    */
   trackEditScreen = async () => {
     const { transaction } = this.props;
-    const actionKey = await getTransactionReviewActionKey({ transaction });
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const actionKey = await (getTransactionReviewActionKey as any)({
+      transaction,
+    });
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)
@@ -749,7 +832,7 @@ class Send extends PureComponent {
    *
    * @param mode - Transaction mode, review or edit
    */
-  onModeChange = (mode) => {
+  onModeChange = (mode: string) => {
     const { navigation } = this.props;
     navigation && navigation.setParams({ mode });
     this.mounted && this.setState({ mode });
@@ -804,7 +887,9 @@ class Send extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => {
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapStateToProps = (state: any) => {
   const globalChainId = selectEvmChainId(state);
 
   return {
@@ -827,11 +912,17 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
   resetTransaction: () => dispatch(resetTransaction()),
-  setTransactionObject: (transaction) =>
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setTransactionObject: (transaction: any) =>
     dispatch(setTransactionObject(transaction)),
-  showAlert: (config) => dispatch(showAlert(config)),
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showAlert: (config: any) => dispatch(showAlert(config)),
   toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal()),
 });
 
@@ -840,4 +931,8 @@ Send.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Send));
+)(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  withMetricsAwareness(Send as any),
+);
