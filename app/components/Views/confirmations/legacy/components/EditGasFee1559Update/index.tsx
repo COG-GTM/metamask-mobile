@@ -82,13 +82,15 @@ const EditGasFee1559Update = ({
   >('');
   const [maxFeeError, setMaxFeeError] = useState('');
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(selectedGasValue);
+  const [selectedOption, setSelectedOption] = useState<string | null>(
+    selectedGasValue,
+  );
   const [showInputs, setShowInputs] = useState(!dappSuggestedGas);
   const [gasObject, updateGasObject] = useState({
-    suggestedMaxFeePerGas: selectedGasObject.suggestedMaxFeePerGas,
+    suggestedMaxFeePerGas: selectedGasObject.suggestedMaxFeePerGas as string,
     suggestedMaxPriorityFeePerGas:
-      selectedGasObject.suggestedMaxPriorityFeePerGas,
-    suggestedGasLimit: selectedGasObject.suggestedGasLimit,
+      selectedGasObject.suggestedMaxPriorityFeePerGas as string,
+    suggestedGasLimit: selectedGasObject.suggestedGasLimit as string,
   });
 
   const [
@@ -105,7 +107,7 @@ const EditGasFee1559Update = ({
     gasSelected: selectedOption,
     legacy: false,
     gasObject,
-  });
+  }) as GasValues;
 
   const {
     renderableGasFeeMinNative,
@@ -209,7 +211,7 @@ const EditGasFee1559Update = ({
     (value: string) => {
       const lowerValue = new BigNumber(
         gasOptions?.[
-          warningMinimumEstimateOption
+          warningMinimumEstimateOption as string
         ]?.suggestedMaxPriorityFeePerGas,
       );
 
@@ -263,7 +265,8 @@ const EditGasFee1559Update = ({
   const changedMaxFeePerGas = useCallback(
     (value: string) => {
       const lowerValue = new BigNumber(
-        gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxFeePerGas,
+        gasOptions?.[warningMinimumEstimateOption as string]
+          ?.suggestedMaxFeePerGas,
       );
       const higherValue = new BigNumber(
         gasOptions?.high?.suggestedMaxFeePerGas,
@@ -399,7 +402,8 @@ const EditGasFee1559Update = ({
       <Text bold reset>
         {strings(value)}:
       </Text>{' '}
-      {gasOptions?.[suggestedEstimateOption]?.suggestedMaxFeePerGas} GWEI
+      {gasOptions?.[suggestedEstimateOption as string]?.suggestedMaxFeePerGas}{' '}
+      GWEI
     </Text>
   );
 
@@ -428,9 +432,10 @@ const EditGasFee1559Update = ({
       >
         <View>
           <HorizontalSelector
-            selected={selectedOption}
+            selected={selectedOption ?? undefined}
             onPress={selectOption}
             options={renderOptions}
+            disabled={undefined as unknown as boolean}
           />
         </View>
         <View style={styles.advancedOptionsContainer}>

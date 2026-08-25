@@ -107,6 +107,12 @@ interface TransactionReviewDataProps {
    * Triggers global alert
    */
   showAlert: (config: AlertConfig) => void;
+  /**
+   * Saves the rendered height of the data view
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  saveTransactionReviewDataHeight?: (...args: any[]) => void;
 }
 
 /**

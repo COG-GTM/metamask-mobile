@@ -7,7 +7,7 @@ import {
   TextStyle,
   ViewStyle,
 } from 'react-native';
-import Summary from '../../../../../../Base/Summary';
+import SummaryBase from '../../../../../../Base/Summary';
 import Text from '../../../../../../Base/Text';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { isMainnetByChainId, isTestNet } from '../../../../../../../util/networks';
@@ -21,6 +21,21 @@ import AppConstants from '../../../../../../../core/AppConstants';
 import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
 import { Theme } from '../../../../../../../util/theme/models';
+
+interface SummaryChildProps {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  style?: any;
+  children?: React.ReactNode;
+  end?: boolean;
+  last?: boolean;
+}
+
+const Summary = SummaryBase as unknown as React.FC<SummaryChildProps> & {
+  Row: React.FC<SummaryChildProps>;
+  Col: React.FC<SummaryChildProps>;
+  Separator: React.FC<SummaryChildProps>;
+};
 
 const createStyles = (colors: Theme['colors']) => {
   const staticStyles = StyleSheet.create({

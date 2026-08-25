@@ -346,11 +346,11 @@ class TransactionReview extends PureComponent<
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
         txParams: transaction.transaction,
-        chainId,
+        chainId: chainId as `0x${string}`,
         networkClientId,
       });
       this.setState({
-        multiLayerL1FeeTotal: result,
+        multiLayerL1FeeTotal: result as string,
       });
     } catch (e) {
       Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
@@ -383,7 +383,7 @@ class TransactionReview extends PureComponent<
         transaction,
         txParams: undefined,
       },
-      chainId,
+      chainId as string,
     );
 
     if (approveTransaction) {
@@ -456,7 +456,11 @@ class TransactionReview extends PureComponent<
       ETH: () => {
         const assetAmount = `${renderFromWei(value)} ${getTicker(ticker)}`;
         const conversionRate = this.props.conversionRate;
-        const fiatValue = weiToFiat(value, conversionRate, currentCurrency);
+        const fiatValue = weiToFiat(
+          value,
+          conversionRate,
+          currentCurrency as string,
+        );
         return [assetAmount, conversionRate, fiatValue];
       },
       ERC20: () => {
@@ -471,7 +475,7 @@ class TransactionReview extends PureComponent<
           (value && fromTokenMinimalUnit(value, selectedAsset.decimals)) || 0,
           this.props.conversionRate,
           conversionRate,
-          currentCurrency,
+          currentCurrency as string,
         );
         return [assetAmount, conversionRate, fiatValue];
       },
@@ -523,7 +527,7 @@ class TransactionReview extends PureComponent<
 
   getUrlFromBrowser() {
     const { browser } = this.props;
-    let url;
+    let url: string | undefined;
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     browser.tabs.forEach((tab: any) => {
@@ -598,9 +602,9 @@ class TransactionReview extends PureComponent<
 
     let url = '';
     if (currentConnection) {
-      url = currentConnection.originatorInfo.url;
+      url = currentConnection.originatorInfo?.url as string;
     } else {
-      url = this.getUrlFromBrowser();
+      url = this.getUrlFromBrowser() as string;
     }
 
     const styles = this.getStyles();
@@ -609,7 +613,7 @@ class TransactionReview extends PureComponent<
     const sdkDappMetadata = {
       url: originatorInfo?.url ?? strings('sdk.unknown'),
       icon: originatorInfo?.icon,
-    };
+    } as { url: string; icon: string };
 
     return (
       <>
@@ -658,8 +662,12 @@ class TransactionReview extends PureComponent<
                     {to && (
                       <View style={styles.accountWrapper}>
                         <AccountFromToInfoCard
-                          transactionState={transaction}
-                          layout="vertical"
+                          {...({
+                            transactionState: transaction,
+                            layout: 'vertical',
+                          } as unknown as React.ComponentProps<
+                            typeof AccountFromToInfoCard
+                          >)}
                         />
                       </View>
                     )}
@@ -796,6 +804,12 @@ TransactionReview.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(
   withNavigation(
-    withQRHardwareAwareness(withMetricsAwareness(TransactionReview)),
+    withQRHardwareAwareness(
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      withMetricsAwareness(TransactionReview as any) as any,
+    ),
   ),
-);
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) as unknown as React.ComponentType<any>;

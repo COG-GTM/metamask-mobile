@@ -59,8 +59,8 @@ export interface TransactionEIP1559UpdateProps {
    * gas object for calculating the gas transaction cost
    */
   gasObject?: {
-    suggestedMaxFeePerGas: string;
-    suggestedMaxPriorityFeePerGas: string;
+    suggestedMaxFeePerGas?: string;
+    suggestedMaxPriorityFeePerGas?: string;
     suggestedGasLimit?: string;
   };
   gasObjectLegacy?: {

@@ -30,7 +30,7 @@ interface UpdateTx1559Options {
   maxPriortyFeeThreshold: BigNumber | string;
   maxFeeThreshold: BigNumber | string;
   showAdvanced: boolean;
-  isCancel: boolean;
+  isCancel?: boolean;
 }
 
 interface GasTransaction {
@@ -114,7 +114,7 @@ const UpdateEIP1559Tx = ({
   onSave,
 }: UpdateEIP1559TxProps) => {
   const [animateOnGasChange, setAnimateOnGasChange] = useState(false);
-  const [gasSelected, setGasSelected] = useState(
+  const [gasSelected, setGasSelected] = useState<string>(
     AppConstants.GAS_OPTIONS.MEDIUM,
   );
   const stopUpdateGas = useRef(false);
@@ -326,7 +326,11 @@ const UpdateEIP1559Tx = ({
           ? [AppConstants.GAS_OPTIONS.LOW, AppConstants.GAS_OPTIONS.MEDIUM]
           : [AppConstants.GAS_OPTIONS.LOW]
       }
-      updateOption={updateTx1559Options.current}
+      updateOption={
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        updateTx1559Options.current as any
+      }
       analyticsParams={getGasAnalyticsParams()}
       animateOnChange={animateOnGasChange}
       selectedGasObject={selectedGasObject}

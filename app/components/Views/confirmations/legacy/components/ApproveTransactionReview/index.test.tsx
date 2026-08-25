@@ -101,7 +101,9 @@ const initialState = {
       },
     ],
   },
-};
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any;
 
 describe('ApproveTransactionModal', () => {
   it('render matches snapshot', () => {
@@ -114,7 +116,7 @@ describe('ApproveTransactionModal', () => {
   });
 
   it('Approve button is enabled when standard is defined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = getTokenDetails as jest.Mock;
     mockGetTokenDetails.mockReturnValue({
       standard: 'ERC20',
     });
@@ -178,7 +180,7 @@ describe('ApproveTransactionModal', () => {
   });
 
   it('Approve button is disabled when standard is undefined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = getTokenDetails as jest.Mock;
     mockGetTokenDetails.mockReturnValue({});
     const state = cloneDeep(initialState);
     state.engine.backgroundState.AccountTrackerController.accounts = [];

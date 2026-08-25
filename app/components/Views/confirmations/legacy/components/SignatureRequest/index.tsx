@@ -432,5 +432,9 @@ const mapStateToProps = (state: any) => ({
 SignatureRequest.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(
-  withQRHardwareAwareness(withMetricsAwareness(SignatureRequest)),
+  withQRHardwareAwareness(
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    withMetricsAwareness(SignatureRequest as any) as any,
+  ),
 );

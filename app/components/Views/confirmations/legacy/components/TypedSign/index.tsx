@@ -56,7 +56,7 @@ const createStyles = (colors: Theme['colors']) =>
 
 interface TypedSignMessageParams {
   metamaskId: string;
-  version: string;
+  version?: string;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
@@ -174,7 +174,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
     await handleSignatureAction(
       onReject,
       messageParams,
-      typedSign[messageParams.version],
+      typedSign[messageParams.version as keyof typeof typedSign],
       securityAlertResponse,
       false,
     );
@@ -192,17 +192,17 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
       await handleSignatureAction(
         onConfirm,
         messageParams,
-        typedSign[messageParams.version],
+        typedSign[messageParams.version as keyof typeof typedSign],
         securityAlertResponse,
         true,
       );
     } else {
       navigation.navigate(
         ...(await createExternalSignModelNav(
-          onReject,
-          onConfirm,
+          onReject as () => void,
+          onConfirm as () => void,
           messageParams,
-          typedSign[messageParams.version],
+          typedSign[messageParams.version as keyof typeof typedSign],
         )),
       );
     }
@@ -265,8 +265,12 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
       );
     }
     if (messageParams.version === 'V3' || messageParams.version === 'V4') {
-      const { sanitizedMessage } = parseAndSanitizeSignTypedData(messageParams.data);
-      return this.renderTypedMessageV3(sanitizedMessage);
+      const { sanitizedMessage } = parseAndSanitizeSignTypedData(
+        messageParams.data,
+      );
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return this.renderTypedMessageV3(sanitizedMessage as Record<string, any>);
     }
   };
 
@@ -312,7 +316,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
         domain={domain}
         currentPageInformation={currentPageInformation}
         truncateMessage={truncateMessage}
-        type={typedSign[messageParams.version]}
+        type={typedSign[messageParams.version as keyof typeof typedSign]}
         fromAddress={from}
         testID={SigningBottomSheetSelectorsIDs.TYPED_REQUEST}
         networkType={networkType}
@@ -345,9 +349,16 @@ const mapStateToProps = (
   );
 
   return {
-    networkType: selectProviderTypeByChainId(state, signatureRequest?.chainId),
+    networkType: selectProviderTypeByChainId(
+      state,
+      signatureRequest?.chainId as `0x${string}`,
+    ),
     securityAlertResponse: state.signatureRequest.securityAlertResponse,
   };
 };
 
-export default connect(mapStateToProps)(withMetricsAwareness(TypedSign));
+export default connect(mapStateToProps)(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  withMetricsAwareness(TypedSign as any),
+);

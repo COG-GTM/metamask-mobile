@@ -5,6 +5,7 @@ import { EditGasViewSelectorsIDs } from '../../../../../../../../e2e/selectors/S
 import { strings } from '../../../../../../../../locales/i18n';
 import AppConstants from '../../../../../../../core/AppConstants';
 import { useGasTransaction } from '../../../../../../../core/GasPolling/GasPolling';
+import { UseGasTransactionProps } from '../../../../../../../core/GasPolling/types';
 import Device from '../../../../../../../util/device';
 import { isMainnetByChainId } from '../../../../../../../util/networks';
 import {
@@ -12,7 +13,7 @@ import {
   useAppThemeFromContext,
 } from '../../../../../../../util/theme';
 import useModalHandler from '../../../../../../Base/hooks/useModalHandler';
-import Summary from '../../../../../../Base/Summary';
+import SummaryBase from '../../../../../../Base/Summary';
 import Text from '../../../../../../Base/Text';
 import FadeAnimationView from '../../../../../../UI/FadeAnimationView';
 import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
@@ -20,6 +21,43 @@ import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
 import { TransactionEIP1559UpdateProps } from './types';
+
+interface SummaryChildProps {
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  style?: any;
+  children?: React.ReactNode;
+  end?: boolean;
+  last?: boolean;
+}
+
+const Summary = SummaryBase as unknown as React.FC<SummaryChildProps> & {
+  Row: React.FC<SummaryChildProps>;
+  Col: React.FC<SummaryChildProps>;
+  Separator: React.FC<SummaryChildProps>;
+};
+
+interface GasTransactionValues {
+  gasFeeMaxNative?: string;
+  renderableGasFeeMinNative?: string;
+  renderableGasFeeMinConversion?: string;
+  renderableGasFeeMaxNative?: string;
+  renderableTotalMinNative?: string;
+  renderableTotalMinConversion?: string;
+  renderableTotalMaxNative?: string;
+  renderableGasFeeMaxConversion?: string;
+  timeEstimateColor?: string;
+  timeEstimate?: string;
+  timeEstimateId?: string;
+  transactionFee?: string;
+  transactionFeeFiat?: string;
+  transactionTotalAmount?: string;
+  transactionTotalAmountFiat?: string;
+  suggestedGasLimit?: string;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
 
 const TransactionReviewEIP1559Update = ({
   primaryCurrency,
@@ -61,10 +99,10 @@ const TransactionReviewEIP1559Update = ({
     onlyGas: !!onlyGas,
     gasSelected,
     legacy: !!legacy,
-    gasObject,
+    gasObject: gasObject as UseGasTransactionProps['gasObject'],
     gasObjectLegacy,
     multiLayerL1FeeTotal,
-  });
+  }) as GasTransactionValues;
 
   const {
     gasFeeMaxNative,
@@ -110,8 +148,8 @@ const TransactionReviewEIP1559Update = ({
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
   const switchNativeCurrencyDisplayOptions = (
-    nativeValue: string,
-    fiatValue: string,
+    nativeValue?: string,
+    fiatValue?: string,
   ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
