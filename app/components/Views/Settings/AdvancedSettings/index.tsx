@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { connect } from 'react-redux';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { KeyboardAwareScrollView , KeyboardAwareScrollView as KeyboardAwareScrollViewType } from 'react-native-keyboard-aware-scroll-view';
 
 import { typography } from '@metamask/design-tokens';
 
@@ -53,7 +53,6 @@ import { downloadStateLogs } from '../../../../util/logs';
 import AutoDetectTokensSettings from '../AutoDetectTokensSettings';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { Dispatch } from 'redux';
-import { KeyboardAwareScrollView as KeyboardAwareScrollViewType } from 'react-native-keyboard-aware-scroll-view';
 import { RootState } from '../../../../reducers';
 import { Theme } from '../../../../util/theme/models';
 import { IWithMetricsAwarenessProps } from '../../../hooks/useMetrics/withMetricsAwareness.types';
@@ -310,8 +309,11 @@ class AdvancedSettings extends PureComponent<
       showHexData,
       showCustomNonce,
       showFiatOnTestnets,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setShowHexData,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setShowCustomNonce,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setShowFiatOnTestnets,
       smartTransactionsOptInStatus,
     } = this.props;
@@ -479,6 +481,7 @@ class AdvancedSettings extends PureComponent<
                   <Switch
                     testID={AdvancedViewSelectorsIDs.SHOW_FIAT_ON_TESTNETS}
                     value={showFiatOnTestnets}
+                    // eslint-disable-next-line @typescript-eslint/no-shadow
                     onValueChange={(showFiatOnTestnets: boolean) => {
                       if (showFiatOnTestnets) {
                         this.props.navigation.navigate(

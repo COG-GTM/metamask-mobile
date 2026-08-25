@@ -54,6 +54,7 @@ interface ManualBackupStep2Props {
 
 const ManualBackupStep2 = ({
   navigation,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   seedphraseBackedUp,
   route,
 }: ManualBackupStep2Props) => {
@@ -136,6 +137,7 @@ const ManualBackupStep2 = ({
 
   const clearConfirmedWordAt = (i: number) => {
     const { word, originalPosition } = confirmedWords[i];
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const currentIndex = i;
     if (word && (originalPosition || originalPosition === 0)) {
       wordsDict[[word, originalPosition].toString()].currentPosition =
@@ -162,6 +164,7 @@ const ManualBackupStep2 = ({
     if (validateWords()) {
       seedphraseBackedUp();
       InteractionManager.runAfterInteractions(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         const words = route.params?.words;
         navigation.navigate('ManualBackupStep3', {
           steps: route.params?.steps,
@@ -182,6 +185,7 @@ const ManualBackupStep2 = ({
   };
 
   const renderSuccess = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const styles = createStyles(colors);
 
     return (
@@ -199,6 +203,7 @@ const ManualBackupStep2 = ({
   };
 
   const renderWordBox = (word: string | undefined, i: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const styles = createStyles(colors);
 
     return (
@@ -225,6 +230,7 @@ const ManualBackupStep2 = ({
     (key: string, i: number) => {
       const [word] = key.split(',');
       const selected = wordsDict[key].currentPosition !== undefined;
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const styles = createStyles(colors);
 
       return (

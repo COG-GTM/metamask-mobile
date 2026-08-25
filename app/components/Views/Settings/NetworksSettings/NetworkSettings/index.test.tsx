@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import { RpcEndpointType } from '@metamask/network-controller';
-import { NetworkSettings } from './'; // Import the undecorated component
+import { NetworkSettings, NetworkSettingsProps } from './'; // Import the undecorated component
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { ThemeContext, mockTheme } from '../../../../../../app/util/theme';
@@ -191,7 +191,7 @@ describe('NetworkSettings', () => {
     wrapper = shallow(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <NetworkSettings {...SAMPLE_NETWORKSETTINGS_PROPS} />
+          <NetworkSettings {...(SAMPLE_NETWORKSETTINGS_PROPS as unknown as NetworkSettingsProps)} />
         </ThemeContext.Provider>
       </Provider>,
     )
@@ -206,7 +206,7 @@ describe('NetworkSettings', () => {
   it('should render correctly', () => {
     const component = shallow(
       <Provider store={store}>
-        <NetworkSettings />
+        <NetworkSettings {...({} as unknown as NetworkSettingsProps)} />
       </Provider>,
     );
 
@@ -218,7 +218,7 @@ describe('NetworkSettings', () => {
 
     const component = shallow(
       <Provider store={store}>
-        <NetworkSettings />
+        <NetworkSettings {...({} as unknown as NetworkSettingsProps)} />
       </Provider>,
     );
 
@@ -231,7 +231,7 @@ describe('NetworkSettings', () => {
 
     const component = shallow(
       <Provider store={store}>
-        <NetworkSettings />
+        <NetworkSettings {...({} as unknown as NetworkSettingsProps)} />
       </Provider>,
     );
 
@@ -273,7 +273,7 @@ describe('NetworkSettings', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapper2: any = shallow(
       <Provider store={store}>
-        <NetworkSettings {...SAMPLE_NETWORKSETTINGS_PROPS_2} />
+        <NetworkSettings {...(SAMPLE_NETWORKSETTINGS_PROPS_2 as unknown as NetworkSettingsProps)} />
       </Provider>,
     )
       .find(NetworkSettings)
@@ -326,7 +326,7 @@ describe('NetworkSettings', () => {
 
     const wrapper2 = shallow(
       <Provider store={store}>
-        <NetworkSettings {...SAMPLE_NETWORKSETTINGS_PROPS_2} />
+        <NetworkSettings {...(SAMPLE_NETWORKSETTINGS_PROPS_2 as unknown as NetworkSettingsProps)} />
       </Provider>,
     )
       .find(NetworkSettings)
@@ -372,7 +372,7 @@ describe('NetworkSettings', () => {
 
     const wrapperComponent = shallow(
       <Provider store={store}>
-        <NetworkSettings {...SAMPLE_NETWORKSETTINGS_PROPS_2} />
+        <NetworkSettings {...(SAMPLE_NETWORKSETTINGS_PROPS_2 as unknown as NetworkSettingsProps)} />
       </Provider>,
     )
       .find(NetworkSettings)
@@ -422,7 +422,7 @@ describe('NetworkSettings', () => {
 
     const wrapper2 = shallow(
       <Provider store={store}>
-        <NetworkSettings {...SAMPLE_NETWORKSETTINGS_PROPS_2} />
+        <NetworkSettings {...(SAMPLE_NETWORKSETTINGS_PROPS_2 as unknown as NetworkSettingsProps)} />
       </Provider>,
     )
       .find(NetworkSettings)
@@ -532,7 +532,7 @@ describe('NetworkSettings', () => {
 
     wrapper = shallow(
       <Provider store={store}>
-        <NetworkSettings {...newProps} />
+        <NetworkSettings {...(newProps as unknown as NetworkSettingsProps)} />
       </Provider>,
     )
       .find(NetworkSettings)
@@ -628,7 +628,7 @@ describe('NetworkSettings', () => {
       wrapperTest = shallow(
         <Provider store={store}>
           <ThemeContext.Provider value={mockTheme}>
-            <NetworkSettings {...SAMPLE_NETWORKSETTINGS_PROPS} />
+            <NetworkSettings {...(SAMPLE_NETWORKSETTINGS_PROPS as unknown as NetworkSettingsProps)} />
           </ThemeContext.Provider>
         </Provider>,
       )
@@ -676,7 +676,7 @@ describe('NetworkSettings', () => {
     beforeEach(() => {
       wrapper = shallow(
         <Provider store={store}>
-          <NetworkSettings {...SAMPLE_NETWORKSETTINGS_PROPS} />
+          <NetworkSettings {...(SAMPLE_NETWORKSETTINGS_PROPS as unknown as NetworkSettingsProps)} />
         </Provider>,
       )
         .find(NetworkSettings)
@@ -1219,7 +1219,7 @@ describe('NetworkSettings', () => {
       // Reinitialize the component with new props
       const wrapper2 = shallow(
         <Provider store={store}>
-          <NetworkSettings {...SAMPLE_NETWORKSETTINGS_PROPS_2} />
+          <NetworkSettings {...(SAMPLE_NETWORKSETTINGS_PROPS_2 as unknown as NetworkSettingsProps)} />
         </Provider>,
       )
         .find(NetworkSettings)
@@ -1252,7 +1252,7 @@ describe('NetworkSettings', () => {
       // Reinitialize the component without networkTypeOrRpcUrl
       const wrapper3 = shallow(
         <Provider store={store}>
-          <NetworkSettings {...SAMPLE_NETWORKSETTINGS_PROPS_3} />
+          <NetworkSettings {...(SAMPLE_NETWORKSETTINGS_PROPS_3 as unknown as NetworkSettingsProps)} />
         </Provider>,
       )
         .find(NetworkSettings)
@@ -1297,7 +1297,7 @@ describe('NetworkSettings', () => {
       // Reinitialize the component with custom network
       const wrapper4 = shallow(
         <Provider store={store}>
-          <NetworkSettings {...SAMPLE_NETWORKSETTINGS_PROPS_4} />
+          <NetworkSettings {...(SAMPLE_NETWORKSETTINGS_PROPS_4 as unknown as NetworkSettingsProps)} />
         </Provider>,
       )
         .find(NetworkSettings)
@@ -1382,7 +1382,7 @@ describe('NetworkSettings', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapper4: any = shallow(
       <Provider store={store}>
-        <NetworkSettings {...SAMPLE_PROPS} />
+        <NetworkSettings {...(SAMPLE_PROPS as unknown as NetworkSettingsProps)} />
       </Provider>,
     )
       .find(NetworkSettings)

@@ -44,7 +44,7 @@ import { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAw
 import { RootState } from '../../../reducers';
 import { Theme } from '../../../util/theme/models';
 import { JsonMap } from '../../../core/Analytics/MetaMetrics.types';
-// eslint-disable-next-line import/no-commonjs
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-commonjs
 const WarningIcon = require('./warning-icon.png');
 
 const createStyles = (colors: Theme['colors']) =>

@@ -1,5 +1,4 @@
 /* eslint-disable */
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   StyleSheet,
@@ -7,6 +6,9 @@ import {
   TextInput,
   SafeAreaView,
   Linking,
+  TextStyle,
+  DimensionValue,
+  ViewProps,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { typography } from '@metamask/design-tokens';
@@ -67,13 +69,15 @@ import { CustomDefaultNetworkIDs } from '../../../../../../e2e/selectors/Onboard
 import { updateIncomingTransactions } from '../../../../../util/transaction-controller';
 import { withMetricsAwareness } from '../../../../../components/hooks/useMetrics';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
+import { Hex } from '@metamask/utils';
+import { RootState } from '../../../../../reducers';
 import Routes from '../../../../../constants/navigation/Routes';
 import {
   selectTokenNetworkFilter,
   selectUseSafeChainsListValidation,
 } from '../../../../../../app/selectors/preferencesController';
 import withIsOriginalNativeToken from './withIsOriginalNativeToken';
-import { compose } from 'redux';
+import { compose, Dispatch } from 'redux';
 import Icon, {
   IconColor,
   IconName,
@@ -83,10 +87,14 @@ import { isNetworkUiRedesignEnabled } from '../../../../../util/networks/isNetwo
 import Cell, {
   CellVariant,
 } from '../../../../../component-library/components/Cells/Cell';
+import { CellProps } from '../../../../../component-library/components/Cells/Cell/Cell.types';
 import BottomSheetHeader from '../../../../../component-library/components/BottomSheets/BottomSheetHeader';
 import ButtonLink from '../../../../../component-library/components/Buttons/Button/variants/ButtonLink';
 import ButtonPrimary from '../../../../../component-library/components/Buttons/Button/variants/ButtonPrimary';
-import { RpcEndpointType } from '@metamask/network-controller';
+import {
+  NetworkConfiguration,
+  RpcEndpointType,
+} from '@metamask/network-controller';
 import { AvatarVariant } from '../../../../../component-library/components/Avatars/Avatar';
 import ReusableModal from '../../../../../components/UI/ReusableModal';
 import Device from '../../../../../util/device';
@@ -95,8 +103,164 @@ import Text, {
   getFontFamily,
   TextVariant,
 } from '../../../../../component-library/components/Texts/Text';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { TabBarProps } from 'react-native-scrollable-tab-view';
+import { IWithMetricsAwarenessProps } from '../../../../hooks/useMetrics/withMetricsAwareness.types';
+import { Theme } from '../../../../../util/theme/models';
+import {
+  ExtendedNetwork,
+  Network,
+} from './CustomNetworkView/CustomNetwork.types';
 
-const createStyles = (colors) =>
+interface RpcEndpoint {
+  url: string;
+  name?: string;
+  type?: RpcEndpointType;
+  networkClientId?: string;
+}
+
+interface SafeChain {
+  chainId: number;
+  name?: string;
+  nativeCurrency?: { symbol?: string; name?: string };
+}
+
+type NetworkConfigurations = Record<Hex, NetworkConfiguration>;
+
+interface NetworkOnboardingParams {
+  networkUrl: string;
+  networkType: string;
+  nativeToken: string;
+  showNetworkOnboarding: boolean;
+}
+
+interface NetworkUpdateParams {
+  rpcUrl?: string;
+  chainId: string;
+  nickname?: string;
+  ticker?: string;
+  blockExplorerUrl?: string;
+  blockExplorerUrls: string[];
+  rpcUrls: RpcEndpoint[];
+  isNetworkExists: unknown[];
+  isCustomMainnet?: boolean;
+  shouldNetworkSwitchPopToWallet: boolean;
+  navigation: NetworkSettingsProps['navigation'];
+  nativeToken?: string;
+  networkType?: string;
+  networkUrl?: string;
+  showNetworkOnboarding?: boolean;
+}
+
+export interface NetworkSettingsProps {
+  /**
+   * Network configurations
+   */
+  networkConfigurations: NetworkConfigurations;
+  /**
+   * Object that represents the navigator
+   */
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: {
+    params?: {
+      network?: string;
+      isCustomMainnet?: boolean;
+      shouldNetworkSwitchPopToWallet?: boolean;
+      shouldShowPopularNetworks?: boolean;
+    };
+  };
+  /**
+   * handles action for onboarding to a network
+   */
+  showNetworkOnboardingAction: (params: NetworkOnboardingParams) => void;
+  /**
+   * returns an array of onboarded networks
+   */
+  networkOnboardedState: Record<string, boolean>;
+  /**
+   * Checks if adding custom mainnet.
+   */
+  isCustomMainnet?: boolean;
+  /**
+   * Current network provider configuration
+   */
+  providerConfig: ReturnType<typeof selectProviderConfig>;
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  metrics: IWithMetricsAwarenessProps['metrics'];
+  /**
+   * Checks if toggle verification is enabled
+   */
+  useSafeChainsListValidation?: boolean;
+  /**
+   * Matched object from third provider
+   */
+  matchedChainNetwork?: { safeChainsList?: SafeChain[] };
+  /**
+   * Checks if all networks are selected
+   */
+  isAllNetworks?: boolean;
+  /**
+   * Token network filter
+   */
+  tokenNetworkFilter: Record<string, boolean>;
+}
+
+interface NetworkSettingsState {
+  rpcUrl?: string;
+  rpcName?: string;
+  rpcUrlFrom?: string;
+  rpcNameForm: string;
+  rpcUrlForm?: string;
+  rpcUrls: RpcEndpoint[];
+  blockExplorerUrls: string[];
+  selectedRpcEndpointIndex?: number;
+  blockExplorerUrl?: string;
+  blockExplorerUrlForm?: string;
+  nickname?: string;
+  chainId?: string;
+  ticker?: string;
+  editable?: boolean;
+  addMode: boolean;
+  warningRpcUrl?: string;
+  warningChainId?: string;
+  warningSymbol?: string | null;
+  warningName?: string | null;
+  validatedRpcURL: boolean;
+  validatedChainId: boolean;
+  validateChainId?: boolean;
+  validatedSymbol: boolean;
+  initialState?: string;
+  enableAction: boolean;
+  inputWidth: { width: DimensionValue };
+  showPopularNetworkModal: boolean;
+  popularNetwork: Partial<Network & ExtendedNetwork>;
+  showWarningModal: boolean;
+  showNetworkDetailsModal: boolean;
+  isNameFieldFocused: boolean;
+  isSymbolFieldFocused: boolean;
+  isRpcUrlFieldFocused: boolean;
+  isChainIdFieldFocused: boolean;
+  networkList: SafeChain | SafeChain[];
+  showMultiRpcAddModal: { isVisible: boolean };
+  showMultiBlockExplorerAddModal: { isVisible: boolean };
+  showAddRpcForm: { isVisible: boolean };
+  showAddBlockExplorerForm: { isVisible: boolean };
+}
+
+const CellWithOptionalAvatar = Cell as unknown as React.ComponentType<
+  Partial<CellProps> & { title: string }
+>;
+
+const TabLabelView = View as unknown as React.ComponentType<
+  ViewProps & { tabLabel?: string; children?: React.ReactNode }
+>;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     base: {
       paddingHorizontal: 16,
@@ -233,7 +397,7 @@ const createStyles = (colors) =>
       borderWidth: 2,
     },
     inputWithError: {
-      ...typography.sBodyMD,
+      ...(typography.sBodyMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.BodyMD),
       borderColor: colors.error.default,
       borderRadius: 5,
@@ -244,7 +408,7 @@ const createStyles = (colors) =>
       color: colors.text.default,
     },
     inputWithFocus: {
-      ...typography.sBodyMD,
+      ...(typography.sBodyMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.BodyMD),
       borderColor: colors.primary.default,
       borderRadius: 5,
@@ -297,9 +461,8 @@ const createStyles = (colors) =>
     },
     messageWarning: {
       paddingVertical: 2,
-      fontSize: 14,
       color: colors.warning.default,
-      ...typography.sBodyMD,
+      ...(typography.sBodyMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.BodyMD),
     },
     suggestionButton: {
@@ -310,15 +473,14 @@ const createStyles = (colors) =>
     },
     inlineWarning: {
       paddingVertical: 2,
-      fontSize: 14,
       color: colors.text.default,
-      ...typography.sBodyMD,
+      ...(typography.sBodyMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.BodyMD),
     },
     inlineWarningMessage: {
       paddingVertical: 2,
       color: colors.warning.default,
-      ...typography.sBodyMD,
+      ...(typography.sBodyMD as TextStyle),
       fontFamily: getFontFamily(TextVariant.BodyMD),
     },
     buttonsWrapper: {
@@ -400,63 +562,15 @@ const infuraProjectId = InfuraKey === 'null' ? '' : InfuraKey;
 /**
  * Main view for app configurations
  */
-export class NetworkSettings extends PureComponent {
-  static propTypes = {
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * handles action for onboarding to a network
-     */
-    showNetworkOnboardingAction: PropTypes.func,
-    /**
-     * returns an array of onboarded networks
-     */
-    networkOnboardedState: PropTypes.object,
-    /**
-     * Checks if adding custom mainnet.
-     */
-    isCustomMainnet: PropTypes.bool,
-    /**
-     * Current network provider configuration
-     */
-    providerConfig: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
+export class NetworkSettings extends PureComponent<
+  NetworkSettingsProps,
+  NetworkSettingsState
+> {
+  static contextType = ThemeContext;
 
-    /**
-     * Checks if toggle verification is enabled
-     */
-    useSafeChainsListValidation: PropTypes.bool,
+  tabView: TabBarProps | null = null;
 
-    /**
-     * Matched object from third provider
-     */
-    matchedChainNetwork: PropTypes.object,
-
-    /**
-     * Checks if all networks are selected
-     */
-    isAllNetworks: PropTypes.bool,
-
-    /**
-     * Token network filter
-     */
-    tokenNetworkFilter: PropTypes.object,
-  };
-
-  state = {
+  state: NetworkSettingsState = {
     rpcUrl: undefined,
     rpcName: undefined,
     rpcUrlFrom: undefined,
@@ -503,15 +617,26 @@ export class NetworkSettings extends PureComponent {
     },
   };
 
-  inputRpcURL = React.createRef();
-  inputNameRpcURL = React.createRef();
-  inputChainId = React.createRef();
-  inputSymbol = React.createRef();
-  inputBlockExplorerURL = React.createRef();
+  inputRpcURL = React.createRef<TextInput>();
+  inputNameRpcURL = React.createRef<TextInput>();
+  inputChainId = React.createRef<TextInput>();
+  inputSymbol = React.createRef<TextInput>();
+  inputBlockExplorerURL = React.createRef<TextInput>();
+
+  getColors = () =>
+    (this.context as unknown as Theme)?.colors || mockTheme.colors;
+
+  /**
+   * The chain entry matched against the safe chains list, if any.
+   */
+  getMatchedChain = (): SafeChain | undefined => {
+    const { networkList } = this.state;
+    return Array.isArray(networkList) ? undefined : networkList;
+  };
 
   getOtherNetworks = () => allNetworks.slice(1);
 
-  templateInfuraRpc = (endpoint) =>
+  templateInfuraRpc = (endpoint: string) =>
     endpoint.endsWith('{infuraProjectId}')
       ? endpoint.replace('{infuraProjectId}', infuraProjectId ?? '')
       : endpoint;
@@ -519,7 +644,7 @@ export class NetworkSettings extends PureComponent {
   updateNavBar = () => {
     const { navigation, route } = this.props;
     const isCustomMainnet = route.params?.isCustomMainnet;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.getColors();
     navigation.setOptions(
       getNavigationOptionsTitle(
         isCustomMainnet
@@ -539,43 +664,48 @@ export class NetworkSettings extends PureComponent {
     const networkTypeOrRpcUrl = route.params?.network;
 
     // if network is main, don't show popular network
-    let blockExplorerUrl,
-      chainId,
-      nickname,
-      ticker,
-      editable,
-      rpcUrl,
-      rpcUrls,
-      blockExplorerUrls,
-      rpcName,
-      selectedRpcEndpointIndex;
+    let blockExplorerUrl: string | undefined,
+      chainId: string | undefined,
+      nickname: string | undefined,
+      ticker: string | undefined,
+      editable: boolean | undefined,
+      rpcUrl: string | undefined,
+      rpcUrls: RpcEndpoint[] | undefined,
+      blockExplorerUrls: string[] | undefined,
+      rpcName: string | undefined,
+      selectedRpcEndpointIndex: number | undefined;
     // If no navigation param, user clicked on add network
     if (networkTypeOrRpcUrl) {
       if (allNetworks.find((net) => networkTypeOrRpcUrl === net)) {
-        const networkInformation = Networks[networkTypeOrRpcUrl];
-        chainId = networkInformation.chainId.toString();
+        const networkInformation = Networks[
+          networkTypeOrRpcUrl as keyof typeof Networks
+        ];
+        chainId = (
+          networkInformation as { chainId: Hex }
+        ).chainId.toString();
 
-        nickname = networkConfigurations?.[chainId]?.name;
+        nickname = networkConfigurations?.[chainId as Hex]?.name;
         editable = false;
         blockExplorerUrl =
-          networkConfigurations?.[chainId]?.blockExplorerUrls[
-            networkConfigurations?.[chainId]?.defaultBlockExplorerUrlIndex
+          networkConfigurations?.[chainId as Hex]?.blockExplorerUrls[
+            networkConfigurations?.[chainId as Hex]
+              ?.defaultBlockExplorerUrlIndex as number
           ];
         rpcUrl =
-          networkConfigurations?.[chainId]?.rpcEndpoints[
-            networkConfigurations?.[chainId]?.defaultRpcEndpointIndex
+          networkConfigurations?.[chainId as Hex]?.rpcEndpoints[
+            networkConfigurations?.[chainId as Hex]?.defaultRpcEndpointIndex
           ]?.url;
         rpcName =
-          networkConfigurations?.[chainId]?.rpcEndpoints[
-            networkConfigurations?.[chainId]?.defaultRpcEndpointIndex
+          networkConfigurations?.[chainId as Hex]?.rpcEndpoints[
+            networkConfigurations?.[chainId as Hex]?.defaultRpcEndpointIndex
           ]?.type ??
-          networkConfigurations?.[chainId]?.rpcEndpoints[
-            networkConfigurations?.[chainId]?.defaultRpcEndpointIndex
+          networkConfigurations?.[chainId as Hex]?.rpcEndpoints[
+            networkConfigurations?.[chainId as Hex]?.defaultRpcEndpointIndex
           ]?.name;
-        rpcUrls = networkConfigurations?.[chainId]?.rpcEndpoints;
-        blockExplorerUrls = networkConfigurations?.[chainId]?.blockExplorerUrls;
+        rpcUrls = networkConfigurations?.[chainId as Hex]?.rpcEndpoints;
+        blockExplorerUrls = networkConfigurations?.[chainId as Hex]?.blockExplorerUrls;
 
-        ticker = networkConfigurations?.[chainId]?.nativeCurrency;
+        ticker = networkConfigurations?.[chainId as Hex]?.nativeCurrency;
       } else {
         const networkConfiguration = Object.values(networkConfigurations).find(
           ({ rpcEndpoints, defaultRpcEndpointIndex }) =>
@@ -587,13 +717,13 @@ export class NetworkSettings extends PureComponent {
         chainId = networkConfiguration?.chainId;
         blockExplorerUrl =
           networkConfiguration?.blockExplorerUrls[
-            networkConfiguration?.defaultBlockExplorerUrlIndex
+            networkConfiguration?.defaultBlockExplorerUrlIndex as number
           ];
         ticker = networkConfiguration?.nativeCurrency;
         editable = true;
         rpcUrl =
-          networkConfigurations?.[chainId]?.rpcEndpoints[
-            networkConfigurations?.[chainId]?.defaultRpcEndpointIndex
+          networkConfigurations?.[chainId as Hex]?.rpcEndpoints[
+            networkConfigurations?.[chainId as Hex]?.defaultRpcEndpointIndex
           ]?.url;
         rpcUrls = networkConfiguration?.rpcEndpoints;
         blockExplorerUrls = networkConfiguration?.blockExplorerUrls;
@@ -610,19 +740,19 @@ export class NetworkSettings extends PureComponent {
       }
 
       const initialState =
-        rpcUrl +
-        blockExplorerUrl +
+        (rpcUrl as string) +
+        (blockExplorerUrl as string) +
         nickname +
         chainId +
         ticker +
         editable +
-        rpcUrls +
-        blockExplorerUrls;
+        (rpcUrls as unknown as string) +
+        (blockExplorerUrls as unknown as string);
       this.setState({
         rpcUrl,
         rpcName,
-        rpcUrls,
-        blockExplorerUrls,
+        rpcUrls: rpcUrls as RpcEndpoint[],
+        blockExplorerUrls: blockExplorerUrls as string[],
         selectedRpcEndpointIndex,
         blockExplorerUrl,
         nickname,
@@ -642,14 +772,14 @@ export class NetworkSettings extends PureComponent {
     }, 100);
   };
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate = (prevProps: NetworkSettingsProps) => {
     this.updateNavBar();
     if (this.props.matchedChainNetwork !== prevProps.matchedChainNetwork) {
       this.validateRpcAndChainId();
     }
   };
 
-  updateNetworkList = (networkList) => {
+  updateNetworkList = (networkList: SafeChain | SafeChain[]) => {
     this.setState({
       networkList,
     });
@@ -665,7 +795,7 @@ export class NetworkSettings extends PureComponent {
    * @returns {string} The props chainId in decimal, or the original value if
    * it can't be converted.
    */
-  getDecimalChainId(chainId) {
+  getDecimalChainId(chainId: unknown) {
     if (!chainId || typeof chainId !== 'string' || !chainId.startsWith('0x')) {
       return chainId;
     }
@@ -683,17 +813,21 @@ export class NetworkSettings extends PureComponent {
 
     if (rpcUrl && chainId) {
       const chainToMatch = this.props.matchedChainNetwork?.safeChainsList?.find(
-        (network) => network.chainId === parseInt(chainId),
+        (network: SafeChain) => network.chainId === parseInt(chainId),
       );
 
       // This is a temporary hack to not include POL as a potential scam token while chainlist updates
       // TODO: This can be safely removed once safeChainsList updates from MATIC to POL
       if (parseInt(chainId) === 137) {
-        chainToMatch.nativeCurrency.symbol = 'POL';
-        chainToMatch.nativeCurrency.name = 'POL';
+        const nativeCurrency = (chainToMatch as SafeChain).nativeCurrency as {
+          symbol?: string;
+          name?: string;
+        };
+        nativeCurrency.symbol = 'POL';
+        nativeCurrency.name = 'POL';
       }
 
-      this.updateNetworkList(chainToMatch);
+      this.updateNetworkList(chainToMatch as SafeChain);
       this.validateName(chainToMatch);
       this.validateSymbol(chainToMatch);
     }
@@ -709,18 +843,22 @@ export class NetworkSettings extends PureComponent {
    * @param {string} parsedChainId - The parsed, hex string chain ID.
    * @param {string} rpcUrl - The RPC URL from the form.
    */
-  validateChainIdOnSubmit = async (formChainId, parsedChainId, rpcUrl) => {
+  validateChainIdOnSubmit = async (
+    formChainId: string,
+    parsedChainId: string,
+    rpcUrl?: string,
+  ) => {
     let errorMessage;
     let endpointChainId;
     let providerError;
 
     try {
       endpointChainId = await jsonRpcRequest(
-        this.templateInfuraRpc(rpcUrl),
+        this.templateInfuraRpc(rpcUrl as string),
         'eth_chainId',
       );
     } catch (err) {
-      Logger.error(err, 'Failed to fetch the chainId from the endpoint.');
+      Logger.error(err as Error, 'Failed to fetch the chainId from the endpoint.');
       providerError = err;
     }
 
@@ -739,7 +877,7 @@ export class NetworkSettings extends PureComponent {
           }
           endpointChainId = endpointChainIdNumber.toString(10);
         } catch (err) {
-          Logger.error(err, {
+          Logger.error(err as Error, {
             endpointChainId,
             message: 'Failed to convert endpoint chain ID to decimal',
           });
@@ -761,13 +899,13 @@ export class NetworkSettings extends PureComponent {
     return true;
   };
 
-  checkIfChainIdExists = async (chainId) => {
+  checkIfChainIdExists = async (chainId?: string) => {
     const { networkConfigurations } = this.props;
 
     let hexChainId;
     try {
       // Convert the chainId to hex format
-      hexChainId = toHex(chainId);
+      hexChainId = toHex(chainId as string);
     } catch (error) {
       hexChainId = null;
     }
@@ -781,12 +919,14 @@ export class NetworkSettings extends PureComponent {
     return isNetworkUiRedesignEnabled() && chainIdExists;
   };
 
-  checkIfRpcUrlExists = async (rpcUrl) => {
+  checkIfRpcUrlExists = async (rpcUrl?: string) => {
     // First, check custom networks in networkConfigurationsByChainId
     const checkCustomNetworks = Object.values(
       this.props.networkConfigurations,
     ).filter((item) =>
-      item.rpcEndpoints?.some((endpoint) => endpoint.url === rpcUrl),
+      item.rpcEndpoints?.some(
+        (endpoint: RpcEndpoint) => endpoint.url === rpcUrl,
+      ),
     );
 
     if (checkCustomNetworks.length > 0) {
@@ -797,10 +937,12 @@ export class NetworkSettings extends PureComponent {
     return [];
   };
 
-  checkIfNetworkExists = async (rpcUrl) => {
+  checkIfNetworkExists = async (rpcUrl?: string) => {
     const checkCustomNetworks = Object.values(
       this.props.networkConfigurations,
-    ).filter((item) => item.rpcUrl === rpcUrl);
+    ).filter(
+      (item) => (item as unknown as { rpcUrl?: string }).rpcUrl === rpcUrl,
+    );
 
     if (checkCustomNetworks.length > 0) {
       if (!isNetworkUiRedesignEnabled()) {
@@ -812,9 +954,13 @@ export class NetworkSettings extends PureComponent {
 
       return checkCustomNetworks;
     }
-    const defaultNetworks = getAllNetworks().map((item) => Networks[item]);
+    const defaultNetworks = getAllNetworks().map(
+      (item) => Networks[item as keyof typeof Networks],
+    );
     const checkDefaultNetworks = defaultNetworks.filter(
-      (item) => Number(item.rpcUrl) === rpcUrl,
+      (item) =>
+        Number((item as unknown as { rpcUrl?: string }).rpcUrl) ===
+        (rpcUrl as unknown as number),
     );
     if (checkDefaultNetworks.length > 0) {
       return checkDefaultNetworks;
@@ -822,7 +968,7 @@ export class NetworkSettings extends PureComponent {
     return [];
   };
 
-  checkIfNetworkNotExistsByChainId = async (chainId) =>
+  checkIfNetworkNotExistsByChainId = async (chainId?: string) =>
     Object.values(this.props.networkConfigurations).filter(
       (item) => item.chainId !== chainId,
     );
@@ -839,20 +985,22 @@ export class NetworkSettings extends PureComponent {
     isCustomMainnet,
     shouldNetworkSwitchPopToWallet,
     navigation,
-  }) => {
+  }: NetworkUpdateParams) => {
     const { NetworkController } = Engine.context;
 
-    const url = new URL(rpcUrl);
+    const url = new URL(rpcUrl as string);
     if (!isPrivateConnection(url.hostname)) {
       url.set('protocol', 'https:');
     }
 
-    const existingNetwork = this.props.networkConfigurations[chainId];
+    const existingNetwork = this.props.networkConfigurations[chainId as Hex];
 
-    const indexRpc = rpcUrls.findIndex(({ url }) => url === rpcUrl);
+    const indexRpc = rpcUrls.findIndex(
+      ({ url }: RpcEndpoint) => url === rpcUrl,
+    );
 
     const blockExplorerIndex = blockExplorerUrls.findIndex(
-      (url) => url === blockExplorerUrl,
+      (url: string) => url === blockExplorerUrl,
     );
 
     const networkConfig = {
@@ -869,7 +1017,7 @@ export class NetworkSettings extends PureComponent {
     if (isNetworkExists.length === 0) {
       await NetworkController.updateNetwork(
         existingNetwork.chainId,
-        networkConfig,
+        networkConfig as Parameters<typeof NetworkController.updateNetwork>[1],
         existingNetwork.chainId === chainId
           ? {
               replacementSelectedRpcEndpointIndex: indexRpc,
@@ -879,7 +1027,7 @@ export class NetworkSettings extends PureComponent {
     } else {
       await NetworkController.addNetwork({
         ...networkConfig,
-      });
+      } as Parameters<typeof NetworkController.addNetwork>[0]);
     }
 
     isCustomMainnet
@@ -936,17 +1084,17 @@ export class NetworkSettings extends PureComponent {
     }
 
     const isOnboarded = getIsNetworkOnboarded(
-      stateChainId,
+      stateChainId as string,
       networkOnboardedState,
     );
 
     const nativeToken = ticker || PRIVATENETWORK;
     const networkType = nickname || rpcUrl;
-    const networkUrl = sanitizeUrl(rpcUrl);
+    const networkUrl = sanitizeUrl(rpcUrl as string);
     // Prevent the network switch modal from showing post onboarding.
     const showNetworkOnboarding = isCustomMainnet ? false : isOnboarded;
 
-    const formChainId = stateChainId.trim().toLowerCase();
+    const formChainId = (stateChainId as string).trim().toLowerCase();
 
     // Ensure chainId is a 0x-prefixed, lowercase hex string
     let chainId = formChainId;
@@ -996,11 +1144,11 @@ export class NetworkSettings extends PureComponent {
    * Validates rpc url, setting a warningRpcUrl if is invalid
    * It also changes validatedRpcURL to true, indicating that was validated
    */
-  validateRpcUrl = async (rpcUrl) => {
+  validateRpcUrl = async (rpcUrl?: string) => {
     const isNetworkExists = await this.checkIfNetworkExists(rpcUrl);
     const isRpcExists = await this.checkIfRpcUrlExists(rpcUrl);
 
-    if (!isWebUri(rpcUrl)) {
+    if (!isWebUri(rpcUrl as string)) {
       const appendedRpc = `http://${rpcUrl}`;
       if (isWebUri(appendedRpc)) {
         this.setState({
@@ -1034,7 +1182,7 @@ export class NetworkSettings extends PureComponent {
         warningRpcUrl: strings('app_settings.network_exists'),
       });
     }
-    const url = new URL(rpcUrl);
+    const url = new URL(rpcUrl as string);
     const privateConnection = isPrivateConnection(url.hostname);
     if (!privateConnection && url.protocol === 'http:') {
       this.setState({
@@ -1126,11 +1274,11 @@ export class NetworkSettings extends PureComponent {
     let providerError;
     try {
       endpointChainId = await jsonRpcRequest(
-        this.templateInfuraRpc(rpcUrl),
+        this.templateInfuraRpc(rpcUrl as string),
         'eth_chainId',
       );
     } catch (err) {
-      Logger.error(err, 'Failed to fetch the chainId from the endpoint.');
+      Logger.error(err as Error, 'Failed to fetch the chainId from the endpoint.');
       providerError = err;
     }
 
@@ -1163,8 +1311,8 @@ export class NetworkSettings extends PureComponent {
   /**
    * Validates that symbol match with the chainId, setting a warningSymbol if is invalid
    */
-  validateSymbol = (chainToMatch = null) => {
-    const { ticker, networkList } = this.state;
+  validateSymbol = (chainToMatch: SafeChain | null = null) => {
+    const { ticker } = this.state;
 
     const { useSafeChainsListValidation } = this.props;
 
@@ -1174,7 +1322,7 @@ export class NetworkSettings extends PureComponent {
 
     const symbol = chainToMatch
       ? chainToMatch?.nativeCurrency?.symbol ?? null
-      : networkList?.nativeCurrency?.symbol ?? null;
+      : this.getMatchedChain()?.nativeCurrency?.symbol ?? null;
 
     const symbolToUse =
       symbol?.toLowerCase() === ticker?.toLowerCase() ? undefined : symbol;
@@ -1188,19 +1336,25 @@ export class NetworkSettings extends PureComponent {
   /**
    * Validates that name match with the chainId, setting a warningName if is invalid
    */
-  validateName = (chainToMatch = null) => {
-    const { nickname, networkList, chainId } = this.state;
+  validateName = (chainToMatch: SafeChain | null = null) => {
+    const { nickname, chainId } = this.state;
     const { useSafeChainsListValidation } = this.props;
-  
+
     if (!useSafeChainsListValidation) {
       return;
     }
 
     // Get the name either from chainToMatch or networkList
-    const name = chainToMatch?.name || networkList?.name || null;
+    const name = chainToMatch?.name || this.getMatchedChain()?.name || null;
 
     // Determine nameToUse based on chainId and nickname comparison
-    const nameToUse = isValidNetworkName(chainId, name, nickname) ? undefined : name;
+    const nameToUse = isValidNetworkName(
+      chainId as string,
+      name as string,
+      nickname as string,
+    )
+      ? undefined
+      : name;
 
     // Update state with warningName
     this.setState({
@@ -1223,13 +1377,13 @@ export class NetworkSettings extends PureComponent {
       initialState,
     } = this.state;
     const actualState =
-      rpcUrl +
-      blockExplorerUrl +
+      (rpcUrl as string) +
+      (blockExplorerUrl as string) +
       nickname +
       chainId +
       ticker +
       editable +
-      rpcUrls;
+      (rpcUrls as unknown as string);
 
     let enableAction;
     // If concstenation of parameters changed, user changed something so we are going to enable the action button
@@ -1270,7 +1424,7 @@ export class NetworkSettings extends PureComponent {
     return false;
   };
 
-  onRpcUrlAdd = async (url) => {
+  onRpcUrlAdd = async (url: string) => {
     await this.setState({
       rpcUrlForm: url,
       validatedRpcURL: false,
@@ -1282,13 +1436,13 @@ export class NetworkSettings extends PureComponent {
     this.validateRpcUrl(this.state.rpcUrlForm);
   };
 
-  onRpcNameAdd = async (name) => {
+  onRpcNameAdd = async (name: string) => {
     await this.setState({
       rpcNameForm: name,
     });
   };
 
-  onRpcItemAdd = async (url, name) => {
+  onRpcItemAdd = async (url?: string, name?: string) => {
     if (!url) {
       return;
     }
@@ -1312,7 +1466,7 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
-  onBlockExplorerItemAdd = async (url) => {
+  onBlockExplorerItemAdd = async (url?: string) => {
     // If URL is empty or undefined, return early
     if (!url) {
       return;
@@ -1341,7 +1495,7 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
-  onRpcUrlChange = async (url) => {
+  onRpcUrlChange = async (url: string) => {
     const { addMode } = this.state;
     await this.setState({
       rpcUrl: url,
@@ -1360,7 +1514,11 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
-  onRpcUrlChangeWithName = async (url, name, type) => {
+  onRpcUrlChangeWithName = async (
+    url: string,
+    name?: string,
+    type?: RpcEndpointType,
+  ) => {
     const nameToUse = name ?? type;
     const { addMode } = this.state;
     await this.setState({
@@ -1384,7 +1542,7 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
-  onBlockExplorerUrlChange = async (url) => {
+  onBlockExplorerUrlChange = async (url: string) => {
     const { addMode } = this.state;
     await this.setState({
       blockExplorerUrlForm: url,
@@ -1399,7 +1557,7 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
-  onRpcUrlDelete = async (url) => {
+  onRpcUrlDelete = async (url: string) => {
     const { addMode } = this.state;
     await this.setState((prevState) => ({
       rpcUrls: prevState.rpcUrls.filter((rpcUrl) => rpcUrl.url !== url),
@@ -1412,7 +1570,7 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
-  onBlockExplorerUrlDelete = async (url) => {
+  onBlockExplorerUrlDelete = async (url: string) => {
     const { addMode } = this.state;
     await this.setState((prevState) => ({
       blockExplorerUrls: prevState.blockExplorerUrls.filter(
@@ -1427,31 +1585,31 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
-  onNicknameChange = async (nickname) => {
+  onNicknameChange = async (nickname: string) => {
     await this.setState({ nickname });
     this.getCurrentState();
   };
 
   // this function will autofill the name field with the value in parameter
-  autoFillNameField = (nickName) => {
+  autoFillNameField = (nickName: string) => {
     this.onNicknameChange(nickName);
     this.setState({
       warningName: undefined,
     });
   };
 
-  onChainIDChange = async (chainId) => {
+  onChainIDChange = async (chainId: string) => {
     await this.setState({ chainId, validatedChainId: false });
     this.getCurrentState();
   };
 
-  onTickerChange = async (ticker) => {
+  onTickerChange = async (ticker: string) => {
     await this.setState({ ticker, validatedSymbol: false });
     this.getCurrentState();
   };
 
   // this function will autofill the symbol field with the value in parameter
-  autoFillSymbolField = (ticker) => {
+  autoFillSymbolField = (ticker: string) => {
     this.onTickerChange(ticker);
     this.setState({
       warningSymbol: undefined,
@@ -1553,12 +1711,18 @@ export class NetworkSettings extends PureComponent {
     const { MultichainNetworkController } = Engine.context;
     const { networkConfigurations } = this.props;
 
+    const legacyConfigurations = networkConfigurations as unknown as {
+      rpcEndpoints?: RpcEndpoint[];
+      defaultRpcEndpointIndex: number;
+    };
     const { networkClientId } =
-      networkConfigurations?.rpcEndpoints?.[
-        networkConfigurations.defaultRpcEndpointIndex
+      legacyConfigurations?.rpcEndpoints?.[
+        legacyConfigurations.defaultRpcEndpointIndex
       ] ?? {};
 
-    await MultichainNetworkController.setActiveNetwork(networkClientId);
+    await MultichainNetworkController.setActiveNetwork(
+      networkClientId as string,
+    );
 
     setTimeout(async () => {
       await updateIncomingTransactions();
@@ -1569,7 +1733,7 @@ export class NetworkSettings extends PureComponent {
     const { navigation, networkConfigurations, providerConfig } = this.props;
     const { rpcUrl } = this.state;
     if (
-      compareSanitizedUrl(rpcUrl, providerConfig.rpcUrl) &&
+      compareSanitizedUrl(rpcUrl as string, providerConfig.rpcUrl as string) &&
       providerConfig.type === RPC
     ) {
       await this.switchToMainnet();
@@ -1602,7 +1766,7 @@ export class NetworkSettings extends PureComponent {
     });
   };
 
-  showNetworkModal = (networkConfiguration) => {
+  showNetworkModal = (networkConfiguration: Network & ExtendedNetwork) => {
     this.setState({
       showPopularNetworkModal: true,
       popularNetwork: {
@@ -1646,12 +1810,13 @@ export class NetworkSettings extends PureComponent {
     } = this.state;
     const { route, networkConfigurations } = this.props;
     const isCustomMainnet = route.params?.isCustomMainnet;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.getColors();
     const themeAppearance =
-      this.context.themeAppearance || themeAppearanceLight;
+      (this.context as unknown as Theme)?.themeAppearance ||
+      themeAppearanceLight;
     const styles = createStyles(colors);
 
-    const formatNetworkRpcUrl = (rpcUrl, chainId) => {
+    const formatNetworkRpcUrl = (rpcUrl?: string, chainId?: string) => {
       const isNetworkPrePopulated = PopularList.find(
         (val) => val.rpcUrl === rpcUrl && val.chainId === chainId,
       );
@@ -1717,7 +1882,7 @@ export class NetworkSettings extends PureComponent {
       ? { ...styles.button, ...styles.disabledButton }
       : styles.button;
 
-    const url = new URL(rpcUrl);
+    const url = new URL(rpcUrl as string);
 
     const selectedNetwork = {
       rpcUrl: url.href,
@@ -1726,7 +1891,7 @@ export class NetworkSettings extends PureComponent {
       rpcPrefs: {
         blockExplorerUrl,
       },
-    };
+    } as unknown as Network;
 
     const shouldNetworkSwitchPopToWallet =
       route.params?.shouldNetworkSwitchPopToWallet ?? true;
@@ -1900,10 +2065,13 @@ export class NetworkSettings extends PureComponent {
         showPopularNetworkModal={this.state.showPopularNetworkModal}
         isNetworkModalVisible={this.state.showNetworkDetailsModal}
         closeNetworkModal={this.toggleNetworkDetailsModal}
-        selectedNetwork={{ ...selectedNetwork, chainId: toHex(chainId) }}
+        selectedNetwork={{
+          ...selectedNetwork,
+          chainId: toHex(chainId as string),
+        }}
         toggleWarningModal={this.toggleWarningModal}
         showNetworkModal={this.showNetworkModal}
-        switchTab={this.tabView}
+        switchTab={this.tabView ?? undefined}
         shouldNetworkSwitchPopToWallet={shouldNetworkSwitchPopToWallet}
       />
     ) : (
@@ -1963,19 +2131,20 @@ export class NetworkSettings extends PureComponent {
             </Text>
             {isNetworkUiRedesignEnabled() ? (
               <View style={styles.dropDownInput}>
-                <Cell
+                <CellWithOptionalAvatar
                   key={rpcUrl}
                   testID={NetworksViewSelectorsIDs.ICON_BUTTON_RPC}
                   variant={CellVariant.SelectWithMenu}
-                  title={rpcName || rpcUrl}
+                  title={(rpcName || rpcUrl) as string}
                   // Conditionally include secondaryText only if rpcName exists
                   {...(rpcName
                     ? {
                         secondaryText:
-                          hideKeyFromUrl(rpcUrl) ??
+                          hideKeyFromUrl(rpcUrl as string) ??
                           hideKeyFromUrl(
-                            networkConfigurations?.[chainId]?.rpcEndpoints?.[
-                              networkConfigurations?.[chainId]
+                            networkConfigurations?.[chainId as Hex]
+                              ?.rpcEndpoints?.[
+                              networkConfigurations?.[chainId as Hex]
                                 ?.defaultRpcEndpointIndex
                             ]?.url,
                           ),
@@ -2086,7 +2255,7 @@ export class NetworkSettings extends PureComponent {
                   key={rpcUrl}
                   testID={NetworksViewSelectorsIDs.ICON_BUTTON_BLOCK_EXPLORER}
                   variant={CellVariant.SelectWithMenu}
-                  title={blockExplorerUrl}
+                  title={blockExplorerUrl as string}
                   isSelected={false}
                   withAvatar={false}
                   onPress={this.openBlockExplorerModal}
@@ -2258,7 +2427,9 @@ export class NetworkSettings extends PureComponent {
                 />
                 {blockExplorerUrl &&
                   (!isUrl(blockExplorerUrl) ||
-                    blockExplorerUrls.includes(blockExplorerUrlForm)) && (
+                    blockExplorerUrls.includes(
+                      blockExplorerUrlForm as string,
+                    )) && (
                     <Text style={styles.warningText}>
                       {strings('app_settings.invalid_block_explorer_url')}
                     </Text>
@@ -2382,7 +2553,7 @@ export class NetworkSettings extends PureComponent {
                       <Cell
                         key={`${url}-${name}`}
                         variant={CellVariant.SelectWithMenu}
-                        title={name || type}
+                        title={(name || type) as string}
                         secondaryText={hideKeyFromUrl(url)}
                         isSelected={rpcUrl === url}
                         withAvatar={false}
@@ -2441,7 +2612,7 @@ export class NetworkSettings extends PureComponent {
   toggleNetworkDetailsModal = async () => {
     const { rpcUrl, chainId: stateChainId } = this.state;
     const { navigation } = this.props;
-    const formChainId = stateChainId.trim().toLowerCase();
+    const formChainId = (stateChainId as string).trim().toLowerCase();
 
     // Ensure chainId is a 0x-prefixed, lowercase hex string
     let chainId = formChainId;
@@ -2465,8 +2636,8 @@ export class NetworkSettings extends PureComponent {
 
   goToLearnMore = () => Linking.openURL(strings('networks.learn_more_url'));
 
-  renderTabBar = (props) => {
-    const colors = this.context.colors || mockTheme.colors;
+  renderTabBar = (props: object) => {
+    const colors = this.getColors();
     const styles = createStyles(colors);
     return (
       <View style={styles.base}>
@@ -2491,7 +2662,7 @@ export class NetworkSettings extends PureComponent {
       route.params?.shouldNetworkSwitchPopToWallet ?? true;
     const shouldShowPopularNetworks =
       route.params?.shouldShowPopularNetworks ?? true;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.getColors();
     const styles = createStyles(colors);
 
     return (
@@ -2508,10 +2679,10 @@ export class NetworkSettings extends PureComponent {
               tabBarTextStyle={styles.tabLabelStyle}
               renderTabBar={this.renderTabBar}
               ref={(tabView) => {
-                this.tabView = tabView;
+                this.tabView = tabView as unknown as TabBarProps;
               }}
             >
-              <View
+              <TabLabelView
                 tabLabel={strings('app_settings.popular')}
                 key={AppConstants.ADD_CUSTOM_NETWORK_POPULAR_TAB_ID}
                 style={styles.networksWrapper}
@@ -2521,23 +2692,23 @@ export class NetworkSettings extends PureComponent {
                   showPopularNetworkModal={this.state.showPopularNetworkModal}
                   isNetworkModalVisible={this.state.showPopularNetworkModal}
                   closeNetworkModal={this.onCancel}
-                  selectedNetwork={this.state.popularNetwork}
+                  selectedNetwork={this.state.popularNetwork as Network}
                   toggleWarningModal={this.toggleWarningModal}
                   showNetworkModal={this.showNetworkModal}
-                  switchTab={this.tabView}
+                  switchTab={this.tabView ?? undefined}
                   shouldNetworkSwitchPopToWallet={
                     shouldNetworkSwitchPopToWallet
                   }
                 />
-              </View>
+              </TabLabelView>
 
-              <View
+              <TabLabelView
                 tabLabel={strings('app_settings.custom_network_name')}
                 key={AppConstants.ADD_CUSTOM_NETWORK_CUSTOM_TAB_ID}
                 testID={NetworksViewSelectorsIDs.CUSTOM_NETWORKS_CONTAINER}
               >
                 {this.customNetwork()}
-              </View>
+              </TabLabelView>
             </ScrollableTabView>
           )}
         </View>
@@ -2563,14 +2734,13 @@ export class NetworkSettings extends PureComponent {
   }
 }
 
-NetworkSettings.contextType = ThemeContext;
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   showNetworkOnboardingAction: ({
     networkUrl,
     networkType,
     nativeToken,
     showNetworkOnboarding,
-  }) =>
+  }: NetworkOnboardingParams) =>
     dispatch(
       showNetworkOnboardingAction({
         networkUrl,
@@ -2581,7 +2751,7 @@ const mapDispatchToProps = (dispatch) => ({
     ),
 });
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   providerConfig: selectProviderConfig(state),
   networkConfigurations: selectNetworkConfigurations(state),
   networkOnboardedState: state.networkOnboarded.networkOnboardedState,
@@ -2593,4 +2763,8 @@ const mapStateToProps = (state) => ({
 export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   withIsOriginalNativeToken,
-)(withMetricsAwareness(NetworkSettings));
+)(
+  withMetricsAwareness(
+    NetworkSettings as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);

@@ -6,7 +6,6 @@ import {
   Image,
   Dimensions,
   TouchableOpacity,
-  StyleProp,
   ViewStyle,
   ImageStyle,
 } from 'react-native';
@@ -244,6 +243,7 @@ const GasEducationCarousel = ({
           conversionRate,
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
         setGasFiat(gasFiat);
       } catch (e) {
@@ -369,7 +369,7 @@ const GasEducationCarousel = ({
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
             >
-              {['one', 'two', 'three'].map((value, index) => {
+              {['one', 'two', 'three'].map((_value, index) => {
                 const key = index + 1;
                 const imgStyleKey = `carouselImage${key}`;
                 return (

@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   ScrollView,
@@ -6,7 +5,7 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+ ImageSourcePropType, ViewStyle } from 'react-native';
 import { connect } from 'react-redux';
 import ActionSheet from '@metamask/react-native-actionsheet';
 import { fontStyles } from '../../../../styles/common';
@@ -49,7 +48,60 @@ import { SolScope } from '@metamask/keyring-api';
 import { selectNonEvmNetworkConfigurationsByChainId } from '../../../../selectors/multichainNetworkController';
 ///: END:ONLY_INCLUDE_IF
 
-const createStyles = (colors) =>
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { Hex } from '@metamask/utils';
+import { RootState } from '../../../../reducers';
+import { Theme } from '../../../../util/theme/models';
+
+interface ActionSheetRef {
+  show: () => void;
+}
+
+type NetworkConfigurations = ReturnType<
+  typeof selectEvmNetworkConfigurationsByChainId
+>;
+
+interface FilteredNetwork {
+  name?: string;
+  color?: string | null;
+  networkTypeOrRpcUrl: string;
+  isCustomRPC: boolean;
+  chainId?: Hex;
+}
+
+interface NetworksSettingsProps {
+  /**
+   * Network configurations
+   */
+  networkConfigurations: NetworkConfigurations;
+  /**
+   * Object that represents the navigator
+   */
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * Current network provider configuration
+   */
+  providerConfig: ReturnType<typeof selectProviderConfig>;
+  ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+  /**
+   * Non evm network configurations
+   */
+  nonEvmNetworkConfigurations: ReturnType<
+    typeof selectNonEvmNetworkConfigurationsByChainId
+  >;
+  ///: END:ONLY_INCLUDE_IF
+}
+
+interface NetworksSettingsState {
+  searchString: string;
+  filteredNetworks: FilteredNetwork[];
+}
+
+const AvatarNetworkWithVariant = AvatarNetwork as unknown as React.ComponentType<
+  React.ComponentProps<typeof AvatarNetwork> & { variant?: AvatarVariant }
+>;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -124,39 +176,31 @@ const createStyles = (colors) =>
 /**
  * Main view for app configurations
  */
-class NetworksSettings extends PureComponent {
-  static propTypes = {
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Current network provider configuration
-     */
-    providerConfig: PropTypes.object,
-    ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-    /**
-     * Non evm network configurations
-     */
-    nonEvmNetworkConfigurations: PropTypes.object,
-    ///: END:ONLY_INCLUDE_IF
-  };
+class NetworksSettings extends PureComponent<
+  NetworksSettingsProps,
+  NetworksSettingsState
+> {
+  static contextType = ThemeContext;
 
-  actionSheet = null;
-  networkToRemove = null;
+  actionSheet: ActionSheetRef | null = null;
+  networkToRemove: string | null = null;
 
-  state = {
+  state: NetworksSettingsState = {
     searchString: '',
     filteredNetworks: [],
   };
 
+  getColors = () =>
+    (this.context as unknown as Theme)?.colors || mockTheme.colors;
+
+  getStyles = () => {
+    const styles = createStyles(this.getColors());
+    return styles as typeof styles & Record<string, ViewStyle>;
+  };
+
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.getColors();
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.networks_title'),
@@ -171,7 +215,7 @@ class NetworksSettings extends PureComponent {
     this.updateNavBar();
   };
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate = (prevProps: NetworksSettingsProps) => {
     if (this.props.networkConfigurations !== prevProps.networkConfigurations) {
       this.handleSearchTextChange(this.state.searchString);
     }
@@ -181,7 +225,7 @@ class NetworksSettings extends PureComponent {
 
   getOtherNetworks = () => getAllNetworks().slice(2);
 
-  onNetworkPress = (networkTypeOrRpcUrl) => {
+  onNetworkPress = (networkTypeOrRpcUrl: string) => {
     const { navigation } = this.props;
     navigation.navigate(Routes.ADD_NETWORK, {
       network: networkTypeOrRpcUrl,
@@ -193,9 +237,9 @@ class NetworksSettings extends PureComponent {
     navigation.navigate(Routes.ADD_NETWORK);
   };
 
-  showRemoveMenu = (networkTypeOrRpcUrl) => {
+  showRemoveMenu = (networkTypeOrRpcUrl: string) => {
     this.networkToRemove = networkTypeOrRpcUrl;
-    this.actionSheet.show();
+    this.actionSheet?.show();
   };
 
   switchToMainnet = () => {
@@ -212,7 +256,10 @@ class NetworksSettings extends PureComponent {
     // Check if it's the selected network and then switch to mainnet first
     const { providerConfig } = this.props;
     if (
-      compareSanitizedUrl(providerConfig.rpcUrl, this.networkToRemove) &&
+      compareSanitizedUrl(
+        providerConfig.rpcUrl as string,
+        this.networkToRemove ?? '',
+      ) &&
       providerConfig.type === RPC
     ) {
       this.switchToMainnet();
@@ -243,19 +290,27 @@ class NetworksSettings extends PureComponent {
       await MultichainNetworkController.setActiveNetwork('mainnet');
     }
 
-    NetworkController.removeNetwork(chainId);
+    NetworkController.removeNetwork(chainId as Hex);
     this.setState({ filteredNetworks: [] });
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: ActionSheetRef | null) => {
     this.actionSheet = ref;
   };
 
-  onActionSheetPress = (index) => (index === 0 ? this.removeNetwork() : null);
+  onActionSheetPress = (index: number) =>
+    index === 0 ? this.removeNetwork() : null;
 
-  networkElement(name, image, i, networkTypeOrRpcUrl, isCustomRPC, color) {
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
+  networkElement(
+    name: string,
+    image: ImageSourcePropType | string | null | undefined,
+    i: number,
+    networkTypeOrRpcUrl: string,
+    isCustomRPC: boolean,
+    color?: string | null,
+  ) {
+    const colors = this.getColors();
+    const styles = this.getStyles();
     return (
       <View key={`network-${networkTypeOrRpcUrl}`}>
         {
@@ -274,10 +329,10 @@ class NetworksSettings extends PureComponent {
             >
               <View style={styles.network}>
                 {isCustomRPC ? (
-                  <AvatarNetwork
+                  <AvatarNetworkWithVariant
                     variant={AvatarVariant.Network}
                     name={name}
-                    imageSource={image}
+                    imageSource={image as ImageSourcePropType}
                     style={styles.networkIcon}
                     size={AvatarSize.Xs}
                   />
@@ -290,7 +345,10 @@ class NetworksSettings extends PureComponent {
                     />
                   ) : (
                     <View
-                      style={[styles.networkIcon, { backgroundColor: color }]}
+                      style={[
+                        styles.networkIcon,
+                        { backgroundColor: color ?? undefined },
+                      ]}
                     >
                       <Text style={styles.text}>{name[0]}</Text>
                     </View>
@@ -314,7 +372,9 @@ class NetworksSettings extends PureComponent {
 
   renderOtherNetworks() {
     return this.getOtherNetworks().map((networkType, i) => {
-      const { name, imageSource, color } = Networks[networkType];
+      const { name, imageSource, color } = Networks[
+        networkType as keyof typeof Networks
+      ] as { name: string; imageSource?: ImageSourcePropType; color?: string };
       return this.networkElement(
         name,
         imageSource,
@@ -347,7 +407,13 @@ class NetworksSettings extends PureComponent {
         const rpcUrl = rpcEndpoints[defaultRpcEndpointIndex].networkClientId;
         const name = nickname || rpcName;
         const image = getNetworkImageSource({ chainId });
-        return this.networkElement(name, image, i, rpcUrl, true);
+        return this.networkElement(
+          name,
+          image as ImageSourcePropType,
+          i,
+          rpcUrl,
+          true,
+        );
       },
     );
   };
@@ -365,10 +431,12 @@ class NetworksSettings extends PureComponent {
     ];
 
     const filteredChain = Object.keys(networkConfigurations).reduce(
-      (filtered, key) => {
-        const network = networkConfigurations[key];
+      (filtered: Record<string, NetworkConfigurations[Hex]>, key) => {
+        const network = networkConfigurations[key as Hex];
         // If the chainId is not in the excludedChainIds, add it to the result
-        if (!excludedChainIds.includes(network.chainId)) {
+        if (
+          !(excludedChainIds as string[]).includes(network.chainId as string)
+        ) {
           filtered[key] = network;
         }
         return filtered;
@@ -376,8 +444,7 @@ class NetworksSettings extends PureComponent {
       {},
     );
 
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    const styles = this.getStyles();
 
     if (Object.keys(filteredChain).length > 0) {
       return (
@@ -393,8 +460,8 @@ class NetworksSettings extends PureComponent {
 
   renderMainnet() {
     const { name: mainnetName } = Networks.mainnet;
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    const colors = this.getColors();
+    const styles = this.getStyles();
 
     return (
       <View style={styles.mainnetHeader}>
@@ -422,8 +489,8 @@ class NetworksSettings extends PureComponent {
 
   renderLineaMainnet() {
     const { name: lineaMainnetName } = Networks['linea-mainnet'];
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    const colors = this.getColors();
+    const styles = this.getStyles();
 
     return (
       <View style={styles.mainnetHeader}>
@@ -452,11 +519,12 @@ class NetworksSettings extends PureComponent {
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   renderSolanaMainnet() {
     // TODO: [SOLANA] - Please revisit this since it's supported on a constant array in mobile and should come from multichain network controller
-    const { name: solanaMainnetName } = Object.values(
-      this.props.nonEvmNetworkConfigurations,
-    ).find((network) => network.chainId === SolScope.Mainnet);
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    const { name: solanaMainnetName } =
+      Object.values(this.props.nonEvmNetworkConfigurations).find(
+        (network) => network.chainId === SolScope.Mainnet,
+      ) ?? {};
+    const colors = this.getColors();
+    const styles = this.getStyles();
 
     return (
       <View style={styles.mainnetHeader}>
@@ -483,10 +551,12 @@ class NetworksSettings extends PureComponent {
     );
   }
   ///: END:ONLY_INCLUDE_IF
-  handleSearchTextChange = (text) => {
+  handleSearchTextChange = (text: string) => {
     this.setState({ searchString: text });
-    const defaultNetwork = getAllNetworks().map((networkType, i) => {
-      const { color, name, chainId } = Networks[networkType];
+    const defaultNetwork = getAllNetworks().map((networkType) => {
+      const { color, name, chainId } = Networks[
+        networkType as keyof typeof Networks
+      ] as { color?: string; name: string; chainId?: Hex };
       return {
         name,
         color,
@@ -504,7 +574,7 @@ class NetworksSettings extends PureComponent {
         const { color, name, url, chainId } = {
           name: networkConfiguration.name || defaultRpcEndpoint.url,
           url: defaultRpcEndpoint.url,
-          color: null,
+          color: null as string | null,
           chainId: networkConfiguration.chainId,
         };
         return {
@@ -518,7 +588,10 @@ class NetworksSettings extends PureComponent {
       },
     );
 
-    const allActiveNetworks = defaultNetwork.concat(customRPC);
+    const allActiveNetworks: FilteredNetwork[] = [
+      ...defaultNetwork,
+      ...customRPC,
+    ];
     const searchResult = allActiveNetworks.filter(({ name }) =>
       name?.toLowerCase().includes(text.toLowerCase()),
     );
@@ -529,18 +602,17 @@ class NetworksSettings extends PureComponent {
     this.setState({ searchString: '', filteredNetworks: [] });
 
   filteredResult = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    const styles = this.getStyles();
     if (this.state.filteredNetworks.length > 0) {
       return this.state.filteredNetworks.map((data, i) => {
         const { networkTypeOrRpcUrl, chainId, name, color, isCustomRPC } = data;
-        const image = getNetworkImageSource({ chainId });
+        const image = getNetworkImageSource({ chainId: chainId as Hex });
         return (
           // TODO: remove this check when linea mainnet is ready
           networkTypeOrRpcUrl !== LINEA_MAINNET &&
           this.networkElement(
-            name,
-            image || color,
+            name as string,
+            (image as ImageSourcePropType) || color,
             i,
             networkTypeOrRpcUrl,
             isCustomRPC,
@@ -556,9 +628,8 @@ class NetworksSettings extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance;
-    const styles = createStyles(colors);
+    const themeAppearance = (this.context as unknown as Theme)?.themeAppearance;
+    const styles = this.getStyles();
 
     return (
       <View
@@ -624,9 +695,7 @@ class NetworksSettings extends PureComponent {
   }
 }
 
-NetworksSettings.contextType = ThemeContext;
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   providerConfig: selectProviderConfig(state),
   networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
@@ -635,4 +704,6 @@ const mapStateToProps = (state) => ({
   ///: END:ONLY_INCLUDE_IF
 });
 
-export default connect(mapStateToProps)(NetworksSettings);
+export default connect(mapStateToProps)(
+  NetworksSettings as unknown as React.ComponentType,
+);

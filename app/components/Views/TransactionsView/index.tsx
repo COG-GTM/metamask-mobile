@@ -132,7 +132,9 @@ const TransactionsView = ({
       let accountAddedTimeInsertPointFound = false;
       const addedAccountTime = selectedInternalAccount?.metadata.importTime;
 
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const submittedTxs: ViewTransaction[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const confirmedTxs: ViewTransaction[] = [];
       const submittedNonces: (string | undefined)[] = [];
 
@@ -143,6 +145,7 @@ const TransactionsView = ({
           self.findIndex((_tx) => _tx.id === tx.id) === index,
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const allTransactions = allTransactionsSorted.filter((tx) => {
         const filter = filterByAddressAndNetwork(
           tx,
@@ -211,8 +214,7 @@ const TransactionsView = ({
       // If the account added insert point is not found, add it to the last transaction
       if (
         !accountAddedTimeInsertPointFound &&
-        allTransactionsFiltered &&
-        allTransactionsFiltered.length
+        allTransactionsFiltered?.length
       ) {
         allTransactionsFiltered[
           allTransactionsFiltered.length - 1

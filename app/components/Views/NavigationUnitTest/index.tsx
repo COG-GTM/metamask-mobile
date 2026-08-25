@@ -64,7 +64,7 @@ const TestStack = ({ secondRoute }: { secondRoute?: string }) => (
 
 const NavigationUnitTest = ({
   firstRoute,
-  secondRoute,
+  secondRoute: _secondRoute,
 }: NavigationUnitTestProps) => (
   <NavigationContainer>
     <Stack.Navigator initialRouteName={firstRoute || 'TestStack'}>

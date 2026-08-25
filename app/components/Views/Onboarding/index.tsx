@@ -37,7 +37,7 @@ import PreventScreenshot from '../../../core/PreventScreenshot';
 import WarningExistingUserModal from '../../UI/WarningExistingUserModal';
 import { PREVIOUS_SCREEN, ONBOARDING } from '../../../constants/navigation';
 import { EXISTING_USER } from '../../../constants/storage';
-import { MetaMetricsEvents } from '../../../core/Analytics';
+import { MetaMetricsEvents , IMetaMetricsEvent } from '../../../core/Analytics';
 import { withMetricsAwareness } from '../../hooks/useMetrics';
 import { Authentication } from '../../../core';
 import { ThemeContext, mockTheme } from '../../../util/theme';
@@ -46,11 +46,9 @@ import { OnboardingSelectorIDs } from '../../../../e2e/selectors/Onboarding/Onbo
 import Routes from '../../../constants/navigation/Routes';
 import { selectAccounts } from '../../../selectors/accountTrackerController';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
-import { trace, TraceName, TraceOperation } from '../../../util/trace';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { Dispatch } from 'redux';
-import { IMetaMetricsEvent } from '../../../core/Analytics';
 import { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
 import { RootState } from '../../../reducers';
 import { Theme } from '../../../util/theme/models';
@@ -382,6 +380,7 @@ class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
       <View style={styles.ctas}>
         <View style={styles.largeFoxWrapper}>
           <Image
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             source={require('../../../images/branding/fox.png')}
             style={styles.foxImage}
             resizeMethod={'auto'}
@@ -473,6 +472,7 @@ class Onboarding extends PureComponent<OnboardingProps, OnboardingState> {
             {loading && (
               <View style={styles.foxWrapper}>
                 <Image
+                  // eslint-disable-next-line @typescript-eslint/no-require-imports
                   source={require('../../../images/branding/fox.png')}
                   style={styles.image}
                   resizeMethod={'auto'}

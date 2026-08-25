@@ -8,13 +8,16 @@ import {
   TextInput,
   SafeAreaView,
   Platform,
-} from 'react-native';
+ TextStyle, ViewStyle } from 'react-native';
 import { connect } from 'react-redux';
 import StorageWrapper from '../../../store/storage-wrapper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import zxcvbn from 'zxcvbn';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { OutlinedTextField } from 'react-native-material-textfield';
+import {
+  OutlinedTextField,
+  TextFieldProps,
+} from 'react-native-material-textfield';
 import Clipboard from '@react-native-clipboard/clipboard';
 import AppConstants from '../../../core/AppConstants';
 import Device from '../../../util/device';
@@ -30,7 +33,7 @@ import {
   passwordRequirementsMet,
   MIN_PASSWORD_LENGTH,
 } from '../../../util/password';
-import { MetaMetricsEvents } from '../../../core/Analytics';
+import { MetaMetricsEvents , IMetaMetricsEvent } from '../../../core/Analytics';
 
 import { useTheme } from '../../../util/theme';
 import { passwordSet, seedphraseBackedUp } from '../../../actions/user';
@@ -65,9 +68,8 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { Dispatch } from 'redux';
-import { TextStyle, ViewStyle } from 'react-native';
 import { BIOMETRY_TYPE } from 'react-native-keychain';
-import { IMetaMetricsEvent } from '../../../core/Analytics';
+import { JsonMap } from '../../../core/Analytics/MetaMetrics.types';
 
 const MINIMUM_SUPPORTED_CLIPBOARD_VERSION = 9;
 
@@ -106,9 +108,13 @@ interface ImportFromSecretRecoveryPhraseProps {
 
 const ImportFromSecretRecoveryPhrase = ({
   navigation,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   passwordSet,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   setLockTime,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   seedphraseBackedUp,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   setOnboardingWizardStep,
   route,
 }: ImportFromSecretRecoveryPhraseProps) => {
@@ -136,7 +142,7 @@ const ImportFromSecretRecoveryPhrase = ({
 
   const track = (
     event: IMetaMetricsEvent,
-    properties: Record<string, unknown> = {},
+    properties: JsonMap = {},
   ) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
@@ -193,6 +199,7 @@ const ImportFromSecretRecoveryPhrase = ({
     termsOfUse();
   }, [termsOfUse]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const updateBiometryChoice = async (biometryChoice: boolean) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     setBiometryChoice(biometryChoice);
@@ -233,6 +240,7 @@ const ImportFromSecretRecoveryPhrase = ({
 
     if (loading) return;
     track(MetaMetricsEvents.WALLET_IMPORT_ATTEMPTED);
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     let error: string | null = null;
     if (!passwordRequirementsMet(password)) {
       error = strings('import_from_seed.password_length_error');
@@ -295,6 +303,7 @@ const ImportFromSecretRecoveryPhrase = ({
           index: 1,
           routes: [{ name: Routes.ONBOARDING.SUCCESS_FLOW }],
         });
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       } catch (error) {
         // Should we force people to enable passcode / biometrics?
         if ((error as Error).toString() === PASSCODE_NOT_SET_ERROR) {
@@ -316,6 +325,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const clearSecretRecoveryPhrase = async (seed: string) => {
     // get clipboard contents
     const clipboardContents = await Clipboard.getString();
@@ -331,6 +341,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const onSeedWordsChange = useCallback(async (seed: string) => {
     setSeed(seed);
     // Only clear on android since iOS will notify users when we getString()
@@ -368,6 +379,7 @@ const ImportFromSecretRecoveryPhrase = ({
   };
 
   const renderSwitch = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const handleUpdateRememberMe = (rememberMe: boolean) => {
       setRememberMe(rememberMe);
     };
@@ -399,6 +411,7 @@ const ImportFromSecretRecoveryPhrase = ({
     navigation.navigate(Routes.QR_TAB_SWITCHER, {
       initialScreen: QRTabSwitcherScreens.Scanner,
       disableTabber: true,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       onScanSuccess: ({ seed = undefined }: { seed?: string }) => {
         if (seed) {
           setSeed(seed);
@@ -423,9 +436,9 @@ const ImportFromSecretRecoveryPhrase = ({
   const hiddenSRPInput = useCallback(
     () => (
       <OutlinedTextField
-        style={styles.input as TextStyle}
-        containerStyle={inputWidth as ViewStyle}
-        inputContainerStyle={styles.padding as ViewStyle}
+        style={styles.input as TextFieldProps}
+        containerStyle={inputWidth as TextFieldProps}
+        inputContainerStyle={styles.padding as TextFieldProps}
         placeholder={strings('import_from_seed.seed_phrase_placeholder')}
         testID={ImportFromSeedSelectorsIDs.SEED_PHRASE_INPUT_ID}
         placeholderTextColor={colors.text.muted}
@@ -543,8 +556,8 @@ const ImportFromSecretRecoveryPhrase = ({
               </View>
             </View>
             <OutlinedTextField
-              style={styles.input as TextStyle}
-              containerStyle={inputWidth as ViewStyle}
+              style={styles.input as TextFieldProps}
+              containerStyle={inputWidth as TextFieldProps}
               testID={ChoosePasswordSelectorsIDs.NEW_PASSWORD_INPUT_ID}
               placeholder={strings('import_from_seed.new_password')}
               placeholderTextColor={colors.text.muted}
@@ -584,8 +597,8 @@ const ImportFromSecretRecoveryPhrase = ({
               {strings('import_from_seed.confirm_password')}
             </Text>
             <OutlinedTextField
-              style={styles.input as TextStyle}
-              containerStyle={inputWidth as ViewStyle}
+              style={styles.input as TextFieldProps}
+              containerStyle={inputWidth as TextFieldProps}
               testID={ChoosePasswordSelectorsIDs.CONFIRM_PASSWORD_INPUT_ID}
               onChangeText={onPasswordConfirmChange}
               returnKeyType={'next'}
@@ -653,10 +666,10 @@ const ImportFromSecretRecoveryPhrase = ({
       </KeyboardAwareScrollView>
       <View style={styles.termsAndConditions}>
         <TermsAndConditions
-          {...({ navigation } as React.ComponentProps<
-            typeof TermsAndConditions
-          >)}
-          action={strings('import_from_seed.import_button')}
+          {...({
+            navigation,
+            action: strings('import_from_seed.import_button'),
+          } as React.ComponentProps<typeof TermsAndConditions>)}
         />
       </View>
       <ScreenshotDeterrent enabled isSRP />
