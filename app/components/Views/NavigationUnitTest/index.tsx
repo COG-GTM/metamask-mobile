@@ -3,7 +3,6 @@
  * For reference see: https://reactnavigation.org/docs/navigation-prop/#dangerouslygetstate
  */
 
-/* eslint-disable react/prop-types */
 /* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -16,7 +15,20 @@ import { Text } from 'react-native';
 
 const Stack = createStackNavigator();
 
-const TestScreen = ({ route }) => {
+interface TestScreenProps {
+  route: {
+    params: {
+      screenName: string;
+    };
+  };
+}
+
+interface NavigationUnitTestProps {
+  firstRoute?: string;
+  secondRoute?: string;
+}
+
+const TestScreen = ({ route }: TestScreenProps) => {
   const routes = useNavigationState((state) => state.routes);
 
   const name = findRouteNameFromNavigatorState(routes);
@@ -39,7 +51,7 @@ const TestSubStack = () => (
   </Stack.Navigator>
 );
 
-const TestStack = ({ secondRoute }) => (
+const TestStack = ({ secondRoute }: { secondRoute?: string }) => (
   <Stack.Navigator initialRouteName={secondRoute || 'TestSubStack'}>
     <Stack.Screen name="TestSubStack" component={TestSubStack} />
     <Stack.Screen
@@ -50,7 +62,10 @@ const TestStack = ({ secondRoute }) => (
   </Stack.Navigator>
 );
 
-const NavigationUnitTest = ({ firstRoute, secondRoute }) => (
+const NavigationUnitTest = ({
+  firstRoute,
+  secondRoute,
+}: NavigationUnitTestProps) => (
   <NavigationContainer>
     <Stack.Navigator initialRouteName={firstRoute || 'TestStack'}>
       <Stack.Screen name="TestStack" component={TestStack} />
@@ -63,7 +78,10 @@ const NavigationUnitTest = ({ firstRoute, secondRoute }) => (
   </NavigationContainer>
 );
 
-const NavigationUnitTestFactory = ({ firstRoute, secondRoute }) => (
+const NavigationUnitTestFactory = ({
+  firstRoute,
+  secondRoute,
+}: NavigationUnitTestProps) => (
   <NavigationUnitTest firstRoute={firstRoute} secondRoute={secondRoute} />
 );
 
