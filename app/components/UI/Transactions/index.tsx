@@ -202,8 +202,8 @@ interface TransactionsState {
   speedUpConfirmDisabled: boolean;
   rpcBlockExplorer?: string;
   errorMsg?: string;
-  isQRHardwareAccount: boolean;
-  isLedgerAccount: boolean;
+  isQRHardwareAccount: boolean | undefined;
+  isLedgerAccount: boolean | undefined;
 }
 
 /**
@@ -340,9 +340,7 @@ class Transactions extends PureComponent<
       this.props.onRefSet && this.props.onRefSet(this.flatList);
     }, 100);
     this.setState({
-      isQRHardwareAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress),
-      ),
+      isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress),
     });
   };
 
@@ -368,16 +366,12 @@ class Transactions extends PureComponent<
 
     this.setState({ rpcBlockExplorer: blockExplorer });
     this.setState({
-      isQRHardwareAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress, [
-          ExtendedKeyringTypes.qr,
-        ]),
-      ),
-      isLedgerAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress, [
-          ExtendedKeyringTypes.ledger,
-        ]),
-      ),
+      isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress, [
+        ExtendedKeyringTypes.qr,
+      ]),
+      isLedgerAccount: isHardwareAccount(this.props.selectedAddress, [
+        ExtendedKeyringTypes.ledger,
+      ]),
     });
   };
 
