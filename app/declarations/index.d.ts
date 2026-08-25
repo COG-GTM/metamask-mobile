@@ -296,6 +296,14 @@ declare module '@metamask/react-native-actionsheet' {
 
 declare module '@metamask/react-native-search-api';
 
+declare module 'ethjs-ens' {
+  export default class ENS {
+    constructor(opts: { provider: unknown; network: string });
+    lookup(name: string): Promise<string>;
+    reverse(address: string): Promise<string>;
+  }
+}
+
 /**
  * @sentry/react-native types for v^6.10.0
  * Types are overridden to ensure captureException receives an Error type for more reliable stack traces
