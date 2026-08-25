@@ -21,7 +21,7 @@ import {
   parseTransactionEIP1559,
   parseTransactionLegacy,
 } from '../../../../../../../util/transactions';
-import { setTransactionObject } from '../../../../../../../actions/transaction';
+import { setTransactionObject as setTransactionObjectAction } from '../../../../../../../actions/transaction';
 import Engine from '../../../../../../../core/Engine';
 import collectiblesTransferInformation from '../../../../../../../util/collectibles-transfer.json';
 import { safeToChecksumAddress } from '../../../../../../../util/address';
@@ -395,13 +395,13 @@ class TransactionEditor extends PureComponent<
       );
     }
 
-    if (transaction && transaction.value) {
+    if (transaction?.value) {
       this.handleUpdateAmount(transaction.value, true);
     }
     if (transaction && transaction.assetType === 'ETH') {
       this.handleUpdateReadableValue(fromWei(transaction.value));
     }
-    if (transaction && transaction.data) {
+    if (transaction?.data) {
       this.setState({ data: transaction.data });
     }
   };
@@ -601,7 +601,7 @@ class TransactionEditor extends PureComponent<
           return transaction.data;
         }
 
-        const tokenAmountToSend = selectedAsset && value && value.toString(16);
+        const tokenAmountToSend = selectedAsset && value?.toString(16);
         return to && tokenAmountToSend
           ? generateTransferData('transfer', {
             toAddress: to,
@@ -1094,7 +1094,7 @@ const mapDispatchToProps = (dispatch: any) => ({
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setTransactionObject: (transaction: any) =>
-    dispatch(setTransactionObject(transaction)),
+    dispatch(setTransactionObjectAction(transaction)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TransactionEditor);

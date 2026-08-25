@@ -36,8 +36,8 @@ import {
 } from '../../../../../../../util/networks';
 import CustomNonceModal from '../../../SendFlow/components/CustomNonceModal';
 import {
-  setNonce,
-  setProposedNonce,
+  setNonce as setNonceAction,
+  setProposedNonce as setProposedNonceAction,
 } from '../../../../../../../actions/transaction';
 import TransactionReviewEIP1559 from '../TransactionReviewEIP1559';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
@@ -329,7 +329,7 @@ class TransactionReviewInformation extends PureComponent<
   getTotalFiat = (
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    asset: any,
+    _: any,
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     totalGas: any,
@@ -668,7 +668,6 @@ class TransactionReviewInformation extends PureComponent<
       currentCurrency,
       conversionRate,
       ticker,
-      over,
       onUpdatingValuesStart,
       onUpdatingValuesEnd,
       animateOnChange,
@@ -689,10 +688,7 @@ class TransactionReviewInformation extends PureComponent<
       currentCurrency as string,
     );
     const totalGasEth = `${renderFromWei(totalGas)} ${getTicker(ticker)}`;
-    const [totalFiat, totalValue] = this.getRenderTotals(
-      totalGas,
-      totalGasFiat,
-    )();
+    this.getRenderTotals(totalGas, totalGasFiat)();
     return (
       <TransactionReviewEIP1559
         gasFeeNative={totalGasEth}
@@ -833,8 +829,8 @@ const mapStateToProps = (state: any) => {
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapDispatchToProps = (dispatch: any) => ({
-  setNonce: (nonce: number) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
+  setNonce: (nonce: number) => dispatch(setNonceAction(nonce)),
+  setProposedNonce: (nonce: number) => dispatch(setProposedNonceAction(nonce)),
 });
 
 TransactionReviewInformation.contextType = ThemeContext;

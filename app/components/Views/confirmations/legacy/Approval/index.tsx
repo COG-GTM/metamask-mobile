@@ -32,6 +32,7 @@ import { WALLET_CONNECT_ORIGIN } from '../../../../../util/walletconnect';
 import Logger from '../../../../../util/Logger';
 import { KEYSTONE_TX_CANCELED } from '../../../../../constants/error';
 import { ThemeContext, mockTheme } from '../../../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 import { createLedgerTransactionModalNavDetails } from '../../../../UI/LedgerModals/LedgerTransactionModal';
 import {
   TX_CANCELLED,
@@ -171,8 +172,6 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   #transactionFinishedListener: any;
 
-  declare context: React.ContextType<typeof ThemeContext>;
-
   state = {
     mode: REVIEW,
     transactionHandled: false,
@@ -184,7 +183,8 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
   originIsMMSDKRemoteConn = false;
 
   updateNavBar = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const { navigation } = this.props;
     navigation.setOptions(
       getTransactionOptionsTitle('approval.title', navigation, {}, colors),
@@ -282,8 +282,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
       'change',
       this.handleAppStateChange,
     );
-    navigation &&
-      navigation.setParams({ mode: REVIEW, dispatch: this.onModeChange });
+    navigation?.setParams({ mode: REVIEW, dispatch: this.onModeChange });
     this.initialise();
   };
 
@@ -405,12 +404,10 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
       : {};
   };
 
-  getAnalyticsParams = (
-    {
-      gasEstimateType,
-      gasSelected,
-    }: { gasEstimateType?: string; gasSelected?: string | null } = {},
-  ) => {
+  getAnalyticsParams = ({
+    gasEstimateType,
+    gasSelected,
+  }: { gasEstimateType?: string; gasSelected?: string | null } = {}) => {
     const { chainId, transaction, selectedAddress, shouldUseSmartTransaction } =
       this.props;
 
@@ -476,8 +473,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
   showWalletConnectNotification = (confirmation = false) => {
     const { transaction } = this.props;
     InteractionManager.runAfterInteractions(() => {
-      transaction.origin &&
-        transaction.origin.startsWith(WALLET_CONNECT_ORIGIN) &&
+      transaction.origin?.startsWith(WALLET_CONNECT_ORIGIN) &&
         NotificationManager.showSimpleNotification({
           status: `simple_notification${!confirmation ? '_rejected' : ''}`,
           duration: 5000,
@@ -507,7 +503,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
 
   onLedgerConfirmation = (
     approve: boolean,
-    transactionId: string,
+    _: string,
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     gaParams: any,
@@ -550,9 +546,9 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
     gasEstimateType,
     EIP1559GasData,
     gasSelected,
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }: any) => {
+  }: // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any) => {
     const { KeyringController, ApprovalController } = Engine.context;
     const {
       transactions,
@@ -687,11 +683,9 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
         !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
         !error?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
-        Alert.alert(
-          strings('transactions.transaction_error'),
-          error && error.message,
-          [{ text: strings('navigation.ok') }],
-        );
+        Alert.alert(strings('transactions.transaction_error'), error?.message, [
+          { text: strings('navigation.ok') },
+        ]);
         Logger.error(
           error,
           'error while trying to send transaction (Approval)',
@@ -734,7 +728,7 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
    */
   onModeChange = (mode: string) => {
     const { navigation } = this.props;
-    navigation && navigation.setParams({ mode });
+    navigation?.setParams({ mode });
     this.setState({ mode });
     InteractionManager.runAfterInteractions(() => {
       mode === REVIEW && this.trackConfirmScreen();
@@ -752,9 +746,9 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
   prepareTransaction = ({
     EIP1559GasData,
     gasEstimateType,
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }: any) => {
+  }: // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any) => {
     const { transaction: rawTransaction, showCustomNonce } = this.props;
     const { assetType, gas, gasPrice, selectedAsset } = rawTransaction;
 
@@ -793,7 +787,8 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
     const { dappTransactionModalVisible } = this.props;
     const { mode, transactionConfirmed, isChangeInSimulationModalOpen } =
       this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
 
     return (
       <Modal

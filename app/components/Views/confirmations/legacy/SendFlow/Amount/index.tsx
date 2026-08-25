@@ -13,11 +13,10 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import {
-  setSelectedAsset,
-  prepareTransaction,
-  setTransactionObject,
-  resetTransaction,
-  setMaxValueMode,
+  setSelectedAsset as setSelectedAssetAction,
+  prepareTransaction as prepareTransactionAction,
+  resetTransaction as resetTransactionAction,
+  setMaxValueMode as setMaxValueModeAction,
 } from '../../../../../../actions/transaction';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
 import StyledButton from '../../../../../UI/StyledButton';
@@ -73,6 +72,7 @@ import {
 } from '../../../../../../reducers/collectibles';
 import { gte } from '../../../../../../util/lodash';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
+import { Theme } from '../../../../../../util/theme/models';
 import Alert, { AlertType } from '../../../../../Base/Alert';
 
 import {
@@ -554,8 +554,6 @@ interface AmountState {
  * View that wraps the wraps the "Send" screen
  */
 class Amount extends PureComponent<AmountProps, AmountState> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   state: AmountState = {
     amountError: undefined,
     inputValue: undefined,
@@ -578,7 +576,8 @@ class Amount extends PureComponent<AmountProps, AmountState> {
 
   updateNavBar = () => {
     const { navigation, route, resetTransaction } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -751,7 +750,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         )}`;
       }
     }
-    if (value && value.includes(',')) {
+    if (value?.includes(',')) {
       value = (inputValue as string).replace(',', '.');
     }
 
@@ -785,29 +784,29 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     if (onConfirm) {
       onConfirm();
     } else if (isRedesignedTransferConfirmationEnabled) {
-        this.setState({ isRedesignedTransferTransactionLoading: true });
+      this.setState({ isRedesignedTransferTransactionLoading: true });
 
-        const transactionParams = {
-          data: transaction.data,
-          from: transaction.from,
-          to: transaction.to,
-          value:
-            typeof transaction.value === 'string'
-              ? transaction.value
-              : BNToHex(transaction.value),
-        };
+      const transactionParams = {
+        data: transaction.data,
+        from: transaction.from,
+        to: transaction.to,
+        value:
+          typeof transaction.value === 'string'
+            ? transaction.value
+            : BNToHex(transaction.value),
+      };
 
-        await addTransaction(transactionParams, {
-          origin: MMM_ORIGIN,
-          networkClientId: globalNetworkClientId,
-        });
-        this.setState({ isRedesignedTransferTransactionLoading: false });
-        navigation.navigate('SendFlowView', {
-          screen: Routes.STANDALONE_CONFIRMATIONS.TRANSFER,
-        });
-      } else {
-        navigation.navigate(Routes.SEND_FLOW.CONFIRM);
-      }
+      await addTransaction(transactionParams, {
+        origin: MMM_ORIGIN,
+        networkClientId: globalNetworkClientId,
+      });
+      this.setState({ isRedesignedTransferTransactionLoading: false });
+      navigation.navigate('SendFlowView', {
+        screen: Routes.STANDALONE_CONFIRMATIONS.TRANSFER,
+      });
+    } else {
+      navigation.navigate(Routes.SEND_FLOW.CONFIRM);
+    }
   };
 
   getCollectibleTranferTransactionProperties() {
@@ -927,7 +926,10 @@ class Amount extends PureComponent<AmountProps, AmountState> {
           weiInput = weiValue.add(estimatedTotalGas);
         } else {
           weiBalance = hexToBN(contractBalances[selectedAsset.address]);
-          weiInput = toTokenMinimalUnit(value as string, selectedAsset.decimals);
+          weiInput = toTokenMinimalUnit(
+            value as string,
+            selectedAsset.decimals,
+          );
         }
         // TODO: weiBalance is not always guaranteed to be type BN. Need to consolidate type.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1032,9 +1034,9 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       hasExchangeRate,
       comma;
     // Remove spaces from input
-    inputValue = inputValue && inputValue.replace(regex.whiteSpaces, '');
+    inputValue = inputValue?.replace(regex.whiteSpaces, '');
     // Handle semicolon for other languages
-    if (inputValue && inputValue.includes(',')) {
+    if (inputValue?.includes(',')) {
       comma = true;
       inputValue = inputValue.replace(',', '.');
     }
@@ -1105,7 +1107,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         renderableInputValueConversion = `${inputValueConversion} ${selectedAsset.symbol}`;
       }
     }
-    if (comma) inputValue = inputValue && inputValue.replace('.', ',');
+    if (comma) inputValue = inputValue?.replace('.', ',');
     inputValueConversion =
       inputValueConversion === '0' ? undefined : inputValueConversion;
     this.setState({
@@ -1155,13 +1157,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       this.onInputChange(undefined, selectedAsset);
       this.handleSelectedAssetBalance(selectedAsset);
       // Wait for input to mount first
-      setTimeout(
-        () =>
-          this.amountInput &&
-          this.amountInput.current &&
-          this.amountInput.current.focus(),
-        500,
-      );
+      setTimeout(() => this.amountInput?.current?.focus(), 500);
     }
   };
 
@@ -1187,7 +1183,8 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     } = this.props;
     let balance, balanceFiat;
     const { address, decimals, symbol } = token;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (isNativeToken(token)) {
@@ -1245,7 +1242,8 @@ class Amount extends PureComponent<AmountProps, AmountState> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderCollectible = (collectible: any, index?: number) => {
     const { name } = collectible;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1313,7 +1311,8 @@ class Amount extends PureComponent<AmountProps, AmountState> {
     const tradableCollectibles = this.collectibles.filter(
       ({ standard }) => standard === 'ERC721',
     );
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1373,8 +1372,10 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       globalChainId,
       ticker,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
+    const themeAppearance =
+      (this.context as unknown as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);
     const navigateToSwap = () => {
       navigation.replace('Swaps', {
@@ -1522,7 +1523,8 @@ class Amount extends PureComponent<AmountProps, AmountState> {
   renderCollectibleInput = () => {
     const { amountError } = this.state;
     const { selectedAsset } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1566,7 +1568,8 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       selectedAsset,
       transactionState: { isPaymentRequest },
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1722,14 +1725,14 @@ const mapDispatchToProps = (dispatch: any) => ({
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   prepareTransaction: (transaction: any) =>
-    dispatch(prepareTransaction(transaction)),
+    dispatch(prepareTransactionAction(transaction)),
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setSelectedAsset: (selectedAsset: any) =>
-    dispatch(setSelectedAsset(selectedAsset)),
-  resetTransaction: () => dispatch(resetTransaction()),
+    dispatch(setSelectedAssetAction(selectedAsset)),
+  resetTransaction: () => dispatch(resetTransactionAction()),
   setMaxValueMode: (maxValueMode: boolean) =>
-    dispatch(setMaxValueMode(maxValueMode)),
+    dispatch(setMaxValueModeAction(maxValueMode)),
 });
 
 export default connect(

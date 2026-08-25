@@ -19,7 +19,7 @@ import {
 } from '../../../../../../util/address';
 import Engine from '../../../../../../core/Engine';
 import { strings } from '../../../../../../../locales/i18n';
-import { setTransactionObject } from '../../../../../../actions/transaction';
+import { setTransactionObject as setTransactionObjectAction } from '../../../../../../actions/transaction';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import {
   fromTokenMinimalUnit,
@@ -1503,7 +1503,7 @@ const mapDispatchToProps = (dispatch: any) => ({
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setTransactionObject: (transaction: any) =>
-    dispatch(setTransactionObject(transaction)),
+    dispatch(setTransactionObjectAction(transaction)),
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showAlert: (config: any) => dispatch(showAlert(config)),

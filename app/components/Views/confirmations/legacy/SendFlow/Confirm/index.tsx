@@ -30,11 +30,11 @@ import { WalletDevice } from '@metamask/transaction-controller';
 import { ChainId } from '@metamask/controller-utils';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import {
-  prepareTransaction,
-  resetTransaction,
-  setNonce,
-  setProposedNonce,
-  setTransactionId,
+  prepareTransaction as prepareTransactionAction,
+  resetTransaction as resetTransactionAction,
+  setNonce as setNonceAction,
+  setProposedNonce as setProposedNonceAction,
+  setTransactionId as setTransactionIdAction,
   setTransactionValue,
 } from '../../../../../../actions/transaction';
 import { getGasLimit } from '../../../../../../util/custom-gas';
@@ -73,6 +73,7 @@ import {
 } from '../../../../../../util/address';
 import { KEYSTONE_TX_CANCELED } from '../../../../../../constants/error';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 import Routes from '../../../../../../constants/navigation/Routes';
 import WarningMessage from '../WarningMessage';
 import { showAlert } from '../../../../../../actions/alert';
@@ -119,7 +120,7 @@ import { getSmartTransactionMetricsProperties } from '../../../../../../util/sma
 import { TransactionConfirmViewSelectorsIDs } from '../../../../../../../e2e/selectors/SendFlow/TransactionConfirmView.selectors.js';
 import {
   selectConfirmationMetrics,
-  updateConfirmationMetric,
+  updateConfirmationMetric as updateConfirmationMetricAction,
 } from '../../../../../../core/redux/slices/confirmationMetrics';
 import {
   validateSufficientTokenBalance,
@@ -376,8 +377,6 @@ interface ConfirmState {
  * View that wraps the wraps the "Send" screen
  */
 class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scrollView: any;
@@ -484,7 +483,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
   updateNavBar = () => {
     const { navigation, route, resetTransaction, transaction } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getSendFlowTitle(
         'send.confirm',
@@ -626,11 +626,9 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     } catch (error: any) {
       Logger.error(error, 'error while adding transaction (Confirm)');
       navigation.navigate(Routes.WALLET_VIEW);
-      Alert.alert(
-        strings('transactions.transaction_error'),
-        error && error.message,
-        [{ text: 'OK' }],
-      );
+      Alert.alert(strings('transactions.transaction_error'), error?.message, [
+        { text: 'OK' },
+      ]);
       return;
     }
 
@@ -852,8 +850,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
     let transactionValue, transactionValueFiat;
     const valueBN = hexToBN(value);
-    const symbol = ticker ?? selectedAsset?.symbol;
-    const parsedTicker = getTicker(symbol);
+    const assetSymbol = ticker ?? selectedAsset?.symbol;
+    const parsedTicker = getTicker(assetSymbol);
 
     if (isNativeToken(selectedAsset)) {
       transactionValue = `${renderFromWei(value)} ${parsedTicker}`;
@@ -1077,12 +1075,12 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
               .build(),
           );
           stopGasPolling();
-          resetTransaction();
+          resetTransactionAction();
         });
       }
     } finally {
       // Error handling derived to LedgerConfirmationModal component
-      navigation && navigation.dangerouslyGetParent()?.popToTop();
+      navigation?.dangerouslyGetParent()?.popToTop();
     }
   };
 
@@ -1221,11 +1219,9 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
         !error?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
-        Alert.alert(
-          strings('transactions.transaction_error'),
-          error && error.message,
-          [{ text: 'OK' }],
-        );
+        Alert.alert(strings('transactions.transaction_error'), error?.message, [
+          { text: 'OK' },
+        ]);
         Logger.error(error, 'error while trying to send transaction (Confirm)');
       } else {
         this.props.metrics.trackEvent(
@@ -1318,7 +1314,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
   renderHexDataModal = () => {
     const { hexDataModalVisible } = this.state;
     const { data } = this.props.transactionState.transaction;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
       <Modal
@@ -1336,11 +1333,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
             style={styles.hexDataClose}
             onPress={this.toggleHexDataModal}
           >
-            <IonicIcon
-              name={'close'}
-              size={28}
-              color={colors.text.default}
-            />
+            <IonicIcon name={'close'} size={28} color={colors.text.default} />
           </TouchableOpacity>
           <View style={styles.qrCode}>
             <Text style={styles.addressTitle}>
@@ -1471,7 +1464,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
   getConfirmButtonStyles() {
     const { securityAlertResponse } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     let confirmButtonStyle = {};
@@ -1551,7 +1545,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       legacyGasObject,
       transactionMeta,
     } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const showFeeMarket =
       !gasEstimateType ||
@@ -1809,28 +1804,29 @@ const mapDispatchToProps = (dispatch: any) => ({
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   prepareTransaction: (transaction: any) =>
-    dispatch(prepareTransaction(transaction)),
-  resetTransaction: () => dispatch(resetTransaction()),
+    dispatch(prepareTransactionAction(transaction)),
+  resetTransaction: () => dispatch(resetTransactionAction()),
   setTransactionId: (transactionId: string) =>
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    dispatch(setTransactionId(transactionId as any)),
-  setNonce: (nonce: number) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
+    dispatch(setTransactionIdAction(transactionId as any)),
+  setNonce: (nonce: number) => dispatch(setNonceAction(nonce)),
+  setProposedNonce: (nonce: number) => dispatch(setProposedNonceAction(nonce)),
   removeFavoriteCollectible: (
     selectedAddress: string,
     chainId: string,
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     collectible: any,
-  ) => dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
+  ) =>
+    dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showAlert: (config: any) => dispatch(showAlert(config)),
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateConfirmationMetric: ({ id, params }: { id: string; params: any }) =>
-    dispatch(updateConfirmationMetric({ id, params })),
+    dispatch(updateConfirmationMetricAction({ id, params })),
   setTransactionValue: (value: string) => dispatch(setTransactionValue(value)),
 });
 

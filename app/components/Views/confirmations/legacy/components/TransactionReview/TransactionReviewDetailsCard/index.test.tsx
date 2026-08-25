@@ -6,8 +6,8 @@ import { Provider } from 'react-redux';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
 
 // TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const TransactionReviewDetailsCard =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   TransactionReviewDetailsCardBase as unknown as React.ComponentType<any>;
 
 const mockStore = configureMockStore();

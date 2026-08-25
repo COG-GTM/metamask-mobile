@@ -23,11 +23,12 @@ import {
   hasZeroWidthPoints,
 } from '../../../../../../util/confusables';
 import { mockTheme, ThemeContext } from '../../../../../../util/theme';
-import { showAlert } from '../../../../../../actions/alert';
+import { Theme } from '@metamask/design-tokens';
+import { showAlert as showAlertAction } from '../../../../../../actions/alert';
 import {
   newAssetTransaction,
-  resetTransaction,
-  setRecipient,
+  resetTransaction as resetTransactionAction,
+  setRecipient as setRecipientAction,
   setSelectedAsset,
 } from '../../../../../../actions/transaction';
 import ErrorMessage from '../ErrorMessage';
@@ -194,8 +195,6 @@ interface SendFlowState {
  * View that wraps the wraps the "Send" screen
  */
 class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addressToInputRef = React.createRef<any>();
@@ -218,7 +217,8 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
 
   updateNavBar = () => {
     const { navigation, route, resetTransaction } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -248,9 +248,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
     const networkAddressBook = addressBook[globalChainId] || {};
     if (!Object.keys(networkAddressBook).length) {
       setTimeout(() => {
-        this.addressToInputRef &&
-          this.addressToInputRef.current &&
-          this.addressToInputRef.current.focus();
+        this.addressToInputRef?.current?.focus();
       }, 500);
     }
     //Fills in to address and sets the transaction if coming from QR code scan
@@ -286,7 +284,8 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
       internalAccounts.find(
         // TODO: Replace "any" with type
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (account: any) => toLowerCaseEquals(account.address, checksummedAddress),
+        (account: any) =>
+          toLowerCaseEquals(account.address, checksummedAddress),
       )
     );
   };
@@ -393,9 +392,6 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
   };
 
   renderBuyEth = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
-
     if (!this.props.isNativeTokenBuySupported) {
       return null;
     }
@@ -499,8 +495,7 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
 
   onToSelectedAddressChange = (toAccount: string) => {
     const currentChain =
-      this.props.ambiguousAddressEntries &&
-      this.props.ambiguousAddressEntries[this.props.globalChainId];
+      this.props.ambiguousAddressEntries?.[this.props.globalChainId];
     const isAmbiguousAddress = includes(currentChain, toAccount);
     if (isAmbiguousAddress) {
       this.setState({ showAmbiguousAcountWarning: isAmbiguousAddress });
@@ -568,7 +563,8 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
       toEnsAddressResolved,
     } = this.state;
 
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const checksummedAddress = toAccount && toChecksumAddress(toAccount);
@@ -576,14 +572,11 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
       toEnsAddressResolved || toAccount,
     );
     const existingContact =
-      checksummedAddress &&
-      addressBook[globalChainId] &&
-      addressBook[globalChainId][checksummedAddress];
+      checksummedAddress && addressBook[globalChainId]?.[checksummedAddress];
     const displayConfusableWarning =
       !existingContact && confusableCollection && !!confusableCollection.length;
     const displayAsWarning =
-      confusableCollection &&
-      confusableCollection.length &&
+      confusableCollection?.length &&
       !confusableCollection.some(hasZeroWidthPoints);
     const explanations =
       displayConfusableWarning &&
@@ -684,8 +677,8 @@ class SendFlow extends PureComponent<SendFlowProps, SendFlowState> {
                 </View>
               )}
               <AddToAddressBookWrapper
-                setToAddressName={(toSelectedAddressName: string) =>
-                  this.setState({ toSelectedAddressName })
+                setToAddressName={(name: string) =>
+                  this.setState({ toSelectedAddressName: name })
                 }
                 address={(toEnsAddressResolved || toAccount) as string}
                 defaultNull
@@ -792,7 +785,7 @@ const mapDispatchToProps = (dispatch: any) => ({
     transactionFromName?: string,
   ) =>
     dispatch(
-      setRecipient(
+      setRecipientAction(
         from as string,
         to as string,
         ensRecipient as string,
@@ -810,8 +803,8 @@ const mapDispatchToProps = (dispatch: any) => ({
     dispatch(setSelectedAsset(selectedAsset)),
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  showAlert: (config: any) => dispatch(showAlert(config)),
-  resetTransaction: () => dispatch(resetTransaction()),
+  showAlert: (config: any) => dispatch(showAlertAction(config)),
+  resetTransaction: () => dispatch(resetTransactionAction()),
 });
 
 export default connect(

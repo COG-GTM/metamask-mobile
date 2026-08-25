@@ -1,10 +1,5 @@
 import React, { PureComponent } from 'react';
-import {
-  Alert,
-  AppState,
-  View,
-  NativeEventSubscription,
-} from 'react-native';
+import { Alert, AppState, View, NativeEventSubscription } from 'react-native';
 import { getApproveNavbar } from '../../../../UI/Navbar';
 import { connect } from 'react-redux';
 import {
@@ -19,9 +14,9 @@ import Modal from 'react-native-modal';
 import { strings } from '../../../../../../locales/i18n';
 
 import {
-  setTransactionObject,
-  setNonce,
-  setProposedNonce,
+  setTransactionObject as setTransactionObjectAction,
+  setNonce as setNonceAction,
+  setProposedNonce as setProposedNonceAction,
 } from '../../../../../actions/transaction';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import { fromWei, renderFromWei, hexToBN } from '../../../../../util/number';
@@ -42,6 +37,7 @@ import { KEYSTONE_TX_CANCELED } from '../../../../../constants/error';
 import GlobalAlert from '../../../../UI/GlobalAlert';
 import checkIfAddressIsSaved from '../../../../../util/checkAddress';
 import { ThemeContext, mockTheme } from '../../../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 import { createLedgerTransactionModalNavDetails } from '../../../../UI/LedgerModals/LedgerTransactionModal';
 import {
   startGasPolling,
@@ -52,7 +48,6 @@ import {
   selectEvmNetworkConfigurationsByChainId,
   selectProviderTypeByChainId,
   selectRpcUrlByChainId,
-  selectEvmChainId,
 } from '../../../../../selectors/networkController';
 import {
   selectConversionRateByChainId,
@@ -253,8 +248,6 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   #transactionFinishedSubscription: any;
-
-  declare context: React.ContextType<typeof ThemeContext>;
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -560,7 +553,7 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
 
   onLedgerConfirmation = (
     approve: boolean,
-    transactionId: string,
+    _: string,
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     gaParams: any,
@@ -741,11 +734,9 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
         !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
         !error?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
-        Alert.alert(
-          strings('transactions.transaction_error'),
-          error && error.message,
-          [{ text: 'OK' }],
-        );
+        Alert.alert(strings('transactions.transaction_error'), error?.message, [
+          { text: 'OK' },
+        ]);
         Logger.error(error, 'error while trying to send transaction (Approve)');
         this.setState({ transactionHandled: true });
         this.props.hideModal();
@@ -871,7 +862,8 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
   };
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const {
@@ -1132,9 +1124,9 @@ const mapDispatchToProps = (dispatch: any) => ({
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setTransactionObject: (transaction: any) =>
-    dispatch(setTransactionObject(transaction)),
-  setNonce: (nonce: number) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
+    dispatch(setTransactionObjectAction(transaction)),
+  setNonce: (nonce: number) => dispatch(setNonceAction(nonce)),
+  setProposedNonce: (nonce: number) => dispatch(setProposedNonceAction(nonce)),
 });
 
 Approve.contextType = ThemeContext;

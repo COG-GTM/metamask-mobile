@@ -393,7 +393,7 @@ class TransactionReview extends PureComponent<
           ({ address }) => address === safeToChecksumAddress(to),
         );
       }
-      const symbol = (contract && contract.symbol) || 'ERC20';
+      const symbol = (contract?.symbol) || 'ERC20';
       assetAmount = `${decodeTransferData('transfer', data)[1]} ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();

@@ -24,7 +24,7 @@ import {
   resetTransaction,
   setTransactionObject,
 } from '../../../../../actions/transaction';
-import { toggleDappTransactionModal } from '../../../../../actions/modals';
+import { toggleDappTransactionModal as toggleDappTransactionModalAction } from '../../../../../actions/modals';
 import NotificationManager from '../../../../../core/NotificationManager';
 import { showAlert } from '../../../../../actions/alert';
 import { MetaMetricsEvents } from '../../../../../core/Analytics';
@@ -46,6 +46,7 @@ import {
 
 import { KEYSTONE_TX_CANCELED } from '../../../../../constants/error';
 import { ThemeContext, mockTheme } from '../../../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 import { getBlockaidTransactionMetricsParams } from '../../../../../util/blockaid';
 import { selectTokenList } from '../../../../../selectors/tokenListController';
 import { selectTokens } from '../../../../../selectors/tokensController';
@@ -207,8 +208,6 @@ interface SendState {
  * View that wraps the wraps the "Send" screen
  */
 class Send extends PureComponent<SendProps, SendState> {
-  declare context: React.ContextType<typeof ThemeContext>;
-
   state: SendState = {
     mode: REVIEW,
     transactionKey: undefined,
@@ -261,7 +260,8 @@ class Send extends PureComponent<SendProps, SendState> {
   }
 
   updateNavBar = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const { navigation, route } = this.props;
     navigation.setOptions(
       getTransactionOptionsTitle('send.confirm', navigation, route, colors),
@@ -280,14 +280,13 @@ class Send extends PureComponent<SendProps, SendState> {
       toggleDappTransactionModal,
     } = this.props;
     this.updateNavBar();
-    navigation &&
-      navigation.setParams({
-        mode: REVIEW,
-        dispatch: this.onModeChange,
-        disableModeChange:
-          assetType === 'ERC20' &&
-          contractBalances[selectedAsset.address] === undefined,
-      });
+    navigation?.setParams({
+      mode: REVIEW,
+      dispatch: this.onModeChange,
+      disableModeChange:
+        assetType === 'ERC20' &&
+        contractBalances[selectedAsset.address] === undefined,
+    });
     dappTransactionModalVisible && toggleDappTransactionModal();
     this.mounted = true;
     await this.reset();
@@ -320,8 +319,7 @@ class Send extends PureComponent<SendProps, SendState> {
       const prevTxMeta = prevRoute.params?.txMeta;
       const currentTxMeta = route.params?.txMeta;
       if (
-        currentTxMeta &&
-        currentTxMeta.source &&
+        currentTxMeta?.source &&
         (!prevTxMeta.source || prevTxMeta.source !== currentTxMeta.source)
       ) {
         this.handleNewTxMeta(currentTxMeta);
@@ -335,10 +333,9 @@ class Send extends PureComponent<SendProps, SendState> {
     const assetTypeDefined =
       prevProps.transaction.assetType === undefined && assetType === 'ERC20';
     if (assetTypeDefined || erc20ContractBalanceChanged) {
-      navigation &&
-        navigation.setParams({
-          disableModeChange: contractBalance === undefined,
-        });
+      navigation?.setParams({
+        disableModeChange: contractBalance === undefined,
+      });
     }
   }
 
@@ -371,9 +368,9 @@ class Send extends PureComponent<SendProps, SendState> {
     target_address,
     action,
     parameters = null,
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }: any) => {
+  }: // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any) => {
     const { addressBook, globalChainId, internalAccounts, selectedAddress } =
       this.props;
 
@@ -393,7 +390,7 @@ class Send extends PureComponent<SendProps, SendState> {
           ...txRecipient,
         };
 
-        if (parameters && parameters.value) {
+        if (parameters?.value) {
           newTxMeta.value = BNToHex(toBN(parameters.value));
           newTxMeta.transactionValue = newTxMeta.value;
           newTxMeta.readableValue = fromWei(newTxMeta.value);
@@ -462,16 +459,17 @@ class Send extends PureComponent<SendProps, SendState> {
       if (!gas && !gasPrice) {
         // TODO: Replace "any" with type
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { gas, gasPrice } = (await estimateGas(
-          this.props.transaction,
-          this.props.globalNetworkClientId,
-          // TODO: Replace "any" with type
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        )) as any;
+        const { gas: estimatedGas, gasPrice: estimatedGasPrice } =
+          (await estimateGas(
+            this.props.transaction,
+            this.props.globalNetworkClientId,
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          )) as any;
         newTxMeta = {
           ...newTxMeta,
-          gas,
-          gasPrice,
+          gas: estimatedGas,
+          gasPrice: estimatedGasPrice,
         };
       }
       // TODO: We should add here support for sending tokens
@@ -684,8 +682,7 @@ class Send extends PureComponent<SendProps, SendState> {
         }
       }
       const existingContact =
-        addressBook[globalChainId] &&
-        addressBook[globalChainId][checksummedAddress as string];
+        addressBook[globalChainId]?.[checksummedAddress as string];
       if (!existingContact) {
         AddressBookController.set(
           checksummedAddress as string,
@@ -718,11 +715,9 @@ class Send extends PureComponent<SendProps, SendState> {
         !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
         !error?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
-        Alert.alert(
-          strings('transactions.transaction_error'),
-          error && error.message,
-          [{ text: strings('navigation.ok') }],
-        );
+        Alert.alert(strings('transactions.transaction_error'), error?.message, [
+          { text: strings('navigation.ok') },
+        ]);
         Logger.error(error, 'error while trying to send transaction (Send)');
       } else {
         this.props.metrics.trackEvent(
@@ -834,7 +829,7 @@ class Send extends PureComponent<SendProps, SendState> {
    */
   onModeChange = (mode: string) => {
     const { navigation } = this.props;
-    navigation && navigation.setParams({ mode });
+    navigation?.setParams({ mode });
     this.mounted && this.setState({ mode });
     InteractionManager.runAfterInteractions(() => {
       mode === REVIEW && this.trackConfirmScreen();
@@ -845,7 +840,8 @@ class Send extends PureComponent<SendProps, SendState> {
   changeToReviewMode = () => this.onModeChange(REVIEW);
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     return createStyles(colors);
   };
 
@@ -923,7 +919,8 @@ const mapDispatchToProps = (dispatch: any) => ({
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showAlert: (config: any) => dispatch(showAlert(config)),
-  toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal()),
+  toggleDappTransactionModal: () =>
+    dispatch(toggleDappTransactionModalAction()),
 });
 
 Send.contextType = ThemeContext;
