@@ -361,7 +361,11 @@ const GasEducationCarousel = ({
         >
           <View style={styles.wrapper}>
             <ScrollableTabView
-              style={dynamicViewStyles.scrollTabs}
+              style={
+                dynamicViewStyles.scrollTabs as unknown as React.ComponentProps<
+                  typeof ScrollableTabView
+                >['style']
+              }
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
             >
