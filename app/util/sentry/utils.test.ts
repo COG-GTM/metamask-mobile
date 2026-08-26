@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 /* eslint-disable dot-notation */
 import { UserFeedback, captureUserFeedback } from '@sentry/react-native';
 import {

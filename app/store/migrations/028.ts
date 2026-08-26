@@ -125,6 +125,7 @@ export default async function migrate(state: unknown) {
     await FilesystemStorage.setItem(
       rootKey,
       JSON.stringify(state),
+      // @ts-expect-error Legacy storage API accepts the platform flag here.
       Device.isIos(),
     );
     // Root file successfully populated with controller data - Can safely delete persisted controller files

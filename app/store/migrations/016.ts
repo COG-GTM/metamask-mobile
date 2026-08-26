@@ -1,0 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Legacy persisted state is expected to contain engine.backgroundState.
+export default function migrate(state: unknown): Record<string, unknown>;
+export default function migrate(state: any) {
+  if (state.engine.backgroundState.NetworkController.properties) {
+    state.engine.backgroundState.NetworkController.networkDetails =
+      state.engine.backgroundState.NetworkController.properties;
+    delete state.engine.backgroundState.NetworkController.properties;
+  }
+  return state;
+}

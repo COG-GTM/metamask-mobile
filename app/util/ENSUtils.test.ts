@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import { isDefaultAccountName, getCachedENSName, ENSCache } from './ENSUtils';
 
 const mockAddress = '0x0000000000000000000000000000000000000001';

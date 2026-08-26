@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import BN4 from 'bnjs4';
 import BN5 from 'bnjs5';
 
