@@ -1,4 +1,4 @@
-export default [
+const resolverAbi = [
   {
     constant: false,
     inputs: [
@@ -232,4 +232,6 @@ export default [
     name: 'ContenthashChanged',
     type: 'event',
   },
-];
+] as const;
+
+export default resolverAbi;

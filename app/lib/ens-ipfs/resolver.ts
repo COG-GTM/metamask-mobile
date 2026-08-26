@@ -1,9 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// @ts-expect-error Legacy package does not publish TypeScript declarations.
 import namehash from 'eth-ens-namehash';
+// @ts-expect-error Legacy package does not publish TypeScript declarations.
 import Eth from '@metamask/ethjs-query';
+// @ts-expect-error Legacy package does not publish TypeScript declarations.
 import EthContract from '@metamask/ethjs-contract';
 import registryAbi from './contracts/registry';
 import resolverAbi from './contracts/resolver';
+// @ts-expect-error Legacy package does not publish TypeScript declarations.
 import contentHash from 'content-hash';
+// @ts-expect-error Legacy package does not publish TypeScript declarations.
 import multihash from 'multihashes';
 import Engine from '../../core/Engine';
 import { IPFS_GATEWAY_DISABLED_ERROR } from '../../components/Views/BrowserTab/constants';
@@ -12,7 +18,11 @@ export default async function resolveEnsToIpfsContentId({
   provider,
   name,
   chainId,
-}) {
+}: {
+  provider: any;
+  name: string;
+  chainId: string;
+}): Promise<{ type: string; hash: string }> {
   const eth = new Eth(provider);
   const hash = namehash.hash(name);
   const contract = new EthContract(eth);
@@ -41,7 +51,7 @@ export default async function resolveEnsToIpfsContentId({
     if (!Engine.context.PreferencesController.state.isIpfsGatewayEnabled) {
       throw new Error(IPFS_GATEWAY_DISABLED_ERROR);
     }
-    return { type, hash: decodedContentHash };
+    return { type, hash: decodedContentHash as string };
   }
   if (isLegacyResolver[0]) {
     // lookup content id
@@ -70,17 +80,17 @@ export default async function resolveEnsToIpfsContentId({
   );
 }
 
-function hexValueIsEmpty(value) {
+function hexValueIsEmpty(value: unknown): boolean {
   return [
     undefined,
     null,
     '0x',
     '0x0',
     '0x0000000000000000000000000000000000000000000000000000000000000000',
-  ].includes(value);
+  ].includes(value as any);
 }
 
-function getRegistryForChainId(chainId) {
+function getRegistryForChainId(chainId: string): string | null {
   switch (chainId) {
     // mainnet
     case '0x1':
@@ -93,7 +103,7 @@ function getRegistryForChainId(chainId) {
   }
 }
 
-export function isGatewayUrl(urlObj) {
+export function isGatewayUrl(urlObj: { pathname: string }): boolean {
   // All IPFS gateway urls start with the path /ipfs/
   if (urlObj.pathname.substr(0, 6) === '/ipfs/') return true;
   // All Swarm gateway urls start with the path /bzz:/
