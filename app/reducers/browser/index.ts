@@ -1,8 +1,35 @@
-import { BrowserActionTypes } from '../../actions/browser';
+/* eslint-disable @typescript-eslint/default-param-last */
+import { BrowserActionTypes, type Action } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 import { appendURLParams } from '../../util/browser';
 
-const initialState = {
+interface HistoryEntry {
+  url: string;
+  name: string;
+}
+
+interface BrowserTab {
+  url: string;
+  id: number;
+  linkType?: unknown;
+  [key: string]: unknown;
+}
+
+interface Favicon {
+  origin: string;
+  url: string;
+}
+
+export interface State {
+  history: HistoryEntry[];
+  whitelist: string[];
+  tabs: BrowserTab[];
+  favicons: Favicon[];
+  activeTab: number | null;
+  visitedDappsByHostname: Record<string, boolean>;
+}
+
+export const initialState: State = {
   history: [],
   whitelist: [],
   tabs: [],
@@ -11,7 +38,10 @@ const initialState = {
   // Keep track of viewed Dapps, which is used for MetaMetricsEvents.DAPP_VIEWED event
   visitedDappsByHostname: {},
 };
-const browserReducer = (state = initialState, action) => {
+const browserReducer = (
+  state: State = initialState,
+  action: Action,
+): State => {
   switch (action.type) {
     case BrowserActionTypes.ADD_TO_VIEWED_DAPP: {
       const { hostname } = action;
@@ -44,8 +74,8 @@ const browserReducer = (state = initialState, action) => {
         tabs: [
           {
             url: appendURLParams(AppConstants.HOMEPAGE_URL, {
-              metricsEnabled: action.metricsEnabled,
-              marketingEnabled: action.marketingEnabled,
+              metricsEnabled: action.metricsEnabled as boolean,
+              marketingEnabled: action.marketingEnabled as boolean,
             }).href,
             id: action.id,
           },
@@ -64,7 +94,9 @@ const browserReducer = (state = initialState, action) => {
           ...state.tabs,
           {
             url: action.url,
-            ...(action.linkType && { linkType: action.linkType }),
+            ...(action.linkType
+              ? { linkType: action.linkType as unknown }
+              : {}),
             id: action.id,
           },
         ],
@@ -84,7 +116,10 @@ const browserReducer = (state = initialState, action) => {
         ...state,
         tabs: state.tabs.map((tab) => {
           if (tab.id === action.id) {
-            return { ...tab, ...action.data };
+            return {
+              ...tab,
+              ...(action.data as Record<string, unknown>),
+            };
           }
           return { ...tab };
         }),
