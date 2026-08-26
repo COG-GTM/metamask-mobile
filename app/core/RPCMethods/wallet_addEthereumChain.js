@@ -9,6 +9,7 @@ import {
   selectEvmChainId,
   selectEvmNetworkConfigurationsByChainId,
 } from '../../selectors/networkController';
+import { selectUseSafeChainsListValidation } from '../../selectors/preferencesController';
 import { store } from '../../store';
 import checkSafeNetwork from './networkChecker.util';
 import {
@@ -169,13 +170,16 @@ export const wallet_addEthereumChain = async ({
     isNetworkRpcUpdate: !!existingNetworkConfiguration,
   };
 
-  const alerts = await checkSafeNetwork(
-    getDecimalChainId(chainId),
-    requestData.rpcUrl,
-    requestData.chainName,
-    requestData.ticker,
-  );
-  requestData.alerts = alerts;
+  if (selectUseSafeChainsListValidation(store.getState())) {
+    requestData.alerts = await checkSafeNetwork(
+      getDecimalChainId(chainId),
+      requestData.rpcUrl,
+      requestData.chainName,
+      requestData.ticker,
+    );
+  } else {
+    requestData.alerts = [];
+  }
 
   MetaMetrics.getInstance().trackEvent(
     MetricsEventBuilder.createEventBuilder(MetaMetricsEvents.NETWORK_REQUESTED)
