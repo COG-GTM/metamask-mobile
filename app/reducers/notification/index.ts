@@ -1,8 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/default-param-last */
 import { createSelector } from 'reselect';
+import type { Action } from '../../actions/notification';
 import { NotificationTypes } from '../../util/notifications';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-export const initialState = {
+type Notification = Record<string, any>;
+
+export interface State {
+  notifications: Notification[];
+}
+
+export const initialState: State = {
   notifications: [],
 };
 
@@ -19,23 +28,31 @@ export const ACTIONS = {
   SHOW_SIMPLE_NOTIFICATION: 'SHOW_SIMPLE_NOTIFICATION',
   SHOW_TRANSACTION_NOTIFICATION: 'SHOW_TRANSACTION_NOTIFICATION',
   UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
-};
+} as const;
 
-const enqueue = (notifications, notification) => [
+const enqueue = (
+  notifications: Notification[],
+  notification: Notification,
+): Notification[] => [
   ...notifications,
   notification,
 ];
-const dequeue = (notifications) => notifications.slice(1);
+const dequeue = (notifications: Notification[]): Notification[] =>
+  notifications.slice(1);
+
+type ReducerAction =
+  | (Action & { id?: unknown })
+  | { type: string; [key: string]: any };
 
 export const currentNotificationSelector = createSelector(
-  (
-    /** @type {import('..').RootState} */
-    state,
-  ) => state?.notifications,
-  (notifications) => notifications[0] || {},
+  (state: { notifications?: Notification[] }) => state.notifications,
+  (notifications) => notifications?.[0] || {},
 );
 
-const notificationReducer = (state = initialState, action) => {
+const notificationReducer = (
+  state: State = initialState,
+  action: ReducerAction,
+): State => {
   const { notifications } = state;
   switch (action.type) {
     // make current notification isVisible props false
