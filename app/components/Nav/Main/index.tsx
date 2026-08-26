@@ -182,8 +182,8 @@ const Main = (props: MainProps) => {
         props.setInfuraAvailabilityNotBlocked();
       } catch (e) {
         if (
-          e instanceof Error &&
-          e.message === AppConstants.ERRORS.INFURA_BLOCKED_MESSAGE
+          (e as { message?: unknown } | null)?.message ===
+          AppConstants.ERRORS.INFURA_BLOCKED_MESSAGE
         ) {
           props.navigation.navigate('OfflineModeView');
           props.setInfuraAvailabilityBlocked();

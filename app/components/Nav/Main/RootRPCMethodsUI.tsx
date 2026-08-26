@@ -380,8 +380,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
           Engine.acceptPendingApproval(transactionMeta.id);
         }
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : undefined;
+        const errorMessage = (error as { message?: string } | null)?.message;
         if (
           !errorMessage?.startsWith(KEYSTONE_TX_CANCELED) &&
           !errorMessage?.startsWith(STX_NO_HASH_ERROR)
