@@ -1,5 +1,4 @@
-/* eslint-disable */
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import BN from 'bnjs4';
 import { renderFromWei, weiToFiat, toWei, conversionUtil } from '../number';
 import { strings } from '../../../locales/i18n';
@@ -28,7 +27,7 @@ export function apiEstimateModifiedToWEI(estimate: number): BN {
  * @returns {string} - The GWEI value as a string
  */
 export function convertApiValueToGWEI(val: number | string): string {
-  return parseInt(val, 10).toString();
+  return parseInt(String(val), 10).toString();
 }
 
 /**
@@ -123,14 +122,17 @@ export async function getGasLimit(
       ? { ...transaction, gas: undefined, gasPrice: undefined }
       : transaction;
 
-    estimation = await estimateGas(newTransactionObj, networkClientId);
+    estimation = await estimateGas(
+      newTransactionObj as any,
+      networkClientId as string,
+    );
   } catch (error) {
     estimation = {
       gas: TransactionTypes.CUSTOM_GAS.DEFAULT_GAS_LIMIT,
     };
   }
 
-  const gas = hexToBN(estimation.gas);
+  const gas = hexToBN(estimation.gas) as unknown as BN;
   return { gas };
 }
 

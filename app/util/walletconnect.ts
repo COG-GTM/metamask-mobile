@@ -1,5 +1,4 @@
-/* eslint-disable */
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const CLIENT_OPTIONS = {
   clientMeta: {
     // Required

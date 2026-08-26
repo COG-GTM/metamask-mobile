@@ -1,5 +1,5 @@
-/* eslint-disable */
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-shadow */
 import URL from 'url-parse';
 
 export const tlc = (str: any): any => str?.toLowerCase?.();
@@ -145,7 +145,7 @@ export const deepJSONParse = ({
   const parsedObject = JSON.parse(jsonString);
 
   // Function to recursively parse stringified properties
-  function parseProperties(obj) {
+  function parseProperties(obj: Record<string, any>): void {
     Object.keys(obj).forEach((key) => {
       if (typeof obj[key] === 'string') {
         const isNumber = !isNaN(obj[key]);

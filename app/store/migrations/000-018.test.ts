@@ -1,5 +1,3 @@
-/* eslint-disable */
-// @ts-nocheck
 import migrate000 from './000';
 import migrate001 from './001';
 import migrate002 from './002';

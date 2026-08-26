@@ -1,9 +1,14 @@
-/* eslint-disable */
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable @typescript-eslint/prefer-optional-chain */
+/* eslint-disable jsdoc/check-syntax */
+/* eslint-disable jsdoc/check-indentation */
 import { addHexPrefix, toChecksumAddress } from 'ethereumjs-util';
 import BN from 'bnjs4';
+// @ts-expect-error ethereumjs-abi has no TypeScript declarations.
 import { rawEncode, rawDecode } from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
+// @ts-expect-error humanize-duration has no TypeScript declarations.
 import humanizeDuration from 'humanize-duration';
 import {
   query,
@@ -110,7 +115,7 @@ const { getSwapsContractAddress } = swapsUtils;
  * of caching CollectibleAddresses
  */
 class CollectibleAddresses {
-  static cache = {};
+  static cache: Record<string, any> = {};
 }
 
 /**
@@ -171,6 +176,8 @@ const actionKeys = {
     'transactions.tx_review_staking_unstake',
   ),
 };
+const typedActionKeys = actionKeys as Record<string, any>;
+const typedReviewActionKeys = reviewActionKeys as Record<string, any>;
 
 /**
  * Generates transfer data for specified method
@@ -179,7 +186,10 @@ const actionKeys = {
  * @param {Object} opts - Optional asset parameters
  * @returns {String} - String containing the generated transfer data
  */
-export function generateTransferData(type = undefined, opts = {}) {
+export function generateTransferData(
+  type: any = undefined,
+  opts: Record<string, any> = {},
+): any {
   if (!type) {
     throw new TypeError('[transactions] type must be defined');
   }
@@ -223,7 +233,7 @@ export function generateTransferData(type = undefined, opts = {}) {
  * @param {string | undefined} data The transaction data.
  * @returns {string | undefined} The four-byte signature if data is provided, otherwise undefined.
  */
-export function getFourByteSignature(data) {
+export function getFourByteSignature(data: any): any {
   return data?.substring(0, 10);
 }
 
@@ -232,7 +242,7 @@ export function getFourByteSignature(data) {
  * @param {string} data The transaction data.
  * @returns {boolean} True if the transaction is an "approve" or "increase allowance" call, false otherwise.
  */
-export function isApprovalTransaction(data) {
+export function isApprovalTransaction(data: any): any {
   const fourByteSignature = getFourByteSignature(data);
   return [
     APPROVE_FUNCTION_SIGNATURE,
@@ -250,7 +260,7 @@ export function isApprovalTransaction(data) {
  * @param {string} [opts.data] - The data of the transaction
  * @returns {String} - String containing the generated data, by default for approve method
  */
-export function generateApprovalData(opts) {
+export function generateApprovalData(opts: Record<string, any>): any {
   const { spender, value, data } = opts;
 
   if (!spender || !value) {
@@ -273,7 +283,7 @@ export function generateApprovalData(opts) {
   );
 }
 
-export function decodeApproveData(data) {
+export function decodeApproveData(data: any): any {
   return {
     spenderAddress: addHexPrefix(data.substr(34, 40)),
     encodedAmount: data.substr(74, 138),
@@ -289,7 +299,7 @@ const BASE = 4 * 16;
  * @param {String} data - Data to decode
  * @returns {Array} - Object containing the decoded transfer data
  */
-export function decodeTransferData(type, data) {
+export function decodeTransferData(type: any, data: any): any {
   switch (type) {
     case 'transfer': {
       const encodedAddress = data.substring(10, BASE + 10);
@@ -336,7 +346,7 @@ export function decodeTransferData(type, data) {
  * @param {string} data - Transaction data
  * @returns {MethodData} - Method data object containing the name if is valid
  */
-export async function getMethodData(data, networkClientId) {
+export async function getMethodData(data: any, networkClientId: any): Promise<any> {
   if (data.length < 10) return {};
   const fourByteSignature = getFourByteSignature(data);
   if (fourByteSignature === TRANSFER_FUNCTION_SIGNATURE) {
@@ -376,10 +386,10 @@ export async function getMethodData(data, networkClientId) {
  * @returns {Promise<boolean>} - Whether the given address is a contract
  */
 export async function isSmartContractAddress(
-  address,
-  chainId,
-  networkClientId = undefined,
-) {
+  address: any,
+  chainId: any,
+  networkClientId: any = undefined,
+): Promise<any> {
   if (!address) return false;
 
   address = toChecksumAddress(address);
@@ -414,7 +424,10 @@ export async function isSmartContractAddress(
  * @param {string} tokenId - A possible collectible id
  * @returns {boolean} - Wether the given address is an ERC721 contract
  */
-export async function isCollectibleAddress(address, tokenId) {
+export async function isCollectibleAddress(
+  address: any,
+  tokenId: any,
+): Promise<any> {
   const cache = CollectibleAddresses.cache[address];
   if (cache) {
     return Promise.resolve(cache);
@@ -438,7 +451,10 @@ export async function isCollectibleAddress(address, tokenId) {
  * @param {string} chainId - Current chainId
  * @returns {string} - Corresponding transaction action key
  */
-export async function getTransactionActionKey(transaction, chainId) {
+export async function getTransactionActionKey(
+  transaction: any,
+  chainId: any,
+): Promise<any> {
   const { networkClientId, type } = transaction ?? {};
   const txParams = transaction.txParams ?? transaction.transaction ?? {};
   const { data, to } = txParams;
@@ -490,7 +506,12 @@ export async function getTransactionActionKey(transaction, chainId) {
  * @param {string} selectedAddress - Current account public address
  * @returns {string} - Transaction type message
  */
-export async function getActionKey(tx, selectedAddress, ticker, chainId) {
+export async function getActionKey(
+  tx: any,
+  selectedAddress: any,
+  ticker: any,
+  chainId: any,
+): Promise<any> {
   const actionKey = await getTransactionActionKey(tx, chainId);
   if (actionKey === SEND_ETHER_ACTION_KEY) {
     let currencySymbol = ticker;
@@ -520,7 +541,7 @@ export async function getActionKey(tx, selectedAddress, ticker, chainId) {
       ? strings('transactions.sent_unit', { unit: currencySymbol })
       : strings('transactions.sent_ether');
   }
-  const transactionActionKey = actionKeys[actionKey];
+  const transactionActionKey = typedActionKeys[actionKey];
 
   if (transactionActionKey) {
     return transactionActionKey;
@@ -536,9 +557,12 @@ export async function getActionKey(tx, selectedAddress, ticker, chainId) {
  * @param {string} chainId - Current chainId
  * @returns {string} - Transaction function type
  */
-export async function getTransactionReviewActionKey(transaction, chainId) {
+export async function getTransactionReviewActionKey(
+  transaction: any,
+  chainId: any,
+): Promise<any> {
   const actionKey = await getTransactionActionKey(transaction, chainId);
-  const transactionReviewActionKey = reviewActionKeys[actionKey];
+  const transactionReviewActionKey = typedReviewActionKeys[actionKey];
   if (transactionReviewActionKey) {
     return transactionReviewActionKey;
   }
@@ -551,7 +575,7 @@ export async function getTransactionReviewActionKey(transaction, chainId) {
  * @param {string} - Ticker
  * @returns {string} - Corresponding ticker or ETH
  */
-export function getTicker(ticker) {
+export function getTicker(ticker: any): any {
   return ticker || strings('unit.eth');
 }
 
@@ -561,7 +585,7 @@ export function getTicker(ticker) {
  * @param {string} ticker - Ticker
  * @returns {object} - ETH object
  */
-export function getEther(ticker) {
+export function getEther(ticker: any): any {
   return {
     name: 'Ether',
     address: '',
@@ -588,7 +612,7 @@ export function getTransactionToName({
   toAddress,
   internalAccounts,
   ensRecipient,
-}) {
+}: Record<string, any>): any {
   if (ensRecipient) {
     return ensRecipient;
   }
@@ -597,10 +621,13 @@ export function getTransactionToName({
   const checksummedToAddress = toChecksumAddress(toAddress);
 
   // Convert internalAccounts array to a map for quick lookup
-  const internalAccountsMap = internalAccounts.reduce((acc, account) => {
+  const internalAccountsMap = internalAccounts.reduce(
+    (acc: Record<string, any>, account: any) => {
     acc[toChecksumAddress(account.address)] = account;
     return acc;
-  }, {});
+    },
+    {},
+  );
 
   const matchingAccount = internalAccountsMap[checksummedToAddress];
 
@@ -621,26 +648,28 @@ export function getTransactionToName({
  * @param {object} accountAddedTimeInsertPointFound - Flag to see if the import time was already found
  */
 export function addAccountTimeFlagFilter(
-  transaction,
-  addedAccountTime,
-  accountAddedTimeInsertPointFound,
-) {
+  transaction: any,
+  addedAccountTime: any,
+  accountAddedTimeInsertPointFound: any,
+): any {
   return (
     transaction.time <= addedAccountTime && !accountAddedTimeInsertPointFound
   );
 }
 
 //Leaving here a comment to re-visit this function since it's probably be possible to deprecate
-export function getNormalizedTxState(state) {
+export function getNormalizedTxState(state: any): any {
   return state.transaction
     ? { ...state.transaction, ...state.transaction.transaction }
     : undefined;
 }
 
-export const getActiveTabUrl = ({ browser = {} }) =>
+export const getActiveTabUrl = ({
+  browser = {},
+}: Record<string, any>): any =>
   browser.tabs &&
   browser.activeTab &&
-  browser.tabs.find(({ id }) => id === browser.activeTab)?.url;
+  browser.tabs.find(({ id }: { id: any }) => id === browser.activeTab)?.url;
 
 export const calculateAmountsEIP1559 = ({
   value,
@@ -653,7 +682,7 @@ export const calculateAmountsEIP1559 = ({
   gasFeeMaxConversion,
   gasFeeMaxHex,
   gasFeeMinHex,
-}) => {
+}: Record<string, any>): any => {
   // amount numbers
   const amountConversion = getValueFromWeiHex({
     value,
@@ -705,7 +734,7 @@ export const calculateEthEIP1559 = ({
   totalMinConversion,
   totalMaxNative,
   totalMaxConversion,
-}) => {
+}: Record<string, any>): any => {
   const renderableTotalMinNative = formatETHFee(totalMinNative, nativeCurrency);
   const renderableTotalMinConversion = formatCurrency(
     totalMinConversion,
@@ -736,7 +765,7 @@ export const calculateERC20EIP1559 = ({
   symbol,
   totalMinNative,
   totalMaxNative,
-}) => {
+}: Record<string, any>): any => {
   const tokenAmountConversion = convertTokenToFiat({
     value: tokenAmount,
     toCurrency: currentCurrency,
@@ -782,7 +811,7 @@ export const calculateEIP1559Times = ({
   selectedOption,
   recommended,
   gasFeeEstimates,
-}) => {
+}: Record<string, any>): any => {
   let timeEstimate = strings('times_eip1559.unknown');
   let timeEstimateColor = 'grey';
   let timeEstimateId;
@@ -871,7 +900,7 @@ export const calculateEIP1559Times = ({
     }
 
     const { GasFeeController } = Engine.context;
-    const times = GasFeeController.getTimeEstimate(
+    const times: any = GasFeeController.getTimeEstimate(
       suggestedMaxPriorityFeePerGas,
       suggestedMaxFeePerGas,
     );
@@ -939,7 +968,7 @@ export const calculateEIP1559GasFeeHexes = ({
   estimatedBaseFeeHex,
   suggestedMaxFeePerGasHex,
   suggestedMaxPriorityFeePerGasHex,
-}) => {
+}: Record<string, any>): any => {
   // Hex calculations
   const estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex = addCurrencies(
     estimatedBaseFeeHex,
@@ -997,13 +1026,13 @@ export const parseTransactionEIP1559 = (
     currentCurrency,
     nativeCurrency,
     transactionState: { selectedAsset, transaction: { value, data } } = {
-      selectedAsset: {},
-      transaction: {},
+      selectedAsset: {} as any,
+      transaction: {} as any,
     },
     gasFeeEstimates,
-  },
-  { onlyGas } = {},
-) => {
+  }: Record<string, any>,
+  { onlyGas }: Record<string, any> = {},
+): any => {
   value = value || '0x0';
 
   const suggestedMaxPriorityFeePerGas = String(
@@ -1325,15 +1354,15 @@ export const parseTransactionLegacy = (
     conversionRate,
     currentCurrency,
     transactionState: { selectedAsset, transaction: { value, data } } = {
-      selectedAsset: '',
-      transaction: {},
+      selectedAsset: '' as any,
+      transaction: {} as any,
     },
     ticker,
     selectedGasFee,
     multiLayerL1FeeTotal,
-  },
-  { onlyGas } = {},
-) => {
+  }: Record<string, any>,
+  { onlyGas }: Record<string, any> = {},
+): any => {
   const gasLimit = new BN(selectedGasFee.suggestedGasLimit);
   const gasLimitHex = BNToHex(new BN(selectedGasFee.suggestedGasLimit));
 
@@ -1448,10 +1477,14 @@ export const parseTransactionLegacy = (
  * @param {string} accounts - Map of accounts to information objects including balances
  * @returns {string} - Whether the balance is validated or not
  */
-export function validateTransactionActionBalance(transaction, rate, accounts) {
+export function validateTransactionActionBalance(
+  transaction: any,
+  rate: any,
+  accounts: Record<string, any>,
+): any {
   try {
     const checksummedFrom = safeToChecksumAddress(transaction.transaction.from);
-    const balance = accounts[checksummedFrom].balance;
+    const balance = accounts[checksummedFrom as string].balance;
 
     let gasPrice = transaction.transaction.gasPrice;
     const transactionToCheck = transaction.transaction;
@@ -1477,12 +1510,12 @@ export function validateTransactionActionBalance(transaction, rate, accounts) {
  * @param {number=} decimals
  * @returns {BigNumber}
  */
-export function calcTokenAmount(value, decimals) {
+export function calcTokenAmount(value: any, decimals: any): any {
   const divisor = new BigNumber(10).pow(decimals ?? 0);
   return new BigNumber(String(value)).div(divisor);
 }
 
-export function calcTokenValue(value, decimals) {
+export function calcTokenValue(value: any, decimals: any): any {
   const multiplier = Math.pow(10, Number(decimals || 0));
   return new BigNumber(String(value)).times(multiplier);
 }
@@ -1497,7 +1530,9 @@ export function calcTokenValue(value, decimals) {
  * @param {Object} tokenData - ethers Interface token data.
  * @returns {string | undefined} A lowercase address string.
  */
-export function getTokenAddressParam(tokenData = {}) {
+export function getTokenAddressParam(
+  tokenData: Record<string, any> = {},
+): any {
   const value = tokenData?.args?._to || tokenData?.args?.[0];
   return value?.toString().toLowerCase();
 }
@@ -1509,7 +1544,9 @@ export function getTokenAddressParam(tokenData = {}) {
  * @param {Object} tokenData - ethers Interface token data.
  * @returns {string | undefined} A hex string value.
  */
-export function getTokenValueParamAsHex(tokenData = {}) {
+export function getTokenValueParamAsHex(
+  tokenData: Record<string, any> = {},
+): any {
   const value = tokenData?.args?._value?._hex || tokenData?.args?.[1]._hex;
   return value?.toLowerCase();
 }
@@ -1521,12 +1558,14 @@ export function getTokenValueParamAsHex(tokenData = {}) {
  * @param {Object} tokenData - ethers Interface token data.
  * @returns {string | undefined} A decimal string value.
  */
-export function getTokenValueParam(tokenData = {}) {
+export function getTokenValueParam(
+  tokenData: Record<string, any> = {},
+): any {
   return tokenData?.args?._value?.toString();
 }
 
-export function getTokenValue(tokenParams = []) {
-  const valueData = tokenParams.find((param) => param.name === '_value');
+export function getTokenValue(tokenParams: any[] = []): any {
+  const valueData = tokenParams.find((param: any) => param.name === '_value');
   return valueData && valueData.value;
 }
 
@@ -1539,11 +1578,11 @@ export function getTokenValue(tokenParams = []) {
  * @returns A new transaction object with the token allowance encoded
  */
 export const generateTxWithNewTokenAllowance = (
-  tokenValue,
-  tokenDecimals,
-  spenderAddress,
-  transaction,
-) => {
+  tokenValue: any,
+  tokenDecimals: any,
+  spenderAddress: any,
+  transaction: Record<string, any>,
+): any => {
   const uint = toTokenMinimalUnit(tokenValue, tokenDecimals);
   const approvalData = generateApprovalData({
     spender: spenderAddress,
@@ -1564,24 +1603,24 @@ export const generateTxWithNewTokenAllowance = (
  * @param {Number} tokenDecimals - Token decimal
  * @returns String indicating the minimum token allowance
  */
-export const minimumTokenAllowance = (tokenDecimals) => {
+export const minimumTokenAllowance = (tokenDecimals: any): any => {
   if (tokenDecimals < 0) {
     throw new Error(NEGATIVE_TOKEN_DECIMALS);
   }
   return Math.pow(10, -1 * tokenDecimals)
     .toFixed(tokenDecimals)
-    .toString(10);
+    .toString();
 };
 
 /**
  * For a MM Swap tx: Determines if the transaction is an ERC20 approve tx OR the actual swap tx where tokens are transferred
  */
 export const getIsSwapApproveOrSwapTransaction = (
-  data,
-  origin,
-  to,
-  chainId,
-) => {
+  data: any,
+  origin: any,
+  to: any,
+  chainId: any,
+): any => {
   if (!data) {
     return false;
   }
@@ -1601,7 +1640,12 @@ export const getIsSwapApproveOrSwapTransaction = (
 /**
  * For a MM Swap tx: Determines if the transaction is an ERC20 approve tx
  */
-export const getIsSwapApproveTransaction = (data, origin, to, chainId) => {
+export const getIsSwapApproveTransaction = (
+  data: any,
+  origin: any,
+  to: any,
+  chainId: any,
+): any => {
   if (!data) {
     return false;
   }
@@ -1619,7 +1663,12 @@ export const getIsSwapApproveTransaction = (data, origin, to, chainId) => {
 /**
  * For a MM Swap tx: Determines if the transaction is the actual swap tx where tokens are transferred
  */
-export const getIsSwapTransaction = (data, origin, to, chainId) => {
+export const getIsSwapTransaction = (
+  data: any,
+  origin: any,
+  to: any,
+  chainId: any,
+): any => {
   const isSwapApproveOrSwapTransaction = getIsSwapApproveOrSwapTransaction(
     data,
     origin,
@@ -1634,7 +1683,7 @@ export const getIsSwapTransaction = (data, origin, to, chainId) => {
 /**
  * For a MM Swap tx: Determines if the transaction is a native swap
  */
-export const getIsNativeTokenTransferred = (txParams) =>
+export const getIsNativeTokenTransferred = (txParams: any): any =>
   txParams?.value !== '0x0';
 
 /**
@@ -1643,7 +1692,7 @@ export const getIsNativeTokenTransferred = (txParams) =>
  * @param {string} tokenStandard - The token standard to check.
  * @returns {boolean} - True if the token standard is ERC721 or ERC1155, otherwise false.
  */
-export function isNFTTokenStandard(tokenStandard) {
+export function isNFTTokenStandard(tokenStandard: any): any {
   return [ERC721, ERC1155].includes(tokenStandard);
 }
 
@@ -1653,8 +1702,11 @@ export function isNFTTokenStandard(tokenStandard) {
  * @param {TransactionController} transactionController - The transaction controller
  * @returns {TransactionMeta} The transaction meta object
  */
-export function getTransactionById(transactionId, transactionController) {
+export function getTransactionById(
+  transactionId: any,
+  transactionController: any,
+): any {
   return transactionController.state.transactions.find(
-    (tx) => tx.id === transactionId,
+    (tx: any) => tx.id === transactionId,
   );
 }

@@ -1,5 +1,4 @@
-/* eslint-disable */
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* Currency Conversion Utility
  * This utility function can be used for converting currency related values within metamask.
  * The caller should be able to pass it a value, along with information about the value's
@@ -35,31 +34,32 @@ const BIG_NUMBER_ETH_MULTIPLIER = new BigNumber('1');
 
 // Setter Maps
 const toBigNumber = {
-  hex: (n) => new BigNumber(stripHexPrefix(n), 16),
-  dec: (n) => new BigNumber(String(n), 10),
-  BN: (n) => new BigNumber(n.toString(16), 16),
+  hex: (n: any) => new BigNumber(stripHexPrefix(n), 16),
+  dec: (n: any) => new BigNumber(String(n), 10),
+  BN: (n: any) => new BigNumber(n.toString(16), 16),
 };
 const toNormalizedDenomination = {
-  WEI: (bigNumber) => bigNumber.div(BIG_NUMBER_WEI_MULTIPLIER),
-  GWEI: (bigNumber) => bigNumber.div(BIG_NUMBER_GWEI_MULTIPLIER),
-  ETH: (bigNumber) => bigNumber.div(BIG_NUMBER_ETH_MULTIPLIER),
+  WEI: (bigNumber: any) => bigNumber.div(BIG_NUMBER_WEI_MULTIPLIER),
+  GWEI: (bigNumber: any) => bigNumber.div(BIG_NUMBER_GWEI_MULTIPLIER),
+  ETH: (bigNumber: any) => bigNumber.div(BIG_NUMBER_ETH_MULTIPLIER),
 };
 const toSpecifiedDenomination = {
-  WEI: (bigNumber) =>
+  WEI: (bigNumber: any) =>
     bigNumber.times(BIG_NUMBER_WEI_MULTIPLIER).decimalPlaces(0),
-  GWEI: (bigNumber) =>
+  GWEI: (bigNumber: any) =>
     bigNumber.times(BIG_NUMBER_GWEI_MULTIPLIER).decimalPlaces(9),
-  ETH: (bigNumber) =>
+  ETH: (bigNumber: any) =>
     bigNumber.times(BIG_NUMBER_ETH_MULTIPLIER).decimalPlaces(9),
 };
 const baseChange = {
-  hex: (n) => n.toString(16),
-  dec: (n) => new BigNumber(n).toString(10),
-  BN: (n) => new BN(n.toString(16)),
+  hex: (n: any) => n.toString(16),
+  dec: (n: any) => new BigNumber(n).toString(10),
+  BN: (n: any) => new BN(n.toString(16)),
 };
 
 // Utility function for checking base types
-const isValidBase = (base) => Number.isInteger(base) && base > 1;
+const isValidBase = (base: any): boolean =>
+  Number.isInteger(base) && base > 1;
 
 /**
  * Defines the base type of numeric value
@@ -99,12 +99,26 @@ const converter = ({
   invertConversionRate,
   roundDown,
 }: Record<string, any>): any => {
+  const typedToBigNumber = toBigNumber as Record<string, (input: any) => any>;
+  const typedToNormalizedDenomination = toNormalizedDenomination as Record<
+    string,
+    (input: any) => any
+  >;
+  const typedToSpecifiedDenomination = toSpecifiedDenomination as Record<
+    string,
+    (input: any) => any
+  >;
+  const typedBaseChange = baseChange as Record<
+    string,
+    (input: any) => any
+  >;
   let convertedValue = fromNumericBase
-    ? toBigNumber[fromNumericBase](value)
+    ? typedToBigNumber[fromNumericBase](value)
     : value;
 
   if (fromDenomination) {
-    convertedValue = toNormalizedDenomination[fromDenomination](convertedValue);
+    convertedValue =
+      typedToNormalizedDenomination[fromDenomination](convertedValue);
   }
 
   if (fromCurrency !== toCurrency) {
@@ -121,7 +135,8 @@ const converter = ({
   }
 
   if (toDenomination) {
-    convertedValue = toSpecifiedDenomination[toDenomination](convertedValue);
+    convertedValue =
+      typedToSpecifiedDenomination[toDenomination](convertedValue);
   }
 
   if (numberOfDecimals) {
@@ -139,7 +154,7 @@ const converter = ({
   }
 
   if (toNumericBase) {
-    convertedValue = baseChange[toNumericBase](convertedValue);
+    convertedValue = typedBaseChange[toNumericBase](convertedValue);
   }
   return convertedValue;
 };

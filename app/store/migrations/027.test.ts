@@ -1,5 +1,3 @@
-/* eslint-disable */
-// @ts-nocheck
 import migration from './027';
 
 describe('Migration #27', () => {
@@ -16,7 +14,8 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migration(oldState) as any;
 
     expect(newState).toStrictEqual(oldState);
   });
@@ -32,7 +31,8 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migration(oldState) as any;
 
     expect(newState).toStrictEqual({
       engine: {
@@ -70,7 +70,8 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migration(oldState) as any;
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
@@ -138,7 +139,8 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migration(oldState) as any;
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
@@ -228,7 +230,8 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migration(oldState) as any;
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,

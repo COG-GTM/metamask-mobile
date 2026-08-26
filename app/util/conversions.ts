@@ -1,5 +1,4 @@
-/* eslint-disable */
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { hexToBN } from '@metamask/controller-utils';
 import { ETH, GWEI, WEI } from './custom-gas';
 import {

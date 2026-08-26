@@ -1,5 +1,3 @@
-/* eslint-disable */
-// @ts-nocheck
 import migrate from './024';
 import { merge } from 'lodash';
 import initialRootState from '../../util/test/initial-root-state';
@@ -42,7 +40,8 @@ describe('Migration #24', () => {
 
   for (const { errorMessage, scenario, state } of invalidBackgroundStates) {
     it(`should capture exception if ${scenario}`, () => {
-      const newState = migrate(state);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+      const newState = migrate(state) as any;
 
       expect(newState).toStrictEqual(state);
       expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
@@ -63,7 +62,8 @@ describe('Migration #24', () => {
       },
     };
 
-    const newState = migrate(state);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migrate(state) as any;
 
     expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
       networkId: null,
@@ -82,7 +82,8 @@ describe('Migration #24', () => {
       },
     };
 
-    const newState = migrate(state);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migrate(state) as any;
 
     expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
       networkId: '1',

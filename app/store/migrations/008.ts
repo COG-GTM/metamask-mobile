@@ -1,5 +1,3 @@
-/* eslint-disable */
-// @ts-nocheck
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Legacy persisted state is expected to contain engine.backgroundState.
 export default function migrate(state: unknown): Record<string, unknown>;
@@ -10,8 +8,8 @@ export default function migrate(state: any) {
   const ignoredTokens =
     state.engine.backgroundState.TokensController.ignoredTokens || [];
 
-  const reduceTokens = (tokens) =>
-    tokens.reduce((final, token) => {
+  const reduceTokens = (tokens: any[]): any[] =>
+    tokens.reduce((final: any[], token: any) => {
       const tokenAddress =
         (typeof token === 'string' && token) || token?.address || '';
       tokenAddress && final.push(tokenAddress);
@@ -20,11 +18,11 @@ export default function migrate(state: any) {
 
   const newIgnoredTokens = reduceTokens(ignoredTokens);
 
-  const newAllIgnoredTokens = {};
+  const newAllIgnoredTokens: Record<string, Record<string, any>> = {};
   Object.entries(allIgnoredTokens).forEach(
-    ([chainId, tokensByAccountAddress]) => {
+    ([chainId, tokensByAccountAddress]: [string, any]) => {
       Object.entries(tokensByAccountAddress).forEach(
-        ([accountAddress, tokens]) => {
+        ([accountAddress, tokens]: [string, any]) => {
           const newTokens = reduceTokens(tokens);
           if (newAllIgnoredTokens[chainId] === undefined) {
             newAllIgnoredTokens[chainId] = { [accountAddress]: newTokens };

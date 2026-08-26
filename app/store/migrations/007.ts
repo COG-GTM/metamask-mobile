@@ -1,11 +1,9 @@
-/* eslint-disable */
-// @ts-nocheck
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Legacy persisted state is expected to contain engine.backgroundState.
 export default function migrate(state: unknown): Record<string, unknown>;
 export default function migrate(state: any) {
   const allTokens = state.engine.backgroundState.TokensController.allTokens;
-  const newAllTokens = {};
+  const newAllTokens: Record<string, Record<string, any>> = {};
   if (allTokens) {
     Object.keys(allTokens).forEach((accountAddress) => {
       Object.keys(allTokens[accountAddress]).forEach((chainId) => {
@@ -24,7 +22,7 @@ export default function migrate(state: any) {
 
   const ignoredTokens =
     state.engine.backgroundState.TokensController.ignoredTokens;
-  const newAllIgnoredTokens = {};
+  const newAllIgnoredTokens: Record<string, Record<string, any>> = {};
   Object.keys(allTokens).forEach((accountAddress) => {
     Object.keys(allTokens[accountAddress]).forEach((chainId) => {
       if (newAllIgnoredTokens[chainId] === undefined) {

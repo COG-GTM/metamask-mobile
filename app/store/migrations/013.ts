@@ -1,5 +1,3 @@
-/* eslint-disable */
-// @ts-nocheck
 import { v1 as random } from 'uuid';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -48,10 +46,10 @@ export default function migrate(state: any) {
         },
       },
     }),
-    {},
+    { subjects: {} } as Record<string, any>,
   );
 
-  const newState = { ...state };
+  const newState: any = { ...state };
 
   newState.engine.backgroundState.PermissionController = {
     subjects,

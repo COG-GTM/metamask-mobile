@@ -1,5 +1,4 @@
-/* eslint-disable */
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Engine from '../../core/Engine';
 import { MetaMetrics, MetaMetricsEvents } from '../../core/Analytics';
 import { getAddressAccountType } from '../address';
@@ -23,10 +22,10 @@ export const typedSign = {
 };
 
 export const getAnalyticsParams = (
-  messageParams,
-  signType,
-  securityAlertResponse,
-) => {
+  messageParams: any,
+  signType: any,
+  securityAlertResponse: any,
+): any => {
   if (!messageParams || typeof messageParams !== 'object') {
     throw new Error('Invalid messageParams provided');
   }
@@ -57,13 +56,16 @@ export const getAnalyticsParams = (
       Object.assign(analyticsParams, blockaidParams);
     }
   } catch (error) {
-    Logger.error(error, 'Error processing analytics parameters:');
+    Logger.error(error as any, 'Error processing analytics parameters:');
   }
 
   return analyticsParams;
 };
 
-export const walletConnectNotificationTitle = (confirmation, isError) => {
+export const walletConnectNotificationTitle = (
+  confirmation: any,
+  isError: any,
+): any => {
   if (isError) return strings('notifications.wc_signed_failed_title');
   return confirmation
     ? strings('notifications.wc_signed_title')
@@ -71,20 +73,20 @@ export const walletConnectNotificationTitle = (confirmation, isError) => {
 };
 
 export const showWalletConnectNotification = (
-  messageParams = {},
-  confirmation = false,
-  isError = false,
-) => {
+  messageParams: Record<string, any> = {},
+  confirmation: any = false,
+  isError: any = false,
+): any => {
   InteractionManager.runAfterInteractions(() => {
     /**
      * FIXME: need to rewrite the way BackgroundBridge sets the origin.
      */
-    const origin = messageParams.origin.toLowerCase().replaceAll(':', '');
+    const origin = messageParams.origin.toLowerCase().replace(/:/g, '');
     const isWCOrigin = origin.startsWith(
-      WALLET_CONNECT_ORIGIN.replaceAll(':', '').toLowerCase(),
+      WALLET_CONNECT_ORIGIN.replace(/:/g, '').toLowerCase(),
     );
     const isSDKOrigin = origin.startsWith(
-      AppConstants.MM_SDK.SDK_REMOTE_ORIGIN.replaceAll(':', '').toLowerCase(),
+      AppConstants.MM_SDK.SDK_REMOTE_ORIGIN.replace(/:/g, '').toLowerCase(),
     );
 
     if (isWCOrigin || isSDKOrigin) {
@@ -99,12 +101,12 @@ export const showWalletConnectNotification = (
 };
 
 export const handleSignatureAction = async (
-  onAction,
-  messageParams,
-  signType,
-  securityAlertResponse,
-  confirmation,
-) => {
+  onAction: (...args: any[]) => any,
+  messageParams: any,
+  signType: any,
+  securityAlertResponse: any,
+  confirmation: any,
+): Promise<void> => {
   await onAction();
   showWalletConnectNotification(messageParams, confirmation);
   MetaMetrics.getInstance().trackEvent(
@@ -120,21 +122,27 @@ export const handleSignatureAction = async (
   );
 };
 
-export const addSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const addSignatureErrorListener = (
+  metamaskId: any,
+  onSignatureError: any,
+): any => {
   Engine.context.SignatureController.hub.on(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const removeSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const removeSignatureErrorListener = (
+  metamaskId: any,
+  onSignatureError: any,
+): any => {
   Engine.context.SignatureController.hub.removeListener(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const shouldTruncateMessage = (e) => {
+export const shouldTruncateMessage = (e: any): boolean => {
   if (
     (Device.isIos() && e.nativeEvent.layout.height > 70) ||
     (Device.isAndroid() && e.nativeEvent.layout.height > 100)

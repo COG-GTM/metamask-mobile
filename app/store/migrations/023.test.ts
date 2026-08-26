@@ -1,5 +1,3 @@
-/* eslint-disable */
-// @ts-nocheck
 import migrate from './023';
 import { merge } from 'lodash';
 import initialRootState, {
@@ -157,7 +155,8 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migrate(state) as any;
 
     expect(newState).toStrictEqual(state);
   });
@@ -183,7 +182,8 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migrate(state) as any;
 
     expect(newState).toStrictEqual(state);
   });
@@ -231,7 +231,8 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migrate(state) as any;
 
     expect(newState.user).toStrictEqual(userInitialState);
     expect(newState.engine.backgroundState).toStrictEqual(
@@ -317,7 +318,8 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migrate(state) as any;
 
     expect(newState.user).toStrictEqual(
       merge({}, userInitialState, {
@@ -404,7 +406,8 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- migration state shape is intentionally dynamic
+    const newState = migrate(state) as any;
 
     expect(newState.user).toStrictEqual(userInitialState);
     expect(newState.engine.backgroundState).toStrictEqual(

@@ -132,6 +132,6 @@ export async function doENSLookup(
   }
 }
 
-export function isDefaultAccountName(name: string): boolean {
-  return regex.defaultAccount.test(name);
+export function isDefaultAccountName(name: string | undefined): boolean {
+  return regex.defaultAccount.test(name ?? '');
 }
