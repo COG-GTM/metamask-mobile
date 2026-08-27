@@ -502,4 +502,4 @@ interface SettingsProps {
   setUseBlockieIcon?: (...args: any[]) => any;
   useBlockieIcon?: boolean;
 }
-type Props = SettingsProps & any;
+type Props = SettingsProps;

@@ -147,7 +147,7 @@ const GasEducationCarousel = ({
   conversionRate,
   currentCurrency,
   ticker,
-}): GasEducationCarouselProps & any => {
+}): GasEducationCarouselProps => {
   const [currentTab, setCurrentTab] = useState(1);
   const [gasFiat, setGasFiat] = useState(null);
   const { colors } = useTheme();
@@ -402,4 +402,4 @@ interface GasEducationCarouselProps {
   route?: Record<string, any>;
   ticker?: string;
 }
-type Props = GasEducationCarouselProps & any;
+type Props = GasEducationCarouselProps;

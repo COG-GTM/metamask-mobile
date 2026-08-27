@@ -172,4 +172,4 @@ interface AddressQRCodeProps {
   selectedAddress?: string;
   showAlert?: (...args: any[]) => any;
 }
-type Props = AddressQRCodeProps & any;
+type Props = AddressQRCodeProps;

@@ -231,4 +231,4 @@ interface ManualBackupStep3Props {
   route?: Record<string, any>;
   setOnboardingWizardStep?: (...args: any[]) => any;
 }
-type Props = ManualBackupStep3Props & any;
+type Props = ManualBackupStep3Props;

@@ -623,4 +623,4 @@ interface NetworksSettingsProps {
   nonEvmNetworkConfigurations?: Record<string, any>;
   providerConfig?: Record<string, any>;
 }
-type Props = NetworksSettingsProps & any;
+type Props = NetworksSettingsProps;

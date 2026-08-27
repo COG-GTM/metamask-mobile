@@ -101,7 +101,7 @@ const WatchAssetRequest = ({
   currentPageInformation,
   onCancel,
   onConfirm,
-}): WatchAssetRequestProps & any => {
+}): WatchAssetRequestProps => {
   const { asset, interactingAddress } = suggestedAssetMeta;
   // TODO - Once TokensController is updated, interactingAddress should always be defined
   const { colors } = useTheme();
@@ -238,4 +238,4 @@ interface WatchAssetRequestProps {
   onConfirm?: (...args: any[]) => any;
   suggestedAssetMeta?: Record<string, any>;
 }
-type Props = WatchAssetRequestProps & any;
+type Props = WatchAssetRequestProps;

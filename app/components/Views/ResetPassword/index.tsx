@@ -798,4 +798,4 @@ interface ResetPasswordProps {
   selectedAddress?: string;
   setLockTime?: (...args: any[]) => any;
 }
-type Props = ResetPasswordProps & any;
+type Props = ResetPasswordProps;

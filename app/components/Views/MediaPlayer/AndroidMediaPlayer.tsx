@@ -650,4 +650,4 @@ interface VideoPlayerProps {
   style?: any;
   textTracks?: any[];
 }
-type Props = VideoPlayerProps & any;
+type Props = VideoPlayerProps;

@@ -184,4 +184,4 @@ interface TransactionReviewDataProps {
   toggleDataView?: (...args: any[]) => any;
   transaction?: Record<string, any>;
 }
-type Props = TransactionReviewDataProps & any;
+type Props = TransactionReviewDataProps;

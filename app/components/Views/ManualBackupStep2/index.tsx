@@ -24,7 +24,7 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
-const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBackupStep2Props & any => {
+const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBackupStep2Props => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -289,4 +289,4 @@ interface ManualBackupStep2Props {
   route?: Record<string, any>;
   seedphraseBackedUp?: (...args: any[]) => any;
 }
-type Props = ManualBackupStep2Props & any;
+type Props = ManualBackupStep2Props;

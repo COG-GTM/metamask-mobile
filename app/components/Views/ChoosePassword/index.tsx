@@ -756,4 +756,4 @@ interface ChoosePasswordProps {
   seedphraseNotBackedUp?: (...args: any[]) => any;
   setLockTime?: (...args: any[]) => any;
 }
-type Props = ChoosePasswordProps & any;
+type Props = ChoosePasswordProps;

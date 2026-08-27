@@ -283,4 +283,4 @@ WalletConnectSessions.contextType = ThemeContext;
 interface WalletConnectSessionsProps {
   navigation?: Record<string, any>;
 }
-type Props = WalletConnectSessionsProps & any;
+type Props = WalletConnectSessionsProps;

@@ -497,4 +497,4 @@ interface ContactFormProps {
   navigation?: Record<string, any>;
   route?: Record<string, any>;
 }
-type Props = ContactFormProps & any;
+type Props = ContactFormProps;

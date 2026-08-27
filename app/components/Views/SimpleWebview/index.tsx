@@ -58,4 +58,4 @@ interface SimpleWebviewProps {
   navigation?: Record<string, any>;
   route?: Record<string, any>;
 }
-type Props = SimpleWebviewProps & any;
+type Props = SimpleWebviewProps;

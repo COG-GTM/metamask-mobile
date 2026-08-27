@@ -166,4 +166,4 @@ interface CollectibleProps {
   route?: Record<string, any>;
   toggleCollectibleContractModal?: (...args: any[]) => any;
 }
-type Props = CollectibleProps & any;
+type Props = CollectibleProps;

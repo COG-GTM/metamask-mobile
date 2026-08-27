@@ -485,4 +485,4 @@ interface OnboardingProps {
   setLoading?: (...args: any[]) => any;
   unsetLoading?: (...args: any[]) => any;
 }
-type Props = OnboardingProps & any;
+type Props = OnboardingProps;

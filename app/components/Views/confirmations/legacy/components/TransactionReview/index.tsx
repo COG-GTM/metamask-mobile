@@ -125,7 +125,7 @@ const createStyles = (colors) =>
 /**
  * PureComponent that supports reviewing a transaction
  */
-class TransactionReview extends PureComponent<TransactionReviewProps & any> {
+class TransactionReview extends PureComponent<TransactionReviewProps> {
 
   state = {
     toFocused: false,
@@ -641,4 +641,4 @@ interface TransactionReviewProps {
   transactionMetadata?: Record<string, any>;
   useTransactionSimulations?: boolean;
 }
-type Props = TransactionReviewProps & any;
+type Props = TransactionReviewProps;

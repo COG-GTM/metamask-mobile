@@ -131,7 +131,7 @@ const createStyles = (colors) =>
 /**
  * PureComponent that supports reviewing a transaction information
  */
-class TransactionReviewInformation extends PureComponent<TransactionReviewInformationProps & any> {
+class TransactionReviewInformation extends PureComponent<TransactionReviewInformationProps> {
 
   state = {
     toFocused: false,
@@ -704,4 +704,4 @@ interface TransactionReviewInformationProps {
   toggleDataView?: (...args: any[]) => any;
   transaction?: Record<string, any>;
 }
-type Props = TransactionReviewInformationProps & any;
+type Props = TransactionReviewInformationProps;

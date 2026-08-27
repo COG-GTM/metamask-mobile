@@ -53,7 +53,7 @@ const TransactionsView = ({
   chainId,
   tokens,
   tokenNetworkFilter,
-}): TransactionsViewProps & any => {
+}): TransactionsViewProps => {
   const [allTransactions, setAllTransactions] = useState([]);
   const [submittedTxs, setSubmittedTxs] = useState([]);
   const [confirmedTxs, setConfirmedTxs] = useState([]);
@@ -230,4 +230,4 @@ interface TransactionsViewProps {
   tokens?: any[];
   transactions?: any[];
 }
-type Props = TransactionsViewProps & any;
+type Props = TransactionsViewProps;

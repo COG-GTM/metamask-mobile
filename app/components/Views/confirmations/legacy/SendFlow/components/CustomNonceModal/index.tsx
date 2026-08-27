@@ -116,7 +116,7 @@ const createStyles = (colors) =>
     },
   });
 
-const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }): CustomModalNonceProps & any => {
+const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }): CustomModalNonceProps => {
   const [nonce, onChangeText] = React.useState(nonceValue);
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
@@ -266,4 +266,4 @@ interface CustomModalNonceProps {
   proposedNonce: number;
   save: (...args: any[]) => any;
 }
-type Props = CustomModalNonceProps & any;
+type Props = CustomModalNonceProps;

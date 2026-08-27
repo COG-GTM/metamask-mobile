@@ -395,4 +395,4 @@ interface TransactionReviewEIP1559Props {
   timeEstimateColor?: string;
   timeEstimateId?: string;
 }
-type Props = TransactionReviewEIP1559Props & any;
+type Props = TransactionReviewEIP1559Props;

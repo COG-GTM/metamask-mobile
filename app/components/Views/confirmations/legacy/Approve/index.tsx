@@ -938,4 +938,4 @@ interface ApproveProps {
   transaction: Record<string, any>;
   transactions?: any[];
 }
-type Props = ApproveProps & any;
+type Props = ApproveProps;

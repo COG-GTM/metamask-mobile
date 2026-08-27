@@ -501,4 +501,4 @@ interface AdvancedSettingsProps {
   showHexData?: boolean;
   smartTransactionsOptInStatus?: boolean;
 }
-type Props = AdvancedSettingsProps & any;
+type Props = AdvancedSettingsProps;

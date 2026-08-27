@@ -56,7 +56,7 @@ const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
     },
   });
 
-function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }): MediaPlayerProps & any {
+function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }): MediaPlayerProps {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const videoRef = useRef();
@@ -176,4 +176,4 @@ interface MediaPlayerProps {
   textTracks?: any[];
   uri?: string;
 }
-type Props = MediaPlayerProps & any;
+type Props = MediaPlayerProps;

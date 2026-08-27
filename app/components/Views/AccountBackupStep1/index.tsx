@@ -309,4 +309,4 @@ interface AccountBackupStep1Props {
   route?: Record<string, any>;
   setOnboardingWizardStep?: (...args: any[]) => any;
 }
-type Props = AccountBackupStep1Props & any;
+type Props = AccountBackupStep1Props;

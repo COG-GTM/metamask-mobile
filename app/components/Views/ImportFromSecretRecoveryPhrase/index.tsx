@@ -83,7 +83,7 @@ const ImportFromSecretRecoveryPhrase = ({
   seedphraseBackedUp,
   setOnboardingWizardStep,
   route,
-}): ImportFromSecretRecoveryPhraseProps & any => {
+}): ImportFromSecretRecoveryPhraseProps => {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
@@ -627,4 +627,4 @@ interface ImportFromSecretRecoveryPhraseProps {
   setLockTime?: (...args: any[]) => any;
   setOnboardingWizardStep?: (...args: any[]) => any;
 }
-type Props = ImportFromSecretRecoveryPhraseProps & any;
+type Props = ImportFromSecretRecoveryPhraseProps;

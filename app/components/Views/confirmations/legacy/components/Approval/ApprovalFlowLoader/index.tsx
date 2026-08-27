@@ -27,7 +27,7 @@ const createStyles = (colors) =>
     },
   });
 
-const ApprovalFlowLoader = ({ loadingText }): ApprovalFlowLoaderProps & any => {
+const ApprovalFlowLoader = ({ loadingText }): ApprovalFlowLoaderProps => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -48,4 +48,4 @@ export default ApprovalFlowLoader;
 interface ApprovalFlowLoaderProps {
   loadingText?: string;
 }
-type Props = ApprovalFlowLoaderProps & any;
+type Props = ApprovalFlowLoaderProps;

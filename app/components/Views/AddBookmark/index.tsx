@@ -171,4 +171,4 @@ interface AddBookmarkProps {
   navigation?: Record<string, any>;
   route?: Record<string, any>;
 }
-type Props = AddBookmarkProps & any;
+type Props = AddBookmarkProps;

@@ -23,7 +23,7 @@ const createStyles = (colors) =>
     },
   });
 
-const CustomNonce = ({ nonce, onNonceEdit }): CustomNonceProps & any => {
+const CustomNonce = ({ nonce, onNonceEdit }): CustomNonceProps => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -49,4 +49,4 @@ interface CustomNonceProps {
   nonce?: number;
   onNonceEdit?: (...args: any[]) => any;
 }
-type Props = CustomNonceProps & any;
+type Props = CustomNonceProps;

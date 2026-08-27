@@ -2555,4 +2555,4 @@ interface NetworkSettingsProps {
   tokenNetworkFilter?: Record<string, any>;
   useSafeChainsListValidation?: boolean;
 }
-type Props = NetworkSettingsProps & any;
+type Props = NetworkSettingsProps;

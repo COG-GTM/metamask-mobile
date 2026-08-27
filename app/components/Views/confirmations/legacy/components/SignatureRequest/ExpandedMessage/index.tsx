@@ -127,4 +127,4 @@ interface ExpandedMessageProps {
   renderMessage?: (...args: any[]) => any;
   toggleExpandedMessage?: (...args: any[]) => any;
 }
-type Props = ExpandedMessageProps & any;
+type Props = ExpandedMessageProps;

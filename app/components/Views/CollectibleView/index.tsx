@@ -128,4 +128,4 @@ interface CollectibleViewProps {
   newAssetTransaction?: (...args: any[]) => any;
   route?: Record<string, any>;
 }
-type Props = CollectibleViewProps & any;
+type Props = CollectibleViewProps;

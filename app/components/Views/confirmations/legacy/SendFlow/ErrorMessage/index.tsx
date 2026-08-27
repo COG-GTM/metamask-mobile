@@ -48,4 +48,4 @@ interface ErrorMessageProps {
   isOnlyWarning?: boolean;
   onContinue?: (...args: any[]) => any;
 }
-type Props = ErrorMessageProps & any;
+type Props = ErrorMessageProps;

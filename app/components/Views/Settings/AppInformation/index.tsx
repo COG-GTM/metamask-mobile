@@ -237,4 +237,4 @@ AppInformation.contextType = ThemeContext;
 interface AppInformationProps {
   navigation?: Record<string, any>;
 }
-type Props = AppInformationProps & any;
+type Props = AppInformationProps;

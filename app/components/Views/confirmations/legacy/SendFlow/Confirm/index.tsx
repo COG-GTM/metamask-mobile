@@ -1546,4 +1546,4 @@ interface ConfirmProps {
   transactionState?: Record<string, any>;
   updateConfirmationMetric?: (...args: any[]) => any;
 }
-type Props = ConfirmProps & any;
+type Props = ConfirmProps;
