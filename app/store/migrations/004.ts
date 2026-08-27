@@ -1,14 +1,19 @@
-import { NETWORKS_CHAIN_ID } from '../../../app/constants/network';
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Legacy persisted state is expected to contain engine.backgroundState.
+// Mirrors the historical `NetworksChainId` map (decimal chain IDs,
+// including deprecated testnets) that @metamask/controller-utils exported
+// when this migration was written.
+const NetworksChainId: Record<string, string> = {
+  mainnet: '1',
+  goerli: '5',
+  sepolia: '11155111',
+  ropsten: '3',
+  rinkeby: '4',
+  kovan: '42',
+};
+
 export default function migrate(state: unknown): Record<string, unknown>;
 export default function migrate(state: any) {
-  const NetworksChainId: Record<string, string> = {
-    mainnet: NETWORKS_CHAIN_ID.MAINNET,
-    goerli: NETWORKS_CHAIN_ID.GOERLI,
-    sepolia: NETWORKS_CHAIN_ID.SEPOLIA,
-  };
   const { allTokens } = state.engine.backgroundState.TokensController;
   const { allCollectibleContracts, allCollectibles } =
     state.engine.backgroundState.CollectiblesController;

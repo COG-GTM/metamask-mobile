@@ -1,4 +1,4 @@
-import { GOERLI, NETWORKS_CHAIN_ID } from '../../../app/constants/network';
+import { GOERLI } from '../../../app/constants/network';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Legacy persisted state is expected to contain engine.backgroundState.
@@ -9,7 +9,8 @@ export default function migrate(state: any) {
   // Deprecate rinkeby, ropsten and Kovan, any user that is on those we fallback to goerli
   if (chainId === '4' || chainId === '3' || chainId === '42') {
     state.engine.backgroundState.NetworkController.providerConfig = {
-      chainId: NETWORKS_CHAIN_ID.GOERLI,
+      // Historical `NetworksChainId.goerli` (decimal chain ID).
+      chainId: '5',
       ticker: 'GoerliETH',
       type: GOERLI,
     };
