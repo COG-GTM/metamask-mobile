@@ -1,9 +1,13 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { PureComponent } from 'react';
 import { View, Animated, Easing, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+
+interface AnimatedSpinnerProps {
+  size?: keyof typeof SpinnerSize;
+}
 
 export const SpinnerSize = {
   MD: 'MD',
@@ -45,32 +49,33 @@ const measures = {
   },
 };
 
-const createStyles = (colors, measures) =>
+const createStyles = (colors: any, sizeMeasures: any): any =>
   StyleSheet.create({
     view: {
       position: 'relative',
       height: Device.isAndroid()
-        ? measures.Android.height
-        : measures.iOS.height,
-      width: Device.isAndroid() ? measures.Android.width : measures.iOS.width,
+        ? sizeMeasures.Android.height
+        : sizeMeasures.iOS.height,
+      width: Device.isAndroid() ? sizeMeasures.Android.width : sizeMeasures.iOS.width,
       top: Device.isAndroid() ? -6 : -5.5,
       left: Device.isAndroid() ? -6 : -5.5,
     },
     static: {
       borderWidth: 3.5,
       borderColor: colors.background.alternative,
-      borderRadius: measures.static.borderRadius,
-      width: measures.static.width,
-      height: measures.static.height,
+      borderRadius: sizeMeasures.static.borderRadius,
+      width: sizeMeasures.static.width,
+      height: sizeMeasures.static.height,
     },
   });
 
-export default class AnimatedSpinner extends PureComponent {
+export default class AnimatedSpinner extends PureComponent<AnimatedSpinnerProps> {
   spinValue = new Animated.Value(0);
 
   state = {
     spinning: false,
   };
+  mounted = false;
 
   componentDidMount() {
     this.mounted = true;
@@ -112,7 +117,9 @@ export default class AnimatedSpinner extends PureComponent {
 
   render() {
     const { size = SpinnerSize.MD } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as React.ContextType<typeof ThemeContext>).colors ||
+      mockTheme.colors;
     const styles = createStyles(colors, measures[size]);
     const spin = this.spinValue.interpolate({
       inputRange: [0, 1],

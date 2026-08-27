@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import DefaultTabBar from 'react-native-scrollable-tab-view/DefaultTabBar';
 import { fontStyles } from '../../styles/common';
 import { useTheme } from '../../util/theme';
 
-const createStyles = (colors) =>
+const createStyles = (colors: any): any =>
   StyleSheet.create({
     tabUnderlineStyle: {
       height: 2,
@@ -22,7 +23,11 @@ const createStyles = (colors) =>
     },
   });
 
-function TabBar({ ...props }) {
+interface TabBarProps {
+  [key: string]: any;
+}
+
+function TabBar({ ...props }: TabBarProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

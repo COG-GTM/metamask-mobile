@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import PropTypes from 'prop-types';
 import { ChainId } from '@metamask/controller-utils';
 import { connect } from 'react-redux';
 import TokenIcon from '../Swaps/components/TokenIcon';
@@ -8,6 +8,15 @@ import {
   selectEvmTicker,
 } from '../../../selectors/networkController';
 
+interface NetworkMainAssetLogoProps {
+  chainId?: string;
+  ticker?: string;
+  style?: any;
+  big?: boolean;
+  biggest?: boolean;
+  testID?: string;
+}
+
 function NetworkMainAssetLogo({
   chainId,
   ticker,
@@ -15,7 +24,7 @@ function NetworkMainAssetLogo({
   big,
   biggest,
   testID,
-}) {
+}: NetworkMainAssetLogoProps) {
   if (chainId === ChainId.mainnet) {
     return (
       <TokenIcon
@@ -38,18 +47,9 @@ function NetworkMainAssetLogo({
   );
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: any) => ({
   chainId: selectChainId(state),
   ticker: selectEvmTicker(state),
 });
-
-NetworkMainAssetLogo.propTypes = {
-  chainId: PropTypes.string,
-  ticker: PropTypes.string,
-  style: PropTypes.object,
-  big: PropTypes.bool,
-  biggest: PropTypes.bool,
-  testID: PropTypes.string,
-};
 
 export default connect(mapStateToProps)(NetworkMainAssetLogo);
