@@ -245,6 +245,7 @@ const OrderDetails: React.FC<Props> = ({ order }: Props) => {
   const networkConfigurations = useSelector(
     selectEvmNetworkConfigurationsByChainId,
   );
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const explorer = useBlockExplorer(networkConfigurations);
   const styles = createStyles(colors);
   const date = createdAt && toDateFormat(createdAt);

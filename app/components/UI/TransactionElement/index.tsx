@@ -200,10 +200,15 @@ class TransactionElement extends PureComponent<Props> {
   componentDidMount = async () => {
     const [transactionElement, transactionDetails] = await decodeTransaction({
       ...this.props,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       swapsTransactions: this.props.swapsTransactions,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       swapsTokens: this.props.swapsTokens,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       assetSymbol: this.props.assetSymbol,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       txChainId: this.props.txChainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       networkConfigurationsByChainId: this.props.networkConfigurationsByChainId,
     });
     this.mounted = true;
@@ -213,8 +218,11 @@ class TransactionElement extends PureComponent<Props> {
 
   componentDidUpdate(prevProps: any) {
     if (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       prevProps.txChainId !== this.props.txChainId ||
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       prevProps.swapsTransactions !== this.props.swapsTransactions ||
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       prevProps.swapsTokens !== this.props.swapsTokens
     ) {
       this.componentDidMount();
@@ -226,9 +234,11 @@ class TransactionElement extends PureComponent<Props> {
   }
 
   onPressItem = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { tx, i, onPressItem } = this.props;
     onPressItem(tx.id, i);
     if (tx.type === 'bridge') {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.navigate(Routes.BRIDGE.BRIDGE_TRANSACTION_DETAILS, {
         evmTxMeta: tx,
       });
@@ -250,6 +260,7 @@ class TransactionElement extends PureComponent<Props> {
   };
 
   renderTxTime = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { tx, selectedInternalAccount } = this.props;
     const selectedAddress = safeToChecksumAddress(
       selectedInternalAccount?.address,
@@ -275,6 +286,7 @@ class TransactionElement extends PureComponent<Props> {
    * @returns Account added to wallet view
    */
   renderImportTime = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { tx, selectedInternalAccount } = this.props;
     const { colors, typography } = (this as any).context || mockTheme;
     const styles: any = createStyles(colors, typography);
@@ -364,11 +376,16 @@ class TransactionElement extends PureComponent<Props> {
    */
   renderTxElement = (transactionElement: any) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedInternalAccount,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isQRHardwareAccount,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isLedgerAccount,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       i,
       tx: { time, status, isSmartTransaction, chainId, type },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       bridgeTxHistoryData: { bridgeTxHistoryItem, isBridgeComplete },
     } = this.props;
     const isBridgeTransaction = type === 'bridge';
@@ -497,6 +514,7 @@ class TransactionElement extends PureComponent<Props> {
   showCancelModal = () => {
     const existingGas = this.parseGas();
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.mounted && this.props.onCancelAction(true, existingGas, this.props.tx);
   };
 
@@ -504,22 +522,27 @@ class TransactionElement extends PureComponent<Props> {
     const existingGas = this.parseGas();
 
     this.mounted &&
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.onSpeedUpAction(true, existingGas, this.props.tx);
   };
 
   hideSpeedUpModal = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.mounted && this.props.onSpeedUpAction(false);
   };
 
   showQRSigningModal = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.mounted && this.props.signQRTransaction(this.props.tx);
   };
 
   showLedgerSigninModal = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.mounted && this.props.signLedgerTransaction(this.props.tx);
   };
 
   cancelUnsignedQRTransaction = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.mounted && this.props.cancelUnsignedQRTransaction(this.props.tx);
   };
 

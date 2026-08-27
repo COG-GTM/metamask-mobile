@@ -37,6 +37,7 @@ const TokenDetailsList: React.FC<TokenDetailsListProps> = ({
   }) => dispatch(showAlert(config));
 
   const copyAccountToClipboard = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     await ClipboardManager.setString(tokenDetails.contractAddress);
 
     handleShowAlert({

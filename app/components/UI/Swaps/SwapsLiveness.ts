@@ -20,6 +20,7 @@ function SwapLiveness() {
   const dispatch = useDispatch();
   const setLiveness = useCallback(
     (_chainId: string, featureFlags?: FeatureFlags | null) => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       dispatch(setSwapsLiveness(_chainId, featureFlags));
     },
     [dispatch],

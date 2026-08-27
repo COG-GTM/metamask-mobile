@@ -69,6 +69,7 @@ function SlippageModal({ isVisible, dismiss, onChange, slippage }: SlippageModal
 
           <View style={styles.slippageWrapper}>
             <View style={styles.warningTextWrapper}>
+              {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
               {slippage >= 5 && (
                 <Text style={styles.warningText}>
                   {strings('swaps.slippage_warning')}

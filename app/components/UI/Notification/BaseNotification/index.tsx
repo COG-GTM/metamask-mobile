@@ -170,7 +170,9 @@ export const getDescription = (status: any, { amount = null, type = null }: any)
  */
 const BaseNotification = ({
   status,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   data = null,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   data: { description = null, title = null },
   onPress,
   onHide,

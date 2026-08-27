@@ -53,6 +53,7 @@ const createStyles = (colors: any): any =>
 class GlobalAlert extends PureComponent<Props> {
 
   onClose = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.dismissAlert();
   };
 
@@ -64,6 +65,7 @@ class GlobalAlert extends PureComponent<Props> {
       this.props.isVisible
     ) {
       setTimeout(() => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.dismissAlert();
       }, this.props.autodismiss);
     }

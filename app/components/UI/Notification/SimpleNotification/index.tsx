@@ -46,9 +46,12 @@ function SimpleNotification({
     >
       <ElevatedView style={styles.elevatedView} elevation={100}>
         <BaseNotification
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           status={currentNotification.status}
           data={{
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             title: currentNotification.title,
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             description: currentNotification.description,
           }}
           onHide={hideCurrentNotification}

@@ -215,6 +215,7 @@ function SwapsAmountView({
   setLiveness,
   shouldUseSmartTransaction,
 }: SwapsAmountViewProps) {
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const accounts = accountsByChainId[chainId];
   const navigation = useNavigation();
   const route = useRoute();
@@ -258,6 +259,7 @@ function SwapsAmountView({
   useStablecoinsDefaultSlippage({
     sourceTokenAddress: sourceToken?.address,
     destTokenAddress: destinationToken?.address,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     chainId,
     setSlippage,
   });
@@ -295,6 +297,7 @@ function SwapsAmountView({
 
 // @ts-expect-error -- legacy JavaScript UI type boundary
         const liveness = getSwapsLiveness(featureFlags, chainId);
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         setLiveness(chainId, featureFlags);
 
         if (liveness) {
@@ -322,6 +325,7 @@ function SwapsAmountView({
       } catch (error) {
 // @ts-expect-error -- legacy JavaScript UI type boundary
         Logger.error(error, 'Swaps: error while fetching swaps liveness');
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         setLiveness(chainId, null);
 // @ts-expect-error -- legacy JavaScript UI type boundary
         navigation.pop();
@@ -337,6 +341,7 @@ function SwapsAmountView({
       const { SwapsController } = Engine.context;
       try {
         await SwapsController.fetchAggregatorMetadataWithCache({
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           networkClientId: selectedNetworkClientId,
         });
         await SwapsController.fetchTopAssetsWithCache({
@@ -365,6 +370,7 @@ function SwapsAmountView({
         }
         setLoadingTokens(true);
         await SwapsController.fetchTokenWithCache({
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           networkClientId: selectedNetworkClientId,
         });
         setLoadingTokens(false);
@@ -386,6 +392,7 @@ function SwapsAmountView({
     !isSourceSet &&
     initialSource &&
     swapsControllerTokens &&
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     swapsTokens?.length > 0 &&
     !sourceToken;
 
@@ -393,6 +400,7 @@ function SwapsAmountView({
     if (canSetAnInitialSourceToken) {
       setIsSourceSet(true);
       setSourceToken(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         swapsTokens.find((token: any) =>
           toLowerCaseEquals(token.address, initialSource),
         ),
@@ -404,6 +412,7 @@ function SwapsAmountView({
     !isDestinationSet &&
     initialDestination &&
     swapsControllerTokens &&
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     swapsTokens?.length > 0 &&
     !destinationToken;
 
@@ -411,6 +420,7 @@ function SwapsAmountView({
     if (canSetAnInitialTokenDestination) {
       setIsDestinationSet(true);
       setDestinationToken(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         swapsTokens.find((token: any) =>
           toLowerCaseEquals(token.address, initialDestination),
         ),
@@ -441,6 +451,7 @@ function SwapsAmountView({
         try {
           const balance = await AssetsContractController.getERC20BalanceOf(
             sourceToken.address,
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             selectedAddress,
           );
           setContractBalanceAsUnits(balance);
@@ -589,6 +600,7 @@ function SwapsAmountView({
         symbol,
         decimals,
         name,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         networkClientId: selectedNetworkClientId,
       });
     }
@@ -629,6 +641,7 @@ function SwapsAmountView({
   const setSlippageAfterTokenPress = useCallback(
     (sourceTokenAddress: any, destinationTokenAddress: any) => {
       const enableDirectWrapping = swapsUtils.shouldEnableDirectWrapping(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         chainId,
         sourceTokenAddress,
         destinationTokenAddress,
@@ -713,6 +726,7 @@ function SwapsAmountView({
 
   const showMaxBalanceLink = shouldShowMaxBalanceLink({
     sourceToken,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     shouldUseSmartTransaction,
     hasBalance,
   });
@@ -751,6 +765,7 @@ function SwapsAmountView({
             tokens={swapsTokens}
             initialTokens={tokensWithBalance}
             onItemPress={handleSourceTokenPress}
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             excludeAddresses={[destinationToken?.address]}
           />
         </View>
@@ -832,16 +847,20 @@ function SwapsAmountView({
             title={strings('swaps.convert_to')}
             tokens={swapsTokens}
             initialTokens={[
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               swapsUtils.getNativeSwapsToken(chainId),
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               ...tokensTopAssets
                 .slice(0, MAX_TOP_ASSETS)
                 .filter(
                   (asset: any) =>
                     asset.address !==
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     swapsUtils.getNativeSwapsToken(chainId).address,
                 ),
             ]}
             onItemPress={handleDestinationTokenPress}
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             excludeAddresses={[sourceToken?.address]}
           />
         </View>
@@ -885,6 +904,7 @@ function SwapsAmountView({
                 onPress={handleDimissTokenAlert}
                 onInfoPress={toggleTokenVerificationModal}
               >
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 {(textStyle: any) => (
                   <TouchableOpacity
                     onPress={explorer.isValid ? handleVerifyPress : undefined}
@@ -1040,4 +1060,5 @@ const mapDispatchToProps = (dispatch: any) => ({
     dispatch(setSwapsLiveness(chainId, featureFlags)),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps, mapDispatchToProps)(SwapsAmountView);

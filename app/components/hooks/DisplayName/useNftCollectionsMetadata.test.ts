@@ -98,6 +98,7 @@ describe('useNftCollectionsMetadata', () => {
       mockGetTokenDetails.mockReset().mockResolvedValueOnce({
         name: 'TEST',
         symbol: 'TST',
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         standard: SimulationTokenStandard.erc20,
       });
 

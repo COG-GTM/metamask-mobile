@@ -25,6 +25,7 @@ const SignatureBlockaidBanner = () => {
 
   const onContactUsClicked = useCallback(() => {
     const analyticsParams = {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ...getAnalyticsParams(
         {
           from: fromAddress,

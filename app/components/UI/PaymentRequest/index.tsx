@@ -293,6 +293,7 @@ class PaymentRequest extends PureComponent<Props> {
   updateNavBar = () => {
     const { navigation, route } = this.props;
     const colors = (this as any).context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     navigation.setOptions(
       getPaymentRequestOptionsTitle(
         strings('payment_request.title'),
@@ -319,6 +320,7 @@ class PaymentRequest extends PureComponent<Props> {
     }
     // TODO: Fuse will only be updated once on mount. When we convert this component to hooks, we can utilize useEffect to update fuse.
     // Update fuse collection with token list
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     fuse.setCollection(tokenList);
   };
 
@@ -375,6 +377,7 @@ class PaymentRequest extends PureComponent<Props> {
     }
 
     const fuseSearchResult = fuse.search(searchInputValue);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const addressSearchResult = tokenList.filter((token: any) =>
       toLowerCaseEquals(token.address, searchInputValue),
     );
@@ -401,6 +404,7 @@ class PaymentRequest extends PureComponent<Props> {
     const themeAppearance = (this as any).context.themeAppearance || 'light';
     const styles: any = createStyles(colors);
     const isTDSupportedForNetwork =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isTokenDetectionSupportedForNetwork(chainId);
 
     if (isTDSupportedForNetwork) {
@@ -412,6 +416,7 @@ class PaymentRequest extends PureComponent<Props> {
     } else if (
       //Check to see if it is not a test net ticker symbol
       Object.values(ChainId).find((value: any) => value === chainId) &&
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       !(parseInt(chainId, 10) > 1 && parseInt(chainId, 10) < 6)
     ) {
       results = [defaultEth];
@@ -419,7 +424,9 @@ class PaymentRequest extends PureComponent<Props> {
       results = [{ ...defaultEth, symbol: getTicker(ticker), name: '' }];
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const userTokens = tokens.map((token: any) => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const contract = tokenList.find(
         (contractToken: any) => contractToken.address === token.address,
       );
@@ -673,6 +680,7 @@ class PaymentRequest extends PureComponent<Props> {
         let eth_link;
         if (selectedAsset.isETH) {
           const amount = toWei(cryptoAmount).toString();
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           eth_link = generateETHLink(selectedAddress, amount, chainId);
         } else {
           const amount = toTokenMinimalUnit(
@@ -680,6 +688,7 @@ class PaymentRequest extends PureComponent<Props> {
             selectedAsset.decimals,
           ).toString();
           eth_link = generateERC20Link(
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             selectedAddress,
             selectedAsset.address,
             amount,
@@ -883,4 +892,5 @@ const mapStateToProps = (state: any) => ({
   tokenList: selectTokenListArray(state),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(PaymentRequest);

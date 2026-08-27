@@ -211,6 +211,7 @@ class Transactions extends PureComponent<Props> {
       this.props.onRefSet && this.props.onRefSet(this.flatList);
     }, 100);
     this.setState({
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress),
     });
   };
@@ -222,6 +223,7 @@ class Transactions extends PureComponent<Props> {
 
   updateBlockExplorer = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerConfig: { type, rpcUrl },
       networkConfigurations,
       chainId,
@@ -229,8 +231,10 @@ class Transactions extends PureComponent<Props> {
     let blockExplorer;
     if (type === RPC) {
       blockExplorer =
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         findBlockExplorerForRpc(rpcUrl, networkConfigurations) ||
         NO_RPC_BLOCK_EXPLORER;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     } else if (isNonEvmChainId(chainId)) {
       // TODO: [SOLANA] - block explorer needs to be implemented
       blockExplorer = findBlockExplorerForNonEvmChainId(chainId);
@@ -238,9 +242,11 @@ class Transactions extends PureComponent<Props> {
 
     this.setState({ rpcBlockExplorer: blockExplorer });
     this.setState({
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress, [
         ExtendedKeyringTypes.qr,
       ]),
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isLedgerAccount: isHardwareAccount(this.props.selectedAddress, [
         ExtendedKeyringTypes.ledger,
       ]),
@@ -250,6 +256,7 @@ class Transactions extends PureComponent<Props> {
   componentDidUpdate() {
     this.updateBlockExplorer();
     if (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.confirmedTransactions.some(
         ({ id }: any) => id === this.existingTx?.id,
       )
@@ -265,6 +272,7 @@ class Transactions extends PureComponent<Props> {
     const txToView = NotificationManager.getTransactionToView();
     if (txToView) {
       setTimeout(() => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const index = this.props.transactions.findIndex(
           (tx: any) => txToView === tx.id,
         );
@@ -356,6 +364,7 @@ class Transactions extends PureComponent<Props> {
   viewOnBlockExplore = () => {
     const {
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerConfig: { type },
       selectedAddress,
       close,
@@ -367,6 +376,7 @@ class Transactions extends PureComponent<Props> {
         selectedAddress,
         rpcBlockExplorer,
       );
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation.push('Webview', {
         screen: 'SimpleWebview',
         params: {
@@ -390,6 +400,7 @@ class Transactions extends PureComponent<Props> {
 
     const {
       chainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerConfig: { type },
     } = this.props;
     const blockExplorerText = () => {
@@ -421,6 +432,7 @@ class Transactions extends PureComponent<Props> {
 
   getItemLayout = (data: any, index: any) => ({
     length: ROW_HEIGHT,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     offset: this.props.headerHeight + ROW_HEIGHT * index,
     index,
   });
@@ -437,6 +449,7 @@ class Transactions extends PureComponent<Props> {
       const speedUpConfirmDisabled = validateTransactionActionBalance(
         tx,
         SPEED_UP_RATE,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.accounts,
       );
       this.setState({ speedUpIsOpen: speedUpAction, speedUpConfirmDisabled });
@@ -461,6 +474,7 @@ class Transactions extends PureComponent<Props> {
       const cancelConfirmDisabled = validateTransactionActionBalance(
         tx,
         CANCEL_RATE,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.accounts,
       );
       this.setState({ cancelIsOpen: cancelAction, cancelConfirmDisabled });
@@ -513,6 +527,7 @@ class Transactions extends PureComponent<Props> {
         throw new SpeedupTransactionError(transactionObject.error);
       }
 
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const isLedgerAccount = isHardwareAccount(this.props.selectedAddress, [
         ExtendedKeyringTypes.ledger,
       ]);
@@ -558,6 +573,7 @@ class Transactions extends PureComponent<Props> {
       }
     };
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate(
       ...createLedgerTransactionModalNavDetails({
         transactionId: transaction.id,
@@ -583,6 +599,7 @@ class Transactions extends PureComponent<Props> {
         throw new CancelTransactionError(transactionObject.error);
       }
 
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const isLedgerAccount = isHardwareAccount(this.props.selectedAddress, [
         ExtendedKeyringTypes.ledger,
       ]);
@@ -784,8 +801,10 @@ class Transactions extends PureComponent<Props> {
               initialNumToRender={10}
               maxToRenderPerBatch={2}
               onEndReachedThreshold={0.5}
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               ListHeaderComponent={header}
               ListFooterComponent={
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 transactions.length > 0 ? this.renderFooter : this.renderEmpty()
               }
               style={baseStyles.flexGrow}
@@ -878,6 +897,7 @@ class Transactions extends PureComponent<Props> {
     const estimateGweiDecimal =
       gasFeeEstimates?.medium?.suggestedMaxFeePerGas ??
       gasFeeEstimates?.medium ??
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasFeeEstimates.gasPrice ??
       '0';
 

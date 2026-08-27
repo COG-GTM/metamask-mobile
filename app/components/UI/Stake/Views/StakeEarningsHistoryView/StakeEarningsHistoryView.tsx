@@ -17,6 +17,7 @@ const StakeEarningsHistoryView = () => {
 
   useEffect(() => {
     navigation.setOptions(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       getStakingNavbar(
         strings('stake.earnings_history_title', {
           ticker: asset.ticker,

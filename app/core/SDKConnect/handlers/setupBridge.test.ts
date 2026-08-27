@@ -32,6 +32,7 @@ describe('setupBridge', () => {
   });
 
   it('should returns existing backgroundBridge if it already exists', () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const existingBridge = new BackgroundBridge();
     connection.backgroundBridge = existingBridge;
 

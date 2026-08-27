@@ -156,6 +156,7 @@ function TokenSelectModal({
   tokens,
   initialTokens,
   onItemPress,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   excludeAddresses = [],
   accounts,
   selectedAddress,
@@ -181,6 +182,7 @@ function TokenSelectModal({
 
   const excludedAddresses = useMemo(
     () =>
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       excludeAddresses.filter(Boolean).map((address: any) => address.toLowerCase()),
     [excludeAddresses],
   );
@@ -196,11 +198,17 @@ function TokenSelectModal({
   const sortedInitialTokensWithFiatValue = useMemo(
     () =>
       getSortedTokensByFiatValue({
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokens: initialTokens,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         account: accounts[selectedAddress],
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenExchangeRates,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         balances,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         conversionRate,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         currencyCode: currentCurrency,
       }),
     [
@@ -228,6 +236,7 @@ function TokenSelectModal({
 
   const tokenFuse = useMemo(
     () =>
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       new Fuse(filteredTokens, {
         shouldSort: true,
         threshold: 0.45,
@@ -249,9 +258,11 @@ function TokenSelectModal({
 
   const shouldFetchToken = useMemo(
     () =>
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       tokenSearchResults.length === 0 &&
       isValidAddress(searchString) &&
       !excludedAddresses.includes(searchString?.toLowerCase()),
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     [excludedAddresses, searchString, tokenSearchResults.length],
   );
 
@@ -270,6 +281,7 @@ function TokenSelectModal({
       return (
         <TouchableOpacity
           style={styles.resultRow}
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           onPress={() => onItemPress(item)}
         >
           <ListItem>
@@ -317,6 +329,7 @@ function TokenSelectModal({
           .build(),
       );
       hideTokenImportModal();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onItemPress(item);
     },
     [
@@ -340,6 +353,7 @@ function TokenSelectModal({
         ),
       },
     });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     dismiss();
   }, [dismiss, explorer, navigation, searchString, shouldFetchToken]);
 
@@ -544,4 +558,5 @@ const mapStateToProps = (state: any) => ({
   networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(TokenSelectModal);

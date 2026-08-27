@@ -385,6 +385,7 @@ class DrawerView extends PureComponent<Props> {
   processedNewBalance = false;
   animatingNetworksModal = false;
   selectedChecksummedAddress = toChecksumHexAddress(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.selectedInternalAccount.address,
   );
 
@@ -421,6 +422,7 @@ class DrawerView extends PureComponent<Props> {
 
   async componentDidUpdate() {
     const route = findRouteNameFromNavigatorState(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.dangerouslyGetState().routes,
     );
     if (!this.props.passwordSet || !this.props.seedphraseBackedUp) {
@@ -445,9 +447,12 @@ class DrawerView extends PureComponent<Props> {
       }
       let tokenFound = false;
 
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.tokens.forEach((token: any) => {
         if (
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.tokenBalances[token.address] &&
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           !isZero(this.props.tokenBalances[token.address])
         ) {
           tokenFound = true;
@@ -457,12 +462,15 @@ class DrawerView extends PureComponent<Props> {
         !this.props.passwordSet ||
         this.currentBalance > 0 ||
         tokenFound ||
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.collectibles.length > 0
       ) {
         // eslint-disable-next-line react/no-did-update-set-state
         this.setState({ showProtectWalletModal: true });
 
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics.trackEvent(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.metrics
             .createEventBuilder(
               MetaMetricsEvents.WALLET_SECURITY_PROTECT_VIEWED,
@@ -499,6 +507,7 @@ class DrawerView extends PureComponent<Props> {
   updateAccountInfo = async () => {
     const { providerConfig, selectedInternalAccount, chainId } = this.props;
     const { currentChainId, address, name } = this.state.account;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const accountName = selectedInternalAccount.metadata.name;
     if (
       currentChainId !== chainId ||
@@ -507,6 +516,7 @@ class DrawerView extends PureComponent<Props> {
     ) {
       const ens = await doENSReverseLookup(
         this.selectedChecksummedAddress,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         chainId,
       );
       this.setState((state: any) => ({
@@ -523,6 +533,7 @@ class DrawerView extends PureComponent<Props> {
   openAccountSelector = () => {
     const { navigation } = this.props;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     navigation.navigate(
       ...createAccountSelectorNavDetails({
         onOpenImportAccount: this.hideDrawer,
@@ -530,7 +541,9 @@ class DrawerView extends PureComponent<Props> {
         onSelectAccount: this.hideDrawer,
       }),
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.NAVIGATION_TAPS_ACCOUNT_NAME)
         .build(),
@@ -540,7 +553,9 @@ class DrawerView extends PureComponent<Props> {
   // NOTE: do we need this event?
   trackOpenBrowserEvent = () => {
     const { chainId } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.BROWSER_OPENED)
         .addProperties({
@@ -552,11 +567,14 @@ class DrawerView extends PureComponent<Props> {
   };
 
   onReceive = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate(Routes.QR_TAB_SWITCHER, {
       initialScreen: QRTabSwitcherScreens.Receive,
       disableTabber: true,
     });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.NAVIGATION_TAPS_RECEIVE)
         .build(),
@@ -565,9 +583,12 @@ class DrawerView extends PureComponent<Props> {
 
   onSend = async () => {
     this.props.newAssetTransaction(getEther(this.props.ticker));
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate('SendFlowView');
     this.hideDrawer();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.NAVIGATION_TAPS_SEND)
         .build(),
@@ -575,11 +596,14 @@ class DrawerView extends PureComponent<Props> {
   };
 
   goToBrowser = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate(Routes.BROWSER.HOME);
     this.hideDrawer();
     // Q: duplicated analytic event?
     this.trackOpenBrowserEvent();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.NAVIGATION_TAPS_BROWSER)
         .build(),
@@ -587,9 +611,12 @@ class DrawerView extends PureComponent<Props> {
   };
 
   showWallet = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate('WalletTabHome');
     this.hideDrawer();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.WALLET_OPENED)
         .build(),
@@ -600,11 +627,13 @@ class DrawerView extends PureComponent<Props> {
     const { passwordSet } = this.props;
     await Authentication.lockApp();
     if (!passwordSet) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.navigate('OnboardingRootNav', {
         screen: Routes.ONBOARDING.NAV,
         params: { screen: 'Onboarding' },
       });
     } else {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.replace(Routes.ONBOARDING.LOGIN, { locked: true });
     }
   };
@@ -626,7 +655,9 @@ class DrawerView extends PureComponent<Props> {
       ],
       { cancelable: false },
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.NAVIGATION_TAPS_LOGOUT)
         .build(),
@@ -638,6 +669,7 @@ class DrawerView extends PureComponent<Props> {
     if (providerConfig.type === RPC) {
       const blockExplorer = findBlockExplorerForRpc(
         providerConfig.rpcUrl,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         networkConfigurations,
       );
       const url = `${blockExplorer}/address/${this.selectedChecksummedAddress}`;
@@ -654,7 +686,9 @@ class DrawerView extends PureComponent<Props> {
       );
       this.goToBrowserUrl(url, etherscan_url);
     }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.NAVIGATION_TAPS_VIEW_ETHERSCAN)
         .build(),
@@ -662,7 +696,9 @@ class DrawerView extends PureComponent<Props> {
   };
 
   submitFeedback = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.NAVIGATION_TAPS_SEND_FEEDBACK)
         .build(),
@@ -674,6 +710,7 @@ class DrawerView extends PureComponent<Props> {
   };
 
   showHelp = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate(Routes.BROWSER.HOME, {
       screen: Routes.BROWSER.VIEW,
       params: {
@@ -681,7 +718,9 @@ class DrawerView extends PureComponent<Props> {
         timestamp: Date.now(),
       },
     });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.NAVIGATION_TAPS_GET_HELP)
         .build(),
@@ -690,6 +729,7 @@ class DrawerView extends PureComponent<Props> {
   };
 
   goToBrowserUrl(url: any, title: any) {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
@@ -701,6 +741,7 @@ class DrawerView extends PureComponent<Props> {
   }
 
   hideDrawer = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.onCloseDrawer();
   };
 
@@ -712,6 +753,7 @@ class DrawerView extends PureComponent<Props> {
       } = this.props;
       const blockExplorer = findBlockExplorerForRpc(
         rpcUrl,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         networkConfigurations,
       );
       if (blockExplorer) {
@@ -802,6 +844,7 @@ class DrawerView extends PureComponent<Props> {
     } = this.props;
     let blockExplorer, blockExplorerName;
     if (type === RPC) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       blockExplorer = findBlockExplorerForRpc(rpcUrl, networkConfigurations);
       blockExplorerName = getBlockExplorerName(blockExplorer);
     }
@@ -867,12 +910,15 @@ class DrawerView extends PureComponent<Props> {
       message: this.selectedChecksummedAddress,
     })
       .then(() => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.protectWalletModalVisible();
       })
       .catch((err: any) => {
         Logger.log('Error while trying to share address', err);
       });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(
           MetaMetricsEvents.NAVIGATION_TAPS_SHARE_PUBLIC_ADDRESS,
@@ -883,12 +929,15 @@ class DrawerView extends PureComponent<Props> {
 
   onSecureWalletModalAction = () => {
     this.setState({ showProtectWalletModal: false });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate(
       'SetPasswordFlow',
       this.props.passwordSet ? { screen: 'AccountBackupStep1' } : undefined,
     );
     InteractionManager.runAfterInteractions(() => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics.trackEvent(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics
           .createEventBuilder(MetaMetricsEvents.WALLET_SECURITY_PROTECT_ENGAGED)
           .addProperties({
@@ -908,10 +957,13 @@ class DrawerView extends PureComponent<Props> {
       toggleInfoNetworkModal,
     } = this.props;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     onboardNetworkAction(chainId);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     networkSwitched({ networkUrl: '', networkStatus: false });
 
     // Wrap the toggle call in a setTimeout to avoid awaiting a non-promise function.
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     safePromiseHandler(toggleInfoNetworkModal(), 100);
   };
 
@@ -981,11 +1033,14 @@ class DrawerView extends PureComponent<Props> {
       name: nameFromState,
       ens: ensFromState,
       ...selectedInternalAccount,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ...accounts[this.selectedChecksummedAddress],
     };
     const { name, ens } = account;
     account.balance =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       (accounts[this.selectedChecksummedAddress] &&
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         renderFromWei(accounts[this.selectedChecksummedAddress].balance)) ||
       0;
     const fiatBalance = Engine.getTotalEvmFiatAccountBalance();
@@ -1167,8 +1222,11 @@ class DrawerView extends PureComponent<Props> {
 
         <Modal
           isVisible={infoNetworkModalVisible}
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           onBackdropPress={navigation.goBack}
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           onBackButtonPress={navigation.goBack}
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           onSwipeComplete={navigation.goBack}
           swipeDirection={'down'}
           propagateSwipe
@@ -1222,4 +1280,5 @@ DrawerView.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(DrawerView));

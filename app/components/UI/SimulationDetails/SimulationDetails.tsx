@@ -167,6 +167,7 @@ export const SimulationDetails: React.FC<SimulationDetailsProps> = ({
         inHeader={
           <AnimatedSpinner
             testID="simulation-details-spinner"
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             size={SpinnerSize.SM}
           />
         }

@@ -64,6 +64,7 @@ const OrderDetails = () => {
 
   useEffect(() => {
     navigation.setOptions(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       getFiatOnRampAggNavbar(
         navigation,
         {

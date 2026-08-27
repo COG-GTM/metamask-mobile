@@ -3,6 +3,7 @@
 interface EmptyIconProps {
   big?: boolean;
   biggest?: boolean;
+  children?: React.ReactNode;
   medium?: boolean;
   style?: Record<string, any>;
   testID?: string;
@@ -113,6 +114,7 @@ function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }: TokenI
       return imageIcons.SOLANA;
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (Object.keys(imageIcons).includes(symbol)) {
 // @ts-expect-error -- legacy JavaScript UI type boundary
       return imageIcons[symbol];

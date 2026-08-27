@@ -21,7 +21,7 @@ const styles: any = StyleSheet.create({
 
 function TokenSelectButton({ icon, symbol, onPress, disabled, label }: TokenSelectButtonProps) {
   return (
-    <SelectorButton onPress={onPress} disabled={disabled}>
+    <SelectorButton onPress={onPress as any} disabled={disabled}>
       <View style={styles.icon}>
         <TokenIcon icon={icon} symbol={symbol} />
       </View>

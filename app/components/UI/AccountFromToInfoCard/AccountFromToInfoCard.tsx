@@ -125,6 +125,7 @@ const AccountFromToInfoCard = (props: AccountFromToInfoCardProps) => {
     );
     const isOwnAccount = ensRecipient && accountNames.includes(ensRecipient);
     if (ensRecipient && !isOwnAccount) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setConfusableCollection(collectConfusables(ensRecipient));
     }
   }, [internalAccounts, ensRecipient]);

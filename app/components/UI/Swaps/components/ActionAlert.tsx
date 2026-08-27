@@ -127,6 +127,7 @@ function ActionAlert({ type, style, action, onInfoPress, onPress, children }: Ac
       {(textStyle: any) => (
         <>
           <View style={styles.wrapper}>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <View style={[styles.content]}>{children(textStyle)}</View>
             {Boolean(action) && (
               <View style={[styles.action]}>

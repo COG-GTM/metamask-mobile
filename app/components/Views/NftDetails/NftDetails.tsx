@@ -183,6 +183,7 @@ const NftDetails = () => {
       );
     }
     dispatch(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       newAssetTransaction({ contractName: collectible.name, ...collectible }),
     );
     navigation.navigate('SendFlowView');

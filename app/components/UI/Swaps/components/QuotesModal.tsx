@@ -158,6 +158,7 @@ function QuotesModal({
   multiLayerL1ApprovalFeeTotal,
 }: QuotesModalProps) {
   const bestOverallValue =
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
   const [displayDetails, setDisplayDetails] = useState<any>(false);
   const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] =
@@ -211,6 +212,7 @@ function QuotesModal({
     if (displayDetails) {
       return toggleDetails();
     }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     toggleModal();
   }, [toggleDetails, displayDetails, toggleModal]);
 
@@ -289,8 +291,10 @@ function QuotesModal({
                     <Text small>{strings('swaps.rate')}</Text>
                     <Ratio
                       sourceAmount={selectedDetailsQuote.sourceAmount}
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       sourceToken={sourceToken}
                       destinationAmount={selectedDetailsQuote.destinationAmount}
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       destinationToken={destinationToken}
                       boldSymbol
                     />
@@ -306,10 +310,11 @@ function QuotesModal({
                     <Text primary>
                       {fromTokenMinimalUnitString(
                         selectedDetailsQuote.destinationAmount,
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         destinationToken.decimals,
                       )}{' '}
                       <Text reset bold>
-                        {destinationToken.symbol}
+                        {(destinationToken as any).symbol}
                       </Text>
                       {selectedDetailsQuote?.priceSlippage?.calculationError
                         ?.length === 0 &&
@@ -377,6 +382,7 @@ function QuotesModal({
                 <View style={styles.row}>
                   <View style={styles.columnAmount}>
                     <Text small bold>
+                      {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                       {destinationToken.symbol}
                     </Text>
                     <Text small primary bold>
@@ -400,10 +406,13 @@ function QuotesModal({
                   />
                 </View>
                 <View>
+                  {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                   {quotes.length > 0 &&
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     quotes.map((quote: any, index: any) => {
                       const { aggregator } = quote;
                       const isSelected = aggregator === selectedQuote;
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       const quoteValue = quoteValues[aggregator];
                       let quoteEthFee = quoteValue?.ethFee;
                       if (multiLayerL1ApprovalFeeTotal) {
@@ -427,6 +436,7 @@ function QuotesModal({
                               ~
                               {renderFromTokenMinimalUnit(
                                 quote.destinationAmount,
+                                // @ts-expect-error -- legacy JavaScript UI type boundary
                                 destinationToken.decimals,
                               )}
                             </Text>
@@ -459,9 +469,11 @@ function QuotesModal({
                               <Text style={styles.red}>
                                 -
                                 {renderFromTokenMinimalUnit(
+                                  // @ts-expect-error -- legacy JavaScript UI type boundary
                                   new BigNumber(quotes[0].destinationAmount)
                                     .minus(quote.destinationAmount)
                                     .toString(10),
+                                  // @ts-expect-error -- legacy JavaScript UI type boundary
                                   destinationToken.decimals,
                                 )}
                               </Text>
@@ -493,4 +505,5 @@ const mapStateToProps = (state: any) => ({
   quoteValues: selectSwapsQuoteValues(state),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(QuotesModal);

@@ -61,11 +61,15 @@ class AccountApproval extends PureComponent<Props> {
     confirmDisabled: true,
     otpChoice: undefined,
     noPersist: false,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     otps: shuffle(this.props.currentPageInformation.otps || []),
     otp:
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.currentPageInformation.origin ===
         AppConstants.DEEPLINKS.ORIGIN_QR_CODE &&
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.currentPageInformation.reconnect &&
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.currentPageInformation.apiVersion,
     isUrlFlaggedAsPhishing: false,
   };
@@ -130,6 +134,7 @@ class AccountApproval extends PureComponent<Props> {
     const { hostname } = new URL(prefixedUrl);
     this.checkUrlFlaggedAsPhishing(hostname);
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
       MetricsEventBuilder.createEventBuilder(
         MetaMetricsEvents.CONNECT_REQUEST_STARTED,
@@ -145,6 +150,7 @@ class AccountApproval extends PureComponent<Props> {
 
   showWalletConnectNotification = (confirmation: any = false) => {
     if (this.props.walletConnectRequest) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const title = this.props.currentPageInformation.title;
       InteractionManager.runAfterInteractions(() => {
         NotificationManager.showSimpleNotification({
@@ -165,16 +171,20 @@ class AccountApproval extends PureComponent<Props> {
   onConfirm = () => {
     if (
       this.state.otp &&
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.state.otpChoice !== this.props.currentPageInformation.otps[0]
     ) {
       SDKConnect.getInstance().removeChannel(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.currentPageInformation.channelId,
 // @ts-expect-error -- legacy JavaScript UI type boundary
         true,
       );
       // onConfirm will close current window by rejecting current approvalRequest.
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.onCancel();
 
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics.trackEvent(
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.CONNECT_REQUEST_OTPFAILURE,
@@ -194,11 +204,14 @@ class AccountApproval extends PureComponent<Props> {
 
     if (this.state.noPersist) {
       SDKConnect.getInstance().invalidateChannel({
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         channelId: this.props.currentPageInformation.channelId,
       });
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.onConfirm();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
       MetricsEventBuilder.createEventBuilder(
         MetaMetricsEvents.CONNECT_REQUEST_COMPLETED,
@@ -213,6 +226,7 @@ class AccountApproval extends PureComponent<Props> {
    * Calls onConfirm callback and analytics to track connect canceled event
    */
   onCancel = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
       MetricsEventBuilder.createEventBuilder(
         MetaMetricsEvents.CONNECT_REQUEST_CANCELLED,
@@ -220,14 +234,17 @@ class AccountApproval extends PureComponent<Props> {
         .addProperties(this.getAnalyticsParams())
         .build(),
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (this.props.currentPageInformation.channelId) {
       SDKConnect.getInstance().removeChannel(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.currentPageInformation.channelId,
 // @ts-expect-error -- legacy JavaScript UI type boundary
         true,
       );
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.onCancel();
     this.showWalletConnectNotification();
   };
@@ -242,6 +259,7 @@ class AccountApproval extends PureComponent<Props> {
       tokensLength,
       accountsLength,
       networkType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       currentPageInformation: { url },
     } = this.props;
     return {
@@ -275,7 +293,9 @@ class AccountApproval extends PureComponent<Props> {
     const { colors, typography } = (this as any).context || mockTheme;
     const styles: any = createStyles(colors, typography);
     const hasRememberMe =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       !currentPageInformation.reconnect &&
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.currentPageInformation.origin ===
         AppConstants.DEEPLINKS.ORIGIN_QR_CODE;
 
@@ -288,7 +308,7 @@ class AccountApproval extends PureComponent<Props> {
 
         {isUrlFlaggedAsPhishing && <ShowWarningBanner />}
 
-        {!currentPageInformation.reconnect && (
+        {!((currentPageInformation as any).reconnect) && (
           <>
             <Text style={styles.intro}>
               {strings('accountApproval.action')}
@@ -299,9 +319,10 @@ class AccountApproval extends PureComponent<Props> {
           </>
         )}
         <View style={styles.accountCardWrapper}>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <AccountInfoCard fromAddress={selectedAddress} />
         </View>
-        {currentPageInformation.reconnect && (
+        {(currentPageInformation as any).reconnect && (
           <Text style={styles.intro_reconnect}>
             {this.state.otp
               ? strings('accountApproval.action_reconnect')
@@ -357,6 +378,7 @@ class AccountApproval extends PureComponent<Props> {
             containerStyle={[styles.button, styles.cancel]}
             testID={CommonSelectorsIDs.CANCEL_BUTTON}
           >
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             {currentPageInformation.reconnect
               ? strings('accountApproval.disconnect')
               : strings('accountApproval.cancel')}
@@ -372,6 +394,7 @@ class AccountApproval extends PureComponent<Props> {
             ]}
             testID={CommonSelectorsIDs.CONNECT_BUTTON}
           >
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             {currentPageInformation.reconnect
               ? strings('accountApproval.resume')
               : strings('accountApproval.connect')}
@@ -392,4 +415,5 @@ const mapStateToProps = (state: any) => ({
 
 AccountApproval.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(withMetricsAwareness(AccountApproval));

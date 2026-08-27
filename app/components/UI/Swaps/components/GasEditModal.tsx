@@ -124,6 +124,7 @@ function GasEditModal({
       Object.keys(EIP1559TransactionDataTemp).length > 0
     ) {
       setHasEnoughEthBalance(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         checkEnoughEthBalance(
           EIP1559TransactionDataTemp?.totalMaxHex?.toString(16),
         ),
@@ -133,6 +134,7 @@ function GasEditModal({
       Object.keys(LegacyTransactionDataTemp).length > 0
     ) {
       setHasEnoughEthBalance(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         checkEnoughEthBalance(
           LegacyTransactionDataTemp?.totalHex?.toString(16),
         ),
@@ -157,11 +159,14 @@ function GasEditModal({
             nativeCurrency: ticker,
             selectedGasFee: {
               suggestedMaxFeePerGas:
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 gasFeeEstimates[gasSelected].suggestedMaxFeePerGas,
               suggestedMaxPriorityFeePerGas:
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 gasFeeEstimates[gasSelected].suggestedMaxPriorityFeePerGas,
               suggestedGasLimit: initialGasLimit,
               suggestedEstimatedGasLimit: tradeGasLimit,
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               estimatedBaseFee: gasFeeEstimates.estimatedBaseFee,
               selectedOption: gasSelected,
               recommended: RECOMMENDED,
@@ -187,7 +192,9 @@ function GasEditModal({
               suggestedGasLimit: initialGasLimit,
               suggestedGasPrice:
                 gasEstimateType === GAS_ESTIMATE_TYPES.ETH_GASPRICE
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   ? gasFeeEstimates.gasPrice
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   : gasFeeEstimates[gasSelected],
             },
           },
@@ -294,6 +301,7 @@ function GasEditModal({
           estimatedBaseFee,
           suggestedGasLimit,
         } = EIP1559TransactionDataTemp;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         onGasUpdate(
           {
             maxFeePerGas,
@@ -306,6 +314,7 @@ function GasEditModal({
       } else {
         const { suggestedGasPrice: gasPrice, suggestedGasLimit } =
           LegacyTransactionDataTemp;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         onGasUpdate(
           {
             gasPrice,
@@ -314,6 +323,7 @@ function GasEditModal({
           suggestedGasLimit,
         );
       }
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       dismiss();
     },
     [
@@ -333,6 +343,7 @@ function GasEditModal({
         ? GAS_OPTIONS.HIGH
         : GAS_OPTIONS.MEDIUM,
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     dismiss();
   }, [customGasFee, dismiss, gasEstimateType]);
 
@@ -484,4 +495,5 @@ const mapStateToProps = (state: any) => ({
   primaryCurrency: state.settings.primaryCurrency,
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(GasEditModal);

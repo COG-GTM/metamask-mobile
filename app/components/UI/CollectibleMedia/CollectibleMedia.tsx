@@ -192,6 +192,7 @@ const CollectibleMedia: React.FC<CollectibleMediaProps> = ({
               cover && styles.cover,
               style,
             ]}
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             chainId={collectible.chainId}
             onError={fallback}
             testID="nft-image"

@@ -199,6 +199,7 @@ class OptinMetrics extends PureComponent<Props> {
   updateNavBar = () => {
     const { navigation } = this.props;
     const colors = (this as any).context.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     navigation.setOptions(getOptinMetricsNavbarOptions(colors));
   };
 
@@ -256,9 +257,12 @@ class OptinMetrics extends PureComponent<Props> {
     // Get onboarding wizard state
     const onboardingWizard = await StorageWrapper.getItem(ONBOARDING_WIZARD);
     if (onboardingWizard) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.reset({ routes: [{ name: 'HomeNav' }] });
     } else {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.setOnboardingWizardStep(1);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.reset({ routes: [{ name: 'HomeNav' }] });
     }
   };
@@ -332,7 +336,9 @@ class OptinMetrics extends PureComponent<Props> {
       // if users refuses tracking, get rid of the stored events
       // and never send them to Segment
       // and disable analytics
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       clearOnboardingEvents();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       await metrics.enable(false);
     }, 200);
     this.continue();
@@ -349,6 +355,7 @@ class OptinMetrics extends PureComponent<Props> {
       setDataCollectionForMarketing,
     } = this.props;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     await metrics.enable();
 
     // Handle null case for marketing consent
@@ -360,7 +367,9 @@ class OptinMetrics extends PureComponent<Props> {
     }
 
     // Track the analytics preference event first
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       metrics
         .createEventBuilder(MetaMetricsEvents.ANALYTICS_PREFERENCE_SELECTED)
         .addProperties({
@@ -372,6 +381,7 @@ class OptinMetrics extends PureComponent<Props> {
         .build(),
     );
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     await metrics.addTraitsToUser({
       ...generateDeviceAnalyticsMetaData(),
       ...generateUserSettingsAnalyticsMetaData(),
@@ -390,11 +400,13 @@ class OptinMetrics extends PureComponent<Props> {
         // as precision is only to the milisecond
         // and loop seems to runs faster than that
         setTimeout(() => {
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           metrics.trackEvent(...eventArgs);
         }, delay);
         delay += eventTrackingDelay;
       });
     }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.clearOnboardingEvents();
 
     this.continue();
@@ -404,6 +416,7 @@ class OptinMetrics extends PureComponent<Props> {
    * Open RPC settings.
    */
   openRPCSettings = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate(Routes.ADD_NETWORK, {
       network: MAINNET,
       isCustomMainnet: true,
@@ -418,6 +431,7 @@ class OptinMetrics extends PureComponent<Props> {
    * @param {string} linkParams.title
    */
   onPressLink = (linkParams: any) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: linkParams,
@@ -636,6 +650,7 @@ class OptinMetrics extends PureComponent<Props> {
               <TouchableOpacity
                 style={styles.checkbox}
                 onPress={() =>
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   setDataCollectionForMarketing(
                     !isDataCollectionForMarketingEnabled,
                   )
@@ -647,6 +662,7 @@ class OptinMetrics extends PureComponent<Props> {
                   accessibilityRole={'checkbox'}
                   accessible
                   onPress={() =>
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     setDataCollectionForMarketing(
                       !isDataCollectionForMarketingEnabled,
                     )
@@ -684,4 +700,5 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(OptinMetrics));

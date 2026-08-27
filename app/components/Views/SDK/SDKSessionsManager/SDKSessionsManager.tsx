@@ -90,6 +90,7 @@ const SDKSessionsManager = (props: SDKSessionsManagerProps) => {
   useEffect(() => {
     const { navigation } = props;
     navigation.setOptions(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       getNavigationOptionsTitle(
         strings('app_settings.manage_sdk_connections_title'),
         navigation,

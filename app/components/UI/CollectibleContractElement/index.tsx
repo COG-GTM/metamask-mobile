@@ -122,6 +122,7 @@ function CollectibleContractElement({
 
   const onPressCollectible = useCallback(
     (collectible: any) => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onPress(collectible);
     },
     [onPress],
@@ -134,6 +135,7 @@ function CollectibleContractElement({
 
   const removeNft = () => {
     const { NftController } = Engine.context;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     removeFavoriteCollectible(
       selectedAddress,
       chainId,
@@ -178,6 +180,7 @@ function CollectibleContractElement({
       if (!collectible) return null;
       const onPress = () => onPressCollectible({ ...collectible });
       const onLongPress = () =>
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         !asset.favorites ? onLongPressCollectible({ ...collectible }) : null;
       return (
         <View
@@ -203,6 +206,7 @@ function CollectibleContractElement({
         </View>
       );
     },
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     [asset.favorites, onPressCollectible, onLongPressCollectible, styles],
   );
 
@@ -214,6 +218,7 @@ function CollectibleContractElement({
   return (
     <View style={styles.itemWrapper}>
       <TouchableOpacity
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         testID={`collectible-contract-element-${asset.address}-${asset.name}`}
         onPress={toggleCollectibles}
         style={styles.titleContainer}
@@ -228,13 +233,15 @@ function CollectibleContractElement({
           />
         </View>
         <View style={styles.collectibleContractIconContainer}>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           {!asset.favorites ? (
             <CollectibleMedia
-// @ts-expect-error -- legacy JavaScript UI type boundary
               iconStyle={styles.collectibleContractIcon}
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               collectible={{
                 name: strings('collectible.untitled_collection'),
                 ...asset,
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 image: asset.logo,
               }}
               tiny
@@ -260,6 +267,7 @@ function CollectibleContractElement({
           {collectiblesGrid.map((row: any, i: any) => (
             <View key={i} style={styles.collectiblesRowContainer}>
               {row.map((collectible: any, index: any) =>
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 renderCollectible({ ...collectible, logo: asset.logo }, index),
               )}
             </View>

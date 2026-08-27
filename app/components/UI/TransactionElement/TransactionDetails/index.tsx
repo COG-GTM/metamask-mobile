@@ -210,6 +210,7 @@ class TransactionDetails extends PureComponent<Props> {
     if (
       !multiLayerFeeNetwork ||
       !transactionHash ||
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       !transactionObject.txParams
     ) {
       this.setState({ updatedTransactionDetails: transactionDetails });
@@ -222,6 +223,7 @@ class TransactionDetails extends PureComponent<Props> {
       if (!multiLayerL1FeeTotal) {
         multiLayerL1FeeTotal = '0x0'; // Sets it to 0 if it's not available in a txReceipt yet.
       }
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionObject.txParams.multiLayerL1FeeTotal = multiLayerL1FeeTotal;
       const decodedTx = await decodeTransaction({
         tx: transactionObject,
@@ -247,6 +249,7 @@ class TransactionDetails extends PureComponent<Props> {
 
   componentDidMount = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionObject: { chainId: txChainId },
       chainId,
       networkConfigurations,
@@ -264,13 +267,16 @@ class TransactionDetails extends PureComponent<Props> {
   viewOnEtherscan = () => {
     const {
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionObject: { networkID },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionDetails: { hash },
       close,
     } = this.props;
     const { rpcBlockExplorer } = this.state;
     try {
       const { url, title } = getBlockExplorerTxUrl(RPC, hash, rpcBlockExplorer);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation.push('Webview', {
         screen: 'SimpleWebview',
         params: { url, title },
@@ -295,6 +301,7 @@ class TransactionDetails extends PureComponent<Props> {
     const { showSpeedUpModal, close } = this.props;
     if (close) {
       close();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showSpeedUpModal();
     }
   };
@@ -303,6 +310,7 @@ class TransactionDetails extends PureComponent<Props> {
     const { showCancelModal, close } = this.props;
     if (close) {
       close();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showCancelModal();
     }
   };
@@ -343,6 +351,7 @@ class TransactionDetails extends PureComponent<Props> {
   render = () => {
     const {
       chainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionObject: { status, time, txParams },
       shouldUseSmartTransaction,
     } = this.props;
@@ -511,4 +520,5 @@ const mapStateToProps = (state: any, ownProps: any) => ({
 
 TransactionDetails.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(withNavigation(TransactionDetails));

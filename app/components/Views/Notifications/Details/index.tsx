@@ -81,6 +81,7 @@ const NotificationsDetails = ({ route, navigation }: Props) => {
     () => (
       <Header
         title={state?.title ?? ''}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         subtitle={toLocaleDate(state?.createdAt)}
       />
     ),

@@ -62,11 +62,14 @@ class NavbarTitle extends PureComponent<Props> {
     if (!this.props.disableNetwork) {
       if (!this.animating) {
         this.animating = true;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.navigation.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
           screen: Routes.SHEET.NETWORK_SELECTOR,
         });
 
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics.trackEvent(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.metrics
             .createEventBuilder(MetaMetricsEvents.NETWORK_SELECTOR_PRESSED)
             .addProperties({

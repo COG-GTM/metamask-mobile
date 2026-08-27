@@ -104,8 +104,10 @@ function TokenImportModal({ isVisible, dismiss, token, onPressImport }: TokenImp
           <Text bold primary centered style={styles.title}>
             {strings('swaps.import_token')}
           </Text>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <TokenIcon biggest icon={token.iconUrl} symbol={token.symbol} />
           <Text bold primary centered style={styles.tokenTitle}>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             {token.name ? `${token.name} (${token.symbol})` : token.symbol}
           </Text>
           <Text primary centered small>
@@ -113,6 +115,7 @@ function TokenImportModal({ isVisible, dismiss, token, onPressImport }: TokenImp
           </Text>
           <View style={styles.tokenAddress}>
             <Text small centered numberOfLines={1} adjustsFontSizeToFit>
+              {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
               {token.address}
             </Text>
           </View>

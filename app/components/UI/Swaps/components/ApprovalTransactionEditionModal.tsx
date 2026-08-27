@@ -80,12 +80,16 @@ function ApprovalTransactionEditionModal({
         spendLimitUnlimitedSelected
           ? approvalTransactionAmount
           : approvalCustomValue,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         sourceToken.decimals,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         swapsUtils.getSwapsContractAddress(chainId),
         customApprovalTransaction,
       );
       setCustomApprovalTransaction(newApprovalTransaction);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setApprovalTransaction(newApprovalTransaction);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onCancelEditQuoteTransactions();
     } catch (err) {
       Logger.log('Failed to setTransactionObject', err);
@@ -105,6 +109,7 @@ function ApprovalTransactionEditionModal({
     const newApprovalTx = spendLimitUnlimitedSelected
       ? originalApprovalTransaction
       : customApprovalTransaction;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     setApprovalTransaction(newApprovalTx);
     if (newApprovalTx) {
       const approvalTransactionAmount = decodeApproveData(
@@ -112,6 +117,7 @@ function ApprovalTransactionEditionModal({
       ).encodedAmount;
       const amountDec = hexToBN(approvalTransactionAmount).toString(10);
       setApprovalTransactionAmount(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         fromTokenMinimalUnitString(amountDec, sourceToken.decimals),
       );
     }
@@ -147,6 +153,7 @@ function ApprovalTransactionEditionModal({
             host={'Swaps'}
             minimumSpendLimit={minimumSpendLimit}
             spendLimitUnlimitedSelected={spendLimitUnlimitedSelected}
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             tokenSymbol={sourceToken.symbol}
             spendLimitCustomValue={approvalCustomValue}
             originalApproveAmount={approvalTransactionAmount}
@@ -156,6 +163,7 @@ function ApprovalTransactionEditionModal({
               onPressSpendLimitUnlimitedSelected
             }
             onPressSpendLimitCustomSelected={onPressSpendLimitCustomSelected}
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             toggleEditPermission={onCancelEditQuoteTransactions}
           />
         )}

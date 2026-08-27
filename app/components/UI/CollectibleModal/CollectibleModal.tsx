@@ -79,6 +79,7 @@ const CollectibleModal = () => {
   }, [chainId]);
 
   const onSend = useCallback(async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     dispatch(newAssetTransaction({ contractName, ...collectible }));
     //@ts-expect-error replace do not exist on ParamListBase
     navigation.replace('SendFlowView');

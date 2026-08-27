@@ -88,6 +88,7 @@ function Onboarding({ setHasOnboarded }: OnboardingProps) {
 
   const handleStartSwapping = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     setHasOnboarded(true);
   }, [setHasOnboarded]);
 

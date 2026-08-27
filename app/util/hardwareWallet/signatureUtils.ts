@@ -20,8 +20,10 @@ export default async (
 
   const onConfirmationComplete = async (confirmed: boolean) => {
     if (!confirmed) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       await handleSignatureAction(onReject, messageParams, signType, false);
     } else {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       await handleSignatureAction(onConfirm, messageParams, signType, true);
     }
   };

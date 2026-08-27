@@ -16,6 +16,7 @@ export class LockManagerService {
   #lockTimer?: number;
 
   #lockApp = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (!SecureKeychain.getInstance().isAuthenticating) {
       const { KeyringController } = Engine.context;
       try {

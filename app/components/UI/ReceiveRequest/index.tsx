@@ -135,17 +135,22 @@ class ReceiveRequest extends PureComponent<Props> {
   onShare = () => {
     const { selectedAddress } = this.props;
     Share.open({
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       message: generateUniversalLinkAddress(selectedAddress),
     })
       .then(() => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.hideModal();
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         setTimeout(() => this.props.protectWalletModalVisible(), 1000);
       })
       .catch((err: any) => {
         Logger.log('Error while trying to share address', err);
       });
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.RECEIVE_OPTIONS_SHARE_ADDRESS)
         .build(),
@@ -163,9 +168,12 @@ class ReceiveRequest extends PureComponent<Props> {
         strings('fiat_on_ramp.switch_network'),
       );
     } else {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation.navigate(...createBuyNavigationDetails());
 
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics.trackEvent(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics
           .createEventBuilder(MetaMetricsEvents.BUY_BUTTON_CLICKED)
           .addProperties({
@@ -180,7 +188,9 @@ class ReceiveRequest extends PureComponent<Props> {
 
   copyAccountToClipboard = async () => {
     const { selectedAddress } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     ClipboardManager.setString(selectedAddress);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -188,18 +198,23 @@ class ReceiveRequest extends PureComponent<Props> {
       data: { msg: strings('account_details.account_copied_to_clipboard') },
     });
     if (!this.props.seedphraseBackedUp) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setTimeout(() => this.props.hideModal(), 1000);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setTimeout(() => this.props.protectWalletModalVisible(), 1500);
     }
   };
 
   onReceive = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate('PaymentRequestView', {
       screen: 'PaymentRequest',
       params: { receiveAsset: this.props.receiveAsset },
     });
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.RECEIVE_OPTIONS_PAYMENT_REQUEST)
         .build(),
@@ -223,6 +238,7 @@ class ReceiveRequest extends PureComponent<Props> {
             />
           </View>
 
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <QRAccountDisplay accountAddress={this.props.selectedAddress} />
 
           <View style={styles.actionRow}>
@@ -264,4 +280,5 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(ReceiveRequest));

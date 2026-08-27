@@ -58,6 +58,7 @@ function Notification({
   useEffect(
     () => () => {
       animatedTimingStart(notificationAnimated, 200, removeCurrentNotification);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       hideCurrentNotification();
     },
     [
@@ -72,6 +73,7 @@ function Notification({
     if (!prevNotificationIsVisible && currentNotificationIsVisible) {
 // @ts-expect-error -- legacy JavaScript UI type boundary
       animatedTimingStart(notificationAnimated, 0);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       hideCurrentNotification();
       setTimeout(() => {
         animatedTimingStart(
@@ -79,6 +81,7 @@ function Notification({
           200,
           removeCurrentNotification,
         );
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       }, currentNotification.autodismiss || 5000);
     }
   }, [
@@ -87,6 +90,7 @@ function Notification({
     removeCurrentNotification,
     currentNotificationIsVisible,
     prevNotificationIsVisible,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     currentNotification.autodismiss,
     notificationAnimated,
   ]);

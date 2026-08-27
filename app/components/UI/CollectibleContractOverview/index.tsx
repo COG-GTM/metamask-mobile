@@ -69,6 +69,7 @@ class CollectibleContractOverview extends PureComponent<Props> {
 
   onAdd = () => {
     const { navigation, collectibleContract } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     navigation.push('AddAsset', {
       assetType: 'collectible',
       collectibleContract,
@@ -77,10 +78,14 @@ class CollectibleContractOverview extends PureComponent<Props> {
 
   onSend = () => {
     const { collectibleContract, collectibles } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const collectible = collectibles.find((collectible: any) =>
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       toLowerCaseEquals(collectible.address, collectibleContract.address),
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.newAssetTransaction(collectible);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate('SendFlowView');
   };
 
@@ -88,6 +93,7 @@ class CollectibleContractOverview extends PureComponent<Props> {
 
   renderLogo = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       collectibleContract: { logo, address },
     } = this.props;
 // @ts-expect-error -- legacy JavaScript UI type boundary
@@ -96,6 +102,7 @@ class CollectibleContractOverview extends PureComponent<Props> {
 
   render() {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       collectibleContract: { name, address },
       ownerOf,
     } = this.props;

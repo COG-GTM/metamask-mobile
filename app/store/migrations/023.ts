@@ -51,6 +51,7 @@ export default function migrate(state: any) {
     return state;
   }
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const networkConfigurations: Record<string, any> =
     networkControllerState.networkConfigurations;
   if (
@@ -94,6 +95,7 @@ export default function migrate(state: any) {
     return state;
   }
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const addressBook: Record<string, any> =
     addressBookControllerState.addressBook;
   if (

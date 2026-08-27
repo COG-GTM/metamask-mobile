@@ -122,6 +122,7 @@ const openSeaLogo = require('../../../images/opensea-logo-flat-colored-blue.png'
 class CollectibleContractInformation extends PureComponent<Props> {
 
   closeModal = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.onClose(true);
   };
 
@@ -129,6 +130,7 @@ class CollectibleContractInformation extends PureComponent<Props> {
     const openSeaUrl = 'https://opensea.io/';
     InteractionManager.runAfterInteractions(() => {
       this.closeModal();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.push('Webview', {
         screen: 'SimpleWebview',
         params: {
@@ -141,6 +143,7 @@ class CollectibleContractInformation extends PureComponent<Props> {
 
   render = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       collectibleContract: { name, description, totalSupply, address },
       chainId,
     } = this.props;

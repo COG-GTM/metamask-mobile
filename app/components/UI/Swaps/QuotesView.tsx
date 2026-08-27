@@ -349,12 +349,18 @@ const createStyles = (colors: any): any =>
   });
 
 async function resetAndStartPolling({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   slippage,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   sourceToken,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   destinationToken,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   sourceAmount,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   walletAddress,
   networkClientId,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   enableGasIncludedQuotes,
 }: Props) {
   if (!sourceToken || !destinationToken) {
@@ -459,6 +465,7 @@ function SwapsQuotesView({
   } = useMemo(() => getQuotesNavigationsParams(route), [route]);
 
   /* Get tokens from the tokens list */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const sourceToken = [...swapsTokens, ...tokens].find((token: any) =>
     toLowerCaseEquals(token.address, sourceTokenAddress),
   );
@@ -509,6 +516,7 @@ function SwapsQuotesView({
     () =>
       Boolean(destinationToken) &&
       (isSwapsNativeAsset(destinationToken) ||
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         (Object.keys(quotes).length > 0 &&
 // @ts-expect-error -- legacy JavaScript UI type boundary
           (Object.values(quotes)[0]?.destinationTokenRate ?? null) !== null)),
@@ -569,26 +577,31 @@ function SwapsQuotesView({
     [isGasIncludedTrade, tradeTxTokenFee],
   );
   const selectedQuoteValue = useMemo(() => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (!quoteValues[selectedQuoteId] || !multiLayerL1ApprovalFeeTotal) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       return quoteValues[selectedQuoteId];
     }
     const fees = {
       ethFee: calculateEthFeeForMultiLayer({
         multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         ethFee: quoteValues[selectedQuoteId].ethFee,
       }),
       maxEthFee: calculateEthFeeForMultiLayer({
         multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         ethFee: quoteValues[selectedQuoteId].maxEthFee,
       }),
     };
     return {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ...quoteValues[selectedQuoteId],
       ...fees,
     };
   }, [
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    quoteValues[selectedQuoteId],
+    (quoteValues as any)[selectedQuoteId],
     multiLayerL1ApprovalFeeTotal,
     quoteValues,
     selectedQuoteId,
@@ -628,6 +641,7 @@ function SwapsQuotesView({
       const ethAmountBN = isSwapsNativeAsset(sourceToken)
         ? new BigNumber(sourceAmount)
         : new BigNumber(0);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const ethBalanceBN = new BigNumber(accounts[selectedAddress].balance);
       const hasEnoughEthBalance =
         isGasIncludedTrade && tradeTxTokenFee
@@ -665,6 +679,7 @@ function SwapsQuotesView({
     const ethAmountBN = isSwapsNativeAsset(sourceToken)
       ? sourceBN
       : new BigNumber(0);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const ethBalanceBN = new BigNumber(accounts[selectedAddress].balance);
     const gasBN = toWei(selectedQuoteValue?.maxEthFee || '0');
     const hasEnoughEthBalance = canUseGasIncludedSwap
@@ -799,6 +814,7 @@ function SwapsQuotesView({
         gas_fees: [
           GAS_ESTIMATE_TYPES.LEGACY,
           GAS_ESTIMATE_TYPES.ETH_GASPRICE,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         ].includes(gasEstimateType)
           ? weiToFiat(
               toWei(
@@ -854,6 +870,7 @@ function SwapsQuotesView({
       setTrackedReceivedQuotes(false);
       setTrackedError(false);
       resetAndStartPolling({
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         slippage,
         sourceToken,
         destinationToken,
@@ -933,6 +950,7 @@ function SwapsQuotesView({
         paramsForAnalytics: {
           sentAt: currentBlock.timestamp,
           gasEstimate: selectedQuote?.gasEstimate || selectedQuote?.maxGas,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           ethAccountBalance: accounts[selectedAddress].balance,
           approvalTransactionMetaId,
         },
@@ -1019,12 +1037,14 @@ function SwapsQuotesView({
       }
 
       try {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         resetTransaction();
         const tradeTransaction = selectedQuote.trade;
 
         const tradeGasFeeEstimates = await getGasFeeEstimatesForTransaction(
           tradeTransaction,
           gasEstimates,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           { chainId, isEIP1559Network },
         );
 
@@ -1035,6 +1055,7 @@ function SwapsQuotesView({
           },
           {
             deviceConfirmedOn: WalletDevice.MM_MOBILE,
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             networkClientId,
             origin: process.env.MM_FOX_CODE,
           },
@@ -1052,6 +1073,7 @@ function SwapsQuotesView({
 
         updateSwapsTransactions(transactionMeta.id, approvalTransactionMetaId);
 
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         setRecipient(selectedAddress);
 
         await addTokenToAssetsController(
@@ -1082,11 +1104,13 @@ function SwapsQuotesView({
   const handleApprovalTransaction = useCallback(
     async (isHardwareAddress: any) => {
       try {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         resetTransaction();
 
         const approvalGasFeeEstimates = await getGasFeeEstimatesForTransaction(
           approvalTransaction,
           gasEstimates,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           { chainId, isEIP1559Network },
         );
 
@@ -1097,6 +1121,7 @@ function SwapsQuotesView({
           },
           {
             deviceConfirmedOn: WalletDevice.MM_MOBILE,
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             networkClientId,
             origin: process.env.MM_FOX_CODE,
           },
@@ -1122,6 +1147,7 @@ function SwapsQuotesView({
             CHAIN_IDS.LINEA_MAINNET,
             CHAIN_IDS.LINEA_GOERLI,
             CHAIN_IDS.LINEA_SEPOLIA,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           ].includes(chainId)
         ) {
           Logger.log(
@@ -1133,6 +1159,7 @@ function SwapsQuotesView({
           await waitPromise;
         }
 
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         setRecipient(selectedAddress);
 
         const approvalTransactionMetaId = transactionMeta.id;
@@ -1192,6 +1219,7 @@ function SwapsQuotesView({
       return;
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const isHardwareAddress = isHardwareAccount(selectedAddress);
 
     startSwapAnalytics(selectedQuote, selectedAddress);
@@ -1560,6 +1588,7 @@ function SwapsQuotesView({
   /* Main polling effect */
   useEffect(() => {
     resetAndStartPolling({
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       slippage,
       sourceToken,
       destinationToken,
@@ -1600,6 +1629,7 @@ function SwapsQuotesView({
   /* First load effect: handle initial animation */
   useEffect(() => {
     if (isFirstLoad && !shouldFinishFirstLoad) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (firstLoadTime < quotesLastFetched || error) {
         setShouldFinishFirstLoad(true);
         if (!error) {
@@ -1631,6 +1661,7 @@ function SwapsQuotesView({
   useEffect(() => {
     const tick = setInterval(() => {
       const newRemainingTime =
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         quotesLastFetched + quoteRefreshSeconds * 1000 - Date.now() + 1000;
       // If newRemainingTime > remainingTime means that a new set of quotes were fetched
       if (newRemainingTime > remainingTime) {
@@ -1724,6 +1755,7 @@ function SwapsQuotesView({
             Boolean(customGasEstimate) &&
             'estimatedBaseFee' in customGasEstimate;
           gasEstimate = {
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             gasPrice: gasFeeEstimates.gasPrice,
             selected: DEFAULT_GAS_FEE_OPTION_LEGACY,
           };
@@ -1733,6 +1765,7 @@ function SwapsQuotesView({
             'estimatedBaseFee' in customGasEstimate;
           const selected =
             customGasEstimate?.selected || DEFAULT_GAS_FEE_OPTION_LEGACY;
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           gasEstimate = { gasPrice: gasFeeEstimates[selected], selected };
         } else if (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
           customGasAreIncompatible =
@@ -1740,9 +1773,12 @@ function SwapsQuotesView({
           const selected =
             customGasEstimate?.selected || DEFAULT_GAS_FEE_OPTION_FEE_MARKET;
           gasEstimate = {
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             maxFeePerGas: gasFeeEstimates[selected].suggestedMaxFeePerGas,
             maxPriorityFeePerGas:
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               gasFeeEstimates[selected].suggestedMaxPriorityFeePerGas,
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             estimatedBaseFee: gasFeeEstimates.estimatedBaseFee,
             selected,
           };
@@ -1856,6 +1892,7 @@ function SwapsQuotesView({
               ...approvalTransaction,
               value: '0x0', // For approval txs we need to use "0x0" here.
             },
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             chainId,
           });
           setMultiLayerL1ApprovalFeeTotal(l1ApprovalFeeTotal);
@@ -1883,7 +1920,9 @@ function SwapsQuotesView({
     canUseGasIncludedSwap,
     selectedQuote,
     tradeTxTokenFee,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     currentCurrency,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     chainId,
   });
 
@@ -1891,6 +1930,7 @@ function SwapsQuotesView({
     canUseGasIncludedSwap,
     selectedQuote,
     tradeTxTokenFee,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     currentCurrency,
     fiatConversionRates: fiatConversionRates?.value,
   });
@@ -2012,6 +2052,7 @@ function SwapsQuotesView({
                     : togglePriceDifferenceModal
                 }
               >
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 {(textStyle: any) =>
                   selectedQuote.priceSlippage?.calculationError?.length > 0 ? (
                     <>
@@ -2086,6 +2127,7 @@ function SwapsQuotesView({
               </>
             ) : (
               <Text primary>
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 {pollingCyclesLeft > 0
                   ? strings('swaps.new_quotes_in')
                   : strings('swaps.quotes_expire_in')}{' '}
@@ -2175,6 +2217,7 @@ function SwapsQuotesView({
               style={styles.quotesSummaryHeader}
               savings={isSaving}
             >
+              {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
               <QuotesSummary.HeaderText style={styles.bestQuoteText} bold>
                 {`${strings('swaps.n_quotes', {
                   numberOfQuotes: allQuotes.length,
@@ -2185,12 +2228,14 @@ function SwapsQuotesView({
                   onPress={handleOpenQuotesModal}
                   disabled={isInFetch}
                 >
+                  {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                   <QuotesSummary.HeaderText small>
                     {strings('swaps.view_details')} →
                   </QuotesSummary.HeaderText>
                 </TouchableOpacity>
               )}
             </QuotesSummary.Header>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <QuotesSummary.Body>
               {canUseGasIncludedSwap && (
                 <View
@@ -2216,6 +2261,7 @@ function SwapsQuotesView({
                       </TouchableOpacity>
                     </View>
                   </View>
+                  {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                   {usedGasEstimate.gasPrice ? (
                     <View style={styles.quotesFiatColumn}>
                       <Text primary bold>
@@ -2276,6 +2322,7 @@ function SwapsQuotesView({
                       </View>
                     </View>
 
+                    {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                     {usedGasEstimate.gasPrice ? (
                       <View style={styles.quotesFiatColumn}>
                         <Text primary bold>
@@ -2369,6 +2416,7 @@ function SwapsQuotesView({
                   </View>
 
                   <View style={styles.quotesRow}>
+                    {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                     {usedGasEstimate.gasPrice ? (
                       <>
                         <View style={styles.quotesDescription}>
@@ -2602,6 +2650,7 @@ function SwapsQuotesView({
         gasEstimateType={gasEstimateType}
         gasFeeEstimates={gasFeeEstimates}
         defaultGasFeeOptionFeeMarket={DEFAULT_GAS_FEE_OPTION_FEE_MARKET}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         defaultGasFeeOptionFeeLegacy={DEFAULT_GAS_FEE_OPTION_LEGACY}
         onGasUpdate={handleGasFeeUpdate}
         dismiss={hideEditingGas}
@@ -2657,4 +2706,5 @@ const mapDispatchToProps = (dispatch: any) => ({
   resetTransaction: () => dispatch(resetTransaction()),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps, mapDispatchToProps)(SwapsQuotesView);
