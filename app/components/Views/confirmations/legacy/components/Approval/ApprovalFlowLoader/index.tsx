@@ -49,4 +49,3 @@ export default ApprovalFlowLoader;
 interface ApprovalFlowLoaderProps {
   loadingText?: string;
 }
-type Props = ApprovalFlowLoaderProps;

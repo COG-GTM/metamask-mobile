@@ -197,4 +197,3 @@ interface ContactsProps {
   chainId?: string;
   navigation?: Record<string, any>;
 }
-type Props = ContactsProps;

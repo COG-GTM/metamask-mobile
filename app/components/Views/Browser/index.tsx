@@ -518,4 +518,3 @@ interface BrowserProps {
   tabs?: any[];
   updateTab?: (...args: any[]) => any;
 }
-type Props = BrowserProps;

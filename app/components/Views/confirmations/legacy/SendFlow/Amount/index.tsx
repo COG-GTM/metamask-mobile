@@ -1638,4 +1638,3 @@ interface AmountProps {
   tokens?: any[];
   transactionState?: Record<string, any>;
 }
-type Props = AmountProps;

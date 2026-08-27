@@ -321,4 +321,3 @@ interface TypedSignProps {
   showExpandedMessage?: boolean;
   toggleExpandedMessage?: (...args: any[]) => any;
 }
-type Props = TypedSignProps;

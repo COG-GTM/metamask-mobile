@@ -1424,4 +1424,3 @@ interface ApproveTransactionReviewProps {
   updateTokenAllowanceState?: (...args: any[]) => any;
   updateTransactionState?: (...args: any[]) => any;
 }
-type Props = ApproveTransactionReviewProps;

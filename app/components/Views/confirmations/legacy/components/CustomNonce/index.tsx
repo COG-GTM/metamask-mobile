@@ -50,4 +50,3 @@ interface CustomNonceProps {
   nonce?: number;
   onNonceEdit?: (...args: any[]) => any;
 }
-type Props = CustomNonceProps;

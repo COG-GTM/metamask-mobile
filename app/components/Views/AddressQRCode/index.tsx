@@ -184,4 +184,3 @@ interface AddressQRCodeProps {
   selectedAddress?: string;
   showAlert?: (...args: any[]) => any;
 }
-type Props = AddressQRCodeProps;

@@ -339,4 +339,3 @@ interface ManualBackupStep1Props {
   navigation?: Record<string, any>;
   route?: Record<string, any>;
 }
-type Props = ManualBackupStep1Props;

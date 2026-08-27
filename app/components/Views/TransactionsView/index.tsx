@@ -245,4 +245,3 @@ interface TransactionsViewProps {
   tokens?: any[];
   transactions?: any[];
 }
-type Props = TransactionsViewProps;

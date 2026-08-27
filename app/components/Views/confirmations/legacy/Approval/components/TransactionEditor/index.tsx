@@ -1072,4 +1072,3 @@ interface TransactionEditorProps {
   transaction?: Record<string, any>;
   transactionConfirmed?: boolean;
 }
-type Props = TransactionEditorProps;

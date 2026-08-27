@@ -892,4 +892,3 @@ interface SendProps {
   tokens?: any[];
   transaction: Record<string, any>;
 }
-type Props = SendProps;

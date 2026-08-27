@@ -163,4 +163,3 @@ export default ImportPrivateKeySuccess;
 interface ImportPrivateKeySuccessProps {
   navigation?: Record<string, any>;
 }
-type Props = ImportPrivateKeySuccessProps;

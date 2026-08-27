@@ -804,4 +804,3 @@ interface ChoosePasswordProps {
   seedphraseNotBackedUp?: (...args: any[]) => any;
   setLockTime?: (...args: any[]) => any;
 }
-type Props = ChoosePasswordProps;

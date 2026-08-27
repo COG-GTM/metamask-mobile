@@ -210,4 +210,3 @@ interface TransactionReviewDetailsCardProps {
   tokenSymbol?: string;
   tokenValue?: string;
 }
-type Props = TransactionReviewDetailsCardProps;

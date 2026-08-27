@@ -522,4 +522,3 @@ interface OnboardingProps {
   setLoading?: (...args: any[]) => any;
   unsetLoading?: (...args: any[]) => any;
 }
-type Props = OnboardingProps;

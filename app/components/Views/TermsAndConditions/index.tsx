@@ -66,4 +66,3 @@ TermsAndConditions.contextType = ThemeContext;
 interface TermsAndConditionsProps {
   navigation?: Record<string, any>;
 }
-type Props = TermsAndConditionsProps;

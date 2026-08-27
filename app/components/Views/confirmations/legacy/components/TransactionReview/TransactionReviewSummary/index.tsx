@@ -151,4 +151,3 @@ interface TransactionReviewSummaryProps {
   fiatValue?: string;
   primaryCurrency?: string;
 }
-type Props = TransactionReviewSummaryProps;

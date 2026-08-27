@@ -182,4 +182,3 @@ interface TransactionSummaryProps {
   totalAmount?: string;
   transactionType?: string;
 }
-type Props = TransactionSummaryProps;

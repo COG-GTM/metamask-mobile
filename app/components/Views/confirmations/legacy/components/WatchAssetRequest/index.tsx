@@ -242,4 +242,3 @@ interface WatchAssetRequestProps {
   onConfirm?: (...args: any[]) => any;
   suggestedAssetMeta?: Record<string, any>;
 }
-type Props = WatchAssetRequestProps;

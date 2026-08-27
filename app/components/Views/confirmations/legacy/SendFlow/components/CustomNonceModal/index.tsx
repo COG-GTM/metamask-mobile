@@ -274,4 +274,3 @@ interface CustomModalNonceProps {
   proposedNonce: number;
   save: (...args: any[]) => any;
 }
-type Props = CustomModalNonceProps;

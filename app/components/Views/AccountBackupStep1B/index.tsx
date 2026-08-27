@@ -396,4 +396,3 @@ interface AccountBackupStep1BProps {
   navigation?: Record<string, any>;
   route?: Record<string, any>;
 }
-type Props = AccountBackupStep1BProps;

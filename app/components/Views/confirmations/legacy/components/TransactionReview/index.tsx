@@ -681,4 +681,3 @@ interface TransactionReviewProps {
   transactionMetadata?: Record<string, any>;
   useTransactionSimulations?: boolean;
 }
-type Props = TransactionReviewProps;

@@ -265,4 +265,3 @@ interface LockScreenProps {
   bioStateMachineId?: string;
   navigation?: Record<string, any>;
 }
-type Props = LockScreenFCWrapperProps;

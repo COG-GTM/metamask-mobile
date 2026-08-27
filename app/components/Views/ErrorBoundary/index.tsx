@@ -524,4 +524,3 @@ interface ErrorBoundaryProps {
   navigation?: Record<string, any>;
   view: string;
 }
-type Props = FallbackProps;

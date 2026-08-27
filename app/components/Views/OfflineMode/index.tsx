@@ -122,4 +122,3 @@ interface OfflineModeProps {
   infuraBlocked?: boolean;
   navigation?: Record<string, any>;
 }
-type Props = OfflineModeProps;

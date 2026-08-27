@@ -662,4 +662,3 @@ interface ImportFromSecretRecoveryPhraseProps {
   setLockTime?: (...args: any[]) => any;
   setOnboardingWizardStep?: (...args: any[]) => any;
 }
-type Props = ImportFromSecretRecoveryPhraseProps;

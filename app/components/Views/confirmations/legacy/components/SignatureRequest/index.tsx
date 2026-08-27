@@ -409,4 +409,3 @@ interface SignatureRequestProps {
   truncateMessage?: boolean;
   type?: string;
 }
-type Props = SignatureRequestProps;

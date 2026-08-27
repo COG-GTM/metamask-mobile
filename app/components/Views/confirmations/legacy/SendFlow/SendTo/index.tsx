@@ -754,4 +754,3 @@ interface SendFlowProps {
   ticker?: string;
   updateParentState?: (...args: any[]) => any;
 }
-type Props = SendFlowProps;

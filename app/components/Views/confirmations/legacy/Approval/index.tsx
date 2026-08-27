@@ -802,4 +802,3 @@ interface ApprovalProps {
   transaction: Record<string, any>;
   transactions?: any[];
 }
-type Props = ApprovalProps;

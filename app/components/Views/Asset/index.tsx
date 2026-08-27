@@ -649,4 +649,3 @@ interface AssetProps {
   tokens?: any[];
   transactions?: any[];
 }
-type Props = AssetProps;

@@ -537,4 +537,3 @@ interface AdvancedSettingsProps {
   showHexData?: boolean;
   smartTransactionsOptInStatus?: boolean;
 }
-type Props = AdvancedSettingsProps;

@@ -183,4 +183,3 @@ interface MediaPlayerProps {
   textTracks?: any[];
   uri?: string;
 }
-type Props = MediaPlayerProps;

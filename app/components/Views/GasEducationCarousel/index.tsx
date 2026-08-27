@@ -416,4 +416,3 @@ interface GasEducationCarouselProps {
   route?: Record<string, any>;
   ticker?: string;
 }
-type Props = GasEducationCarouselProps;
