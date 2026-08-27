@@ -41,10 +41,6 @@ export default function migrate(state: any) {
     state.engine.backgroundState.NetworkController;
   const addressBookControllerState: any =
     state.engine.backgroundState.AddressBookController;
-  const networkConfigurations: Record<string, any> =
-    networkControllerState.networkConfigurations;
-  const addressBook: Record<string, any> =
-    addressBookControllerState.addressBook;
 
   if (!isObject(networkControllerState)) {
     captureException(
@@ -53,7 +49,11 @@ export default function migrate(state: any) {
       ),
     );
     return state;
-  } else if (
+  }
+
+  const networkConfigurations: Record<string, any> =
+    networkControllerState.networkConfigurations;
+  if (
     !hasProperty(networkControllerState, 'networkConfigurations') ||
     !isObject(networkConfigurations)
   ) {
@@ -63,7 +63,8 @@ export default function migrate(state: any) {
       ),
     );
     return state;
-  } else if (
+  }
+  if (
     Object.values(networkConfigurations).some(
       (networkConfiguration: any) =>
         !hasProperty(networkConfiguration, 'chainId'),
@@ -83,14 +84,19 @@ export default function migrate(state: any) {
       ),
     );
     return state;
-  } else if (!isObject(addressBookControllerState)) {
+  }
+  if (!isObject(addressBookControllerState)) {
     captureException(
       new Error(
         `Migration 23: Invalid address book controller state: '${typeof addressBookControllerState}'`,
       ),
     );
     return state;
-  } else if (
+  }
+
+  const addressBook: Record<string, any> =
+    addressBookControllerState.addressBook;
+  if (
     !hasProperty(addressBookControllerState, 'addressBook') ||
     !isObject(addressBook)
   ) {
