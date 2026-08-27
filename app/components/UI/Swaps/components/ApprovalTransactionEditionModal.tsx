@@ -47,7 +47,7 @@ function ApprovalTransactionEditionModal({
   sourceToken,
   minimumSpendLimit,
   chainId,
-}: ApprovalTransactionEditionModalProps & any) {
+}: ApprovalTransactionEditionModalProps) {
   /* Approval transaction if any */
   const [customApprovalTransaction, setCustomApprovalTransaction] =
     useState<any>(approvalTransaction);

@@ -30,7 +30,7 @@ interface DrawerViewProps {
   tokens?: any[];
   wizard?: Record<string, any>;
 }
-type Props = DrawerViewProps & any;
+type Props = DrawerViewProps;
 import React, { PureComponent } from 'react';
 import {
   Alert,

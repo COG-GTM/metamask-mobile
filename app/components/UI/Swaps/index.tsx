@@ -214,7 +214,7 @@ function SwapsAmountView({
   currentCurrency,
   setLiveness,
   shouldUseSmartTransaction,
-}: SwapsAmountViewProps & any) {
+}: SwapsAmountViewProps) {
   const accounts = accountsByChainId[chainId];
   const navigation = useNavigation();
   const route = useRoute();

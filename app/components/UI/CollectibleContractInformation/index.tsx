@@ -5,7 +5,7 @@ interface CollectibleContractInformationProps {
   navigation?: Record<string, any>;
   onClose?: (...args: any[]) => any;
 }
-type Props = CollectibleContractInformationProps & any;
+type Props = CollectibleContractInformationProps;
 import React, { PureComponent } from 'react';
 import {
   ScrollView,

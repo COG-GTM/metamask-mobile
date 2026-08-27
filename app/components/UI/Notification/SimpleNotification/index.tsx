@@ -35,7 +35,7 @@ function SimpleNotification({
   notificationAnimated,
   hideCurrentNotification,
   currentNotification,
-}: SimpleNotificationProps & any) {
+}: SimpleNotificationProps) {
   return (
     <Animated.View
       style={[

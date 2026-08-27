@@ -36,7 +36,7 @@ function Notification({
   currentNotificationIsVisible,
   hideCurrentNotification,
   removeCurrentNotification,
-}: NotificationProps & any) {
+}: NotificationProps) {
   const notificationAnimated = useSharedValue(200);
   const routes = useNavigationState((state: any) => state.routes);
 

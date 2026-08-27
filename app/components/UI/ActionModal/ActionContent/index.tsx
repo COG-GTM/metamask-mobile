@@ -85,7 +85,7 @@ export default function ActionContent({
   actionContainerStyle,
   childrenContainerStyle,
   verticalButtons,
-}: ActionContentProps & any) {
+}: ActionContentProps) {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 

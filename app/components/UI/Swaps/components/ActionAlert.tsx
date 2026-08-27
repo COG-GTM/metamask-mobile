@@ -13,7 +13,7 @@ interface ActionAlertProps {
   style?: Record<string, any>;
   type?: any;
 }
-type Props = ActionAlertProps & any;
+type Props = ActionAlertProps;
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -93,7 +93,7 @@ const getInfoIconStyle = (type: any, styles: any) => {
   }
 };
 
-function Button({ type, onPress, children }: ButtonProps & any) {
+function Button({ type, onPress, children }: ButtonProps) {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 
@@ -114,7 +114,7 @@ function Button({ type, onPress, children }: ButtonProps & any) {
   );
 }
 
-function ActionAlert({ type, style, action, onInfoPress, onPress, children }: ActionAlertProps & any) {
+function ActionAlert({ type, style, action, onInfoPress, onPress, children }: ActionAlertProps) {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 

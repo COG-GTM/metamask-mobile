@@ -7,7 +7,7 @@ interface GlobalAlertProps {
   dismissAlert?: (...args: any[]) => any;
   isVisible: boolean;
 }
-type Props = GlobalAlertProps & any;
+type Props = GlobalAlertProps;
 import React, { PureComponent } from 'react';
 import Modal from 'react-native-modal';
 import { StyleSheet, View, Text } from 'react-native';

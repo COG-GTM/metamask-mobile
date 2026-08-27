@@ -165,7 +165,7 @@ function TokenSelectModal({
   chainId,
   networkConfigurations,
   balances,
-}: TokenSelectModalProps & any) {
+}: TokenSelectModalProps) {
   const navigation = useNavigation();
   const { trackEvent, createEventBuilder } = useMetrics();
 

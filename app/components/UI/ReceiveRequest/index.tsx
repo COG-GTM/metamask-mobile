@@ -11,7 +11,7 @@ interface ReceiveRequestProps {
   selectedAddress?: string;
   showAlert?: (...args: any[]) => any;
 }
-type Props = ReceiveRequestProps & any;
+type Props = ReceiveRequestProps;
 import React, { PureComponent } from 'react';
 import {
   SafeAreaView,

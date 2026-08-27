@@ -8,7 +8,7 @@ interface CollectibleContractOverviewProps {
   ownerOf?: number;
   toggleCollectibleContractModal: (...args: any[]) => any;
 }
-type Props = CollectibleContractOverviewProps & any;
+type Props = CollectibleContractOverviewProps;
 import React, { PureComponent } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { fontStyles } from '../../../styles/common';

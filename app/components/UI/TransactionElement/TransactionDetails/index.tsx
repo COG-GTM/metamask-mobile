@@ -21,7 +21,7 @@ interface TransactionDetailsProps {
   transactionObject?: Record<string, any>;
   transactions?: any[];
 }
-type Props = TransactionDetailsProps & any;
+type Props = TransactionDetailsProps;
 import React, { PureComponent } from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { query } from '@metamask/controller-utils';

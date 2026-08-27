@@ -10,7 +10,7 @@ interface OptinMetricsProps {
   setDataCollectionForMarketing?: (...args: any[]) => any;
   setOnboardingWizardStep?: (...args: any[]) => any;
 }
-type Props = OptinMetricsProps & any;
+type Props = OptinMetricsProps;
 import React, { PureComponent } from 'react';
 import {
   View,

@@ -13,7 +13,7 @@ interface PaymentRequestProps {
   tokenList?: any[];
   tokens?: any[];
 }
-type Props = PaymentRequestProps & any;
+type Props = PaymentRequestProps;
 import React, { PureComponent } from 'react';
 import {
   SafeAreaView,

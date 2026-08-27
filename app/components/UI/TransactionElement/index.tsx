@@ -24,7 +24,7 @@ interface TransactionElementProps {
   tx?: Record<string, any>;
   txChainId?: string;
 }
-type Props = TransactionElementWithBridgeProps & any;
+type Props = TransactionElementWithBridgeProps;
 import React, { PureComponent } from 'react';
 import {
   TouchableOpacity,

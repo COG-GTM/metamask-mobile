@@ -30,7 +30,7 @@ interface SwapsQuotesViewProps {
   usedCustomGas?: Record<string, any>;
   usedGasEstimate?: Record<string, any>;
 }
-type Props = SwapsQuotesViewProps & any;
+type Props = SwapsQuotesViewProps;
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 // @ts-expect-error -- legacy JavaScript UI type boundary
 import Eth from '@metamask/ethjs-query';
@@ -441,7 +441,7 @@ function SwapsQuotesView({
   resetTransaction,
   shouldUseSmartTransaction,
   isEIP1559Network,
-}: SwapsQuotesViewProps & any) {
+}: SwapsQuotesViewProps) {
   const navigation = useNavigation();
   /* Get params from navigation */
   const route = useRoute();

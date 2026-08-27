@@ -48,7 +48,7 @@ interface NavbarTitleProps {
   title?: string;
   translate?: boolean;
 }
-type Props = NavbarTitleProps & any;
+type Props = NavbarTitleProps;
 
 class NavbarTitle extends PureComponent<Props> {
   static defaultProps = {

@@ -175,7 +175,7 @@ const BaseNotification = ({
   onPress,
   onHide,
   autoDismiss,
-}: BaseNotificationProps & any) => {
+}: BaseNotificationProps) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 

@@ -75,7 +75,7 @@ const createStyles = (colors: any): any =>
 
 const QuotesSummary = (props: any) => <View {...props} />;
 
-const Header = ({ style, savings, children, ...props }: HeaderProps & any) => {
+const Header = ({ style, savings, children, ...props }: HeaderProps) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
   return (
@@ -94,17 +94,17 @@ const Header = ({ style, savings, children, ...props }: HeaderProps & any) => {
   );
 };
 
-const Body = ({ style, ...props }: BodyProps & any) => {
+const Body = ({ style, ...props }: BodyProps) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
   return <View style={[styles.body, style]} {...props} />;
 };
-const HeaderText = ({ style, ...props }: HeaderTextProps & any) => {
+const HeaderText = ({ style, ...props }: HeaderTextProps) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
   return <Text style={[styles.headerText, style]} {...props} />;
 };
-const Separator = ({ style }: SeparatorProps & any) => {
+const Separator = ({ style }: SeparatorProps) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
   return <View style={[styles.separator, style]} />;

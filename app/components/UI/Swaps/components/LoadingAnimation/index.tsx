@@ -125,7 +125,7 @@ function LoadingAnimation({
   onAnimationEnd,
   aggregatorMetadata,
   headPan = true,
-}: LoadingAnimationProps & any) {
+}: LoadingAnimationProps) {
   const [metadata, setMetadata] = useState<any>([]);
   const [shouldStart, setShouldStart] = useState<any>(false);
   const [hasStarted, setHasStarted] = useState<any>(false);

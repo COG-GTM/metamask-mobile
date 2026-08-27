@@ -14,7 +14,7 @@ interface CollectibleContractsProps {
   selectedAddress?: string;
   useNftDetection?: boolean;
 }
-type Props = CollectibleContractsProps & any;
+type Props = CollectibleContractsProps;
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   TouchableOpacity,
@@ -186,7 +186,7 @@ const CollectibleContracts = ({
   useNftDetection,
   isIpfsGatewayEnabled,
   displayNftMedia,
-}: CollectibleContractsProps & any) => {
+}: CollectibleContractsProps) => {
   const isAllNetworks = useSelector(selectIsAllNetworks);
 
   const filteredCollectibleContracts = useMemo(

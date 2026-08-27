@@ -80,7 +80,7 @@ const createStyles = (colors: any): any =>
     },
   });
 
-const EmptyIcon = ({ medium, big, biggest, style, ...props }: EmptyIconProps & any) => {
+const EmptyIcon = ({ medium, big, biggest, style, ...props }: EmptyIconProps) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 
@@ -99,7 +99,7 @@ const EmptyIcon = ({ medium, big, biggest, style, ...props }: EmptyIconProps & a
   );
 };
 
-function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }: TokenIconProps & any) {
+function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }: TokenIconProps) {
   const [showFallback, setShowFallback] = useState<any>(false);
   const { colors } = useTheme();
   const styles: any = createStyles(colors);

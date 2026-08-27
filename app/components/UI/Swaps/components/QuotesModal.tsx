@@ -156,7 +156,7 @@ function QuotesModal({
   showOverallValue,
   ticker,
   multiLayerL1ApprovalFeeTotal,
-}: QuotesModalProps & any) {
+}: QuotesModalProps) {
   const bestOverallValue =
     quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
   const [displayDetails, setDisplayDetails] = useState<any>(false);

@@ -27,7 +27,7 @@ interface TransactionsProps {
   tokens?: Record<string, any>;
   transactions?: any[];
 }
-type Props = TransactionsProps & any;
+type Props = TransactionsProps;
 import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
 import React, { PureComponent } from 'react';
 import {

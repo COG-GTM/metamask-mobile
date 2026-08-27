@@ -19,7 +19,7 @@ const styles: any = StyleSheet.create({
   },
 });
 
-function TokenSelectButton({ icon, symbol, onPress, disabled, label }: TokenSelectButtonProps & any) {
+function TokenSelectButton({ icon, symbol, onPress, disabled, label }: TokenSelectButtonProps) {
   return (
     <SelectorButton onPress={onPress} disabled={disabled}>
       <View style={styles.icon}>

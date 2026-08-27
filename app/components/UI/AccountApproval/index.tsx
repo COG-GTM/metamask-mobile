@@ -13,7 +13,7 @@ interface AccountApprovalProps {
   tokensLength?: number;
   walletConnectRequest?: boolean;
 }
-type Props = AccountApprovalProps & any;
+type Props = AccountApprovalProps;
 import React, { PureComponent } from 'react';
 import { InteractionManager, TouchableOpacity, View } from 'react-native';
 import { connect } from 'react-redux';

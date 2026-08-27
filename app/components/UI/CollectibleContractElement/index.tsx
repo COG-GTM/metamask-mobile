@@ -105,7 +105,7 @@ function CollectibleContractElement({
   chainId,
   selectedAddress,
   removeFavoriteCollectible,
-}: CollectibleContractElementProps & any) {
+}: CollectibleContractElementProps) {
   const [collectiblesGrid, setCollectiblesGrid] = useState<any>([]);
   const [collectiblesVisible, setCollectiblesVisible] = useState<any>(
     propsCollectiblesVisible,

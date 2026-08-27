@@ -89,7 +89,7 @@ function GasEditModal({
   chainId,
   ticker,
   animateOnChange,
-}: GasEditModalProps & any) {
+}: GasEditModalProps) {
   const [gasSelected, setGasSelected] = useState<any>(
     customGasFee
       ? customGasFee.selected ?? null

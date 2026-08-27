@@ -26,7 +26,7 @@ function AssetSwapButton({
   isNetworkAllowed,
   isAssetAllowed,
   onPress,
-}: AssetSwapButtonProps & any) {
+}: AssetSwapButtonProps) {
   const [isModalOpen, , showModal, hideModal] = useModalHandler(false);
   const isDisabled = !isFeatureLive || !isNetworkAllowed || !isAssetAllowed;
 

@@ -67,7 +67,7 @@ const createStyles = (colors: any): any =>
     },
   });
 
-function TokenImportModal({ isVisible, dismiss, token, onPressImport }: TokenImportModalProps & any) {
+function TokenImportModal({ isVisible, dismiss, token, onPressImport }: TokenImportModalProps) {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 
