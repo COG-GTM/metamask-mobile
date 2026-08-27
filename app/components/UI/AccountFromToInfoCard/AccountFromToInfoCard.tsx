@@ -15,7 +15,6 @@ import { safeToChecksumAddress } from '../../../util/address';
 import { useTheme } from '../../../util/theme';
 import InfoModal from '../Swaps/components/InfoModal';
 import useExistingAddress from '../../hooks/useExistingAddress';
-// @ts-expect-error -- legacy JavaScript UI type boundary
 import { AddressTo } from '../AddressInputs';
 import createStyles from './AccountFromToInfoCard.styles';
 import { AccountFromToInfoCardProps } from './AccountFromToInfoCard.types';

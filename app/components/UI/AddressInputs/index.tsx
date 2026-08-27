@@ -247,7 +247,7 @@ export interface AddressToProps {
   layout?: string;
 }
 
-const AddressTo = (props: AddressToProps) => {
+export const AddressTo = (props: AddressToProps) => {
   const {
     addressToReady,
     highlighted,
@@ -596,13 +596,13 @@ AddressTo.propTypes = {
 export interface AddressFromProps {
   highlighted?: boolean;
   onPressIcon?: (...args: any[]) => any;
-  fromAccountAddress?: string;
+  fromAccountAddress?: string | null;
   fromAccountName?: string;
   fromAccountBalance?: string;
   layout?: string;
 }
 
-const AddressFrom = (props: AddressFromProps) => {
+export const AddressFrom = (props: AddressFromProps) => {
   const {
     highlighted,
     onPressIcon,
@@ -626,7 +626,7 @@ const AddressFrom = (props: AddressFromProps) => {
         ]}
       >
         <View style={styles.identiconWrapper}>
-          <Identicon address={fromAccountAddress} diameter={30} />
+          <Identicon address={fromAccountAddress as string} diameter={30} />
         </View>
         <View style={[baseStyles.flexGrow, styles.address]}>
           <View style={styles.accountNameLabel}>

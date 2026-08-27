@@ -2,7 +2,6 @@ import React from 'react';
 import { fireEvent } from '@testing-library/react-native';
 
 import renderWithProvider from '../../../util/test/renderWithProvider';
-// @ts-expect-error -- legacy JavaScript UI type boundary
 import { AddressFrom, AddressTo } from './index';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { AddAddressModalSelectorsIDs } from '../../../../e2e/selectors/SendFlow/AddAddressModal.selectors';

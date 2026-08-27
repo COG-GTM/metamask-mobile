@@ -76,8 +76,7 @@ import { useMetrics } from '../../../components/hooks/useMetrics';
 import { trackDappViewedEvent } from '../../../util/metrics';
 import trackErrorAsAnalytics from '../../../util/metrics/TrackError/trackErrorAsAnalytics';
 import { selectPermissionControllerState } from '../../../selectors/snaps/permissionController';
-// @ts-expect-error -- legacy JavaScript UI type boundary
-import { isTest } from '../../../util/test/utils.ts';
+import { isTest } from '../../../util/test/utils';
 import { EXTERNAL_LINK_TYPE } from '../../../constants/browser';
 import { AccountPermissionsScreens } from '../AccountPermissions/AccountPermissions.types';
 import { useIsFocused, useNavigation } from '@react-navigation/native';

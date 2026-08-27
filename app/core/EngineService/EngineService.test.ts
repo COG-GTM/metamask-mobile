@@ -24,7 +24,7 @@ jest.mock('../BackupVault', () => ({
   getVaultFromBackup: () => ({ success: true, vault: 'fake_vault' }),
 }));
 
-jest.mock('../../util/test/network-store.ts', () => jest.fn());
+jest.mock('../../util/test/network-store', () => jest.fn());
 
 // Unmock global Engine
 jest.unmock('../Engine');
