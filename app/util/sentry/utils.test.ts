@@ -8,8 +8,6 @@ import {
   sentryStateMask,
   AllProperties,
 } from './utils';
-import { DeepPartial } from '../test/renderWithProvider';
-import { RootState } from '../../reducers';
 import { NetworkStatus } from '@metamask/network-controller';
 import { EthScope } from '@metamask/keyring-api';
 
@@ -135,7 +133,7 @@ describe('captureSentryFeedback', () => {
   });
 
   describe('maskObject', () => {
-    const rootState: DeepPartial<RootState> = {
+    const rootState: Record<string, unknown> = {
       legalNotices: {
         newPrivacyPolicyToastClickedOrClosed: true,
         newPrivacyPolicyToastShownDate: null,
