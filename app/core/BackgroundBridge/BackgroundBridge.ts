@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-var-requires */
-import URLParse from 'url-parse';
 import {
   createSelectedNetworkMiddleware,
   METAMASK_DOMAIN,
@@ -78,14 +77,14 @@ export class BackgroundBridge extends EventEmitter {
   url: string;
   hostname: string;
   remoteConnHost?: string;
-  isMainFrame: boolean;
-  isWalletConnect: boolean;
-  isMMSDK: boolean;
-  isRemoteConn: boolean;
+  isMainFrame?: boolean;
+  isWalletConnect?: boolean;
+  isMMSDK?: boolean;
+  isRemoteConn?: boolean;
   _webviewRef?: any;
   disconnected: boolean;
   getApprovedHosts?: (...args: any[]) => any;
-  channelId: string;
+  channelId?: string;
   createMiddleware: (params: any) => any;
   port: any;
   engine: any;
@@ -98,38 +97,39 @@ export class BackgroundBridge extends EventEmitter {
     webview,
     url,
     getRpcMethodMiddleware,
-    isMainFrame = false,
-    isRemoteConn = false,
-    sendMessage = () => undefined,
-    isWalletConnect = false,
+    isMainFrame,
+    isRemoteConn,
+    sendMessage,
+    isWalletConnect,
     wcRequestActions,
     getApprovedHosts,
     remoteConnHost,
-    isMMSDK = false,
-    channelId = '',
+    isMMSDK,
+    channelId,
   }: BackgroundBridgeParams) {
     super();
     this.url = url;
     // TODO - When WalletConnect and MMSDK uses the Permission System, URL does not apply in all conditions anymore since hosts may not originate from web. This will need to change!
-    this.hostname = new URLParse(url).hostname;
-    this.remoteConnHost = remoteConnHost ?? '';
+    this.hostname = new URL(url).hostname;
+    this.remoteConnHost = remoteConnHost;
     this.isMainFrame = isMainFrame;
     this.isWalletConnect = isWalletConnect;
     this.isMMSDK = isMMSDK;
     this.isRemoteConn = isRemoteConn;
-    this._webviewRef = webview?.current;
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+    this._webviewRef = webview && webview.current;
     this.disconnected = false;
-    this.getApprovedHosts = getApprovedHosts ?? (() => undefined);
-    this.channelId = channelId ?? '';
+    this.getApprovedHosts = getApprovedHosts;
+    this.channelId = channelId;
     this.deprecatedNetworkVersions = {};
 
     this.createMiddleware = getRpcMethodMiddleware;
 
     this.port = isRemoteConn
-      ? new RemotePort(sendMessage)
+      ? new RemotePort(sendMessage as (...args: any[]) => void)
       : this.isWalletConnect
       ? new WalletConnectPort(wcRequestActions)
-      : new Port(this._webviewRef, isMainFrame);
+      : new Port(this._webviewRef, isMainFrame as boolean);
 
     this.engine = null;
 
@@ -202,7 +202,7 @@ export class BackgroundBridge extends EventEmitter {
           const selectedAddress = this.getState().selectedAddress;
           this.notifySelectedAddressChanged(selectedAddress);
         },
-        (state: any) => state.subjects[this.channelId],
+        (state: any) => state.subjects[this.channelId as string],
       );
     } catch (err) {
       DevLogger.log(`Error in BackgroundBridge: ${err}`);
@@ -439,7 +439,9 @@ export class BackgroundBridge extends EventEmitter {
    * A method for creating a provider that is safely restricted for the requesting domain.
    **/
   setupProviderEngine(): any {
-    const origin: string = this.isMMSDK ? this.channelId : this.hostname;
+    const origin = (
+      this.isMMSDK ? this.channelId : this.hostname
+    ) as string;
     // setup json rpc engine stack
     const engine = new JsonRpcEngine();
 
@@ -482,7 +484,10 @@ export class BackgroundBridge extends EventEmitter {
       createEip1193MethodMiddleware({
         // Permission-related
         getAccounts: (...args: any[]) =>
-          getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
+          getPermittedAccounts(
+            (this.isMMSDK ? this.channelId : origin) as string,
+            ...args,
+          ),
         getCaip25PermissionFromLegacyPermissionsForOrigin: (
           requestedPermissions: any,
         ) =>
@@ -536,7 +541,10 @@ export class BackgroundBridge extends EventEmitter {
     engine.push(
       createEthAccountsMethodMiddleware({
         getAccounts: (...args: any[]) =>
-          getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
+          getPermittedAccounts(
+            (this.isMMSDK ? this.channelId : origin) as string,
+            ...args,
+          ),
       }),
     );
 
@@ -562,7 +570,7 @@ export class BackgroundBridge extends EventEmitter {
       Engine.context.PermissionController.createPermissionMiddleware({
         // FIXME: This condition exists so that both WC and SDK are compatible with the permission middleware.
         // This is not a long term solution. BackgroundBridge should be not contain hardcoded logic pertaining to WC, SDK, or browser.
-        origin: this.isMMSDK ? this.channelId : origin,
+        origin: (this.isMMSDK ? this.channelId : origin) as string,
       }),
     );
 

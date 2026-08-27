@@ -285,7 +285,9 @@ export async function switchToNetwork({
 
   const shouldGrantPermissions =
     chainPermissionsFeatureEnabled &&
-    !(ethChainIds as string[]).includes(chainId);
+    // Preserve the legacy no-permission path when ethChainIds is undefined.
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+    (!ethChainIds || !ethChainIds.includes(chainId));
 
   const requestModalType = isAddNetworkFlow ? 'new' : 'switch';
 
