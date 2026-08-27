@@ -24,12 +24,10 @@ const createStyles = (colors) =>
     },
   });
 
-// @ts-expect-error -- legacy JavaScript UI type boundary
-const CustomNonce = ({ nonce, onNonceEdit }): CustomNonceProps => {
+const CustomNonce = ({ nonce, onNonceEdit }: CustomNonceProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <TouchableOpacity style={styles.customNonce} onPress={onNonceEdit}>
       <Text bold black>

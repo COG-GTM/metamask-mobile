@@ -78,19 +78,13 @@ const IOS_REJECTED_BIOMETRICS_ERROR =
  * The SRP was formally called the seed phrase
  */
 const ImportFromSecretRecoveryPhrase = ({
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   navigation,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   passwordSet,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   setLockTime,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   seedphraseBackedUp,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   setOnboardingWizardStep,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   route,
-}): ImportFromSecretRecoveryPhraseProps => {
+}: ImportFromSecretRecoveryPhraseProps) => {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
@@ -119,7 +113,9 @@ const ImportFromSecretRecoveryPhrase = ({
   };
 
   const updateNavBar = () => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    (navigation as any).setOptions(
+      getOnboardingNavbarOptions(route, {}, colors),
+    );
   };
 
   useEffect(() => {
@@ -250,9 +246,9 @@ const ImportFromSecretRecoveryPhrase = ({
           ONBOARDING_WIZARD,
         );
         setLoading(false);
-        passwordSet();
-        setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT);
-        seedphraseBackedUp();
+        (passwordSet as any)();
+        (setLockTime as any)(AppConstants.DEFAULT_LOCK_TIMEOUT);
+        (seedphraseBackedUp as any)();
         track(MetaMetricsEvents.WALLET_IMPORTED, {
           biometrics_enabled: Boolean(biometryType),
         });
@@ -260,8 +256,8 @@ const ImportFromSecretRecoveryPhrase = ({
           wallet_setup_type: 'import',
           new_wallet: false,
         });
-        !onboardingWizard && setOnboardingWizardStep(1);
-        navigation.reset({
+        !onboardingWizard && (setOnboardingWizardStep as any)(1);
+        (navigation as any).reset({
           index: 1,
           routes: [{ name: Routes.ONBOARDING.SUCCESS_FLOW }],
         });
@@ -376,7 +372,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
 
     setHideSeedPhraseInput(false);
-    navigation.navigate(Routes.QR_TAB_SWITCHER, {
+    (navigation as any).navigate(Routes.QR_TAB_SWITCHER, {
       initialScreen: QRTabSwitcherScreens.Scanner,
       disableTabber: true,
       onScanSuccess: ({ seed = undefined }) => {
@@ -436,7 +432,6 @@ const ImportFromSecretRecoveryPhrase = ({
     ],
   );
 
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <SafeAreaView style={styles.mainWrapper}>
       <KeyboardAwareScrollView
@@ -657,7 +652,6 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   null,
   mapDispatchToProps,
-// @ts-expect-error -- legacy JavaScript UI type boundary
 )(ImportFromSecretRecoveryPhrase);
 
 interface ImportFromSecretRecoveryPhraseProps {

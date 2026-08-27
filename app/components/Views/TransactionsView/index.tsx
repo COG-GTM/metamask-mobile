@@ -44,25 +44,16 @@ const styles = StyleSheet.create({
 });
 
 const TransactionsView = ({
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   navigation,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   conversionRate,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   selectedInternalAccount,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   networkType,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   currentCurrency,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   transactions,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   chainId,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   tokens,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   tokenNetworkFilter,
-}): TransactionsViewProps => {
+}: TransactionsViewProps) => {
   const [allTransactions, setAllTransactions] = useState([]);
   const [submittedTxs, setSubmittedTxs] = useState([]);
   const [confirmedTxs, setConfirmedTxs] = useState([]);
@@ -88,7 +79,7 @@ const TransactionsView = ({
       // @ts-expect-error -- legacy JavaScript UI type boundary
       const submittedNonces = [];
 
-      const allTransactionsSorted = sortTransactions(transactions).filter(
+      const allTransactionsSorted = sortTransactions(transactions as any).filter(
         (tx, index, self) =>
           self.findIndex((_tx) => _tx.id === tx.id) === index,
       );
@@ -96,11 +87,11 @@ const TransactionsView = ({
       const allTransactions = allTransactionsSorted.filter((tx) => {
         const filter = filterByAddressAndNetwork(
           tx,
-          tokens,
-          selectedAddress,
+          tokens as any,
+          selectedAddress as string,
           networkId,
-          chainId,
-          tokenNetworkFilter,
+          chainId as string,
+          tokenNetworkFilter as any,
         );
 
         if (!filter) return false;
@@ -199,7 +190,6 @@ const TransactionsView = ({
     }
   }, [filterTransactions, selectedNetworkClientId]);
 
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <View style={styles.wrapper}>
       <Transactions
@@ -242,14 +232,13 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withNavigation(TransactionsView));
 
 interface TransactionsViewProps {
   chainId?: string;
   conversionRate?: number;
   currentCurrency?: string;
-  navigation?: Record<string, any>;
+  navigation: Record<string, any>;
   networkType?: string;
   selectedInternalAccount?: Record<string, any>;
   tokenNetworkFilter?: Record<string, any>;

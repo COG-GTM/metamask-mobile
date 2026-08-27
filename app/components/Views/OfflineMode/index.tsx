@@ -52,8 +52,7 @@ const createStyles = (colors) =>
 
 const astronautImage = require('../../../images/astronaut.png'); // eslint-disable-line import/no-commonjs
 
-// @ts-expect-error -- legacy JavaScript UI type boundary
-const OfflineMode = ({ navigation, infuraBlocked }): OfflineModeProps => {
+const OfflineMode = ({ navigation, infuraBlocked }: OfflineModeProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -61,11 +60,13 @@ const OfflineMode = ({ navigation, infuraBlocked }): OfflineModeProps => {
 
   const tryAgain = () => {
     if (netinfo?.isConnected) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation.pop();
     }
   };
 
   const learnMore = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: { url: AppConstants.URLS.CONNECTIVITY_ISSUES },
@@ -80,7 +81,6 @@ const OfflineMode = ({ navigation, infuraBlocked }): OfflineModeProps => {
     }
   };
 
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <SafeAreaView style={styles.container}>
       <Image source={astronautImage} style={styles.frame} />
@@ -116,7 +116,6 @@ const mapStateToProps = (state) => ({
   infuraBlocked: getInfuraBlockedSelector(state),
 });
 
-// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(OfflineMode);
 
 interface OfflineModeProps {

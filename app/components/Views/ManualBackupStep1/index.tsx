@@ -43,8 +43,11 @@ import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder
  * View that's shown during the second step of
  * the backup seed phrase flow
  */
-// @ts-expect-error -- legacy JavaScript UI type boundary
-const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Props => {
+const ManualBackupStep1 = ({
+  route,
+  navigation,
+  appTheme,
+}: ManualBackupStep1Props) => {
   const [seedPhraseHidden, setSeedPhraseHidden] = useState(true);
 
   const [password, setPassword] = useState(undefined);
@@ -61,7 +64,10 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
   const steps = MANUAL_BACKUP_STEPS;
 
   const updateNavBar = useCallback(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    // @ts-expect-error -- legacy JavaScript UI type boundary
+    navigation.setOptions(
+      getOnboardingNavbarOptions(route as any, {}, colors),
+    );
   }, [colors, navigation, route]);
 
   // @ts-expect-error -- legacy JavaScript UI type boundary
@@ -97,7 +103,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
     };
 
     getSeedphrase();
-    setWords(route.params?.words ?? []);
+    setWords((route as any).params?.words ?? []);
     setReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -112,6 +118,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
   };
 
   const goNext = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     navigation.navigate('ManualBackupStep2', {
       words,
       steps,
@@ -305,7 +312,6 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
     );
   };
 
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   return ready ? (
     <SafeAreaView style={styles.mainWrapper}>
       <View style={styles.onBoardingWrapper}>
@@ -326,7 +332,6 @@ const mapStateToProps = (state) => ({
   appTheme: state.user.appTheme,
 });
 
-// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(ManualBackupStep1);
 
 interface ManualBackupStep1Props {

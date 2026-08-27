@@ -86,7 +86,6 @@ const AdvancedDetailsRow = () => {
               </InfoRow>
             </InfoSection>
             {showNonceModal && (
-              // @ts-expect-error -- legacy JavaScript UI type boundary
               <CustomNonceModal
                 proposedNonce={proposedNonce}
                 nonceValue={userSelectedNonce}

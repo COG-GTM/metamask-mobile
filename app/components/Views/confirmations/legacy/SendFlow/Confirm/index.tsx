@@ -1158,7 +1158,6 @@ class Confirm extends PureComponent {
     // @ts-expect-error -- legacy JavaScript UI type boundary
     const { proposedNonce, nonce } = this.props.transaction;
     return (
-      // @ts-expect-error -- legacy JavaScript UI type boundary
       <CustomNonceModal
         proposedNonce={proposedNonce}
         nonceValue={nonce}
@@ -1548,7 +1547,6 @@ class Confirm extends PureComponent {
             />
           )}
           {showCustomNonce && !shouldUseSmartTransaction && (
-            // @ts-expect-error -- legacy JavaScript UI type boundary
             <CustomNonce
               nonce={nonce}
               onNonceEdit={() => this.toggleConfirmationModal(EDIT_NONCE)}

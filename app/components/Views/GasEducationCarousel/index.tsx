@@ -143,17 +143,12 @@ const carousel_images = [
  * View that is displayed to first time (new) users
  */
 const GasEducationCarousel = ({
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   navigation,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   route,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   conversionRate,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   currentCurrency,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   ticker,
-}): GasEducationCarouselProps => {
+}: GasEducationCarouselProps) => {
   const [currentTab, setCurrentTab] = useState(1);
   const [gasFiat, setGasFiat] = useState(null);
   const { colors } = useTheme();
@@ -161,6 +156,7 @@ const GasEducationCarousel = ({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     navigation.setOptions(getTransparentOnboardingNavbarOptions(colors));
   }, [navigation, colors]);
 
@@ -216,7 +212,10 @@ const GasEducationCarousel = ({
           conversionRate,
         });
 
-        const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
+        const gasFiat = formatCurrency(
+          maxFeePerGasConversion,
+          currentCurrency as string,
+        );
         // @ts-expect-error -- legacy JavaScript UI type boundary
         setGasFiat(gasFiat);
       } catch (e) {
@@ -229,6 +228,7 @@ const GasEducationCarousel = ({
   }, [conversionRate, currentCurrency, ticker]);
 
   const onPresGetStarted = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     navigation.pop();
     route?.params?.navigateTo?.();
   };
@@ -241,6 +241,7 @@ const GasEducationCarousel = ({
   };
 
   const openLink = () =>
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
@@ -328,7 +329,6 @@ const GasEducationCarousel = ({
     }
   };
 
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <View style={baseStyles.flexGrow}>
       <OnboardingScreenWithBg screen={'carousel'}>
@@ -407,7 +407,6 @@ const mapStateToProps = (state) => ({
   ticker: selectEvmTicker(state),
 });
 
-// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(GasEducationCarousel);
 
 interface GasEducationCarouselProps {

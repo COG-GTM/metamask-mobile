@@ -98,16 +98,12 @@ const createStyles = (colors) =>
   });
 
 const WatchAssetRequest = ({
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   suggestedAssetMeta,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   currentPageInformation,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   onCancel,
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   onConfirm,
-}): WatchAssetRequestProps => {
-  const { asset, interactingAddress } = suggestedAssetMeta;
+}: WatchAssetRequestProps) => {
+  const { asset, interactingAddress } = suggestedAssetMeta as any;
   // TODO - Once TokensController is updated, interactingAddress should always be defined
   const { colors } = useTheme();
   const { trackEvent, createEventBuilder } = useMetrics();
@@ -139,7 +135,7 @@ const WatchAssetRequest = ({
   };
 
   const onConfirmPress = async () => {
-    await onConfirm();
+    await (onConfirm as any)();
     InteractionManager.runAfterInteractions(() => {
       const analyticsParams = getTokenAddedAnalyticsParams();
 
@@ -164,14 +160,13 @@ const WatchAssetRequest = ({
 
   const { address, symbol, decimals, standard } = asset;
 
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <View style={styles.root} testID={AssetWatcherSelectorsIDs.CONTAINER}>
       <View style={styles.approveTransactionHeaderWrapper}>
         <ApproveTransactionHeader
           origin={currentPageInformation?.url}
           url={activeTabUrl}
-          from={suggestedAssetMeta.interactingAddress}
+          from={(suggestedAssetMeta as any).interactingAddress}
           asset={{
             address,
             symbol,

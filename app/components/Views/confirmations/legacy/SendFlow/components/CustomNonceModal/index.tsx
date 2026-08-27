@@ -117,9 +117,13 @@ const createStyles = (colors) =>
     },
   });
 
-// @ts-expect-error -- legacy JavaScript UI type boundary
-const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }): CustomModalNonceProps => {
-  const [nonce, onChangeText] = React.useState(nonceValue);
+const CustomModalNonce = ({
+  proposedNonce,
+  nonceValue,
+  close,
+  save,
+}: CustomModalNonceProps) => {
+  const [nonce, onChangeText] = React.useState(nonceValue as any);
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
@@ -140,7 +144,6 @@ const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }): CustomMod
 
   const displayWarning = String(proposedNonce) !== String(nonce);
 
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <Modal
       isVisible

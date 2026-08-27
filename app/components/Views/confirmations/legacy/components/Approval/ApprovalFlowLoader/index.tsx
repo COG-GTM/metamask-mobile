@@ -28,12 +28,10 @@ const createStyles = (colors) =>
     },
   });
 
-// @ts-expect-error -- legacy JavaScript UI type boundary
-const ApprovalFlowLoader = ({ loadingText }): ApprovalFlowLoaderProps => {
+const ApprovalFlowLoader = ({ loadingText }: ApprovalFlowLoaderProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <View style={styles.root}>
       <View style={styles.spinnerWrapper}>

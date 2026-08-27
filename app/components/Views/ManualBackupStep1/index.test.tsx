@@ -15,9 +15,7 @@ describe('ManualBackupStep1', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <ManualBackupStep1
-          // @ts-expect-error -- legacy JavaScript UI type boundary
           route={{
             params: {
               words: [

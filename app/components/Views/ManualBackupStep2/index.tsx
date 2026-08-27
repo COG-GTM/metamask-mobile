@@ -24,8 +24,11 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
-// @ts-expect-error -- legacy JavaScript UI type boundary
-const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBackupStep2Props => {
+const ManualBackupStep2 = ({
+  navigation,
+  seedphraseBackedUp,
+  route,
+}: ManualBackupStep2Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -37,8 +40,8 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
   const currentStep = 2;
   const words =
     process.env.JEST_WORKER_ID === undefined
-      ? shuffle(route.params?.words)
-      : route.params?.words;
+      ? shuffle((route as any).params?.words)
+      : (route as any).params?.words;
 
   const createWordsDictionary = () => {
     const dict = {};
@@ -51,11 +54,14 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
   };
 
   const updateNavBar = useCallback(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    // @ts-expect-error -- legacy JavaScript UI type boundary
+    navigation.setOptions(
+      getOnboardingNavbarOptions(route as any, {}, colors),
+    );
   }, [colors, navigation, route]);
 
   useEffect(() => {
-    const wordsFromRoute = route.params?.words ?? [];
+    const wordsFromRoute = (route as any).params?.words ?? [];
     setConfirmedWords(
       // @ts-expect-error -- legacy JavaScript UI type boundary
       new Array(wordsFromRoute.length).fill({
@@ -127,22 +133,24 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
   };
 
   const validateWords = useCallback(() => {
-    const validWords = route.params?.words ?? [];
+    const validWords = ((route as any).params?.words ?? []) as any;
     const proposedWords = confirmedWords.map(
       // @ts-expect-error -- legacy JavaScript UI type boundary
       (confirmedWord) => confirmedWord.word,
     );
 
     return compareMnemonics(validWords, proposedWords);
-  }, [confirmedWords, route.params?.words]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [confirmedWords, (route as any).params?.words]);
 
   const goNext = () => {
     if (validateWords()) {
-      seedphraseBackedUp();
+      (seedphraseBackedUp as any)();
       InteractionManager.runAfterInteractions(async () => {
-        const words = route.params?.words;
+        const words = (route as any).params?.words;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         navigation.navigate('ManualBackupStep3', {
-          steps: route.params?.steps,
+          steps: (route as any).params?.steps,
           words,
         });
         trackOnboarding(
@@ -241,13 +249,12 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
     [renderWordSelectableBox, styles.words, wordsDict],
   );
 
-  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <SafeAreaView style={styles.mainWrapper}>
       <View style={styles.onBoardingWrapper}>
         <OnboardingProgress
           currentStep={currentStep}
-          steps={route.params?.steps}
+          steps={(route as any).params?.steps}
         />
       </View>
       <ActionView
@@ -303,7 +310,6 @@ const mapDispatchToProps = (dispatch) => ({
   seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
 });
 
-// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(null, mapDispatchToProps)(ManualBackupStep2);
 
 interface ManualBackupStep2Props {
