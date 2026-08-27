@@ -81,7 +81,8 @@ const NotificationsDetails = ({ route, navigation }: Props) => {
     () => (
       <Header
         title={state?.title ?? ''}
-        subtitle={toLocaleDate(state?.createdAt)}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        subtitle={toLocaleDate(state?.createdAt as any)}
       />
     ),
     [state?.title, state?.createdAt],

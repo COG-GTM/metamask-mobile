@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Image,
   View,
@@ -7,6 +7,7 @@ import {
   Dimensions,
 } from 'react-native';
 import FadeIn from 'react-native-fade-in-image';
+// @ts-expect-error - React Native's internal resolver has no published declaration.
 // eslint-disable-next-line import/default
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import { SvgUri } from 'react-native-svg';
@@ -42,7 +43,20 @@ import {
   UnpopularNetworkList,
 } from '../../../util/networks/customNetworks';
 
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+
+interface RemoteImageProps {
+  source: any;
+  style?: any;
+  placeholderStyle?: any;
+  onError?: (event: any) => void;
+  fadeIn?: boolean;
+  isUrl?: boolean;
+  address?: string;
+  isTokenImage?: boolean;
+  isFullRatio?: boolean;
+  chainId?: string;
+  [key: string]: any;
+}
 
 const createStyles = () =>
   StyleSheet.create({
@@ -62,10 +76,10 @@ const createStyles = () =>
     },
   });
 
-const RemoteImage = (props) => {
+const RemoteImage = (props: RemoteImageProps) => {
   const [error, setError] = useState(undefined);
   // Avoid using this component with animated SVG
-  const source = resolveAssetSource(props.source);
+  const source: any = resolveAssetSource(props.source);
   const isImageUrl = isUrl(props?.source?.uri);
   const ipfsGateway = useIpfsGateway();
   const styles = createStyles();
@@ -74,7 +88,7 @@ const RemoteImage = (props) => {
   //TODO remove once migrated to TS and chainID is properly typed to hex
   const chainId = props.chainId ? toHex(props.chainId) : currentChainId;
   const networkName = useSelector(selectNetworkName);
-  const [resolvedIpfsUrl, setResolvedIpfsUrl] = useState(false);
+  const [resolvedIpfsUrl, setResolvedIpfsUrl] = useState<string | false>(false);
 
   const uri =
     resolvedIpfsUrl ||
@@ -82,9 +96,13 @@ const RemoteImage = (props) => {
       ? ''
       : source.uri);
 
-  const onError = ({ nativeEvent: { error } }) => setError(error);
+  const onError = ({ nativeEvent: { error: nativeError } }: any) =>
+    setError(nativeError);
 
-  const [dimensions, setDimensions] = useState(null);
+  const [dimensions, setDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
 
   useEffect(() => {
     resolveIpfsUrl();
@@ -97,7 +115,7 @@ const RemoteImage = (props) => {
           props.source.uri,
           false,
         );
-        setResolvedIpfsUrl(ipfsUrl);
+        setResolvedIpfsUrl(ipfsUrl as string);
       } catch (err) {
         setResolvedIpfsUrl(false);
       }
@@ -105,7 +123,10 @@ const RemoteImage = (props) => {
   }, [props.source.uri, ipfsGateway]);
 
   useEffect(() => {
-    const calculateImageDimensions = (imageWidth, imageHeight) => {
+    const calculateImageDimensions = (
+      imageWidth: number,
+      imageHeight: number,
+    ) => {
       const deviceWidth = Dimensions.get('window').width;
       const maxWidth = deviceWidth - 32;
       const maxHeight = 0.75 * maxWidth;
@@ -155,7 +176,8 @@ const RemoteImage = (props) => {
       (networkConfig) => networkConfig.chainId === chainId,
     );
     const network = unpopularNetwork || popularNetwork;
-    const customNetworkImg = CustomNetworkImgMapping[chainId];
+    const customNetworkImg =
+      CustomNetworkImgMapping[chainId as keyof typeof CustomNetworkImgMapping];
 
     if (network) {
       return network.rpcPrefs.imageSource;
@@ -166,9 +188,7 @@ const RemoteImage = (props) => {
   }, [chainId]);
 
   const isSVG =
-    source &&
-    source.uri &&
-    source.uri.match('.svg') &&
+    source?.uri?.match('.svg') &&
     (isImageUrl || resolvedIpfsUrl);
 
   const viewbox = useSvgUriViewBox(uri, isSVG);
@@ -190,7 +210,7 @@ const RemoteImage = (props) => {
 
     return (
       <ComponentErrorBoundary
-        onError={props.onError}
+        onError={props.onError as () => void}
         componentLabel="RemoteImage-SVG"
       >
         <View style={{ ...style, ...styles.svgContainer }}>
@@ -277,42 +297,6 @@ const RemoteImage = (props) => {
   }
 
   return <Image {...props} source={{ uri }} onError={onError} />;
-};
-
-RemoteImage.propTypes = {
-  /**
-   * Flag that determines the fade in behavior
-   */
-  fadeIn: PropTypes.bool,
-  /**
-   * Source of the image
-   */
-  source: PropTypes.any,
-  /**
-   * Style for the image
-   */
-  style: ViewPropTypes.style,
-  /**
-   * Style for the placeholder (used for fadeIn)
-   */
-  placeholderStyle: ViewPropTypes.style,
-  /**
-   * Called when there is an error
-   */
-  onError: PropTypes.func,
-  /**
-   * This is set if we know that an image is remote
-   */
-  isUrl: PropTypes.bool,
-  /**
-   * Token address
-   */
-  address: PropTypes.string,
-
-  isTokenImage: PropTypes.bool,
-
-  isFullRatio: PropTypes.bool,
-  chainId: PropTypes.string,
 };
 
 export default RemoteImage;

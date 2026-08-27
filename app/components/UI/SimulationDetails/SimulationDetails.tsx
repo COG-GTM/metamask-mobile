@@ -165,6 +165,7 @@ export const SimulationDetails: React.FC<SimulationDetailsProps> = ({
     return (
       <SimulationDetailsLayout
         inHeader={
+          // @ts-expect-error -- legacy spinner prop compatibility
           <AnimatedSpinner
             testID="simulation-details-spinner"
             size={SpinnerSize.SM}

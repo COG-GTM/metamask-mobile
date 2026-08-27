@@ -16,7 +16,11 @@ export class LockManagerService {
   #lockTimer?: number;
 
   #lockApp = async () => {
-    if (!SecureKeychain.getInstance().isAuthenticating) {
+    if (
+      !(
+        SecureKeychain.getInstance() as { isAuthenticating: boolean }
+      ).isAuthenticating
+    ) {
       const { KeyringController } = Engine.context;
       try {
         await KeyringController.setLocked();

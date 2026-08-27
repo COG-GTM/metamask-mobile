@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View } from 'react-native';
 import AssetIcon from '../AssetIcon';
 import Identicon from '../Identicon';
@@ -8,6 +8,13 @@ import { connect, useSelector } from 'react-redux';
 import { selectTokenList } from '../../../selectors/tokenListController';
 import { selectIsIpfsGatewayEnabled } from '../../../selectors/preferencesController';
 import { isIPFSUri } from '../../../util/general';
+
+interface TokenImageProps {
+  asset?: any;
+  containerStyle?: any;
+  iconStyle?: any;
+  tokenList: Record<string, any>;
+}
 
 const styles = StyleSheet.create({
   itemLogoWrapper: {
@@ -20,7 +27,12 @@ const styles = StyleSheet.create({
   },
 });
 
-const TokenImage = ({ asset, containerStyle, iconStyle, tokenList }) => {
+const TokenImage = ({
+  asset,
+  containerStyle,
+  iconStyle,
+  tokenList,
+}: TokenImageProps) => {
   const isIpfsGatewayEnabled = useSelector(selectIsIpfsGatewayEnabled);
 
   const assetImage = isUrl(asset?.image) ? asset.image : null;
@@ -48,14 +60,7 @@ const TokenImage = ({ asset, containerStyle, iconStyle, tokenList }) => {
   );
 };
 
-TokenImage.propTypes = {
-  asset: PropTypes.object,
-  containerStyle: PropTypes.object,
-  iconStyle: PropTypes.object,
-  tokenList: PropTypes.object,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: any) => ({
   tokenList: selectTokenList(state),
 });
 

@@ -248,6 +248,7 @@ export class SDKConnect {
     }
     DevLogger.log(`SDKConnect::refreshChannel channelId=${channelId}`);
     // Force enitting updated accounts
+    // @ts-expect-error -- legacy background bridge callback signature
     session.backgroundBridge?.notifySelectedAddressChanged();
   }
 

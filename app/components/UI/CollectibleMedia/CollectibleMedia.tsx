@@ -192,7 +192,7 @@ const CollectibleMedia: React.FC<CollectibleMediaProps> = ({
               cover && styles.cover,
               style,
             ]}
-            chainId={collectible.chainId}
+            chainId={collectible.chainId as unknown as string}
             onError={fallback}
             testID="nft-image"
             isTokenImage={isTokenImage}

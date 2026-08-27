@@ -749,6 +749,7 @@ export class Engine {
       state: initialState.PermissionController,
       caveatSpecifications: getCaveatSpecifications({
         listAccounts: (...args) =>
+          // @ts-expect-error -- legacy controller callback signature
           this.accountsController.listAccounts(...args),
         findNetworkClientIdByChainId:
           networkController.findNetworkClientIdByChainId.bind(
@@ -1682,7 +1683,6 @@ export class Engine {
                 : undefined);
             const tokenBalanceFiat = balanceToFiatNumber(
               // TODO: Fix this by handling or eliminating the undefined case
-              // @ts-expect-error This variable can be `undefined`, which would break here.
               tokenBalance,
               conversionRate,
               exchangeRate,

@@ -113,6 +113,7 @@ const SendFlowAddressFrom = ({
     const balance = `${renderFromWei(accounts[address].balance)} ${getTicker(
       ticker,
     )}`;
+    // @ts-expect-error -- legacy ENS lookup call shape
     const ens = await doENSReverseLookup(address);
     const accName = ens || name;
     const balanceIsZero = hexToBN(accounts[address].balance).isZero();
