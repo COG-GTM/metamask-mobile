@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { wallet_switchEthereumChain } from './wallet_switchEthereumChain';
 import Engine from '../Engine';
 import { mockNetworkState } from '../../util/test/network';
@@ -5,6 +6,9 @@ import {
   Caip25CaveatType,
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
+
+const mockNetworkStateAny = mockNetworkState as any;
+const engineContext: any = Engine.context;
 
 const existingNetworkConfiguration = {
   id: 'test-network-configuration-id',
@@ -50,7 +54,7 @@ jest.mock('../../store', () => ({
       engine: {
         backgroundState: {
           NetworkController: {
-            ...mockNetworkState(
+            ...mockNetworkStateAny(
               {
                 chainId: '0x1',
                 id: 'Mainnet',
@@ -72,7 +76,7 @@ const correctParams = {
   chainId: '0x1',
 };
 
-const otherOptions = {
+const otherOptions: any = {
   res: {},
   switchCustomNetworkRequest: {},
   requestUserApproval: jest.fn(),
@@ -98,7 +102,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain('Expected single, object parameter.');
     }
   });
@@ -111,7 +115,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(
         'Received unexpected keys on object parameter. Unsupported keys',
       );
@@ -126,7 +130,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(
         `Expected 0x-prefixed, unpadded, non-zero hexadecimal string 'chainId'.`,
       );
@@ -141,7 +145,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).toContain(
         'numerical value greater than max safe value.',
       );
@@ -151,20 +155,20 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
   it('should should show a modal for user approval and not grant permissions', async () => {
     otherOptions.hooks.hasApprovalRequestsForOrigin.mockReturnValue(true);
     const spyOnGrantPermissionsIncremental = jest.spyOn(
-      Engine.context.PermissionController,
+      engineContext.PermissionController,
       'grantPermissionsIncremental',
     );
     jest
       .spyOn(
-        Engine.context.SelectedNetworkController,
+        engineContext.SelectedNetworkController,
         'getNetworkClientIdForDomain',
       )
       .mockReturnValue('mainnet');
     jest
-      .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
+      .spyOn(engineContext.NetworkController, 'getNetworkClientById')
       .mockReturnValue({ configuration: { chainId: '0x1' } });
     const spyOnSetActiveNetwork = jest.spyOn(
-      Engine.context.MultichainNetworkController,
+      engineContext.MultichainNetworkController,
       'setActiveNetwork',
     );
     await wallet_switchEthereumChain({
@@ -189,17 +193,17 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
     });
     it('should not change network permissions and should switch without user approval when chain is already permitted', async () => {
       const spyOnGrantPermissionsIncremental = jest.spyOn(
-        Engine.context.PermissionController,
+        engineContext.PermissionController,
         'grantPermissionsIncremental',
       );
       jest
         .spyOn(
-          Engine.context.SelectedNetworkController,
+          engineContext.SelectedNetworkController,
           'getNetworkClientIdForDomain',
         )
         .mockReturnValue('mainnet');
       jest
-        .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
+        .spyOn(engineContext.NetworkController, 'getNetworkClientById')
         .mockReturnValue({ configuration: { chainId: '0x1' } });
       otherOptions.hooks.getCaveat.mockReturnValue({
         type: Caip25CaveatType,
@@ -216,7 +220,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
       });
       otherOptions.hooks.hasApprovalRequestsForOrigin.mockReturnValue(false);
       const spyOnSetActiveNetwork = jest.spyOn(
-        Engine.context.MultichainNetworkController,
+        engineContext.MultichainNetworkController,
         'setActiveNetwork',
       );
       await wallet_switchEthereumChain({
@@ -236,20 +240,20 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
     it('should add network permission and should switch with user approval when requested chain is not permitted', async () => {
       const origin = 'https://test.com';
       const spyOnGrantPermissionsIncremental = jest.spyOn(
-        Engine.context.PermissionController,
+        engineContext.PermissionController,
         'grantPermissionsIncremental',
       );
       jest
         .spyOn(
-          Engine.context.SelectedNetworkController,
+          engineContext.SelectedNetworkController,
           'getNetworkClientIdForDomain',
         )
         .mockReturnValue('mainnet');
       jest
-        .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
+        .spyOn(engineContext.NetworkController, 'getNetworkClientById')
         .mockReturnValue({ configuration: { chainId: '0x1' } });
       const spyOnSetActiveNetwork = jest.spyOn(
-        Engine.context.MultichainNetworkController,
+        engineContext.MultichainNetworkController,
         'setActiveNetwork',
       );
       otherOptions.hooks.hasApprovalRequestsForOrigin.mockReturnValue(true);

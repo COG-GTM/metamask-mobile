@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
 import {
   caveatSpecifications as snapsCaveatsSpecifications,
@@ -52,11 +53,14 @@ export const CaveatFactories = Object.freeze({
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
-}) => ({
+}: {
+  listAccounts?: (...args: any[]) => any[];
+  findNetworkClientIdByChainId?: (chainId: `0x${string}`) => string;
+} = {}) => ({
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
-  }),
+  } as any),
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   ...snapsCaveatsSpecifications,
   ...snapsEndowmentCaveatSpecifications,
@@ -68,7 +72,7 @@ export const getCaveatSpecifications = ({
  * PermissionController.
  *
  */
-export const getPermissionSpecifications = () => ({
+export const getPermissionSpecifications = (_options?: unknown) => ({
   [caip25EndowmentBuilder.targetName]:
     caip25EndowmentBuilder.specificationBuilder({}),
 });
