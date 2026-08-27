@@ -38,7 +38,7 @@ function KeypadComponent({
   const { handler, decimalSeparator } = useCurrency(currency, decimals);
   const handleKeypadPress = useCallback(
     (pressedKey: string) => {
-      const newValue = handler(value ?? '', pressedKey);
+      const newValue = handler(value as any, pressedKey);
       let valueAsNumber = 0;
       try {
       valueAsNumber = Number(
@@ -47,7 +47,11 @@ function KeypadComponent({
       } catch (error) {
         console.error(error);
       }
-      onChange?.({ value: newValue, valueAsNumber, pressedKey });
+      (onChange as NonNullable<KeypadProps['onChange']>)({
+        value: newValue,
+        valueAsNumber,
+        pressedKey,
+      });
     },
     [decimalSeparator, handler, onChange, value],
   );

@@ -139,14 +139,30 @@ const RangeInput = ({
   );
 
   const increaseNumber = useCallback(() => {
-    const newValue = new BigNumber(value ?? 0).plus(new BigNumber(increment ?? 1));
-    if (!new BigNumber(max ?? NaN).isNaN() && newValue.gt(max ?? 0)) return;
+    const newValue = new BigNumber(
+      value as unknown as BigNumber.Value,
+    ).plus(
+      new BigNumber(increment as unknown as BigNumber.Value),
+    );
+    if (
+      !new BigNumber(max as unknown as BigNumber.Value).isNaN() &&
+      newValue.gt(max as unknown as BigNumber.Value)
+    )
+      return;
     changeValue(newValue.toString());
   }, [changeValue, increment, max, value]);
 
   const decreaseNumber = useCallback(() => {
-    const newValue = new BigNumber(value ?? 0).minus(new BigNumber(increment ?? 1));
-    if (!new BigNumber(min ?? NaN).isNaN() && newValue.lt(min ?? 0)) return;
+    const newValue = new BigNumber(
+      value as unknown as BigNumber.Value,
+    ).minus(
+      new BigNumber(increment as unknown as BigNumber.Value),
+    );
+    if (
+      !new BigNumber(min as unknown as BigNumber.Value).isNaN() &&
+      newValue.lt(min as unknown as BigNumber.Value)
+    )
+      return;
     changeValue(newValue.toString());
   }, [changeValue, increment, min, value]);
 
@@ -162,13 +178,13 @@ const RangeInput = ({
   }, []);
 
   const checkLimits = useCallback(() => {
-    if (new BigNumber(value || 0).lt(min ?? NaN)) {
+    if (new BigNumber(value || 0).lt(min as unknown as BigNumber.Value)) {
       setErrorState(`${name} must be at least ${min}`);
-      return changeValue((min ?? '').toString(), true);
+      return changeValue((min as BigNumber).toString(), true);
     }
-    if (new BigNumber(value || 0).gt(max ?? NaN)) {
+    if (new BigNumber(value || 0).gt(max as unknown as BigNumber.Value)) {
       setErrorState(`${name} must be at most ${max}`);
-      return changeValue((max ?? '').toString());
+      return changeValue((max as BigNumber).toString());
     }
   }, [changeValue, max, min, name, value]);
 
