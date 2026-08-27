@@ -2,7 +2,7 @@
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
 // eslint-disable-next-line import/no-nodejs-modules
-import { Duplex } from 'stream';
+import { Duplex } from 'readable-stream';
 
 interface Port {
   addListener: (event: 'message' | 'disconnect', listener: (...args: any[]) => void) => void;
@@ -50,7 +50,7 @@ export default class PortDuplexStream extends Duplex {
    * @private
    */
   _onDisconnect = (): void => {
-    this.destroy && this.destroy();
+    this.destroy?.();
   };
 
   /**

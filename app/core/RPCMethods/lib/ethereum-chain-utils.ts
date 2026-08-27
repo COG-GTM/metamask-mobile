@@ -285,7 +285,7 @@ export async function switchToNetwork({
 
   const shouldGrantPermissions =
     chainPermissionsFeatureEnabled &&
-    !ethChainIds?.includes(chainId);
+    !(ethChainIds as string[]).includes(chainId);
 
   const requestModalType = isAddNetworkFlow ? 'new' : 'switch';
 
@@ -334,7 +334,10 @@ export async function switchToNetwork({
     }
   }
 
-  if (!shouldShowRequestModal && !ethChainIds?.includes(chainId)) {
+  if (
+    !shouldShowRequestModal &&
+    !(ethChainIds as string[]).includes(chainId)
+  ) {
     await requestPermittedChainsPermissionIncrementalForOrigin({
       origin,
       chainId,
