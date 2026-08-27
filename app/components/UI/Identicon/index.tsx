@@ -65,7 +65,7 @@ const Identicon: React.FC<IdenticonProps> = ({
     <Image source={{ uri: imageUri }} style={styleForBlockieAndTokenIcon} />
   ) : useBlockieIcon ? (
     <Image
-      source={{ uri: toDataUrl(address) }}
+      source={{ uri: toDataUrl(address as string) }}
       style={styleForBlockieAndTokenIcon}
     />
   ) : (

@@ -20,8 +20,10 @@ export default async (
 
   const onConfirmationComplete = async (confirmed: boolean) => {
     if (!confirmed) {
+      // @ts-expect-error -- legacy signature action call shape
       await handleSignatureAction(onReject, messageParams, signType, false);
     } else {
+      // @ts-expect-error -- legacy signature action call shape
       await handleSignatureAction(onConfirm, messageParams, signType, true);
     }
   };

@@ -52,7 +52,7 @@ export default function migrate(state: any) {
   }
 
   const networkConfigurations: Record<string, any> =
-    networkControllerState.networkConfigurations;
+    networkControllerState.networkConfigurations as Record<string, any>;
   if (
     !hasProperty(networkControllerState, 'networkConfigurations') ||
     !isObject(networkConfigurations)
@@ -95,7 +95,7 @@ export default function migrate(state: any) {
   }
 
   const addressBook: Record<string, any> =
-    addressBookControllerState.addressBook;
+    addressBookControllerState.addressBook as Record<string, any>;
   if (
     !hasProperty(addressBookControllerState, 'addressBook') ||
     !isObject(addressBook)

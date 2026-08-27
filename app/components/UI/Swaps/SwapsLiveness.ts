@@ -20,7 +20,8 @@ function SwapLiveness() {
   const dispatch = useDispatch();
   const setLiveness = useCallback(
     (_chainId: string, featureFlags?: FeatureFlags | null) => {
-      dispatch(setSwapsLiveness(_chainId, featureFlags));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      dispatch(setSwapsLiveness(_chainId, featureFlags as any));
     },
     [dispatch],
   );

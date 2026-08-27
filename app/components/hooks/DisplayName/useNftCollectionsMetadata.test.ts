@@ -98,7 +98,8 @@ describe('useNftCollectionsMetadata', () => {
       mockGetTokenDetails.mockReset().mockResolvedValueOnce({
         name: 'TEST',
         symbol: 'TST',
-        standard: SimulationTokenStandard.erc20,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        standard: SimulationTokenStandard.erc20 as any,
       });
 
       renderHook(() =>
