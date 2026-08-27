@@ -39,7 +39,6 @@ import {
 } from '../../hooks/useMetrics';
 import StorageWrapper from '../../../store/storage-wrapper';
 import { ThemeContext } from '../../../util/theme';
-import type { Theme } from '../../../util/theme/models';
 import { MetaMetricsOptInSelectorsIDs } from '../../../../e2e/selectors/Onboarding/MetaMetricsOptIn.selectors';
 import Checkbox from '../../../component-library/components/Checkbox';
 import Button, {
@@ -56,7 +55,10 @@ import {
   UserProfileProperty
 } from '../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
 
-const createStyles = ({ colors }: Theme): any =>
+const createStyles = ({ colors }: {
+  colors: any;
+  typography: any;
+}): any =>
   StyleSheet.create({
     root: {
       ...baseStyles.flexGrow,
