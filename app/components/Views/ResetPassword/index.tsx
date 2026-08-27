@@ -31,6 +31,7 @@ import { strings } from '../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AppConstants from '../../../core/AppConstants';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import zxcvbn from 'zxcvbn';
 import { ONBOARDING, PREVIOUS_SCREEN } from '../../../constants/navigation';
 import {
@@ -56,6 +57,7 @@ import Logger from '../../../util/Logger';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
 import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ChoosePassword.selectors';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     mainWrapper: {
@@ -272,7 +274,9 @@ class ResetPassword extends PureComponent {
   confirmPasswordInput = React.createRef();
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -317,10 +321,12 @@ class ResetPassword extends PureComponent {
     }, 100);
   }
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   componentDidUpdate(_, prevState) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
     const { loading } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     if (!prevLoading && loading) {
       // update navigationOptions
@@ -367,13 +373,17 @@ class ResetPassword extends PureComponent {
         );
         await Authentication.storePassword(password, authData.currentAuthType);
       } catch (error) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         Logger.error(error);
       }
 
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.passwordSet();
       this.setState({ loading: false });
       InteractionManager.runAfterInteractions(() => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.navigation.navigate('SecuritySettings');
         NotificationManager.showSimpleNotification({
           status: 'success',
@@ -384,6 +394,7 @@ class ResetPassword extends PureComponent {
       });
     } catch (error) {
       // Should we force people to enable passcode / biometrics?
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (error.toString() === PASSCODE_NOT_SET_ERROR) {
         Alert.alert(
           strings('choose_password.security_alert_title'),
@@ -391,6 +402,7 @@ class ResetPassword extends PureComponent {
         );
         this.setState({ loading: false });
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.setState({ loading: false, error: error.toString() });
       }
     }
@@ -404,17 +416,21 @@ class ResetPassword extends PureComponent {
     const { originalPassword, password: newPassword } = this.state;
     // Recreate keyring with password
     await recreateVaultWithNewPassword(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       originalPassword,
       newPassword,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.selectedAddress,
     );
   };
 
   jumpToConfirmPassword = () => {
     const { current } = this.confirmPasswordInput;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     current && current.focus();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateBiometryChoice = async (biometryChoice) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     this.setState({ biometryChoice });
@@ -422,6 +438,7 @@ class ResetPassword extends PureComponent {
 
   renderSwitch = () => {
     const { biometryType, biometryChoice } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const handleUpdateRememberMe = (rememberMe) => {
       this.setState({ rememberMe });
     };
@@ -435,11 +452,13 @@ class ResetPassword extends PureComponent {
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   tryExportSeedPhrase = async (password) => {
     const { KeyringController } = Engine.context;
     await KeyringController.exportSeedPhrase(password);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   tryUnlockWithPassword = async (password) => {
     this.setState({ ready: false });
     try {
@@ -465,6 +484,7 @@ class ResetPassword extends PureComponent {
     this.tryUnlockWithPassword(password);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onPasswordChange = (val) => {
     const passInfo = zxcvbn(val);
 
@@ -472,10 +492,12 @@ class ResetPassword extends PureComponent {
   };
 
   toggleShowHide = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.setState((state) => ({ secureTextEntry: !state.secureTextEntry }));
   };
 
   learnMore = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.push('Webview', {
       screen: 'SimpleWebview',
       params: {
@@ -486,21 +508,27 @@ class ResetPassword extends PureComponent {
   };
 
   renderLoader = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <View style={styles.loader}>
         <ActivityIndicator size="small" />
       </View>
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setConfirmPassword = (val) => this.setState({ confirmPassword: val });
 
   renderConfirmPassword() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { warningIncorrectPassword } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
 
@@ -544,6 +572,7 @@ class ResetPassword extends PureComponent {
             </View>
             <View style={styles.buttonWrapper}>
               <StyledButton
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 containerStyle={styles.button}
                 type={'confirm'}
                 onPress={this.tryUnlock}
@@ -563,17 +592,21 @@ class ResetPassword extends PureComponent {
       isSelected,
       inputWidth,
       password,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       passwordStrength,
       confirmPassword,
       secureTextEntry,
       error,
       loading,
     } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
     const passwordsMatch = password !== '' && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const previousScreen = this.props.route.params?.[PREVIOUS_SCREEN];
     const passwordStrengthWord = getPasswordStrengthWord(passwordStrength);
 
@@ -635,6 +668,7 @@ class ResetPassword extends PureComponent {
                     )}
                   </Text>
                   <TextInput
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     style={[styles.input, inputWidth]}
                     value={password}
                     onChangeText={this.onPasswordChange}
@@ -661,6 +695,7 @@ class ResetPassword extends PureComponent {
                       </Text>
                     </Text>
                   )) || (
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     <Text
                       variant={TextVariant.BodySM}
                       style={styles.hintLabel}
@@ -671,6 +706,7 @@ class ResetPassword extends PureComponent {
                   <Text variant={TextVariant.BodySM} style={styles.hintLabel}>
                     {strings('reset_password.confirm_password')}
                   </Text>
+                  {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                   <TextInput
                     ref={this.confirmPasswordInput}
                     style={[styles.input, inputWidth]}
@@ -757,6 +793,7 @@ class ResetPassword extends PureComponent {
 
   render() {
     const { view, ready } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -779,12 +816,15 @@ class ResetPassword extends PureComponent {
 
 ResetPassword.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
   passwordSet: () => dispatch(passwordSet()),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setLockTime: (time) => dispatch(setLockTime(time)),
   seedphraseNotBackedUp: () => dispatch(seedphraseNotBackedUp()),
 });

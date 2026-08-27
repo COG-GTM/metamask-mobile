@@ -16,6 +16,7 @@ import {
   selectCurrentCurrency,
 } from '../../../../../../../selectors/currencyRateController';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     root: {
@@ -80,15 +81,18 @@ const createStyles = (colors) =>
  */
 class TransactionReviewData extends PureComponent {
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   applyRootHeight = () => ({ height: this.props.customGasHeight });
 
   handleCopyHex = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: {
         transaction: { data },
       },
     } = this.props;
     ClipboardManager.setString(data);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -99,12 +103,16 @@ class TransactionReviewData extends PureComponent {
 
   render = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: {
         transaction: { data },
       },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       actionKey,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       toggleDataView,
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -160,13 +168,16 @@ class TransactionReviewData extends PureComponent {
   };
 }
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   conversionRate: selectConversionRateByChainId(state, state.transaction.chainId),
   currentCurrency: selectCurrentCurrency(state),
   transaction: state.transaction,
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   showAlert: (config) => dispatch(showAlert(config)),
 });
 

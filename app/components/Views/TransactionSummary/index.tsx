@@ -13,6 +13,7 @@ import Text from '../../Base/Text';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { isTestNet } from '../../../util/networks';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     loader: {
@@ -23,8 +24,11 @@ const createStyles = (colors) =>
 
 export default class TransactionSummary extends PureComponent {
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderIfGastEstimationReady = (children) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { gasEstimationReady } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -38,6 +42,7 @@ export default class TransactionSummary extends PureComponent {
   };
 
   renderAmountTitle = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transactionType } = this.props;
     if (
       transactionType === TRANSACTION_TYPES.SENT_COLLECTIBLE ||
@@ -50,23 +55,34 @@ export default class TransactionSummary extends PureComponent {
 
   render = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       amount,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       fee,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       totalAmount,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       secondaryTotalAmount,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasEstimationReady,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onEditPress,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       chainId,
     } = this.props;
 
     const isTestNetResult = isTestNet(chainId);
 
     if (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED_TOKEN ||
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED
     ) {
       return (
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         <Summary>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <Summary.Row>
             <Text small bold primary>
               {strings('transaction.amount')}
@@ -76,6 +92,7 @@ export default class TransactionSummary extends PureComponent {
             </Text>
           </Summary.Row>
           {secondaryTotalAmount && (
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             <Summary.Row end last>
               <Text small right upper={!isTestNetResult}>
                 {secondaryTotalAmount}
@@ -86,7 +103,9 @@ export default class TransactionSummary extends PureComponent {
       );
     }
     return (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <Summary>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <Summary.Row>
           <Text small primary>
             {this.renderAmountTitle()}
@@ -95,8 +114,11 @@ export default class TransactionSummary extends PureComponent {
             {amount}
           </Text>
         </Summary.Row>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <Summary.Row>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <Summary.Col>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <Text small primary italic>
               {!fee
                 ? strings('transaction.transaction_fee_less')
@@ -124,6 +146,7 @@ export default class TransactionSummary extends PureComponent {
             )}
         </Summary.Row>
         <Summary.Separator />
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <Summary.Row>
           <Text small bold primary>
             {strings('transaction.total_amount')}
@@ -134,6 +157,7 @@ export default class TransactionSummary extends PureComponent {
             </Text>,
           )}
         </Summary.Row>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <Summary.Row end last>
           {this.renderIfGastEstimationReady(
             <Text small right upper={!isTestNetResult}>

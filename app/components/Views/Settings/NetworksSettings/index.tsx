@@ -49,6 +49,7 @@ import { SolScope } from '@metamask/keyring-api';
 import { selectNonEvmNetworkConfigurationsByChainId } from '../../../../selectors/multichainNetworkController';
 ///: END:ONLY_INCLUDE_IF
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -135,7 +136,9 @@ class NetworksSettings extends PureComponent {
   };
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -151,7 +154,9 @@ class NetworksSettings extends PureComponent {
     this.updateNavBar();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   componentDidUpdate = (prevProps) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (this.props.networkConfigurations !== prevProps.networkConfigurations) {
       this.handleSearchTextChange(this.state.searchString);
     }
@@ -161,7 +166,9 @@ class NetworksSettings extends PureComponent {
 
   getOtherNetworks = () => getAllNetworks().slice(2);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onNetworkPress = (networkTypeOrRpcUrl) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     navigation.navigate(Routes.ADD_NETWORK, {
       network: networkTypeOrRpcUrl,
@@ -169,12 +176,15 @@ class NetworksSettings extends PureComponent {
   };
 
   onAddNetwork = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     navigation.navigate(Routes.ADD_NETWORK);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   showRemoveMenu = (networkTypeOrRpcUrl) => {
     this.networkToRemove = networkTypeOrRpcUrl;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.actionSheet.show();
   };
 
@@ -190,8 +200,10 @@ class NetworksSettings extends PureComponent {
 
   removeNetwork = async () => {
     // Check if it's the selected network and then switch to mainnet first
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { providerConfig } = this.props;
     if (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       compareSanitizedUrl(providerConfig.rpcUrl, this.networkToRemove) &&
       providerConfig.type === RPC
     ) {
@@ -199,10 +211,13 @@ class NetworksSettings extends PureComponent {
     }
     const { NetworkController, MultichainNetworkController } = Engine.context;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { networkConfigurations } = this.props;
     const entry = Object.entries(networkConfigurations).find(
       ([, networkConfiguration]) =>
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         networkConfiguration.rpcEndpoints.some(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           (rpcEndpoint) => rpcEndpoint.networkClientId === this.networkToRemove,
         ),
     );
@@ -223,17 +238,22 @@ class NetworksSettings extends PureComponent {
       await MultichainNetworkController.setActiveNetwork('mainnet');
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     NetworkController.removeNetwork(chainId);
     this.setState({ filteredNetworks: [] });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   createActionSheetRef = (ref) => {
     this.actionSheet = ref;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onActionSheetPress = (index) => (index === 0 ? this.removeNetwork() : null);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   networkElement(name, image, i, networkTypeOrRpcUrl, isCustomRPC, color) {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
@@ -255,6 +275,7 @@ class NetworksSettings extends PureComponent {
               <View style={styles.network}>
                 {isCustomRPC ? (
                   <AvatarNetwork
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     variant={AvatarVariant.Network}
                     name={name}
                     imageSource={image}
@@ -294,6 +315,7 @@ class NetworksSettings extends PureComponent {
 
   renderOtherNetworks() {
     return this.getOtherNetworks().map((networkType, i) => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const { name, imageSource, color } = Networks[networkType];
       return this.networkElement(
         name,
@@ -307,8 +329,10 @@ class NetworksSettings extends PureComponent {
   }
 
   renderRpcNetworks = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { networkConfigurations } = this.props;
     return Object.values(networkConfigurations).map(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       (
         { rpcEndpoints, name: nickname, chainId, defaultRpcEndpointIndex },
         i,
@@ -327,12 +351,14 @@ class NetworksSettings extends PureComponent {
         const rpcUrl = rpcEndpoints[defaultRpcEndpointIndex].networkClientId;
         const name = nickname || rpcName;
         const image = getNetworkImageSource({ chainId });
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         return this.networkElement(name, image, i, rpcUrl, true);
       },
     );
   };
 
   renderRpcNetworksView = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { networkConfigurations } = this.props;
     // Define the chainIds to exclude (Mainnet and Linea)
     const excludedChainIds = [
@@ -349,6 +375,7 @@ class NetworksSettings extends PureComponent {
         const network = networkConfigurations[key];
         // If the chainId is not in the excludedChainIds, add it to the result
         if (!excludedChainIds.includes(network.chainId)) {
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           filtered[key] = network;
         }
         return filtered;
@@ -356,6 +383,7 @@ class NetworksSettings extends PureComponent {
       {},
     );
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -365,7 +393,7 @@ class NetworksSettings extends PureComponent {
           <Text style={styles.sectionLabel}>
             {strings('app_settings.custom_network_name')}
           </Text>
-          {this.renderRpcNetworks()}
+          {this.renderRpcNetworks() as any}
         </View>
       );
     }
@@ -373,10 +401,12 @@ class NetworksSettings extends PureComponent {
 
   renderMainnet() {
     const { name: mainnetName } = Networks.mainnet;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <View style={styles.mainnetHeader}>
         <TouchableOpacity
           style={styles.network}
@@ -385,6 +415,7 @@ class NetworksSettings extends PureComponent {
         >
           <View style={styles.networkWrapper}>
             <ImageIcons image="ETHEREUM" style={styles.networkIcon} />
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <View style={styles.networkInfo}>
               <Text style={styles.networkLabel}>{mainnetName}</Text>
             </View>
@@ -402,10 +433,12 @@ class NetworksSettings extends PureComponent {
 
   renderLineaMainnet() {
     const { name: lineaMainnetName } = Networks['linea-mainnet'];
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <View style={styles.mainnetHeader}>
         <TouchableOpacity
           style={styles.network}
@@ -414,6 +447,7 @@ class NetworksSettings extends PureComponent {
         >
           <View style={styles.networkWrapper}>
             <ImageIcons image="LINEA-MAINNET" style={styles.networkIcon} />
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <View style={styles.networkInfo}>
               <Text style={styles.networkLabel}>{lineaMainnetName}</Text>
             </View>
@@ -432,13 +466,18 @@ class NetworksSettings extends PureComponent {
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   renderSolanaMainnet() {
     // TODO: [SOLANA] - Please revisit this since it's supported on a constant array in mobile and should come from multichain network controller
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { name: solanaMainnetName } = Object.values(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.nonEvmNetworkConfigurations,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     ).find((network) => network.chainId === SolScope.Mainnet);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <View style={styles.mainnetHeader}>
         <TouchableOpacity
           style={{ ...styles.network, ...styles.networkDisabled }}
@@ -448,6 +487,7 @@ class NetworksSettings extends PureComponent {
         >
           <View style={styles.networkWrapper}>
             <ImageIcons image={'SOLANA'} style={styles.networkIcon} />
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <View style={styles.networkInfo}>
               <Text style={styles.networkLabel}>{solanaMainnetName}</Text>
             </View>
@@ -463,9 +503,11 @@ class NetworksSettings extends PureComponent {
     );
   }
   ///: END:ONLY_INCLUDE_IF
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleSearchTextChange = (text) => {
     this.setState({ searchString: text });
     const defaultNetwork = getAllNetworks().map((networkType, i) => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const { color, name, chainId } = Networks[networkType];
       return {
         name,
@@ -475,16 +517,21 @@ class NetworksSettings extends PureComponent {
         chainId,
       };
     });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const customRPC = Object.values(this.props.networkConfigurations).map(
       (networkConfiguration, i) => {
         const defaultRpcEndpoint =
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           networkConfiguration.rpcEndpoints[
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             networkConfiguration.defaultRpcEndpointIndex
           ];
         const { color, name, url, chainId } = {
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           name: networkConfiguration.name || defaultRpcEndpoint.url,
           url: defaultRpcEndpoint.url,
           color: null,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           chainId: networkConfiguration.chainId,
         };
         return {
@@ -509,6 +556,7 @@ class NetworksSettings extends PureComponent {
     this.setState({ searchString: '', filteredNetworks: [] });
 
   filteredResult = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     if (this.state.filteredNetworks.length > 0) {
@@ -518,6 +566,7 @@ class NetworksSettings extends PureComponent {
         return (
           // TODO: remove this check when linea mainnet is ready
           networkTypeOrRpcUrl !== LINEA_MAINNET &&
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.networkElement(
             name,
             image || color,
@@ -536,7 +585,9 @@ class NetworksSettings extends PureComponent {
   };
 
   render() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const themeAppearance = this.context.themeAppearance;
     const styles = createStyles(colors);
 
@@ -556,6 +607,7 @@ class NetworksSettings extends PureComponent {
             testIdCloseIcon={NetworksViewSelectorsIDs.CLOSE_ICON}
           />
         }
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <ScrollView style={styles.networksWrapper}>
           {this.state.searchString.length > 0 ? (
             this.filteredResult()
@@ -582,6 +634,7 @@ class NetworksSettings extends PureComponent {
         <StyledButton
           type="confirm"
           onPress={this.onAddNetwork}
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           containerStyle={styles.syncConfirm}
           testID={ADD_NETWORK_BUTTON}
         >
@@ -606,6 +659,7 @@ class NetworksSettings extends PureComponent {
 
 NetworksSettings.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   providerConfig: selectProviderConfig(state),
   networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),

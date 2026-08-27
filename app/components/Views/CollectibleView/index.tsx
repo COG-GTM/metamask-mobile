@@ -7,10 +7,12 @@ import StyledButton from '../../UI/StyledButton';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import collectiblesTransferInformation from '../../../util/collectibles-transfer';
 import { newAssetTransaction } from '../../../actions/transaction';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     root: {
@@ -43,7 +45,9 @@ const createStyles = (colors) =>
 class CollectibleView extends PureComponent {
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation, route } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.contractName ?? '',
@@ -63,18 +67,24 @@ class CollectibleView extends PureComponent {
 
   onSend = async () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       route: { params },
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.newAssetTransaction(params);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate('SendFlowView');
   };
 
   render() {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       route: { params },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
     } = this.props;
     const collectible = params;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -86,7 +96,9 @@ class CollectibleView extends PureComponent {
 
     return (
       <SafeAreaView style={styles.root}>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <ScrollView style={styles.wrapper} ref={this.scrollViewRef}>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <View style={styles.assetOverviewWrapper}>
             <CollectibleOverview
               navigation={navigation}
@@ -100,6 +112,7 @@ class CollectibleView extends PureComponent {
               type={'confirm'}
               onPress={this.onSend}
               containerStyle={styles.button}
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               childGroupStyle={styles.flexRow}
               testID="send-button"
             >
@@ -116,7 +129,9 @@ class CollectibleView extends PureComponent {
 
 CollectibleView.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   newAssetTransaction: (selectedAsset) =>
     dispatch(newAssetTransaction(selectedAsset)),
 });

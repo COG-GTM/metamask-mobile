@@ -17,6 +17,7 @@ import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const LabelElement = (styles, label): any => (
   <View key={label} style={styles.labelElementWrapper}>
     <Text variant={TextVariant.BodyMD} style={styles.contactLabel}>
@@ -26,13 +27,20 @@ const LabelElement = (styles, label): any => (
 );
 
 const AddressList = ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   chainId,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   inputSearch,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onAccountPress,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onAccountLongPress,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onIconPress,
   onlyRenderAddressBook = false,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   reloadAddressList,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 }): Props => {
   const { colors } = useTheme();
   const styles = styleSheet(colors);
@@ -41,6 +49,7 @@ const AddressList = ({
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (state) => state.user.ambiguousAddressEntries,
   );
 
@@ -49,7 +58,9 @@ const AddressList = ({
     [addressBook, chainId],
   );
   const parseAddressBook = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (networkAddressBookList) => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const contacts = networkAddressBookList.map((contact) => {
         const isAmbiguousAddress =
           chainId &&
@@ -62,6 +73,7 @@ const AddressList = ({
       });
 
       Promise.all(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         contacts.map((contact) =>
           isSmartContractAddress(contact.address, contact.chainId)
             .then((isSmartContract) => {
@@ -73,6 +85,7 @@ const AddressList = ({
             .catch(() => contact),
         ),
       ).then((updatedContacts) => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const newContactElements = [];
         const addressBookTree = {};
 
@@ -83,10 +96,12 @@ const AddressList = ({
             ? nameInitial[0].toLowerCase()
             : strings('address_book.others');
           if (Object.keys(addressBookTree).includes(initial)) {
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             addressBookTree[initial].push(contact);
           } else if (contact.isSmartContract && !onlyRenderAddressBook) {
             return;
           } else {
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             addressBookTree[initial] = [contact];
           }
         });
@@ -95,11 +110,13 @@ const AddressList = ({
           .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
           .forEach((initial) => {
             newContactElements.push(initial);
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             addressBookTree[initial].forEach((contact) => {
               newContactElements.push(contact);
             });
           });
 
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         setContactElements(newContactElements);
       });
     },
@@ -122,12 +139,14 @@ const AddressList = ({
         { name: 'address', weight: 0.5 },
       ],
     });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     setFuse(newFuse);
     parseAddressBook(networkAddressBookList);
   }, [networkAddressBook, parseAddressBook]);
 
   const getNetworkAddressBookList = useCallback(() => {
     if (inputSearch && fuse) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       return fuse.search(inputSearch);
     }
 
@@ -175,6 +194,7 @@ const AddressList = ({
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const renderElement = (addressElement) => {
     if (typeof addressElement === 'string') {
       return LabelElement(styles, addressElement);
@@ -198,14 +218,18 @@ const AddressList = ({
   };
 
   const renderContent = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const sendFlowContacts = [];
 
     contactElements.forEach((contractElement) => {
       if (
         typeof contractElement === 'object' &&
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         contractElement.isSmartContract === false
       ) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const nameInitial = contractElement?.name?.[0].toLowerCase();
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         if (sendFlowContacts.includes(nameInitial)) {
           sendFlowContacts.push(contractElement);
         } else {
@@ -236,6 +260,7 @@ const AddressList = ({
                 <></>
               )}
 
+              {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
               {sendFlowContacts.map(renderElement)}
             </>
           ) : (

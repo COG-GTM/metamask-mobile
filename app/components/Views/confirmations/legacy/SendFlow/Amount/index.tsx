@@ -58,10 +58,12 @@ import ErrorMessage from '../ErrorMessage';
 import { getGasLimit } from '../../../../../../util/custom-gas';
 import Engine from '../../../../../../core/Engine';
 import CollectibleMedia from '../../../../../UI/CollectibleMedia';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import collectiblesTransferInformation from '../../../../../../util/collectibles-transfer';
 import { strings } from '../../../../../../../locales/i18n';
 import Device from '../../../../../../util/device';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import dismissKeyboard from 'react-native/Libraries/Utilities/dismissKeyboard';
 import NetworkMainAssetLogo from '../../../../../UI/NetworkMainAssetLogo';
 import { renderShortText } from '../../../../../../util/general';
@@ -113,6 +115,7 @@ import { MMM_ORIGIN } from '../../../constants/confirmations';
 
 const KEYBOARD_OFFSET = Device.isSmallDevice() ? 80 : 120;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -386,6 +389,7 @@ class Amount extends PureComponent {
     inputValueConversion: undefined,
     renderableInputValueConversion: undefined,
     assetsModalVisible: false,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     internalPrimaryCurrencyIsCrypto: this.props.primaryCurrency === 'ETH',
     estimatedTotalGas: undefined,
     hasExchangeRate: false,
@@ -397,9 +401,12 @@ class Amount extends PureComponent {
   collectibles = [];
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation, route, resetTransaction } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       getSendFlowTitle(
         'send.amount',
         navigation,
@@ -412,27 +419,41 @@ class Amount extends PureComponent {
 
   componentDidMount = async () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       tokens,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ticker,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: { readableValue },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAsset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isPaymentRequest,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasEstimateType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasFeeEstimates,
     } = this.props;
     // For analytics
     this.updateNavBar();
     navigation.setParams({ providerType, isPaymentRequest });
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.tokens = [getEther(ticker), ...tokens];
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.collectibles = this.processCollectibles();
     // Wait until navigation finishes to focus
     InteractionManager.runAfterInteractions(() =>
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.amountInput?.current?.focus?.(),
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.onInputChange(readableValue);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     !selectedAsset.tokenId && this.handleSelectedAssetBalance(selectedAsset);
 
     const [gas] = await Promise.all([this.estimateGasLimit()]);
@@ -449,6 +470,7 @@ class Amount extends PureComponent {
       const suggestedMaxFeePerGasHex = decGWEIToHexWEI(
         mediumGasFeeEstimates.suggestedMaxFeePerGas,
       );
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const gasLimitHex = BNToHex(gas);
       const gasHexes = calculateEIP1559GasFeeHexes({
         gasLimitHex,
@@ -474,6 +496,7 @@ class Amount extends PureComponent {
       this.state.internalPrimaryCurrencyIsCrypto;
 
     // Default to crypto if exchange rate is not available while on Fiat primary currency
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (this.props.primaryCurrency === 'Fiat' && !hasExchangeRate) {
       internalPrimaryCurrencyIsCrypto = true;
     }
@@ -490,6 +513,7 @@ class Amount extends PureComponent {
   };
 
   hasExchangeRate = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { selectedAsset, conversionRate, contractExchangeRates } = this.props;
 
     if (isNativeToken(selectedAsset)) {
@@ -508,9 +532,11 @@ class Amount extends PureComponent {
   validateCollectibleOwnership = async () => {
     const { NftController } = Engine.context;
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: {
         selectedAsset: { address, tokenId },
       },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAddress,
     } = this.props;
     try {
@@ -522,19 +548,28 @@ class Amount extends PureComponent {
 
   onNext = async () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAsset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setSelectedAsset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: { transaction },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onConfirm,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       globalNetworkClientId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isRedesignedTransferConfirmationEnabled,
     } = this.props;
     const {
       inputValue,
       inputValueConversion,
       internalPrimaryCurrencyIsCrypto,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       maxFiatInput,
     } = this.state;
 
@@ -547,6 +582,7 @@ class Amount extends PureComponent {
         value = `${renderFromWei(
           fiatNumberToWei(
             handleWeiNumber(maxFiatInput),
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             this.props.conversionRate,
           ),
           18,
@@ -554,6 +590,7 @@ class Amount extends PureComponent {
       }
     }
     if (value && value.includes(',')) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       value = inputValue.replace(',', '.');
     }
 
@@ -576,7 +613,9 @@ class Amount extends PureComponent {
 
     await this.prepareTransaction(value);
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.SEND_FLOW_ADDS_AMOUNT)
         .addProperties({ network: providerType })
@@ -614,7 +653,9 @@ class Amount extends PureComponent {
 
   getCollectibleTranferTransactionProperties() {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAsset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: { transaction, transactionTo },
     } = this.props;
 
@@ -627,6 +668,7 @@ class Amount extends PureComponent {
       (collectibleTransferInformation.tradable &&
         collectibleTransferInformation.method === 'transferFrom')
     ) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       collectibleTransferTransactionProperties.data = generateTransferData(
         'transferFrom',
         {
@@ -639,6 +681,7 @@ class Amount extends PureComponent {
       collectibleTransferInformation.tradable &&
       collectibleTransferInformation.method === 'transfer'
     ) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       collectibleTransferTransactionProperties.data = generateTransferData(
         'transfer',
         {
@@ -647,16 +690,22 @@ class Amount extends PureComponent {
         },
       );
     }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     collectibleTransferTransactionProperties.to = selectedAsset.address;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     collectibleTransferTransactionProperties.value = '0x0';
 
     return collectibleTransferTransactionProperties;
   }
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   prepareTransaction = async (value) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       prepareTransaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAsset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: { transaction, transactionTo },
     } = this.props;
 
@@ -667,8 +716,11 @@ class Amount extends PureComponent {
     } else if (selectedAsset.tokenId) {
       const collectibleTransferTransactionProperties =
         this.getCollectibleTranferTransactionProperties();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction.data = collectibleTransferTransactionProperties.data;
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction.to = collectibleTransferTransactionProperties.to;
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction.value = collectibleTransferTransactionProperties.value;
     } else {
       const tokenAmount = toTokenMinimalUnit(value, selectedAsset.decimals);
@@ -688,7 +740,9 @@ class Amount extends PureComponent {
    * @param {string} - Crypto value
    * @returns - Whether there is an error with the amount
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   validateAmount = (inputValue, internalPrimaryCurrencyIsCrypto) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { accounts, selectedAddress, selectedAsset, contractBalances } =
       this.props;
     const { estimatedTotalGas, inputValueConversion } = this.state;
@@ -715,6 +769,7 @@ class Amount extends PureComponent {
       if (!amountError) {
         if (isNativeToken(selectedAsset)) {
           weiBalance = hexToBN(accounts[selectedAddress].balance);
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           weiInput = weiValue.add(estimatedTotalGas);
         } else {
           weiBalance = hexToBN(contractBalances[selectedAsset.address]);
@@ -742,7 +797,9 @@ class Amount extends PureComponent {
     const {
       transaction: { from },
       transactionTo,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     } = this.props.transactionState;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { globalNetworkClientId } = this.props;
     const { gas } = await getGasLimit(
       {
@@ -758,11 +815,17 @@ class Amount extends PureComponent {
 
   useMax = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       accounts,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAddress,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractBalances,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAsset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       conversionRate,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractExchangeRates,
     } = this.props;
     const { internalPrimaryCurrencyIsCrypto, estimatedTotalGas } = this.state;
@@ -801,12 +864,18 @@ class Amount extends PureComponent {
     this.onInputChange(input, undefined, true);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onInputChange = (inputValue, selectedAsset, useMax) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractExchangeRates,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       conversionRate,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       currentCurrency,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ticker,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setMaxValueMode,
     } = this.props;
     const { internalPrimaryCurrencyIsCrypto } = this.state;
@@ -828,6 +897,7 @@ class Amount extends PureComponent {
     const processedInputValue = isDecimal(inputValue)
       ? handleWeiNumber(inputValue)
       : '0';
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     selectedAsset = selectedAsset || this.props.selectedAsset;
     if (isNativeToken(selectedAsset)) {
       // toWei can throw error if input is not a number: Error: while converting number to string, invalid number value
@@ -901,7 +971,9 @@ class Amount extends PureComponent {
     this.setState({ assetsModalVisible: !assetsModalVisible });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleSelectedAssetBalance = (selectedAsset, renderableBalance) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { accounts, selectedAddress, contractBalances } = this.props;
     let currentBalance;
     if (renderableBalance) {
@@ -919,23 +991,29 @@ class Amount extends PureComponent {
     this.setState({ currentBalance });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   pickSelectedAsset = (selectedAsset) => {
     this.toggleAssetsModal();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.setSelectedAsset(selectedAsset);
     if (!selectedAsset.tokenId) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.onInputChange(undefined, selectedAsset);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.handleSelectedAssetBalance(selectedAsset);
       // Wait for input to mount first
       setTimeout(
         () =>
           this.amountInput &&
           this.amountInput.current &&
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.amountInput.current.focus(),
         500,
       );
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   assetKeyExtractor = (asset) => {
     if (asset.tokenId) {
       return asset.address + asset.tokenId;
@@ -943,17 +1021,25 @@ class Amount extends PureComponent {
     return asset.address;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderToken = (token, index) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       accounts,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAddress,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       conversionRate,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       currentCurrency,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractBalances,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractExchangeRates,
     } = this.props;
     let balance, balanceFiat;
     const { address, decimals, symbol } = token;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -1008,8 +1094,10 @@ class Amount extends PureComponent {
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderCollectible = (collectible, index) => {
     const { name } = collectible;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -1024,6 +1112,7 @@ class Amount extends PureComponent {
           <CollectibleMedia
             small
             collectible={collectible}
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             iconStyle={styles.tokenImage}
             containerStyle={styles.tokenImage}
           />
@@ -1035,6 +1124,7 @@ class Amount extends PureComponent {
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderAsset = (props) => {
     const { item: asset, index } = props;
     if (!asset.tokenId) {
@@ -1044,8 +1134,11 @@ class Amount extends PureComponent {
   };
 
   processCollectibles = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { collectibleContracts } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const collectibles = [];
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const sortedCollectibles = [...this.props.collectibles].sort((a, b) => {
       if (a.address < b.address) return -1;
       if (a.address > b.address) return 1;
@@ -1058,12 +1151,14 @@ class Amount extends PureComponent {
         collectiblesTransferInformation[address].tradable;
       if (!isTradable) return;
       const collectibleContract = collectibleContracts.find(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         (contract) => contract.address.toLowerCase() === address,
       );
       if (!collectible.name) collectible.name = collectibleContract.name;
       if (!collectible.image) collectible.image = collectibleContract.logo;
       collectibles.push(collectible);
     });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     return collectibles;
   };
 
@@ -1072,6 +1167,7 @@ class Amount extends PureComponent {
     const tradableCollectibles = this.collectibles.filter(
       ({ standard }) => standard === 'ERC721',
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -1109,6 +1205,7 @@ class Amount extends PureComponent {
         internalPrimaryCurrencyIsCrypto: !internalPrimaryCurrencyIsCrypto,
       },
       () => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.onInputChange(inputValueConversion);
       },
     );
@@ -1121,18 +1218,28 @@ class Amount extends PureComponent {
       amountError,
       hasExchangeRate,
       internalPrimaryCurrencyIsCrypto,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       currentBalance,
     } = this.state;
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       currentCurrency,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAsset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isNetworkBuyNativeTokenSupported,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       swapsIsLive,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       globalChainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ticker,
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
     const navigateToSwap = () => {
@@ -1155,7 +1262,9 @@ class Amount extends PureComponent {
 
     const navigateToBuyOrSwaps = () => {
       if (isSwappable) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics.trackEvent(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.metrics
             .createEventBuilder(MetaMetricsEvents.LINK_CLICKED)
             .addProperties({
@@ -1169,7 +1278,9 @@ class Amount extends PureComponent {
         isNetworkBuyNativeTokenSupported &&
         isNativeToken(selectedAsset)
       ) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics.trackEvent(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.metrics
             .createEventBuilder(MetaMetricsEvents.LINK_CLICKED)
             .addProperties({
@@ -1191,6 +1302,7 @@ class Amount extends PureComponent {
                 currentCurrency,
               )} `}</Text>
             )}
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <TextInput
               ref={this.amountInput}
               style={styles.textInput}
@@ -1221,6 +1333,7 @@ class Amount extends PureComponent {
                 >
                   {renderableInputValueConversion}
                 </Text>
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 <View styles={styles.switchWrapper}>
                   <MaterialCommunityIcons
                     name="swap-vertical"
@@ -1278,7 +1391,9 @@ class Amount extends PureComponent {
 
   renderCollectibleInput = () => {
     const { amountError } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { selectedAsset } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -1287,6 +1402,7 @@ class Amount extends PureComponent {
         <View style={styles.collectibleInputImageWrapper}>
           <CollectibleMedia
             small
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             containerStyle={styles.CollectibleMedia}
             iconStyle={styles.CollectibleMedia}
             collectible={selectedAsset}
@@ -1318,9 +1434,12 @@ class Amount extends PureComponent {
       isRedesignedTransferTransactionLoading,
     } = this.state;
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAsset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: { isPaymentRequest },
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -1347,6 +1466,7 @@ class Amount extends PureComponent {
               {() => (
                 <View style={styles.warningTextContainer}>
                   <Text
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     red
                     style={styles.warningText}
                     testID={AmountViewSelectorsIDs.FIAT_CONVERSION_WARNING_TEXT}
@@ -1369,6 +1489,7 @@ class Amount extends PureComponent {
                   <Text style={styles.textDropdown}>
                     {selectedAsset.symbol || strings('wallet.collectible')}
                   </Text>
+                  {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                   <View styles={styles.arrow}>
                     <Ionicons
                       name="arrow-down"
@@ -1427,6 +1548,7 @@ class Amount extends PureComponent {
 
 Amount.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state, ownProps) => {
   const transaction = ownProps.transaction || state.transaction;
   const globalChainId = selectEvmChainId(state);
@@ -1465,18 +1587,23 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   prepareTransaction: (transaction) =>
     dispatch(prepareTransaction(transaction)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setSelectedAsset: (selectedAsset) =>
     dispatch(setSelectedAsset(selectedAsset)),
   resetTransaction: () => dispatch(resetTransaction()),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setMaxValueMode: (maxValueMode) => dispatch(setMaxValueMode(maxValueMode)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(Amount));
 
 interface AmountProps {

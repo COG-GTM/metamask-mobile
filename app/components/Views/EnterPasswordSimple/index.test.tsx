@@ -33,6 +33,7 @@ describe('EnterPasswordSimple', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <NavigationContainer>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <EnterPasswordSimple navigation={mockNavigation} />
         </NavigationContainer>
       </ThemeContext.Provider>,

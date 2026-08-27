@@ -36,6 +36,7 @@ import { getOnboardingNavbarOptions } from '../../UI/Navbar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AppConstants from '../../../core/AppConstants';
 import OnboardingProgress from '../../UI/OnboardingProgress';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import zxcvbn from 'zxcvbn';
 import Logger from '../../../util/Logger';
 import { ONBOARDING, PREVIOUS_SCREEN } from '../../../constants/navigation';
@@ -63,6 +64,7 @@ import navigateTermsOfUse from '../../../util/termsOfUse/termsOfUse';
 import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ChoosePassword.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     mainWrapper: {
@@ -226,6 +228,7 @@ class ChoosePassword extends PureComponent {
   // Flag to know if password in keyring was set or not
   keyringControllerPasswordSet = false;
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   track = (event, properties) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
@@ -233,13 +236,17 @@ class ChoosePassword extends PureComponent {
   };
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { route, navigation } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
   };
 
   termsOfUse = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (this.props.navigation) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       await navigateTermsOfUse(this.props.navigation.navigate);
     }
   };
@@ -274,10 +281,12 @@ class ChoosePassword extends PureComponent {
     this.termsOfUse();
   }
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   componentDidUpdate(prevProps, prevState) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
     const { loading } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     if (!prevLoading && loading) {
       // update navigationOptions
@@ -310,10 +319,12 @@ class ChoosePassword extends PureComponent {
       Alert.alert('Error', strings('choose_password.password_dont_match'));
       return;
     }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.track(MetaMetricsEvents.WALLET_CREATION_ATTEMPTED);
 
     try {
       this.setState({ loading: true });
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const previous_screen = this.props.route.params?.[PREVIOUS_SCREEN];
 
       const authType = await Authentication.componentAuthenticationType(
@@ -325,17 +336,22 @@ class ChoosePassword extends PureComponent {
         try {
           await Authentication.newWalletAndKeychain(password, authType);
         } catch (error) {
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           if (Device.isIos) await this.handleRejectedOsBiometricPrompt();
         }
         this.keyringControllerPasswordSet = true;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.seedphraseNotBackedUp();
       } else {
         await this.recreateVault(password, authType);
       }
 
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.passwordSet();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT);
       this.setState({ loading: false });
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.replace('AccountBackupStep1');
       this.track(MetaMetricsEvents.WALLET_CREATED, {
         biometrics_enabled: Boolean(this.state.biometryType),
@@ -346,16 +362,21 @@ class ChoosePassword extends PureComponent {
       });
     } catch (error) {
       try {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         await this.recreateVault('');
       } catch (e) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         Logger.error(e);
       }
       // Set state in app as it was with no password
       await StorageWrapper.setItem(EXISTING_USER, TRUE);
       await StorageWrapper.removeItem(SEED_PHRASE_HINTS);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.passwordUnset();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.setLockTime(-1);
       // Should we force people to enable passcode / biometrics?
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (error.toString() === PASSCODE_NOT_SET_ERROR) {
         Alert.alert(
           strings('choose_password.security_alert_title'),
@@ -363,10 +384,12 @@ class ChoosePassword extends PureComponent {
         );
         this.setState({ loading: false });
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.setState({ loading: false, error: error.toString() });
       }
       this.track(MetaMetricsEvents.WALLET_SETUP_FAILURE, {
         wallet_setup_type: 'new',
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         error_type: error.toString(),
       });
     }
@@ -400,9 +423,11 @@ class ChoosePassword extends PureComponent {
    *
    * @param password - Password to recreate and set the vault with
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   recreateVault = async (password, authType) => {
     const { KeyringController } = Engine.context;
     const seedPhrase = await this.getSeedPhrase();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     let importedAccounts = [];
     try {
       const keychainPassword = this.keyringControllerPasswordSet
@@ -419,10 +444,12 @@ class ChoosePassword extends PureComponent {
             KeyringController.exportAccount(keychainPassword, account),
           ),
         );
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         importedAccounts = [...importedAccounts, ...simpleKeyringAccounts];
       }
     } catch (e) {
       Logger.error(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         e,
         'error while trying to get imported accounts on recreate vault',
       );
@@ -432,6 +459,7 @@ class ChoosePassword extends PureComponent {
     await Authentication.newWalletAndRestore(
       password,
       authType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       seedPhrase,
       true,
     );
@@ -450,12 +478,15 @@ class ChoosePassword extends PureComponent {
     try {
       // Import imported accounts again
       for (let i = 0; i < importedAccounts.length; i++) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         await KeyringController.importAccountWithStrategy('privateKey', [
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           importedAccounts[i],
         ]);
       }
     } catch (e) {
       Logger.error(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         e,
         'error while trying to import accounts on recreate vault',
       );
@@ -476,9 +507,11 @@ class ChoosePassword extends PureComponent {
 
   jumpToConfirmPassword = () => {
     const { current } = this.confirmPasswordInput;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     current && current.focus();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateBiometryChoice = async (biometryChoice) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     this.setState({ biometryChoice });
@@ -486,6 +519,7 @@ class ChoosePassword extends PureComponent {
 
   renderSwitch = () => {
     const { biometryType, biometryChoice } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const handleUpdateRememberMe = (rememberMe) => {
       this.setState({ rememberMe });
     };
@@ -499,6 +533,7 @@ class ChoosePassword extends PureComponent {
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onPasswordChange = (val) => {
     const passInfo = zxcvbn(val);
 
@@ -506,10 +541,12 @@ class ChoosePassword extends PureComponent {
   };
 
   toggleShowHide = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.setState((state) => ({ secureTextEntry: !state.secureTextEntry }));
   };
 
   learnMore = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.push('Webview', {
       screen: 'SimpleWebview',
       params: {
@@ -519,6 +556,7 @@ class ChoosePassword extends PureComponent {
     });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setConfirmPassword = (val) => this.setState({ confirmPassword: val });
 
   render() {
@@ -526,6 +564,7 @@ class ChoosePassword extends PureComponent {
       isSelected,
       inputWidth,
       password,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       passwordStrength,
       confirmPassword,
       secureTextEntry,
@@ -534,9 +573,12 @@ class ChoosePassword extends PureComponent {
     } = this.state;
     const passwordsMatch = password !== '' && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const previousScreen = this.props.route.params?.[PREVIOUS_SCREEN];
     const passwordStrengthWord = getPasswordStrengthWord(passwordStrength);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
 
@@ -568,6 +610,7 @@ class ChoosePassword extends PureComponent {
           </View>
         ) : (
           <View style={styles.wrapper}>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <OnboardingProgress steps={CHOOSE_PASSWORD_STEPS} />
             <KeyboardAwareScrollView
               style={styles.scrollableWrapper}
@@ -602,6 +645,7 @@ class ChoosePassword extends PureComponent {
                     )}
                   </Text>
                   <TextInput
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     style={[styles.input, inputWidth]}
                     value={password}
                     onChangeText={this.onPasswordChange}
@@ -631,6 +675,7 @@ class ChoosePassword extends PureComponent {
                       </Text>
                     </Text>
                   )) || (
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     <Text
                       variant={TextVariant.BodySM}
                       style={styles.passwordStrengthLabel}
@@ -641,6 +686,7 @@ class ChoosePassword extends PureComponent {
                   <Text variant={TextVariant.BodySM}>
                     {strings('choose_password.confirm_password')}
                   </Text>
+                  {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                   <TextInput
                     ref={this.confirmPasswordInput}
                     style={[styles.input, inputWidth]}
@@ -739,9 +785,11 @@ class ChoosePassword extends PureComponent {
 
 ChoosePassword.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
   passwordSet: () => dispatch(passwordSet()),
   passwordUnset: () => dispatch(passwordUnset()),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setLockTime: (time) => dispatch(setLockTime(time)),
   seedphraseNotBackedUp: () => dispatch(seedphraseNotBackedUp()),
 });

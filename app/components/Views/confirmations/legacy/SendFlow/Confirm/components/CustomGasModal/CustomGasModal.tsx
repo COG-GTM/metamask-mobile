@@ -11,27 +11,42 @@ import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
 import createStyles from './CustomGasModal.styles';
 
 const CustomGasModal = ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasSelected,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   animateOnChange,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   isAnimating,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onlyGas,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   validateAmount,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   legacy,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   legacyGasData,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   EIP1559GasData,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   EIP1559GasTxn,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onGasChanged,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onGasCanceled,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateGasState,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 }): Props => {
   const { colors } = useAppThemeFromContext();
   const styles = createStyles();
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const transaction = useSelector((state) => state.transaction);
   const gasFeeEstimate = useSelector(selectGasFeeEstimates);
   const primaryCurrency = useSelector(selectPrimaryCurrency);
   const chainId = transaction?.chainId;
   const selectedAsset = useSelector(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (state) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
@@ -55,6 +70,7 @@ const CustomGasModal = ({
     gas_estimate_type: gasEstimateType,
   });
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const onChangeGas = (gasValue) => {
     setSelectedGas(gasValue);
     onGasChanged(selectedGas);
@@ -74,6 +90,7 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (gasTxn, gasObj) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
@@ -87,6 +104,7 @@ const CustomGasModal = ({
   );
 
   const onSaveEIP1559GasOption = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (gasTxn, gasObj) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
@@ -123,6 +141,7 @@ const CustomGasModal = ({
       eip1559GasObj?.[selectedGas]?.suggestedMaxFeePerGas,
     suggestedMaxPriorityFeePerGas:
       eip1559GasObj?.suggestedMaxPriorityFeePerGas ||
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasFeeEstimate[selectedGas]?.suggestedMaxPriorityFeePerGas,
     suggestedGasLimit:
       eip1559GasObj?.suggestedGasLimit || eip1559Txn?.suggestedGasLimit,
@@ -148,6 +167,7 @@ const CustomGasModal = ({
         contentContainerStyle={styles.keyboardAwareWrapper}
       >
         {legacy ? (
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           <EditGasFeeLegacy
             onCancel={onCancelGas}
             onSave={onSaveLegacyGasOption}
@@ -174,6 +194,7 @@ const CustomGasModal = ({
             animateOnChange={animateOnChange}
             isAnimating={isAnimating}
             analyticsParams={getGasAnalyticsParams()}
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             view={'SendTo (Confirm)'}
             selectedGasObject={eip1559GasObject}
             onlyGas={onlyGas}

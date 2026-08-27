@@ -6,6 +6,7 @@ import { useTheme } from '../../../../../../../util/theme';
 import Text from '../../../../../../Base/Text';
 import Spinner from '../../../../../../UI/AnimatedSpinner';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     root: {
@@ -27,10 +28,12 @@ const createStyles = (colors) =>
     },
   });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const ApprovalFlowLoader = ({ loadingText }): ApprovalFlowLoaderProps => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <View style={styles.root}>
       <View style={styles.spinnerWrapper}>

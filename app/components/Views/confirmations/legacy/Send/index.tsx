@@ -76,6 +76,7 @@ const REVIEW = 'review';
 const EDIT = 'edit';
 const SEND = 'Send';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -110,11 +111,14 @@ class Send extends PureComponent {
    * Resets gas and gasPrice of transaction
    */
   async reset() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { globalNetworkClientId, transaction } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { gas, gasPrice } = await estimateGas(
       transaction,
       globalNetworkClientId,
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.setTransactionObject({
       gas: hexToBN(gas),
       gasPrice: hexToBN(gasPrice),
@@ -126,6 +130,7 @@ class Send extends PureComponent {
    * Transaction state is erased, ready to create a new clean transaction
    */
   clear = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.resetTransaction();
   };
 
@@ -133,6 +138,7 @@ class Send extends PureComponent {
    * Check if view is called with txMeta object for a deeplink
    */
   async checkForDeeplinks() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { route } = this.props;
     const txMeta = route.params?.txMeta;
     if (txMeta) {
@@ -143,7 +149,9 @@ class Send extends PureComponent {
   }
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation, route } = this.props;
     navigation.setOptions(
       getTransactionOptionsTitle('send.confirm', navigation, route, colors),
@@ -155,10 +163,15 @@ class Send extends PureComponent {
    */
   async componentDidMount() {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { assetType, selectedAsset },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractBalances,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       dappTransactionModalVisible,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       toggleDappTransactionModal,
     } = this.props;
     this.updateNavBar();
@@ -181,6 +194,7 @@ class Send extends PureComponent {
    */
   async componentWillUnmount() {
     const { transactionSubmitted } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction } = this.state;
     if (!transactionSubmitted && !this.unmountHandled) {
       transaction && (await this.onCancel(transaction.id));
@@ -189,12 +203,17 @@ class Send extends PureComponent {
     this.mounted = false;
   }
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   componentDidUpdate(prevProps) {
     const prevRoute = prevProps.route;
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       route,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { assetType, selectedAsset },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractBalances,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
     } = this.props;
     this.updateNavBar();
@@ -227,7 +246,9 @@ class Send extends PureComponent {
   /**
    * Handle deeplink txMeta recipient
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleNewTxMetaRecipient = async (recipient) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const to = await getAddress(recipient, this.props.globalChainId);
 
     if (!to) {
@@ -237,6 +258,7 @@ class Send extends PureComponent {
         title: strings('transaction.invalid_recipient'),
         description: strings('transaction.invalid_recipient_description'),
       });
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.navigate('WalletView');
     }
     return { to };
@@ -245,7 +267,9 @@ class Send extends PureComponent {
   /**
    * Handle txMeta object, setting neccesary state to make a transaction
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleNewTxMeta = async ({ target_address, action, parameters = null }) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { addressBook, globalChainId, internalAccounts, selectedAddress } =
       this.props;
 
@@ -263,31 +287,43 @@ class Send extends PureComponent {
           ...txRecipient,
         };
 
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         if (parameters && parameters.value) {
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           newTxMeta.value = BNToHex(toBN(parameters.value));
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           newTxMeta.transactionValue = newTxMeta.value;
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           newTxMeta.readableValue = fromWei(newTxMeta.value);
         }
 
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         newTxMeta.transactionToName = getTransactionToName({
           addressBook,
           chainId: globalChainId,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           toAddress: newTxMeta.to,
           internalAccounts,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           ensRecipient: newTxMeta.ensRecipient,
         });
 
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         newTxMeta.transactionTo = newTxMeta.to;
         break;
       case 'send-token': {
         const selectedAsset = await this.handleTokenDeeplink(target_address);
 
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const { ensRecipient, to } = await this.handleNewTxMetaRecipient(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           parameters.address,
         );
         if (!to) return;
         const tokenAmount =
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           (parameters.uint256 &&
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             new BigNumber(parameters.uint256).toString(16)) ||
           '0';
         newTxMeta = {
@@ -304,10 +340,12 @@ class Send extends PureComponent {
           value: '0x0',
           readableValue:
             fromTokenMinimalUnit(
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               parameters.uint256 || '0',
               selectedAsset.decimals,
             ) || '0',
         };
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         newTxMeta.transactionToName = getTransactionToName({
           addressBook,
           chainId: globalChainId,
@@ -322,16 +360,21 @@ class Send extends PureComponent {
     if (parameters) {
       const { gas, gasPrice } = parameters;
       if (gas) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         newTxMeta.gas = toBN(gas);
       }
       if (gasPrice) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         newTxMeta.gasPrice = toBN(gas);
       }
 
       // if gas and gasPrice is not defined in the deeplink, we should define them
       if (!gas && !gasPrice) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const { gas, gasPrice } = await estimateGas(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.transaction,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.globalNetworkClientId,
         );
         newTxMeta = {
@@ -344,15 +387,21 @@ class Send extends PureComponent {
       // or calling smart contract functions
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (!newTxMeta.value) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       newTxMeta.value = toBN(0);
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     newTxMeta.from = selectedAddress;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const fromAccount = internalAccounts.find((account) =>
       toLowerCaseEquals(account.address, selectedAddress),
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     newTxMeta.transactionFromName = fromAccount.metadata.name;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.setTransactionObject(newTxMeta);
     this.mounted && this.setState({ ready: true, transactionKey: Date.now() });
   };
@@ -364,7 +413,9 @@ class Send extends PureComponent {
    *
    * @returns ERC20 asset, containing address, symbol and decimals
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleTokenDeeplink = async (address) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { tokens, tokenList } = this.props;
     address = toChecksumAddress(address);
     // First check if we have token information in token list
@@ -372,6 +423,7 @@ class Send extends PureComponent {
       return tokenList[address];
     }
     // Then check if the token is already in state
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const stateToken = tokens.find((token) => token.address === address);
     if (stateToken) {
       return stateToken;
@@ -383,22 +435,27 @@ class Send extends PureComponent {
       const decimals = await AssetsContractController.getERC20TokenDecimals(
         address,
       );
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       token.decimals = parseInt(String(decimals));
     } catch (e) {
       // Drop tx since we don't have any form to get decimals and send the correct tx
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.showAlert({
         isVisible: true,
         autodismiss: 2000,
         content: 'clipboard-alert',
         data: { msg: strings(`send.deeplink_failure`) },
       });
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.onCancel();
     }
     try {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       token.symbol = await AssetsContractController.getERC721AssetSymbol(
         address,
       );
     } catch (e) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       token.symbol = 'ERC20';
     }
     return token;
@@ -409,6 +466,7 @@ class Send extends PureComponent {
    *
    * @param {object} transaction - Transaction object
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   prepareTransaction = (transaction) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
@@ -423,6 +481,7 @@ class Send extends PureComponent {
    * @param {object} transaction - Transaction object
    * @param {object} selectedAsset - Asset object
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   prepareAssetTransaction = (transaction, selectedAsset) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
@@ -436,6 +495,7 @@ class Send extends PureComponent {
    *
    * @param transaction - Transaction object
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   sanitizeTransaction = (transaction) => ({
     ...transaction,
     gas: BNToHex(transaction.gas),
@@ -446,6 +506,7 @@ class Send extends PureComponent {
    * Removes collectible in case an ERC721 asset is being sent, when not in mainnet
    */
   removeNft = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { selectedAsset, assetType, providerType } = this.props.transaction;
     if (assetType === 'ERC721' && providerType !== MAINNET) {
       const { NftController } = Engine.context;
@@ -458,11 +519,13 @@ class Send extends PureComponent {
    *
    * @param if - Transaction id
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onCancel = (id) => {
     Engine.context.ApprovalController.reject(
       id,
       providerErrors.userRejectedRequest(),
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.pop();
     this.unmountHandled = true;
     this.state.mode === REVIEW && this.trackOnCancel();
@@ -479,11 +542,16 @@ class Send extends PureComponent {
       Engine.context;
     this.setState({ transactionConfirmed: true });
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { selectedAsset, assetType },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       globalChainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       globalNetworkClientId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       addressBook,
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     let { transaction } = this.props;
     try {
       if (assetType === 'ETH') {
@@ -505,23 +573,27 @@ class Send extends PureComponent {
       let checksummedAddress = null;
 
       if (assetType === 'ETH') {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         checksummedAddress = toChecksumAddress(transactionMeta.transaction.to);
       } else if (assetType === 'ERC20') {
         try {
           const [addressTo] = decodeTransferData(
             'transfer',
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             transactionMeta.transaction.data,
           );
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);
           }
         } catch (e) {
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           Logger.log('Error decoding transfer data', transactionMeta.data);
         }
       } else if (assetType === 'ERC721') {
         try {
           const data = decodeTransferData(
             'transferFrom',
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             transactionMeta.transaction.data,
           );
           const addressTo = data[1];
@@ -529,6 +601,7 @@ class Send extends PureComponent {
             checksummedAddress = toChecksumAddress(addressTo);
           }
         } catch (e) {
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           Logger.log('Error decoding transfer data', transactionMeta.data);
         }
       }
@@ -536,6 +609,7 @@ class Send extends PureComponent {
         addressBook[globalChainId] &&
         addressBook[globalChainId][checksummedAddress];
       if (!existingContact) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         AddressBookController.set(checksummedAddress, '', globalChainId);
       }
       await new Promise((resolve) => {
@@ -548,6 +622,7 @@ class Send extends PureComponent {
         transactionConfirmed: false,
         transactionSubmitted: true,
       });
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.pop();
       InteractionManager.runAfterInteractions(() => {
         NotificationManager.watchSubmittedTransaction({
@@ -558,17 +633,23 @@ class Send extends PureComponent {
       });
     } catch (error) {
       if (
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         !error?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           error && error.message,
           [{ text: strings('navigation.ok') }],
         );
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         Logger.error(error, 'error while trying to send transaction (Send)');
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics.trackEvent(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.metrics
             .createEventBuilder(
               MetaMetricsEvents.QR_HARDWARE_TRANSACTION_CANCELED,
@@ -588,7 +669,9 @@ class Send extends PureComponent {
    * Call Analytics to track confirm started event for send screen
    */
   trackConfirmScreen = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_STARTED)
         .addProperties(this.getTrackingParams())
@@ -600,9 +683,13 @@ class Send extends PureComponent {
    * Call Analytics to track confirm started event for send screen
    */
   trackEditScreen = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const actionKey = await getTransactionReviewActionKey({ transaction });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)
         .addProperties({
@@ -617,7 +704,9 @@ class Send extends PureComponent {
    * Call Analytics to track cancel pressed
    */
   trackOnCancel = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CANCEL_TRANSACTION)
         .addProperties(this.getTrackingParams())
@@ -629,7 +718,9 @@ class Send extends PureComponent {
    * Call Analytics to track confirm pressed
    */
   trackOnConfirm = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(
           MetaMetricsEvents.TRANSACTIONS_COMPLETED_TRANSACTION,
@@ -646,9 +737,13 @@ class Send extends PureComponent {
    */
   getTrackingParams = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       networkType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { selectedAsset, assetType },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       shouldUseSmartTransaction,
     } = this.props;
 
@@ -671,7 +766,9 @@ class Send extends PureComponent {
    *
    * @param mode - Transaction mode, review or edit
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onModeChange = (mode) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     navigation && navigation.setParams({ mode });
     this.mounted && this.setState({ mode });
@@ -684,6 +781,7 @@ class Send extends PureComponent {
   changeToReviewMode = () => this.onModeChange(REVIEW);
 
   getStyles = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     return createStyles(colors);
   };
@@ -701,7 +799,9 @@ class Send extends PureComponent {
     if (this.state.mode === EDIT) {
       return (
         <EditAmount
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           transaction={this.props.transaction}
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           navigation={this.props.navigation}
           onConfirm={this.changeToReviewMode}
         />
@@ -709,7 +809,9 @@ class Send extends PureComponent {
     } else if (this.state.mode === REVIEW) {
       return (
         <ConfirmSend
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           transaction={this.props.transaction}
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           navigation={this.props.navigation}
         />
       );
@@ -726,6 +828,7 @@ class Send extends PureComponent {
   };
 }
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => {
   const globalChainId = selectEvmChainId(state);
 
@@ -749,10 +852,13 @@ const mapStateToProps = (state) => {
   };
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
   resetTransaction: () => dispatch(resetTransaction()),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setTransactionObject: (transaction) =>
     dispatch(setTransactionObject(transaction)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   showAlert: (config) => dispatch(showAlert(config)),
   toggleDappTransactionModal: () => dispatch(toggleDappTransactionModal()),
 });
@@ -762,6 +868,7 @@ Send.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(Send));
 
 interface SendProps {

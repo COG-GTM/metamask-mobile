@@ -1,3 +1,4 @@
+import React from 'react';
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { cloneDeep } from 'lodash';
 import ApproveTransactionModal from '.';
@@ -106,6 +107,7 @@ const initialState = {
 describe('ApproveTransactionModal', () => {
   it('render matches snapshot', () => {
     const { toJSON } = renderScreen(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ApproveTransactionModal,
       { name: 'Approve' },
       { state: initialState },
@@ -115,15 +117,18 @@ describe('ApproveTransactionModal', () => {
 
   it('Approve button is enabled when standard is defined', async () => {
     const mockGetTokenDetails = getTokenDetails;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     mockGetTokenDetails.mockReturnValue({
       standard: 'ERC20',
     });
     const state = cloneDeep(initialState);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     state.engine.backgroundState.AccountTrackerController.accounts = [];
     state.engine.backgroundState.TokenListController = {
       tokensChainsCache: {
         '0x1': {
           data: [{
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f': {
               address: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
               symbol: 'SNX',
@@ -161,9 +166,11 @@ describe('ApproveTransactionModal', () => {
     const { getByTestId } = renderScreen(
       () => (
         // eslint-disable-next-line react/react-in-jsx-scope
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         <ApproveTransactionModal onConfirm={mockOnConfirm} />
       ),
       { name: 'Approve' },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       { state },
     );
 
@@ -179,13 +186,16 @@ describe('ApproveTransactionModal', () => {
 
   it('Approve button is disabled when standard is undefined', async () => {
     const mockGetTokenDetails = getTokenDetails;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     mockGetTokenDetails.mockReturnValue({});
     const state = cloneDeep(initialState);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     state.engine.backgroundState.AccountTrackerController.accounts = [];
     state.engine.backgroundState.TokenListController = {
       tokensChainsCache: {
         '0x1': {
           data: [{
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f': {
               address: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
               symbol: 'SNX',
@@ -222,9 +232,11 @@ describe('ApproveTransactionModal', () => {
     const { getByTestId } = renderScreen(
       () => (
         // eslint-disable-next-line react/react-in-jsx-scope
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         <ApproveTransactionModal onConfirm={mockOnConfirm} />
       ),
       { name: 'Approve' },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       { state },
     );
 

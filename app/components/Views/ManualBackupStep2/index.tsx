@@ -24,6 +24,7 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBackupStep2Props => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -41,7 +42,9 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
 
   const createWordsDictionary = () => {
     const dict = {};
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     words.forEach((word, i) => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       dict[`${word},${i}`] = { currentPosition: undefined };
     });
     setWordsDict(dict);
@@ -54,6 +57,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
   useEffect(() => {
     const wordsFromRoute = route.params?.words ?? [];
     setConfirmedWords(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       new Array(wordsFromRoute.length).fill({
         word: undefined,
         originalPosition: undefined,
@@ -73,19 +77,26 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
   );
 
   const selectWord = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (word, i) => {
       let tempCurrentIndex = currentIndex;
       const tempWordsDict = wordsDict;
       const tempConfirmedWords = confirmedWords;
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (wordsDict[`${word},${i}`].currentPosition !== undefined) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tempCurrentIndex = wordsDict[`${word},${i}`].currentPosition;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tempWordsDict[`${word},${i}`].currentPosition = undefined;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tempConfirmedWords[currentIndex] = {
           word: undefined,
           originalPosition: undefined,
         };
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tempWordsDict[`${word},${i}`].currentPosition = currentIndex;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tempConfirmedWords[currentIndex] = { word, originalPosition: i };
         tempCurrentIndex = findNextAvailableIndex();
       }
@@ -98,11 +109,14 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
     [confirmedWords, currentIndex, findNextAvailableIndex, wordsDict],
   );
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const clearConfirmedWordAt = (i) => {
     const { word, originalPosition } = confirmedWords[i];
     const currentIndex = i;
     if (word && (originalPosition || originalPosition === 0)) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       wordsDict[[word, originalPosition]].currentPosition = undefined;
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       confirmedWords[i] = { word: undefined, originalPosition: undefined };
     }
 
@@ -115,6 +129,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
   const validateWords = useCallback(() => {
     const validWords = route.params?.words ?? [];
     const proposedWords = confirmedWords.map(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       (confirmedWord) => confirmedWord.word,
     );
 
@@ -161,6 +176,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const renderWordBox = (word, i) => {
     const styles = createStyles(colors);
 
@@ -175,6 +191,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
           style={[
             styles.wordWrapper,
             i === currentIndex && styles.currentWord,
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             confirmedWords[i].word && styles.confirmedWord,
           ]}
         >
@@ -185,8 +202,10 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
   };
 
   const renderWordSelectableBox = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (key, i) => {
       const [word] = key.split(',');
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const selected = wordsDict[key].currentPosition !== undefined;
       const styles = createStyles(colors);
 
@@ -222,6 +241,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
     [renderWordSelectableBox, styles.words, wordsDict],
   );
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <SafeAreaView style={styles.mainWrapper}>
       <View style={styles.onBoardingWrapper}>
@@ -278,10 +298,12 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }): ManualBac
   );
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
   seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(null, mapDispatchToProps)(ManualBackupStep2);
 
 interface ManualBackupStep2Props {

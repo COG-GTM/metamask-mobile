@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-shadow, @typescript-eslint/prefer-optional-chain, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/prefer-for-of, import/no-namespace, import/no-named-as-default-member, react/no-unstable-nested-components */
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import Eth from '@metamask/ethjs-query';
 import { withNavigation } from '@react-navigation/compat';
 import React, { PureComponent } from 'react';
@@ -62,8 +63,10 @@ import { selectContractExchangeRatesByChainId } from '../../../../../../selector
 import SmartTransactionsMigrationBanner from '../SmartTransactionsMigrationBanner/SmartTransactionsMigrationBanner';
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 let intervalIdForEstimatedL1Fee;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     tabUnderlineStyle: {
@@ -149,6 +152,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
         txParams: transaction.transaction,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         chainId,
         networkClientId,
       });
@@ -156,6 +160,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
         multiLayerL1FeeTotal: result,
       });
     } catch (e) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
         multiLayerL1FeeTotal: '0x0',
@@ -166,6 +171,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
   componentDidMount = async () => {
     const {
       transaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { data, to, value },
       transactionMetadata,
       tokens,
@@ -190,8 +196,10 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
     );
 
     if (approveTransaction) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       let contract = tokenList[safeToChecksumAddress(to)];
       if (!contract) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         contract = tokens.find(
           ({ address }) => address === safeToChecksumAddress(to),
         );
@@ -211,7 +219,9 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
       approveTransaction,
     });
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_STARTED)
         .addProperties({
@@ -232,11 +242,14 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
   onContactUsClicked = () => {
     const { securityAlertResponse, metrics } = this.props;
     const additionalParams = {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ...getBlockaidMetricsParams(securityAlertResponse),
       external_link_clicked: 'security_alert_support_link',
     };
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_STARTED)
         .addProperties(additionalParams)
@@ -245,11 +258,13 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
   };
 
   componentWillUnmount = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     clearInterval(intervalIdForEstimatedL1Fee);
   };
 
   getRenderValues = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
       contractExchangeRates,
@@ -286,12 +301,15 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
       },
       default: () => [undefined, undefined, undefined],
     };
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     return values[assetType] || values.default;
   };
 
   edit = () => {
     const { onModeChange, metrics } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)
         .build(),
@@ -300,6 +318,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
   };
 
   getStyles = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     return createStyles(colors);
   };
@@ -307,6 +326,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
   toggleDataView = () => {
     const { animate } = this.props;
     if (this.state.dataVisible) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       animate({
         modalEndValue: 1,
         xTranslationName: 'reviewToData',
@@ -315,6 +335,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
       this.setState({ dataVisible: false });
       return;
     }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     animate({
       modalEndValue: 0,
       xTranslationName: 'reviewToData',
@@ -326,7 +347,9 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
   getUrlFromBrowser() {
     const { browser } = this.props;
     let url;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     browser.tabs.forEach((tab) => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (tab.id === browser.activeTab) {
         url = tab.url;
       }
@@ -370,6 +393,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
       gasSelected,
       chainId,
       transaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { to, origin, from, ensRecipient, id: transactionId },
       error,
       transactionMetadata,
@@ -384,9 +408,11 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
       assetAmount,
       conversionRate,
       fiatValue,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       approveTransaction,
       multiLayerL1FeeTotal,
     } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { origin: channelIdOrHostname } = transaction;
     DevLogger.log(
       `TransactionReview render channelIdOrHostname=${channelIdOrHostname}`,
@@ -398,8 +424,10 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
 
     let url = '';
     if (currentConnection) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       url = currentConnection.originatorInfo.url;
     } else {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       url = this.getUrlFromBrowser();
     }
 
@@ -414,6 +442,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
     return (
       <>
         <Animated.View
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           style={generateTransform('reviewToData', [
             0,
             -Device.getDeviceWidth(),
@@ -441,6 +470,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
                       currentEnsName={ensRecipient}
                       from={from}
                       origin={origin}
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       sdkDappMetadata={sdkDappMetadata}
                       url={url}
                     />
@@ -456,14 +486,17 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
                       </View>
                     )}
                     {to && (
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       <View style={styles.accountWrapper}>
                         <AccountFromToInfoCard
+                          // @ts-expect-error -- legacy JavaScript UI type boundary
                           transactionState={transaction}
                           layout="vertical"
                         />
                       </View>
                     )}
                     <TransactionReviewSummary
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       actionKey={actionKey}
                       assetAmount={assetAmount}
                       conversionRate={conversionRate}
@@ -477,6 +510,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
                       transactionMetadata && (
                         <View style={styles.transactionSimulations}>
                           <SimulationDetails
+                            // @ts-expect-error -- legacy JavaScript UI type boundary
                             transaction={transactionMetadata}
                             enableMetrics
                           />
@@ -514,11 +548,13 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
         <Animated.View
           style={[
             styles.transactionData,
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             generateTransform('reviewToData', [Device.getDeviceWidth(), 0]),
             hideData && styles.hidden,
           ]}
         >
           <TransactionReviewData
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             actionKey={actionKey}
             toggleDataView={this.toggleDataView}
             saveTransactionReviewDataHeight={saveTransactionReviewDataHeight}
@@ -533,6 +569,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
     const currentPageInformation = { url: this.getUrlFromBrowser() };
     const {
       QRState,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { from },
       onCancel,
       onConfirm,
@@ -543,6 +580,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
       <View style={styles.actionViewQRObject}>
         <TransactionHeader currentPageInformation={currentPageInformation} />
         <QRSigningDetails
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           QRState={QRState}
           tighten
           showCancelButton
@@ -564,6 +602,7 @@ class TransactionReview extends PureComponent<TransactionReviewProps> {
   }
 }
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
@@ -594,6 +633,7 @@ TransactionReview.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(
   withNavigation(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     withQRHardwareAwareness(withMetricsAwareness(TransactionReview)),
   ),
 );

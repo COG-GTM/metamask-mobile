@@ -43,6 +43,7 @@ import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder
  * View that's shown during the second step of
  * the backup seed phrase flow
  */
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Props => {
   const [seedPhraseHidden, setSeedPhraseHidden] = useState(true);
 
@@ -63,6 +64,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
     navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
   }, [colors, navigation, route]);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const tryExportSeedPhrase = async (password) => {
     const { KeyringController } = Engine.context;
     const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(
@@ -77,8 +79,10 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
         try {
           const credentials = await Authentication.getPassword();
           if (credentials) {
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             setWords(await tryExportSeedPhrase(credentials.password));
           } else {
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             setView(CONFIRM_PASSWORD);
           }
         } catch (e) {
@@ -86,6 +90,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
             'Error trying to recover SRP from keyring-controller',
           );
           Logger.error(srpRecoveryError);
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           setView(CONFIRM_PASSWORD);
         }
       }
@@ -101,6 +106,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
     updateNavBar();
   }, [updateNavBar]);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const onPasswordChange = (password) => {
     setPassword(password);
   };
@@ -121,15 +127,18 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const tryUnlockWithPassword = async (password) => {
     setReady(false);
     try {
       const seedPhrase = await tryExportSeedPhrase(password);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setWords(seedPhrase);
       setView(SEED_PHRASE);
       setReady(true);
     } catch (e) {
       let msg = strings('reveal_credential.warning_incorrect_password');
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (e.toString().toLowerCase() !== WRONG_PASSWORD_ERROR.toLowerCase()) {
         msg = strings('reveal_credential.unknown_error');
       }
@@ -152,6 +161,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
         blurType = 'dark';
         break;
       case 'os':
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         blurType = Appearance.getColorScheme();
         break;
       default:
@@ -165,6 +175,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
 
     return (
       <View style={styles.seedPhraseConcealerContainer}>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <BlurView blurType={blurType} blurAmount={5} style={styles.blurView} />
         <View style={styles.seedPhraseConcealer}>
           <FeatherIcons name="eye-off" size={24} style={styles.icon} />
@@ -174,6 +185,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
           <Text style={styles.watching}>
             {strings('manual_backup_step_1.watching')}
           </Text>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <View style={styles.viewButtonWrapper}>
             <StyledButton
               type={'onOverlay'}
@@ -224,6 +236,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
           </View>
           <View style={styles.buttonWrapper}>
             <StyledButton
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               containerStyle={styles.button}
               type={'confirm'}
               onPress={tryUnlock}
@@ -292,9 +305,11 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return ready ? (
     <SafeAreaView style={styles.mainWrapper}>
       <View style={styles.onBoardingWrapper}>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <OnboardingProgress currentStep={currentStep} steps={steps} />
       </View>
       {view === SEED_PHRASE ? renderSeedphraseView() : renderConfirmPassword()}
@@ -306,10 +321,12 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }): ManualBackupStep1Pr
   );
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   appTheme: state.user.appTheme,
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(ManualBackupStep1);
 
 interface ManualBackupStep1Props {

@@ -7,6 +7,7 @@ import {
   Linking,
   ScrollView,
 } from 'react-native';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import Eth from '@metamask/ethjs-query';
 import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
 import { getApproveNavbar } from '../../../../../UI/Navbar';
@@ -109,6 +110,7 @@ import SmartTransactionsMigrationBanner from '../SmartTransactionsMigrationBanne
 const { ORIGIN_DEEPLINK, ORIGIN_QR_CODE } = AppConstants.DEEPLINKS;
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 let intervalIdForEstimatedL1Fee;
 
 const {
@@ -119,7 +121,9 @@ const {
  * PureComponent that manages ERC20 approve from the dapp browser
  */
 class ApproveTransactionReview extends PureComponent {
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   static navigationOptions = ({ navigation }) =>
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     getApproveNavbar('approve.title', navigation);
 
   state = {
@@ -127,9 +131,11 @@ class ApproveTransactionReview extends PureComponent {
     host: undefined,
     originalApproveAmount: undefined,
     spendLimitCustomValue: undefined,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     ticker: getTicker(this.props.ticker),
     viewDetails: false,
     spenderAddress: '0x...',
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     transaction: this.props.transaction,
     token: {},
     isReadyToApprove: false,
@@ -145,6 +151,7 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   customSpendLimitInput = React.createRef();
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   channelIdOrHostname = this.props.transaction.origin;
 
   sdkConnection = SDKConnect.getInstance().getConnection({
@@ -153,6 +160,7 @@ class ApproveTransactionReview extends PureComponent {
   originIsMMSDKRemoteConn = Boolean(this.sdkConnection);
 
   fetchEstimatedL1Fee = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction, chainId } = this.props;
     if (!transaction?.transaction) {
       return;
@@ -169,6 +177,7 @@ class ApproveTransactionReview extends PureComponent {
         multiLayerL1FeeTotal: result,
       });
     } catch (e) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
         multiLayerL1FeeTotal: '0x0',
@@ -177,12 +186,17 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   componentDidMount = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { chainId } = this.props;
     const {
       // We need to extract transaction.transaction here to retrieve up-to-date nonce
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { origin, to, data, from, transaction },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setTransactionObject,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       tokenList,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       tokenAllowanceState,
     } = this.props;
     const { AssetsContractController } = Engine.context;
@@ -192,6 +206,7 @@ class ApproveTransactionReview extends PureComponent {
     if (!this.originIsMMSDKRemoteConn) {
       // Check if it is walletConnect origin
       WC2Manager.getInstance().then((wc2) => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.originIsWalletConnect = wc2.getSessions().some((session) => {
           // Otherwise, compare the origin with the metadata URL
           if (
@@ -277,6 +292,7 @@ class ApproveTransactionReview extends PureComponent {
       false,
     );
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { name: method } = await getMethodData(data);
     const minTokenAllowance = minimumTokenAllowance(tokenDecimals);
 
@@ -294,6 +310,7 @@ class ApproveTransactionReview extends PureComponent {
     });
 
     const token = Object.values(tokenList).filter(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       (token) => token.address === to,
     );
 
@@ -309,6 +326,7 @@ class ApproveTransactionReview extends PureComponent {
           tokenValue: encodedDecimalAmount,
           tokenStandard,
           tokenBalance,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           tokenImage: token[0]?.iconUrl,
         },
         spenderAddress,
@@ -322,7 +340,9 @@ class ApproveTransactionReview extends PureComponent {
         unroundedAccountBalance,
       },
       () => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics.trackEvent(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.metrics
             .createEventBuilder(MetaMetricsEvents.APPROVAL_STARTED)
             .addProperties(this.getAnalyticsParams())
@@ -339,11 +359,14 @@ class ApproveTransactionReview extends PureComponent {
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   componentDidUpdate = (_, prevState) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction, setTransactionObject } = this.props;
     const {
       tokenSpendValue,
       spenderAddress,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       token: { tokenDecimals },
     } = this.state;
 
@@ -366,9 +389,11 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   componentWillUnmount = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     clearInterval(intervalIdForEstimatedL1Fee);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   getTrustMessage = (originIsDeeplink, isMethodSetApprovalForAll) => {
     if (isMethodSetApprovalForAll) {
       return strings('spend_limit_edition.you_trust_this_third_party');
@@ -380,8 +405,11 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   getTrustTitle = (
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     originIsDeeplink,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     isNonFungibleToken,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     isMethodSetApprovalForAll,
   ) => {
     if (isMethodSetApprovalForAll) {
@@ -398,15 +426,21 @@ class ApproveTransactionReview extends PureComponent {
 
   getAnalyticsParams = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       chainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onSetAnalyticsParams,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       shouldUseSmartTransaction,
     } = this.props;
 
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       token: { tokenSymbol } = {},
       originalApproveAmount,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       encodedHexAmount,
     } = this.state || {};
 
@@ -426,6 +460,7 @@ class ApproveTransactionReview extends PureComponent {
       referral_type: 'unknown',
       request_source: this.originIsMMSDKRemoteConn
         ? AppConstants.REQUEST_SOURCES.SDK_REMOTE_CONN
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         : this.originIsWalletConnect
         ? AppConstants.REQUEST_SOURCES.WC
         : AppConstants.REQUEST_SOURCES.IN_APP_BROWSER,
@@ -449,16 +484,21 @@ class ApproveTransactionReview extends PureComponent {
 
       return params;
     } catch (error) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(error, 'Error in getAnalyticsParams:');
       return baseParams;
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   trackApproveEvent = (event) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction, tokensLength, accountsLength, providerType } =
       this.props;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(event)
         .addProperties({
@@ -478,7 +518,9 @@ class ApproveTransactionReview extends PureComponent {
 
   toggleViewDetails = () => {
     const { viewDetails } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.DAPP_APPROVE_SCREEN_VIEW_DETAILS)
         .build(),
@@ -486,15 +528,19 @@ class ApproveTransactionReview extends PureComponent {
     this.setState({ viewDetails: !viewDetails });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   copyContractAddress = async (address) => {
     await ClipboardManager.setString(address);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
       content: 'clipboard-alert',
       data: { msg: strings('transactions.address_copied_to_clipboard') },
     });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.CONTRACT_ADDRESS_COPIED)
         .addProperties(this.getAnalyticsParams())
@@ -503,19 +549,27 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   edit = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { onModeChange, updateTokenAllowanceState } = this.props;
     const {
       token: {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenName,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenStandard,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenSymbol,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenDecimals,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenBalance,
       },
       tokenSpendValue,
       originalApproveAmount,
     } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)
         .build(),
@@ -538,9 +592,11 @@ class ApproveTransactionReview extends PureComponent {
     Linking.openURL(AppConstants.URLS.WHY_TRANSACTION_TAKE_TIME);
 
   toggleGasTooltip = () =>
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.setState((state) => ({ showGasTooltip: !state.showGasTooltip }));
 
   renderGasTooltip = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const isMainnet = isMainnetByChainId(this.props.chainId);
     return (
       <InfoModal
@@ -551,17 +607,21 @@ class ApproveTransactionReview extends PureComponent {
         toggleModal={this.toggleGasTooltip}
         body={
           <View>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <Text grey infoModal>
               {strings('transaction.gas_education_1')}
               {strings(
                 `transaction.gas_education_2${isMainnet ? '_ethereum' : ''}`,
               )}{' '}
+              {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
               <Text bold>{strings('transaction.gas_education_3')}</Text>
             </Text>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <Text grey infoModal>
               {strings('transaction.gas_education_4')}
             </Text>
             <TouchableOpacity onPress={this.openLinkAboutGas}>
+              {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
               <Text grey link infoModal>
                 {strings('transaction.gas_education_learn_more')}
               </Text>
@@ -573,16 +633,19 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   getStyles = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
   goToSpendCap = () => this.setState({ isReadyToApprove: false });
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleSetIsCustomSpendInputValid = (value) => {
     this.setState({ isCustomSpendInputValid: value });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   toggleLearnMoreWebPage = (url) => {
     this.setState({
       showBlockExplorerModal: !this.state.showBlockExplorerModal,
@@ -590,6 +653,7 @@ class ApproveTransactionReview extends PureComponent {
     });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleCustomSpendOnInputChange = (value) => {
     if (isNumber(value)) {
       this.setState({
@@ -599,13 +663,16 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   onContactUsClicked = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction } = this.props;
     const analyticsParams = {
       ...this.getAnalyticsParams(),
       ...getBlockaidTransactionMetricsParams(transaction),
       external_link_clicked: 'security_alert_support_link',
     };
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.CONTRACT_ADDRESS_COPIED)
         .addProperties(analyticsParams)
@@ -614,6 +681,7 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   getConfirmButtonState() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { securityAlertResponse } = this.props;
     let confirmButtonState = ConfirmButtonState.Normal;
 
@@ -632,46 +700,78 @@ class ApproveTransactionReview extends PureComponent {
       originalApproveAmount,
       multiLayerL1FeeTotal,
       token: {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenStandard,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenSymbol,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenName,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenValue,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenDecimals,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenBalance,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenImage,
       },
       tokenSpendValue,
       fetchingUpdateDone,
       isReadyToApprove,
       isCustomSpendInputValid,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       method,
       unroundedAccountBalance,
     } = this.state;
 
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       primaryCurrency,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasError,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       activeTabUrl,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { origin, from, to, id: transactionId },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       chainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       over,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasEstimateType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onUpdatingValuesStart,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onUpdatingValuesEnd,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       animateOnChange,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isAnimating,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasEstimationReady,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionConfirmed,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasSelected,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       legacyGasObject,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       eip1559GasObject,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       updateTransactionState,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showBlockExplorer,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showVerifyContractDetails,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerRpcTarget,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       networkConfigurations,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isNativeTokenBuySupported,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isGasEstimateStatusIn,
     } = this.props;
 
@@ -760,6 +860,7 @@ class ApproveTransactionReview extends PureComponent {
                   >
                     <TransactionBlockaidBanner
                       transactionId={transactionId}
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       style={styles.blockaidWarning}
                       onContactUsClicked={this.onContactUsClicked}
                     />
@@ -822,6 +923,7 @@ class ApproveTransactionReview extends PureComponent {
                       ) : null}
                     </View>
                     {isNonFungibleToken && (
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       <Text reset style={styles.explanation}>
                         {`${this.getTrustMessage(
                           originIsDeeplink,
@@ -830,6 +932,7 @@ class ApproveTransactionReview extends PureComponent {
                       </Text>
                     )}
                     <ButtonLink
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       variant={TextVariant.BodyMD}
                       onPress={showVerifyContractDetails}
                       style={styles.verifyContractLink}
@@ -845,9 +948,11 @@ class ApproveTransactionReview extends PureComponent {
                           isERC2OToken && (
                             <CustomSpendCap
                               ticker={tokenSymbol}
+                              // @ts-expect-error -- legacy JavaScript UI type boundary
                               dappProposedValue={originalApproveAmount}
                               tokenSpendValue={tokenSpendValue}
                               accountBalance={tokenBalance}
+                              // @ts-expect-error -- legacy JavaScript UI type boundary
                               unroundedAccountBalance={unroundedAccountBalance}
                               tokenDecimal={tokenDecimals}
                               toggleLearnMoreWebPage={
@@ -858,6 +963,7 @@ class ApproveTransactionReview extends PureComponent {
                               onInputChanged={
                                 this.handleCustomSpendOnInputChange
                               }
+                              // @ts-expect-error -- legacy JavaScript UI type boundary
                               isInputValid={
                                 this.handleSetIsCustomSpendInputValid
                               }
@@ -867,12 +973,14 @@ class ApproveTransactionReview extends PureComponent {
                         {((isERC2OToken && isReadyToApprove) ||
                           isNonFungibleToken) && (
                           <View style={styles.transactionWrapper}>
+                            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                             <TransactionReview
                               gasSelected={gasSelected}
                               primaryCurrency={primaryCurrency}
                               hideTotal
                               noMargin
                               onEdit={this.edit}
+                              // @ts-expect-error -- legacy JavaScript UI type boundary
                               chainId={this.props.chainId}
                               onUpdatingValuesStart={onUpdatingValuesStart}
                               onUpdatingValuesEnd={onUpdatingValuesEnd}
@@ -897,12 +1005,14 @@ class ApproveTransactionReview extends PureComponent {
                             {isTestNetworkWithFaucet(chainId) ||
                             isNativeTokenBuySupported ? (
                               <TouchableOpacity onPress={errorPress}>
+                                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                                 <Text reset style={styles.error}>
                                   {gasError}
                                 </Text>
 
                                 {over && (
                                   <Text
+                                    // @ts-expect-error -- legacy JavaScript UI type boundary
                                     reset
                                     style={[styles.error, styles.underline]}
                                   >
@@ -911,6 +1021,7 @@ class ApproveTransactionReview extends PureComponent {
                                 )}
                               </TouchableOpacity>
                             ) : (
+                              // @ts-expect-error -- legacy JavaScript UI type boundary
                               <Text reset style={styles.error}>
                                 {gasError}
                               </Text>
@@ -924,6 +1035,7 @@ class ApproveTransactionReview extends PureComponent {
                             testID="view-transaction-details"
                           >
                             <View style={styles.iconContainer}>
+                              {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                               <Text reset style={styles.viewDetailsText}>
                                 {strings(
                                   'spend_limit_edition.view_transaction_details',
@@ -950,15 +1062,19 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   renderTransactionReview = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { nickname, nicknameExists } = this.props;
     const {
       host,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       method,
       viewData,
       tokenSpendValue,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       token: { tokenStandard, tokenSymbol, tokenValue, tokenName },
     } = this.state;
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { to, data },
     } = this.props;
     return (
@@ -984,20 +1100,28 @@ class ApproveTransactionReview extends PureComponent {
 
   renderVerifyContractDetails = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerRpcTarget,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       savedContactListToArray,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       toggleModal,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       closeVerifyContractDetails,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       networkConfigurations,
     } = this.props;
     const {
       transaction: { to },
       showBlockExplorerModal,
       spenderAddress,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       token: { tokenSymbol },
     } = this.state;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const toggleBlockExplorerModal = (address) => {
       closeVerifyContractDetails();
       this.setState({
@@ -1006,6 +1130,7 @@ class ApproveTransactionReview extends PureComponent {
       });
     };
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const showNickname = (address) => {
       toggleModal(address);
     };
@@ -1023,6 +1148,7 @@ class ApproveTransactionReview extends PureComponent {
         tokenSymbol={tokenSymbol}
         providerRpcTarget={providerRpcTarget}
         networkConfigurations={networkConfigurations}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tokenStandard={this.state.token?.tokenStandard}
       />
     );
@@ -1030,11 +1156,16 @@ class ApproveTransactionReview extends PureComponent {
 
   renderBlockExplorerView = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showVerifyContractDetails,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       networkConfigurations,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerRpcTarget,
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { showBlockExplorerModal, address, learnMoreURL } = this.state;
 
     const styles = this.getStyles();
@@ -1062,16 +1193,20 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   buyEth = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     /* this is kinda weird, we have to reject the transaction to collapse the modal */
     this.onCancelPress();
     try {
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.RECEIVE_OPTIONS_PAYMENT_REQUEST)
         .build(),
@@ -1079,9 +1214,12 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   onCancelPress = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { onCancel, transaction } = this.props;
     onCancel && onCancel();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.APPROVAL_PERMISSION_UPDATED)
         .addProperties({
@@ -1095,16 +1233,21 @@ class ApproveTransactionReview extends PureComponent {
   onConfirmPress = () => {
     const {
       isReadyToApprove,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       token: { tokenStandard },
     } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { onConfirm } = this.props;
 
     if (tokenStandard === ERC20 && !isReadyToApprove) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics.trackEvent(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics
           .createEventBuilder(MetaMetricsEvents.APPROVAL_PERMISSION_UPDATED)
           .addProperties({
             ...this.getAnalyticsParams(),
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             ...getBlockaidTransactionMetricsParams(this.props.transaction),
           })
           .build(),
@@ -1116,9 +1259,11 @@ class ApproveTransactionReview extends PureComponent {
   };
 
   goToFaucet = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { chainId } = this.props;
     InteractionManager.runAfterInteractions(() => {
       this.onCancelPress();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.navigate(Routes.BROWSER.VIEW, {
         newTabUrl: TESTNET_FAUCETS[chainId],
         timestamp: Date.now(),
@@ -1129,8 +1274,11 @@ class ApproveTransactionReview extends PureComponent {
   renderQRDetails() {
     const { host, spenderAddress } = this.state;
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       activeTabUrl,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { origin, from },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       QRState,
     } = this.props;
     const styles = this.getStyles();
@@ -1160,6 +1308,7 @@ class ApproveTransactionReview extends PureComponent {
 
   render = () => {
     const { viewDetails, showBlockExplorerModal } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { isSigningQRObject, shouldVerifyContractDetails } = this.props;
 
     return (
@@ -1178,6 +1327,7 @@ class ApproveTransactionReview extends PureComponent {
   };
 }
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
@@ -1203,9 +1353,12 @@ const mapStateToProps = (state) => {
   };
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setTransactionObject: (transaction) =>
     dispatch(setTransactionObject(transaction)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   showAlert: (config) => dispatch(showAlert(config)),
 });
 
@@ -1216,6 +1369,7 @@ export default connect(
   mapDispatchToProps,
 )(
   withNavigation(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     withQRHardwareAwareness(withMetricsAwareness(ApproveTransactionReview)),
   ),
 );

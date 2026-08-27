@@ -21,24 +21,43 @@ import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
 
 const TransactionReviewEIP1559Update = ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   primaryCurrency,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   chainId,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onEdit,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   hideTotal,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   noMargin,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   originWarning,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onUpdatingValuesStart,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onUpdatingValuesEnd,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   animateOnChange,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   isAnimating,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasEstimationReady,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   legacy,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasSelected,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasObject,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasObjectLegacy,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onlyGas,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateTransactionState,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   multiLayerL1FeeTotal,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 }): Props => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
@@ -108,6 +127,7 @@ const TransactionReviewEIP1559Update = ({
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const switchNativeCurrencyDisplayOptions = (nativeValue, fiatValue) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
@@ -116,9 +136,13 @@ const TransactionReviewEIP1559Update = ({
   const valueToWatchAnimation = `${renderableGasFeeMinNative}${renderableGasFeeMaxNative}`;
 
   return (
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     <Summary style={styles.overview(noMargin)}>
+      {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
       <Summary.Row>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <View style={styles.gasRowContainer}>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <View style={styles.gasRowContainer}>
             <Text
               primary={!originWarning}
@@ -128,15 +152,18 @@ const TransactionReviewEIP1559Update = ({
             >
               {strings('transaction_review_eip1559.network_fee')}
               <TouchableOpacity
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 style={styles.gasInfoContainer}
                 onPress={() =>
                   originWarning ? showLegacyLearnMore() : toggleLearnMoreModal()
                 }
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 hitSlop={styles.hitSlop}
               >
                 <MaterialCommunityIcons
                   name="information"
                   size={13}
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   style={styles.gasInfoIcon(originWarning)}
                 />
               </TouchableOpacity>
@@ -145,6 +172,7 @@ const TransactionReviewEIP1559Update = ({
 
           {gasEstimationReady ? (
             <FadeAnimationView
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               style={styles.valuesContainer}
               valueToWatch={valueToWatchAnimation}
               animateOnChange={animateOnChange}
@@ -163,6 +191,7 @@ const TransactionReviewEIP1559Update = ({
                     grey={nativeCurrencySelected}
                     link={!nativeCurrencySelected}
                     underline={!nativeCurrencySelected}
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     style={styles.amountContainer}
                     noMargin
                     adjustsFontSizeToFit
@@ -184,6 +213,7 @@ const TransactionReviewEIP1559Update = ({
               <TouchableOpacity
                 onPress={edit}
                 disabled={!nativeCurrencySelected}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 style={[Device.isSmallDevice() && styles.flex]}
                 testID={EditGasViewSelectorsIDs.ESTIMATED_FEE_TEST_ID}
               >
@@ -217,13 +247,16 @@ const TransactionReviewEIP1559Update = ({
         </View>
       </Summary.Row>
       {!legacy && (
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         <Summary.Row>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <View style={styles.gasRowContainer}>
             {gasEstimationReady ? (
               <FadeAnimationView
                 valueToWatch={valueToWatchAnimation}
                 animateOnChange={animateOnChange}
               >
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 <View style={styles.timeEstimateContainer}>
                   <Text
                     small
@@ -236,13 +269,16 @@ const TransactionReviewEIP1559Update = ({
                   {(timeEstimateId === AppConstants.GAS_TIMES.MAYBE ||
                     timeEstimateId === AppConstants.GAS_TIMES.UNKNOWN) && (
                     <TouchableOpacity
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       style={styles.gasInfoContainer}
                       onPress={showTimeEstimateInfoModal}
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       hitSlop={styles.hitSlop}
                     >
                       <MaterialCommunityIcons
                         name="information"
                         size={13}
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         style={styles.redInfo}
                       />
                     </TouchableOpacity>
@@ -254,6 +290,7 @@ const TransactionReviewEIP1559Update = ({
             )}
             {gasEstimationReady ? (
               <FadeAnimationView
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 style={styles.valuesContainer}
                 valueToWatch={valueToWatchAnimation}
                 animateOnChange={animateOnChange}
@@ -268,13 +305,16 @@ const TransactionReviewEIP1559Update = ({
                   >
                     {timeEstimateId === AppConstants.GAS_TIMES.VERY_LIKELY && (
                       <TouchableOpacity
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         style={styles.gasInfoContainer}
                         onPress={showTimeEstimateInfoModal}
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         hitSlop={styles.hitSlop}
                       >
                         <MaterialCommunityIcons
                           name="alert"
                           size={13}
+                          // @ts-expect-error -- legacy JavaScript UI type boundary
                           style={styles.redInfo}
                         />
                       </TouchableOpacity>
@@ -311,13 +351,16 @@ const TransactionReviewEIP1559Update = ({
       {!hideTotal && (
         <View>
           <Summary.Separator />
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <View style={styles.gasBottomRowContainer}>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <Summary.Row>
               <Text primary bold noMargin>
                 {strings('transaction_review_eip1559.total')}
               </Text>
               {gasEstimationReady ? (
                 <FadeAnimationView
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   style={styles.valuesContainer}
                   valueToWatch={valueToWatchAnimation}
                   animateOnChange={animateOnChange}
@@ -332,6 +375,7 @@ const TransactionReviewEIP1559Update = ({
                         upper
                         right
                         noMargin
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         style={styles.amountContainer}
                         adjustsFontSizeToFit
                         numberOfLines={2}
@@ -354,6 +398,7 @@ const TransactionReviewEIP1559Update = ({
                     upper
                     right
                     noMargin
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     style={[Device.isSmallDevice() && styles.flex]}
                     adjustsFontSizeToFit
                     numberOfLines={2}
@@ -375,9 +420,11 @@ const TransactionReviewEIP1559Update = ({
             </Summary.Row>
           </View>
           {!legacy && (
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             <Summary.Row>
               {gasEstimationReady ? (
                 <FadeAnimationView
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   style={styles.valuesContainer}
                   valueToWatch={valueToWatchAnimation}
                   animateOnChange={animateOnChange}

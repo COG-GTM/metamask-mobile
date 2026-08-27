@@ -23,6 +23,7 @@ import { getDecimalChainId } from '../../../../../../util/networks';
 import { useMetrics } from '../../../../../../components/hooks/useMetrics';
 import Logger from '../../../../../../util/Logger';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     root: {
@@ -97,9 +98,13 @@ const createStyles = (colors) =>
   });
 
 const WatchAssetRequest = ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   suggestedAssetMeta,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   currentPageInformation,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onCancel,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onConfirm,
 }): WatchAssetRequestProps => {
   const { asset, interactingAddress } = suggestedAssetMeta;
@@ -127,6 +132,7 @@ const WatchAssetRequest = ({
         source: 'Dapp suggested (watchAsset)',
       };
     } catch (error) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(error, 'WatchAssetRequest.getTokenAddedAnalyticsParams');
       return undefined;
     }
@@ -158,6 +164,7 @@ const WatchAssetRequest = ({
 
   const { address, symbol, decimals, standard } = asset;
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <View style={styles.root} testID={AssetWatcherSelectorsIDs.CONTAINER}>
       <View style={styles.approveTransactionHeaderWrapper}>
@@ -174,7 +181,9 @@ const WatchAssetRequest = ({
           dontWatchAsset
         />
       </View>
+      {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
       <View style={styles.titleWrapper}>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <Text style={styles.title} onPress={this.cancelSignature}>
           {strings('watch_asset_request.title')}
         </Text>

@@ -15,6 +15,7 @@ import Routes from '../../../../../app/constants/navigation/Routes';
 import { ContactsViewSelectorIDs } from '../../../../../e2e/selectors/Settings/Contacts/ContacsView.selectors';
 import { selectAddressBook } from '../../../../selectors/addressBookController';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -40,11 +41,15 @@ class Contacts extends PureComponent {
     reloadAddressList: false,
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   actionSheet;
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   contactAddressToRemove;
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -60,13 +65,17 @@ class Contacts extends PureComponent {
     this.updateNavBar();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   componentDidUpdate = (prevProps) => {
     this.updateNavBar();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { chainId } = this.props;
     if (
       prevProps.addressBook &&
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.addressBook &&
       JSON.stringify(prevProps.addressBook[chainId]) !==
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         JSON.stringify(this.props.addressBook[chainId])
     )
       this.updateAddressList();
@@ -79,6 +88,7 @@ class Contacts extends PureComponent {
     }, 100);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onAddressLongPress = (address) => {
     this.contactAddressToRemove = address;
     this.actionSheet && this.actionSheet.show();
@@ -86,12 +96,15 @@ class Contacts extends PureComponent {
 
   deleteContact = () => {
     const { AddressBookController } = Engine.context;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { chainId } = this.props;
     AddressBookController.delete(chainId, this.contactAddressToRemove);
     this.updateAddressList();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onAddressPress = (address) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate('ContactForm', {
       mode: EDIT,
       editMode: EDIT,
@@ -101,14 +114,17 @@ class Contacts extends PureComponent {
   };
 
   goToAddContact = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate('ContactForm', { mode: ADD });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   createActionSheetRef = (ref) => {
     this.actionSheet = ref;
   };
 
   onIconPress = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     navigation.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
       screen: Routes.SHEET.AMBIGUOUS_ADDRESS,
@@ -117,9 +133,12 @@ class Contacts extends PureComponent {
 
   render = () => {
     const { reloadAddressList } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const themeAppearance = this.context.themeAppearance;
     const styles = createStyles(colors);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { chainId } = this.props;
 
     return (
@@ -127,6 +146,7 @@ class Contacts extends PureComponent {
         style={styles.wrapper}
         testID={ContactsViewSelectorIDs.CONTAINER}
       >
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <AddressList
           chainId={chainId}
           onlyRenderAddressBook
@@ -153,6 +173,7 @@ class Contacts extends PureComponent {
           cancelButtonIndex={1}
           destructiveButtonIndex={0}
           // eslint-disable-next-line react/jsx-no-bind
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           onPress={(index) => (index === 0 ? this.deleteContact() : null)}
           theme={themeAppearance}
         />
@@ -163,6 +184,7 @@ class Contacts extends PureComponent {
 
 Contacts.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   addressBook: selectAddressBook(state),
   chainId: selectChainId(state),

@@ -72,6 +72,7 @@ import { isNonEvmChainId } from '../../../core/Multichain/utils';
 import { isBridgeAllowed } from '../../UI/Bridge/utils';
 import { getIsSwapsAssetAllowed, getSwapsIsLive } from './utils';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -149,18 +150,26 @@ class Asset extends PureComponent {
   navSymbol = undefined;
   navAddress = undefined;
   selectedAddress = toChecksumHexAddress(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.selectedInternalAccount?.address,
   );
 
   updateNavBar = (contentOffset = 0) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       route: { params },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       route,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       chainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       rpcUrl,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       networkConfigurations,
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const isNativeToken = route.params.isNative ?? route.params.isETH;
     const isMainnet = isMainnetByChainId(chainId);
@@ -172,6 +181,7 @@ class Asset extends PureComponent {
       isMainnet || !isNativeToken || (isNativeToken && blockExplorer);
     const asset = navigation && params;
     const currentNetworkName =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.networkConfigurations[asset.chainId]?.name;
     navigation.setOptions(
       getNetworkNavbarOptions(
@@ -203,15 +213,20 @@ class Asset extends PureComponent {
     this.updateNavBar(contentOffset);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   checkLiveness = async (chainId) => {
     try {
       const featureFlags = await swapsUtils.fetchSwapsFeatureFlags(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         getFeatureFlagChainId(chainId),
         AppConstants.SWAPS.CLIENT_ID,
       );
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.setLiveness(chainId, featureFlags);
     } catch (error) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(error, 'Swaps: error while fetching swaps liveness');
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.setLiveness(chainId, null);
     }
   };
@@ -219,6 +234,7 @@ class Asset extends PureComponent {
   componentDidMount() {
     this.updateNavBar();
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const tokenChainId = this.props.route?.params?.chainId;
     if (tokenChainId) {
       this.checkLiveness(tokenChainId);
@@ -226,22 +242,31 @@ class Asset extends PureComponent {
 
     InteractionManager.runAfterInteractions(() => {
       this.normalizeTransactions();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.mounted = true;
     });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.navSymbol = (this.props.route.params?.symbol ?? '').toLowerCase();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.navAddress = (this.props.route.params?.address ?? '').toLowerCase();
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (this.navSymbol.toUpperCase() !== 'ETH' && this.navAddress !== '') {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.filter = this.noEthFilter;
     } else {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.filter = this.ethFilter;
     }
   }
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   componentDidUpdate(prevProps) {
     if (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       prevProps.chainId !== this.props.chainId ||
       prevProps.selectedInternalAccount.address !==
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.selectedInternalAccount?.address
     ) {
       this.showLoaderAndNormalize();
@@ -257,14 +282,18 @@ class Asset extends PureComponent {
   }
 
   componentWillUnmount() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.mounted = false;
   }
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   didTxStatusesChange = (newTxsPending) =>
     this.txsPending.length !== newTxsPending.length;
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   ethFilter = (tx) => {
     const { networkId } = store.getState().inpageProvider;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { chainId } = this.props;
     const {
       txParams: { from, to },
@@ -279,10 +308,12 @@ class Asset extends PureComponent {
       (chainId === tx.chainId || (!tx.chainId && networkId === tx.networkID)) &&
       tx.status !== 'unapproved'
     ) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (TOKEN_CATEGORY_HASH[type]) {
         return false;
       }
       if (isTransfer) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         return this.props.tokens.find(({ address }) =>
           toLowerCaseEquals(address, transferInformation.contractAddress),
         );
@@ -293,9 +324,11 @@ class Asset extends PureComponent {
     return false;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   noEthFilter = (tx) => {
     const { networkId } = store.getState().inpageProvider;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { chainId, swapsTransactions } = this.props;
     const {
       txParams: { to, from },
@@ -331,15 +364,21 @@ class Asset extends PureComponent {
   normalizeTransactions() {
     if (this.isNormalizing) return;
     let accountAddedTimeInsertPointFound = false;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { selectedInternalAccount } = this.props;
     const addedAccountTime = selectedInternalAccount?.metadata.importTime;
     this.isNormalizing = true;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     let submittedTxs = [];
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const newPendingTxs = [];
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const confirmedTxs = [];
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const submittedNonces = [];
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { chainId, transactions } = this.props;
     if (transactions.length) {
       const sortedTransactions = sortTransactions(transactions).filter(
@@ -347,6 +386,7 @@ class Asset extends PureComponent {
           self.findIndex((_tx) => _tx.id === tx.id) === index,
       );
       const filteredTransactions = sortedTransactions.filter((tx) => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const filterResult = this.filter(tx);
         if (filterResult) {
           tx.insertImportTime = addAccountTimeFlagFilter(
@@ -372,11 +412,14 @@ class Asset extends PureComponent {
         return filterResult;
       });
 
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       submittedTxs = submittedTxs.filter(({ txParams: { from, nonce } }) => {
         if (!toLowerCaseEquals(from, this.selectedAddress)) {
           return false;
         }
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const alreadySubmitted = submittedNonces.includes(nonce);
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const alreadyConfirmed = confirmedTxs.find(
           (confirmedTransaction) =>
             toLowerCaseEquals(
@@ -407,15 +450,19 @@ class Asset extends PureComponent {
         (this.txs.length === 0 && !this.state.transactionsUpdated) ||
         this.txs.length !== filteredTransactions.length ||
         this.chainId !== chainId ||
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.didTxStatusesChange(newPendingTxs)
       ) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.txs = filteredTransactions;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.txsPending = newPendingTxs;
         this.setState({
           transactionsUpdated: true,
           loading: false,
           transactions: filteredTransactions,
           submittedTxs,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           confirmedTxs,
         });
       }
@@ -427,6 +474,7 @@ class Asset extends PureComponent {
   }
 
   renderLoader = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -454,15 +502,22 @@ class Asset extends PureComponent {
       transactionsUpdated,
     } = this.state;
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       route: { params },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       conversionRate,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       currentCurrency,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       chainId,
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const asset = navigation && params;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const isSwapsFeatureLive = this.props.swapsIsLive;
     const isSwapsNetworkAllowed = isPortfolioViewEnabled()
       ? isSwapsAllowed(asset.chainId)
@@ -470,7 +525,9 @@ class Asset extends PureComponent {
 
     const isSwapsAssetAllowed = getIsSwapsAssetAllowed({
       asset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       searchDiscoverySwapsTokens: this.props.searchDiscoverySwapsTokens,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       swapsTokens: this.props.swapsTokens,
     });
 
@@ -482,7 +539,9 @@ class Asset extends PureComponent {
       : isBridgeAllowed(chainId);
 
     const displayBuyButton = asset.isETH
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ? this.props.isNetworkBuyNativeTokenSupported
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       : this.props.isNetworkRampSupported;
     return (
       <View style={styles.wrapper}>
@@ -499,6 +558,7 @@ class Asset extends PureComponent {
                   displayBridgeButton={displayBridgeButton}
                   swapsIsLive={isSwapsFeatureLive}
                   networkName={
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     this.props.networkConfigurations[asset.chainId]?.name
                   }
                 />
@@ -527,6 +587,7 @@ class Asset extends PureComponent {
 
 Asset.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state, { route }) => ({
   swapsIsLive: getSwapsIsLive(state, route.params.chainId),
   swapsTokens: isPortfolioViewEnabled()
@@ -556,7 +617,9 @@ const mapStateToProps = (state, { route }) => ({
   networkClientId: selectNetworkClientId(state),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setLiveness: (chainId, featureFlags) =>
     dispatch(setSwapsLiveness(chainId, featureFlags)),
 });
@@ -564,6 +627,7 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(Asset));
 
 interface AssetProps {

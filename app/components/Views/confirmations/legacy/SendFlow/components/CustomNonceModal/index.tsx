@@ -19,6 +19,7 @@ import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import { useTheme } from '../../../../../../../util/theme';
 import { isNumber } from '../../../../../../../util/number';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     bottomModal: {
@@ -116,11 +117,13 @@ const createStyles = (colors) =>
     },
   });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }): CustomModalNonceProps => {
   const [nonce, onChangeText] = React.useState(nonceValue);
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const incrementDecrementNonce = (isDecrement) => {
     const currentNonce = Number(nonce);
     const updatedValue = isDecrement ? currentNonce - 1 : currentNonce + 1;
@@ -137,6 +140,7 @@ const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }): CustomMod
 
   const displayWarning = String(proposedNonce) !== String(nonce);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <Modal
       isVisible
@@ -246,6 +250,7 @@ const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }): CustomMod
             </StyledButton>
             <StyledButton
               type={'blue'}
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               onPress={() => saveAndClose(nonce)}
               containerStyle={styles.actionButton}
             >

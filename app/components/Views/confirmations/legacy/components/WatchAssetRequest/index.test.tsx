@@ -17,6 +17,7 @@ describe('WatchAssetRequest', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <WatchAssetRequest
           suggestedAssetMeta={{
             asset: { address: '0x2', symbol: 'TKN', decimals: 0 },

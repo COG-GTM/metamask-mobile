@@ -18,6 +18,7 @@ import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { SuccessImportAccountIDs } from '../../../../e2e/selectors/ImportAccount/SuccessImportAccount.selectors';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     mainWrapper: {
@@ -79,6 +80,7 @@ class ImportPrivateKeySuccess extends PureComponent {
 
   componentDidMount = () => {
     InteractionManager.runAfterInteractions(() => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
     });
   };
@@ -87,22 +89,26 @@ class ImportPrivateKeySuccess extends PureComponent {
     InteractionManager.runAfterInteractions(() => {
       BackHandler.removeEventListener(
         'hardwareBackPress',
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.handleBackPress,
       );
     });
   };
 
   handleBackPress = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.popToTop();
   };
 
   dismiss = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { popToTop, canGoBack, goBack } = this.props.navigation;
     popToTop();
     canGoBack() && goBack(null);
   };
 
   render() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 

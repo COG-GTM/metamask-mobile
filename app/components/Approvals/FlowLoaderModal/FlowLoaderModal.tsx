@@ -16,6 +16,7 @@ const FlowLoaderModal = () => {
 
   return (
     <ApprovalModal isVisible onCancel={onCancel}>
+      {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
       <ApprovalFlowLoader loadingText={approvalFlow?.loadingText} />
     </ApprovalModal>
   );

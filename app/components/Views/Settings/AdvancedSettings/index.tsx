@@ -46,6 +46,7 @@ import AppConstants from '../../../../../app/core/AppConstants';
 import { downloadStateLogs } from '../../../../util/logs';
 import AutoDetectTokensSettings from '../AutoDetectTokensSettings';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -147,12 +148,14 @@ class AdvancedSettings extends PureComponent {
   };
 
   getStyles = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return { styles, colors };
   };
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation, route } = this.props;
     const { colors } = this.getStyles();
     const isFullScreenModal = route?.params?.isFullScreenModal || false;
@@ -168,14 +171,18 @@ class AdvancedSettings extends PureComponent {
 
   componentDidMount = async () => {
     this.updateNavBar();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.mounted = true;
     // Workaround https://github.com/facebook/react-native/issues/9958
     this.state.inputWidth &&
       setTimeout(() => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.mounted && this.setState({ inputWidth: '100%' });
       }, 100);
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.route?.params?.scrollToBottom &&
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.scrollView?.current?.scrollToEnd({ animated: true });
   };
 
@@ -184,6 +191,7 @@ class AdvancedSettings extends PureComponent {
   };
 
   componentWillUnmount = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.mounted = false;
   };
 
@@ -192,6 +200,7 @@ class AdvancedSettings extends PureComponent {
   };
 
   resetAccount = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     wipeTransactions();
     navigation.navigate('WalletView');
@@ -202,22 +211,27 @@ class AdvancedSettings extends PureComponent {
   };
 
   downloadStateLogs = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { fullState } = this.props;
     downloadStateLogs(fullState);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   toggleTokenDetection = (detectionStatus) => {
     const { PreferencesController } = Engine.context;
     PreferencesController.setUseTokenDetection(detectionStatus);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   toggleSmartTransactionsOptInStatus = (smartTransactionsOptInStatus) => {
     const { PreferencesController } = Engine.context;
     PreferencesController.setSmartTransactionsOptInStatus(
       smartTransactionsOptInStatus,
     );
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.SMART_TRANSACTION_OPT_IN)
         .addProperties({
@@ -234,12 +248,19 @@ class AdvancedSettings extends PureComponent {
 
   render = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showHexData,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showCustomNonce,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showFiatOnTestnets,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setShowHexData,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setShowCustomNonce,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setShowFiatOnTestnets,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       smartTransactionsOptInStatus,
     } = this.props;
     const { resetModalVisible } = this.state;
@@ -252,6 +273,7 @@ class AdvancedSettings extends PureComponent {
           style={styles.wrapper}
           resetScrollToCoords={{ x: 0, y: 0 }}
           testID={AdvancedViewSelectorsIDs.ADVANCED_SETTINGS_SCROLLVIEW}
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           ref={this.scrollView}
         >
           <View
@@ -270,6 +292,7 @@ class AdvancedSettings extends PureComponent {
                 <Text style={styles.modalTitle} variant={TextVariant.HeadingMD}>
                   {strings('app_settings.reset_account_modal_title')}
                 </Text>
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 <Text style={styles.modalText}>
                   {strings('app_settings.reset_account_modal_message')}
                 </Text>
@@ -310,6 +333,7 @@ class AdvancedSettings extends PureComponent {
                       true: colors.primary.default,
                       false: colors.border.muted,
                     }}
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     thumbColor={theme.brandColors.white}
                     style={styles.switch}
                     ios_backgroundColor={colors.border.muted}
@@ -330,6 +354,7 @@ class AdvancedSettings extends PureComponent {
                 )}{' '}
                 <Text
                   color={TextColor.Primary}
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   link
                   onPress={this.openLinkAboutStx}
                 >
@@ -351,6 +376,7 @@ class AdvancedSettings extends PureComponent {
                       true: colors.primary.default,
                       false: colors.border.muted,
                     }}
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     thumbColor={theme.brandColors.white}
                     style={styles.switch}
                     ios_backgroundColor={colors.border.muted}
@@ -378,6 +404,7 @@ class AdvancedSettings extends PureComponent {
                       true: colors.primary.default,
                       false: colors.border.muted,
                     }}
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     thumbColor={theme.brandColors.white}
                     style={styles.switch}
                     ios_backgroundColor={colors.border.muted}
@@ -404,6 +431,7 @@ class AdvancedSettings extends PureComponent {
                     value={showFiatOnTestnets}
                     onValueChange={(showFiatOnTestnets) => {
                       if (showFiatOnTestnets) {
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         this.props.navigation.navigate(
                           Routes.MODAL.ROOT_MODAL_FLOW,
                           {
@@ -418,6 +446,7 @@ class AdvancedSettings extends PureComponent {
                       true: colors.primary.default,
                       false: colors.border.muted,
                     }}
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     thumbColor={theme.brandColors.white}
                     style={styles.switch}
                     ios_backgroundColor={colors.border.muted}
@@ -461,6 +490,7 @@ class AdvancedSettings extends PureComponent {
 
 AdvancedSettings.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   showHexData: state.settings.showHexData,
   showCustomNonce: state.settings.showCustomNonce,
@@ -471,14 +501,19 @@ const mapStateToProps = (state) => ({
   smartTransactionsOptInStatus: selectSmartTransactionsOptInStatus(state),
   smartTransactionsEnabled: selectSmartTransactionsEnabled(
     state,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     selectChainId(state),
   ),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setShowHexData: (showHexData) => dispatch(setShowHexData(showHexData)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setShowCustomNonce: (showCustomNonce) =>
     dispatch(setShowCustomNonce(showCustomNonce)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setShowFiatOnTestnets: (showFiatOnTestnets) =>
     dispatch(setShowFiatOnTestnets(showFiatOnTestnets)),
 });
@@ -486,6 +521,7 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(AdvancedSettings));
 
 interface AdvancedSettingsProps {

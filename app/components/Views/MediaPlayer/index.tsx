@@ -19,8 +19,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useStyles } from '../../../component-library/hooks';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
   StyleSheet.create({
     loaderContainer: {
@@ -56,6 +58,7 @@ const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
     },
   });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }): MediaPlayerProps {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -97,6 +100,7 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }): Me
 
   const onPressVolumeControls = () => setIsMuted(!isMuted);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <View style={style}>
       {loading && (
@@ -105,6 +109,7 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }): Me
         </View>
       )}
       {Device.isAndroid() ? (
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         <AndroidMediaPlayer
           onLoad={onLoad}
           onError={onError}
@@ -127,11 +132,13 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }): Me
             textTracks={textTracks}
             selectedTextTrack={selectedTextTrack}
             ignoreSilentSwitch="ignore"
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             ref={videoRef}
           />
           {/**
            * Use custom controls for iOS since iOS 17.2+ begins crashing. https://github.com/react-native-video/react-native-video/issues/3329
            */}
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <TapGestureHandler onEnded={onPressVideoControls}>
             <Animated.View style={videoControlsStyle}>
               <View style={styles.playButtonCircle}>

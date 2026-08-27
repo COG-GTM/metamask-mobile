@@ -76,6 +76,7 @@ class SendFlow extends PureComponent {
   state = {
     addressError: undefined,
     balanceIsZero: false,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     fromSelectedAddress: this.props.selectedAddress,
     toAccount: undefined,
     toSelectedAddressName: undefined,
@@ -88,9 +89,12 @@ class SendFlow extends PureComponent {
   };
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation, route, resetTransaction } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       getSendFlowTitle(
         'send.send_to',
         navigation,
@@ -103,12 +107,19 @@ class SendFlow extends PureComponent {
 
   componentDidMount = async () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       addressBook,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ticker,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       globalChainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       route,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isPaymentRequest,
     } = this.props;
     this.updateNavBar();
@@ -119,18 +130,22 @@ class SendFlow extends PureComponent {
       setTimeout(() => {
         this.addressToInputRef &&
           this.addressToInputRef.current &&
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.addressToInputRef.current.focus();
       }, 500);
     }
     //Fills in to address and sets the transaction if coming from QR code scan
     const targetAddress = route.params?.txMeta?.target_address;
     if (targetAddress) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.newAssetTransaction(getEther(ticker));
       this.onToSelectedAddressChange(targetAddress);
     }
 
     // Disabling back press for not be able to exit the send flow without reseting the transaction object
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.hardwareBackPress = () => true;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     BackHandler.addEventListener('hardwareBackPress', this.hardwareBackPress);
   };
 
@@ -141,17 +156,21 @@ class SendFlow extends PureComponent {
   componentWillUnmount() {
     BackHandler.removeEventListener(
       'hardwareBackPress',
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.hardwareBackPress,
     );
   }
 
   isAddressSaved = () => {
     const { toAccount } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { addressBook, globalChainId, internalAccounts } = this.props;
     const networkAddressBook = addressBook[globalChainId] || {};
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const checksummedAddress = toChecksumAddress(toAccount);
     return !!(
       networkAddressBook[checksummedAddress] ||
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       internalAccounts.find((account) =>
         toLowerCaseEquals(account.address, checksummedAddress),
       )
@@ -165,6 +184,7 @@ class SendFlow extends PureComponent {
       if (!toEnsAddressResolved) {
         addressError = strings('transaction.could_not_resolve_ens');
       }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     } else if (!isValidHexAddress(toAccount, { mixedCaseUseChecksum: true })) {
       addressError = strings('transaction.invalid_address');
     }
@@ -172,8 +192,10 @@ class SendFlow extends PureComponent {
     return addressError;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleNetworkSwitch = (globalChainId) => {
     try {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const { showAlert } = this.props;
       const networkName = handleNetworkSwitch(globalChainId);
 
@@ -189,6 +211,7 @@ class SendFlow extends PureComponent {
       });
     } catch (e) {
       let alertMessage;
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       switch (e.message) {
         case NetworkSwitchErrorType.missingNetworkId:
           alertMessage = strings('send.network_missing_id');
@@ -203,6 +226,7 @@ class SendFlow extends PureComponent {
   };
 
   onTransactionDirectionSet = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { setRecipient, navigation, providerType } = this.props;
     const {
       fromSelectedAddress,
@@ -223,7 +247,9 @@ class SendFlow extends PureComponent {
       toEnsName,
       toSelectedAddressName,
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.SEND_FLOW_ADDS_RECIPIENT)
         .addProperties({
@@ -236,19 +262,24 @@ class SendFlow extends PureComponent {
   };
 
   onToInputFocus = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { toInputHighlighted } = this.state;
     this.setState({ toInputHighlighted: !toInputHighlighted });
   };
 
   goToBuy = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate(...createBuyNavigationDetails());
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.BUY_BUTTON_CLICKED)
         .addProperties({
           button_location: 'Send Flow warning',
           button_copy: 'Buy Native Token',
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           chain_id_destination: this.props.globalChainId,
         })
         .build(),
@@ -256,9 +287,11 @@ class SendFlow extends PureComponent {
   };
 
   renderBuyEth = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (!this.props.isNativeTokenBuySupported) {
       return null;
     }
@@ -277,6 +310,7 @@ class SendFlow extends PureComponent {
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderAddressError = (addressError) =>
     addressError === SYMBOL_ERROR ? (
       <Fragment>
@@ -288,25 +322,31 @@ class SendFlow extends PureComponent {
       addressError
     );
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateParentState = (state) => {
     this.setState({ ...state });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   fromAccountBalanceState = (value) => {
     this.setState({ balanceIsZero: value });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setFromAddress = (address) => {
     this.setState({ fromSelectedAddress: address });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   getAddressNameFromBookOrInternalAccounts = (toAccount) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { addressBook, internalAccounts, globalChainId } = this.props;
     if (!toAccount) return;
 
     const networkAddressBook = addressBook[globalChainId] || {};
 
     const checksummedAddress = toChecksumAddress(toAccount);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const matchingAccount = internalAccounts.find((account) =>
       toLowerCaseEquals(account.address, checksummedAddress),
     );
@@ -318,7 +358,9 @@ class SendFlow extends PureComponent {
       : null;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   validateAddressOrENSFromInput = async (toAccount) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { addressBook, internalAccounts, globalChainId } = this.props;
     const {
       addressError,
@@ -328,6 +370,7 @@ class SendFlow extends PureComponent {
       addToAddressToAddressBook,
       toAddressName,
       errorContinue,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isOnlyWarning,
       confusableCollection,
     } = await validateAddressOrENS(
@@ -350,19 +393,25 @@ class SendFlow extends PureComponent {
     });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onToSelectedAddressChange = (toAccount) => {
     const currentChain =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.ambiguousAddressEntries &&
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.ambiguousAddressEntries[this.props.globalChainId];
     const isAmbiguousAddress = includes(currentChain, toAccount);
     if (isAmbiguousAddress) {
       this.setState({ showAmbiguousAcountWarning: isAmbiguousAddress });
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics.trackEvent(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics
           .createEventBuilder(
             MetaMetricsEvents.SEND_FLOW_SELECT_DUPLICATE_ADDRESS,
           )
           .addProperties({
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             chain_id: getDecimalChainId(this.props.globalChainId),
           })
           .build(),
@@ -396,6 +445,7 @@ class SendFlow extends PureComponent {
   };
 
   onIconPress = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     navigation.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
       screen: Routes.SHEET.AMBIGUOUS_ADDRESS,
@@ -407,6 +457,7 @@ class SendFlow extends PureComponent {
   };
 
   render = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { ticker, addressBook, globalChainId } = this.props;
     const {
       toAccount,
@@ -415,12 +466,15 @@ class SendFlow extends PureComponent {
       addressError,
       balanceIsZero,
       inputWidth,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       errorContinue,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isOnlyWarning,
       confusableCollection,
       toEnsAddressResolved,
     } = this.state;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -475,6 +529,7 @@ class SendFlow extends PureComponent {
           <View style={styles.warningContainer}>
             <WarningMessage
               warningMessage={
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 toAccount.substring(0, 2) === '0x'
                   ? strings('transaction.address_invalid')
                   : strings('transaction.ens_not_found')
@@ -484,6 +539,7 @@ class SendFlow extends PureComponent {
         )}
 
         {!toSelectedAddressReady ? (
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           <AddressList
             chainId={globalChainId}
             inputSearch={toAccount}
@@ -511,6 +567,7 @@ class SendFlow extends PureComponent {
                 <View
                   style={[
                     styles.confusabeError,
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     displayAsWarning && styles.confusabeWarning,
                   ]}
                 >
@@ -531,7 +588,7 @@ class SendFlow extends PureComponent {
                     </Text>
                     <Text style={styles.confusableMsg}>
                       {strings('transaction.confusable_msg')}{' '}
-                      {explanations.join(', ')}.
+                      {(explanations as string[]).join(', ')}.
                     </Text>
                   </View>
                 </View>
@@ -540,6 +597,7 @@ class SendFlow extends PureComponent {
                 setToAddressName={(toSelectedAddressName) =>
                   this.setState({ toSelectedAddressName })
                 }
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 address={toEnsAddressResolved || toAccount}
                 defaultNull
               >
@@ -593,7 +651,9 @@ class SendFlow extends PureComponent {
                   //Will be here just to ensure that we don't break existing conditions
                   disabled={
                     !(
+                      // @ts-expect-error -- legacy JavaScript UI type boundary
                       (isValidHexAddress(toEnsAddressResolved) ||
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         isValidHexAddress(toAccount)) &&
                       toSelectedAddressReady
                     )
@@ -612,6 +672,7 @@ class SendFlow extends PureComponent {
 
 SendFlow.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => {
   const globalChainId = selectEvmChainId(state);
 
@@ -632,12 +693,18 @@ const mapStateToProps = (state) => {
   };
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
   setRecipient: (
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     from,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     to,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     ensRecipient,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     transactionToName,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     transactionFromName,
   ) =>
     dispatch(
@@ -649,10 +716,13 @@ const mapDispatchToProps = (dispatch) => ({
         transactionFromName,
       ),
     ),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   newAssetTransaction: (selectedAsset) =>
     dispatch(newAssetTransaction(selectedAsset)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setSelectedAsset: (selectedAsset) =>
     dispatch(setSelectedAsset(selectedAsset)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   showAlert: (config) => dispatch(showAlert(config)),
   resetTransaction: () => dispatch(resetTransaction()),
 });
@@ -660,6 +730,7 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(SendFlow));
 
 interface SendFlowProps {

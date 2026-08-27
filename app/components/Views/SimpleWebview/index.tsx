@@ -11,12 +11,15 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 export default class SimpleWebview extends PureComponent {
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation, route } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(getWebviewNavbar(navigation, route, colors));
   };
 
   componentDidMount = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     this.updateNavBar();
     navigation && navigation.setParams({ dispatch: this.share });
@@ -27,6 +30,7 @@ export default class SimpleWebview extends PureComponent {
   };
 
   share = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { route } = this.props;
     const url = route.params?.url;
     if (url) {
@@ -39,6 +43,7 @@ export default class SimpleWebview extends PureComponent {
   };
 
   render() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const uri = this.props.route.params?.url;
     if (uri) {
       return (

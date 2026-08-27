@@ -24,6 +24,7 @@ import {
 } from '../../../../../../../util/transactions';
 import { setTransactionObject } from '../../../../../../../actions/transaction';
 import Engine from '../../../../../../../core/Engine';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import collectiblesTransferInformation from '../../../../../../../util/collectibles-transfer';
 import { safeToChecksumAddress } from '../../../../../../../util/address';
 import { shallowEqual } from '../../../../../../../util/general';
@@ -85,13 +86,19 @@ class TransactionEditor extends PureComponent {
     suggestedMaxFeePerGas: undefined,
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   computeGasEstimates = async (gasEstimateTypeChanged) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasEstimateType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasFeeEstimates,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setTransactionObject,
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { dappSuggestedGasPrice, dappSuggestedEIP1559Gas } = this.state;
 
     const gasSelected = gasEstimateTypeChanged
@@ -130,6 +137,7 @@ class TransactionEditor extends PureComponent {
 
       const suggestedGasLimit = fromWei(transaction.gas, 'wei');
 
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const EIP1559GasData = this.parseTransactionDataEIP1559({
         ...initialGas,
         suggestedGasLimit,
@@ -140,6 +148,7 @@ class TransactionEditor extends PureComponent {
       if (gasSelected === gasSelectedTemp) {
         EIP1559GasDataTemp = EIP1559GasData;
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         EIP1559GasDataTemp = this.parseTransactionDataEIP1559({
           ...initialGasTemp,
           suggestedGasLimit,
@@ -147,6 +156,7 @@ class TransactionEditor extends PureComponent {
         });
       }
 
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       await this.validate(EIP1559GasData);
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState(
@@ -166,13 +176,17 @@ class TransactionEditor extends PureComponent {
           this.setState({ animateOnChange: false });
         },
       );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     } else if (this.props.gasEstimateType !== GAS_ESTIMATE_TYPES.NONE) {
       const suggestedGasLimit = fromWei(transaction.gas, 'wei');
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const getGas = (selected) =>
         dappSuggestedGasPrice
           ? fromWei(dappSuggestedGasPrice, 'gwei')
           : gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             ? this.props.gasFeeEstimates[selected]
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             : this.props.gasFeeEstimates.gasPrice;
 
       const LegacyGasData = this.parseTransactionDataLegacy(
@@ -193,6 +207,7 @@ class TransactionEditor extends PureComponent {
       if (gasSelected === gasSelectedTemp) {
         LegacyGasDataTemp = LegacyGasData;
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         LegacyGasDataTemp = this.parseTransactionDataLegacy({
           suggestedGasPrice: getGas(gasSelectedTemp),
           suggestedGasLimit,
@@ -224,12 +239,14 @@ class TransactionEditor extends PureComponent {
   startPolling = async () => {
     const { GasFeeController } = Engine.context;
     const pollToken = await GasFeeController.getGasFeeEstimatesAndStartPolling(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.state.pollToken,
     );
     this.setState({ pollToken });
   };
 
   componentDidMount = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction, setTransactionObject } = this.props;
 
     const zeroGas = new BN('00');
@@ -271,7 +288,9 @@ class TransactionEditor extends PureComponent {
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   parseTransactionDataEIP1559 = (gasFee, options) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { ticker } = this.props;
 
     const parsedTransactionEIP1559 = parseTransactionEIP1559(
@@ -280,6 +299,7 @@ class TransactionEditor extends PureComponent {
         nativeCurrency: ticker,
         selectedGasFee: {
           ...gasFee,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           estimatedBaseFee: this.props.gasFeeEstimates.estimatedBaseFee,
         },
       },
@@ -293,7 +313,9 @@ class TransactionEditor extends PureComponent {
     return parsedTransactionEIP1559;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   parseTransactionDataLegacy = (gasFee, options) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { ticker } = this.props;
 
     const parsedTransactionLegacy = parseTransactionLegacy(
@@ -312,22 +334,28 @@ class TransactionEditor extends PureComponent {
     return parsedTransactionLegacy;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   componentDidUpdate = (prevProps) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction } = this.props;
     if (transaction.data !== prevProps.transaction.data) {
       this.handleUpdateData(transaction.data);
     }
 
     const gasEstimateTypeChanged =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       prevProps.gasEstimateType !== this.props.gasEstimateType;
 
     if (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       (!this.state.stopUpdateGas && !this.state.advancedGasInserted) ||
       gasEstimateTypeChanged
     ) {
       if (
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.gasFeeEstimates &&
         transaction.gas &&
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         (!shallowEqual(prevProps.gasFeeEstimates, this.props.gasFeeEstimates) ||
           !transaction.gas.eq(prevProps?.transaction?.gas) ||
           !this.state.ready)
@@ -337,16 +365,21 @@ class TransactionEditor extends PureComponent {
     }
 
     if (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       prevProps.transaction !== this.props.transaction ||
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       prevProps.selectedAddress !== this.props.selectedAddress ||
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       prevProps.contractBalances !== this.props.contractBalances
     ) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.validate();
     }
   };
 
   componentWillUnmount = () => {
     const { GasFeeController } = Engine.context;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     GasFeeController.stopPolling(this.state.pollToken);
   };
 
@@ -354,6 +387,7 @@ class TransactionEditor extends PureComponent {
    * Call callback when transaction is cancelled
    */
   onCancel = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { onCancel } = this.props;
     onCancel && onCancel();
   };
@@ -362,8 +396,10 @@ class TransactionEditor extends PureComponent {
    * Call callback when transaction is confirmed, after being validated
    */
   onConfirm = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { onConfirm, gasEstimateType } = this.props;
     const { EIP1559GasData, gasSelected } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     !(await this.validate()) &&
       onConfirm &&
       onConfirm({ gasEstimateType, EIP1559GasData, gasSelected });
@@ -376,9 +412,12 @@ class TransactionEditor extends PureComponent {
    * @param {object} amount - BN object containing transaction amount
    * @param {bool} mounting - Whether the view is mounting, in that case it should use the gas from transaction state
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleUpdateAmount = async (amount, mounting = false) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { to, data, assetType, gas: gasLimit },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction,
     } = this.props;
     // If ETH transaction, there is no need to generate new data
@@ -386,12 +425,14 @@ class TransactionEditor extends PureComponent {
       const { gas } = mounting
         ? { gas: gasLimit }
         : await estimateGas({ amount, data, to }, transaction);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.setTransactionObject({ value: amount, to, gas: hexToBN(gas) });
     }
     // If selectedAsset defined, generates data
     else if (assetType === 'ERC20') {
       const res = await this.handleDataGeneration({ value: amount });
       const gas = mounting ? gasLimit : res.gas;
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.setTransactionObject({
         value: amount,
         to,
@@ -406,7 +447,9 @@ class TransactionEditor extends PureComponent {
    *
    * @param {string} readableValue - String containing the readable value
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleUpdateReadableValue = (readableValue) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.setTransactionObject({ readableValue });
   };
 
@@ -415,10 +458,13 @@ class TransactionEditor extends PureComponent {
    *
    * @param {string} data - String containing new data
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleUpdateData = async (data) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction } = this.props;
     const { gas } = await estimateGas({ data }, transaction);
     this.setState({ data });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.setTransactionObject({ gas: hexToBN(gas), data });
   };
 
@@ -428,9 +474,12 @@ class TransactionEditor extends PureComponent {
    * @param {object} opts? - Optional object to customize data generation, containing selectedAsset, value and to
    * @returns {object} - Object containing data and gas, according to new generated data
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleDataGeneration = async (opts) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { from },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction,
     } = this.props;
     const selectedAsset = opts.selectedAsset
@@ -492,14 +541,18 @@ class TransactionEditor extends PureComponent {
     return { data, gas };
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   validateTotal = (totalGas) => {
     let error = '';
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ticker,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { value, from, assetType },
     } = this.props;
 
     const checksummedFrom = safeToChecksumAddress(from) || '';
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const fromAccount = this.props.accounts[checksummedFrom];
     const { balance } = fromAccount;
     const weiBalance = hexToBN(balance);
@@ -529,7 +582,9 @@ class TransactionEditor extends PureComponent {
   validateToAddress = () => {
     let error;
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { to },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       promptedFromApproval,
     } = this.props;
     // If it comes from a dapp it could be a contract deployment
@@ -546,30 +601,40 @@ class TransactionEditor extends PureComponent {
   review = async () => {
     const { data } = this.state;
     await this.setState({ toFocused: true });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const validated = !(await this.validate());
     if (validated) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (data && data.substr(0, 2) !== '0x') {
         this.handleUpdateData(addHexPrefix(data));
       }
     }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props?.onModeChange(REVIEW);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   validate = async (EIP1559GasData, LegacyGasData) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: {
         assetType,
         selectedAsset: { address, tokenId },
       },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAddress,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractBalances,
     } = this.props;
 
     const totalError = this.validateTotal(
       EIP1559GasData?.totalMaxHex ||
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.state.EIP1559GasData.totalMaxHex ||
       LegacyGasData?.totalHex ||
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.state.LegacyGasData.totalHex,
     );
     const amountError = await validateAmount(
@@ -590,12 +655,15 @@ class TransactionEditor extends PureComponent {
     return totalError || amountError || toAddressError;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   calculateTempGasFee = (gas, selected) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction } = this.props;
     if (selected && gas) {
       gas.suggestedGasLimit = fromWei(transaction.gas, 'wei');
     }
     this.setState({
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       EIP1559GasDataTemp: this.parseTransactionDataEIP1559({
         ...gas,
         selectedOption: selected,
@@ -605,13 +673,17 @@ class TransactionEditor extends PureComponent {
     });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   saveGasEdition = (gasSelected) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { gasEstimateType, setTransactionObject } = this.props;
     const { LegacyGasDataTemp } = this.state;
 
     if (gasEstimateType !== GAS_ESTIMATE_TYPES.FEE_MARKET) {
       handleGasFeeSelection(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         hexToBN(LegacyGasDataTemp.suggestedGasLimitHex),
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         hexToBN(LegacyGasDataTemp.suggestedGasPriceHex),
         setTransactionObject,
       );
@@ -632,10 +704,13 @@ class TransactionEditor extends PureComponent {
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   calculateTotalGasValue = (totalHex) => fromWei(totalHex);
 
   updateEIP1559GasDataFromLegacyTransaction = ({
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     legacyGasTransaction,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     totalGasValue,
   }) => ({
     // These values are updated to EIP1559GasData to reflect the gas values on the review UI
@@ -659,7 +734,9 @@ class TransactionEditor extends PureComponent {
       legacyGasTransaction?.suggestedGasPriceHex,
   });
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   saveGasEditionLegacy = (legacyGasTransaction, legacyGasObject) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { setTransactionObject, gasEstimateType } = this.props;
     const totalHex = legacyGasTransaction?.totalHex;
     legacyGasTransaction.error = this.validateTotal(totalHex);
@@ -702,6 +779,7 @@ class TransactionEditor extends PureComponent {
       stopUpdateGas: false,
       gasSelectedTemp: this.state.gasSelected,
     });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.onModeChange?.('review');
   };
 
@@ -713,9 +791,12 @@ class TransactionEditor extends PureComponent {
   };
 
   renderWarning = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { dappSuggestedGasPrice, dappSuggestedEIP1559Gas } = this.state;
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { origin },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasEstimateType,
     } = this.props;
     if (
@@ -741,13 +822,21 @@ class TransactionEditor extends PureComponent {
 
   render = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       mode,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionConfirmed,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onModeChange,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasFeeEstimates,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       primaryCurrency,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasEstimateType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       chainId,
     } = this.props;
     const {
@@ -757,9 +846,13 @@ class TransactionEditor extends PureComponent {
       EIP1559GasData,
       EIP1559GasDataTemp,
       gasSelected,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       dappSuggestedGasPrice,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       dappSuggestedEIP1559Gas,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       animateOnChange,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isAnimating,
       legacyGasObject,
       suggestedMaxFeePerGas,
@@ -767,8 +860,10 @@ class TransactionEditor extends PureComponent {
     } = this.state;
 
     const selectedLegacyGasObject = {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       legacyGasLimit: legacyGasObject?.legacyGasLimit,
       suggestedGasPrice:
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         legacyGasObject?.suggestedGasPrice || suggestedMaxFeePerGas,
     };
 
@@ -787,24 +882,40 @@ class TransactionEditor extends PureComponent {
               ready={ready}
               review={this.review}
             >
+              {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
               <TransactionReview
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 onCancel={this.onCancel}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 onConfirm={this.onConfirm}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 ready={ready}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 error={error}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 gasSelected={gasSelected}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 transactionConfirmed={transactionConfirmed}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 over={over}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 gasEstimateType={gasEstimateType}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 EIP1559GasData={EIP1559GasData}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 onUpdatingValuesStart={this.onUpdatingValuesStart}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 onUpdatingValuesEnd={this.onUpdatingValuesEnd}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 animateOnChange={animateOnChange}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 isAnimating={isAnimating}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 dappSuggestedGas={
                   Boolean(dappSuggestedGasPrice) ||
                   Boolean(dappSuggestedEIP1559Gas)
                 }
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 dappSuggestedGasWarning={
                   Boolean(dappSuggestedGasPrice) &&
                   gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET
@@ -818,6 +929,7 @@ class TransactionEditor extends PureComponent {
 
         {mode !== 'review' &&
           (showLegacyGasEditModal ? (
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             <EditGasFeeLegacy
               animateOnChange={animateOnChange}
               view={'Transaction'}
@@ -835,6 +947,7 @@ class TransactionEditor extends PureComponent {
                 Boolean(dappSuggestedGasPrice) ||
                 Boolean(dappSuggestedEIP1559Gas)
               }
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               error={legacyGasTransaction.error}
               onUpdatingValuesStart={this.onUpdatingValuesStart}
               onUpdatingValuesEnd={this.onUpdatingValuesEnd}
@@ -846,30 +959,41 @@ class TransactionEditor extends PureComponent {
               gasFee={EIP1559GasDataTemp}
               gasOptions={gasFeeEstimates}
               onChange={this.calculateTempGasFee}
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               gasFeeNative={EIP1559GasDataTemp.renderableGasFeeMinNative}
               gasFeeConversion={
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 EIP1559GasDataTemp.renderableGasFeeMinConversion
               }
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               gasFeeMaxNative={EIP1559GasDataTemp.renderableGasFeeMaxNative}
               gasFeeMaxConversion={
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 EIP1559GasDataTemp.renderableGasFeeMaxConversion
               }
               maxPriorityFeeNative={
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 EIP1559GasDataTemp.renderableMaxPriorityFeeNative
               }
               maxPriorityFeeConversion={
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 EIP1559GasDataTemp.renderableMaxPriorityFeeConversion
               }
               maxFeePerGasNative={
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 EIP1559GasDataTemp.renderableMaxFeePerGasNative
               }
               maxFeePerGasConversion={
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 EIP1559GasDataTemp.renderableMaxFeePerGasConversion
               }
               primaryCurrency={primaryCurrency}
               chainId={transaction.chainId}
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               timeEstimate={EIP1559GasDataTemp.timeEstimate}
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               timeEstimateColor={EIP1559GasDataTemp.timeEstimateColor}
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               timeEstimateId={EIP1559GasDataTemp.timeEstimateId}
               onCancel={this.cancelGasEdition}
               onSave={this.saveGasEdition}
@@ -878,7 +1002,9 @@ class TransactionEditor extends PureComponent {
                 Boolean(dappSuggestedEIP1559Gas)
               }
               warning={this.renderWarning()}
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               error={EIP1559GasDataTemp.error}
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               over={over}
               onUpdatingValuesStart={this.onUpdatingValuesStart}
               onUpdatingValuesEnd={this.onUpdatingValuesEnd}
@@ -897,6 +1023,7 @@ class TransactionEditor extends PureComponent {
   };
 }
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
@@ -918,7 +1045,9 @@ const mapStateToProps = (state) => {
   };
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setTransactionObject: (transaction) =>
     dispatch(setTransactionObject(transaction)),
 });

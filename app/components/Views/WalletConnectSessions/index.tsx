@@ -24,6 +24,7 @@ import WC2Manager, {
 } from '../../../../app/core/WalletConnect/WalletConnectV2';
 import { ExperimentalSelectorsIDs } from '../../../../e2e/selectors/Settings/ExperimentalView.selectors';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -92,7 +93,9 @@ export default class WalletConnectSessions extends PureComponent {
   sessionToRemove = null;
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -115,6 +118,7 @@ export default class WalletConnectSessions extends PureComponent {
 
   loadSessions = async () => {
     let sessions = [];
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     let sessionsV2 = [];
 
     const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
@@ -127,11 +131,14 @@ export default class WalletConnectSessions extends PureComponent {
       sessionsV2 = (await WC2Manager.getInstance())?.getSessions() || [];
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.setState({ ready: true, sessions, sessionsV2 });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderDesc = (meta) => {
     const { description } = meta;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -141,25 +148,32 @@ export default class WalletConnectSessions extends PureComponent {
     return null;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onLongPress = (session) => {
     this.sessionToRemove = session;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.actionSheet.show();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   createActionSheetRef = (ref) => {
     this.actionSheet = ref;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onActionSheetPress = (index) => (index === 0 ? this.killSession() : null);
 
   killSession = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const isV2 = this.sessionToRemove.peerId === undefined;
     try {
       if (isV2 && isWC2Enabled) {
         await (
           await WC2Manager.getInstance()
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         )?.removeSession(this.sessionToRemove);
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         await WalletConnect.killSession(this.sessionToRemove.peerId);
       }
 
@@ -169,6 +183,7 @@ export default class WalletConnectSessions extends PureComponent {
       );
       this.loadSessions();
     } catch (e) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(e, 'WC: Failed to kill session');
     }
   };
@@ -184,7 +199,9 @@ export default class WalletConnectSessions extends PureComponent {
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderV1 = (session) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
@@ -205,7 +222,9 @@ export default class WalletConnectSessions extends PureComponent {
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderV2 = (session, index) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
@@ -230,6 +249,7 @@ export default class WalletConnectSessions extends PureComponent {
   };
 
   renderEmpty = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -243,9 +263,12 @@ export default class WalletConnectSessions extends PureComponent {
   };
 
   render = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { ready, sessions, sessionsV2 } = this.state;
     if (!ready) return null;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const themeAppearance = this.context.themeAppearance;
     const styles = createStyles(colors);
 

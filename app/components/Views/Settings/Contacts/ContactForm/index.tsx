@@ -37,6 +37,7 @@ import { selectInternalAccounts } from '../../../../../selectors/accountsControl
 import { toLowerCaseEquals } from '../../../../../util/general';
 import { selectAddressBook } from '../../../../../selectors/addressBookController';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -125,6 +126,7 @@ class ContactForm extends PureComponent {
     toEnsName: null,
     toEnsAddress: null,
     addressReady: false,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     mode: this.props.route.params?.mode ?? ADD,
     memo: null,
     editable: true,
@@ -136,7 +138,9 @@ class ContactForm extends PureComponent {
   memoInput = React.createRef();
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation, route } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getEditableOptions(
@@ -150,6 +154,7 @@ class ContactForm extends PureComponent {
 
   componentDidMount = () => {
     const { mode } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     this.updateNavBar();
     // Workaround https://github.com/facebook/react-native/issues/9958
@@ -158,12 +163,15 @@ class ContactForm extends PureComponent {
         this.setState({ inputWidth: '100%' });
       }, 100);
     if (mode === EDIT) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const { addressBook, chainId, internalAccounts } = this.props;
       const networkAddressBook = addressBook[chainId] || {};
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const address = this.props.route.params?.address ?? '';
       const contact =
         networkAddressBook[address] ||
         (address &&
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           internalAccounts.find((account) =>
             toLowerCaseEquals(account.address, address),
           ));
@@ -183,6 +191,7 @@ class ContactForm extends PureComponent {
   };
 
   onEdit = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     const { editable } = this.state;
     if (editable) navigation.setParams({ editMode: EDIT });
@@ -192,15 +201,20 @@ class ContactForm extends PureComponent {
   };
 
   onDelete = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.contactAddressToRemove = this.state.address;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.actionSheet && this.actionSheet.show();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onChangeName = (name) => {
     this.setState({ name });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   validateAddressOrENSFromInput = async (address) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { addressBook, internalAccounts, chainId } = this.props;
 
     const {
@@ -225,27 +239,32 @@ class ContactForm extends PureComponent {
     });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onChangeAddress = (address) => {
     this.validateAddressOrENSFromInput(address);
     this.setState({ address });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onChangeMemo = (memo) => {
     this.setState({ memo });
   };
 
   jumpToAddressInput = () => {
     const { current } = this.addressInput;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     current && current.focus();
   };
 
   jumpToMemoInput = () => {
     const { current } = this.memoInput;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     current && current.focus();
   };
 
   saveContact = () => {
     const { name, address, memo, toEnsAddress } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { chainId, navigation } = this.props;
     const { AddressBookController } = Engine.context;
     if (!name || !address) return;
@@ -253,6 +272,7 @@ class ContactForm extends PureComponent {
       toChecksumAddress(toEnsAddress || address),
       name,
       chainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       memo,
     );
     navigation.pop();
@@ -260,13 +280,16 @@ class ContactForm extends PureComponent {
 
   deleteContact = () => {
     const { AddressBookController } = Engine.context;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { chainId, navigation, route } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     AddressBookController.delete(chainId, this.contactAddressToRemove);
     route.params.onDelete();
     navigation.pop();
   };
 
   onScan = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate(
       ...createQRScannerNavDetails({
         onScanSuccess: (meta) => {
@@ -279,10 +302,12 @@ class ContactForm extends PureComponent {
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   createActionSheetRef = (ref) => {
     this.actionSheet = ref;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderErrorMessage = (addressError) => {
     let errorMessage = addressError;
 
@@ -316,9 +341,12 @@ class ContactForm extends PureComponent {
       editable,
       inputWidth,
       toEnsAddress,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       errorContinue,
     } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
 
@@ -330,6 +358,7 @@ class ContactForm extends PureComponent {
         <KeyboardAwareScrollView style={styles.informationWrapper}>
           <View style={styles.scrollWrapper}>
             <Text style={styles.label}>{strings('address_book.name')}</Text>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <TextInput
               editable={this.state.editable}
               autoCapitalize={'none'}
@@ -355,6 +384,7 @@ class ContactForm extends PureComponent {
               style={[styles.input, editable ? {} : styles.textInputDisaled]}
             >
               <View style={styles.inputWrapper}>
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 <TextInput
                   editable={editable}
                   autoCapitalize={'none'}
@@ -401,6 +431,7 @@ class ContactForm extends PureComponent {
               style={[styles.input, editable ? {} : styles.textInputDisaled]}
             >
               <View style={styles.inputWrapper}>
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 <TextInput
                   multiline
                   editable={editable}
@@ -471,6 +502,7 @@ class ContactForm extends PureComponent {
             cancelButtonIndex={1}
             destructiveButtonIndex={0}
             // eslint-disable-next-line react/jsx-no-bind
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             onPress={(index) => (index === 0 ? this.deleteContact() : null)}
             theme={themeAppearance}
           />
@@ -482,6 +514,7 @@ class ContactForm extends PureComponent {
 
 ContactForm.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   addressBook: selectAddressBook(state),
   internalAccounts: selectInternalAccounts(state),

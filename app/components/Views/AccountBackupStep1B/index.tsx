@@ -34,6 +34,7 @@ const IMAGE_1_RATIO = 162.8 / 138;
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const IMG_PADDING = Device.isIphoneX() ? 100 : Device.isIphone5S() ? 180 : 220;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     mainWrapper: {
@@ -200,6 +201,7 @@ const createStyles = (colors) =>
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const AccountBackupStep1B = (props): any => {
   const { navigation, route } = props;
   const [showWhySecureWalletModal, setWhySecureWalletModal] = useState(false);
@@ -249,6 +251,7 @@ const AccountBackupStep1B = (props): any => {
           style={styles.wrapper}
           testID={ManualBackUpStepsSelectorsIDs.PROTECT_CONTAINER}
         >
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <OnboardingProgress steps={CHOOSE_PASSWORD_STEPS} currentStep={1} />
           <View style={styles.content}>
             <Text style={styles.titleIcon}>🔒</Text>
@@ -321,6 +324,7 @@ const AccountBackupStep1B = (props): any => {
             </Text>
 
             <StyledButton
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               containerStyle={styles.button}
               type={'confirm'}
               onPress={goNext}
@@ -366,6 +370,7 @@ const AccountBackupStep1B = (props): any => {
               </Text>
             </Text>
             <TouchableOpacity
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               style={styles.remindLaterButton}
               onPress={learnMore}
               hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}

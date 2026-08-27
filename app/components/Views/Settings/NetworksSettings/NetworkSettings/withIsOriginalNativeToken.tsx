@@ -4,8 +4,10 @@ import axios from 'axios';
 
 const CHAIN_ID_NETWORK_URL = 'https://chainid.network/chains.json';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const withIsOriginalNativeToken = (WrappedComponent) => {
   // This is the functional component wrapper that can use hooks
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const WithIsOriginalNativeTokenWrapper = (props): any => {
     // Use the useSelector hook to access Redux state
     const [matchedChainNetwork, setMatchedChainNetwork] = useState(null);
@@ -13,6 +15,7 @@ const withIsOriginalNativeToken = (WrappedComponent) => {
     useEffect(() => {
       axios.get(CHAIN_ID_NETWORK_URL).then(({ data: safeChainsList }) => {
         setMatchedChainNetwork({
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           safeChainsList: [...safeChainsList],
         });
       });

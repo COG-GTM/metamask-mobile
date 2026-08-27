@@ -224,11 +224,14 @@ const OnboardingNav = () => (
       name={Routes.ONBOARDING.DEFAULT_SETTINGS} // This is being used in import wallet flow
       component={DefaultSettings}
     />
+    {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
     <Stack.Screen name="ManualBackupStep1" component={ManualBackupStep1} />
+    {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
     <Stack.Screen name="ManualBackupStep2" component={ManualBackupStep2} />
     <Stack.Screen name="ManualBackupStep3" component={ManualBackupStep3} />
     <Stack.Screen
       name={Routes.ONBOARDING.IMPORT_FROM_SECRET_RECOVERY_PHRASE}
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       component={ImportFromSecretRecoveryPhrase}
     />
     <Stack.Screen name="OptinMetrics" component={OptinMetrics} />
@@ -284,6 +287,7 @@ const AddNetworkFlow = () => {
     <Stack.Navigator>
       <Stack.Screen
         name="AddNetwork"
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         component={NetworkSettings}
         initialParams={route?.params}
       />

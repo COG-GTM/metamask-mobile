@@ -124,6 +124,7 @@ describe('Asset', () => {
         }}
       />,
       {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         state: mockInitialState,
       },
     );
@@ -146,6 +147,7 @@ describe('Asset', () => {
         transactions={[]}
       />,
       {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         state: mockInitialState,
       },
     );
@@ -167,6 +169,7 @@ describe('Asset', () => {
         }}
       />,
       {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         state: mockInitialState,
       },
     );
@@ -189,6 +192,7 @@ describe('Asset', () => {
         }}
       />,
       {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         state: mockInitialState,
       },
     );

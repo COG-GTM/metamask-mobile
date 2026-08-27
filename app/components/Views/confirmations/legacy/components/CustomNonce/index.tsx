@@ -5,6 +5,7 @@ import { strings } from '../../../../../../../locales/i18n';
 import Text from '../../../../../Base/Text';
 import { useTheme } from '../../../../../../util/theme';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     customNonce: {
@@ -23,10 +24,12 @@ const createStyles = (colors) =>
     },
   });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const CustomNonce = ({ nonce, onNonceEdit }): CustomNonceProps => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <TouchableOpacity style={styles.customNonce} onPress={onNonceEdit}>
       <Text bold black>

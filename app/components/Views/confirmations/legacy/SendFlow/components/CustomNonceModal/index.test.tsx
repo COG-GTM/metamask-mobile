@@ -7,6 +7,7 @@ const saveMock = jest.fn();
 const closeMock = jest.fn();
 const createWrapper = () =>
   shallow(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     <CustomNonceModal
       save={saveMock}
       close={closeMock}
@@ -43,6 +44,7 @@ describe('CustomNonceModal', () => {
 
   it('decrements nonce correctly', () => {
     const wrapper = shallow(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <CustomNonceModal
         save={saveMock}
         close={closeMock}

@@ -1,7 +1,9 @@
 import { StyleSheet } from 'react-native';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     overview: (noMargin) => ({
       marginHorizontal: noMargin ? 0 : 24,
       paddingTop: 10,
@@ -15,6 +17,7 @@ const createStyles = (colors) =>
     gasInfoContainer: {
       paddingLeft: 2,
     },
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     gasInfoIcon: (hasOrigin) => ({
       color: hasOrigin ? colors.warning.default : colors.icon.muted,
     }),

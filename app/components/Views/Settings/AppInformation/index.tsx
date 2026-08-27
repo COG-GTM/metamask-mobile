@@ -25,6 +25,7 @@ import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -98,7 +99,9 @@ export default class AppInformation extends PureComponent {
   };
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -125,8 +128,10 @@ export default class AppInformation extends PureComponent {
     this.updateNavBar();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   goTo = (url, title) => {
     InteractionManager.runAfterInteractions(() => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.navigate('Webview', {
         screen: 'SimpleWebview',
         params: {
@@ -168,6 +173,7 @@ export default class AppInformation extends PureComponent {
   };
 
   render = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -191,6 +197,7 @@ export default class AppInformation extends PureComponent {
             ) : null}
           </View>
           <Text style={styles.title}>{strings('app_information.links')}</Text>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <View style={styles.links}>
             <TouchableOpacity onPress={this.onPrivacyPolicy}>
               <Text style={styles.link}>
@@ -209,6 +216,7 @@ export default class AppInformation extends PureComponent {
             </TouchableOpacity>
           </View>
           <View style={styles.division} />
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <View style={styles.links}>
             <TouchableOpacity onPress={this.onSupportCenter}>
               <Text style={styles.link}>

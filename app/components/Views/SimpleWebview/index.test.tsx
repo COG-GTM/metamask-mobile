@@ -6,6 +6,7 @@ describe('SimpleWebview', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <SimpleWebview
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         navigation={{
           setParams: () => {
             ('');

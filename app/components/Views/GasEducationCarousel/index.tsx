@@ -44,6 +44,7 @@ const DEVICE_WIDTH = Dimensions.get('window').width;
 
 const IMG_PADDING = Device.isIphone5() ? 220 : 200;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     scroll: {
@@ -142,10 +143,15 @@ const carousel_images = [
  * View that is displayed to first time (new) users
  */
 const GasEducationCarousel = ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   navigation,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   route,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   conversionRate,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   currentCurrency,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   ticker,
 }): GasEducationCarouselProps => {
   const [currentTab, setCurrentTab] = useState(1);
@@ -211,8 +217,10 @@ const GasEducationCarousel = ({
         });
 
         const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         setGasFiat(gasFiat);
       } catch (e) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         Logger.error(e);
       }
       setIsLoading(false);
@@ -227,6 +235,7 @@ const GasEducationCarousel = ({
 
   const renderTabBar = () => <View />;
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const onChangeTab = (obj) => {
     setCurrentTab(obj.i + 1);
   };
@@ -239,6 +248,7 @@ const GasEducationCarousel = ({
       },
     });
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const renderText = (key) => {
     if (key === 1) {
       return (
@@ -318,6 +328,7 @@ const GasEducationCarousel = ({
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <View style={baseStyles.flexGrow}>
       <OnboardingScreenWithBg screen={'carousel'}>
@@ -327,6 +338,7 @@ const GasEducationCarousel = ({
         >
           <View style={styles.wrapper}>
             <ScrollableTabView
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               style={styles.scrollTabs}
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
@@ -339,6 +351,7 @@ const GasEducationCarousel = ({
                     <View style={styles.carouselImageWrapper}>
                       <Image
                         source={carousel_images[index]}
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         style={[styles.carouselImage, styles[imgStyleKey]]}
                         resizeMethod={'auto'}
                       />
@@ -387,12 +400,14 @@ const GasEducationCarousel = ({
   );
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(GasEducationCarousel);
 
 interface GasEducationCarouselProps {

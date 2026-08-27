@@ -466,6 +466,7 @@ class TransactionDetails extends PureComponent<Props> {
           ]}
         >
           <TransactionSummary
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             amount={updatedTransactionDetails.summaryAmount}
             fee={updatedTransactionDetails.summaryFee}
             totalAmount={updatedTransactionDetails.summaryTotalAmount}

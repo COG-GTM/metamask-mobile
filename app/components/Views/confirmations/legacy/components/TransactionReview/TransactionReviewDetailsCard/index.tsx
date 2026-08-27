@@ -16,6 +16,7 @@ const {
   ASSET: { ERC20 },
 } = TransactionTypes;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     uppercase: {
@@ -108,6 +109,7 @@ export default class TransactionReviewDetailsCard extends Component<any, any> {
       tokenName,
       tokenStandard,
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 

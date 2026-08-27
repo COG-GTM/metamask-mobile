@@ -24,6 +24,7 @@ import { CommonActions } from '@react-navigation/native';
 import trackErrorAsAnalytics from '../../../util/metrics/TrackError/trackErrorAsAnalytics';
 
 const LOGO_SIZE = 175;
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     container: {
@@ -81,6 +82,7 @@ class LockScreen extends PureComponent {
   secondAnimation = React.createRef();
   animationName = React.createRef();
   opacity = new Animated.Value(1);
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   appStateListener;
 
   componentDidMount() {
@@ -90,9 +92,11 @@ class LockScreen extends PureComponent {
     );
   }
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleAppStateChange = async (nextAppState) => {
     // Trigger biometrics
     if (nextAppState === 'active') {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.firstAnimation?.play();
       this.unlockKeychain();
       this.appStateListener?.remove();
@@ -111,12 +115,14 @@ class LockScreen extends PureComponent {
       index: 0,
       routes: [{ name: Routes.ONBOARDING.LOGIN }],
     });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.dispatch(resetAction);
     // Do not need to await since it's the last action.
     Authentication.lockApp({ reset: false });
   };
 
   async unlockKeychain() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { bioStateMachineId } = this.props;
     try {
       // Retrieve the credentials
@@ -133,6 +139,7 @@ class LockScreen extends PureComponent {
       this.lock();
       trackErrorAsAnalytics(
         'Lockscreen: Authentication failed',
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         error?.message,
       );
     }
@@ -146,6 +153,7 @@ class LockScreen extends PureComponent {
         useNativeDriver: true,
         isInteraction: false,
       }).start(() => {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.navigation.navigate(Routes.ONBOARDING.HOME_NAV, {
           screen: Routes.WALLET_VIEW,
         });
@@ -154,11 +162,13 @@ class LockScreen extends PureComponent {
   };
 
   getStyles = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
   renderAnimations() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { appTheme } = this.props;
     const osColorScheme = Appearance.getColorScheme();
     const wordmark = getAssetFromTheme(
@@ -174,6 +184,7 @@ class LockScreen extends PureComponent {
         <LottieView
           // eslint-disable-next-line react/jsx-no-bind
           ref={(animation) => {
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             this.firstAnimation = animation;
           }}
           style={styles.animation}
@@ -187,6 +198,7 @@ class LockScreen extends PureComponent {
         <LottieView
           // eslint-disable-next-line react/jsx-no-bind
           ref={(animation) => {
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             this.secondAnimation = animation;
           }}
           style={styles.animation}
@@ -197,6 +209,7 @@ class LockScreen extends PureComponent {
         <LottieView
           // eslint-disable-next-line react/jsx-no-bind
           ref={(animation) => {
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             this.animationName = animation;
           }}
           style={styles.metamaskName}
@@ -220,6 +233,7 @@ class LockScreen extends PureComponent {
   }
 }
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   appTheme: state.user.appTheme,
 });
@@ -229,6 +243,7 @@ LockScreen.contextType = ThemeContext;
 const ConnectedLockScreen = connect(mapStateToProps)(LockScreen);
 
 // Wrapper that forces LockScreen to re-render when bioStateMachineId changes.
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const LockScreenFCWrapper = (props): any => {
   const { bioStateMachineId } = props.route.params;
   return (

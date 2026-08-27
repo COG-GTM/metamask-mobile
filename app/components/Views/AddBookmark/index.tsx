@@ -9,6 +9,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 
 import { AddBookmarkViewSelectorsIDs } from '../../../../e2e/selectors/Browser/AddBookmarkView.selectors';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -46,7 +47,9 @@ export default class AddBookmark extends PureComponent {
   };
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
 
     navigation.setOptions(
@@ -69,6 +72,7 @@ export default class AddBookmark extends PureComponent {
   };
 
   loadInitialValues() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { route } = this.props;
     this.setState({
       title: route.params?.title ?? '',
@@ -79,18 +83,23 @@ export default class AddBookmark extends PureComponent {
   addBookmark = () => {
     const { title, url } = this.state;
     if (title === '' || url === '') return false;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.route.params.onAddBookmark({ name: title, url });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.pop();
   };
 
   cancelAddBookmark = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.pop();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onTitleChange = (title) => {
     this.setState({ title });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onUrlChange = (url) => {
     this.setState({ url });
   };
@@ -99,11 +108,14 @@ export default class AddBookmark extends PureComponent {
 
   jumpToUrl = () => {
     const { current } = this.urlInput;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     current && current.focus();
   };
 
   render = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
 
@@ -136,6 +148,7 @@ export default class AddBookmark extends PureComponent {
                 returnKeyType={'next'}
                 keyboardAppearance={themeAppearance}
               />
+              {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
               <Text style={styles.warningText}>{this.state.warningSymbol}</Text>
             </View>
             <View style={styles.rowWrapper}>
@@ -148,13 +161,16 @@ export default class AddBookmark extends PureComponent {
                 value={this.state.url}
                 onChangeText={this.onUrlChange}
                 testID={AddBookmarkViewSelectorsIDs.URL_TEXT}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 ref={this.urlInput}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 onSubmitEditing={this.addToken}
                 returnKeyType={'done'}
                 placeholderTextColor={colors.text.muted}
                 keyboardAppearance={themeAppearance}
               />
               <Text style={styles.warningText}>
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 {this.state.warningDecimals}
               </Text>
             </View>

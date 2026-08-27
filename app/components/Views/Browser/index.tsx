@@ -56,6 +56,7 @@ const MAX_BROWSER_TABS = 5;
  * Component that wraps all the browser
  * individual tabs and the tabs view
  */
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export const Browser = (props): any => {
   const {
     route,
@@ -79,11 +80,13 @@ export const Browser = (props): any => {
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
   const [_tabIdleTimes, setTabIdleTimes] = useState({});
   const accountAvatarType = useSelector((state) =>
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     state.settings.useBlockieIcon
       ? AvatarAccountType.Blockies
       : AvatarAccountType.JazzIcon,
   );
   const isDataCollectionForMarketingEnabled = useSelector(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (state) => state.security.dataCollectionForMarketing,
   );
 
@@ -104,7 +107,9 @@ export const Browser = (props): any => {
   // TODO remove after we release Solana dapp connectivity
   useFocusEffect(
     useCallback(() => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (isSolanaAccount(currentSelectedAccount)) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         toastRef?.current?.showToast({
           variant: ToastVariants.Network,
           networkImageSource: require('../../../images/solana-logo.png'),
@@ -128,6 +133,7 @@ export const Browser = (props): any => {
   ///: END:ONLY_INCLUDE_IF
 
   const newTab = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (url, linkType) => {
       // if tabs.length > MAX_BROWSER_TABS, show the max browser tabs modal
       if (tabs.length >= MAX_BROWSER_TABS) {
@@ -141,12 +147,14 @@ export const Browser = (props): any => {
   );
 
   const updateTabInfo = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (tabID, info) => {
       updateTab(tabID, info);
     },
     [updateTab],
   );
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const hideTabsAndUpdateUrl = (url) => {
     navigation.setParams({
       ...route.params,
@@ -155,6 +163,7 @@ export const Browser = (props): any => {
     });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const switchToTab = (tab) => {
     trackEvent(
       createEventBuilder(MetaMetricsEvents.BROWSER_SWITCH_TAB).build(),
@@ -175,13 +184,17 @@ export const Browser = (props): any => {
       setTabIdleTimes((prevIdleTimes) => {
         const newIdleTimes = { ...prevIdleTimes };
         // for each existing tab
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tabs.forEach((tab) => {
           // if it isn't the active tab
           if (tab.id !== activeTabId) {
             // add idle time for each non-active tab
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             newIdleTimes[tab.id] =
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               (newIdleTimes[tab.id] || 0) + IDLE_TIME_CALC_INTERVAL;
             // if the tab has surpassed the maximum
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             if (newIdleTimes[tab.id] > IDLE_TIME_MAX) {
               // then "archive" it
               updateTab(tab.id, {
@@ -196,6 +209,7 @@ export const Browser = (props): any => {
               isArchived: false,
             });
             // also set new tab idle time back to zero
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             newIdleTimes[tab.id] = 0;
           }
         });
@@ -219,6 +233,7 @@ export const Browser = (props): any => {
           ensByAccountAddress,
         });
         // Show active account toast
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         toastRef?.current?.showToast({
           variant: ToastVariants.Account,
           labelOptions: [
@@ -252,6 +267,7 @@ export const Browser = (props): any => {
       const existingTabId = route.params?.existingTabId;
       if (!currentUrl && !existingTabId) {
         // Nothing from deeplink, carry on.
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const activeTab = tabs.find((tab) => tab.id === activeTabId);
         if (activeTab) {
           // Resume where last left off.
@@ -263,6 +279,7 @@ export const Browser = (props): any => {
             switchToTab(tabs[0]);
           } else {
             // No tabs. Create a new one.
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             newTab();
           }
         }
@@ -277,6 +294,7 @@ export const Browser = (props): any => {
   // Detect when new tab is added and switch to it.
   useEffect(
     () => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (previousTabs.current && tabs.length > previousTabs.current.length) {
         // New tab was added.
         const tabToSwitch = tabs[tabs.length - 1];
@@ -298,6 +316,7 @@ export const Browser = (props): any => {
         // Open url from link.
         newTab(newTabUrl, linkType);
       } else if (existingTabId) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const existingTab = tabs.find((tab) => tab.id === existingTabId);
         if (existingTab) {
           switchToTab(existingTab);
@@ -313,11 +332,13 @@ export const Browser = (props): any => {
   );
 
   const takeScreenshot = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (url, tabID) =>
       new Promise((resolve, reject) => {
         captureScreen({
           format: 'jpg',
           quality: 0.2,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           THUMB_WIDTH,
           THUMB_HEIGHT,
         }).then(
@@ -339,9 +360,11 @@ export const Browser = (props): any => {
 
   const showTabs = useCallback(async () => {
     try {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const activeTab = tabs.find((tab) => tab.id === activeTabId);
       await takeScreenshot(activeTab.url, activeTab.id);
     } catch (e) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(e);
     }
 
@@ -361,12 +384,14 @@ export const Browser = (props): any => {
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const closeTab = (tab) => {
     // If the tab was selected we have to select
     // the next one, and if there's no next one,
     // we select the previous one.
     if (tab.id === activeTabId) {
       if (tabs.length > 1) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tabs.forEach((t, i) => {
           if (t.id === tab.id) {
             let newTab = tabs[i - 1];
@@ -421,7 +446,9 @@ export const Browser = (props): any => {
   const renderBrowserTabWindows = useCallback(
     () =>
       tabs
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         .filter((tab) => !tab.isArchived)
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         .map((tab) => (
           <BrowserTab
             id={tab.id}
@@ -430,6 +457,7 @@ export const Browser = (props): any => {
             linkType={tab.linkType}
             updateTabInfo={updateTabInfo}
             showTabs={showTabs}
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             newTab={newTab}
             isInTabsView={route.params?.showTabs}
             homePageUrl={homePageUrl()}
@@ -456,16 +484,22 @@ export const Browser = (props): any => {
   );
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   tabs: state.browser.tabs,
   activeTab: state.browser.activeTab,
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   createNewTab: (url, linkType) => dispatch(createNewTab(url, linkType)),
   closeAllTabs: () => dispatch(closeAllTabs()),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   closeTab: (id) => dispatch(closeTab(id)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setActiveTab: (id) => dispatch(setActiveTab(id)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateTab: (id, url) => dispatch(updateTab(id, url)),
 });
 

@@ -39,6 +39,7 @@ jest.mock('react-native-keyboard-aware-scroll-view', () => {
 
 jest.mock(
   '../../../../../UI/QRHardware/withQRHardwareAwareness',
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   () => (obj) => obj,
 );
 
@@ -109,11 +110,13 @@ jest.mock('@react-navigation/compat', () => {
   const actualNav = jest.requireActual('@react-navigation/compat');
   return {
     actualNav,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     withNavigation: (obj) => obj,
   };
 });
 
 jest.mock('react-native-gzip', () => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   deflate: (val) => val,
 }));
 
@@ -179,6 +182,7 @@ jest.mock('react-redux', () => {
   };
   return {
     ...jest.requireActual('react-redux'),
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     useSelector: (fn) =>
       fn({
         ...mockState,
@@ -201,7 +205,9 @@ describe('TransactionReview', () => {
     const store = mockStore(mockState);
     const wrapper = shallow(
       <Provider store={store}>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <TransactionReview
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           generateTransform={generateTransform}
         />
       </Provider>,
@@ -211,10 +217,14 @@ describe('TransactionReview', () => {
 
   it('should match snapshot', () => {
     const container = renderWithProvider(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <TransactionReview
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         EIP1559GasData={{}}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         generateTransform={generateTransform}
       />,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       { state: mockState },
     );
     expect(container).toMatchSnapshot();
@@ -234,6 +244,7 @@ describe('TransactionReview', () => {
     const blockaidMetricsParamsSpy = jest
       .spyOn(BlockaidUtils, 'getBlockaidMetricsParams')
       .mockImplementation(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         ({ result_type, reason, providerRequestsCount }) => ({
           security_alert_response: result_type,
           security_alert_reason: reason,
@@ -241,11 +252,15 @@ describe('TransactionReview', () => {
         }),
       );
     const { queryByText, queryByTestId, getByText } = renderWithProvider(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <TransactionReview
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         EIP1559GasData={{}}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         generateTransform={generateTransform}
       />,
       {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         state: {
           ...mockState,
           transaction: {
@@ -288,13 +303,18 @@ describe('TransactionReview', () => {
       .spyOn(TransactionUtils, 'getTransactionReviewActionKey')
       .mockReturnValue(Promise.resolve(undefined));
     const { queryByRole } = renderWithProvider(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <TransactionReview
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         EIP1559GasData={{}}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         generateTransform={generateTransform}
       />,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       { state: mockState },
     );
     const confirmButton = await queryByRole('button', { name: 'Confirm' });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     expect(confirmButton.props.disabled).not.toBe(true);
   });
 
@@ -320,13 +340,18 @@ describe('TransactionReview', () => {
     };
     jest.mock('react-redux', () => ({
       ...jest.requireActual('react-redux'),
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       useSelector: (fn) => fn(mockNewState),
     }));
     const { getByRole } = renderWithProvider(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <TransactionReview
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         EIP1559GasData={{}}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         generateTransform={generateTransform}
       />,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       { state: mockState },
     );
     const confirmButton = getByRole('button', { name: 'Confirm' });
@@ -336,14 +361,20 @@ describe('TransactionReview', () => {
   it('should have confirm button disabled if error is defined', async () => {
     jest.mock('react-redux', () => ({
       ...jest.requireActual('react-redux'),
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       useSelector: (fn) => fn(mockState),
     }));
     const { getByRole } = renderWithProvider(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <TransactionReview
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         EIP1559GasData={{}}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         generateTransform={generateTransform}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         error="You need 1 more ETH to complete the transaction"
       />,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       { state: mockState },
     );
     const confirmButton = getByRole('button', { name: 'Confirm' });

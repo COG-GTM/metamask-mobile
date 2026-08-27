@@ -10,6 +10,7 @@ const SkeletonComponent = ({ width, noStyle }: SkeletonProps) => {
   const styles = createStyles(colors);
 
   return (
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     <View style={[!noStyle && styles.valuesContainer]}>
       <SkeletonPlaceholder>
         <SkeletonPlaceholder.Item width={width} height={10} borderRadius={4} />

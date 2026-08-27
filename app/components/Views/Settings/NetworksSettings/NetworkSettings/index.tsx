@@ -96,6 +96,7 @@ import Text, {
   TextVariant,
 } from '../../../../../component-library/components/Texts/Text';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     base: {
@@ -297,6 +298,7 @@ const createStyles = (colors) =>
     },
     messageWarning: {
       paddingVertical: 2,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       fontSize: 14,
       color: colors.warning.default,
       ...typography.sBodyMD,
@@ -310,6 +312,7 @@ const createStyles = (colors) =>
     },
     inlineWarning: {
       paddingVertical: 2,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       fontSize: 14,
       color: colors.text.default,
       ...typography.sBodyMD,
@@ -457,14 +460,17 @@ export class NetworkSettings extends PureComponent {
 
   getOtherNetworks = () => allNetworks.slice(1);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   templateInfuraRpc = (endpoint) =>
     endpoint.endsWith('{infuraProjectId}')
       ? endpoint.replace('{infuraProjectId}', infuraProjectId ?? '')
       : endpoint;
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation, route } = this.props;
     const isCustomMainnet = route.params?.isCustomMainnet;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -480,6 +486,7 @@ export class NetworkSettings extends PureComponent {
 
   componentDidMount = () => {
     this.updateNavBar();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { route, networkConfigurations } = this.props;
 
     const networkTypeOrRpcUrl = route.params?.network;
@@ -498,6 +505,7 @@ export class NetworkSettings extends PureComponent {
     // If no navigation param, user clicked on add network
     if (networkTypeOrRpcUrl) {
       if (allNetworks.find((net) => networkTypeOrRpcUrl === net)) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const networkInformation = Networks[networkTypeOrRpcUrl];
         chainId = networkInformation.chainId.toString();
 
@@ -524,34 +532,47 @@ export class NetworkSettings extends PureComponent {
         ticker = networkConfigurations?.[chainId]?.nativeCurrency;
       } else {
         const networkConfiguration = Object.values(networkConfigurations).find(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           ({ rpcEndpoints, defaultRpcEndpointIndex }) =>
             rpcEndpoints[defaultRpcEndpointIndex].url === networkTypeOrRpcUrl ||
             rpcEndpoints[defaultRpcEndpointIndex].networkClientId ===
               networkTypeOrRpcUrl,
         );
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         nickname = networkConfiguration?.name;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         chainId = networkConfiguration?.chainId;
         blockExplorerUrl =
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           networkConfiguration?.blockExplorerUrls[
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             networkConfiguration?.defaultBlockExplorerUrlIndex
           ];
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         ticker = networkConfiguration?.nativeCurrency;
         editable = true;
         rpcUrl =
           networkConfigurations?.[chainId]?.rpcEndpoints[
             networkConfigurations?.[chainId]?.defaultRpcEndpointIndex
           ]?.url;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         rpcUrls = networkConfiguration?.rpcEndpoints;
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         blockExplorerUrls = networkConfiguration?.blockExplorerUrls;
         rpcName =
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           networkConfiguration?.rpcEndpoints[
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             networkConfiguration?.defaultRpcEndpointIndex
           ]?.name ??
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           networkConfiguration?.rpcEndpoints[
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             networkConfiguration?.defaultRpcEndpointIndex
           ]?.type;
 
         selectedRpcEndpointIndex =
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           networkConfiguration?.defaultRpcEndpointIndex;
       }
 
@@ -588,13 +609,16 @@ export class NetworkSettings extends PureComponent {
     }, 100);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   componentDidUpdate = (prevProps) => {
     this.updateNavBar();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (this.props.matchedChainNetwork !== prevProps.matchedChainNetwork) {
       this.validateRpcAndChainId();
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateNetworkList = (networkList) => {
     this.setState({
       networkList,
@@ -611,6 +635,7 @@ export class NetworkSettings extends PureComponent {
    * @returns {string} The props chainId in decimal, or the original value if
    * it can't be converted.
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   getDecimalChainId(chainId) {
     if (!chainId || typeof chainId !== 'string' || !chainId.startsWith('0x')) {
       return chainId;
@@ -628,7 +653,9 @@ export class NetworkSettings extends PureComponent {
     const { rpcUrl, chainId } = this.state;
 
     if (rpcUrl && chainId) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const chainToMatch = this.props.matchedChainNetwork?.safeChainsList?.find(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         (network) => network.chainId === parseInt(chainId),
       );
 
@@ -655,6 +682,7 @@ export class NetworkSettings extends PureComponent {
    * @param {string} parsedChainId - The parsed, hex string chain ID.
    * @param {string} rpcUrl - The RPC URL from the form.
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   validateChainIdOnSubmit = async (formChainId, parsedChainId, rpcUrl) => {
     let errorMessage;
     let endpointChainId;
@@ -666,6 +694,7 @@ export class NetworkSettings extends PureComponent {
         'eth_chainId',
       );
     } catch (err) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(err, 'Failed to fetch the chainId from the endpoint.');
       providerError = err;
     }
@@ -685,6 +714,7 @@ export class NetworkSettings extends PureComponent {
           }
           endpointChainId = endpointChainIdNumber.toString(10);
         } catch (err) {
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           Logger.error(err, {
             endpointChainId,
             message: 'Failed to convert endpoint chain ID to decimal',
@@ -707,7 +737,9 @@ export class NetworkSettings extends PureComponent {
     return true;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   checkIfChainIdExists = async (chainId) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { networkConfigurations } = this.props;
 
     let hexChainId;
@@ -720,6 +752,7 @@ export class NetworkSettings extends PureComponent {
 
     // Check if any network configuration matches the given chainId
     const chainIdExists = Object.values(networkConfigurations).some(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       (item) => item.chainId === hexChainId,
     );
 
@@ -727,11 +760,14 @@ export class NetworkSettings extends PureComponent {
     return isNetworkUiRedesignEnabled() && chainIdExists;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   checkIfRpcUrlExists = async (rpcUrl) => {
     // First, check custom networks in networkConfigurationsByChainId
     const checkCustomNetworks = Object.values(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.networkConfigurations,
     ).filter((item) =>
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       item.rpcEndpoints?.some((endpoint) => endpoint.url === rpcUrl),
     );
 
@@ -743,9 +779,12 @@ export class NetworkSettings extends PureComponent {
     return [];
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   checkIfNetworkExists = async (rpcUrl) => {
     const checkCustomNetworks = Object.values(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.networkConfigurations,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     ).filter((item) => item.rpcUrl === rpcUrl);
 
     if (checkCustomNetworks.length > 0) {
@@ -758,6 +797,7 @@ export class NetworkSettings extends PureComponent {
 
       return checkCustomNetworks;
     }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const defaultNetworks = getAllNetworks().map((item) => Networks[item]);
     const checkDefaultNetworks = defaultNetworks.filter(
       (item) => Number(item.rpcUrl) === rpcUrl,
@@ -768,22 +808,36 @@ export class NetworkSettings extends PureComponent {
     return [];
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   checkIfNetworkNotExistsByChainId = async (chainId) =>
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     Object.values(this.props.networkConfigurations).filter(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       (item) => item.chainId !== chainId,
     );
 
   handleNetworkUpdate = async ({
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     rpcUrl,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     chainId,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     nickname,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     ticker,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     blockExplorerUrl,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     blockExplorerUrls,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     rpcUrls,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     isNetworkExists,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     isCustomMainnet,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     shouldNetworkSwitchPopToWallet,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     navigation,
   }) => {
     const { NetworkController } = Engine.context;
@@ -793,11 +847,14 @@ export class NetworkSettings extends PureComponent {
       url.set('protocol', 'https:');
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const existingNetwork = this.props.networkConfigurations[chainId];
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const indexRpc = rpcUrls.findIndex(({ url }) => url === rpcUrl);
 
     const blockExplorerIndex = blockExplorerUrls.findIndex(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       (url) => url === blockExplorerUrl,
     );
 
@@ -851,12 +908,18 @@ export class NetworkSettings extends PureComponent {
       editable,
     } = this.state;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const ticker = this.state.ticker && this.state.ticker.toUpperCase();
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       networkOnboardedState,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       route,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isAllNetworks,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       tokenNetworkFilter,
     } = this.props;
     const isCustomMainnet = route.params?.isCustomMainnet;
@@ -892,6 +955,7 @@ export class NetworkSettings extends PureComponent {
     // Prevent the network switch modal from showing post onboarding.
     const showNetworkOnboarding = isCustomMainnet ? false : isOnboarded;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const formChainId = stateChainId.trim().toLowerCase();
 
     // Ensure chainId is a 0x-prefixed, lowercase hex string
@@ -908,10 +972,12 @@ export class NetworkSettings extends PureComponent {
     if (isPortfolioViewEnabled()) {
       const { PreferencesController } = Engine.context;
       if (!isAllNetworks) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         PreferencesController.setTokenNetworkFilter({
           [chainId]: true,
         });
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         PreferencesController.setTokenNetworkFilter({
           ...tokenNetworkFilter,
           [chainId]: true,
@@ -931,6 +997,7 @@ export class NetworkSettings extends PureComponent {
       isCustomMainnet,
       shouldNetworkSwitchPopToWallet,
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       nativeToken,
       networkType,
       networkUrl,
@@ -942,6 +1009,7 @@ export class NetworkSettings extends PureComponent {
    * Validates rpc url, setting a warningRpcUrl if is invalid
    * It also changes validatedRpcURL to true, indicating that was validated
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   validateRpcUrl = async (rpcUrl) => {
     const isNetworkExists = await this.checkIfNetworkExists(rpcUrl);
     const isRpcExists = await this.checkIfRpcUrlExists(rpcUrl);
@@ -1039,6 +1107,7 @@ export class NetworkSettings extends PureComponent {
     let errorMessage = '';
 
     // Check if it's a valid chainId format
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (chainId.startsWith('0x')) {
       if (!regex.validChainIdHex.test(chainId)) {
         errorMessage = strings('app_settings.invalid_hex_number');
@@ -1047,6 +1116,7 @@ export class NetworkSettings extends PureComponent {
       }
     } else if (!regex.validChainId.test(chainId)) {
       errorMessage = strings('app_settings.invalid_number');
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     } else if (chainId.startsWith('0')) {
       errorMessage = strings('app_settings.invalid_number_leading_zeros');
     }
@@ -1076,6 +1146,7 @@ export class NetworkSettings extends PureComponent {
         'eth_chainId',
       );
     } catch (err) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(err, 'Failed to fetch the chainId from the endpoint.');
       providerError = err;
     }
@@ -1112,6 +1183,7 @@ export class NetworkSettings extends PureComponent {
   validateSymbol = (chainToMatch = null) => {
     const { ticker, networkList } = this.state;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { useSafeChainsListValidation } = this.props;
 
     if (!useSafeChainsListValidation) {
@@ -1119,10 +1191,13 @@ export class NetworkSettings extends PureComponent {
     }
 
     const symbol = chainToMatch
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ? chainToMatch?.nativeCurrency?.symbol ?? null
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       : networkList?.nativeCurrency?.symbol ?? null;
 
     const symbolToUse =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       symbol?.toLowerCase() === ticker?.toLowerCase() ? undefined : symbol;
 
     return this.setState({
@@ -1136,6 +1211,7 @@ export class NetworkSettings extends PureComponent {
    */
   validateName = (chainToMatch = null) => {
     const { nickname, networkList, chainId } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { useSafeChainsListValidation } = this.props;
   
     if (!useSafeChainsListValidation) {
@@ -1143,6 +1219,7 @@ export class NetworkSettings extends PureComponent {
     }
 
     // Get the name either from chainToMatch or networkList
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const name = chainToMatch?.name || networkList?.name || null;
 
     // Determine nameToUse based on chainId and nickname comparison
@@ -1169,7 +1246,9 @@ export class NetworkSettings extends PureComponent {
       initialState,
     } = this.state;
     const actualState =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       rpcUrl +
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       blockExplorerUrl +
       nickname +
       chainId +
@@ -1216,6 +1295,7 @@ export class NetworkSettings extends PureComponent {
     return false;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onRpcUrlAdd = async (url) => {
     await this.setState({
       rpcUrlForm: url,
@@ -1225,15 +1305,18 @@ export class NetworkSettings extends PureComponent {
       warningSymbol: undefined,
       warningName: undefined,
     });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.validateRpcUrl(this.state.rpcUrlForm);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onRpcNameAdd = async (name) => {
     await this.setState({
       rpcNameForm: name,
     });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onRpcItemAdd = async (url, name) => {
     if (!url) {
       return;
@@ -1243,6 +1326,7 @@ export class NetworkSettings extends PureComponent {
 
     await this.setState((prevState) => ({
       rpcUrls: [
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         ...prevState.rpcUrls,
         { url, name: rpcName, type: RpcEndpointType.Custom },
       ],
@@ -1258,6 +1342,7 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onBlockExplorerItemAdd = async (url) => {
     // If URL is empty or undefined, return early
     if (!url) {
@@ -1266,6 +1351,7 @@ export class NetworkSettings extends PureComponent {
 
     // Check if the URL already exists in blockExplorerUrls
     const { blockExplorerUrls } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const urlExists = blockExplorerUrls.includes(url);
 
     if (urlExists) {
@@ -1275,6 +1361,7 @@ export class NetworkSettings extends PureComponent {
 
     // If the URL doesn't exist, proceed with adding it
     await this.setState((prevState) => ({
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       blockExplorerUrls: [...prevState.blockExplorerUrls, url],
     }));
 
@@ -1287,6 +1374,7 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onRpcUrlChange = async (url) => {
     const { addMode } = this.state;
     await this.setState({
@@ -1306,6 +1394,7 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onRpcUrlChangeWithName = async (url, name, type) => {
     const nameToUse = name ?? type;
     const { addMode } = this.state;
@@ -1330,6 +1419,7 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onBlockExplorerUrlChange = async (url) => {
     const { addMode } = this.state;
     await this.setState({
@@ -1345,9 +1435,11 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onRpcUrlDelete = async (url) => {
     const { addMode } = this.state;
     await this.setState((prevState) => ({
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       rpcUrls: prevState.rpcUrls.filter((rpcUrl) => rpcUrl.url !== url),
     }));
     this.validateName();
@@ -1358,10 +1450,13 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onBlockExplorerUrlDelete = async (url) => {
     const { addMode } = this.state;
     await this.setState((prevState) => ({
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       blockExplorerUrls: prevState.blockExplorerUrls.filter(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         (explorerUrl) => explorerUrl !== url,
       ),
     }));
@@ -1373,12 +1468,14 @@ export class NetworkSettings extends PureComponent {
     this.getCurrentState();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onNicknameChange = async (nickname) => {
     await this.setState({ nickname });
     this.getCurrentState();
   };
 
   // this function will autofill the name field with the value in parameter
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   autoFillNameField = (nickName) => {
     this.onNicknameChange(nickName);
     this.setState({
@@ -1386,17 +1483,20 @@ export class NetworkSettings extends PureComponent {
     });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onChainIDChange = async (chainId) => {
     await this.setState({ chainId, validatedChainId: false });
     this.getCurrentState();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onTickerChange = async (ticker) => {
     await this.setState({ ticker, validatedSymbol: false });
     this.getCurrentState();
   };
 
   // this function will autofill the symbol field with the value in parameter
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   autoFillSymbolField = (ticker) => {
     this.onTickerChange(ticker);
     this.setState({
@@ -1438,18 +1538,22 @@ export class NetworkSettings extends PureComponent {
 
   jumpToRpcURL = () => {
     const { current } = this.inputRpcURL;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     current && current.focus();
   };
   jumpToChainId = () => {
     const { current } = this.inputChainId;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     current && current.focus();
   };
   jumpToSymbol = () => {
     const { current } = this.inputSymbol;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     current && current.focus();
   };
   jumpBlockExplorerURL = () => {
     const { current } = this.inputBlockExplorerURL;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     current && current.focus();
   };
 
@@ -1497,6 +1601,7 @@ export class NetworkSettings extends PureComponent {
 
   switchToMainnet = async () => {
     const { MultichainNetworkController } = Engine.context;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { networkConfigurations } = this.props;
 
     const { networkClientId } =
@@ -1512,9 +1617,11 @@ export class NetworkSettings extends PureComponent {
   };
 
   removeRpcUrl = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation, networkConfigurations, providerConfig } = this.props;
     const { rpcUrl } = this.state;
     if (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       compareSanitizedUrl(rpcUrl, providerConfig.rpcUrl) &&
       providerConfig.type === RPC
     ) {
@@ -1523,7 +1630,9 @@ export class NetworkSettings extends PureComponent {
 
     const entry = Object.entries(networkConfigurations).find(
       ([, networkConfiguration]) =>
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         networkConfiguration.rpcEndpoints[
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           networkConfiguration.defaultRpcEndpointIndex
         ].url === rpcUrl,
     );
@@ -1533,12 +1642,14 @@ export class NetworkSettings extends PureComponent {
     }
     const [, networkConfiguration] = entry;
     const { NetworkController } = Engine.context;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     NetworkController.removeNetwork(networkConfiguration.chainId);
     navigation.goBack();
   };
 
   goToNetworkEdit = () => {
     const { rpcUrl } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     navigation.goBack();
     navigation.navigate(Routes.EDIT_NETWORK, {
@@ -1548,6 +1659,7 @@ export class NetworkSettings extends PureComponent {
     });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   showNetworkModal = (networkConfiguration) => {
     this.setState({
       showPopularNetworkModal: true,
@@ -1574,6 +1686,7 @@ export class NetworkSettings extends PureComponent {
       warningRpcUrl,
       warningChainId,
       warningSymbol,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       warningName,
       enableAction,
       inputWidth,
@@ -1585,18 +1698,23 @@ export class NetworkSettings extends PureComponent {
       showMultiBlockExplorerAddModal,
       showAddRpcForm,
       showAddBlockExplorerForm,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       rpcUrlForm,
       rpcNameForm,
       rpcName,
       blockExplorerUrlForm,
     } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { route, networkConfigurations } = this.props;
     const isCustomMainnet = route.params?.isCustomMainnet;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const themeAppearance =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.context.themeAppearance || themeAppearanceLight;
     const styles = createStyles(colors);
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const formatNetworkRpcUrl = (rpcUrl, chainId) => {
       const isNetworkPrePopulated = PopularList.find(
         (val) => val.rpcUrl === rpcUrl && val.chainId === chainId,
@@ -1663,6 +1781,7 @@ export class NetworkSettings extends PureComponent {
       ? { ...styles.button, ...styles.disabledButton }
       : styles.button;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const url = new URL(rpcUrl);
 
     const selectedNetwork = {
@@ -1742,6 +1861,7 @@ export class NetworkSettings extends PureComponent {
         if (validatedSymbol) {
           return (
             <View>
+              {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
               <Text style={styles.inlineWarning}>
                 {strings('wallet.suggested_token_symbol')}{' '}
                 <Text
@@ -1753,6 +1873,7 @@ export class NetworkSettings extends PureComponent {
                   {warningSymbol}
                 </Text>
               </Text>
+              {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
               <Text style={styles.inlineWarningMessage}>
                 {strings('wallet.chain_list_returned_different_ticker_symbol')}
               </Text>
@@ -1761,6 +1882,7 @@ export class NetworkSettings extends PureComponent {
         }
         return (
           <View>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <Text style={styles.inlineWarning}>
               {strings('wallet.suggested_token_symbol')}{' '}
               <Text
@@ -1846,9 +1968,11 @@ export class NetworkSettings extends PureComponent {
         showPopularNetworkModal={this.state.showPopularNetworkModal}
         isNetworkModalVisible={this.state.showNetworkDetailsModal}
         closeNetworkModal={this.toggleNetworkDetailsModal}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         selectedNetwork={{ ...selectedNetwork, chainId: toHex(chainId) }}
         toggleWarningModal={this.toggleWarningModal}
         showNetworkModal={this.showNetworkModal}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         switchTab={this.tabView}
         shouldNetworkSwitchPopToWallet={shouldNetworkSwitchPopToWallet}
       />
@@ -1869,6 +1993,7 @@ export class NetworkSettings extends PureComponent {
               {strings('app_settings.network_name_label')}
             </Text>
             <TextInput
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               style={inputErrorNameStyle}
               autoCapitalize={'none'}
               autoCorrect={false}
@@ -1888,9 +2013,11 @@ export class NetworkSettings extends PureComponent {
             />
             {warningName ? (
               <View>
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 <Text style={styles.messageWarning}>
                   {strings('wallet.incorrect_network_name_warning')}
                 </Text>
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 <Text style={styles.inlineWarning}>
                   {strings('wallet.suggested_name')}{' '}
                   <Text
@@ -1913,6 +2040,7 @@ export class NetworkSettings extends PureComponent {
                   key={rpcUrl}
                   testID={NetworksViewSelectorsIDs.ICON_BUTTON_RPC}
                   variant={CellVariant.SelectWithMenu}
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   title={rpcName || rpcUrl}
                   // Conditionally include secondaryText only if rpcName exists
                   {...(rpcName
@@ -1920,7 +2048,9 @@ export class NetworkSettings extends PureComponent {
                         secondaryText:
                           hideKeyFromUrl(rpcUrl) ??
                           hideKeyFromUrl(
+                            // @ts-expect-error -- legacy JavaScript UI type boundary
                             networkConfigurations?.[chainId]?.rpcEndpoints?.[
+                              // @ts-expect-error -- legacy JavaScript UI type boundary
                               networkConfigurations?.[chainId]
                                 ?.defaultRpcEndpointIndex
                             ]?.url,
@@ -1937,6 +2067,7 @@ export class NetworkSettings extends PureComponent {
                 />
               </View>
             ) : (
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               <TextInput
                 ref={this.inputRpcURL}
                 style={inputErrorRpcStyle}
@@ -1976,6 +2107,7 @@ export class NetworkSettings extends PureComponent {
             <Text style={styles.label}>
               {strings('app_settings.network_chain_id_label')}
             </Text>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <TextInput
               ref={this.inputChainId}
               style={inputChainIdStyle}
@@ -2001,6 +2133,7 @@ export class NetworkSettings extends PureComponent {
             <Text style={styles.label}>
               {strings('app_settings.network_symbol_label')}
             </Text>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <TextInput
               ref={this.inputSymbol}
               style={inputErrorSymbolStyle}
@@ -2032,6 +2165,7 @@ export class NetworkSettings extends PureComponent {
                   key={rpcUrl}
                   testID={NetworksViewSelectorsIDs.ICON_BUTTON_BLOCK_EXPLORER}
                   variant={CellVariant.SelectWithMenu}
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   title={blockExplorerUrl}
                   isSelected={false}
                   withAvatar={false}
@@ -2046,6 +2180,7 @@ export class NetworkSettings extends PureComponent {
                 />
               </View>
             ) : (
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               <TextInput
                 ref={this.inputBlockExplorerURL}
                 style={inputStyle}
@@ -2107,6 +2242,7 @@ export class NetworkSettings extends PureComponent {
                 <Text style={styles.label}>
                   {strings('app_settings.network_rpc_url_label')}
                 </Text>
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 <TextInput
                   ref={this.inputRpcURL}
                   style={inputErrorRpcStyle}
@@ -2129,6 +2265,7 @@ export class NetworkSettings extends PureComponent {
                 <Text style={styles.label}>
                   {strings('app_settings.network_rpc_name_label')}
                 </Text>
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 <TextInput
                   ref={this.inputNameRpcURL}
                   style={inputErrorRpcStyle}
@@ -2185,6 +2322,7 @@ export class NetworkSettings extends PureComponent {
                 <Text style={styles.label}>
                   {strings('app_settings.network_block_explorer_label')}
                 </Text>
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 <TextInput
                   ref={this.inputBlockExplorerURL}
                   style={inputStyle}
@@ -2204,6 +2342,7 @@ export class NetworkSettings extends PureComponent {
                 />
                 {blockExplorerUrl &&
                   (!isUrl(blockExplorerUrl) ||
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     blockExplorerUrls.includes(blockExplorerUrlForm)) && (
                     <Text style={styles.warningText}>
                       {strings('app_settings.invalid_block_explorer_url')}
@@ -2386,7 +2525,9 @@ export class NetworkSettings extends PureComponent {
 
   toggleNetworkDetailsModal = async () => {
     const { rpcUrl, chainId: stateChainId } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const formChainId = stateChainId.trim().toLowerCase();
 
     // Ensure chainId is a 0x-prefixed, lowercase hex string
@@ -2411,7 +2552,9 @@ export class NetworkSettings extends PureComponent {
 
   goToLearnMore = () => Linking.openURL(strings('networks.learn_more_url'));
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderTabBar = (props) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
@@ -2431,12 +2574,14 @@ export class NetworkSettings extends PureComponent {
   };
 
   render() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { route } = this.props;
     const networkTypeOrRpcUrl = route.params?.network;
     const shouldNetworkSwitchPopToWallet =
       route.params?.shouldNetworkSwitchPopToWallet ?? true;
     const shouldShowPopularNetworks =
       route.params?.shouldShowPopularNetworks ?? true;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -2454,10 +2599,12 @@ export class NetworkSettings extends PureComponent {
               tabBarTextStyle={styles.tabLabelStyle}
               renderTabBar={this.renderTabBar}
               ref={(tabView) => {
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 this.tabView = tabView;
               }}
             >
               <View
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 tabLabel={strings('app_settings.popular')}
                 key={AppConstants.ADD_CUSTOM_NETWORK_POPULAR_TAB_ID}
                 style={styles.networksWrapper}
@@ -2467,9 +2614,11 @@ export class NetworkSettings extends PureComponent {
                   showPopularNetworkModal={this.state.showPopularNetworkModal}
                   isNetworkModalVisible={this.state.showPopularNetworkModal}
                   closeNetworkModal={this.onCancel}
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   selectedNetwork={this.state.popularNetwork}
                   toggleWarningModal={this.toggleWarningModal}
                   showNetworkModal={this.showNetworkModal}
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   switchTab={this.tabView}
                   shouldNetworkSwitchPopToWallet={
                     shouldNetworkSwitchPopToWallet
@@ -2478,6 +2627,7 @@ export class NetworkSettings extends PureComponent {
               </View>
 
               <View
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 tabLabel={strings('app_settings.custom_network_name')}
                 key={AppConstants.ADD_CUSTOM_NETWORK_CUSTOM_TAB_ID}
                 testID={NetworksViewSelectorsIDs.CUSTOM_NETWORKS_CONTAINER}
@@ -2510,11 +2660,16 @@ export class NetworkSettings extends PureComponent {
 }
 
 NetworkSettings.contextType = ThemeContext;
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
   showNetworkOnboardingAction: ({
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     networkUrl,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     networkType,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     nativeToken,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     showNetworkOnboarding,
   }) =>
     dispatch(
@@ -2527,6 +2682,7 @@ const mapDispatchToProps = (dispatch) => ({
     ),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   providerConfig: selectProviderConfig(state),
   networkConfigurations: selectNetworkConfigurations(state),
@@ -2539,6 +2695,7 @@ const mapStateToProps = (state) => ({
 export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   withIsOriginalNativeToken,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(NetworkSettings));
 
 interface NetworkSettingsProps {

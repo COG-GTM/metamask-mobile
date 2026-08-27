@@ -26,18 +26,31 @@ import { getTicker } from '../../../../../../util/transactions';
 import EditGasFee1559Update from '../EditGasFee1559Update';
 
 const UpdateEIP1559Tx = ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gas,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   accounts,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   selectedAddress,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   ticker,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   existingGas,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasFeeEstimates,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasEstimateType,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   primaryCurrency,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   isCancel,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   chainId,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onCancel,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onSave,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 }): Props => {
   const [animateOnGasChange, setAnimateOnGasChange] = useState(false);
   const [gasSelected, setGasSelected] = useState(
@@ -73,6 +86,7 @@ const UpdateEIP1559Tx = ({
   }, []);
 
   const isMaxFeePerGasMoreThanLegacy = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (maxFeePerGas) => {
       const newDecMaxFeePerGas = new BigNumber(existingGas.maxFeePerGas).times(
         new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE),
@@ -86,6 +100,7 @@ const UpdateEIP1559Tx = ({
   );
 
   const isMaxPriorityFeePerGasMoreThanLegacy = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (maxPriorityFeePerGas) => {
       const newDecMaxPriorityFeePerGas = new BigNumber(
         existingGas.maxPriorityFeePerGas,
@@ -99,6 +114,7 @@ const UpdateEIP1559Tx = ({
   );
 
   const validateAmount = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (updateTx) => {
       let error;
       const totalMaxHexPrefixed = addHexPrefix(updateTx.totalMaxHex);
@@ -173,6 +189,7 @@ const UpdateEIP1559Tx = ({
             new BigNumber(gasFeeEstimates.medium.suggestedMaxFeePerGas),
           ).result
         ) {
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           updateTx1559Options.current = {
             maxPriortyFeeThreshold: newDecMaxPriorityFeePerGas,
             maxFeeThreshold: newDecMaxFeePerGas,
@@ -183,8 +200,10 @@ const UpdateEIP1559Tx = ({
           onlyDisplayHigh.current = true;
           //Disable polling
           stopUpdateGas.current = true;
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           setGasSelected('');
         } else {
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           updateTx1559Options.current = {
             maxPriortyFeeThreshold:
               gasFeeEstimates.medium.suggestedMaxPriorityFeePerGas,
@@ -211,11 +230,13 @@ const UpdateEIP1559Tx = ({
     isMaxPriorityFeePerGasMoreThanLegacy,
   ]);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const update1559TempGasValue = (selected) => {
     stopUpdateGas.current = !selected;
     setGasSelected(selected);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const onSaveTxnWithError = (gasTxn) => {
     gasTxn.error = validateAmount(gasTxn);
     onSave(gasTxn);
@@ -235,6 +256,7 @@ const UpdateEIP1559Tx = ({
     suggestedGasLimit,
   };
   return (
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     <EditGasFee1559Update
       selectedGasValue={gasSelected}
       gasOptions={gasFeeEstimates}
@@ -257,6 +279,7 @@ const UpdateEIP1559Tx = ({
   );
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state, ownProps) => ({
   accounts: selectAccounts(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),

@@ -17,6 +17,7 @@ const WatchAssetApproval = () => {
       isVisible={approvalRequest.type === ApprovalTypes.WATCH_ASSET}
       onCancel={onReject}
     >
+      {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
       <WatchAssetRequest
         onCancel={onReject}
         onConfirm={onConfirm}

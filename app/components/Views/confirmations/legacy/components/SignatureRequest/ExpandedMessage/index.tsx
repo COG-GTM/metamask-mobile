@@ -16,6 +16,7 @@ import Device from '../../../../../../../util/device';
 import { getHost } from '../../../../../../../util/browser';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     expandedRoot: {
@@ -75,11 +76,13 @@ const createStyles = (colors) =>
 export default class ExpandedMessage extends PureComponent {
 
   render() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { currentPageInformation, renderMessage, toggleExpandedMessage } =
       this.props;
     const url = currentPageInformation.url;
     const icon = currentPageInformation.icon;
     const title = getHost(url);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 

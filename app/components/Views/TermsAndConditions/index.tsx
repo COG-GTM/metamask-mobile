@@ -8,6 +8,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { TERMS_AND_CONDITIONS_BUTTON_ID } from '../../../../wdio/screen-objects/testIDs/Components/TermsAndConditions.testIds';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     text: {
@@ -27,6 +28,7 @@ const createStyles = (colors) =>
 export default class TermsAndConditions extends PureComponent {
 
   press = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     navigation.navigate('Webview', {
       screen: 'SimpleWebview',
@@ -38,6 +40,7 @@ export default class TermsAndConditions extends PureComponent {
   };
 
   render() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 

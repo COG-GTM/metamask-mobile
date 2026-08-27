@@ -38,27 +38,48 @@ import TimeEstimateInfoModal from '../../../../../UI/TimeEstimateInfoModal';
 import createStyles from './styles';
 
 const EditGasFee1559Update = ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   selectedGasValue,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasOptions,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   primaryCurrency,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   chainId,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onCancel,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onChange,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onSave,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   error,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   dappSuggestedGas,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   ignoreOptions,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateOption,
   extendOptions = {},
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   recommended,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   warningMinimumEstimateOption,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   suggestedEstimateOption,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   animateOnChange,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   isAnimating,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   analyticsParams,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   warning,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   selectedGasObject,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onlyGas,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 }): Props => {
   const [modalInfo, updateModalInfo] = useState({
     isVisible: false,
@@ -142,6 +163,7 @@ const EditGasFee1559Update = ({
   }, [showLearnMoreModal]);
 
   const toggleInfoModal = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (value) => {
       updateModalInfo({ isVisible: !modalInfo.isVisible, value });
     },
@@ -172,6 +194,7 @@ const EditGasFee1559Update = ({
   ]);
 
   const changeGas = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (gas, option) => {
       setSelectedOption(option);
       updateGasObject({
@@ -186,6 +209,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedGasLimit = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (value) => {
       const newGas = { ...gasTransaction, suggestedGasLimit: value };
       changeGas(newGas, null);
@@ -194,6 +218,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxPriorityFee = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (value) => {
       const lowerValue = new BigNumber(
         gasOptions?.[
@@ -227,6 +252,7 @@ const EditGasFee1559Update = ({
           strings('edit_gas_fee_eip1559.max_priority_fee_high'),
         );
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         setMaxPriorityFeeError(null);
       }
 
@@ -247,6 +273,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxFeePerGas = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (value) => {
       const lowerValue = new BigNumber(
         gasOptions?.[warningMinimumEstimateOption]?.suggestedMaxFeePerGas,
@@ -293,6 +320,7 @@ const EditGasFee1559Update = ({
   );
 
   const selectOption = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (option) => {
       setSelectedOption(option);
       setMaxFeeError('');
@@ -303,6 +331,7 @@ const EditGasFee1559Update = ({
   );
 
   const shouldIgnore = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (option) => ignoreOptions?.find((item) => item === option),
     [ignoreOptions],
   );
@@ -326,6 +355,7 @@ const EditGasFee1559Update = ({
         .filter(({ name }) => !shouldIgnore(name))
         .map(({ name, label, ...option }) => ({
           name,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           label: function LabelComponent(selected, disabled): any {
             return (
               <Text bold primary={selected && !disabled}>
@@ -335,6 +365,7 @@ const EditGasFee1559Update = ({
           },
           topLabel: recommended?.name === name && recommended.render,
           ...option,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           ...extendOptions[name],
         })),
     [recommended, extendOptions, shouldIgnore],
@@ -344,7 +375,9 @@ const EditGasFee1559Update = ({
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
   const switchNativeCurrencyDisplayOptions = (
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     nativeValue,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     fiatValue,
   ) => {
     if (nativeCurrencySelected) return nativeValue;
@@ -354,8 +387,11 @@ const EditGasFee1559Update = ({
   const valueToWatch = `${renderableGasFeeMinNative}${renderableGasFeeMaxNative}`;
 
   const LeftLabelComponent = ({
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     value,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     infoValue,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   }): Props => (
     <View style={styles.labelTextContainer}>
       <Text black bold noMargin>
@@ -374,6 +410,7 @@ const EditGasFee1559Update = ({
     </View>
   );
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const RightLabelComponent = ({ value }): Props => (
     <Text noMargin small grey>
       <Text bold reset>
@@ -384,8 +421,11 @@ const EditGasFee1559Update = ({
   );
 
   const TextComponent = ({
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     title,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     value,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   }): Props => (
     <>
       <Text noMargin primary infoModal bold style={styles.learnMoreLabels}>
@@ -397,6 +437,7 @@ const EditGasFee1559Update = ({
     </>
   );
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const renderInputs = (option) => (
     <View>
       <FadeAnimationView
@@ -404,6 +445,7 @@ const EditGasFee1559Update = ({
         animateOnChange={animateOnChange}
       >
         <View>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <HorizontalSelector
             selected={selectedOption}
             onPress={selectOption}

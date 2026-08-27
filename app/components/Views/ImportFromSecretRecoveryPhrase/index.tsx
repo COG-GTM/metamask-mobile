@@ -13,6 +13,7 @@ import {
 import { connect } from 'react-redux';
 import StorageWrapper from '../../../store/storage-wrapper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import zxcvbn from 'zxcvbn';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { OutlinedTextField } from 'react-native-material-textfield';
@@ -77,11 +78,17 @@ const IOS_REJECTED_BIOMETRICS_ERROR =
  * The SRP was formally called the seed phrase
  */
 const ImportFromSecretRecoveryPhrase = ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   navigation,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   passwordSet,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setLockTime,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   seedphraseBackedUp,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setOnboardingWizardStep,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   route,
 }): ImportFromSecretRecoveryPhraseProps => {
   const { colors, themeAppearance } = useTheme();
@@ -104,6 +111,7 @@ const ImportFromSecretRecoveryPhrase = ({
   const passwordInput = React.createRef();
   const confirmPasswordInput = React.createRef();
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const track = (event, properties) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
@@ -126,11 +134,13 @@ const ImportFromSecretRecoveryPhrase = ({
         PASSCODE_DISABLED,
       );
       if (authData.currentAuthType === AUTHENTICATION_TYPE.PASSCODE) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         setBiometryType(passcodeType(authData.currentAuthType));
         setBiometryChoice(
           !(passcodePreviouslyDisabled && passcodePreviouslyDisabled === TRUE),
         );
       } else if (authData.availableBiometryType) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         setBiometryType(authData.availableBiometryType);
         setBiometryChoice(!(previouslyDisabled && previouslyDisabled === TRUE));
       }
@@ -154,6 +164,7 @@ const ImportFromSecretRecoveryPhrase = ({
     termsOfUse();
   }, [termsOfUse]);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const updateBiometryChoice = async (biometryChoice) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     setBiometryChoice(biometryChoice);
@@ -163,6 +174,7 @@ const ImportFromSecretRecoveryPhrase = ({
    * This function handles the case when the user rejects the OS prompt for allowing use of biometrics.
    * If this occurs we will create the wallet automatically with password as the login method
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const handleRejectedOsBiometricPrompt = async (parsedSeed) => {
     const newAuthData = await Authentication.componentAuthenticationType(
       false,
@@ -176,8 +188,10 @@ const ImportFromSecretRecoveryPhrase = ({
         true,
       );
     } catch (err) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.setState({ loading: false, error: err.toString() });
     }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     setBiometryType(newAuthData.availableBiometryType);
     updateBiometryChoice(false);
   };
@@ -189,6 +203,7 @@ const ImportFromSecretRecoveryPhrase = ({
     setSeed(parsedSeed);
 
     if (loading) return;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     track(MetaMetricsEvents.WALLET_IMPORT_ATTEMPTED);
     let error = null;
     if (!passwordRequirementsMet(password)) {
@@ -226,6 +241,7 @@ const ImportFromSecretRecoveryPhrase = ({
           );
         } catch (err) {
           // retry faceID if the user cancels the
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           if (Device.isIos && err.toString() === IOS_REJECTED_BIOMETRICS_ERROR)
             await handleRejectedOsBiometricPrompt(parsedSeed);
         }
@@ -251,6 +267,7 @@ const ImportFromSecretRecoveryPhrase = ({
         });
       } catch (error) {
         // Should we force people to enable passcode / biometrics?
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         if (error.toString() === PASSCODE_NOT_SET_ERROR) {
           Alert.alert(
             'Security Alert',
@@ -259,17 +276,21 @@ const ImportFromSecretRecoveryPhrase = ({
           setLoading(false);
         } else {
           setLoading(false);
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           setError(error.message);
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           Logger.log('Error with seed phrase import', error.message);
         }
         track(MetaMetricsEvents.WALLET_SETUP_FAILURE, {
           wallet_setup_type: 'import',
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           error_type: error.toString(),
         });
       }
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const clearSecretRecoveryPhrase = async (seed) => {
     // get clipboard contents
     const clipboardContents = await Clipboard.getString();
@@ -281,14 +302,17 @@ const ImportFromSecretRecoveryPhrase = ({
       // only clear clipboard if the seed phrase entered matches what's in the clipboard
       parseSeedPhrase(seed) === parsedClipboardContents
     ) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       await Clipboard.clearString();
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const onSeedWordsChange = useCallback(async (seed) => {
     setSeed(seed);
     // Only clear on android since iOS will notify users when we getString()
     if (Device.isAndroid()) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const androidOSVersion = parseInt(Platform.constants.Release, 10);
       // This conditional is necessary to avoid an error in Android 8.1.0 or lower
       if (androidOSVersion >= MINIMUM_SUPPORTED_CLIPBOARD_VERSION) {
@@ -297,6 +321,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   }, []);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const onPasswordChange = (value) => {
     const passInfo = zxcvbn(value);
 
@@ -304,21 +329,25 @@ const ImportFromSecretRecoveryPhrase = ({
     setPasswordStrength(passInfo.score);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const onPasswordConfirmChange = (value) => {
     setConfirmPassword(value);
   };
 
   const jumpToPassword = useCallback(() => {
     const { current } = passwordInput;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     current && current.focus();
   }, [passwordInput]);
 
   const jumpToConfirmPassword = () => {
     const { current } = confirmPasswordInput;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     current && current.focus();
   };
 
   const renderSwitch = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const handleUpdateRememberMe = (rememberMe) => {
       setRememberMe(rememberMe);
     };
@@ -361,17 +390,20 @@ const ImportFromSecretRecoveryPhrase = ({
         }
         setHideSeedPhraseInput(shouldHideSRP);
       },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onScanError: (error) => {
         setHideSeedPhraseInput(shouldHideSRP);
       },
     });
   }, [hideSeedPhraseInput, navigation]);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const passwordStrengthWord = getPasswordStrengthWord(passwordStrength);
 
   const hiddenSRPInput = useCallback(
     () => (
       <OutlinedTextField
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         style={styles.input}
         containerStyle={inputWidth}
         inputContainerStyle={styles.padding}
@@ -404,6 +436,7 @@ const ImportFromSecretRecoveryPhrase = ({
     ],
   );
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <SafeAreaView style={styles.mainWrapper}>
       <KeyboardAwareScrollView
@@ -441,6 +474,7 @@ const ImportFromSecretRecoveryPhrase = ({
               numberOfLines={3}
               style={[
                 styles.seedPhrase,
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 inputWidth,
                 seedphraseInputFocused && styles.inputFocused,
               ]}
@@ -494,6 +528,7 @@ const ImportFromSecretRecoveryPhrase = ({
               </View>
             </View>
             <OutlinedTextField
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               style={styles.input}
               containerStyle={inputWidth}
               testID={ChoosePasswordSelectorsIDs.NEW_PASSWORD_INPUT_ID}
@@ -529,6 +564,7 @@ const ImportFromSecretRecoveryPhrase = ({
               {strings('import_from_seed.confirm_password')}
             </Text>
             <OutlinedTextField
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               style={styles.input}
               containerStyle={inputWidth}
               testID={ChoosePasswordSelectorsIDs.CONFIRM_PASSWORD_INPUT_ID}
@@ -598,6 +634,7 @@ const ImportFromSecretRecoveryPhrase = ({
       </KeyboardAwareScrollView>
       <View style={styles.termsAndConditions}>
         <TermsAndConditions
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           navigation={navigation}
           action={strings('import_from_seed.import_button')}
         />
@@ -607,8 +644,11 @@ const ImportFromSecretRecoveryPhrase = ({
   );
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setLockTime: (time) => dispatch(setLockTime(time)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
   passwordSet: () => dispatch(passwordSet()),
   seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
@@ -617,6 +657,7 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   null,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(ImportFromSecretRecoveryPhrase);
 
 interface ImportFromSecretRecoveryPhraseProps {

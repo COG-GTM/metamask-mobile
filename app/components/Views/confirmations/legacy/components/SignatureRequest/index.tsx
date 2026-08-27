@@ -22,6 +22,7 @@ import WebsiteIcon from '../../../../../UI/WebsiteIcon';
 import BlockaidBanner from '../BlockaidBanner/BlockaidBanner';
 import { ResultType } from '../BlockaidBanner/BlockaidBanner.types';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const getCleanUrl = (url) => {
   try {
     const urlObject = new URL(url);
@@ -32,6 +33,7 @@ const getCleanUrl = (url) => {
   }
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     root: {
@@ -131,8 +133,11 @@ class SignatureRequest extends PureComponent {
    * Calls trackCancelSignature and onReject callback
    */
   onReject = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.onReject();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CANCEL_SIGNATURE)
         .addProperties(this.getTrackingParams())
@@ -144,8 +149,11 @@ class SignatureRequest extends PureComponent {
    * Calls trackConfirmSignature and onConfirm callback
    */
   onConfirm = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.onConfirm();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_SIGNATURE)
         .addProperties(this.getTrackingParams())
@@ -159,6 +167,7 @@ class SignatureRequest extends PureComponent {
    * @return {object} - Object containing network and functionType
    */
   getTrackingParams = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { type, networkType } = this.props;
     return {
       network: networkType,
@@ -167,17 +176,22 @@ class SignatureRequest extends PureComponent {
   };
 
   getStyles = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
   componentDidMount = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { currentPageInformation, type, fromAddress } = this.props;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.SIGNATURE_REQUESTED)
         .addProperties(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           getAnalyticsParams(
             {
               currentPageInformation,
@@ -192,10 +206,15 @@ class SignatureRequest extends PureComponent {
 
   renderActionViewChildren = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       children,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       currentPageInformation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       truncateMessage,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       toggleExpandedMessage,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       fromAddress,
     } = this.props;
     const styles = this.getStyles();
@@ -256,8 +275,10 @@ class SignatureRequest extends PureComponent {
   };
 
   onContactUsClicked = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { fromAddress, type } = this.props;
     const analyticsParams = {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ...getAnalyticsParams(
         {
           from: fromAddress,
@@ -266,7 +287,9 @@ class SignatureRequest extends PureComponent {
       ),
       external_link_clicked: 'security_alert_support_link',
     };
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.SIGNATURE_REQUESTED)
         .addProperties(analyticsParams)
@@ -275,6 +298,7 @@ class SignatureRequest extends PureComponent {
   };
 
   renderSignatureRequest() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { securityAlertResponse, fromAddress } = this.props;
     let expandedHeight;
     const styles = this.getStyles();
@@ -294,6 +318,7 @@ class SignatureRequest extends PureComponent {
     }
 
     return (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <View testID={this.props.testID} style={[styles.root, expandedHeight]}>
         <ActionView
           cancelTestID={SigningBottomSheetSelectorsIDs.CANCEL_BUTTON}
@@ -329,6 +354,7 @@ class SignatureRequest extends PureComponent {
   }
 
   renderQRDetails() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { QRState, fromAddress } = this.props;
     const styles = this.getStyles();
 
@@ -346,6 +372,7 @@ class SignatureRequest extends PureComponent {
   }
 
   render() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { isSigningQRObject } = this.props;
     return isSigningQRObject
       ? this.renderQRDetails()
@@ -353,6 +380,7 @@ class SignatureRequest extends PureComponent {
   }
 }
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   securityAlertResponse: state.signatureRequest.securityAlertResponse,
@@ -361,6 +389,7 @@ const mapStateToProps = (state) => ({
 SignatureRequest.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   withQRHardwareAwareness(withMetricsAwareness(SignatureRequest)),
 );
 

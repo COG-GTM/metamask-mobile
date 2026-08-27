@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import Eth from '@metamask/ethjs-query';
 import { isEmpty } from 'lodash';
 import {
@@ -145,6 +146,7 @@ const EDIT_NONCE = 'edit_nonce';
 const REVIEW = 'review';
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 let intervalIdForEstimatedL1Fee;
 
 /**
@@ -154,6 +156,7 @@ class Confirm extends PureComponent {
 
   state = {
     gasEstimationReady: false,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     fromSelectedAddress: this.props.transactionState.transaction.from,
     hexDataModalVisible: false,
     warningGasPriceHigh: undefined,
@@ -176,15 +179,18 @@ class Confirm extends PureComponent {
     hasHandledFirstGasUpdate: false,
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   originIsWalletConnect = this.props.transaction.origin?.startsWith(
     WALLET_CONNECT_ORIGIN,
   );
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   originIsMMSDKRemoteConn = this.props.transaction.origin?.startsWith(
     AppConstants.MM_SDK.SDK_REMOTE_ORIGIN,
   );
 
   setNetworkNonce = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { globalNetworkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(
@@ -195,11 +201,16 @@ class Confirm extends PureComponent {
     setProposedNonce(proposedNonce);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   getAnalyticsParams = (transactionMeta) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAsset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasEstimateType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       chainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       shouldUseSmartTransaction,
     } = this.props;
     const { gasSelected, fromSelectedAddress } = this.state;
@@ -229,6 +240,7 @@ class Confirm extends PureComponent {
       const { SmartTransactionsController } = Engine.context;
 
       const smartTransactionMetricsProperties =
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         getSmartTransactionMetricsProperties(
           SmartTransactionsController,
           transactionMeta,
@@ -241,13 +253,16 @@ class Confirm extends PureComponent {
       };
     } catch (error) {
       // Log the error and return the baseParams
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(error, 'Error in getAnalyticsParams:');
       return baseParams;
     }
   };
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation, route, resetTransaction, transaction } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getSendFlowTitle(
@@ -263,15 +278,20 @@ class Confirm extends PureComponent {
 
   componentWillUnmount = async () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractBalances,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: { selectedAsset },
     } = this.props;
 
     const { transactionMeta } = this.state;
     const { TokensController } = Engine.context;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     await stopGasPolling(this.state.pollToken);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     clearInterval(intervalIdForEstimatedL1Fee);
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     Engine.rejectPendingApproval(transactionMeta.id, undefined, {
       ignoreMissing: true,
       logErrors: false,
@@ -293,12 +313,14 @@ class Confirm extends PureComponent {
     if (weiBalance?.isZero()) {
       await TokensController.ignoreTokens(
         [selectedAsset.address],
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.networkClientId,
       );
     }
   };
 
   fetchEstimatedL1Fee = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction, chainId } = this.props;
     if (!transaction?.transaction) {
       return;
@@ -315,6 +337,7 @@ class Confirm extends PureComponent {
         multiLayerL1FeeTotal: result,
       });
     } catch (e) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
         multiLayerL1FeeTotal: '0x0',
@@ -324,12 +347,19 @@ class Confirm extends PureComponent {
 
   componentDidMount = async () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       chainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       globalNetworkClientId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showCustomNonce,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       providerType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isPaymentRequest,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setTransactionId,
     } = this.props;
 
@@ -338,19 +368,24 @@ class Confirm extends PureComponent {
       transactionTo: to,
       transactionValue: value,
       data,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     } = this.props.transaction;
 
     this.updateNavBar();
     this.getGasLimit();
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const pollToken = await startGasPolling(this.state.pollToken);
     this.setState({
       pollToken,
     });
     // For analytics
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.SEND_TRANSACTION_STARTED)
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         .addProperties(this.getAnalyticsParams())
         .build(),
     );
@@ -380,10 +415,12 @@ class Confirm extends PureComponent {
         },
       ));
     } catch (error) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(error, 'error while adding transaction (Confirm)');
       navigation.navigate(Routes.WALLET_VIEW);
       Alert.alert(
         strings('transactions.transaction_error'),
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         error && error.message,
         [{ text: 'OK' }],
       );
@@ -416,20 +453,28 @@ class Confirm extends PureComponent {
     ppomUtil.validateRequest(reqObject, id);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   componentDidUpdate = (prevProps, prevState) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       accounts,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: {
         transactionTo,
         transaction: { value, gas, from },
       },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractBalances,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAsset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       maxValueMode,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasFeeEstimates,
     } = this.props;
 
     const { transactionMeta } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { id: transactionId } = transactionMeta;
 
     this.updateNavBar();
@@ -439,6 +484,7 @@ class Confirm extends PureComponent {
 
     let error;
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (this.state?.closeModal) this.toggleConfirmationModal(REVIEW);
 
     const { errorMessage, fromSelectedAddress } = this.state;
@@ -452,22 +498,28 @@ class Confirm extends PureComponent {
       previousContractBalance !== newContractBalance;
     const recipientIsDefined = transactionTo !== undefined;
     const haveEIP1559TotalMaxHexChanged =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       EIP1559GasTransaction.totalMaxHex !==
       prevState.EIP1559GasTransaction.totalMaxHex;
     const isEIP1559Transaction =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET;
     const haveGasFeeMaxNativeChanged = isEIP1559Transaction
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ? EIP1559GasTransaction.gasFeeMaxHex !==
         prevState.EIP1559GasTransaction.gasFeeMaxHex
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       : legacyGasTransaction.gasFeeMaxHex !==
         prevState.legacyGasTransaction.gasFeeMaxHex;
 
     const haveGasPropertiesChanged =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       (this.props.gasFeeEstimates &&
         gas &&
         (!prevProps.gasFeeEstimates ||
           !shallowEqual(
             prevProps.gasFeeEstimates,
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             this.props.gasFeeEstimates,
           ) ||
           gas !== prevProps?.transactionState?.transaction?.gas)) ||
@@ -480,6 +532,7 @@ class Confirm extends PureComponent {
       this.parseTransactionDataHeader();
     }
     if (!prevState.errorMessage && errorMessage) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.scrollView.scrollToEnd({ animated: true });
     }
 
@@ -494,9 +547,12 @@ class Confirm extends PureComponent {
       updateTransactionToMaxValue({
         transactionId,
         isEIP1559Transaction,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         EIP1559GasTransaction,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         legacyGasTransaction,
         accountBalance: accounts[from].balance,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         setTransactionValue: this.props.setTransactionValue,
       });
 
@@ -505,6 +561,7 @@ class Confirm extends PureComponent {
 
     if (haveGasPropertiesChanged) {
       const gasEstimateTypeChanged =
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         prevProps.gasEstimateType !== this.props.gasEstimateType;
       const gasSelected = gasEstimateTypeChanged
         ? AppConstants.GAS_OPTIONS.MEDIUM
@@ -514,6 +571,7 @@ class Confirm extends PureComponent {
         (!this.state.stopUpdateGas && !this.state.advancedGasInserted) ||
         gasEstimateTypeChanged
       ) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         if (this.props.gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
           error = this.validateAmount({
             transaction,
@@ -530,7 +588,9 @@ class Confirm extends PureComponent {
               this.setState({ animateOnChange: false });
             },
           );
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         } else if (this.props.gasEstimateType !== GAS_ESTIMATE_TYPES.NONE) {
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.setError(this.state.legacyGasTransaction.error);
           // eslint-disable-next-line react/no-did-update-set-state
           this.setState(
@@ -559,19 +619,25 @@ class Confirm extends PureComponent {
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setScrollViewRef = (ref) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.scrollView = ref;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   toggleConfirmationModal = (MODE) => {
     this.onModeChange(MODE);
     this.setState({ closeModal: false });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onModeChange = (mode) => {
     this.setState({ mode });
     if (mode === EDIT) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics.trackEvent(
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics
           .createEventBuilder(
             MetaMetricsEvents.SEND_FLOW_ADJUSTS_TRANSACTION_FEE,
@@ -583,9 +649,12 @@ class Confirm extends PureComponent {
 
   getGasLimit = async () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       prepareTransaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: { transaction },
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { networkClientId } = this.props;
     const estimation = await getGasLimit(transaction, true, networkClientId);
     prepareTransaction({ ...transaction, ...estimation });
@@ -593,14 +662,20 @@ class Confirm extends PureComponent {
 
   parseTransactionDataHeader = async () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractBalances,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractExchangeRates,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       conversionRate,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       currentCurrency,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: {
         selectedAsset,
         transaction: { value, data },
       },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ticker,
     } = this.props;
 
@@ -639,6 +714,7 @@ class Confirm extends PureComponent {
           decimals,
           image,
           name,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           networkClientId: this.props.networkClientId,
         });
       }
@@ -672,8 +748,11 @@ class Confirm extends PureComponent {
 
   prepareTransactionToSend = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasEstimateType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showCustomNonce,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: rawTransaction,
     } = this.props;
 
@@ -702,7 +781,9 @@ class Confirm extends PureComponent {
    */
   checkRemoveCollectible = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: { selectedAsset, assetType },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       chainId,
     } = this.props;
     const { fromSelectedAddress } = this.state;
@@ -717,22 +798,32 @@ class Confirm extends PureComponent {
    * Validates transaction balances
    * @returns - Whether there is an error with the amount
    */
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   validateAmount = ({ transaction }) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       accounts,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       contractBalances,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAsset,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ticker,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: {
         transaction: { value },
       },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       updateConfirmationMetric,
     } = this.props;
     const { EIP1559GasTransaction, legacyGasTransaction, transactionMeta } =
       this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { id: transactionId } = transactionMeta;
     const isEIP1559Transaction =
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { gasFeeMaxHex } = isEIP1559Transaction
       ? EIP1559GasTransaction
       : legacyGasTransaction;
@@ -779,21 +870,29 @@ class Confirm extends PureComponent {
     return insufficientBalanceMessage || insufficientTokenBalanceMessage;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setError = (errorMessage) => {
     this.setState({ errorMessage }, () => {
       if (errorMessage) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.scrollView.scrollToEnd({ animated: true });
       }
     });
   };
 
   onLedgerConfirmation = async (
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     approve,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     result,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     transactionMeta,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     assetType,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     gaParams,
   ) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     // Manual cancel from UI or rejected from ledger device.
     try {
@@ -810,7 +909,9 @@ class Confirm extends PureComponent {
             assetType,
           });
           this.checkRemoveCollectible();
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.metrics.trackEvent(
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             this.props.metrics
               .createEventBuilder(MetaMetricsEvents.SEND_TRANSACTION_COMPLETED)
               .addProperties(gaParams)
@@ -829,16 +930,22 @@ class Confirm extends PureComponent {
   onNext = async () => {
     const { KeyringController, ApprovalController } = Engine.context;
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: { assetType },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       resetTransaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       shouldUseSmartTransaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionMetadata,
     } = this.props;
 
     const transactionSimulationData = transactionMetadata?.simulationData;
     const { isUpdatedAfterSecurityCheck } = transactionSimulationData ?? {};
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transactionConfirmed, isChangeInSimulationModalShown } = this.state;
     if (transactionConfirmed) return;
 
@@ -884,8 +991,10 @@ class Confirm extends PureComponent {
         const deviceId = await getDeviceId();
         this.setState({ transactionConfirmed: false });
         // Approve transaction for ledger is called in the Confirmation Flow (modals) after user prompt
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.navigation.navigate(
           ...createLedgerTransactionModalNavDetails({
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             transactionId: transactionMeta.id,
             deviceId,
             onConfirmationComplete: async (approve) =>
@@ -895,11 +1004,14 @@ class Confirm extends PureComponent {
                 transactionMeta,
                 assetType,
                 {
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   ...this.getAnalyticsParams(),
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   ...getBlockaidTransactionMetricsParams(transaction),
                   ...this.getTransactionMetrics(),
                 },
               ),
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             type: 'signTransaction',
           }),
         );
@@ -909,11 +1021,13 @@ class Confirm extends PureComponent {
       await KeyringController.resetQRKeyringState();
 
       if (shouldUseSmartTransaction) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         await ApprovalController.accept(transactionMeta.id, undefined, {
           waitForResult: false,
         });
         navigation.navigate(Routes.TRANSACTIONS_VIEW);
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         await ApprovalController.accept(transactionMeta.id, undefined, {
           waitForResult: true,
         });
@@ -921,7 +1035,9 @@ class Confirm extends PureComponent {
 
       await new Promise((resolve) => resolve(result));
 
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (transactionMeta.error) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         throw transactionMeta.error;
       }
 
@@ -931,11 +1047,14 @@ class Confirm extends PureComponent {
           assetType,
         });
         this.checkRemoveCollectible();
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics.trackEvent(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.metrics
             .createEventBuilder(MetaMetricsEvents.SEND_TRANSACTION_COMPLETED)
             .addProperties({
               ...this.getAnalyticsParams(transactionMeta),
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               ...getBlockaidTransactionMetricsParams(transaction),
               ...this.getTransactionMetrics(),
             })
@@ -950,17 +1069,23 @@ class Confirm extends PureComponent {
       });
     } catch (error) {
       if (
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         !error?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           error && error.message,
           [{ text: 'OK' }],
         );
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         Logger.error(error, 'error while trying to send transaction (Confirm)');
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.metrics.trackEvent(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.metrics
             .createEventBuilder(
               MetaMetricsEvents.QR_HARDWARE_TRANSACTION_CANCELED,
@@ -974,8 +1099,10 @@ class Confirm extends PureComponent {
     this.setState({ transactionConfirmed: false });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   getBalanceError = (balance) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionState: {
         transaction: { value = '0x0', gas = '0x0', gasPrice = '0x0' },
       },
@@ -991,7 +1118,9 @@ class Confirm extends PureComponent {
     return balanceIsInsufficient ? strings('transaction.insufficient') : null;
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onSelectAccount = async (accountAddress) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { accounts } = this.props;
     // If new account doesn't have the asset
     this.setState({
@@ -1002,6 +1131,7 @@ class Confirm extends PureComponent {
   };
 
   openAccountSelector = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     navigation.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
       screen: Routes.SHEET.ACCOUNT_SELECTOR,
@@ -1018,13 +1148,17 @@ class Confirm extends PureComponent {
     this.setState({ hexDataModalVisible: !hexDataModalVisible });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateTransactionStateWithUpdatedNonce = (nonceValue) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.setNonce(nonceValue);
   };
 
   renderCustomNonceModal = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { proposedNonce, nonce } = this.props.transaction;
     return (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <CustomNonceModal
         proposedNonce={proposedNonce}
         nonceValue={nonce}
@@ -1035,8 +1169,10 @@ class Confirm extends PureComponent {
   };
 
   handleCopyHex = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { data } = this.props.transactionState.transaction;
     ClipboardManager.setString(data);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -1047,7 +1183,9 @@ class Confirm extends PureComponent {
 
   renderHexDataModal = () => {
     const { hexDataModalVisible } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { data } = this.props.transactionState.transaction;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
@@ -1093,14 +1231,18 @@ class Confirm extends PureComponent {
   };
 
   buyEth = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     try {
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.RECEIVE_OPTIONS_PAYMENT_REQUEST)
         .build(),
@@ -1108,8 +1250,10 @@ class Confirm extends PureComponent {
   };
 
   goToFaucet = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { chainId } = this.props;
     InteractionManager.runAfterInteractions(() => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.navigate(Routes.BROWSER.VIEW, {
         newTabUrl: TESTNET_FAUCETS[chainId],
         timestamp: Date.now(),
@@ -1124,6 +1268,7 @@ class Confirm extends PureComponent {
     this.setState({ isAnimating: false });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateTransactionState = (gas) => {
     this.setState({
       EIP1559GasTransaction: gas,
@@ -1131,10 +1276,12 @@ class Confirm extends PureComponent {
     });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onGasChanged = (gasValue) => {
     this.setState({ gasSelected: gasValue });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onGasCanceled = (gasValue) => {
     this.setState({
       stopUpdateGas: false,
@@ -1143,6 +1290,7 @@ class Confirm extends PureComponent {
     });
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateGasState = ({ gasTxn, gasObj, gasSelect, txnType }) => {
     this.setState({
       gasSelectedTemp: gasSelect,
@@ -1163,13 +1311,17 @@ class Confirm extends PureComponent {
   };
 
   onContactUsClicked = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { transaction } = this.props;
     const analyticsParams = {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       ...this.getAnalyticsParams(),
       ...getBlockaidTransactionMetricsParams(transaction),
       external_link_clicked: 'security_alert_support_link',
     };
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.CONTRACT_ADDRESS_COPIED)
         .addProperties(analyticsParams)
@@ -1178,7 +1330,9 @@ class Confirm extends PureComponent {
   };
 
   getConfirmButtonStyles() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { securityAlertResponse } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -1193,9 +1347,11 @@ class Confirm extends PureComponent {
     return confirmButtonStyle;
   }
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   async persistTransactionParameters(transactionParams) {
     const { TransactionController } = Engine.context;
     const { transactionMeta } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { id: transactionId } = transactionMeta;
 
     const controllerTransactionMeta =
@@ -1207,31 +1363,44 @@ class Confirm extends PureComponent {
       ...controllerTransactionMeta,
       txParams: {
         ...transactionParams,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         chainId: controllerTransactionMeta.chainId,
       },
     };
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     await updateTransaction(updatedTx);
   }
 
   getTransactionMetrics = () => {
     const { transactionMeta } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { confirmationMetricsById } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { id: transactionId } = transactionMeta;
 
     return confirmationMetricsById[transactionId]?.properties || {};
   };
 
   render = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { selectedAsset, paymentRequest } = this.props.transactionState;
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showHexData,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showCustomNonce,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       primaryCurrency,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       chainId,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       gasEstimateType,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isNativeTokenBuySupported,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       shouldUseSmartTransaction,
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { nonce } = this.props.transaction;
     const {
       gasEstimationReady,
@@ -1239,10 +1408,13 @@ class Confirm extends PureComponent {
       transactionValue = '',
       transactionValueFiat = '',
       errorMessage,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transactionConfirmed,
       warningGasPriceHigh,
       mode,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       isAnimating,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       animateOnChange,
       multiLayerL1FeeTotal,
       gasSelected,
@@ -1251,6 +1423,7 @@ class Confirm extends PureComponent {
       legacyGasObject,
       transactionMeta,
     } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const showFeeMarket =
@@ -1276,17 +1449,22 @@ class Confirm extends PureComponent {
         testID={ConfirmViewSelectorsIDs.CONTAINER}
       >
         <AccountFromToInfoCard
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           transactionState={this.props.transactionState}
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           onPressFromAddressIcon={
             !paymentRequest ? null : this.openAccountSelector
           }
           layout="vertical"
         />
         <ScrollView style={baseStyles.flexGrow} ref={this.setScrollViewRef}>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           {this.state.transactionMeta?.id && (
             <>
               <TransactionBlockaidBanner
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 transactionId={this.state.transactionMeta.id}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 style={styles.blockaidBanner}
                 onContactUsClicked={this.onContactUsClicked}
               />
@@ -1320,6 +1498,7 @@ class Confirm extends PureComponent {
               <View style={styles.CollectibleMediaWrapper}>
                 <CollectibleMedia
                   small
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   iconStyle={styles.CollectibleMedia}
                   containerStyle={styles.CollectibleMedia}
                   collectible={selectedAsset}
@@ -1334,6 +1513,7 @@ class Confirm extends PureComponent {
               </View>
             </View>
           )}
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <TransactionReview
             gasSelected={this.state.gasSelected}
             primaryCurrency={primaryCurrency}
@@ -1368,6 +1548,7 @@ class Confirm extends PureComponent {
             />
           )}
           {showCustomNonce && !shouldUseSmartTransaction && (
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             <CustomNonce
               nonce={nonce}
               onNonceEdit={() => this.toggleConfirmationModal(EDIT_NONCE)}
@@ -1394,7 +1575,7 @@ class Confirm extends PureComponent {
             </View>
           )}
 
-          {this.state.gasSelected === AppConstants.GAS_OPTIONS.LOW && (
+          {(this.state.gasSelected as any) === AppConstants.GAS_OPTIONS.LOW && (
             <WarningMessage
               style={styles.actionsWrapper}
               warningMessage={strings('edit_gas_fee_eip1559.low_fee_warning')}
@@ -1448,6 +1629,7 @@ class Confirm extends PureComponent {
 
 Confirm.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId || selectEvmChainId(state);
@@ -1487,25 +1669,35 @@ const mapStateToProps = (state) => {
   };
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   prepareTransaction: (transaction) =>
     dispatch(prepareTransaction(transaction)),
   resetTransaction: () => dispatch(resetTransaction()),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setTransactionId: (transactionId) =>
     dispatch(setTransactionId(transactionId)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setNonce: (nonce) => dispatch(setNonce(nonce)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   showAlert: (config) => dispatch(showAlert(config)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateConfirmationMetric: ({ id, params }) =>
     dispatch(updateConfirmationMetric({ id, params })),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setTransactionValue: (value) => dispatch(setTransactionValue(value)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(Confirm));
 
 interface ConfirmProps {

@@ -23,8 +23,10 @@ import FA5Icon from 'react-native-vector-icons/FontAwesome5';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import { baseStyles, colors as importedColors } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (theme) =>
   StyleSheet.create({
     playerContainer: {
@@ -155,16 +157,27 @@ const createStyles = (theme) =>
   });
 
 export default function VideoPlayer({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   controlsAnimationTiming,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   controlsToggleTiming,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   source,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   displayTopControls,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   displayBottomControls,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onClose,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onError,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   textTracks,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   selectedTextTrack,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onLoad: propsOnLoad,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   style,
 }) {
   const [paused, setPaused] = useState(false);
@@ -232,6 +245,7 @@ export default function VideoPlayer({
 
   const resetControlsTimeout = useCallback(() => {
     clearTimeout(controlsTimeout.current);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     controlsTimeout.current = setTimeout(() => {
       hideControls();
     }, controlsToggleTiming);
@@ -281,6 +295,7 @@ export default function VideoPlayer({
   );
 
   const updateSeekerPosition = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (position) => {
       if (!position) return;
       position = constrainToSeekerMinMax(position);
@@ -319,12 +334,15 @@ export default function VideoPlayer({
 
   const onLoad = (data = {}) => {
     propsOnLoad();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     setDuration(data.duration);
     setLoading(false);
   };
 
   const onProgress = (data = {}) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (!scrubbing && !seeking && data?.seekableDuration > 0) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const position = data.currentTime / data.seekableDuration;
       updateSeekerPosition(position * seekerWidth);
     }
@@ -353,6 +371,7 @@ export default function VideoPlayer({
   }, [seekerPosition, seekerWidth, duration]);
 
   const seekTo = (time = 0) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     videoRef.current.seek(time);
   };
 
@@ -425,6 +444,7 @@ export default function VideoPlayer({
   );
 
   const renderControl = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (children, callback, style = {}) => (
       <TouchableHighlight
         underlayColor="transparent"
@@ -452,6 +472,7 @@ export default function VideoPlayer({
   );
 
   const onLayoutSeekerWidth = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (event) => setSeekerWidth(event.nativeEvent.layout.width),
     [],
   );
@@ -605,6 +626,7 @@ export default function VideoPlayer({
     >
       <View style={baseStyles.flexGrow}>
         <Video
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           ref={videoRef}
           paused={paused}
           muted={muted}

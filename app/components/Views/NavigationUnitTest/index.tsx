@@ -17,6 +17,7 @@ import { Text } from 'react-native';
 
 const Stack = createStackNavigator();
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const TestScreen = ({ route }): Props => {
   const routes = useNavigationState((state) => state.routes);
 
@@ -40,6 +41,7 @@ const TestSubStack = () => (
   </Stack.Navigator>
 );
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const TestStack = ({ secondRoute }): Props => (
   <Stack.Navigator initialRouteName={secondRoute || 'TestSubStack'}>
     <Stack.Screen name="TestSubStack" component={TestSubStack} />
@@ -51,6 +53,7 @@ const TestStack = ({ secondRoute }): Props => (
   </Stack.Navigator>
 );
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const NavigationUnitTest = ({ firstRoute, secondRoute }): Props => (
   <NavigationContainer>
     <Stack.Navigator initialRouteName={firstRoute || 'TestStack'}>
@@ -64,6 +67,7 @@ const NavigationUnitTest = ({ firstRoute, secondRoute }): Props => (
   </NavigationContainer>
 );
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const NavigationUnitTestFactory = ({ firstRoute, secondRoute }): Props => (
   <NavigationUnitTest firstRoute={firstRoute} secondRoute={secondRoute} />
 );

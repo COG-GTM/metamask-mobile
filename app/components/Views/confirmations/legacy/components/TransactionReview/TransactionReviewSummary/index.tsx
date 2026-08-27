@@ -7,6 +7,7 @@ import WarningMessage from '../../../SendFlow/WarningMessage';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
 import { isTestNet } from '../../../../../../../util/networks';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     confirmBadge: {
@@ -66,20 +67,29 @@ class TransactionReviewSummary extends PureComponent {
 
   renderWarning = () => (
     <Text>{`${strings('transaction.approve_warning')} ${
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.assetAmount
     }`}</Text>
   );
 
   render = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       actionKey,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       assetAmount,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       conversionRate,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       fiatValue,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       approveTransaction,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       primaryCurrency,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       chainId,
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const isTestNetResult = isTestNet(chainId);

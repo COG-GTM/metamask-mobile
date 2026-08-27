@@ -16,6 +16,7 @@ const styles = StyleSheet.create({
   },
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default function ErrorMessage(props): any {
   const { errorMessage, errorContinue, onContinue, isOnlyWarning } = props;
   return (

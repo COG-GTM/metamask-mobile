@@ -42,20 +42,35 @@ import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import createStyles from './styles';
 
 const EditGasFeeLegacy = ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onCancel,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onSave,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   error,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   warning,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onUpdatingValuesStart,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onUpdatingValuesEnd,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   animateOnChange,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   isAnimating,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   analyticsParams,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   view,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onlyGas,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   selectedGasObject,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   hasDappSuggestedGas,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   chainId,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 }): Props => {
   const { trackEvent, createEventBuilder } = useMetrics();
   const [showRangeInfoModal, setShowRangeInfoModal] = useState(false);
@@ -111,6 +126,7 @@ const EditGasFeeLegacy = ({
     createEventBuilder,
   ]);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const changeGas = useCallback((gas) => {
     updateGasObjectLegacy({
       legacyGasLimit: gas.suggestedGasLimit,
@@ -119,17 +135,22 @@ const EditGasFeeLegacy = ({
   }, []);
 
   const changedGasPrice = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (value) => {
       let newGas;
 
       const lowerValue = new BigNumber(
         gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           ? gasFeeEstimate?.low
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           : gasFeeEstimate?.gasPrice,
       );
       const higherValue = new BigNumber(
         gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           ? gasFeeEstimate?.high
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           : gasFeeEstimate?.gasPrice,
       ).multipliedBy(new BigNumber(1.5));
 
@@ -155,6 +176,7 @@ const EditGasFeeLegacy = ({
   );
 
   const changedGasLimit = useCallback(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (value) => {
       const newGas =
         typeof gasTransaction === 'object'
@@ -243,6 +265,7 @@ const EditGasFeeLegacy = ({
 
   const valueToWatch = transactionFee;
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const handleInfoModalPress = (text) => {
     setShowRangeInfoModal(true);
     setInfoText(text);

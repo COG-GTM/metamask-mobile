@@ -23,6 +23,7 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import OnboardingSuccess from '../OnboardingSuccess';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     mainWrapper: {
@@ -77,8 +78,10 @@ const HARDWARE_BACK_PRESS = 'hardwareBackPress';
  * the backup seed phrase flow
  */
 class ManualBackupStep3 extends PureComponent {
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   constructor(props) {
     super(props);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.steps = props.route.params?.steps;
   }
 
@@ -89,12 +92,15 @@ class ManualBackupStep3 extends PureComponent {
   };
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(getTransparentOnboardingNavbarOptions(colors));
   };
 
   componentWillUnmount = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     BackHandler.removeEventListener(HARDWARE_BACK_PRESS, hardwareBackPress);
   };
 
@@ -114,6 +120,7 @@ class ManualBackupStep3 extends PureComponent {
         MetaMetricsEvents.WALLET_SECURITY_COMPLETED,
       ).build(),
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     BackHandler.addEventListener(HARDWARE_BACK_PRESS, hardwareBackPress);
   };
 
@@ -122,10 +129,12 @@ class ManualBackupStep3 extends PureComponent {
   };
 
   toggleHint = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.setState((state) => ({ showHint: !state.showHint }));
   };
 
   learnMore = () =>
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
@@ -134,9 +143,12 @@ class ManualBackupStep3 extends PureComponent {
       },
     });
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   isHintSeedPhrase = (hintText) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const words = this.props.route.params?.words;
     if (words) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const lower = (string) => String(string).toLowerCase();
       return lower(hintText) === lower(words.join(' '));
     }
@@ -169,13 +181,17 @@ class ManualBackupStep3 extends PureComponent {
   done = async () => {
     const onboardingWizard = await StorageWrapper.getItem(ONBOARDING_WIZARD);
     if (onboardingWizard) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.reset({ routes: [{ name: 'HomeNav' }] });
     } else {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.setOnboardingWizardStep(1);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.reset({ routes: [{ name: 'HomeNav' }] });
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleChangeText = (text) => this.setState({ hintText: text });
 
   renderHint = () => {
@@ -193,22 +209,26 @@ class ManualBackupStep3 extends PureComponent {
   };
 
   render() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
       <View style={styles.mainWrapper}>
         <Confetti />
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         {this.steps ? (
           <View style={styles.onBoardingWrapper}>
             <OnboardingProgress
               currentStep={this.state.currentStep}
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               steps={this.steps}
             />
           </View>
         ) : null}
         <OnboardingSuccess onDone={this.done} backedUpSRP />
         {Device.isAndroid() && (
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           <AndroidBackHandler customBackPress={this.props.navigation.pop} />
         )}
         {this.renderHint()}
@@ -219,8 +239,11 @@ class ManualBackupStep3 extends PureComponent {
 
 ManualBackupStep3.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   showAlert: (config) => dispatch(showAlert(config)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
 });
 

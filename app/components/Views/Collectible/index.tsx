@@ -14,6 +14,7 @@ import { collectiblesSelector } from '../../../reducers/collectibles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     wrapper: {
@@ -35,7 +36,9 @@ class Collectible extends PureComponent {
   };
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation, route } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.name ?? '',
@@ -65,23 +68,31 @@ class Collectible extends PureComponent {
   };
 
   hideCollectibleContractModal = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.toggleCollectibleContractModal();
   };
 
   render = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       route: { params },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       collectibleContractModalVisible,
     } = this.props;
     const collectibleContract = params;
     const address = params.address;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { collectibles } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const filteredCollectibles = collectibles.filter((collectible) =>
       toLowerCaseEquals(collectible.address, address),
     );
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     filteredCollectibles.map((collectible) => {
       if (!collectible.name || collectible.name === '') {
         collectible.name = collectibleContract.name;
@@ -109,6 +120,7 @@ class Collectible extends PureComponent {
           style={styles.wrapper}
         >
           <View>
+            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <View style={styles.assetOverviewWrapper}>
               <CollectibleContractOverview
                 navigation={navigation}
@@ -145,11 +157,13 @@ class Collectible extends PureComponent {
   };
 }
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   collectibles: collectiblesSelector(state),
   collectibleContractModalVisible: state.modals.collectibleContractModalVisible,
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),

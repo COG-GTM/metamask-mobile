@@ -15,6 +15,7 @@ import { connect } from 'react-redux';
 import { getInfuraBlockedSelector } from '../../../reducers/infuraAvailability';
 import { useTheme } from '../../../util/theme';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     container: {
@@ -51,6 +52,7 @@ const createStyles = (colors) =>
 
 const astronautImage = require('../../../images/astronaut.png'); // eslint-disable-line import/no-commonjs
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const OfflineMode = ({ navigation, infuraBlocked }): OfflineModeProps => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -78,6 +80,7 @@ const OfflineMode = ({ navigation, infuraBlocked }): OfflineModeProps => {
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
     <SafeAreaView style={styles.container}>
       <Image source={astronautImage} style={styles.frame} />
@@ -103,13 +106,17 @@ const OfflineMode = ({ navigation, infuraBlocked }): OfflineModeProps => {
   );
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 OfflineMode.navigationOptions = ({ navigation }) =>
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   getOfflineModalNavbar(navigation);
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   infuraBlocked: getInfuraBlockedSelector(state),
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(OfflineMode);
 
 interface OfflineModeProps {

@@ -35,6 +35,7 @@ import Routes from '../../../../app/constants/navigation/Routes';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import SRPDesign from '../../../images/srp-lock-design.png';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     mainWrapper: {
@@ -127,6 +128,7 @@ const createStyles = (colors) =>
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const AccountBackupStep1 = (props): any => {
   const { navigation, route } = props;
   const [showRemindLaterModal, setRemindLaterModal] = useState(false);
@@ -136,6 +138,7 @@ const AccountBackupStep1 = (props): any => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const track = (event, properties) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
@@ -175,6 +178,7 @@ const AccountBackupStep1 = (props): any => {
 
   const goNext = () => {
     props.navigation.navigate('AccountBackupStep1B', { ...props.route.params });
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     track(MetaMetricsEvents.WALLET_SECURITY_STARTED);
   };
 
@@ -182,6 +186,7 @@ const AccountBackupStep1 = (props): any => {
     if (hasFunds) return;
 
     setRemindLaterModal(true);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     track(MetaMetricsEvents.WALLET_SECURITY_SKIP_INITIATED);
   };
 
@@ -200,6 +205,7 @@ const AccountBackupStep1 = (props): any => {
 
   const skip = async () => {
     hideRemindLaterModal();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     track(MetaMetricsEvents.WALLET_SECURITY_SKIP_CONFIRMED);
     // Get onboarding wizard state
     const onboardingWizard = await StorageWrapper.getItem(ONBOARDING_WIZARD);
@@ -222,6 +228,7 @@ const AccountBackupStep1 = (props): any => {
         testID={ManualBackUpStepsSelectorsIDs.PROTECT_CONTAINER}
       >
         <View style={styles.wrapper}>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <OnboardingProgress steps={CHOOSE_PASSWORD_STEPS} currentStep={1} />
           <View style={styles.content}>
             <Text style={styles.title}>
@@ -266,6 +273,7 @@ const AccountBackupStep1 = (props): any => {
             )}
             <View style={styles.ctaContainer}>
               <StyledButton
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 containerStyle={styles.button}
                 type={'confirm'}
                 onPress={goNext}
@@ -298,7 +306,9 @@ const AccountBackupStep1 = (props): any => {
   );
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
 });
 

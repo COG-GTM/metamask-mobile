@@ -44,6 +44,7 @@ import { isTest } from '../../../util/test/utils';
 // eslint-disable-next-line import/no-commonjs
 const WarningIcon = require('./warning-icon.png');
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     container: {
@@ -224,12 +225,14 @@ const createStyles = (colors) =>
     hitSlop: { top: 50, right: 50, bottom: 50, left: 50 },
   });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export const Fallback = (props): any => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [feedback, setFeedback] = React.useState('');
   const dataCollectionForMarketing = useSelector(
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     (state) => state.security.dataCollectionForMarketing,
   );
 
@@ -354,6 +357,7 @@ export const Fallback = (props): any => {
                     name={IconName.Close}
                     size={IconSize.Md}
                     color={IconColor.Default}
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     onPress={toggleModal}
                   />
                 </TouchableOpacity>
@@ -398,10 +402,12 @@ export const Fallback = (props): any => {
 class ErrorBoundary extends Component<any, any> {
   state = { error: null };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   static getDerivedStateFromError(error) {
     return { error };
   }
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   generateErrorReport = (error, errorInfo = '') => {
     const {
       view,
@@ -413,6 +419,7 @@ class ErrorBoundary extends Component<any, any> {
       stack.trim(),
     );
     // Limit to 5 levels
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     analyticsParams.stack = stackList.slice(1, 5).join(', ');
 
     trackEvent(
@@ -422,6 +429,7 @@ class ErrorBoundary extends Component<any, any> {
     );
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   componentDidCatch(error, errorInfo) {
     // Note: Sentry briefly removed this in the next version but eventually added it back in later versions.
     // Read more here - https://github.com/getsentry/sentry-javascript/issues/11951
@@ -444,6 +452,7 @@ class ErrorBoundary extends Component<any, any> {
   };
 
   getErrorMessage = () =>
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     `View: ${this.props.view}\n${this.state?.error?.toString()}`;
 
   copyErrorToClipboard = async () => {
@@ -463,7 +472,9 @@ class ErrorBoundary extends Component<any, any> {
     Linking.openURL(url);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderWithSafeArea = (children) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -471,8 +482,10 @@ class ErrorBoundary extends Component<any, any> {
   };
 
   render() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     return this.state.backupSeedphrase
       ? this.renderWithSafeArea(
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           <RevealPrivateCredential
             credentialName={'seed_phrase'}
             cancel={this.cancelExportSeedphrase}
@@ -487,6 +500,7 @@ class ErrorBoundary extends Component<any, any> {
             showExportSeedphrase={this.showExportSeedphrase}
             copyErrorToClipboard={this.copyErrorToClipboard}
             openTicket={this.openTicket}
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             sentryId={this.state.sentryId}
           />,
         )

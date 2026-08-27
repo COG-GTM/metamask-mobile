@@ -40,6 +40,7 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (params) => {
   const { theme } = params;
   const { colors } = theme;
@@ -82,6 +83,7 @@ const createStyles = (params) => {
     },
     title: {
       marginTop: 20,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       fontSize: 20,
       color: colors.text.default,
       ...typography.sHeadingMD,
@@ -111,6 +113,7 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   const hasOrders = useSelector((state) => getHasOrders(state) || false);
   const accountsByChainId = useSelector(selectAccountsByChainId);
   const tabViewRef = useRef();
@@ -128,6 +131,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             accountsByChainId[selectedAddress] ?? {},
           ).length,
         })
@@ -167,10 +171,13 @@ const ActivityView = () => {
 
   useFocusEffect(
     useCallback(() => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (hasOrders && params.redirectToOrders) {
         navigation.setParams({ redirectToOrders: false });
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         tabViewRef.current?.goToPage(1);
       }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     }, [hasOrders, navigation, params.redirectToOrders]),
   );
 
@@ -178,6 +185,7 @@ const ActivityView = () => {
     <ErrorBoundary navigation={navigation} view="ActivityView">
       <View style={[styles.header, { marginTop: insets.top }]}>
         <Text
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           style={styles.title}
           variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT}
         >
@@ -207,19 +215,23 @@ const ActivityView = () => {
           />
         </View>
         <ScrollableTabView
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           ref={tabViewRef}
           renderTabBar={renderTabBar}
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
             <MultichainTransactionsView
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               tabLabel={strings('transactions_view.title')}
             />
           ) : (
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             <TransactionsView tabLabel={strings('transactions_view.title')} />
           )}
           {hasOrders && (
             <RampOrdersList
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}

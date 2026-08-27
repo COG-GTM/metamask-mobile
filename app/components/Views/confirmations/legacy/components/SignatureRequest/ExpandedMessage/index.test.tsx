@@ -9,6 +9,7 @@ describe('ExpandedMessage', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <ExpandedMessage
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         currentPageInformation={{ title: 'title', url: 'url' }}
         renderMessage={renderMessageMock}
         toggleExpandedMessageMock={toggleExpandedMessageMock}

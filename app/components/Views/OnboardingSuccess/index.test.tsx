@@ -46,23 +46,28 @@ const mockProviderConfig = {
 
 describe('OnboardingSuccess', () => {
   it('should render correctly', () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     useSelector.mockImplementation((selector) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const { toJSON } = renderWithProvider(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <OnboardingSuccess navigation={useNavigation()} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('imports additional accounts and sets completedOnboarding to true when onDone is called', () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     useSelector.mockImplementation((selector) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const mockDispatch = jest.fn();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     useDispatch.mockImplementation(() => mockDispatch);
 
     const { getByTestId } = renderWithProvider(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <OnboardingSuccess navigation={useNavigation()} onDone={jest.fn()} />,
     );
     const button = getByTestId(OnboardingSuccessSelectorIDs.DONE_BUTTON);

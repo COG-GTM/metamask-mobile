@@ -22,6 +22,7 @@ import { selectSelectedInternalAccountFormattedAddress } from '../../../selector
 
 const WIDTH = Dimensions.get('window').width - 88;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (theme) =>
   StyleSheet.create({
     root: {
@@ -85,14 +86,19 @@ class AddressQRCode extends PureComponent {
    * Closes QR code modal
    */
   closeQrModal = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.closeQrModal();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     !this.props.seedphraseBackedUp &&
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       setTimeout(() => this.props.protectWalletModalVisible(), 1000);
   };
 
   copyAccountToClipboard = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { selectedAddress } = this.props;
     await ClipboardManager.setString(selectedAddress);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -102,6 +108,7 @@ class AddressQRCode extends PureComponent {
   };
 
   processAddress = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { selectedAddress } = this.props;
     const processedAddress = `${selectedAddress.slice(0, 2)} ${selectedAddress
       .slice(2)
@@ -112,6 +119,7 @@ class AddressQRCode extends PureComponent {
 
   render() {
     const theme = this.context || mockTheme;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = theme.colors;
     const styles = createStyles(theme);
 
@@ -131,6 +139,7 @@ class AddressQRCode extends PureComponent {
           <View style={styles.qrCodeContainer}>
             <View style={styles.qrCode}>
               <QRCode
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 value={`ethereum:${this.props.selectedAddress}`}
                 size={Dimensions.get('window').width - 160}
               />
@@ -151,12 +160,15 @@ class AddressQRCode extends PureComponent {
   }
 }
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   seedphraseBackedUp: state.user.seedphraseBackedUp,
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   showAlert: (config) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });

@@ -61,6 +61,7 @@ import { getNetworkNonce } from '../../../../../../../util/transaction-controlle
 import { selectNativeCurrencyByChainId } from '../../../../../../../selectors/networkController';
 import { selectContractExchangeRatesByChainId } from '../../../../../../../selectors/tokenRatesController';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     overviewAlert: {
@@ -148,18 +149,24 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
   setNetworkNonce = async () => {
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const proposedNonce = await getNetworkNonce(transaction, networkClientId);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     setNonce(proposedNonce);
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     setProposedNonce(proposedNonce);
   };
 
   toggleNonceModal = () =>
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.setState((state) => ({ nonceModalVisible: !state.nonceModalVisible }));
 
   renderCustomNonceModal = () => {
     const { setNonce } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { proposedNonce, nonce } = this.props.transaction;
     return (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <CustomNonceModal
         proposedNonce={proposedNonce}
         nonceValue={nonce}
@@ -170,11 +177,17 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
   };
 
   getTotalFiat = (
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     asset,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     totalGas,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     conversionRate,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     exchangeRate,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     currentCurrency,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     amountToken,
   ) => {
     let total = 0;
@@ -194,12 +207,16 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
     /* this is kinda weird, we have to reject the transaction to collapse the modal */
     this.onCancelPress();
     try {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
     }
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.metrics.trackEvent(
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.RECEIVE_OPTIONS_PAYMENT_REQUEST)
         .build(),
@@ -211,8 +228,10 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
     edit && edit();
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   getRenderTotals = (totalGas, totalGasFiat) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
       conversionRate,
@@ -239,6 +258,7 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
           selectedAsset.decimals,
         );
         const conversionRateAsset =
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           contractExchangeRates[selectedAsset.address];
         const totalFiat = this.getTotalFiat(
           selectedAsset,
@@ -262,6 +282,7 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
       },
       default: () => [undefined, undefined],
     };
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     return totals[assetType] || totals.default;
   };
 
@@ -271,12 +292,17 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
   };
 
   getRenderTotalsEIP1559 = ({
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     gasFeeMinNative,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     gasFeeMinConversion,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     gasFeeMaxNative,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     gasFeeMaxConversion,
   }) => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
       conversionRate,
@@ -349,6 +375,7 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
           value,
           selectedAsset.decimals,
         );
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         const exchangeRate = contractExchangeRates[selectedAsset.address];
         const symbol = selectedAsset.symbol;
 
@@ -424,6 +451,7 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
       },
       default: () => [undefined, undefined],
     };
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     return totals[assetType] || totals.default;
   };
 
@@ -436,8 +464,10 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
     const { chainId } = this.props;
     InteractionManager.runAfterInteractions(() => {
       this.onCancelPress();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.navigate(
         ...createBrowserNavDetails({
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           newTabUrl: TESTNET_FAUCETS[chainId],
           timestamp: Date.now(),
         }),
@@ -466,19 +496,29 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
       renderableTotalMinNative,
       renderableTotalMinConversion,
       renderableTotalMaxNative,
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     ] = this.getRenderTotalsEIP1559(EIP1559GasData)();
     return (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <TransactionReviewEIP1559
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         totalNative={renderableTotalMinNative}
         totalConversion={renderableTotalMinConversion}
         totalMaxNative={renderableTotalMaxNative}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         gasFeeNative={EIP1559GasData.renderableGasFeeMinNative}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         gasFeeConversion={EIP1559GasData.renderableGasFeeMinConversion}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         gasFeeMaxNative={EIP1559GasData.renderableGasFeeMaxNative}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         gasFeeMaxConversion={EIP1559GasData.renderableGasFeeMaxConversion}
         primaryCurrency={primaryCurrency}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         timeEstimate={EIP1559GasData.timeEstimate}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         timeEstimateColor={EIP1559GasData.timeEstimateColor}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         timeEstimateId={EIP1559GasData.timeEstimateId}
         onEdit={this.edit}
         origin={host}
@@ -497,6 +537,7 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
     const {
       primaryCurrency,
       ready,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { gas, gasPrice },
       currentCurrency,
       conversionRate,
@@ -523,7 +564,9 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
       totalGasFiat,
     )();
     return (
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       <TransactionReviewEIP1559
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         totalNative={totalValue}
         totalConversion={totalFiat}
         gasFeeNative={totalGasEth}
@@ -547,6 +590,7 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
     const {
       chainId,
       toggleDataView,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       transaction: { warningGasPriceHigh, type },
       error,
       over,
@@ -556,7 +600,9 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
       isNativeTokenBuySupported,
       shouldUseSmartTransaction,
     } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { nonce } = this.props.transaction;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -584,6 +630,7 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
           />
         )}
         {showCustomNonce && !shouldUseSmartTransaction && (
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           <CustomNonce nonce={nonce} onNonceEdit={this.toggleNonceModal} />
         )}
         {!!amountError && (
@@ -636,6 +683,7 @@ class TransactionReviewInformation extends PureComponent<TransactionReviewInform
   }
 }
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
@@ -659,8 +707,11 @@ const mapStateToProps = (state) => {
   };
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setNonce: (nonce) => dispatch(setNonce(nonce)),
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
 });
 
@@ -669,6 +720,7 @@ TransactionReviewInformation.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(TransactionReviewInformation));
 
 interface TransactionReviewInformationProps {

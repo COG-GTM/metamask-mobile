@@ -22,6 +22,7 @@ import {
   colors as importedColors,
 } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import Button from '@metamask/react-native-button';
 import { connect } from 'react-redux';
 import FadeOutOverlay from '../../UI/FadeOutOverlay';
@@ -50,6 +51,7 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import { trace, TraceName, TraceOperation } from '../../../util/trace';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     scroll: {
@@ -144,6 +146,7 @@ class Onboarding extends PureComponent {
   actionXAnimated = new Animated.Value(0);
   detailsAnimated = new Animated.Value(0);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   animatedTimingStart = (animatedRef, toValue) => {
     Animated.timing(animatedRef, {
       toValue,
@@ -185,7 +188,9 @@ class Onboarding extends PureComponent {
   };
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { route, navigation } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       route.params?.delete
@@ -198,14 +203,18 @@ class Onboarding extends PureComponent {
     this.updateNavBar();
     this.mounted = true;
     this.checkIfExistingUser();
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.disableNewPrivacyPolicyToast();
 
     InteractionManager.runAfterInteractions(() => {
       PreventScreenshot.forbid();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       if (this.props.route.params?.delete) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.setLoading(strings('onboarding.delete_current'));
         setTimeout(() => {
           this.showNotification();
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           this.props.unsetLoading();
         }, 2000);
       }
@@ -214,6 +223,7 @@ class Onboarding extends PureComponent {
 
   componentWillUnmount() {
     this.mounted = false;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.unsetLoading();
     InteractionManager.runAfterInteractions(PreventScreenshot.allow);
   }
@@ -230,16 +240,20 @@ class Onboarding extends PureComponent {
   }
 
   onLogin = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { passwordSet } = this.props;
     if (!passwordSet) {
       await Authentication.resetVault();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.replace(Routes.ONBOARDING.HOME_NAV);
     } else {
       await Authentication.lockApp();
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.replace(Routes.ONBOARDING.LOGIN);
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   handleExistingUser = (action) => {
     if (this.state.existingUser) {
       this.alertExistingUser(action);
@@ -250,15 +264,19 @@ class Onboarding extends PureComponent {
 
   onPressCreate = () => {
     const action = () => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const { metrics } = this.props;
       if (metrics.isEnabled()) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.navigation.navigate('ChoosePassword', {
           [PREVIOUS_SCREEN]: ONBOARDING,
         });
         this.track(MetaMetricsEvents.WALLET_SETUP_STARTED);
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.navigation.navigate('OptinMetrics', {
           onContinue: () => {
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             this.props.navigation.replace('ChoosePassword', {
               [PREVIOUS_SCREEN]: ONBOARDING,
             });
@@ -273,15 +291,19 @@ class Onboarding extends PureComponent {
 
   onPressImport = () => {
     const action = async () => {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       const { metrics } = this.props;
       if (metrics.isEnabled()) {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.navigation.push(
           Routes.ONBOARDING.IMPORT_FROM_SECRET_RECOVERY_PHRASE,
         );
         this.track(MetaMetricsEvents.WALLET_IMPORT_STARTED);
       } else {
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         this.props.navigation.navigate('OptinMetrics', {
           onContinue: () => {
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             this.props.navigation.replace(
               Routes.ONBOARDING.IMPORT_FROM_SECRET_RECOVERY_PHRASE,
             );
@@ -293,11 +315,14 @@ class Onboarding extends PureComponent {
     this.handleExistingUser(action);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   track = (event) => {
     trackOnboarding(MetricsEventBuilder.createEventBuilder(event).build());
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   alertExistingUser = (callback) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.warningCallback = () => {
       callback();
       this.toggleWarningModal();
@@ -311,6 +336,7 @@ class Onboarding extends PureComponent {
   };
 
   renderLoader = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -318,6 +344,7 @@ class Onboarding extends PureComponent {
       <View style={styles.wrapper}>
         <View style={styles.loader}>
           <ActivityIndicator size="small" />
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <Text style={styles.loadingText}>{this.props.loadingMsg}</Text>
         </View>
       </View>
@@ -325,6 +352,7 @@ class Onboarding extends PureComponent {
   };
 
   renderContent() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -377,9 +405,11 @@ class Onboarding extends PureComponent {
   }
 
   handleSimpleNotification = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     if (!this.props.route.params?.delete) return;
     return (
       <Animated.View
@@ -390,6 +420,7 @@ class Onboarding extends PureComponent {
       >
         <ElevatedView style={styles.modalTypeView} elevation={100}>
           <BaseNotification
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             closeButtonDisabled
             status="success"
             data={{
@@ -403,8 +434,10 @@ class Onboarding extends PureComponent {
   };
 
   render() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { loading } = this.props;
     const { existingUser } = this.state;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -455,6 +488,7 @@ class Onboarding extends PureComponent {
 
 Onboarding.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state) => ({
   accounts: selectAccounts(state),
   passwordSet: state.user.passwordSet,
@@ -462,7 +496,9 @@ const mapStateToProps = (state) => ({
   loadingMsg: state.user.loadingMsg,
 });
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapDispatchToProps = (dispatch) => ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   setLoading: (msg) => dispatch(loadingSet(msg)),
   unsetLoading: () => dispatch(loadingUnset()),
   disableNewPrivacyPolicyToast: () =>
@@ -472,6 +508,7 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(Onboarding));
 
 interface OnboardingProps {

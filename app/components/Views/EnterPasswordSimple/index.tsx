@@ -18,6 +18,7 @@ import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import { passwordRequirementsMet } from '../../../util/password';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     mainWrapper: {
@@ -59,7 +60,9 @@ export default class EnterPasswordSimple extends PureComponent {
   mounted = true;
 
   updateNavBar = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -91,18 +94,23 @@ export default class EnterPasswordSimple extends PureComponent {
         strings('choose_password.password_length_error'),
       );
     } else {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.route.params.onPasswordSet(this.state.password);
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       this.props.navigation.pop();
       return;
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onPasswordChange = (val) => {
     this.setState({ password: val });
   };
 
   render() {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
 

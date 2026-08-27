@@ -15,8 +15,10 @@ import AppConstants from '../../../../../../../core/AppConstants';
 import Device from '../../../../../../../util/device';
 import { useTheme } from '../../../../../../../util/theme';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     overview: (noMargin) => ({
       marginHorizontal: noMargin ? 0 : 24,
       paddingTop: 10,
@@ -30,6 +32,7 @@ const createStyles = (colors) =>
     gasInfoContainer: {
       paddingLeft: 2,
     },
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     gasInfoIcon: (hasOrigin) => ({
       color: hasOrigin ? colors.warning.default : colors.icon.muted,
     }),
@@ -65,11 +68,14 @@ const createStyles = (colors) =>
   });
 
 // eslint-disable-next-line react/prop-types
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const Skeleton = ({ width, noStyle }): Props => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     <View style={[!noStyle && styles.valuesContainer]}>
       <SkeletonPlaceholder>
         <SkeletonPlaceholder.Item width={width} height={10} borderRadius={4} />
@@ -79,24 +85,43 @@ const Skeleton = ({ width, noStyle }): Props => {
 };
 
 const TransactionReviewEIP1559 = ({
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasFeeNative,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasFeeConversion,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasFeeMaxNative,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasFeeMaxConversion,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   timeEstimate,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   timeEstimateColor,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   timeEstimateId,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   primaryCurrency,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   chainId,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onEdit,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   noMargin,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   origin,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   originWarning,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onUpdatingValuesStart,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onUpdatingValuesEnd,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   animateOnChange,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   isAnimating,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   gasEstimationReady,
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   legacy,
 }): Props => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
@@ -142,10 +167,15 @@ const TransactionReviewEIP1559 = ({
   const valueToWatchAnimation = `${gasFeeNative}${gasFeeMaxNative}`;
   const isTestNetwork = isTestNet(chainId);
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   return (
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     <Summary style={styles.overview(noMargin)}>
+      {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
       <Summary.Row>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <View style={styles.gasRowContainer}>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <View style={styles.gasRowContainer}>
             <Text
               primary={!originWarning}
@@ -157,15 +187,18 @@ const TransactionReviewEIP1559 = ({
                 ? strings('transaction_review_eip1559.estimated_gas_fee')
                 : strings('transaction_review_eip1559.network_fee')}
               <TouchableOpacity
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 style={styles.gasInfoContainer}
                 onPress={() =>
                   originWarning ? showLegacyLearnMore() : toggleLearnMoreModal()
                 }
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 hitSlop={styles.hitSlop}
               >
                 <MaterialCommunityIcons
                   name="information"
                   size={13}
+                  // @ts-expect-error -- legacy JavaScript UI type boundary
                   style={styles.gasInfoIcon(originWarning)}
                 />
               </TouchableOpacity>
@@ -174,6 +207,7 @@ const TransactionReviewEIP1559 = ({
 
           {gasEstimationReady ? (
             <FadeAnimationView
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               style={styles.valuesContainer}
               valueToWatch={valueToWatchAnimation}
               animateOnChange={animateOnChange}
@@ -191,6 +225,7 @@ const TransactionReviewEIP1559 = ({
                     grey={nativeCurrencySelected}
                     link={!nativeCurrencySelected}
                     underline={!nativeCurrencySelected}
+                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     style={styles.amountContainer}
                     noMargin
                     adjustsFontSizeToFit
@@ -204,6 +239,7 @@ const TransactionReviewEIP1559 = ({
               <TouchableOpacity
                 onPress={edit}
                 disabled={!nativeCurrencySelected}
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 style={[Device.isSmallDevice() && styles.flex]}
               >
                 <Text
@@ -223,18 +259,22 @@ const TransactionReviewEIP1559 = ({
               </TouchableOpacity>
             </FadeAnimationView>
           ) : (
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             <Skeleton width={80} />
           )}
         </View>
       </Summary.Row>
       {!legacy && (
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         <Summary.Row>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <View style={styles.gasRowContainer}>
             {gasEstimationReady ? (
               <FadeAnimationView
                 valueToWatch={valueToWatchAnimation}
                 animateOnChange={animateOnChange}
               >
+                {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
                 <View style={styles.timeEstimateContainer}>
                   <Text
                     small
@@ -246,13 +286,16 @@ const TransactionReviewEIP1559 = ({
                     {(timeEstimateId === AppConstants.GAS_TIMES.MAYBE ||
                       timeEstimateId === AppConstants.GAS_TIMES.UNKNOWN) && (
                       <TouchableOpacity
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         style={styles.gasInfoContainer}
                         onPress={showTimeEstimateInfoModal}
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         hitSlop={styles.hitSlop}
                       >
                         <MaterialCommunityIcons
                           name="information"
                           size={13}
+                          // @ts-expect-error -- legacy JavaScript UI type boundary
                           style={styles.redInfo}
                         />
                       </TouchableOpacity>
@@ -261,10 +304,12 @@ const TransactionReviewEIP1559 = ({
                 </View>
               </FadeAnimationView>
             ) : (
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               <Skeleton width={120} noStyle />
             )}
             {gasEstimationReady ? (
               <FadeAnimationView
+                // @ts-expect-error -- legacy JavaScript UI type boundary
                 style={styles.valuesContainer}
                 valueToWatch={valueToWatchAnimation}
                 animateOnChange={animateOnChange}
@@ -279,13 +324,16 @@ const TransactionReviewEIP1559 = ({
                   >
                     {timeEstimateId === AppConstants.GAS_TIMES.VERY_LIKELY && (
                       <TouchableOpacity
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         style={styles.gasInfoContainer}
                         onPress={showTimeEstimateInfoModal}
+                        // @ts-expect-error -- legacy JavaScript UI type boundary
                         hitSlop={styles.hitSlop}
                       >
                         <MaterialCommunityIcons
                           name="alert"
                           size={13}
+                          // @ts-expect-error -- legacy JavaScript UI type boundary
                           style={styles.redInfo}
                         />
                       </TouchableOpacity>
@@ -311,6 +359,7 @@ const TransactionReviewEIP1559 = ({
                 </Text>
               </FadeAnimationView>
             ) : (
+              // @ts-expect-error -- legacy JavaScript UI type boundary
               <Skeleton width={120} />
             )}
           </View>

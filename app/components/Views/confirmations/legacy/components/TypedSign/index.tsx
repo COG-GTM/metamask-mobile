@@ -29,6 +29,7 @@ import { withMetricsAwareness } from '../../../../../../components/hooks/useMetr
 import { selectProviderTypeByChainId } from '../../../../../../selectors/networkController';
 import { selectSignatureRequestById } from '../../../../../../selectors/signatureController';
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const createStyles = (colors) =>
   StyleSheet.create({
     messageText: {
@@ -65,8 +66,11 @@ class TypedSign extends PureComponent {
 
   componentDidMount = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       messageParams: { metamaskId },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       messageParams,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       metrics,
     } = this.props;
 
@@ -74,6 +78,7 @@ class TypedSign extends PureComponent {
       MetricsEventBuilder.createEventBuilder(
         MetaMetricsEvents.SIGNATURE_REQUESTED,
       )
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         .addProperties(getAnalyticsParams(messageParams, 'typed_sign'))
         .build(),
     );
@@ -82,30 +87,37 @@ class TypedSign extends PureComponent {
 
   componentWillUnmount = () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       messageParams: { metamaskId },
     } = this.props;
     removeSignatureErrorListener(metamaskId, this.onSignatureError);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   onSignatureError = ({ error }) => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { metrics } = this.props;
     if (error?.message.startsWith(KEYSTONE_TX_CANCELED)) {
       metrics.trackEvent(
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.QR_HARDWARE_TRANSACTION_CANCELED,
         )
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           .addProperties(getAnalyticsParams())
           .build(),
       );
     }
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     showWalletConnectNotification(this.props.messageParams, false, true);
   };
 
   rejectSignature = async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { messageParams, onReject, securityAlertResponse } = this.props;
     await handleSignatureAction(
       onReject,
       messageParams,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       typedSign[messageParams.version],
       securityAlertResponse,
       false,
@@ -114,16 +126,22 @@ class TypedSign extends PureComponent {
 
   confirmSignature = async () => {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       messageParams,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onConfirm,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       onReject,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       navigation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       securityAlertResponse,
     } = this.props;
     if (!isExternalHardwareAccount(messageParams.from)) {
       await handleSignatureAction(
         onConfirm,
         messageParams,
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         typedSign[messageParams.version],
         securityAlertResponse,
         true,
@@ -134,22 +152,26 @@ class TypedSign extends PureComponent {
           onReject,
           onConfirm,
           messageParams,
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           typedSign[messageParams.version],
         )),
       );
     }
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   updateShouldTruncateMessage = (e) => {
     const truncateMessage = shouldTruncateMessage(e);
     this.setState({ truncateMessage });
   };
 
   getStyles = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
+  // @ts-expect-error -- legacy JavaScript UI type boundary
   renderTypedMessageV3 = (obj) => {
     const styles = this.getStyles();
     return Object.keys(obj).map((key) => (
@@ -172,12 +194,14 @@ class TypedSign extends PureComponent {
   };
 
   renderTypedMessage = () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { messageParams } = this.props;
     const styles = this.getStyles();
 
     if (messageParams.version === 'V1') {
       return (
         <View style={styles.message}>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           {messageParams.data.map((obj, i) => (
             <View key={`${obj.name}_${i}`}>
               <Text style={[styles.messageText, styles.msgKey]}>
@@ -199,11 +223,17 @@ class TypedSign extends PureComponent {
 
   render() {
     const {
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       messageParams,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       currentPageInformation,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       showExpandedMessage,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       toggleExpandedMessage,
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       messageParams: { from },
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       networkType,
     } = this.props;
     const { truncateMessage } = this.state;
@@ -226,12 +256,14 @@ class TypedSign extends PureComponent {
 
     const rootView = showExpandedMessage ? (
       <ExpandedMessage
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         currentPageInformation={currentPageInformation}
         renderMessage={this.renderTypedMessage}
         toggleExpandedMessage={toggleExpandedMessage}
       />
     ) : (
       <SignatureRequest
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         navigation={this.props.navigation}
         onReject={this.rejectSignature}
         onConfirm={this.confirmSignature}
@@ -239,6 +271,7 @@ class TypedSign extends PureComponent {
         domain={domain}
         currentPageInformation={currentPageInformation}
         truncateMessage={truncateMessage}
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         type={typedSign[messageParams.version]}
         fromAddress={from}
         testID={SigningBottomSheetSelectorsIDs.TYPED_REQUEST}
@@ -246,6 +279,7 @@ class TypedSign extends PureComponent {
       >
         <View
           style={messageWrapperStyles}
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           onLayout={truncateMessage ? null : this.updateShouldTruncateMessage}
         >
           {this.renderTypedMessage()}
@@ -258,6 +292,7 @@ class TypedSign extends PureComponent {
 
 TypedSign.contextType = ThemeContext;
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 const mapStateToProps = (state, ownProps) => {
   const signatureRequest = selectSignatureRequestById(
     state,
@@ -265,11 +300,13 @@ const mapStateToProps = (state, ownProps) => {
   );
 
   return {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     networkType: selectProviderTypeByChainId(state, signatureRequest?.chainId),
     securityAlertResponse: state.signatureRequest.securityAlertResponse,
   };
 };
 
+// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(withMetricsAwareness(TypedSign));
 
 interface TypedSignProps {

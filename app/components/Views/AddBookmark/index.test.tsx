@@ -21,6 +21,7 @@ describe('AddBookmark', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <AddBookmark
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           navigation={{ setOptions: () => null }}
           route={{ params: {} }}
         />
