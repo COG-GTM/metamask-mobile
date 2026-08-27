@@ -250,6 +250,7 @@ const PersonalSign = ({
 
   const rootView = showExpandedMessage ? (
     <ExpandedMessage
+      // @ts-expect-error -- legacy JavaScript UI type boundary
       currentPageInformation={currentPageInformation}
       renderMessage={renderMessageText}
       toggleExpandedMessage={toggleExpandedMessage}

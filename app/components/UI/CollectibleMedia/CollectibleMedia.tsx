@@ -168,6 +168,7 @@ const CollectibleMedia: React.FC<CollectibleMediaProps> = ({
     ) {
       if (renderAnimation && collectible?.animation?.includes('.mp4')) {
         return (
+          // @ts-expect-error -- legacy JavaScript UI type boundary
           <MediaPlayer
             onClose={onClose}
             uri={collectible.animation}

@@ -284,6 +284,7 @@ const AddNetworkFlow = () => {
     <Stack.Navigator>
       <Stack.Screen
         name="AddNetwork"
+        // @ts-expect-error -- legacy JavaScript UI type boundary
         component={NetworkSettings}
         initialParams={route?.params}
       />

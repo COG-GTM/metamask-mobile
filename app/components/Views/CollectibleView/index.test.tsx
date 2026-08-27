@@ -35,6 +35,7 @@ describe('CollectibleView Snapshot', () => {
     const { toJSON } = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <CollectibleView {...props} />
         </ThemeContext.Provider>
       </Provider>,
@@ -60,6 +61,7 @@ describe('CollectibleView Snapshot', () => {
     const wrapper = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
+          {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
           <CollectibleView {...props} />
         </ThemeContext.Provider>
       </Provider>,

@@ -26,6 +26,7 @@ describe('ChoosePassword', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <ChoosePassword route={{ params: [ONBOARDING, PROTECT] }} />
       </Provider>,
     );

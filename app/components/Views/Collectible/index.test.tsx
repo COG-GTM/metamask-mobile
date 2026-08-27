@@ -63,6 +63,7 @@ describe('Collectible', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
+        {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
         <Collectible route={{ params: { address: '0x1' } }} />
       </Provider>,
     );
@@ -81,6 +82,7 @@ describe('Collectible', () => {
       <Provider store={storeMocked}>
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             navigation={navigationMock}
             route={{ params: defaultCollectibleContract }}
           />
@@ -98,6 +100,7 @@ describe('Collectible', () => {
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
+            // @ts-expect-error -- legacy JavaScript UI type boundary
             navigation={navigationMock}
             route={{ params: defaultCollectibleContract }}
           />

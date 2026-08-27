@@ -11,6 +11,7 @@ const initialState = {
 
 describe('TransactionReviewEIP1559', () => {
   it('should match snapshot', async () => {
+    // @ts-expect-error -- legacy JavaScript UI type boundary
     const container = renderWithProvider(<TransactionReviewEIP1559 />, {
       state: initialState,
     });
