@@ -3,6 +3,7 @@ import { SignatureRequest } from '@metamask/signature-controller';
 import { useSelector } from 'react-redux';
 
 import { selectSignatureRequestById } from '../../../../../selectors/signatureController';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import { RootState } from '../../../../UI/BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
 import useApprovalRequest from '../useApprovalRequest';
 

@@ -5,6 +5,7 @@ import { TokenI } from '../../Tokens/types';
 import { getSupportedEarnTokens, filterEligibleTokens } from '../utils';
 import { selectAccountTokensAcrossChains } from '../../../../selectors/multichain';
 import { isPortfolioViewEnabled } from '../../../../util/networks';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import { RootState } from '../../BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
 import { useEarnTokenDetails } from './useEarnTokenDetails';
 import {

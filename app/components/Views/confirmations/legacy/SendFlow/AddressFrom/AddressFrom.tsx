@@ -11,6 +11,7 @@ import { selectSelectedInternalAccount } from '../../../../../../selectors/accou
 import { doENSReverseLookup } from '../../../../../../util/ENSUtils';
 import { renderFromWei, hexToBN } from '../../../../../../util/number';
 import { getEther, getTicker } from '../../../../../../util/transactions';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import { AddressFrom } from '../../../../../UI/AddressInputs';
 import { SFAddressFromProps } from './AddressFrom.types';
 import { toChecksumHexAddress } from '@metamask/controller-utils';

@@ -2,6 +2,7 @@ import migrate from './065';
 import { merge } from 'lodash';
 import { captureException } from '@sentry/react-native';
 import initialRootState from '../../util/test/initial-root-state';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import { RootState } from '../../components/UI/BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
 
 jest.mock('@sentry/react-native', () => ({

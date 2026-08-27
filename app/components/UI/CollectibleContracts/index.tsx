@@ -14,7 +14,6 @@ interface CollectibleContractsProps {
   selectedAddress?: string;
   useNftDetection?: boolean;
 }
-type Props = CollectibleContractsProps;
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   TouchableOpacity,
@@ -192,9 +191,9 @@ const CollectibleContracts = ({
   const filteredCollectibleContracts = useMemo(
     () =>
       isAllNetworks
-        // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
         ? Object.values(collectibleContracts).flat()
-        // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
         : collectibleContracts[chainId] || [],
     [collectibleContracts, chainId, isAllNetworks],
   );
@@ -202,9 +201,9 @@ const CollectibleContracts = ({
   const filteredCollectibles = useMemo(
     () =>
       isAllNetworks
-        // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
         ? Object.values(allCollectibles).flat()
-        // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
         : allCollectibles[chainId] || [],
     [allCollectibles, chainId, isAllNetworks],
   );
@@ -223,7 +222,7 @@ const CollectibleContracts = ({
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
   const showFilterControls = () => {
-    // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
     navigation.navigate(...createTokenBottomSheetFilterNavDetails({}));
   };
   const chainIdsToDetectNftsFor = useNftDetectionChainIds();
@@ -284,13 +283,13 @@ const CollectibleContracts = ({
       );
 
       removable.forEach((elm: any) => {
-        // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
         removeFavoriteCollectible(selectedAddress, chainId, elm);
       });
 
       filteredcollectibles.forEach((collectible: any) => {
         if (String(collectible.tokenId).includes('e+')) {
-          // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
           removeFavoriteCollectible(selectedAddress, chainId, collectible);
         }
       });
@@ -326,7 +325,7 @@ const CollectibleContracts = ({
 
   const goToAddCollectible = useCallback(() => {
     setIsAddNFTEnabled(false);
-    // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
     navigation.push('AddAsset', { assetType: 'collectible' });
     trackEvent(
       createEventBuilder(MetaMetricsEvents.WALLET_ADD_COLLECTIBLES).build(),
@@ -381,7 +380,7 @@ const CollectibleContracts = ({
   );
 
   const renderFavoriteCollectibles = useCallback(() => {
-    // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
     const filteredCollectibles = favoriteCollectibles.map((collectible: any) =>
       collectibles.find(
         ({ tokenId, address }: any) =>
@@ -423,7 +422,7 @@ const CollectibleContracts = ({
       // Get initial state of NFTs before refresh
       const { NftDetectionController, NftController } = Engine.context;
       const previousNfts = cloneDeep(
-        // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
         NftController.state.allNfts[selectedAddress.toLowerCase()],
       );
 
@@ -438,7 +437,7 @@ const CollectibleContracts = ({
 
       // Get updated state after refresh
       const newNfts = cloneDeep(
-        // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
         NftController.state.allNfts[selectedAddress.toLowerCase()],
       );
 
@@ -466,7 +465,7 @@ const CollectibleContracts = ({
 
   const goToLearnMore = useCallback(
     () =>
-      // @ts-expect-error -- legacy JavaScript UI type boundary
+// @ts-expect-error -- legacy JavaScript UI type boundary
       navigation.navigate('Webview', {
         screen: 'SimpleWebview',
         params: { url: AppConstants.URLS.NFT },

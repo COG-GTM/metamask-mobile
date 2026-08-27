@@ -13,7 +13,6 @@ interface ActionAlertProps {
   style?: Record<string, any>;
   type?: any;
 }
-type Props = ActionAlertProps;
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -127,7 +126,7 @@ function ActionAlert({ type, style, action, onInfoPress, onPress, children }: Ac
       {(textStyle: any) => (
         <>
           <View style={styles.wrapper}>
-            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
+{/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             <View style={[styles.content]}>{children(textStyle)}</View>
             {Boolean(action) && (
               <View style={[styles.action]}>

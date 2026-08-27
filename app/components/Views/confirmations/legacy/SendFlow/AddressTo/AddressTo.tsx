@@ -9,6 +9,7 @@ import { showAlert } from '../../../../../../actions/alert';
 import { NetworkSwitchErrorType } from '../../../../../../constants/error';
 import Routes from '../../../../../../constants/navigation/Routes';
 import { handleNetworkSwitch } from '../../../../../../util/networks/handleNetworkSwitch';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import { AddressTo } from '../../../../../UI/AddressInputs';
 import { createQRScannerNavDetails } from '../../../../QRTabSwitcher';
 import { SFAddressToProps } from './AddressTo.types';

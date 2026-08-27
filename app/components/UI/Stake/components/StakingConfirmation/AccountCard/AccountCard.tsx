@@ -17,6 +17,7 @@ import AccountTag from '../AccountTag/AccountTag';
 import { selectNetworkName } from '../../../../../../selectors/networkInfos';
 import { AccountCardProps } from './AccountCard.types';
 import ContractTag from '../ContractTag/ContractTag';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import { RootState } from '../../../../BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
 import useVaultMetadata from '../../../hooks/useVaultMetadata';
 
