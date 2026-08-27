@@ -19,6 +19,7 @@ import TagBase, {
 } from '../../../../../../../component-library/base-components/TagBase';
 import { getLabelTextByAddress } from '../../../../../../../util/address';
 import { useStyles } from '../../../../../../../component-library/hooks';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import { RootState } from '../../../../../../UI/BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
 import InfoSection from '../../../UI/info-row/info-section';
 import Icon, {

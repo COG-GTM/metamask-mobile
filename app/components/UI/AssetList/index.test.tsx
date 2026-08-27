@@ -8,6 +8,7 @@ describe('AssetList', () => {
       <AssetList
         searchQuery={''}
         searchResults={[]}
+// @ts-expect-error -- legacy JavaScript UI type boundary
         handleSelectAsset={null}
         selectedAsset={{ address: '0xABC', symbol: 'ABC', decimals: 0 }}
       />,

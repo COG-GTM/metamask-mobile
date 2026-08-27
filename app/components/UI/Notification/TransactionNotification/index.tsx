@@ -22,7 +22,6 @@ interface TransactionNotificationProps {
   tokens?: Record<string, any>;
   transactions?: any[];
 }
-type Props = TransactionNotificationProps;
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import { connect } from 'react-redux';

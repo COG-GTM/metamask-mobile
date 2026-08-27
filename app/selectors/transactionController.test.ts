@@ -1,4 +1,5 @@
 import { SmartTransaction } from '@metamask/smart-transactions-controller/dist/types';
+// @ts-expect-error -- legacy JavaScript UI type boundary
 import { RootState } from '../components/UI/BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
 import {
   selectTransactions,

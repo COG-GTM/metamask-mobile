@@ -165,7 +165,18 @@ const createStyles = (colors) =>
 /**
  * Main view for general app configurations
  */
-class Settings extends PureComponent {
+interface SettingsState {
+  currentLanguage: string;
+  languages: Record<string, any>;
+  languageOptions?: any[];
+  searchEngineOptions?: any[];
+  primaryCurrencyOptions?: any[];
+}
+
+class Settings extends PureComponent<SettingsProps, SettingsState> {
+  languageOptions?: any[];
+  searchEngineOptions?: any[];
+  primaryCurrencyOptions?: any[];
 
   state = {
     currentLanguage: I18n.locale.substr(0, 2),
@@ -176,7 +187,6 @@ class Settings extends PureComponent {
   selectCurrency = async (currency) => {
     const { CurrencyRateController } = Engine.context;
     CurrencyRateController.setCurrentCurrency(currency);
-    // @ts-expect-error -- legacy JavaScript UI type boundary
     updateUserTraitsWithCurrentCurrency(currency, this.props.metrics);
   };
 
@@ -185,8 +195,10 @@ class Settings extends PureComponent {
     if (language === this.state.currentLanguage) return;
     setLocale(language);
     this.setState({ currentLanguage: language });
-    // @ts-expect-error -- legacy JavaScript UI type boundary
-    setTimeout(() => this.props.navigation.navigate('Home'), 100);
+    setTimeout(
+      () => (this.props.navigation as any).navigate('Home'),
+      100,
+    );
   };
 
   // @ts-expect-error -- legacy JavaScript UI type boundary
@@ -200,7 +212,6 @@ class Settings extends PureComponent {
     // @ts-expect-error -- legacy JavaScript UI type boundary
     this.props.setPrimaryCurrency(primaryCurrency);
 
-    // @ts-expect-error -- legacy JavaScript UI type boundary
     updateUserTraitsWithCurrencyType(primaryCurrency, this.props.metrics);
   };
 
@@ -211,11 +222,10 @@ class Settings extends PureComponent {
   };
 
   updateNavBar = () => {
-    // @ts-expect-error -- legacy JavaScript UI type boundary
     const { navigation } = this.props;
     // @ts-expect-error -- legacy JavaScript UI type boundary
     const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(
+    (navigation as any).setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.general_title'),
         navigation,
@@ -229,19 +239,16 @@ class Settings extends PureComponent {
     this.updateNavBar();
     const languages = getLanguages();
     this.setState({ languages });
-    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.languageOptions = Object.keys(languages).map((key) => ({
       value: key,
       // @ts-expect-error -- legacy JavaScript UI type boundary
       label: languages[key],
       key,
     }));
-    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.searchEngineOptions = [
       { value: 'Google', label: 'Google', key: 'Google' },
       { value: 'DuckDuckGo', label: 'DuckDuckGo', key: 'DuckDuckGo' },
     ];
-    // @ts-expect-error -- legacy JavaScript UI type boundary
     this.primaryCurrencyOptions = [
       {
         value: 'ETH',
@@ -290,17 +297,11 @@ class Settings extends PureComponent {
 
   render() {
     const {
-      // @ts-expect-error -- legacy JavaScript UI type boundary
       currentCurrency,
-      // @ts-expect-error -- legacy JavaScript UI type boundary
       primaryCurrency,
-      // @ts-expect-error -- legacy JavaScript UI type boundary
       useBlockieIcon,
-      // @ts-expect-error -- legacy JavaScript UI type boundary
       setUseBlockieIcon,
-      // @ts-expect-error -- legacy JavaScript UI type boundary
       selectedAddress,
-      // @ts-expect-error -- legacy JavaScript UI type boundary
       hideZeroBalanceTokens,
     } = this.props;
     const themeTokens = this.context || mockTheme;
@@ -344,7 +345,6 @@ class Settings extends PureComponent {
             >
               {strings('app_settings.primary_currency_desc')}
             </Text>
-            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             {this.primaryCurrencyOptions && (
               <View style={styles.accessory}>
                 <PickComponent
@@ -357,7 +357,7 @@ class Settings extends PureComponent {
                     'app_settings.primary_currency_text_second',
                   )}
                   valueSecond={'Fiat'}
-                  selectedValue={primaryCurrency}
+                  selectedValue={primaryCurrency as any}
                 />
               </View>
             )}
@@ -373,7 +373,6 @@ class Settings extends PureComponent {
             >
               {strings('app_settings.language_desc')}
             </Text>
-            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             {this.languageOptions && (
               <View style={styles.accessory}>
                 <View style={styles.picker}>
@@ -381,7 +380,6 @@ class Settings extends PureComponent {
                     selectedValue={this.state.currentLanguage}
                     onValueChange={this.selectLanguage}
                     label={strings('app_settings.current_language')}
-                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     options={this.languageOptions}
                   />
                 </View>
@@ -399,16 +397,13 @@ class Settings extends PureComponent {
             >
               {strings('app_settings.engine_desc')}
             </Text>
-            {/* @ts-expect-error -- legacy JavaScript UI type boundary */}
             {this.searchEngineOptions && (
               <View style={styles.accessory}>
                 <View style={styles.picker}>
                   <SelectComponent
-                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     selectedValue={this.props.searchEngine}
                     onValueChange={this.selectSearchEngine}
                     label={strings('app_settings.search_engine')}
-                    // @ts-expect-error -- legacy JavaScript UI type boundary
                     options={this.searchEngineOptions}
                   />
                 </View>
@@ -457,7 +452,7 @@ class Settings extends PureComponent {
             <View style={styles.accessory}>
               <View style={styles.identicon_container}>
                 <TouchableOpacity
-                  onPress={() => setUseBlockieIcon(false)}
+                  onPress={() => (setUseBlockieIcon as any)(false)}
                   style={styles.identicon_row}
                 >
                   <View
@@ -470,14 +465,14 @@ class Settings extends PureComponent {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => setUseBlockieIcon(true)}
+                  onPress={() => (setUseBlockieIcon as any)(true)}
                   style={styles.identicon_row}
                 >
                   <View
                     style={[styles.border, useBlockieIcon && styles.selected]}
                   >
                     <Image
-                      source={{ uri: toDataUrl(selectedAddress) }}
+                      source={{ uri: toDataUrl(selectedAddress as string) }}
                       style={styles.blockie}
                     />
                   </View>

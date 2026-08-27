@@ -774,6 +774,7 @@ const AccountConnect = (props: AccountConnectProps) => {
       >
         <PhishingModal
           fullUrl={blockedUrl}
+// @ts-expect-error -- legacy JavaScript UI type boundary
           goToETHPhishingDetector={goToETHPhishingDetector}
           continueToPhishingSite={continueToPhishingSite}
           goToEtherscam={goToEtherscam}
