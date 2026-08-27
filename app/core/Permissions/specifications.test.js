@@ -10,6 +10,9 @@ import {
 import { EthAccountType, EthMethod } from '@metamask/keyring-api';
 import { SnapCaveatType } from '@metamask/snaps-utils';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const getCaveatSpecificationsAny = getCaveatSpecifications as any;
+
 describe('PermissionController specifications', () => {
   const baseEoaAccount = {
     type: EthAccountType.Eoa,
@@ -72,7 +75,7 @@ describe('PermissionController specifications', () => {
         it('rejects invalid array values', () => {
           const listAccounts = jest.fn();
           const findNetworkClientIdByChainId = jest.fn();
-          const { validator } = getCaveatSpecifications({
+          const { validator } = getCaveatSpecificationsAny({
             listAccounts,
             findNetworkClientIdByChainId,
           })[Caip25CaveatType];
@@ -87,7 +90,7 @@ describe('PermissionController specifications', () => {
         it('rejects falsy or non-string addresses', () => {
           const listAccounts = jest.fn();
           const findNetworkClientIdByChainId = jest.fn();
-          const { validator } = getCaveatSpecifications({
+          const { validator } = getCaveatSpecificationsAny({
             listAccounts,
             findNetworkClientIdByChainId,
           })[Caip25CaveatType];
@@ -129,7 +132,7 @@ describe('PermissionController specifications', () => {
           ]);
           const caveatValues = ['0x1', '0x2', '0x3'];
 
-          const { validator } = getCaveatSpecifications({
+          const { validator } = getCaveatSpecificationsAny({
             listAccounts,
             findNetworkClientIdByChainId,
           })[Caip25CaveatType];

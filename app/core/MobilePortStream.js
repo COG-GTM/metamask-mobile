@@ -1,12 +1,22 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
-import { Duplex } from 'readable-stream';
+// eslint-disable-next-line import/no-nodejs-modules
+import { Duplex } from 'stream';
+
+interface Port {
+  addListener: (event: 'message' | 'disconnect', listener: (...args: any[]) => void) => void;
+  postMessage: (message: unknown, url: string) => void;
+}
 
 // eslint-disable-next-line no-empty-function
-const noop = () => {};
+const noop = (): void => {};
 
 export default class PortDuplexStream extends Duplex {
-  constructor(port, url) {
+  private _port: Port;
+  private _url: string;
+
+  constructor(port: Port, url: string) {
     super({
       objectMode: true,
     });
@@ -23,10 +33,10 @@ export default class PortDuplexStream extends Duplex {
    * @private
    * @param {Object} msg - Payload from the onMessage listener of Port
    */
-  _onMessage = function (msg) {
+  _onMessage = (msg: unknown): void => {
     if (Buffer.isBuffer(msg)) {
-      delete msg._isBuffer;
-      const data = new Buffer(msg);
+      delete (msg as Buffer & { _isBuffer?: boolean })._isBuffer;
+      const data = Buffer.from(msg);
       this.push(data);
     } else {
       this.push(msg);
@@ -39,7 +49,7 @@ export default class PortDuplexStream extends Duplex {
    *
    * @private
    */
-  _onDisconnect = function () {
+  _onDisconnect = (): void => {
     this.destroy && this.destroy();
   };
 
@@ -57,11 +67,15 @@ export default class PortDuplexStream extends Duplex {
    * @param {string} encoding Encoding to use when writing payload
    * @param {Function} cb Called when writing is complete or an error occurs
    */
-  _write = function (msg, encoding, cb) {
+  _write = (
+    msg: unknown,
+    _encoding: string,
+    cb: (error?: Error) => void,
+  ): void => {
     try {
       if (Buffer.isBuffer(msg)) {
         const data = msg.toJSON();
-        data._isBuffer = true;
+        (data as any)._isBuffer = true;
         this._port.postMessage(data, this._url);
       } else {
         this._port.postMessage(msg, this._url);
