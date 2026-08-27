@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface NotificationProps {
+  currentNotification?: Record<string, any>;
+  currentNotificationIsVisible?: boolean;
+  hideCurrentNotification?: (...args: any[]) => any;
+  removeCurrentNotification?: (...args: any[]) => any;
 }
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { connect } from 'react-redux';
@@ -33,7 +36,7 @@ function Notification({
   currentNotificationIsVisible,
   hideCurrentNotification,
   removeCurrentNotification,
-}: Props) {
+}: NotificationProps & any) {
   const notificationAnimated = useSharedValue(200);
   const routes = useNavigationState((state: any) => state.routes);
 

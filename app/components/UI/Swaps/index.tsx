@@ -1,7 +1,21 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface SwapsAmountViewProps {
+  accountsByChainId?: Record<string, any>;
+  balances?: Record<string, any>;
+  chainId?: string;
+  conversionRate?: number;
+  currentCurrency?: string;
+  networkConfigurations?: Record<string, any>;
+  selectedAddress?: string;
+  selectedNetworkClientId?: string;
+  setLiveness?: (...args: any[]) => any;
+  shouldUseSmartTransaction?: boolean;
+  swapsControllerTokens?: any[];
+  swapsTokens?: any[];
+  tokenExchangeRates?: Record<string, any>;
+  tokensTopAssets?: any[];
+  tokensWithBalance?: any[];
 }
 import React, {
   useCallback,
@@ -200,7 +214,7 @@ function SwapsAmountView({
   currentCurrency,
   setLiveness,
   shouldUseSmartTransaction,
-}: Props) {
+}: SwapsAmountViewProps & any) {
   const accounts = accountsByChainId[chainId];
   const navigation = useNavigation();
   const route = useRoute();

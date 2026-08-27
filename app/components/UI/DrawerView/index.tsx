@@ -1,8 +1,36 @@
 /* eslint-disable @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars, @typescript-eslint/prefer-optional-chain */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface DrawerViewProps {
+  accounts?: Record<string, any>;
+  chainId?: string;
+  collectibles?: any[];
+  currentCurrency?: string;
+  currentRoute?: string;
+  infoNetworkModalVisible?: boolean;
+  keyrings?: any[];
+  metrics?: Record<string, any>;
+  navigation?: Record<string, any>;
+  networkConfigurations?: Record<string, any>;
+  networkModalVisible: boolean;
+  networkSwitched?: (...args: any[]) => any;
+  newAssetTransaction: (...args: any[]) => any;
+  onCloseDrawer?: (...args: any[]) => any;
+  onboardNetworkAction?: (...args: any[]) => any;
+  passwordSet?: boolean;
+  protectWalletModalVisible?: (...args: any[]) => any;
+  providerConfig: Record<string, any>;
+  seedphraseBackedUp?: boolean;
+  selectedInternalAccount?: Record<string, any>;
+  showAlert: (...args: any[]) => any;
+  switchedNetwork?: Record<string, any>;
+  ticker?: string;
+  toggleInfoNetworkModal?: (...args: any[]) => any;
+  toggleNetworkModal?: (...args: any[]) => any;
+  tokenBalances?: Record<string, any>;
+  tokens?: any[];
+  wizard?: Record<string, any>;
 }
+type Props = DrawerViewProps & any;
 import React, { PureComponent } from 'react';
 import {
   Alert,
@@ -1194,5 +1222,4 @@ DrawerView.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(DrawerView));

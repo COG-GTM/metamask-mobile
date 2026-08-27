@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface CollectibleContractElementProps {
+  asset?: Record<string, any>;
+  chainId?: string;
+  collectiblesVisible?: boolean;
+  contractCollectibles?: any[];
+  onPress?: (...args: any[]) => any;
+  removeFavoriteCollectible?: (...args: any[]) => any;
+  selectedAddress?: string;
 }
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
@@ -99,7 +105,7 @@ function CollectibleContractElement({
   chainId,
   selectedAddress,
   removeFavoriteCollectible,
-}: Props) {
+}: CollectibleContractElementProps & any) {
   const [collectiblesGrid, setCollectiblesGrid] = useState<any>([]);
   const [collectiblesVisible, setCollectiblesVisible] = useState<any>(
     propsCollectiblesVisible,

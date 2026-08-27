@@ -1,6 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface QuotesModalProps {
+  conversionRate?: number;
+  currentCurrency?: string;
+  decimals?: number;
+  destinationToken?: Record<string, any>;
+  isVisible?: boolean;
+  multiLayerL1ApprovalFeeTotal?: string;
+  quoteValues?: Record<string, any>;
+  quotes?: any[];
+  selectedQuote?: string;
+  showOverallValue?: boolean;
+  sourceToken?: Record<string, any>;
+  symbol?: string;
+  ticker?: string;
+  toggleModal?: (...args: any[]) => any;
 }
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -143,7 +156,7 @@ function QuotesModal({
   showOverallValue,
   ticker,
   multiLayerL1ApprovalFeeTotal,
-}: Props) {
+}: QuotesModalProps & any) {
   const bestOverallValue =
     quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
   const [displayDetails, setDisplayDetails] = useState<any>(false);

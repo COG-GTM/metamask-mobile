@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-shadow, @typescript-eslint/prefer-optional-chain */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface LoadingAnimationProps {
+  aggregatorMetadata?: Record<string, any>;
+  finish?: boolean;
+  headPan?: boolean;
+  onAnimationEnd?: (...args: any[]) => any;
 }
 import React, {
   useCallback,
@@ -122,7 +125,7 @@ function LoadingAnimation({
   onAnimationEnd,
   aggregatorMetadata,
   headPan = true,
-}: Props) {
+}: LoadingAnimationProps & any) {
   const [metadata, setMetadata] = useState<any>([]);
   const [shouldStart, setShouldStart] = useState<any>(false);
   const [hasStarted, setHasStarted] = useState<any>(false);

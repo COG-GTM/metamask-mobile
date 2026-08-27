@@ -1,6 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface TokenImportModalProps {
+  address?: string;
+  decimals?: number;
+  dismiss?: (...args: any[]) => any;
+  iconUrl?: string;
+  isVisible?: boolean;
+  name?: string;
+  onPressImport?: (...args: any[]) => any;
+  symbol?: string;
+  token?: Record<string, any>;
 }
 import React from 'react';
 import { StyleSheet, SafeAreaView, View } from 'react-native';
@@ -59,7 +67,7 @@ const createStyles = (colors: any): any =>
     },
   });
 
-function TokenImportModal({ isVisible, dismiss, token, onPressImport }: Props) {
+function TokenImportModal({ isVisible, dismiss, token, onPressImport }: TokenImportModalProps & any) {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 

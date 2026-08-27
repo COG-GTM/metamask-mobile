@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/prefer-optional-chain */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface GlobalAlertProps {
+  autodismiss?: number;
+  content?: any;
+  data?: Record<string, any>;
+  dismissAlert?: (...args: any[]) => any;
+  isVisible: boolean;
 }
+type Props = GlobalAlertProps & any;
 import React, { PureComponent } from 'react';
 import Modal from 'react-native-modal';
 import { StyleSheet, View, Text } from 'react-native';

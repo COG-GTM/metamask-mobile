@@ -1,6 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface GasEditModalProps {
+  animateOnChange?: boolean;
+  chainId?: string;
+  checkEnoughEthBalance?: (...args: any[]) => any;
+  conversionRate?: number;
+  currentCurrency?: string;
+  customGasFee?: Record<string, any>;
+  defaultGasFeeOptionFeeMarket?: string;
+  defaultGasFeeOptionLegacy?: string;
+  dismiss?: (...args: any[]) => any;
+  gasEstimateType?: string;
+  gasFeeEstimates?: Record<string, any>;
+  initialGasLimit?: string;
+  isNativeAsset?: boolean;
+  isVisible?: boolean;
+  onGasUpdate?: (...args: any[]) => any;
+  primaryCurrency?: string;
+  sourceAmount?: string;
+  ticker?: string;
+  tradeGasLimit?: string;
+  tradeValue?: string;
 }
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
@@ -70,7 +89,7 @@ function GasEditModal({
   chainId,
   ticker,
   animateOnChange,
-}: Props) {
+}: GasEditModalProps & any) {
   const [gasSelected, setGasSelected] = useState<any>(
     customGasFee
       ? customGasFee.selected ?? null

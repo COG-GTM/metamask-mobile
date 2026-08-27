@@ -35,9 +35,20 @@ const createStyles = (colors: any): any =>
  * UI PureComponent that renders inside the navbar
  * showing the view title and the selected network
  */
-interface Props {
-  [key: string]: any;
+interface NavbarTitleProps {
+  chainId?: string;
+  children?: React.ReactNode;
+  disableNetwork?: boolean;
+  metrics?: Record<string, any>;
+  navigation?: Record<string, any>;
+  networkName?: string;
+  providerConfig: Record<string, any>;
+  selectedNetworkName?: string;
+  showSelectedNetwork?: boolean;
+  title?: string;
+  translate?: boolean;
 }
+type Props = NavbarTitleProps & any;
 
 class NavbarTitle extends PureComponent<Props> {
   static defaultProps = {

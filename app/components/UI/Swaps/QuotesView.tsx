@@ -1,8 +1,36 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface SwapsQuotesViewProps {
+  accounts?: Record<string, any>;
+  aggregatorMetadata?: Record<string, any>;
+  approvalTransaction?: Record<string, any>;
+  balances?: Record<string, any>;
+  chainId?: string;
+  conversionRate?: number;
+  currentCurrency?: string;
+  error?: Record<string, any>;
+  gasEstimateType?: string;
+  gasFeeEstimates?: Record<string, any>;
+  isEIP1559Network?: boolean;
+  isInPolling?: boolean;
+  networkClientId?: string;
+  pollingCyclesLeft?: number;
+  primaryCurrency?: string;
+  quoteRefreshSeconds?: number;
+  quoteValues?: Record<string, any>;
+  quotes?: Record<string, any>;
+  quotesLastFetched?: number;
+  resetTransaction?: (...args: any[]) => any;
+  selectedAddress?: string;
+  setRecipient?: (...args: any[]) => any;
+  shouldUseSmartTransaction?: boolean;
+  swapsTokens?: any[];
+  ticker?: string;
+  topAggId?: string;
+  usedCustomGas?: Record<string, any>;
+  usedGasEstimate?: Record<string, any>;
 }
+type Props = SwapsQuotesViewProps & any;
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 // @ts-expect-error -- legacy JavaScript UI type boundary
 import Eth from '@metamask/ethjs-query';
@@ -346,7 +374,7 @@ async function resetAndStartPolling({
   await SwapsController.stopPollingAndResetState();
   await SwapsController.startFetchAndSetQuotes(
     fetchParams,
-    fetchParams.metaData,
+    fetchParams.metaData as any,
   );
 }
 
@@ -413,7 +441,7 @@ function SwapsQuotesView({
   resetTransaction,
   shouldUseSmartTransaction,
   isEIP1559Network,
-}: Props) {
+}: SwapsQuotesViewProps & any) {
   const navigation = useNavigation();
   /* Get params from navigation */
   const route = useRoute();

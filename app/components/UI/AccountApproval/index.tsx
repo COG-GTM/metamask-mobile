@@ -1,8 +1,19 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface AccountApprovalProps {
+  accountsLength?: number;
+  chainId?: string;
+  currentPageInformation?: Record<string, any>;
+  metrics?: Record<string, any>;
+  navigation?: Record<string, any>;
+  networkType?: string;
+  onCancel?: (...args: any[]) => any;
+  onConfirm?: (...args: any[]) => any;
+  selectedAddress?: string;
+  tokensLength?: number;
+  walletConnectRequest?: boolean;
 }
+type Props = AccountApprovalProps & any;
 import React, { PureComponent } from 'react';
 import { InteractionManager, TouchableOpacity, View } from 'react-native';
 import { connect } from 'react-redux';
@@ -381,5 +392,4 @@ const mapStateToProps = (state: any) => ({
 
 AccountApproval.contextType = ThemeContext;
 
-// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(withMetricsAwareness(AccountApproval));

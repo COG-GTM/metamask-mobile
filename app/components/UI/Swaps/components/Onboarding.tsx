@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface OnboardingProps {
+  setHasOnboarded?: (...args: any[]) => any;
 }
 import React, { useCallback } from 'react';
 import {
@@ -76,7 +76,7 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-function Onboarding({ setHasOnboarded }: Props) {
+function Onboarding({ setHasOnboarded }: OnboardingProps & any) {
   const navigation = useNavigation();
   const { colors } = useTheme();
   const { bottom: bottomInset } = useSafeAreaInsets();

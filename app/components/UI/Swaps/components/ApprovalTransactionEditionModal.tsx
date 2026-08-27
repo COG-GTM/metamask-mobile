@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface ApprovalTransactionEditionModalProps {
+  approvalTransaction?: Record<string, any>;
+  chainId?: string;
+  editQuoteTransactionsVisible?: boolean;
+  minimumSpendLimit: string;
+  onCancelEditQuoteTransactions?: (...args: any[]) => any;
+  originalApprovalTransaction?: Record<string, any>;
+  setApprovalTransaction?: (...args: any[]) => any;
+  sourceToken?: Record<string, any>;
 }
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -40,7 +47,7 @@ function ApprovalTransactionEditionModal({
   sourceToken,
   minimumSpendLimit,
   chainId,
-}: Props) {
+}: ApprovalTransactionEditionModalProps & any) {
   /* Approval transaction if any */
   const [customApprovalTransaction, setCustomApprovalTransaction] =
     useState<any>(approvalTransaction);

@@ -1,8 +1,14 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface CollectibleContractOverviewProps {
+  collectibleContract?: Record<string, any>;
+  collectibles?: any[];
+  navigation?: Record<string, any>;
+  newAssetTransaction?: (...args: any[]) => any;
+  ownerOf?: number;
+  toggleCollectibleContractModal: (...args: any[]) => any;
 }
+type Props = CollectibleContractOverviewProps & any;
 import React, { PureComponent } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { fontStyles } from '../../../styles/common';

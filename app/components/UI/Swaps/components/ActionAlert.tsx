@@ -1,8 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface ButtonProps {
+  children?: string;
+  onPress?: (...args: any[]) => any;
+  type?: any;
 }
+interface ActionAlertProps {
+  action?: string;
+  children?: React.ReactNode;
+  onInfoPress?: (...args: any[]) => any;
+  onPress?: (...args: any[]) => any;
+  style?: Record<string, any>;
+  type?: any;
+}
+type Props = ActionAlertProps & any;
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -82,7 +93,7 @@ const getInfoIconStyle = (type: any, styles: any) => {
   }
 };
 
-function Button({ type, onPress, children }: Props) {
+function Button({ type, onPress, children }: ButtonProps & any) {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 
@@ -103,7 +114,7 @@ function Button({ type, onPress, children }: Props) {
   );
 }
 
-function ActionAlert({ type, style, action, onInfoPress, onPress, children }: Props) {
+function ActionAlert({ type, style, action, onInfoPress, onPress, children }: ActionAlertProps & any) {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 

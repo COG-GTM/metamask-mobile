@@ -1,8 +1,19 @@
 /* eslint-disable @typescript-eslint/prefer-optional-chain */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface PaymentRequestProps {
+  chainId?: string;
+  contractExchangeRates?: Record<string, any>;
+  conversionRate?: number;
+  currentCurrency?: string;
+  navigation?: Record<string, any>;
+  primaryCurrency?: string;
+  route?: Record<string, any>;
+  selectedAddress?: string;
+  ticker?: string;
+  tokenList?: any[];
+  tokens?: any[];
 }
+type Props = PaymentRequestProps & any;
 import React, { PureComponent } from 'react';
 import {
   SafeAreaView,

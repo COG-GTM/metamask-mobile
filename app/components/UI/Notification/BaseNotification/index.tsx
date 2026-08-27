@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface BaseNotificationProps {
+  autoDismiss?: boolean;
+  data?: Record<string, any>;
+  onHide?: (...args: any[]) => any;
+  onPress?: (...args: any[]) => any;
+  status?: string;
 }
 import React from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
@@ -171,7 +175,7 @@ const BaseNotification = ({
   onPress,
   onHide,
   autoDismiss,
-}: Props) => {
+}: BaseNotificationProps & any) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 

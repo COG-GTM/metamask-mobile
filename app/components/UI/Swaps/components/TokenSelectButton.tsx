@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface TokenSelectButtonProps {
+  disabled?: boolean;
+  icon?: string;
+  label?: string;
+  onPress?: (...args: any[]) => any;
+  symbol?: string;
 }
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
@@ -15,7 +19,7 @@ const styles: any = StyleSheet.create({
   },
 });
 
-function TokenSelectButton({ icon, symbol, onPress, disabled, label }: Props) {
+function TokenSelectButton({ icon, symbol, onPress, disabled, label }: TokenSelectButtonProps & any) {
   return (
     <SelectorButton onPress={onPress} disabled={disabled}>
       <View style={styles.icon}>

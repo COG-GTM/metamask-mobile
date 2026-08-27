@@ -1,8 +1,30 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/prefer-optional-chain */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface TransactionElementWithBridgeProps {
+  tx: Record<string, any>;
 }
+interface TransactionElementProps {
+  assetSymbol?: string;
+  bridgeTxHistoryData?: Record<string, any>;
+  cancelUnsignedQRTransaction?: (...args: any[]) => any;
+  i?: number;
+  isLedgerAccount?: boolean;
+  isQRHardwareAccount?: boolean;
+  navigate: (...args: any[]) => any;
+  navigation?: Record<string, any>;
+  networkConfigurationsByChainId?: Record<string, any>;
+  onCancelAction?: (...args: any[]) => any;
+  onPressItem?: (...args: any[]) => any;
+  onSpeedUpAction?: (...args: any[]) => any;
+  selectedInternalAccount?: Record<string, any>;
+  signLedgerTransaction?: (...args: any[]) => any;
+  signQRTransaction?: (...args: any[]) => any;
+  swapsTokens?: any[];
+  swapsTransactions?: Record<string, any>;
+  tx?: Record<string, any>;
+  txChainId?: string;
+}
+type Props = TransactionElementWithBridgeProps & any;
 import React, { PureComponent } from 'react';
 import {
   TouchableOpacity,

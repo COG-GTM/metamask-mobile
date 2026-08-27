@@ -1,6 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface TokenSelectModalProps {
+  accounts?: Record<string, any>;
+  balances?: Record<string, any>;
+  chainId?: string;
+  conversionRate?: number;
+  currentCurrency?: string;
+  dismiss?: (...args: any[]) => any;
+  excludeAddresses?: string;
+  initialTokens?: any[];
+  isVisible?: boolean;
+  networkConfigurations?: Record<string, any>;
+  onItemPress?: (...args: any[]) => any;
+  selectedAddress?: string;
+  title?: string;
+  tokenExchangeRates?: Record<string, any>;
+  tokens?: any[];
 }
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
@@ -151,7 +165,7 @@ function TokenSelectModal({
   chainId,
   networkConfigurations,
   balances,
-}: Props) {
+}: TokenSelectModalProps & any) {
   const navigation = useNavigation();
   const { trackEvent, createEventBuilder } = useMetrics();
 

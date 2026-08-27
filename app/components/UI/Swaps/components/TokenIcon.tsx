@@ -1,7 +1,20 @@
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface EmptyIconProps {
+  big?: boolean;
+  biggest?: boolean;
+  medium?: boolean;
+  style?: Record<string, any>;
+  testID?: string;
+}
+interface TokenIconProps {
+  big?: boolean;
+  biggest?: boolean;
+  icon?: string;
+  medium?: boolean;
+  style?: Record<string, any>;
+  symbol?: string;
+  testID?: string;
 }
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -67,7 +80,7 @@ const createStyles = (colors: any): any =>
     },
   });
 
-const EmptyIcon = ({ medium, big, biggest, style, ...props }: Props) => {
+const EmptyIcon = ({ medium, big, biggest, style, ...props }: EmptyIconProps & any) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 
@@ -86,7 +99,7 @@ const EmptyIcon = ({ medium, big, biggest, style, ...props }: Props) => {
   );
 };
 
-function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }: Props) {
+function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }: TokenIconProps & any) {
   const [showFallback, setShowFallback] = useState<any>(false);
   const { colors } = useTheme();
   const styles: any = createStyles(colors);

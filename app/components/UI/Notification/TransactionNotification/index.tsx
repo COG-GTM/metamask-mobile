@@ -1,8 +1,28 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface TransactionNotificationProps {
+  accounts?: Record<string, any>;
+  animatedTimingStart?: (...args: any[]) => any;
+  chainId?: string;
+  collectibleContracts?: any[];
+  contractExchangeRates?: Record<string, any>;
+  conversionRate?: number;
+  currentCurrency?: string;
+  currentNotification?: Record<string, any>;
+  exchangeRate?: number;
+  isInBrowserView?: boolean;
+  notificationAnimated?: Record<string, any>;
+  onClose?: (...args: any[]) => any;
+  primaryCurrency?: string;
+  selectedAddress?: string;
+  smartTransactions?: any[];
+  swapsTokens?: any[];
+  swapsTransactions?: Record<string, any>;
+  ticker?: string;
+  tokens?: Record<string, any>;
+  transactions?: any[];
 }
+type Props = TransactionNotificationProps & any;
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import { connect } from 'react-redux';

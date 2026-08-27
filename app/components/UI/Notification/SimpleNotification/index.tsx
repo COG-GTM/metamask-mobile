@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface SimpleNotificationProps {
+  currentNotification?: Record<string, any>;
+  hideCurrentNotification?: (...args: any[]) => any;
+  isInBrowserView?: boolean;
+  notificationAnimated?: Record<string, any>;
 }
 import React from 'react';
 import { StyleSheet } from 'react-native';
@@ -32,7 +35,7 @@ function SimpleNotification({
   notificationAnimated,
   hideCurrentNotification,
   currentNotification,
-}: Props) {
+}: SimpleNotificationProps & any) {
   return (
     <Animated.View
       style={[

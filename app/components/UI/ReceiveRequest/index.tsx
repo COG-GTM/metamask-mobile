@@ -1,7 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface ReceiveRequestProps {
+  chainId?: string;
+  hideModal?: (...args: any[]) => any;
+  isNetworkBuySupported?: boolean;
+  metrics?: Record<string, any>;
+  navigation?: Record<string, any>;
+  protectWalletModalVisible?: (...args: any[]) => any;
+  receiveAsset?: Record<string, any>;
+  seedphraseBackedUp?: boolean;
+  selectedAddress?: string;
+  showAlert?: (...args: any[]) => any;
 }
+type Props = ReceiveRequestProps & any;
 import React, { PureComponent } from 'react';
 import {
   SafeAreaView,
@@ -254,5 +264,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(ReceiveRequest));

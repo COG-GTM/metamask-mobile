@@ -1,6 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface ActionContentProps {
+  actionContainerStyle?: Record<string, any>;
+  cancelButtonDisabled?: boolean;
+  cancelButtonMode?: string;
+  cancelTestID?: string;
+  cancelText?: string;
+  children?: React.ReactNode;
+  childrenContainerStyle?: Record<string, any>;
+  confirmButtonMode?: string;
+  confirmDisabled?: boolean;
+  confirmTestID?: string;
+  confirmText?: string;
+  displayCancelButton?: boolean;
+  displayConfirmButton?: boolean;
+  onCancelPress?: (...args: any[]) => any;
+  onConfirmPress?: (...args: any[]) => any;
+  verticalButtons?: boolean;
+  viewContainerStyle?: Record<string, any>;
+  viewWrapperStyle?: Record<string, any>;
 }
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -68,7 +85,7 @@ export default function ActionContent({
   actionContainerStyle,
   childrenContainerStyle,
   verticalButtons,
-}: Props) {
+}: ActionContentProps & any) {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 

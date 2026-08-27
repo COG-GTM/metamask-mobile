@@ -1,8 +1,27 @@
 /* eslint-disable @typescript-eslint/prefer-optional-chain */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface TransactionDetailsProps {
+  chainId?: string;
+  close?: (...args: any[]) => any;
+  contractExchangeRates?: Record<string, any>;
+  conversionRate?: number;
+  currentCurrency?: string;
+  navigation?: Record<string, any>;
+  networkConfigurations?: Record<string, any>;
+  primaryCurrency?: string;
+  selectedAddress?: string;
+  shouldUseSmartTransaction?: boolean;
+  showCancelModal?: (...args: any[]) => any;
+  showSpeedUpModal?: (...args: any[]) => any;
+  swapsTokens?: any[];
+  swapsTransactions?: Record<string, any>;
+  ticker?: string;
+  tokens?: Record<string, any>;
+  transactionDetails?: Record<string, any>;
+  transactionObject?: Record<string, any>;
+  transactions?: any[];
 }
+type Props = TransactionDetailsProps & any;
 import React, { PureComponent } from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { query } from '@metamask/controller-utils';
@@ -492,5 +511,4 @@ const mapStateToProps = (state: any, ownProps: any) => ({
 
 TransactionDetails.contextType = ThemeContext;
 
-// @ts-expect-error -- legacy JavaScript UI type boundary
 export default connect(mapStateToProps)(withNavigation(TransactionDetails));

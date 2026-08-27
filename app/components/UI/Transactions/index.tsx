@@ -1,8 +1,33 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/prefer-optional-chain */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface TransactionsProps {
+  accounts?: Record<string, any>;
+  assetSymbol?: string;
+  chainId?: string;
+  close?: (...args: any[]) => any;
+  collectibleContracts?: any[];
+  confirmedTransactions?: any[];
+  contractExchangeRates?: Record<string, any>;
+  conversionRate?: number;
+  currentCurrency?: string;
+  exchangeRate?: number;
+  gasFeeEstimates?: Record<string, any>;
+  header?: Record<string, any>;
+  headerHeight?: number;
+  isSigningQRObject?: boolean;
+  loading?: boolean;
+  navigation?: Record<string, any>;
+  networkConfigurations?: Record<string, any>;
+  onRefSet?: (...args: any[]) => any;
+  onScrollThroughContent?: (...args: any[]) => any;
+  providerConfig?: Record<string, any>;
+  selectedAddress?: string;
+  submittedTransactions?: any[];
+  tokenChainId?: string;
+  tokens?: Record<string, any>;
+  transactions?: any[];
 }
+type Props = TransactionsProps & any;
 import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
 import React, { PureComponent } from 'react';
 import {

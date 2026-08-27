@@ -1,8 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-shadow, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, jsdoc/check-indentation */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface CollectibleContractsProps {
+  chainId?: string;
+  collectibleContracts?: any[];
+  collectibles?: any[];
+  displayNftMedia?: boolean;
+  favoriteCollectibles?: any[];
+  isIpfsGatewayEnabled?: boolean;
+  isNftFetchingProgress?: boolean;
+  navigation?: Record<string, any>;
+  networkType?: string;
+  removeFavoriteCollectible?: (...args: any[]) => any;
+  selectedAddress?: string;
+  useNftDetection?: boolean;
 }
+type Props = CollectibleContractsProps & any;
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   TouchableOpacity,
@@ -174,7 +186,7 @@ const CollectibleContracts = ({
   useNftDetection,
   isIpfsGatewayEnabled,
   displayNftMedia,
-}: Props) => {
+}: CollectibleContractsProps & any) => {
   const isAllNetworks = useSelector(selectIsAllNetworks);
 
   const filteredCollectibleContracts = useMemo(

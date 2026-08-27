@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface CollectibleContractInformationProps {
+  chainId: string;
+  collectibleContract?: Record<string, any>;
+  navigation?: Record<string, any>;
+  onClose?: (...args: any[]) => any;
 }
+type Props = CollectibleContractInformationProps & any;
 import React, { PureComponent } from 'react';
 import {
   ScrollView,

@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface AssetSwapButtonProps {
+  isAssetAllowed?: boolean;
+  isFeatureLive?: boolean;
+  isNetworkAllowed?: boolean;
+  onPress?: (...args: any[]) => any;
 }
 import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -23,7 +26,7 @@ function AssetSwapButton({
   isNetworkAllowed,
   isAssetAllowed,
   onPress,
-}: Props) {
+}: AssetSwapButtonProps & any) {
   const [isModalOpen, , showModal, hideModal] = useModalHandler(false);
   const isDisabled = !isFeatureLive || !isNetworkAllowed || !isAssetAllowed;
 

@@ -1,7 +1,18 @@
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface HeaderProps {
+  children?: React.ReactNode;
+  savings?: boolean;
+  style?: Record<string, any>;
+}
+interface BodyProps {
+  style?: Record<string, any>;
+}
+interface HeaderTextProps {
+  style?: Record<string, any>;
+}
+interface SeparatorProps {
+  style?: Record<string, any>;
 }
 import React from 'react';
 import { View, StyleSheet, Image } from 'react-native';
@@ -64,7 +75,7 @@ const createStyles = (colors: any): any =>
 
 const QuotesSummary = (props: any) => <View {...props} />;
 
-const Header = ({ style, savings, children, ...props }: Props) => {
+const Header = ({ style, savings, children, ...props }: HeaderProps & any) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
   return (
@@ -83,17 +94,17 @@ const Header = ({ style, savings, children, ...props }: Props) => {
   );
 };
 
-const Body = ({ style, ...props }: Props) => {
+const Body = ({ style, ...props }: BodyProps & any) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
   return <View style={[styles.body, style]} {...props} />;
 };
-const HeaderText = ({ style, ...props }: Props) => {
+const HeaderText = ({ style, ...props }: HeaderTextProps & any) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
   return <Text style={[styles.headerText, style]} {...props} />;
 };
-const Separator = ({ style }: Props) => {
+const Separator = ({ style }: SeparatorProps & any) => {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
   return <View style={[styles.separator, style]} />;

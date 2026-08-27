@@ -1,6 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface ActionModalProps {
+  actionContainerStyle?: Record<string, any>;
+  cancelButtonDisabled?: boolean;
+  cancelButtonMode?: string;
+  cancelTestID?: string;
+  cancelText?: string;
+  children?: React.ReactNode;
+  childrenContainerStyle?: Record<string, any>;
+  confirmButtonMode?: string;
+  confirmDisabled?: boolean;
+  confirmTestID?: string;
+  confirmText?: string;
+  displayCancelButton?: boolean;
+  displayConfirmButton?: boolean;
+  modalStyle?: Record<string, any>;
+  modalVisible?: boolean;
+  onCancelPress?: (...args: any[]) => any;
+  onConfirmPress?: (...args: any[]) => any;
+  onRequestClose?: (...args: any[]) => any;
+  propagateSwipe?: boolean;
+  verticalButtons?: boolean;
+  viewContainerStyle?: Record<string, any>;
+  viewWrapperStyle?: Record<string, any>;
 }
 import React from 'react';
 import { StyleSheet } from 'react-native';
@@ -42,7 +63,7 @@ export default function ActionModal({
   verticalButtons,
   propagateSwipe,
   cancelButtonDisabled,
-}: Props) {
+}: ActionModalProps & any) {
   const { colors } = useTheme();
 
   return (

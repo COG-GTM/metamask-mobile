@@ -1,6 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface FetchParams {
+  slippage?: any;
+  sourceToken: Record<string, any>;
+  destinationToken: Record<string, any>;
+  sourceAmount: any;
+  walletAddress: any;
+  networkClientId: any;
+  enableGasIncludedQuotes: any;
+}
+interface MaxBalanceLinkParams {
+  sourceToken: Record<string, any>;
+  shouldUseSmartTransaction: boolean;
+  hasBalance: boolean;
 }
 import { useMemo } from 'react';
 import BigNumber from 'bignumber.js';
@@ -137,7 +148,7 @@ export function getFetchParams({
   walletAddress,
   networkClientId,
   enableGasIncludedQuotes,
-}: Props) {
+}: FetchParams) {
   return {
     slippage,
     sourceToken: sourceToken.address,
@@ -252,7 +263,7 @@ export function shouldShowMaxBalanceLink({
   sourceToken,
   shouldUseSmartTransaction,
   hasBalance,
-}: Props) {
+}: MaxBalanceLinkParams) {
   if (!sourceToken?.symbol || !hasBalance) {
     return false;
   }

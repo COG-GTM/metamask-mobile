@@ -1,8 +1,16 @@
 /* eslint-disable @typescript-eslint/no-shadow, @typescript-eslint/prefer-optional-chain */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface OptinMetricsProps {
+  clearOnboardingEvents?: (...args: any[]) => any;
+  events?: any[];
+  isDataCollectionForMarketingEnabled?: boolean;
+  metrics?: Record<string, any>;
+  navigation?: Record<string, any>;
+  route?: Record<string, any>;
+  setDataCollectionForMarketing?: (...args: any[]) => any;
+  setOnboardingWizardStep?: (...args: any[]) => any;
 }
+type Props = OptinMetricsProps & any;
 import React, { PureComponent } from 'react';
 import {
   View,
@@ -673,5 +681,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-// @ts-expect-error -- legacy JavaScript UI type boundary
 )(withMetricsAwareness(OptinMetrics));

@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface Props {
-  [key: string]: any;
+interface SlippageModalProps {
+  dismiss?: (...args: any[]) => any;
+  isVisible?: boolean;
+  onChange?: (...args: any[]) => any;
+  slippage?: number;
 }
 import React from 'react';
 import { StyleSheet, SafeAreaView, View } from 'react-native';
@@ -41,7 +44,7 @@ const createStyles = (colors: any): any =>
     },
   });
 
-function SlippageModal({ isVisible, dismiss, onChange, slippage }: Props) {
+function SlippageModal({ isVisible, dismiss, onChange, slippage }: SlippageModalProps & any) {
   const { colors } = useTheme();
   const styles: any = createStyles(colors);
 
