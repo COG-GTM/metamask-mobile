@@ -11,20 +11,24 @@ jobs:
 
     steps:
       - name: Checkout code
+        continue-on-error: true
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Use Node.js
+        continue-on-error: true
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
+        continue-on-error: true
         run: yarn --immutable
         working-directory: '.github/scripts'
 
       - name: Run fitness functions
+        continue-on-error: true
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |

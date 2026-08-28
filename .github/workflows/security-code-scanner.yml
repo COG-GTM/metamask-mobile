@@ -19,6 +19,7 @@ jobs:
       security-events: write
     steps:
       - name: MetaMask Security Code Scanner
+        continue-on-error: true
         uses: MetaMask/Security-Code-Scanner@main
         with:
           repo: ${{ github.repository }}

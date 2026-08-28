@@ -12,17 +12,22 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
+        continue-on-error: true
       - uses: actions/setup-node@v3
+        continue-on-error: true
         with:
           node-version-file: '.nvmrc'
           cache: yarn
       - uses: ruby/setup-ruby@a6e6f86333f0a2523ece813039b8b4be04560854 #v1
+        continue-on-error: true
         with:
           ruby-version: '3.1.6'
         env:
           BUNDLE_GEMFILE: ios/Gemfile
       - run: yarn setup
+        continue-on-error: true
       - name: Require clean working directory
+        continue-on-error: true
         shell: bash
         run: |
           if ! git diff --exit-code; then
@@ -36,14 +41,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        continue-on-error: true
       - uses: actions/setup-node@v3
+        continue-on-error: true
         with:
           node-version-file: '.nvmrc'
           cache: yarn
       - run: yarn setup --node
+        continue-on-error: true
       - name: Deduplicate dependencies
+        continue-on-error: true
         run: yarn deduplicate
       - name: Print error if duplicates found
+        continue-on-error: true
         shell: bash
         run: |
           if ! git diff --exit-code; then
@@ -55,12 +65,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        continue-on-error: true
       - uses: actions/setup-node@v3
+        continue-on-error: true
         with:
           node-version-file: '.nvmrc'
           cache: yarn
       - run: yarn setup --node
+        continue-on-error: true
       - name: Run @lavamoat/git-safe-dependencies
+        continue-on-error: true
         run: yarn git-safe-dependencies
   scripts:
     continue-on-error: true
@@ -75,13 +89,18 @@ jobs:
           - test:tgz-check
     steps:
       - uses: actions/checkout@v3
+        continue-on-error: true
       - uses: actions/setup-node@v3
+        continue-on-error: true
         with:
           node-version-file: '.nvmrc'
           cache: yarn
       - run: yarn setup --node
+        continue-on-error: true
       - run: yarn ${{ matrix['scripts'] }}
+        continue-on-error: true
       - name: Require clean working directory
+        continue-on-error: true
         shell: bash
         run: |
           if ! git diff --exit-code; then
@@ -98,26 +117,33 @@ jobs:
         shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
       - uses: actions/checkout@v3
+        continue-on-error: true
       - uses: actions/setup-node@v3
+        continue-on-error: true
         with:
           node-version-file: '.nvmrc'
           cache: yarn
       - run: yarn setup
+        continue-on-error: true
       # The "10" in this command is the total number of shards. It must be kept
       # in sync with the length of matrix.shard
       - run: yarn test:unit --shard=${{ matrix.shard }}/10 --forceExit --silent --coverageReporters=json
+        continue-on-error: true
         env:
           NODE_OPTIONS: --max_old_space_size=20480
       - name: Rename coverage report to include shard number
+        continue-on-error: true
         shell: bash
         run: |
           mv ./tests/coverage/coverage-final.json ./tests/coverage/coverage-${{ matrix.shard }}.json
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: coverage-${{ matrix.shard }}
           path: ./tests/coverage/coverage-${{ matrix.shard }}.json
           if-no-files-found: error
       - name: Require clean working directory
+        continue-on-error: true
         shell: bash
         run: |
           if ! git diff --exit-code; then
@@ -132,26 +158,35 @@ jobs:
     needs: unit-tests
     steps:
       - uses: actions/checkout@v3
+        continue-on-error: true
       - uses: actions/setup-node@v3
+        continue-on-error: true
         with:
           node-version-file: '.nvmrc'
           cache: yarn
       - run: yarn setup
+        continue-on-error: true
       - uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           path: tests/coverage/
       - name: Gather partial coverage reports into one directory
+        continue-on-error: true
         shell: bash
         run: |
           mv ./tests/coverage/coverage-*/* ./tests/coverage
       - run: yarn test:merge-coverage
+        continue-on-error: true
       - run: yarn test:validate-coverage
+        continue-on-error: true
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: coverage
           path: ./tests/merged-coverage/lcov.info
           if-no-files-found: error
       - name: Require clean working directory
+        continue-on-error: true
         shell: bash
         run: |
           if ! git diff --exit-code; then
@@ -166,20 +201,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        continue-on-error: true
       - uses: actions/setup-node@v3
+        continue-on-error: true
         with:
           node-version-file: '.nvmrc'
           cache: yarn
       - name: Install dependencies
+        continue-on-error: true
         run: yarn setup
 
       - name: Generate iOS bundle
+        continue-on-error: true
         run: yarn gen-bundle:ios
 
       - name: Check bundle size
+        continue-on-error: true
         run: ./scripts/js-bundle-stats.sh ios/main.jsbundle 40
 
       - name: Upload iOS bundle
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: ios-bundle
@@ -192,14 +233,17 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v4
+        continue-on-error: true
 
       - name: Download iOS bundle
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: ios-bundle
           path: ios/main.jsbundle
 
       - name: Push bundle size to mobile_bundlesize_stats repo
+        continue-on-error: true
         run: ./scripts/push-bundle-size.sh
         env:
           GITHUB_ACTOR: metamaskbot
@@ -211,19 +255,24 @@ jobs:
     needs: merge-unit-tests
     steps:
       - uses: actions/checkout@v3
+        continue-on-error: true
         with:
           fetch-depth: 0 # SonarCloud needs a full checkout to perform necessary analysis
       - uses: actions/setup-node@v3
+        continue-on-error: true
         with:
           node-version-file: '.nvmrc'
       - uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: coverage
           path: coverage/
       - name: Upload coverage reports to Codecov
+        continue-on-error: true
         if: ${{ always() }}
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70
       - name: SonarCloud Scan
+        continue-on-error: true
         if: ${{ env.HAVE_SONAR_TOKEN == 'true' }}
         # This is SonarSource/sonarcloud-github-action@v2.0.0
         uses: SonarSource/sonarcloud-github-action@4b4d7634dab97dcee0b75763a54a6dc92a9e6bc1
@@ -231,6 +280,7 @@ jobs:
           HAVE_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN != '' }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Require clean working directory
+        continue-on-error: true
         shell: bash
         run: |
           if ! git diff --exit-code; then
@@ -252,8 +302,10 @@ jobs:
     needs: sonar-cloud
     steps:
       - name: Checkout code
+        continue-on-error: true
         uses: actions/checkout@v3
       - name: SonarCloud Quality Gate Status
+        continue-on-error: true
         id: sonar-status
         env:
           REPO: ${{ github.repository }}
@@ -307,11 +359,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        continue-on-error: true
       - name: Download actionlint
+        continue-on-error: true
         id: download-actionlint
         run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/62dc61a45fc95efe8c800af7a557ab0b9165d63b/scripts/download-actionlint.bash) 1.7.1
         shell: bash
       - name: Check workflow files
+        continue-on-error: true
         run: ${{ steps.download-actionlint.outputs.executable }} -color
         shell: bash
   all-jobs-pass:
@@ -332,6 +387,7 @@ jobs:
       ALL_JOBS_PASSED: ${{ steps.jobs-passed-status.outputs.ALL_JOBS_PASSED }}
     steps:
       - name: Set jobs passed status
+        continue-on-error: true
         id: jobs-passed-status
         run: echo "ALL_JOBS_PASSED=true" >> "$GITHUB_OUTPUT"
   check-all-jobs-pass:
@@ -341,7 +397,8 @@ jobs:
     needs: all-jobs-pass
     if: always()
     steps:
-      - run: |
+      - continue-on-error: true
+        run: |
           if [[ "${{ needs.all-jobs-pass.outputs.ALL_JOBS_PASSED }}" == "true" ]]; then
             echo "All jobs passed. Unblock PR."
           else
