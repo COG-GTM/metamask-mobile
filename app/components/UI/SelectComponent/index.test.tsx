@@ -10,12 +10,13 @@ jest.mock('../../../core/Engine', () => ({
 
 describe('SelectComponent', () => {
   it('should render correctly', () => {
+    const options = [
+      { key: 'key 1', val: 'val 1', label: 'option 1' },
+      { key: 'key 2', val: 'val 2', label: 'option 2' },
+    ];
     const { toJSON } = renderWithProvider(
       <SelectComponent
-        options={[
-          { key: 'key 1', val: 'val 1', label: 'option 1' },
-          { key: 'key 2', val: 'val 2', label: 'option 2' },
-        ]}
+        options={options}
         selectedValue={'val 2'}
         label={'Choose an option'}
       />,
