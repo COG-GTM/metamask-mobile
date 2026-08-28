@@ -31,9 +31,9 @@ const createStyles = (colors: Colors) => ({
     backgroundColor: colors.overlay.alternative,
     padding: 20,
     paddingTop: 30,
-    alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignSelf: 'center' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     borderRadius: 8,
   }),
 });

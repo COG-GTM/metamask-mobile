@@ -6,10 +6,8 @@ import {
   removeCurrentNotification,
   hideCurrentNotification,
 } from '../../../actions/notification';
-import {
-  NotificationTypes,
-  NotificationTypesType,
-} from '../../../util/notifications';
+import { NotificationTypes } from '../../../util/notifications';
+import { CurrentNotification } from './types';
 import TransactionNotification from './TransactionNotification';
 import SimpleNotification from './SimpleNotification';
 import { currentNotificationSelector } from '../../../reducers/notification';
@@ -28,19 +26,6 @@ import {
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
 const BROWSER_ROUTE = 'BrowserView';
-
-interface CurrentNotification {
-  id?: string;
-  isVisible?: boolean;
-  autodismiss?: number;
-  type?: NotificationTypesType;
-  title?: string;
-  description?: string;
-  status?: string;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  transaction?: any;
-}
 
 interface StateProps {
   currentNotification: CurrentNotification;
