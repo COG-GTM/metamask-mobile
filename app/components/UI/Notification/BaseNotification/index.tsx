@@ -1,6 +1,11 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
+import {
+  TouchableOpacity,
+  StyleSheet,
+  View,
+  StyleProp,
+  TextStyle,
+} from 'react-native';
 import { fontStyles, baseStyles } from '../../../../styles/common';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AnimatedSpinner from '../../AnimatedSpinner';
@@ -9,9 +14,32 @@ import IonicIcon from 'react-native-vector-icons/Ionicons';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
+import { Colors } from '../../../../util/theme/models';
 import { ToastSelectorsIDs } from '../../../../../e2e/selectors/wallet/ToastModal.selectors';
 
-const createStyles = (colors) =>
+interface NotificationData {
+  description?: string | null;
+  title?: string | null;
+  nonce?: string;
+  amount?: string | object | null;
+  assetType?: string;
+  type?: string | null;
+}
+
+interface IconStyles {
+  checkIcon?: StyleProp<TextStyle>;
+  [key: string]: unknown;
+}
+
+interface BaseNotificationProps {
+  status: string;
+  data?: NotificationData;
+  onPress?: () => void;
+  onHide?: () => void;
+  autoDismiss?: boolean;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     floatingBackground: {
       backgroundColor: colors.background.default,
@@ -60,7 +88,7 @@ const createStyles = (colors) =>
     },
   });
 
-export const getIcon = (status, colors, styles) => {
+export const getIcon = (status: string, colors: Colors, styles: IconStyles) => {
   switch (status) {
     case 'pending':
     case 'pending_withdrawal':
@@ -121,7 +149,10 @@ export const getIcon = (status, colors, styles) => {
   }
 };
 
-const getTitle = (status, { nonce, amount, assetType }) => {
+const getTitle = (
+  status: string,
+  { nonce, amount, assetType }: NotificationData,
+) => {
   switch (status) {
     case 'pending':
       return strings('notifications.pending_title');
@@ -130,7 +161,9 @@ const getTitle = (status, { nonce, amount, assetType }) => {
     case 'pending_withdrawal':
       return strings('notifications.pending_withdrawal_title');
     case 'success':
-      return strings('notifications.success_title', { nonce: parseInt(nonce) });
+      return strings('notifications.success_title', {
+        nonce: parseInt(String(nonce)),
+      });
     case 'success_deposit':
       return strings('notifications.success_deposit_title');
     case 'success_withdrawal':
@@ -141,7 +174,9 @@ const getTitle = (status, { nonce, amount, assetType }) => {
         assetType,
       });
     case 'speedup':
-      return strings('notifications.speedup_title', { nonce: parseInt(nonce) });
+      return strings('notifications.speedup_title', {
+        nonce: parseInt(String(nonce)),
+      });
     case 'received_payment':
       return strings('notifications.received_payment_title');
     case 'cancelled':
@@ -151,7 +186,10 @@ const getTitle = (status, { nonce, amount, assetType }) => {
   }
 };
 
-export const getDescription = (status, { amount = null, type = null }) => {
+export const getDescription = (
+  status: string,
+  { amount = null, type = null }: NotificationData,
+) => {
   if (amount && typeof amount !== 'object' && type) {
     return strings(`notifications.${type}_${status}_message`, { amount });
   }
@@ -163,12 +201,12 @@ export const getDescription = (status, { amount = null, type = null }) => {
  */
 const BaseNotification = ({
   status,
-  data = null,
-  data: { description = null, title = null },
+  data = {},
+  data: { description = null, title = null } = {},
   onPress,
   onHide,
-  autoDismiss,
-}) => {
+  autoDismiss = false,
+}: BaseNotificationProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -205,18 +243,6 @@ const BaseNotification = ({
       </View>
     </View>
   );
-};
-
-BaseNotification.propTypes = {
-  status: PropTypes.string,
-  data: PropTypes.object,
-  onPress: PropTypes.func,
-  onHide: PropTypes.func,
-  autoDismiss: PropTypes.bool,
-};
-
-BaseNotification.defaultProps = {
-  autoDismiss: false,
 };
 
 export default BaseNotification;
