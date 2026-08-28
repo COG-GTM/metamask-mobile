@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
-import Animated from 'react-native-reanimated';
+import Animated, { SharedValue } from 'react-native-reanimated';
 import BaseNotification from './../BaseNotification';
 import Device from '../../../../util/device';
 import ElevatedView from 'react-native-elevated-view';
@@ -24,12 +23,34 @@ const styles = StyleSheet.create({
   },
 });
 
+interface CurrentNotification {
+  status: string;
+  title?: string;
+  description?: string;
+}
+
+interface BaseNotificationProps {
+  status: string;
+  data: Pick<CurrentNotification, 'title' | 'description'>;
+  onHide: () => void;
+}
+
+interface Props {
+  isInBrowserView?: boolean;
+  notificationAnimated: SharedValue<number>;
+  currentNotification: CurrentNotification;
+  hideCurrentNotification: () => void;
+}
+
+const TypedBaseNotification =
+  BaseNotification as unknown as React.ComponentType<BaseNotificationProps>;
+
 function SimpleNotification({
   isInBrowserView,
   notificationAnimated,
   hideCurrentNotification,
   currentNotification,
-}) {
+}: Props) {
   return (
     <Animated.View
       style={[
@@ -39,7 +60,7 @@ function SimpleNotification({
       ]}
     >
       <ElevatedView style={styles.elevatedView} elevation={100}>
-        <BaseNotification
+        <TypedBaseNotification
           status={currentNotification.status}
           data={{
             title: currentNotification.title,
@@ -51,12 +72,5 @@ function SimpleNotification({
     </Animated.View>
   );
 }
-
-SimpleNotification.propTypes = {
-  isInBrowserView: PropTypes.bool,
-  notificationAnimated: PropTypes.object,
-  currentNotification: PropTypes.object,
-  hideCurrentNotification: PropTypes.func,
-};
 
 export default SimpleNotification;
