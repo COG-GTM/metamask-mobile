@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, Text } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
@@ -17,10 +16,12 @@ import {
 } from '../../../selectors/networkController';
 import { INTERNAL_ORIGINS } from '../../../constants/transaction';
 import { TransactionReviewSelectorsIDs } from '../../../../e2e/selectors/SendFlow/TransactionReview.selectors';
+import { RootState } from '../../../reducers';
+import { Colors } from '../../../util/theme/models';
 
 const { ORIGIN_DEEPLINK, ORIGIN_QR_CODE } = AppConstants.DEEPLINKS;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     transactionHeader: {
       justifyContent: 'center',
@@ -83,10 +84,38 @@ const createStyles = (colors) =>
     },
   });
 
+interface CurrentPageInformation {
+  origin?: string;
+  url?: string;
+  icon?: string | { uri?: string };
+  currentEnsName?: string;
+  spenderAddress?: string;
+}
+
+interface OwnProps {
+  /**
+   * Object containing current page title and url
+   */
+  currentPageInformation: CurrentPageInformation;
+}
+
+interface StateProps {
+  /**
+   * String representing the selected network
+   */
+  networkType?: string;
+  /**
+   * Provider name
+   */
+  nickname?: string;
+}
+
+type Props = OwnProps & StateProps;
+
 /**
- * PureComponent that renders the transaction header used for signing, granting permissions and sending
+ * Component that renders the transaction header used for signing, granting permissions and sending
  */
-const TransactionHeader = (props) => {
+const TransactionHeader = (props: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -109,9 +138,11 @@ const TransactionHeader = (props) => {
    */
   const renderNetworkStatusIndicator = () => {
     const { networkType } = props;
+    const network = networkType
+      ? networkList[networkType as keyof typeof networkList]
+      : undefined;
     const networkStatusIndicatorColor =
-      (networkList[networkType] && networkList[networkType].color) ||
-      colors.error.default;
+      network?.color || colors.error.default;
     const networkStatusIndicator = (
       <View
         style={[
@@ -133,11 +164,11 @@ const TransactionHeader = (props) => {
     const { url, origin } = props.currentPageInformation;
     const name =
       getUrlObj(
-        originIsWalletConnect
-          ? origin.split(WALLET_CONNECT_ORIGIN)[1]
+        (originIsWalletConnect
+          ? origin?.split(WALLET_CONNECT_ORIGIN)[1]
           : originIsMMSDKRemoteConn
-          ? origin.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1]
-          : url,
+          ? origin?.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1]
+          : url) as string,
       ).protocol === 'https:'
         ? 'lock'
         : 'warning';
@@ -159,19 +190,19 @@ const TransactionHeader = (props) => {
         </View>
       );
     }
-    let iconTitle = getHost(currentEnsName || url);
+    let iconTitle = getHost((currentEnsName || url) as string);
     if (originIsWalletConnect) {
-      url = origin.split(WALLET_CONNECT_ORIGIN)[1];
-      iconTitle = getHost(url);
+      url = origin?.split(WALLET_CONNECT_ORIGIN)[1];
+      iconTitle = getHost(url as string);
     } else if (originIsMMSDKRemoteConn) {
-      url = origin.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1];
+      url = origin?.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1];
     }
     return (
       <WebsiteIcon
         style={styles.domainLogo}
         viewStyle={styles.assetLogo}
         title={iconTitle}
-        url={currentEnsName || url}
+        url={(currentEnsName || url) as string}
         icon={typeof icon === 'string' ? icon : icon?.uri}
       />
     );
@@ -182,14 +213,16 @@ const TransactionHeader = (props) => {
       props.currentPageInformation;
     let title = '';
 
-    if (originIsDeeplink) title = renderShortAddress(spenderAddress);
+    if (originIsDeeplink) title = renderShortAddress(spenderAddress as string);
     else if (originIsWalletConnect)
-      title = getHost(origin.split(WALLET_CONNECT_ORIGIN)[1]);
+      title = getHost(origin?.split(WALLET_CONNECT_ORIGIN)[1] as string);
     else if (originIsMMSDKRemoteConn) {
-      title = getHost(origin.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1]);
+      title = getHost(
+        origin?.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1] as string,
+      );
     }
 
-    if (!title) title = getHost(currentEnsName || url || origin);
+    if (!title) title = getHost((currentEnsName || url || origin) as string);
 
     return <Text style={styles.domainUrl}>{title}</Text>;
   };
@@ -208,7 +241,11 @@ const TransactionHeader = (props) => {
     <View style={styles.networkContainer}>
       {renderNetworkStatusIndicator()}
       <Text style={styles.network}>
-        {props.nickname || networkList[props.networkType]?.shortName}
+        {props.nickname ||
+          (props.networkType
+            ? networkList[props.networkType as keyof typeof networkList]
+                ?.shortName
+            : undefined)}
       </Text>
     </View>
   );
@@ -225,22 +262,7 @@ const TransactionHeader = (props) => {
   );
 };
 
-TransactionHeader.propTypes = {
-  /**
-   * Object containing current page title and url
-   */
-  currentPageInformation: PropTypes.object,
-  /**
-   * String representing the selected network
-   */
-  networkType: PropTypes.string,
-  /**
-   * Provider name
-   */
-  nickname: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   networkType: selectProviderType(state),
   nickname: selectNickname(state),
 });
