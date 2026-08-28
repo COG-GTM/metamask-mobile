@@ -383,6 +383,9 @@ jobs:
         js-bundle-size-check,
         sonar-cloud-quality-gate-status,
       ]
+    # Run even if a dependency is skipped or fails, so the gate never depends on
+    # upstream job conclusions.
+    if: always()
     outputs:
       ALL_JOBS_PASSED: ${{ steps.jobs-passed-status.outputs.ALL_JOBS_PASSED }}
     steps:
