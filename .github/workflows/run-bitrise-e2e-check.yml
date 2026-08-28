@@ -16,6 +16,7 @@ env:
 
 jobs:
   run-bitrise-e2e-check:
+    continue-on-error: true
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write

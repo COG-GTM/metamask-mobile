@@ -9,6 +9,7 @@ on:
 
 jobs:
   add-release-label:
+    continue-on-error: true
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
     steps:

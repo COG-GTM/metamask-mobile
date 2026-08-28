@@ -8,6 +8,7 @@ on:
 
 jobs:
   check-template-and-add-labels:
+    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

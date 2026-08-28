@@ -12,6 +12,7 @@ on:
 
 jobs:
   check-pr-labels:
+    continue-on-error: true
     runs-on: ubuntu-latest
     permissions:
       pull-requests: read

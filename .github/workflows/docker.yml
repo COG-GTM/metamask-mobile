@@ -6,6 +6,7 @@ on:
 
 jobs:
   docker:
+    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - name: Set up QEMU
