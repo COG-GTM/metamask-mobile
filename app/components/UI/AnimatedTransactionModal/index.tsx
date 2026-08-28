@@ -74,11 +74,13 @@ const AnimatedTransactionModal = ({
   const [originComponent] = useState(
     React.Children.toArray(children).length > 1 ? 'dapp' : 'wallet',
   );
-  const modalValueRef = useRef(
-    React.Children.toArray(children).length > 1
-      ? new Animated.Value(1)
-      : new Animated.Value(0),
-  );
+  const modalValueRef = useRef<Animated.Value | null>(null);
+  if (modalValueRef.current === null) {
+    modalValueRef.current = new Animated.Value(
+      React.Children.toArray(children).length > 1 ? 1 : 0,
+    );
+  }
+  const modalValue = modalValueRef.current;
   const [width] = useState(Device.getDeviceWidth());
   const [rootHeight, setRootHeight] = useState<number | null>(null);
   const [customGasHeight, setCustomGasHeight] = useState(
@@ -91,15 +93,18 @@ const AnimatedTransactionModal = ({
   const [advancedCustomGas, setAdvancedCustomGas] = useState(false);
   const [toAdvancedFrom, setToAdvancedFrom] = useState('edit');
 
-  const reviewToEditValue = useRef(new Animated.Value(0));
-  const reviewToDataValue = useRef(new Animated.Value(0));
-  const editToAdvancedValue = useRef(new Animated.Value(0));
-
-  const xTranslationMappings: Record<XTranslationName, Animated.Value> = {
-    reviewToEdit: reviewToEditValue.current,
-    editToAdvanced: editToAdvancedValue.current,
-    reviewToData: reviewToDataValue.current,
-  };
+  const xTranslationMappingsRef = useRef<Record<
+    XTranslationName,
+    Animated.Value
+  > | null>(null);
+  if (xTranslationMappingsRef.current === null) {
+    xTranslationMappingsRef.current = {
+      reviewToEdit: new Animated.Value(0),
+      editToAdvanced: new Animated.Value(0),
+      reviewToData: new Animated.Value(0),
+    };
+  }
+  const xTranslationMappings = xTranslationMappingsRef.current;
 
   const hideComponents = (
     xTranslationName: XTranslationName,
@@ -124,7 +129,7 @@ const AnimatedTransactionModal = ({
   }: AnimateParams) => {
     hideComponents(xTranslationName, xTranslationEndValue, 'start');
     Animated.parallel([
-      Animated.timing(modalValueRef.current, {
+      Animated.timing(modalValue, {
         toValue: modalEndValue,
         duration: 250,
         easing: Easing.ease,
@@ -182,7 +187,7 @@ const AnimatedTransactionModal = ({
       return {
         transform: [
           {
-            translateY: modalValueRef.current.interpolate({
+            translateY: modalValue.interpolate({
               inputRange: [
                 0,
                 valueType === 'saveButton'
@@ -195,9 +200,11 @@ const AnimatedTransactionModal = ({
         ],
       };
     }
-    let value: Animated.Value = reviewToEditValue.current;
-    if (valueType === 'editToAdvanced') value = editToAdvancedValue.current;
-    else if (valueType === 'reviewToData') value = reviewToDataValue.current;
+    let value: Animated.Value = xTranslationMappings.reviewToEdit;
+    if (valueType === 'editToAdvanced')
+      value = xTranslationMappings.editToAdvanced;
+    else if (valueType === 'reviewToData')
+      value = xTranslationMappings.reviewToData;
     return {
       transform: [
         {
