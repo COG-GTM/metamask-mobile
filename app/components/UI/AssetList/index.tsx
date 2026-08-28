@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import StyledButton from '../StyledButton'; // eslint-disable-line  import/no-unresolved
@@ -98,4 +98,4 @@ const AssetList = ({
   </View>
 );
 
-export default AssetList;
+export default memo(AssetList);
