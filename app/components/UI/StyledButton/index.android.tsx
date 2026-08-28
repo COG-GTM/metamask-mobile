@@ -89,4 +89,9 @@ const StyledButton = ({
   );
 };
 
+StyledButton.defaultProps = {
+  styleDisabled: { opacity: 0.6 },
+  disabledContainerStyle: { opacity: 0.6 },
+};
+
 export default StyledButton;
