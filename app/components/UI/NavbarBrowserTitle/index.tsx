@@ -1,0 +1,196 @@
+import React from 'react';
+import { connect } from 'react-redux';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { fontStyles } from '../../../styles/common';
+import Networks from '../../../util/networks';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Device from '../../../util/device';
+import { useTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
+import {
+  selectProviderConfig,
+  ProviderConfig,
+} from '../../../selectors/networkController';
+import { RootState } from '../../../reducers';
+import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
+
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    wrapper: {
+      alignItems: 'center',
+      flex: 1,
+    },
+    network: {
+      flexDirection: 'row',
+      marginBottom: 5,
+    },
+    networkName: {
+      fontSize: 11,
+      lineHeight: 11,
+      color: colors.text.default,
+      ...fontStyles.normal,
+    },
+    networkIcon: {
+      marginTop: 3,
+      width: 5,
+      height: 5,
+      borderRadius: 100,
+      marginRight: 5,
+    },
+    currentUrlWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 1,
+      marginBottom: Device.isAndroid() ? 5 : 0,
+    },
+    lockIcon: {
+      marginTop: 2,
+      marginLeft: 10,
+      color: colors.text.default,
+    },
+    currentUrl: {
+      ...fontStyles.normal,
+      fontSize: 14,
+      textAlign: 'center',
+      color: colors.text.default,
+    },
+    currentUrlAndroid: {
+      maxWidth: '60%',
+    },
+    siteIcon: {
+      width: 16,
+      height: 16,
+      marginRight: 4,
+    },
+  });
+
+interface NetworkInfo {
+  name: string;
+  color: string | null;
+}
+
+const NetworkList = Networks as unknown as Record<
+  string,
+  NetworkInfo | undefined
+>;
+
+interface OwnProps {
+  /**
+   * hostname of the current webview
+   */
+  hostname: string;
+  /**
+   * Boolean that specifies if it is a secure website
+   */
+  https?: boolean;
+  /**
+   * Boolean that specifies if there is an error
+   */
+  error?: boolean;
+  /**
+   * Website icon
+   */
+  icon?: string;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route?: {
+    params?: {
+      showUrlModal?: () => void;
+    };
+  };
+}
+
+interface StateProps {
+  /**
+   * Object representing the configuration for the selected network
+   */
+  providerConfig: ProviderConfig;
+}
+
+type Props = OwnProps & StateProps;
+
+const getNetworkName = (providerConfig: ProviderConfig): string => {
+  let name = NetworkList.rpc?.name ?? '';
+
+  if (providerConfig) {
+    if (providerConfig.nickname) {
+      name = providerConfig.nickname;
+    } else if (providerConfig.type) {
+      const currentNetwork = NetworkList[providerConfig.type];
+      if (currentNetwork?.name) {
+        name = currentNetwork.name;
+      }
+    }
+  }
+
+  return name;
+};
+
+/**
+ * UI component that renders inside the navbar
+ * showing the view title and the selected network
+ */
+const NavbarBrowserTitle = ({
+  https,
+  providerConfig,
+  hostname,
+  error,
+  icon,
+  route,
+}: Props) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
+  const onTitlePress = () => {
+    route?.params?.showUrlModal?.();
+  };
+
+  const color = NetworkList[providerConfig.type]?.color || null;
+  const name = getNetworkName(providerConfig);
+
+  return (
+    <TouchableOpacity onPress={onTitlePress} style={styles.wrapper}>
+      <View style={styles.currentUrlWrapper}>
+        {Boolean(icon) && (
+          <Image style={styles.siteIcon} source={{ uri: icon }} />
+        )}
+        <Text
+          numberOfLines={1}
+          ellipsizeMode={'head'}
+          style={[
+            styles.currentUrl,
+            Device.isAndroid() ? styles.currentUrlAndroid : {},
+          ]}
+        >
+          {hostname}
+        </Text>
+        {https && !error ? (
+          <Icon name="lock" size={14} style={styles.lockIcon} />
+        ) : null}
+      </View>
+      <View style={styles.network}>
+        <View
+          style={[
+            styles.networkIcon,
+            { backgroundColor: color || colors.error.default },
+          ]}
+        />
+        <Text
+          numberOfLines={1}
+          style={styles.networkName}
+          testID={CommonSelectorsIDs.NAVBAR_TITLE_NETWORKS_TEXT}
+        >
+          {name}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const mapStateToProps = (state: RootState): StateProps => ({
+  providerConfig: selectProviderConfig(state),
+});
+
+export default connect(mapStateToProps)(NavbarBrowserTitle);
