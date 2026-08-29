@@ -480,13 +480,25 @@ export function excludeEvents(event) {
   return event;
 }
 
+function isAllowlistedErrorUrl(url) {
+  const host = url.match(regex.urlHostname)?.[1]?.toLowerCase();
+
+  if (!host) {
+    return false;
+  }
+
+  return ERROR_URL_ALLOWLIST.some(
+    (allowedUrl) => host === allowedUrl || host.endsWith(`.${allowedUrl}`),
+  );
+}
+
 export function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
 
     return (urlsInMessage ?? []).reduce(
       (sanitizedMessage, url) =>
-        ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))
+        isAllowlistedErrorUrl(url)
           ? sanitizedMessage
           : sanitizedMessage.split(url).join('**'),
       errorMessage,

@@ -28,6 +28,7 @@ export interface RegexTypes {
   trailingSlash: RegExp;
   trailingZero: RegExp;
   transactionNonce: RegExp;
+  urlHostname: RegExp;
   urlHttpToHttps: RegExp;
   url: RegExp;
   validChainIdHex: RegExp;

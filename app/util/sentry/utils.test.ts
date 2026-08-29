@@ -786,6 +786,34 @@ describe('sanitizeUrlsFromErrorMessages', () => {
     );
   });
 
+  it('redacts urls whose host merely contains an allowlisted domain', () => {
+    const report = {
+      message: 'Failed to fetch https://notcoingecko.com/private?key=secret',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch **');
+  });
+
+  it('redacts urls on long top level domains', () => {
+    const report = {
+      message: 'Failed to fetch https://private.technology/path?key=secret',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch **');
+  });
+
+  it('keeps subdomains of allowlisted domains intact', () => {
+    const report = { message: 'Failed to fetch https://api.etherscan.io/api' };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch https://api.etherscan.io/api');
+  });
+
   it('leaves messages without urls unchanged', () => {
     const report = { message: 'Something went wrong' };
 
