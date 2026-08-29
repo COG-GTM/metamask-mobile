@@ -5,7 +5,11 @@ import React, {
   useState,
   useCallback,
 } from 'react';
-import { Animated, ViewStyle } from 'react-native';
+import { Animated, ViewProps, ViewStyle } from 'react-native';
+
+// RN treats a null and an undefined pointerEvents identically, but the prop is
+// serialised into snapshots, so the null is kept to preserve existing output.
+const POINTER_EVENTS_UNSET = null as unknown as ViewProps['pointerEvents'];
 
 const TIME = 3900; // 3900/6 = 650 for each
 
@@ -128,7 +132,7 @@ const FadeAnimationView = ({
         ...style,
         opacity: fadeAnim, // Bind opacity to animated value
       }}
-      pointerEvents={isAnimating ? 'none' : undefined}
+      pointerEvents={isAnimating ? 'none' : POINTER_EVENTS_UNSET}
     >
       {isAnimating ? lastChildren : children}
     </Animated.View>
