@@ -7,6 +7,7 @@ import {
   maskObject,
   sentryStateMask,
   AllProperties,
+  sanitizeUrlsFromErrorMessages,
 } from './utils';
 import { DeepPartial } from '../test/renderWithProvider';
 import { RootState } from '../../reducers';
@@ -730,5 +731,66 @@ describe('captureSentryFeedback', () => {
         exampleObj: 'object',
       },
     });
+  });
+});
+
+describe('sanitizeUrlsFromErrorMessages', () => {
+  it('redacts non-allowlisted urls from the top level message', () => {
+    const report = {
+      message:
+        'Failed to fetch https://malicious-dapp.example.com/path?key=abc',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch **');
+  });
+
+  it('redacts non-allowlisted urls from exception values', () => {
+    const report = {
+      exception: {
+        values: [
+          {
+            value:
+              'Request to https://rpc.example.com/v3/secret-project-id failed',
+          },
+        ],
+      },
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.exception.values[0].value).toBe('Request to ** failed');
+  });
+
+  it('redacts every occurrence of a repeated url', () => {
+    const report = {
+      message:
+        'https://dapp.example.com/a redirected to https://dapp.example.com/a',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('** redirected to **');
+  });
+
+  it('keeps allowlisted urls intact', () => {
+    const report = {
+      message: 'Failed to fetch https://api.coingecko.com/api/v3/simple/price',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe(
+      'Failed to fetch https://api.coingecko.com/api/v3/simple/price',
+    );
+  });
+
+  it('leaves messages without urls unchanged', () => {
+    const report = { message: 'Something went wrong' };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Something went wrong');
   });
 });

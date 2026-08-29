@@ -480,16 +480,17 @@ export function excludeEvents(event) {
   return event;
 }
 
-function sanitizeUrlsFromErrorMessages(report) {
+export function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
 
-    urlsInMessage?.forEach((url) => {
-      if (!ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
-        errorMessage.replace(url, '**');
-      }
-    });
-    return errorMessage;
+    return (urlsInMessage ?? []).reduce(
+      (sanitizedMessage, url) =>
+        ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))
+          ? sanitizedMessage
+          : sanitizedMessage.split(url).join('**'),
+      errorMessage,
+    );
   });
 }
 
