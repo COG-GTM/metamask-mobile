@@ -481,7 +481,10 @@ export function excludeEvents(event) {
 }
 
 function isAllowlistedErrorUrl(url) {
-  const host = url.match(regex.urlHostname)?.[1]?.toLowerCase();
+  const host = url
+    .match(regex.urlHostname)?.[1]
+    ?.toLowerCase()
+    .replace(regex.trailingDot, '');
 
   if (!host) {
     return false;

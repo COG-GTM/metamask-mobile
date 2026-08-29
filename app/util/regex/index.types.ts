@@ -25,6 +25,7 @@ export interface RegexTypes {
   sanitizeUrl: RegExp;
   seedPhrase: RegExp;
   startUrl: RegExp;
+  trailingDot: RegExp;
   trailingSlash: RegExp;
   trailingZero: RegExp;
   transactionNonce: RegExp;

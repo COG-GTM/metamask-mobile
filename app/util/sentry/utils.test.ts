@@ -814,6 +814,14 @@ describe('sanitizeUrlsFromErrorMessages', () => {
     expect(report.message).toBe('Failed to fetch https://api.etherscan.io/api');
   });
 
+  it('keeps allowlisted hosts with a trailing dns root dot intact', () => {
+    const report = { message: 'Failed to fetch https://coingecko.com./api' };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch https://coingecko.com./api');
+  });
+
   it('leaves messages without urls unchanged', () => {
     const report = { message: 'Something went wrong' };
 
