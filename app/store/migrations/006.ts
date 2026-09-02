@@ -7,11 +7,21 @@ import {
   EXPLORED,
 } from '../../constants/storage';
 
-export default function migrate(state) {
-  state.analytics?.enabled
+/**
+ * Subset of the persisted state read by this migration.
+ */
+interface MigrationState {
+  analytics?: {
+    enabled?: boolean;
+  };
+}
+
+export default function migrate(state: unknown) {
+  const migratedState = state as MigrationState;
+  migratedState.analytics?.enabled
     ? DefaultPreference.set(METRICS_OPT_IN, AGREED)
     : DefaultPreference.set(METRICS_OPT_IN, DENIED);
   DefaultPreference.set(ONBOARDING_WIZARD, EXPLORED);
 
-  return state;
+  return migratedState;
 }

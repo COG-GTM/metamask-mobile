@@ -1,17 +1,55 @@
 import { NetworkType } from '@metamask/controller-utils';
 
+interface TransactionMeta {
+  chainId?: string;
+  origin?: string;
+  rawTransaction?: string;
+  time?: number;
+  transaction?: Record<string, unknown>;
+  transactionHash?: string;
+  [key: string]: unknown;
+}
+
+interface NetworkConfiguration {
+  chainId?: string;
+  rpcUrl?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Subset of the persisted state read and written by this migration.
+ */
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      TransactionController?: {
+        transactions?: TransactionMeta[];
+        submitHistory?: unknown[];
+        [key: string]: unknown;
+      };
+      NetworkController?: {
+        providerConfig?: { chainId?: string; type?: string };
+        networkConfigurations?: Record<string, NetworkConfiguration>;
+        [key: string]: unknown;
+      };
+    };
+  };
+}
+
 /**
  * Populate the submitHistory in the TransactionController using any
  * transaction metadata entries that have a rawTransaction value.
- * @param {any} state - Redux state
- * @returns
+ *
+ * @param state - Redux state
+ * @returns Migrated Redux state
  */
-export default function migrate(state) {
-  const backgroundState = state.engine.backgroundState;
+export default function migrate(state: unknown) {
+  const migratedState = state as MigrationState;
+  const backgroundState = migratedState.engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;
 
-  if (!transactionControllerState) return state;
+  if (!transactionControllerState) return migratedState;
 
   const transactions = transactionControllerState.transactions || [];
   const networkControllerState = backgroundState.NetworkController || {};
@@ -51,8 +89,7 @@ export default function migrate(state) {
       };
     });
 
-  state.engine.backgroundState.TransactionController.submitHistory =
-    submitHistory;
+  transactionControllerState.submitHistory = submitHistory;
 
-  return state;
+  return migratedState;
 }
