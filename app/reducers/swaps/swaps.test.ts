@@ -8,16 +8,18 @@ import reducer, {
   swapsSmartTxFlagEnabled,
   swapsTokensObjectSelector,
   selectSwapsChainFeatureFlags,
+  type SwapsAction,
 } from './index';
 import type { RootState } from '../../reducers';
 import type { FeatureFlags } from '@metamask/swaps-controller/dist/types';
 import { NetworkClientType } from '@metamask/network-controller';
+import { getChainFeatureFlags } from './utils';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
 
 jest.mock('../../selectors/tokensController');
 
-const emptyAction = { type: null } as unknown as import('./index').SwapsAction;
+const emptyAction = { type: null } as unknown as SwapsAction;
 const asRootState = (state: unknown) => state as RootState;
 
 const DEFAULT_FEATURE_FLAGS = {
@@ -238,9 +240,7 @@ describe('swaps reducer', () => {
               maxDeadline: 150,
               mobileReturnTxHashAsap: false,
             },
-          } as unknown as ReturnType<
-            typeof import('./utils').getChainFeatureFlags
-          >,
+          } as unknown as ReturnType<typeof getChainFeatureFlags>,
         },
       } as unknown as typeof initialState;
 
@@ -296,9 +296,7 @@ describe('swaps reducer', () => {
               maxDeadline: 150,
               mobileReturnTxHashAsap: false,
             },
-          } as unknown as ReturnType<
-            typeof import('./utils').getChainFeatureFlags
-          >,
+          } as unknown as ReturnType<typeof getChainFeatureFlags>,
         },
       } as unknown as typeof initialState;
 

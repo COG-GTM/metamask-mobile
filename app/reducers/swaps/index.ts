@@ -22,6 +22,7 @@ import type {
 } from '@metamask/swaps-controller/dist/types';
 import type { Token } from '@metamask/assets-controllers';
 import type { RootState } from '..';
+import type { SubmitSmartTransactionRequest } from '../../util/smart-transactions/smart-publish-hook';
 
 // If we are in dev and on a testnet, just use mainnet feature flags,
 // since we don't have feature flags for testnets in the API
@@ -40,13 +41,6 @@ interface SwapsGlobalFeatureFlags {
     returnTxHashAsap?: boolean;
   };
 }
-type SwapsChainFeatureFlags = FeatureFlags[string] & {
-  smartTransactions: FeatureFlags[string]['smartTransactions'] & {
-    mobileReturnTxHashAsap?: boolean;
-    extensionReturnTxHashAsap?: boolean;
-  };
-};
-
 export interface SwapsState {
   isLive: boolean;
   hasOnboarded: boolean;
@@ -98,7 +92,7 @@ function addMetadata(
   tokens: (Token | SwapsToken)[],
   tokenList: ReturnType<typeof selectTokenList>,
 ): (Token | SwapsToken)[] {
-  if (!isMainnetByChainId(chainId as unknown as number)) {
+  if (!isMainnetByChainId(chainId)) {
     return tokens;
   }
   return tokens.map((token) => {
@@ -151,18 +145,15 @@ export const selectSwapsChainFeatureFlags = createSelector(
   swapsStateSelector,
   (_state: RootState, transactionChainId?: ChainId) =>
     transactionChainId || selectEvmChainId(_state),
-  (swapsState, chainId): SwapsChainFeatureFlags => {
-    const chainState = swapsState[chainId as ChainId];
-    if (!chainState) {
-      throw new Error(`Missing swaps state for chain ${chainId}`);
-    }
+  (swapsState, chainId): SubmitSmartTransactionRequest['featureFlags'] => {
+    const chainState = swapsState[chainId as ChainId] as SwapsChainState;
     return {
       ...chainState.featureFlags,
       smartTransactions: {
         ...(chainState.featureFlags?.smartTransactions || {}),
         ...(swapsState.featureFlags?.smartTransactions || {}),
       },
-    } as SwapsChainFeatureFlags;
+    } as SubmitSmartTransactionRequest['featureFlags'];
   },
 );
 
@@ -399,7 +390,7 @@ export const swapsTokensWithBalanceSelector = createSelector(
     }
     const baseTokens = tokens;
     const tokensAddressesWithBalance = Object.entries(balances)
-      .filter(([, balance]) => balance !== (0 as unknown as typeof balance))
+      .filter(([, balance]) => (balance as unknown) !== 0)
       .sort(([, balanceA], [, balanceB]) =>
         lte(balanceB as unknown as number, balanceA as unknown as number)
           ? -1

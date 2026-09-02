@@ -301,19 +301,13 @@ describe('Transaction Controller Init', () => {
       networkClientId: 'selectedNetworkClientId',
     };
 
-    const getTransactionByIdMock = jest.requireMock(
-      '../../../../util/transactions',
-    ).getTransactionById;
+    const getTransactionByIdMock = jest.requireMock('../../../../util/transactions').getTransactionById;
     getTransactionByIdMock.mockReturnValue(mockTransactionMeta);
 
     selectShouldUseSmartTransactionMock.mockReturnValue(true);
 
-    const submitBatchSmartTransactionHookMock = jest.requireMock(
-      '../../../../util/smart-transactions/smart-publish-hook',
-    ).submitBatchSmartTransactionHook;
-    submitBatchSmartTransactionHookMock.mockResolvedValue({
-      results: [{ transactionHash: '0xhash' }],
-    });
+    const submitBatchSmartTransactionHookMock = jest.requireMock('../../../../util/smart-transactions/smart-publish-hook').submitBatchSmartTransactionHook;
+    submitBatchSmartTransactionHookMock.mockResolvedValue({ results: [{ transactionHash: '0xhash' }] });
 
     const hooks = testConstructorOption('hooks');
 
