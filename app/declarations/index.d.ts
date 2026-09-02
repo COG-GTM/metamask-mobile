@@ -13,6 +13,11 @@ declare module 'react-native-minimizer';
 declare module 'react-native-tcp-socket';
 
 declare module 'xhr2';
+
+declare module '@react-native-clipboard/clipboard/jest/clipboard-mock.js';
+
+declare module 'enzyme-adapter-react-16';
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

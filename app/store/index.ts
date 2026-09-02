@@ -32,7 +32,7 @@ const createStoreAndPersistor = async () => {
   });
   // Obtain the initial state from ReadOnlyNetworkStore for E2E tests.
   const initialState = isE2E
-    ? await ReadOnlyNetworkStore.getState()
+    ? ((await ReadOnlyNetworkStore.getState()) as unknown as never)
     : undefined;
 
   const sagaMiddleware = createSagaMiddleware();
