@@ -15,6 +15,12 @@ describe('Migration #24', () => {
   });
   const invalidBackgroundStates = [
     {
+      state: 'invalid_state',
+      errorMessage:
+        'Migration 24: Invalid root state: root state is not an object',
+      scenario: 'root state is invalid',
+    },
+    {
       state: merge({}, initialRootState, {
         engine: {
           backgroundState: {
@@ -61,7 +67,7 @@ describe('Migration #24', () => {
       },
     };
 
-    const newState = migrate(state);
+    const newState = migrate(state) as typeof state;
 
     expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
       networkId: null,
@@ -80,7 +86,7 @@ describe('Migration #24', () => {
       },
     };
 
-    const newState = migrate(state);
+    const newState = migrate(state) as typeof state;
 
     expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
       networkId: '1',

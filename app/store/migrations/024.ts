@@ -1,4 +1,4 @@
-import { isObject } from '@metamask/utils';
+import { hasProperty, isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
 import { NetworkStatus } from '@metamask/network-controller';
 
@@ -9,14 +9,23 @@ import { NetworkStatus } from '@metamask/network-controller';
  *
  * @see {@link https://github.com/MetaMask/core/blob/main/packages/network-controller/CHANGELOG.md#800}
  *
- * Note: the type is wrong here because it conflicts with `redux-persist`
- * types, due to a bug in that package.
- * See: https://github.com/rt2zz/redux-persist/issues/1065
- * TODO: Use `unknown` as the state type, and silence or work around the
- * redux-persist bug somehow.
- *
  **/
-export default function migrate(state) {
+export default function migrate(state: unknown) {
+  if (
+    !isObject(state) ||
+    !hasProperty(state, 'engine') ||
+    !isObject(state.engine) ||
+    !hasProperty(state.engine, 'backgroundState') ||
+    !isObject(state.engine.backgroundState)
+  ) {
+    captureException(
+      new Error(
+        'Migration 24: Invalid root state: root state is not an object',
+      ),
+    );
+    return state;
+  }
+
   const networkControllerState = state.engine.backgroundState.NetworkController;
 
   if (!isObject(networkControllerState)) {

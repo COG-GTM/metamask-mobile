@@ -1,4 +1,8 @@
 import migrate, { controllerList } from './028';
+import { hasProperty, isObject } from '@metamask/utils';
+import { captureException } from '@sentry/react-native';
+import { deepJSONParse } from '../../util/general';
+import FilesystemStorage from 'redux-persist-filesystem-storage';
 
 jest.mock('@metamask/utils', () => ({
   hasProperty: jest.fn(),
@@ -22,26 +26,26 @@ jest.mock('redux-persist-filesystem-storage', () => ({
 }));
 
 describe('Migration #28', () => {
+  const mockedCaptureException = jest.mocked(captureException);
+  const mockedHasProperty = jest.mocked(hasProperty);
+  const mockedIsObject = jest.mocked(isObject);
+  const mockedDeepJSONParse = jest.mocked(deepJSONParse);
+  const mockedGetItem = jest.mocked(FilesystemStorage.getItem);
+  const mockedSetItem = jest.mocked(FilesystemStorage.setItem);
+  const mockedRemoveItem = jest.mocked(FilesystemStorage.removeItem);
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
-
-  jest.mock('@sentry/react-native', () => ({
-    captureException: jest.fn(),
-  }));
 
   it('should return state unchanged if it is not an object', async () => {
     const state = 'invalid_state';
     const result = await migrate(state);
 
     expect(result).toEqual(state);
-    expect(
-      require('@sentry/react-native').captureException,
-    ).toHaveBeenCalledWith(expect.any(Error));
-    expect(
-      require('@sentry/react-native').captureException,
-    ).toHaveBeenCalledTimes(1);
-    expect(require('@metamask/utils').isObject).toHaveBeenCalledTimes(1);
+    expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
+    expect(mockedCaptureException).toHaveBeenCalledTimes(1);
+    expect(mockedIsObject).toHaveBeenCalledTimes(1);
   });
 
   it('should return state unchanged if engine already exists in state', async () => {
@@ -49,10 +53,8 @@ describe('Migration #28', () => {
     const result = await migrate(state);
 
     expect(result).toEqual(state);
-    expect(
-      require('redux-persist-filesystem-storage').getItem,
-    ).not.toHaveBeenCalled();
-    expect(require('@metamask/utils').isObject).toHaveBeenCalledTimes(1);
+    expect(mockedGetItem).not.toHaveBeenCalled();
+    expect(mockedIsObject).toHaveBeenCalledTimes(1);
   });
 
   it('should properly migrate state', async () => {
@@ -65,12 +67,12 @@ describe('Migration #28', () => {
     const deepJSONParseMock = jest.fn().mockReturnValue(persistedData);
     const hasPropertyMock = jest.fn().mockReturnValue(false);
 
-    require('@metamask/utils').isObject.mockReturnValue(true);
-    require('../../util/general').deepJSONParse = deepJSONParseMock;
-    require('redux-persist-filesystem-storage').getItem = getItemMock;
-    require('redux-persist-filesystem-storage').setItem = setItemMock;
-    require('redux-persist-filesystem-storage').removeItem = removeItemMock;
-    require('@metamask/utils').hasProperty = hasPropertyMock;
+    mockedIsObject.mockReturnValue(true);
+    mockedDeepJSONParse.mockImplementation(deepJSONParseMock);
+    mockedGetItem.mockImplementation(getItemMock);
+    mockedSetItem.mockImplementation(setItemMock);
+    mockedRemoveItem.mockImplementation(removeItemMock);
+    mockedHasProperty.mockImplementation(hasPropertyMock);
 
     const state = {};
     const result = await migrate(state);
@@ -110,8 +112,6 @@ describe('Migration #28', () => {
     expect(setItemMock).toHaveBeenCalledWith('persist:root', mockValue, true);
     expect(removeItemMock).toHaveBeenCalledTimes(controllerList.length);
     expect(result).toEqual({ engine: { backgroundState: mockEngine } });
-    expect(
-      require('@sentry/react-native').captureException,
-    ).not.toHaveBeenCalled();
+    expect(mockedCaptureException).not.toHaveBeenCalled();
   });
 });
