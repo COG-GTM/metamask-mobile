@@ -3,13 +3,31 @@
  */
 import { ACTIONS } from '../../reducers/notification';
 
+export interface TransactionNotificationOptions {
+  autodismiss?: number | false;
+  transaction: { id?: string; [key: string]: unknown };
+  status?: string;
+}
+
+export interface SimpleNotificationOptions {
+  autodismiss?: number | false;
+  title?: string;
+  description?: string;
+  status?: string;
+}
+
+export interface Notification {
+  id: string | number;
+  [key: string]: unknown;
+}
+
 export function hideCurrentNotification() {
   return {
     type: ACTIONS.HIDE_CURRENT_NOTIFICATION,
   };
 }
 
-export function hideNotificationById(id) {
+export function hideNotificationById(id: string | number) {
   return {
     type: ACTIONS.HIDE_NOTIFICATION_BY_ID,
     id,
@@ -20,7 +38,7 @@ export function modifyOrShowTransactionNotificationById({
   autodismiss,
   transaction,
   status,
-}) {
+}: TransactionNotificationOptions) {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION,
     autodismiss,
@@ -34,7 +52,7 @@ export function modifyOrShowSimpleNotificationById({
   title,
   description,
   status,
-}) {
+}: SimpleNotificationOptions) {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION,
     autodismiss,
@@ -44,7 +62,7 @@ export function modifyOrShowSimpleNotificationById({
   };
 }
 
-export function replaceNotificationById(notification) {
+export function replaceNotificationById(notification: Notification) {
   return {
     type: ACTIONS.REPLACE_NOTIFICATION_BY_ID,
     notification,
@@ -52,7 +70,7 @@ export function replaceNotificationById(notification) {
   };
 }
 
-export function removeNotificationById(id) {
+export function removeNotificationById(id: string | number) {
   return {
     type: ACTIONS.REMOVE_NOTIFICATION_BY_ID,
     id,
@@ -71,7 +89,7 @@ export function showSimpleNotification({
   description,
   status,
   id,
-}) {
+}: SimpleNotificationOptions & { id?: string | number }) {
   return {
     id,
     type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
@@ -86,7 +104,7 @@ export function showTransactionNotification({
   autodismiss,
   transaction,
   status,
-}) {
+}: TransactionNotificationOptions) {
   return {
     type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
     autodismiss,

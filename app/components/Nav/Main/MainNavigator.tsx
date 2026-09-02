@@ -1,8 +1,13 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Image, StyleSheet, Keyboard, Platform } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { RouteProp, ParamListBase } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {
+  createBottomTabNavigator,
+  BottomTabBarProps,
+} from '@react-navigation/bottom-tabs';
+import { RootState } from '../../../reducers';
 import Browser from '../../Views/Browser';
 import { ChainId } from '@metamask/controller-utils';
 import AddBookmark from '../../Views/AddBookmark';
@@ -77,6 +82,7 @@ import { selectAccountsLength } from '../../../selectors/accountTrackerControlle
 import isUrl from 'is-url';
 import SDKSessionsManager from '../../Views/SDK/SDKSessionsManager/SDKSessionsManager';
 import PermissionsManager from '../../Views/Settings/PermissionsSettings/PermissionsManager';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import Logger from '../../../util/Logger';
 import { getDecimalChainId } from '../../../util/networks';
@@ -99,6 +105,28 @@ import TurnOnBackupAndSync from '../../Views/Identity/TurnOnBackupAndSync/TurnOn
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+/**
+ * The navigator tree mixes typed and untyped screens and relies on legacy
+ * `mode` / static `navigationOptions` APIs, which the generated navigator
+ * types cannot express, so the navigator primitives are aliased to loose
+ * component types.
+ */
+type LooseNavigationProps = Record<string, unknown> & {
+  children?: React.ReactNode | (() => React.ReactNode);
+};
+
+const StackNavigator =
+  Stack.Navigator as unknown as React.ComponentType<LooseNavigationProps>;
+const StackScreen =
+  Stack.Screen as unknown as React.ComponentType<LooseNavigationProps>;
+const TabNavigator =
+  Tab.Navigator as unknown as React.ComponentType<LooseNavigationProps>;
+const TabScreen =
+  Tab.Screen as unknown as React.ComponentType<LooseNavigationProps>;
+
+const navigationOptionsOf = (component: unknown) =>
+  (component as { navigationOptions?: unknown }).navigationOptions;
+
 const styles = StyleSheet.create({
   headerLogo: {
     width: 125,
@@ -120,201 +148,211 @@ const clearStackNavigatorOptions = {
 };
 
 const WalletModalFlow = () => (
-  <Stack.Navigator mode={'modal'} screenOptions={clearStackNavigatorOptions}>
-    <Stack.Screen
+  <StackNavigator mode={'modal'} screenOptions={clearStackNavigatorOptions}>
+    <StackScreen
       name={'Wallet'}
       component={Wallet}
       options={{ headerShown: true, animationEnabled: false }}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
-/* eslint-disable react/prop-types */
-const AssetStackFlow = (props) => (
-  <Stack.Navigator>
-    <Stack.Screen
+interface RouteParamsProps {
+  route: RouteProp<ParamListBase, string> & {
+    params?: Record<string, unknown>;
+  };
+}
+
+const AssetStackFlow = (props: RouteParamsProps) => (
+  <StackNavigator>
+    <StackScreen
       name={'Asset'}
       component={Asset}
       initialParams={props.route.params}
     />
-    <Stack.Screen
+    <StackScreen
       name={'AssetDetails'}
       component={AssetDetails}
-      initialParams={{ address: props.route.params?.address }}
+      initialParams={{ address: props.route.params?.address as string }}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
-const AssetModalFlow = (props) => (
-  <Stack.Navigator
+const AssetModalFlow = (props: RouteParamsProps) => (
+  <StackNavigator
     mode={'modal'}
     initialRouteName={'AssetStackFlow'}
     screenOptions={clearStackNavigatorOptions}
   >
-    <Stack.Screen
+    <StackScreen
       name={'AssetStackFlow'}
       component={AssetStackFlow}
       initialParams={props.route.params}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
-/* eslint-enable react/prop-types */
 
 const WalletTabStackFlow = () => (
-  <Stack.Navigator initialRouteName={'WalletView'}>
-    <Stack.Screen
+  <StackNavigator initialRouteName={'WalletView'}>
+    <StackScreen
       name="WalletView"
       component={WalletModalFlow}
       options={{ headerShown: false }}
     />
-    <Stack.Screen
+    <StackScreen
       name="AddAsset"
       component={AddAsset}
-      options={AddAsset.navigationOptions}
+      options={navigationOptionsOf(AddAsset)}
     />
-    <Stack.Screen
+    <StackScreen
       name="Collectible"
       component={Collectible}
-      options={Collectible.navigationOptions}
+      options={navigationOptionsOf(Collectible)}
     />
-    <Stack.Screen
+    <StackScreen
       name="ConfirmAddAsset"
       component={ConfirmAddAsset}
-      options={ConfirmAddAsset.navigationOptions}
+      options={navigationOptionsOf(ConfirmAddAsset)}
     />
-    <Stack.Screen
+    <StackScreen
       name="RevealPrivateCredentialView"
       component={RevealPrivateCredential}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const WalletTabModalFlow = () => (
-  <Stack.Navigator mode={'modal'} screenOptions={clearStackNavigatorOptions}>
-    <Stack.Screen
+  <StackNavigator mode={'modal'} screenOptions={clearStackNavigatorOptions}>
+    <StackScreen
       name={Routes.WALLET.TAB_STACK_FLOW}
       component={WalletTabStackFlow}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const TransactionsHome = () => (
-  <Stack.Navigator>
-    <Stack.Screen
+  <StackNavigator>
+    <StackScreen
       name={Routes.TRANSACTIONS_VIEW}
       component={ActivityView}
       options={{ headerShown: false }}
     />
-    <Stack.Screen name={Routes.RAMP.ORDER_DETAILS} component={OrderDetails} />
-    <Stack.Screen
+    <StackScreen name={Routes.RAMP.ORDER_DETAILS} component={OrderDetails} />
+    <StackScreen
       name={Routes.RAMP.SEND_TRANSACTION}
       component={SendTransaction}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.BRIDGE.BRIDGE_TRANSACTION_DETAILS}
       component={BridgeTransactionDetails}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
-/* eslint-disable react/prop-types */
-const BrowserFlow = (props) => (
-  <Stack.Navigator
+const BrowserFlow = (props: RouteParamsProps) => (
+  <StackNavigator
     initialRouteName={Routes.BROWSER.VIEW}
     mode={'modal'}
     screenOptions={{
       cardStyle: { backgroundColor: importedColors.transparent },
     }}
   >
-    <Stack.Screen
+    <StackScreen
       name={Routes.BROWSER.VIEW}
       component={Browser}
       options={{ headerShown: false }}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.BROWSER.ASSET_LOADER}
       component={AssetLoader}
       options={{ headerShown: false, animationEnabled: false }}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.BROWSER.ASSET_VIEW}
       component={Asset}
       initialParams={props.route.params}
     />
-    <Stack.Screen
+    <StackScreen
       name="SwapsAmountView"
       component={SwapsAmountView}
-      options={SwapsAmountView.navigationOptions}
+      options={navigationOptionsOf(SwapsAmountView)}
     />
-    <Stack.Screen
+    <StackScreen
       name="SwapsQuotesView"
       component={SwapsQuotesView}
-      options={SwapsQuotesView.navigationOptions}
+      options={navigationOptionsOf(SwapsQuotesView)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
-export const DrawerContext = React.createContext({ drawerRef: null });
+interface DrawerHandle {
+  dismissDrawer: () => void;
+  showDrawer: () => void;
+}
+
+export const DrawerContext = React.createContext<{
+  drawerRef: React.RefObject<DrawerHandle> | null;
+}>({ drawerRef: null });
 
 ///: BEGIN:ONLY_INCLUDE_IF(external-snaps)
 const SnapsSettingsStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen
+  <StackNavigator>
+    <StackScreen
       name={Routes.SNAPS.SNAPS_SETTINGS_LIST}
       component={SnapsSettingsList}
-      options={SnapsSettingsList.navigationOptions}
+      options={navigationOptionsOf(SnapsSettingsList)}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.SNAPS.SNAP_SETTINGS}
       component={SnapSettings}
-      options={SnapSettings.navigationOptions}
+      options={navigationOptionsOf(SnapSettings)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 ///: END:ONLY_INCLUDE_IF
 
 const NotificationsOptInStack = () => (
-  <Stack.Navigator initialRouteName={Routes.NOTIFICATIONS.OPT_IN}>
-    <Stack.Screen
+  <StackNavigator initialRouteName={Routes.NOTIFICATIONS.OPT_IN}>
+    <StackScreen
       mode={'modal'}
       name={Routes.NOTIFICATIONS.OPT_IN}
       component={OptIn}
       options={{ headerShown: false }}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.SETTINGS.NOTIFICATIONS}
       component={NotificationsSettings}
-      options={NotificationsSettings.navigationOptions}
+      options={navigationOptionsOf(NotificationsSettings)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const SettingsFlow = () => (
-  <Stack.Navigator initialRouteName={'Settings'}>
-    <Stack.Screen
+  <StackNavigator initialRouteName={'Settings'}>
+    <StackScreen
       name="Settings"
       component={Settings}
-      options={Settings.navigationOptions}
+      options={navigationOptionsOf(Settings)}
     />
-    <Stack.Screen
+    <StackScreen
       name="GeneralSettings"
       component={GeneralSettings}
-      options={GeneralSettings.navigationOptions}
+      options={navigationOptionsOf(GeneralSettings)}
     />
-    <Stack.Screen
+    <StackScreen
       name="AdvancedSettings"
       component={AdvancedSettings}
-      options={AdvancedSettings.navigationOptions}
+      options={navigationOptionsOf(AdvancedSettings)}
     />
-    <Stack.Screen name="SDKSessionsManager" component={SDKSessionsManager} />
-    <Stack.Screen name="PermissionsManager" component={PermissionsManager} />
-    <Stack.Screen
+    <StackScreen name="SDKSessionsManager" component={SDKSessionsManager} />
+    <StackScreen name="PermissionsManager" component={PermissionsManager} />
+    <StackScreen
       name="SecuritySettings"
       component={SecuritySettings}
-      options={SecuritySettings.navigationOptions}
+      options={navigationOptionsOf(SecuritySettings)}
     />
-    <Stack.Screen name={Routes.RAMP.SETTINGS} component={RampSettings} />
-    <Stack.Screen
+    <StackScreen name={Routes.RAMP.SETTINGS} component={RampSettings} />
+    <StackScreen
       name={Routes.RAMP.ACTIVATION_KEY_FORM}
       component={RampActivationKeyForm}
     />
@@ -326,47 +364,47 @@ const SettingsFlow = () => (
        * If this is in production, it is a bug.
        */
       isTest && (
-        <Stack.Screen
+        <StackScreen
           name="AesCryptoTestForm"
           component={AesCryptoTestForm}
-          options={AesCryptoTestForm.navigationOptions}
+          options={navigationOptionsOf(AesCryptoTestForm)}
         />
       )
     }
-    <Stack.Screen
+    <StackScreen
       name="ExperimentalSettings"
       component={ExperimentalSettings}
-      options={ExperimentalSettings.navigationOptions}
+      options={navigationOptionsOf(ExperimentalSettings)}
     />
-    <Stack.Screen
+    <StackScreen
       name="NetworksSettings"
       component={NetworksSettings}
-      options={NetworksSettings.navigationOptions}
+      options={navigationOptionsOf(NetworksSettings)}
     />
-    <Stack.Screen
+    <StackScreen
       name="CompanySettings"
       component={AppInformation}
-      options={AppInformation.navigationOptions}
+      options={navigationOptionsOf(AppInformation)}
     />
     {process.env.MM_ENABLE_SETTINGS_PAGE_DEV_OPTIONS === 'true' && (
-      <Stack.Screen
+      <StackScreen
         name={Routes.SETTINGS.DEVELOPER_OPTIONS}
         component={DeveloperOptions}
-        options={DeveloperOptions.navigationOptions}
+        options={navigationOptionsOf(DeveloperOptions)}
       />
     )}
 
-    <Stack.Screen
+    <StackScreen
       name="ContactsSettings"
       component={Contacts}
-      options={Contacts.navigationOptions}
+      options={navigationOptionsOf(Contacts)}
     />
-    <Stack.Screen
+    <StackScreen
       name="ContactForm"
       component={ContactForm}
-      options={ContactForm.navigationOptions}
+      options={navigationOptionsOf(ContactForm)}
     />
-    <Stack.Screen
+    <StackScreen
       name="AccountPermissionsAsFullScreen"
       component={AccountPermissions}
       options={{ headerShown: false }}
@@ -374,59 +412,59 @@ const SettingsFlow = () => (
         initialScreen: AccountPermissionsScreens.PermissionsSummary,
       }}
     />
-    <Stack.Screen
+    <StackScreen
       name="RevealPrivateCredentialView"
       component={RevealPrivateCredential}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.WALLET.WALLET_CONNECT_SESSIONS_VIEW}
       component={WalletConnectSessions}
-      options={WalletConnectSessions.navigationOptions}
+      options={navigationOptionsOf(WalletConnectSessions)}
     />
-    <Stack.Screen
+    <StackScreen
       name="ResetPassword"
       component={ResetPassword}
-      options={ResetPassword.navigationOptions}
+      options={navigationOptionsOf(ResetPassword)}
     />
-    <Stack.Screen
+    <StackScreen
       name="AccountBackupStep1B"
       component={AccountBackupStep1B}
-      options={AccountBackupStep1B.navigationOptions}
+      options={navigationOptionsOf(AccountBackupStep1B)}
     />
-    <Stack.Screen
+    <StackScreen
       name="ManualBackupStep1"
       component={ManualBackupStep1}
-      options={ManualBackupStep1.navigationOptions}
+      options={navigationOptionsOf(ManualBackupStep1)}
     />
-    <Stack.Screen
+    <StackScreen
       name="ManualBackupStep2"
       component={ManualBackupStep2}
-      options={ManualBackupStep2.navigationOptions}
+      options={navigationOptionsOf(ManualBackupStep2)}
     />
-    <Stack.Screen
+    <StackScreen
       name="ManualBackupStep3"
       component={ManualBackupStep3}
-      options={ManualBackupStep3.navigationOptions}
+      options={navigationOptionsOf(ManualBackupStep3)}
     />
-    <Stack.Screen
+    <StackScreen
       name="EnterPasswordSimple"
       component={EnterPasswordSimple}
-      options={EnterPasswordSimple.navigationOptions}
+      options={navigationOptionsOf(EnterPasswordSimple)}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.SETTINGS.NOTIFICATIONS}
       component={NotificationsSettings}
-      options={NotificationsSettings.navigationOptions}
+      options={navigationOptionsOf(NotificationsSettings)}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.SETTINGS.BACKUP_AND_SYNC}
       component={BackupAndSyncSettings}
-      options={BackupAndSyncSettings.navigationOptions}
+      options={navigationOptionsOf(BackupAndSyncSettings)}
     />
     {
       ///: BEGIN:ONLY_INCLUDE_IF(external-snaps)
     }
-    <Stack.Screen
+    <StackScreen
       name={Routes.SNAPS.SNAPS_SETTINGS_LIST}
       component={SnapsSettingsStack}
       options={{ headerShown: false }}
@@ -434,28 +472,28 @@ const SettingsFlow = () => (
     {
       ///: END:ONLY_INCLUDE_IF
     }
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const HomeTabs = () => {
   const { trackEvent, createEventBuilder } = useMetrics();
-  const drawerRef = useRef(null);
+  const drawerRef = useRef<DrawerHandle>(null);
   const [isKeyboardHidden, setIsKeyboardHidden] = useState(true);
 
   const accountsLength = useSelector(selectAccountsLength);
 
-  const chainId = useSelector((state) => {
+  const chainId = useSelector((state: RootState) => {
     const providerConfig = selectProviderConfig(state);
-    return ChainId[providerConfig.type];
+    return ChainId[providerConfig.type as keyof typeof ChainId];
   });
 
   const amountOfBrowserOpenTabs = useSelector(
-    (state) => state.browser.tabs.length,
+    (state: RootState) => state.browser.tabs.length,
   );
 
   /* tabs: state.browser.tabs, */
   /* activeTab: state.browser.activeTab, */
-  const activeConnectedDapp = useSelector((state) => {
+  const activeConnectedDapp = useSelector((state: RootState) => {
     const activeTabUrl = getActiveTabUrl(state);
     if (!isUrl(activeTabUrl)) return [];
     try {
@@ -467,7 +505,7 @@ const HomeTabs = () => {
       );
       return permittedAcc;
     } catch (error) {
-      Logger.error(error, {
+      Logger.error(error as Error, {
         message: 'ParseUrl::MainNavigator error while parsing URL',
       });
     }
@@ -552,12 +590,18 @@ const HomeTabs = () => {
     }
   }, []);
 
-  const renderTabBar = ({ state, descriptors, navigation }) => {
+  const renderTabBar = ({
+    state,
+    descriptors,
+    navigation,
+  }: BottomTabBarProps) => {
     if (isKeyboardHidden) {
       return (
         <TabBar
           state={state}
-          descriptors={descriptors}
+          descriptors={
+            descriptors as React.ComponentProps<typeof TabBar>['descriptors']
+          }
           navigation={navigation}
         />
       );
@@ -568,244 +612,241 @@ const HomeTabs = () => {
   return (
     <DrawerContext.Provider value={{ drawerRef }}>
       <Drawer ref={drawerRef}>
-        <Tab.Navigator
+        <TabNavigator
           initialRouteName={Routes.WALLET.HOME}
           tabBar={renderTabBar}
         >
-          <Tab.Screen
+          <TabScreen
             name={Routes.WALLET.HOME}
             options={options.home}
             component={WalletTabModalFlow}
           />
-          <Tab.Screen
+          <TabScreen
             name={Routes.TRANSACTIONS_VIEW}
             options={options.activity}
             component={TransactionsHome}
           />
-          <Tab.Screen
+          <TabScreen
             name={Routes.MODAL.WALLET_ACTIONS}
             options={options.actions}
             component={WalletTabModalFlow}
           />
-          <Tab.Screen
+          <TabScreen
             name={Routes.BROWSER.HOME}
             options={options.browser}
             component={BrowserFlow}
           />
 
-          <Tab.Screen
+          <TabScreen
             name={Routes.SETTINGS_VIEW}
             options={options.settings}
             component={SettingsFlow}
           />
-        </Tab.Navigator>
+        </TabNavigator>
       </Drawer>
     </DrawerContext.Provider>
   );
 };
 
 const Webview = () => (
-  <Stack.Navigator>
-    <Stack.Screen
+  <StackNavigator>
+    <StackScreen
       name="SimpleWebview"
       component={SimpleWebview}
       mode={'modal'}
-      options={SimpleWebview.navigationOptions}
+      options={navigationOptionsOf(SimpleWebview)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const SendView = () => (
-  <Stack.Navigator>
-    <Stack.Screen
+  <StackNavigator>
+    <StackScreen
       name="Send"
       component={Send}
-      options={Send.navigationOptions}
+      options={navigationOptionsOf(Send)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
-/* eslint-disable react/prop-types */
-const NftDetailsModeView = (props) => (
-  <Stack.Navigator>
-    <Stack.Screen
+const NftDetailsModeView = (props: RouteParamsProps) => (
+  <StackNavigator>
+    <StackScreen
       name=" " // No name here because this title will be displayed in the header of the page
       component={NftDetails}
       initialParams={{
         collectible: props.route.params?.collectible,
       }}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
-/* eslint-disable react/prop-types */
-const NftDetailsFullImageModeView = (props) => (
-  <Stack.Navigator>
-    <Stack.Screen
+const NftDetailsFullImageModeView = (props: RouteParamsProps) => (
+  <StackNavigator>
+    <StackScreen
       name=" " // No name here because this title will be displayed in the header of the page
       component={NftDetailsFullImage}
       initialParams={{
         collectible: props.route.params?.collectible,
       }}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const SendFlowView = () => (
-  <Stack.Navigator>
-    <Stack.Screen
+  <StackNavigator>
+    <StackScreen
       name="SendTo"
       component={SendTo}
-      options={SendTo.navigationOptions}
+      options={navigationOptionsOf(SendTo)}
     />
-    <Stack.Screen
+    <StackScreen
       name="Amount"
       component={Amount}
-      options={Amount.navigationOptions}
+      options={navigationOptionsOf(Amount)}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.SEND_FLOW.CONFIRM}
       component={Confirm}
-      options={Confirm.navigationOptions}
+      options={navigationOptionsOf(Confirm)}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.STANDALONE_CONFIRMATIONS.TRANSFER}
       component={RedesignedConfirm}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const AddBookmarkView = () => (
-  <Stack.Navigator>
-    <Stack.Screen
+  <StackNavigator>
+    <StackScreen
       name="AddBookmark"
       component={AddBookmark}
-      options={AddBookmark.navigationOptions}
+      options={navigationOptionsOf(AddBookmark)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const OfflineModeView = () => (
-  <Stack.Navigator>
-    <Stack.Screen
+  <StackNavigator>
+    <StackScreen
       name="OfflineMode"
       component={OfflineMode}
-      options={OfflineMode.navigationOptions}
+      options={navigationOptionsOf(OfflineMode)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const PaymentRequestView = () => (
-  <Stack.Navigator>
-    <Stack.Screen
+  <StackNavigator>
+    <StackScreen
       name="PaymentRequest"
       component={PaymentRequest}
-      options={PaymentRequest.navigationOptions}
+      options={navigationOptionsOf(PaymentRequest)}
     />
-    <Stack.Screen
+    <StackScreen
       name="PaymentRequestSuccess"
       component={PaymentRequestSuccess}
-      options={PaymentRequestSuccess.navigationOptions}
+      options={navigationOptionsOf(PaymentRequestSuccess)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
-/* eslint-disable react/prop-types */
-const NotificationsModeView = (props) => (
-  <Stack.Navigator>
-    <Stack.Screen
+const NotificationsModeView = () => (
+  <StackNavigator>
+    <StackScreen
       name={Routes.NOTIFICATIONS.VIEW}
       component={NotificationsView}
-      options={NotificationsView.navigationOptions}
+      options={navigationOptionsOf(NotificationsView)}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.SETTINGS.NOTIFICATIONS}
       component={NotificationsSettings}
-      options={NotificationsSettings.navigationOptions}
+      options={navigationOptionsOf(NotificationsSettings)}
     />
-    <Stack.Screen
+    <StackScreen
       mode={'modal'}
       name={Routes.NOTIFICATIONS.OPT_IN}
       component={OptIn}
-      options={OptIn.navigationOptions}
+      options={navigationOptionsOf(OptIn)}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.NOTIFICATIONS.DETAILS}
       component={NotificationsDetails}
-      options={NotificationsDetails.navigationOptions}
+      options={navigationOptionsOf(NotificationsDetails)}
     />
-    <Stack.Screen
+    <StackScreen
       name="ContactForm"
       component={ContactForm}
-      options={ContactForm.navigationOptions}
+      options={navigationOptionsOf(ContactForm)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const Swaps = () => (
-  <Stack.Navigator>
-    <Stack.Screen
+  <StackNavigator>
+    <StackScreen
       name="SwapsAmountView"
       component={SwapsAmountView}
-      options={SwapsAmountView.navigationOptions}
+      options={navigationOptionsOf(SwapsAmountView)}
     />
-    <Stack.Screen
+    <StackScreen
       name="SwapsQuotesView"
       component={SwapsQuotesView}
-      options={SwapsQuotesView.navigationOptions}
+      options={navigationOptionsOf(SwapsQuotesView)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const SetPasswordFlow = () => (
-  <Stack.Navigator>
-    <Stack.Screen
+  <StackNavigator>
+    <StackScreen
       name="ChoosePassword"
       component={ChoosePassword}
-      options={ChoosePassword.navigationOptions}
+      options={navigationOptionsOf(ChoosePassword)}
     />
-    <Stack.Screen
+    <StackScreen
       name="AccountBackupStep1"
       component={AccountBackupStep1}
-      options={AccountBackupStep1.navigationOptions}
+      options={navigationOptionsOf(AccountBackupStep1)}
     />
-    <Stack.Screen
+    <StackScreen
       name="AccountBackupStep1B"
       component={AccountBackupStep1B}
-      options={AccountBackupStep1B.navigationOptions}
+      options={navigationOptionsOf(AccountBackupStep1B)}
     />
-    <Stack.Screen
+    <StackScreen
       name="ManualBackupStep1"
       component={ManualBackupStep1}
-      options={ManualBackupStep1.navigationOptions}
+      options={navigationOptionsOf(ManualBackupStep1)}
     />
-    <Stack.Screen
+    <StackScreen
       name="ManualBackupStep2"
       component={ManualBackupStep2}
-      options={ManualBackupStep2.navigationOptions}
+      options={navigationOptionsOf(ManualBackupStep2)}
     />
-    <Stack.Screen
+    <StackScreen
       name="ManualBackupStep3"
       component={ManualBackupStep3}
-      options={ManualBackupStep3.navigationOptions}
+      options={navigationOptionsOf(ManualBackupStep3)}
     />
-    <Stack.Screen
+    <StackScreen
       name="OptinMetrics"
       component={OptinMetrics}
-      options={OptinMetrics.navigationOptions}
+      options={navigationOptionsOf(OptinMetrics)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 const MainNavigator = () => (
-  <Stack.Navigator
+  <StackNavigator
     screenOptions={{
       headerShown: false,
     }}
     mode={'modal'}
     initialRouteName={'Home'}
   >
-    <Stack.Screen
+    <StackScreen
       name="CollectiblesDetails"
       component={CollectiblesDetails}
       options={{
@@ -818,7 +859,7 @@ const MainNavigator = () => (
         }),
       }}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.DEPRECATED_NETWORK_DETAILS}
       component={DeprecatedNetworkDetails}
       options={{
@@ -831,54 +872,55 @@ const MainNavigator = () => (
         }),
       }}
     />
-    <Stack.Screen name="Home" component={HomeTabs} />
-    <Stack.Screen name="Asset" component={AssetModalFlow} />
-    <Stack.Screen name="Webview" component={Webview} />
-    <Stack.Screen name="SendView" component={SendView} />
-    <Stack.Screen
+    <StackScreen name="Home" component={HomeTabs} />
+    <StackScreen name="Asset" component={AssetModalFlow} />
+    <StackScreen name="Webview" component={Webview} />
+    <StackScreen name="SendView" component={SendView} />
+    <StackScreen
       name="SendFlowView"
       component={SendFlowView}
       //Disabling swipe down on IOS
       options={{ gestureEnabled: false }}
     />
-    <Stack.Screen name="AddBookmarkView" component={AddBookmarkView} />
-    <Stack.Screen name="OfflineModeView" component={OfflineModeView} />
-    <Stack.Screen
+    <StackScreen name="AddBookmarkView" component={AddBookmarkView} />
+    <StackScreen name="OfflineModeView" component={OfflineModeView} />
+    <StackScreen
       name={Routes.NOTIFICATIONS.VIEW}
       component={NotificationsModeView}
     />
-    <Stack.Screen name={Routes.QR_TAB_SWITCHER} component={QRTabSwitcher} />
-    <Stack.Screen name="NftDetails" component={NftDetailsModeView} />
-    <Stack.Screen
+    <StackScreen name={Routes.QR_TAB_SWITCHER} component={QRTabSwitcher} />
+    <StackScreen name="NftDetails" component={NftDetailsModeView} />
+    <StackScreen
       name="NftDetailsFullImage"
       component={NftDetailsFullImageModeView}
     />
-    <Stack.Screen name="PaymentRequestView" component={PaymentRequestView} />
-    <Stack.Screen name={Routes.RAMP.BUY}>
+    <StackScreen name="PaymentRequestView" component={PaymentRequestView} />
+    <StackScreen name={Routes.RAMP.BUY}>
       {() => <RampRoutes rampType={RampType.BUY} />}
-    </Stack.Screen>
-    <Stack.Screen name={Routes.RAMP.SELL}>
+    </StackScreen>
+    <StackScreen name={Routes.RAMP.SELL}>
       {() => <RampRoutes rampType={RampType.SELL} />}
-    </Stack.Screen>
-    <Stack.Screen name="Swaps" component={Swaps} />
-    <Stack.Screen name={Routes.BRIDGE.ROOT} component={BridgeScreenStack} />
-    <Stack.Screen
+    </StackScreen>
+    <StackScreen name="Swaps" component={Swaps} />
+    <StackScreen name={Routes.BRIDGE.ROOT} component={BridgeScreenStack} />
+    <StackScreen
       name={Routes.BRIDGE.MODALS.ROOT}
       component={BridgeModalStack}
       options={clearStackNavigatorOptions}
     />
-    <Stack.Screen name="StakeScreens" component={StakeScreenStack} />
-    <Stack.Screen
+    <StackScreen name="StakeScreens" component={StakeScreenStack} />
+    <StackScreen
       name="StakeModals"
       component={StakeModalStack}
       options={clearStackNavigatorOptions}
     />
-    <Stack.Screen
+    <StackScreen
       name="SetPasswordFlow"
       component={SetPasswordFlow}
       headerTitle={() => (
         <Image
           style={styles.headerLogo}
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={require('../../../images/branding/metamask-name.png')}
           resizeMode={'contain'}
         />
@@ -887,25 +929,25 @@ const MainNavigator = () => (
       headerStyle={{ borderBottomWidth: 0 }}
     />
     {/* TODO: This is added to support slide 4 in the carousel - once changed this can be safely removed*/}
-    <Stack.Screen
+    <StackScreen
       name="GeneralSettings"
       component={GeneralSettings}
       options={{
         headerShown: true,
-        ...GeneralSettings.navigationOptions,
+        ...(navigationOptionsOf(GeneralSettings) as object),
       }}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.NOTIFICATIONS.OPT_IN_STACK}
       component={NotificationsOptInStack}
-      options={NotificationsOptInStack.navigationOptions}
+      options={navigationOptionsOf(NotificationsOptInStack)}
     />
-    <Stack.Screen
+    <StackScreen
       name={Routes.IDENTITY.TURN_ON_BACKUP_AND_SYNC}
       component={TurnOnBackupAndSync}
-      options={TurnOnBackupAndSync.navigationOptions}
+      options={navigationOptionsOf(TurnOnBackupAndSync)}
     />
-  </Stack.Navigator>
+  </StackNavigator>
 );
 
 export default MainNavigator;
