@@ -23,7 +23,27 @@ export const sentryStateMask = {
   accounts: true,
   alert: true,
   bookmarks: true,
-  browser: true,
+  browser: {
+    activeTab: true,
+    tabs: {
+      [AllProperties]: {
+        id: true,
+        url: false,
+      },
+    },
+    history: {
+      [AllProperties]: false,
+    },
+    favicons: {
+      [AllProperties]: false,
+    },
+    whitelist: {
+      [AllProperties]: false,
+    },
+    visitedDappsByHostname: {
+      [AllProperties]: false,
+    },
+  },
   collectibles: true,
   engine: {
     backgroundState: {

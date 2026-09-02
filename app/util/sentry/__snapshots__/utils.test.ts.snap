@@ -14,11 +14,11 @@ exports[`captureSentryFeedback maskObject masks initial root state fixture 1`] =
   "bookmarks": {},
   "browser": {
     "activeTab": null,
-    "favicons": [],
-    "history": [],
-    "tabs": [],
+    "favicons": {},
+    "history": {},
+    "tabs": {},
     "visitedDappsByHostname": {},
-    "whitelist": [],
+    "whitelist": {},
   },
   "collectibles": {
     "favorites": {},

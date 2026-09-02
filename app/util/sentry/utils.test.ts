@@ -490,6 +490,33 @@ describe('captureSentryFeedback', () => {
       expect(maskedState).toMatchSnapshot();
     });
 
+    it('masks browsing history, tab urls and the dapp whitelist', () => {
+      const maskedState = maskObject(
+        {
+          ...rootState,
+          browser: {
+            activeTab: 1,
+            history: [{ url: 'https://dapp.example/path', name: 'Dapp' }],
+            tabs: [{ id: 1, url: 'https://dapp.example/path' }],
+            whitelist: ['dapp.example'],
+            favicons: [{ origin: 'dapp.example', url: 'https://dapp.example' }],
+            visitedDappsByHostname: { 'dapp.example': true },
+          },
+        },
+        sentryStateMask,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ) as any;
+
+      expect(maskedState.browser).toEqual({
+        activeTab: 1,
+        history: { '0': 'object' },
+        tabs: { '0': { id: 1, url: 'string' } },
+        whitelist: { '0': 'string' },
+        favicons: { '0': 'object' },
+        visitedDappsByHostname: { 'dapp.example': 'boolean' },
+      });
+    });
+
     it('handles undefined mask', () => {
       const maskedState = maskObject(rootState, undefined);
       expect(maskedState).toEqual({
