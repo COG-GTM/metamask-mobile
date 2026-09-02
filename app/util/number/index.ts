@@ -6,7 +6,7 @@ import BN4 from 'bnjs4';
 import type BN from 'bn.js';
 import { utils as ethersUtils } from 'ethers';
 import convert from '@metamask/ethjs-unit';
-import { add0x, remove0x } from '@metamask/utils';
+import { add0x, remove0x, type Hex } from '@metamask/utils';
 import numberToBN from 'number-to-bn';
 import BigNumber from 'bignumber.js';
 
@@ -979,20 +979,14 @@ export const formatValueToMatchTokenDecimals = (
   return value;
 };
 
-export function safeBNToHex(value: null): null;
-export function safeBNToHex(value: undefined): undefined;
-export function safeBNToHex(value: BN4 | BN | BigNumber | string): `0x${string}`;
-export function safeBNToHex(
-  value: string | BN4 | BN | BigNumber | null | undefined,
-): `0x${string}` | null | undefined;
-export function safeBNToHex(
-  value: string | BN4 | BN | BigNumber | null | undefined,
-) {
+export function safeBNToHex<
+  T extends string | BN4 | BN | BigNumber | null | undefined,
+>(value: T): T extends null | undefined ? T : Hex {
   if (value === null || value === undefined) {
-    return value;
+    return value as T extends null | undefined ? T : Hex;
   }
 
-  return BNToHex(value);
+  return BNToHex(value) as T extends null | undefined ? T : Hex;
 }
 
 /**

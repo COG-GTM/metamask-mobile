@@ -1,4 +1,5 @@
 import { handleSignatureAction } from '../confirmation/signatureUtils';
+import type { SecurityAlertResponse } from '@metamask/transaction-controller';
 import { getKeyringByAddress } from '../address';
 import { signModalNavDetail } from './hardwareWallets/ledger';
 import ExtendedKeyringTypes from '../../constants/keyringTypes';
@@ -24,14 +25,14 @@ export default async (
         onReject,
         messageParams,
         signType,
-        false as unknown as Parameters<typeof handleSignatureAction>[3],
+        false as unknown as SecurityAlertResponse,
       );
     } else {
       await handleSignatureAction(
         onConfirm,
         messageParams,
         signType,
-        true as unknown as Parameters<typeof handleSignatureAction>[3],
+        true as unknown as SecurityAlertResponse,
       );
     }
   };

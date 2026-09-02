@@ -201,6 +201,10 @@ export function getDecimalChainId(chainId: string): string;
 export function getDecimalChainId(
   chainId?: string | null,
 ): string | null | undefined;
+export function getDecimalChainId(chainId: number): number;
+export function getDecimalChainId(
+  chainId: number | undefined,
+): number | undefined;
 export function getDecimalChainId(
   chainId?: string | number | null,
 ): string | number | null | undefined {

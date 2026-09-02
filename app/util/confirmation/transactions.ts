@@ -28,13 +28,9 @@ export function buildTransactionParams({
   const { type } = transactionParams;
 
   transactionParams.from = safeToChecksumAddress(transaction.from) as string;
-  transactionParams.nonce = showCustomNonce
-    ? (safeBNToHex(nonce) as unknown as string)
-    : undefined;
-  transactionParams.to = safeToChecksumAddress(
-    transaction.to,
-  ) as unknown as string;
-  transactionParams.value = safeBNToHex(value) as unknown as string;
+  transactionParams.nonce = showCustomNonce ? safeBNToHex(nonce) : undefined;
+  transactionParams.to = safeToChecksumAddress(transaction.to);
+  transactionParams.value = safeBNToHex(value);
 
   if (
     gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET &&
