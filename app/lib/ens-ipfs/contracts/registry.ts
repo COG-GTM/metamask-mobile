@@ -1,4 +1,21 @@
-export default [
+interface AbiInput {
+  name: string;
+  type: string;
+  indexed?: boolean;
+}
+
+interface AbiItem {
+  name?: string;
+  type: string;
+  constant?: boolean;
+  anonymous?: boolean;
+  payable?: boolean;
+  stateMutability?: string;
+  inputs?: AbiInput[];
+  outputs?: AbiInput[];
+}
+
+const abi: AbiItem[] = [
   {
     constant: true,
     inputs: [{ name: 'node', type: 'bytes32' }],
@@ -106,3 +123,5 @@ export default [
     type: 'event',
   },
 ];
+
+export default abi;

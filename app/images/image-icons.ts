@@ -1,3 +1,4 @@
+import { ImageSourcePropType } from 'react-native';
 import MATIC from './matic.png';
 import POL from './pol.png';
 import PALM from './palm.png';
@@ -25,8 +26,7 @@ import FLOW from './flow.png';
 import LENS from './lens.png';
 import PLUME from './plume.png';
 
-
-export default {
+const imageIcons: Record<string, ImageSourcePropType> = {
   PALM,
   MATIC,
   POL,
@@ -56,3 +56,5 @@ export default {
   LENS,
   PLUME,
 };
+
+export default imageIcons;
