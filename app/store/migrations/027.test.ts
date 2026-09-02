@@ -14,7 +14,7 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as typeof oldState;
 
     expect(newState).toStrictEqual(oldState);
   });
@@ -30,7 +30,7 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as typeof oldState;
 
     expect(newState).toStrictEqual({
       engine: {
@@ -68,7 +68,13 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as typeof oldState & {
+      engine: {
+        backgroundState: {
+          TransactionController: { submitHistory: unknown };
+        };
+      };
+    };
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
@@ -136,7 +142,13 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as typeof oldState & {
+      engine: {
+        backgroundState: {
+          TransactionController: { submitHistory: unknown };
+        };
+      };
+    };
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
@@ -226,7 +238,13 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as typeof oldState & {
+      engine: {
+        backgroundState: {
+          TransactionController: { submitHistory: unknown };
+        };
+      };
+    };
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,

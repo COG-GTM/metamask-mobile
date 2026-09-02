@@ -24,7 +24,7 @@ describe('Migration #26', () => {
       },
     };
 
-    const newState = migrate(oldState);
+    const newState = migrate(oldState) as typeof oldState;
     expect(newState).toStrictEqual({
       engine: {
         backgroundState: {
@@ -48,7 +48,7 @@ describe('Migration #26', () => {
       },
     };
 
-    const newState = migrate(oldState);
+    const newState = migrate(oldState) as typeof oldState;
     expect(newState).toStrictEqual({
       engine: {
         backgroundState: {
