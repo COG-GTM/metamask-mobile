@@ -145,7 +145,9 @@ describe('Transaction Controller Init', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     selectShouldUseSmartTransactionMock.mockReturnValue(true);
-    selectSwapsChainFeatureFlagsMock.mockReturnValue({});
+    selectSwapsChainFeatureFlagsMock.mockReturnValue(
+      {} as unknown as ReturnType<typeof selectSwapsChainFeatureFlags>,
+    );
     getGlobalChainIdMock.mockReturnValue('0x1');
   });
 
@@ -299,13 +301,19 @@ describe('Transaction Controller Init', () => {
       networkClientId: 'selectedNetworkClientId',
     };
 
-    const getTransactionByIdMock = jest.requireMock('../../../../util/transactions').getTransactionById;
+    const getTransactionByIdMock = jest.requireMock(
+      '../../../../util/transactions',
+    ).getTransactionById;
     getTransactionByIdMock.mockReturnValue(mockTransactionMeta);
 
     selectShouldUseSmartTransactionMock.mockReturnValue(true);
 
-    const submitBatchSmartTransactionHookMock = jest.requireMock('../../../../util/smart-transactions/smart-publish-hook').submitBatchSmartTransactionHook;
-    submitBatchSmartTransactionHookMock.mockResolvedValue({ results: [{ transactionHash: '0xhash' }] });
+    const submitBatchSmartTransactionHookMock = jest.requireMock(
+      '../../../../util/smart-transactions/smart-publish-hook',
+    ).submitBatchSmartTransactionHook;
+    submitBatchSmartTransactionHookMock.mockResolvedValue({
+      results: [{ transactionHash: '0xhash' }],
+    });
 
     const hooks = testConstructorOption('hooks');
 
