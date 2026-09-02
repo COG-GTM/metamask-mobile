@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import CollectibleView from '.';
 import configureMockStore from 'redux-mock-store';
 import { backgroundState } from '../../../util/test/initial-root-state';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
 const initialState = {
@@ -22,7 +23,7 @@ describe('CollectibleView Snapshot', () => {
     const props = {
       navigation: {
         navigate: jest.fn(),
-      },
+      } as unknown as NavigationProp<ParamListBase>,
       route: {
         params: {
           contractName: 'Test Collectible',
@@ -47,7 +48,7 @@ describe('CollectibleView Snapshot', () => {
     const props = {
       navigation: {
         navigate: jest.fn(),
-      },
+      } as unknown as NavigationProp<ParamListBase>,
       route: {
         params: {
           contractName: 'Test Collectible',

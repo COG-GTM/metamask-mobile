@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import { screen, render } from '@testing-library/react-native';
 import AddBookmark from './';
 import { ThemeContext } from '../../../util/theme';
@@ -21,8 +21,10 @@ describe('AddBookmark', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <AddBookmark
-          navigation={{ setOptions: () => null }}
-          route={{ params: {} }}
+          {...({
+            navigation: { setOptions: () => null },
+            route: { params: {} },
+          } as unknown as ComponentProps<typeof AddBookmark>)}
         />
       </ThemeContext.Provider>,
     );
