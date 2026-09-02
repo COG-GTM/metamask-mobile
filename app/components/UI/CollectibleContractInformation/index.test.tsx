@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { shallow } from 'enzyme';
 import CollectibleContractInformation from './';
 import configureMockStore from 'redux-mock-store';
@@ -65,7 +66,9 @@ describe('CollectibleContractInformation', () => {
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
           <CollectibleContractInformation
-            navigation={navigationMock}
+            navigation={
+              navigationMock as unknown as NavigationProp<ParamListBase>
+            }
             onClose={onCloseMock}
             collectibleContract={collectibleContract}
           />
@@ -92,7 +95,9 @@ describe('CollectibleContractInformation', () => {
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
           <CollectibleContractInformation
-            navigation={navigationMock}
+            navigation={
+              navigationMock as unknown as NavigationProp<ParamListBase>
+            }
             onClose={onCloseMock}
             collectibleContract={collectibleContract}
           />

@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { View, Platform, TextInput, TouchableOpacity } from 'react-native';
 
@@ -17,7 +17,7 @@ import createStyles from './styles';
 
 interface AddToAddressBookWrapperProps {
   address: string;
-  children: ReactElement;
+  children: ReactNode;
   setToAddressName?: (name: string) => void;
   defaultNull?: boolean;
 }

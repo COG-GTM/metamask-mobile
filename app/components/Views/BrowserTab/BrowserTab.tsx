@@ -76,7 +76,7 @@ import { useMetrics } from '../../../components/hooks/useMetrics';
 import { trackDappViewedEvent } from '../../../util/metrics';
 import trackErrorAsAnalytics from '../../../util/metrics/TrackError/trackErrorAsAnalytics';
 import { selectPermissionControllerState } from '../../../selectors/snaps/permissionController';
-import { isTest } from '../../../util/test/utils.js';
+import { isTest } from '../../../util/test/utils';
 import { EXTERNAL_LINK_TYPE } from '../../../constants/browser';
 import { AccountPermissionsScreens } from '../AccountPermissions/AccountPermissions.types';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
@@ -181,13 +181,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const iconRef = useRef<ImageSourcePropType | undefined>();
   const sessionENSNamesRef = useRef<SessionENSNames>({});
   const ensIgnoreListRef = useRef<string[]>([]);
-  const backgroundBridgeRef = useRef<{
-    url: string;
-    hostname: string;
-    sendNotification: (payload: unknown) => void;
-    onDisconnect: () => void;
-    onMessage: (message: Record<string, unknown>) => void;
-  }>();
+  const backgroundBridgeRef = useRef<BackgroundBridge>();
   const fromHomepage = useRef(false);
   const wizardScrollAdjustedRef = useRef(false);
   const searchEngine = useSelector(selectSearchEngine);
@@ -899,7 +893,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       backgroundBridgeRef.current?.onDisconnect();
       backgroundBridgeRef.current = undefined;
 
-      //@ts-expect-error - We should type bacgkround bridge js file
       const newBridge = new BackgroundBridge({
         webview: webviewRef,
         url: urlBridge,

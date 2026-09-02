@@ -1,4 +1,6 @@
 import React from 'react';
+import { ParamListBase } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import AdvancedSettings from './';
 import renderWithProvider from '../../../../util/test/renderWithProvider';
 import { fireEvent } from '@testing-library/react-native';
@@ -56,7 +58,12 @@ describe('AdvancedSettings', () => {
   it('should render correctly', () => {
     const container = renderWithProvider(
       <AdvancedSettings
-        navigation={{ navigate: mockNavigate, setOptions: jest.fn() }}
+        navigation={
+          {
+            navigate: mockNavigate,
+            setOptions: jest.fn(),
+          } as unknown as StackNavigationProp<ParamListBase>
+        }
       />,
       {
         state: initialState,
@@ -76,7 +83,12 @@ describe('AdvancedSettings', () => {
     it('should render smart transactions opt in switch on by default', async () => {
       const { findByLabelText } = renderWithProvider(
         <AdvancedSettings
-          navigation={{ navigate: mockNavigate, setOptions: jest.fn() }}
+          navigation={
+            {
+              navigate: mockNavigate,
+              setOptions: jest.fn(),
+            } as unknown as StackNavigationProp<ParamListBase>
+          }
         />,
         {
           state: initialState,
@@ -91,7 +103,12 @@ describe('AdvancedSettings', () => {
     it('should update smartTransactionsOptInStatus when smart transactions opt in is pressed', async () => {
       const { findByLabelText } = renderWithProvider(
         <AdvancedSettings
-          navigation={{ navigate: mockNavigate, setOptions: jest.fn() }}
+          navigation={
+            {
+              navigate: mockNavigate,
+              setOptions: jest.fn(),
+            } as unknown as StackNavigationProp<ParamListBase>
+          }
         />,
         {
           state: initialState,

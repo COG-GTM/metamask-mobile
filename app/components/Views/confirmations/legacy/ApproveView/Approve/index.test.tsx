@@ -4,7 +4,12 @@ import { act, render, screen, fireEvent } from '@testing-library/react-native';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { Store } from 'redux';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import Approve from './index';
@@ -97,8 +102,12 @@ const renderComponent = ({ store }: { store: Store }) =>
               {() => (
                 <Approve
                   modalVisible
-                  navigation={navigationPropMock}
-                  route={routeMock}
+                  navigation={
+                    navigationPropMock as unknown as NavigationProp<ParamListBase>
+                  }
+                  route={
+                    routeMock as unknown as RouteProp<ParamListBase, string>
+                  }
                   hideModal={hideModalMock}
                 />
               )}
