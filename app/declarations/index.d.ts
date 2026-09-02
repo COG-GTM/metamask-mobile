@@ -8,6 +8,12 @@ declare module 'react-native-fade-in-image';
 
 declare module 'react-native-fast-crypto';
 
+declare module 'unicode-confusables' {
+  export function confusables(
+    str: string,
+  ): { point: string; similarTo?: string }[];
+}
+
 declare module 'react-native-minimizer';
 
 declare module 'react-native-tcp-socket';
