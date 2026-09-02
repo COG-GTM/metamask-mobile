@@ -25,7 +25,6 @@ import FLOW from './flow.png';
 import LENS from './lens.png';
 import PLUME from './plume.png';
 
-
 export default {
   PALM,
   MATIC,
@@ -55,4 +54,4 @@ export default {
   FLOW,
   LENS,
   PLUME,
-};
+} as const;

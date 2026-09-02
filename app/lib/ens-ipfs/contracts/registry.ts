@@ -1,4 +1,4 @@
-export default [
+const registryAbi = [
   {
     constant: true,
     inputs: [{ name: 'node', type: 'bytes32' }],
@@ -105,4 +105,6 @@ export default [
     name: 'NewTTL',
     type: 'event',
   },
-];
+] as const;
+
+export default registryAbi;
