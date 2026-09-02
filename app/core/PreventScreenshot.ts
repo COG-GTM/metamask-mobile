@@ -6,15 +6,24 @@ const METAMASK_ENVIRONMENT = process.env['METAMASK_ENVIRONMENT'];
 const isQa = METAMASK_ENVIRONMENT === 'qa';
 const isAndroid = Platform.OS === 'android';
 
+interface PreventScreenshotNativeModule {
+  forbid: () => boolean;
+  allow: () => boolean;
+}
+
+const nativeModules = NativeModules as {
+  PreventScreenshot: PreventScreenshotNativeModule;
+};
+
 export default {
   forbid: isQa
     ? () => true
     : isAndroid
-    ? NativeModules.PreventScreenshot.forbid
+    ? nativeModules.PreventScreenshot.forbid
     : () => true,
   allow: isQa
     ? () => true
     : isAndroid
-    ? NativeModules.PreventScreenshot.allow
+    ? nativeModules.PreventScreenshot.allow
     : () => true,
 };
