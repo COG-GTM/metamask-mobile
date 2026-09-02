@@ -109,7 +109,7 @@
     "**/json-schema": "^0.4.0",
     "react-native-svg/**/nth-check": "^2.0.1",
     "**/node-fetch": "^2.6.7",
-    "**/xml2js": ">=0.5.0",
+    "**/xml2js": "^0.6.2",
     "react-native-level-fs/**/bl": "^1.2.3",
     "react-native-level-fs/levelup/semver": "^5.7.2",
     "@metamask/react-native-payments/validator": "^13.7.0",
@@ -547,7 +547,7 @@
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4",
     "xhr2": "^0.2.1",
-    "xml2js": "^0.5.0",
+    "xml2js": "^0.6.2",
     "yarn-deduplicate": "^6.0.2"
   },
   "config": {
