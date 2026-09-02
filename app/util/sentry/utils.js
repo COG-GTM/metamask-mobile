@@ -480,16 +480,44 @@ export function excludeEvents(event) {
   return event;
 }
 
-function sanitizeUrlsFromErrorMessages(report) {
-  rewriteErrorMessages(report, (errorMessage) => {
-    const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
+/**
+ * Checks whether a URL found in an error message may be reported as-is.
+ *
+ * @param {string} url - Absolute http(s) URL matched in an error message.
+ * @returns {boolean} True when the URL's host exactly matches, or is a
+ * subdomain of, an allowlisted domain and the URL does not embed another URL.
+ */
+function isAllowlistedUrl(url) {
+  // A nested url (e.g. a redirect target in the query string) can carry data
+  // the allowlisted host itself would not, so never allowlist those.
+  if ((url.match(/https?:\/\//giu) ?? []).length > 1) {
+    return false;
+  }
 
-    urlsInMessage?.forEach((url) => {
-      if (!ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
-        errorMessage.replace(url, '**');
+  const authority = url.match(/^https?:\/\/([^/?#]*)/iu)?.[1] ?? '';
+  const hostname = authority.split('@').pop().split(':')[0].toLowerCase();
+
+  return ERROR_URL_ALLOWLIST.some(
+    (allowedUrl) =>
+      hostname === allowedUrl || hostname.endsWith(`.${allowedUrl}`),
+  );
+}
+
+export function sanitizeUrlsFromErrorMessages(report) {
+  rewriteErrorMessages(report, (errorMessage) => {
+    const urlsInMessage = errorMessage.match(regex.sanitizeUrl) ?? [];
+    // Longest first, so a URL that is a prefix of another one does not
+    // partially replace it and leave the remainder in the message.
+    const urlsByLength = [...new Set(urlsInMessage)].sort(
+      (urlA, urlB) => urlB.length - urlA.length,
+    );
+
+    return urlsByLength.reduce((message, url) => {
+      if (isAllowlistedUrl(url)) {
+        return message;
       }
-    });
-    return errorMessage;
+      return message.split(url).join('**');
+    }, errorMessage);
   });
 }
 
