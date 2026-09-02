@@ -1,6 +1,7 @@
 import { toHex } from '@metamask/controller-utils';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { CaipChainId, KnownCaipNamespace } from '@metamask/utils';
+import type { NetworkConfiguration } from '@metamask/network-controller';
 import { NavigationContainerRef } from '@react-navigation/native';
 import { RelayerTypes } from '@walletconnect/types';
 import { parseRelayParams } from '@walletconnect/utils';
@@ -255,7 +256,9 @@ export const checkWCPermissions = async ({
   caip2ChainId,
   allowSwitchingToNewChain = false,
 }: { origin: string; caip2ChainId: CaipChainId; allowSwitchingToNewChain?: boolean }) => {
-  const networkConfigurations = selectNetworkConfigurations(store.getState());
+  const networkConfigurations = selectNetworkConfigurations(
+    store.getState(),
+  ) as unknown as Record<string, NetworkConfiguration>;
   const decimalChainId = caip2ChainId.split(':')[1];
   const hexChainIdString = toHex(`0x${parseInt(decimalChainId, 10).toString(16)}`);
 

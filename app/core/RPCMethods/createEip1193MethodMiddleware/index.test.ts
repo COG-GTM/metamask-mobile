@@ -2,11 +2,30 @@ import { JsonRpcEngine } from '@metamask/json-rpc-engine';
 import {
   assertIsJsonRpcFailure,
   assertIsJsonRpcSuccess,
+  Json,
+  JsonRpcParams,
 } from '@metamask/utils';
+import type {
+  HandlerMiddlewareFunction,
+  PermittedHandlerExport,
+} from '@metamask/permission-controller';
 import { createEip1193MethodMiddleware } from '.';
 
-const getHandler = () => ({
-  implementation: (req, res, _next, end, hooks) => {
+interface TestHooks {
+  hook1: () => number;
+  hook2: () => number;
+}
+
+const getHandler = (): PermittedHandlerExport<
+  TestHooks,
+  JsonRpcParams,
+  Json
+> => {
+  const implementation: HandlerMiddlewareFunction<
+    TestHooks,
+    JsonRpcParams,
+    Json
+  > = (req, res, _next, end, hooks) => {
     if (Array.isArray(req.params)) {
       switch (req.params[0]) {
         case 1:
@@ -27,10 +46,14 @@ const getHandler = () => ({
       }
     }
     return end();
-  },
-  hookNames: { hook1: true, hook2: true },
-  methodNames: ['method1', 'method2'],
-});
+  };
+
+  return {
+    implementation,
+    hookNames: { hook1: true, hook2: true },
+    methodNames: ['method1', 'method2'],
+  };
+};
 
 jest.mock('@metamask/permission-controller', () => ({
   ...jest.requireActual('@metamask/permission-controller'),
@@ -144,7 +167,10 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(
+      (response.error.data as unknown as { cause: { message: string } }).cause
+        .message,
+    ).toBe('test error');
   });
 
   it('should handle errors thrown by the implementation', async () => {
@@ -161,7 +187,10 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(
+      (response.error.data as unknown as { cause: { message: string } }).cause
+        .message,
+    ).toBe('test error');
   });
 
   it('should handle non-errors thrown by the implementation', async () => {
