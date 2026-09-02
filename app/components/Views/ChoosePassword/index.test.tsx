@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import { shallow } from 'enzyme';
 import ChoosePassword from './';
 import configureMockStore from 'redux-mock-store';
@@ -26,7 +26,11 @@ describe('ChoosePassword', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ChoosePassword route={{ params: [ONBOARDING, PROTECT] }} />
+        <ChoosePassword
+          {...({
+            route: { params: [ONBOARDING, PROTECT] },
+          } as unknown as ComponentProps<typeof ChoosePassword>)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

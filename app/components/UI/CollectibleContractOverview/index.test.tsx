@@ -1,5 +1,10 @@
 import React from 'react';
-import CollectibleContractOverview from './';
+import CollectibleContractOverviewComponent from './';
+
+const CollectibleContractOverview =
+  CollectibleContractOverviewComponent as unknown as React.FC<
+    Partial<React.ComponentProps<typeof CollectibleContractOverviewComponent>>
+  >;
 import configureMockStore from 'redux-mock-store';
 import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
