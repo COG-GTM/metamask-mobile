@@ -17,18 +17,76 @@ import {
   switchToNetwork,
 } from './lib/ethereum-chain-utils';
 import { getDecimalChainId } from '../../util/networks';
-import { RpcEndpointType } from '@metamask/network-controller';
+import {
+  RpcEndpointType,
+  type NetworkConfiguration,
+  type UpdateNetworkFields,
+} from '@metamask/network-controller';
+import type {
+  Hex,
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
+import type { getRpcMethodMiddlewareHooks } from './RPCMethodMiddleware';
+
+export type RpcMethodHooks = ReturnType<typeof getRpcMethodMiddlewareHooks>;
+
+export type RequestUserApproval = (args: {
+  type: string;
+  requestData: Record<string, unknown>;
+}) => Promise<unknown>;
+
+export interface AddEthereumChainParams {
+  req: JsonRpcRequest<JsonRpcParams> & { origin: string };
+  res: PendingJsonRpcResponse<Json>;
+  requestUserApproval: RequestUserApproval;
+  analytics: Record<string, unknown>;
+  hooks: RpcMethodHooks;
+}
+
+export interface ValidatedAddEthereumChainParams {
+  chainId: Hex;
+  chainName: string;
+  firstValidRPCUrl: string;
+  firstValidBlockExplorerUrl: string;
+  ticker: string;
+}
+
+export interface SwitchToNetworkParams {
+  network: [string | undefined, UpdateNetworkFields];
+  chainId: Hex;
+  controllers: Partial<typeof Engine.context>;
+  requestUserApproval: RequestUserApproval;
+  analytics: Record<string, unknown>;
+  origin: string;
+  isAddNetworkFlow?: boolean;
+  autoApprove?: boolean | string;
+  hooks: Partial<RpcMethodHooks> & {
+    fromNetworkConfiguration?: NetworkConfiguration;
+    toNetworkConfiguration?: NetworkConfiguration;
+  };
+}
+
+export type SwitchToNetwork = (params: SwitchToNetworkParams) => Promise<void>;
+
+type RpcEndpointFields = UpdateNetworkFields['rpcEndpoints'][number];
 
 const waitForInteraction = async () =>
-  new Promise((resolve) => {
+  new Promise<void>((resolve) => {
     InteractionManager.runAfterInteractions(() => {
       resolve();
     });
   });
 
 // Utility function to find or add an item in an array and return the updated array and index
-const addOrUpdateIndex = (array, value, comparator) => {
+const addOrUpdateIndex = <T>(
+  array: T[],
+  value: T,
+  comparator: (item: T) => boolean,
+) => {
   const index = array.findIndex(comparator);
   if (index === -1) {
     return {
@@ -55,7 +113,7 @@ export const wallet_addEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: AddEthereumChainParams) => {
   const {
     NetworkController,
     MultichainNetworkController,
@@ -65,7 +123,9 @@ export const wallet_addEthereumChain = async ({
   } = Engine.context;
 
   const { origin } = req;
-  const params = validateAddEthereumChainParams(req.params);
+  const params = validateAddEthereumChainParams(
+    req.params,
+  ) as ValidatedAddEthereumChainParams;
 
   const {
     chainId,
@@ -75,11 +135,15 @@ export const wallet_addEthereumChain = async ({
     ticker,
   } = params;
 
-  const switchToNetworkAndMetrics = async (network, isAddNetworkFlow) => {
+  const switchToNetworkAndMetrics = async (
+    network: UpdateNetworkFields,
+    isAddNetworkFlow: boolean,
+  ) => {
     const { networkClientId } =
       network.rpcEndpoints[network.defaultRpcEndpointIndex];
 
-    const existingNetwork = hooks.getNetworkConfigurationByChainId(chainId);
+    const existingNetwork: NetworkConfiguration | undefined =
+      hooks.getNetworkConfigurationByChainId(chainId);
     const rpcIndex = existingNetwork?.rpcEndpoints.findIndex(({ url }) =>
       equal(url, firstValidRPCUrl),
     );
@@ -96,7 +160,7 @@ export const wallet_addEthereumChain = async ({
       (firstValidBlockExplorerUrl &&
         blockExplorerIndex !== existingNetwork.defaultBlockExplorerUrlIndex);
 
-    await switchToNetwork({
+    await (switchToNetwork as SwitchToNetwork)({
       network: [networkClientId, network],
       chainId,
       controllers: {
@@ -136,7 +200,7 @@ export const wallet_addEthereumChain = async ({
     existingNetworkConfiguration &&
     existingNetworkConfigurationHasRpcEndpoint
   ) {
-    const rpcResult = addOrUpdateIndex(
+    const rpcResult = addOrUpdateIndex<RpcEndpointFields>(
       existingNetworkConfiguration.rpcEndpoints,
       {
         url: firstValidRPCUrl,
@@ -160,7 +224,15 @@ export const wallet_addEthereumChain = async ({
   }
 
   await validateRpcEndpoint(firstValidRPCUrl, chainId);
-  const requestData = {
+  const requestData: {
+    chainId: typeof chainId;
+    blockExplorerUrl: typeof firstValidBlockExplorerUrl;
+    chainName: typeof chainName;
+    rpcUrl: typeof firstValidRPCUrl;
+    ticker: typeof ticker;
+    isNetworkRpcUpdate: boolean;
+    alerts?: Awaited<ReturnType<typeof checkSafeNetwork>>;
+  } = {
     chainId,
     blockExplorerUrl: firstValidBlockExplorerUrl,
     chainName,
@@ -216,11 +288,11 @@ export const wallet_addEthereumChain = async ({
     throw providerErrors.userRejectedRequest();
   }
 
-  let newNetworkConfiguration;
+  let newNetworkConfiguration: UpdateNetworkFields;
   if (existingNetworkConfiguration) {
     const currentChainId = selectEvmChainId(store.getState());
 
-    const rpcResult = addOrUpdateIndex(
+    const rpcResult = addOrUpdateIndex<RpcEndpointFields>(
       existingNetworkConfiguration.rpcEndpoints,
       {
         url: firstValidRPCUrl,

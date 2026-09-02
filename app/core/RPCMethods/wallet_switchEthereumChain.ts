@@ -8,6 +8,27 @@ import {
   switchToNetwork,
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
+import type {
+  Hex,
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
+import type {
+  RequestUserApproval,
+  RpcMethodHooks,
+  SwitchToNetwork,
+  SwitchToNetworkParams,
+} from './wallet_addEthereumChain';
+
+export interface SwitchEthereumChainParams {
+  req: JsonRpcRequest<JsonRpcParams> & { origin: string };
+  res: PendingJsonRpcResponse<Json>;
+  requestUserApproval: RequestUserApproval;
+  analytics: Record<string, unknown>;
+  hooks: RpcMethodHooks;
+}
 
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
@@ -25,14 +46,14 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: SwitchEthereumChainParams) => {
   const {
     CurrencyRateController,
     NetworkController,
     MultichainNetworkController,
     SelectedNetworkController,
   } = Engine.context;
-  const params = req.params?.[0];
+  const params = (req.params as Json[] | undefined)?.[0];
   const { origin } = req;
   if (!params || typeof params !== 'object') {
     throw rpcErrors.invalidParams({
@@ -41,8 +62,8 @@ export const wallet_switchEthereumChain = async ({
       )}`,
     });
   }
-  const { chainId } = params;
-  const allowedKeys = {
+  const { chainId } = params as Record<string, Json>;
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
@@ -52,12 +73,15 @@ export const wallet_switchEthereumChain = async ({
       `Received unexpected keys on object parameter. Unsupported keys:\n${extraKeys}`,
     );
   }
-  const _chainId = validateChainId(chainId);
+  const _chainId = validateChainId(chainId) as Hex;
   // TODO: [SOLANA] - This do not support non evm networks
   const networkConfigurations = selectEvmNetworkConfigurationsByChainId(
     store.getState(),
   );
-  const existingNetwork = findExistingNetwork(_chainId, networkConfigurations);
+  const existingNetwork = findExistingNetwork(
+    _chainId,
+    networkConfigurations,
+  ) as SwitchToNetworkParams['network'] | undefined;
   if (existingNetwork) {
     const currentDomainSelectedNetworkClientId =
       SelectedNetworkController.getNetworkClientIdForDomain(origin);
@@ -81,7 +105,7 @@ export const wallet_switchEthereumChain = async ({
     const toNetworkConfiguration =
       hooks.getNetworkConfigurationByChainId(chainId);
 
-    await switchToNetwork({
+    await (switchToNetwork as SwitchToNetwork)({
       network: existingNetwork,
       chainId: _chainId,
       controllers: {
@@ -96,7 +120,7 @@ export const wallet_switchEthereumChain = async ({
       hooks: {
         toNetworkConfiguration,
         fromNetworkConfiguration,
-        ...hooks,
+        ...(hooks as Partial<RpcMethodHooks>),
       },
     });
 
