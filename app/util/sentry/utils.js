@@ -22,8 +22,11 @@ export const AllProperties = Symbol('*');
 export const sentryStateMask = {
   accounts: true,
   alert: true,
-  bookmarks: true,
-  browser: true,
+  bookmarks: false,
+  browser: {
+    [AllProperties]: false,
+    activeTab: true,
+  },
   collectibles: true,
   engine: {
     backgroundState: {
