@@ -46,9 +46,7 @@ export const StakeSDKProvider: React.FC<
     if (
       !chainId ||
       !isSupportedChain(
-        getDecimalChainId(chainId) as unknown as Parameters<
-          typeof isSupportedChain
-        >[0],
+        getDecimalChainId(chainId) as unknown as number,
       )
     ) {
       console.error(

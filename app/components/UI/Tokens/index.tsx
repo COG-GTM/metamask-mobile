@@ -154,9 +154,7 @@ const Tokens = memo(() => {
         currentChainId,
         trackEvent,
         strings,
-        getDecimalChainId: getDecimalChainId as unknown as (
-          chainId: string,
-        ) => number,
+        getDecimalChainId,
         createEventBuilder, // Now passed as a prop
       });
     }
@@ -176,9 +174,7 @@ const Tokens = memo(() => {
         navigation,
         trackEvent,
         createEventBuilder,
-        getDecimalChainId: getDecimalChainId as unknown as (
-          chainId: string,
-        ) => number,
+        getDecimalChainId,
         currentChainId,
       });
     }

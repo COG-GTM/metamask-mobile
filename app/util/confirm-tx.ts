@@ -141,9 +141,9 @@ export function getTransactionFee({
   conversionRate,
   numberOfDecimals,
 }: Omit<CurrencyConversionOptions, 'value' | 'toDenomination'> & {
-  value: string;
+  value: string | number | BigNumber;
 }) {
-  return conversionUtil(value, {
+  return conversionUtil(value as string, {
     fromNumericBase: 'BN',
     toNumericBase: 'dec',
     fromDenomination: 'WEI',
@@ -173,11 +173,11 @@ export function convertTokenToFiat({
   value,
   fromCurrency = 'ETH',
   toCurrency,
-  conversionRate = 0,
+  conversionRate,
   contractExchangeRate,
 }: CurrencyConversionOptions & { contractExchangeRate?: number }) {
   if (!contractExchangeRate) return 0;
-  const totalExchangeRate = Number(conversionRate) * contractExchangeRate;
+  const totalExchangeRate = (conversionRate as number) * contractExchangeRate;
 
   return conversionUtil(value, {
     fromNumericBase: 'dec',

@@ -8,9 +8,7 @@ const useStakingChain = () => {
   const chainId = useSelector(selectEvmChainId);
 
   const isStakingSupportedChain = isSupportedChain(
-    getDecimalChainId(chainId) as unknown as Parameters<
-      typeof isSupportedChain
-    >[0],
+    getDecimalChainId(chainId) as unknown as number,
   );
 
   return {
@@ -20,9 +18,7 @@ const useStakingChain = () => {
 
 export const useStakingChainByChainId = (chainId: Hex | CaipChainId) => {
   const isStakingSupportedChain = isSupportedChain(
-    getDecimalChainId(chainId) as unknown as Parameters<
-      typeof isSupportedChain
-    >[0],
+    getDecimalChainId(chainId) as unknown as number,
   );
 
   return {

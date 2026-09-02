@@ -201,8 +201,6 @@ export function getDecimalChainId(chainId: string): string;
 export function getDecimalChainId(
   chainId?: string | null,
 ): string | null | undefined;
-export function getDecimalChainId(chainId: number): number;
-export function getDecimalChainId(chainId: number | undefined): number | undefined;
 export function getDecimalChainId(
   chainId?: string | number | null,
 ): string | number | null | undefined {
@@ -297,7 +295,7 @@ export function getNetworkTypeById(id?: string | number): string {
   const filteredNetworkTypes = NetworkListKeys.filter(
     (key) =>
       (NetworkList[key] as { networkId?: number }).networkId ===
-      parseInt(String(id), 10),
+      parseInt(id as string, 10),
   );
   if (filteredNetworkTypes.length > 0) {
     return filteredNetworkTypes[0];
@@ -360,13 +358,18 @@ export function findBlockExplorerForRpc(
       }
   >,
 ) {
-  const networkConfiguration = Object.values(networkConfigurations).find(
-    (configuration) =>
-      (
-        configuration as {
-          rpcEndpoints?: { url: string }[];
-        }
-      ).rpcEndpoints?.some(({ url }) => url === rpcTargetUrl),
+  const networkConfiguration = Object.values(
+    networkConfigurations as Record<
+      string,
+      {
+        rpcEndpoints?: { url: string }[];
+        blockExplorerUrls: string[];
+        defaultBlockExplorerUrlIndex?: number;
+      }
+    >,
+  ).find(
+    ({ rpcEndpoints }) =>
+      rpcEndpoints?.some(({ url }) => url === rpcTargetUrl),
   ) as
     | {
         blockExplorerUrls: string[];
@@ -375,8 +378,8 @@ export function findBlockExplorerForRpc(
     | undefined;
 
   if (networkConfiguration) {
-    return networkConfiguration.blockExplorerUrls[
-      networkConfiguration.defaultBlockExplorerUrlIndex ?? 0
+    return networkConfiguration?.blockExplorerUrls[
+      networkConfiguration?.defaultBlockExplorerUrlIndex as number
     ];
   }
 
@@ -427,7 +430,9 @@ export function findBlockExplorerForNonEvmAccount(internalAccount: {
     const networkConfigs =
       nonEvmNetworks.multichainNetworkConfigurationsByChainId;
     const matchingNetwork = Object.values(networkConfigs || {}).find((network) =>
-      internalAccount.scopes?.includes(network.chainId),
+      (internalAccount as { scopes: readonly string[] }).scopes.includes(
+        network.chainId,
+      ),
     );
 
     if (matchingNetwork) {
@@ -463,8 +468,8 @@ export function findBlockExplorerForNonEvmAccount(internalAccount: {
 export function compareRpcUrls(rpcOne: string, rpcTwo: string) {
   // First check that both objects are of the type string
   if (typeof rpcOne === 'string' && typeof rpcTwo === 'string') {
-    const rpcUrlOne = new URL(rpcOne);
-    const rpcUrlTwo = new URL(rpcTwo);
+    const rpcUrlOne = new URLParser(rpcOne);
+    const rpcUrlTwo = new URLParser(rpcTwo);
     return rpcUrlOne.host === rpcUrlTwo.host;
   }
   return false;
@@ -480,7 +485,7 @@ export function getBlockExplorerName(blockExplorerUrl?: string) {
   const hostname = new URLParser(blockExplorerUrl).hostname;
   if (!hostname) return undefined;
   const tempBlockExplorerName = fastSplit(hostname);
-  if (!tempBlockExplorerName?.[0]) return undefined;
+  if (!tempBlockExplorerName) return undefined;
   return (
     tempBlockExplorerName[0].toUpperCase() + tempBlockExplorerName.slice(1)
   );
@@ -590,7 +595,7 @@ export const getNetworkImageSource = ({
     return getNonEvmNetworkImageSourceByChainId(chainId);
   }
 
-  return getTestNetImage(networkType ?? RPC);
+  return getTestNetImage(networkType as string);
 };
 
 /**
@@ -611,7 +616,7 @@ export const getBlockExplorerAddressUrl = (
     if (!rpcBlockExplorer) return { url: null, title: null };
 
     const url = `${rpcBlockExplorer}/address/${address}`;
-    const title = new URL(rpcBlockExplorer).hostname;
+    const title = new URLParser(rpcBlockExplorer).hostname;
     return { url, title };
   }
 
@@ -638,7 +643,7 @@ export const getBlockExplorerTxUrl = (
     if (!rpcBlockExplorer) return { url: null, title: null };
 
     const url = `${rpcBlockExplorer}/tx/${transactionHash}`;
-    const title = new URL(rpcBlockExplorer).hostname;
+    const title = new URLParser(rpcBlockExplorer).hostname;
     return { url, title };
   }
 

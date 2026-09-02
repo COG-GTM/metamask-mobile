@@ -31,8 +31,10 @@ export function buildTransactionParams({
   transactionParams.nonce = showCustomNonce
     ? (safeBNToHex(nonce) as unknown as string)
     : undefined;
-  transactionParams.to = safeToChecksumAddress(transaction.to) as string;
-  transactionParams.value = safeBNToHex(value) as string;
+  transactionParams.to = safeToChecksumAddress(
+    transaction.to,
+  ) as unknown as string;
+  transactionParams.value = safeBNToHex(value) as unknown as string;
 
   if (
     gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET &&

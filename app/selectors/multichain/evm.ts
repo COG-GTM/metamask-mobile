@@ -161,12 +161,12 @@ export const selectNativeTokensAcrossChainsForAddress = createSelector(
         hexToBN(nativeTokenInfoByChainId?.balance),
         conversionRate,
         currentCurrency,
-      ) as unknown as string;
+      ) as string;
       stakedBalanceFiat = weiToFiat(
         hexToBN(nativeTokenInfoByChainId?.stakedBalance),
         conversionRate,
         currentCurrency,
-      ) as unknown as string;
+      ) as string;
 
       const tokenByChain = {
         ...nativeTokenInfoByChainId,
