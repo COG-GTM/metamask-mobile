@@ -35,7 +35,10 @@ export const validateSufficientTokenBalance = (
   contractBalances: { [key: string]: string },
   selectedAsset: SelectedAsset,
 ) => {
-  const [, , amount] = decodeTransferData('transfer', transaction.data);
+  const [, , amount] = decodeTransferData(
+    'transfer',
+    transaction.data,
+  ) as string[];
   const tokenBalance = hexToBN(contractBalances[selectedAsset.address]);
   const weiInput = hexToBN(amount);
 
@@ -49,8 +52,8 @@ export const validateSufficientTokenBalance = (
 };
 
 export const validateSufficientBalance = (
-  weiBalance: string,
-  totalTransactionValue: string,
+  weiBalance: string | BN4,
+  totalTransactionValue: string | BN4,
   ticker: string,
 ) => {
   const weiBalanceBN = hexToBN(weiBalance);

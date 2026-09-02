@@ -1,5 +1,9 @@
 import { renderScreen } from '../../../util/test/renderWithProvider';
+import React from 'react';
 import ImportFromSecretRecoveryPhrase from '.';
+
+const ImportFromSecretRecoveryPhraseView =
+  ImportFromSecretRecoveryPhrase as unknown as React.ComponentType;
 import Routes from '../../../constants/navigation/Routes';
 
 const initialState = {
@@ -12,7 +16,7 @@ const initialState = {
 describe('ImportFromSecretRecoveryPhrase', () => {
   it('should render correctly', () => {
     const { toJSON } = renderScreen(
-      ImportFromSecretRecoveryPhrase,
+      ImportFromSecretRecoveryPhraseView,
       { name: Routes.ONBOARDING.IMPORT_FROM_SECRET_RECOVERY_PHRASE },
       { state: initialState },
     );
