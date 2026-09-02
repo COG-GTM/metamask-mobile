@@ -31,7 +31,7 @@ interface SignatureMessageParams {
 }
 
 interface AnalyticsParams {
-  chain_id: string | number | null;
+  chain_id: string | number | null | undefined;
   dapp_host_name: string;
   [key: string]:
     | string
@@ -41,6 +41,10 @@ interface AnalyticsParams {
     | string[]
     | undefined;
 }
+
+type ReplaceAllString = string & {
+  replaceAll(searchValue: string, replaceValue: string): string;
+};
 
 export const typedSign = {
   V1: 'eth_signTypedData',
@@ -71,7 +75,7 @@ export const getAnalyticsParams = (
 
   try {
     const chainId = selectEvmChainId(store.getState());
-    analyticsParams.chain_id = getDecimalChainId(chainId) ?? null;
+    analyticsParams.chain_id = getDecimalChainId(chainId);
 
     if (pageInfo.url) {
       const url = new URL(pageInfo.url);
@@ -83,10 +87,7 @@ export const getAnalyticsParams = (
       Object.assign(analyticsParams, blockaidParams);
     }
   } catch (error) {
-    Logger.error(
-      error instanceof Error ? error : new Error(String(error)),
-      'Error processing analytics parameters:',
-    );
+    Logger.error(error as Error, 'Error processing analytics parameters:');
   }
 
   return analyticsParams;
@@ -111,14 +112,18 @@ export const showWalletConnectNotification = (
     /**
      * FIXME: need to rewrite the way BackgroundBridge sets the origin.
      */
-    const origin = (messageParams.origin as string)
-      .toLowerCase()
-      .replace(/:/g, '');
+    const origin = (
+      (messageParams.origin as string).toLowerCase() as ReplaceAllString
+    ).replaceAll(':', '');
     const isWCOrigin = origin.startsWith(
-      WALLET_CONNECT_ORIGIN.replace(/:/g, '').toLowerCase(),
+      (WALLET_CONNECT_ORIGIN as ReplaceAllString)
+        .replaceAll(':', '')
+        .toLowerCase(),
     );
     const isSDKOrigin = origin.startsWith(
-      AppConstants.MM_SDK.SDK_REMOTE_ORIGIN.replace(/:/g, '').toLowerCase(),
+      (AppConstants.MM_SDK.SDK_REMOTE_ORIGIN as ReplaceAllString)
+        .replaceAll(':', '')
+        .toLowerCase(),
     );
 
     if (isWCOrigin || isSDKOrigin) {
@@ -132,34 +137,13 @@ export const showWalletConnectNotification = (
   });
 };
 
-export function handleSignatureAction(
-  onAction: () => Promise<void> | void,
-  messageParams: SignatureMessageParams,
-  signType: string,
-  confirmation?: boolean,
-): Promise<void>;
-export function handleSignatureAction(
+export const handleSignatureAction = async (
   onAction: () => Promise<void> | void,
   messageParams: SignatureMessageParams,
   signType: string,
   securityAlertResponse?: SecurityAlertResponse,
   confirmation?: boolean,
-): Promise<void>;
-export async function handleSignatureAction(
-  onAction: () => Promise<void> | void,
-  messageParams: SignatureMessageParams,
-  signType: string,
-  securityAlertResponseOrConfirmation?: SecurityAlertResponse | boolean,
-  confirmation?: boolean,
-) {
-  const securityAlertResponse =
-    typeof securityAlertResponseOrConfirmation === 'boolean'
-      ? undefined
-      : securityAlertResponseOrConfirmation;
-  confirmation =
-    typeof securityAlertResponseOrConfirmation === 'boolean'
-      ? securityAlertResponseOrConfirmation
-      : confirmation;
+): Promise<void> => {
   await onAction();
   showWalletConnectNotification(messageParams, confirmation);
   MetaMetrics.getInstance().trackEvent(
@@ -177,7 +161,7 @@ export async function handleSignatureAction(
       )
       .build(),
   );
-}
+};
 
 export const addSignatureErrorListener = (
   metamaskId: string,
