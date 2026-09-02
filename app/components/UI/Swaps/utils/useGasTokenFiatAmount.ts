@@ -50,7 +50,7 @@ export function useGasTokenFiatAmount({
       return undefined;
     }
     const hexDecimalValue = hexToDecimal(balanceNeededToken);
-    const decimalValue = new BigNumber(hexDecimalValue);
+    const decimalValue = new BigNumber(hexDecimalValue as BigNumber.Value);
     const tokenAmountBN = swapsUtils.calcTokenAmount(
       decimalValue,
       token.decimals,
