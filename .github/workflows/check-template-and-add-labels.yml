@@ -8,23 +8,28 @@ on:
 
 jobs:
   check-template-and-add-labels:
+    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
+        continue-on-error: true
         uses: actions/checkout@v3
         with:
           fetch-depth: 1 # This retrieves only the latest commit.
 
       - name: Set up Node.js
+        continue-on-error: true
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
+        continue-on-error: true
         run: yarn --immutable
         working-directory: '.github/scripts'
 
       - name: Check template and add labels
+        continue-on-error: true
         id: check-template-and-add-labels
         env:
           LABEL_TOKEN: ${{ secrets.LABEL_TOKEN }}

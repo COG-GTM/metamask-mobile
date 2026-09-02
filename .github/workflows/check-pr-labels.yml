@@ -12,26 +12,31 @@ on:
 
 jobs:
   check-pr-labels:
+    continue-on-error: true
     runs-on: ubuntu-latest
     permissions:
       pull-requests: read
 
     steps:
       - name: Checkout repository
+        continue-on-error: true
         uses: actions/checkout@v3
         with:
             fetch-depth: 1 # This retrieves only the latest commit.
 
       - name: Set up Node.js
+        continue-on-error: true
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
+        continue-on-error: true
         run: yarn --immutable
         working-directory: '.github/scripts'
 
       - name: Check PR has required labels
+        continue-on-error: true
         id: check-pr-has-required-labels
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

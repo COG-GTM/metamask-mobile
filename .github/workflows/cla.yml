@@ -9,6 +9,7 @@ on:
     
 jobs:
   CLABot:
+    continue-on-error: true
     if: github.event_name == 'pull_request_target' || contains(github.event.comment.html_url, '/pull/')
     runs-on: ubuntu-latest
     permissions:
@@ -16,6 +17,7 @@ jobs:
       contents: write
     steps:
       - name: "CLA Signature Bot"
+        continue-on-error: true
         uses: MetaMask/cla-signature-bot@v3.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

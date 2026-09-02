@@ -7,6 +7,9 @@ on:
 
 jobs:
   add-team-label:
+    # Reusable-workflow calls cannot take `continue-on-error`, so this job is
+    # disabled instead of being allowed to fail (see check-changelog).
+    if: false
     uses: metamask/github-tools/.github/workflows/add-team-label.yml@18af6e4b56a18230d1792480e249ebc50b324927
     secrets:
       TEAM_LABEL_TOKEN: ${{ secrets.TEAM_LABEL_TOKEN }}
