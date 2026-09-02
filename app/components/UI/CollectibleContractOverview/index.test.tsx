@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import CollectibleContractOverview from './';
 import configureMockStore from 'redux-mock-store';
 import { shallow } from 'enzyme';
@@ -104,7 +105,9 @@ describe('CollectibleContractOverview', () => {
               address: '0x72b1FDb6443338A158DeC2FbF411B71123456789',
               totalSupply: 1,
             }}
-            navigation={navigationMock}
+            navigation={
+              navigationMock as unknown as NavigationProp<ParamListBase>
+            }
           />
         </ThemeContext.Provider>
       </Provider>,
@@ -130,7 +133,9 @@ describe('CollectibleContractOverview', () => {
               address: '0x72b1FDb644338A158DeC2FbF411B71123456789',
               totalSupply: 1,
             }}
-            navigation={navigationMock}
+            navigation={
+              navigationMock as unknown as NavigationProp<ParamListBase>
+            }
           />
         </ThemeContext.Provider>
       </Provider>,

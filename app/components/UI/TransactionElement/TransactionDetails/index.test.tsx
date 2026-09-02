@@ -1,7 +1,7 @@
 import React from 'react';
 import { query } from '@metamask/controller-utils';
 import { fireEvent, waitFor } from '@testing-library/react-native';
-import TransactionDetails from './';
+import TransactionDetails, { TransactionDetailsOwnProps } from './';
 import { backgroundState } from '../../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../../util/test/accountsControllerTestUtils';
 import renderWithProvider from '../../../../util/test/renderWithProvider';
@@ -102,29 +102,35 @@ const renderComponent = ({
       <Stack.Screen name="Amount" options={{}}>
         {() => (
           <TransactionDetails
-            transactionObject={{
-              networkID: '1',
-              status,
-              transaction: {
-                nonce: '',
-              },
-              chainId: networkId,
-              ...(txParams ? { txParams } : {}),
-            }}
-            transactionDetails={{
-              renderFrom: '0x0',
-              renderTo: networkId,
-              transactionHash: '0x2',
-              renderValue: '2 TKN',
-              renderGas: '21000',
-              renderGasPrice: '2',
-              renderTotalValue: '2 TKN / 0.001 ETH',
-              renderTotalValueFiat: '',
-              txChainId: networkId,
-              hash: '0x3',
-              ...(hash ? { hash } : {}),
-            }}
-            navigation={navigationMock}
+            transactionObject={
+              {
+                networkID: '1',
+                status,
+                transaction: {
+                  nonce: '',
+                },
+                chainId: networkId,
+                ...(txParams ? { txParams } : {}),
+              } as unknown as TransactionDetailsOwnProps['transactionObject']
+            }
+            transactionDetails={
+              {
+                renderFrom: '0x0',
+                renderTo: networkId,
+                transactionHash: '0x2',
+                renderValue: '2 TKN',
+                renderGas: '21000',
+                renderGasPrice: '2',
+                renderTotalValue: '2 TKN / 0.001 ETH',
+                renderTotalValueFiat: '',
+                txChainId: networkId,
+                hash: '0x3',
+                ...(hash ? { hash } : {}),
+              } as unknown as TransactionDetailsOwnProps['transactionDetails']
+            }
+            navigation={
+              navigationMock as unknown as TransactionDetailsOwnProps['navigation']
+            }
             chainId={networkId}
           />
         )}

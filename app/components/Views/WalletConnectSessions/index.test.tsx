@@ -1,9 +1,13 @@
+import { ComponentType } from 'react';
 import { waitFor } from '@testing-library/react-native';
-import WalletConnectSessions from './';
+import WalletConnectSessionsView from './';
 import StorageWrapper from '../../../store/storage-wrapper';
 import { renderScreen } from '../../../util/test/renderWithProvider';
 import Routes from '../../../constants/navigation/Routes';
 import { ExperimentalSelectorsIDs } from '../../../../e2e/selectors/Settings/ExperimentalView.selectors';
+
+const WalletConnectSessions =
+  WalletConnectSessionsView as unknown as ComponentType;
 
 jest.mock('../../../core/WalletConnect/WalletConnectV2', () => ({
   isWC2Enabled: false,

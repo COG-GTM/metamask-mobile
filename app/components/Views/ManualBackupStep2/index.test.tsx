@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import { shallow } from 'enzyme';
-import ManualBackupStep2 from './';
+import ManualBackupStep2View from './';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
+
+const ManualBackupStep2 = ManualBackupStep2View as unknown as ComponentType<{
+  route: { params: { words: string[]; steps: string[] } };
+}>;
 
 const mockStore = configureMockStore();
 const initialState = {

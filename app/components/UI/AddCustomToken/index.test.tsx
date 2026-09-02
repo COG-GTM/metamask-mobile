@@ -28,13 +28,21 @@ jest.mock('../../../util/networks', () => ({
 
 describe('AddCustomToken', () => {
   it('render correctly', () => {
-    const { toJSON } = renderWithProvider(<AddCustomToken />);
+    const { toJSON } = renderWithProvider(
+      <AddCustomToken
+        {...({} as React.ComponentProps<typeof AddCustomToken>)}
+      />,
+    );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('should call network selector bottom sheet handler', () => {
     const { getByTestId } = renderWithProvider(
-      <AddCustomToken setOpenNetworkSelector={mockSetOpenNetworkSelector} />,
+      <AddCustomToken
+        {...({
+          setOpenNetworkSelector: mockSetOpenNetworkSelector,
+        } as unknown as React.ComponentProps<typeof AddCustomToken>)}
+      />,
       { state: mockInitialState },
     );
 
@@ -48,7 +56,11 @@ describe('AddCustomToken', () => {
 
   it('should handle text input callback for short address', () => {
     const { getByTestId } = renderWithProvider(
-      <AddCustomToken setOpenNetworkSelector={mockSetOpenNetworkSelector} />,
+      <AddCustomToken
+        {...({
+          setOpenNetworkSelector: mockSetOpenNetworkSelector,
+        } as unknown as React.ComponentProps<typeof AddCustomToken>)}
+      />,
       { state: mockInitialState },
     );
 
@@ -71,7 +83,11 @@ describe('AddCustomToken', () => {
 
   it('should handle text input callback and reset fields for short address', () => {
     const { getByTestId } = renderWithProvider(
-      <AddCustomToken setOpenNetworkSelector={mockSetOpenNetworkSelector} />,
+      <AddCustomToken
+        {...({
+          setOpenNetworkSelector: mockSetOpenNetworkSelector,
+        } as unknown as React.ComponentProps<typeof AddCustomToken>)}
+      />,
       { state: mockInitialState },
     );
 
@@ -94,7 +110,11 @@ describe('AddCustomToken', () => {
 
   it('should handle text input callback and reset fields for 42 length address', async () => {
     const { getByTestId } = renderWithProvider(
-      <AddCustomToken setOpenNetworkSelector={mockSetOpenNetworkSelector} />,
+      <AddCustomToken
+        {...({
+          setOpenNetworkSelector: mockSetOpenNetworkSelector,
+        } as unknown as React.ComponentProps<typeof AddCustomToken>)}
+      />,
       { state: mockInitialState },
     );
 
