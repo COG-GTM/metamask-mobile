@@ -15,7 +15,9 @@ export default function migrate(state: unknown) {
     !isObject(state.engine.backgroundState)
   ) {
     captureException(
-      new Error('Migration 26: Invalid root state: root state is not an object'),
+      new Error(
+        'Migration 26: Invalid root state: root state is not an object',
+      ),
     );
     return state;
   }

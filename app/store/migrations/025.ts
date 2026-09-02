@@ -27,7 +27,7 @@ export default function migrate(state: unknown) {
       ) {
         preferencesController.showIncomingTransactions = {
           ...preferencesController.showIncomingTransactions,
-            [hexChainId]: thirdPartyApiMode,
+          [hexChainId]: thirdPartyApiMode,
         };
       } else if (preferencesController) {
         preferencesController.showIncomingTransactions = {

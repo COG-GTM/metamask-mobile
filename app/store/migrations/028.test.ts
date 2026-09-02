@@ -43,9 +43,7 @@ describe('Migration #28', () => {
     const result = await migrate(state);
 
     expect(result).toEqual(state);
-    expect(
-      mockedCaptureException,
-    ).toHaveBeenCalledWith(expect.any(Error));
+    expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
     expect(mockedCaptureException).toHaveBeenCalledTimes(1);
     expect(mockedIsObject).toHaveBeenCalledTimes(1);
   });
@@ -55,9 +53,7 @@ describe('Migration #28', () => {
     const result = await migrate(state);
 
     expect(result).toEqual(state);
-    expect(
-      mockedGetItem,
-    ).not.toHaveBeenCalled();
+    expect(mockedGetItem).not.toHaveBeenCalled();
     expect(mockedIsObject).toHaveBeenCalledTimes(1);
   });
 
@@ -116,8 +112,6 @@ describe('Migration #28', () => {
     expect(setItemMock).toHaveBeenCalledWith('persist:root', mockValue, true);
     expect(removeItemMock).toHaveBeenCalledTimes(controllerList.length);
     expect(result).toEqual({ engine: { backgroundState: mockEngine } });
-    expect(
-      mockedCaptureException,
-    ).not.toHaveBeenCalled();
+    expect(mockedCaptureException).not.toHaveBeenCalled();
   });
 });

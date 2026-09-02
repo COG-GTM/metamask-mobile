@@ -16,7 +16,8 @@ describe('Migration #24', () => {
   const invalidBackgroundStates = [
     {
       state: 'invalid_state',
-      errorMessage: 'Migration 24: Invalid root state: root state is not an object',
+      errorMessage:
+        'Migration 24: Invalid root state: root state is not an object',
       scenario: 'root state is invalid',
     },
     {

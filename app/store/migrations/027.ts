@@ -36,7 +36,9 @@ export default function migrate(state: unknown) {
     !isObject(state.engine.backgroundState)
   ) {
     captureException(
-      new Error('Migration 27: Invalid root state: root state is not an object'),
+      new Error(
+        'Migration 27: Invalid root state: root state is not an object',
+      ),
     );
     return state;
   }
@@ -45,11 +47,9 @@ export default function migrate(state: unknown) {
 
   const transactionControllerState = backgroundState.TransactionController;
 
-  if (!transactionControllerState) return state;
   if (!isObject(transactionControllerState)) return state;
 
   const transactions = (
-    isObject(transactionControllerState) &&
     Array.isArray(transactionControllerState.transactions)
       ? transactionControllerState.transactions
       : []
