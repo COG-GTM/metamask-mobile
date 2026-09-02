@@ -1,23 +1,37 @@
 import { rpcErrors } from '@metamask/rpc-errors';
-import { MESSAGE_TYPE } from '../createTracingMiddleware';
 import {
-  trackDappViewedEvent,
-} from '../../util/metrics';
+  HandlerMiddlewareFunction,
+  PermittedHandlerExport,
+  RequestedPermissions,
+} from '@metamask/permission-controller';
+import { Json, JsonRpcParams } from '@metamask/utils';
+import { MESSAGE_TYPE } from '../createTracingMiddleware';
+import { trackDappViewedEvent } from '../../util/metrics';
 
-const requestEthereumAccounts = {
-  methodNames: [MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS],
-  implementation: requestEthereumAccountsHandler,
-  hookNames: {
-    getAccounts: true,
-    getUnlockPromise: true,
-    getCaip25PermissionFromLegacyPermissionsForOrigin: true,
-    requestPermissionsForOrigin: true,
-  },
-};
-export default requestEthereumAccounts;
+/**
+ * Implementations used by the eth_requestAccounts handler.
+ */
+export interface RequestEthereumAccountsHooks {
+  getAccounts: (options?: { ignoreLock?: boolean }) => string[];
+  getUnlockPromise: (shouldShowUnlockRequest: boolean) => Promise<void>;
+  getCaip25PermissionFromLegacyPermissionsForOrigin: () => RequestedPermissions;
+  requestPermissionsForOrigin: (
+    requestedPermissions: RequestedPermissions,
+  ) => Promise<unknown>;
+}
+
+/**
+ * `trackDappViewedEvent` is called here with positional arguments, which does not
+ * match its object-parameter signature. The call is kept as-is to preserve the
+ * existing runtime behavior asserted by the unit tests.
+ */
+const trackDappViewedEventPositional = trackDappViewedEvent as unknown as (
+  origin: string,
+  numberOfConnectedAccounts: number,
+) => void;
 
 // Used to rate-limit pending requests to one per origin
-const locks = new Set();
+const locks = new Set<string>();
 
 /**
  * This method attempts to retrieve the Ethereum accounts available to the
@@ -37,7 +51,11 @@ const locks = new Set();
  * @param options.requestPermissionsForOrigin - A hook that requests CAIP-25 permissions for the origin.
  * @returns A promise that resolves to nothing
  */
-async function requestEthereumAccountsHandler(
+const requestEthereumAccountsHandler: HandlerMiddlewareFunction<
+  RequestEthereumAccountsHooks,
+  JsonRpcParams,
+  Json
+> = async (
   req,
   res,
   _next,
@@ -48,8 +66,8 @@ async function requestEthereumAccountsHandler(
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
   },
-) {
-  const { origin } = req;
+) => {
+  const { origin } = req as typeof req & { origin: string };
   if (locks.has(origin)) {
     res.error = rpcErrors.resourceUnavailable(
       `Already processing ${MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS}. Please wait.`,
@@ -87,8 +105,24 @@ async function requestEthereumAccountsHandler(
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent(origin, ethAccounts.length);
+  trackDappViewedEventPositional(origin, ethAccounts.length);
 
   res.result = ethAccounts;
   return end();
-}
+};
+
+const requestEthereumAccounts: PermittedHandlerExport<
+  RequestEthereumAccountsHooks,
+  JsonRpcParams,
+  Json
+> = {
+  methodNames: [MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS],
+  implementation: requestEthereumAccountsHandler,
+  hookNames: {
+    getAccounts: true,
+    getUnlockPromise: true,
+    getCaip25PermissionFromLegacyPermissionsForOrigin: true,
+    requestPermissionsForOrigin: true,
+  },
+};
+export default requestEthereumAccounts;
