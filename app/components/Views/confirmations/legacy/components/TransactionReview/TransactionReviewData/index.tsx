@@ -1,0 +1,221 @@
+import React, { PureComponent } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { Theme } from '@metamask/design-tokens';
+import { Dispatch } from 'redux';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import IonicIcon from 'react-native-vector-icons/Ionicons';
+import { fontStyles } from '../../../../../../../styles/common';
+import { strings } from '../../../../../../../../locales/i18n';
+import { connect } from 'react-redux';
+import Device from '../../../../../../../util/device';
+import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
+import ClipboardManager from '../../../../../../../core/ClipboardManager';
+import { showAlert } from '../../../../../../../actions/alert';
+import GlobalAlert from '../../../../../../UI/GlobalAlert';
+import {
+  selectConversionRateByChainId,
+  selectCurrentCurrency,
+} from '../../../../../../../selectors/currencyRateController';
+import { RootState } from '../../../../../../../reducers';
+
+const createStyles = (colors: Theme['colors']) =>
+  StyleSheet.create({
+    root: {
+      paddingHorizontal: 24,
+      paddingTop: 24,
+      paddingBottom: Device.isIphoneX() ? 48 : 24,
+    },
+    dataHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: '100%',
+      marginBottom: 28,
+    },
+    dataTitleText: {
+      ...fontStyles.bold,
+      color: colors.text.default,
+      fontSize: 14,
+      alignSelf: 'center',
+    },
+    dataDescription: {
+      textAlign: 'center',
+      ...fontStyles.normal,
+      color: colors.text.default,
+      fontSize: 14,
+      marginBottom: 28,
+    },
+    dataBox: {
+      padding: 12,
+      borderWidth: 1,
+      borderColor: colors.border.default,
+      borderRadius: 8,
+      flex: 1,
+    },
+    label: {
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      marginBottom: 12,
+    },
+    boldLabel: {
+      ...fontStyles.bold,
+    },
+    labelText: {
+      ...fontStyles.normal,
+      color: colors.text.default,
+      fontSize: 14,
+    },
+    hexData: {
+      ...fontStyles.normal,
+      backgroundColor: colors.background.default,
+      color: colors.text.default,
+      fontSize: 14,
+      paddingTop: 0,
+    },
+    scrollView: {
+      flex: 1,
+    },
+  });
+
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface TransactionReviewDataProps {
+  /**
+   * Transaction object associated with this transaction
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transaction: any;
+  /**
+   * Transaction corresponding action key
+   */
+  actionKey?: string;
+  /**
+   * Hides or shows transaction data
+   */
+  toggleDataView?: () => void;
+  /**
+   * Height of custom gas and data modal
+   */
+  customGasHeight?: number;
+  /**
+   * Triggers global alert
+   */
+  showAlert: (config: AlertConfig) => void;
+  /**
+   * Saves the rendered height of the data view
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  saveTransactionReviewDataHeight?: (...args: any[]) => void;
+}
+
+/**
+ * PureComponent that supports reviewing transaction data
+ */
+class TransactionReviewData extends PureComponent<TransactionReviewDataProps> {
+  applyRootHeight = () => ({ height: this.props.customGasHeight });
+
+  handleCopyHex = () => {
+    const {
+      transaction: {
+        transaction: { data },
+      },
+    } = this.props;
+    ClipboardManager.setString(data);
+    this.props.showAlert({
+      isVisible: true,
+      autodismiss: 1500,
+      content: 'clipboard-alert',
+      data: { msg: strings('transaction.hex_data_copied') },
+    });
+  };
+
+  render = () => {
+    const {
+      transaction: {
+        transaction: { data },
+      },
+      actionKey,
+      toggleDataView,
+    } = this.props;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
+    const styles = createStyles(colors);
+
+    return (
+      <View style={[styles.root, this.applyRootHeight()]}>
+        <View style={styles.dataHeader}>
+          <TouchableOpacity onPress={toggleDataView}>
+            <IonicIcon
+              name={'arrow-back'}
+              size={24}
+              color={colors.text.default}
+            />
+          </TouchableOpacity>
+          <Text style={styles.dataTitleText}>
+            {strings('transaction.data')}
+          </Text>
+          <IonicIcon
+            name={'arrow-back'}
+            size={24}
+            color={colors.background.default}
+          />
+        </View>
+        <Text style={styles.dataDescription}>
+          {strings('transaction.data_description')}
+        </Text>
+        <View style={styles.dataBox}>
+          {actionKey !== strings('transactions.tx_review_confirm') && (
+            <View style={styles.label}>
+              <Text style={[styles.labelText, styles.boldLabel]}>
+                {strings('transaction.review_function')}:{' '}
+              </Text>
+              <Text style={styles.labelText}>{actionKey}</Text>
+            </View>
+          )}
+          <Text style={[styles.labelText, styles.boldLabel]}>
+            {strings('transaction.review_hex_data')}:{' '}
+          </Text>
+          <View style={styles.scrollView}>
+            <KeyboardAwareScrollView style={styles.scrollView}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={this.handleCopyHex}
+                style={styles.scrollView}
+              >
+                <Text style={styles.hexData}>{data}</Text>
+              </TouchableOpacity>
+            </KeyboardAwareScrollView>
+          </View>
+        </View>
+        <GlobalAlert />
+      </View>
+    );
+  };
+}
+
+const mapStateToProps = (state: RootState) => ({
+  conversionRate: selectConversionRateByChainId(
+    state,
+    state.transaction.chainId,
+  ),
+  currentCurrency: selectCurrentCurrency(state),
+  transaction: state.transaction,
+});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
+});
+
+TransactionReviewData.contextType = ThemeContext;
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(TransactionReviewData);
