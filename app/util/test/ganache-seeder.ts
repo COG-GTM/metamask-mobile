@@ -7,7 +7,10 @@ import ContractAddressRegistry from './contract-address-registry';
  * Ganache seeder is used to seed initial smart contract or set initial blockchain state.
  */
 class GanacheSeeder {
-  constructor(ganacheProvider) {
+  private smartContractRegistry: ContractAddressRegistry;
+  private ganacheProvider: ConstructorParameters<typeof Web3Provider>[0];
+
+  constructor(ganacheProvider: ConstructorParameters<typeof Web3Provider>[0]) {
     this.smartContractRegistry = new ContractAddressRegistry();
     this.ganacheProvider = ganacheProvider;
   }
@@ -18,12 +21,14 @@ class GanacheSeeder {
    * @param contractName
    */
 
-  async deploySmartContract(contractName) {
+  async deploySmartContract(contractName: string) {
     const ethersProvider = new Web3Provider(this.ganacheProvider, 'any');
     const signer = ethersProvider.getSigner();
     const fromAddress = await signer.getAddress();
     const contractFactory = new ContractFactory(
-      contractConfiguration[contractName].abi,
+      contractConfiguration[contractName].abi as ConstructorParameters<
+        typeof ContractFactory
+      >[0],
       contractConfiguration[contractName].bytecode,
       signer,
     );
@@ -69,7 +74,7 @@ class GanacheSeeder {
    * @param contractName
    * @param contractAddress
    */
-  storeSmartContractAddress(contractName, contractAddress) {
+  storeSmartContractAddress(contractName: string, contractAddress: string) {
     this.smartContractRegistry.storeNewContractAddress(
       contractName,
       contractAddress,
