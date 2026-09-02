@@ -1,4 +1,5 @@
-import browserReducer from './index';
+import browserReducer, { BrowserState } from './index';
+import { StoreFaviconAction } from '../../actions/browser';
 import AppConstants from '../../core/AppConstants';
 
 describe('browserReducer STORE_FAVICON_URL', () => {
@@ -9,9 +10,9 @@ describe('browserReducer STORE_FAVICON_URL', () => {
       tabs: [],
       favicons: [],
       activeTab: null,
-    };
+    } as unknown as BrowserState;
 
-    const action = {
+    const action: StoreFaviconAction = {
       type: 'STORE_FAVICON_URL',
       origin: 'testOrigin',
       url: 'testUrl',
@@ -40,9 +41,9 @@ describe('browserReducer STORE_FAVICON_URL', () => {
         url: 'oldUrl',
       }),
       activeTab: null,
-    };
+    } as unknown as BrowserState;
 
-    const action = {
+    const action: StoreFaviconAction = {
       type: 'STORE_FAVICON_URL',
       origin: 'newOrigin',
       url: 'newUrl',
