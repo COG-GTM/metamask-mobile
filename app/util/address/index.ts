@@ -357,7 +357,9 @@ export function getLabelTextByAddress(address: string) {
             );
             // -1 means the address is not found in any of the hd keyrings
             if (hdKeyringIndex !== -1) {
-              return strings('accounts.srp_index', { index: hdKeyringIndex + 1 });
+              return strings('accounts.srp_index', {
+                index: hdKeyringIndex + 1,
+              });
             }
           }
         }
@@ -626,7 +628,7 @@ export async function validateAddressOrENS(
     confusableCollection = collectConfusables(toEnsName);
     const resolvedAddress = await doENSLookup(toAccount, chainId);
     const contactAlreadySaved = checkIfAddressAlreadySaved(
-      resolvedAddress,
+      resolvedAddress ?? '',
       addressBook,
       chainId,
       internalAccounts,
@@ -700,7 +702,7 @@ export async function getAddress(
   chainId: string,
 ): Promise<string | null> {
   if (isENS(toAccount)) {
-    return await doENSLookup(toAccount, chainId);
+    return (await doENSLookup(toAccount, chainId)) ?? null;
   }
   if (isValidHexAddress(toAccount, { mixedCaseUseChecksum: true })) {
     return toAccount;

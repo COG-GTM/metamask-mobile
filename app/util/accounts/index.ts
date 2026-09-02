@@ -28,7 +28,7 @@ export const getAccountNameWithENS = ({
       safeToChecksumAddress(address) === safeToChecksumAddress(accountAddress),
   );
   const ensName = ensByAccountAddress[accountAddress];
-  return isDefaultAccountName(account?.name) && ensName
+  return isDefaultAccountName(account?.name ?? '') && ensName
     ? ensName
     : account?.name || '';
 };

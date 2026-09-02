@@ -410,3 +410,40 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'ethjs-ens' {
+  class ENS {
+    constructor(opts: { provider: unknown; network: string });
+    reverse(address: string): Promise<string>;
+    lookup(name: string): Promise<string>;
+  }
+  export default ENS;
+}
+
+declare module 'through2' {
+  // eslint-disable-next-line import/no-nodejs-modules
+  import { Transform, TransformOptions } from 'stream';
+  type TransformFn = (
+    this: Transform,
+    chunk: unknown,
+    enc: BufferEncoding,
+    cb: (err?: Error | null, data?: unknown) => void,
+  ) => void;
+  function through2(transform?: TransformFn): Transform;
+  namespace through2 {
+    function obj(
+      transform?: TransformFn,
+      options?: TransformOptions,
+    ): Transform;
+  }
+  export = through2;
+}
+
+declare module 'pump' {
+  // eslint-disable-next-line import/no-nodejs-modules, no-duplicate-imports
+  import { Stream } from 'stream';
+  function pump(
+    ...streams: (Stream | ((err?: Error | null) => void))[]
+  ): Stream;
+  export = pump;
+}
