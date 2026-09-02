@@ -21,31 +21,12 @@ export type TokenWithFiatValue = Token & {
 };
 
 export interface Account {
-  balance: Hex;
+  balance: string;
 }
 
 export interface TokenExchangeRate {
-  tokenAddress: string;
-  currency: string;
-  id: string;
   price: number;
-  marketCap: number;
-  allTimeHigh: number;
-  allTimeLow: number;
-  totalVolume: number;
-  high1d: number;
-  low1d: number;
-  circulatingSupply: number;
-  dilutedMarketCap: number;
-  marketCapPercentChange1d: number;
-  priceChange1d: number;
-  pricePercentChange1h: number;
-  pricePercentChange1d: number;
-  pricePercentChange7d: number;
-  pricePercentChange14d: number;
-  pricePercentChange30d: number;
-  pricePercentChange200d: number;
-  pricePercentChange1y: number;
+  [key: string]: unknown;
 }
 export type TokenExchangeRates = Record<string, TokenExchangeRate>;
 
