@@ -37,6 +37,7 @@ import generateUserSettingsAnalyticsMetaData from '../../util/metrics/UserSettin
 import { isE2E } from '../../util/test/utils';
 import MetaMetricsPrivacySegmentPlugin from './MetaMetricsPrivacySegmentPlugin';
 import MetaMetricsTestUtils from './MetaMetricsTestUtils';
+import branch from 'react-native-branch';
 
 /**
  * MetaMetrics using Segment as the analytics provider.
@@ -555,6 +556,8 @@ class MetaMetrics implements IMetaMetrics {
     if (this.#isConfigured) return true;
     try {
       this.enabled = await this.#isMetaMetricsEnabled();
+      // keep Branch third-party telemetry aligned with user consent
+      branch.disableTracking(!this.enabled);
       // get the user unique id when initializing
       this.metametricsId = await this.#getMetaMetricsId();
       this.deleteRegulationId = await this.#getDeleteRegulationIdFromPrefs();
@@ -591,6 +594,7 @@ class MetaMetrics implements IMetaMetrics {
    */
   enable = async (enable = true): Promise<void> => {
     this.enabled = enable;
+    branch.disableTracking(!this.enabled);
     await this.#storeMetricsOptInPreference(this.enabled);
   };
 
