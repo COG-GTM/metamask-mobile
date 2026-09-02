@@ -49,7 +49,7 @@ interface ConverterOptions<B extends NumericBase | undefined = undefined> {
   toDenomination?: EthDenomination;
   toCurrency?: string | null;
   numberOfDecimals?: number;
-  conversionRate?: number | string | null;
+  conversionRate?: number | string | BigNumber | null;
   invertConversionRate?: boolean;
   roundDown?: number;
 }

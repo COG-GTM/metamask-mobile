@@ -168,14 +168,14 @@ export const deepJSONParse = ({
             const parsed: unknown = JSON.parse(value);
             obj[key] = parsed;
             // If the parsed value is an object, parse its properties too
-            if (typeof parsed === 'object' && parsed !== null) {
+            if (typeof parsed === 'object') {
               parseProperties(parsed as Record<string, unknown>);
             }
           } catch (e) {
             // If parsing throws, it's not a JSON string, so do nothing
           }
         }
-      } else if (typeof value === 'object' && value !== null) {
+      } else if (typeof value === 'object') {
         // If it's an object, parse its properties
         parseProperties(value as Record<string, unknown>);
       }

@@ -70,7 +70,7 @@ export function getValueFromWeiHex({
   value: ConversionInput;
   fromCurrency?: string;
   toCurrency?: string;
-  conversionRate?: number | string;
+  conversionRate?: number | string | BigNumber;
   numberOfDecimals?: number;
   toDenomination?: EthDenomination;
 }): string | 0 {
