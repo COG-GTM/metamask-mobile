@@ -1,4 +1,4 @@
-import { isTestEnvironment } from './utils';
+import { isTestEnvironment } from './isTestEnvironment';
 
 describe('isTestEnvironment', () => {
   it.each(['local', 'debug', 'dev', 'test', 'e2e', 'qa'])(
