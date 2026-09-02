@@ -5,8 +5,26 @@ import { Duplex } from 'readable-stream';
 // eslint-disable-next-line no-empty-function
 const noop = () => {};
 
+/**
+ * Minimal interface of the Port objects this stream wraps
+ * (see `./BackgroundBridge/Port`, `RemotePort` and `WalletConnectPort`).
+ */
+export interface Port {
+  addListener(event: 'message', listener: (msg: unknown) => void): unknown;
+  addListener(event: 'disconnect', listener: () => void): unknown;
+  postMessage(msg: unknown, url?: string): void;
+}
+
+interface SerializedBuffer extends ReturnType<Buffer['toJSON']> {
+  _isBuffer?: boolean;
+}
+
 export default class PortDuplexStream extends Duplex {
-  constructor(port, url) {
+  private _port: Port;
+
+  private _url: string | undefined;
+
+  constructor(port: Port, url?: string) {
     super({
       objectMode: true,
     });
@@ -21,11 +39,11 @@ export default class PortDuplexStream extends Duplex {
    * the remote Port associated with this Stream.
    *
    * @private
-   * @param {Object} msg - Payload from the onMessage listener of Port
+   * @param msg - Payload from the onMessage listener of Port
    */
-  _onMessage = function (msg) {
+  _onMessage = function (this: PortDuplexStream, msg: unknown) {
     if (Buffer.isBuffer(msg)) {
-      delete msg._isBuffer;
+      delete (msg as Buffer & { _isBuffer?: boolean })._isBuffer;
       const data = new Buffer(msg);
       this.push(data);
     } else {
@@ -39,8 +57,8 @@ export default class PortDuplexStream extends Duplex {
    *
    * @private
    */
-  _onDisconnect = function () {
-    this.destroy && this.destroy();
+  _onDisconnect = function (this: PortDuplexStream) {
+    this.destroy?.();
   };
 
   /**
@@ -53,14 +71,19 @@ export default class PortDuplexStream extends Duplex {
    * this writable stream.
    *
    * @private
-   * @param {*} msg Arbitrary object to write
-   * @param {string} encoding Encoding to use when writing payload
-   * @param {Function} cb Called when writing is complete or an error occurs
+   * @param msg Arbitrary object to write
+   * @param _encoding Encoding to use when writing payload
+   * @param cb Called when writing is complete or an error occurs
    */
-  _write = function (msg, encoding, cb) {
+  _write = function (
+    this: PortDuplexStream,
+    msg: unknown,
+    _encoding: BufferEncoding,
+    cb: (error?: Error | null) => void,
+  ) {
     try {
       if (Buffer.isBuffer(msg)) {
-        const data = msg.toJSON();
+        const data: SerializedBuffer = msg.toJSON();
         data._isBuffer = true;
         this._port.postMessage(data, this._url);
       } else {
