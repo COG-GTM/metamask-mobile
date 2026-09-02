@@ -490,6 +490,14 @@ describe('captureSentryFeedback', () => {
       expect(maskedState).toMatchSnapshot();
     });
 
+    it('masks browser activity and SDK connection state', () => {
+      const maskedState = maskObject(rootState, sentryStateMask);
+
+      expect(maskedState.bookmarks).toBe('object');
+      expect(maskedState.browser).toBe('object');
+      expect(maskedState.sdk).toBe('object');
+    });
+
     it('handles undefined mask', () => {
       const maskedState = maskObject(rootState, undefined);
       expect(maskedState).toEqual({

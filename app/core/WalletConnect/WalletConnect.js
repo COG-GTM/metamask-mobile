@@ -114,7 +114,7 @@ class WalletConnect {
      *  Subscribe to session requests
      */
     this.walletConnector.on('session_request', async (error, payload) => {
-      Logger.log('WC session_request:', payload);
+      Logger.log('WC session request received');
       if (error) {
         throw error;
       }
@@ -129,7 +129,7 @@ class WalletConnect {
           requestOriginatedFrom: this.requestOriginatedFrom,
         };
 
-        Logger.log('WC:', sessionData);
+        Logger.log('WC session data received');
 
         await waitForInitialization();
         await this.sessionRequest(sessionData);
@@ -152,7 +152,7 @@ class WalletConnect {
 
       await waitForKeychainUnlocked();
 
-      Logger.log('CALL_REQUEST', error, payload);
+      Logger.log('WC call request received');
       if (error) {
         throw error;
       }
@@ -253,7 +253,7 @@ class WalletConnect {
     });
 
     this.walletConnector.on('session_update', (error, payload) => {
-      Logger.log('WC: Session update', payload);
+      Logger.log('WC session updated');
       if (error) {
         throw error;
       }

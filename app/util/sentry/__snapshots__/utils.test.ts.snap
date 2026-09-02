@@ -11,15 +11,8 @@ exports[`captureSentryFeedback maskObject masks initial root state fixture 1`] =
     "data": null,
     "isVisible": false,
   },
-  "bookmarks": {},
-  "browser": {
-    "activeTab": null,
-    "favicons": [],
-    "history": [],
-    "tabs": [],
-    "visitedDappsByHostname": {},
-    "whitelist": [],
-  },
+  "bookmarks": "object",
+  "browser": "object",
   "collectibles": {
     "favorites": {},
     "isNftFetchingProgress": false,
@@ -230,12 +223,7 @@ exports[`captureSentryFeedback maskObject masks initial root state fixture 1`] =
       "rpcName": "",
     },
   },
-  "sdk": {
-    "approvedHosts": {},
-    "connections": {},
-    "dappConnections": {},
-    "wc2Metadata": undefined,
-  },
+  "sdk": "object",
   "security": {
     "allowLoginWithRememberMe": false,
     "automaticSecurityChecksEnabled": false,
