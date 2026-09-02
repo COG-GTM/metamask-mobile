@@ -59,8 +59,7 @@ export function getCachedENSName(
   address: string,
   chainId: string,
 ): string | undefined {
-  const networkHasEnsSupport =
-    chainId !== undefined && ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
+  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
   if (!networkHasEnsSupport) {
     return undefined;
   }

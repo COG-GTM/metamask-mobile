@@ -441,9 +441,13 @@ declare module 'through2' {
 
 declare module 'pump' {
   // eslint-disable-next-line import/no-nodejs-modules, no-duplicate-imports
-  import { Stream } from 'stream';
   function pump(
-    ...streams: (Stream | ((err?: Error | null) => void))[]
-  ): Stream;
+    ...streams: (
+      | NodeJS.ReadableStream
+      | NodeJS.WritableStream
+      | NodeJS.ReadWriteStream
+      | ((err?: Error | null) => void)
+    )[]
+  ): NodeJS.ReadWriteStream;
   export = pump;
 }

@@ -380,14 +380,10 @@ function removeDeviceName(report: SentryEvent): void {
 function removeSES(report: SentryEvent): void {
   const firstException = report?.exception?.values?.[0];
   const stacktraceFrames = firstException?.stacktrace?.frames;
-  if (stacktraceFrames) {
-    const filteredFrames = stacktraceFrames.filter(
+  if (stacktraceFrames && firstException?.stacktrace) {
+    firstException.stacktrace.frames = stacktraceFrames.filter(
       (frame) => frame.filename !== 'app:///ses.cjs',
     );
-    firstException.stacktrace = {
-      ...firstException.stacktrace,
-      frames: filteredFrames,
-    };
   }
 }
 
@@ -484,28 +480,19 @@ function rewriteReport(report: ErrorEvent): ErrorEvent {
   return report;
 }
 
-type TransactionEventInput =
-  | TransactionEvent
-  | {
-      transaction: string;
-      tags?: TransactionEvent['tags'];
-      start_timestamp?: number;
-    };
+type ExcludableEvent = Pick<
+  TransactionEvent,
+  'transaction' | 'tags' | 'start_timestamp'
+>;
 
 /**
  * This function excludes events from being logged in the performance portion of the app.
  * @param {*} event - to be logged
  * @returns {(event|null)}
  */
-export function excludeEvents(
-  event: TransactionEvent | null,
-): TransactionEvent | null;
-export function excludeEvents(
-  event: Exclude<TransactionEventInput, TransactionEvent>,
-): Exclude<TransactionEventInput, TransactionEvent> | null;
-export function excludeEvents(
-  event: TransactionEventInput | null,
-): TransactionEventInput | null {
+export function excludeEvents<T extends ExcludableEvent>(
+  event: T | null,
+): T | null {
   // This is needed because store starts to initialise before performance observers completes to measure app start time
   if (event?.transaction === TraceName.UIStartup) {
     event.tags = getTraceTags(store.getState());

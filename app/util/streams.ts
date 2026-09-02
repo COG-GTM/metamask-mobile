@@ -2,27 +2,17 @@ import ObjectMultiplex from '@metamask/object-multiplex';
 import pump from 'pump';
 import Through from 'through2';
 // eslint-disable-next-line import/no-nodejs-modules
-import { Duplex, Stream, Transform } from 'stream';
+import { Duplex, Transform } from 'stream';
 
 /**
  * Returns a stream transform that parses JSON strings passing through
  * @return {stream.Transform}
  */
 function jsonParseStream(): Transform {
-  return Through.obj(function (
-    this: Transform,
-    serialized: string,
-    _: BufferEncoding,
-    cb: (err?: Error | null, data?: unknown) => void,
-  ) {
-    this.push(JSON.parse(serialized));
+  return Through.obj(function (serialized: unknown, _, cb) {
+    this.push(JSON.parse(serialized as string));
     cb();
-  } as unknown as (
-    this: Transform,
-    chunk: unknown,
-    enc: BufferEncoding,
-    cb: (err?: Error | null, data?: unknown) => void,
-  ) => void);
+  });
 }
 
 /**
@@ -44,11 +34,16 @@ function jsonStringifyStream(): Transform {
  */
 function setupMultiplex(connectionStream: Duplex): ObjectMultiplex {
   const mux = new ObjectMultiplex();
-  pump(connectionStream, mux as unknown as Stream, connectionStream, (err) => {
-    if (err) {
-      console.warn(err);
-    }
-  });
+  pump(
+    connectionStream,
+    mux as unknown as NodeJS.ReadWriteStream,
+    connectionStream,
+    (err) => {
+      if (err) {
+        console.warn(err);
+      }
+    },
+  );
   return mux;
 }
 
