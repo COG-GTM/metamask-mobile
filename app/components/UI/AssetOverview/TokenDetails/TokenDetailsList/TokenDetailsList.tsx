@@ -37,6 +37,7 @@ const TokenDetailsList: React.FC<TokenDetailsListProps> = ({
   }) => dispatch(showAlert(config));
 
   const copyAccountToClipboard = async () => {
+    if (!tokenDetails.contractAddress) return;
     await ClipboardManager.setString(tokenDetails.contractAddress);
 
     handleShowAlert({

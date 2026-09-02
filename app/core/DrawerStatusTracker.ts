@@ -4,9 +4,11 @@
 import { EventEmitter } from 'events';
 const hub = new EventEmitter();
 
+export type DrawerStatus = 'open' | 'closed';
+
 class DrawerStatusTracker {
   open = false;
-  setStatus(status) {
+  setStatus(status: DrawerStatus) {
     if (status === 'open') {
       this.open = true;
     } else {
@@ -17,16 +19,23 @@ class DrawerStatusTracker {
   }
 }
 
-let instance = null;
+let instance: DrawerStatusTracker | null = null;
+
+const getInstance = (): DrawerStatusTracker => {
+  if (!instance) {
+    throw new Error('DrawerStatusTracker not initialized');
+  }
+  return instance;
+};
 
 const SharedDrawerStatusTracker = {
   init: () => {
     instance = new DrawerStatusTracker();
   },
-  setStatus: (status) => {
-    instance.setStatus(status);
+  setStatus: (status: DrawerStatus) => {
+    getInstance().setStatus(status);
   },
-  getStatus: () => (instance.open ? 'open' : 'closed'),
+  getStatus: (): DrawerStatus => (getInstance().open ? 'open' : 'closed'),
   hub,
 };
 
