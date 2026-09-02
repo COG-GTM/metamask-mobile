@@ -8,19 +8,7 @@ import type { EthAccountHooks } from '../eth_accounts/types';
 
 export type Eip1193OnlyHooks = EthAccountHooks & RequestEthereumAccountsHooks;
 
-export const eip1193OnlyHandlers: PermittedHandlerExport<
-  Eip1193OnlyHooks,
-  JsonRpcParams,
-  Json
->[] = [
-  ethAccounts as unknown as PermittedHandlerExport<
-    Eip1193OnlyHooks,
-    JsonRpcParams,
-    Json
-  >,
-  requestEthereumAccounts as unknown as PermittedHandlerExport<
-    Eip1193OnlyHooks,
-    JsonRpcParams,
-    Json
-  >,
-];
+export const eip1193OnlyHandlers: (
+  | PermittedHandlerExport<EthAccountHooks, JsonRpcParams, Json>
+  | PermittedHandlerExport<RequestEthereumAccountsHooks, JsonRpcParams, Json>
+)[] = [ethAccounts, requestEthereumAccounts];

@@ -236,21 +236,6 @@ export function findExistingNetwork(
   return;
 }
 
-/**
- * Switches the active network for the origin if already permitted
- * otherwise requests approval to update permission first.
- *
- * @param response - The JSON RPC request's response object.
- * @param end - The JSON RPC request's end callback.
- * @param {object} params.network - Network configuration of the chain being switched to.
- * @param {string} params.chainId - The network client being switched to.
- * @param {Function} params.requestUserApproval - The callback to trigger user approval flow.
- * @param {object} params.analytics - Analytics parameters to be passed when tracking event via `MetaMetrics`.
- * @param {string} params.origin - The origin sending this request.
- * @param {boolean} params.isAddNetworkFlow - Variable to check if its add flow.
- * @param {object} params.hooks - Method hooks passed to the method implementation.
- * @returns a null response on success or an error if user rejects an approval when autoApprove is false or on unexpected errors.
- */
 export interface SwitchToNetworkHooks {
   getCaveat: (args: {
     target: string;
@@ -281,6 +266,21 @@ export interface SwitchToNetworkParams {
   hooks: SwitchToNetworkHooks;
 }
 
+/**
+ * Switches the active network for the origin if already permitted
+ * otherwise requests approval to update permission first.
+ *
+ * @param response - The JSON RPC request's response object.
+ * @param end - The JSON RPC request's end callback.
+ * @param {object} params.network - Network configuration of the chain being switched to.
+ * @param {string} params.chainId - The network client being switched to.
+ * @param {Function} params.requestUserApproval - The callback to trigger user approval flow.
+ * @param {object} params.analytics - Analytics parameters to be passed when tracking event via `MetaMetrics`.
+ * @param {string} params.origin - The origin sending this request.
+ * @param {boolean} params.isAddNetworkFlow - Variable to check if its add flow.
+ * @param {object} params.hooks - Method hooks passed to the method implementation.
+ * @returns a null response on success or an error if user rejects an approval when autoApprove is false or on unexpected errors.
+ */
 export async function switchToNetwork({
   network,
   chainId,
@@ -332,8 +332,7 @@ export async function switchToNetwork({
   }
 
   const shouldGrantPermissions =
-    chainPermissionsFeatureEnabled &&
-    (!ethChainIds || !(ethChainIds as Hex[]).includes(chainId));
+    chainPermissionsFeatureEnabled && !ethChainIds?.includes(chainId);
 
   const requestModalType = isAddNetworkFlow ? 'new' : 'switch';
 
