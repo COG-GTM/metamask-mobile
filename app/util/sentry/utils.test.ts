@@ -7,6 +7,7 @@ import {
   maskObject,
   sentryStateMask,
   AllProperties,
+  sanitizeUrlsFromErrorMessages,
 } from './utils';
 import { DeepPartial } from '../test/renderWithProvider';
 import { RootState } from '../../reducers';
@@ -730,5 +731,102 @@ describe('captureSentryFeedback', () => {
         exampleObj: 'object',
       },
     });
+  });
+});
+
+describe('sanitizeUrlsFromErrorMessages', () => {
+  it('redacts non-allowlisted urls from the top level message', () => {
+    const report = {
+      message:
+        'Failed to fetch https://malicious-dapp.example.com/path?key=abc',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch **');
+  });
+
+  it('redacts non-allowlisted urls from exception values', () => {
+    const report = {
+      exception: {
+        values: [
+          {
+            value:
+              'Request to https://rpc.example.com/v3/secret-project-id failed',
+          },
+        ],
+      },
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.exception.values[0].value).toBe('Request to ** failed');
+  });
+
+  it('redacts every occurrence of a repeated url', () => {
+    const report = {
+      message:
+        'https://dapp.example.com/a redirected to https://dapp.example.com/a',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('** redirected to **');
+  });
+
+  it('keeps allowlisted urls intact', () => {
+    const report = {
+      message: 'Failed to fetch https://api.coingecko.com/api/v3/simple/price',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe(
+      'Failed to fetch https://api.coingecko.com/api/v3/simple/price',
+    );
+  });
+
+  it('redacts urls whose host merely contains an allowlisted domain', () => {
+    const report = {
+      message: 'Failed to fetch https://notcoingecko.com/private?key=secret',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch **');
+  });
+
+  it('redacts urls on long top level domains', () => {
+    const report = {
+      message: 'Failed to fetch https://private.technology/path?key=secret',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch **');
+  });
+
+  it('keeps subdomains of allowlisted domains intact', () => {
+    const report = { message: 'Failed to fetch https://api.etherscan.io/api' };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch https://api.etherscan.io/api');
+  });
+
+  it('keeps allowlisted hosts with a trailing dns root dot intact', () => {
+    const report = { message: 'Failed to fetch https://coingecko.com./api' };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch https://coingecko.com./api');
+  });
+
+  it('leaves messages without urls unchanged', () => {
+    const report = { message: 'Something went wrong' };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Something went wrong');
   });
 });
