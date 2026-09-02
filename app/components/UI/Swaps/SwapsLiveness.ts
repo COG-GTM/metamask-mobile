@@ -19,7 +19,7 @@ function SwapLiveness() {
   const chainId = useSelector(selectEvmChainId);
   const dispatch = useDispatch();
   const setLiveness = useCallback(
-    (_chainId: string, featureFlags?: FeatureFlags | null) => {
+    (_chainId: `0x${string}`, featureFlags?: FeatureFlags | null) => {
       dispatch(setSwapsLiveness(_chainId, featureFlags));
     },
     [dispatch],
@@ -31,12 +31,12 @@ function SwapLiveness() {
         AppConstants.SWAPS.CLIENT_ID,
       );
 
-      setLiveness(chainId, featureFlags);
+      setLiveness(chainId as `0x${string}`, featureFlags);
     } catch (error) {
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Logger.error(error as any, 'Swaps: error while fetching swaps liveness');
-      setLiveness(chainId, null);
+      setLiveness(chainId as `0x${string}`, null);
     }
   }, [setLiveness, chainId]);
 
