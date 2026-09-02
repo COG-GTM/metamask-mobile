@@ -15,6 +15,8 @@ import { fromWei, isBN, toGwei } from '../../util/number';
 import {
   parseTransactionEIP1559,
   parseTransactionLegacy,
+  type ContractExchangeRates,
+  type GasFeeEstimates,
 } from '../../util/transactions';
 import Engine from '../Engine';
 import {
@@ -123,7 +125,7 @@ export const getEIP1559TransactionData = ({
 
     const parsedTransactionEIP1559 = parseTransactionEIP1559(
       {
-        contractExchangeRates,
+        contractExchangeRates: contractExchangeRates as ContractExchangeRates,
         conversionRate,
         currentCurrency,
         nativeCurrency,
@@ -134,7 +136,7 @@ export const getEIP1559TransactionData = ({
             data: transactionState.transaction.data,
           },
         },
-        gasFeeEstimates,
+        gasFeeEstimates: gasFeeEstimates as unknown as GasFeeEstimates,
         swapsParams: undefined,
         selectedGasFee: {
           ...gas,

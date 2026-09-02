@@ -1,0 +1,33 @@
+import Clipboard from '@react-native-clipboard/clipboard';
+import Device from '../util/device';
+
+const EXPIRE_TIME_MS = 60000;
+
+const ClipboardManager = {
+  async getString() {
+    return await Clipboard.getString();
+  },
+  async setString(string: string) {
+    await Clipboard.setString(string);
+  },
+  expireTime: null as ReturnType<typeof setTimeout> | null,
+  async setStringExpire(string: string) {
+    if (Device.isIos()) {
+      await Clipboard.setStringExpire(string);
+    } else {
+      await this.setString(string);
+      if (this.expireTime) {
+        clearTimeout(this.expireTime);
+      }
+      this.expireTime = setTimeout(async () => {
+        const currentString = await this.getString();
+
+        if (!currentString) return;
+
+        await Clipboard.clearString();
+      }, EXPIRE_TIME_MS);
+    }
+  },
+};
+
+export default ClipboardManager;

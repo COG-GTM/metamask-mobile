@@ -6,18 +6,98 @@ declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
 declare module 'react-native-fade-in-image';
 
+declare module 'eth-ens-namehash' {
+  const namehash: {
+    hash(name: string): string;
+    normalize(name: string): string;
+  };
+  export default namehash;
+}
+
+declare module '@metamask/ethjs-query' {
+  export default class Eth {
+    constructor(provider: unknown, options?: Record<string, unknown>);
+    [method: string]: unknown;
+  }
+}
+
+declare module '@metamask/ethjs-contract' {
+  export type EthContractMethod = (...args: unknown[]) => Promise<unknown[]>;
+
+  export interface EthContractInstance {
+    [methodName: string]: EthContractMethod;
+  }
+
+  export interface EthContractFactory {
+    at(address: string): EthContractInstance;
+  }
+
+  export type EthContractBuilder = (abi: unknown[]) => EthContractFactory;
+
+  type EthContractConstructor = new (eth: unknown) => EthContractBuilder;
+
+  const EthContract: EthContractConstructor;
+  export default EthContract;
+}
+
+declare module 'content-hash' {
+  const contentHash: {
+    decode(contentHash: string): string;
+    getCodec(contentHash: string): string;
+    encode(codec: string, value: string): string;
+  };
+  export default contentHash;
+}
+
+declare module 'multihashes' {
+  const multihash: {
+    fromHexString(hex: string): Buffer;
+    toHexString(buffer: Buffer): string;
+    toB58String(buffer: Buffer): string;
+    fromB58String(value: string): Buffer;
+    encode(buffer: Buffer, codec: string, length?: number): Buffer;
+  };
+  export default multihash;
+}
+
 declare module 'react-native-fast-crypto';
+
+declare module 'react-native-confetti';
 
 declare module 'react-native-minimizer';
 
 declare module 'react-native-tcp-socket';
 
 declare module 'xhr2';
+
+declare module 'readable-stream' {
+  // eslint-disable-next-line import/no-nodejs-modules
+  import stream from 'stream';
+  export = stream;
+}
+
+declare module 'zxcvbn' {
+  interface ZxcvbnResult {
+    score: number;
+  }
+  const zxcvbn: (password: string, userInputs?: string[]) => ZxcvbnResult;
+  export default zxcvbn;
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const content: React.FC<any>;
   export default content;
+}
+
+declare module 'react-native/Libraries/Image/resolveAssetSource' {
+  const resolveAssetSource: (
+    source: import('react-native').ImageSourcePropType,
+  ) => import('react-native').ImageResolvedAssetSource & {
+    __packager_asset?: boolean;
+  };
+  export default resolveAssetSource;
 }
 
 declare module '*.svg' {
@@ -298,6 +378,67 @@ declare module '@metamask/react-native-actionsheet' {
 
 declare module '@metamask/react-native-search-api';
 
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
+declare module 'react-native-progress/Bar' {
+  // `width` accepts `null` to opt into automatic flexbox sizing
+  const Bar: import('react').ComponentType<
+    Omit<import('react-native-progress').BarPropTypes, 'width'> & {
+      width?: number | null;
+    }
+  >;
+  export default Bar;
+}
+
+declare module '@metamask/react-native-button' {
+  export interface ButtonProps {
+    accessibilityLabel?: string;
+    accessibilityRole?: import('react-native').AccessibilityRole;
+    allowFontScaling?: boolean;
+    activeOpacity?: number;
+    delayPressIn?: number;
+    delayPressOut?: number;
+    delayLongPress?: number;
+    children?: import('react').ReactNode;
+    childGroupStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    containerStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    disabled?: boolean;
+    disabledContainerStyle?: import('react-native').StyleProp<
+      import('react-native').ViewStyle
+    >;
+    onPress?: () => void;
+    onPressIn?: () => void;
+    onPressOut?: () => void;
+    onLongPress?: () => void;
+    style?: import('react-native').StyleProp<import('react-native').TextStyle>;
+    styleDisabled?: import('react-native').StyleProp<
+      import('react-native').TextStyle
+    >;
+    testID?: string;
+  }
+
+  const Button: import('react').ComponentType<ButtonProps>;
+  export default Button;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  const coalesceNonElementChildren: (
+    children: import('react').ReactNode,
+    coalesceNodes: (
+      nodes: import('react').ReactNode[],
+      index: number,
+    ) => import('react').ReactNode,
+  ) => import('react').ReactNode[];
+  export default coalesceNonElementChildren;
+}
+
 /**
  * @sentry/react-native types for v^6.10.0
  * Types are overridden to ensure captureException receives an Error type for more reliable stack traces
@@ -409,4 +550,75 @@ declare module '@sentry/react-native' {
     hint?: ExclusiveEventHintOrCaptureContext,
   ) => string;
   export { captureException };
+}
+
+declare module 'ethjs-ens';
+
+declare module 'number-to-bn' {
+  import type BN from 'bnjs4';
+  const numberToBN: (value: string | number | BN) => BN;
+  export default numberToBN;
+}
+
+declare module '@metamask/ethjs-unit' {
+  type EthjsUnitValue =
+    | string
+    | number
+    | import('bnjs4').default
+    | import('bnjs5').default
+    | import('bignumber.js').default
+    | import('ethereumjs-util').BN;
+  export function fromWei(value: EthjsUnitValue, unit: string): string;
+  export function toWei(
+    value: EthjsUnitValue,
+    unit: string,
+  ): import('bnjs4').default;
+  export function numberToString(value: EthjsUnitValue): string;
+}
+
+declare module '@react-native-clipboard/clipboard/jest/clipboard-mock.js';
+
+declare module 'enzyme-adapter-react-16';
+
+declare module 'humanize-duration' {
+  interface HumanizeDurationOptions {
+    language?: string;
+    fallbacks?: string[];
+    largest?: number;
+    units?: string[];
+    round?: boolean;
+    delimiter?: string;
+    conjunction?: string;
+    serialComma?: boolean;
+  }
+  const humanizeDuration: (
+    milliseconds: number,
+    options?: HumanizeDurationOptions,
+  ) => string;
+  export default humanizeDuration;
+}
+
+declare module 'ethereumjs-abi' {
+  export function rawEncode(types: string[], values: unknown[]): Buffer;
+  export function rawDecode(types: string[], data: Buffer): unknown[];
+}
+
+declare module 'unicode-confusables' {
+  export function confusables(
+    input: string,
+  ): { point: string; similarTo?: string }[];
+  export function isConfusing(input: string): boolean;
+}
+
+declare module '@metamask/ethjs-query' {
+  export default class Eth {
+    constructor(provider: unknown);
+  }
+}
+
+declare module 'human-standard-token-abi' {
+  import { JsonFragment } from '@ethersproject/abi';
+
+  const abi: JsonFragment[];
+  export default abi;
 }
