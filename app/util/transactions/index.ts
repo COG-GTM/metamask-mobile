@@ -1,6 +1,10 @@
-import { addHexPrefix, toChecksumAddress } from 'ethereumjs-util';
+import {
+  addHexPrefix,
+  toChecksumAddress,
+  type BN as EthereumBN,
+} from 'ethereumjs-util';
 import BN from 'bnjs4';
-import type StandardBN from 'bn.js';
+import type BN5 from 'bnjs5';
 import { rawEncode, rawDecode } from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
 import humanizeDuration from 'humanize-duration';
@@ -58,6 +62,8 @@ import {
 import Logger from '../../util/Logger';
 import { handleMethodData } from '../../util/transaction-controller';
 import EthQuery from '@metamask/eth-query';
+
+type StandardBN = BN5 | EthereumBN;
 
 const { SAI_ADDRESS } = AppConstants;
 

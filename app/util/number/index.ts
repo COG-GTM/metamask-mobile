@@ -1,9 +1,9 @@
 /**
  * Collection of utility functions for consistent formatting and conversion
  */
-import { stripHexPrefix } from 'ethereumjs-util';
+import { stripHexPrefix, type BN as EthereumBN } from 'ethereumjs-util';
 import BN4 from 'bnjs4';
-import type BN from 'bn.js';
+import type BN5 from 'bnjs5';
 import { utils as ethersUtils } from 'ethers';
 import convert from '@metamask/ethjs-unit';
 import { add0x, remove0x, type Hex } from '@metamask/utils';
@@ -17,6 +17,7 @@ import { regex } from '../regex';
 const MAX_DECIMALS_FOR_TOKENS = 36;
 BigNumber.config({ DECIMAL_PLACES: MAX_DECIMALS_FOR_TOKENS });
 
+type BN = BN5 | EthereumBN;
 type NumericInput = string | number | BN4 | BN | BigNumber;
 type BNInput = NumericInput | Buffer | number[];
 type NumericBase = 'hex' | 'dec' | 'BN';
