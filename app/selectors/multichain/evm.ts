@@ -158,19 +158,15 @@ export const selectNativeTokensAcrossChainsForAddress = createSelector(
         currencyRates?.[token.nativeCurrency]?.conversionRate ?? 0;
 
       balanceFiat = weiToFiat(
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        hexToBN(nativeTokenInfoByChainId?.balance) as any,
+        hexToBN(nativeTokenInfoByChainId?.balance),
         conversionRate,
         currentCurrency,
-      );
+      ) as unknown as string;
       stakedBalanceFiat = weiToFiat(
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        hexToBN(nativeTokenInfoByChainId?.stakedBalance) as any,
+        hexToBN(nativeTokenInfoByChainId?.stakedBalance),
         conversionRate,
         currentCurrency,
-      );
+      ) as unknown as string;
 
       const tokenByChain = {
         ...nativeTokenInfoByChainId,

@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 /**
  * Collection of utility functions for consistent formatting and conversion
  */
 import { stripHexPrefix } from 'ethereumjs-util';
 import BN4 from 'bnjs4';
+import type BN from 'bn.js';
 import { utils as ethersUtils } from 'ethers';
 import convert from '@metamask/ethjs-unit';
 import { add0x, remove0x } from '@metamask/utils';
@@ -13,8 +16,29 @@ import currencySymbols from '../currency-symbols.json';
 import { isZero } from '../lodash';
 import { regex } from '../regex';
 
+const getCurrencySymbolForCode = (code?: string) =>
+  code ? currencySymbols[code as keyof typeof currencySymbols] : undefined;
+
 const MAX_DECIMALS_FOR_TOKENS = 36;
 BigNumber.config({ DECIMAL_PLACES: MAX_DECIMALS_FOR_TOKENS });
+
+type NumericInput = string | number | BN4 | BN | BigNumber;
+type BNInput = NumericInput | Buffer | number[];
+type NumericBase = 'hex' | 'dec' | 'BN';
+type Denomination = 'WEI' | 'GWEI' | 'ETH';
+
+interface ConversionOptions {
+  fromCurrency?: string | null;
+  toCurrency?: string | null;
+  fromNumericBase?: NumericBase;
+  toNumericBase?: NumericBase;
+  fromDenomination?: Denomination;
+  toDenomination?: Denomination;
+  numberOfDecimals?: number;
+  conversionRate?: number | string | null;
+  invertConversionRate?: boolean;
+  roundDown?: number;
+}
 
 // Big Number Constants
 const BIG_NUMBER_WEI_MULTIPLIER = new BigNumber('1000000000000000000');
@@ -28,7 +52,7 @@ const BIG_NUMBER_ETH_MULTIPLIER = new BigNumber('1');
  * @param inputHex - Number represented as a hex string.
  * @returns A BN instance.
  */
-export const hexToBN = (inputHex) =>
+export const hexToBN = (inputHex: BNInput | undefined) =>
   typeof inputHex !== 'string'
     ? new BN4(inputHex, 16)
     : (inputHex ? new BN4(remove0x(inputHex), 16) : new BN4(0));
@@ -41,33 +65,33 @@ export const hexToBN = (inputHex) =>
  */
 // TODO: Either fix this lint violation or explain why it's necessary to ignore.
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function BNToHex(inputBn) {
+export function BNToHex(inputBn: string | BN4 | BN | BigNumber): string {
   return add0x(inputBn.toString(16));
 }
 
 // Setter Maps
 export const toBigNumber = {
-  hex: (n) => new BigNumber(stripHexPrefix(n), 16),
-  dec: (n) => new BigNumber(String(n), 10),
-  BN: (n) => new BigNumber(n.toString(16), 16),
+  hex: (n: string) => new BigNumber(stripHexPrefix(n), 16),
+  dec: (n: NumericInput) => new BigNumber(String(n), 10),
+  BN: (n: BN4 | BN | BigNumber) => new BigNumber(n.toString(16), 16),
 };
 const toNormalizedDenomination = {
-  WEI: (bigNumber) => bigNumber.div(BIG_NUMBER_WEI_MULTIPLIER),
-  GWEI: (bigNumber) => bigNumber.div(BIG_NUMBER_GWEI_MULTIPLIER),
-  ETH: (bigNumber) => bigNumber.div(BIG_NUMBER_ETH_MULTIPLIER),
+  WEI: (bigNumber: BigNumber) => bigNumber.div(BIG_NUMBER_WEI_MULTIPLIER),
+  GWEI: (bigNumber: BigNumber) => bigNumber.div(BIG_NUMBER_GWEI_MULTIPLIER),
+  ETH: (bigNumber: BigNumber) => bigNumber.div(BIG_NUMBER_ETH_MULTIPLIER),
 };
 const toSpecifiedDenomination = {
-  WEI: (bigNumber) =>
+  WEI: (bigNumber: BigNumber) =>
     bigNumber.times(BIG_NUMBER_WEI_MULTIPLIER).decimalPlaces(0),
-  GWEI: (bigNumber) =>
+  GWEI: (bigNumber: BigNumber) =>
     bigNumber.times(BIG_NUMBER_GWEI_MULTIPLIER).decimalPlaces(9),
-  ETH: (bigNumber) =>
+  ETH: (bigNumber: BigNumber) =>
     bigNumber.times(BIG_NUMBER_ETH_MULTIPLIER).decimalPlaces(9),
 };
 const baseChange = {
-  hex: (n) => n.toString(16),
-  dec: (n) => new BigNumber(n).toString(10),
-  BN: (n) => new BN4(n.toString(16)),
+  hex: (n: BigNumber) => n.toString(16),
+  dec: (n: BigNumber) => new BigNumber(n).toString(10),
+  BN: (n: BigNumber) => new BN4(n.toString(16)),
 };
 
 /**
@@ -76,7 +100,7 @@ const baseChange = {
  * @param {string} str - The string to prefix.
  * @returns {string} The prefixed string.
  */
-export const addHexPrefix = (str) => {
+export const addHexPrefix = (str: string): string => {
   if (typeof str !== 'string' || str.match(regex.hexPrefix)) {
     return str;
   }
@@ -99,7 +123,10 @@ export const addHexPrefix = (str) => {
  * @param {string} unit - Unit to convert to, ether by default
  * @returns {string} - String containing the new number
  */
-export function fromWei(value = 0, unit = 'ether') {
+export function fromWei(
+  value: NumericInput = 0,
+  unit: string = 'ether',
+): string {
   return convert.fromWei(value, unit);
 }
 
@@ -112,8 +139,8 @@ export function fromWei(value = 0, unit = 'ether') {
  * @returns {string} - String containing the new number
  */
 export function fromTokenMinimalUnit(
-  minimalInput,
-  decimals,
+  minimalInput: NumericInput,
+  decimals: number,
   isRounding = true,
 ) {
   minimalInput = isRounding ? Number(minimalInput) : minimalInput;
@@ -145,7 +172,10 @@ export function fromTokenMinimalUnit(
  * @param {number} decimals - Token decimals to convert
  * @returns {string} - String containing the new number
  */
-export function fromTokenMinimalUnitString(minimalInput, decimals) {
+export function fromTokenMinimalUnitString(
+  minimalInput: string,
+  decimals: number,
+) {
   if (typeof minimalInput !== 'string') {
     throw new TypeError('minimalInput must be a string');
   }
@@ -167,7 +197,7 @@ export function fromTokenMinimalUnitString(minimalInput, decimals) {
  * @param {number} decimals - Unit to convert from, ether by default
  * @returns {BN} - BN instance containing the new number
  */
-export function toTokenMinimalUnit(tokenValue, decimals) {
+export function toTokenMinimalUnit(tokenValue: NumericInput, decimals: number) {
   const base = toBN(Math.pow(10, decimals).toString());
   let value = convert.numberToString(tokenValue);
   const negative = value.substring(0, 1) === '-';
@@ -227,9 +257,9 @@ export function toTokenMinimalUnit(tokenValue, decimals) {
  * If value is less than 5 precision decimals will show '< 0.00001'
  */
 export function renderFromTokenMinimalUnit(
-  tokenValue,
-  decimals,
-  decimalsToShow = 5,
+  tokenValue: NumericInput,
+  decimals: number,
+  decimalsToShow: number = 5,
 ) {
   const minimalUnit = fromTokenMinimalUnit(tokenValue || 0, decimals);
   const minimalUnitNumber = parseFloat(minimalUnit);
@@ -256,10 +286,10 @@ export function renderFromTokenMinimalUnit(
  * If value is less than 5 precision decimals will show '< 0.00001'
  */
 export function renderFiatAddition(
-  transferFiat,
-  feeFiat,
-  currentCurrency,
-  decimalsToShow = 5,
+  transferFiat: number,
+  feeFiat: number,
+  currentCurrency: string,
+  decimalsToShow: number = 5,
 ) {
   const addition = transferFiat + feeFiat;
   let renderMinimalUnit;
@@ -269,8 +299,9 @@ export function renderFiatAddition(
     const base = Math.pow(10, decimalsToShow);
     renderMinimalUnit = (Math.round(addition * base) / base).toString();
   }
-  if (currencySymbols[currentCurrency]) {
-    return `${currencySymbols[currentCurrency]}${renderMinimalUnit}`;
+  const currencySymbol = getCurrencySymbolForCode(currentCurrency);
+  if (currencySymbol) {
+    return `${currencySymbol}${renderMinimalUnit}`;
   }
   return `${renderMinimalUnit} ${currentCurrency}`;
 }
@@ -281,7 +312,10 @@ export function renderFiatAddition(
  * @param {number} maxDecimalPlaces
  * @returns {string}
  */
-export function limitToMaximumDecimalPlaces(num, maxDecimalPlaces = 5) {
+export function limitToMaximumDecimalPlaces(
+  num: number,
+  maxDecimalPlaces: number = 5,
+) {
   if (isNaN(num) || isNaN(maxDecimalPlaces)) {
     return num;
   }
@@ -299,12 +333,13 @@ export function limitToMaximumDecimalPlaces(num, maxDecimalPlaces = 5) {
  * @returns {Object} - The converted balance as BN instance
  */
 export function fiatNumberToTokenMinimalUnit(
-  fiat,
-  conversionRate,
-  exchangeRate,
-  decimals,
-) {
-  const floatFiatConverted = parseFloat(fiat) / (conversionRate * exchangeRate);
+  fiat: string | number,
+  conversionRate: number,
+  exchangeRate: number,
+  decimals: number,
+): BN4 {
+  const floatFiatConverted =
+    parseFloat(String(fiat)) / (conversionRate * exchangeRate);
   const base = Math.pow(10, decimals);
   let weiNumber = floatFiatConverted * base;
   // avoid decimals
@@ -321,20 +356,23 @@ export function fiatNumberToTokenMinimalUnit(
  * @returns {String} - Number of token minimal unit, in render format
  * If value is less than 5 precision decimals will show '< 0.00001'
  */
-export function renderFromWei(value, decimalsToShow = 5) {
-  let renderWei = '0';
+export function renderFromWei(
+  value: NumericInput,
+  decimalsToShow: number = 5,
+) {
+  let renderedWei = '0';
   // avoid undefined
   if (value) {
     const wei = fromWei(value);
     const weiNumber = parseFloat(wei);
     if (weiNumber < 0.00001 && weiNumber > 0) {
-      renderWei = '< 0.00001';
+      renderedWei = '< 0.00001';
     } else {
       const base = Math.pow(10, decimalsToShow);
-      renderWei = (Math.round(weiNumber * base) / base).toString();
+      renderedWei = (Math.round(weiNumber * base) / base).toString();
     }
   }
-  return renderWei;
+  return renderedWei;
 }
 
 /**
@@ -344,7 +382,7 @@ export function renderFromWei(value, decimalsToShow = 5) {
  * @param {number} decimals - Decimals to be considered on the conversion
  * @returns {string} - String of the hex token value
  */
-export function calcTokenValueToSend(value, decimals) {
+export function calcTokenValueToSend(value: NumericInput, decimals: number) {
   return value ? (value * Math.pow(10, decimals)).toString(16) : 0;
 }
 
@@ -354,7 +392,7 @@ export function calcTokenValueToSend(value, decimals) {
  * @param {object|string} value - Value to check
  * @returns {boolean} - True if the value is a BN instance
  */
-export function isBN(value) {
+export function isBN(value: unknown): value is BN4 {
   return BN4.isBN(value);
 }
 
@@ -364,7 +402,7 @@ export function isBN(value) {
  * @param {number | string} value - String to check
  * @returns {boolean} - True if the string is a valid decimal
  */
-export function isDecimal(value) {
+export function isDecimal(value: number | string) {
   return (
     Number.isFinite(parseFloat(value)) &&
     !Number.isNaN(parseFloat(value)) &&
@@ -378,7 +416,7 @@ export function isDecimal(value) {
  * @param {string} value - Some numeric value represented as a string
  * @returns {Object} - BN instance
  */
-export function toBN(value) {
+export function toBN(value: string | number) {
   return new BN4(value);
 }
 
@@ -388,8 +426,8 @@ export function toBN(value) {
  * @param {*} str - Number string
  * @returns {boolean} - True if the string  is a valid number
  */
-export function isNumber(str) {
-  return regex.number.test(str);
+export function isNumber(str?: string | null) {
+  return typeof str === 'string' && regex.number.test(str);
 }
 
 /**
@@ -398,7 +436,7 @@ export function isNumber(str) {
  * @param {number | string | null | undefined} value - Value to check
  * @returns {boolean} - True if the value is a valid number
  */
-export function isNumberValue(value) {
+export function isNumberValue(value: NumericInput | null | undefined) {
   if (value === null || value === undefined) { return false; }
 
   if (typeof value === 'number') {
@@ -408,7 +446,7 @@ export function isNumberValue(value) {
   return isDecimal(value);
 }
 
-export const dotAndCommaDecimalFormatter = (value) => {
+export const dotAndCommaDecimalFormatter = (value: NumericInput) => {
   const valueStr = String(value);
 
   const formattedValue = valueStr.replace(',', '.');
@@ -425,7 +463,9 @@ export const dotAndCommaDecimalFormatter = (value) => {
  * @see https://262.ecma-international.org/5.1/#sec-9.8.1
  */
 
-export const isNumberScientificNotationWhenString = (value) => {
+export const isNumberScientificNotationWhenString = (
+  value: NumericInput,
+) => {
   if (typeof value !== 'number') {
     return false;
   }
@@ -440,11 +480,11 @@ export const isNumberScientificNotationWhenString = (value) => {
  * @param {string} unit - Unit to convert from, ether by default
  * @returns {BN4} - BN instance containing the new number
  */
-export function toWei(value, unit = 'ether') {
+export function toWei(value: NumericInput, unit: string = 'ether'): BN4 {
   // check the posibilty to convert to BN
   // directly on the swaps screen
   if (isNumberScientificNotationWhenString(value)) {
-    value = value.toFixed(18);
+    value = Number(value).toFixed(18);
   }
   return convert.toWei(value, unit);
 }
@@ -456,8 +496,8 @@ export function toWei(value, unit = 'ether') {
  * @param {string} unit - Unit to convert from, ether by default
  * @returns {Object} - BN instance containing the new number
  */
-export function toGwei(value, unit = 'ether') {
-  return fromWei(value, unit) * 1000000000;
+export function toGwei(value: NumericInput, unit: string = 'ether'): number {
+  return Number(fromWei(value, unit)) * 1000000000;
 }
 
 /**
@@ -467,9 +507,9 @@ export function toGwei(value, unit = 'ether') {
  * @param {string} unit - Unit to convert from, ether by default
  * @returns {string} - String instance containing the renderable number
  */
-export function renderToGwei(value, unit = 'ether') {
-  const gwei = fromWei(value, unit) * 1000000000;
-  let gweiFixed = parseFloat(Math.round(gwei));
+export function renderToGwei(value: NumericInput, unit: string = 'ether') {
+  const gwei = Number(fromWei(value, unit)) * 1000000000;
+  let gweiFixed = Math.round(gwei);
   gweiFixed = isNaN(gweiFixed) ? 0 : gweiFixed;
   return gweiFixed;
 }
@@ -484,10 +524,11 @@ export function renderToGwei(value, unit = 'ether') {
  * @returns {string} - Currency-formatted string
  */
 export function weiToFiat(
-  wei,
-  conversionRate = null,
-  currencyCode,
-  decimalsToShow = 5,
+  wei: NumericInput,
+  // eslint-disable-next-line @typescript-eslint/default-param-last
+  conversionRate: number | null = null,
+  currencyCode: string,
+  decimalsToShow: number = 5,
 ) {
   if (!conversionRate) return undefined;
   if (!wei || !isBN(wei) || !conversionRate) {
@@ -506,32 +547,36 @@ export function weiToFiat(
  * @returns {string} - Currency-formatted string
  */
 export function addCurrencySymbol(
-  amount,
-  currencyCode,
-  extendDecimals = false,
+  amount: string | number,
+  currencyCode: string,
+  extendDecimals: boolean = false,
 ) {
-  const prefix = parseFloat(amount) < 0 ? '-' : '';
+  const numericAmount = Number(amount);
+  const prefix = numericAmount < 0 ? '-' : '';
   if (extendDecimals) {
     if (isNumberScientificNotationWhenString(amount)) {
-      amount = amount.toFixed(18);
+      amount = numericAmount.toFixed(18);
     }
 
     // if bigger than 0.01, show 2 decimals
-    if (amount >= 0.01 || amount <= -0.01) {
-      amount = parseFloat(amount).toFixed(2);
+    if (numericAmount >= 0.01 || numericAmount <= -0.01) {
+      amount = numericAmount.toFixed(2);
     }
 
     // if less than 0.01, show all the decimals that are zero except the trailing zeros, and 3 decimals for the rest that are not zero
-    if ((amount < 0.01 && amount > 0) || (amount > -0.01 && amount < 0)) {
+    if (
+      (numericAmount < 0.01 && numericAmount > 0) ||
+      (numericAmount > -0.01 && numericAmount < 0)
+    ) {
       const decimalString = amount.toString().split('.')[1];
       if (decimalString && decimalString.length > 1) {
         const firstNonZeroDecimal = decimalString.indexOf(
           decimalString.match(regex.decimalString)[0],
         );
         if (firstNonZeroDecimal > 0) {
-          amount = parseFloat(amount).toFixed(firstNonZeroDecimal + 3);
+          amount = numericAmount.toFixed(firstNonZeroDecimal + 3);
           // remove trailing zeros
-          amount = amount.replace(regex.trailingZero, '');
+          amount = String(amount).replace(regex.trailingZero, '');
         }
       }
     }
@@ -546,14 +591,18 @@ export function addCurrencySymbol(
     ? amountString.slice(1) // Remove the first character if it's a '-'
     : amountString;
 
-  if (currencySymbols[currencyCode]) {
-    return `${prefix}${currencySymbols[currencyCode]}${absAmountStr}`;
+  const currencySymbol = getCurrencySymbolForCode(currencyCode);
+  if (currencySymbol) {
+    return `${prefix}${currencySymbol}${absAmountStr}`;
   }
 
   const lowercaseCurrencyCode = currencyCode?.toLowerCase();
 
-  if (currencySymbols[lowercaseCurrencyCode]) {
-    return `${prefix}${currencySymbols[lowercaseCurrencyCode]}${absAmountStr}`;
+  const lowercaseCurrencySymbol = getCurrencySymbolForCode(
+    lowercaseCurrencyCode,
+  );
+  if (lowercaseCurrencySymbol) {
+    return `${prefix}${lowercaseCurrencySymbol}${absAmountStr}`;
   }
 
   return `${prefix}${absAmountStr} ${currencyCode}`;
@@ -567,7 +616,11 @@ export function addCurrencySymbol(
  * @param {Number} decimalsToShow - Decimals to 5
  * @returns {Number} - The converted balance
  */
-export function weiToFiatNumber(wei, conversionRate, decimalsToShow = 5) {
+export function weiToFiatNumber(
+  wei: NumericInput,
+  conversionRate: number,
+  decimalsToShow: number = 5,
+) {
   const base = Math.pow(10, decimalsToShow);
   const eth = fromWei(wei).toString();
   let value = parseFloat(Math.floor(eth * conversionRate * base) / base);
@@ -581,7 +634,7 @@ export function weiToFiatNumber(wei, conversionRate, decimalsToShow = 5) {
  * @param {string} wei - Amount in decimal notation
  * @returns {string} - Number string with less or equal 18 decimals
  */
-export function handleWeiNumber(wei) {
+export function handleWeiNumber(wei: string) {
   const comps = wei.split('.');
   let fraction = comps[1];
   if (fraction && fraction.length > 18) fraction = fraction.substring(0, 18);
@@ -596,8 +649,11 @@ export function handleWeiNumber(wei) {
  * @param {number} conversionRate - ETH to current currency conversion rate
  * @returns {Object} - The converted balance as BN instance
  */
-export function fiatNumberToWei(fiat, conversionRate) {
-  const floatFiatConverted = parseFloat(fiat) / conversionRate;
+export function fiatNumberToWei(
+  fiat: string | number,
+  conversionRate: number,
+): BN4 | string {
+  const floatFiatConverted = parseFloat(String(fiat)) / conversionRate;
   if (
     !floatFiatConverted ||
     isNaN(floatFiatConverted) ||
@@ -619,7 +675,7 @@ export function fiatNumberToWei(fiat, conversionRate) {
  * @param {number|string} value -  number
  * @returns {Object} - The converted value as BN instance
  */
-export function safeNumberToBN(value) {
+export function safeNumberToBN(value: NumericInput | null | undefined) {
   try {
     const safeValue = fastSplit(value?.toString()) || '0';
     return numberToBN(safeValue);
@@ -636,7 +692,8 @@ export function safeNumberToBN(value) {
  * @returns {string} - the selected splitted element
  */
 
-export function fastSplit(value, divider = '.') {
+export function fastSplit(value: string | undefined, divider: string = '.') {
+  if (value === undefined) return value;
   const [from, to] = [value.indexOf(divider), 0];
   return value.substring(from, to) || value;
 }
@@ -651,10 +708,10 @@ export function fastSplit(value, divider = '.') {
  * @returns {string} - Currency-formatted string
  */
 export function balanceToFiat(
-  balance,
-  conversionRate,
-  exchangeRate,
-  currencyCode,
+  balance: string | number,
+  conversionRate: number | null | undefined,
+  exchangeRate: number | undefined,
+  currencyCode: string,
 ) {
   if (
     balance === undefined ||
@@ -679,10 +736,10 @@ export function balanceToFiat(
  * @returns {Number} - The converted balance
  */
 export function balanceToFiatNumber(
-  balance,
-  conversionRate,
-  exchangeRate,
-  decimalsToShow = 5,
+  balance: string | number,
+  conversionRate: number,
+  exchangeRate: number,
+  decimalsToShow: number = 5,
 ) {
   const base = Math.pow(10, decimalsToShow);
   let fiatFixed = parseFloat(
@@ -692,9 +749,10 @@ export function balanceToFiatNumber(
   return fiatFixed;
 }
 
-export function getCurrencySymbol(currencyCode) {
-  if (currencySymbols[currencyCode]) {
-    return `${currencySymbols[currencyCode]}`;
+export function getCurrencySymbol(currencyCode: string) {
+  const symbol = currencySymbols[currencyCode as keyof typeof currencySymbols];
+  if (symbol) {
+    return `${symbol}`;
   }
   return currencyCode;
 }
@@ -707,12 +765,17 @@ export function getCurrencySymbol(currencyCode) {
  * @param {number} decimalsToShow - Decimals to 5
  * @returns {string} - The converted balance
  */
-export function renderFiat(value, currencyCode, decimalsToShow = 5) {
+export function renderFiat(
+  value: number,
+  currencyCode: string,
+  decimalsToShow: number = 5,
+) {
   const base = Math.pow(10, decimalsToShow);
   let fiatFixed = parseFloat(Math.round(value * base) / base);
   fiatFixed = isNaN(fiatFixed) ? 0.0 : fiatFixed;
-  if (currencySymbols[currencyCode]) {
-    return `${currencySymbols[currencyCode]}${fiatFixed}`;
+  const currencySymbol = getCurrencySymbolForCode(currencyCode);
+  if (currencySymbol) {
+    return `${currencySymbol}${fiatFixed}`;
   }
   return `${fiatFixed} ${currencyCode.toUpperCase()}`;
 }
@@ -723,11 +786,11 @@ export function renderFiat(value, currencyCode, decimalsToShow = 5) {
  * @param {object} value - Object containing wei value in BN format
  * @returns {string} - Corresponding wei value
  */
-export function renderWei(value) {
+export function renderWei(value: NumericInput) {
   if (!value) return '0';
   const wei = fromWei(value);
-  const renderWei = wei * Math.pow(10, 18);
-  return renderWei.toString();
+  const renderedWei = wei * Math.pow(10, 18);
+  return renderedWei.toString();
 }
 /**
  * Format a string number in an string number with at most 5 decimal places
@@ -735,7 +798,7 @@ export function renderWei(value) {
  * @param {string} number - String containing a number
  * @returns {string} - String number with none or at most 5 decimal places
  */
-export function renderNumber(number) {
+export function renderNumber(number: string) {
   const index = number.indexOf('.');
   if (index === 0) return number;
   return number.substring(0, index + 6);
@@ -768,7 +831,7 @@ const converter = ({
   conversionRate,
   invertConversionRate,
   roundDown,
-}) => {
+}: ConversionOptions & { value: NumericInput }) => {
   let convertedValue = fromNumericBase
     ? toBigNumber[fromNumericBase](value)
     : value;
@@ -815,7 +878,7 @@ const converter = ({
 };
 
 export const conversionUtil = (
-  value,
+  value: NumericInput,
   {
     fromCurrency = null,
     toCurrency = fromCurrency,
@@ -826,7 +889,7 @@ export const conversionUtil = (
     numberOfDecimals,
     conversionRate,
     invertConversionRate,
-  },
+  }: ConversionOptions,
 ) =>
   converter({
     fromCurrency,
@@ -841,8 +904,8 @@ export const conversionUtil = (
     value: value || '0',
   });
 
-export const toHexadecimal = (decimal) => {
-  if (!decimal) return decimal;
+export const toHexadecimal = (decimal?: NumericInput): `0x${string}` => {
+  if (!decimal) return decimal as unknown as `0x${string}`;
   if (decimal !== typeof 'string') {
     decimal = String(decimal);
   }
@@ -853,6 +916,9 @@ export const toHexadecimal = (decimal) => {
 export const calculateEthFeeForMultiLayer = ({
   multiLayerL1FeeTotal,
   ethFee = 0,
+}: {
+  multiLayerL1FeeTotal?: NumericInput;
+  ethFee?: NumericInput;
 }) => {
   if (!multiLayerL1FeeTotal) {
     return ethFee;
@@ -873,28 +939,33 @@ export const calculateEthFeeForMultiLayer = ({
  * @param {number|string|object} value - Value to check
  * @returns {boolean} - true if value is zero
  */
-export const isZeroValue = (value) => {
+export const isZeroValue = (value: NumericInput | null | undefined) => {
   if (value === null || value === undefined) {
     return false;
   }
   return value === '0x0' || (isBN(value) && value.isZero()) || isZero(value);
 };
 
-export const formatValueToMatchTokenDecimals = (value, decimal) => {
+export const formatValueToMatchTokenDecimals = (
+  value: string | null | undefined,
+  decimal: number | null | undefined | string,
+) => {
   if (value === null || value === undefined) {
     return value;
   }
   const decimalIndex = value.indexOf('.');
   if (decimalIndex !== -1) {
     const fractionalLength = value.substring(decimalIndex + 1).length;
-    if (fractionalLength > decimal) {
+    if (typeof decimal === 'number' && fractionalLength > decimal) {
       value = parseFloat(value).toFixed(decimal);
     }
   }
   return value;
 };
 
-export const safeBNToHex = (value) => {
+export const safeBNToHex = (
+  value: string | BN4 | BN | BigNumber | null | undefined,
+) => {
   if (value === null || value === undefined) {
     return value;
   }
@@ -910,28 +981,32 @@ export const safeBNToHex = (value) => {
  * @param number - The number to format.
  * @returns A localized string of the formatted number + unit.
  */
-export const localizeLargeNumber = (i18n, number) => {
+export const localizeLargeNumber = (
+  i18n: { t: unknown },
+  number: number,
+) => {
+  const translate = i18n.t as (key: string) => string;
   const oneTrillion = 1000000000000;
   const oneBillion = 1000000000;
   const oneMillion = 1000000;
 
   if (number >= oneTrillion) {
-    return `${(number / oneTrillion).toFixed(2)}${i18n.t(
+    return `${(number / oneTrillion).toFixed(2)}${translate(
       'token.trillion_abbreviation',
     )}`;
   } else if (number >= oneBillion) {
-    return `${(number / oneBillion).toFixed(2)}${i18n.t(
+    return `${(number / oneBillion).toFixed(2)}${translate(
       'token.billion_abbreviation',
     )}`;
   } else if (number >= oneMillion) {
-    return `${(number / oneMillion).toFixed(2)}${i18n.t(
+    return `${(number / oneMillion).toFixed(2)}${translate(
       'token.million_abbreviation',
     )}`;
   }
   return number.toFixed(2);
 };
 
-export const convertDecimalToPercentage = (decimal) => {
+export const convertDecimalToPercentage = (decimal: number) => {
   if (typeof decimal !== 'number' || isNaN(decimal)) {
     throw new Error('Input must be a valid number');
   }

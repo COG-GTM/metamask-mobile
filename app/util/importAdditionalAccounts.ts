@@ -24,7 +24,7 @@ const getBalance = async (address: string, ethQuery: EthQuery): Promise<Hex> =>
         Logger.error(error);
       } else {
         const balanceHex = BNToHex(balance);
-        resolve(balanceHex || ZERO_BALANCE);
+        resolve((balanceHex || ZERO_BALANCE) as Hex);
       }
     });
   });
