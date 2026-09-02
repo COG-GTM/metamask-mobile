@@ -4,7 +4,6 @@ import { SafeAreaView, Image, View, StyleSheet } from 'react-native';
 import Text from '../../Base/Text';
 import NetInfo from '@react-native-community/netinfo';
 import { baseStyles, fontStyles } from '../../../styles/common';
-import PropTypes from 'prop-types';
 import { strings } from '../../../../locales/i18n';
 import StyledButton from '../../UI/StyledButton';
 import { getOfflineModalNavbar } from '../../UI/Navbar';
@@ -12,10 +11,26 @@ import AndroidBackHandler from '../AndroidBackHandler';
 import Device from '../../../util/device';
 import AppConstants from '../../../core/AppConstants';
 import { connect } from 'react-redux';
+import astronautImage from '../../../images/astronaut.png';
 import { getInfuraBlockedSelector } from '../../../reducers/infuraAvailability';
 import { useTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
+import { ParamListBase } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-const createStyles = (colors) =>
+interface OfflineModeProps {
+  /**
+   * Object that represents the navigator
+   */
+  navigation?: StackNavigationProp<ParamListBase>;
+  /**
+   * Whether infura was blocked or not
+   */
+  infuraBlocked?: boolean;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -49,22 +64,21 @@ const createStyles = (colors) =>
     },
   });
 
-const astronautImage = require('../../../images/astronaut.png'); // eslint-disable-line import/no-commonjs
-
-const OfflineMode = ({ navigation, infuraBlocked }) => {
+const OfflineMode = ({ navigation, infuraBlocked }: OfflineModeProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
+  // eslint-disable-next-line import/no-named-as-default-member
   const netinfo = NetInfo.useNetInfo();
 
   const tryAgain = () => {
     if (netinfo?.isConnected) {
-      navigation.pop();
+      navigation?.pop();
     }
   };
 
   const learnMore = () => {
-    navigation.navigate('Webview', {
+    navigation?.navigate('Webview', {
       screen: 'SimpleWebview',
       params: { url: AppConstants.URLS.CONNECTIVITY_ISSUES },
     });
@@ -103,21 +117,9 @@ const OfflineMode = ({ navigation, infuraBlocked }) => {
   );
 };
 
-OfflineMode.navigationOptions = ({ navigation }) =>
-  getOfflineModalNavbar(navigation);
+OfflineMode.navigationOptions = () => getOfflineModalNavbar();
 
-OfflineMode.propTypes = {
-  /**
-   * Object that represents the navigator
-   */
-  navigation: PropTypes.object,
-  /**
-   * Whether infura was blocked or not
-   */
-  infuraBlocked: PropTypes.bool,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   infuraBlocked: getInfuraBlockedSelector(state),
 });
 
