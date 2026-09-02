@@ -32,7 +32,7 @@ const createStoreAndPersistor = async () => {
   });
   // Obtain the initial state from ReadOnlyNetworkStore for E2E tests.
   const initialState = isE2E
-    ? ((await ReadOnlyNetworkStore.getState()) as RootState | undefined)
+    ? ((await ReadOnlyNetworkStore.getState()) as unknown as never)
     : undefined;
 
   const sagaMiddleware = createSagaMiddleware();
@@ -52,15 +52,7 @@ const createStoreAndPersistor = async () => {
     middlewares.push(createReduxFlipperDebugger());
   }*/
 
-  interface StoreOptions {
-    reducer: typeof pReducer;
-    middleware: typeof middlewares;
-    preloadedState?: RootState;
-  }
-  const configureTypedStore = configureStore as (
-    options: StoreOptions,
-  ) => ReduxStore;
-  store = configureTypedStore({
+  store = configureStore({
     reducer: pReducer,
     middleware: middlewares,
     preloadedState: initialState,
