@@ -13,6 +13,19 @@ declare module 'react-native-minimizer';
 declare module 'react-native-tcp-socket';
 
 declare module 'xhr2';
+
+// The published package points `types` at a file it does not ship, so the
+// declarations below mirror its `index.ts.d`.
+declare module 'unicode-confusables' {
+  export interface ConfusablePoint {
+    point: string;
+    similarTo?: string;
+  }
+  export function isConfusing(input: string): boolean;
+  export function confusables(input: string): ConfusablePoint[];
+  export function rectifyConfusion(input: string): string;
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

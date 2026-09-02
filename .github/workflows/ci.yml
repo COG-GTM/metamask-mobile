@@ -155,6 +155,23 @@ jobs:
             echo "No changes detected"
           fi
 
+  js-ts-migration-progress:
+    runs-on: ubuntu-latest
+    # Advisory only: reports new .js/.jsx files under app/ and migration
+    # progress. The blocking check is the fitness-functions workflow.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+      - name: Check for new JavaScript files under app/
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref || github.ref_name }}
+        run: node scripts/js-ts-migration/check-js-additions.js
+
   js-bundle-size-check:
     runs-on: ubuntu-latest
     steps:
