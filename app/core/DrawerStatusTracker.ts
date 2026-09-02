@@ -21,14 +21,21 @@ class DrawerStatusTracker {
 
 let instance: DrawerStatusTracker | null = null;
 
+const getInstance = (): DrawerStatusTracker => {
+  if (!instance) {
+    throw new Error('DrawerStatusTracker not initialized');
+  }
+  return instance;
+};
+
 const SharedDrawerStatusTracker = {
   init: () => {
     instance = new DrawerStatusTracker();
   },
   setStatus: (status: DrawerStatus) => {
-    instance?.setStatus(status);
+    getInstance().setStatus(status);
   },
-  getStatus: (): DrawerStatus => (instance?.open ? 'open' : 'closed'),
+  getStatus: (): DrawerStatus => (getInstance().open ? 'open' : 'closed'),
   hub,
 };
 
