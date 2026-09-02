@@ -1,0 +1,101 @@
+import React, { memo } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { strings } from '../../../../locales/i18n';
+import StyledButton from '../StyledButton'; // eslint-disable-line  import/no-unresolved
+import AssetIcon from '../AssetIcon';
+import { fontStyles } from '../../../styles/common';
+import Text from '../../Base/Text';
+
+const styles = StyleSheet.create({
+  rowWrapper: {
+    padding: 20,
+  },
+  item: {
+    marginBottom: 5,
+    borderWidth: 2,
+  },
+  assetListElement: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  text: {
+    padding: 16,
+  },
+  normalText: {
+    ...fontStyles.normal,
+  },
+});
+
+interface SearchAsset {
+  symbol: string;
+  name: string;
+  address: string;
+  iconUrl: string;
+}
+
+interface SelectedAsset {
+  address: string;
+  symbol?: string;
+  decimals?: number;
+}
+
+interface Props {
+  /**
+   * Array of assets objects returned from the search
+   */
+  searchResults: SearchAsset[];
+  /**
+   * Callback triggered when a token is selected
+   */
+  handleSelectAsset: (asset: SearchAsset) => void;
+  /**
+   * Object of the currently-selected token
+   */
+  selectedAsset?: SelectedAsset | null;
+  /**
+   * Search query that generated "searchResults"
+   */
+  searchQuery: string;
+}
+
+/**
+ * Component that provides ability to search assets.
+ */
+const AssetList = ({
+  searchResults = [],
+  handleSelectAsset,
+  selectedAsset,
+  searchQuery,
+}: Props) => (
+  <View style={styles.rowWrapper}>
+    {searchResults.length > 0 ? (
+      <Text style={styles.normalText}>{strings('token.select_token')}</Text>
+    ) : null}
+    {searchResults.length === 0 && searchQuery.length ? (
+      <Text style={styles.normalText}>{strings('token.no_tokens_found')}</Text>
+    ) : null}
+    {searchResults.slice(0, 6).map((_, i) => {
+      const { symbol, name, address, iconUrl } = searchResults[i] || {};
+      const isSelected = selectedAsset && selectedAsset.address === address;
+
+      return (
+        <StyledButton
+          type={isSelected ? 'normal' : 'transparent'}
+          containerStyle={styles.item}
+          onPress={() => handleSelectAsset(searchResults[i])} // eslint-disable-line
+          key={i}
+        >
+          <View style={styles.assetListElement}>
+            <AssetIcon address={address} logo={iconUrl} />
+            <Text style={styles.text}>
+              {name} ({symbol})
+            </Text>
+          </View>
+        </StyledButton>
+      );
+    })}
+  </View>
+);
+
+export default memo(AssetList);
