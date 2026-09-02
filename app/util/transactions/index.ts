@@ -1855,7 +1855,7 @@ export function getTokenAddressParam(tokenData: TokenData = {}) {
 export function getTokenValueParamAsHex(tokenData: TokenData = {}) {
   const value =
     tokenData?.args?._value?._hex ||
-    (tokenData?.args?.[1] as TokenArgument)._hex;
+    (tokenData?.args?.[1] as TokenArgument | undefined)?._hex;
   return value?.toLowerCase();
 }
 
