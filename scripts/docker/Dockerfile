@@ -11,11 +11,11 @@ RUN apt-get update \
 
 ENV YARN_VERSION 1.22.22
 # replace base image yarn 1.19
-# checksums and sigs for 1.22 not available as of now...
+# tarball is verified against the committed sha256 checksum below
 # https://github.com/nodejs/docker-node/blob/07bd7414c9eeb7a134951122e1105e8c849f770e/Dockerfile-debian.template
 COPY scripts/docker/yarn-v$YARN_VERSION.tar.gz.sha256 .
 RUN curl -fsSLO --compressed "https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz" \
-  && sha256sum yarn-v$YARN_VERSION.tar.gz.sha256 \
+  && sha256sum -c yarn-v$YARN_VERSION.tar.gz.sha256 \
   && tar -xzf yarn-v$YARN_VERSION.tar.gz -C /opt/ \
   && ln -sf /opt/yarn-v$YARN_VERSION/bin/yarn /usr/local/bin/yarn \
   && ln -sf /opt/yarn-v$YARN_VERSION/bin/yarnpkg /usr/local/bin/yarnpkg \
