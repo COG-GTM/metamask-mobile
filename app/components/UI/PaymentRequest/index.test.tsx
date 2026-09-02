@@ -116,6 +116,10 @@ const mockNavigation = {
   setParams: jest.fn(),
   navigate: jest.fn(),
   goBack: jest.fn(),
+  replace: jest.fn(),
+  push: jest.fn(),
+  pop: jest.fn(),
+  dangerouslyGetParent: jest.fn(),
 };
 
 const mockRoute = {

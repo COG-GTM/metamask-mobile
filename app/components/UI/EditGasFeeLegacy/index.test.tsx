@@ -3,10 +3,15 @@ import React from 'react';
 
 import EditGasFeeLegacy from './';
 
+/** The screen requires callback props that this shallow render does not need. */
+const EditGasFeeLegacyComponent = EditGasFeeLegacy as unknown as React.FC<
+  Partial<React.ComponentProps<typeof EditGasFeeLegacy>>
+>;
+
 describe('EditGasFeeLegacy', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
-      <EditGasFeeLegacy
+      <EditGasFeeLegacyComponent
         gasFee={{
           maxWaitTimeEstimate: 150000,
           minWaitTimeEstimate: 0,
