@@ -102,3 +102,4 @@ function setupGlobalErrorHandler() {
 }
 
 setupGlobalErrorHandler();
+
