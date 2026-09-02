@@ -5,6 +5,7 @@ import { ModalFieldType } from '../../../../../util/notifications';
 import { processNotification } from '@metamask/notification-services-controller/notification-services';
 import { createMockNotificationEthReceived } from '@metamask/notification-services-controller/notification-services/mocks';
 import NetworkFeeFieldSkeleton from './Skeletons/NetworkFeeField';
+import { ModalFieldNetworkFee } from '../../../../../util/notifications/notification-states/types/NotificationModalDetails';
 import { useMetrics } from '../../../../hooks/useMetrics';
 
 jest.mock('../../../../../util/notifications/methods/common', () => ({
@@ -66,7 +67,7 @@ describe('NetworkFeeField', () => {
             transactionFeeInEth: '0',
             transactionFeeInUsd: '0',
             chainId: '0x1',
-          })
+          } as unknown as Awaited<ReturnType<ModalFieldNetworkFee['getNetworkFees']>>)
         }
         notification={MOCK_NOTIFICATION}
       />,
@@ -100,7 +101,7 @@ describe('NetworkFeeField', () => {
             transactionFeeInEth: '0',
             transactionFeeInUsd: '0',
             chainId: '0x1',
-          })
+          } as unknown as Awaited<ReturnType<ModalFieldNetworkFee['getNetworkFees']>>)
         }
         notification={MOCK_NOTIFICATION}
       />,
