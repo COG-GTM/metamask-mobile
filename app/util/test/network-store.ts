@@ -52,22 +52,25 @@ class ReadOnlyNetworkStore {
   // Async Storage
   async getString(key: string): Promise<string | null> {
     await this._initIfRequired();
-    const value = this._asyncState?.[key];
+    const value = this._getAsyncState()[key];
     return value !== undefined ? value : null;
   }
 
   async set(key: string, value: string): Promise<void> {
     await this._initIfRequired();
-    if (this._asyncState) {
-      this._asyncState[key] = value;
-    }
+    this._getAsyncState()[key] = value;
   }
 
   async delete(key: string): Promise<void> {
     await this._initIfRequired();
-    if (this._asyncState) {
-      delete this._asyncState[key];
+    delete this._getAsyncState()[key];
+  }
+
+  private _getAsyncState(): Record<string, string> {
+    if (!this._asyncState) {
+      throw new Error('MetaMask - async state is missing');
     }
+    return this._asyncState;
   }
 
   async clearAll(): Promise<void> {
