@@ -247,10 +247,9 @@ const EditGasFee1559 = ({
     'gas_limit' | 'max_priority_fee' | 'max_fee' | 'new_gas_fee' | false | null
   >(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(!selected);
-  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<string | null>(
-    null,
-  );
-  const [maxFeeError, setMaxFeeError] = useState<string | null>(null);
+  const [maxPriorityFeeError, setMaxPriorityFeeError] =
+    useState<string | undefined>();
+  const [maxFeeError, setMaxFeeError] = useState<string | undefined>();
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | undefined>(
     selected,
@@ -315,7 +314,7 @@ const EditGasFee1559 = ({
     onChange(gas, selectedOptionValue);
   };
 
-  const changedMaxPriorityFee = (value: string) => {
+  const changedMaxPriorityFee = (value: string | undefined) => {
     const lowerValue = new BigNumber(
       gasOptions?.[warningMinimumEstimateOption]
         ?.suggestedMaxPriorityFeePerGas as string,
@@ -327,7 +326,7 @@ const EditGasFee1559 = ({
       updateOption?.maxPriortyFeeThreshold as string,
     );
 
-    const valueBN = new BigNumber(value);
+    const valueBN = new BigNumber(value ?? NaN);
 
     if (updateFloor && !updateFloor.isNaN() && valueBN.lt(updateFloor)) {
       setMaxPriorityFeeError(
@@ -356,7 +355,7 @@ const EditGasFee1559 = ({
     changeGas(newGas, null);
   };
 
-  const changedMaxFeePerGas = (value: string) => {
+  const changedMaxFeePerGas = (value: string | undefined) => {
     const lowerValue = new BigNumber(
       gasOptions?.[warningMinimumEstimateOption]
         ?.suggestedMaxFeePerGas as string,
@@ -366,7 +365,7 @@ const EditGasFee1559 = ({
     ).multipliedBy(new BigNumber(1.5));
     const updateFloor = new BigNumber(updateOption?.maxFeeThreshold as string);
 
-    const valueBN = new BigNumber(value);
+    const valueBN = new BigNumber(value ?? NaN);
 
     if (updateFloor && !updateFloor.isNaN() && valueBN.lt(updateFloor)) {
       setMaxFeeError(
@@ -390,7 +389,7 @@ const EditGasFee1559 = ({
     changeGas(newGas, null);
   };
 
-  const changedGasLimit = (value: string) => {
+  const changedGasLimit = (value: string | undefined) => {
     const newGas = { ...gasFee, suggestedGasLimit: value };
     changeGas(newGas, null);
   };

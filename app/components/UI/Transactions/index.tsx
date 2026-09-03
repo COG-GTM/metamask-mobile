@@ -83,6 +83,7 @@ import {
   speedUpTransaction,
   updateIncomingTransactions,
 } from '../../../util/transaction-controller';
+import type { GasTransactionProps } from '../../../core/GasPolling/types';
 import { selectGasFeeEstimates } from '../../../selectors/confirmTransaction';
 import { decGWEIToHexWEI } from '../../../util/conversions';
 import { ActivitiesViewSelectorsIDs } from '../../../../e2e/selectors/Transactions/ActivitiesView.selectors';
@@ -293,7 +294,12 @@ class Transactions extends PureComponent<Props, State> {
     let blockExplorer;
     if (type === RPC) {
       blockExplorer =
-        findBlockExplorerForRpc(rpcUrl, networkConfigurations) ||
+        findBlockExplorerForRpc(
+          rpcUrl as string,
+          networkConfigurations as unknown as Parameters<
+            typeof findBlockExplorerForRpc
+          >[1],
+        ) ||
         NO_RPC_BLOCK_EXPLORER;
     } else if (isNonEvmChainId(chainId)) {
       // TODO: [SOLANA] - block explorer needs to be implemented
@@ -507,9 +513,13 @@ class Transactions extends PureComponent<Props, State> {
       this.setState({ speedUp1559IsOpen: speedUpAction });
     } else {
       const speedUpConfirmDisabled = validateTransactionActionBalance(
-        tx as Transaction,
+        tx as unknown as Parameters<
+          typeof validateTransactionActionBalance
+        >[0],
         SPEED_UP_RATE as unknown as string,
-        this.props.accounts,
+        this.props.accounts as unknown as Parameters<
+          typeof validateTransactionActionBalance
+        >[2],
       ) as unknown as boolean;
       this.setState({ speedUpIsOpen: speedUpAction, speedUpConfirmDisabled });
     }
@@ -535,9 +545,13 @@ class Transactions extends PureComponent<Props, State> {
       this.setState({ cancel1559IsOpen: cancelAction });
     } else {
       const cancelConfirmDisabled = validateTransactionActionBalance(
-        tx as Transaction,
+        tx as unknown as Parameters<
+          typeof validateTransactionActionBalance
+        >[0],
         CANCEL_RATE as unknown as string,
-        this.props.accounts,
+        this.props.accounts as unknown as Parameters<
+          typeof validateTransactionActionBalance
+        >[2],
       ) as unknown as boolean;
       this.setState({ cancelIsOpen: cancelAction, cancelConfirmDisabled });
     }
@@ -587,7 +601,9 @@ class Transactions extends PureComponent<Props, State> {
     });
   };
 
-  speedUpTransaction = async (transactionObject: Record<string, string>) => {
+  speedUpTransaction = async (
+    transactionObject?: GasTransactionProps,
+  ) => {
     try {
       if (transactionObject?.error) {
         throw new SpeedupTransactionError(transactionObject.error);
@@ -657,7 +673,9 @@ class Transactions extends PureComponent<Props, State> {
     );
   };
 
-  cancelTransaction = async (transactionObject: Record<string, string>) => {
+  cancelTransaction = async (
+    transactionObject?: GasTransactionProps,
+  ) => {
     try {
       if (transactionObject?.error) {
         throw new CancelTransactionError(transactionObject.error);
@@ -777,14 +795,20 @@ class Transactions extends PureComponent<Props, State> {
             contentContainerStyle={styles.keyboardAwareWrapper}
           >
             <UpdateEIP1559Tx
-              gas={this.existingTx?.txParams.gas}
+              gas={this.existingTx?.txParams.gas as string}
               onSave={
                 isCancel ? this.cancelTransaction : this.speedUpTransaction
               }
               onCancel={
                 isCancel ? this.onCancelCompleted : this.onSpeedUpCompleted
               }
-              existingGas={this.existingGas}
+              chainId={this.props.chainId}
+              existingGas={
+                this.existingGas as {
+                  maxFeePerGas: string;
+                  maxPriorityFeePerGas: string;
+                }
+              }
               isCancel={isCancel}
             />
           </KeyboardAwareScrollView>
@@ -830,9 +854,9 @@ class Transactions extends PureComponent<Props, State> {
       : this.props.transactions;
 
     const renderRetryGas = (rate: number) => {
-      if (!this.existingGas) return null;
+      if (!this.existingGas) return undefined;
 
-      if (this.existingGas.isEIP1559Transaction) return null;
+      if (this.existingGas.isEIP1559Transaction) return undefined;
 
       const gasPrice = Number(this.existingGas.gasPrice as string);
 

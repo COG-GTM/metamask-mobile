@@ -70,6 +70,7 @@ import {
   CHAIN_IDS,
   type TransactionMeta,
 } from '@metamask/transaction-controller';
+import type { SwapsToken } from '@metamask/swaps-controller/dist/types';
 import type { Colors, Theme } from '../../../../util/theme/models';
 import type { MultichainNetworkConfiguration } from '@metamask/multichain-network-controller';
 
@@ -112,7 +113,7 @@ interface StateProps {
   conversionRate: number | null;
   currentCurrency: string;
   swapsTransactions: Record<string, unknown>;
-  swapsTokens: Record<string, unknown>[];
+  swapsTokens?: SwapsToken[] | null;
   primaryCurrency: unknown;
   shouldUseSmartTransaction?: boolean;
 }

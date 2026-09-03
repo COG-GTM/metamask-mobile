@@ -40,6 +40,7 @@ import { selectSelectedInternalAccount } from '../../../selectors/accountsContro
 import { selectPrimaryCurrency } from '../../../selectors/settings';
 import { selectSwapsTransactions } from '../../../selectors/transactionController';
 import { swapsControllerTokens } from '../../../reducers/swaps';
+import type { SwapsToken } from '@metamask/swaps-controller/dist/types';
 import {
   FINAL_NON_CONFIRMED_STATUSES,
   useBridgeTxHistoryData,
@@ -95,7 +96,7 @@ interface OwnProps {
   i?: number;
   selectedInternalAccount?: InternalAccount;
   swapsTransactions?: Record<string, unknown>;
-  swapsTokens?: Record<string, unknown>[];
+  swapsTokens?: SwapsToken[] | null;
   signQRTransaction?: (tx: TransactionMeta) => void;
   cancelUnsignedQRTransaction?: (tx: TransactionMeta) => void;
   isQRHardwareAccount?: boolean;
@@ -122,7 +123,7 @@ interface StateProps {
   primaryCurrency: string;
   selectedInternalAccount?: InternalAccount;
   swapsTransactions?: Record<string, unknown>;
-  swapsTokens?: Record<string, unknown>[];
+  swapsTokens?: SwapsToken[] | null;
 }
 
 interface Props extends OwnProps, StateProps {

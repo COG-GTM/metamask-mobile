@@ -144,7 +144,7 @@ export interface TransactionDetailsData {
   renderTo?: string;
   renderValue?: string;
   renderGas?: string | number;
-  renderGasPrice?: string;
+  renderGasPrice?: string | number;
   renderTotalGas?: string;
   summaryAmount?: string;
   summaryFee?: string;
@@ -243,7 +243,7 @@ function getTokenTransfer(args: DecodeTransactionArgs): DecodeResult {
     selectedAddress,
   } = args;
 
-  const [, , encodedAmount] = decodeTransferData('transfer', data);
+  const [, , encodedAmount] = decodeTransferData('transfer', data) ?? [];
   const amount = hexToBN(encodedAmount);
   const tokenAddress = safeToChecksumAddress(to as string) ?? '';
   const userHasToken = tokenAddress in tokens;
@@ -346,7 +346,7 @@ function getCollectibleTransfer(args: DecodeTransactionArgs): DecodeResult {
     selectedAddress,
   } = args;
   let actionKey;
-  const [, tokenId] = decodeTransferData('transfer', data);
+  const [, tokenId] = decodeTransferData('transfer', data) ?? [];
   const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
   const collectible = collectibleContracts.find((item) =>
     toLowerCaseEquals(item.address, to),
@@ -534,7 +534,7 @@ async function decodeTransferTx(
     txChainId,
   } = args;
 
-  const decodedData = decodeTransferData('transfer', data);
+  const decodedData = decodeTransferData('transfer', data) ?? [];
   const addressTo = decodedData[0];
   let isCollectible = false;
   try {
@@ -579,10 +579,8 @@ function decodeTransferFromTx(args: DecodeTransactionArgs): DecodeResult {
     primaryCurrency,
     selectedAddress,
   } = args;
-  const [addressFrom, addressTo, tokenId] = decodeTransferData(
-    'transferFrom',
-    data,
-  );
+  const [addressFrom, addressTo, tokenId] =
+    decodeTransferData('transferFrom', data) ?? [];
   const collectible = collectibleContracts.find((item) =>
     toLowerCaseEquals(item.address, to),
   );

@@ -237,7 +237,7 @@ const EditGasFeeLegacy = ({
     onChange(gas, selectedOptionValue);
   };
 
-  const changedGasPrice = (value: string) => {
+  const changedGasPrice = (value: string | undefined) => {
     const lowerValue = new BigNumber(
       gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
         ? gasOptions?.[warningMinimumEstimateOption]
@@ -249,7 +249,7 @@ const EditGasFeeLegacy = ({
         : (gasOptions?.gasPrice as string),
     ).multipliedBy(new BigNumber(1.5));
 
-    const valueBN = new BigNumber(value);
+    const valueBN = new BigNumber(value ?? NaN);
 
     if (!lowerValue.isNaN() && valueBN.lt(lowerValue)) {
       setGasPriceError(strings('edit_gas_fee_eip1559.gas_price_low'));
@@ -264,7 +264,7 @@ const EditGasFeeLegacy = ({
     changeGas(newGas, null);
   };
 
-  const changedGasLimit = (value: string) => {
+  const changedGasLimit = (value: string | undefined) => {
     const newGas = { ...gasFee, suggestedGasLimit: value };
 
     changeGas(newGas, null);
