@@ -37,10 +37,7 @@ interface CollectibleAsset {
   [key: string]: unknown;
 }
 
-const toFavoriteCollectible = ({
-  address,
-  tokenId,
-}: CollectibleAsset) => ({
+const toFavoriteCollectible = ({ address, tokenId }: CollectibleAsset) => ({
   address,
   tokenId: String(tokenId),
 });
