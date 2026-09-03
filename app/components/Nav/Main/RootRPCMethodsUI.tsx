@@ -376,7 +376,8 @@ const RootRPCMethodsUI = (props: Props) => {
               NotificationManager.watchSubmittedTransaction({
                 ...finishedTransactionMeta,
                 assetType:
-                  'assetType' in finishedTransactionMeta.txParams
+                  'assetType' in finishedTransactionMeta.txParams &&
+                  typeof finishedTransactionMeta.txParams.assetType === 'string'
                     ? finishedTransactionMeta.txParams.assetType
                     : undefined,
               });

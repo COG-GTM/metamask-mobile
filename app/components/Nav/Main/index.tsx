@@ -103,6 +103,11 @@ import type { RootState } from '../../../reducers';
 import type { Colors } from '../../../util/theme/models';
 
 const Stack = createStackNavigator();
+
+const ProtectYourWalletModalWithNavigation =
+  ProtectYourWalletModal as unknown as React.ComponentType<{
+    navigation: NavigationProp<ParamListBase>;
+  }>;
 type SelectedChainId = ReturnType<typeof selectChainId>;
 
 const createStyles = (colors: Colors) =>
@@ -162,9 +167,11 @@ interface DispatchProps {
   /**
    * Dispatch showing a transaction notification
    */
-  showTransactionNotification: (
-    args: Parameters<typeof showTransactionNotification>[0],
-  ) => void;
+  showTransactionNotification: (args: {
+    autodismiss?: number | false;
+    transaction?: unknown;
+    status: string;
+  }) => void;
   /**
    * Dispatch showing a simple notification
    */
@@ -556,7 +563,7 @@ const Main = (props: Props) => {
           skipCheckbox={skipCheckbox}
           toggleSkipCheckbox={toggleSkipCheckbox}
         />
-        <ProtectYourWalletModal navigation={props.navigation} />
+        <ProtectYourWalletModalWithNavigation navigation={props.navigation} />
         <RootRPCMethodsUI navigation={props.navigation} />
       </View>
     </React.Fragment>
@@ -575,7 +582,13 @@ const mapStateToProps = (state: RootState): StateProps => ({
 
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   showTransactionNotification: (args) =>
-    dispatch(showTransactionNotification(args)),
+    dispatch(
+      showTransactionNotification({
+        autodismiss: args.autodismiss,
+        transaction: args.transaction,
+        status: args.status,
+      }),
+    ),
   showSimpleNotification: (args) => dispatch(showSimpleNotification(args)),
   hideCurrentNotification: () => dispatch(hideCurrentNotification()),
   removeNotificationById: (id) => dispatch(removeNotificationById(id)),
