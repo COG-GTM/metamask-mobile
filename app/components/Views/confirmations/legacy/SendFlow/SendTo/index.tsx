@@ -19,6 +19,7 @@ import StyledButton from '../../../../../UI/StyledButton';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
 import { getDecimalChainId } from '../../../../../../util/networks';
 import { handleNetworkSwitch } from '../../../../../../util/networks/handleNetworkSwitch';
+import { TransactionType } from '../../../../../../util/blockaid';
 import {
   isENS,
   isValidHexAddress,
@@ -187,7 +188,7 @@ class SendFlow extends PureComponent<Props, SendToState> {
         route,
         colors,
         resetSendTransaction,
-        undefined,
+        undefined as unknown as TransactionType,
       ),
     );
   };
@@ -789,5 +790,5 @@ export default connect(
 )(
   withMetricsAwareness(
     SendFlow as unknown as ComponentType<IWithMetricsAwarenessProps>,
-  ),
+  ) as unknown as ComponentType<Omit<Props, keyof IWithMetricsAwarenessProps>>,
 );

@@ -3,6 +3,11 @@ import { render, screen, fireEvent } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { Store } from 'redux';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 
 import SendTo from './index';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
@@ -25,14 +30,15 @@ jest.mock('../../../../../../util/address', () => ({
 }));
 
 const mockStore = configureStore();
+const mockNavigate = jest.fn();
 const navigationPropMock = {
   setOptions: jest.fn(),
   setParams: jest.fn(),
-  navigate: jest.fn(),
-};
+  navigate: mockNavigate,
+} as unknown as NavigationProp<ParamListBase>;
 const routeMock = {
   params: {},
-};
+} as unknown as RouteProp<ParamListBase, string>;
 
 describe('SendTo Component', () => {
   let store: Store;
@@ -67,14 +73,13 @@ describe('SendTo Component', () => {
 
   it('should navigate to Amount screen', () => {
     const MOCK_TARGET_ADDRESS = '0x0000000000000000000000000000000000000000';
-    const { navigate } = navigationPropMock;
     const routeProps = {
       params: {
         txMeta: {
           target_address: MOCK_TARGET_ADDRESS,
         },
       },
-    };
+    } as unknown as RouteProp<ParamListBase, string>;
 
     render(
       <Provider store={store}>
@@ -84,6 +89,6 @@ describe('SendTo Component', () => {
       </Provider>,
     );
     fireEvent.press(screen.getByText('Next'));
-    expect(navigate).toHaveBeenCalledWith('Amount');
+    expect(mockNavigate).toHaveBeenCalledWith('Amount');
   });
 });
