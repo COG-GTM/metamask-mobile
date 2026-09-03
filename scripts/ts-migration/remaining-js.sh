@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Lists the JavaScript files still to be migrated under app/ (plus the two
+# top-level entry files), with line counts. Pass a path prefix to filter,
+# e.g. `scripts/ts-migration/remaining-js.sh app/util`.
+# See docs/ts-migration-plan.md.
+set -euo pipefail
+
+cd "$(dirname "$0")/../.."
+
+ROOT="${1:-app}"
+
+# Files that intentionally stay JavaScript (see docs/ts-migration-tracker.md).
+EXCLUDE_REGEX='^(app/lib/ppom/blockaid-version\.js|app/util/test/assetFileTransformer\.js)$'
+
+{
+  find "$ROOT" -type f \( -name '*.js' -o -name '*.jsx' \) -not -path '*/node_modules/*'
+  if [ "$ROOT" = "app" ]; then
+    for f in index.js shim.js; do [ -f "$f" ] && echo "$f"; done
+  fi
+} | grep -Ev "$EXCLUDE_REGEX" | sort | xargs -r wc -l | sed '$d' | sort -k2
+
+count=$(
+  {
+    find "$ROOT" -type f \( -name '*.js' -o -name '*.jsx' \) -not -path '*/node_modules/*'
+  } | grep -Evc "$EXCLUDE_REGEX" || true
+)
+echo
+echo "Remaining under $ROOT: $count file(s)"
