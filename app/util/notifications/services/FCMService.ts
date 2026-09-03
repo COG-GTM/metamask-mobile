@@ -76,8 +76,7 @@ async function processAndHandleNotification(
   } catch (error) {
     // Do Nothing, cannot parse a bad notification
     Logger.log('Unable to send push notification:', {
-      notification: payload?.data?.data,
-      error,
+      error: error instanceof Error ? error.name : 'UnknownError',
     });
   }
 }
