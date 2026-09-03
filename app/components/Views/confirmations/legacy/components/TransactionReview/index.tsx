@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - legacy confirmation migration
 import Eth from '@metamask/eth-query';
 import { withNavigation } from '@react-navigation/compat';
 import React, { PureComponent } from 'react';
@@ -62,7 +60,9 @@ import TransactionHeader from '../../../../../UI/TransactionHeader';
 import { ResultType } from '../BlockaidBanner/BlockaidBanner.types';
 import TransactionBlockaidBanner from '../TransactionBlockaidBanner/TransactionBlockaidBanner';
 import TransactionReviewData from './TransactionReviewData';
-import TransactionReviewInformation from './TransactionReviewInformation';
+import TransactionReviewInformation, {
+  type EIP1559GasData,
+} from './TransactionReviewInformation';
 import TransactionReviewSummary from './TransactionReviewSummary';
 import DevLogger from '../../../../../../core/SDKConnect/utils/DevLogger';
 import { selectNativeCurrencyByChainId } from '../../../../../../selectors/networkController';
@@ -73,7 +73,17 @@ import { IUseMetricsHook } from '../../../../../../components/hooks/useMetrics/u
 import { IWithMetricsAwarenessProps } from '../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { IQRState } from '../../../../../UI/QRHardware/types';
 import { RootState } from '../../../../../../reducers';
-import { TransactionMeta } from '@metamask/transaction-controller';
+import type {
+  TransactionMeta,
+  TransactionParams,
+} from '@metamask/transaction-controller';
+import type { Hex } from '@metamask/utils';
+import { ResultType as BlockaidResultType } from '../../../constants/signatures';
+
+const LegacyAccountFromToInfoCard = AccountFromToInfoCard as unknown as React.ComponentType<{
+  transactionState: unknown;
+  layout?: string;
+}>;
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
 let intervalIdForEstimatedL1Fee: ReturnType<typeof setInterval>;
@@ -154,6 +164,7 @@ interface ReviewTransaction extends Omit<Partial<TransactionMeta>, 'id'> {
     gas?: string;
     gasPrice?: string;
   };
+  data?: string;
   value?: string;
   selectedAsset: TokenAsset & { name?: string; tokenId?: string | number };
   assetType?: string;
@@ -181,7 +192,7 @@ interface Navigation {
 }
 
 interface SecurityAlertResponse {
-  result_type?: ResultType;
+  result_type?: BlockaidResultType;
   reason?: string;
   providerRequestsCount?: unknown;
 }
@@ -208,7 +219,7 @@ interface OwnProps {
 }
 
 interface StateProps {
-  showHexData: boolean;
+  showHexData: boolean | string;
   transaction: ReviewTransaction;
   browser: Browser;
   conversionRate?: number;
@@ -231,19 +242,7 @@ interface InjectedProps {
   error?: string | boolean;
   over?: boolean;
   gasEstimateType?: string;
-  EIP1559GasData?: {
-    gasFeeMinNative?: string;
-    gasFeeMinConversion?: string;
-    gasFeeMaxNative?: string;
-    gasFeeMaxConversion?: string;
-    renderableGasFeeMinNative?: string;
-    renderableGasFeeMinConversion?: string;
-    renderableGasFeeMaxNative?: string;
-    renderableGasFeeMaxConversion?: string;
-    timeEstimate?: string | null;
-    timeEstimateColor?: string;
-    timeEstimateId?: string;
-  };
+  EIP1559GasData?: EIP1559GasData;
   metrics: IUseMetricsHook;
   navigation: Navigation;
 }
@@ -253,7 +252,7 @@ type Props = OwnProps & StateProps & InjectedProps;
 interface State {
   toFocused: boolean;
   actionKey: string;
-  showHexData: boolean;
+  showHexData: boolean | string;
   dataVisible: boolean;
   assetAmount?: string;
   conversionRate?: number | boolean;
@@ -281,18 +280,22 @@ class TransactionReview extends PureComponent<Props, State> {
     }
     try {
       const eth = new Eth(
-        Engine.context.NetworkController.getProviderAndBlockTracker().provider,
+        Engine.context.NetworkController.getProviderAndBlockTracker()
+          .provider as unknown as ConstructorParameters<typeof Eth>[0],
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
-        txParams: transaction.transaction,
-        chainId,
+        txParams: transaction.transaction as unknown as TransactionParams,
+        chainId: chainId as Hex,
         networkClientId,
       });
       this.setState({
-        multiLayerL1FeeTotal: result,
+        multiLayerL1FeeTotal: result as string,
       });
     } catch (e) {
-      Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
+      Logger.error(
+        e instanceof Error ? e : new Error(String(e)),
+        'fetchEstimatedMultiLayerL1Fee call failed',
+      );
       this.setState({
         multiLayerL1FeeTotal: '0x0',
       });
@@ -312,9 +315,9 @@ class TransactionReview extends PureComponent<Props, State> {
     } = this.props;
     let { showHexData } = this.props;
     let assetAmount, conversionRate, fiatValue;
-    showHexData = showHexData || data;
+    showHexData = (showHexData || data) as boolean | string;
     const approveTransaction =
-      isApprovalTransaction(data) && (!value || isZeroValue(value));
+      isApprovalTransaction(data as string) && (!value || isZeroValue(value));
 
     const actionKey = await getTransactionReviewActionKey(
       {
@@ -326,14 +329,15 @@ class TransactionReview extends PureComponent<Props, State> {
     );
 
     if (approveTransaction) {
-      let contract = tokenList?.[safeToChecksumAddress(to)];
+      const checksumTo = safeToChecksumAddress(to as string);
+      let contract = checksumTo ? tokenList?.[checksumTo] : undefined;
       if (!contract) {
         contract = tokens.find(
-          ({ address }) => address === safeToChecksumAddress(to),
+          ({ address }) => address === checksumTo,
         );
       }
       const symbol = contract?.symbol || 'ERC20';
-      assetAmount = `${decodeTransferData('transfer', data)[1]} ${symbol}`;
+      assetAmount = `${decodeTransferData('transfer', data as string)[1]} ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();
     }
@@ -368,7 +372,11 @@ class TransactionReview extends PureComponent<Props, State> {
   onContactUsClicked = () => {
     const { securityAlertResponse, metrics } = this.props;
     const additionalParams = {
-      ...getBlockaidMetricsParams(securityAlertResponse),
+      ...getBlockaidMetricsParams(
+        securityAlertResponse as unknown as Parameters<
+          typeof getBlockaidMetricsParams
+        >[0],
+      ),
       external_link_clicked: 'security_alert_support_link',
     };
 
@@ -393,14 +401,18 @@ class TransactionReview extends PureComponent<Props, State> {
     } = this.props;
     const values = {
       ETH: () => {
-        const assetAmount = `${renderFromWei(value)} ${getTicker(ticker)}`;
+        const assetAmount = `${renderFromWei(value as string)} ${getTicker(ticker)}`;
         const conversionRate = this.props.conversionRate;
-        const fiatValue = weiToFiat(value, conversionRate, currentCurrency);
+        const fiatValue = weiToFiat(
+          value as unknown as number,
+          conversionRate,
+          currentCurrency,
+        );
         return [assetAmount, conversionRate, fiatValue];
       },
       ERC20: () => {
         const assetAmount = `${renderFromTokenMinimalUnit(
-          value,
+          value as string,
           selectedAsset.decimals,
         )} ${selectedAsset.symbol}`;
         const conversionRate = contractExchangeRates
@@ -422,7 +434,7 @@ class TransactionReview extends PureComponent<Props, State> {
       },
       default: () => [undefined, undefined, undefined],
     };
-    return values[assetType] || values.default;
+    return (assetType && values[assetType as keyof typeof values]) || values.default;
   };
 
   edit = () => {
@@ -436,14 +448,16 @@ class TransactionReview extends PureComponent<Props, State> {
   };
 
   getStyles = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors =
+      (this.context as React.ContextType<typeof ThemeContext>)?.colors ||
+      mockTheme.colors;
     return createStyles(colors);
   };
 
   toggleDataView = () => {
     const { animate } = this.props;
     if (this.state.dataVisible) {
-      animate({
+      (animate as NonNullable<Props['animate']>)({
         modalEndValue: 1,
         xTranslationName: 'reviewToData',
         xTranslationEndValue: 0,
@@ -451,7 +465,7 @@ class TransactionReview extends PureComponent<Props, State> {
       this.setState({ dataVisible: false });
       return;
     }
-    animate({
+    (animate as NonNullable<Props['animate']>)({
       modalEndValue: 0,
       xTranslationName: 'reviewToData',
       xTranslationEndValue: 1,
@@ -459,7 +473,7 @@ class TransactionReview extends PureComponent<Props, State> {
     this.setState({ dataVisible: true });
   };
 
-  getUrlFromBrowser() {
+  getUrlFromBrowser(): string {
     const { browser } = this.props;
     let url;
     browser.tabs.forEach((tab) => {
@@ -467,7 +481,7 @@ class TransactionReview extends PureComponent<Props, State> {
         url = tab.url;
       }
     });
-    return url;
+    return url as unknown as string;
   }
 
   getConfirmButtonState() {
@@ -534,7 +548,9 @@ class TransactionReview extends PureComponent<Props, State> {
 
     let url = '';
     if (currentConnection) {
-      url = currentConnection.originatorInfo.url;
+      url = (
+        currentConnection.originatorInfo as { url?: string }
+      ).url as string;
     } else {
       url = this.getUrlFromBrowser();
     }
@@ -575,14 +591,19 @@ class TransactionReview extends PureComponent<Props, State> {
                   >
                     <ApprovalTagUrl
                       currentEnsName={ensRecipient}
-                      from={from}
+                      from={from as string}
                       origin={origin}
-                      sdkDappMetadata={sdkDappMetadata}
-                      url={url}
+                      sdkDappMetadata={
+                        sdkDappMetadata as unknown as {
+                          url: string;
+                          icon: string;
+                        }
+                      }
+                      url={url as string}
                     />
                     <View style={styles.blockaidBannerContainer}>
                       <TransactionBlockaidBanner
-                        transactionId={transactionId}
+                        transactionId={transactionId as string}
                         onContactUsClicked={this.onContactUsClicked}
                       />
                     </View>
@@ -592,13 +613,9 @@ class TransactionReview extends PureComponent<Props, State> {
                       </View>
                     )}
                     {to && (
-                      <View style={styles.accountWrapper}>
-                        <AccountFromToInfoCard
-                          transactionState={
-                            transaction as unknown as React.ComponentProps<
-                              typeof AccountFromToInfoCard
-                            >['transactionState']
-                          }
+                      <View>
+                        <LegacyAccountFromToInfoCard
+                          transactionState={transaction}
                           layout="vertical"
                         />
                       </View>
@@ -624,7 +641,11 @@ class TransactionReview extends PureComponent<Props, State> {
                       )}
                     <View style={styles.accountInfoCardWrapper}>
                       <TransactionReviewInformation
-                        navigation={navigation}
+                        navigation={
+                          navigation as unknown as React.ComponentProps<
+                            typeof TransactionReviewInformation
+                          >['navigation']
+                        }
                         error={error}
                         edit={this.edit}
                         ready={ready}
@@ -712,7 +733,10 @@ const mapStateToProps = (state: RootState): StateProps => {
 
   return {
     tokens: selectTokens(state),
-    conversionRate: selectConversionRateByChainId(state, chainId),
+    conversionRate: selectConversionRateByChainId(
+      state,
+      chainId,
+    ) as unknown as number,
     currentCurrency: selectCurrentCurrency(state),
     contractExchangeRates: selectContractExchangeRatesByChainId(state, chainId),
     ticker: selectNativeCurrencyByChainId(state, chainId),

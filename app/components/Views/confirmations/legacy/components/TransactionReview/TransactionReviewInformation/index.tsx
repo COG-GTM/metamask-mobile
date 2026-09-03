@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - legacy confirmation migration
 import React, { PureComponent } from 'react';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -170,11 +168,27 @@ interface Navigation {
   navigate: (...args: unknown[]) => void;
 }
 
+export interface EIP1559GasData {
+  gasFeeMinNative?: string;
+  gasFeeMinConversion?: string;
+  gasFeeMaxNative?: string;
+  gasFeeMaxConversion?: string;
+  renderableGasFeeMinNative?: string;
+  renderableGasFeeMinConversion?: string;
+  renderableGasFeeMaxNative?: string;
+  renderableGasFeeMaxConversion?: string;
+  timeEstimate?: string;
+  timeEstimateColor?: string;
+  timeEstimateId?: string;
+}
+
 interface Props {
   conversionRate: number;
   currentCurrency: string;
   transaction: ReviewTransaction;
   contractExchangeRates: Record<string, { price?: number }>;
+  assetAmount?: string;
+  fiatValue?: string;
   edit?: () => void;
   ticker: string;
   primaryCurrency: string;
@@ -190,19 +204,7 @@ interface Props {
   setNonce: (nonce: number) => void;
   setProposedNonce: (nonce: number) => void;
   gasEstimateType?: string;
-  EIP1559GasData?: {
-    gasFeeMinNative?: string;
-    gasFeeMinConversion?: string;
-    gasFeeMaxNative?: string;
-    gasFeeMaxConversion?: string;
-    renderableGasFeeMinNative?: string;
-    renderableGasFeeMinConversion?: string;
-    renderableGasFeeMaxNative?: string;
-    renderableGasFeeMaxConversion?: string;
-    timeEstimate?: string;
-    timeEstimateColor?: string;
-    timeEstimateId?: string;
-  };
+  EIP1559GasData?: EIP1559GasData;
   origin?: string;
   onUpdatingValuesStart?: () => void;
   onUpdatingValuesEnd?: () => void;
@@ -260,8 +262,8 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
     const { proposedNonce, nonce } = this.props.transaction;
     return (
       <CustomNonceModal
-        proposedNonce={proposedNonce}
-        nonceValue={nonce}
+        proposedNonce={proposedNonce ?? 0}
+        nonceValue={nonce ?? 0}
         close={this.toggleNonceModal}
         save={setNonce}
       />
@@ -330,7 +332,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
             )
           : totalGas;
         const totalFiat = `${weiToFiat(
-          totalEth,
+          totalEth as unknown as BN,
           conversionRate,
           currentCurrency,
         )}`;
@@ -676,7 +678,9 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
       shouldUseSmartTransaction,
     } = this.props;
     const { nonce } = this.props.transaction;
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors =
+      (this.context as React.ContextType<typeof ThemeContext>)?.colors ||
+      mockTheme.colors;
     const styles = createStyles(colors);
 
     const errorPress = this.isTestNetwork() ? this.goToFaucet : this.buyEth;

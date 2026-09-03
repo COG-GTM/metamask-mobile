@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - legacy confirmation migration
 import React, { useState, useCallback } from 'react';
 import {
   TouchableOpacity,

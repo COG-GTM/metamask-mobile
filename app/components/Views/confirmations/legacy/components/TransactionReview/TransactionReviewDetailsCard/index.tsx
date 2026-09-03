@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - legacy confirmation migration
 import React, { Component } from 'react';
 
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
@@ -127,13 +125,15 @@ export default class TransactionReviewDetailsCard extends Component<Props> {
       tokenName,
       tokenStandard,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as React.ContextType<typeof ThemeContext>).colors ||
+      mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
       <View style={styles.section}>
         <ConnectHeader
-          action={toggleViewDetails}
+          action={toggleViewDetails as () => void}
           title={strings('spend_limit_edition.transaction_details')}
         />
         <View style={styles.transactionDetails}>

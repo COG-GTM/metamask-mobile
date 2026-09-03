@@ -1,13 +1,13 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - legacy confirmation migration
 import React from 'react';
 import TransactionReviewEIP1559 from '.';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
 import renderWithProvider, {
   renderHookWithProvider,
 } from '../../../../../../../util/test/renderWithProvider';
+import type { RootState } from '../../../../../../../reducers';
+import type { Props } from './index';
 
-const initialState = {
+const initialState = ({
   settings: {},
   engine: {
     backgroundState: {
@@ -49,9 +49,9 @@ const initialState = {
       },
     },
   },
-};
+} as unknown) as RootState;
 
-const transactionReview = {
+const transactionReview = ({
   primaryCurrency: 'USD',
   chainId: '1',
   onEdit: () => undefined,
@@ -73,7 +73,7 @@ const transactionReview = {
   gasObjectLegacy: {},
   updateTransactionState: undefined,
   onlyGas: false,
-};
+} as unknown) as Props;
 
 describe('TransactionReviewEIP1559', () => {
   it('should render correctly', () => {

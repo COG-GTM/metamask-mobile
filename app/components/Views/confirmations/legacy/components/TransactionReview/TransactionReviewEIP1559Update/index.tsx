@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck - legacy confirmation migration
 import React, { useCallback, useEffect, useState } from 'react';
 import { Linking, TouchableOpacity, View } from 'react-native';
 import { GasTransactionProps } from '../../../../../../../core/GasPolling/types';
@@ -23,7 +21,7 @@ import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
 
-interface Props {
+export interface Props {
   primaryCurrency?: string;
   chainId?: string;
   onEdit?: () => void;
@@ -181,7 +179,7 @@ const TransactionReviewEIP1559Update = ({
                 <MaterialCommunityIcons
                   name="information"
                   size={13}
-                  style={styles.gasInfoIcon(originWarning)}
+                  style={styles.gasInfoIcon(!!originWarning)}
                 />
               </TouchableOpacity>
             </Text>
