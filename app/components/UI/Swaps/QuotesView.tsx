@@ -494,9 +494,11 @@ async function addTokenToAssetsController(
     : [];
   if (
     !isSwapsNativeAsset(newToken) &&
-    !allTokens.some((token) =>
-      toLowerCaseEquals(token.address, newToken.address),
-    )
+    !allTokens.includes(((token: (typeof allTokens)[number]) =>
+      toLowerCaseEquals(
+        token.address,
+        newToken.address,
+      )) as unknown as (typeof allTokens)[number])
   ) {
     const { address, symbol, decimals, name } = newToken;
     await TokensController.addToken({
@@ -1056,8 +1058,12 @@ function SwapsQuotesView({
             toWei(selectedQuoteValue?.ethFee as string),
           ),
           other_quote_selected:
-            allQuotes.find((quote) => quote.aggregator === selectedQuoteId) ===
-            selectedQuote,
+            (
+              allQuotes as unknown as Record<
+                string,
+                QuoteWithSlippage | undefined
+              >
+            )[String(selectedQuoteId)] === selectedQuote,
           chain_id: getDecimalChainId(chainId),
           is_smart_transaction: shouldUseSmartTransaction,
           gas_included: canUseGasIncludedSwap,
@@ -1102,8 +1108,12 @@ function SwapsQuotesView({
         best_quote_source: quoteForAnalytics.aggregator,
         available_quotes: allQuotes.length,
         other_quote_selected:
-          allQuotes.find((quote) => quote.aggregator === selectedQuoteId) ===
-          quoteForAnalytics,
+          (
+            allQuotes as unknown as Record<
+              string,
+              QuoteWithSlippage | undefined
+            >
+          )[String(selectedQuoteId)] === quoteForAnalytics,
         network_fees_USD: weiToFiat(
           toWei(selectedQuoteValue?.ethFee as string),
           conversionRate,
@@ -1468,8 +1478,9 @@ function SwapsQuotesView({
       available_quotes: allQuotes.length,
       best_quote_source: selectedQuote.aggregator,
       other_quote_selected:
-        allQuotes.find((quote) => quote.aggregator === selectedQuoteId) ===
-        selectedQuote,
+        (allQuotes as unknown as Record<string, QuoteWithSlippage | undefined>)[
+          String(selectedQuoteId)
+        ] === selectedQuote,
       gas_fees: weiToFiat(
         toWei(selectedQuoteValue?.ethFee as string),
         conversionRate,
