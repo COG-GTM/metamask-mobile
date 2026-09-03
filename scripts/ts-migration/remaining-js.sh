@@ -23,8 +23,8 @@ candidates=$(
 
 printf '%s\n' "$candidates" | xargs -r wc -l | awk '$2 != "total"' | sort -k2
 
-count=$(
-  printf '%s\n' "$candidates" | grep -Ec "^${ROOT%/}/" || true
-)
+count=$(printf '%s\n' "$candidates" | grep -c . || true)
+label="$ROOT"
+[ "$ROOT" = "app" ] && label="app + top-level entry files"
 echo
-echo "Remaining under $ROOT: $count file(s)"
+echo "Remaining under $label: $count file(s)"
