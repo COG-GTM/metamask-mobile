@@ -188,7 +188,7 @@ export class WC2Manager {
           projectId,
           logger: 'fatal',
           telemetryEnabled: TELEMETRY_ENABLED,
-          ...(typeof RELAY_URL === 'string' && RELAY_URL.length > 0
+          ...(typeof RELAY_URL === 'string' && RELAY_URL.startsWith('wss://')
             ? { relayUrl: RELAY_URL }
             : {}),
         });
