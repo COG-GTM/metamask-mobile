@@ -8,9 +8,10 @@ declare module 'react-native-fade-in-image';
 
 declare module 'react-native-elevated-view' {
   import { ComponentType } from 'react';
-  import { ViewProps } from 'react-native';
 
-  const ElevatedView: ComponentType<ViewProps & { elevation?: number }>;
+  const ElevatedView: ComponentType<
+    import('react-native').ViewProps & { elevation?: number }
+  >;
   export default ElevatedView;
 }
 
