@@ -2,7 +2,10 @@ import {
   CONTRACT_CREATION_SIGNATURE,
   TRANSACTION_TYPES,
 } from '../../../util/transactions';
-import decodeTransaction, { decodeIncomingTransfer } from './utils';
+import decodeTransaction, {
+  DecodeTransactionArgs,
+  decodeIncomingTransfer,
+} from './utils';
 
 jest.mock('../../../core/Engine', () => ({
   context: {
@@ -86,8 +89,9 @@ describe('Utils', () => {
       };
 
       // Act
-      const [transactionElement, transactionDetails] =
-        decodeIncomingTransfer(args);
+      const [transactionElement, transactionDetails] = decodeIncomingTransfer(
+        args as unknown as DecodeTransactionArgs,
+      );
 
       // Assert
       expect(transactionElement).toEqual({
@@ -146,8 +150,9 @@ describe('Utils', () => {
       };
 
       // Act
-      const [transactionElement, transactionDetails] =
-        decodeIncomingTransfer(args);
+      const [transactionElement, transactionDetails] = decodeIncomingTransfer(
+        args as unknown as DecodeTransactionArgs,
+      );
 
       // Assert
       expect(transactionElement).toEqual({
@@ -222,7 +227,9 @@ describe('Utils', () => {
         },
       };
 
-      const result = await decodeTransaction(args);
+      const result = await decodeTransaction(
+        args as unknown as DecodeTransactionArgs,
+      );
 
       expect(result).toEqual([
         {
@@ -265,7 +272,9 @@ describe('Utils', () => {
         },
       };
 
-      const result = await decodeTransaction(args);
+      const result = await decodeTransaction(
+        args as unknown as DecodeTransactionArgs,
+      );
 
       expect(result).toEqual([
         {
@@ -307,7 +316,9 @@ describe('Utils', () => {
         },
       };
 
-      const result = await decodeTransaction(args);
+      const result = await decodeTransaction(
+        args as unknown as DecodeTransactionArgs,
+      );
 
       expect(result).toEqual([
         {

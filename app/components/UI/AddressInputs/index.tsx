@@ -1,26 +1,68 @@
 import React from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  TouchableOpacity,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 import { fontStyles, baseStyles } from '../../../styles/common';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import PropTypes from 'prop-types';
 import Identicon from '../Identicon';
 import {
   renderShortAddress,
   renderSlightlyLongAddress,
   isENS,
-  getLabelTextByAddress,
 } from '../../../util/address';
 import { strings } from '../../../../locales/i18n';
 import { hasZeroWidthPoints } from '../../../util/confusables';
 import { useTheme } from '../../../util/theme';
 import AddToAddressBookWrapper from '../AddToAddressBookWrapper/AddToAddressBookWrapper';
 import { SendViewSelectorsIDs } from '../../../../e2e/selectors/SendFlow/SendView.selectors';
-import Text, {
-  TextVariant,
-} from '../../../component-library/components/Texts/Text';
+import Text from '../../../component-library/components/Texts/Text';
+import type { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors, layout = 'horizontal') => {
+interface AddressNameProps {
+  toAddressName?: string;
+  confusableCollection?: string[];
+}
+
+interface AddressToProps {
+  addressToReady?: boolean;
+  highlighted?: boolean;
+  inputRef?: React.RefObject<TextInput>;
+  toSelectedAddress?: string;
+  onToSelectedAddressChange?: (value: string) => void;
+  onScan?: () => void;
+  onClear?: () => void;
+  onInputFocus?: () => void;
+  onSubmit?: () => void;
+  onInputBlur?: () => void;
+  toAddressName?: string;
+  inputWidth?: StyleProp<TextStyle>;
+  confusableCollection?: string[];
+  displayExclamation?: boolean;
+  isConfirmScreen?: boolean;
+  isFromAddressBook?: boolean;
+  layout?: 'horizontal' | 'vertical';
+}
+
+interface AddressFromProps {
+  highlighted?: boolean;
+  onPressIcon?: () => void;
+  fromAccountAddress?: string;
+  fromAccountName?: string;
+  fromAccountBalance?: string;
+  layout?: 'horizontal' | 'vertical';
+}
+
+const createStyles = (
+  colors: Colors,
+  layout: 'horizontal' | 'vertical' = 'horizontal',
+) => {
   const isVerticalLayout = layout === 'vertical';
   return StyleSheet.create({
     wrapper: {
@@ -178,7 +220,10 @@ const createStyles = (colors, layout = 'horizontal') => {
   });
 };
 
-const AddressName = ({ toAddressName, confusableCollection = [] }) => {
+const AddressName = ({
+  toAddressName,
+  confusableCollection = [],
+}: AddressNameProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   if (confusableCollection.length) {
@@ -187,17 +232,9 @@ const AddressName = ({ toAddressName, confusableCollection = [] }) => {
       if (confusableCollection.includes(char)) {
         // if the confusable is zero width, replace it with `?`
         const replacement = hasZeroWidthPoints(char) ? '?' : char;
-        return (
-          <Text red key={index}>
-            {replacement}
-          </Text>
-        );
+        return <Text key={index}>{replacement}</Text>;
       }
-      return (
-        <Text black key={index}>
-          {char}
-        </Text>
-      );
+      return <Text key={index}>{char}</Text>;
     });
     return (
       <Text style={styles.textAddress} numberOfLines={1}>
@@ -214,12 +251,7 @@ const AddressName = ({ toAddressName, confusableCollection = [] }) => {
   );
 };
 
-AddressName.propTypes = {
-  toAddressName: PropTypes.string,
-  confusableCollection: PropTypes.array,
-};
-
-export const AddressTo = (props) => {
+export const AddressTo = (props: AddressToProps) => {
   const {
     addressToReady,
     highlighted,
@@ -245,7 +277,7 @@ export const AddressTo = (props) => {
   const isInputFilled = toSelectedAddress?.length;
 
   if (isConfirmScreen) {
-    const wrapperStyles = [styles.wrapper];
+    const wrapperStyles: StyleProp<ViewStyle>[] = [styles.wrapper];
     if (layout === 'vertical') {
       wrapperStyles.push(styles.marginedWrapper);
     }
@@ -260,9 +292,9 @@ export const AddressTo = (props) => {
             highlighted ? styles.borderHighlighted : styles.borderOpaque,
           ]}
         >
-          <AddToAddressBookWrapper address={toSelectedAddress}>
+          <AddToAddressBookWrapper address={toSelectedAddress as string}>
             <View style={styles.addressToInformation}>
-              <Identicon address={toSelectedAddress} diameter={30} />
+              <Identicon address={toSelectedAddress as string} diameter={30} />
               {displayExclamation && (
                 <View style={styles.exclamation}>
                   <FontAwesome
@@ -287,7 +319,7 @@ export const AddressTo = (props) => {
                       }
                       numberOfLines={1}
                     >
-                      {renderShortAddress(toSelectedAddress)}
+                      {renderShortAddress(toSelectedAddress as string)}
                     </Text>
                     <View
                       style={
@@ -376,21 +408,23 @@ export const AddressTo = (props) => {
           ]}
         >
           <View style={styles.addressToInformation}>
-            <AddToAddressBookWrapper address={toSelectedAddress}>
-              <Identicon
-                address={toSelectedAddress}
-                diameter={30}
-                customStyle={styles.identIcon}
-              />
-              {displayExclamation && (
-                <View style={styles.exclamation}>
-                  <FontAwesome
-                    color={colors.error.default}
-                    name="exclamation-circle"
-                    size={14}
-                  />
-                </View>
-              )}
+            <AddToAddressBookWrapper address={toSelectedAddress as string}>
+              <React.Fragment>
+                <Identicon
+                  address={toSelectedAddress as string}
+                  diameter={30}
+                  customStyle={styles.identIcon}
+                />
+                {displayExclamation && (
+                  <View style={styles.exclamation}>
+                    <FontAwesome
+                      color={colors.error.default}
+                      name="exclamation-circle"
+                      size={14}
+                    />
+                  </View>
+                )}
+              </React.Fragment>
             </AddToAddressBookWrapper>
             <View style={styles.addressReadyWrapper}>
               {isFromAddressBook ? (
@@ -410,7 +444,7 @@ export const AddressTo = (props) => {
                         }
                         numberOfLines={1}
                       >
-                        {renderShortAddress(toSelectedAddress)}
+                        {renderShortAddress(toSelectedAddress as string)}
                       </Text>
                       <View
                         style={
@@ -447,7 +481,7 @@ export const AddressTo = (props) => {
                   keyboardAppearance={themeAppearance}
                 />
               ) : (
-                <AddToAddressBookWrapper address={toSelectedAddress}>
+                <AddToAddressBookWrapper address={toSelectedAddress as string}>
                   <View style={styles.toAddressTextWrapper}>
                     <Text style={styles.textInput} numberOfLines={1}>
                       {toSelectedAddress
@@ -488,76 +522,7 @@ export const AddressTo = (props) => {
   );
 };
 
-AddressTo.propTypes = {
-  /**
-   * Whether is a valid Ethereum address to send to
-   */
-  addressToReady: PropTypes.bool,
-  /**
-   * Whether the input is highlighted
-   */
-  highlighted: PropTypes.bool,
-  /**
-   * Object to use as reference for input
-   */
-  inputRef: PropTypes.object,
-  /**
-   * Address of selected address as string
-   */
-  toSelectedAddress: PropTypes.string,
-  /**
-   * Callback called when to selected address changes
-   */
-  onToSelectedAddressChange: PropTypes.func,
-  /**
-   * Callback called when scan icon is pressed
-   */
-  onScan: PropTypes.func,
-  /**
-   * Callback called when close icon is pressed
-   */
-  onClear: PropTypes.func,
-  /**
-   * Callback called when input onFocus
-   */
-  onInputFocus: PropTypes.func,
-  /**
-   * Callback called when input is submitted
-   */
-  onSubmit: PropTypes.func,
-  /**
-   * Callback called when input onBlur
-   */
-  onInputBlur: PropTypes.func,
-  /**
-   * Name of selected address as string
-   */
-  toAddressName: PropTypes.string,
-  /**
-   * Input width to solve android paste bug
-   * https://github.com/facebook/react-native/issues/9958
-   */
-  inputWidth: PropTypes.object,
-  /**
-   * Array of confusables
-   */
-  confusableCollection: PropTypes.array,
-  /**
-   * Display Exclamation Icon
-   */
-  displayExclamation: PropTypes.bool,
-  /**
-   * Confirm screen confirmation
-   */
-  isConfirmScreen: PropTypes.bool,
-  /**
-   * Returns if it selected from address book
-   */
-  isFromAddressBook: PropTypes.bool,
-  layout: PropTypes.string,
-};
-
-export const AddressFrom = (props) => {
+export const AddressFrom = (props: AddressFromProps) => {
   const {
     highlighted,
     onPressIcon,
@@ -609,28 +574,4 @@ export const AddressFrom = (props) => {
       </View>
     </View>
   );
-};
-
-AddressFrom.propTypes = {
-  /**
-   * Whether the input is highlighted
-   */
-  highlighted: PropTypes.bool,
-  /**
-   * Callback to execute when icon is pressed
-   */
-  onPressIcon: PropTypes.func,
-  /**
-   * Address of selected address as string
-   */
-  fromAccountAddress: PropTypes.string,
-  /**
-   * Name of selected address as string
-   */
-  fromAccountName: PropTypes.string,
-  /**
-   * Account balance of selected address as string
-   */
-  fromAccountBalance: PropTypes.string,
-  layout: PropTypes.string,
 };

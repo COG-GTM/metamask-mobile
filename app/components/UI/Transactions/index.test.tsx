@@ -5,6 +5,7 @@ import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
+import type { TransactionMeta } from '@metamask/transaction-controller';
 
 const mockStore = configureMockStore();
 const initialState = {
@@ -19,7 +20,6 @@ const initialState = {
   },
 };
 const store = mockStore(initialState);
-
 describe('Transactions', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
@@ -42,7 +42,7 @@ describe('Transactions', () => {
                 value: '0xfa1c6d5030000',
               },
               hash: '0x79ce2d56aaa4735b2bb602ae3a501d9055350a6ec3fb3bd457ba18e8fa4aa2ae',
-            },
+            } as unknown as TransactionMeta,
           ]}
           loading={false}
         />

@@ -68,7 +68,11 @@ describe('SwitchCustomNetwork', () => {
     const { toJSON } = renderWithProvider(
       <SwitchCustomNetwork
         customNetworkInformation={{ chainName: '', chainId: '' }}
-        currentPageInformation={{ url: 'https://app.uniswap.org/' }}
+        currentPageInformation={{
+          currentEnsName: '',
+          icon: '',
+          url: 'https://app.uniswap.org/',
+        }}
       />,
       { state: mockInitialState },
     );
