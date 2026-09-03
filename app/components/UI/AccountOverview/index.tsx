@@ -299,7 +299,8 @@ class AccountOverview extends PureComponent<Props, State> {
 
   copyAccountToClipboard = async () => {
     const { selectedAddress } = this.props;
-    await ClipboardManager.setString(selectedAddress ?? '');
+    if (!selectedAddress) return;
+    await ClipboardManager.setString(selectedAddress);
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
