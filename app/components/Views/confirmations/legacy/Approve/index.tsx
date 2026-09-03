@@ -441,7 +441,7 @@ class Approve extends PureComponent<Props, State> {
           ) ||
           !this.state.ready)
       ) {
-        this.computeGasEstimates(null, false, gasEstimateTypeChanged);
+        this.computeGasEstimates(null, null, gasEstimateTypeChanged);
       }
     }
   };
