@@ -54,8 +54,6 @@ import { useMetrics } from '../../../components/hooks/useMetrics';
 import Routes from '../../../constants/navigation/Routes';
 import {
   MM_BLOCKLIST_ISSUE_URL,
-  MM_ETHERSCAN_URL,
-  MM_PHISH_DETECT_URL,
 } from '../../../constants/urls';
 import AppConstants from '../../../core/AppConstants';
 import SDKConnect from '../../../core/SDKConnect/SDKConnect';
@@ -370,16 +368,8 @@ const AccountConnect = (props: AccountConnectProps) => {
     setShowPhishingModal(false);
   }, []);
 
-  const goToETHPhishingDetector = useCallback(() => {
-    navigateToUrlInEthPhishingModal(MM_PHISH_DETECT_URL);
-  }, [navigateToUrlInEthPhishingModal]);
-
   const goToFilePhishingIssue = useCallback(() => {
     navigateToUrlInEthPhishingModal(MM_BLOCKLIST_ISSUE_URL);
-  }, [navigateToUrlInEthPhishingModal]);
-
-  const goToEtherscam = useCallback(() => {
-    navigateToUrlInEthPhishingModal(MM_ETHERSCAN_URL);
   }, [navigateToUrlInEthPhishingModal]);
 
   const goBackToSafety = useCallback(() => {
@@ -774,9 +764,7 @@ const AccountConnect = (props: AccountConnectProps) => {
       >
         <PhishingModal
           fullUrl={blockedUrl}
-          goToETHPhishingDetector={goToETHPhishingDetector}
           continueToPhishingSite={continueToPhishingSite}
-          goToEtherscam={goToEtherscam}
           goToFilePhishingIssue={goToFilePhishingIssue}
           goBackToSafety={goBackToSafety}
         />
@@ -787,8 +775,6 @@ const AccountConnect = (props: AccountConnectProps) => {
       colors.error.default,
       continueToPhishingSite,
       goBackToSafety,
-      goToETHPhishingDetector,
-      goToEtherscam,
       goToFilePhishingIssue,
       showPhishingModal,
       styles.fullScreenModal,

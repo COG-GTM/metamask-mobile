@@ -6,6 +6,15 @@ declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
 declare module 'react-native-fade-in-image';
 
+declare module 'react-native-elevated-view' {
+  import { ComponentType } from 'react';
+
+  const ElevatedView: ComponentType<
+    import('react-native').ViewProps & { elevation?: number }
+  >;
+  export default ElevatedView;
+}
+
 declare module 'react-native-fast-crypto';
 
 declare module 'react-native-minimizer';

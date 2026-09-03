@@ -1,13 +1,18 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import ActionModal from '../../UI/ActionModal';
 import { useTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Props {
+  showWhatIsSeedphraseModal?: boolean;
+  hideWhatIsSeedphrase?: () => void;
+}
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     whatIsSeedphraseTitle: {
       flex: 1,
@@ -51,7 +56,7 @@ const createStyles = (colors) =>
     },
   });
 
-const SeedphraseModal = ({
+const SeedphraseModal: React.FC<Props> = ({
   showWhatIsSeedphraseModal,
   hideWhatIsSeedphrase,
 }) => {
@@ -94,17 +99,6 @@ const SeedphraseModal = ({
       </View>
     </ActionModal>
   );
-};
-
-SeedphraseModal.propTypes = {
-  /**
-  /* Show or hide modal
-  */
-  showWhatIsSeedphraseModal: PropTypes.bool,
-  /**
-  /* Function to hide modal
-  */
-  hideWhatIsSeedphrase: PropTypes.func,
 };
 
 export default SeedphraseModal;
