@@ -74,7 +74,12 @@ interface Props {
   /**
    * Message string to display when searchResults is empty
    */
-  emptyMessage: string;
+  emptyMessage?: string;
+  selectedAsset?: {
+    symbol?: string;
+    address?: string;
+  };
+  searchQuery?: string;
 }
 
 const AssetList = ({

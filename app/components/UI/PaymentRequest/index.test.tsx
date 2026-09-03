@@ -1,4 +1,6 @@
 import React from 'react';
+import type { ParamListBase, RouteProp } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import {
   render,
   fireEvent,
@@ -124,13 +126,20 @@ const mockRoute = {
   },
 };
 
+const typedMockNavigation =
+  mockNavigation as unknown as StackNavigationProp<ParamListBase>;
+const typedMockRoute = mockRoute as unknown as RouteProp<
+  ParamListBase & { params: { dispatch?: () => void } },
+  'params'
+>;
+
 const renderComponent = (props = {}) =>
   render(
     <Provider store={store}>
       <ThemeContext.Provider value={mockTheme}>
         <PaymentRequest
-          navigation={mockNavigation}
-          route={mockRoute}
+          navigation={typedMockNavigation}
+          route={typedMockRoute}
           {...props}
         />
       </ThemeContext.Provider>
