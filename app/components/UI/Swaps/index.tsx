@@ -65,7 +65,6 @@ import ScreenView from '../../Base/ScreenView';
 import ActionAlert from './components/ActionAlert';
 import TokenSelectButton from './components/TokenSelectButton';
 import TokenSelectModal from './components/TokenSelectModal';
-type TokenSelectModalProps = React.ComponentProps<typeof TokenSelectModal>;
 import SlippageModal from './components/SlippageModal';
 import useBalance from './utils/useBalance';
 import useBlockExplorer from './utils/useBlockExplorer';
@@ -102,6 +101,8 @@ import type {
 } from '@metamask/swaps-controller/dist/types';
 import type { RootState } from '../../../reducers';
 import type { Theme } from '../../../util/theme/models';
+
+type TokenSelectModalProps = React.ComponentProps<typeof TokenSelectModal>;
 
 interface StateProps {
   swapsTokens: SwapsToken[];

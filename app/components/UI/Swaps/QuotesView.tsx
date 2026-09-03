@@ -70,13 +70,9 @@ import LoadingAnimation from './components/LoadingAnimation';
 import TokenIcon from './components/TokenIcon';
 import QuotesSummary from './components/QuotesSummary';
 import QuotesModal from './components/QuotesModal';
-type QuotesModalProps = React.ComponentProps<typeof QuotesModal>;
 import Ratio from './components/Ratio';
 import ActionAlert from './components/ActionAlert';
 import ApprovalTransactionEditionModal from './components/ApprovalTransactionEditionModal';
-type ApprovalTransactionEditionModalProps = React.ComponentProps<
-  typeof ApprovalTransactionEditionModal
->;
 import GasEditModal from './components/GasEditModal';
 import InfoModal from './components/InfoModal';
 import useModalHandler from '../../Base/hooks/useModalHandler';
@@ -156,6 +152,12 @@ import type {
 } from '@metamask/swaps-controller/dist/types';
 import type { RootState } from '../../../reducers';
 import type { Theme } from '../../../util/theme/models';
+
+type QuotesModalProps = React.ComponentProps<typeof QuotesModal>;
+type ApprovalTransactionEditionModalProps = React.ComponentProps<
+  typeof ApprovalTransactionEditionModal
+>;
+
 interface GasFeeOption {
   suggestedMaxFeePerGas: string;
   suggestedMaxPriorityFeePerGas: string;
