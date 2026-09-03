@@ -82,7 +82,8 @@ same basename, e.g. `foo.js` + `foo.test.js`, or `index.js` + `index.test.js` /
 separately. Only test files with no JS source sibling (e.g. `app/store/migrations/028.test.js`,
 whose source is already `028.ts`) are standalone units. Pairing is deterministic:
 (a) matching basename in the same directory; otherwise (b) the JS source the test imports
-(`rg "from '\./" <test>`); and (c) if a directory contains exactly **one** JS source, every
+(`rg "(from|require\()\s*['\"]\.\.?/" <test>` — covers `import`/`require`, either quote style,
+and `./` or `../` paths); and (c) if a directory contains exactly **one** JS source, every
 `*.test.js` in it pairs with that source regardless of name — e.g.
 `app/reducers/notification/index.js` + `notification.test.js`, and
 `app/components/Views/NavigationUnitTest/index.js` + `TestScreen1/2/3.test.js`. In
