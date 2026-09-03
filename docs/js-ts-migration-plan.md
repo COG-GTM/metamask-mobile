@@ -81,10 +81,12 @@ same basename, e.g. `foo.js` + `foo.test.js`, or `index.js` + `index.test.js` /
 `<Dir>.test.js`); test files that pair with a source file in the checklist are never assigned
 separately. Only test files with no JS source sibling (e.g. `app/store/migrations/028.test.js`,
 whose source is already `028.ts`) are standalone units. Pairing is deterministic:
-(a) matching basename in the same directory; otherwise (b) the JS source the test imports
-(`rg "(from|require\()\s*['\"]\.\.?/" <test>` — covers `import`/`require`, either quote style,
-and `./` or `../` paths); and (c) if a directory contains exactly **one** JS source, every
-`*.test.js` in it pairs with that source regardless of name — e.g.
+(a) matching basename in the same directory; otherwise (b) the module under test is the
+**same-directory** `./` import (`rg "(from|require\()\s*['\"]\./" <test>`, `import` or
+`require`, either quote style) — `../` imports are helpers, never the paired source, and if a
+test has zero or more than one `./` JS import it falls through to (c) or is a standalone unit;
+and (c) if a directory contains exactly **one** JS source, every `*.test.js` in it pairs with
+that source regardless of name — e.g.
 `app/reducers/notification/index.js` + `notification.test.js`, and
 `app/components/Views/NavigationUnitTest/index.js` + `TestScreen1/2/3.test.js`. In
 multi-source directories (e.g. `app/components/UI/Swaps/components/`) only rules (a)/(b)
