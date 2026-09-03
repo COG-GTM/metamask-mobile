@@ -227,6 +227,7 @@ const ImportFromSecretRecoveryPhrase = ({
     } catch (err) {
       setLoading(false);
       setError(String(err));
+      throw err;
     }
     setBiometryType(newAuthData.availableBiometryType ?? null);
     updateBiometryChoice(false);
