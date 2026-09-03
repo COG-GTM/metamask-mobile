@@ -1,11 +1,18 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
-import Animated from 'react-native-reanimated';
+import Animated, { type SharedValue } from 'react-native-reanimated';
 import BaseNotification from './../BaseNotification';
 import Device from '../../../../util/device';
 import ElevatedView from 'react-native-elevated-view';
 import { colors as importedColors } from '../../../../styles/common';
+import type { CurrentNotification } from '../types';
+
+interface Props {
+  isInBrowserView?: boolean;
+  notificationAnimated: SharedValue<number>;
+  hideCurrentNotification?: () => void;
+  currentNotification: CurrentNotification;
+}
 
 const styles = StyleSheet.create({
   modalTypeViewBrowser: {
@@ -29,7 +36,7 @@ function SimpleNotification({
   notificationAnimated,
   hideCurrentNotification,
   currentNotification,
-}) {
+}: Props) {
   return (
     <Animated.View
       style={[
@@ -51,12 +58,5 @@ function SimpleNotification({
     </Animated.View>
   );
 }
-
-SimpleNotification.propTypes = {
-  isInBrowserView: PropTypes.bool,
-  notificationAnimated: PropTypes.object,
-  currentNotification: PropTypes.object,
-  hideCurrentNotification: PropTypes.func,
-};
 
 export default SimpleNotification;

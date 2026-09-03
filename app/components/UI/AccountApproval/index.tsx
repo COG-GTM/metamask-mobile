@@ -1,7 +1,14 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
-import { InteractionManager, TouchableOpacity, View } from 'react-native';
+import {
+  InteractionManager,
+  TouchableOpacity,
+  View,
+  type StyleProp,
+  type TextStyle,
+} from 'react-native';
 import { connect } from 'react-redux';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { Theme } from '@metamask/design-tokens';
 import { strings } from '../../../../locales/i18n';
 import Text from '../../../component-library/components/Texts/Text';
 import NotificationManager from '../../../core/NotificationManager';
@@ -13,7 +20,7 @@ import { MetaMetricsEvents } from '../../../core/Analytics';
 
 import CheckBox from '@react-native-community/checkbox';
 import { shuffle } from 'lodash';
-import URL from 'url-parse';
+import URLParser from 'url-parse';
 import AppConstants from '../../../../app/core/AppConstants';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
 import { ConnectAccountBottomSheetSelectorsIDs } from '../../../../e2e/selectors/Browser/ConnectAccountBottomSheet.selectors';
@@ -36,59 +43,57 @@ import createStyles from './styles';
 import { SourceType } from '../../hooks/useMetrics/useMetrics.types';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import { getPhishingTestResultAsync } from '../../../util/phishingDetection';
+import type { RootState } from '../../../reducers';
+import type { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
 /**
  * Account access approval component
  */
-class AccountApproval extends PureComponent {
-  static propTypes = {
-    /**
-     * Object containing current page title, url, and icon href
-     */
-    currentPageInformation: PropTypes.object,
-    /**
-     * Callback triggered on account access approval
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Callback triggered on account access rejection
-     */
-    onCancel: PropTypes.func,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Number of tokens
-     */
-    tokensLength: PropTypes.number,
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-     * Number of accounts
-     */
-    accountsLength: PropTypes.number,
-    /**
-     * A string representing the network name
-     */
-    networkType: PropTypes.string,
-    /**
-     * Whether it was a request coming through wallet connect
-     */
-    walletConnectRequest: PropTypes.bool,
-    /**
-     * A string representing the network chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+interface CurrentPageInformation {
+  url?: string;
+  title?: string;
+  icon?: string;
+  origin?: string;
+  reconnect?: boolean;
+  apiVersion?: string;
+  otps?: number[];
+  channelId?: string;
+  analytics?: { source?: string; [key: string]: unknown };
+}
 
-  state = {
+interface OwnProps {
+  currentPageInformation: CurrentPageInformation;
+  onConfirm: () => void;
+  onCancel: () => void;
+  navigation?: NavigationProp<ParamListBase>;
+  walletConnectRequest?: boolean;
+}
+
+interface StateProps {
+  selectedAddress: ReturnType<
+    typeof selectSelectedInternalAccountFormattedAddress
+  >;
+  tokensLength: number;
+  accountsLength: number;
+  networkType: ReturnType<typeof selectProviderType>;
+  chainId: ReturnType<typeof selectEvmChainId>;
+}
+
+type Props = OwnProps & StateProps & IWithMetricsAwarenessProps;
+
+interface State {
+  start: number;
+  confirmDisabled: boolean;
+  otpChoice?: number;
+  noPersist: boolean;
+  otps: number[];
+  otp: string | boolean | undefined;
+  isUrlFlaggedAsPhishing: boolean;
+}
+
+class AccountApproval extends PureComponent<Props, State> {
+  private _isMounted = false;
+
+  state: State = {
     start: Date.now(),
     confirmDisabled: true,
     otpChoice: undefined,
@@ -109,7 +114,7 @@ class AccountApproval extends PureComponent {
 
     try {
       if (currentPageInformation?.url) {
-        const url = new URL(currentPageInformation.url);
+        const url = new URLParser(currentPageInformation.url);
         urlHostName = url.host;
       }
     } catch (error) {
@@ -158,8 +163,10 @@ class AccountApproval extends PureComponent {
 
     const { currentPageInformation } = this.props;
 
-    const prefixedUrl = prefixUrlWithProtocol(currentPageInformation?.url);
-    const { hostname } = new URL(prefixedUrl);
+    const prefixedUrl = prefixUrlWithProtocol(
+      currentPageInformation?.url ?? '',
+    );
+    const { hostname } = new URLParser(prefixedUrl);
     this.checkUrlFlaggedAsPhishing(hostname);
 
     this.props.metrics.trackEvent(
@@ -197,12 +204,14 @@ class AccountApproval extends PureComponent {
   onConfirm = () => {
     if (
       this.state.otp &&
-      this.state.otpChoice !== this.props.currentPageInformation.otps[0]
+      this.state.otpChoice !== this.props.currentPageInformation.otps?.[0]
     ) {
-      SDKConnect.getInstance().removeChannel(
-        this.props.currentPageInformation.channelId,
-        true,
-      );
+      if (this.props.currentPageInformation.channelId) {
+        SDKConnect.getInstance().removeChannel({
+          channelId: this.props.currentPageInformation.channelId,
+          sendTerminate: true,
+        });
+      }
       // onConfirm will close current window by rejecting current approvalRequest.
       this.props.onCancel();
 
@@ -224,9 +233,11 @@ class AccountApproval extends PureComponent {
     }
 
     if (this.state.noPersist) {
-      SDKConnect.getInstance().invalidateChannel({
-        channelId: this.props.currentPageInformation.channelId,
-      });
+      if (this.props.currentPageInformation.channelId) {
+        SDKConnect.getInstance().invalidateChannel({
+          channelId: this.props.currentPageInformation.channelId,
+        });
+      }
     }
 
     this.props.onConfirm();
@@ -252,10 +263,10 @@ class AccountApproval extends PureComponent {
         .build(),
     );
     if (this.props.currentPageInformation.channelId) {
-      SDKConnect.getInstance().removeChannel(
-        this.props.currentPageInformation.channelId,
-        true,
-      );
+      SDKConnect.getInstance().removeChannel({
+        channelId: this.props.currentPageInformation.channelId,
+        sendTerminate: true,
+      });
     }
 
     this.props.onCancel();
@@ -283,14 +294,14 @@ class AccountApproval extends PureComponent {
     };
   };
 
-  onOTP = (value) => {
+  onOTP = (value: number) => {
     this.setState({
       otpChoice: value,
       confirmDisabled: false,
     });
   };
 
-  checkUrlFlaggedAsPhishing = async (hostname) => {
+  checkUrlFlaggedAsPhishing = async (hostname: string) => {
     const scanResult = await getPhishingTestResultAsync(hostname);
     if (this._isMounted) {
       this.setState({
@@ -302,7 +313,8 @@ class AccountApproval extends PureComponent {
   render = () => {
     const { currentPageInformation, selectedAddress } = this.props;
     const { isUrlFlaggedAsPhishing } = this.state;
-    const { colors, typography } = this.context || mockTheme;
+    const { colors, typography } =
+      (this.context as unknown as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
     const hasRememberMe =
       !currentPageInformation.reconnect &&
@@ -320,19 +332,19 @@ class AccountApproval extends PureComponent {
 
         {!currentPageInformation.reconnect && (
           <>
-            <Text style={styles.intro}>
+            <Text style={styles.intro as StyleProp<TextStyle>}>
               {strings('accountApproval.action')}
             </Text>
-            <Text style={styles.warning}>
+            <Text style={styles.warning as StyleProp<TextStyle>}>
               {strings('accountApproval.warning')}
             </Text>
           </>
         )}
         <View style={styles.accountCardWrapper}>
-          <AccountInfoCard fromAddress={selectedAddress} />
+          <AccountInfoCard fromAddress={selectedAddress ?? ''} />
         </View>
         {currentPageInformation.reconnect && (
-          <Text style={styles.intro_reconnect}>
+          <Text style={styles.intro_reconnect as StyleProp<TextStyle>}>
             {this.state.otp
               ? strings('accountApproval.action_reconnect')
               : strings('accountApproval.action_reconnect_deeplink')}
@@ -356,7 +368,9 @@ class AccountApproval extends PureComponent {
                       : styles.circle
                   }
                 />
-                <Text style={styles.optionText}>{otpValue}</Text>
+                <Text style={styles.optionText as StyleProp<TextStyle>}>
+                  {otpValue}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -366,7 +380,7 @@ class AccountApproval extends PureComponent {
             <CheckBox
               style={styles.rememberCheckbox}
               value={this.state.noPersist}
-              onValueChange={(checked) => {
+              onValueChange={(checked: boolean) => {
                 this.setState({ noPersist: checked });
               }}
               boxType={'square'}
@@ -412,7 +426,7 @@ class AccountApproval extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   accountsLength: selectAccountsLength(state),
   tokensLength: selectTokensLength(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
