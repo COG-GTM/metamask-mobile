@@ -321,6 +321,7 @@ class TransactionReview extends PureComponent<Props, State> {
       {
         ...transactionMetadata,
         transaction,
+        txParams: undefined,
       },
       chainId,
     );
