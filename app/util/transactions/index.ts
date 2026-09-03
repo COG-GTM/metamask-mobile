@@ -440,7 +440,10 @@ const BASE = 4 * 16;
  * @param {String} data - Data to decode
  * @returns {Array} - Object containing the decoded transfer data
  */
-export function decodeTransferData(type: string, data: string) {
+export function decodeTransferData(
+  type: 'transfer' | 'transferFrom',
+  data: string,
+): string[] {
   switch (type) {
     case 'transfer': {
       const encodedAddress = data.substring(10, BASE + 10);
