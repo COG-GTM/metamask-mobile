@@ -11,6 +11,8 @@ import {
   View,
   TouchableOpacity,
   InteractionManager,
+  type StyleProp,
+  type TextStyle,
 } from 'react-native';
 import { connect } from 'react-redux';
 import {
@@ -63,6 +65,7 @@ import ScreenView from '../../Base/ScreenView';
 import ActionAlert from './components/ActionAlert';
 import TokenSelectButton from './components/TokenSelectButton';
 import TokenSelectModal from './components/TokenSelectModal';
+type TokenSelectModalProps = React.ComponentProps<typeof TokenSelectModal>;
 import SlippageModal from './components/SlippageModal';
 import useBalance from './utils/useBalance';
 import useBlockExplorer from './utils/useBlockExplorer';
@@ -95,12 +98,10 @@ import type { Dispatch } from 'redux';
 import type { Hex } from '@metamask/utils';
 import type {
   FeatureFlags,
-  SwapsAsset,
   SwapsToken,
 } from '@metamask/swaps-controller/dist/types';
 import type { RootState } from '../../../reducers';
 import type { Theme } from '../../../util/theme/models';
-import type { Token } from './utils/token-list-utils';
 
 interface StateProps {
   swapsTokens: SwapsToken[];
@@ -113,8 +114,8 @@ interface StateProps {
     typeof selectEvmNetworkConfigurationsByChainId
   >;
   balances: NonNullable<ReturnType<typeof selectContractBalances>>;
-  tokensWithBalance: Token[];
-  tokensTopAssets: SwapsAsset[];
+  tokensWithBalance: ReturnType<typeof swapsTokensWithBalanceSelector>;
+  tokensTopAssets: ReturnType<typeof swapsTopAssetsSelector>;
   conversionRate: number;
   tokenExchangeRates: ReturnType<typeof selectContractExchangeRates>;
   currentCurrency: string;
@@ -565,7 +566,12 @@ function SwapsAmountView({
     }
 
     // TODO: Cannot call .gte on balanceAsUnits since it isn't always guaranteed to be type BN. Should consolidate into one type.
-    return gte(balanceAsUnits, amountAsUnits) ?? false;
+    return (
+      gte(
+        Number(balanceAsUnits.toString()),
+        Number(amountAsUnits.toString()),
+      ) ?? false
+    );
   }, [amountAsUnits, balanceAsUnits, hasBalance, hasInvalidDecimals]);
 
   const currencyAmount = useMemo(() => {
@@ -640,7 +646,7 @@ function SwapsAmountView({
           10,
         ),
         slippage,
-        [sourceToken, destinationToken],
+        [sourceToken as SwapsToken, destinationToken as SwapsToken],
       ),
     );
   }, [
@@ -758,11 +764,13 @@ function SwapsAmountView({
   const disabledView =
     !destinationTokenHasEnoughOcurrances && !hasDismissedTokenAlert;
 
-  const showMaxBalanceLink = shouldShowMaxBalanceLink({
-    sourceToken: sourceToken as object,
-    shouldUseSmartTransaction,
-    hasBalance,
-  });
+  const showMaxBalanceLink = sourceToken
+    ? shouldShowMaxBalanceLink({
+        sourceToken,
+        shouldUseSmartTransaction,
+        hasBalance,
+      })
+    : false;
 
   return (
     <TypedScreenView
@@ -794,10 +802,18 @@ function SwapsAmountView({
             isVisible={isSourceModalVisible}
             dismiss={toggleSourceModal}
             title={strings('swaps.convert_from')}
-            tokens={swapsTokens}
-            initialTokens={tokensWithBalance}
-            onItemPress={handleSourceTokenPress}
-            excludeAddresses={[destinationToken?.address]}
+            tokens={
+              swapsTokens as unknown as TokenSelectModalProps['tokens']
+            }
+            initialTokens={
+              tokensWithBalance as unknown as TokenSelectModalProps['initialTokens']
+            }
+            onItemPress={
+              handleSourceTokenPress as TokenSelectModalProps['onItemPress']
+            }
+            excludeAddresses={
+              destinationToken ? [destinationToken.address] : []
+            }
           />
         </View>
         <View
@@ -876,19 +892,25 @@ function SwapsAmountView({
             isVisible={isDestinationModalVisible}
             dismiss={toggleDestinationModal}
             title={strings('swaps.convert_to')}
-            tokens={swapsTokens}
-            initialTokens={[
-              swapsUtils.getNativeSwapsToken(chainId),
-              ...tokensTopAssets
-                .slice(0, MAX_TOP_ASSETS)
-                .filter(
-                  (asset) =>
-                    asset.address !==
-                    swapsUtils.getNativeSwapsToken(chainId).address,
-                ),
-            ]}
-            onItemPress={handleDestinationTokenPress}
-            excludeAddresses={[sourceToken?.address]}
+            tokens={
+              swapsTokens as unknown as TokenSelectModalProps['tokens']
+            }
+            initialTokens={
+              [
+                swapsUtils.getNativeSwapsToken(chainId),
+                ...tokensTopAssets
+                  .slice(0, MAX_TOP_ASSETS)
+                  .filter(
+                    (asset: SwapsToken) =>
+                      asset.address !==
+                      swapsUtils.getNativeSwapsToken(chainId).address,
+                  ),
+              ] as unknown as TokenSelectModalProps['initialTokens']
+            }
+            onItemPress={
+              handleDestinationTokenPress as TokenSelectModalProps['onItemPress']
+            }
+            excludeAddresses={sourceToken ? [sourceToken.address] : []}
           />
         </View>
         <View>
@@ -931,7 +953,7 @@ function SwapsAmountView({
                 onPress={handleDimissTokenAlert}
                 onInfoPress={toggleTokenVerificationModal}
               >
-                {(textStyle: object) => (
+                {(textStyle: StyleProp<TextStyle>) => (
                   <TouchableOpacity
                     onPress={explorer.isValid ? handleVerifyPress : undefined}
                   >

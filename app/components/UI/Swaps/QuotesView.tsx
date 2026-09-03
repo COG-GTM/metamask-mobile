@@ -7,6 +7,8 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Linking,
+  type StyleProp,
+  type TextStyle,
 } from 'react-native';
 import { connect, useSelector } from 'react-redux';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
@@ -68,9 +70,13 @@ import LoadingAnimation from './components/LoadingAnimation';
 import TokenIcon from './components/TokenIcon';
 import QuotesSummary from './components/QuotesSummary';
 import QuotesModal from './components/QuotesModal';
+type QuotesModalProps = React.ComponentProps<typeof QuotesModal>;
 import Ratio from './components/Ratio';
 import ActionAlert from './components/ActionAlert';
 import ApprovalTransactionEditionModal from './components/ApprovalTransactionEditionModal';
+type ApprovalTransactionEditionModalProps = React.ComponentProps<
+  typeof ApprovalTransactionEditionModal
+>;
 import GasEditModal from './components/GasEditModal';
 import InfoModal from './components/InfoModal';
 import useModalHandler from '../../Base/hooks/useModalHandler';
@@ -462,7 +468,9 @@ async function resetAndStartPolling({
   } as Parameters<typeof getFetchParams>[0]);
   await SwapsController.stopPollingAndResetState();
   await SwapsController.startFetchAndSetQuotes(
-    fetchParams as Parameters<typeof SwapsController.startFetchAndSetQuotes>[0],
+    fetchParams as unknown as Parameters<
+      typeof SwapsController.startFetchAndSetQuotes
+    >[0],
     fetchParams.metaData as Parameters<
       typeof SwapsController.startFetchAndSetQuotes
     >[1],
@@ -771,7 +779,7 @@ function SwapsQuotesView({
   ] = useMemo(() => {
     // Token
     const sourceBN = new BigNumber(sourceAmount);
-    const tokenBalanceBN = new BigNumber(balance.toString(10));
+    const tokenBalanceBN = new BigNumber(balance?.toString(10) ?? '0');
     const tokenHasEnoughBalance = tokenBalanceBN.gte(sourceBN);
     const tokenBalanceMissing = tokenHasEnoughBalance
       ? null
@@ -1300,7 +1308,7 @@ function SwapsQuotesView({
           },
           destinationToken: { swaps: 'swaps' },
           upTo: new BigNumber(
-            decodeApproveData(approvalTransaction.data).encodedAmount,
+            decodeApproveData(approvalTransaction.data ?? '').encodedAmount,
             16,
           ).toString(10),
         });
@@ -1453,14 +1461,14 @@ function SwapsQuotesView({
       return;
     }
     const originalApprovalTransactionEncodedAmount = decodeApproveData(
-      originalApprovalTransaction.data,
+      originalApprovalTransaction.data ?? '',
     ).encodedAmount;
     const originalAmount = fromTokenMinimalUnitString(
       hexToBN(originalApprovalTransactionEncodedAmount).toString(10),
       sourceToken.decimals,
     );
     const currentApprovalTransactionEncodedAmount = approvalTransaction
-      ? decodeApproveData(approvalTransaction.data).encodedAmount
+      ? decodeApproveData(approvalTransaction.data ?? '').encodedAmount
       : '0';
     const currentAmount = fromTokenMinimalUnitString(
       hexToBN(currentApprovalTransactionEncodedAmount).toString(10),
@@ -2203,7 +2211,7 @@ function SwapsQuotesView({
                     : togglePriceDifferenceModal
                 }
               >
-                {(textStyle: object) =>
+                {(textStyle: StyleProp<TextStyle>) =>
                   selectedQuote.priceSlippage?.calculationError ? (
                     <>
                       <Text style={textStyle} bold centered>
@@ -2775,21 +2783,27 @@ function SwapsQuotesView({
       <QuotesModal
         isVisible={isQuotesModalVisible}
         toggleModal={toggleQuotesModal}
-        quotes={allQuotes}
+        quotes={allQuotes as unknown as QuotesModalProps['quotes']}
         sourceToken={sourceToken}
         destinationToken={destinationToken}
-        selectedQuote={selectedQuoteId}
+        selectedQuote={selectedQuoteId ?? undefined}
         showOverallValue={hasConversionRate}
-        ticker={getTicker(ticker)}
-        multiLayerL1ApprovalFeeTotal={multiLayerL1ApprovalFeeTotal}
+        ticker={getTicker(ticker) ?? undefined}
+        multiLayerL1ApprovalFeeTotal={
+          multiLayerL1ApprovalFeeTotal ?? undefined
+        }
       />
 
       <ApprovalTransactionEditionModal
-        approvalTransaction={approvalTransaction}
+        approvalTransaction={
+          approvalTransaction as unknown as ApprovalTransactionEditionModalProps['approvalTransaction']
+        }
         editQuoteTransactionsVisible={editQuoteTransactionsVisible}
         minimumSpendLimit={approvalMinimumSpendLimit}
         onCancelEditQuoteTransactions={onCancelEditQuoteTransactions}
-        setApprovalTransaction={setApprovalTransaction}
+        setApprovalTransaction={
+          setApprovalTransaction as unknown as ApprovalTransactionEditionModalProps['setApprovalTransaction']
+        }
         sourceToken={sourceToken}
         chainId={chainId}
       />
