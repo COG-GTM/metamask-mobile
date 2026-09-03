@@ -43,7 +43,7 @@ export interface CustomGasModalProps {
     total,
   }: {
     transaction: TransactionParams;
-    total: string;
+    total?: string;
   }) => string;
   legacy: boolean;
   legacyGasData?: {

@@ -17,6 +17,12 @@ import {
   GasTransaction,
 } from './CustomGasModal.types';
 
+const LegacyEditGasFee1559 = EditGasFee1559 as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+const LegacyEditGasFeeLegacy =
+  EditGasFeeLegacy as unknown as React.ComponentType<Record<string, unknown>>;
+
 const CustomGasModal = ({
   gasSelected,
   animateOnChange,
@@ -84,7 +90,7 @@ const CustomGasModal = ({
     (gasTxn: GasTransaction, gasObj: GasObject) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
-        total: gasTxn.totalHex || '',
+        total: gasTxn.totalHex,
       });
       setLegacyGasObj(gasObj);
       setError(gasTxn?.error);
@@ -97,7 +103,7 @@ const CustomGasModal = ({
     (gasTxn: GasTransaction, gasObj: GasObject) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
-        total: gasTxn.totalMaxHex || '',
+        total: gasTxn.totalMaxHex,
       });
 
       setEIP1559Txn(gasTxn);
@@ -120,8 +126,8 @@ const CustomGasModal = ({
   );
 
   const legacyGasObject = {
-    legacyGasLimit: legacyGasObj?.legacyGasLimit || '',
-    suggestedGasPrice: legacyGasObj?.suggestedGasPrice || '',
+    legacyGasLimit: legacyGasObj?.legacyGasLimit,
+    suggestedGasPrice: legacyGasObj?.suggestedGasPrice,
   };
 
   const eip1559GasObject = {
@@ -132,9 +138,9 @@ const CustomGasModal = ({
     suggestedMaxPriorityFeePerGas:
       eip1559GasObj?.suggestedMaxPriorityFeePerGas ||
       (gasFeeEstimate as Record<string, GasOption>)[selectedGas]
-        ?.suggestedMaxPriorityFeePerGas || '',
+        ?.suggestedMaxPriorityFeePerGas,
     suggestedGasLimit:
-      eip1559GasObj?.suggestedGasLimit || eip1559Txn?.suggestedGasLimit || '',
+      eip1559GasObj?.suggestedGasLimit || eip1559Txn?.suggestedGasLimit,
   };
 
   return (
@@ -157,7 +163,7 @@ const CustomGasModal = ({
         contentContainerStyle={styles.keyboardAwareWrapper}
       >
         {legacy ? (
-          <EditGasFeeLegacy
+          <LegacyEditGasFeeLegacy
             onCancel={onCancelGas}
             onSave={onSaveLegacyGasOption}
             animateOnChange={animateOnChange}
@@ -167,14 +173,12 @@ const CustomGasModal = ({
             onlyGas={false}
             selectedGasObject={legacyGasObject}
             error={error}
-            warning={undefined}
-            hasDappSuggestedGas={false}
             onUpdatingValuesStart={onGasAnimationStart}
             onUpdatingValuesEnd={onGasAnimationEnd}
             chainId={chainId}
           />
         ) : (
-          <EditGasFee1559
+          <LegacyEditGasFee1559
             selectedGasValue={selectedGas}
             gasOptions={gasFeeEstimate}
             onChange={onChangeGas}
@@ -185,17 +189,10 @@ const CustomGasModal = ({
             animateOnChange={animateOnChange}
             isAnimating={isAnimating}
             analyticsParams={getGasAnalyticsParams()}
+            view={'SendTo (Confirm)'}
             selectedGasObject={eip1559GasObject}
             onlyGas={onlyGas}
             error={error}
-            warning={undefined}
-            ignoreOptions={undefined}
-            updateOption={undefined}
-            extendOptions={undefined}
-            recommended={undefined}
-            warningMinimumEstimateOption=""
-            suggestedEstimateOption=""
-            dappSuggestedGas={undefined}
           />
         )}
       </KeyboardAwareScrollView>

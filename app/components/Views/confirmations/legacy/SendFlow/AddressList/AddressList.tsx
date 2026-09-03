@@ -19,10 +19,7 @@ import { RootState } from '../../../../../../reducers';
 import { AddressBookEntry } from '@metamask/address-book-controller';
 import { AddressListProps, Contact } from './AddressList.types';
 
-const LabelElement = (
-  styles: ReturnType<typeof styleSheet>,
-  label: string,
-) => (
+const LabelElement = (styles: ReturnType<typeof styleSheet>, label: string) => (
   <View key={label} style={styles.labelElementWrapper}>
     <Text variant={TextVariant.BodyMD} style={styles.contactLabel}>
       {label.toUpperCase()}
@@ -215,7 +212,7 @@ const AddressList = ({
         typeof contractElement === 'object' &&
         contractElement.isSmartContract === false
       ) {
-        const nameInitial = contractElement.name[0].toLowerCase();
+        const nameInitial = contractElement?.name?.[0].toLowerCase();
         if (sendFlowContacts.includes(nameInitial)) {
           sendFlowContacts.push(contractElement);
         } else {

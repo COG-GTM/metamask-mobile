@@ -214,7 +214,7 @@ const renderComponent = (state: any = {}) =>
               navigate: mockNavigate,
               setOptions: jest.fn(),
               setParams: jest.fn(),
-            } as never}
+            }}
           />
         )}
       </Stack.Screen>

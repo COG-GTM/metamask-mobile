@@ -97,7 +97,7 @@ interface SendToState {
   toEnsName?: string;
   toEnsAddressResolved?: string;
   confusableCollection: string[];
-  inputWidth?: { width: string };
+  inputWidth: { width: string };
   showAmbiguousAcountWarning: boolean;
   toInputHighlighted?: boolean;
   addressReady?: boolean;
@@ -119,11 +119,11 @@ interface OwnProps {
 interface StateProps {
   addressBook: ReturnType<typeof selectAddressBook>;
   globalChainId: Hex;
-  selectedAddress: string;
+  selectedAddress?: string;
   selectedAsset: object;
   internalAccounts: ReturnType<typeof selectInternalAccounts>;
   ticker: string;
-  providerType: string;
+  providerType?: string;
   isPaymentRequest?: boolean;
   isNativeTokenBuySupported: boolean;
   ambiguousAddressEntries: Record<string, string[]>;
@@ -148,10 +148,7 @@ interface DispatchProps {
   resetTransaction: () => void;
 }
 
-type Props = OwnProps &
-  StateProps &
-  DispatchProps &
-  IWithMetricsAwarenessProps;
+type Props = OwnProps & StateProps & DispatchProps & IWithMetricsAwarenessProps;
 
 /**
  * View that wraps the wraps the "Send" screen
@@ -175,11 +172,14 @@ class SendFlow extends PureComponent<Props, SendToState> {
   };
 
   updateNavBar = () => {
-    const { navigation, route, resetTransaction: resetSendTransaction } =
-      this.props;
-    const colors = (
-      this.context as React.ContextType<typeof ThemeContext>
-    ).colors || mockTheme.colors;
+    const {
+      navigation,
+      route,
+      resetTransaction: resetSendTransaction,
+    } = this.props;
+    const colors =
+      (this.context as React.ContextType<typeof ThemeContext>).colors ||
+      mockTheme.colors;
     navigation.setOptions(
       getSendFlowTitle(
         'send.send_to',
@@ -208,12 +208,15 @@ class SendFlow extends PureComponent<Props, SendToState> {
     const networkAddressBook = addressBook[globalChainId] || {};
     if (!Object.keys(networkAddressBook).length) {
       setTimeout(() => {
-        this.addressToInputRef?.current?.focus();
+        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+        this.addressToInputRef &&
+          this.addressToInputRef.current &&
+          this.addressToInputRef.current.focus();
       }, 500);
     }
     //Fills in to address and sets the transaction if coming from QR code scan
-    const { txMeta } = route.params as SendToRouteParams;
-    const targetAddress = txMeta?.target_address;
+    const targetAddress = (route.params as SendToRouteParams | undefined)
+      ?.txMeta?.target_address;
     if (targetAddress) {
       this.props.newAssetTransaction(getEther(ticker));
       this.onToSelectedAddressChange(targetAddress);
@@ -238,9 +241,8 @@ class SendFlow extends PureComponent<Props, SendToState> {
   isAddressSaved = () => {
     const { toAccount } = this.state;
     const { addressBook, globalChainId, internalAccounts } = this.props;
-    if (!toAccount) return false;
     const networkAddressBook = addressBook[globalChainId] || {};
-    const checksummedAddress = toChecksumAddress(toAccount);
+    const checksummedAddress = toChecksumAddress(toAccount as string);
     return !!(
       networkAddressBook[checksummedAddress] ||
       internalAccounts.find((account) =>
@@ -257,8 +259,9 @@ class SendFlow extends PureComponent<Props, SendToState> {
         addressError = strings('transaction.could_not_resolve_ens');
       }
     } else if (
-      !toAccount ||
-      !isValidHexAddress(toAccount, { mixedCaseUseChecksum: true })
+      !isValidHexAddress(toAccount as string, {
+        mixedCaseUseChecksum: true,
+      })
     ) {
       addressError = strings('transaction.invalid_address');
     }
@@ -283,8 +286,7 @@ class SendFlow extends PureComponent<Props, SendToState> {
       });
     } catch (e) {
       let alertMessage;
-      const errorMessage = e instanceof Error ? e.message : '';
-      switch (errorMessage) {
+      switch ((e as Error).message) {
         case NetworkSwitchErrorType.missingNetworkId:
           alertMessage = strings('send.network_missing_id');
           break;
@@ -355,6 +357,12 @@ class SendFlow extends PureComponent<Props, SendToState> {
   };
 
   renderBuyEth = () => {
+    const colors =
+      (this.context as React.ContextType<typeof ThemeContext>).colors ||
+      mockTheme.colors;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const styles = createStyles(colors);
+
     if (!this.props.isNativeTokenBuySupported) {
       return null;
     }
@@ -385,7 +393,7 @@ class SendFlow extends PureComponent<Props, SendToState> {
     );
 
   updateParentState = (state: Partial<SendToState>) => {
-    this.setState((previousState) => ({ ...previousState, ...state }));
+    this.setState({ ...state } as SendToState);
   };
 
   fromAccountBalanceState = (value: boolean) => {
@@ -416,6 +424,22 @@ class SendFlow extends PureComponent<Props, SendToState> {
 
   validateAddressOrENSFromInput = async (toAccount: string) => {
     const { addressBook, internalAccounts, globalChainId } = this.props;
+    const validationResult = (await validateAddressOrENS(
+      toAccount,
+      addressBook,
+      internalAccounts,
+      globalChainId,
+    )) as {
+      addressError?: string;
+      toEnsName?: string;
+      addressReady: boolean;
+      toEnsAddress?: string;
+      addToAddressToAddressBook?: boolean;
+      toAddressName?: string;
+      errorContinue?: boolean;
+      isOnlyWarning?: boolean;
+      confusableCollection: string[];
+    };
     const {
       addressError,
       toEnsName,
@@ -425,12 +449,8 @@ class SendFlow extends PureComponent<Props, SendToState> {
       toAddressName,
       errorContinue,
       confusableCollection,
-    } = await validateAddressOrENS(
-      toAccount,
-      addressBook,
-      internalAccounts,
-      globalChainId,
-    );
+      isOnlyWarning,
+    } = validationResult;
 
     this.setState({
       addressError,
@@ -440,13 +460,16 @@ class SendFlow extends PureComponent<Props, SendToState> {
       addToAddressToAddressBook,
       toSelectedAddressName: toAddressName,
       errorContinue,
+      isOnlyWarning,
       confusableCollection,
     });
   };
 
   onToSelectedAddressChange = (toAccount: string) => {
     const currentChain =
-      this.props.ambiguousAddressEntries?.[this.props.globalChainId];
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      this.props.ambiguousAddressEntries &&
+      this.props.ambiguousAddressEntries[this.props.globalChainId];
     const isAmbiguousAddress = includes(currentChain, toAccount);
     if (isAmbiguousAddress) {
       this.setState({ showAmbiguousAcountWarning: isAmbiguousAddress });
@@ -507,35 +530,38 @@ class SendFlow extends PureComponent<Props, SendToState> {
       toSelectedAddressName,
       addressError,
       balanceIsZero,
-      inputWidth = { width: '99%' },
+      inputWidth,
       errorContinue,
       isOnlyWarning,
       confusableCollection,
       toEnsAddressResolved,
     } = this.state;
 
-    const colors = (
-      this.context as React.ContextType<typeof ThemeContext>
-    ).colors || mockTheme.colors;
+    const colors =
+      (this.context as React.ContextType<typeof ThemeContext>).colors ||
+      mockTheme.colors;
     const styles = createStyles(colors);
 
     const checksummedAddress = toAccount && toChecksumAddress(toAccount);
     const existingAddressName = this.getAddressNameFromBookOrInternalAccounts(
       toEnsAddressResolved || toAccount,
     );
-    const existingContact = checksummedAddress
-      ? addressBook[globalChainId]?.[checksummedAddress]
-      : undefined;
-    const displayConfusableWarning = Boolean(
-      !existingContact && confusableCollection?.length,
-    );
-    const displayAsWarning = Boolean(
-      confusableCollection?.length &&
-        !confusableCollection.some(hasZeroWidthPoints),
-    );
-    const explanations = displayConfusableWarning
-      ? getConfusablesExplanations(confusableCollection)
-      : [];
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+    const existingContact =
+      checksummedAddress &&
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      addressBook[globalChainId] &&
+      addressBook[globalChainId][checksummedAddress];
+    const displayConfusableWarning =
+      !existingContact && confusableCollection && !!confusableCollection.length;
+    const displayAsWarning =
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      confusableCollection &&
+      confusableCollection.length &&
+      !confusableCollection.some(hasZeroWidthPoints);
+    const explanations =
+      displayConfusableWarning &&
+      getConfusablesExplanations(confusableCollection);
 
     return (
       <SafeAreaView
@@ -560,7 +586,9 @@ class SendFlow extends PureComponent<Props, SendToState> {
             confusableCollectionArray={
               (!existingContact && confusableCollection) || []
             }
-            isFromAddressBook={Boolean(existingAddressName?.length)}
+            isFromAddressBook={
+              !!existingAddressName && existingAddressName.length > 0
+            }
             onToSelectedAddressChange={this.onToSelectedAddressChange}
             highlighted={false}
           />
@@ -606,7 +634,7 @@ class SendFlow extends PureComponent<Props, SendToState> {
                 <View
                   style={[
                     styles.confusabeError,
-                    displayAsWarning && styles.confusabeWarning,
+                    (displayAsWarning as boolean) && styles.confusabeWarning,
                   ]}
                 >
                   <View style={styles.warningIcon}>
@@ -626,7 +654,7 @@ class SendFlow extends PureComponent<Props, SendToState> {
                     </Text>
                     <Text style={styles.confusableMsg}>
                       {strings('transaction.confusable_msg')}{' '}
-                      {explanations.join(', ')}.
+                      {(explanations as string[]).join(', ')}.
                     </Text>
                   </View>
                 </View>
@@ -635,7 +663,7 @@ class SendFlow extends PureComponent<Props, SendToState> {
                 setToAddressName={(addressName) =>
                   this.setState({ toSelectedAddressName: addressName })
                 }
-                address={toEnsAddressResolved || toAccount || ''}
+                address={(toEnsAddressResolved || toAccount) as string}
                 defaultNull
               >
                 <Text
@@ -688,8 +716,8 @@ class SendFlow extends PureComponent<Props, SendToState> {
                   //Will be here just to ensure that we don't break existing conditions
                   disabled={
                     !(
-                      (isValidHexAddress(toEnsAddressResolved || '') ||
-                        isValidHexAddress(toAccount || '')) &&
+                      (isValidHexAddress(toEnsAddressResolved as string) ||
+                        isValidHexAddress(toAccount as string)) &&
                       toSelectedAddressReady
                     )
                   }
@@ -713,18 +741,20 @@ const mapStateToProps = (state: RootState): StateProps => {
   return {
     addressBook: selectAddressBook(state),
     globalChainId,
-    selectedAddress: selectSelectedInternalAccountFormattedAddress(state) || '',
+    selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
     selectedAsset: state.transaction.selectedAsset,
     internalAccounts: selectInternalAccounts(state),
     ticker: selectNativeCurrencyByChainId(state, globalChainId),
-    providerType: selectProviderTypeByChainId(state, globalChainId) || '',
+    providerType: selectProviderTypeByChainId(state, globalChainId),
     isPaymentRequest: state.transaction.paymentRequest,
     isNativeTokenBuySupported: isNetworkRampNativeTokenSupported(
       globalChainId,
       getRampNetworks(state),
     ),
-    ambiguousAddressEntries:
-      state.user.ambiguousAddressEntries as Record<string, string[]>,
+    ambiguousAddressEntries: state.user.ambiguousAddressEntries as Record<
+      string,
+      string[]
+    >,
   };
 };
 
@@ -756,4 +786,8 @@ const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(SendFlow as unknown as ComponentType<IWithMetricsAwarenessProps>));
+)(
+  withMetricsAwareness(
+    SendFlow as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);

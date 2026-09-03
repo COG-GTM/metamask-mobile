@@ -1,4 +1,4 @@
-import React, { ComponentType, PureComponent } from 'react';
+import React, { PureComponent } from 'react';
 import { baseStyles } from '../../../../../../styles/common';
 import {
   InteractionManager,
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
+import PropTypes from 'prop-types';
 import Eth from '@metamask/ethjs-query';
 import { isEmpty } from 'lodash';
 import {
@@ -26,10 +27,7 @@ import {
   getNormalizedTxState,
 } from '../../../../../../util/transactions';
 import StyledButton from '../../../../../UI/StyledButton';
-import {
-  WalletDevice,
-  type TransactionMeta,
-} from '@metamask/transaction-controller';
+import { WalletDevice } from '@metamask/transaction-controller';
 import { ChainId } from '@metamask/controller-utils';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import {
@@ -141,210 +139,166 @@ import { selectContractExchangeRatesByChainId } from '../../../../../../selector
 import { updateTransactionToMaxValue } from './utils';
 import SmartTransactionsMigrationBanner from '../../components/SmartTransactionsMigrationBanner/SmartTransactionsMigrationBanner';
 import { isNativeToken } from '../../../utils/generic';
-import { TokenI } from '../../../../../UI/Tokens/types';
-import { RootState } from '../../../../../../reducers';
-import { Dispatch } from 'redux';
-import {
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-} from '@react-navigation/native';
-import { Hex } from '@metamask/utils';
-import { IWithMetricsAwarenessProps } from '../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
-import {
-  GasObject,
-  GasTransaction,
-  TransactionParams,
-} from './components/CustomGasModal/CustomGasModal.types';
-
-const LegacyCollectibleMedia = CollectibleMedia as unknown as React.ComponentType<
-  Record<string, unknown>
->;
-const LegacyTransactionReview =
-  TransactionReview as unknown as React.ComponentType<Record<string, unknown>>;
-const LegacyAccountFromToInfoCard =
-  AccountFromToInfoCard as unknown as React.ComponentType<Record<string, unknown>>;
 
 const EDIT = 'edit';
 const EDIT_NONCE = 'edit_nonce';
 const REVIEW = 'review';
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
-let intervalIdForEstimatedL1Fee: ReturnType<typeof setInterval> | undefined;
-
-interface SelectedAsset {
-  address: string;
-  symbol: string;
-  decimals: number;
-  tokenId?: string;
-  isETH?: boolean;
-  name?: string;
-  image?: string;
-  logo?: string;
-  standard?: string;
-}
-
-interface TransactionParamsShape {
-  from?: string;
-  to?: string;
-  value?: string;
-  data?: string;
-  gas?: string;
-  gasPrice?: string;
-  maxFeePerGas?: string;
-  maxPriorityFeePerGas?: string;
-  nonce?: string;
-  chainId?: Hex;
-  networkClientId?: string;
-  type?: string;
-  proposedNonce?: number;
-}
-
-interface TransactionShape {
-  origin?: string;
-  chainId?: Hex;
-  networkClientId?: string;
-  from?: string;
-  to?: string;
-  data?: string;
-  value?: string;
-  gas?: string;
-  gasPrice?: string;
-  maxFeePerGas?: string;
-  maxPriorityFeePerGas?: string;
-  nonce?: string | number;
-  transaction?: TransactionParamsShape;
-  transactionTo?: string;
-  transactionToName?: string;
-  transactionFromName?: string;
-  selectedAsset?: SelectedAsset;
-  assetType?: string;
-  paymentRequest?: boolean;
-  id?: string;
-  [key: string]: unknown;
-}
-
-interface TransactionStateShape extends TransactionShape {
-  transaction: TransactionParamsShape;
-  selectedAsset: SelectedAsset;
-}
-
-const isSelectedAssetNative = (asset: SelectedAsset) =>
-  isNativeToken(asset as unknown as TokenI);
-
-type TransactionMetadata = Partial<TransactionMeta> & {
-  simulationData?: TransactionMeta['simulationData'];
-  id?: string;
-  error?: Error | string;
-};
-
-type SendFlowNavigation = Omit<
-  NavigationProp<ParamListBase>,
-  'dangerouslyGetParent'
-> & {
-  dangerouslyGetParent: () =>
-    | {
-        pop: () => void;
-        popToTop: () => void;
-      }
-    | undefined;
-};
-
-interface ConfirmState {
-  balanceIsZero?: boolean;
-  pollToken?: string;
-  closeModal?: boolean;
-  animateOnChange?: boolean;
-  transactionConfirmed?: boolean;
-  isAnimating?: boolean;
-  gasSelected: string;
-  gasSelectedTemp?: string;
-  gasEstimationReady: boolean;
-  fromSelectedAddress?: string;
-  hexDataModalVisible: boolean;
-  warningGasPriceHigh?: unknown;
-  ready: boolean;
-  transactionValue?: string;
-  transactionValueFiat?: string;
-  errorMessage?: string;
-  mode: string;
-  stopUpdateGas: boolean;
-  advancedGasInserted: boolean;
-  EIP1559GasTransaction: Partial<GasTransaction>;
-  EIP1559GasObject: GasObject;
-  legacyGasObject: GasObject;
-  legacyGasTransaction: Partial<GasTransaction>;
-  multiLayerL1FeeTotal: string;
-  result: Record<string, unknown>;
-  transactionMeta: TransactionMetadata;
-  isChangeInSimulationModalShown: boolean;
-  hasHandledFirstGasUpdate: boolean;
-}
-
-interface OwnProps {
-  navigation: SendFlowNavigation;
-  route: RouteProp<ParamListBase, string>;
-}
-
-interface StateProps {
-  accounts: ReturnType<typeof selectAccounts>;
-  contractBalances: Record<string, string>;
-  ticker: string;
-  transactionState: TransactionStateShape;
-  transaction: TransactionShape;
-  conversionRate?: number;
-  currentCurrency: string;
-  contractExchangeRates: Record<string, { price?: number }>;
-  chainId: Hex;
-  networkClientId: string;
-  globalNetworkClientId: string;
-  showHexData: boolean;
-  showCustomNonce: boolean;
-  providerType: string;
-  selectedAsset: SelectedAsset;
-  primaryCurrency: string;
-  gasFeeEstimates: ReturnType<typeof selectGasFeeEstimates>;
-  gasEstimateType: string;
-  isPaymentRequest?: boolean;
-  isNativeTokenBuySupported: boolean;
-  shouldUseSmartTransaction: boolean;
-  confirmationMetricsById: Record<string, { properties?: Record<string, unknown> }>;
-  transactionMetadata?: TransactionMetadata;
-  securityAlertResponse?: import('../../components/BlockaidBanner/BlockaidBanner.types').SecurityAlertResponse;
-  maxValueMode: boolean;
-}
-
-interface DispatchProps {
-  prepareTransaction: (transaction: TransactionParams) => void;
-  resetTransaction: () => void;
-  setTransactionId: (transactionId: string) => void;
-  setNonce: (nonce: number) => void;
-  setProposedNonce: (nonce: number) => void;
-  removeFavoriteCollectible: (
-    selectedAddress: string,
-    chainId: string,
-    collectible: unknown,
-  ) => void;
-  showAlert: (config: unknown) => void;
-  updateConfirmationMetric: (args: {
-    id: string;
-    params: Record<string, unknown>;
-  }) => void;
-  setTransactionValue: (value: string) => void;
-}
-
-type Props = OwnProps &
-  StateProps &
-  DispatchProps &
-  IWithMetricsAwarenessProps;
+let intervalIdForEstimatedL1Fee;
 
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Confirm extends PureComponent<Props, ConfirmState> {
-  scrollView: ScrollView | null = null;
+class Confirm extends PureComponent {
+  static propTypes = {
+    /**
+     * Object that represents the navigator
+     */
+    navigation: PropTypes.object,
+    /**
+     * Object that contains navigation props
+     */
+    route: PropTypes.object,
+    /**
+     * Map of accounts to information objects including balances
+     */
+    accounts: PropTypes.object,
+    /**
+     * Object containing token balances in the format address => balance
+     */
+    contractBalances: PropTypes.object,
+    /**
+     * Current provider ticker
+     */
+    ticker: PropTypes.string,
+    /**
+     * Current transaction state
+     */
+    transactionState: PropTypes.object,
+    /**
+     * Normalized transaction state
+     */
+    transaction: PropTypes.object.isRequired,
+    /**
+     * ETH to current currency conversion rate
+     */
+    conversionRate: PropTypes.number,
+    /**
+     * Currency code of the currently-active currency
+     */
+    currentCurrency: PropTypes.string,
+    /**
+     * Object containing token exchange rates in the format address => exchangeRate
+     */
+    contractExchangeRates: PropTypes.object,
+    /**
+     * Set transaction object to be sent
+     */
+    prepareTransaction: PropTypes.func,
+    /**
+     * Chain Id
+     */
+    chainId: PropTypes.string,
+    /**
+     * ID of the associated network client
+     */
+    networkClientId: PropTypes.string,
+    /**
+     * ID of the global network client
+     */
+    globalNetworkClientId: PropTypes.string,
+    /**
+     * Indicates whether hex data should be shown in transaction editor
+     */
+    showHexData: PropTypes.bool,
+    /**
+     * Indicates whether custom nonce should be shown in transaction editor
+     */
+    showCustomNonce: PropTypes.bool,
+    /**
+     * Network provider type as mainnet
+     */
+    providerType: PropTypes.string,
+    /**
+     * Selected asset from current transaction state
+     */
+    selectedAsset: PropTypes.object,
+    /**
+     * Resets transaction state
+     */
+    resetTransaction: PropTypes.func,
+    /**
+     * ETH or fiat, depending on user setting
+     */
+    primaryCurrency: PropTypes.string,
+    /**
+     * Set transaction nonce
+     */
+    setNonce: PropTypes.func,
+    /**
+     * Set proposed nonce (from network)
+     */
+    setProposedNonce: PropTypes.func,
+    /**
+     * Gas fee estimates returned by the gas fee controller
+     */
+    gasFeeEstimates: PropTypes.object,
+    /**
+     * Estimate type returned by the gas fee controller, can be market-fee, legacy or eth_gasPrice
+     */
+    gasEstimateType: PropTypes.string,
+    /**
+     * Indicates whether the current transaction is a deep link transaction
+     */
+    isPaymentRequest: PropTypes.bool,
+    /**
+     * Triggers global alert
+     */
+    showAlert: PropTypes.func,
+    /**
+     * Boolean that indicates if the network supports buy
+     */
+    isNativeTokenBuySupported: PropTypes.bool,
+    /**
+     * Metrics injected by withMetricsAwareness HOC
+     */
+    metrics: PropTypes.object,
+    /**
+     * Set transaction ID
+     */
+    setTransactionId: PropTypes.func,
+    /**
+     * Boolean that indicates if smart transaction should be used
+     */
+    shouldUseSmartTransaction: PropTypes.bool,
+    /**
+     * Object containing confirmation metrics by id
+     */
+    confirmationMetricsById: PropTypes.object,
+    /**
+     * Transaction metadata from the transaction controller
+     */
+    transactionMetadata: PropTypes.object,
+    /**
+     * Update confirmation metrics
+     */
+    updateConfirmationMetric: PropTypes.func,
+    /**
+     * Object containing blockaid validation response for confirmation
+     */
+    securityAlertResponse: PropTypes.object,
+    /**
+     * Boolean that indicates if the max value mode is enabled
+     */
+    maxValueMode: PropTypes.bool,
+    /**
+     * Function that sets the transaction value
+     */
+    setTransactionValue: PropTypes.func,
+  };
 
-  state: ConfirmState = {
+  state = {
     gasEstimationReady: false,
     fromSelectedAddress: this.props.transactionState.transaction.from,
     hexDataModalVisible: false,
@@ -377,21 +331,17 @@ class Confirm extends PureComponent<Props, ConfirmState> {
   );
 
   setNetworkNonce = async () => {
-    const {
-      globalNetworkClientId,
-      setNonce: setNonceAction,
-      setProposedNonce: setProposedNonceAction,
-      transaction,
-    } = this.props;
+    const { globalNetworkClientId, setNonce, setProposedNonce, transaction } =
+      this.props;
     const proposedNonce = await getNetworkNonce(
-      transaction as TransactionShape & { from: string },
+      transaction,
       globalNetworkClientId,
     );
-    setNonceAction(proposedNonce);
-    setProposedNonceAction(proposedNonce);
+    setNonce(proposedNonce);
+    setProposedNonce(proposedNonce);
   };
 
-  getAnalyticsParams = (transactionMeta?: TransactionShape) => {
+  getAnalyticsParams = (transactionMeta) => {
     const {
       selectedAsset,
       gasEstimateType,
@@ -427,8 +377,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       const smartTransactionMetricsProperties =
         getSmartTransactionMetricsProperties(
           SmartTransactionsController,
-          transactionMeta as TransactionMeta,
-          this.props.shouldUseSmartTransaction,
+          transactionMeta,
         );
 
       // Merge baseParams with the additional smart transaction properties
@@ -438,28 +387,21 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       };
     } catch (error) {
       // Log the error and return the baseParams
-      Logger.error(error as Error, 'Error in getAnalyticsParams:');
+      Logger.error(error, 'Error in getAnalyticsParams:');
       return baseParams;
     }
   };
 
   updateNavBar = () => {
-    const {
-      navigation,
-      route,
-      resetTransaction: resetTransactionAction,
-      transaction,
-    } = this.props;
-    const colors = (
-      this.context as React.ContextType<typeof ThemeContext>
-    ).colors || mockTheme.colors;
+    const { navigation, route, resetTransaction, transaction } = this.props;
+    const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getSendFlowTitle(
         'send.confirm',
         navigation,
         route,
         colors,
-        resetTransactionAction,
+        resetTransaction,
         transaction,
       ),
     );
@@ -473,10 +415,10 @@ class Confirm extends PureComponent<Props, ConfirmState> {
 
     const { transactionMeta } = this.state;
     const { TokensController } = Engine.context;
-    await stopGasPolling();
+    await stopGasPolling(this.state.pollToken);
     clearInterval(intervalIdForEstimatedL1Fee);
 
-    Engine.rejectPendingApproval(transactionMeta.id as string, undefined as never, {
+    Engine.rejectPendingApproval(transactionMeta.id, undefined, {
       ignoreMissing: true,
       logErrors: false,
     });
@@ -486,14 +428,14 @@ class Confirm extends PureComponent<Props, ConfirmState> {
      * Ref.: https://github.com/MetaMask/metamask-mobile/pull/3989#issuecomment-1367558394
      */
     if (
-      isSelectedAssetNative(selectedAsset) ||
+      isNativeToken(selectedAsset) ||
       selectedAsset.tokenId ||
       !selectedAsset.address
     ) {
       return;
     }
 
-    const weiBalance = hexToBN(contractBalances[selectedAsset.address as Hex]);
+    const weiBalance = hexToBN(contractBalances[selectedAsset.address]);
     if (weiBalance?.isZero()) {
       await TokensController.ignoreTokens(
         [selectedAsset.address],
@@ -512,14 +454,14 @@ class Confirm extends PureComponent<Props, ConfirmState> {
         Engine.context.NetworkController.getProviderAndBlockTracker().provider,
       );
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
-          txParams: transaction.transaction as never,
+        txParams: transaction.transaction,
         chainId,
       });
       this.setState({
-        multiLayerL1FeeTotal: result ?? '0x0',
+        multiLayerL1FeeTotal: result,
       });
     } catch (e) {
-      Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
+      Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
         multiLayerL1FeeTotal: '0x0',
       });
@@ -534,7 +476,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       navigation,
       providerType,
       isPaymentRequest,
-      setTransactionId: setTransactionIdAction,
+      setTransactionId,
     } = this.props;
 
     const {
@@ -576,7 +518,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     let result, transactionMeta;
     try {
       ({ result, transactionMeta } = await TransactionController.addTransaction(
-        transactionParams as never,
+        transactionParams,
         {
           deviceConfirmedOn: WalletDevice.MM_MOBILE,
           networkClientId: globalNetworkClientId,
@@ -584,25 +526,22 @@ class Confirm extends PureComponent<Props, ConfirmState> {
         },
       ));
     } catch (error) {
-      Logger.error(error as Error, 'error while adding transaction (Confirm)');
+      Logger.error(error, 'error while adding transaction (Confirm)');
       navigation.navigate(Routes.WALLET_VIEW);
       Alert.alert(
         strings('transactions.transaction_error'),
-        error instanceof Error ? error.message : undefined,
+        error && error.message,
         [{ text: 'OK' }],
       );
       return;
     }
 
-    setTransactionIdAction(transactionMeta.id as string);
+    setTransactionId(transactionMeta.id);
 
-    this.setState({
-      result: result as unknown as Record<string, unknown>,
-      transactionMeta,
-    });
+    this.setState({ result, transactionMeta });
 
     // start validate ppom
-    const id = transactionMeta.id as string;
+    const id = transactionMeta.id;
     const reqObject = {
       id,
       jsonrpc: '2.0',
@@ -623,7 +562,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     ppomUtil.validateRequest(reqObject, id);
   };
 
-  componentDidUpdate = (prevProps: Props, prevState: ConfirmState) => {
+  componentDidUpdate = (prevProps, prevState) => {
     const {
       accounts,
       transactionState: {
@@ -653,8 +592,8 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     const fromAddressChanged =
       prevState.fromSelectedAddress !== fromSelectedAddress;
     const previousContractBalance =
-      prevProps.contractBalances[selectedAsset.address as Hex];
-    const newContractBalance = contractBalances[selectedAsset.address as Hex];
+      prevProps.contractBalances[selectedAsset.address];
+    const newContractBalance = contractBalances[selectedAsset.address];
     const contractBalanceChanged =
       previousContractBalance !== newContractBalance;
     const recipientIsDefined = transactionTo !== undefined;
@@ -687,7 +626,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       this.parseTransactionDataHeader();
     }
     if (!prevState.errorMessage && errorMessage) {
-    this.scrollView?.scrollToEnd({ animated: true });
+      this.scrollView.scrollToEnd({ animated: true });
     }
 
     if (
@@ -701,9 +640,9 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       updateTransactionToMaxValue({
         transactionId,
         isEIP1559Transaction,
-        EIP1559GasTransaction: EIP1559GasTransaction as GasTransaction,
-        legacyGasTransaction: legacyGasTransaction as GasTransaction,
-        accountBalance: accounts[from as string].balance,
+        EIP1559GasTransaction,
+        legacyGasTransaction,
+        accountBalance: accounts[from].balance,
         setTransactionValue: this.props.setTransactionValue,
       });
 
@@ -766,16 +705,16 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     }
   };
 
-  setScrollViewRef = (ref: ScrollView | null) => {
+  setScrollViewRef = (ref) => {
     this.scrollView = ref;
   };
 
-  toggleConfirmationModal = (MODE: string) => {
+  toggleConfirmationModal = (MODE) => {
     this.onModeChange(MODE);
     this.setState({ closeModal: false });
   };
 
-  onModeChange = (mode: string) => {
+  onModeChange = (mode) => {
     this.setState({ mode });
     if (mode === EDIT) {
       this.props.metrics.trackEvent(
@@ -790,16 +729,12 @@ class Confirm extends PureComponent<Props, ConfirmState> {
 
   getGasLimit = async () => {
     const {
-      prepareTransaction: prepareTransactionAction,
+      prepareTransaction,
       transactionState: { transaction },
     } = this.props;
     const { networkClientId } = this.props;
-    const estimation = await getGasLimit(
-      transaction as never,
-      true,
-      networkClientId,
-    );
-    prepareTransactionAction({ ...transaction, ...estimation } as never);
+    const estimation = await getGasLimit(transaction, true, networkClientId);
+    prepareTransaction({ ...transaction, ...estimation });
   };
 
   parseTransactionDataHeader = async () => {
@@ -820,23 +755,23 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     const symbol = ticker ?? selectedAsset?.symbol;
     const parsedTicker = getTicker(symbol);
 
-    if (isSelectedAssetNative(selectedAsset)) {
-      transactionValue = `${renderFromWei(value as never)} ${parsedTicker}`;
+    if (isNativeToken(selectedAsset)) {
+      transactionValue = `${renderFromWei(value)} ${parsedTicker}`;
       transactionValueFiat = weiToFiat(
-        valueBN as Parameters<typeof weiToFiat>[0],
-        conversionRate as number,
+        valueBN,
+        conversionRate,
         currentCurrency,
       );
     } else if (selectedAsset.tokenId) {
       transactionValueFiat = weiToFiat(
-        valueBN as Parameters<typeof weiToFiat>[0],
-        conversionRate as number,
+        valueBN,
+        conversionRate,
         currentCurrency,
       );
     } else {
       const {
         address,
-        symbol: assetSymbol = 'ERC20',
+        symbol = 'ERC20',
         decimals,
         image,
         name,
@@ -846,7 +781,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       if (!contractBalances[address]) {
         await TokensController.addToken({
           address,
-          symbol: assetSymbol,
+          symbol,
           decimals,
           image,
           name,
@@ -854,7 +789,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
         });
       }
 
-      const [, , rawAmount] = decodeTransferData('transfer', data as string);
+      const [, , rawAmount] = decodeTransferData('transfer', data);
       const rawAmountString = parseInt(rawAmount, 16).toLocaleString(
         'fullwide',
         { useGrouping: false },
@@ -863,7 +798,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
         rawAmountString,
         decimals,
       );
-      transactionValue = `${transferValue} ${assetSymbol}`;
+      transactionValue = `${transferValue} ${symbol}`;
       const exchangeRate = contractExchangeRates
         ? contractExchangeRates[address]?.price
         : undefined;
@@ -899,13 +834,13 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       from,
     };
 
-    return buildTransactionParams(({
+    return buildTransactionParams({
       gasDataEIP1559,
       gasDataLegacy,
       gasEstimateType,
       showCustomNonce,
       transaction,
-    }) as never);
+    });
   };
 
   /**
@@ -919,15 +854,8 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     const { fromSelectedAddress } = this.state;
     if (assetType === 'ERC721' && chainId !== ChainId.mainnet) {
       const { NftController } = Engine.context;
-      removeFavoriteCollectible(
-        fromSelectedAddress as string,
-        chainId,
-        selectedAsset,
-      );
-      NftController.removeNft(
-        selectedAsset.address,
-        selectedAsset.tokenId as string,
-      );
+      removeFavoriteCollectible(fromSelectedAddress, chainId, selectedAsset);
+      NftController.removeNft(selectedAsset.address, selectedAsset.tokenId);
     }
   };
 
@@ -935,7 +863,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
    * Validates transaction balances
    * @returns - Whether there is an error with the amount
    */
-  validateAmount = ({ transaction }: { transaction: TransactionParams }) => {
+  validateAmount = ({ transaction }) => {
     const {
       accounts,
       contractBalances,
@@ -944,7 +872,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       transactionState: {
         transaction: { value },
       },
-      updateConfirmationMetric: updateConfirmationMetricAction,
+      updateConfirmationMetric,
     } = this.props;
     const { EIP1559GasTransaction, legacyGasTransaction, transactionMeta } =
       this.state;
@@ -956,26 +884,26 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       : legacyGasTransaction;
 
     const transactionFeeMax = hexToBN(gasFeeMaxHex);
-      const transactionValueHex = hexToBN(value as string);
+    const transactionValueHex = hexToBN(value);
 
     const totalTransactionValue = transactionValueHex.add(transactionFeeMax);
 
-    const selectedAddress = transaction?.from as string;
+    const selectedAddress = transaction?.from;
     const weiBalance = hexToBN(accounts[selectedAddress].balance);
 
-    if (!isDecimal(value as string)) {
+    if (!isDecimal(value)) {
       return strings('transaction.invalid_amount');
     }
 
-      const insufficientBalanceMessage = validateSufficientBalance(
-      weiBalance as never,
-      totalTransactionValue as never,
+    const insufficientBalanceMessage = validateSufficientBalance(
+      weiBalance,
+      totalTransactionValue,
       ticker,
     );
 
     if (insufficientBalanceMessage) {
-      updateConfirmationMetricAction({
-        id: transactionId as string,
+      updateConfirmationMetric({
+        id: transactionId,
         params: {
           properties: {
             alert_triggered: ['insufficient_funds_for_gas'],
@@ -984,35 +912,33 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       });
     }
 
-    if (isSelectedAssetNative(selectedAsset) || selectedAsset.tokenId) {
+    if (isNativeToken(selectedAsset) || selectedAsset.tokenId) {
       return insufficientBalanceMessage;
     }
 
-      const insufficientTokenBalanceMessage = validateSufficientTokenBalance(
-      transaction as never,
+    const insufficientTokenBalanceMessage = validateSufficientTokenBalance(
+      transaction,
       contractBalances,
-      selectedAsset as unknown as Parameters<
-        typeof validateSufficientTokenBalance
-      >[2],
+      selectedAsset,
     );
 
     return insufficientBalanceMessage || insufficientTokenBalanceMessage;
   };
 
-  setError = (errorMessage?: string) => {
+  setError = (errorMessage) => {
     this.setState({ errorMessage }, () => {
       if (errorMessage) {
-        this.scrollView?.scrollToEnd({ animated: true });
+        this.scrollView.scrollToEnd({ animated: true });
       }
     });
   };
 
   onLedgerConfirmation = async (
-    approve: boolean,
-    result: unknown,
-    transactionMeta: TransactionMetadata,
-    assetType: string,
-    gaParams: Record<string, unknown>,
+    approve,
+    result,
+    transactionMeta,
+    assetType,
+    gaParams,
   ) => {
     const { navigation } = this.props;
     // Manual cancel from UI or rejected from ledger device.
@@ -1033,7 +959,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
           this.props.metrics.trackEvent(
             this.props.metrics
               .createEventBuilder(MetaMetricsEvents.SEND_TRANSACTION_COMPLETED)
-              .addProperties(gaParams as never)
+              .addProperties(gaParams)
               .build(),
           );
           stopGasPolling();
@@ -1042,9 +968,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       }
     } finally {
       // Error handling derived to LedgerConfirmationModal component
-      (navigation as unknown as SendFlowNavigation)
-        .dangerouslyGetParent()
-        ?.popToTop();
+      navigation && navigation.dangerouslyGetParent()?.popToTop();
     }
   };
 
@@ -1053,7 +977,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     const {
       transactionState: { assetType },
       navigation,
-      resetTransaction: resetTransactionAction,
+      resetTransaction,
       shouldUseSmartTransaction,
       transactionMetadata,
     } = this.props;
@@ -1073,8 +997,8 @@ class Confirm extends PureComponent<Props, ConfirmState> {
           },
           onReject: () => {
             this.setState({ isChangeInSimulationModalShown: true });
-            resetTransactionAction();
-        (navigation as unknown as SendFlowNavigation).dangerouslyGetParent()?.pop();
+            resetTransaction();
+            navigation?.dangerouslyGetParent()?.pop();
           },
         },
       });
@@ -1107,23 +1031,23 @@ class Confirm extends PureComponent<Props, ConfirmState> {
         this.setState({ transactionConfirmed: false });
         // Approve transaction for ledger is called in the Confirmation Flow (modals) after user prompt
         this.props.navigation.navigate(
-          ...createLedgerTransactionModalNavDetails(({
-            transactionId: transactionMeta.id as string,
-            deviceId: deviceId as string,
-            onConfirmationComplete: async (approve: boolean) =>
+          ...createLedgerTransactionModalNavDetails({
+            transactionId: transactionMeta.id,
+            deviceId,
+            onConfirmationComplete: async (approve) =>
               await this.onLedgerConfirmation(
                 approve,
                 result,
                 transactionMeta,
-                assetType as string,
+                assetType,
                 {
                   ...this.getAnalyticsParams(),
-          ...getBlockaidTransactionMetricsParams(transaction as never),
+                  ...getBlockaidTransactionMetricsParams(transaction),
                   ...this.getTransactionMetrics(),
                 },
               ),
             type: 'signTransaction',
-          }) as never),
+          }),
         );
         return;
       }
@@ -1131,12 +1055,12 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       await KeyringController.resetQRKeyringState();
 
       if (shouldUseSmartTransaction) {
-        await ApprovalController.accept(transactionMeta.id as string, undefined, {
+        await ApprovalController.accept(transactionMeta.id, undefined, {
           waitForResult: false,
         });
         navigation.navigate(Routes.TRANSACTIONS_VIEW);
       } else {
-        await ApprovalController.accept(transactionMeta.id as string, undefined, {
+        await ApprovalController.accept(transactionMeta.id, undefined, {
           waitForResult: true,
         });
       }
@@ -1158,7 +1082,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
             .createEventBuilder(MetaMetricsEvents.SEND_TRANSACTION_COMPLETED)
             .addProperties({
               ...this.getAnalyticsParams(transactionMeta),
-              ...getBlockaidTransactionMetricsParams(transaction as never),
+              ...getBlockaidTransactionMetricsParams(transaction),
               ...this.getTransactionMetrics(),
             })
             .build(),
@@ -1171,17 +1095,16 @@ class Confirm extends PureComponent<Props, ConfirmState> {
         }
       });
     } catch (error) {
-      const err = error as Error;
       if (
-        !err?.message.startsWith(KEYSTONE_TX_CANCELED) &&
-        !err?.message.startsWith(STX_NO_HASH_ERROR)
+        !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
+        !error?.message.startsWith(STX_NO_HASH_ERROR)
       ) {
         Alert.alert(
           strings('transactions.transaction_error'),
-          err.message,
+          error && error.message,
           [{ text: 'OK' }],
         );
-        Logger.error(err, 'error while trying to send transaction (Confirm)');
+        Logger.error(error, 'error while trying to send transaction (Confirm)');
       } else {
         this.props.metrics.trackEvent(
           this.props.metrics
@@ -1197,7 +1120,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     this.setState({ transactionConfirmed: false });
   };
 
-  getBalanceError = (balance: unknown) => {
+  getBalanceError = (balance) => {
     const {
       transactionState: {
         transaction: { value = '0x0', gas = '0x0', gasPrice = '0x0' },
@@ -1214,13 +1137,13 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     return balanceIsInsufficient ? strings('transaction.insufficient') : null;
   };
 
-  onSelectAccount = async (accountAddress: string) => {
+  onSelectAccount = async (accountAddress) => {
     const { accounts } = this.props;
     // If new account doesn't have the asset
     this.setState({
       fromSelectedAddress: accountAddress,
       balanceIsZero: hexToBN(accounts[accountAddress].balance).isZero(),
-    } as never);
+    });
     this.parseTransactionDataHeader();
   };
 
@@ -1241,7 +1164,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     this.setState({ hexDataModalVisible: !hexDataModalVisible });
   };
 
-  updateTransactionStateWithUpdatedNonce = (nonceValue: number) => {
+  updateTransactionStateWithUpdatedNonce = (nonceValue) => {
     this.props.setNonce(nonceValue);
   };
 
@@ -1249,8 +1172,8 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     const { proposedNonce, nonce } = this.props.transaction;
     return (
       <CustomNonceModal
-        proposedNonce={proposedNonce as number}
-        nonceValue={nonce as number}
+        proposedNonce={proposedNonce}
+        nonceValue={nonce}
         close={() => this.toggleConfirmationModal(REVIEW)}
         save={this.updateTransactionStateWithUpdatedNonce}
       />
@@ -1271,9 +1194,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
   renderHexDataModal = () => {
     const { hexDataModalVisible } = this.state;
     const { data } = this.props.transactionState.transaction;
-    const colors = (
-      this.context as React.ContextType<typeof ThemeContext>
-    ).colors || mockTheme.colors;
+    const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return (
       <Modal
@@ -1322,7 +1243,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     try {
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
-      Logger.error(error as Error, 'Navigation: Error when navigating to buy ETH.');
+      Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
     }
 
     this.props.metrics.trackEvent(
@@ -1336,7 +1257,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     const { chainId } = this.props;
     InteractionManager.runAfterInteractions(() => {
       this.props.navigation.navigate(Routes.BROWSER.VIEW, {
-        newTabUrl: (TESTNET_FAUCETS as Record<string, string>)[chainId],
+        newTabUrl: TESTNET_FAUCETS[chainId],
         timestamp: Date.now(),
       });
     });
@@ -1349,18 +1270,18 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     this.setState({ isAnimating: false });
   };
 
-  updateTransactionState = (gas: GasTransaction) => {
+  updateTransactionState = (gas) => {
     this.setState({
       EIP1559GasTransaction: gas,
       legacyGasTransaction: gas,
     });
   };
 
-  onGasChanged = (gasValue: string) => {
+  onGasChanged = (gasValue) => {
     this.setState({ gasSelected: gasValue });
   };
 
-  onGasCanceled = (gasValue: string) => {
+  onGasCanceled = (gasValue) => {
     this.setState({
       stopUpdateGas: false,
       gasSelectedTemp: gasValue,
@@ -1368,20 +1289,10 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     });
   };
 
-  updateGasState = ({
-    gasTxn,
-    gasObj,
-    gasSelect,
-    txnType,
-  }: {
-    gasTxn: GasTransaction;
-    gasObj: GasObject;
-    gasSelect?: string;
-    txnType: boolean;
-  }) => {
+  updateGasState = ({ gasTxn, gasObj, gasSelect, txnType }) => {
     this.setState({
       gasSelectedTemp: gasSelect,
-      gasSelected: gasSelect as string,
+      gasSelected: gasSelect,
       closeModal: true,
       ...(txnType
         ? {
@@ -1394,14 +1305,14 @@ class Confirm extends PureComponent<Props, ConfirmState> {
             EIP1559GasTransaction: gasTxn,
             EIP1559GasObject: gasObj,
           }),
-    } as never);
+    });
   };
 
   onContactUsClicked = () => {
     const { transaction } = this.props;
     const analyticsParams = {
       ...this.getAnalyticsParams(),
-                  ...getBlockaidTransactionMetricsParams(transaction as never),
+      ...getBlockaidTransactionMetricsParams(transaction),
       external_link_clicked: 'security_alert_support_link',
     };
     this.props.metrics.trackEvent(
@@ -1414,9 +1325,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
 
   getConfirmButtonStyles() {
     const { securityAlertResponse } = this.props;
-    const colors = (
-      this.context as React.ContextType<typeof ThemeContext>
-    ).colors || mockTheme.colors;
+    const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     let confirmButtonStyle = {};
@@ -1430,7 +1339,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     return confirmButtonStyle;
   }
 
-  async persistTransactionParameters(transactionParams: TransactionParams) {
+  async persistTransactionParameters(transactionParams) {
     const { TransactionController } = Engine.context;
     const { transactionMeta } = this.state;
     const { id: transactionId } = transactionMeta;
@@ -1439,9 +1348,6 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       TransactionController.state.transactions.find(
         (tx) => tx.id === transactionId,
       );
-    if (!controllerTransactionMeta) {
-      return;
-    }
 
     const updatedTx = {
       ...controllerTransactionMeta,
@@ -1450,9 +1356,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
         chainId: controllerTransactionMeta.chainId,
       },
     };
-    await (updateTransaction as (transaction: unknown) => Promise<void>)(
-      updatedTx,
-    );
+    await updateTransaction(updatedTx);
   }
 
   getTransactionMetrics = () => {
@@ -1460,7 +1364,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
     const { confirmationMetricsById } = this.props;
     const { id: transactionId } = transactionMeta;
 
-    return confirmationMetricsById[transactionId as string]?.properties || {};
+    return confirmationMetricsById[transactionId]?.properties || {};
   };
 
   render = () => {
@@ -1493,18 +1397,14 @@ class Confirm extends PureComponent<Props, ConfirmState> {
       legacyGasObject,
       transactionMeta,
     } = this.state;
-    const colors = (
-      this.context as React.ContextType<typeof ThemeContext>
-    ).colors || mockTheme.colors;
+    const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const showFeeMarket =
       !gasEstimateType ||
       gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET ||
       gasEstimateType === GAS_ESTIMATE_TYPES.NONE;
-    const isQRHardwareWalletDevice = isQRHardwareAccount(
-      fromSelectedAddress as string,
-    );
-    const isLedgerAccount = isHardwareAccount(fromSelectedAddress as string, [
+    const isQRHardwareWalletDevice = isQRHardwareAccount(fromSelectedAddress);
+    const isLedgerAccount = isHardwareAccount(fromSelectedAddress, [
       ExtendedKeyringTypes.ledger,
     ]);
 
@@ -1521,10 +1421,10 @@ class Confirm extends PureComponent<Props, ConfirmState> {
         style={styles.wrapper}
         testID={ConfirmViewSelectorsIDs.CONTAINER}
       >
-        <LegacyAccountFromToInfoCard
-          transactionState={this.props.transactionState as never}
+        <AccountFromToInfoCard
+          transactionState={this.props.transactionState}
           onPressFromAddressIcon={
-            (!paymentRequest ? null : this.openAccountSelector) as never
+            !paymentRequest ? null : this.openAccountSelector
           }
           layout="vertical"
         />
@@ -1533,10 +1433,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
             <>
               <TransactionBlockaidBanner
                 transactionId={this.state.transactionMeta.id}
-                style={
-                  (styles as typeof styles & { blockaidBanner: object })
-                    .blockaidBanner
-                }
+                style={styles.blockaidBanner}
                 onContactUsClicked={this.onContactUsClicked}
               />
               <SmartTransactionsMigrationBanner
@@ -1567,7 +1464,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
                 {strings('transaction.asset')}
               </Text>
               <View style={styles.CollectibleMediaWrapper}>
-                <LegacyCollectibleMedia
+                <CollectibleMedia
                   small
                   iconStyle={styles.CollectibleMedia}
                   containerStyle={styles.CollectibleMedia}
@@ -1583,7 +1480,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
               </View>
             </View>
           )}
-          <LegacyTransactionReview
+          <TransactionReview
             gasSelected={this.state.gasSelected}
             primaryCurrency={primaryCurrency}
             onEdit={() => this.toggleConfirmationModal(EDIT)}
@@ -1604,7 +1501,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
             <CustomGasModal
               gasSelected={gasSelected}
               animateOnChange={animateOnChange}
-              isAnimating={isAnimating as boolean}
+              isAnimating={isAnimating}
               legacyGasData={legacyGasObject}
               EIP1559GasData={EIP1559GasObject}
               EIP1559GasTxn={EIP1559GasTransaction}
@@ -1618,7 +1515,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
           )}
           {showCustomNonce && !shouldUseSmartTransaction && (
             <CustomNonce
-              nonce={nonce as number}
+              nonce={nonce}
               onNonceEdit={() => this.toggleConfirmationModal(EDIT_NONCE)}
             />
           )}
@@ -1639,7 +1536,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
           )}
           {!!warningGasPriceHigh && (
             <View style={styles.errorWrapper}>
-              <Text style={styles.error}>{warningGasPriceHigh as never}</Text>
+              <Text style={styles.error}>{warningGasPriceHigh}</Text>
             </View>
           )}
 
@@ -1697,7 +1594,7 @@ class Confirm extends PureComponent<Props, ConfirmState> {
 
 Confirm.contextType = ThemeContext;
 
-const mapStateToProps = (state: RootState): StateProps => {
+const mapStateToProps = (state) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId || selectEvmChainId(state);
 
@@ -1705,15 +1602,12 @@ const mapStateToProps = (state: RootState): StateProps => {
     transaction?.networkClientId || selectNetworkClientId(state);
 
   return {
-    accounts: selectAccounts(state) as never,
+    accounts: selectAccounts(state),
     contractExchangeRates: selectContractExchangeRatesByChainId(state, chainId),
-    contractBalances: selectContractBalances(state) as never,
-    conversionRate: selectConversionRateByChainId(
-      state,
-      chainId,
-    ) as number | undefined,
+    contractBalances: selectContractBalances(state),
+    conversionRate: selectConversionRateByChainId(state, chainId),
     currentCurrency: selectCurrentCurrency(state),
-    providerType: selectProviderTypeByChainId(state, chainId) as string,
+    providerType: selectProviderTypeByChainId(state, chainId),
     showHexData: state.settings.showHexData,
     showCustomNonce: state.settings.showCustomNonce,
     chainId,
@@ -1739,35 +1633,23 @@ const mapStateToProps = (state: RootState): StateProps => {
   };
 };
 
-const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
-  prepareTransaction: (transaction: unknown) =>
-    dispatch(prepareTransaction(transaction as never)),
+const mapDispatchToProps = (dispatch) => ({
+  prepareTransaction: (transaction) =>
+    dispatch(prepareTransaction(transaction)),
   resetTransaction: () => dispatch(resetTransaction()),
-  setTransactionId: (transactionId: string) =>
-    dispatch(setTransactionId(transactionId as never)),
-  setNonce: (nonce: number) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
-  removeFavoriteCollectible: (
-    selectedAddress: string,
-    chainId: string,
-    collectible: unknown,
-  ) =>
-    dispatch(
-      removeFavoriteCollectible(selectedAddress, chainId, collectible as never),
-    ),
-  showAlert: (config: unknown) => dispatch(showAlert(config as never)),
-  updateConfirmationMetric: ({
-    id,
-    params,
-  }: {
-    id: string;
-    params: Record<string, unknown>;
-  }) =>
+  setTransactionId: (transactionId) =>
+    dispatch(setTransactionId(transactionId)),
+  setNonce: (nonce) => dispatch(setNonce(nonce)),
+  setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
+  removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
+    dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
+  showAlert: (config) => dispatch(showAlert(config)),
+  updateConfirmationMetric: ({ id, params }) =>
     dispatch(updateConfirmationMetric({ id, params })),
-  setTransactionValue: (value: string) => dispatch(setTransactionValue(value)),
+  setTransactionValue: (value) => dispatch(setTransactionValue(value)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Confirm as unknown as ComponentType<IWithMetricsAwarenessProps>));
+)(withMetricsAwareness(Confirm));

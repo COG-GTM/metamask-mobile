@@ -1,4 +1,3 @@
-declare module '@metamask/ethjs-query';
 // This file contains type declarations for asset types.
 // Ex. This makes it so that when you import CloseIcon from './close-icon.svg, CloseIcon, will be detected as a React.FC component.
 declare module '*.mp4';
