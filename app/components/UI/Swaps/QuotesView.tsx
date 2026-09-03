@@ -18,6 +18,7 @@ import {
   type ParamListBase,
   type RouteProp,
 } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { swapsUtils } from '@metamask/swaps-controller';
 import {
   WalletDevice,
@@ -543,7 +544,7 @@ function SwapsQuotesView({
   const quoteValues = useMemo(() => rawQuoteValues ?? {}, [rawQuoteValues]);
   const quotesLastFetchedValue = quotesLastFetched ?? 0;
   const quoteRefreshSecondsValue = quoteRefreshSeconds ?? 0;
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<QuotesRoute>>();
   /* Get params from navigation */
   const route = useRoute<RouteProp<QuotesRoute, 'SwapsQuotesView'>>();
   const { trackEvent, createEventBuilder } = useMetrics();
@@ -591,7 +592,7 @@ function SwapsQuotesView({
     useState<string | null>(null);
 
   /* Selected quote, initially topAggId (see effects) */
-  const [selectedQuoteId, setSelectedQuoteId] = useState<string>('');
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
 
   /* Slippage alert dismissed, values: false, 'high', medium, 'low' */
   const [hasDismissedSlippageAlert, setHasDismissedSlippageAlert] = useState<
@@ -680,31 +681,27 @@ function SwapsQuotesView({
     [isGasIncludedTrade, tradeTxTokenFee],
   );
   const selectedQuoteValue = useMemo(() => {
-    if (!quoteValues[selectedQuoteId] || !multiLayerL1ApprovalFeeTotal) {
-      return quoteValues[selectedQuoteId];
+    const quoteValue = selectedQuoteId
+      ? quoteValues[selectedQuoteId]
+      : undefined;
+    if (!quoteValue || !multiLayerL1ApprovalFeeTotal) {
+      return quoteValue;
     }
     const fees = {
       ethFee: calculateEthFeeForMultiLayer({
         multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
-        ethFee: Number(quoteValues[selectedQuoteId].ethFee),
+        ethFee: quoteValue.ethFee as unknown as number,
       }),
       maxEthFee: calculateEthFeeForMultiLayer({
         multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
-        ethFee: Number(quoteValues[selectedQuoteId].maxEthFee),
+        ethFee: quoteValue.maxEthFee as unknown as number,
       }),
     };
     return {
-      ...quoteValues[selectedQuoteId],
+      ...quoteValue,
       ...fees,
     } as QuoteValues;
-  }, [
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    quoteValues[selectedQuoteId],
-    multiLayerL1ApprovalFeeTotal,
-    quoteValues,
-    selectedQuoteId,
-  ]);
-
+  }, [multiLayerL1ApprovalFeeTotal, quoteValues, selectedQuoteId]);
   const gasEstimates = useMemo(
     () => customGasEstimate || usedGasEstimate,
     [customGasEstimate, usedGasEstimate],
@@ -923,27 +920,26 @@ function SwapsQuotesView({
         ].includes(gasEstimateType as 'legacy' | 'eth_gasPrice')
           ? weiToFiat(
               toWei(
-                swapsUtils
-                  .calcTokenAmount(
-                    Number(
-                      new BigNumber(changedGasLimit || '0', 10)
-                        .times(
-                          new BigNumber(
-                            String(
-                              decGWEIToHexWEI(
-                                'gasPrice' in changedGasEstimate
-                                  ? changedGasEstimate.gasPrice
-                                  : '0',
-                              ),
-                            ),
-                          ),
-                          16,
-                        )
-                        .toString(),
+                swapsUtils.calcTokenAmount(
+                  new BigNumber(
+                    (changedGasLimit || '0') as unknown as number,
+                    10,
+                  ).times(
+                    new BigNumber(
+                      String(
+                        decGWEIToHexWEI(
+                          'gasPrice' in changedGasEstimate
+                            ? changedGasEstimate.gasPrice
+                            : '0',
+                        ),
+                      ),
+                      16,
                     ),
-                    18,
-                  )
-                  .toNumber(),
+                  ) as unknown as Parameters<
+                    typeof swapsUtils.calcTokenAmount
+                  >[0],
+                  18,
+                ) as unknown as Parameters<typeof toWei>[0],
               ),
               conversionRate,
               currentCurrency,
@@ -998,7 +994,7 @@ function SwapsQuotesView({
         enableGasIncludedQuotes: shouldUseSmartTransaction,
       });
     } else {
-      navigation.goBack();
+      navigation.pop();
     }
   }, [
     error,
@@ -1014,7 +1010,7 @@ function SwapsQuotesView({
 
   const updateSwapsTransactions = useCallback(
     async (
-      transactionMetaId: string,
+      transactionMetaId: string | undefined,
       approvalTransactionMetaId: string | undefined,
     ) => {
       const ethQuery = getGlobalEthQuery();
@@ -1024,7 +1020,7 @@ function SwapsQuotesView({
         false,
       ]);
 
-      addSwapsTransaction(transactionMetaId, {
+      addSwapsTransaction(transactionMetaId as string, {
         action: 'swap',
         sourceToken: {
           address: sourceToken.address,
@@ -1057,11 +1053,13 @@ function SwapsQuotesView({
           best_quote_source: selectedQuote.aggregator,
           available_quotes: allQuotes.length,
           network_fees_USD: weiToFiat(
-            toWei(selectedQuoteValue?.ethFee),
+            toWei(selectedQuoteValue?.ethFee as unknown as string),
             conversionRate,
             currentCurrency,
           ),
-          network_fees_ETH: renderFromWei(toWei(selectedQuoteValue?.ethFee)),
+          network_fees_ETH: renderFromWei(
+            toWei(selectedQuoteValue?.ethFee as unknown as string),
+          ),
           other_quote_selected:
             allQuotes.find((quote) => quote.aggregator === selectedQuoteId) ===
             selectedQuote,
@@ -1112,11 +1110,13 @@ function SwapsQuotesView({
           allQuotes.find((quote) => quote.aggregator === selectedQuoteId) ===
           quoteForAnalytics,
         network_fees_USD: weiToFiat(
-          toWei(selectedQuoteValue?.ethFee),
+          toWei(selectedQuoteValue?.ethFee as unknown as string),
           conversionRate,
           'usd',
         ),
-        network_fees_ETH: renderFromWei(toWei(selectedQuoteValue?.ethFee)),
+        network_fees_ETH: renderFromWei(
+          toWei(selectedQuoteValue?.ethFee as unknown as string),
+        ),
         chain_id: getDecimalChainId(chainId),
         is_smart_transaction: shouldUseSmartTransaction,
         gas_included: canUseGasIncludedSwap,
@@ -1163,12 +1163,10 @@ function SwapsQuotesView({
         resetTransactionProp();
         const tradeTransaction = selectedQuote.trade;
 
-        const tradeTransactionParams = {
-          ...tradeTransaction,
-          chainId,
-        };
         const tradeGasFeeEstimates = await getGasFeeEstimatesForTransaction(
-          tradeTransactionParams,
+          tradeTransaction as unknown as Parameters<
+            typeof getGasFeeEstimatesForTransaction
+          >[0],
           gasEstimates as unknown as { gasPrice?: string; medium: string },
           { chainId, isEIP1559Network },
         );
@@ -1233,7 +1231,9 @@ function SwapsQuotesView({
         resetTransactionProp();
 
         const approvalGasFeeEstimates = await getGasFeeEstimatesForTransaction(
-          { ...approvalTransaction, chainId },
+          approvalTransaction as unknown as Parameters<
+            typeof getGasFeeEstimatesForTransaction
+          >[0],
           gasEstimates as unknown as { gasPrice?: string; medium: string },
           { chainId, isEIP1559Network },
         );
@@ -1241,7 +1241,6 @@ function SwapsQuotesView({
         const { transactionMeta, result } = await addTransaction(
           {
             ...approvalTransaction,
-            chainId,
             ...approvalGasFeeEstimates,
           },
           {
@@ -1376,7 +1375,7 @@ function SwapsQuotesView({
         }
 
         // Trade tx info
-        updateSwapsTransactions(tradeTxUuid ?? '', approvalTxUuid);
+        updateSwapsTransactions(tradeTxUuid, approvalTxUuid);
 
         // Route to TransactionsView and show Swaps STX modal
         navigation.navigate(Routes.TRANSACTIONS_VIEW);
@@ -1390,7 +1389,7 @@ function SwapsQuotesView({
             smartTransaction: {
               status: SmartTransactionStatuses.PENDING,
               creationTime: Date.now(),
-              uuid: tradeTxUuid ?? '',
+              uuid: tradeTxUuid as string,
             },
             isInSwapFlow: true,
           },
@@ -1407,7 +1406,11 @@ function SwapsQuotesView({
 
         if (isHardwareAddress) {
           setIsHandlingSwap(false);
-          navigation.dangerouslyGetParent()?.goBack();
+          (
+            navigation.dangerouslyGetParent() as
+              | StackNavigationProp<QuotesRoute>
+              | undefined
+          )?.pop();
           return;
         }
       }
@@ -1415,7 +1418,11 @@ function SwapsQuotesView({
       await handleSwapTransaction(approvalTransactionMetaId);
 
       setIsHandlingSwap(false);
-      navigation.dangerouslyGetParent()?.goBack();
+      (
+        navigation.dangerouslyGetParent() as
+          | StackNavigationProp<QuotesRoute>
+          | undefined
+      )?.pop();
     }
   }, [
     selectedQuote,
@@ -1469,7 +1476,7 @@ function SwapsQuotesView({
         allQuotes.find((quote) => quote.aggregator === selectedQuoteId) ===
         selectedQuote,
       gas_fees: weiToFiat(
-        toWei(selectedQuoteValue?.ethFee),
+        toWei(selectedQuoteValue?.ethFee as unknown as string),
         conversionRate,
         currentCurrency,
       ),
@@ -1785,7 +1792,7 @@ function SwapsQuotesView({
   }, [allQuotes]);
 
   /* selectedQuoteId effect: when topAggId changes make it selected by default */
-  useEffect(() => setSelectedQuoteId(topAggId ?? ''), [topAggId]);
+  useEffect(() => setSelectedQuoteId(topAggId), [topAggId]);
 
   /* IsInFetch effect: hide every modal, handle countdown */
   useEffect(() => {
@@ -2397,13 +2404,19 @@ function SwapsQuotesView({
                   {usedGasPrice ? (
                     <View style={styles.quotesFiatColumn}>
                       <Text primary bold>
-                        {renderFromWei(toWei(selectedQuoteValue?.ethFee))}{' '}
+                        {renderFromWei(
+                          toWei(
+                            selectedQuoteValue?.ethFee as unknown as string,
+                          ),
+                        )}{' '}
                         {getTicker(ticker)}
                       </Text>
                       <Text primary bold upper>
                         {`  ${
                           weiToFiat(
-                            toWei(selectedQuoteValue?.ethFee),
+                            toWei(
+                              selectedQuoteValue?.ethFee as unknown as string,
+                            ),
                             conversionRate,
                             currentCurrency,
                           ) || ''
@@ -2457,13 +2470,19 @@ function SwapsQuotesView({
                     {usedGasPrice ? (
                       <View style={styles.quotesFiatColumn}>
                         <Text primary bold>
-                          {renderFromWei(toWei(selectedQuoteValue?.ethFee))}{' '}
+                          {renderFromWei(
+                            toWei(
+                              selectedQuoteValue?.ethFee as unknown as string,
+                            ),
+                          )}{' '}
                           {getTicker(ticker)}
                         </Text>
                         <Text primary bold upper>
                           {`  ${
                             weiToFiat(
-                              toWei(selectedQuoteValue?.ethFee),
+                              toWei(
+                                selectedQuoteValue?.ethFee as unknown as string,
+                              ),
                               conversionRate,
                               currentCurrency,
                             ) || ''
@@ -2483,7 +2502,9 @@ function SwapsQuotesView({
                             <Text>
                               {`${
                                 weiToFiat(
-                                  toWei(selectedQuoteValue?.ethFee),
+                                  toWei(
+                                    selectedQuoteValue?.ethFee as unknown as string,
+                                  ),
                                   conversionRate,
                                   currentCurrency,
                                 ) || ''
@@ -2504,7 +2525,9 @@ function SwapsQuotesView({
                                 underline={!unableToSwap}
                               >
                                 {renderFromWei(
-                                  toWei(selectedQuoteValue?.ethFee),
+                                  toWei(
+                                    selectedQuoteValue?.ethFee as unknown as string,
+                                  ),
                                 )}{' '}
                                 {getTicker(ticker)}
                               </Text>
@@ -2526,7 +2549,9 @@ function SwapsQuotesView({
                                 underline={!unableToSwap}
                               >
                                 {renderFromWei(
-                                  toWei(selectedQuoteValue?.ethFee),
+                                  toWei(
+                                    selectedQuoteValue?.ethFee as unknown as string,
+                                  ),
                                 )}{' '}
                                 {getTicker(ticker)}
                               </Text>
@@ -2534,7 +2559,9 @@ function SwapsQuotesView({
                             <Text primary bold>
                               {` ${
                                 weiToFiat(
-                                  toWei(selectedQuoteValue?.ethFee),
+                                  toWei(
+                                    selectedQuoteValue?.ethFee as unknown as string,
+                                  ),
                                   conversionRate,
                                   currentCurrency,
                                 ) || ''
@@ -2564,7 +2591,9 @@ function SwapsQuotesView({
                           <Text upper>
                             {`  ${
                               weiToFiat(
-                                toWei(selectedQuoteValue?.maxEthFee),
+                                toWei(
+                                  selectedQuoteValue?.maxEthFee as unknown as string,
+                                ),
                                 conversionRate,
                                 currentCurrency,
                               ) || ''
@@ -2590,7 +2619,9 @@ function SwapsQuotesView({
                                 )} ${getTicker(ticker)}` // eslint-disable-line
                               : ` ${
                                   weiToFiat(
-                                    toWei(selectedQuoteValue?.maxEthFee),
+                                    toWei(
+                                      selectedQuoteValue?.maxEthFee as unknown as string,
+                                    ),
                                     conversionRate,
                                     currentCurrency,
                                   ) || '' // eslint-disable-next-line

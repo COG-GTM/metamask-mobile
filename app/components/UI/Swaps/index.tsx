@@ -276,16 +276,17 @@ function SwapsAmountView({
   );
   const [isDestinationSet, setIsDestinationSet] = useState(false);
 
-  const [sourceToken, setSourceToken] = useState<SwapsToken>(
-    () =>
-      swapsTokens?.find((token) =>
-        toLowerCaseEquals(token.address, initialSource),
-      ) as SwapsToken,
+  const [sourceToken, setSourceToken] = useState<SwapsToken | undefined>(() =>
+    swapsTokens?.find((token) =>
+      toLowerCaseEquals(token.address, initialSource),
+    ),
   );
-  const [destinationToken, setDestinationToken] = useState<SwapsToken>(
+  const [destinationToken, setDestinationToken] = useState<
+    SwapsToken | null | undefined
+  >(
     swapsTokens?.find((token) =>
       toLowerCaseEquals(token.address, initialDestination),
-    ) as SwapsToken,
+    ),
   );
 
   useStablecoinsDefaultSlippage({
@@ -426,7 +427,7 @@ function SwapsAmountView({
       setSourceToken(
         swapsTokens.find((token) =>
           toLowerCaseEquals(token.address, initialSource),
-        ) as SwapsToken,
+        ),
       );
     }
   }, [canSetAnInitialSourceToken, initialSource, swapsTokens]);
@@ -444,7 +445,7 @@ function SwapsAmountView({
       setDestinationToken(
         swapsTokens.find((token) =>
           toLowerCaseEquals(token.address, initialDestination),
-        ) as SwapsToken,
+        ),
       );
     }
   }, [canSetAnInitialTokenDestination, initialDestination, swapsTokens]);
@@ -501,9 +502,9 @@ function SwapsAmountView({
       setSourceToken(
         swapsTokens?.find((token) =>
           toLowerCaseEquals(token.address, initialSource),
-        ) as SwapsToken,
+        ),
       );
-      setDestinationToken(null as unknown as SwapsToken);
+      setDestinationToken(null);
       setSlippage(AppConstants.SWAPS.DEFAULT_SLIPPAGE);
       previousSelectedAddress.current = selectedAddress;
     }
@@ -520,7 +521,7 @@ function SwapsAmountView({
     () =>
       toTokenMinimalUnit(
         hasInvalidDecimals ? '0' : amount,
-        sourceToken?.decimals,
+        sourceToken?.decimals as number,
       ),
     [amount, hasInvalidDecimals, sourceToken],
   );
@@ -581,7 +582,9 @@ function SwapsAmountView({
     } else {
       const sourceAddress = safeToChecksumAddress(sourceToken.address);
       const exchangeRate =
-        sourceAddress && sourceAddress in tokenExchangeRates
+        tokenExchangeRates &&
+        sourceAddress &&
+        sourceAddress in tokenExchangeRates
           ? tokenExchangeRates[sourceAddress]?.price
           : undefined;
       balanceFiat = balanceToFiat(
@@ -614,11 +617,12 @@ function SwapsAmountView({
       return;
     }
     if (
-      !sourceToken ||
-      (!isSwapsNativeAsset(sourceToken) && !isTokenInBalances && !isBalanceZero)
+      !isSwapsNativeAsset(sourceToken) &&
+      !isTokenInBalances &&
+      !isBalanceZero
     ) {
       const { TokensController } = Engine.context;
-      const { address, symbol, decimals, name } = sourceToken;
+      const { address, symbol, decimals, name } = sourceToken as SwapsToken;
       await TokensController.addToken({
         address,
         symbol,
@@ -630,9 +634,11 @@ function SwapsAmountView({
     return navigation.navigate(
       'SwapsQuotesView',
       setQuotesNavigationsParams(
-        sourceToken?.address,
-        destinationToken?.address,
-        toTokenMinimalUnit(amount, sourceToken.decimals).toString(10),
+        sourceToken?.address as string,
+        destinationToken?.address as string,
+        toTokenMinimalUnit(amount, sourceToken?.decimals as number).toString(
+          10,
+        ),
         slippage,
         [sourceToken, destinationToken],
       ),
@@ -662,11 +668,14 @@ function SwapsAmountView({
   );
 
   const setSlippageAfterTokenPress = useCallback(
-    (sourceTokenAddress: string, destinationTokenAddress: string) => {
+    (
+      sourceTokenAddress: string | undefined,
+      destinationTokenAddress: string | undefined,
+    ) => {
       const enableDirectWrapping = swapsUtils.shouldEnableDirectWrapping(
         chainId,
-        sourceTokenAddress,
-        destinationTokenAddress,
+        sourceTokenAddress as string,
+        destinationTokenAddress as string,
       );
       if (enableDirectWrapping && !isDirectWrapping) {
         // ETH <> WETH, set slippage to 0
@@ -685,7 +694,10 @@ function SwapsAmountView({
     (item: SwapsToken) => {
       toggleSourceModal();
       setSourceToken(item);
-      setSlippageAfterTokenPress(item.address, destinationToken.address);
+      setSlippageAfterTokenPress(
+        item.address,
+        destinationToken?.address as string,
+      );
     },
     [toggleSourceModal, setSlippageAfterTokenPress, destinationToken],
   );
@@ -694,7 +706,7 @@ function SwapsAmountView({
     (item: SwapsToken) => {
       toggleDestinationModal();
       setDestinationToken(item);
-      setSlippageAfterTokenPress(sourceToken.address, item.address);
+      setSlippageAfterTokenPress(sourceToken?.address as string, item.address);
     },
     [toggleDestinationModal, setSlippageAfterTokenPress, sourceToken],
   );
@@ -739,7 +751,7 @@ function SwapsAmountView({
   );
 
   const handleFlipTokens = useCallback(() => {
-    setSourceToken(destinationToken);
+    setSourceToken(destinationToken as SwapsToken | undefined);
     setDestinationToken(sourceToken);
   }, [destinationToken, sourceToken]);
 
@@ -747,7 +759,7 @@ function SwapsAmountView({
     !destinationTokenHasEnoughOcurrances && !hasDismissedTokenAlert;
 
   const showMaxBalanceLink = shouldShowMaxBalanceLink({
-    sourceToken,
+    sourceToken: sourceToken as object,
     shouldUseSmartTransaction,
     hasBalance,
   });
@@ -890,7 +902,7 @@ function SwapsAmountView({
                 <Text small centered>
                   <Text reset bold>
                     {strings('swaps.verified_on_sources', {
-                      sources: destinationToken.occurrences,
+                      sources: (destinationToken as SwapsToken).occurrences,
                     })}
                   </Text>
                   {` ${strings('swaps.verify_on')} `}
@@ -907,7 +919,7 @@ function SwapsAmountView({
             ) : (
               <ActionAlert
                 type={
-                  !destinationToken.occurrences ||
+                  !(destinationToken as SwapsToken).occurrences ||
                   isDynamicToken(destinationToken)
                     ? AlertType.Error
                     : AlertType.Warning
@@ -924,19 +936,20 @@ function SwapsAmountView({
                     onPress={explorer.isValid ? handleVerifyPress : undefined}
                   >
                     <Text style={textStyle} bold centered>
-                      {!destinationToken.occurrences ||
+                      {!(destinationToken as SwapsToken).occurrences ||
                       isDynamicToken(destinationToken)
                         ? strings('swaps.added_manually', {
-                            symbol: destinationToken.symbol,
+                            symbol: (destinationToken as SwapsToken).symbol,
                             // eslint-disable-next-line no-mixed-spaces-and-tabs
                           })
                         : strings('swaps.only_verified_on', {
-                            symbol: destinationToken.symbol,
-                            occurrences: destinationToken.occurrences,
+                            symbol: (destinationToken as SwapsToken).symbol,
+                            occurrences: (destinationToken as SwapsToken)
+                              .occurrences,
                             // eslint-disable-next-line no-mixed-spaces-and-tabs
                           })}
                     </Text>
-                    {!destinationToken.occurrences ||
+                    {!(destinationToken as SwapsToken).occurrences ||
                     isDynamicToken(destinationToken) ? (
                       <Text style={textStyle} centered>
                         {`${strings('swaps.verify_this_token_on')} `}
